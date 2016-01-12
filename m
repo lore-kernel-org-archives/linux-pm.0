@@ -1,74 +1,58 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v3 2/2] power: add documentation for ACT8945A's charger DT bindings
-Date: Tue, 12 Jan 2016 16:09:45 +0800
-Message-ID: <1452586185-818-3-git-send-email-wenyou.yang@atmel.com>
-References: <1452586185-818-1-git-send-email-wenyou.yang@atmel.com>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
+Date: Tue, 12 Jan 2016 08:23:02 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641D63E880D@penmbx01>
+References: <1452219225-10510-1-git-send-email-wenyou.yang@atmel.com>
+	<1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
+ <CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.245]:41381 "EHLO
-	DVREDG01.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753788AbcALIOf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 03:14:35 -0500
-In-Reply-To: <1452586185-818-1-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javier Martinez Canillas <javier@dowhile0.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Javier Martinez Canillas <javier@dowhile0.org>, Lee Jones <lee.jones@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
-This patch adds documentation for the DT bindings of the charger
-subdevice of ACT8945A MFD.
-
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
----
-
-Changes in v3: None
-Changes in v2: None
-
- .../devicetree/bindings/power/act8945a-charger.txt |   34 ++++++++++++++++++++
- 1 file changed, 34 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/act8945a-charger.txt
-
-diff --git a/Documentation/devicetree/bindings/power/act8945a-charger.txt b/Documentation/devicetree/bindings/power/act8945a-charger.txt
-new file mode 100644
-index 0000000..868e0164
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/act8945a-charger.txt
-@@ -0,0 +1,34 @@
-+Device-Tree bindings for charger of Active-semi ACT8945A Multi-Function Device
-+
-+Required properties:
-+ - compatible: "active-semi,act8945a-charger"
-+ - active-semi,chglev-gpio = Specifies a gpio that uses to select
-+   the charge current level.
-+
-+Optional properties:
-+ - active-semi,battery_temperature: Indicates if it is allowed to check
-+   the battery temperature. If it is missing, assume the battery temperature
-+   is not allowed to check.
-+ - active-semi,input_voltage_threshold: unit: mV;
-+   Specifies the charger's input over-voltage threshold value;
-+   The value can be: 6600, 7000, 7500, 8000; default: 6600
-+ - active-semi,precondition_timeout: unit: minutes;
-+   Specifies the charger's PRECONDITION safety timer setting value;
-+   The value can be: 40, 60, 80, 0; If 0, it means to disable this timer;
-+   default: 40.
-+ - active-semi,total_timeout: unit: hours;
-+   Specifies the charger's total safety timer setting value;
-+   The value can be: 3, 4, 5, 0; If 0, it means to disable this timer;
-+   default: 3.
-+
-+Example:
-+
-+	charger {
-+		compatible = "active-semi,act8945a-charger";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_charger_chglev>;
-+		active-semi,chglev-gpio = <&pioA 12 GPIO_ACTIVE_HIGH>;
-+		active-semi,input_voltage_threshold = <6600>;
-+		active-semi,precondition_timeout = <40>;
-+		active-semi,total_timeout = <3>;
-+	};
--- 
-1.7.9.5
-
+SGkgSmF2aWVyLA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgcmV2aWV3Lg0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyBbbWFpbHRv
+OmphdmllckBkb3doaWxlMC5vcmddDQo+IFNlbnQ6IDIwMTblubQx5pyIOOaXpSAyMzowMA0KPiBU
+bzogWWFuZywgV2VueW91IDxXZW55b3UuWWFuZ0BhdG1lbC5jb20+DQo+IENjOiBTZWJhc3RpYW4g
+UmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdg0KPiA8ZGJh
+cnlzaGtvdkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UgPGR3bXcyQGluZnJhZGVhZC5vcmc+
+OyBSb2INCj4gSGVycmluZyA8cm9iaCtkdEBrZXJuZWwub3JnPjsgUGF3ZWwgTW9sbCA8cGF3ZWwu
+bW9sbEBhcm0uY29tPjsgTWFyaw0KPiBSdXRsYW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47IElh
+biBDYW1wYmVsbCA8aWpjK2RldmljZXRyZWVAaGVsbGlvbi5vcmcudWs+Ow0KPiBLdW1hciBHYWxh
+IDxnYWxha0Bjb2RlYXVyb3JhLm9yZz47IEZlcnJlLCBOaWNvbGFzDQo+IDxOaWNvbGFzLkZFUlJF
+QGF0bWVsLmNvbT47IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgTGludXgN
+Cj4gS2VybmVsIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcjogYWN0ODk0NWE6IGFk
+ZCBjaGFyZ2VyIGRyaXZlciBmb3IgQUNUODk0NUENCj4gDQo+IEhlbGxvIFdlbnlvdSwNCj4gDQo+
+IE9uIFRodSwgSmFuIDcsIDIwMTYgYXQgMTE6MTMgUE0sIFdlbnlvdSBZYW5nIDx3ZW55b3UueWFu
+Z0BhdG1lbC5jb20+DQo+IHdyb3RlOg0KPiA+IFRoaXMgcGF0Y2ggYWRkcyBuZXcgZHJpdmVyIGZv
+ciBBY3RpdmUtc2VtaSBBQ1Q4OTQ1QSBBY3RpdmVQYXRoIGNoYXJnZXINCj4gPiAocGFydCBvZiBB
+Q1Q4OTQ1QSBNRkQgZHJpdmVyKSBwcm92aWRpbmcgcG93ZXIgc3VwcGx5IGNsYXNzIGluZm9ybWF0
+aW9uDQo+ID4gdG8gdXNlcnNwYWNlLg0KPiA+DQo+ID4gVGhlIGRyaXZlciBpcyBjb25maWd1cmVk
+IHRocm91Z2ggRFRTIChiYXR0ZXJ5IGFuZCBzeXN0ZW0gcmVsYXRlZA0KPiA+IHNldHRpbmdzKSBh
+bmQgc3lzZnMgZW50cmllcyAodGltZXJzIGFuZCBpbnB1dCBvdmVyLXZvbHRhZ2UgdGhyZXNob2xk
+KS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1l
+bC5jb20+DQo+ID4gLS0tDQo+ID4NCj4gDQo+IFtzbmlwXQ0KPiANCj4gPiArDQo+ID4gK3N0YXRp
+YyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGFjdDg5NDVhX2NoYXJnZXJfZHJpdmVyID0gew0KPiA+
+ICsgICAgICAgLmRyaXZlciA9IHsNCj4gPiArICAgICAgICAgICAgICAgLm5hbWUgPSAiYWN0ODk0
+NWEtY2hhcmdlciIsDQo+ID4gKyAgICAgICB9LA0KPiA+ICsgICAgICAgLnByb2JlICA9IGFjdDg5
+NDVhX2NoYXJnZXJfcHJvYmUsDQo+ID4gKyAgICAgICAucmVtb3ZlID0gYWN0ODk0NWFfY2hhcmdl
+cl9yZW1vdmUsIH07DQo+ID4gKw0KPiANCj4gVGhlIGRyaXZlciBpcyBtaXNzaW5nIGFuIE9GIG1h
+dGNoIHRhYmxlIChhbmQgYWxzbyBhIHBsYXRmb3JtIElEIG1hdGNoIHRhYmxlIGlmDQo+IG5vbi1E
+VCBpcyBzdXBwb3J0ZWQpIHNvIHRoaXMgbWVhbnMgdGhhdCBtb2R1bGUgYXV0b2xvYWRpbmcgd2ls
+bCBiZSBicm9rZW4gZm9yIHRoaXMNCj4gZHJpdmVyIHNpbmNlIHRoZSBwbGF0Zm9ybSB1ZXZlbnQg
+ZnVuY3Rpb24gd2lsbCByZXBvcnQgYSBNT0RBTElBUz1vZjpOKlQqQ2FjdGl2ZS0NCj4gc2VtaSxh
+Y3Q4OTQ1YS1jaGFyZ2VyDQoNClRoaXMgaXMgYW4gTUZEIGRldmljZSwgaXQgY29tcGF0aWJsZSBp
+cyBkZWNsYXJlZCBpbiB0aGUgLi4vbWZkL2FjdDg5NDVhLmMgZmlsZS4NCg0KCS5vZl9jb21wYXRp
+YmxlID0gImFjdGl2ZS1zZW1pLGFjdDg5NDVhLWNoYXJnZXIiLg0KDQpUaGUgbm9uLURUICBpcyBu
+b3Qgc3VwcG9ydGVkIGluIHRoaXMgcGF0Y2guIFNvIGEgcGxhdGZvcm0gSUQgbWF0Y2ggdGFibGUg
+aXMgbm90IGluY2x1ZGVkLg0KDQo+IA0KPiBNYXRjaGluZyBpcyBvbmx5IHdvcmtpbmcgYmVjYXVz
+ZSB0aGUgcGxhdGZvcm0gYnVzIG1hdGNoIGZ1bmN0aW9uIHVzZSBhcyBhDQo+IGZhbGxiYWNrIHRo
+ZSBkcml2ZXIgbmFtZS4NCg0KDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+IEphdmllcg0KDQoNCkJl
+c3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
