@@ -1,75 +1,74 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH RESEND v4 1/4] cpufreq: powernv: Remove cpu_to_chip_id()
- from hot-path
-Date: Tue, 12 Jan 2016 16:27:37 +0530
-Message-ID: <5694DC21.5000009@linux.vnet.ibm.com>
-References: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1452594267-12844-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 14/19] cpufreq: fix locking of policy->rwsem in
+ cpufreq_offline_finish
+Date: Tue, 12 Jan 2016 16:32:17 +0530
+Message-ID: <20160112110217.GF1084@ubuntu>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-15-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452594267-12844-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <1452533760-13787-15-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 01/12/2016 03:54 PM, Shilpasri G Bhat wrote:
-> cpu_to_chip_id() does a DT walk through to find out the chip id by taking a
-> contended device tree lock. This adds an unnecessary overhead in a hot-path.
-> So instead of cpu_to_chip_id() use PIR of the cpu to find the chip id.
+On 11-01-16, 17:35, Juri Lelli wrote:
+> There are paths in cpufreq_offline_prepare where policy is used, but its
+> rwsem is not held.
 > 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Fix it.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index cb50138..597a084 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -39,6 +39,7 @@
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
->  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
->  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
-> +#define pir_to_chip_id(pir)	(((pir) >> 7) & 0x3f)
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 91158b0..ba452c3 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1381,9 +1381,13 @@ static void cpufreq_offline_finish(unsigned int cpu)
+>  		return;
+>  	}
+>  
+> +	down_write(&policy->rwsem);
+> +
+>  	/* Only proceed for inactive policies */
+> -	if (!policy_is_inactive(policy))
+> +	if (!policy_is_inactive(policy)) {
+> +		up_write(&policy->rwsem);
+>  		return;
+> +	}
+>  
+>  	/* If cpu is last user of policy, free policy */
+>  	if (has_target()) {
+> @@ -1392,6 +1396,8 @@ static void cpufreq_offline_finish(unsigned int cpu)
+>  			pr_err("%s: Failed to exit governor\n", __func__);
+>  	}
+>  
+> +	up_write(&policy->rwsem);
+> +
+>  	/*
+>  	 * Perform the ->exit() even during light-weight tear-down,
+>  	 * since this is a core component, and is essential for the
 
-Since this is platform specific and true only for power8, this is not
-the right place to put it. Either you can move this to arch/powerpc  or
-you can maintain a cpu to chip map within the driver.
-> 
->  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
->  static bool rebooting, throttled, occ_reset;
-> @@ -312,13 +313,14 @@ static inline unsigned int get_nominal_index(void)
->  static void powernv_cpufreq_throttle_check(void *data)
->  {
->  	unsigned int cpu = smp_processor_id();
-> +	unsigned int chip_id = pir_to_chip_id(hard_smp_processor_id());
->  	unsigned long pmsr;
->  	int pmsr_pmax, i;
-> 
->  	pmsr = get_pmspr(SPRN_PMSR);
-> 
->  	for (i = 0; i < nr_chips; i++)
-> -		if (chips[i].id == cpu_to_chip_id(cpu))
-> +		if (chips[i].id == chip_id)
->  			break;
-> 
->  	/* Check for Pmax Capping */
-> @@ -558,7 +560,8 @@ static int init_chip_info(void)
->  	unsigned int prev_chip_id = UINT_MAX;
-> 
->  	for_each_possible_cpu(cpu) {
-> -		unsigned int id = cpu_to_chip_id(cpu);
-> +		unsigned int id =
-> +			pir_to_chip_id(get_hard_smp_processor_id(cpu));
-> 
->  		if (prev_chip_id != id) {
->  			prev_chip_id = id;
-> 
+I think we need to nail down the purpose of the lock first and discuss
+the races we are trying to fix. For example, policy is used by all
+cpufreq drivers, etc and no one is stopping them to use it without
+taking the lock..
 
-Thanks,
-Shreyas
+FWIW, I have also tried to do some cleanups earlier, but was never
+able to send them upstream due to busy schedule.
+
+ssh://git@git.linaro.org/people/viresh.kumar/linux.git
+cpufreq/core/locking
+
+You might find some interesting bits there.
+
+-- 
+viresh
