@@ -1,47 +1,92 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 0/4] cpufreq: powernv: Redesign the presentation of
- throttle notification
-Date: Tue, 12 Jan 2016 08:02:23 +0530
-Message-ID: <20160112023223.GF1084@ubuntu>
-References: <1451899527-14359-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1452545680-11976-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160111222312.GA3967@kroah.com>
+Subject: Re: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
+Date: Tue, 12 Jan 2016 08:35:43 +0530
+Message-ID: <20160112030543.GG1084@ubuntu>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
+ <20160111232118.GG22188@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36613 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760144AbcALDFs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 22:05:48 -0500
+Received: by mail-pf0-f172.google.com with SMTP id n128so54835147pfn.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2016 19:05:47 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160111222312.GA3967@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, stable@vger.kernel.org
+In-Reply-To: <20160111232118.GG22188@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 11-01-16, 14:23, Greg KH wrote:
-> On Mon, Jan 11, 2016 at 02:54:36PM -0600, Shilpasri G Bhat wrote:
-> > In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
-> > CPU when the chip crosses its thermal and power limits. Currently,
-> > powernv-cpufreq driver detects and reports this event as a console
-> > message. Some machines may not sustain the max turbo frequency in all
-> > conditions and can be throttled frequently. This can lead to the
-> > flooding of console with throttle messages. So this patchset aims to
-> > redesign the presentation of this event via sysfs counters and
-> > tracepoints. 
-> > 
-> > Patches [2] to [4] will add a perf trace point "power:powernv_throttle" and
-> > sysfs throttle counter stats in /sys/devices/system/cpu/cpufreq/chipN.
-> > Patch [1] solves a bug in powernv_cpufreq_throttle_check(), which calls in to
-> > cpu_to_chip_id() in hot path which reads DT every time to find the chip id.
-> 
-> <formletter>
-> 
-> This is not the correct way to submit patches for inclusion in the
-> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-> for how to do this properly.
-> 
-> </formletter>
+On 11-01-16, 15:21, Stephen Boyd wrote:
+> Is there a reason we capitalize regulator?
 
-Also you shouldn't use --in-reply-to for the new versions of a
-multiple patch series. Just use a new thread.
+-------------------------8<-------------------------
 
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index cf351d3dab1c..9e437416e155 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -19,6 +19,7 @@
+ #include <linux/device.h>
+ #include <linux/of.h>
+ #include <linux/export.h>
++#include <linux/regulator/consumer.h>
+ 
+ #include "opp.h"
+ 
+@@ -505,6 +506,7 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ {
+ 	struct device_opp *dev_opp;
+ 	struct device_list_opp *list_dev;
++	const char *name = dev_name(dev);
+ 
+ 	/* Check for existing list for 'dev' first */
+ 	dev_opp = _find_device_opp(dev);
+@@ -527,6 +529,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ 		return NULL;
+ 	}
+ 
++	dev_opp->regulator = regulator_get_optional(dev, name);
++	if (IS_ERR(dev_opp->regulator))
++		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
++			 name, PTR_ERR(dev_opp->regulator));
++
+ 	srcu_init_notifier_head(&dev_opp->srcu_head);
+ 	INIT_LIST_HEAD(&dev_opp->opp_list);
+ 
+@@ -565,6 +572,8 @@ static void _remove_device_opp(struct device_opp *dev_opp)
+ 	if (dev_opp->prop_name)
+ 		return;
+ 
++	regulator_put(dev_opp->regulator);
++
+ 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
+ 				    node);
+ 
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 690638ef36ee..b9555f28f216 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -132,6 +132,8 @@ struct device_list_opp {
+  * @supported_hw: Array of version number to support.
+  * @supported_hw_count: Number of elements in supported_hw array.
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
++ * @regulator: Supply Regulator
++ *
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+  *
+@@ -159,6 +161,7 @@ struct device_opp {
+ 	unsigned int *supported_hw;
+ 	unsigned int supported_hw_count;
+ 	const char *prop_name;
++	struct regulator *regulator;
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *dentry;
 -- 
 viresh
