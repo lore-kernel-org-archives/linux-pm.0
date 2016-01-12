@@ -1,140 +1,270 @@
-From: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v2 1/4] dt-bindings: power: reset: add document for reboot-mode driver
-Date: Tue, 12 Jan 2016 19:29:49 +0800
-Message-ID: <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: [PATCH v2 2/4] power: reset: add reboot mode driver
+Date: Tue, 12 Jan 2016 19:31:59 +0800
+Message-ID: <1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
 References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1452598029-8222-1-git-send-email-andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jun.nie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org, cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org
+Cc: linux@roeck-us.net, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, catalin.marinas@arm.com, geert+renesas@glider.be, sre@kernel.org, olof@lixom.net, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, f.fainelli@gmail.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org, mark.rutland@arm.com, maxime.ripard@free-electrons.com, Andy Yan <andy.yan@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-add device tree binding document for reboot-mode driver
+This driver parse the reboot commands like "reboot loader"
+and "reboot recovery" to get a boot mode described in the
+device tree , then call the write interfae to store the boot
+mode in some persistent storage  like special register or ram,
+which can be read by the bootloader after system reboot, then
+the bootloader can take different action according to the mode
+stored.
 
-Signed-off-by: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+This is commonly used on Android based devices, which in order
+to reboot the device into fastboot or recovery mode.
+
+Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
 
 ---
 
-Changes in v2: None
-Changes in v1: None
+Changes in v2:
+- move to dir drivers/power/reset/
+- make syscon-reboot-mode a generic driver
 
- .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++++++++++
- .../bindings/power/reset/syscon-reboot-mode.txt    | 52 ++++++++++++++++++++++
- 2 files changed, 93 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
- create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+Changes in v1:
+- fix the embarrassed compile warning
+- correct the maskrom magic number
+- check for the normal reboot
 
-diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+ drivers/power/reset/Kconfig              |  16 +++++
+ drivers/power/reset/Makefile             |   2 +
+ drivers/power/reset/reboot-mode.c        | 100 +++++++++++++++++++++++++++++++
+ drivers/power/reset/reboot-mode.h        |   6 ++
+ drivers/power/reset/syscon-reboot-mode.c |  62 +++++++++++++++++++
+ 5 files changed, 186 insertions(+)
+ create mode 100644 drivers/power/reset/reboot-mode.c
+ create mode 100644 drivers/power/reset/reboot-mode.h
+ create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 1131cf7..2e6d873 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -173,5 +173,21 @@ config POWER_RESET_ZX
+ 	help
+ 	  Reboot support for ZTE SoCs.
+ 
++config REBOOT_MODE
++	tristate
++	depends on OF
++	help
++	 This driver will help to pass the system reboot mode
++	 to bootloader
++
++config SYSCON_REBOOT_MODE
++	bool "Generic SYSCON regmap reboot mode driver"
++	select REBOOT_MODE
++	help
++	 Say y here will enable reboot mode driver. This will
++	 get reboot mode arguments and store it in SYSCON mapped
++	 register, then the bootloader can read it to take different
++	 action according to the mode.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index 096fa67..a63865b 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -20,3 +20,5 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
+ obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
+ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
+ obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
++obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
++obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
+diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
 new file mode 100644
-index 0000000..81d9f66
+index 0000000..92b7b4d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
-@@ -0,0 +1,41 @@
-+Generic reboot mode core map driver
++++ b/drivers/power/reset/reboot-mode.c
+@@ -0,0 +1,100 @@
++/*
++ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++#include <linux/device.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/reboot.h>
++#include "reboot-mode.h"
 +
-+This driver get reboot mode arguments and call the write
-+interface to stores the magic value in special register
-+or ram . Then the bootloader can read it and take different
-+action according to the argument stored.
++struct mode_info {
++	const char *mode;
++	int magic;
++	struct list_head list;
++};
 +
-+Required properties:
-+- compatible: only support "syscon-reboot-mode" now.
++struct reboot_mode_driver {
++	struct list_head head;
++	int (*write)(int magic);
++	struct notifier_block reboot_notifier;
++};
 +
-+Each mode is represented as a sub-node of reboot_mode:
++static int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
++				 const char *cmd)
++{
++	const char *normal = "normal";
++	int magic = 0;
++	struct mode_info *info;
 +
-+Subnode required properties:
-+- linux,mode: reboot mode command,such as "loader", "recovery", "fastboot".
-+- loader,magic: magic number for the mode, this is vendor specific.
++	if (!cmd)
++		cmd = normal;
 +
-+Example:
-+	reboot_mode {
-+		compatible = "syscon-reboot-mode";
-+		offset = <0x40>;
++	list_for_each_entry(info, &reboot->head, list) {
++		if (!strcmp(info->mode, cmd)) {
++			magic = info->magic;
++			break;
++		}
++	}
 +
-+		loader {
-+			linux,mode = "loader";
-+			loader,magic = <BOOT_LOADER>;
-+		};
++	return magic;
++}
 +
-+		maskrom {
-+			linux,mode = "maskrom";
-+			loader,magic = <BOOT_MASKROM>;
-+		};
++static int reboot_mode_notify(struct notifier_block *this,
++			      unsigned long mode, void *cmd)
++{
++	struct reboot_mode_driver *reboot;
++	int magic;
 +
-+		recovery {
-+			linux,mode = "recovery";
-+			loader,magic = <BOOT_RECOVERY>;
-+		};
++	reboot = container_of(this, struct reboot_mode_driver, reboot_notifier);
++	magic = get_reboot_mode_magic(reboot, cmd);
++	if (magic)
++		reboot->write(magic);
 +
-+		fastboot {
-+			linux,mode = "fastboot";
-+			loader,magic = <BOOT_FASTBOOT>;
-+		};
-+        };
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
++	return NOTIFY_DONE;
++}
++
++int reboot_mode_register(struct device *dev, int (*write)(int))
++{
++	struct reboot_mode_driver *reboot;
++	struct mode_info *info;
++	struct device_node *child;
++	int ret;
++
++	reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
++	if (!reboot)
++		return -ENOMEM;
++
++	reboot->write = write;
++	INIT_LIST_HEAD(&reboot->head);
++	for_each_child_of_node(dev->of_node, child) {
++		info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
++		if (!info)
++			return -ENOMEM;
++		info->mode = of_get_property(child, "linux,mode", NULL);
++		if (of_property_read_u32(child, "loader,magic", &info->magic)) {
++			dev_err(dev, "reboot mode %s without magic number\n",
++				info->mode);
++			devm_kfree(dev, info);
++			continue;
++		}
++		list_add_tail(&info->list, &reboot->head);
++	}
++	reboot->reboot_notifier.notifier_call = reboot_mode_notify;
++	ret = register_reboot_notifier(&reboot->reboot_notifier);
++	if (ret)
++		dev_err(dev, "can't register reboot notifier\n");
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(reboot_mode_register);
++
++MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
++MODULE_DESCRIPTION("System reboot mode driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/power/reset/reboot-mode.h b/drivers/power/reset/reboot-mode.h
 new file mode 100644
-index 0000000..6bce7dd
+index 0000000..76646e7
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
-@@ -0,0 +1,52 @@
-+SYSCON reboot mode driver
++++ b/drivers/power/reset/reboot-mode.h
+@@ -0,0 +1,6 @@
++#ifndef __REBOOT_MODE_H__
++#define __REBOOT_MODE_H__
 +
-+This driver get reboot mode magic value form reboot-mode driver
-+and stores it in a SYSCON mapped register. Then the bootloader
-+can read it and take different action according to the magic
-+value stored.
++extern int reboot_mode_register(struct device *dev, int (*write)(int));
 +
-+This DT node should be represented as a sub-node of a "syscon", "simple-mfd"
-+node.
++#endif
+diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
+new file mode 100644
+index 0000000..b9370f3
+--- /dev/null
++++ b/drivers/power/reset/syscon-reboot-mode.c
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/reboot.h>
++#include <linux/regmap.h>
++#include <linux/mfd/syscon.h>
++#include "reboot-mode.h"
 +
-+Required properties:
-+- compatible: should be "syscon-reboot-mode"
-+- offset: offset in the register map for the storage register (in bytes)
++static struct regmap *map;
++static u32 offset;
 +
-+The rest of the properties should follow the generic reboot-mode discription
-+found in reboot-mode.txt
++static int syscon_reboot_mode_write(int magic)
++{
++	regmap_write(map, offset, magic);
 +
-+Example:
-+	pmu: pmu@20004000 {
-+		compatible = "rockchip,rk3066-pmu", "syscon", "simple-mfd";
-+		reg = <0x20004000 0x100>;
++	return 0;
++}
 +
-+		reboot-mode {
-+			compatible = "syscon-reboot-mode";
-+			offset = <0x40>;
++static int syscon_reboot_mode_probe(struct platform_device *pdev)
++{
++	int ret;
 +
-+			normal {
-+				linux,mode = "normal";
-+				loader,magic = <BOOT_NORMAL>;
-+			};
++	map = syscon_node_to_regmap(pdev->dev.parent->of_node);
++	if (IS_ERR(map))
++		return PTR_ERR(map);
++	if (of_property_read_u32(pdev->dev.of_node, "offset", &offset))
++		return -EINVAL;
++	ret = reboot_mode_register(&pdev->dev, syscon_reboot_mode_write);
++	if (ret)
++		dev_err(&pdev->dev, "can't register reboot mode\n");
 +
-+			loader {
-+				linux,mode = "loader";
-+				loader,magic = <BOOT_LOADER>;
-+			};
++	return ret;
++}
 +
-+			maskrom {
-+				linux,mode = "maskrom";
-+				loader,magic = <BOOT_MASKROM>;
-+			};
++static const struct of_device_id syscon_reboot_mode_of_match[] = {
++	{ .compatible = "syscon-reboot-mode" },
++	{}
++};
 +
-+			recovery {
-+				linux,mode = "recovery";
-+				loader,magic = <BOOT_RECOVERY>;
-+			};
++static struct platform_driver syscon_reboot_mode_driver = {
++	.probe = syscon_reboot_mode_probe,
++	.driver = {
++		.name = "syscon-reboot-mode",
++		.of_match_table = syscon_reboot_mode_of_match,
++	},
++};
++module_platform_driver(syscon_reboot_mode_driver);
 +
-+			fastboot {
-+				linux,mode = "fastboot";
-+				loader,magic = <BOOT_FASTBOOT>;
-+			};
-+		};
-+	};
++MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
++MODULE_DESCRIPTION("SYSCON reboot mode driver");
++MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
