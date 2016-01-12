@@ -1,206 +1,263 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH 1/3][v3] Thermal: initialize thermal zone device
- correctly
-Date: Tue, 12 Jan 2016 06:42:00 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286B0B42@shsmsx102.ccr.corp.intel.com>
-References: <cover.1446192980.git.yu.c.chen@intel.com>
- <3e6dafce0f659ca2510750f1e03dbba4bc5767c9.1446192980.git.yu.c.chen@intel.com>
- <20151231184344.GB14127@localhost.localdomain>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 08/17] PM / OPP: Add dev_pm_opp_set_rate()
+Date: Tue, 12 Jan 2016 12:28:32 +0530
+Message-ID: <20160112065832.GN1084@ubuntu>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <5824076a64ad4215cfc63c238e8b8947bc996e87.1450777582.git.viresh.kumar@linaro.org>
+ <20160112014010.GM22188@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151231184344.GB14127@localhost.localdomain>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "javi.merino@arm.com" <javi.merino@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:33096 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbcALG6h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 01:58:37 -0500
+Received: by mail-pa0-f46.google.com with SMTP id cy9so334906367pac.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2016 22:58:37 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20160112014010.GM22188@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-Hi Eduardo,
-Thanks for your review and sorry for that I missed your email.
+On 11-01-16, 17:40, Stephen Boyd wrote:
+> > +	ret = regulator_set_voltage_triplet(reg, opp->u_volt_min, opp->u_volt,
+> 
+> This can't be called under an RCU read lock.
+> 
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Friday, January 01, 2016 2:44 AM
-> To: Chen, Yu C
-> Cc: Zhang, Rui; javi.merino@arm.com; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org; stable@vger.kernel.org
-> Subject: Re: [PATCH 1/3][v3] Thermal: initialize thermal zone device correctly
+> > +	rcu_read_lock();
 > 
-> For some reason, I thought Rui had picked this already.
+> This lock is held way too long.
 > 
-> Anyways, here are a couple of comments:
-> 
-> On Fri, Oct 30, 2015 at 04:31:47PM +0800, Chen Yu wrote:
-> > From: Zhang Rui <rui.zhang@intel.com>
-> >
-> > After thermal zone device registered, as we have not read any
-> > temperature before, thus tz->temperature should not be 0, which
-> > actually means 0C, and thermal trend is not available.
-> > In this case, we need specially handling for the first
-> > thermal_zone_device_update().
-> >
-> > Both thermal core framework and step_wise governor is enhanced to
-> > handle this. And since the step_wise governor is the only one that
-> > uses trends, so it's the only thermal governor that needs to be
-> > updated.
-> >
-> > CC: <stable@vger.kernel.org> #3.18+
-> > Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> > Tested-by: szegad <szegadlo@poczta.onet.pl>
-> > Tested-by: prash <prash.n.rao@gmail.com>
-> > Tested-by: amish <ammdispose-arch@yahoo.com>
-> > Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> > Reviewed-by: Javi Merino <javi.merino@arm.com>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > ---
-> >  drivers/thermal/step_wise.c    | 17 +++++++++++++++--
-> >  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
-> > drivers/thermal/thermal_core.h |  1 +
-> 
-> I would prefer if you could split this patch in two. One for thermal core
-> another one for step wise.
-[Yu]  It would be better if we can split this patch into two, for stable material.
-What do you think, Rui?
-> 
-> >  include/linux/thermal.h        |  3 +++
-> >  4 files changed, 36 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> > index 2f9f708..ea9366a 100644
-> > --- a/drivers/thermal/step_wise.c
-> > +++ b/drivers/thermal/step_wise.c
-> > @@ -63,6 +63,19 @@ static unsigned long get_target_state(struct
-> thermal_instance *instance,
-> >  	next_target = instance->target;
-> >  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
-> >
-> > +	if (!instance->initialized) {
-> > +		if (throttle) {
-> > +			next_target = (cur_state + 1) >= instance->upper ?
-> > +					instance->upper :
-> > +					((cur_state + 1) < instance->lower ?
-> > +					instance->lower : (cur_state + 1));
-> > +		} else {
-> > +			next_target = THERMAL_NO_TARGET;
-> > +		}
-> > +
-> > +		return next_target;
-> > +	}
-> > +
-> >  	switch (trend) {
-> >  	case THERMAL_TREND_RAISING:
-> >  		if (throttle) {
-> > @@ -149,7 +162,7 @@ static void thermal_zone_trip_update(struct
-> thermal_zone_device *tz, int trip)
-> >  		dev_dbg(&instance->cdev->device, "old_target=%d,
-> target=%d\n",
-> >  					old_target, (int)instance->target);
-> >
-> > -		if (old_target == instance->target)
-> > +		if (instance->initialized && old_target == instance->target)
-> >  			continue;
-> >
-> >  		/* Activate a passive thermal instance */ @@ -161,7 +174,7
-> @@
-> > static void thermal_zone_trip_update(struct thermal_zone_device *tz, int
-> trip)
-> >  			instance->target == THERMAL_NO_TARGET)
-> >  			update_passive_instance(tz, trip_type, -1);
-> >
-> > -
-> > +		instance->initialized = true;
-> >  		instance->cdev->updated = false; /* cdev needs update */
-> >  	}
-> >
-> 
-> Considering that I understood the problem and your proposal well, I would
-> say these changes on step wise are the perfect case for setting up a
-> step_wise.bind_to_tz(). bind_to_tz() is already designed as an opportunity
-> for governor to check the thermal zone status at the time of binding.
-> Remember that moving to bind_to_tz() covers not only registration time, but
-> governor switching too (say, user chooses user_space, then step_wise).
 
-[Yu] The  code change in step_wise. get_target_state is mainly for
-suspend/resume scenario, which  is not involved with thermal zone/governor bindings IMO.
+> > +	freq = clk_round_rate(clk, target_freq);
 > 
-> The above code seams to be correct, but after reviewing the code of
-> step_wise.throttle(), I would say it is already complicated and deserves
-> simplification, when possible.
+> This can't be called under RCU.
 > 
-> 
-> 
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c index d9e525c..682bc1e 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -532,8 +532,22 @@ static void update_temperature(struct
-> thermal_zone_device *tz)
-> >  	mutex_unlock(&tz->lock);
-> >
-> >  	trace_thermal_temperature(tz);
-> > -	dev_dbg(&tz->device, "last_temperature=%d,
-> current_temperature=%d\n",
-> > -				tz->last_temperature, tz->temperature);
-> > +	if (tz->last_temperature == THERMAL_TEMP_INVALID)
-> > +		dev_dbg(&tz->device, "last_temperature N/A,
-> current_temperature=%d\n",
-> > +			tz->temperature);
-> > +	else
-> > +		dev_dbg(&tz->device, "last_temperature=%d,
-> current_temperature=%d\n",
-> > +			tz->last_temperature, tz->temperature); }
+> > +	if ((long)freq <= 0)
+> > +		freq = target_freq;
 > > +
-> > +static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-> > +{
-> > +	struct thermal_instance *pos;
-> > +
-> > +	tz->temperature = THERMAL_TEMP_INVALID;
-> > +	tz->passive = 0;
-> > +	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
-> > +		pos->initialized = false;
-> >  }
-> >
-> >  void thermal_zone_device_update(struct thermal_zone_device *tz) @@
-> > -1900,6 +1914,7 @@ struct thermal_zone_device
-> > *thermal_zone_device_register(const char *type,
-> >
-> >  	INIT_DELAYED_WORK(&(tz->poll_queue),
-> thermal_zone_device_check);
-> >
-> > +	thermal_zone_device_reset(tz);
-> >  	thermal_zone_device_update(tz);
-> >
-> >  	return tz;
-> > diff --git a/drivers/thermal/thermal_core.h
-> > b/drivers/thermal/thermal_core.h index d7ac1fc..749d41a 100644
-> > --- a/drivers/thermal/thermal_core.h
-> > +++ b/drivers/thermal/thermal_core.h
-> > @@ -41,6 +41,7 @@ struct thermal_instance {
-> >  	struct thermal_zone_device *tz;
-> >  	struct thermal_cooling_device *cdev;
-> >  	int trip;
-> > +	bool initialized;
-> >  	unsigned long upper;	/* Highest cooling state for this trip point */
-> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
-> >  	unsigned long target;	/* expected cooling state */
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h index
-> > 157d366..5bcabc7 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -43,6 +43,9 @@
-> >  /* Default weight of a bound cooling device */  #define
-> > THERMAL_WEIGHT_DEFAULT 0
-> >
-> > +/* use value, which < 0K, to indicate an invalid/uninitialized temperature
-> */
-> > +#define THERMAL_TEMP_INVALID	-274000
-> > +
-> >  /* Unit conversion macros */
-> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
-> >  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-> > --
-> > 1.8.4.2
+> > +	old_freq = clk_get_rate(clk);
+> 
+> Same for this.
+
+Some of these I figured out earlier (after sending the series), and
+fixed them by dropping rcu lock at certain points. But the problem is
+that we will be using opp/clk/reg here for almost the complete routine
+and the lock must be acquired for all the time.
+
+(Untested for now)
+
+-------------------------8<-------------------------
+
+Subject: [PATCH] PM / OPP: Add dev_pm_opp_set_rate()
+
+This adds a routine, dev_pm_opp_set_rate(), responsible for configuring
+power-supply and clock source for an OPP.
+
+The OPP is found by matching against the target_freq passed to the
+routine. This shall replace similar code present in most of the OPP
+users and help simplify them a lot.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/core.c | 155 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h        |   6 ++
+ 2 files changed, 161 insertions(+)
+
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 2b1e8cb3897f..ca6b31ab5c87 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -527,6 +527,161 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+ 
++static int _set_opp_voltage(struct device *dev, struct regulator *reg,
++			    unsigned long u_volt, unsigned long u_volt_min,
++			    unsigned long u_volt_max)
++{
++	int ret;
++
++	/* Regulator not be available for device */
++	if (IS_ERR(reg)) {
++		dev_dbg(dev, "%s: regulator not available: %ld\n", __func__,
++			PTR_ERR(reg));
++		return 0;
++	}
++
++	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__, u_volt_min,
++		u_volt, u_volt_max);
++
++	ret = regulator_set_voltage_triplet(reg, u_volt_min, u_volt,
++					    u_volt_max);
++	if (ret)
++		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
++			__func__, u_volt_min, u_volt, u_volt_max, ret);
++
++	return ret;
++}
++
++/**
++ * dev_pm_opp_set_rate() - Configure new OPP based on frequency
++ * @dev:	 device for which we do this operation
++ * @target_freq: frequency to achieve
++ *
++ * This configures the power-supplies and clock source to the levels specified
++ * by the OPP corresponding to the target_freq.
++ *
++ * Locking: This function internally uses mutex locks to keep the integrity of
++ * the internal data structures. Callers should ensure that this function is
++ * *NOT* called under RCU protection or in contexts where mutex cannot be
++ * locked.
++ */
++int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
++{
++	struct device_opp *dev_opp;
++	struct dev_pm_opp *old_opp, *opp;
++	struct regulator *reg;
++	struct clk *clk;
++	unsigned long freq, old_freq;
++	unsigned long u_volt, u_volt_min, u_volt_max;
++	unsigned long ou_volt, ou_volt_min, ou_volt_max;
++	int ret;
++
++	if (unlikely(!target_freq)) {
++		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
++			target_freq);
++		return -EINVAL;
++	}
++
++	/*
++	 * Hold our list modification lock here as clk/regulator routines called
++	 * below can possibly take another mutex, which isn't allowed within rcu
++	 * locks.
++	 */
++	mutex_lock(&dev_opp_list_lock);
++
++	dev_opp = _find_device_opp(dev);
++	if (IS_ERR(dev_opp)) {
++		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
++		ret = PTR_ERR(dev_opp);
++		goto unlock;
++	}
++
++	clk = dev_opp->clk;
++	if (IS_ERR(clk)) {
++		dev_err(dev, "%s: No clock available for the device\n",
++			__func__);
++		ret = -EINVAL;
++		goto unlock;
++	}
++
++	freq = clk_round_rate(clk, target_freq);
++	if ((long)freq <= 0)
++		freq = target_freq;
++
++	old_freq = clk_get_rate(clk);
++
++	/* Return early if nothing to do */
++	if (old_freq == freq) {
++		dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
++			__func__, freq);
++		ret = 0;
++		goto unlock;
++	}
++
++	reg = dev_opp->regulator;
++	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
++	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
++
++	if (IS_ERR(opp)) {
++		ret = PTR_ERR(opp);
++		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
++			__func__, freq, ret);
++		goto unlock;
++	}
++
++	u_volt = opp->u_volt;
++	u_volt_min = opp->u_volt_min;
++	u_volt_max = opp->u_volt_max;
++
++	ou_volt = old_opp->u_volt;
++	ou_volt_min = old_opp->u_volt_min;
++	ou_volt_max = old_opp->u_volt_max;
++
++	/* Scaling up? Scale voltage before frequency */
++	if (freq > old_freq) {
++		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
++				       u_volt_max);
++		if (ret)
++			goto restore_voltage;
++	}
++
++	/* Change frequency */
++
++	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n",
++		__func__, old_freq, freq);
++
++	ret = clk_set_rate(clk, freq);
++	if (ret) {
++		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
++			ret);
++		goto restore_voltage;
++	}
++
++	/* Scaling down? Scale voltage after frequency */
++	if (freq < old_freq) {
++		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
++				       u_volt_max);
++		if (ret)
++			goto restore_freq;
++	}
++
++	mutex_unlock(&dev_opp_list_lock);
++
++	return 0;
++
++restore_freq:
++	if (clk_set_rate(clk, old_freq))
++		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
++			__func__, old_freq);
++restore_voltage:
++	/* This shouldn't harm if the voltages weren't updated earlier */
++	_set_opp_voltage(dev, reg, ou_volt, ou_volt_min, ou_volt_max);
++unlock:
++	mutex_unlock(&dev_opp_list_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_rate);
++
+ /* List-dev Helpers */
+ static void _kfree_list_dev_rcu(struct rcu_head *head)
+ {
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 59da3d9e11ea..cccaf4a29e9f 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -64,6 +64,7 @@ int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct device *dev);
+ int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+ void dev_pm_opp_put_regulator(struct device *dev);
++int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -172,6 +173,11 @@ static inline int dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ 
+ static inline void dev_pm_opp_put_regulator(struct device *dev) {}
+ 
++static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
++{
++	return -EINVAL;
++}
++
+ #endif		/* CONFIG_PM_OPP */
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+
+
+-- 
+viresh
