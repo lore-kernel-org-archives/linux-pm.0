@@ -1,54 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 05/19] cpufreq: assert locking when accessing
- cpufreq_policy_list
-Date: Wed, 13 Jan 2016 11:29:17 +0530
-Message-ID: <20160113055917.GG6050@ubuntu>
+Subject: Re: [RFC PATCH 06/19] cpufreq: always access cpufreq_policy_list
+ while holding cpufreq_driver_lock
+Date: Wed, 13 Jan 2016 11:31:59 +0530
+Message-ID: <20160113060159.GH6050@ubuntu>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-6-git-send-email-juri.lelli@arm.com>
- <20160112093452.GW1084@ubuntu>
- <20160112114454.GB7015@e106622-lin>
+ <1452533760-13787-7-git-send-email-juri.lelli@arm.com>
+ <20160112095740.GX1084@ubuntu>
+ <20160112120803.GC7015@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:36298 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490AbcAMGCD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 01:02:03 -0500
+Received: by mail-pf0-f171.google.com with SMTP id n128so75493099pfn.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 22:02:02 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160112114454.GB7015@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20160112120803.GC7015@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Juri Lelli <juri.lelli@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
-List-Id: linux-pm@vger.kernel.org
 
-On 12-01-16, 11:44, Juri Lelli wrote:
-> But next_policy is called multiple times as part of
-> for_each_suitable_policy().  What if someone thinks she/he can release
-> cpufreq_driver_lock inside for_each_(in)active_policy() loop? Not that
-> it makes sense, but don't you think it could happen?
+On 12-01-16, 12:08, Juri Lelli wrote:
+> I currently don't have any branch fetched by Fengguang's bot; I'll see
+> how to start doing that. In the meantime I'll try to setup an x86 box
+> and run some more tests.
 
-Okay, I don't have strong opinion about using that only in the first
-routine. No issues.
+Perhaps, just create a new tree (that you always want to be tested by
+the Bot) and push your branch there. And then ask Fengguang ((In)formal
+email to: fengguang.wu@intel.com) to add your tree. He is very fast :)
 
-> > >  	/* No policies in the list */
-> > >  	if (list_empty(&cpufreq_policy_list))
-> > >  		return NULL;
-> > > @@ -2430,6 +2432,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
-> > >  	if (ret)
-> > >  		goto err_boost_unreg;
-> > >  
-> > > +	lockdep_assert_held(&cpufreq_driver_lock);
-> > 
-> > Why do you need a cpufreq_driver_lock here? And the above change
-> > should generate a lockdep here as the lock isn't taken right now.
-> > 
-> 
-> Because you are checking cpufreq_policy_list to see if it's empty. And
-> it generates a lockdep warning, yes; fixed by next patch. Maybe putting
-> fixes before warnings, as you are suggesting, is better.
+> I was thinking hotplug can get in the way, but we are inside a
+> {get,put}_online_cpus block. I'll remove that.
 
-Well, locking isn't required because we think we need to protect every
-access of a variable (like cpufreq_policy_list here). But we need to
-protect its access from possible races.
-
-What I am saying is, we can't have a race here. And so no need to lock
-it down.
+Exactly.
 
 -- 
 viresh
