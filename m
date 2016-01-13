@@ -1,109 +1,88 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH v2 0/4] add reboot mode driver
-Date: Wed, 13 Jan 2016 10:17:35 +0800
-Message-ID: <5695B3BF.4030505@gmail.com>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH v3 2/2] power: add documentation for ACT8945A's charger
+ DT bindings
+Date: Wed, 13 Jan 2016 03:50:09 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641D63E9586@penmbx01>
+References: <1452586185-818-1-git-send-email-wenyou.yang@atmel.com>
+ <1452586185-818-3-git-send-email-wenyou.yang@atmel.com>
+ <5695AFAD.4030307@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:35352 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbcAMCRp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 21:17:45 -0500
-In-Reply-To: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+Received: from nasmtp01.atmel.com ([192.199.1.245]:13181 "EHLO
+	DVREDG01.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752643AbcAMDuV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 22:50:21 -0500
+In-Reply-To: <5695AFAD.4030307@samsung.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>, heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org
-Cc: mark.rutland@arm.com, geert+renesas@glider.be, catalin.marinas@arm.com, will.deacon@arm.com, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, lorenzo.pieralisi@arm.com, f.fainelli@gmail.com, linux@arm.linux.org.uk, dbaryshkov@gmail.com, cernekee@gmail.com, linux-rockchip@lists.infradead.org, linux@roeck-us.net, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, maxime.ripard@free-electrons.com, linux-arm-kernel@lists.infradead.org, moritz.fischer@ettus.com, linux-pm@vger.kernel.org, sre@kernel.org, galak@codeaurora.org, olof@lixom.net, jun.nie@linaro.org, dwmw2@infradead.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: Javier Martinez Canillas <javier@dowhile0.org>, Lee Jones <lee.jones@linaro.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi ,
-
-=E5=9C=A8 2016=E5=B9=B401=E6=9C=8812=E6=97=A5 19:27, Andy Yan =E5=86=99=
-=E9=81=93:
-> This driver parse the reboot commands like "reboot loader"
-> and "reboot recovery" to get a boot mode described in the
-> device tree , then call the corresponding  write interface
-> to store the boot mode magic value in some persistent storage
-> like special register or ram , which can be read by the bootloader
-> after system reboot.
->
-> This is commonly used on Android based devices, which in order
-> to reboot the device into fastboot or recovery mode.
->
-> Before this patch , I have try some hack on[0], and then found
-> John Stultz also doing the same work[1].
->
-> As John is busy these days, I go on with this work.
->
-> [0]https://patchwork.kernel.org/patch/7647751/
-> [1]https://patchwork.kernel.org/patch/7802391/
->
-> Changes in v2:
-> - move to dir drivers/power/reset/
-> - make syscon-reboot-mode a generic driver
-> - make this DT node as a subnode of PMU/PMUGRF
->
-> Changes in v1:
-> - fix the embarrassed compile warning
-> - correct the maskrom magic number
-> - check for the normal reboot
-> - correct the maskrom magic number
-> - use macro defined in rockchip_boot-mode.h for reboot-mode DT node
->
-> Andy Yan (4):
->    dt-bindings: power: reset: add document for reboot-mode driver
->    power: reset: add reboot mode driver
->    ARM: dts: rockchip: add syscon-reboot-mode node
->    ARM64: dts: rockchip: add syscon-reboot-mode DT node
-
-This series patches are verified by my github based on kernel 4.4 relea=
-se.
-https://github.com/Caesar-github/rockchip/commits/kylin-develop4.4
-
-reboot loader, reboot recovery, reboot fastboot..... these are okay for=
-=20
-rk3288, rk3368. rk3036 Socs on my hand board.
-(Note: the loader need that jeffy send patches to support uboot on=20
-upstream,  that's also okay if you are using the RK loader from Rockchi=
-p)
-
-I just send the patch to support the rk3036 dts.=20
-<https://patchwork.kernel.org/patch/8021581/>
-
-So feel free add my test tags:
-
-Tested-by: Caesar Wang <wxt@rock-chips.com>
-
->
->   .../bindings/power/reset/reboot-mode.txt           |  41 +++++++++
->   .../bindings/power/reset/syscon-reboot-mode.txt    |  52 ++++++++++=
-+
->   arch/arm/boot/dts/rk3288.dtsi                      |  31 +++++++
->   arch/arm/boot/dts/rk3xxx.dtsi                      |  33 ++++++-
->   arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  33 ++++++-
->   drivers/power/reset/Kconfig                        |  16 ++++
->   drivers/power/reset/Makefile                       |   2 +
->   drivers/power/reset/reboot-mode.c                  | 100 ++++++++++=
-+++++++++++
->   drivers/power/reset/reboot-mode.h                  |   6 ++
->   drivers/power/reset/syscon-reboot-mode.c           |  62 ++++++++++=
-+++
->   include/dt-bindings/soc/rockchip_boot-mode.h       |  30 +++++++
->   11 files changed, 404 insertions(+), 2 deletions(-)
->   create mode 100644 Documentation/devicetree/bindings/power/reset/re=
-boot-mode.txt
->   create mode 100644 Documentation/devicetree/bindings/power/reset/sy=
-scon-reboot-mode.txt
->   create mode 100644 drivers/power/reset/reboot-mode.c
->   create mode 100644 drivers/power/reset/reboot-mode.h
->   create mode 100644 drivers/power/reset/syscon-reboot-mode.c
->   create mode 100644 include/dt-bindings/soc/rockchip_boot-mode.h
->
-
-
---=20
-Thanks,
-Caesar
-
+SGkgS3J6eXN6dG9mLA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgc28gbXVjaCBmZWVkYmFjay4NCg0K
+SSB3aWxsIGNoYW5nZSBpdCBpbiBuZXh0IHZlcnNpb24uDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogS3J6eXN6dG9mIEtvemxvd3NraSBbbWFpbHRvOmsua296bG93c2tp
+QHNhbXN1bmcuY29tXQ0KPiBTZW50OiAyMDE2xOox1MIxM8jVIDEwOjAwDQo+IFRvOiBZYW5nLCBX
+ZW55b3UgPFdlbnlvdS5ZYW5nQGF0bWVsLmNvbT47IFNlYmFzdGlhbiBSZWljaGVsDQo+IDxzcmVA
+a2VybmVsLm9yZz47IERtaXRyeSBFcmVtaW4tU29sZW5pa292IDxkYmFyeXNoa292QGdtYWlsLmNv
+bT47IERhdmlkDQo+IFdvb2Rob3VzZSA8ZHdtdzJAaW5mcmFkZWFkLm9yZz47IFJvYiBIZXJyaW5n
+IDxyb2JoK2R0QGtlcm5lbC5vcmc+OyBQYXdlbA0KPiBNb2xsIDxwYXdlbC5tb2xsQGFybS5jb20+
+OyBNYXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgSWFuDQo+IENhbXBiZWxsIDxp
+amMrZGV2aWNldHJlZUBoZWxsaW9uLm9yZy51az47IEt1bWFyIEdhbGEgPGdhbGFrQGNvZGVhdXJv
+cmEub3JnPg0KPiBDYzogSmF2aWVyIE1hcnRpbmV6IENhbmlsbGFzIDxqYXZpZXJAZG93aGlsZTAu
+b3JnPjsgTGVlIEpvbmVzDQo+IDxsZWUuam9uZXNAbGluYXJvLm9yZz47IEZlcnJlLCBOaWNvbGFz
+IDxOaWNvbGFzLkZFUlJFQGF0bWVsLmNvbT47IGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmlu
+ZnJhZGVhZC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2
+Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAyLzJdIHBvd2VyOiBhZGQg
+ZG9jdW1lbnRhdGlvbiBmb3IgQUNUODk0NUEncyBjaGFyZ2VyDQo+IERUIGJpbmRpbmdzDQo+IA0K
+PiBPbiAxMi4wMS4yMDE2IDE3OjA5LCBXZW55b3UgWWFuZyB3cm90ZToNCj4gPiBUaGlzIHBhdGNo
+IGFkZHMgZG9jdW1lbnRhdGlvbiBmb3IgdGhlIERUIGJpbmRpbmdzIG9mIHRoZSBjaGFyZ2VyDQo+
+ID4gc3ViZGV2aWNlIG9mIEFDVDg5NDVBIE1GRC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFdl
+bnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1lbC5jb20+DQo+ID4gLS0tDQo+ID4NCj4gPiBDaGFu
+Z2VzIGluIHYzOiBOb25lDQo+ID4gQ2hhbmdlcyBpbiB2MjogTm9uZQ0KPiA+DQo+ID4gIC4uLi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL2FjdDg5NDVhLWNoYXJnZXIudHh0IHwgICAzNA0KPiAr
+KysrKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMzQgaW5zZXJ0aW9ucygr
+KQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvcG93ZXIvYWN0ODk0NWEtY2hhcmdlci50eHQNCj4gPg0KPiA+IGRpZmYgLS1naXQN
+Cj4gPiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1YS1j
+aGFyZ2VyLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2Vy
+L2FjdDg5NDVhLWNoYXJnZXIudHh0DQo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiBpbmRl
+eCAwMDAwMDAwLi44NjhlMDE2NA0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYWN0ODk0NWEtY2hhcmdlci50eHQNCj4g
+PiBAQCAtMCwwICsxLDM0IEBADQo+ID4gK0RldmljZS1UcmVlIGJpbmRpbmdzIGZvciBjaGFyZ2Vy
+IG9mIEFjdGl2ZS1zZW1pIEFDVDg5NDVBDQo+ID4gK011bHRpLUZ1bmN0aW9uIERldmljZQ0KPiA+
+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiArIC0gY29tcGF0aWJsZTogImFjdGl2
+ZS1zZW1pLGFjdDg5NDVhLWNoYXJnZXIiDQo+ID4gKyAtIGFjdGl2ZS1zZW1pLGNoZ2xldi1ncGlv
+ID0gU3BlY2lmaWVzIGEgZ3BpbyB0aGF0IHVzZXMgdG8gc2VsZWN0DQo+ID4gKyAgIHRoZSBjaGFy
+Z2UgY3VycmVudCBsZXZlbC4NCj4gDQo+IGFjdGl2ZS1zZW1pLGNoZ2xldi1ncGlvcw0KPiBTZWU6
+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9ncGlvL2dwaW8udHh0DQo+IA0KPiA+
+ICsNCj4gPiArT3B0aW9uYWwgcHJvcGVydGllczoNCj4gPiArIC0gYWN0aXZlLXNlbWksYmF0dGVy
+eV90ZW1wZXJhdHVyZTogSW5kaWNhdGVzIGlmIGl0IGlzIGFsbG93ZWQgdG8gY2hlY2sNCj4gPiAr
+ICAgdGhlIGJhdHRlcnkgdGVtcGVyYXR1cmUuIElmIGl0IGlzIG1pc3NpbmcsIGFzc3VtZSB0aGUg
+YmF0dGVyeSB0ZW1wZXJhdHVyZQ0KPiA+ICsgICBpcyBub3QgYWxsb3dlZCB0byBjaGVjay4NCj4g
+DQo+IEhlcmUgYW5kIGluIHJlc3Qgb2YgcHJvcGVydGllcyAtIG5vIHVuZGVyc2NvcmVzIGJ1dCBo
+eXBoZW5zLiBUaGUgbmFtZSBzdWdnZXN0cw0KPiB0aGF0IHRoaXMgaXMgYSB2YWx1ZS4uLiBidXQg
+dGhpcyBpcyBhIGJvb2xlYW4/DQo+IA0KPiA+ICsgLSBhY3RpdmUtc2VtaSxpbnB1dF92b2x0YWdl
+X3RocmVzaG9sZDogdW5pdDogbVY7DQo+ID4gKyAgIFNwZWNpZmllcyB0aGUgY2hhcmdlcidzIGlu
+cHV0IG92ZXItdm9sdGFnZSB0aHJlc2hvbGQgdmFsdWU7DQo+ID4gKyAgIFRoZSB2YWx1ZSBjYW4g
+YmU6IDY2MDAsIDcwMDAsIDc1MDAsIDgwMDA7IGRlZmF1bHQ6IDY2MDANCj4gDQo+IEkgdGhpbmsg
+YWRkaW5nIHVuaXRzIHN1ZmZpeCBpbiBiaW5kaW5nIGlzIHByZWZlcnJlZC4gc28gIi1taWNyb3Zv
+bHQiPw0KPiANCj4gQmVzdCByZWdhcmRzLA0KPiBLcnp5c3p0b2YNCj4gDQo+IA0KPiA+ICsgLSBh
+Y3RpdmUtc2VtaSxwcmVjb25kaXRpb25fdGltZW91dDogdW5pdDogbWludXRlczsNCj4gPiArICAg
+U3BlY2lmaWVzIHRoZSBjaGFyZ2VyJ3MgUFJFQ09ORElUSU9OIHNhZmV0eSB0aW1lciBzZXR0aW5n
+IHZhbHVlOw0KPiA+ICsgICBUaGUgdmFsdWUgY2FuIGJlOiA0MCwgNjAsIDgwLCAwOyBJZiAwLCBp
+dCBtZWFucyB0byBkaXNhYmxlIHRoaXMgdGltZXI7DQo+ID4gKyAgIGRlZmF1bHQ6IDQwLg0KPiA+
+ICsgLSBhY3RpdmUtc2VtaSx0b3RhbF90aW1lb3V0OiB1bml0OiBob3VyczsNCj4gPiArICAgU3Bl
+Y2lmaWVzIHRoZSBjaGFyZ2VyJ3MgdG90YWwgc2FmZXR5IHRpbWVyIHNldHRpbmcgdmFsdWU7DQo+
+ID4gKyAgIFRoZSB2YWx1ZSBjYW4gYmU6IDMsIDQsIDUsIDA7IElmIDAsIGl0IG1lYW5zIHRvIGRp
+c2FibGUgdGhpcyB0aW1lcjsNCj4gPiArICAgZGVmYXVsdDogMy4NCj4gPiArDQo+ID4gK0V4YW1w
+bGU6DQo+ID4gKw0KPiA+ICsJY2hhcmdlciB7DQo+ID4gKwkJY29tcGF0aWJsZSA9ICJhY3RpdmUt
+c2VtaSxhY3Q4OTQ1YS1jaGFyZ2VyIjsNCj4gPiArCQlwaW5jdHJsLW5hbWVzID0gImRlZmF1bHQi
+Ow0KPiA+ICsJCXBpbmN0cmwtMCA9IDwmcGluY3RybF9jaGFyZ2VyX2NoZ2xldj47DQo+ID4gKwkJ
+YWN0aXZlLXNlbWksY2hnbGV2LWdwaW8gPSA8JnBpb0EgMTIgR1BJT19BQ1RJVkVfSElHSD47DQo+
+ID4gKwkJYWN0aXZlLXNlbWksaW5wdXRfdm9sdGFnZV90aHJlc2hvbGQgPSA8NjYwMD47DQo+ID4g
+KwkJYWN0aXZlLXNlbWkscHJlY29uZGl0aW9uX3RpbWVvdXQgPSA8NDA+Ow0KPiA+ICsJCWFjdGl2
+ZS1zZW1pLHRvdGFsX3RpbWVvdXQgPSA8Mz47DQo+ID4gKwl9Ow0KPiA+DQoNCg0KQmVzdCBSZWdh
+cmRzLA0KV2VueW91IFlhbmcNCg==
