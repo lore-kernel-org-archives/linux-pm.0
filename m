@@ -1,43 +1,41 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 1/2] x86/msr: add on cpu read/modify/write function
-Date: Tue, 12 Jan 2016 17:14:26 -0800
-Message-ID: <20160112171426.20062fa8@yairi>
-References: <1449873637-24300-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1449873637-24300-2-git-send-email-jacob.jun.pan@linux.intel.com>
-	<alpine.DEB.2.11.1512201421300.28591@nanos>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v3 0/2] power: act8945a: add charger driver for the
+ sub-device of ACT8945A MFD
+Date: Wed, 13 Jan 2016 10:48:23 +0900
+Message-ID: <5695ACE7.3050505@samsung.com>
+References: <1452586185-818-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:5889 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbcAMBQu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Jan 2016 20:16:50 -0500
-In-Reply-To: <alpine.DEB.2.11.1512201421300.28591@nanos>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:15614 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbcAMBs2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 20:48:28 -0500
+In-reply-to: <1452586185-818-1-git-send-email-wenyou.yang@atmel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, jacob.jun.pan@linux.intel.com
+To: Wenyou Yang <wenyou.yang@atmel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: Javier Martinez Canillas <javier@dowhile0.org>, Lee Jones <lee.jones@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sun, 20 Dec 2015 14:28:48 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On 12.01.2016 17:09, Wenyou Yang wrote:
+> The ACT8945A is a Multi Function Device with the following subdevices:
+>  - Regulator
+>  - Charger
+> 
+> This patch set is to add regulator driver for ACT8945A.
+> It is based on the patch set:
+> 	[PATCH v2] mfd: act8945a: add Active-semi ACT8945A PMIC MFD driver
+> 
 
-> So this is a copy of the above !SMP inline. What's wrong with
-> providing:
-> 
->  int rmwmsrl_safe(msr_no, clear_mask, set_mask)
-> 
-> in x86/lib/msr.c and make the !SMP variant of rdmsrl_safe_on_cpu()
-> and that variant for the SMP case a simple wrapper around it?
-> 
-> static void remote_rmwmsrl_safe(void *info)
-> {
-> 	struct msr_action *ma = info;
-> 
-> 	return rmwmsrl_safe(ma->msr, ma->clear_mask, ma->set_mask);
-> }
-> 
-> No gotos, no pointless code duplication. Just simple.
-much better, just sent new code in v2. Sorry for the delay.
+The useful information would be can be applied independently to other
+tree than MFD. From the sentence above I would guess that not (in that
+case don't send it as separate patchset)... but from the code I think it
+could (because it depends on MFD_ACT8945A).
 
-Thanks
+Anyway please mark it explicitly - it helps the maintainer.
+
+Best regards,
+Krzysztof
+
+
