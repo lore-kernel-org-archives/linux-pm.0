@@ -1,52 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 12/17] cpufreq: dt: Pass regulator name to the OPP core
- for V1 bindings
-Date: Wed, 13 Jan 2016 11:17:50 +0530
-Message-ID: <20160113054750.GD6050@ubuntu>
+Subject: Re: [PATCH 08/17] PM / OPP: Add dev_pm_opp_set_rate()
+Date: Wed, 13 Jan 2016 11:21:57 +0530
+Message-ID: <20160113055157.GE6050@ubuntu>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <981905b802879bff26d839b0aab19ad67a3aa1ff.1450777582.git.viresh.kumar@linaro.org>
- <20160112015328.GQ22188@codeaurora.org>
- <20160112071159.GO1084@ubuntu>
- <20160113004335.GD22188@codeaurora.org>
+ <5824076a64ad4215cfc63c238e8b8947bc996e87.1450777582.git.viresh.kumar@linaro.org>
+ <20160112014010.GM22188@codeaurora.org>
+ <20160112065832.GN1084@ubuntu>
+ <20160113004936.GE22188@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:36004 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754979AbcAMFr4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 00:47:56 -0500
-Received: by mail-pf0-f177.google.com with SMTP id n128so75292106pfn.3
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 21:47:56 -0800 (PST)
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33693 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbcAMFwA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 00:52:00 -0500
+Received: by mail-pf0-f175.google.com with SMTP id e65so75613370pfe.0
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 21:52:00 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160113004335.GD22188@codeaurora.org>
+In-Reply-To: <20160113004936.GE22188@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Mark Brown <broonie@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 12-01-16, 16:43, Stephen Boyd wrote:
-> It's far easier to implement, but not far better. In most designs
-> the pin is not called <device_name>-supply, but something more
-> mundane like vdd-supply, vddio-supply, vcc-supply, etc. In the
-> case of CPUs, there's probably nothing in the datasheets, so cpu
-> vs cpu0 is not too important to distinguish here. But for things
-> like a GPU, DSP, video encoder, etc. I doubt it's going to be
-> called <device_name>-supply, so making that the norm is
-> misguided.
+On 12-01-16, 16:49, Stephen Boyd wrote:
+> Having a single mutex around the clock and voltage setting
+> makes cpu frequency switching scalability drop to zero for
+> devices that have independent clock and voltage supplies for each
+> CPU. We need to get the voltage and frequency settings under rcu
+> and then release rcu and change the hardware. This is already how
+> cpufreq-dt is doing it anyway, so I'm lost how it can't be copied
+> here into OPP framework.
 
-I completely agree with that, but here is the usecase:
-- A OPP-user driver doesn't need to call any special OPP API and OPP
-  layer can allocate the regulator for it using <device>-name. This
-  will make all drivers (that follow this nomenclature in DT) very
-  simple and straight-forward.
-- But then there are drivers, which need special supply-name. They can
-  always call opp-set-regulator API to mention that, no one is
-  stopping them from that.
+Hmm. So what should we do about the clk/regulator issue I mentioned in
+the other thread? How do we guarantee that the OPP doesn't get freed?
 
-And so I still believe, OPP layer has only this option to do it
-generically.
-
-Comments ?
+Should we implement a get/put regulator and clk within the OPP layer
+using some sort of refcount ?
 
 -- 
 viresh
