@@ -1,78 +1,87 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Wed, 13 Jan 2016 18:03:24 +0100
-Message-ID: <20160113170324.GO2588@ulmo>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/3] cpuidle,menu: use interactivity_req to disable polling
+Date: Wed, 13 Jan 2016 17:27:11 +0000
+Message-ID: <CAPKp9ubg3V0979dGTGi+kjXGiBczCG2+QBGgfrZBKjMgSuhy-A@mail.gmail.com>
+References: <1446590059-18897-1-git-send-email-riel@redhat.com>
+	<1446590059-18897-3-git-send-email-riel@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="Qa0ccP92Gc0Ko3P8"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1449241037-22193-17-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f195.google.com ([209.85.213.195]:35990 "EHLO
+	mail-ig0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767AbcAMR1M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 12:27:12 -0500
+In-Reply-To: <1446590059-18897-3-git-send-email-riel@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: riel@redhat.com, rafael.j.wysocki@intel.com
+Cc: Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, arjan@linux.intel.com, Len Brown <len.brown@intel.com>, daniel.lezcano@linaro.org, Sudeep Holla <sudeep.holla@arm.com>
 
+Hi Rik,
 
---Qa0ccP92Gc0Ko3P8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This change break idle on ARM64(may be on other ARM?) platform.
+Sorry for reporting late, but missed to check cpuidle in -next.
 
-On Fri, Dec 04, 2015 at 02:57:17PM +0000, Jon Hunter wrote:
-> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
-> dependent upon a particular power-domain are only probed when that power
-> domain has been powered up, requires that PM is made mandatory for tegra
-> 64-bit devices and so select this option for tegra as well.
->=20
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On Tue, Nov 3, 2015 at 10:34 PM,  <riel@redhat.com> wrote:
+> From: Rik van Riel <riel@redhat.com>
+>
+> The menu governor carefully figures out how much time we typically
+> sleep for an estimated sleep interval, or whether there is a repeating
+> pattern going on, and corrects that estimate for the CPU load.
+>
+> Then it proceeds to ignore that information when determining whether
+> or not to consider polling. This is not a big deal on most x86 CPUs,
+> which have very low C1 latencies, and the patch should not have any
+> effect on those CPUs.
+>
+> However, certain CPUs (eg. Atom) have much higher C1 latencies, and
+> it would be good to not waste performance and power on those CPUs if
+> we are expecting a very low wakeup latency.
+>
+> Disable polling based on the estimated interactivity requirement, not
+> on the time to the next timer interrupt.
+>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 > ---
->  arch/arm64/Kconfig.platforms | 2 ++
->  1 file changed, 2 insertions(+)
->=20
-> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
-> index 9806324fa215..e0b5bd0aff0f 100644
-> --- a/arch/arm64/Kconfig.platforms
-> +++ b/arch/arm64/Kconfig.platforms
-> @@ -93,6 +93,8 @@ config ARCH_TEGRA
->  	select GENERIC_CLOCKEVENTS
->  	select HAVE_CLK
->  	select PINCTRL
-> +	select PM
-> +	select PM_GENERIC_DOMAINS
->  	select RESET_CONTROLLER
->  	help
->  	  This enables support for the NVIDIA Tegra SoC family.
+>  drivers/cpuidle/governors/menu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index ecc242a586c9..b1a55731f921 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>          * We want to default to C1 (hlt), not to busy polling
+>          * unless the timer is happening really really soon.
+>          */
+> -       if (data->next_timer_us > 20 &&
+> +       if (interactivity_req > 20 &&
 
-This has potential consequences for multi-platform builds, doesn't it?
-All of a sudden any combination of builds that includes Tegra won't be
-possible to build without PM support.
+I found that data->predicted_us is gets overwritten in get_typical_interval
+when avg computed = 0 which is the case initially on boot when the past
+intervals are not yet accumulated.
 
-Adding linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org for visibility.
+I just tried a hack and that seem to work and proved what I anticipated
+(i.e. interactivity_req = 0). Let me know if you have any clues on how to
+solve it ? I can help you getting the change tested.
 
-Thierry
+Regards,
+Sudeep
 
---Qa0ccP92Gc0Ko3P8
-Content-Type: application/pgp-signature; name="signature.asc"
+--->8
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJWloNZAAoJEN0jrNd/PrOhiSsP/3+9Pa/eT+yiNAJHUw7uVnVT
-vsfDIb/2y3O1SKsLpBed8BCgLGES0wNqLKJ2XHeKJs0NE9jKnhsSUIzNMF+wMBHx
-nptdWAm4sHkbiYlpYv+fT1Y+WELHl+LwmdTlNnOx25r72dCSu+Hj1XIfwY2A9/1O
-cRoRjE5DcEPBBovaJYf2O4lp2vSKWOcA7Xj2PdWv1x73AE7kifK61f6vkXJgE97V
-eIzXHHVEZimLLVSy0F72/9ZoLCIWhg/z7Owg/YwvQnEclvHj6V14I4A5edglWSP/
-BFLXCq1J0qArE2Ew5DP/A2Mt0ZHNR+2Px53XYzr3s/PaviBK5+j6h+8HZlxRTMoB
-UPoz3QjY4B5voKbKlJv06kkXm8eFI5tdOg5/nEg/OWmPRhdImo3tLH71lqK0eO0i
-5pDkG0Yu5aSYrY/xYpepiHZeAR9+EjwCE3NsVm+5tlrd/8XirSZUx0nw7TjrlkQs
-T+Y2ja1dEr1EkXBMqkvwVuVt4ca3wpbOl2/BG+4aHKaFJaeFVVtyYC7kiYRBlF/0
-g55ed5zkDlsOYBwK3PWFQoiwjOqOVt9V5M1h9xdIkHH85anTeC3RVhBdfjgG8bE3
-G2NhAIzOVk9bEFwz16J7rZ7TZEJC+dtYj1cMTvCmJQuikDDFBi8X3ymPyf+ECq0N
-fLTet+6rQoHIUwQZtrYg
-=QG7j
------END PGP SIGNATURE-----
-
---Qa0ccP92Gc0Ko3P8--
+diff --git i/drivers/cpuidle/governors/menu.c w/drivers/cpuidle/governors/menu.c
+index 7b0971d97cc3..7c7f4059705a 100644
+--- i/drivers/cpuidle/governors/menu.c
++++ w/drivers/cpuidle/governors/menu.c
+@@ -330,7 +330,8 @@ static int menu_select(struct cpuidle_driver *drv,
+struct cpuidle_device *dev)
+         * We want to default to C1 (hlt), not to busy polling
+         * unless the timer is happening really really soon.
+         */
+-       if (interactivity_req > 20 &&
++       if (((interactivity_req && interactivity_req > 20) ||
++               data->next_timer_us > 20) &&
+            !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+                dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+                data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
