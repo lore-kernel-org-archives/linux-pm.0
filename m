@@ -1,62 +1,65 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 04/17] PM / OPP: Introduce
- dev_pm_opp_get_max_volt_latency()
-Date: Wed, 13 Jan 2016 11:04:47 +0530
-Message-ID: <20160113053447.GB6050@ubuntu>
+Subject: Re: [PATCH 06/17] PM / OPP: Parse clock-latency and
+ voltage-tolerance for v1 bindings
+Date: Wed, 13 Jan 2016 11:05:34 +0530
+Message-ID: <20160113053534.GC6050@ubuntu>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <08691b482198b0709fd258d310a5e6ecda2f1a18.1450777582.git.viresh.kumar@linaro.org>
- <20160112012512.GJ22188@codeaurora.org>
- <20160112051058.GJ1084@ubuntu>
- <20160112194537.GZ22188@codeaurora.org>
+ <25cb4d7e9169815448193bd93305fae31a83792c.1450777582.git.viresh.kumar@linaro.org>
+ <20160112012905.GK22188@codeaurora.org>
+ <20160112051413.GK1084@ubuntu>
+ <20160113003650.GC22188@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:35213 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751723AbcAMFew (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 00:34:52 -0500
-Received: by mail-pa0-f52.google.com with SMTP id ho8so91392384pac.2
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 21:34:52 -0800 (PST)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:33612 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbcAMFfj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 00:35:39 -0500
+Received: by mail-pf0-f181.google.com with SMTP id e65so75387458pfe.0
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 21:35:37 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160112194537.GZ22188@codeaurora.org>
+In-Reply-To: <20160113003650.GC22188@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stephen Boyd <sboyd@codeaurora.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 12-01-16, 11:45, Stephen Boyd wrote:
-> > + * Locking: This function takes rcu_read_lock().
+On 12-01-16, 16:36, Stephen Boyd wrote:
+> On 01/12, Viresh Kumar wrote:
+> > On 11-01-16, 17:29, Stephen Boyd wrote:
+> > > On 12/22, Viresh Kumar wrote:
+> > > > @@ -580,6 +581,21 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
+> > > >  		return NULL;
+> > > >  	}
+> > > >  
+> > > > +	/*
+> > > > +	 * Only required for backward compatibility with v1 bindings, but isn't
+> > > > +	 * harmful for other cases. And so we do it unconditionally.
+> > > > +	 */
+> > > > +	np = of_node_get(dev->of_node);
+> > > > +	if (np) {
+> > > > +		u32 val;
+> > > > +
+> > > > +		if (!of_property_read_u32(np, "clock-latency", &val))
+> > > > +			dev_opp->clock_latency_ns_max = val;
+> > 
+> > This is u64 type variable, but we are reading a 32 bit value from DT
+> > and so wrote it that way.
+> > 
+> > > > +		of_property_read_u32(np, "voltage-tolerance",
+> > > > +				     &dev_opp->voltage_tolerance_v1);
+> > 
+> > And this is u32 type.
+> > 
+> > > Why do we conditionalize the assignment for clock latency but not
+> > > for voltage tolerance?
+> > 
+> > Nothing more than what I described earlier.
+> > 
 > 
-> False.
+> Ok.
 
-Yeah, I realized it and fixed it right after sending it:
-
-+ * Locking: This function internally uses mutex locks to keep the integrity of
-+ * the internal data structures. Callers should ensure that this function is
-+ * *NOT* called under RCU protection or in contexts where mutex cannot be
-+ * locked.
-
-> > +	/*
-> > +	 * Hold our list modification lock here as regulator_set_voltage_time()
-> > +	 * can possibly take another mutex, which isn't allowed within rcu
-> > +	 * locks.
-> > +	 */
-> > +	mutex_lock(&dev_opp_list_lock);
-> 
-> So now we take the list modification mutex. Why can't we
-> rcu_read_lock(), find the min and max voltage, and then release
-> the read lock and ask regulator framework for the voltage time?
-
-That was possible before this series came in..
-
-> From what I can tell we're just trying to make sure that the list
-> is stable when iterating through it to find the min/max voltage.
-
-Hmm, we have pointer to regulator within the dev-opp struct. If we
-drop the lock, the dev-opp struct can get freed and regulator will be
-put just before that. So, we may be using an already freed resource.
-
-How do you suggest we fix it ?
+Should I consider that an Reviewed-by ?
 
 -- 
 viresh
