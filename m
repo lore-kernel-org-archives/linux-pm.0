@@ -1,66 +1,96 @@
-From: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH v3 22/22] thermal/intel_powerclamp: Convert the kthread
- to kthread worker API
-Date: Wed, 13 Jan 2016 11:18:31 +0100
-Message-ID: <20160113101831.GQ731@pathway.suse.cz>
-References: <1447853127-3461-1-git-send-email-pmladek@suse.com>
- <1447853127-3461-23-git-send-email-pmladek@suse.com>
- <20160107115531.34279a9b@icelake>
- <20160108164931.GT3178@pathway.suse.cz>
- <20160111181718.0ace4a58@yairi>
- <20160112101129.GN731@pathway.suse.cz>
- <20160112082021.6a28dc66@icelake>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 09/19] cpufreq: fix warning for
+ show_scaling_available_governors unlocked access to cpufreq_governor_list
+Date: Wed, 13 Jan 2016 10:25:36 +0000
+Message-ID: <20160113102536.GB18603@e106622-lin>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-10-git-send-email-juri.lelli@arm.com>
+ <20160112101315.GA1084@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160112082021.6a28dc66@icelake>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jacob Pan <jacob.jun.pan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, "Paul E. McKenney" <paulmck-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Josh Triplett <josh-iaAMLnmF4UmaiuxdJuQwMA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, Borislav Petkov <bp-l3A5Bk7waGM@public.gmane.org>, Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, Vlastimil Babka <vbabka-AlSwsSmVLrQ@public.gmane.org>, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20160112101315.GA1084@ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2016-01-12 08:20:21, Jacob Pan wrote:
-> On Tue, 12 Jan 2016 11:11:29 +0100
-> Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org> wrote:
+Hi,
+
+On 12/01/16 15:43, Viresh Kumar wrote:
+> On 11-01-16, 17:35, Juri Lelli wrote:
+> > show_scaling_available_governors iterates through cpufreq_governor_list
+> > without holding cpufreq_governor_mutex; this generates the following
+> > warning:
+> > 
+> > [  700.910381] ------------[ cut here ]------------
+> > [  700.924282] WARNING: CPU: 2 PID: 1756 at kernel/drivers/cpufreq/cpufreq.c:700 show_scaling_available_governors+0x6f/0xb8()
+> > [  700.965473] Modules linked in:
+> > [  700.974637] CPU: 2 PID: 1756 Comm: cat Tainted: G        W       4.4.0-rc2+ #299
+> > [  700.996813] Hardware name: ARM-Versatile Express
+> > [  701.010674] [<c0014215>] (unwind_backtrace) from [<c0010e25>] (show_stack+0x11/0x14)
+> > [  701.033905] [<c0010e25>] (show_stack) from [<c02eca5d>] (dump_stack+0x55/0x78)
+> > [  701.055561] [<c02eca5d>] (dump_stack) from [<c00202cd>] (warn_slowpath_common+0x59/0x84)
+> > [  701.079839] [<c00202cd>] (warn_slowpath_common) from [<c002030f>] (warn_slowpath_null+0x17/0x1c)
+> > [  701.106182] [<c002030f>] (warn_slowpath_null) from [<c03b7bef>] (show_scaling_available_governors+0x6f/0xb8)
+> > [  701.135656] [<c03b7bef>] (show_scaling_available_governors) from [<c03b7dc3>] (show+0x27/0x38)
+> > [  701.161488] [<c03b7dc3>] (show) from [<c015469f>] (sysfs_kf_seq_show+0x5f/0xa0)
+> > [  701.183409] [<c015469f>] (sysfs_kf_seq_show) from [<c01536a7>] (kernfs_seq_show+0x1b/0x1c)
+> > [  701.208188] [<c01536a7>] (kernfs_seq_show) from [<c011a6d5>] (seq_read+0x129/0x33c)
+> > [  701.231161] [<c011a6d5>] (seq_read) from [<c00ff7c7>] (__vfs_read+0x1b/0x84)
+> > [  701.252300] [<c00ff7c7>] (__vfs_read) from [<c010000f>] (vfs_read+0x5f/0xb0)
+> > [  701.273436] [<c010000f>] (vfs_read) from [<c0100099>] (SyS_read+0x39/0x68)
+> > [  701.294049] [<c0100099>] (SyS_read) from [<c000df21>] (ret_fast_syscall+0x1/0x1a)
+> > [  701.316484] ---[ end trace 5dd15744a4da127c ]---
 > 
-> > > > BTW: I wonder if the original code correctly handle freezing after
-> > > > the schedule_timeout(). It does not call try_to_freeze()
-> > > > there and the forced idle states might block freezing.
-> > > > I think that the small overhead of kthread works is worth
-> > > > solving such bugs. It makes it easier to maintain these
-> > > > sleeping states.  
-> > > it is in a while loop, so try_to_freeze() gets called. Am I missing
-> > > something?  
+> FWIW, I would suggest you to use cpufreq-dt for Juno instead of
+> arm_bL. I have asked Sudeep to do it earlier, but perhaps he was busy.
+>
+
+I couldn't really relate this comment with this patch or the backtrace.
+Can you please clarify why you are referring to switching to use
+cpufreq-dt here?
+
+> > Fix this by locking cpufreq_governor_mutex before for_each_governor().
 > > 
-> > But it might take some time until try_to_freeze() is called.
-> > If I get it correctly. try_to_freeze_tasks() wakes freezable
-> > tasks to get them into the fridge. If clamp_thread() is waken
-> > from that schedule_timeout_interruptible(), it still might inject
-> > the idle state before calling try_to_freeze(). It means that freezer
-> > needs to wait "quite" some time until the kthread ends up in the
-> > fridge.
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
 > > 
-> > Hmm, even my conversion does not solve this entirely. We might
-> > need to call freezing(current) in the
-> > 
-> >    while (time_before(jiffies, target_jiffies)) {
-> > 
-> > cycle. And break injecting the idle state when freezing is requested.
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index d065435..d91fdb8 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -694,7 +694,7 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
+> >  		goto out;
+> >  	}
+> >  
+> > -	lockdep_assert_held(&cpufreq_governor_mutex);
+> > +	mutex_lock(&cpufreq_governor_mutex);
+> >  	for_each_governor(t) {
+> >  		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
+> >  		    - (CPUFREQ_NAME_LEN + 2)))
+> > @@ -702,6 +702,7 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
+> >  		i += scnprintf(&buf[i], CPUFREQ_NAME_PLEN, "%s ", t->name);
+> >  	}
+> >  out:
+> > +	mutex_unlock(&cpufreq_governor_mutex);
+> >  	i += sprintf(&buf[i], "\n");
+> >  	return i;
+> >  }
 > 
-> The injection time for each period is very short, default 6ms. While on
-> the other side the default freeze timeout is 20 sec. So I think task
-> freeze can wait :)
-> i.e.
-> unsigned int __read_mostly freeze_timeout_msecs = 20 * MSEC_PER_SEC;
+> Just move this patch before before the patch that added the
+> lockdep-assert and we wouldn't be required to add the
+> lockdep_assert_held() in the first place.
+> 
 
-You are right. And it does not make sense to add an extra
-freezer-specific code if not really necessary.
+Yep. As said, I just wanted to try to highlight possible problems with
+this RFC.
 
-Otherwise, I will keep the conversion into the kthread worker as is
-for now. Please, let me know if you are strongly against the split
-into the two works.
+Thanks,
 
-
-Best Regards,
-Petr
+- Juri
