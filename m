@@ -1,49 +1,39 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH v2 2/2] powercap/rapl: reduce ipi calls
-Date: Wed, 13 Jan 2016 08:21:13 -0800
-Message-ID: <20160113082113.3314fa92@icelake>
+Date: Wed, 13 Jan 2016 17:36:10 +0100
+Message-ID: <20160113163610.GH12897@pd.tnic>
 References: <1452647483-14244-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1452647483-14244-3-git-send-email-jacob.jun.pan@linux.intel.com>
-	<alpine.DEB.2.11.1601131042590.3575@nanos>
+ <1452647483-14244-3-git-send-email-jacob.jun.pan@linux.intel.com>
+ <alpine.DEB.2.11.1601131042590.3575@nanos>
+ <20160113082113.3314fa92@icelake>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:59658 "EHLO mga03.intel.com"
+Received: from mail.skyhub.de ([78.46.96.112]:33253 "EHLO mail.skyhub.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbcAMQW2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jan 2016 11:22:28 -0500
-In-Reply-To: <alpine.DEB.2.11.1601131042590.3575@nanos>
+	id S1752167AbcAMQgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Jan 2016 11:36:25 -0500
+Content-Disposition: inline
+In-Reply-To: <20160113082113.3314fa92@icelake>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, jacob.jun.pan@linux.intel.com, Borislav Petkov <bp@alien8.de>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Wed, 13 Jan 2016 10:47:26 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Wed, Jan 13, 2016 at 08:21:13AM -0800, Jacob Pan wrote:
+> Thanks for bring this out. I didn't mean to ignore. I thought my point
+> was stated in the commit message there was no point of going back and
+> forth. Read-Modify-Write is quite common, not just for RAPL could be
+> used by future code. Sorry if I wasn't clear.
 
-> So here you actually use that new (misnomed) function, but for 
-> 
-> > +static void power_limit_irq_save_cpu(void *info)  
-> 
-> and
-> 
-> > +static void power_limit_irq_restore_cpu(void *info)  
-> 
-> you use a bog standard smp function call. What's the benefit of
-> adding that rmw function over a bog standard smp function call if you
-> can only use it for one instance of the same pattern?
-> 
-> Boris asked you the same question here
-> 
->       https://lkml.kernel.org/r/20151220152749.GA29805@pd.tnic
-> 
-> but you decided to ignore it.
-+Borislav,
+But it also shows that it doesn't suffice for all your needs. So why add
+it?
 
-Thanks for bring this out. I didn't mean to ignore. I thought my point
-was stated in the commit message there was no point of going back and
-forth. Read-Modify-Write is quite common, not just for RAPL could be
-used by future code. Sorry if I wasn't clear.
+You can much better define your own functions which do all the MSR
+handling you require and call them with smp_call_function_*.
 
-Jacob
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
