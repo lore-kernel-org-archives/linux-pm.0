@@ -1,48 +1,49 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v2 2/2] powercap/rapl: reduce ipi calls
-Date: Wed, 13 Jan 2016 09:51:24 -0800
-Message-ID: <20160113095124.186ff487@yairi>
-References: <1452647483-14244-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1452647483-14244-3-git-send-email-jacob.jun.pan@linux.intel.com>
-	<alpine.DEB.2.11.1601131042590.3575@nanos>
-	<20160113082113.3314fa92@icelake>
-	<20160113163610.GH12897@pd.tnic>
+Subject: Re: [PATCH v3 22/22] thermal/intel_powerclamp: Convert the kthread
+ to kthread worker API
+Date: Wed, 13 Jan 2016 09:53:53 -0800
+Message-ID: <20160113095353.5231c28f@yairi>
+References: <1447853127-3461-1-git-send-email-pmladek@suse.com>
+	<1447853127-3461-23-git-send-email-pmladek@suse.com>
+	<20160107115531.34279a9b@icelake>
+	<20160108164931.GT3178@pathway.suse.cz>
+	<20160111181718.0ace4a58@yairi>
+	<20160112101129.GN731@pathway.suse.cz>
+	<20160112082021.6a28dc66@icelake>
+	<20160113101831.GQ731@pathway.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:19091 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932130AbcAMRvZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jan 2016 12:51:25 -0500
-In-Reply-To: <20160113163610.GH12897@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20160113101831.GQ731@pathway.suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, jacob.jun.pan@linux.intel.com
 
-On Wed, 13 Jan 2016 17:36:10 +0100
-Borislav Petkov <bp@alien8.de> wrote:
+On Wed, 13 Jan 2016 11:18:31 +0100
+Petr Mladek <pmladek@suse.com> wrote:
 
-> On Wed, Jan 13, 2016 at 08:21:13AM -0800, Jacob Pan wrote:
-> > Thanks for bring this out. I didn't mean to ignore. I thought my
-> > point was stated in the commit message there was no point of going
-> > back and forth. Read-Modify-Write is quite common, not just for
-> > RAPL could be used by future code. Sorry if I wasn't clear.
+> > unsigned int __read_mostly freeze_timeout_msecs = 20 *
+> > MSEC_PER_SEC;  
 > 
-> But it also shows that it doesn't suffice for all your needs. So why
-> add it?
+> You are right. And it does not make sense to add an extra
+> freezer-specific code if not really necessary.
 > 
-> You can much better define your own functions which do all the MSR
-> handling you require and call them with smp_call_function_*.
-> 
-yeah, that is what I did in the original patch.
-https://lkml.org/lkml/2015/12/7/1090
+> Otherwise, I will keep the conversion into the kthread worker as is
+> for now. Please, let me know if you are strongly against the split
+> into the two works.
+I am fine with the split now.
 
-Then i was suggested to add a rmw msr api for the common good :), I
-think it is a good idea since such operation is not limited to RAPL
-driver. Other register access APIs such as regmap have more complete
-selections.
+Another question, are you planning to convert acpi_pad.c as well? It
+uses kthread similar way.
 
 
 Jacob
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
