@@ -1,127 +1,51 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH v2] reboot: Backup orderly_poweroff
-Date: Wed, 13 Jan 2016 18:03:25 +0530
-Message-ID: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v4] power: bq27xxx_battery: Fix bq27541 AveragePower
+ register address
+Date: Wed, 13 Jan 2016 09:16:17 -0600
+Message-ID: <56966A41.3060809@ti.com>
+References: <1452348639-3072-1-git-send-email-liu.xiang6@zte.com.cn>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: edubezval@gmail.com, grygorii.strashko@ti.com, j-keerthy@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, mingo@kernel.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:51440 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755893AbcAMPQr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 10:16:47 -0500
+In-Reply-To: <1452348639-3072-1-git-send-email-liu.xiang6@zte.com.cn>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liu Xiang <liu.xiang6@zte.com.cn>, linux-pm@vger.kernel.org
+Cc: pali.rohar@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 
-orderly_poweroff is triggered when a graceful shutdown
-of system is desired. This may be used in many critical states of the
-kernel such as when subsystems detects conditions such as critical
-temperature conditions. However, in certain conditions in system
-boot up sequences like those in the middle of driver probes being
-initiated, userspace will be unable to power off the system in a clean
-manner and leaves the system in a critical state. In cases like these,
-the /sbin/poweroff will return success (having forked off to attempt
-powering off the system. However, the system overall will fail to
-completely poweroff (since other modules will be probed) and the system
-is still functional with no userspace (since that would have shut itself
-off).
+On 01/09/2016 08:10 AM, Liu Xiang wrote:
+> Currently in bq27541 driver, the average power register address is
+> incorrectly set to 0x76, which would result in an error:
+> bq27xxx-battery 2-0055: error reading average power register  10: -11
+> According to the bq27541 datasheet, fix this problem by setting
+> the average power register address to 0x24.
+>
+> Signed-off-by: Liu Xiang <liu.xiang6@zte.com.cn>
+> ---
+> v4:
+>   - Modify the patch format.
+> ---
+>   drivers/power/bq27xxx_battery.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+> index 880233c..633f96d 100644
+> --- a/drivers/power/bq27xxx_battery.c
+> +++ b/drivers/power/bq27xxx_battery.c
+> @@ -242,7 +242,7 @@ static u8 bq27541_regs[] = {
+>   	INVALID_REG_ADDR,	/* AE - NA	*/
+>   	0x2c,	/* SOC(RSOC)	*/
+>   	0x3c,	/* DCAP		*/
+> -	0x76,	/* AP		*/
+> +	0x24,	/* AP		*/
+>   };
+>
+>   static u8 bq27545_regs[] = {
+>
 
-However, there is no clean way of detecting such failure of userspace
-powering off the system. In such scenarios, it is necessary for a backup
-workqueue to be able to force a shutdown of the system when orderly
-shutdown is not successful after a configurable time period.
-
-Signed-off-by: Keerthy <j-keerthy@ti.com>
-Suggested-by: Eduardo Valentin <edubezval@gmail.com> 
-Reported-by: Nishanth Menon <nm@ti.com>
----
-Links to previous discussion can be found here:
-
-http://www.spinics.net/lists/linux-omap/msg124925.html
-
-Boot tested on DRA7.
-
-changes in v2:
-
-	* Changed #ifdef to #if CONFIG_SHUTDOWN_BACKUP_DELAY_MS
-
- arch/Kconfig    |  7 +++++++
- kernel/reboot.c | 23 ++++++++++++++++++-----
- 2 files changed, 25 insertions(+), 5 deletions(-)
-
-Index: linux/arch/Kconfig
-===================================================================
---- linux.orig/arch/Kconfig	2016-01-11 15:26:07.732173131 +0530
-+++ linux/arch/Kconfig	2016-01-11 15:26:07.728173205 +0530
-@@ -37,6 +37,18 @@
- 	def_bool y
- 	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI && !PPC64
- 
-+config SHUTDOWN_BACKUP_DELAY_MS
-+	int "Backup shutdown delay in milli-seconds"
-+	default 0
-+	help
-+	  The number of milliseconds to delay before backup workqueue
-+	  executes attempting to poweroff the system after the
-+	  orderly_poweroff function has failed to complete.
-+
-+	  If set to 0, the backup workqueue is not active. The value
-+	  should be conservatively configured based on userspace latencies
-+	  expected for a given system.
-+
- config KPROBES
- 	bool "Kprobes"
- 	depends on MODULES
-Index: linux/kernel/reboot.c
-===================================================================
---- linux.orig/kernel/reboot.c	2016-01-11 15:26:07.732173131 +0530
-+++ linux/kernel/reboot.c	2016-01-11 15:38:33.502341511 +0530
-@@ -424,6 +424,38 @@
- 	return ret;
- }
- 
-+#if CONFIG_SHUTDOWN_BACKUP_DELAY_MS
-+
-+/**
-+ * shutdown_backup_func - shutdown backup work after a known delay
-+ * @work: work_struct associated with the backup shutdown function
-+ *
-+ * In system bootup sequences like those in the middle of driver probes being
-+ * initiated, userspace will be unable to power off the system in a clean
-+ * manner and leaves the system in a critical state.
-+ * In such scenarios, this backup workqueue forces a shutdown of the system
-+ * when orderly shutdown is not successful after a configurable time period.
-+ */
-+static void shutdown_backup_func(struct work_struct *work)
-+{
-+	pr_warn("Orderly_poweroff has failed! Attempting kernel_power_off\n");
-+	kernel_power_off();
-+
-+	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-+	emergency_restart();
-+}
-+
-+static DECLARE_DELAYED_WORK(bkup_shutdown_work, shutdown_backup_func);
-+
-+static inline void setup_backup_shutdown_workqueue(void)
-+{
-+	schedule_delayed_work(&bkup_shutdown_work,
-+		      msecs_to_jiffies(CONFIG_SHUTDOWN_BACKUP_DELAY_MS));
-+}
-+#else
-+static inline void setup_backup_shutdown_workqueue(void) { }
-+#endif
-+
- static int __orderly_poweroff(bool force)
- {
- 	int ret;
-@@ -442,6 +474,12 @@
- 		kernel_power_off();
- 	}
- 
-+	/*
-+	 * Schedule a backup work function to execute after a known time
-+	 * when orderly shutdown fails.
-+	 */
-+	setup_backup_shutdown_workqueue();
-+
- 	return ret;
- }
- 
+Acked-by: Andrew F. Davis <afd@ti.com>
