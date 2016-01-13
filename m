@@ -1,31 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Wed, 13 Jan 2016 12:01:48 +0530
-Message-ID: <20160113063148.GJ6050@ubuntu>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
- <20160112112409.GJ1084@ubuntu>
- <20160113005452.10884.77606@quark.deferred.io>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH] thermal: use %d to print S32 parameters
+Date: Wed, 13 Jan 2016 16:33:56 +0800
+Message-ID: <1452674036-14907-1-git-send-email-leo.yan@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:34418 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbcAMGbw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 01:31:52 -0500
-Received: by mail-pa0-f48.google.com with SMTP id uo6so336855766pac.1
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 22:31:52 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160113005452.10884.77606@quark.deferred.io>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:35967 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbcAMIe3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 03:34:29 -0500
+Received: by mail-pf0-f172.google.com with SMTP id n128so77671145pfn.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jan 2016 00:34:28 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Leo Yan <leo.yan@linaro.org>
 
-On 12-01-16, 16:54, Michael Turquette wrote:
-> __cpufreq_driver_target should be using a per-policy lock.
+Power allocator's parameters are S32 type, so use %d to print them.
 
-It doesn't :)
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+---
+ drivers/thermal/thermal_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d9e525c..1335df2 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -931,7 +931,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
+ 									\
+ 	if (tz->tzp)							\
+-		return sprintf(buf, "%u\n", tz->tzp->name);		\
++		return sprintf(buf, "%d\n", tz->tzp->name);		\
+ 	else								\
+ 		return -EIO;						\
+ 	}								\
 -- 
-viresh
+1.9.1
+
