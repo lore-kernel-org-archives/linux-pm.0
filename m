@@ -1,31 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 09/19] cpufreq: fix warning for
- show_scaling_available_governors unlocked access to cpufreq_governor_list
-Date: Wed, 13 Jan 2016 16:02:51 +0530
-Message-ID: <20160113103251.GN6050@ubuntu>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-10-git-send-email-juri.lelli@arm.com>
- <20160112101315.GA1084@ubuntu>
- <20160113102536.GB18603@e106622-lin>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 12/17] cpufreq: dt: Pass regulator name to the OPP core
+ for V1 bindings
+Date: Wed, 13 Jan 2016 11:15:35 +0000
+Message-ID: <20160113111535.GH6588@sirena.org.uk>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <981905b802879bff26d839b0aab19ad67a3aa1ff.1450777582.git.viresh.kumar@linaro.org>
+ <20160112015328.GQ22188@codeaurora.org>
+ <20160112071159.GO1084@ubuntu>
+ <20160113004335.GD22188@codeaurora.org>
+ <20160113054750.GD6050@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="C+dxB3FEDSxkOkFg"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51041 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756253AbcAMLPt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 06:15:49 -0500
 Content-Disposition: inline
-In-Reply-To: <20160113102536.GB18603@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+In-Reply-To: <20160113054750.GD6050@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 13-01-16, 10:25, Juri Lelli wrote:
-> I couldn't really relate this comment with this patch or the backtrace.
-> Can you please clarify why you are referring to switching to use
-> cpufreq-dt here?
 
-Yeah, sorry about that. One of your previous patches had backtrace
-mentioning bL and so I wanted to mention that thing to you. But by
-that time, I moved to the new patch and thought of just adding the
-point before forgetting it completely.
+--C+dxB3FEDSxkOkFg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
--- 
-viresh
+On Wed, Jan 13, 2016 at 11:17:50AM +0530, Viresh Kumar wrote:
+
+> - A OPP-user driver doesn't need to call any special OPP API and OPP
+>   layer can allocate the regulator for it using <device>-name. This
+>   will make all drivers (that follow this nomenclature in DT) very
+>   simple and straight-forward.
+
+Viresh, as we've been through multiple times supplies should always be
+requested with the name of the supply on the physical device.  Please
+stop trying to create ABIs around whatever Linux internals you're
+currently working with, this is getting repetitive.
+
+--C+dxB3FEDSxkOkFg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWljHWAAoJECTWi3JdVIfQ0xgH/RdsaOZsLi+xKPxGiMx6i0Wj
+QVxWc2JNVjSBvf0cIQbsDqAonnQY0VsHwG0XdCArnQyAtCjvEoGRktgLjCyk77X+
+Wnvuil7T55BzITsc4lnJ/znKujuHZZ6+Kq0XS8ZUa3PIlBZG4eEhKt5h1aAK7sjq
+lxDUucEHxXv1zDX3K8TLQDJ/MA1xCqwi7wdz7n3L6frE5SdHnm4DLYYra80YS97o
+0j96cW8pjuFNZCEZkX7r4tERY0h5gJZvC8c9Sll1c6mle7EbeuuWauE5H+ybz2Qt
+JidHppfZ0H8gkgLCDz4wPjl41KtGO97LjKFOhKEWQA335MgUAakBI/Czn75NoKw=
+=bjOU
+-----END PGP SIGNATURE-----
+
+--C+dxB3FEDSxkOkFg--
