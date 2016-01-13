@@ -1,42 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 08/17] PM / OPP: Add dev_pm_opp_set_rate()
-Date: Wed, 13 Jan 2016 11:21:57 +0530
-Message-ID: <20160113055157.GE6050@ubuntu>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <5824076a64ad4215cfc63c238e8b8947bc996e87.1450777582.git.viresh.kumar@linaro.org>
- <20160112014010.GM22188@codeaurora.org>
- <20160112065832.GN1084@ubuntu>
- <20160113004936.GE22188@codeaurora.org>
+Subject: Re: [RFC PATCH 05/19] cpufreq: assert locking when accessing
+ cpufreq_policy_list
+Date: Wed, 13 Jan 2016 11:29:17 +0530
+Message-ID: <20160113055917.GG6050@ubuntu>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-6-git-send-email-juri.lelli@arm.com>
+ <20160112093452.GW1084@ubuntu>
+ <20160112114454.GB7015@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:33693 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbcAMFwA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 00:52:00 -0500
-Received: by mail-pf0-f175.google.com with SMTP id e65so75613370pfe.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 21:52:00 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160113004936.GE22188@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160112114454.GB7015@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 12-01-16, 16:49, Stephen Boyd wrote:
-> Having a single mutex around the clock and voltage setting
-> makes cpu frequency switching scalability drop to zero for
-> devices that have independent clock and voltage supplies for each
-> CPU. We need to get the voltage and frequency settings under rcu
-> and then release rcu and change the hardware. This is already how
-> cpufreq-dt is doing it anyway, so I'm lost how it can't be copied
-> here into OPP framework.
+On 12-01-16, 11:44, Juri Lelli wrote:
+> But next_policy is called multiple times as part of
+> for_each_suitable_policy().  What if someone thinks she/he can release
+> cpufreq_driver_lock inside for_each_(in)active_policy() loop? Not that
+> it makes sense, but don't you think it could happen?
 
-Hmm. So what should we do about the clk/regulator issue I mentioned in
-the other thread? How do we guarantee that the OPP doesn't get freed?
+Okay, I don't have strong opinion about using that only in the first
+routine. No issues.
 
-Should we implement a get/put regulator and clk within the OPP layer
-using some sort of refcount ?
+> > >  	/* No policies in the list */
+> > >  	if (list_empty(&cpufreq_policy_list))
+> > >  		return NULL;
+> > > @@ -2430,6 +2432,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+> > >  	if (ret)
+> > >  		goto err_boost_unreg;
+> > >  
+> > > +	lockdep_assert_held(&cpufreq_driver_lock);
+> > 
+> > Why do you need a cpufreq_driver_lock here? And the above change
+> > should generate a lockdep here as the lock isn't taken right now.
+> > 
+> 
+> Because you are checking cpufreq_policy_list to see if it's empty. And
+> it generates a lockdep warning, yes; fixed by next patch. Maybe putting
+> fixes before warnings, as you are suggesting, is better.
+
+Well, locking isn't required because we think we need to protect every
+access of a variable (like cpufreq_policy_list here). But we need to
+protect its access from possible races.
+
+What I am saying is, we can't have a race here. And so no need to lock
+it down.
 
 -- 
 viresh
