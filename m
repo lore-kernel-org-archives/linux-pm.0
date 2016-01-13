@@ -1,43 +1,49 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH RESEND] thermal: power_allocator: req_range
- multiplication should be a 64 bit type
-Date: Wed, 13 Jan 2016 16:10:25 +0000
-Message-ID: <20160113161024.GD2594@e104805>
-References: <1448982923-19416-1-git-send-email-javi.merino@arm.com>
- <20151219134958.GB2594@e104805>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v2 2/2] powercap/rapl: reduce ipi calls
+Date: Wed, 13 Jan 2016 08:21:13 -0800
+Message-ID: <20160113082113.3314fa92@icelake>
+References: <1452647483-14244-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1452647483-14244-3-git-send-email-jacob.jun.pan@linux.intel.com>
+	<alpine.DEB.2.11.1601131042590.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:41463 "EHLO foss.arm.com"
+Received: from mga03.intel.com ([134.134.136.65]:59658 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbcAMQK2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jan 2016 11:10:28 -0500
-Content-Disposition: inline
-In-Reply-To: <20151219134958.GB2594@e104805>
+	id S1752846AbcAMQW2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Jan 2016 11:22:28 -0500
+In-Reply-To: <alpine.DEB.2.11.1601131042590.3575@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>
-Cc: dan.carpenter@oracle.com, linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, jacob.jun.pan@linux.intel.com, Borislav Petkov <bp@alien8.de>
 
-On Sat, Dec 19, 2015 at 01:49:58PM +0000, Javi Merino wrote:
-> Eduardo, Rui,
+On Wed, 13 Jan 2016 10:47:26 +0100 (CET)
+Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> So here you actually use that new (misnomed) function, but for 
 > 
-> On Tue, Dec 01, 2015 at 03:15:23PM +0000, Javi Merino wrote:
-> > req_range is declared as a u64 to cope with overflows in the
-> > multiplication of two u32.  As both req_power and power_range are u32,
-> > we need to make sure the multiplication is done with u64 types.
-> > 
-> > Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  drivers/thermal/power_allocator.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > +static void power_limit_irq_save_cpu(void *info)  
 > 
-> Any comments on this?  If not, can it be merged?
+> and
+> 
+> > +static void power_limit_irq_restore_cpu(void *info)  
+> 
+> you use a bog standard smp function call. What's the benefit of
+> adding that rmw function over a bog standard smp function call if you
+> can only use it for one instance of the same pattern?
+> 
+> Boris asked you the same question here
+> 
+>       https://lkml.kernel.org/r/20151220152749.GA29805@pd.tnic
+> 
+> but you decided to ignore it.
++Borislav,
 
-If there are no objections, can this be merged?
+Thanks for bring this out. I didn't mean to ignore. I thought my point
+was stated in the commit message there was no point of going back and
+forth. Read-Modify-Write is quite common, not just for RAPL could be
+used by future code. Sorry if I wasn't clear.
 
-Thanks,
-Javi
+Jacob
