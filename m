@@ -1,53 +1,107 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2 2/2] powercap/rapl: reduce ipi calls
-Date: Wed, 13 Jan 2016 23:02:33 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601132257550.3575@nanos>
-References: <1452647483-14244-1-git-send-email-jacob.jun.pan@linux.intel.com>  <1452647483-14244-3-git-send-email-jacob.jun.pan@linux.intel.com>  <alpine.DEB.2.11.1601131042590.3575@nanos>  <20160113082113.3314fa92@icelake> <20160113163610.GH12897@pd.tnic>
-  <20160113095124.186ff487@yairi> <20160113180412.GN12897@pd.tnic>  <20160113102138.4e34e890@yairi> <20160113191622.GP12897@pd.tnic>  <20160113121003.3e9c2108@yairi> <20160113212602.GT12897@pd.tnic> <1452722083.3092.92.camel@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/3] cpuidle,menu: use interactivity_req to disable polling
+Date: Wed, 13 Jan 2016 23:07:46 +0100
+Message-ID: <3835535.S7ikxthAoE@vostro.rjw.lan>
+References: <1446590059-18897-1-git-send-email-riel@redhat.com> <CAPKp9ubg3V0979dGTGi+kjXGiBczCG2+QBGgfrZBKjMgSuhy-A@mail.gmail.com> <CAJZ5v0ipLZ3o_f_bZ=ddhvx=_OrGwzZq0bbzo7tSNbu_JDJd1Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1863996531-1452722557=:3575"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452722083.3092.92.camel@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Borislav Petkov <bp@alien8.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56244 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753340AbcAMWHN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 17:07:13 -0500
+In-Reply-To: <CAJZ5v0ipLZ3o_f_bZ=ddhvx=_OrGwzZq0bbzo7tSNbu_JDJd1Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, riel@redhat.com, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, arjan@linux.intel.com, Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-1863996531-1452722557=:3575
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 13 Jan 2016, Srinivas Pandruvada wrote:
-> On Wed, 2016-01-13 at 22:26 +0100, Borislav Petkov wrote:
-> > 	rmwmsrl_safe_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
-> > 			    INTEL_PERF_CTL_MASK,
-> > 			    (u32)sfi_cpufreq_array[next_perf_state].ctr
-> > l_val & INTEL_PERF_CTL_MASK);
-> > 
-> > Yikes!
-> > 
-> > So yes, it can work but it is ugly, hard to parse and use, not
-> > generic
-> > enough, etc, etc.
-> > 
-> > So thanks, but no thanks.
-> > 
-> I agree, in some cases it will not make much sense to use read-
-> modify_write calls, the user may decide whether it makes sense or not.
-> But such interface is not new to Linux kernel:
+On Wednesday, January 13, 2016 10:58:13 PM Rafael J. Wysocki wrote:
+> Hi,
 > 
-> regmap_update_bits(), which is referenced for 346 times.
+> On Wed, Jan 13, 2016 at 6:27 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > Hi Rik,
+
+[cut]
+
+> >
+> > diff --git i/drivers/cpuidle/governors/menu.c w/drivers/cpuidle/governors/menu.c
+> > index 7b0971d97cc3..7c7f4059705a 100644
+> > --- i/drivers/cpuidle/governors/menu.c
+> > +++ w/drivers/cpuidle/governors/menu.c
+> > @@ -330,7 +330,8 @@ static int menu_select(struct cpuidle_driver *drv,
+> > struct cpuidle_device *dev)
+> >          * We want to default to C1 (hlt), not to busy polling
+> >          * unless the timer is happening really really soon.
+> >          */
+> > -       if (interactivity_req > 20 &&
+> > +       if (((interactivity_req && interactivity_req > 20) ||
 > 
-> Are you saying that any such calls are not useful?
+> Well, if interactivity_req > 20, then it also is different from 0, so
+> the first check should not be necessary here.
+> 
+> > +               data->next_timer_us > 20) &&
+> 
+> I guess that this simply restores the previous behavior on the
+> platforms in question.
+> 
+> Now, the reason why it may matter is because
+> CPUIDLE_DRIVER_STATE_START is 0 and so data->last_state_idx may end up
+> as -1 on them.  So I think this piece of code only ever makes sense if
+> CPUIDLE_DRIVER_STATE_START is 1.
+> 
+> >             !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+> >                 dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+> >                 data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+> > --
 
-There are certainly cases when such calls are useful. And those cases are when
-we have a sufficiently big occurence of similar code which is sufficiently
-complex to justify the library code and the export.
+So I'm wondering if the appended patch helps by any chance?
 
-Thanks,
+Rafael
 
-	tglx
---8323329-1863996531-1452722557=:3575--
+---
+ drivers/cpuidle/governors/menu.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -294,8 +294,6 @@ static int menu_select(struct cpuidle_dr
+ 		data->needs_update = 0;
+ 	}
+ 
+-	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+-
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0))
+ 		return 0;
+@@ -326,14 +324,19 @@ static int menu_select(struct cpuidle_dr
+ 	if (latency_req > interactivity_req)
+ 		latency_req = interactivity_req;
+ 
+-	/*
+-	 * We want to default to C1 (hlt), not to busy polling
+-	 * unless the timer is happening really really soon.
+-	 */
+-	if (interactivity_req > 20 &&
+-	    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+-		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
++	if (CPUIDLE_DRIVER_STATE_START > 0) {
++		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
++		/*
++		 * We want to default to C1 (hlt), not to busy polling
++		 * unless the timer is happening really really soon.
++		 */
++		if (interactivity_req > 20 &&
++		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
++			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
++			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
++	} else {
+ 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
++	}
+ 
+ 	/*
+ 	 * Find the idle state with the lowest power while satisfying
+
