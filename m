@@ -1,43 +1,156 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/3] cpuidle,menu: use interactivity_req to disable
- polling
-Date: Thu, 14 Jan 2016 10:40:44 +0000
-Message-ID: <56977B2C.4070600@arm.com>
-References: <1446590059-18897-1-git-send-email-riel@redhat.com>
- <CAPKp9ubg3V0979dGTGi+kjXGiBczCG2+QBGgfrZBKjMgSuhy-A@mail.gmail.com>
- <CAJZ5v0ipLZ3o_f_bZ=ddhvx=_OrGwzZq0bbzo7tSNbu_JDJd1Q@mail.gmail.com>
- <3835535.S7ikxthAoE@vostro.rjw.lan>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Thu, 14 Jan 2016 16:12:47 +0530
+Message-ID: <56977BA7.702@ti.com>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com> <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:45254 "EHLO foss.arm.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:45992 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbcANKks (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Jan 2016 05:40:48 -0500
-In-Reply-To: <3835535.S7ikxthAoE@vostro.rjw.lan>
+	id S1753075AbcANKoH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Jan 2016 05:44:07 -0500
+In-Reply-To: <20160114100913.GB15857@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, riel@redhat.com, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, arjan@linux.intel.com, Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, grygorii.strashko@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
+Hi Ingo,
 
-
-On 13/01/16 22:07, Rafael J. Wysocki wrote:
-> On Wednesday, January 13, 2016 10:58:13 PM Rafael J. Wysocki wrote:
-
-[..]
-
+On Thursday 14 January 2016 03:39 PM, Ingo Molnar wrote:
 >
-> So I'm wondering if the appended patch helps by any chance?
+> * Keerthy <a0393675@ti.com> wrote:
+>
+>> Hi Ingo,
+>>
+>> On Thursday 14 January 2016 02:35 PM, Ingo Molnar wrote:
+>>>
+>>> * Keerthy <j-keerthy@ti.com> wrote:
+>>>
+>>>> orderly_poweroff is triggered when a graceful shutdown
+>>>> of system is desired. This may be used in many critical states of the
+>>>> kernel such as when subsystems detects conditions such as critical
+>>>> temperature conditions. However, in certain conditions in system
+>>>> boot up sequences like those in the middle of driver probes being
+>>>> initiated, userspace will be unable to power off the system in a clean
+>>>> manner and leaves the system in a critical state. In cases like these,
+>>>> the /sbin/poweroff will return success (having forked off to attempt
+>>>> powering off the system. However, the system overall will fail to
+>>>> completely poweroff (since other modules will be probed) and the system
+>>>> is still functional with no userspace (since that would have shut itself
+>>>> off).
+>>>>
+>>>> However, there is no clean way of detecting such failure of userspace
+>>>> powering off the system. In such scenarios, it is necessary for a backup
+>>>> workqueue to be able to force a shutdown of the system when orderly
+>>>> shutdown is not successful after a configurable time period.
+>>>>
+>>>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>>>> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
+>>>> Reported-by: Nishanth Menon <nm@ti.com>
+>>>> ---
+>>>> Links to previous discussion can be found here:
+>>>>
+>>>> http://www.spinics.net/lists/linux-omap/msg124925.html
+>>>>
+>>>> Boot tested on DRA7.
+>>>>
+>>>> changes in v2:
+>>>>
+>>>> 	* Changed #ifdef to #if CONFIG_SHUTDOWN_BACKUP_DELAY_MS
+>>>>
+>>>>   arch/Kconfig    |  7 +++++++
+>>>>   kernel/reboot.c | 23 ++++++++++++++++++-----
+>>>>   2 files changed, 25 insertions(+), 5 deletions(-)
+>>>>
+>>>> Index: linux/arch/Kconfig
+>>>> ===================================================================
+>>>> --- linux.orig/arch/Kconfig	2016-01-11 15:26:07.732173131 +0530
+>>>> +++ linux/arch/Kconfig	2016-01-11 15:26:07.728173205 +0530
+>>>> @@ -37,6 +37,18 @@
+>>>>   	def_bool y
+>>>>   	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI && !PPC64
+>>>>
+>>>> +config SHUTDOWN_BACKUP_DELAY_MS
+>>>> +	int "Backup shutdown delay in milli-seconds"
+>>>> +	default 0
+>>>> +	help
+>>>> +	  The number of milliseconds to delay before backup workqueue
+>>>> +	  executes attempting to poweroff the system after the
+>>>> +	  orderly_poweroff function has failed to complete.
+>>>> +
+>>>> +	  If set to 0, the backup workqueue is not active. The value
+>>>> +	  should be conservatively configured based on userspace latencies
+>>>> +	  expected for a given system.
+>>>
+>>> I don't really understand this. In what circumstances can a reboot fail?
+>>>
+>>> I think that is what should be fixed: a reboot should never fail, instead of
+>>> introducing some sort of fragile timeout based method.
+>>
+>> Here is the complete description of the scenario which was reported by Nishanth
+>> who encountered the issue. The link has bootlogs and description of the exact
+>> case which led to this patch.
+>>
+>> http://www.spinics.net/lists/linux-omap/msg124923.html
+>
+> it's a reply in the middle of a discussion ...
+>
+> What I managed to decode is that this:
+>
+> static int __orderly_poweroff(bool force)
+> {
+>          int ret;
+>
+>          ret = run_cmd(poweroff_cmd);
+>
+>          if (ret && force) {
+>                  pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+>
+>                  /*
+>                   * I guess this should try to kick off some daemon to sync and
+>                   * poweroff asap.  Or not even bother syncing if we're doing an
+>                   * emergency shutdown?
+>                   */
+>                  emergency_sync();
+>                  kernel_power_off();
+>          }
+>
+>          return ret;
+> }
+>
+> could fail to actually power the system off, if the run_cmd(poweroff_cmd)
+> 'succeeds', but due to a user-space bug it does not actually call the real
+> poweroff system call?
 >
 
-Yes it does fix. As you mentioned earlier, CPUIDLE_DRIVER_STATE_START is
-0 on ARM platforms and hence data->last_state_idx ended up as -1.
+I tried to simulate the issue.
 
-You can add by Tested-by when you push this change. Thanks for the quick
-fix.
+In the probe function of drivers/thermal/ti-soc-thermal/ti-bandgap.c
+ti_bandgap_probe i call
 
--- 
-Regards,
-Sudeep
+orderly_poweroff(true);
+
+This is while driver probes are still on going. I observe that
+ret = run_cmd(poweroff_cmd);
+
+ret is a non-zero value and we enter the if condition:
+
+Even after the
+
+emergency_sync();
+kernel_power_off();
+
+calls
+
+the console remained active in weird state.
+
+
+> Thanks,
+>
+> 	Ingo
+>
