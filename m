@@ -1,134 +1,115 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [RFC][PATCH 0/5] Functional dependencies between devices
-Date: Thu, 14 Jan 2016 15:19:03 +0100
-Message-ID: <CAAObsKD7U9SwNZ-AzU1xPz988c1R1E20Vt5ayp2PDzoiJSS3Xg@mail.gmail.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <2576341.476ZsjkPgF@vostro.rjw.lan>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Thu, 14 Jan 2016 14:22:27 +0000
+Message-ID: <20160114142227.GB5783@n2100.arm.linux.org.uk>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com>
+ <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
+ <56977BA7.702@ti.com>
+ <20160114112354.GA17869@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:34806 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbcANOTY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 09:19:24 -0500
-In-Reply-To: <2576341.476ZsjkPgF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160114112354.GA17869@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Keerthy <a0393675@ti.com>, nm@ti.com, grygorii.strashko@ti.com, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, peterz@infradead.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, josh@joshtriplett.org, edubezval@gmail.com, joel@jms.id.au, mpe@ellerman.id.au, akpm@linux-foundation.org, linux-omap@vger.kernel.org, dyoung@redhat.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 14 January 2016 at 02:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 27, 2015 04:24:14 PM Rafael J. Wysocki wrote:
->> Hi All,
->>
->> As discussed in the recent "On-demand device probing" thread and in a Kernel
->> Summit session earlier today, there is a problem with handling cases where
->> functional dependencies between devices are involved.
->>
->> What I mean by a "functional dependency" is when the driver of device B needs
->> both device A and its driver to be present and functional to be able to work.
->> This implies that the driver of A needs to be working for B to be probed
->> successfully and it cannot be unbound from the device before the B's driver.
->> This also has certain consequences for power management of these devices
->> (suspend/resume and runtime PM ordering).
->>
->> So I want to be able to represent those functional dependencies between devices
->> and I'd like the driver core to track them and act on them in certain cases
->> where they matter.  The argument for doing that in the driver core is that
->> there are quite a few distinct use cases related to that, they are relatively
->> hard to get right in a driver (if one wants to address all of them properly)
->> and it only gets worse if multiplied by the number of drivers potentially
->> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
->> cannot be handled in a single driver at all, because it requires the driver of A
->> to wait for B to suspend (during system suspend) and the driver of B to wait for
->> A to resume (during system resume).
->>
->> My idea is to represent a supplier-consumer dependency between devices (or
->> more precisely between device+driver combos) as a "link" object containing
->> pointers to the devices in question, a list node for each of them and some
->> additional information related to the management of those objects, ie.
->> something like:
->>
->> struct device_link {
->>       struct device *supplier;
->>       struct list_head supplier_node;
->>       struct device *consumer;
->>       struct list_head consumer_node;
->>       <flags, status etc>
->> };
->>
->> In general, there will be two lists of those things per device, one list
->> of links to consumers and one list of links to suppliers.
->>
->> In that picture, links will be created by calling, say:
->>
->> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
->>
->> and they will be deleted by the driver core when not needed any more.  The
->> creation of a link should also cause dpm_list and the list used during shutdown
->> to be reordered if needed.
->>
->> In principle, it seems usefult to consider two types of links, one created
->> at device registration time (when registering the second device from the linked
->> pair, whichever it is) and one created at probe time (of the consumer device).
->> I'll refer to them as "permanent" and "probe-time" links, respectively.
->>
->> The permanent links (created at device registration time) will stay around
->> until one of the linked devices is unregistered (at which time the driver
->> core will drop the link along with the device going away).  The probe-time
->> ones will be dropped (automatically) at the consumer device driver unbind time.
->>
->> There's a question about what if the supplier device is being unbound before
->> the consumer one (for example, as a result of a hotplug event).  My current
->> view on that is that the consumer needs to be force-unbound in that case too,
->> but I guess I may be persuaded otherwise given sufficiently convincing
->> arguments.  Anyway, there are reasons to do that, like for example it may
->> help with the synchronization.  Namely, if there's a rule that suppliers
->> cannot be unbound before any consumers linked to them, than the list of links
->> to suppliers for a consumer can only change at its registration/probe or
->> unbind/remove times (which simplifies things quite a bit).
->>
->> With that, the permanent links existing at the probe time for a consumer
->> device can be used to check whether or not to defer the probing of it
->> even before executing its probe callback.  In turn, system suspend
->> synchronization should be a matter of calling device_pm_wait_for_dev()
->> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
->> and so on.
->>
->> Of course, the new lists have to be stable during those operations and ensuring
->> that is going to be somewhat tricky (AFAICS right now at least), but apart from
->> that the whole concept looks reasonably straightforward to me.
->>
->
-> What follows is my prototype implementation of this.  It took some time
-> to develop (much more than I was hoping for), but here it goes at last.
->
-> The first patch rearranges the code around __device_release_driver() a bit
-> to prepare it for the next one.
->
-> The second patch introduces the actual device links mechanics, but without
-> system suspend/resume and runtime PM support which are added by the subsequent
-> patches.
->
-> This hasn't been really tested yet (apart from checking that it doesn't break
-> things when device links are not in used, which would be rather embarrassing),
-> but at this time I'd really like you to have a look and tell me what you think
-> (especially if you see a reason why this is not going to work).
+On Thu, Jan 14, 2016 at 12:23:54PM +0100, Ingo Molnar wrote:
+> * Keerthy <a0393675@ti.com> wrote:
+> > I tried to simulate the issue.
+> > 
+> > In the probe function of drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > ti_bandgap_probe i call
+> > 
+> > orderly_poweroff(true);
+> > 
+> > This is while driver probes are still on going. I observe that
+> > ret = run_cmd(poweroff_cmd);
+> > 
+> > ret is a non-zero value and we enter the if condition:
+> > 
+> > Even after the
+> > 
+> > emergency_sync();
+> > kernel_power_off();
+> > 
+> > calls
+> > 
+> > the console remained active in weird state.
+> 
+> Now _that_ is clearly an architecture bug that should not be papered over ...
 
-Hi Rafael,
+No, it's not an architecture bug - it's a platform bug.  The ARM
+architecture has no standard way to control CPU reset or system
+power, all that is up to the platform.
 
-have given a quick look and I have 2 questions for now:
+> If kernel_power_off() is called then the system should power off. No
+> ifs and whens.
 
-- Why deferring the probe if a supplier isn't ready? Seems like quite
-a bit of a waste to keep iterating that list until all suppliers have
-probed. If we know that a supplier is needed at a given time, why not
-probe it right away?
+There definitely are ifs and whens.  Only if the platform has support,
+and when that support works.
 
-- When were you thinking of calling device_link_add for permanent links?
+If the platform does not provide such support, or that support is
+broken, there's nothing that can be done at the architecture level.
 
-I also wonder if we could find clearer names for supplier_links and
-consumer_links, as it wasn't immediately clear to me what those lists
-contained. Maybe just "consumers" and "suppliers"?
+Looking at the log given via the message that was referred to in a
+previous message in this thread, it looks like userspace fails to get
+to the point of calling into the kernel:
 
-Thanks,
+159.636627] rc              S c0756104     0   527      1 0x00000000
+159.643027] [<c0756104>] (__schedule) from [<c0756778>] (schedule+0x40/0x98)
+159.650108] [<c0756778>] (schedule) from [<c0193c50>] (pipe_wait+0x60/0x9c)
+159.657102] [<c0193c50>] (pipe_wait) from [<c0193cc0>] (wait_for_partner+0x34/0x
+159.664792] [<c0193cc0>] (wait_for_partner) from [<c01947fc>] (fifo_open+0x1a4/0
+159.672658] [<c01947fc>] (fifo_open) from [<c018a5c0>] (do_dentry_open+0x1c8/0x3
+159.680351] [<c018a5c0>] (do_dentry_open) from [<c019855c>] (do_last+0x64c/0xce0
+159.687867] [<c019855c>] (do_last) from [<c019adf8>] (path_openat+0x80/0x608)
+159.695036] [<c019adf8>] (path_openat) from [<c019be34>] (do_filp_open+0x2c/0x88
+159.702555] [<c019be34>] (do_filp_open) from [<c018b94c>] (do_sys_open+0xfc/0x1c
+159.710158] [<c018b94c>] (do_sys_open) from [<c00102a0>] (ret_fast_syscall+0x0/0
 
-Tomeu
+and later on, it's still there:
+
+219.253041] rc              S c0756104     0   527      1 0x00000000
+219.259443] [<c0756104>] (__schedule) from [<c0756778>] (schedule+0x40/0x98)
+219.266524] [<c0756778>] (schedule) from [<c0193c50>] (pipe_wait+0x60/0x9c)
+219.273516] [<c0193c50>] (pipe_wait) from [<c0193cc0>] (wait_for_partner+0x34/0x
+219.281206] [<c0193cc0>] (wait_for_partner) from [<c01947fc>] (fifo_open+0x1a4/0
+219.289071] [<c01947fc>] (fifo_open) from [<c018a5c0>] (do_dentry_open+0x1c8/0x3
+219.296762] [<c018a5c0>] (do_dentry_open) from [<c019855c>] (do_last+0x64c/0xce0
+
+The 'rc' script in sysvinit/upstart is normally responsible for walking
+through /etc/rc?.d/* running the scripts in order.  It looks like this
+has wedged, and so it's not getting anywhere near to asking the kernel
+to shut down.
+
+That's even more confirmed by there being no "Power down" message in
+the log, which is printed by kernel_power_off().  So I'm not convinced
+that the pointed to log is actually an illustration of the problem
+that its being discussed here: it looks to me like some other failure,
+and it looks like 'rc' is stuck trying to open a fifo.
+
+It would be nice to see an example of a log where we have proof that
+kernel_power_off() was called (via the "Power down" message being in
+the log.)
+
+In any case, at the architecture level, if a platform code fails to
+reboot, we print "Reboot failed -- System halted", disable IRQs and
+spin.
+
+We don't print anything if a platform hasn't provided a "pm_power_off()"
+hook, or that hook fails though - we just fall back to the generic
+code which does a do_exit(0) for the caller.
+
+I think some people have their power off/reboot stuff as part of their
+watchdog driver, which can be a loadable module - if the module isn't
+loaded, then these facilities are not available.
+
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
