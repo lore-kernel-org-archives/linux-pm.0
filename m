@@ -1,80 +1,108 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Thu, 14 Jan 2016 10:21:06 +0100
-Message-ID: <11122786.kKumQ3Dhls@wuerfel>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com> <8579242.omBpg1aLr2@wuerfel> <CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
+Date: Thu, 14 Jan 2016 09:44:31 +0000
+Message-ID: <20160114094431.GF18603@e106622-lin>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
+ <20160112112409.GJ1084@ubuntu>
+ <20160113005452.10884.77606@quark.deferred.io>
+ <20160113063148.GJ6050@ubuntu>
+ <20160113182131.1168.45753@quark.deferred.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.133]:51110 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbcANJWA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 04:22:00 -0500
-In-Reply-To: <CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160113182131.1168.45753@quark.deferred.io>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thursday 14 January 2016 09:57:14 Ulf Hansson wrote:
-> On 13 January 2016 at 21:43, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Wednesday 13 January 2016 18:03:24 Thierry Reding wrote:
-> >> On Fri, Dec 04, 2015 at 02:57:17PM +0000, Jon Hunter wrote:
-> >> > Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
-> >> > dependent upon a particular power-domain are only probed when that power
-> >> > domain has been powered up, requires that PM is made mandatory for tegra
-> >> > 64-bit devices and so select this option for tegra as well.
-> >> >
-> >> > Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> >> > ---
-> >> >  arch/arm64/Kconfig.platforms | 2 ++
-> >> >  1 file changed, 2 insertions(+)
-> >> >
-> >> > diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
-> >> > index 9806324fa215..e0b5bd0aff0f 100644
-> >> > --- a/arch/arm64/Kconfig.platforms
-> >> > +++ b/arch/arm64/Kconfig.platforms
-> >> > @@ -93,6 +93,8 @@ config ARCH_TEGRA
-> >> >       select GENERIC_CLOCKEVENTS
-> >> >       select HAVE_CLK
-> >> >       select PINCTRL
-> >> > +     select PM
-> >> > +     select PM_GENERIC_DOMAINS
-> >> >       select RESET_CONTROLLER
-> >> >       help
-> >> >         This enables support for the NVIDIA Tegra SoC family.
-> >>
-> >> This has potential consequences for multi-platform builds, doesn't it?
-> >> All of a sudden any combination of builds that includes Tegra won't be
-> >> possible to build without PM support.
-> >>
-> >> Adding linux-arm-kernel@lists.infradead.org for visibility.
-> >>
-> >>
-> >
-> > Agreed, it would be better to add 'depends on PM_GENERIC_DOMAINS'
-> > dependencies in the drivers that require it.
-> >
+Hi,
+
+On 13/01/16 10:21, Michael Turquette wrote:
+> Hi Viresh,
 > 
-> The problem with that approach is that if those drivers are cross SoC
-> drivers. In some cases PM isn't needed and it is.
+> Quoting Viresh Kumar (2016-01-12 22:31:48)
+> > On 12-01-16, 16:54, Michael Turquette wrote:
+> > > __cpufreq_driver_target should be using a per-policy lock.
+> > 
+> > It doesn't :)
 > 
-> Of course I don't have the in depth knowledge about the drivers being
-> used in Tegra which may need PM, perhaps it's not that many?
+> It should.
 > 
-> Anyway, to me it seems like ARCH_TEGRA should depend on PM instead.
-> Would that work?
+> A less conceited response is that a per-policy lock should be held
+> around calls to __cpufreq_driver_target. This can obviously be done by
+> cpufreq_driver_target (no double underscore), but there are quite a few
+> drivers that call __cpufreq_driver_target, and since we're touching the
+> policy structure we need a lock around it.
+> 
 
-That seems a little over-restrictive, as it prevents you from
-building a tegra kernel even if none of the drivers that rely
-on the pm domains are used, but it would work.
+Agree, we should enforce the rule that everything that touches policy
+structure has to lock it before.
 
-I've looked again at how other platforms (on arm32) do it, and
-a lot of them use "select PM_GENERIC_DOMAINS if PM", so they don't
-automatically enable PM, but they enable the pmdomain code if
-PM is already set. No driver really "depends on PM_GENERIC_DOMAINS",
-so we shouldn't really start that now or we end up with circular
-dependencies in the long run.
+> Juri's cover letter did not explicitly state my original, full intention
+> for the patches I was working on. I'll spell that out below and
+> hopefully we can gather consensus around it before moving forward. Juri,
+> I'm implicitly assuming that you agree with the stuff below, but please
+> correct me if I am wrong.
 
-	Arnd
+Right. I decided to post with this RFC only a subset of the patches we
+came up with because I needed to build some more confidence with the
+subsystem I was going to propose changes for. Review comments received
+are helping me on that front. I didn't mention at all next steps (RCU)
+because I wanted to focus on understanding and documenting, and maybe
+fixing where required, the current status, before we change it.
+
+> The original idea for overhauling the locking
+> in cpufreq is to use two locks:
+> 
+> 1) per-policy lock (my patches were using a mutex), which is the only
+> lock that needs to be touched during a frequency transition. We do not
+> want any lock contention between policy's during freq transition. For
+> read-side operation this locking scheme should utilize RCU so that the
+> scheduler can safely access the values in struct cpufreq_policy within
+> it's schedule() context. [a note on RCU below]
+> 
+> 2) a single, framework-wide lock (my patches were using a mutex) that
+> handles all of the other synchronization: governor events, driver events
+> and anything else that does not happen on a per-policy basis. I don't
+> think RCU is necessary for this. These operations are all slow-path ones
+> so reducing the mess of 6-ish locks in cpufreq.c and friends down to a
+> single mutex simplifies things greatly, eliminates the "drop the lock
+> here for a few instructions" hacks and generally makes things more
+> readable.
+> 
+
+This is basically what I also have on top of this series. I actually
+went for RCUs also for 2, but yes, that's maybe overkilling.
+
+A comment on 1 above, and something on which I got stuck upon for some
+time, is that, if we implement RCU logic as it is supposed to be, I
+think we can generate a lot of copy-update operations when changing
+frequency (as policy structure needs to be changed). Also, we might read
+stale data. So, I'm not sure this will pay off. However, I tried to get
+around this problem and I guess we will discuss if 1 is doable in the
+next RFC :-).
+
+> A quick note on RCU and the scheduler-driven DVFS stuff: RCU only helps
+> us on read-side operations. For the purposes of sched-dvfs, this means
+> that when we look at capacity utilization and want to normalize
+> frequency based on that, we need to access the per-policy structure in a
+> lockless way. RCU makes this possible.
+> 
+> RCU is absolutely not a magic bullet or elixir that lets us kick off
+> DVFS transitions from the schedule() context. The frequency transitions
+> are write-side operations, as we invariably touch struct cpufreq_policy.
+> This means that the read-side stuff can live in the schedule() context,
+> but write-side needs to be kicked out to a thread.
+> 
+
+Correct. We will still need the kthread machinery even after this
+changes.
+
+Thanks for clarifying things!
+
+Best,
+
+- Juri
