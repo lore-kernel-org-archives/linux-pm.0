@@ -1,170 +1,100 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
-Date: Thu, 14 Jan 2016 11:33:16 -0700
-Message-ID: <20160114183316.GB1651@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH V4 05/16] soc: tegra: pmc: Avoid extra remapping of PMC
+ registers
+Date: Thu, 14 Jan 2016 19:02:05 +0000
+Message-ID: <5697F0AD.9080601@nvidia.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-6-git-send-email-jonathanh@nvidia.com>
+ <20160114134526.GA23082@ulmo> <5697CE50.2050004@nvidia.com>
+ <20160114172459.GA32767@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:4168 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932252AbcANTCM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 14:02:12 -0500
+In-Reply-To: <20160114172459.GA32767@ulmo>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Jan 14 2016 at 07:42 -0700, Ulf Hansson wrote:
->On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
->> Generic Power Domains currently support turning on/off only in process
->> context. This prevents the usage of PM domains for domains that could be
->> powered on/off in a context where IRQs are disabled. Many such domains
->> exist today and do not get powered off, when the IRQ safe devices in
->> that domain are powered off, because of this limitation.
+
+On 14/01/16 17:24, Thierry Reding wrote:
+> * PGP Signed by an unknown key
+> 
+> On Thu, Jan 14, 2016 at 04:35:28PM +0000, Jon Hunter wrote:
 >>
->> However, not all domains can operate in IRQ safe contexts. Genpd
->> therefore, has to support both cases where the domain may or may not
->> operate in IRQ safe contexts. Configuring genpd to use an appropriate
->> lock for that domain, would allow domains that have IRQ safe devices to
->> runtime suspend and resume, in atomic context.
->>
->> To achieve domain specific locking, set the domain's ->flag to
->> GENPD_FLAG_IRQ_SAFE while defining the domain. This indicates that genpd
->> should use a spinlock instead of a mutex for locking the domain. Locking
->> is abstracted through genpd_lock() and genpd_unlock() functions that use
->> the flag to determine the appropriate lock to be used for that domain.
->
->Please add a newline here.
->
-Sure.
->> Domains that have lower latency to suspend and resume and can operate
->
->I believe I get the point, as we must not keep IRQs disabled for too
->long. Perhaps that can be a bit clarified?
->
->> with IRQs disabled may now be able to save power, when the component
->> devices and sub-domains are idle at runtime.
->>
->> The restriction this imposes on the domain hierarchy is that sub-domains
->> and all devices in the IRQ safe domain's hierarchy also have to be IRQ
->> safe, so that we dont try to lock a mutex, while holding a spinlock.
->
->Isn't it the opposite as you described here?
->
->So holding a mutex while taking a spinlock should be okay, but not the
->other way around.
->
-That's exactly what I describe. We *dont* try to lock a mutex while
-holding a spinlock.
+>> On 14/01/16 13:45, Thierry Reding wrote:
+>>>> Old Signed by an unknown key
+>>>
+>>> On Fri, Dec 04, 2015 at 02:57:06PM +0000, Jon Hunter wrote:
+>>>> During early initialisation, the PMC registers are mapped and the PMC SoC
+>>>> data is populated in the PMC data structure. This allows other drivers
+>>>> access the PMC register space, via the public tegra PMC APIs, prior to
+>>>> probing the PMC device.
+>>>>
+>>>> When the PMC device is probed, the PMC registers are mapped again and if
+>>>> successful the initial mapping is freed. If the probing of the PMC device
+>>>> fails after the registers are remapped, then the registers will be
+>>>> unmapped and hence the pointer to the PMC registers will be invalid. This
+>>>> could lead to a potential crash, because once the PMC SoC data pointer is
+>>>> populated, the driver assumes that the PMC register mapping is also valid
+>>>> and a user calling any of the public tegra PMC APIs could trigger an
+>>>> exception because these APIs don't check that the mapping is still valid.
+>>>>
+>>>> Rather than adding a test to see if the PMC register mapping is valid,
+>>>> fix this by removing the second mapping of the PMC registers and reserve
+>>>> the memory region for the PMC registers during early initialisation where
+>>>> the initial mapping is created. During the probing of the PMC simply check
+>>>> that the PMC registers have been mapped.
+>>>>
+>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>>> ---
+>>>>  drivers/soc/tegra/pmc.c | 19 +++++++++----------
+>>>>  1 file changed, 9 insertions(+), 10 deletions(-)
 
->Regarding power on:
->*)
->If we get a request to power on the master, its spinlock will be
->taken, but its subdomain isn't touched.
->
-True. Powering on a domain should not power on its subdomains. So we are
-good here.
+[snip]
 
->**)
->If we get a request to power on the subdomain, it will first try to
->power its master. That means, first we take the mutex of the
->subdomain, then as the master is IRQ safe we will take its spinlock.
->We power on the master, releases its spinlock, continues to power on
->the subdomain and then releases its mutex.
->
-The implied assumption in having a subdomain that is IRQ-safe while the
-parent domain is non-IRQ-safe is that the parent is never powered on/off
-in the context of the subdomain, it is assumed always ON.
+> Ah yes, of course. You could still do it with just the two pointers if
+> you keep the code as-is and revert back to the backed up value in case
+> of errors. Along this line:
+> 
+> 	base = pmc->base;
+> 
+> 	pmc->base = devm_ioremap_resource(&pdev->dev, res);
+> 
+> 	/* on success */
+> 	iounmap(base);
+> 
+> 	/* on error */
+> 	pmc->base = base;
+> 
+> These pointer assignments should be atomic, so no potential for races
+> there. I've attached a patch which should do the trick, though I have
+> not tested it.
 
->Regarding power off:
->*)
->Trying to power off the master will fail unless the atomic "sd_count"
->is tested for zero. In that execution path, its subdomain isn't
->touched.
->
-True for IRQ-safe parents with IRQ-safe subdomains as well as non-IRQ
-safe parents with IRQ-safe subdomains.
+Right, but I am concerned about someone calling tegra_powergate_set()
+(which with patch 6 of this series) will poll for the state to change. I
+am not sure we can guarantee the pointer does not change while this is
+happening.
 
->**)
->Trying to power off a subdomain, thus executing in non-atomic context,
->starts by taking its mutex then continue doing the power off things.
->When completed, the sd_count for its master will be decreased and then
->we schedule a power off work for it, to allow it to be powered off at
->some point later. Even if we wouldn't schedule a work, and instead
->tried to power off the master within the same context it should be
->safe to take a spinlock.
->
-This is true as well for IRQ-safe subdomains that are attached to
-IRQ-safe parents. But if the parent is not IRQ-safe then the domains is
-left powered ON.
+>>               Even so, I was not sure if there could be a race here.
+>> Ideally, you would lock, but then you need to lock everywhere that you
+>> use base. Given that my patch still provides a /proc/iomem entry with a
+>> valid name, it seems best to me.
+> 
+> The primary reason for the "takeover" is that except for the extra
+> iounmap() and pointer swapping the tegra_pmc_probe() function is really
+> a standard driver implementation. The idea behind this had always been
+> that it should be possible to easily convert this to a proper driver if
+> either we ended up with PSCI exclusively for SMP or defer SMP setup
+> until the PMC driver had been probed, so that we could get rid of the
+> early_initcall().
 
->I haven't thought about the IRQ safe devices yet, but I guess similar
->applies to them.
->
-The same rules apply to IRQ safe devices.
+I agree it is cleaner, however, I am still concerned there could still
+be a race.
 
-Here is an excerpt from pm_genpd_runtime_resume -
-
-/* If power.irq_safe, the PM domain is never powered off. */
-if (dev->power.irq_safe) {
-        timed = false;
-	goto out;
-}
-
->> Non-IRQ safe domains may continue to have devices and sub-domains that
->> may or may not be IRQ safe.
->
->According the my comments above, no I don't think so. Non-IRQ safe
->domains can't have subdomains that is IRQ safe.
->
-Here is a summary of the combinations as I understand. Correct me if I
-am wrong, please.
-
-*) Non-IRQ safe parent + IRQ-safe subdomain
-   Attach subdomain:
-   	- parent mutex held and subdomain spinlocked.
-   Power-on:
-	- subdomain assumes parent is always ON or powered on before the
-	subdomain is powered ON.
-   Power-off:
-   	- parent is not powered off even if the subdomain was the last
-	active domain.
-
-**) IRQ-safe parent + IRQ-safe subdomain
-    Attach subdomain:
-    	- parent spinlock held and subdomain spinlocked.
-    Power-on:
-	- subdomain may power on the parent.
-    Power-off:
-    	- last active sub-domain will power off the parent in the same
-	  context.
-
-***) IRQ-safe parent + non-IRQ-safe subdomain
-    Attach subdomain:
-   	- parent spinlock held and subdomain **cannot** be mutex locked.
-    Power-on:
-	- subdomain may power on the parent.
-    Power-off:
-    	- last active subdomain will be able to power off the domain
-
-Except for the last case, we can support the others in addition to 
-the currently available, with the restriction that 
-
-- IRQ-safe parents can only have IRQ-safe subdomains and devices
-
-- Non-IRQ safe parents may have both IRQ-safe and non-IRQ-safe
-  subdomains and devices and the assumption that
-	-- IRQ-safe subdomains and devices will not bother to power
-	on/off their non-IRQ-safe parent.
-
->Before I continue to review the code, let's align on the above first
->as I think it's important we get this right first. :-)
->
-Absolutely.
-
-Thank you for your review. Was expecting this detail a review of the
-concept from you :)
-
-Thanks,
-Lina
+Jon
