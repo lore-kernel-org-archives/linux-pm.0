@@ -1,65 +1,129 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 08/19] cpufreq: fix warning for cpufreq_init_policy
- unlocked access to cpufreq_governor_list
-Date: Thu, 14 Jan 2016 16:35:11 +0000
-Message-ID: <20160114163511.GA4246@e106622-lin>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-9-git-send-email-juri.lelli@arm.com>
- <20160112100945.GZ1084@ubuntu>
- <20160112155200.GC18734@e106622-lin>
- <20160113060746.GI6050@ubuntu>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH V4 05/16] soc: tegra: pmc: Avoid extra remapping of PMC
+ registers
+Date: Thu, 14 Jan 2016 16:35:28 +0000
+Message-ID: <5697CE50.2050004@nvidia.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-6-git-send-email-jonathanh@nvidia.com>
+ <20160114134526.GA23082@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:47783 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbcANQev (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Jan 2016 11:34:51 -0500
-Content-Disposition: inline
-In-Reply-To: <20160113060746.GI6050@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160114134526.GA23082@ulmo>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On 13/01/16 11:37, Viresh Kumar wrote:
-> On 12-01-16, 15:52, Juri Lelli wrote:
-> > Other users (i.e., cpufreq_parse_governor and cpufreq_register_governor)
-> > needs to take the mutex externally. So, we need to unify this behaviour.
+
+On 14/01/16 13:45, Thierry Reding wrote:
+> * PGP Signed by an unknown key
 > 
-> No they don't have to.
+> On Fri, Dec 04, 2015 at 02:57:06PM +0000, Jon Hunter wrote:
+>> During early initialisation, the PMC registers are mapped and the PMC SoC
+>> data is populated in the PMC data structure. This allows other drivers
+>> access the PMC register space, via the public tegra PMC APIs, prior to
+>> probing the PMC device.
+>>
+>> When the PMC device is probed, the PMC registers are mapped again and if
+>> successful the initial mapping is freed. If the probing of the PMC device
+>> fails after the registers are remapped, then the registers will be
+>> unmapped and hence the pointer to the PMC registers will be invalid. This
+>> could lead to a potential crash, because once the PMC SoC data pointer is
+>> populated, the driver assumes that the PMC register mapping is also valid
+>> and a user calling any of the public tegra PMC APIs could trigger an
+>> exception because these APIs don't check that the mapping is still valid.
+>>
+>> Rather than adding a test to see if the PMC register mapping is valid,
+>> fix this by removing the second mapping of the PMC registers and reserve
+>> the memory region for the PMC registers during early initialisation where
+>> the initial mapping is created. During the probing of the PMC simply check
+>> that the PMC registers have been mapped.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>> ---
+>>  drivers/soc/tegra/pmc.c | 19 +++++++++----------
+>>  1 file changed, 9 insertions(+), 10 deletions(-)
 > 
-> And that's why I have been saying that we better nail down the exact
-> thing the mutex is supposed to protect.
+> devm_ioremap_resource() was used on purpose to make sure we get a proper
+> name assigned to the memory region in /proc/iomem. As it is, there will
+> be no name associated with it, which I think is unfortunate. As such I'd
+> prefer keeping that call and instead fix the issue with the invalid
+> mapping by making sure that pmc->base is assigned only after nothing can
+> fail in probe anymore.
+
+Yes, however, you still get a valid name in /proc/iomem with this
+change. I made sure I tested that ...
+
+/ # cat /proc/iomem
+6000d000-6000dfff : /gpio@0,6000d000
+60020000-600213ff : /dma@0,60020000
+700008d4-70000b6f : /pinmux@0,700008d4
+70003000-70003293 : /pinmux@0,700008d4
+70006000-7000603f : serial
+7000d100-7000d1ff : /i2c@0,7000d100
+7000e400-7000e7ff : /pmc@0,7000e400
+...
+
+The only expection might be the non-DT case, but I am not sure we care
+about that for most boards? Hmm ... I wonder if I need to set
+"regs.name" for the non-DT case? I probably should ...
+
+>> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+>> index e60fc2d33c94..fdd1a8d0940f 100644
+>> --- a/drivers/soc/tegra/pmc.c
+>> +++ b/drivers/soc/tegra/pmc.c
+>> @@ -807,22 +807,17 @@ out:
+>>  
+>>  static int tegra_pmc_probe(struct platform_device *pdev)
+>>  {
+>> -	void __iomem *base = pmc->base;
 > 
-> There can be two cases here:
-> - It protects the governor list, in that case we can move it to
->   find_governor().
-> - It guarantees that the governor pointer stays valid: That's not true
->   as we are using the governor pointer outside of the lock.
+> The alternative that I proposed above would entail not setting this...
 > 
-> And so I said, "No they don't have to" :)
+>> -	struct resource *res;
+>>  	int err;
+>>  
+>> +	if (!pmc->base) {
+>> +		dev_err(&pdev->dev, "base address is not configured\n");
+>> +		return -ENXIO;
+>> +	}
+>> +
+>>  	err = tegra_pmc_parse_dt(pmc, pdev->dev.of_node);
+>>  	if (err < 0)
+>>  		return err;
+>>  
+>> -	/* take over the memory region from the early initialization */
+>> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> -	pmc->base = devm_ioremap_resource(&pdev->dev, res);
 > 
+> ... and storing the result of the mapping in "base" instead...
+> 
+>> -	if (IS_ERR(pmc->base))
+>> -		return PTR_ERR(pmc->base);
+>> -
+>> -	iounmap(base);
+> 
+> ... and move the unmap to the very end of the probe function, which
+> would look something like:
+> 
+> 	/* take over the memory region from the early initialization */
+> 	iounmap(pmc->base);
+> 	pmc->base = base;
+> 
+> That way the mapping in "base" will automatically be undone upon error
+> and the pmc->base will only be overridden when it's certain that the
+> probe will succeed.
+> 
+> What do you think?
 
-But, don't we have to guarantee consinstency between multiple operations
-on cpufreq_governor_list?
+I thought about that, but it still seems racy. You probably want to
+assign the new base before freeing the old and so you would need another
+tmp variable. Even so, I was not sure if there could be a race here.
+Ideally, you would lock, but then you need to lock everywhere that you
+use base. Given that my patch still provides a /proc/iomem entry with a
+valid name, it seems best to me.
 
-In cpufreq_register_governor() we have:
-
- mutex_lock(&cpufreq_governor_mutex);
- 
- governor->initialized = 0;
- err = -EBUSY;
- if (!find_governor(governor->name)) {
- 	err = 0;
- 	list_add(&governor->governor_list, &cpufreq_governor_list);
- }
- 
- mutex_unlock(&cpufreq_governor_mutex);
-
-IIUC, find_governor and list_add have to be atomic. Couldn't someone
-slip in right after find_governor and add the same governor to the list?
-
-Thanks,
-
-- Juri
+Cheers
+Jon
