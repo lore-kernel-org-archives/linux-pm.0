@@ -1,156 +1,77 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
-Date: Thu, 14 Jan 2016 16:12:47 +0530
-Message-ID: <56977BA7.702@ti.com>
-References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
- <20160114090520.GA4351@gmail.com> <569767EC.2010704@ti.com>
- <20160114100913.GB15857@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Thu, 14 Jan 2016 12:11:39 +0100
+Message-ID: <4244898.5om31fQ1mz@wuerfel>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com> <11122786.kKumQ3Dhls@wuerfel> <20160114102924.GA22340@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:45992 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075AbcANKoH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Jan 2016 05:44:07 -0500
-In-Reply-To: <20160114100913.GB15857@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160114102924.GA22340@ulmo>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, grygorii.strashko@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Hi Ingo,
+On Thursday 14 January 2016 11:29:24 Thierry Reding wrote:
+> 
+> It just occurred to me that none of these options really make much of a
+> difference. As Jon mentioned once we merge this series a lot of features
+> on Tegra will start to rely on PM_GENERIC_DOMAINS and hence PM. So if we
+> do want to build a kernel with a maximum of Tegra features enabled (and
+> I think a multi_v7_defconfig should include that) we'll end up with a PM
+> dependency anyway, whether forced via select or implied via depends on.
+> 
+> I'm beginning to wonder if PM really should be an option these days. The
+> disadvantages of making it optional do outweigh the advantages in my
+> opinion. I'm not saying that, in general, it's totally useless to build
+> a kernel that has no PM support, but for the more specific case where
+> you would want to enable multi-platform support I don't think there's
+> much practical advantage in allowing !PM. One of the most common build
+> warnings are triggered because of this option. Also multi-platform
+> kernels are really big already, so much so that I doubt it would make a
+> significant difference if we unconditionally built PM support. Also the
+> chances are that we'll be seeing more and more SoCs support PM and rely
+> on it, much like Tegra would with the addition of this series.
+> 
+> I imagine that we could save ourselves a lot of headaches by simply
+> enabling PM by default, whether that be via the PM Kconfig option or by
+> selecting it from ARCH_TEGRA and any other architectures that may come
+> to rely on it. Doing so would also reduce the amount of test coverage
+> that we need to do, both at compile- and runtime.
 
-On Thursday 14 January 2016 03:39 PM, Ingo Molnar wrote:
->
-> * Keerthy <a0393675@ti.com> wrote:
->
->> Hi Ingo,
->>
->> On Thursday 14 January 2016 02:35 PM, Ingo Molnar wrote:
->>>
->>> * Keerthy <j-keerthy@ti.com> wrote:
->>>
->>>> orderly_poweroff is triggered when a graceful shutdown
->>>> of system is desired. This may be used in many critical states of the
->>>> kernel such as when subsystems detects conditions such as critical
->>>> temperature conditions. However, in certain conditions in system
->>>> boot up sequences like those in the middle of driver probes being
->>>> initiated, userspace will be unable to power off the system in a clean
->>>> manner and leaves the system in a critical state. In cases like these,
->>>> the /sbin/poweroff will return success (having forked off to attempt
->>>> powering off the system. However, the system overall will fail to
->>>> completely poweroff (since other modules will be probed) and the system
->>>> is still functional with no userspace (since that would have shut itself
->>>> off).
->>>>
->>>> However, there is no clean way of detecting such failure of userspace
->>>> powering off the system. In such scenarios, it is necessary for a backup
->>>> workqueue to be able to force a shutdown of the system when orderly
->>>> shutdown is not successful after a configurable time period.
->>>>
->>>> Signed-off-by: Keerthy <j-keerthy@ti.com>
->>>> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
->>>> Reported-by: Nishanth Menon <nm@ti.com>
->>>> ---
->>>> Links to previous discussion can be found here:
->>>>
->>>> http://www.spinics.net/lists/linux-omap/msg124925.html
->>>>
->>>> Boot tested on DRA7.
->>>>
->>>> changes in v2:
->>>>
->>>> 	* Changed #ifdef to #if CONFIG_SHUTDOWN_BACKUP_DELAY_MS
->>>>
->>>>   arch/Kconfig    |  7 +++++++
->>>>   kernel/reboot.c | 23 ++++++++++++++++++-----
->>>>   2 files changed, 25 insertions(+), 5 deletions(-)
->>>>
->>>> Index: linux/arch/Kconfig
->>>> ===================================================================
->>>> --- linux.orig/arch/Kconfig	2016-01-11 15:26:07.732173131 +0530
->>>> +++ linux/arch/Kconfig	2016-01-11 15:26:07.728173205 +0530
->>>> @@ -37,6 +37,18 @@
->>>>   	def_bool y
->>>>   	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI && !PPC64
->>>>
->>>> +config SHUTDOWN_BACKUP_DELAY_MS
->>>> +	int "Backup shutdown delay in milli-seconds"
->>>> +	default 0
->>>> +	help
->>>> +	  The number of milliseconds to delay before backup workqueue
->>>> +	  executes attempting to poweroff the system after the
->>>> +	  orderly_poweroff function has failed to complete.
->>>> +
->>>> +	  If set to 0, the backup workqueue is not active. The value
->>>> +	  should be conservatively configured based on userspace latencies
->>>> +	  expected for a given system.
->>>
->>> I don't really understand this. In what circumstances can a reboot fail?
->>>
->>> I think that is what should be fixed: a reboot should never fail, instead of
->>> introducing some sort of fragile timeout based method.
->>
->> Here is the complete description of the scenario which was reported by Nishanth
->> who encountered the issue. The link has bootlogs and description of the exact
->> case which led to this patch.
->>
->> http://www.spinics.net/lists/linux-omap/msg124923.html
->
-> it's a reply in the middle of a discussion ...
->
-> What I managed to decode is that this:
->
-> static int __orderly_poweroff(bool force)
-> {
->          int ret;
->
->          ret = run_cmd(poweroff_cmd);
->
->          if (ret && force) {
->                  pr_warn("Failed to start orderly shutdown: forcing the issue\n");
->
->                  /*
->                   * I guess this should try to kick off some daemon to sync and
->                   * poweroff asap.  Or not even bother syncing if we're doing an
->                   * emergency shutdown?
->                   */
->                  emergency_sync();
->                  kernel_power_off();
->          }
->
->          return ret;
-> }
->
-> could fail to actually power the system off, if the run_cmd(poweroff_cmd)
-> 'succeeds', but due to a user-space bug it does not actually call the real
-> poweroff system call?
->
+I think this needs some investigation. As a general policy, we should
+not grow the kernel image size when moving from a traditional ARM
+platform to an ARCH_MULTIPLATFORM one.
 
-I tried to simulate the issue.
+This is somewhat contradicted by how we already require CONFIG_OF
+to be set for multiplatform kernels, and that adds around 80kb
+to the image size.
 
-In the probe function of drivers/thermal/ti-soc-thermal/ti-bandgap.c
-ti_bandgap_probe i call
+Looking at just the defconfig files, these are the ones that currently
+do not set CONFIG_PM:
 
-orderly_poweroff(true);
+build/acs5k_defconfig/.config:# CONFIG_PM is not set
+build/acs5k_tiny_defconfig/.config:# CONFIG_PM is not set
+build/axm55xx_defconfig/.config:# CONFIG_PM is not set
+build/bcm2835_defconfig/.config:# CONFIG_PM is not set
+build/clps711x_defconfig/.config:# CONFIG_PM is not set
+build/ebsa110_defconfig/.config:# CONFIG_PM is not set
+build/footbridge_defconfig/.config:# CONFIG_PM is not set
+build/ks8695_defconfig/.config:# CONFIG_PM is not set
+build/netwinder_defconfig/.config:# CONFIG_PM is not set
+build/rpc_defconfig/.config:# CONFIG_PM is not set
+build/u300_defconfig/.config:# CONFIG_PM is not set
+build/vf610m4_defconfig/.config:# CONFIG_PM is not set
 
-This is while driver probes are still on going. I observe that
-ret = run_cmd(poweroff_cmd);
+The only ones among these are are actually multiplatform are axm55xx,
+bcm2835, and u300. I see no downsides of force-enabling PM for
+any of those, so we could decide to 'select PM' from
+CONFIG_ARCH_MULTIPLATFORM.
 
-ret is a non-zero value and we enter the if condition:
+The one usecase where we may want to have a modern machine without
+CONFIG_PM is a minimal MACH_VIRT kernel for running in a virtual
+machine or QEMU with minimal memory requirements, e.g. trying to
+squeeze a large number of guests on a single host system.
 
-Even after the
-
-emergency_sync();
-kernel_power_off();
-
-calls
-
-the console remained active in weird state.
-
-
-> Thanks,
->
-> 	Ingo
->
+	Arnd
