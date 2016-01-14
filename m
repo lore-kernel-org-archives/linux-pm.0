@@ -1,129 +1,63 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V4 05/16] soc: tegra: pmc: Avoid extra remapping of PMC
- registers
-Date: Thu, 14 Jan 2016 14:45:26 +0100
-Message-ID: <20160114134526.GA23082@ulmo>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-6-git-send-email-jonathanh@nvidia.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
+Date: Thu, 14 Jan 2016 13:52:24 +0000
+Message-ID: <20160114135224.GH18603@e106622-lin>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
+ <20160112112409.GJ1084@ubuntu>
+ <20160113005452.10884.77606@quark.deferred.io>
+ <20160113063148.GJ6050@ubuntu>
+ <20160113182131.1168.45753@quark.deferred.io>
+ <20160114103221.GB6078@vireshk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="5vNYLRcllDrimb99"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1449241037-22193-6-git-send-email-jonathanh@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
-
---5vNYLRcllDrimb99
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:46449 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753685AbcANNwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Jan 2016 08:52:01 -0500
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20160114103221.GB6078@vireshk>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On Fri, Dec 04, 2015 at 02:57:06PM +0000, Jon Hunter wrote:
-> During early initialisation, the PMC registers are mapped and the PMC SoC
-> data is populated in the PMC data structure. This allows other drivers
-> access the PMC register space, via the public tegra PMC APIs, prior to
-> probing the PMC device.
->=20
-> When the PMC device is probed, the PMC registers are mapped again and if
-> successful the initial mapping is freed. If the probing of the PMC device
-> fails after the registers are remapped, then the registers will be
-> unmapped and hence the pointer to the PMC registers will be invalid. This
-> could lead to a potential crash, because once the PMC SoC data pointer is
-> populated, the driver assumes that the PMC register mapping is also valid
-> and a user calling any of the public tegra PMC APIs could trigger an
-> exception because these APIs don't check that the mapping is still valid.
->=20
-> Rather than adding a test to see if the PMC register mapping is valid,
-> fix this by removing the second mapping of the PMC registers and reserve
-> the memory region for the PMC registers during early initialisation where
-> the initial mapping is created. During the probing of the PMC simply check
-> that the PMC registers have been mapped.
->=20
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> ---
->  drivers/soc/tegra/pmc.c | 19 +++++++++----------
->  1 file changed, 9 insertions(+), 10 deletions(-)
+On 14/01/16 16:02, Viresh Kumar wrote:
+> On 13-01-16, 10:21, Michael Turquette wrote:
+> > Quoting Viresh Kumar (2016-01-12 22:31:48)
+> > > On 12-01-16, 16:54, Michael Turquette wrote:
+> > > > __cpufreq_driver_target should be using a per-policy lock.
+> > > 
+> > > It doesn't :)
+> > 
+> > It should.
+> 
+> I thought we wanted the routine doing DVFS to not sleep as it will be
+> called from scheduler ?
+> 
+> Looks fine otherwise. But yeah, the series is still incomplete in the
+> sense that there is no lock today around __cpufreq_driver_target().
+> 
 
-devm_ioremap_resource() was used on purpose to make sure we get a proper
-name assigned to the memory region in /proc/iomem. As it is, there will
-be no name associated with it, which I think is unfortunate. As such I'd
-prefer keeping that call and instead fix the issue with the invalid
-mapping by making sure that pmc->base is assigned only after nothing can
-fail in probe anymore.
+I was under the impression that the purpose of having
+__cpufreq_driver_target() exported outside cpufreq.c was working due to
+the fact that users implement their own locking.
 
-> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-> index e60fc2d33c94..fdd1a8d0940f 100644
-> --- a/drivers/soc/tegra/pmc.c
-> +++ b/drivers/soc/tegra/pmc.c
-> @@ -807,22 +807,17 @@ out:
-> =20
->  static int tegra_pmc_probe(struct platform_device *pdev)
->  {
-> -	void __iomem *base =3D pmc->base;
+That's why I put the following comment in this patch.
 
-The alternative that I proposed above would entail not setting this...
+ /*
+  * Callers must ensure proper mutual exclusion on policy (for transition_
+  * ongoing/transition_task handling). While holding policy->rwsem is
+  * sufficient, other schemes might work as well (e.g., cpufreq_governor.c
+  * holds timer_mutex while entering the path that generates transitions).
+  */
 
-> -	struct resource *res;
->  	int err;
-> =20
-> +	if (!pmc->base) {
-> +		dev_err(&pdev->dev, "base address is not configured\n");
-> +		return -ENXIO;
-> +	}
-> +
->  	err =3D tegra_pmc_parse_dt(pmc, pdev->dev.of_node);
->  	if (err < 0)
->  		return err;
-> =20
-> -	/* take over the memory region from the early initialization */
-> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	pmc->base =3D devm_ioremap_resource(&pdev->dev, res);
+>From what I can see ondemand and conservative (via governor) seem to use
+timer_mutex; userspace userspace_mutex instead. Do they serve different
+purposes instead? How do we currently serialize operations on policy
+when using __cpufreq_driver_target() directly otherwise?
 
-=2E.. and storing the result of the mapping in "base" instead...
+Thanks,
 
-> -	if (IS_ERR(pmc->base))
-> -		return PTR_ERR(pmc->base);
-> -
-> -	iounmap(base);
-
-=2E.. and move the unmap to the very end of the probe function, which
-would look something like:
-
-	/* take over the memory region from the early initialization */
-	iounmap(pmc->base);
-	pmc->base =3D base;
-
-That way the mapping in "base" will automatically be undone upon error
-and the pmc->base will only be overridden when it's certain that the
-probe will succeed.
-
-What do you think?
-
-Thierry
-
---5vNYLRcllDrimb99
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJWl6ZzAAoJEN0jrNd/PrOhwt0QALiLsgn8/ZX5N4ziMzHYYPdi
-GP1IBL0nwkDCbLDwzHc/aA/xKwzNsouHRV+1otCXnIocPNgfo3EhKc2svSyc8ir/
-1tqeN6o+6om3okKIBlLdiZ3aWo9YBTvv5tojrM4MKbrBc0KMGR2PVWdF5k7VvAXi
-3uznqng+AVIDFEWTjiNRFedaiqzjP5qoBItV8H5JCzJhPwYuflWlPbX9EBov5Mxi
-M68lSQCAaqrTVc1cVvpkfE4/TfMlyzAj+/IjAsE2HAN/t7FvKO4a7Klq0dMa+4Wo
-e5xhQZYmEwATNWShlkulCyhN2z/J8xHX/d7FymmcEKZZuZuTs+2ycSfOOYCKqZwZ
-NLysJL3fMXynQ7omvK220RHWpYv7CqDvuX1MQj0rTzJbBpbWncrt8BgvRE3Jnz/o
-MvwaW6VsQWAKLkCZGer1Z/feBEDCz3TPlSkhT56+54lker/seQsIZa1a2+8rwmAw
-cK86lUQf1EHdzdGtWzFrapCkuYDl1ETruIQwTNUlX17iiut05FisWSgxnVOY6t7G
-DQmi0+dP4rYLZ7z4oHtJ3qKZ9C/igtw4lTGpLfy5bFjwA+RlVUzETlQk2pexmpBY
-43h1PtLaKA78tLG8g1Fl/He/jNJyko/c6apLU2Az9y58bYizBxW/WYWLc5WL8FIu
-XPyrJ1IXsfAfA6YPAsyv
-=LRR3
------END PGP SIGNATURE-----
-
---5vNYLRcllDrimb99--
+- Juri
