@@ -1,79 +1,67 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re2: [GIT PULL] devfreq for next-RC
-Date: Thu, 14 Jan 2016 02:11:31 +0000 (GMT)
-Message-ID: <1255741958.1057371452737491338.JavaMail.weblogic@ep2mlwas06a>
-Reply-To: myungjoo.ham@samsung.com
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Thu, 14 Jan 2016 09:57:14 +0100
+Message-ID: <CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+	<1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
+	<20160113170324.GO2588@ulmo>
+	<8579242.omBpg1aLr2@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:60866 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755924AbcANCLk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 21:11:40 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout3.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0O0X0316T7F8DK90@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 14 Jan 2016 11:11:32 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <8579242.omBpg1aLr2@wuerfel>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
 
-T24gVGh1cnNkYXksIE5vdmVtYmVyIDI2LCAyMDE1IDEwOjU4OjEwIFBNIFJhZmFlbCBKLiBXeXNv
-Y2tpIHdyb3RlOg0KPiBPbiBUaHVyc2RheSwgTm92ZW1iZXIgMjYsIDIwMTUgMDI6MTQ6NDAgQU0g
-TXl1bmdKb28gSGFtIHdyb3RlOg0KPj4gUHVsbCByZXF1ZXN0IGZvciBSYWZhZWwgb24gMjAxNS0x
-MS0yNi4gQmFzZWQgb24gNC40LXJjMg0KPiBJcyB0aGlzIHJlYWxseSA0LjQtcmMgbWF0ZXJpYWw/
-DQo+DQo+IFdlJ3JlIHF1aXRlIGxhdGUgaW4gdGhlIGN5Y2xlIGFuZCBJJ20gbm90IHdpbGxpbmcg
-dG8gcHVzaCBhbnl0aGluZyBtb3JlIHRoYW4NCj4gZml4ZXMgdG8gTGludXMgYXQgdGhpcyBwb2lu
-dC4NCj4NCj4gSSBjYW4gcHVsbCB0aGlzIGFuZCBxdWV1ZSBpdCB1cCBmb3IgdjQuNSBpZiB0aGF0
-IHdvcmtzIGZvciB5b3UsIHRob3VnaC4NCj4NCg0KSGkgUmFmYWVsLA0KDQpIZXJlIGdvZXMgdGhl
-IHJlYmFzZWQgb25lIGZvciB2NC41Lg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCi0tLS0tQkVH
-SU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCkhhc2g6IFNIQTENCg0KVGhlIGZvbGxvd2luZyBj
-aGFuZ2VzIHNpbmNlIGNvbW1pdCBhZmQyZmY5YjdlMWIzNjcxNzJmMThiYTdmNjkzZGZiNjJiZGNi
-MmRjOg0KDQogIExpbnV4IDQuNCAoMjAxNi0wMS0xMCAxNTowMTozMiAtMDgwMCkNCg0KYXJlIGF2
-YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6DQoNCiAgaHR0cHM6Ly9naXQua2VybmVs
-Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IGZvci1yYWZhZWwN
-Cg0KZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIDdkYmRlZDA2ZWZlNDEzNjcxNjNlOTAz
-MzMxZWY0NWJkNzY1YTYyYTQ6DQoNCiAgTUFJTlRBSU5FUlM6IEFkZCBkZXZmcmVxLWV2ZW50IGVu
-dHJ5ICgyMDE2LTAxLTEzIDE3OjMwOjMzICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClB1bGwgcmVxdWVz
-dCBmb3IgTGludXggNC41DQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KQ2hhbndvbyBDaG9pICg3KToNCiAgICAgIFBN
-IC8gZGV2ZnJlcTogZXZlbnQ6IFJlbW92ZSB0aGUgZXJyb3IgbG9nIG9mIGRldmZyZXFfZXZlbnRf
-Z2V0X2VkZXZfYnlfcGhhbmRsZSgpDQogICAgICBQTSAvIGRldmZyZXE6IGV2ZW50OiBGaXggdGhl
-IGVycm9yIGFuZCB3YXJuaW5nIGZyb20gc2NyaXB0L2NoZWNrcGF0Y2gucGwNCiAgICAgIFBNIC8g
-ZGV2ZnJlcTogQWRkIHNob3dfb25lIG1hY3JvIHRvIGRlbGV0ZSB0aGUgZHVwbGljYXRlIGNvZGUN
-CiAgICAgIFBNIC8gZGV2ZnJlcTogU2V0IHRoZSBmcmVxX3RhYmxlIG9mIGRldmZyZXEgZGV2aWNl
-DQogICAgICBQTSAvIGRldmZyZXE6IE1vZGlmeSB0aGUgaW5kZW50YXRpb24gb2YgdHJhbnNfc3Rh
-dCBzeXNmcyBmb3IgcmVhZGFiaWxpdHkNCiAgICAgIE1BSU5UQUlORVJTOiBBZGQgbWlzc2luZyBn
-aXQgcmVwb3NpdG9yeSBhbmQgZGlyZWN0b3J5IGZvciBkZXZmcmVxDQogICAgICBNQUlOVEFJTkVS
-UzogQWRkIGRldmZyZXEtZXZlbnQgZW50cnkNCg0KTXl1bmdKb28gSGFtICgxKToNCiAgICAgIFBN
-IC8gZGV2ZnJlcTogRG8gbm90IHNob3cgc3RhdGlzdGljcyBpZiBpdCdzIG5vdCByZWFkeS4NCg0K
-IE1BSU5UQUlORVJTICAgICAgICAgICAgICAgICAgICAgfCAxMyArKysrKysrDQogZHJpdmVycy9k
-ZXZmcmVxL2RldmZyZXEtZXZlbnQuYyB8IDE2ICsrKy0tLS0tLQ0KIGRyaXZlcnMvZGV2ZnJlcS9k
-ZXZmcmVxLmMgICAgICAgfCA3OCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0t
-LS0tLQ0KIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oICAgICAgICAgfCAgMiArLQ0KIDQgZmlsZXMg
-Y2hhbmdlZCwgODEgaW5zZXJ0aW9ucygrKSwgMjggZGVsZXRpb25zKC0pDQotLS0tLUJFR0lOIFBH
-UCBTSUdOQVRVUkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKV2x3
-TUlBQW9KRUJPaHVydldCb0NLdEFrUC9SY0QzVU9rQ3Y1VDRZZTFNSS83TUJtTg0KejZnRlV0USs0
-Rkw0VElnVVV6MzBtTElHVkVaMm11ZlRCckd0cFNIVGpKMU5rZVRDQ0s2M0RCOWFDdVozUkU4ZA0K
-OXVGUzF6M0FJK0cwNEExVzFQQWd1eUw4YWhVQU1SdUErRzlQeitxTDhJem1QTHFKd01Gc3p1MlFH
-RHlwdmI1WA0KSzFOMGhqeDZGbEpVWHpQTDlDeHRDQzJzSFdiUjdJaEFXbkRHdWJRSm0ya3h5UTM3
-YU96cFd6NXdSVS95R0pvRw0KMGdqUTJOMW5Yc0Z5TXNOeS9KUzVjcEdQcHkwNG5LaVRRZU45NVY0
-d0llSWVsb2lMaktKOExRQkRwVlVIQjN2WA0KaHBGYjRFeE90MDZBbG5qeWt2NWhyQk9JZ2loVXZy
-MU5XYWhPcTBxU1BpRVF0WGx1MmlsbVFVTTA3YUNQMUpCUg0KM21lZHQ0VUxuMUlFaHF5T21RWXdu
-SXAydnBoaWYyNWR1bjRhSXgrWVNvcVNwT01DdkJSalNFQXhPUkJ4a3lCag0KQnNtcE5WcGFFMExU
-OHNDbStJUFcxblRRU3diWVZKQ0VXV1BMNTQ0TUhZSjJkVUNjVFQ5cjBoakovVjJCbUl3Vw0KSUlz
-L2RnbUl1Nzk3U2VhMHVQMFhFMzMzMGhqK1g0dDlGeEQzT1ZtZnZsb2kyVzNVNEJFR0c5VnhzSEd3
-N2VsRA0KcjVXdkh0R055ZExNMzNOSHJIRjFIc2t6S1lhSm4yeXZtSzJTS2l0Ni9oNkE0QXRTQVRs
-eGRjTmdJREJpaXhYTQ0KSGdoc0x4a1ZPTmp3L2dGeVdEc0VJZ24rRk9rL0RscE1ITGVaalpUazFO
-WmsvdjM0YUlEMkNvWEVmNE1zMnhYZA0KcUorWmlpMWovcmdYVFc2UURxdXcNCj1XTWlqDQotLS0t
-LUVORCBQR1AgU0lHTkFUVVJFLS0tLS0NCg0KDQotLQ0KTXl1bmdKb28gSGFtICjtlajrqoXso7wp
-LCBQaC5ELg0KRnJvbnRpZXIgQ1MgTGFiLCBTb2Z0d2FyZSBSJkQgQ2VudGVyDQpTYW1zdW5nIEVs
-ZWN0cm9uaWNzDQpDZWxsOiArODItMTAtNjcxNC0yODU4
+On 13 January 2016 at 21:43, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org> wrote:
+> On Wednesday 13 January 2016 18:03:24 Thierry Reding wrote:
+>> On Fri, Dec 04, 2015 at 02:57:17PM +0000, Jon Hunter wrote:
+>> > Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
+>> > dependent upon a particular power-domain are only probed when that power
+>> > domain has been powered up, requires that PM is made mandatory for tegra
+>> > 64-bit devices and so select this option for tegra as well.
+>> >
+>> > Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> > ---
+>> >  arch/arm64/Kconfig.platforms | 2 ++
+>> >  1 file changed, 2 insertions(+)
+>> >
+>> > diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+>> > index 9806324fa215..e0b5bd0aff0f 100644
+>> > --- a/arch/arm64/Kconfig.platforms
+>> > +++ b/arch/arm64/Kconfig.platforms
+>> > @@ -93,6 +93,8 @@ config ARCH_TEGRA
+>> >       select GENERIC_CLOCKEVENTS
+>> >       select HAVE_CLK
+>> >       select PINCTRL
+>> > +     select PM
+>> > +     select PM_GENERIC_DOMAINS
+>> >       select RESET_CONTROLLER
+>> >       help
+>> >         This enables support for the NVIDIA Tegra SoC family.
+>>
+>> This has potential consequences for multi-platform builds, doesn't it?
+>> All of a sudden any combination of builds that includes Tegra won't be
+>> possible to build without PM support.
+>>
+>> Adding linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org for visibility.
+>>
+>>
+>
+> Agreed, it would be better to add 'depends on PM_GENERIC_DOMAINS'
+> dependencies in the drivers that require it.
+>
 
+The problem with that approach is that if those drivers are cross SoC
+drivers. In some cases PM isn't needed and it is.
 
+Of course I don't have the in depth knowledge about the drivers being
+used in Tegra which may need PM, perhaps it's not that many?
+
+Anyway, to me it seems like ARCH_TEGRA should depend on PM instead.
+Would that work?
+
+Kind regards
+Uffe
