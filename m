@@ -1,77 +1,55 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Thu, 14 Jan 2016 12:11:39 +0100
-Message-ID: <4244898.5om31fQ1mz@wuerfel>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com> <11122786.kKumQ3Dhls@wuerfel> <20160114102924.GA22340@ulmo>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Thu, 14 Jan 2016 12:23:54 +0100
+Message-ID: <20160114112354.GA17869@gmail.com>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com>
+ <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
+ <56977BA7.702@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160114102924.GA22340@ulmo>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:35760 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbcANLX7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 06:23:59 -0500
+Content-Disposition: inline
+In-Reply-To: <56977BA7.702@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Keerthy <a0393675@ti.com>
+Cc: Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, grygorii.strashko@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-On Thursday 14 January 2016 11:29:24 Thierry Reding wrote:
+
+* Keerthy <a0393675@ti.com> wrote:
+
+> I tried to simulate the issue.
 > 
-> It just occurred to me that none of these options really make much of a
-> difference. As Jon mentioned once we merge this series a lot of features
-> on Tegra will start to rely on PM_GENERIC_DOMAINS and hence PM. So if we
-> do want to build a kernel with a maximum of Tegra features enabled (and
-> I think a multi_v7_defconfig should include that) we'll end up with a PM
-> dependency anyway, whether forced via select or implied via depends on.
+> In the probe function of drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> ti_bandgap_probe i call
 > 
-> I'm beginning to wonder if PM really should be an option these days. The
-> disadvantages of making it optional do outweigh the advantages in my
-> opinion. I'm not saying that, in general, it's totally useless to build
-> a kernel that has no PM support, but for the more specific case where
-> you would want to enable multi-platform support I don't think there's
-> much practical advantage in allowing !PM. One of the most common build
-> warnings are triggered because of this option. Also multi-platform
-> kernels are really big already, so much so that I doubt it would make a
-> significant difference if we unconditionally built PM support. Also the
-> chances are that we'll be seeing more and more SoCs support PM and rely
-> on it, much like Tegra would with the addition of this series.
+> orderly_poweroff(true);
 > 
-> I imagine that we could save ourselves a lot of headaches by simply
-> enabling PM by default, whether that be via the PM Kconfig option or by
-> selecting it from ARCH_TEGRA and any other architectures that may come
-> to rely on it. Doing so would also reduce the amount of test coverage
-> that we need to do, both at compile- and runtime.
+> This is while driver probes are still on going. I observe that
+> ret = run_cmd(poweroff_cmd);
+> 
+> ret is a non-zero value and we enter the if condition:
+> 
+> Even after the
+> 
+> emergency_sync();
+> kernel_power_off();
+> 
+> calls
+> 
+> the console remained active in weird state.
 
-I think this needs some investigation. As a general policy, we should
-not grow the kernel image size when moving from a traditional ARM
-platform to an ARCH_MULTIPLATFORM one.
+Now _that_ is clearly an architecture bug that should not be papered over ...
 
-This is somewhat contradicted by how we already require CONFIG_OF
-to be set for multiplatform kernels, and that adds around 80kb
-to the image size.
+If kernel_power_off() is called then the system should power off. No ifs and 
+whens.
 
-Looking at just the defconfig files, these are the ones that currently
-do not set CONFIG_PM:
+Thanks,
 
-build/acs5k_defconfig/.config:# CONFIG_PM is not set
-build/acs5k_tiny_defconfig/.config:# CONFIG_PM is not set
-build/axm55xx_defconfig/.config:# CONFIG_PM is not set
-build/bcm2835_defconfig/.config:# CONFIG_PM is not set
-build/clps711x_defconfig/.config:# CONFIG_PM is not set
-build/ebsa110_defconfig/.config:# CONFIG_PM is not set
-build/footbridge_defconfig/.config:# CONFIG_PM is not set
-build/ks8695_defconfig/.config:# CONFIG_PM is not set
-build/netwinder_defconfig/.config:# CONFIG_PM is not set
-build/rpc_defconfig/.config:# CONFIG_PM is not set
-build/u300_defconfig/.config:# CONFIG_PM is not set
-build/vf610m4_defconfig/.config:# CONFIG_PM is not set
-
-The only ones among these are are actually multiplatform are axm55xx,
-bcm2835, and u300. I see no downsides of force-enabling PM for
-any of those, so we could decide to 'select PM' from
-CONFIG_ARCH_MULTIPLATFORM.
-
-The one usecase where we may want to have a modern machine without
-CONFIG_PM is a minimal MACH_VIRT kernel for running in a virtual
-machine or QEMU with minimal memory requirements, e.g. trying to
-squeeze a large number of guests on a single host system.
-
-	Arnd
+	Ingo
