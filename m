@@ -1,36 +1,151 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 2/2] powercap/rapl: reduce ipi calls
-Date: Wed, 13 Jan 2016 14:39:07 -0800
-Message-ID: <1452724747.3092.96.camel@linux.intel.com>
-References: <alpine.DEB.2.11.1601131042590.3575@nanos>
-	 <20160113082113.3314fa92@icelake> <20160113163610.GH12897@pd.tnic>
-	 <20160113095124.186ff487@yairi> <20160113180412.GN12897@pd.tnic>
-	 <20160113102138.4e34e890@yairi> <20160113191622.GP12897@pd.tnic>
-	 <20160113121003.3e9c2108@yairi> <20160113212602.GT12897@pd.tnic>
-	 <1452722083.3092.92.camel@linux.intel.com> <20160113221613.GW12897@pd.tnic>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH 5/5] PM core: Optimize the use of device links for runtime PM
+Date: Thu, 14 Jan 2016 02:56:53 +0100
+Message-ID: <1953764.Cf42Ruii0H@vostro.rjw.lan>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <2576341.476ZsjkPgF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:53041 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbcAMWkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jan 2016 17:40:32 -0500
-In-Reply-To: <20160113221613.GW12897@pd.tnic>
+Received: from v094114.home.net.pl ([79.96.170.134]:50440 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751316AbcANB4p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jan 2016 20:56:45 -0500
+In-Reply-To: <2576341.476ZsjkPgF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, X86 Kernel <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Wed, 2016-01-13 at 23:16 +0100, Borislav Petkov wrote:
-> On Wed, Jan 13, 2016 at 01:54:43PM -0800, Srinivas Pandruvada wrote:
-> > regmap_update_bits(), which is referenced for 346 times.
-> 
-> I'm at a loss as to why people keep talking about regmap.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thomas Gleixner, understood the context and he gave a satisfactory
-reply.
+If the device has no links to suppliers that should be used for
+runtime PM (links with DEVICE_LINK_PM_RUNTIME set), there is no
+reason to walk the list of suppliers for that device during
+runtime suspend and resume.
 
-Thanks,
-Srinivas
+Add a simple mechanism to detect that case and possibly avoid the
+extra unnecessary overhead.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/core.c          |    6 ++++++
+ drivers/base/power/runtime.c |   23 ++++++++++++++++++++---
+ include/linux/pm.h           |    1 +
+ include/linux/pm_runtime.h   |    4 ++++
+ 4 files changed, 31 insertions(+), 3 deletions(-)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -596,6 +596,7 @@ struct dev_pm_info {
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
+ 	unsigned int		memalloc_noio:1;
++	unsigned int		links_count;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -270,6 +270,7 @@ static int __rpm_callback(int (*cb)(stru
+ {
+ 	struct devlink *link;
+ 	int retval, idx;
++	bool use_links = dev->power.links_count > 0;
+ 
+ 	if (dev->power.irq_safe) {
+ 		spin_unlock(&dev->power.lock);
+@@ -283,7 +284,7 @@ static int __rpm_callback(int (*cb)(stru
+ 		 * routine returns, so it is safe to read the status outside of
+ 		 * the lock.
+ 		 */
+-		if (dev->power.runtime_status == RPM_RESUMING) {
++		if (use_links && dev->power.runtime_status == RPM_RESUMING) {
+ 			idx = device_links_read_lock();
+ 
+ 			list_for_each_entry_rcu(link, &dev->consumer_links, c_node)
+@@ -314,8 +315,9 @@ static int __rpm_callback(int (*cb)(stru
+ 		 *
+ 		 * Do that if resume fails too.
+ 		 */
+-		if ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
+-		    || (dev->power.runtime_status == RPM_RESUMING && retval)) {
++		if (use_links
++		    && ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
++		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
+ 			idx = device_links_read_lock();
+ 
+  fail:
+@@ -1525,6 +1527,21 @@ void pm_runtime_clean_up_links(struct de
+ 	device_links_read_unlock(idx);
+ }
+ 
++void pm_runtime_new_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	dev->power.links_count++;
++	spin_unlock_irq(&dev->power.lock);
++}
++
++void pm_runtime_drop_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	WARN_ON(dev->power.links_count == 0);
++	dev->power.links_count--;
++	spin_unlock_irq(&dev->power.lock);
++}
++
+ /**
+  * pm_runtime_force_suspend - Force a device into suspend state if needed.
+  * @dev: Device to suspend.
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -56,6 +56,8 @@ extern void pm_runtime_update_max_time_s
+ 						 s64 delta_ns);
+ extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
+ extern void pm_runtime_clean_up_links(struct device *dev);
++extern void pm_runtime_new_link(struct device *dev);
++extern void pm_runtime_drop_link(struct device *dev);
+ 
+ static inline bool pm_children_suspended(struct device *dev)
+ {
+@@ -182,6 +184,8 @@ static inline unsigned long pm_runtime_a
+ static inline void pm_runtime_set_memalloc_noio(struct device *dev,
+ 						bool enable){}
+ static inline void pm_runtime_clean_up_links(struct device *dev) {}
++static inline void pm_runtime_new_link(struct device *dev) {}
++static inline void pm_runtime_drop_link(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM */
+ 
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -119,6 +119,9 @@ struct devlink *device_link_add(struct d
+ 	get_device(consumer);
+ 	link->consumer = consumer;
+ 	INIT_LIST_HEAD(&link->c_node);
++	if (flags & DEVICE_LINK_PM_RUNTIME)
++		pm_runtime_new_link(consumer);
++
+ 	link->flags = flags;
+ 	link->status = (flags & DEVICE_LINK_PROBE_TIME) ?
+ 			DEVICE_LINK_CONSUMER_PROBE : DEVICE_LINK_DORMANT;
+@@ -161,6 +164,9 @@ static void devlink_del(struct devlink *
+ 	dev_info(link->consumer, "Dropping the link to %s\n",
+ 		 dev_name(link->supplier));
+ 
++	if (link->flags & DEVICE_LINK_PM_RUNTIME)
++		pm_runtime_drop_link(link->consumer);
++
+ 	list_del_rcu(&link->s_node);
+ 	list_del_rcu(&link->c_node);
+ 	call_srcu(&device_links_srcu, &link->rcu_head, __devlink_free_srcu);
 
