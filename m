@@ -1,63 +1,149 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Thu, 14 Jan 2016 13:52:24 +0000
-Message-ID: <20160114135224.GH18603@e106622-lin>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
- <20160112112409.GJ1084@ubuntu>
- <20160113005452.10884.77606@quark.deferred.io>
- <20160113063148.GJ6050@ubuntu>
- <20160113182131.1168.45753@quark.deferred.io>
- <20160114103221.GB6078@vireshk>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V4 06/16] soc: tegra: pmc: Wait for powergate state to
+ change
+Date: Thu, 14 Jan 2016 15:01:05 +0100
+Message-ID: <20160114140105.GB23082@ulmo>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-7-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46449 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753685AbcANNwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Jan 2016 08:52:01 -0500
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="OwLcNYc0lM97+oe1"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160114103221.GB6078@vireshk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1449241037-22193-7-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On 14/01/16 16:02, Viresh Kumar wrote:
-> On 13-01-16, 10:21, Michael Turquette wrote:
-> > Quoting Viresh Kumar (2016-01-12 22:31:48)
-> > > On 12-01-16, 16:54, Michael Turquette wrote:
-> > > > __cpufreq_driver_target should be using a per-policy lock.
-> > > 
-> > > It doesn't :)
-> > 
-> > It should.
-> 
-> I thought we wanted the routine doing DVFS to not sleep as it will be
-> called from scheduler ?
-> 
-> Looks fine otherwise. But yeah, the series is still incomplete in the
-> sense that there is no lock today around __cpufreq_driver_target().
-> 
 
-I was under the impression that the purpose of having
-__cpufreq_driver_target() exported outside cpufreq.c was working due to
-the fact that users implement their own locking.
+--OwLcNYc0lM97+oe1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's why I put the following comment in this patch.
+On Fri, Dec 04, 2015 at 02:57:07PM +0000, Jon Hunter wrote:
+> Currently, the function tegra_powergate_set() simply sets the desired
+> powergate state but does not wait for the state to change. In most cases
+> we should wait for the state to change before proceeding. Currently, there
+> is a case for tegra114 and tegra124 devices where we do not wait when
+> starting the secondary CPU as this is not necessary. However, this is only
+> done at boot time and so waiting here will only have a small impact on bo=
+ot
+> time. Therefore, update tegra_powergate_set() to wait when setting the
+> powergate.
+>=20
+> By adding this feature, we can also eliminate the polling loop from
+> tegra30_boot_secondary().
+>=20
+> A macro has also been adding for checking the status of the powergate and
 
- /*
-  * Callers must ensure proper mutual exclusion on policy (for transition_
-  * ongoing/transition_task handling). While holding policy->rwsem is
-  * sufficient, other schemes might work as well (e.g., cpufreq_governor.c
-  * holds timer_mutex while entering the path that generates transitions).
-  */
+"added"
 
->From what I can see ondemand and conservative (via governor) seem to use
-timer_mutex; userspace userspace_mutex instead. Do they serve different
-purposes instead? How do we currently serialize operations on policy
-when using __cpufreq_driver_target() directly otherwise?
+> so update the tegra_powergate_is_powered() to use this macro as well.
+>=20
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  arch/arm/mach-tegra/platsmp.c | 16 +++-------------
+>  drivers/soc/tegra/pmc.c       | 21 +++++++++++++++------
+>  2 files changed, 18 insertions(+), 19 deletions(-)
+>=20
+> diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
+> index b45086666648..40cb761e7c95 100644
+> --- a/arch/arm/mach-tegra/platsmp.c
+> +++ b/arch/arm/mach-tegra/platsmp.c
+> @@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, =
+struct task_struct *idle)
+>  	 * be un-gated by un-toggling the power gate register
+>  	 * manually.
+>  	 */
+> -	if (!tegra_pmc_cpu_is_powered(cpu)) {
+> -		ret =3D tegra_pmc_cpu_power_on(cpu);
+> -		if (ret)
+> -			return ret;
+> -
+> -		/* Wait for the power to come up. */
+> -		timeout =3D jiffies + msecs_to_jiffies(100);
+> -		while (!tegra_pmc_cpu_is_powered(cpu)) {
+> -			if (time_after(jiffies, timeout))
+> -				return -ETIMEDOUT;
+> -			udelay(10);
+> -		}
+> -	}
+> +	ret =3D tegra_pmc_cpu_power_on(cpu);
+> +	if (ret)
+> +		return ret;
+> =20
+>  remove_clamps:
+>  	/* CPU partition is powered. Enable the CPU clock. */
 
-Thanks,
+I vaguely remember this being very brittle. I assume you've tested this
+extensively and made sure it doesn't regress?
 
-- Juri
+> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+> index fdd1a8d0940f..f94d970089ce 100644
+> --- a/drivers/soc/tegra/pmc.c
+> +++ b/drivers/soc/tegra/pmc.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/export.h>
+>  #include <linux/init.h>
+>  #include <linux/io.h>
+> +#include <linux/iopoll.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+>  #include <linux/platform_device.h>
+> @@ -101,6 +102,8 @@
+> =20
+>  #define GPU_RG_CNTRL			0x2d4
+> =20
+> +#define PMC_PWRGATE_STATE(status, id)	((status & BIT(id)) !=3D 0)
+> +
+
+This looks suspiciously like a register or register field definition.
+Maybe turn this into a static inline function, such as:
+
+	static inline bool tegra_powergate_state(u32 status, int id)
+	{
+		return (status & BIT(id)) !=3D 0;
+	}
+
+?
+
+>  struct tegra_pmc_soc {
+>  	unsigned int num_powergates;
+>  	const char *const *powergates;
+> @@ -181,22 +184,27 @@ static void tegra_pmc_writel(u32 value, unsigned lo=
+ng offset)
+>   */
+>  static int tegra_powergate_set(int id, bool new_state)
+>  {
+> -	bool status;
+> +	u32 status;
+> +	int err =3D 0;
+
+Initialization to 0 doesn't seem necessary here.
+
+Thierry
+
+--OwLcNYc0lM97+oe1
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWl6ofAAoJEN0jrNd/PrOhtnoQAIexe7X0xQiIpYROJ1NOJdBn
+8ve6SAuq9EEuDk3MQhe8OCkLhEH2p2tNMr2we+I+DEfRKon5dYLf6kfCQsXHGBcO
+hiVWCTWWGVawYrs44Ce6uPFJV3GThRqv0jB3yZGPsFP74IT4xTKwmTz4BhUG9kpd
+ecVYPTwHT/2tdfX6Y3RM0CsRUkc0pgsGlIQlV4hUlRw7nIIaWNfYov5iwvYRh7Oz
+kr8Pi49o9YLROvFEUH6kdiTq6pOY9/eI7nnfRx8cETwGm08REygJaxd9PQ2u3Roh
+tNpLrJjCae7gDgn4CI+lefOfHrKiqyvOZlWJvq42FuDICiwlDH5Ww5jinitKVlmX
+BfjJCQZkrG87ixlkCI+FEaBflukAJk1KZIDxb6n6BEKNowpYHHfngF9NLJ557W/B
+Tw3NqarYNC+1m0FkOlLYshecW5fOEN0K0f3GW8L2P+8qUDzBZK1PvHZG/+Ll5FJd
+1Xx0pombKg+yTWfTqRI0+TFK/ckAUp1a9TyTq9pIAQwTBD2w1GEu4qW4K/a0qm6p
+6djQovB4PWv1b9OUeoXLxspCsDlN3uVDpyk6XdJFp+FsGLJf17if0NB92pZocO53
+w+uJr0mpv2eJj4u2a/NjgI9GbWwDhNmKzZdFd5HjxJrHctaLB59Loxhuzu9akC0W
+1gSlirSmNrgiybFqsMIq
+=4EzA
+-----END PGP SIGNATURE-----
+
+--OwLcNYc0lM97+oe1--
