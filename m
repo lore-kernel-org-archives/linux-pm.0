@@ -1,65 +1,134 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 09/16] soc: tegra: pmc: Ensure partitions can be
- toggled on/off by PMC
-Date: Thu, 14 Jan 2016 15:14:53 +0100
-Message-ID: <20160114141453.GD23082@ulmo>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-10-git-send-email-jonathanh@nvidia.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [RFC][PATCH 0/5] Functional dependencies between devices
+Date: Thu, 14 Jan 2016 15:19:03 +0100
+Message-ID: <CAAObsKD7U9SwNZ-AzU1xPz988c1R1E20Vt5ayp2PDzoiJSS3Xg@mail.gmail.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <2576341.476ZsjkPgF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="mSxgbZZZvrAyzONB"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1449241037-22193-10-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:34806 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbcANOTY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 09:19:24 -0500
+In-Reply-To: <2576341.476ZsjkPgF@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
+On 14 January 2016 at 02:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, October 27, 2015 04:24:14 PM Rafael J. Wysocki wrote:
+>> Hi All,
+>>
+>> As discussed in the recent "On-demand device probing" thread and in a Kernel
+>> Summit session earlier today, there is a problem with handling cases where
+>> functional dependencies between devices are involved.
+>>
+>> What I mean by a "functional dependency" is when the driver of device B needs
+>> both device A and its driver to be present and functional to be able to work.
+>> This implies that the driver of A needs to be working for B to be probed
+>> successfully and it cannot be unbound from the device before the B's driver.
+>> This also has certain consequences for power management of these devices
+>> (suspend/resume and runtime PM ordering).
+>>
+>> So I want to be able to represent those functional dependencies between devices
+>> and I'd like the driver core to track them and act on them in certain cases
+>> where they matter.  The argument for doing that in the driver core is that
+>> there are quite a few distinct use cases related to that, they are relatively
+>> hard to get right in a driver (if one wants to address all of them properly)
+>> and it only gets worse if multiplied by the number of drivers potentially
+>> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
+>> cannot be handled in a single driver at all, because it requires the driver of A
+>> to wait for B to suspend (during system suspend) and the driver of B to wait for
+>> A to resume (during system resume).
+>>
+>> My idea is to represent a supplier-consumer dependency between devices (or
+>> more precisely between device+driver combos) as a "link" object containing
+>> pointers to the devices in question, a list node for each of them and some
+>> additional information related to the management of those objects, ie.
+>> something like:
+>>
+>> struct device_link {
+>>       struct device *supplier;
+>>       struct list_head supplier_node;
+>>       struct device *consumer;
+>>       struct list_head consumer_node;
+>>       <flags, status etc>
+>> };
+>>
+>> In general, there will be two lists of those things per device, one list
+>> of links to consumers and one list of links to suppliers.
+>>
+>> In that picture, links will be created by calling, say:
+>>
+>> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+>>
+>> and they will be deleted by the driver core when not needed any more.  The
+>> creation of a link should also cause dpm_list and the list used during shutdown
+>> to be reordered if needed.
+>>
+>> In principle, it seems usefult to consider two types of links, one created
+>> at device registration time (when registering the second device from the linked
+>> pair, whichever it is) and one created at probe time (of the consumer device).
+>> I'll refer to them as "permanent" and "probe-time" links, respectively.
+>>
+>> The permanent links (created at device registration time) will stay around
+>> until one of the linked devices is unregistered (at which time the driver
+>> core will drop the link along with the device going away).  The probe-time
+>> ones will be dropped (automatically) at the consumer device driver unbind time.
+>>
+>> There's a question about what if the supplier device is being unbound before
+>> the consumer one (for example, as a result of a hotplug event).  My current
+>> view on that is that the consumer needs to be force-unbound in that case too,
+>> but I guess I may be persuaded otherwise given sufficiently convincing
+>> arguments.  Anyway, there are reasons to do that, like for example it may
+>> help with the synchronization.  Namely, if there's a rule that suppliers
+>> cannot be unbound before any consumers linked to them, than the list of links
+>> to suppliers for a consumer can only change at its registration/probe or
+>> unbind/remove times (which simplifies things quite a bit).
+>>
+>> With that, the permanent links existing at the probe time for a consumer
+>> device can be used to check whether or not to defer the probing of it
+>> even before executing its probe callback.  In turn, system suspend
+>> synchronization should be a matter of calling device_pm_wait_for_dev()
+>> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
+>> and so on.
+>>
+>> Of course, the new lists have to be stable during those operations and ensuring
+>> that is going to be somewhat tricky (AFAICS right now at least), but apart from
+>> that the whole concept looks reasonably straightforward to me.
+>>
+>
+> What follows is my prototype implementation of this.  It took some time
+> to develop (much more than I was hoping for), but here it goes at last.
+>
+> The first patch rearranges the code around __device_release_driver() a bit
+> to prepare it for the next one.
+>
+> The second patch introduces the actual device links mechanics, but without
+> system suspend/resume and runtime PM support which are added by the subsequent
+> patches.
+>
+> This hasn't been really tested yet (apart from checking that it doesn't break
+> things when device links are not in used, which would be rather embarrassing),
+> but at this time I'd really like you to have a look and tell me what you think
+> (especially if you see a reason why this is not going to work).
 
---mSxgbZZZvrAyzONB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Rafael,
 
-On Fri, Dec 04, 2015 at 02:57:10PM +0000, Jon Hunter wrote:
-> For Tegra124 and Tegra210, the GPU partition cannot be toggled on and off
-> via the APBDEV_PMC_PWRGATE_TOGGLE_0 register. For these devices, the
-> partition is simply powered up and down via an external regulator.
-> Describe in the PMC SoC data in which devices the GPU partition can be
-> controlled via the APBDEV_PMC_PWRGATE_TOGGLE_0 register and ensure that
-> no one can incorrectly try to toggle the GPU partition via the
-> APBDEV_PMC_PWRGATE_TOGGLE_0 register.
->=20
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->  drivers/soc/tegra/pmc.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+have given a quick look and I have 2 questions for now:
 
-The TRM doesn't mention anything like this. Will this be updated in the
-TRM as well?
+- Why deferring the probe if a supplier isn't ready? Seems like quite
+a bit of a waste to keep iterating that list until all suppliers have
+probed. If we know that a supplier is needed at a given time, why not
+probe it right away?
 
-Thierry
+- When were you thinking of calling device_link_add for permanent links?
 
---mSxgbZZZvrAyzONB
-Content-Type: application/pgp-signature; name="signature.asc"
+I also wonder if we could find clearer names for supplier_links and
+consumer_links, as it wasn't immediately clear to me what those lists
+contained. Maybe just "consumers" and "suppliers"?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Thanks,
 
-iQIcBAABCAAGBQJWl61dAAoJEN0jrNd/PrOh9IgP/RtUAxXToxNCJn4+XuWbLRpx
-P/OgmmrwJFe4pCWtt0HBk6nnvqyCCywjBXn6AE+JaE3xjHvNnfc/udjSAucO4FZM
-IB8BNZc4//y6PVrrNDTFET/XIG/4teuk3eMwFuHpGV9o8V9JJI3kEhjX+HD00Y7x
-IK1QM9VZMYvUwNUihJ0PXZgNLf5Znuw+2mlPCaK0qTmkJEf7pocNUnhRhlpuoVlo
-vib5JwQM1qtBjQsFAJfh73ft7WXyKi3eCAXbsUe9Zxwrn2g61SEuhfKVbpjH0IYC
-3c6TjyJyam/wNgMao8uh0VsCednuKGPxJNl7nN9T78S4IOINdombWgY8tfY7w72Q
-dyCGUXNenFomIljKtxQqKzqG06wrEHhsaIMiKuixKv5f31lgY4j6FaBiznUzaXR3
-oHyq7Qh8xjFGTkBIIuHyRCuf8Rm/g+fF08mEHx6RrNCZjRZLX1b1eCNXn9O3KewW
-1WXvcaRv5Gk/UzuZbFnkGxe0GcMvmMOVaK1PPSTSSr/Is3/0kq4DtBDL/CkXP/qL
-TJPLKchg/dLnD3lpbwSOXn4tO8d75cNielsc+gsY2IYzLcn2z4abiy2W7fstLJ1Q
-WgqgW8K687iA0mflgYkvIFofdJy8QWlQSldaEOUfyEZPnvV5RfpaQ77+1uwEgHU3
-93bjo7p+GWF2zD7WbuYG
-=BfOI
------END PGP SIGNATURE-----
-
---mSxgbZZZvrAyzONB--
+Tomeu
