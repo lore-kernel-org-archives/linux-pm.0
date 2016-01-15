@@ -1,55 +1,94 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
-Date: Fri, 15 Jan 2016 23:08:41 +0100
-Message-ID: <CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
-	<CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
-	<20160114183316.GB1651@linaro.org>
-	<CAPDyKFpj0Gv=5hVwZWjmgmumHPriuYk+LLVBwjEeW9Jfj8p5Kw@mail.gmail.com>
-	<20160115165758.GC1651@linaro.org>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH v2 1/4] dt-bindings: power: reset: add document for
+ reboot-mode driver
+Date: Fri, 15 Jan 2016 14:41:55 -0800
+Message-ID: <CALAqxLUxh3=LhoHxqiRm_5L4G6m1Vctp=aUg+9_uAtLkFwW9bw@mail.gmail.com>
+References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+	<1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160115165758.GC1651@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f182.google.com ([209.85.160.182]:36372 "EHLO
+	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbcAOWl4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 17:41:56 -0500
+Received: by mail-yk0-f182.google.com with SMTP id v14so465903970ykd.3
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jan 2016 14:41:56 -0800 (PST)
+In-Reply-To: <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Arnd Bergmann <arnd@arndb.de>, linux@roeck-us.net, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, geert+renesas@glider.be, sre@kernel.org, Olof Johansson <olof@lixom.net>, dbaryshkov@gmail.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, jun.nie@linaro.org, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, f.fainelli@gmail.com, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, lkml <linux-kernel@vger.kern>
 
-[...]
+On Tue, Jan 12, 2016 at 3:29 AM, Andy Yan <andy.yan@rock-chips.com> wrote:
+> add device tree binding document for reboot-mode driver
+>
+> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+>
+> ---
+>
+> Changes in v2: None
+> Changes in v1: None
+>
+>  .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++++++++++
+>  .../bindings/power/reset/syscon-reboot-mode.txt    | 52 ++++++++++++++++++++++
+>  2 files changed, 93 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> new file mode 100644
+> index 0000000..81d9f66
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> @@ -0,0 +1,41 @@
+> +Generic reboot mode core map driver
+> +
+> +This driver get reboot mode arguments and call the write
+> +interface to stores the magic value in special register
+> +or ram . Then the bootloader can read it and take different
+> +action according to the argument stored.
+> +
+> +Required properties:
+> +- compatible: only support "syscon-reboot-mode" now.
+> +
+> +Each mode is represented as a sub-node of reboot_mode:
+> +
+> +Subnode required properties:
+> +- linux,mode: reboot mode command,such as "loader", "recovery", "fastboot".
+> +- loader,magic: magic number for the mode, this is vendor specific.
+> +
+> +Example:
+> +       reboot_mode {
+> +               compatible = "syscon-reboot-mode";
+> +               offset = <0x40>;
+> +
+> +               loader {
+> +                       linux,mode = "loader";
+> +                       loader,magic = <BOOT_LOADER>;
+> +               };
+> +
+> +               maskrom {
+> +                       linux,mode = "maskrom";
+> +                       loader,magic = <BOOT_MASKROM>;
+> +               };
+> +
+> +               recovery {
+> +                       linux,mode = "recovery";
+> +                       loader,magic = <BOOT_RECOVERY>;
+> +               };
+> +
+> +               fastboot {
+> +                       linux,mode = "fastboot";
+> +                       loader,magic = <BOOT_FASTBOOT>;
+> +               };
+> +        };
 
->> I think case 2 and case 3 should be okay to support, but I am really
->> questioning case 1.
->>
-> With you other patch, it does make sense to have 2 and 3 instead of 1
-> and 2.
 
-Okay!
+So one minor thought here. While the commands are somewhat vendor
+specific, would it be a good idea for the example commands to match
+the common commands on Android devices?  For example, usually
+"bootloader" is what gets you into fastboot mode on nexus devices.
 
-> My only concern is as I view the SoC as a whole, there would be cases
-> where the parent domain could only be non-IRQ safe (turning off a big
-> regulator may require some sleep) and the subdomains are quicker and
-> faster IRQ-safe domains. Putting up this restriction, chops up the
-
-Just because they are "quick" (don't sleep) doesn't mean they have to
-set the IRQ safe flag for the domain.
-
-Let's compare how pm_runtime_irq_safe() is used for devices in
-drivers. Lots of corresponding runtime PM callbacks don't sleep, but
-that don't mean that the driver calls pm_runtime_irq_safe().
-
-Drivers that are expecting to invoke pm_runtime_get_sync() (or other
-synchronous runtime PM API) from atomic context, requires the
-corresponding runtime PM callbacks to be IRQ safe. Only under these
-circumstances the pm_runtime_irq_safe() is used.
-
-> domain hierarchy. Imagine, if you could represent the whole power domain
-> organization in DT, but because of this restriction, we may not be able
-> to do that.
-
-You do have a point. Considering my comment above, do you still think
-this may become an issue?
-
-Kind regards
-Uffe
+thanks
+-john
