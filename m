@@ -1,82 +1,92 @@
-From: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Subject: Re: [PATCH V4 13/16] soc: tegra: pmc: Add generic PM domain support
-Date: Fri, 15 Jan 2016 11:01:12 +0100
-Message-ID: <1452852072.3694.86.camel@pengutronix.de>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
-	 <1449241037-22193-14-git-send-email-jonathanh@nvidia.com>
-	 <20160114143932.GE23082@ulmo> <5698BF00.6090102@nvidia.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Fri, 15 Jan 2016 11:13:12 +0100
+Message-ID: <20160115101312.GA23349@gmail.com>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com>
+ <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
+ <56977BA7.702@ti.com>
+ <20160114112354.GA17869@gmail.com>
+ <20160114142227.GB5783@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5698BF00.6090102-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:35154 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756861AbcAOKNS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 05:13:18 -0500
+Content-Disposition: inline
+In-Reply-To: <20160114142227.GB5783@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Keerthy <a0393675@ti.com>, nm@ti.com, grygorii.strashko@ti.com, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, peterz@infradead.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, josh@joshtriplett.org, edubezval@gmail.com, joel@jms.id.au, mpe@ellerman.id.au, akpm@linux-foundation.org, linux-omap@vger.kernel.org, dyoung@redhat.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 
-Am Freitag, den 15.01.2016, 09:42 +0000 schrieb Jon Hunter:
-> On 14/01/16 14:39, Thierry Reding wrote:
-> > * PGP Signed by an unknown key
+
+* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+
+> On Thu, Jan 14, 2016 at 12:23:54PM +0100, Ingo Molnar wrote:
+> > * Keerthy <a0393675@ti.com> wrote:
+> > > I tried to simulate the issue.
+> > > 
+> > > In the probe function of drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> > > ti_bandgap_probe i call
+> > > 
+> > > orderly_poweroff(true);
+> > > 
+> > > This is while driver probes are still on going. I observe that
+> > > ret = run_cmd(poweroff_cmd);
+> > > 
+> > > ret is a non-zero value and we enter the if condition:
+> > > 
+> > > Even after the
+> > > 
+> > > emergency_sync();
+> > > kernel_power_off();
+> > > 
+> > > calls
+> > > 
+> > > the console remained active in weird state.
 > > 
-> > On Fri, Dec 04, 2015 at 02:57:14PM +0000, Jon Hunter wrote:
-> > [...]
-> >> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-> > [...]
-> >> +static int tegra_powergate_power_down(struct tegra_powergate *pg,
-> >> +				      bool enable_clocks)
-> >> +{
-> >> +	int err;
-> >> +
-> >> +	if (enable_clocks) {
-> >> +		err = tegra_powergate_enable_clocks(pg);
-> >> +		if (err)
-> >> +			return err;
-> >> +
-> >> +		usleep_range(10, 20);
-> >> +	}
-> >> +
-> >> +	err = tegra_powergate_reset_assert(pg);
-> >> +	if (err)
-> >> +		goto err_reset;
-> >> +
-> >> +	usleep_range(10, 20);
-> >> +
-> >> +	tegra_powergate_disable_clocks(pg);
-> > 
-> > There's no guarantee that all clocks are actually disabled at this
-> > point. Will the power down and subsequent power up sequences still
-> > work properly in such cases? If not perhaps we should add some way
-> > of checking for that case here (WARN_ON?) to make sure we can fix
-> > up all drivers to release their clock enable references.
+> > Now _that_ is clearly an architecture bug that should not be papered over ...
 > 
-> The problem is that there is no easy way to check the status of a clock
-> and whether it is enabled. Yes clk-provider.h does provide a
-> __clk_is_enabled() API but I don't think that this is meant to be used
-> here. May be we need a clk API for disabling a clock that will WARN if
-> the clock is not disabled?
+> No, it's not an architecture bug - it's a platform bug. [...]
+
+It's an 'architecture bug' in Linux kernel speak: all stuff that is traditionally 
+under arch/*. The 'arch' in that directory name derives from 'architecture'.
+
+kernel_power_off() is a traditionally architecture level (not core kernel level 
+and not driver level) code.
+
+> [...] The ARM architecture has no standard way to control CPU reset or system 
+> power, all that is up to the platform.
+
+... and platform code is typically part of arch/ as well.
+
+FYI, you are making an unnecessarily obtuse argument by insisting on the 
+architecture != platform triviality and you also injected an uncalled for 
+patronizing tone into this discussion by pretending that I don't know that 
+distinction. It's sad.
+
+> > If kernel_power_off() is called then the system should power off. No ifs and 
+> > whens.
 > 
-I can't find any hint in the TRM that disabling the clocks is required
-for clamping/powergating.
+> There definitely are ifs and whens.  Only if the platform has support, and when 
+> that support works.
 
-All occurrences of those clock requirements are in regard to a
-synchronous reset propagation. So there is no requirement that the
-clocks need to be _disabled_ at a certain time, but actually they just
-need to be _enabled_ whenever the PMC is trying to drive the resets in
-any way.
+And that is precisely what I meant: in a correctly working kernel, with correctly 
+working hardware, in a correctly working universe, the core kernel expects 
+kernel_power_off() to never 'fail'.
 
-Obviously the power savings might be higher when the peripheral drivers
-properly disable any unused clocks in suspend, but that can be solved on
-a case by case basis I think.
+As the name suggests.
 
-Regards,
-Lucas
+Yes, bugs in user-space, kernel-space, hardware and designed buggy hardware might 
+prevent a reboot - as usual.
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+I.e. I NAK this patch from a core kernel perspective, we don't add such 
+workarounds without a lot more information about why it's the right thing to do.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+
+	Ingo
