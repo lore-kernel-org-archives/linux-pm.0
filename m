@@ -1,151 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 0/5] Functional dependencies between devices
-Date: Fri, 15 Jan 2016 01:44:51 +0100
-Message-ID: <4446837.X4dNibc5VE@vostro.rjw.lan>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <2576341.476ZsjkPgF@vostro.rjw.lan> <CAAObsKD7U9SwNZ-AzU1xPz988c1R1E20Vt5ayp2PDzoiJSS3Xg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] cpuidle,menu: use interactivity_req to disable polling
+Date: Fri, 15 Jan 2016 01:46:10 +0100
+Message-ID: <2379818.mUY3ZAH25Y@vostro.rjw.lan>
+References: <1446590059-18897-1-git-send-email-riel@redhat.com> <3835535.S7ikxthAoE@vostro.rjw.lan> <56977B2C.4070600@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAObsKD7U9SwNZ-AzU1xPz988c1R1E20Vt5ayp2PDzoiJSS3Xg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51585 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754529AbcAOApf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jan 2016 19:45:35 -0500
+In-Reply-To: <56977B2C.4070600@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, riel@redhat.com, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, arjan@linux.intel.com, Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Thursday, January 14, 2016 03:19:03 PM Tomeu Vizoso wrote:
-> On 14 January 2016 at 02:52, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Tuesday, October 27, 2015 04:24:14 PM Rafael J. Wysocki wrote:
-> >> Hi All,
-> >>
-> >> As discussed in the recent "On-demand device probing" thread and in a Kernel
-> >> Summit session earlier today, there is a problem with handling cases where
-> >> functional dependencies between devices are involved.
-> >>
-> >> What I mean by a "functional dependency" is when the driver of device B needs
-> >> both device A and its driver to be present and functional to be able to work.
-> >> This implies that the driver of A needs to be working for B to be probed
-> >> successfully and it cannot be unbound from the device before the B's driver.
-> >> This also has certain consequences for power management of these devices
-> >> (suspend/resume and runtime PM ordering).
-> >>
-> >> So I want to be able to represent those functional dependencies between devices
-> >> and I'd like the driver core to track them and act on them in certain cases
-> >> where they matter.  The argument for doing that in the driver core is that
-> >> there are quite a few distinct use cases related to that, they are relatively
-> >> hard to get right in a driver (if one wants to address all of them properly)
-> >> and it only gets worse if multiplied by the number of drivers potentially
-> >> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
-> >> cannot be handled in a single driver at all, because it requires the driver of A
-> >> to wait for B to suspend (during system suspend) and the driver of B to wait for
-> >> A to resume (during system resume).
-> >>
-> >> My idea is to represent a supplier-consumer dependency between devices (or
-> >> more precisely between device+driver combos) as a "link" object containing
-> >> pointers to the devices in question, a list node for each of them and some
-> >> additional information related to the management of those objects, ie.
-> >> something like:
-> >>
-> >> struct device_link {
-> >>       struct device *supplier;
-> >>       struct list_head supplier_node;
-> >>       struct device *consumer;
-> >>       struct list_head consumer_node;
-> >>       <flags, status etc>
-> >> };
-> >>
-> >> In general, there will be two lists of those things per device, one list
-> >> of links to consumers and one list of links to suppliers.
-> >>
-> >> In that picture, links will be created by calling, say:
-> >>
-> >> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
-> >>
-> >> and they will be deleted by the driver core when not needed any more.  The
-> >> creation of a link should also cause dpm_list and the list used during shutdown
-> >> to be reordered if needed.
-> >>
-> >> In principle, it seems usefult to consider two types of links, one created
-> >> at device registration time (when registering the second device from the linked
-> >> pair, whichever it is) and one created at probe time (of the consumer device).
-> >> I'll refer to them as "permanent" and "probe-time" links, respectively.
-> >>
-> >> The permanent links (created at device registration time) will stay around
-> >> until one of the linked devices is unregistered (at which time the driver
-> >> core will drop the link along with the device going away).  The probe-time
-> >> ones will be dropped (automatically) at the consumer device driver unbind time.
-> >>
-> >> There's a question about what if the supplier device is being unbound before
-> >> the consumer one (for example, as a result of a hotplug event).  My current
-> >> view on that is that the consumer needs to be force-unbound in that case too,
-> >> but I guess I may be persuaded otherwise given sufficiently convincing
-> >> arguments.  Anyway, there are reasons to do that, like for example it may
-> >> help with the synchronization.  Namely, if there's a rule that suppliers
-> >> cannot be unbound before any consumers linked to them, than the list of links
-> >> to suppliers for a consumer can only change at its registration/probe or
-> >> unbind/remove times (which simplifies things quite a bit).
-> >>
-> >> With that, the permanent links existing at the probe time for a consumer
-> >> device can be used to check whether or not to defer the probing of it
-> >> even before executing its probe callback.  In turn, system suspend
-> >> synchronization should be a matter of calling device_pm_wait_for_dev()
-> >> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
-> >> and so on.
-> >>
-> >> Of course, the new lists have to be stable during those operations and ensuring
-> >> that is going to be somewhat tricky (AFAICS right now at least), but apart from
-> >> that the whole concept looks reasonably straightforward to me.
-> >>
-> >
-> > What follows is my prototype implementation of this.  It took some time
-> > to develop (much more than I was hoping for), but here it goes at last.
-> >
-> > The first patch rearranges the code around __device_release_driver() a bit
-> > to prepare it for the next one.
-> >
-> > The second patch introduces the actual device links mechanics, but without
-> > system suspend/resume and runtime PM support which are added by the subsequent
-> > patches.
-> >
-> > This hasn't been really tested yet (apart from checking that it doesn't break
-> > things when device links are not in used, which would be rather embarrassing),
-> > but at this time I'd really like you to have a look and tell me what you think
-> > (especially if you see a reason why this is not going to work).
+On Thursday, January 14, 2016 10:40:44 AM Sudeep Holla wrote:
 > 
-> Hi Rafael,
+> On 13/01/16 22:07, Rafael J. Wysocki wrote:
+> > On Wednesday, January 13, 2016 10:58:13 PM Rafael J. Wysocki wrote:
 > 
-> have given a quick look and I have 2 questions for now:
+> [..]
 > 
-> - Why deferring the probe if a supplier isn't ready? Seems like quite
-> a bit of a waste to keep iterating that list until all suppliers have
-> probed. If we know that a supplier is needed at a given time, why not
-> probe it right away?
-
-Because it is not guaranteed to succeed.
-
-The fact that the supplier is not ready may very well mean that its driver
-has not been loaded yet and we need to wait for that to happen before
-actually trying to bind the supplier.
-
-So what is done in the current patches is needed anyway and there might
-be some optimizations on top of that, but I'm not really sure how much
-of a difference they would make in practice.
-
+> >
+> > So I'm wondering if the appended patch helps by any chance?
+> >
 > 
-> - When were you thinking of calling device_link_add for permanent links?
+> Yes it does fix. As you mentioned earlier, CPUIDLE_DRIVER_STATE_START is
+> 0 on ARM platforms and hence data->last_state_idx ended up as -1.
+> 
+> You can add by Tested-by when you push this change. Thanks for the quick
+> fix.
 
-For example, I'm envisioning calling it from the ACPI layer for devices
-with _DEP.
+No problem, thanks for testing!
 
-> I also wonder if we could find clearer names for supplier_links and
-> consumer_links, as it wasn't immediately clear to me what those lists
-> contained. Maybe just "consumers" and "suppliers"?
+Below it goes again with a changelog and all.
 
-OK, I see why these names may be confusing.  These are lists of links,
-not lists of devices, though, so I'd like the names to reflect that.
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] cpuidle: menu: Fix menu_select() for CPUIDLE_DRIVER_STATE_START == 0
 
-What about links_to_suppliers and links_to_consumers?  Somewhat longer,
-but should be less confusing IMO.
+Commit a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable
+polling) exposed a bug in menu_select() causing it to return -1
+on systems with CPUIDLE_DRIVER_STATE_START equal to zero, although
+it should have returned 0.  As a result, idle states are not entered
+by CPUs on those systems.
 
-Thanks,
-Rafael
+Namely, on the systems in question data->last_state_idx is initially
+equal to -1 and the above commit modified the condition that would
+have caused it to be changed to 0 to be less likely to trigger which
+exposed the problem.  However, setting data->last_state_idx initially
+to -1 doesn't make sense at all and on the affected systems it should
+always be set to CPUIDLE_DRIVER_STATE_START (ie. 0) unconditionally,
+so make that happen.
+
+Fixes: a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable polling)
+Reported-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -294,8 +294,6 @@ static int menu_select(struct cpuidle_dr
+ 		data->needs_update = 0;
+ 	}
+ 
+-	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+-
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0))
+ 		return 0;
+@@ -326,14 +324,19 @@ static int menu_select(struct cpuidle_dr
+ 	if (latency_req > interactivity_req)
+ 		latency_req = interactivity_req;
+ 
+-	/*
+-	 * We want to default to C1 (hlt), not to busy polling
+-	 * unless the timer is happening really really soon.
+-	 */
+-	if (interactivity_req > 20 &&
+-	    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+-		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
++	if (CPUIDLE_DRIVER_STATE_START > 0) {
++		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
++		/*
++		 * We want to default to C1 (hlt), not to busy polling
++		 * unless the timer is happening really really soon.
++		 */
++		if (interactivity_req > 20 &&
++		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
++			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
++			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
++	} else {
+ 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
++	}
+ 
+ 	/*
+ 	 * Find the idle state with the lowest power while satisfying
+
