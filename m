@@ -1,60 +1,55 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH v2 2/4] power: reset: add reboot mode driver
-Date: Fri, 15 Jan 2016 12:27:57 -0800
-Message-ID: <CALAqxLVNUG_cVbavXC34sNPv68jbMghti31+PrgQ7mpPngXh6g@mail.gmail.com>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
-	<1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
+Date: Fri, 15 Jan 2016 23:08:41 +0100
+Message-ID: <CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+	<1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
+	<CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
+	<20160114183316.GB1651@linaro.org>
+	<CAPDyKFpj0Gv=5hVwZWjmgmumHPriuYk+LLVBwjEeW9Jfj8p5Kw@mail.gmail.com>
+	<20160115165758.GC1651@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f182.google.com ([209.85.160.182]:34039 "EHLO
-	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbcAOU15 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 15:27:57 -0500
-Received: by mail-yk0-f182.google.com with SMTP id a85so478024476ykb.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 Jan 2016 12:27:57 -0800 (PST)
-In-Reply-To: <1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20160115165758.GC1651@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Arnd Bergmann <arnd@arndb.de>, linux@roeck-us.net, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, geert+renesas@glider.be, sre@kernel.org, Olof Johansson <olof@lixom.net>, dbaryshkov@gmail.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, jun.nie@linaro.org, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, f.fainelli@gmail.com, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, lkml <linux-kernel@vger.kern>
 
-On Tue, Jan 12, 2016 at 3:31 AM, Andy Yan <andy.yan@rock-chips.com> wrote:
-> This driver parse the reboot commands like "reboot loader"
-> and "reboot recovery" to get a boot mode described in the
-> device tree , then call the write interfae to store the boot
-> mode in some persistent storage  like special register or ram,
-> which can be read by the bootloader after system reboot, then
-> the bootloader can take different action according to the mode
-> stored.
->
-> This is commonly used on Android based devices, which in order
-> to reboot the device into fastboot or recovery mode.
->
-> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+[...]
 
+>> I think case 2 and case 3 should be okay to support, but I am really
+>> questioning case 1.
+>>
+> With you other patch, it does make sense to have 2 and 3 instead of 1
+> and 2.
 
-Hey Andy!
-  Thanks for keeping this work going! I've just successfully reworked
-my Nexus7 tree to use your implementation (using the syscon version,
-setting up a syscon for IMEM as Bjorn had requested earlier).
+Okay!
 
-All is working well so far!
+> My only concern is as I view the SoC as a whole, there would be cases
+> where the parent domain could only be non-IRQ safe (turning off a big
+> regulator may require some sleep) and the subdomains are quicker and
+> faster IRQ-safe domains. Putting up this restriction, chops up the
 
-The one thing I was working on supporting with my own version that
-seems to be missing here are for devices that use string based codes,
-rather then magic numbers.
+Just because they are "quick" (don't sleep) doesn't mean they have to
+set the IRQ safe flag for the domain.
 
-This was mostly a theoretical issue. I think the Galaxy Nexus used it,
-and when I was looking at some of the HTC devices, they support a text
-based reason along with the magic code, but at least in some
-implementations the text mode isn't used, so I suspect there its just
-for extra debugging.  So this may not be critical to solve until
-someone tries to add support for such a device.
+Let's compare how pm_runtime_irq_safe() is used for devices in
+drivers. Lots of corresponding runtime PM callbacks don't sleep, but
+that don't mean that the driver calls pm_runtime_irq_safe().
 
-Anyway, I'm going to look at porting this to the HiKey board next
-(which just uses reserved ram, not syscon), so I'll try to do a an
-SRAM driver implementaiton to see how that goes.
+Drivers that are expecting to invoke pm_runtime_get_sync() (or other
+synchronous runtime PM API) from atomic context, requires the
+corresponding runtime PM callbacks to be IRQ safe. Only under these
+circumstances the pm_runtime_irq_safe() is used.
 
-thanks!
--john
+> domain hierarchy. Imagine, if you could represent the whole power domain
+> organization in DT, but because of this restriction, we may not be able
+> to do that.
+
+You do have a point. Considering my comment above, do you still think
+this may become an issue?
+
+Kind regards
+Uffe
