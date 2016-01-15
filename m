@@ -1,88 +1,95 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
-Date: Fri, 15 Jan 2016 15:29:04 +0200
-Message-ID: <5698F420.2010500@ti.com>
+Date: Fri, 15 Jan 2016 14:12:17 +0000
+Message-ID: <20160115141217.GF5783@n2100.arm.linux.org.uk>
 References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
- <20160114090520.GA4351@gmail.com> <569767EC.2010704@ti.com>
- <20160114100913.GB15857@gmail.com> <56977BA7.702@ti.com>
+ <20160114090520.GA4351@gmail.com>
+ <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
+ <56977BA7.702@ti.com>
  <20160114112354.GA17869@gmail.com>
  <20160114132527.575e0f20@lxorguk.ukuu.org.uk>
  <20160115101459.GB23349@gmail.com>
+ <5698F420.2010500@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160115101459.GB23349@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <5698F420.2010500@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Cc: Keerthy <a0393675@ti.com>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, nm@ti.com, Keerthy <a0393675@ti.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, peterz@infradead.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, josh@joshtriplett.org, edubezval@gmail.com, joel@jms.id.au, mpe@ellerman.id.au, akpm@linux-foundation.org, linux-omap@vger.kernel.org, dyoung@redhat.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/15/2016 12:14 PM, Ingo Molnar wrote:
+On Fri, Jan 15, 2016 at 03:29:04PM +0200, Grygorii Strashko wrote:
+> Seems ARM doesn't have endless loop implemented in machine_power_off() - so,
+> not too much chances for Watchdog to fire.
+> void machine_power_off(void)
+> {
+> 	local_irq_disable();
+> 	smp_send_stop();
 > 
-> * One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
+> 	if (pm_power_off)
+> 		pm_power_off();
 > 
->>> If kernel_power_off() is called then the system should power off. No ifs and
->>> whens.
->>
->> Even if it doesn't the watchdog should kill it.
->>
->> That is broken on some platforms on the watchdog side as the
->> watchdog shuts down during our power off callbacks - because the system
->> firmware is too stupid to reset the watchdog as it powers back up (so
->> keeps rebooting).
->>
->> If you watchdog and firmware function properly you shouldn't even have to
->> care if you crash during the kernel power off.
+> 	--- endless loop ?
+> 	--- or restart ?
+> }
+> [and even if it will be there - 20-30sec is usual timeout for Watchdog
+> and this enough time to burn the system in case of thermal emergency
+> poweroff :(]
+
+I covered this in my reply to Ingo yesterday.  The result is that a
+failed or unimplemented call drops through to do_exit(0) on behalf of
+the calling process, terminating that process.  However, as I said
+in that same email, I don't think you're getting anywhere near this
+code.
+
+> That's true - original log [1] has 
+> Nov 30 11:19:22 [    5.942769] thermal thermal_zone3: critical temperature reached(108 C),shutting down
+> [...]
+> Nov 30 11:19:24 [    7.387900] ahci 4a140000.sata: flags: 64bit ncq sntf stag pm led clo only pmp pio slum part ccc apst 
+> Nov 30 11:19:24 INIT: Switching to runlevel: 0
+> Nov 30 11:19:24 INIT: Sending processes the TERM signal
 > 
-> That's a good point as well - if the system is 'stuck' for some notion of stuck,
-> then watchdog drivers can help.
-> 
+> and there are no
+> [  220.004522] reboot: Power down
 
-Seems ARM doesn't have endless loop implemented in machine_power_off() - so,
-not too much chances for Watchdog to fire.
-void machine_power_off(void)
-{
-	local_irq_disable();
-	smp_send_stop();
+Right, so things are stuck in userspace, which means the system is still
+in an active runnable state.
 
-	if (pm_power_off)
-		pm_power_off();
+As I mentioned (again) in my email, the issue appears to be that the 'rc'
+script is stuck waiting on a FIFO.
 
-	--- endless loop ?
-	--- or restart ?
-}
-[and even if it will be there - 20-30sec is usual timeout for Watchdog and this
-enough time to burn the system in case of thermal emergency poweroff :(]
+The init daemon is trying to do an orderly shutdown.  As part of that,
+it's executing the 'rc' script, which in systems I've seen, runs through
+a set of scripts in the /etc/rc?.d directory in order, which normally
+bring up or take down services and perform other sequenced actions.
 
-> Here it's unclear whether user-space even called the sys_reboot() system call.
-> 
+If this script hangs (as it seems to be doing) it won't get to running
+/sbin/poweroff or similar, and that means machine_power_off() won't be
+called.
 
-That's true - original log [1] has 
-Nov 30 11:19:22 [    5.942769] thermal thermal_zone3: critical temperature reached(108 C),shutting down
-[...]
-Nov 30 11:19:24 [    7.387900] ahci 4a140000.sata: flags: 64bit ncq sntf stag pm led clo only pmp pio slum part ccc apst 
-Nov 30 11:19:24 INIT: Switching to runlevel: 0
-Nov 30 11:19:24 INIT: Sending processes the TERM signal
+> In general, this kind of use case can be simulated using SysRq on any arch
+> - [3.290034] Freeing unused kernel memory: 492K (c0a67000 - c0ae2000)
+>   INIT: version 2.88 booting
+>   Starting udev
+> ^^ The issue most probably might happens when system in the process of
+> loading modules
+> So, once modules loading process is started - fire Sysrq "poweroff(o)"
 
-and there are no
-[  220.004522] reboot: Power down
+This suggests it could be a udev issue - but without knowing what's
+happening inside sysvinit's scripts, it's hard to know for certain.
+Adding some debug to the 'rc' script (make sure it works without
+rebooting or changing the run level, or have a way of restoring the
+file if it fails to boot) so that it's possible to see what it's doing
+may be a good idea - the simplest approach may be to just add
 
+set -x
 
-Also, It's not the first time this part of code is discussed (thermal emergency poweroff) [2],
-so the good question, as for me, is it really required and safe to use orderly_poweroff() in
-case of thermal emergency poweroff ([3] as example)?
+towards the top of the file - which will make it very noisy.
 
-In general, this kind of use case can be simulated using SysRq on any arch
-- [3.290034] Freeing unused kernel memory: 492K (c0a67000 - c0ae2000)
-  INIT: version 2.88 booting
-  Starting udev
-^^ The issue most probably might happens when system in the process of loading modules
-So, once modules loading process is started - fire Sysrq "poweroff(o)"
-
-[1] http://pastebin.ubuntu.com/14326688/
-[2] https://lkml.org/lkml/2012/9/18/577
-[3] http://review.omapzoom.org/#/c/34898/
 -- 
-regards,
--grygorii
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
