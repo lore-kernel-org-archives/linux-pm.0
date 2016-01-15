@@ -1,74 +1,60 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
- systems
-Date: Fri, 15 Jan 2016 11:50:31 -0800
-Message-ID: <56994D87.6000709@linaro.org>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH v2 2/4] power: reset: add reboot mode driver
+Date: Fri, 15 Jan 2016 12:27:57 -0800
+Message-ID: <CALAqxLVNUG_cVbavXC34sNPv68jbMghti31+PrgQ7mpPngXh6g@mail.gmail.com>
+References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+	<1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f182.google.com ([209.85.160.182]:34039 "EHLO
+	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbcAOU15 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 15:27:57 -0500
+Received: by mail-yk0-f182.google.com with SMTP id a85so478024476ykb.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 Jan 2016 12:27:57 -0800 (PST)
+In-Reply-To: <1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Arnd Bergmann <arnd@arndb.de>, linux@roeck-us.net, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, geert+renesas@glider.be, sre@kernel.org, Olof Johansson <olof@lixom.net>, dbaryshkov@gmail.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, jun.nie@linaro.org, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, f.fainelli@gmail.com, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, lkml <linux-kernel@vger.kern>
 
-On 01/08/2016 06:09 AM, Juri Lelli wrote:
->  2. Dynamic profiling at boot (v2)
-> 
->     pros: - does not require a standardized definition of capacity
->           - cannot be incorrectly tuned (once benchmark is fixed)
->           - does not require user/integrator work
-> 
->     cons: - not easy to come up with a clean solution, as it seems interaction
->             with several subsystems (e.g., cpufreq) is required
->           - not easy to agree upon a single benchmark (that has to be both
->             representative and simple enough to run at boot)
->           - numbers might (and do) vary from boot to boot
+On Tue, Jan 12, 2016 at 3:31 AM, Andy Yan <andy.yan@rock-chips.com> wrote:
+> This driver parse the reboot commands like "reboot loader"
+> and "reboot recovery" to get a boot mode described in the
+> device tree , then call the write interfae to store the boot
+> mode in some persistent storage  like special register or ram,
+> which can be read by the bootloader after system reboot, then
+> the bootloader can take different action according to the mode
+> stored.
+>
+> This is commonly used on Android based devices, which in order
+> to reboot the device into fastboot or recovery mode.
+>
+> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
 
-An important additional con that was mentioned earlier IIRC was the
-additional boot time required for the benchmark. Perhaps there could be
-a kernel command line argument to bypass the benchmark if it is known
-that predetermined values will be provided via sysfs later?
 
-Though there may be another issue with that as mentioned below.
+Hey Andy!
+  Thanks for keeping this work going! I've just successfully reworked
+my Nexus7 tree to use your implementation (using the syscon version,
+setting up a syscon for IMEM as Bjorn had requested earlier).
 
->  3. sysfs (v1)
-> 
->     pros: - clean and super easy to implement
->           - values don't require to be physical properties, defining them is
->             probably easier
-> 
->     cons: - CPUs capacity have to be provided after boot (by some init script?)
->           - API is modified, still some discussion/review is needed
->           - values can still be incorrectly used for runtime tuning purposes
+All is working well so far!
 
-Initializing the values via userspace init will cause more of the boot
-process to run with incorrect CPU capacity values. Boot times may be
-increased with tasks running on suboptimal CPUs. Such increases may also
-not be deterministic.
+The one thing I was working on supporting with my own version that
+seems to be missing here are for devices that use string based codes,
+rather then magic numbers.
 
-Extending the kernel command line idea above, perhaps capacity values
-could be provided there as well, similar to the lpj parameter? That has
-scalability issues though if there's a huge highly heterogeneous platform...
+This was mostly a theoretical issue. I think the Galaxy Nexus used it,
+and when I was looking at some of the HTC devices, they support a text
+based reason along with the magic code, but at least in some
+implementations the text mode isn't used, so I suspect there its just
+for extra debugging.  So this may not be critical to solve until
+someone tries to add support for such a device.
 
-DT solves these issues and would be the perfect place for this - we are
-defining the compute capacity of a CPU which is a property of the
-hardware. However there are a couple things forcing us to compromise.
-One is that the amount and detail of information required to adequately
-capture the computational abilities of a CPU across all possible
-workloads seem onerous to collect and enumerate. The second is that even
-if we were willing to undertake that, CPU vendors probably won't be
-forthcoming with that information.
+Anyway, I'm going to look at porting this to the HiKey board next
+(which just uses reserved ram, not syscon), so I'll try to do a an
+SRAM driver implementaiton to see how that goes.
 
-Despite this DT still seems to me like the best way to go. At their
-heart these are properties of the hardware, even if we can't specify
-them as such per se because of the problems above. The capacity would
-have to be defined as a relative value among CPUs. And while it's true
-it may be abused for tuning purposes, that's true of any strategy.
-Certainly the sysfs strategy and even if only a dynamic option is
-provided, it is guaranteed to be hacked by platform vendors.
-
-thanks,
-Steve
+thanks!
+-john
