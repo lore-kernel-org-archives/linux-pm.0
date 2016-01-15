@@ -1,45 +1,43 @@
-From: Ingo Molnar <mingo@kernel.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
-Date: Fri, 15 Jan 2016 11:14:59 +0100
-Message-ID: <20160115101459.GB23349@gmail.com>
+Date: Fri, 15 Jan 2016 11:05:17 +0000
+Message-ID: <20160115110517.GE5783@n2100.arm.linux.org.uk>
 References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
  <20160114090520.GA4351@gmail.com>
  <569767EC.2010704@ti.com>
  <20160114100913.GB15857@gmail.com>
  <56977BA7.702@ti.com>
  <20160114112354.GA17869@gmail.com>
- <20160114132527.575e0f20@lxorguk.ukuu.org.uk>
+ <20160114142227.GB5783@n2100.arm.linux.org.uk>
+ <20160115101312.GA23349@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:40924 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757290AbcAOLFe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 06:05:34 -0500
 Content-Disposition: inline
-In-Reply-To: <20160114132527.575e0f20@lxorguk.ukuu.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Cc: Keerthy <a0393675@ti.com>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, grygorii.strashko@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20160115101312.GA23349@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Keerthy <a0393675@ti.com>, nm@ti.com, grygorii.strashko@ti.com, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, peterz@infradead.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, josh@joshtriplett.org, edubezval@gmail.com, joel@jms.id.au, mpe@ellerman.id.au, akpm@linux-foundation.org, linux-omap@vger.kernel.org, dyoung@redhat.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 
+On Fri, Jan 15, 2016 at 11:13:12AM +0100, Ingo Molnar wrote:
+> FYI, you are making an unnecessarily obtuse argument by insisting on the 
+> architecture != platform triviality and you also injected an uncalled for 
+> patronizing tone into this discussion by pretending that I don't know that 
+> distinction. It's sad.
 
-* One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
+I was trying to be helpful, but your attitude seems to always one of
+finding some way to turn a reasonable discussion into an ad hominem
+attack.  You've just proven that you're totally impossible to work
+with.
 
-> > If kernel_power_off() is called then the system should power off. No ifs and 
-> > whens.
-> 
-> Even if it doesn't the watchdog should kill it. 
-> 
-> That is broken on some platforms on the watchdog side as the
-> watchdog shuts down during our power off callbacks - because the system
-> firmware is too stupid to reset the watchdog as it powers back up (so
-> keeps rebooting).
-> 
-> If you watchdog and firmware function properly you shouldn't even have to
-> care if you crash during the kernel power off.
+I won't make the mistake of replying to one of your messages again.
 
-That's a good point as well - if the system is 'stuck' for some notion of stuck, 
-then watchdog drivers can help.
-
-Here it's unclear whether user-space even called the sys_reboot() system call.
-
-Thanks,
-
-	Ingo
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
