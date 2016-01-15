@@ -1,31 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/2] cpuidle optimizations (on top of linux-next)
-Date: Sat, 16 Jan 2016 00:53:41 +0100
-Message-ID: <1621492.NI2xz9vt7M@vostro.rjw.lan>
+Subject: [PATCH 2/2] cpuidle: menu: Avoid pointless checks in menu_select()
+Date: Sat, 16 Jan 2016 00:56:34 +0100
+Message-ID: <7876665.vgkxSAt2aO@vostro.rjw.lan>
+References: <1621492.NI2xz9vt7M@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60553 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753837AbcAOX4f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jan 2016 18:56:35 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1621492.NI2xz9vt7M@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] 
 
-When I was looking at the cpuidle code after the Sudeeps's problem report,
-it occured to me that we had some pointless overhead there, so two
-changes to reduce it follow.
+If menu_select() cannot find a suitable state to return, it will
+return the state index stored in data->last_state_idx.  This
+means that it is pointless to look at the states whose indices
+are less than or equal to data->last_state_idx in the main loop,
+so don't do that.
 
-[1/2] Make the fallback to to default_idle_call() in call_cpuidle()
-      unnecessary and drop it.
-[2/2] Make menu_select() avoid checking states that don't need to
-      (or even shouldn't) be checked when making the selection.
+Given that those checks are done on every idle state selection, this
+change can save quite a bit of completely unnecessary overhead.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -342,7 +342,7 @@ static int menu_select(struct cpuidle_dr
+ 	 * Find the idle state with the lowest power while satisfying
+ 	 * our constraints.
+ 	 */
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
++	for (i = data->last_state_idx + 1; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
+ 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ 
