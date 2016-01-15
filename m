@@ -1,221 +1,74 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH v3] powercap/rapl: reduce ipi calls
-Date: Fri, 15 Jan 2016 11:04:13 -0800
-Message-ID: <1452884653-10560-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:59882 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbcAOTF2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 Jan 2016 14:05:28 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
+ systems
+Date: Fri, 15 Jan 2016 11:50:31 -0800
+Message-ID: <56994D87.6000709@linaro.org>
+References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Reduce remote CPU calls for MSR access by combining read
-modify write into one function. Also optimize search for active CPU on
-package such that remote CPU is not used if the current CPU is already
-on the target package.
+On 01/08/2016 06:09 AM, Juri Lelli wrote:
+>  2. Dynamic profiling at boot (v2)
+> 
+>     pros: - does not require a standardized definition of capacity
+>           - cannot be incorrectly tuned (once benchmark is fixed)
+>           - does not require user/integrator work
+> 
+>     cons: - not easy to come up with a clean solution, as it seems interaction
+>             with several subsystems (e.g., cpufreq) is required
+>           - not easy to agree upon a single benchmark (that has to be both
+>             representative and simple enough to run at boot)
+>           - numbers might (and do) vary from boot to boot
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 122 ++++++++++++++++++++++++++++++------------
- 1 file changed, 87 insertions(+), 35 deletions(-)
+An important additional con that was mentioned earlier IIRC was the
+additional boot time required for the benchmark. Perhaps there could be
+a kernel command line argument to bypass the benchmark if it is known
+that predetermined values will be provided via sysfs later?
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 48747c2..2dcd95f 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -133,6 +133,12 @@ struct rapl_domain_data {
- 	unsigned long timestamp;
- };
- 
-+struct msrl_action {
-+	u32 msr_no;
-+	u64 clear_mask;
-+	u64 set_mask;
-+	int err;
-+};
- 
- #define	DOMAIN_STATE_INACTIVE           BIT(0)
- #define	DOMAIN_STATE_POWER_LIMIT_SET    BIT(1)
-@@ -263,7 +269,11 @@ static struct rapl_package *find_package_by_id(int id)
- /* caller to ensure CPU hotplug lock is held */
- static int find_active_cpu_on_package(int package_id)
- {
--	int i;
-+	/* try to avoid remote cpu call, use raw since we are preemptible */
-+	int i = raw_smp_processor_id();
-+
-+	if (topology_physical_package_id(i) == package_id)
-+		return i;
- 
- 	for_each_online_cpu(i) {
- 		if (topology_physical_package_id(i) == package_id)
-@@ -800,35 +810,62 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
- 	return 0;
- }
- 
-+
-+static int msrl_update_safe(u32 msr_no, u64 clear_mask, u64 set_mask)
-+{
-+	int err;
-+	u64 val;
-+
-+	err = rdmsrl_safe(msr_no, &val);
-+	if (err)
-+		goto out;
-+
-+	val &= ~clear_mask;
-+	val |= set_mask;
-+
-+	err = wrmsrl_safe(msr_no, val);
-+
-+out:
-+	return err;
-+}
-+
-+static void msrl_update_func(void *info)
-+{
-+	struct msrl_action *ma = info;
-+
-+	ma->err = msrl_update_safe(ma->msr_no, ma->clear_mask, ma->set_mask);
-+}
-+
- /* Similar use of primitive info in the read counterpart */
- static int rapl_write_data_raw(struct rapl_domain *rd,
- 			enum rapl_primitives prim,
- 			unsigned long long value)
- {
--	u64 msr_val;
--	u32 msr;
- 	struct rapl_primitive_info *rp = &rpi[prim];
- 	int cpu;
-+	u64 bits;
-+	struct msrl_action ma;
-+	int ret;
- 
- 	cpu = find_active_cpu_on_package(rd->package_id);
- 	if (cpu < 0)
- 		return cpu;
--	msr = rd->msrs[rp->id];
--	if (rdmsrl_safe_on_cpu(cpu, msr, &msr_val)) {
--		dev_dbg(&rd->power_zone.dev,
--			"failed to read msr 0x%x on cpu %d\n", msr, cpu);
--		return -EIO;
--	}
--	value = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
--	msr_val &= ~rp->mask;
--	msr_val |= value << rp->shift;
--	if (wrmsrl_safe_on_cpu(cpu, msr, msr_val)) {
--		dev_dbg(&rd->power_zone.dev,
--			"failed to write msr 0x%x on cpu %d\n", msr, cpu);
--		return -EIO;
--	}
- 
--	return 0;
-+	bits = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
-+	bits |= bits << rp->shift;
-+	memset(&ma, 0, sizeof(ma));
-+
-+	ma.msr_no = rd->msrs[rp->id];
-+	ma.clear_mask = rp->mask;
-+	ma.set_mask = bits;
-+
-+	ret = smp_call_function_single(cpu, msrl_update_func, &ma, 1);
-+	if (ret)
-+		WARN_ON_ONCE(ret);
-+	else
-+		ret = ma.err;
-+
-+	return ret;
- }
- 
- /*
-@@ -893,6 +930,21 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
- 	return 0;
- }
- 
-+static void power_limit_irq_save_cpu(void *info)
-+{
-+	u32 l, h = 0;
-+	struct rapl_package *rp = (struct rapl_package *)info;
-+
-+	/* save the state of PLN irq mask bit before disabling it */
-+	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-+	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
-+		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
-+		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
-+	}
-+	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
-+	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-+}
-+
- 
- /* REVISIT:
-  * When package power limit is set artificially low by RAPL, LVT
-@@ -906,7 +958,6 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
- 
- static void package_power_limit_irq_save(int package_id)
- {
--	u32 l, h = 0;
- 	int cpu;
- 	struct rapl_package *rp;
- 
-@@ -920,20 +971,27 @@ static void package_power_limit_irq_save(int package_id)
- 	cpu = find_active_cpu_on_package(package_id);
- 	if (cpu < 0)
- 		return;
--	/* save the state of PLN irq mask bit before disabling it */
--	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
--	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
--		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
--		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
--	}
--	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
--	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-+	smp_call_function_single(cpu, power_limit_irq_save_cpu, rp, 1);
-+}
-+
-+static void power_limit_irq_restore_cpu(void *info)
-+{
-+	u32 l, h = 0;
-+	struct rapl_package *rp = (struct rapl_package *)info;
-+
-+	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
-+
-+	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
-+		l |= PACKAGE_THERM_INT_PLN_ENABLE;
-+	else
-+		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
-+
-+	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- }
- 
- /* restore per package power limit interrupt enable state */
- static void package_power_limit_irq_restore(int package_id)
- {
--	u32 l, h;
- 	int cpu;
- 	struct rapl_package *rp;
- 
-@@ -951,14 +1009,8 @@ static void package_power_limit_irq_restore(int package_id)
- 	/* irq enable state not saved, nothing to restore */
- 	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED))
- 		return;
--	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
--
--	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
--		l |= PACKAGE_THERM_INT_PLN_ENABLE;
--	else
--		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
- 
--	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
-+	smp_call_function_single(cpu, power_limit_irq_restore_cpu, rp, 1);
- }
- 
- static void set_floor_freq_default(struct rapl_domain *rd, bool mode)
--- 
-1.9.1
+Though there may be another issue with that as mentioned below.
 
+>  3. sysfs (v1)
+> 
+>     pros: - clean and super easy to implement
+>           - values don't require to be physical properties, defining them is
+>             probably easier
+> 
+>     cons: - CPUs capacity have to be provided after boot (by some init script?)
+>           - API is modified, still some discussion/review is needed
+>           - values can still be incorrectly used for runtime tuning purposes
+
+Initializing the values via userspace init will cause more of the boot
+process to run with incorrect CPU capacity values. Boot times may be
+increased with tasks running on suboptimal CPUs. Such increases may also
+not be deterministic.
+
+Extending the kernel command line idea above, perhaps capacity values
+could be provided there as well, similar to the lpj parameter? That has
+scalability issues though if there's a huge highly heterogeneous platform...
+
+DT solves these issues and would be the perfect place for this - we are
+defining the compute capacity of a CPU which is a property of the
+hardware. However there are a couple things forcing us to compromise.
+One is that the amount and detail of information required to adequately
+capture the computational abilities of a CPU across all possible
+workloads seem onerous to collect and enumerate. The second is that even
+if we were willing to undertake that, CPU vendors probably won't be
+forthcoming with that information.
+
+Despite this DT still seems to me like the best way to go. At their
+heart these are properties of the hardware, even if we can't specify
+them as such per se because of the problems above. The capacity would
+have to be defined as a relative value among CPUs. And while it's true
+it may be abused for tuning purposes, that's true of any strategy.
+Certainly the sysfs strategy and even if only a dynamic option is
+provided, it is guaranteed to be hacked by platform vendors.
+
+thanks,
+Steve
