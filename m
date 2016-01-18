@@ -1,95 +1,55 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: update bq27xxx driver
-Date: Sun, 17 Jan 2016 21:53:53 +0100
-Message-ID: <201601172153.53285@pali>
-References: <1453063539-18483-1-git-send-email-sre@kernel.org>
+From: Nicolas Boichat <drinkcat@chromium.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: fix out of bounds access in time_in_idle
+Date: Mon, 18 Jan 2016 10:25:35 +0800
+Message-ID: <CANMq1KCD0n1mdp2dU5mL5YZvk5SwMi+Nnwqr+c5Qi7FOPNg2PA@mail.gmail.com>
+References: <1450529677-23426-1-git-send-email-javi.merino@arm.com>
+	<20151221031940.GB5532@ubuntu>
+	<20160105191925.GD3163@e104805>
+	<20160115152055.GA2917@e104805>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2202823.i7Mf4nQNCt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:35390 "EHLO
-	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbcAQUx4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2016 15:53:56 -0500
-Received: by mail-wm0-f54.google.com with SMTP id r129so29223700wmr.0
-        for <linux-pm@vger.kernel.org>; Sun, 17 Jan 2016 12:53:56 -0800 (PST)
-In-Reply-To: <1453063539-18483-1-git-send-email-sre@kernel.org>
+Received: from mail-vk0-f53.google.com ([209.85.213.53]:33345 "EHLO
+	mail-vk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753512AbcARCZg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jan 2016 21:25:36 -0500
+Received: by mail-vk0-f53.google.com with SMTP id i129so186335929vkb.0
+        for <linux-pm@vger.kernel.org>; Sun, 17 Jan 2016 18:25:36 -0800 (PST)
+In-Reply-To: <20160115152055.GA2917@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
+To: Javi Merino <javi.merino@arm.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
---nextPart2202823.i7Mf4nQNCt
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 15, 2016 at 11:20 PM, Javi Merino <javi.merino@arm.com> wrote:
+> Eduardo, Rui,
+>
+> On Tue, Jan 05, 2016 at 07:19:25PM +0000, Javi Merino wrote:
+>> On Mon, Dec 21, 2015 at 08:49:40AM +0530, Viresh Kumar wrote:
+>> > On 19-12-15, 12:54, Javi Merino wrote:
+>> > > In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
+>> > > and time_in_idle_timestamp to be as big as the number of cpus in this
+>> > > cpufreq device.  However, in get_load() we access this array using the
+>> > > cpu number as index, which can result in an out of bound access.
+>> > >
+>> > > Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
+>> > > allowed_cpus mask, as we do for the load_cpu array in
+>> > > cpufreq_get_requested_power()
+>> > >
+>> > > Reported-by: Nicolas Boichat <drinkcat@chromium.org>
+>> > > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+>> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> > > Cc: Zhang Rui <rui.zhang@intel.com>
+>> > > Cc: Eduardo Valentin <edubezval@gmail.com>
+>> > > Signed-off-by: Javi Merino <javi.merino@arm.com>
+>> > > ---
+>> > >  drivers/thermal/cpu_cooling.c | 14 ++++++++------
+>> > >  1 file changed, 8 insertions(+), 6 deletions(-)
+>> >
+>> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> If there are no more objections, can you pick this up?
+>
+> Another gentle ping, can this be merged?
 
-On Sunday 17 January 2016 21:45:39 Sebastian Reichel wrote:
-> Update reviewers for bq27xxx, so that Pali and Andrew
-> are reviewers with status and maintainer inherited from
-> the power supply subsystem entry.
->=20
-> Signed-off-by: Sebastian Reichel <sre@kernel.org>
-> Cc: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> Cc: Andrew F. Davis <afd@ti.com>
-
-Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-
-> ---
->  MAINTAINERS | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 04d62b1e8b17..6b0098f0a098 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -7581,13 +7581,13 @@ S:	Maintained
->  F:	arch/nios2/
->=20
->  NOKIA N900 POWER SUPPLY DRIVERS
-> -M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> -S:	Maintained
-> +R:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
->  F:	include/linux/power/bq2415x_charger.h
->  F:	include/linux/power/bq27xxx_battery.h
->  F:	include/linux/power/isp1704_charger.h
->  F:	drivers/power/bq2415x_charger.c
->  F:	drivers/power/bq27xxx_battery.c
-> +F:	drivers/power/bq27xxx_battery_i2c.c
->  F:	drivers/power/isp1704_charger.c
->  F:	drivers/power/rx51_battery.c
->=20
-> @@ -9414,6 +9414,12 @@ M:	Andreas Noever <andreas.noever@gmail.com>
->  S:	Maintained
->  F:	drivers/thunderbolt/
->=20
-> +TI BQ27XXX POWER SUPPLY DRIVER
-> +R:	Andrew F. Davis <afd@ti.com>
-> +F:	include/linux/power/bq27xxx_battery.h
-> +F:	drivers/power/bq27xxx_battery.c
-> +F:	drivers/power/bq27xxx_battery_i2c.c
-> +
->  TIMEKEEPING, CLOCKSOURCE CORE, NTP, ALARMTIMER
->  M:	John Stultz <john.stultz@linaro.org>
->  M:	Thomas Gleixner <tglx@linutronix.de>
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart2202823.i7Mf4nQNCt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlab/2EACgkQi/DJPQPkQ1L6hACgu7JZNhBuNNrqTgg1t6PmAq+W
-rVgAn3cV+JCta0KjnKhMigTvprmw+lev
-=PsYI
------END PGP SIGNATURE-----
-
---nextPart2202823.i7Mf4nQNCt--
+Tested-by: Nicolas Boichat <drinkcat@chromium.org>
