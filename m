@@ -1,146 +1,77 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous systems
-Date: Mon, 18 Jan 2016 17:42:58 +0100
-Message-ID: <CAKfTPtDJBAXUz=_-QQSkrqwAvmUJd1bUJ-VfSaNER-0NzWpunA@mail.gmail.com>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
- <56994D87.6000709@linaro.org> <20160118151316.GD7159@e106622-lin>
- <CAKfTPtBFR4cowT-j4qVxfUvh6NDNmi6R=J7z9kywi6bONU3Pow@mail.gmail.com> <20160118163014.GA10332@e106622-lin>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
+Date: Mon, 18 Jan 2016 09:58:18 -0700
+Message-ID: <20160118165818.GD1651@linaro.org>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
+ <20160114183316.GB1651@linaro.org>
+ <CAPDyKFpj0Gv=5hVwZWjmgmumHPriuYk+LLVBwjEeW9Jfj8p5Kw@mail.gmail.com>
+ <20160115165758.GC1651@linaro.org>
+ <CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160118163014.GA10332@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Steve Muckle <steve.muckle@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 18 January 2016 at 17:30, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi Vincent,
+On Fri, Jan 15 2016 at 15:08 -0700, Ulf Hansson wrote:
+>[...]
 >
-> On 18/01/16 17:13, Vincent Guittot wrote:
->> On 18 January 2016 at 16:13, Juri Lelli <juri.lelli@arm.com> wrote:
->> > Hi Steve,
->> >
->> > On 15/01/16 11:50, Steve Muckle wrote:
->> >> On 01/08/2016 06:09 AM, Juri Lelli wrote:
->> >> >  2. Dynamic profiling at boot (v2)
->> >> >
->> >> >     pros: - does not require a standardized definition of capacity
->> >> >           - cannot be incorrectly tuned (once benchmark is fixed)
->> >> >           - does not require user/integrator work
->> >> >
->> >> >     cons: - not easy to come up with a clean solution, as it seems interaction
->> >> >             with several subsystems (e.g., cpufreq) is required
->> >> >           - not easy to agree upon a single benchmark (that has to be both
->> >> >             representative and simple enough to run at boot)
->> >> >           - numbers might (and do) vary from boot to boot
->> >>
->> >> An important additional con that was mentioned earlier IIRC was the
->> >> additional boot time required for the benchmark.
->> >
->> > Right. I forgot about that.
->> >
->> >> Perhaps there could be
->> >> a kernel command line argument to bypass the benchmark if it is known
->> >> that predetermined values will be provided via sysfs later?
->> >>
->> >
->> > This might work, yes.
->>
->> Instead of command line, I prefer to use DT.
->>
->> Can't we use something similar to what is currently done in arm arch
->> for the early stage of the boot ? We don't have to provide performance
->> value for which it's difficult to find a consensus on how to define it
->> and which benchmark should be used. We use the micro arch and the
->> frequency of the core to define a relative capacity. This give us a
->> relatively good idea of the capacity of each core.
+>>> I think case 2 and case 3 should be okay to support, but I am really
+>>> questioning case 1.
+>>>
+>> With you other patch, it does make sense to have 2 and 3 instead of 1
+>> and 2.
 >
-> I'm not sure I understand what you are proposing. arm arch is currently
-> based on having static hardcoded data (efficiency values). But, this has
-> already been NACKed for arm64 during last review of this RFC.
+>Okay!
 >
-> Are you proposing something different?
+>> My only concern is as I view the SoC as a whole, there would be cases
+>> where the parent domain could only be non-IRQ safe (turning off a big
+>> regulator may require some sleep) and the subdomains are quicker and
+>> faster IRQ-safe domains. Putting up this restriction, chops up the
+>
+>Just because they are "quick" (don't sleep) doesn't mean they have to
+>set the IRQ safe flag for the domain.
+>
+>Let's compare how pm_runtime_irq_safe() is used for devices in
+>drivers. Lots of corresponding runtime PM callbacks don't sleep, but
+>that don't mean that the driver calls pm_runtime_irq_safe().
+>
+>Drivers that are expecting to invoke pm_runtime_get_sync() (or other
+>synchronous runtime PM API) from atomic context, requires the
+>corresponding runtime PM callbacks to be IRQ safe. Only under these
+>circumstances the pm_runtime_irq_safe() is used.
+>
+I agree.
 
-No, i'm proposing to use it at boot time until the dynamic profiling
-gives better value.
-We don't have to set any new properties.
-IIRC, It was nacked because it was of static hardcoded value that was
-not always reflecting the best accurate capacity of a system. IMHO,
-it's not that far from reality so can't this be used as an
-intermediate step while waiting for dynamic profiling ?
+The limitation and the interpretation could completely be s/w. There is
+nothing preventing that in hardware. So we could have a processor
+subsystem domain that can collapse faster and even during cpuidle. We
+would define that domain IRQ-safe because of its need to collapse and
+resume when IRQs are disabled, but its parent may not have that
+restriction, in fact, the parent could have another child that could
+only operate as non-IRQ safe.
 
-Vincent
+By imposing the limitation that parents of IRQ-safe domains cannot be 
+non-IRQ-safe, we have to chop off that relationship, because of another
+non-IRQ-safe sibling.
 
+>> domain hierarchy. Imagine, if you could represent the whole power domain
+>> organization in DT, but because of this restriction, we may not be able
+>> to do that.
 >
-> Thanks,
+>You do have a point. Considering my comment above, do you still think
+>this may become an issue?
 >
-> - Juri
->
->> Then, the dynamic profiling can update it with a more accurate value
->> during the boot.
->>
->> >
->> >> Though there may be another issue with that as mentioned below.
->> >>
->> >> >  3. sysfs (v1)
->> >> >
->> >> >     pros: - clean and super easy to implement
->> >> >           - values don't require to be physical properties, defining them is
->> >> >             probably easier
->> >> >
->> >> >     cons: - CPUs capacity have to be provided after boot (by some init script?)
->> >> >           - API is modified, still some discussion/review is needed
->> >> >           - values can still be incorrectly used for runtime tuning purposes
->> >>
->> >> Initializing the values via userspace init will cause more of the boot
->> >> process to run with incorrect CPU capacity values. Boot times may be
->> >> increased with tasks running on suboptimal CPUs. Such increases may also
->> >> not be deterministic.
->> >>
->> >> Extending the kernel command line idea above, perhaps capacity values
->> >> could be provided there as well, similar to the lpj parameter? That has
->> >> scalability issues though if there's a huge highly heterogeneous platform...
->> >>
->> >
->> > Yeah, adding such option is not difficult, but I'm also a bit concerned
->> > about the scalability of such a thing.
->> >
->> >> DT solves these issues and would be the perfect place for this - we are
->> >> defining the compute capacity of a CPU which is a property of the
->> >> hardware. However there are a couple things forcing us to compromise.
->> >> One is that the amount and detail of information required to adequately
->> >> capture the computational abilities of a CPU across all possible
->> >> workloads seem onerous to collect and enumerate. The second is that even
->> >> if we were willing to undertake that, CPU vendors probably won't be
->> >> forthcoming with that information.
->> >>
->> >
->> > You mean because they won't publish performance data of their hw?
->> >
->> > But we already use per platform normalized values (as you are proposing
->> > below). So that a platform to platform comparison doesn't make sense.
->> >
->> >> Despite this DT still seems to me like the best way to go. At their
->> >> heart these are properties of the hardware, even if we can't specify
->> >> them as such per se because of the problems above. The capacity would
->> >> have to be defined as a relative value among CPUs. And while it's true
->> >> it may be abused for tuning purposes, that's true of any strategy.
->> >> Certainly the sysfs strategy and even if only a dynamic option is
->> >> provided, it is guaranteed to be hacked by platform vendors.
->> >
->> > I also like the DT approach and consider the sysfs option as something
->> > that can go together with any solution we want to adopt.
->>
->> I'm not sure that we should consider sysfs as an option because of all
->> the concerned that as already been put forward.
->> I would prefer a debugfs if we have play with these capacity values in
->> order to test their accuracy.
->>
->> Regards,
->> Vincent
->> >
->> > Best,
->> >
->> > - Juri
->>
+Yes. Pls see my example below.
+
+That said, I probably won't encounter this limitation in my current
+series, but its not hard to foresee this corner case.
+
+Thanks,
+Lina
