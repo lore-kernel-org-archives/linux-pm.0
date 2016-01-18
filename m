@@ -1,66 +1,486 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 04/17] PM / OPP: Introduce
- dev_pm_opp_get_max_volt_latency()
-Date: Mon, 18 Jan 2016 12:53:37 +0530
-Message-ID: <20160118072337.GA21107@vireshk>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <08691b482198b0709fd258d310a5e6ecda2f1a18.1450777582.git.viresh.kumar@linaro.org>
- <20160112012512.GJ22188@codeaurora.org>
- <20160112051058.GJ1084@ubuntu>
- <20160112194537.GZ22188@codeaurora.org>
- <20160113053447.GB6050@ubuntu>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 1/2] power: act8945a: add charger driver for ACT8945A
+Date: Mon, 18 Jan 2016 17:19:05 +0900
+Message-ID: <569C9FF9.2050005@samsung.com>
+References: <1452659289-30837-1-git-send-email-wenyou.yang@atmel.com>
+ <1452659289-30837-2-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:32849 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbcARHXl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2016 02:23:41 -0500
-Received: by mail-pa0-f41.google.com with SMTP id cy9so429744639pac.0
-        for <linux-pm@vger.kernel.org>; Sun, 17 Jan 2016 23:23:41 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160113053447.GB6050@ubuntu>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:17492 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbcARITO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2016 03:19:14 -0500
+In-reply-to: <1452659289-30837-2-git-send-email-wenyou.yang@atmel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
+To: Wenyou Yang <wenyou.yang@atmel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@dowhile0.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Lee Jones <lee.jones@linaro.org>
 
-On 13-01-16, 11:04, Viresh Kumar wrote:
-> On 12-01-16, 11:45, Stephen Boyd wrote:
-> > > + * Locking: This function takes rcu_read_lock().
-> > 
-> > False.
+On 13.01.2016 13:28, Wenyou Yang wrote:
+> This patch adds new driver for Active-semi ACT8945A ActivePath
+> charger (part of ACT8945A MFD driver) providing power supply class
+> information to userspace.
 > 
-> Yeah, I realized it and fixed it right after sending it:
+> The driver is configured through DTS (battery and system related
+> settings) and sysfs entries (timers and input over-voltage threshold).
 > 
-> + * Locking: This function internally uses mutex locks to keep the integrity of
-> + * the internal data structures. Callers should ensure that this function is
-> + * *NOT* called under RCU protection or in contexts where mutex cannot be
-> + * locked.
+> Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+> ---
 > 
-> > > +	/*
-> > > +	 * Hold our list modification lock here as regulator_set_voltage_time()
-> > > +	 * can possibly take another mutex, which isn't allowed within rcu
-> > > +	 * locks.
-> > > +	 */
-> > > +	mutex_lock(&dev_opp_list_lock);
-> > 
-> > So now we take the list modification mutex. Why can't we
-> > rcu_read_lock(), find the min and max voltage, and then release
-> > the read lock and ask regulator framework for the voltage time?
+> Changes in v4:
+>  - use spaces after #define, not tabs.
+>  - use BIT(n) macros to substitute (0x01 << x).
+>  - change dt properties with more legible name.
 > 
-> That was possible before this series came in..
+> Changes in v3:
+>  - update the file header with short version license and author line.
+>  - remove unused member of struct act8945a_charger, dev.
+>  - action due to removing the member of stuct act8945a_dev, dev.
+>  - remove the unnecessary print out.
+>  - remove the unnecessary act8945a_charger_remove().
+>  - fix align of the code-style.
 > 
-> > From what I can tell we're just trying to make sure that the list
-> > is stable when iterating through it to find the min/max voltage.
+> Changes in v2:
+>  1./ Substitute of_property_read_bool() for of_get_property().
+>  2./ Substitute devm_power_supply_register() for power_supply_register().
+>  3./ Use module_platform_driver(), instead of subsys_initcall().
+>  4./ Substitute MODULE_LICENSE("GPL") for MODULE_LICENSE("GPL v2").
 > 
-> Hmm, we have pointer to regulator within the dev-opp struct. If we
-> drop the lock, the dev-opp struct can get freed and regulator will be
-> put just before that. So, we may be using an already freed resource.
+>  drivers/power/Kconfig            |    7 +
+>  drivers/power/Makefile           |    1 +
+>  drivers/power/act8945a_charger.c |  368 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 376 insertions(+)
+>  create mode 100644 drivers/power/act8945a_charger.c
 > 
-> How do you suggest we fix it ?
+> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> index 1ddd13c..ae75211 100644
+> --- a/drivers/power/Kconfig
+> +++ b/drivers/power/Kconfig
+> @@ -75,6 +75,13 @@ config BATTERY_88PM860X
+>  	help
+>  	  Say Y here to enable battery monitor for Marvell 88PM860x chip.
+>  
+> +config BATTERY_ACT8945A
+> +	tristate "Active-semi ACT8945A charger driver"
+> +	depends on MFD_ACT8945A
+> +	help
+> +	  Say Y here to enable support for power supply provided by
+> +	  Active-semi ActivePath ACT8945A charger.
+> +
+>  config BATTERY_DS2760
+>  	tristate "DS2760 battery driver (HP iPAQ & others)"
+>  	depends on W1 && W1_SLAVE_DS2760
+> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+> index 0e4eab5..e46b75d 100644
+> --- a/drivers/power/Makefile
+> +++ b/drivers/power/Makefile
+> @@ -17,6 +17,7 @@ obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
+>  obj-$(CONFIG_TEST_POWER)	+= test_power.o
+>  
+>  obj-$(CONFIG_BATTERY_88PM860X)	+= 88pm860x_battery.o
+> +obj-$(CONFIG_BATTERY_ACT8945A)	+= act8945a_charger.o
+>  obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
+>  obj-$(CONFIG_BATTERY_DS2780)	+= ds2780_battery.o
+>  obj-$(CONFIG_BATTERY_DS2781)	+= ds2781_battery.o
+> diff --git a/drivers/power/act8945a_charger.c b/drivers/power/act8945a_charger.c
+> new file mode 100644
+> index 0000000..0ebfb66
+> --- /dev/null
+> +++ b/drivers/power/act8945a_charger.c
+> @@ -0,0 +1,368 @@
+> +/*
+> + * Power supply driver for the Active-semi ACT8945A PMIC
+> + *
+> + * Copyright (C) 2015 Atmel Corporation
+> + *
+> + * Author: Wenyou Yang <wenyou.yang@atmel.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +#include <linux/module.h>
+> +#include <linux/mfd/act8945a.h>
+> +#include <linux/of.h>
+> +#include <linux/of_gpio.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/regmap.h>
+> +
+> +static const char *act8945a_charger_model = "ACT8945A";
+> +static const char *act8945a_charger_manufacturer = "Active-semi";
+> +
+> +/**
+> + * ACT8945A Charger Register Map
+> + */
+> +
+> +/* 0x70: Reserved */
+> +#define ACT8945A_APCH_CFG		0x71
+> +#define ACT8945A_APCH_STATUS		0x78
+> +#define ACT8945A_APCH_CTRL		0x79
+> +#define ACT8945A_APCH_STATE		0x7A
+> +
+> +/* ACT8945A_APCH_CFG */
+> +#define APCH_CFG_OVPSET		(0x03 << 0)
+> +#define    APCH_CFG_OVPSET_6V6		(0x0 << 0)
+> +#define    APCH_CFG_OVPSET_7V		(0x1 << 0)
+> +#define    APCH_CFG_OVPSET_7V5		(0x2 << 0)
+> +#define    APCH_CFG_OVPSET_8V		(0x3 << 0)
+> +#define APCH_CFG_PRETIMO	(0x03 << 2)
+> +#define    APCH_CFG_PRETIMO_40_MIN	(0x0 << 2)
+> +#define    APCH_CFG_PRETIMO_60_MIN	(0x1 << 2)
+> +#define    APCH_CFG_PRETIMO_80_MIN	(0x2 << 2)
+> +#define    APCH_CFG_PRETIMO_DISABLED	(0x3 << 2)
+> +#define APCH_CFG_TOTTIMO	(0x03 << 4)
+> +#define    APCH_CFG_TOTTIMO_3_HOUR	(0x0 << 4)
+> +#define    APCH_CFG_TOTTIMO_4_HOUR	(0x1 << 4)
+> +#define    APCH_CFG_TOTTIMO_5_HOUR	(0x2 << 4)
+> +#define    APCH_CFG_TOTTIMO_DISABLED	(0x3 << 4)
 
-Ping..
+To me this still looks ugly. These spaces after #defiine are not needed.
+You are using common prefix so indentation won't help.
 
--- 
-viresh
+Instead just:
++#define APCH_CFG_TOTTIMO		(0x03 << 4)
++#define APCH_CFG_TOTTIMO_3_HOUR	(0x0 << 4)
+
+Easily readable.
+
+> +#define APCH_CFG_SUSCHG		(0x01 << 7)
+> +
+> +#define APCH_STATUS_CHGDAT	BIT(0)
+> +#define APCH_STATUS_INDAT	BIT(1)
+> +#define APCH_STATUS_TEMPDAT	BIT(2)
+> +#define APCH_STATUS_TIMRDAT	BIT(3)
+> +#define APCH_STATUS_CHGSTAT	BIT(4)
+> +#define APCH_STATUS_INSTAT	BIT(5)
+> +#define APCH_STATUS_TEMPSTAT	BIT(6)
+> +#define APCH_STATUS_TIMRSTAT	BIT(7)
+> +
+> +#define APCH_CTRL_CHGEOCOUT	BIT(0)
+> +#define APCH_CTRL_INDIS		BIT(1)
+> +#define APCH_CTRL_TEMPOUT	BIT(2)
+> +#define APCH_CTRL_TIMRPRE	BIT(3)
+> +#define APCH_CTRL_CHGEOCIN	BIT(4)
+> +#define APCH_CTRL_INCON		BIT(5)
+> +#define APCH_CTRL_TEMPIN	BIT(6)
+> +#define APCH_CTRL_TIMRTOT	BIT(7)
+> +
+> +#define APCH_STATE_ACINSTAT	(0x01 << 1)
+> +#define APCH_STATE_CSTATE	(0x03 << 4)
+> +#define APCH_STATE_CSTATE_SHIFT		4
+> +#define		APCH_STATE_CSTATE_DISABLED	0x00
+> +#define		APCH_STATE_CSTATE_EOC		0x01
+> +#define		APCH_STATE_CSTATE_FAST		0x02
+> +#define		APCH_STATE_CSTATE_PRE		0x03
+
+ditto
+
+I didn't point it previously but this is the same pattern...
+
+> +
+> +struct act8945a_charger {
+> +	struct act8945a_dev *act8945a_dev;
+> +	struct power_supply *psy;
+> +
+> +	u32 tolal_time_out;
+> +	u32 pre_time_out;
+> +	u32 input_voltage_threshold;
+> +	bool battery_temperature;
+> +	int chglev_pin;
+> +	int chglev_value;
+> +};
+> +
+> +static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+> +{
+> +	int ret;
+> +	unsigned int status, state;
+> +
+> +	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	state &= APCH_STATE_CSTATE;
+> +	state >>= APCH_STATE_CSTATE_SHIFT;
+> +
+> +	if (state == APCH_STATE_CSTATE_EOC) {
+> +		if (status & APCH_STATUS_CHGDAT)
+> +			*val = POWER_SUPPLY_STATUS_FULL;
+> +		else
+> +			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +	} else if ((state == APCH_STATE_CSTATE_FAST) ||
+> +		   (state == APCH_STATE_CSTATE_PRE)) {
+> +		*val = POWER_SUPPLY_STATUS_CHARGING;
+> +	} else {
+> +		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+> +{
+> +	int ret;
+> +	unsigned int state;
+> +
+> +	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	state &= APCH_STATE_CSTATE;
+> +	state >>= APCH_STATE_CSTATE_SHIFT;
+> +
+> +	switch (state) {
+> +	case APCH_STATE_CSTATE_PRE:
+> +		*val = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
+> +		break;
+> +	case APCH_STATE_CSTATE_FAST:
+> +		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
+> +		break;
+> +	case APCH_STATE_CSTATE_EOC:
+> +	case APCH_STATE_CSTATE_DISABLED:
+> +	default:
+> +		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int act8945a_get_battery_health(struct act8945a_charger *charger,
+> +				       struct regmap *regmap, int *val)
+> +{
+> +	int ret;
+> +	unsigned int status;
+> +
+> +	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
+> +		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
+> +	else if (!(status & APCH_STATUS_INDAT))
+> +		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> +	else if (status & APCH_STATUS_TIMRDAT)
+> +		*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+> +	else
+> +		*val = POWER_SUPPLY_HEALTH_GOOD;
+> +
+> +	return 0;
+> +}
+> +
+> +static enum power_supply_property act8945a_charger_props[] = {
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+> +	POWER_SUPPLY_PROP_HEALTH,
+> +	POWER_SUPPLY_PROP_MODEL_NAME,
+> +	POWER_SUPPLY_PROP_MANUFACTURER
+> +};
+> +
+> +static int act8945a_charger_get_property(struct power_supply *psy,
+> +					 enum power_supply_property prop,
+> +					 union power_supply_propval *val)
+> +{
+> +	struct act8945a_charger *charger = power_supply_get_drvdata(psy);
+> +	struct regmap *regmap = charger->act8945a_dev->regmap;
+> +	int ret = 0;
+> +
+> +	switch (prop) {
+> +	case POWER_SUPPLY_PROP_STATUS:
+> +		ret = act8945a_get_charger_state(regmap, &val->intval);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+> +		ret = act8945a_get_charge_type(regmap, &val->intval);
+> +		break;
+> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
+> +		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
+> +		break;
+> +	case POWER_SUPPLY_PROP_HEALTH:
+> +		ret = act8945a_get_battery_health(charger,
+> +						  regmap, &val->intval);
+> +		break;
+> +	case POWER_SUPPLY_PROP_MODEL_NAME:
+> +		val->strval = act8945a_charger_model;
+> +		break;
+> +	case POWER_SUPPLY_PROP_MANUFACTURER:
+> +		val->strval = act8945a_charger_manufacturer;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct power_supply_desc act8945a_charger_desc = {
+> +	.name		= "act8945a-charger",
+> +	.type		= POWER_SUPPLY_TYPE_BATTERY,
+> +	.get_property	= act8945a_charger_get_property,
+> +	.properties	= act8945a_charger_props,
+> +	.num_properties	= ARRAY_SIZE(act8945a_charger_props),
+> +};
+> +
+> +#define DEFAULT_TOTAL_TIME_OUT		3
+> +#define DEFAULT_PRE_TIME_OUT		40
+> +#define DEFAULT_INPUT_OVP_THRESHOLD	6600
+> +
+> +static int act8945a_charger_parse_dt(struct device *dev,
+> +				     struct act8945a_charger *charger)
+> +{
+> +	struct device_node *np = dev->of_node;
+> +	enum of_gpio_flags flags;
+> +
+> +	if (!np) {
+> +		dev_err(dev, "no charger of node\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	charger->chglev_pin = of_get_named_gpio_flags(np,
+> +				"active-semi,chglev-gpios", 0, &flags);
+> +
+> +	charger->chglev_value = (flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
+> +
+> +	charger->battery_temperature = of_property_read_bool(np,
+> +				"active-semi,check-battery-temperature");
+> +
+> +	if (of_property_read_u32(np,
+> +			"active-semi,input-voltage-threshold-microvolt",
+> +			&charger->input_voltage_threshold))
+> +		charger->input_voltage_threshold = DEFAULT_PRE_TIME_OUT;
+> +
+> +	if (of_property_read_u32(np, "active-semi,precondition-timeout",
+> +				 &charger->pre_time_out))
+> +		charger->pre_time_out = DEFAULT_PRE_TIME_OUT;
+> +
+> +	if (of_property_read_u32(np, "active-semi,total-timeout",
+> +				 &charger->tolal_time_out))
+> +		charger->tolal_time_out = DEFAULT_TOTAL_TIME_OUT;
+> +
+> +	return 0;
+> +}
+> +
+> +static int act8945a_charger_config(struct act8945a_charger *charger)
+> +{
+> +	struct regmap *regmap = charger->act8945a_dev->regmap;
+> +	u8 value = 0;
+
+Nothing changed here so you ignored my previous comment. That is not how
+we interact. If you do not agree with them it is fine. In such case
+write that you do not agree. We will discuss and reach a consensus.
+
+However you wrote "I will try" and then the comment was ignored...
+
+> +
+> +	if (gpio_is_valid(charger->chglev_pin))
+> +		gpio_set_value(charger->chglev_pin, charger->chglev_value);
+> +
+> +	switch (charger->input_voltage_threshold) {
+> +	case 8000:
+> +		value |= APCH_CFG_OVPSET_8V;
+> +		break;
+> +	case 7500:
+> +		value |= APCH_CFG_OVPSET_7V5;
+> +		break;
+> +	case 7000:
+> +		value |= APCH_CFG_OVPSET_7V;
+> +		break;
+> +	case 6600:
+> +	default:
+> +		value |= APCH_CFG_OVPSET_6V6;
+> +		break;
+> +	}
+> +
+> +	switch (charger->pre_time_out) {
+> +	case 60:
+> +		value |= APCH_CFG_PRETIMO_60_MIN;
+> +		break;
+> +	case 80:
+> +		value |= APCH_CFG_PRETIMO_80_MIN;
+> +		break;
+> +	case 0:
+> +		value |= APCH_CFG_PRETIMO_DISABLED;
+> +		break;
+> +	case 40:
+> +	default:
+> +		value |= APCH_CFG_PRETIMO_40_MIN;
+> +		break;
+> +	}
+> +
+> +	switch (charger->tolal_time_out) {
+> +	case 4:
+> +		value |= APCH_CFG_TOTTIMO_4_HOUR;
+> +		break;
+> +	case 5:
+> +		value |= APCH_CFG_TOTTIMO_5_HOUR;
+> +		break;
+> +	case 0:
+> +		value |= APCH_CFG_TOTTIMO_DISABLED;
+> +		break;
+> +	case 3:
+> +	default:
+> +		value |= APCH_CFG_TOTTIMO_3_HOUR;
+> +		break;
+> +	}
+> +
+> +	return regmap_write(regmap, ACT8945A_APCH_CFG, value);
+> +}
+> +
+> +static int act8945a_charger_probe(struct platform_device *pdev)
+> +{
+> +	struct act8945a_dev *act8945a_dev = dev_get_drvdata(pdev->dev.parent);
+> +	struct act8945a_charger *charger;
+> +	struct power_supply_config psy_cfg = {};
+> +	int ret;
+> +
+> +	charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
+> +	if (!charger)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, charger);
+> +
+> +	charger->act8945a_dev = act8945a_dev;
+> +
+> +	ret = act8945a_charger_parse_dt(&pdev->dev, charger);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = act8945a_charger_config(charger);
+> +	if (ret)
+> +		return ret;
+> +
+> +	psy_cfg.of_node	= pdev->dev.of_node;
+> +	psy_cfg.drv_data = charger;
+> +
+> +	charger->psy = devm_power_supply_register(&pdev->dev,
+> +						  &act8945a_charger_desc,
+> +						  &psy_cfg);
+> +	if (IS_ERR(charger->psy)) {
+> +		dev_err(&pdev->dev, "failed to register power supply\n");
+> +		return PTR_ERR(charger->psy);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver act8945a_charger_driver = {
+> +	.driver	= {
+> +		.name = "act8945a-charger",
+> +	},
+> +	.probe	= act8945a_charger_probe,
+> +};
+> +module_platform_driver(act8945a_charger_driver);
+
+Is your driver auto-loaded properly when built as a module? By
+auto-loading I mean auto-loaded by udev, not by putting to some
+rc-script or other modprobe-load scripts.
+
+BR,
+Krzysztof
+
