@@ -1,82 +1,48 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
-Date: Mon, 18 Jan 2016 10:00:48 -0700
-Message-ID: <20160118170048.GE1651@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
- <20160114183316.GB1651@linaro.org>
- <CAPDyKFpj0Gv=5hVwZWjmgmumHPriuYk+LLVBwjEeW9Jfj8p5Kw@mail.gmail.com>
- <20160115165758.GC1651@linaro.org>
- <CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
- <20160118165818.GD1651@linaro.org>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH 8/9] drivers/cpuidle: coupled: fix warning
+ cpuidle_coupled_lock
+Date: Mon, 18 Jan 2016 18:02:09 +0100
+Message-ID: <20160118170209.GA12309@linutronix.de>
+References: <1452885673-30891-9-git-send-email-anders.roxell@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-rt-users-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160118165818.GD1651@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+In-Reply-To: <1452885673-30891-9-git-send-email-anders.roxell@linaro.org>
+Sender: linux-rt-users-owner@vger.kernel.org
+To: Anders Roxell <anders.roxell@linaro.org>
+Cc: linux-rt-users@vger.kernel.org, khilman@kernel.org, ccross@android.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 18 2016 at 09:58 -0700, Lina Iyer wrote:
->On Fri, Jan 15 2016 at 15:08 -0700, Ulf Hansson wrote:
->>[...]
->>
->>>>I think case 2 and case 3 should be okay to support, but I am really
->>>>questioning case 1.
->>>>
->>>With you other patch, it does make sense to have 2 and 3 instead of 1
->>>and 2.
->>
->>Okay!
->>
->>>My only concern is as I view the SoC as a whole, there would be cases
->>>where the parent domain could only be non-IRQ safe (turning off a big
->>>regulator may require some sleep) and the subdomains are quicker and
->>>faster IRQ-safe domains. Putting up this restriction, chops up the
->>
->>Just because they are "quick" (don't sleep) doesn't mean they have to
->>set the IRQ safe flag for the domain.
->>
->>Let's compare how pm_runtime_irq_safe() is used for devices in
->>drivers. Lots of corresponding runtime PM callbacks don't sleep, but
->>that don't mean that the driver calls pm_runtime_irq_safe().
->>
->>Drivers that are expecting to invoke pm_runtime_get_sync() (or other
->>synchronous runtime PM API) from atomic context, requires the
->>corresponding runtime PM callbacks to be IRQ safe. Only under these
->>circumstances the pm_runtime_irq_safe() is used.
->>
->I agree.
->
->The limitation and the interpretation could completely be s/w. There is
->nothing preventing that in hardware. So we could have a processor
->subsystem domain that can collapse faster and even during cpuidle. We
->would define that domain IRQ-safe because of its need to collapse and
->resume when IRQs are disabled, but its parent may not have that
->restriction, in fact, the parent could have another child that could
->only operate as non-IRQ safe.
->
->By imposing the limitation that parents of IRQ-safe domains cannot be 
->non-IRQ-safe, we have to chop off that relationship, because of 
->another
->non-IRQ-safe sibling.
->
->>>domain hierarchy. Imagine, if you could represent the whole power domain
->>>organization in DT, but because of this restriction, we may not be able
->>>to do that.
->>
->>You do have a point. Considering my comment above, do you still think
->>this may become an issue?
->>
->Yes. Pls see my example below.
->
-Sorry above ;)
+* Anders Roxell | 2016-01-15 20:21:12 [+0100]:
 
->That said, I probably won't encounter this limitation in my current
->series, but its not hard to foresee this corner case.
+>Used multi_v7_defconfig+PREEMPT_RT_FULL=y and this caused a compilation
+>warning without this fix:
+>../drivers/cpuidle/coupled.c:122:21: warning: 'cpuidle_coupled_lock'
+>defined but not used [-Wunused-variable]
 >
->Thanks,
->Lina
+>Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+
+Could you please forward this patch upstream? The driver was introduced
+in 4126c0197bc8 ("cpuidle: add support for states that affect multiple
+cpus") with the cpuidle_coupled_lock variable unused. This is not -RT
+specific.
+
+>---
+> drivers/cpuidle/coupled.c | 1 -
+> 1 file changed, 1 deletion(-)
+>
+>diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+>index 344058f..d5657d5 100644
+>--- a/drivers/cpuidle/coupled.c
+>+++ b/drivers/cpuidle/coupled.c
+>@@ -119,7 +119,6 @@ struct cpuidle_coupled {
+> 
+> #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
+> 
+>-static DEFINE_MUTEX(cpuidle_coupled_lock);
+> static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
+> 
+> /*
+
+Sebastian
