@@ -1,39 +1,26 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 0/2] cpuidle optimizations (on top of linux-next)
-Date: Mon, 18 Jan 2016 13:45:42 +0000
-Message-ID: <569CEC86.5080002@arm.com>
-References: <1621492.NI2xz9vt7M@vostro.rjw.lan>
+From: =?UTF-8?B?SmlubnkgQ2xhcm9z?= <jinnygwtclaros@mail.ua>
+Subject: (unknown)
+Date: Mon, 18 Jan 2016 16:23:42 +0300
+Message-ID: <1453123422.944745016@f388.i.mail.ru>
+Reply-To: =?UTF-8?B?SmlubnkgQ2xhcm9z?= <jinnygwtclaros@mail.ua>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34705 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754902AbcARNpp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Jan 2016 08:45:45 -0500
-In-Reply-To: <1621492.NI2xz9vt7M@vostro.rjw.lan>
+Received: from fallback8.mail.ru ([94.100.181.110]:54308 "EHLO
+	fallback8.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754958AbcARN62 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jan 2016 08:58:28 -0500
+Received: from f388.i.mail.ru (f388.i.mail.ru [185.5.136.59])
+	by fallback8.mail.ru (mPOP.Fallback_MX) with ESMTP id 6B6C8938E6BC
+	for <linux-pm@vger.kernel.org>; Mon, 18 Jan 2016 16:23:45 +0300 (MSK)
+Received: from [175.140.134.231] (ident=mail)
+	by f388.i.mail.ru with local (envelope-from <jinnygwtclaros@mail.ua>)
+	id 1aL9mY-0000mY-TJ
+	for linux-pm@vger.kernel.org; Mon, 18 Jan 2016 16:23:43 +0300
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: linux-pm@vger.kernel.org
 
-
-
-On 15/01/16 23:53, Rafael J. Wysocki wrote:
-> Hi,
->
-> When I was looking at the cpuidle code after the Sudeeps's problem report,
-> it occured to me that we had some pointless overhead there, so two
-> changes to reduce it follow.
->
-> [1/2] Make the fallback to to default_idle_call() in call_cpuidle()
->        unnecessary and drop it.
-> [2/2] Make menu_select() avoid checking states that don't need to
->        (or even shouldn't) be checked when making the selection.
->
-
-Tested-by: Sudeep Holla <sudeep.holla@arm.com>
-
--- 
-Regards,
-Sudeep
+UmVpbnZlbnQgaG93IHBlb3BsZSBsb29rIGF0IHlvdQpodHRwOi8vdGdmamNwZmF2eC4lNzMlNzAl
+NjUlNjMlNjklNjElNmMlNzIlNjUlNzAlNjclNjklNjYlNzQlMmUlNzIlNzUK
