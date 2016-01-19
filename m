@@ -1,22 +1,25 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Crash introduced by commit b8b2c7d845d5 ("base/platform: assert
  that dev_pm_domain callbacks are called unconditionally")
-Date: Tue, 19 Jan 2016 11:55:12 -0800
-Message-ID: <20160119195512.GA17729@kroah.com>
-References: <Pine.LNX.4.44L0.1601191312260.1312-100000@iolanthe.rowland.org>
- <20160119190709.GA3338@pengutronix.de>
+Date: Tue, 19 Jan 2016 15:06:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1601191504470.1312-100000@iolanthe.rowland.org>
+References: <20160119190709.GA3338@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:34265 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757440AbcASUGL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 15:06:11 -0500
 In-Reply-To: <20160119190709.GA3338@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Tue, Jan 19, 2016 at 08:07:09PM +0100, Uwe Kleine-K=F6nig wrote:
+On Tue, 19 Jan 2016, Uwe [iso-8859-1] Kleine-K=F6nig wrote:
+
 > Hello Alan,
 >=20
 > On Tue, Jan 19, 2016 at 01:22:22PM -0500, Alan Stern wrote:
@@ -51,8 +54,8 @@ s.fujitsu.com
 >=20
 > Greg, I'd welcome this fix in mainline and 4.4.x.
 
-Yes it's in my queue to get to after 4.5-rc1 -s out.
+Yep, that fixed it, thank you.  This definitely needs to get into 4.4.x
+as soon as possible.
 
-thanks,
+Alan Stern
 
-greg k-h
