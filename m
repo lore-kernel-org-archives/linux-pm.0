@@ -1,56 +1,59 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Tue, 19 Jan 2016 14:42:33 +0000
-Message-ID: <20160119144233.GG8573@e106622-lin>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
- <20160112112409.GJ1084@ubuntu>
- <20160113005452.10884.77606@quark.deferred.io>
- <20160113063148.GJ6050@ubuntu>
- <20160113182131.1168.45753@quark.deferred.io>
- <20160119140036.GG6344@twins.programming.kicks-ass.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
+ systems
+Date: Tue, 19 Jan 2016 16:05:51 +0100
+Message-ID: <20160119150551.GI6344@twins.programming.kicks-ass.net>
+References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40208 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbcASOmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Jan 2016 09:42:06 -0500
+Received: from bombadil.infradead.org ([198.137.202.9]:50701 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbcASPGF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 10:06:05 -0500
 Content-Disposition: inline
-In-Reply-To: <20160119140036.GG6344@twins.programming.kicks-ass.net>
+In-Reply-To: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
 
-On 19/01/16 15:00, Peter Zijlstra wrote:
-> On Wed, Jan 13, 2016 at 10:21:31AM -0800, Michael Turquette wrote:
-> > RCU is absolutely not a magic bullet or elixir that lets us kick off
-> > DVFS transitions from the schedule() context. The frequency transitions
-> > are write-side operations, as we invariably touch struct cpufreq_policy.
-> > This means that the read-side stuff can live in the schedule() context,
-> > but write-side needs to be kicked out to a thread.
+On Fri, Jan 08, 2016 at 02:09:28PM +0000, Juri Lelli wrote:
+> Second version of this RFC proposes an alternative solution (w.r.t. v1) to the
+> problem of how do we init CPUs original capacity: we run a bogus benchmark (for
+> this RFC I simple stole int_sqrt from lib/ and I run that in a loop to perform
+> some integer computation, I'm sure there are better benchmarks around) on the
+> first cpu of each frequency domain (assuming no u-arch differences inside
+> domains), measure time to complete a fixed number of iterations and then
+> normalize results to SCHED_CAPACITY_SCALE (1024). I didn't spend much time in
+> polishing this up or thinking about a better benchmark, as this is an RFC and
+> I'd like discussion happening before we make this solution better
+> working/looking. However, surprisingly, results are not that bad already:
+
+>  2. Dynamic profiling at boot (v2)
 > 
-> Why? If the state is per-cpu and acquired by RCU, updates should be no
-> problem at all.
+>     pros: - does not require a standardized definition of capacity
+>           - cannot be incorrectly tuned (once benchmark is fixed)
+>           - does not require user/integrator work
 > 
-> If you need inter-cpu state, then things get to be a little tricky
-> though, but you can actually nest a raw_spinlock_t in there if you
-> absolutely have to.
+>     cons: - not easy to come up with a clean solution, as it seems interaction
+>             with several subsystems (e.g., cpufreq) is required
+>           - not easy to agree upon a single benchmark (that has to be both
+>             representative and simple enough to run at boot)
+>           - numbers might (and do) vary from boot to boot
+
+This last point is a total pain for benchmarking, it means nothing is
+every reproducible.
+
+Therefore, I would always augment the above (2) with the below (3), such
+that you can overwrite the results with a known stable set of numbers:
+
+>  3. sysfs (v1)
 > 
-
-We have at least two problems. First one is that state is per frequency
-domain (struct cpufreq_policy) and this usually spans more than one cpu.
-Second one is that we might need to sleep while servicing the frequency
-transition, both because platform needs to sleep and because some paths
-of cpufreq core use sleeping locks (yes, that might be changed as well I
-guess).  A solution based on spinlocks only might not be usable on
-platforms that needs to sleep, also.
-
-Another thing that I was thinking of actually is that since struct
-cpufreq_policy is updated a lot (more or less at every frequency
-transition), is it actually suitable for RCU?
-
-Best,
-
-- Juri
+>     pros: - clean and super easy to implement
+>           - values don't require to be physical properties, defining them is
+>             probably easier
+> 
+>     cons: - CPUs capacity have to be provided after boot (by some init script?)
+>           - API is modified, still some discussion/review is needed
+>           - values can still be incorrectly used for runtime tuning purposes
