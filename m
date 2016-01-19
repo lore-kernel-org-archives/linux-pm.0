@@ -1,90 +1,118 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 08/27] PM / Domains: Support IRQ safe PM domains
-Date: Tue, 19 Jan 2016 11:01:51 +0100
-Message-ID: <CAPDyKFpV4mNdYt=KVXARrcZALcqL-7wjcDumeNkT0yCnymk42g@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-9-git-send-email-lina.iyer@linaro.org>
-	<CAPDyKFoKpgURMYoepWH0TNK1=bFp4uyQCHUSnPiXmLxC7BNyRA@mail.gmail.com>
-	<20160114183316.GB1651@linaro.org>
-	<CAPDyKFpj0Gv=5hVwZWjmgmumHPriuYk+LLVBwjEeW9Jfj8p5Kw@mail.gmail.com>
-	<20160115165758.GC1651@linaro.org>
-	<CAPDyKFo4qe8THwJQd1aNQwpbjV1phOGKz_gEuP-wRD6Dgtx0pg@mail.gmail.com>
-	<20160118165818.GD1651@linaro.org>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Tue, 19 Jan 2016 16:02:30 +0530
+Message-ID: <569E10BE.2020809@ti.com>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com> <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com> <56977BA7.702@ti.com>
+ <20160114112354.GA17869@gmail.com>
+ <20160114132527.575e0f20@lxorguk.ukuu.org.uk>
+ <20160115101459.GB23349@gmail.com> <5698F420.2010500@ti.com>
+ <20160119090623.GA29678@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160118165818.GD1651@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:50677 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932625AbcASKeC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 05:34:02 -0500
+In-Reply-To: <20160119090623.GA29678@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-On 18 January 2016 at 17:58, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Fri, Jan 15 2016 at 15:08 -0700, Ulf Hansson wrote:
->>
->> [...]
->>
->>>> I think case 2 and case 3 should be okay to support, but I am really
->>>> questioning case 1.
+Hi Ingo,
+
+On Tuesday 19 January 2016 02:36 PM, Ingo Molnar wrote:
+>
+> * Grygorii Strashko <grygorii.strashko@ti.com> wrote:
+>
+>> On 01/15/2016 12:14 PM, Ingo Molnar wrote:
+>>>
+>>> * One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
+>>>
+>>>>> If kernel_power_off() is called then the system should power off. No ifs and
+>>>>> whens.
 >>>>
->>> With you other patch, it does make sense to have 2 and 3 instead of 1
->>> and 2.
+>>>> Even if it doesn't the watchdog should kill it.
+>>>>
+>>>> That is broken on some platforms on the watchdog side as the
+>>>> watchdog shuts down during our power off callbacks - because the system
+>>>> firmware is too stupid to reset the watchdog as it powers back up (so
+>>>> keeps rebooting).
+>>>>
+>>>> If you watchdog and firmware function properly you shouldn't even have to
+>>>> care if you crash during the kernel power off.
+>>>
+>>> That's a good point as well - if the system is 'stuck' for some notion of stuck,
+>>> then watchdog drivers can help.
+>>>
+>>
+>> Seems ARM doesn't have endless loop implemented in machine_power_off() - so,
+>> not too much chances for Watchdog to fire.
+>> void machine_power_off(void)
+>> {
+>> 	local_irq_disable();
+>> 	smp_send_stop();
+>>
+>> 	if (pm_power_off)
+>> 		pm_power_off();
+>>
+>> 	--- endless loop ?
+>> 	--- or restart ?
+>> }
+>> [and even if it will be there - 20-30sec is usual timeout for Watchdog and this
+>> enough time to burn the system in case of thermal emergency poweroff :(]
+>>
+>>> Here it's unclear whether user-space even called the sys_reboot() system call.
+>>>
+>>
+>> That's true - original log [1] has
+>> Nov 30 11:19:22 [    5.942769] thermal thermal_zone3: critical temperature reached(108 C),shutting down
+>> [...]
+>> Nov 30 11:19:24 [    7.387900] ahci 4a140000.sata: flags: 64bit ncq sntf stag pm led clo only pmp pio slum part ccc apst
+>> Nov 30 11:19:24 INIT: Switching to runlevel: 0
+>> Nov 30 11:19:24 INIT: Sending processes the TERM signal
+>>
+>> and there are no
+>> [  220.004522] reboot: Power down
 >>
 >>
->> Okay!
+>> Also, It's not the first time this part of code is discussed (thermal emergency poweroff) [2],
+>> so the good question, as for me, is it really required and safe to use orderly_poweroff() in
+>> case of thermal emergency poweroff ([3] as example)?
 >>
->>> My only concern is as I view the SoC as a whole, there would be cases
->>> where the parent domain could only be non-IRQ safe (turning off a big
->>> regulator may require some sleep) and the subdomains are quicker and
->>> faster IRQ-safe domains. Putting up this restriction, chops up the
->>
->>
->> Just because they are "quick" (don't sleep) doesn't mean they have to
->> set the IRQ safe flag for the domain.
->>
->> Let's compare how pm_runtime_irq_safe() is used for devices in
->> drivers. Lots of corresponding runtime PM callbacks don't sleep, but
->> that don't mean that the driver calls pm_runtime_irq_safe().
->>
->> Drivers that are expecting to invoke pm_runtime_get_sync() (or other
->> synchronous runtime PM API) from atomic context, requires the
->> corresponding runtime PM callbacks to be IRQ safe. Only under these
->> circumstances the pm_runtime_irq_safe() is used.
->>
-> I agree.
+>> In general, this kind of use case can be simulated using SysRq on any arch
+>> - [3.290034] Freeing unused kernel memory: 492K (c0a67000 - c0ae2000)
+>>    INIT: version 2.88 booting
+>>    Starting udev
+>> ^^ The issue most probably might happens when system in the process of loading modules
+>> So, once modules loading process is started - fire Sysrq "poweroff(o)"
 >
-> The limitation and the interpretation could completely be s/w. There is
-> nothing preventing that in hardware. So we could have a processor
-> subsystem domain that can collapse faster and even during cpuidle. We
-> would define that domain IRQ-safe because of its need to collapse and
-> resume when IRQs are disabled, but its parent may not have that
-> restriction, in fact, the parent could have another child that could
-> only operate as non-IRQ safe.
+> So I'd say emergency poweroff should be named accordingly - and the
+> orderly_poweroff() name suggest anything but an emergency, right?
 >
-> By imposing the limitation that parents of IRQ-safe domains cannot be
-> non-IRQ-safe, we have to chop off that relationship, because of another
-> non-IRQ-safe sibling.
+> So I'd be fine with the following:
 >
->>> domain hierarchy. Imagine, if you could represent the whole power domain
->>> organization in DT, but because of this restriction, we may not be able
->>> to do that.
->>
->>
->> You do have a point. Considering my comment above, do you still think
->> this may become an issue?
->>
-> Yes. Pls see my example below.
+>   - introduce a poweroff_emergency() core kernel function call
 >
-> That said, I probably won't encounter this limitation in my current
-> series, but its not hard to foresee this corner case.
+>   - use it in drivers where it's justified
+>
+>   - poweroff_emergency() has a configurable timeout value. If the timeout value is
+>     set to 0 then it powers the system off immediately.
+>
+> Functionally it would be mostly equivalent to your current patch (except the '0'
+> immediate poweroff functionality).
 
-Okay, thanks for sharing your thoughts.
+Thanks for the suggestion. I will work on this and get back.
 
-For now, I suggest we leave case 1) as a non-supported option.
+Best Regards,
+Keerthy
 
-When we have a valid use case for case 1), we anyway will have to
-think of a better approach than what's suggested in $subject patch,
-since keeping the parent domain always powered on isn't good enough.
-
-Kind regards
-Uffe
+>
+> Thanks,
+>
+> 	Ingo
+>
