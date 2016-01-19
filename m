@@ -1,56 +1,43 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 2/2] power: Add support for TI BQ24261 charger
-Date: Tue, 19 Jan 2016 09:02:32 +0200
-Message-ID: <CAHp75VcBAHg3trt45xVr6m9ppDyv+TSZEEVsWra3QVRWGKfC1g@mail.gmail.com>
-References: <1446136455-20752-1-git-send-email-ramakrishna.pallala@intel.com>
-	<1446136455-20752-3-git-send-email-ramakrishna.pallala@intel.com>
-	<CAHp75Vde8ZFXZC9SzKSaXS8TThJd1u=+UMHPOiTWZvY1P4xKqw@mail.gmail.com>
-	<D854C92F57B1B347B57E531E78D05EAD57A22F3D@BGSMSX104.gar.corp.intel.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 0/2] cpuidle optimizations (on top of linux-next)
+Date: Tue, 19 Jan 2016 08:28:11 +0100
+Message-ID: <20160119072811.GA11346@gmail.com>
+References: <1621492.NI2xz9vt7M@vostro.rjw.lan>
+ <569CEC86.5080002@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <D854C92F57B1B347B57E531E78D05EAD57A22F3D@BGSMSX104.gar.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:34517 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbcASH2R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 02:28:17 -0500
+Content-Disposition: inline
+In-Reply-To: <569CEC86.5080002@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Tue, Jan 19, 2016 at 3:26 AM, Pallala, Ramakrishna
-<ramakrishna.pallala@intel.com> wrote:
->> On Thu, Oct 29, 2015 at 6:34 PM, Ramakrishna Pallala
->> <ramakrishna.pallala@intel.com> wrote:
->> > Add new charger driver support for TI BQ24261 charger IC.
->> >
->> > TI BQ24261 charger driver relies on extcon notifications to get the
->> > charger cable type and based on that it will set the charging parameters.
 
->> > +/* BQ24261 registers */
->> > +#define BQ24261_STAT_CTRL0_ADDR                0x00
->> > +#define BQ24261_CTRL_ADDR              0x01
->> > +#define BQ24261_BATT_VOL_CTRL_ADDR     0x02
->> > +#define BQ24261_VENDOR_REV_ADDR                0x03
->> > +#define BQ24261_TERM_FCC_ADDR          0x04
->> > +#define BQ24261_VINDPM_STAT_ADDR       0x05
->> > +#define BQ24261_ST_NTC_MON_ADDR                0x06
->> > +
->> > +#define BQ24261_RESET_ENABLE           BIT(7)
->> > +
->>
->> Might be a good idea to put comment line preceded each group to refer which
->> register it covers.
-> Ok.
->
->>
->> > +#define BQ24261_FAULT_MASK             GENMASK(2, 0)
->>
->> Either use GENMASK in each case, or put plain number.
->>
-> Ok.
+* Sudeep Holla <sudeep.holla@arm.com> wrote:
 
-Looking to your definitions again I can say that GENMASK is more
-readable. Regarding to BIT() macro you have to do smart choice in each
-case separately.
+> On 15/01/16 23:53, Rafael J. Wysocki wrote:
+> >Hi,
+> >
+> >When I was looking at the cpuidle code after the Sudeeps's problem report,
+> >it occured to me that we had some pointless overhead there, so two
+> >changes to reduce it follow.
+> >
+> >[1/2] Make the fallback to to default_idle_call() in call_cpuidle()
+> >       unnecessary and drop it.
+> >[2/2] Make menu_select() avoid checking states that don't need to
+> >       (or even shouldn't) be checked when making the selection.
+> >
+> 
+> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
 
--- 
-With Best Regards,
-Andy Shevchenko
+Rafael, can I pick these up into the scheduler tree?
+
+Thanks,
+
+	Ingo
