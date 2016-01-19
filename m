@@ -1,62 +1,63 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
- systems
-Date: Tue, 19 Jan 2016 17:50:38 +0000
-Message-ID: <20160119175038.GS6588@sirena.org.uk>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
- <20160119150551.GI6344@twins.programming.kicks-ass.net>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH 0/4] nvmem: new drivers for v4.5
+Date: Tue, 19 Jan 2016 10:15:45 -0800
+Message-ID: <CAGS+omDHYeDCaHJC8Q3i4utTUJt40FPyq6S_maQ7scG_2oDmsQ@mail.gmail.com>
+References: <1449485763-391-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <5693AC68.6040802@linaro.org> <20160111183018.GA10243@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="pA3GpxlsFRhNUARh"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:34152 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755254AbcASRuu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 12:50:50 -0500
-Content-Disposition: inline
-In-Reply-To: <20160119150551.GI6344@twins.programming.kicks-ass.net>
+Received: from mail-vk0-f54.google.com ([209.85.213.54]:34977 "EHLO
+	mail-vk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932510AbcASSQG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 13:16:06 -0500
+Received: by mail-vk0-f54.google.com with SMTP id k1so353052779vkb.2
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2016 10:16:05 -0800 (PST)
+In-Reply-To: <20160111183018.GA10243@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, ariel@vanguardiasur.com.ar, Sascha Hauer <s.hauer@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org
 
+Hi Greg,
 
---pA3GpxlsFRhNUARh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Mon, Jan 11, 2016 at 10:30 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
+>
+> On Mon, Jan 11, 2016 at 01:21:44PM +0000, Srinivas Kandagatla wrote:
+> >
+> >
+> > On 07/12/15 10:56, Srinivas Kandagatla wrote:
+> > >Hi Greg,
+> > >
+> > >Here are 2 new nvmem drivers which are in the mailing list for long time
+> > >and are good to go for some testing and find its way to v4.5-rc*.
+> > >
+> > >Could you please take these patches via char-misc tree.
+> > Hi Greg,
+> >
+> > I have not seen these patches or https://lkml.org/lkml/2015/12/14/169 appear
+> > in your char-misc tree/linux-next.
+> >
+> > Just wanted to know whats your plan on these patches?
+>
+> To wait until after 4.5-rc1 is out, sorry, my patch backlog got huge
+> during Nov/Dec due to other external issues, I'll be digging out from
+> them after 4.5-rc1 is out.
 
-On Tue, Jan 19, 2016 at 04:05:51PM +0100, Peter Zijlstra wrote:
-> On Fri, Jan 08, 2016 at 02:09:28PM +0000, Juri Lelli wrote:
+Soon after 4.5-rc1 sounds great.
 
-> >     cons: - not easy to come up with a clean solution, as it seems interaction
-> >             with several subsystems (e.g., cpufreq) is required
-> >           - not easy to agree upon a single benchmark (that has to be both
-> >             representative and simple enough to run at boot)
-> >           - numbers might (and do) vary from boot to boot
+FYI, to add some context, the Mediatek nvmem driver is actually
+blocking several other drivers that we would also like to see land in
+v4.5:  Mediatek thermal, Mediatek cpufreq_thermal, and Mediatek
+devfreq_thermal.
 
-> This last point is a total pain for benchmarking, it means nothing is
-> every reproducible.
+So, the sooner nvmem lands, the earlier we can start staging/pushing
+through the rest.
 
-> Therefore, I would always augment the above (2) with the below (3), such
-> that you can overwrite the results with a known stable set of numbers:
+Thanks,
+-Dan
 
-The suggestion when the previous version was being discussed was that
-there are supposed to be some other knobs one uses for tuning and one
-was never supposed to use these numbers.
-
---pA3GpxlsFRhNUARh
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWnnduAAoJECTWi3JdVIfQrS0H/0AJRa2JXxF8a6YHUgxQCw6E
-fAdNBftzxSzZGWdQiZx9V1BI9/9VEz0+zkv2g/LBF6BENq/LcOkB6RhPoD9RrO7V
-K+qI2YGecXFcrGQp0XMQ+mH1fAnd4a1W7hoiS9v5WJieItJ+uO7/oxiufh52QV73
-qJ37a4yuucWKdNQNtpz80/6Btigjs7aXGBlGbanajHcKnKCsvOesq1xvGHNRndAp
-iqZebgKlhg9SLtxHp0ZXzI1Tpm4qJwt8bmb0KM2ZOvK4ArsnotW306PZ0VJ8aQas
-2TtxR3bToadisLRpSg6AGXv8usoJtIRkcGxRE19UdLxUo3Nx/sD3UMTbT1+wEmo=
-=8GNY
------END PGP SIGNATURE-----
-
---pA3GpxlsFRhNUARh--
+>
+> thanks,
+>
+> greg k-h
