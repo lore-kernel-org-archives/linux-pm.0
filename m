@@ -1,69 +1,56 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
- systems
-Date: Tue, 19 Jan 2016 14:29:33 +0000
-Message-ID: <20160119142933.GF8573@e106622-lin>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
- <56994D87.6000709@linaro.org>
- <20160118151316.GD7159@e106622-lin>
- <CAKfTPtBFR4cowT-j4qVxfUvh6NDNmi6R=J7z9kywi6bONU3Pow@mail.gmail.com>
- <20160118163014.GA10332@e106622-lin>
- <CAKfTPtDJBAXUz=_-QQSkrqwAvmUJd1bUJ-VfSaNER-0NzWpunA@mail.gmail.com>
- <20160119105941.GA28845@e104818-lin.cambridge.arm.com>
- <20160119112323.GB8573@e106622-lin>
+Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
+Date: Tue, 19 Jan 2016 14:42:33 +0000
+Message-ID: <20160119144233.GG8573@e106622-lin>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
+ <20160112112409.GJ1084@ubuntu>
+ <20160113005452.10884.77606@quark.deferred.io>
+ <20160113063148.GJ6050@ubuntu>
+ <20160113182131.1168.45753@quark.deferred.io>
+ <20160119140036.GG6344@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40108 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:40208 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753920AbcASO3H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Jan 2016 09:29:07 -0500
+	id S1752795AbcASOmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Jan 2016 09:42:06 -0500
 Content-Disposition: inline
-In-Reply-To: <20160119112323.GB8573@e106622-lin>
+In-Reply-To: <20160119140036.GG6344@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mark Brown <broonie@kernel.org>, Will Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Rob Herring <robh+dt@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On 19/01/16 11:23, Juri Lelli wrote:
-> Hi Catalin,
+On 19/01/16 15:00, Peter Zijlstra wrote:
+> On Wed, Jan 13, 2016 at 10:21:31AM -0800, Michael Turquette wrote:
+> > RCU is absolutely not a magic bullet or elixir that lets us kick off
+> > DVFS transitions from the schedule() context. The frequency transitions
+> > are write-side operations, as we invariably touch struct cpufreq_policy.
+> > This means that the read-side stuff can live in the schedule() context,
+> > but write-side needs to be kicked out to a thread.
 > 
-> On 19/01/16 10:59, Catalin Marinas wrote:
-> > On Mon, Jan 18, 2016 at 05:42:58PM +0100, Vincent Guittot wrote:
-> > > On 18 January 2016 at 17:30, Juri Lelli <juri.lelli@arm.com> wrote:
-> > > > On 18/01/16 17:13, Vincent Guittot wrote:
-> > > >> On 18 January 2016 at 16:13, Juri Lelli <juri.lelli@arm.com> wrote:
-> > > >> > On 15/01/16 11:50, Steve Muckle wrote:
-> > > >> >> On 01/08/2016 06:09 AM, Juri Lelli wrote:
-
-[...]
-
-> > 
-> > Two questions:
-> > 
-> > 1. How is the boot time affected by the benchmark?
-> > 2. How is the boot time affected by considering all the CPUs the same?
-> > 
-> > My preference is for DT and sysfs (especially useful for
-> > development/tuning) but I'm not opposed to a boot-time benchmark if
-> > people insist on it. If the answer to point 2 is "insignificant", we
-> > could as well defer the capacity setting to user space (sysfs).
-> > 
+> Why? If the state is per-cpu and acquired by RCU, updates should be no
+> problem at all.
 > 
-> Given that we are not targeting boot time with this, but rather better
-> performance afterwards, I don't expect significant differences; but,
-> I'll get numbers :).
+> If you need inter-cpu state, then things get to be a little tricky
+> though, but you can actually nest a raw_spinlock_t in there if you
+> absolutely have to.
 > 
 
-I've got some boot time numbers on TC2 and Juno based on timestamps.
-They are of course not accurate and maybe not so representative of
-products, but I guess still ballpark right.
+We have at least two problems. First one is that state is per frequency
+domain (struct cpufreq_policy) and this usually spans more than one cpu.
+Second one is that we might need to sleep while servicing the frequency
+transition, both because platform needs to sleep and because some paths
+of cpufreq core use sleeping locks (yes, that might be changed as well I
+guess).  A solution based on spinlocks only might not be usable on
+platforms that needs to sleep, also.
 
-I'm generally seeing ~1sec increase in boot time for 1 and practically
-no difference for 2 (even after having added patches that provide
-runtime performance improvements).
+Another thing that I was thinking of actually is that since struct
+cpufreq_policy is updated a lot (more or less at every frequency
+transition), is it actually suitable for RCU?
 
 Best,
 
 - Juri
-
