@@ -1,57 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH v1] refining the rpm_suspend function
-Date: Tue, 19 Jan 2016 20:54:12 +0100
-Message-ID: <20160119195412.GA8414@amd>
-References: <1453194858-17416-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: Crash introduced by commit b8b2c7d845d5 ("base/platform: assert
+ that dev_pm_domain callbacks are called unconditionally")
+Date: Tue, 19 Jan 2016 11:55:12 -0800
+Message-ID: <20160119195512.GA17729@kroah.com>
+References: <Pine.LNX.4.44L0.1601191312260.1312-100000@iolanthe.rowland.org>
+ <20160119190709.GA3338@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56225 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757208AbcASTyP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 14:54:15 -0500
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1453194858-17416-1-git-send-email-zhaoyang.huang@spreadtrum.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160119190709.GA3338@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: zhaoyang.huang@spreadtrum.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org
 
-Hi!
+On Tue, Jan 19, 2016 at 08:07:09PM +0100, Uwe Kleine-K=F6nig wrote:
+> Hello Alan,
+>=20
+> On Tue, Jan 19, 2016 at 01:22:22PM -0500, Alan Stern wrote:
+> >=20
+> > Your commit causes my ASUS laptop to crash during early boot.  The=20
+> > problem occurs in platform_drv_probe(), affecting both the alarmtim=
+er=20
+> > and the asus_laptop platform drivers (I can't tell which is the=20
+> > critical one).
+> >=20
+> > The old code would not call platform_drv_probe() at all, and probin=
+g
+> > would always succeed immediately because these drivers have no prob=
+e
+> > routine.  But with the new code, platform_drv_probe() does run.  Th=
+e
+> > call to of_clk_set_defaults() returns -ENODEV, as does the call to
+> > dev_pm_domain_attach().  The call to drv->probe() gets skipped, of=20
+> > course.  The final return value is -ENODEV, and so probing fails.  =
+This=20
+> > causes the kernel to crash: blank screen, NumLock LED blinking.
+> >=20
+> > The patch below fixes the problem, but I'm not sure that it's the b=
+est=20
+> > solution.  What is your advice?
+> You want
+>=20
+> 	http://mid.gmane.org/1449132704-9952-1-git-send-email-martin.wilck@t=
+s.fujitsu.com
+>=20
+> .
+>=20
+> Greg, I'd welcome this fix in mainline and 4.4.x.
 
-> +		else{
+Yes it's in my queue to get to after 4.5-rc1 -s out.
 
-missing space.
+thanks,
 
-> +			while (dev->power.runtime_status ==
-> +				RPM_SUSPENDING) {
-> +				if (dev->power.irq_safe) {
-> +					spin_unlock(&dev->power.lock);
-> +
-> +					cpu_relax();
-> +
-> +					spin_lock(&dev->power.lock);
-> +					continue;
-> +				}
-> +
-> +				/* Wait for the other suspend
-> +				running in parallel with us. */
-> +				for (;;) {
-> +					prepare_to_wait(&dev->power.wait_queue,
-> +					&wait,	TASK_UNINTERRUPTIBLE);
-> +					if (dev->power.runtime_status
-> +						!= RPM_SUSPENDING)
-> +						break;
-
-You really need to restructure the code so that you don't get
-indentation _this_ deep.
-
-
-> -	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-> +	might_sleep_if (!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-
-Original was right. Function -> no space.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+greg k-h
