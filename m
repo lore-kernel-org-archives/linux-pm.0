@@ -1,35 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH v1] refining the rpm_suspend function
-Date: Tue, 19 Jan 2016 14:49:15 +0100
-Message-ID: <9438969.iYZ3h3fHzb@vostro.rjw.lan>
-References: <1453194858-17416-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+Subject: Re: [PATCH 0/2] cpuidle optimizations (on top of linux-next)
+Date: Tue, 19 Jan 2016 14:50:48 +0100
+Message-ID: <7943578.tuUzrzI8EM@vostro.rjw.lan>
+References: <1621492.NI2xz9vt7M@vostro.rjw.lan> <CAJZ5v0hgKfpi2PDbzk5Rvnio1vC3onaWkJ-2ccg5KAd=r3qPBA@mail.gmail.com> <20160119132858.GA32559@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48165 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:43903 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754015AbcASNsd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 08:48:33 -0500
-In-Reply-To: <1453194858-17416-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+	with SMTP id S1754015AbcASNuG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 08:50:06 -0500
+In-Reply-To: <20160119132858.GA32559@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: zhaoyang.huang@spreadtrum.com, pavel@ucw.cz, linux-kernel@vger.kernel.org, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Tuesday, January 19, 2016 05:14:18 PM Zhaoyang Huang wrote:
-> There are too many branch path within he original rpm_suspend funciton,which make
-> the code a little bit hard for understanding and debugging.Just try to split the
-> function into some small one to eliminate the goto and make one optimization for
-> avoiding transfering from wait to auto when irq_safe flag set
+On Tuesday, January 19, 2016 02:28:58 PM Ingo Molnar wrote:
 > 
-> Signed-off-by: Zhaoyang Huang <zhaoyang.huang@spreadtrum.com>
+> * Rafael J. Wysocki <rafael@kernel.org> wrote:
+> 
+> > On Tue, Jan 19, 2016 at 8:28 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> > >
+> > > * Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > >
+> > >> On 15/01/16 23:53, Rafael J. Wysocki wrote:
+> > >> >Hi,
+> > >> >
+> > >> >When I was looking at the cpuidle code after the Sudeeps's problem report,
+> > >> >it occured to me that we had some pointless overhead there, so two
+> > >> >changes to reduce it follow.
+> > >> >
+> > >> >[1/2] Make the fallback to to default_idle_call() in call_cpuidle()
+> > >> >       unnecessary and drop it.
+> > >> >[2/2] Make menu_select() avoid checking states that don't need to
+> > >> >       (or even shouldn't) be checked when making the selection.
+> > >> >
+> > >>
+> > >> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> > >
+> > > Rafael, can I pick these up into the scheduler tree?
+> > 
+> > They won't apply at this point as one commit they depend on is in my
+> > linux-next branch waiting for the next push.
+> > 
+> > Would it be a problem if they went in through the PM tree instead?
+> 
+> Absolutely no problem:
+> 
+> Acked-by: Ingo Molnar <mingo@kernel.org>
 
-First off, please don't mix cleanups with optimizations.
+OK, thanks!
 
-Second, I don't really think that the changes you're making improve things
-from the readability/debugging viewpoint.
-
-Thanks,
 Rafael
 
