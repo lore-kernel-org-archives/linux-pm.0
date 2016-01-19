@@ -1,63 +1,53 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH 0/4] nvmem: new drivers for v4.5
-Date: Tue, 19 Jan 2016 10:15:45 -0800
-Message-ID: <CAGS+omDHYeDCaHJC8Q3i4utTUJt40FPyq6S_maQ7scG_2oDmsQ@mail.gmail.com>
-References: <1449485763-391-1-git-send-email-srinivas.kandagatla@linaro.org>
- <5693AC68.6040802@linaro.org> <20160111183018.GA10243@kroah.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Crash introduced by commit b8b2c7d845d5 ("base/platform: assert that
+ dev_pm_domain callbacks are called unconditionally")
+Date: Tue, 19 Jan 2016 13:22:22 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1601191312260.1312-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f54.google.com ([209.85.213.54]:34977 "EHLO
-	mail-vk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932510AbcASSQG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 13:16:06 -0500
-Received: by mail-vk0-f54.google.com with SMTP id k1so353052779vkb.2
-        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2016 10:16:05 -0800 (PST)
-In-Reply-To: <20160111183018.GA10243@kroah.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:33517 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932271AbcASSWY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 13:22:24 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, ariel@vanguardiasur.com.ar, Sascha Hauer <s.hauer@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-Hi Greg,
+Uwe:
 
-On Mon, Jan 11, 2016 at 10:30 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
->
-> On Mon, Jan 11, 2016 at 01:21:44PM +0000, Srinivas Kandagatla wrote:
-> >
-> >
-> > On 07/12/15 10:56, Srinivas Kandagatla wrote:
-> > >Hi Greg,
-> > >
-> > >Here are 2 new nvmem drivers which are in the mailing list for long time
-> > >and are good to go for some testing and find its way to v4.5-rc*.
-> > >
-> > >Could you please take these patches via char-misc tree.
-> > Hi Greg,
-> >
-> > I have not seen these patches or https://lkml.org/lkml/2015/12/14/169 appear
-> > in your char-misc tree/linux-next.
-> >
-> > Just wanted to know whats your plan on these patches?
->
-> To wait until after 4.5-rc1 is out, sorry, my patch backlog got huge
-> during Nov/Dec due to other external issues, I'll be digging out from
-> them after 4.5-rc1 is out.
+Your commit causes my ASUS laptop to crash during early boot.  The 
+problem occurs in platform_drv_probe(), affecting both the alarmtimer 
+and the asus_laptop platform drivers (I can't tell which is the 
+critical one).
 
-Soon after 4.5-rc1 sounds great.
+The old code would not call platform_drv_probe() at all, and probing
+would always succeed immediately because these drivers have no probe
+routine.  But with the new code, platform_drv_probe() does run.  The
+call to of_clk_set_defaults() returns -ENODEV, as does the call to
+dev_pm_domain_attach().  The call to drv->probe() gets skipped, of 
+course.  The final return value is -ENODEV, and so probing fails.  This 
+causes the kernel to crash: blank screen, NumLock LED blinking.
 
-FYI, to add some context, the Mediatek nvmem driver is actually
-blocking several other drivers that we would also like to see land in
-v4.5:  Mediatek thermal, Mediatek cpufreq_thermal, and Mediatek
-devfreq_thermal.
+The patch below fixes the problem, but I'm not sure that it's the best 
+solution.  What is your advice?
 
-So, the sooner nvmem lands, the earlier we can start staging/pushing
-through the rest.
+Alan Stern
 
-Thanks,
--Dan
 
->
-> thanks,
->
-> greg k-h
+
+Index: usb-4.4/drivers/base/platform.c
+===================================================================
+--- usb-4.4.orig/drivers/base/platform.c
++++ usb-4.4/drivers/base/platform.c
+@@ -524,6 +524,8 @@ static int platform_drv_probe(struct dev
+ 		ret = -ENXIO;
+ 	}
+ 
++	if (!drv->probe)
++		ret = 0;
+ 	return ret;
+ }
+ 
+
