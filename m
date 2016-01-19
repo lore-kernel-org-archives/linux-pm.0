@@ -1,61 +1,69 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: Crash introduced by commit b8b2c7d845d5 ("base/platform: assert
- that dev_pm_domain callbacks are called unconditionally")
-Date: Tue, 19 Jan 2016 20:07:09 +0100
-Message-ID: <20160119190709.GA3338@pengutronix.de>
-References: <Pine.LNX.4.44L0.1601191312260.1312-100000@iolanthe.rowland.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
+Date: Tue, 19 Jan 2016 20:17:34 +0100
+Message-ID: <20160119191734.GB6357@twins.programming.kicks-ass.net>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
+ <20160112112409.GJ1084@ubuntu>
+ <20160113005452.10884.77606@quark.deferred.io>
+ <20160113063148.GJ6050@ubuntu>
+ <20160113182131.1168.45753@quark.deferred.io>
+ <20160119140036.GG6344@twins.programming.kicks-ass.net>
+ <20160119144233.GG8573@e106622-lin>
+ <20160119153007.GZ6357@twins.programming.kicks-ass.net>
+ <20160119160155.GH8573@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:56900 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754824AbcASTHM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 14:07:12 -0500
+Received: from bombadil.infradead.org ([198.137.202.9]:47831 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755745AbcASTRn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 14:17:43 -0500
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1601191312260.1312-100000@iolanthe.rowland.org>
+In-Reply-To: <20160119160155.GH8573@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-Hello Alan,
+On Tue, Jan 19, 2016 at 04:01:55PM +0000, Juri Lelli wrote:
+> Right, read path is fast, but write path still requires some sort of
+> locking (malloc, copy and update). So, I'm wondering if this still pays
+> off for a structure that gets written a lot.
 
-On Tue, Jan 19, 2016 at 01:22:22PM -0500, Alan Stern wrote:
->=20
-> Your commit causes my ASUS laptop to crash during early boot.  The=20
-> problem occurs in platform_drv_probe(), affecting both the alarmtimer=
-=20
-> and the asus_laptop platform drivers (I can't tell which is the=20
-> critical one).
->=20
-> The old code would not call platform_drv_probe() at all, and probing
-> would always succeed immediately because these drivers have no probe
-> routine.  But with the new code, platform_drv_probe() does run.  The
-> call to of_clk_set_defaults() returns -ENODEV, as does the call to
-> dev_pm_domain_attach().  The call to drv->probe() gets skipped, of=20
-> course.  The final return value is -ENODEV, and so probing fails.  Th=
-is=20
-> causes the kernel to crash: blank screen, NumLock LED blinking.
->=20
-> The patch below fixes the problem, but I'm not sure that it's the bes=
-t=20
-> solution.  What is your advice?
-You want
+No, not at all.
 
-	http://mid.gmane.org/1449132704-9952-1-git-send-email-martin.wilck@ts.=
-fujitsu.com
+struct cpufreq_driver *driver;
 
-=2E
+void sched_util_change(unsigned int util)
+{
+	struct my_per_cpu_data *foo;
 
-Greg, I'd welcome this fix in mainline and 4.4.x.
+	rcu_read_lock();
+	foo = __this_cpu_ptr(rcu_dereference(driver)->data);
+	if (foo) {
+		if (abs(util - foo->last_util) > 10) {
+			foo->last_util = util;
+			foo->set_util(util);
+		}
+	}
+	rcu_read_unlock();
+}
 
-Best regards
-Uwe
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+struct cpufreq_driver *cpufreq_flip_driver(struct cpufreq_driver *new_driver)
+{
+	struct cpufreq_driver *old_driver;
+
+	mutex_lock(&cpufreq_driver_lock);
+	old_driver = driver;
+	rcu_assign_driver(driver, new_driver);
+	if (old_driver)
+		synchronize_rcu();
+	mutex_unlock(&cpufreq_driver_lock);
+
+	return old_driver;
+}
+
+
+
