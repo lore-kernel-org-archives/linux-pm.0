@@ -1,66 +1,92 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
- systems
-Date: Tue, 19 Jan 2016 21:10:49 +0000
-Message-ID: <20160119211049.GX6588@sirena.org.uk>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
- <56994D87.6000709@linaro.org>
- <20160118151316.GD7159@e106622-lin>
- <CAKfTPtBFR4cowT-j4qVxfUvh6NDNmi6R=J7z9kywi6bONU3Pow@mail.gmail.com>
- <20160118163014.GA10332@e106622-lin>
- <CAKfTPtDJBAXUz=_-QQSkrqwAvmUJd1bUJ-VfSaNER-0NzWpunA@mail.gmail.com>
- <20160119105941.GA28845@e104818-lin.cambridge.arm.com>
- <20160119112323.GB8573@e106622-lin>
- <20160119142933.GF8573@e106622-lin>
- <569E92FF.4000006@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
+Date: Tue, 19 Jan 2016 22:52:22 +0100
+Message-ID: <10535878.57N9JsXUl5@vostro.rjw.lan>
+References: <1452533760-13787-19-git-send-email-juri.lelli@arm.com> <20160119191734.GB6357@twins.programming.kicks-ass.net> <20160119192111.GC6373@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="xzSe+wpn+kb4oFkG"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:34362 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757269AbcASVLJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 16:11:09 -0500
-Content-Disposition: inline
-In-Reply-To: <569E92FF.4000006@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:47985 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932689AbcASVvk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 16:51:40 -0500
+In-Reply-To: <20160119192111.GC6373@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
+On Tuesday, January 19, 2016 08:21:11 PM Peter Zijlstra wrote:
+> On Tue, Jan 19, 2016 at 08:17:34PM +0100, Peter Zijlstra wrote:
+> > On Tue, Jan 19, 2016 at 04:01:55PM +0000, Juri Lelli wrote:
+> > > Right, read path is fast, but write path still requires some sort of
+> > > locking (malloc, copy and update). So, I'm wondering if this still pays
+> > > off for a structure that gets written a lot.
+> > 
+> > No, not at all.
+> > 
 
---xzSe+wpn+kb4oFkG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This is very similar to what I was thinking about, plus-minus a couple of
+things.
 
-On Tue, Jan 19, 2016 at 11:48:15AM -0800, Steve Muckle wrote:
-> On 01/19/2016 06:29 AM, Juri Lelli wrote:
+> > struct cpufreq_driver *driver;
+> > 
+> > void sched_util_change(unsigned int util)
+> > {
+> > 	struct my_per_cpu_data *foo;
+> > 
+> > 	rcu_read_lock();
+> 
+> That should obviously be:
+> 
+> 	d = rcu_dereference(driver);
+> 	if (d) {
+> 		foo = __this_cpu_ptr(d->data);
 
-> > I'm generally seeing ~1sec increase in boot time for 1 and practically
-> > no difference for 2 (even after having added patches that provide
-> > runtime performance improvements).
+If we do this, it would be convenient to define ->set_util() to take
+foo as an arg too, in addition to util.
 
-> One second is considerable IMO. Aside from the general desire to have
-> shorter boot times on any platform there are environments like
-> automotive where boot time is critical.
+And is there any particular reason why d->data has to be per-cpu?
 
-Yeah, definitely.  Is this actually blocking boot and if so can we
-arrange to do this in parallel with other activity (with likely knock on
-effects on reproducibility...)?
+> 
+> > 		if (abs(util - foo->last_util) > 10) {
 
---xzSe+wpn+kb4oFkG
-Content-Type: application/pgp-signature; name="signature.asc"
+Even if the utilization doesn't change, it still may be too high or too low,
+so we may want to call foo->set_util() in that case too, at least once a
+while.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> > 			foo->last_util = util;
+> > 			foo->set_util(util);
+> > 		}
+> > 	}
+> > 	rcu_read_unlock();
+> > }
+> > 
+> > 
+> > struct cpufreq_driver *cpufreq_flip_driver(struct cpufreq_driver *new_driver)
+> > {
+> > 	struct cpufreq_driver *old_driver;
+> > 
+> > 	mutex_lock(&cpufreq_driver_lock);
+> > 	old_driver = driver;
+> > 	rcu_assign_driver(driver, new_driver);
+> > 	if (old_driver)
+> > 		synchronize_rcu();
+> > 	mutex_unlock(&cpufreq_driver_lock);
+> > 
+> > 	return old_driver;
+> > }
 
-iQEcBAEBCAAGBQJWnqZYAAoJECTWi3JdVIfQq6sH/0dYYzSGQorNniustWzVIFaQ
-ZgINqGaDEQnR91pYMeZycfco/du7UpU99z8ncZJWT4ok9oyEJAxVitFmaIV/5IMY
-d6N+DNE+diqbz0Yf9QGVMiqAvAFwJPdjrRsazGcXVBR9jB5iJZxZytLJkGfjx3i+
-zXFUfHraUGaNua41Nh+iY2uSqHyDDmeJAObWaAKJWNvmBVi5sWG7B/0TuYZTLH0B
-vE8VfBk40jMMJvt6m3A0v9dLQr6nyH/g5u7Fjb+cV/CsZEYVi78zKQ7TBby3SWw9
-ZpMIOifv2pieDJebMKc1cmMDDUBlDo+be0QS7sAeshNF/6W0Ull1uOAYmSvzLHM=
-=j3dl
------END PGP SIGNATURE-----
+We never need to do this, because we never replace one driver with another in
+one go.  We need to go from a valid driver pointer to NULL and the other way
+around only.
 
---xzSe+wpn+kb4oFkG--
+This means there may be other pointers around that may be accessed safely
+from foo->set_util() above if there's a rule that they must be set before
+the driver pointer and the data structures they point to must stay around
+until the syncronize_rcu() returns.
+
+Thanks,
+Rafael
+
