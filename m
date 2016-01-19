@@ -1,75 +1,62 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Tue, 19 Jan 2016 20:21:11 +0100
-Message-ID: <20160119192111.GC6373@twins.programming.kicks-ass.net>
-References: <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
- <20160112112409.GJ1084@ubuntu>
- <20160113005452.10884.77606@quark.deferred.io>
- <20160113063148.GJ6050@ubuntu>
- <20160113182131.1168.45753@quark.deferred.io>
- <20160119140036.GG6344@twins.programming.kicks-ass.net>
- <20160119144233.GG8573@e106622-lin>
- <20160119153007.GZ6357@twins.programming.kicks-ass.net>
- <20160119160155.GH8573@e106622-lin>
- <20160119191734.GB6357@twins.programming.kicks-ass.net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
+ systems
+Date: Tue, 19 Jan 2016 11:48:15 -0800
+Message-ID: <569E92FF.4000006@linaro.org>
+References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
+ <56994D87.6000709@linaro.org> <20160118151316.GD7159@e106622-lin>
+ <CAKfTPtBFR4cowT-j4qVxfUvh6NDNmi6R=J7z9kywi6bONU3Pow@mail.gmail.com>
+ <20160118163014.GA10332@e106622-lin>
+ <CAKfTPtDJBAXUz=_-QQSkrqwAvmUJd1bUJ-VfSaNER-0NzWpunA@mail.gmail.com>
+ <20160119105941.GA28845@e104818-lin.cambridge.arm.com>
+ <20160119112323.GB8573@e106622-lin> <20160119142933.GF8573@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:37879 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755745AbcASTVO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 14:21:14 -0500
-Content-Disposition: inline
-In-Reply-To: <20160119191734.GB6357@twins.programming.kicks-ass.net>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34647 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757106AbcASTsT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 14:48:19 -0500
+Received: by mail-pa0-f44.google.com with SMTP id uo6so442829507pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jan 2016 11:48:18 -0800 (PST)
+In-Reply-To: <20160119142933.GF8573@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Juri Lelli <juri.lelli@arm.com>, Catalin Marinas <catalin.marinas@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mark Brown <broonie@kernel.org>, Will Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Jan 19, 2016 at 08:17:34PM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 19, 2016 at 04:01:55PM +0000, Juri Lelli wrote:
-> > Right, read path is fast, but write path still requires some sort of
-> > locking (malloc, copy and update). So, I'm wondering if this still pays
-> > off for a structure that gets written a lot.
+On 01/19/2016 06:29 AM, Juri Lelli wrote:
+>>> Two questions:
+>>> > > 
+>>> > > 1. How is the boot time affected by the benchmark?
+>>> > > 2. How is the boot time affected by considering all the CPUs the same?
+>>> > > 
+>>> > > My preference is for DT and sysfs (especially useful for
+>>> > > development/tuning) but I'm not opposed to a boot-time benchmark if
+>>> > > people insist on it. If the answer to point 2 is "insignificant", we
+>>> > > could as well defer the capacity setting to user space (sysfs).
+>>> > > 
+>> > 
+>> > Given that we are not targeting boot time with this, but rather better
+>> > performance afterwards, I don't expect significant differences; but,
+>> > I'll get numbers :).
+>> > 
+> I've got some boot time numbers on TC2 and Juno based on timestamps.
+> They are of course not accurate and maybe not so representative of
+> products, but I guess still ballpark right.
 > 
-> No, not at all.
-> 
-> struct cpufreq_driver *driver;
-> 
-> void sched_util_change(unsigned int util)
-> {
-> 	struct my_per_cpu_data *foo;
-> 
-> 	rcu_read_lock();
+> I'm generally seeing ~1sec increase in boot time for 1 and practically
+> no difference for 2 (even after having added patches that provide
+> runtime performance improvements).
 
-That should obviously be:
+One second is considerable IMO. Aside from the general desire to have
+shorter boot times on any platform there are environments like
+automotive where boot time is critical.
 
-	d = rcu_dereference(driver);
-	if (d) {
-		foo = __this_cpu_ptr(d->data);
+How are the CPUs numbered on TC2 and Juno? When all CPUs are considered
+the same, is work running on the big CPUs because of the way they are
+numbered?
 
-> 		if (abs(util - foo->last_util) > 10) {
-> 			foo->last_util = util;
-> 			foo->set_util(util);
-> 		}
-> 	}
-> 	rcu_read_unlock();
-> }
-> 
-> 
-> struct cpufreq_driver *cpufreq_flip_driver(struct cpufreq_driver *new_driver)
-> {
-> 	struct cpufreq_driver *old_driver;
-> 
-> 	mutex_lock(&cpufreq_driver_lock);
-> 	old_driver = driver;
-> 	rcu_assign_driver(driver, new_driver);
-> 	if (old_driver)
-> 		synchronize_rcu();
-> 	mutex_unlock(&cpufreq_driver_lock);
-> 
-> 	return old_driver;
-> }
-> 
-> 
-> 
+thanks,
+Steve
