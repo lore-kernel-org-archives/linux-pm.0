@@ -1,78 +1,106 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: Re: [PATCH v2 2/4] power: reset: add reboot mode driver
-Date: Tue, 19 Jan 2016 16:38:20 +0800
-Message-ID: <569DF5FC.1080402@rock-chips.com>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
- <1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
- <CALAqxLVNUG_cVbavXC34sNPv68jbMghti31+PrgQ7mpPngXh6g@mail.gmail.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2] reboot: Backup orderly_poweroff
+Date: Tue, 19 Jan 2016 10:06:23 +0100
+Message-ID: <20160119090623.GA29678@gmail.com>
+References: <1452688405-15087-1-git-send-email-j-keerthy@ti.com>
+ <20160114090520.GA4351@gmail.com>
+ <569767EC.2010704@ti.com>
+ <20160114100913.GB15857@gmail.com>
+ <56977BA7.702@ti.com>
+ <20160114112354.GA17869@gmail.com>
+ <20160114132527.575e0f20@lxorguk.ukuu.org.uk>
+ <20160115101459.GB23349@gmail.com>
+ <5698F420.2010500@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.130]:50124 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757322AbcASIi0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jan 2016 03:38:26 -0500
-In-Reply-To: <CALAqxLVNUG_cVbavXC34sNPv68jbMghti31+PrgQ7mpPngXh6g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5698F420.2010500@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Keerthy <a0393675@ti.com>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, edubezval@gmail.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, joel@jms.id.au, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, dyoung@redhat.com, josh@joshtriplett.org, mpe@ellerman.id.au, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>, Arnd Bergmann <arnd@arndb.de>, linux@roeck-us.net, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, geert+renesas@glider.be, sre@kernel.org, Olof Johansson <olof@lixom.net>, dbaryshkov@gmail.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, jun.nie@linaro.org, =?UTF-8?Q?Pawe=c5=82_Moll?= <pawel.moll@arm.com>, f.fainelli@gmail.com, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, lkml <linux-kernel@vger.kern>
-
-Hi John:
-
-On 2016=E5=B9=B401=E6=9C=8816=E6=97=A5 04:27, John Stultz wrote:
-> On Tue, Jan 12, 2016 at 3:31 AM, Andy Yan <andy.yan@rock-chips.com> w=
-rote:
->> This driver parse the reboot commands like "reboot loader"
->> and "reboot recovery" to get a boot mode described in the
->> device tree , then call the write interfae to store the boot
->> mode in some persistent storage  like special register or ram,
->> which can be read by the bootloader after system reboot, then
->> the bootloader can take different action according to the mode
->> stored.
->>
->> This is commonly used on Android based devices, which in order
->> to reboot the device into fastboot or recovery mode.
->>
->> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
->
-> Hey Andy!
->    Thanks for keeping this work going! I've just successfully reworke=
-d
-> my Nexus7 tree to use your implementation (using the syscon version,
-> setting up a syscon for IMEM as Bjorn had requested earlier).
->
-> All is working well so far!
->
-> The one thing I was working on supporting with my own version that
-> seems to be missing here are for devices that use string based codes,
-> rather then magic numbers.
->
-> This was mostly a theoretical issue. I think the Galaxy Nexus used it=
-,
-> and when I was looking at some of the HTC devices, they support a tex=
-t
-> based reason along with the magic code, but at least in some
-> implementations the text mode isn't used, so I suspect there its just
-> for extra debugging.  So this may not be critical to solve until
-> someone tries to add support for such a device.
->
-> Anyway, I'm going to look at porting this to the HiKey board next
-> (which just uses reserved ram, not syscon), so I'll try to do a an
-> SRAM driver implementaiton to see how that goes.
->
-> thanks!
-> -john
->
->
->
->
-
-  Very glad to hear news from you. And welcome your SRAM based driver=20
-implementation.
 
 
+* Grygorii Strashko <grygorii.strashko@ti.com> wrote:
 
+> On 01/15/2016 12:14 PM, Ingo Molnar wrote:
+> > 
+> > * One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk> wrote:
+> > 
+> >>> If kernel_power_off() is called then the system should power off. No ifs and
+> >>> whens.
+> >>
+> >> Even if it doesn't the watchdog should kill it.
+> >>
+> >> That is broken on some platforms on the watchdog side as the
+> >> watchdog shuts down during our power off callbacks - because the system
+> >> firmware is too stupid to reset the watchdog as it powers back up (so
+> >> keeps rebooting).
+> >>
+> >> If you watchdog and firmware function properly you shouldn't even have to
+> >> care if you crash during the kernel power off.
+> > 
+> > That's a good point as well - if the system is 'stuck' for some notion of stuck,
+> > then watchdog drivers can help.
+> > 
+> 
+> Seems ARM doesn't have endless loop implemented in machine_power_off() - so,
+> not too much chances for Watchdog to fire.
+> void machine_power_off(void)
+> {
+> 	local_irq_disable();
+> 	smp_send_stop();
+> 
+> 	if (pm_power_off)
+> 		pm_power_off();
+> 
+> 	--- endless loop ?
+> 	--- or restart ?
+> }
+> [and even if it will be there - 20-30sec is usual timeout for Watchdog and this
+> enough time to burn the system in case of thermal emergency poweroff :(]
+> 
+> > Here it's unclear whether user-space even called the sys_reboot() system call.
+> > 
+> 
+> That's true - original log [1] has 
+> Nov 30 11:19:22 [    5.942769] thermal thermal_zone3: critical temperature reached(108 C),shutting down
+> [...]
+> Nov 30 11:19:24 [    7.387900] ahci 4a140000.sata: flags: 64bit ncq sntf stag pm led clo only pmp pio slum part ccc apst 
+> Nov 30 11:19:24 INIT: Switching to runlevel: 0
+> Nov 30 11:19:24 INIT: Sending processes the TERM signal
+> 
+> and there are no
+> [  220.004522] reboot: Power down
+> 
+> 
+> Also, It's not the first time this part of code is discussed (thermal emergency poweroff) [2],
+> so the good question, as for me, is it really required and safe to use orderly_poweroff() in
+> case of thermal emergency poweroff ([3] as example)?
+> 
+> In general, this kind of use case can be simulated using SysRq on any arch
+> - [3.290034] Freeing unused kernel memory: 492K (c0a67000 - c0ae2000)
+>   INIT: version 2.88 booting
+>   Starting udev
+> ^^ The issue most probably might happens when system in the process of loading modules
+> So, once modules loading process is started - fire Sysrq "poweroff(o)"
 
+So I'd say emergency poweroff should be named accordingly - and the 
+orderly_poweroff() name suggest anything but an emergency, right?
+
+So I'd be fine with the following:
+
+ - introduce a poweroff_emergency() core kernel function call
+
+ - use it in drivers where it's justified
+
+ - poweroff_emergency() has a configurable timeout value. If the timeout value is
+   set to 0 then it powers the system off immediately.
+
+Functionally it would be mostly equivalent to your current patch (except the '0' 
+immediate poweroff functionality).
+
+Thanks,
+
+	Ingo
