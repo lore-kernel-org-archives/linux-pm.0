@@ -1,54 +1,76 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Wed, 20 Jan 2016 15:04:55 -0500 (EST)
-Message-ID: <alpine.LFD.2.20.1601201502080.2140@knanqh.ubzr>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org> <20160120190718.GS6357@twins.programming.kicks-ass.net> <alpine.DEB.2.11.1601202050050.3575@nanos>
+Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Wed, 20 Jan 2016 15:14:26 -0500 (EST)
+Message-ID: <alpine.LFD.2.20.1601201509070.2140@knanqh.ubzr>
+References: <alpine.DEB.2.11.1601201634520.3575@nanos> <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-6-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.11.1601202050050.3575@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f45.google.com ([209.85.192.45]:34807 "EHLO
+	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755020AbcATUO3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 15:14:29 -0500
+Received: by mail-qg0-f45.google.com with SMTP id 6so15512823qgy.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 12:14:28 -0800 (PST)
+In-Reply-To: <1453305636-22156-6-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On Wed, 20 Jan 2016, Thomas Gleixner wrote:
+On Wed, 20 Jan 2016, Daniel Lezcano wrote:
+[...]
 
-> On Wed, 20 Jan 2016, Peter Zijlstra wrote:
-> 
-> > On Wed, Jan 20, 2016 at 05:00:32PM +0100, Daniel Lezcano wrote:
-> > > +++ b/kernel/irq/handle.c
-> > > @@ -165,6 +165,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
-> > >  			/* Fall through to add to randomness */
-> > >  		case IRQ_HANDLED:
-> > >  			flags |= action->flags;
-> > > +			handle_irqtiming(irq, action->dev_id);
-> > >  			break;
-> > >  
-> > >  		default:
-> > 
-> > > +++ b/kernel/irq/internals.h
-> > 
-> > > +static inline void handle_irqtiming(unsigned int irq, void *dev_id)
-> > > +{
-> > > +	if (__irqtimings->handler)
-> > > +		__irqtimings->handler(irq, ktime_get(), dev_id);
-> > > +}
-> > 
-> > Here too, ktime_get() is daft.
-> 
-> What's the problem? ktime_xxx() itself or just the clock monotonic variant?
-> 
-> On 99.9999% of the platforms ktime_get_mono_fast/raw_fast is not any slower
-> than sched_clock(). The only case where sched_clock is faster is if your TSC
-> is buggered and the box switches to HPET for timekeeping.
-> 
-> But I wonder, whether this couldn't do with jiffies in the first place. If the
-> interrupt comes faster than a jiffie then you hardly go into some interesting
-> power state, but I might be wrong as usual :)
+One more comment:
 
-Jiffies are not precise enough for some power states, even more so with 
-HZ = 100 on many platforms.
+> +		/*
+> +		 * If the mean value is null, just ignore this wakeup
+> +		 * source.
+> +		 */
+> +		mean = stats_mean(&w->stats);
+> +		if (!mean)
+> +			continue;
+> +
+> +		variance = stats_variance(&w->stats, mean);
+> +		/*
+> +		 * We want to check the last interval is:
+> +		 *
+> +		 *  mean - stddev < interval < mean + stddev
+> +		 *
+> +		 * That simplifies to:
+> +		 *
+> +		 * -stddev < interval - mean < stddev
+> +		 *
+> +		 * abs(interval - mean) < stddev
+> +		 *
+> +		 * The standard deviation is the sqrt of the variance:
+> +		 *
+> +		 * abs(interval - mean) < sqrt(variance)
+> +		 *
+> +		 * and we want to prevent to do an sqrt, so we square
+> +		 * the equation:
+> +		 *
+> +		 * (interval - mean)^2 < variance
+> +		 *
+> +		 * So if the latest value of the stats complies with
+> +		 * this condition, then the wakeup source is
+> +		 * considered predictable and can be used to predict
+> +		 * the next event.
+> +		 */
+> +		interval = w->stats.values[w->stats.w_ptr];
+> +		if ((u64)((interval - mean) * (interval - mean)) > variance)
+> +			continue;
+> +
+> +		/*
+> +		 * Let's compute the next event: the wakeup source is
+> +		 * considered predictable, we add the average interval
+> +		 * time added to the latest interruption event time.
+> +		 */
+> +		next = ktime_add_us(w->timestamp, stats_mean(&w->stats));
+
+You don't need to call stats_mean() again as you have it in the 'mean' 
+variable already.
 
 
 Nicolas
