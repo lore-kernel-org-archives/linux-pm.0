@@ -1,44 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 15/19] cpufreq: remove useless usage of
- cpufreq_governor_mutex in __cpufreq_governor
-Date: Wed, 20 Jan 2016 15:48:36 +0530
-Message-ID: <20160120101836.GB18097@vireshk>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-16-git-send-email-juri.lelli@arm.com>
- <20160112110658.GG1084@ubuntu>
- <20160115163031.GU18603@e106622-lin>
- <20160118055034.GC30762@vireshk>
- <20160119164941.GI8573@e106622-lin>
- <20160120072933.GF22443@vireshk>
- <20160120101724.GM8573@e106622-lin>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous
+ systems
+Date: Wed, 20 Jan 2016 10:22:37 +0000
+Message-ID: <20160120102237.GN8573@e106622-lin>
+References: <56994D87.6000709@linaro.org>
+ <20160118151316.GD7159@e106622-lin>
+ <CAKfTPtBFR4cowT-j4qVxfUvh6NDNmi6R=J7z9kywi6bONU3Pow@mail.gmail.com>
+ <20160118163014.GA10332@e106622-lin>
+ <CAKfTPtDJBAXUz=_-QQSkrqwAvmUJd1bUJ-VfSaNER-0NzWpunA@mail.gmail.com>
+ <20160119105941.GA28845@e104818-lin.cambridge.arm.com>
+ <20160119112323.GB8573@e106622-lin>
+ <20160119142933.GF8573@e106622-lin>
+ <569E92FF.4000006@linaro.org>
+ <20160119211049.GX6588@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36451 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933423AbcATKSk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 05:18:40 -0500
-Received: by mail-pf0-f179.google.com with SMTP id n128so2542413pfn.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 02:18:39 -0800 (PST)
+Received: from foss.arm.com ([217.140.101.70]:44358 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751348AbcATKWK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Jan 2016 05:22:10 -0500
 Content-Disposition: inline
-In-Reply-To: <20160120101724.GM8573@e106622-lin>
+In-Reply-To: <20160119211049.GX6588@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Mark Brown <broonie@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
 
-On 20-01-16, 10:17, Juri Lelli wrote:
-> On 20/01/16 12:59, Viresh Kumar wrote:
-> > On 19-01-16, 16:49, Juri Lelli wrote:
-> > > I'm actually hitting this running sp2, on linux-pm/linux-next :/.
-> > 
-> > That's really bad .. Are you hitting this on Juno or x86 ?
-> > 
+On 19/01/16 21:10, Mark Brown wrote:
+> On Tue, Jan 19, 2016 at 11:48:15AM -0800, Steve Muckle wrote:
+> > On 01/19/2016 06:29 AM, Juri Lelli wrote:
 > 
-> That's on TC2. I'll try to run the same on Juno and x86.
+> > > I'm generally seeing ~1sec increase in boot time for 1 and practically
+> > > no difference for 2 (even after having added patches that provide
+> > > runtime performance improvements).
+> 
+> > One second is considerable IMO. Aside from the general desire to have
+> > shorter boot times on any platform there are environments like
+> > automotive where boot time is critical.
+> 
+> Yeah, definitely.  Is this actually blocking boot and if so can we
+> arrange to do this in parallel with other activity (with likely knock on
+> effects on reproducibility...)?
 
-Juno will be the same as that also set the per-policy-governor thing
-:)
-
--- 
-viresh
+No, this goes in parallel. That's also showed by the fact that the
+benchmarking thing itself usually takes more that 1 sec, but it seems to
+impact for that amount of time only.
