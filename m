@@ -1,153 +1,139 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH RESEND] power: genpd: fix lockdep issue for all subdomains
-Date: Wed, 20 Jan 2016 10:13:42 +0100
-Message-ID: <1453281222-19055-1-git-send-email-m.szyprowski@samsung.com>
-References: <CAPDyKFpcckcRqHGR-J-nb9+O3yTjU4k4KyLqNwKT2M4RvTgq7w@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 15/19] cpufreq: remove useless usage of
+ cpufreq_governor_mutex in __cpufreq_governor
+Date: Wed, 20 Jan 2016 10:17:24 +0000
+Message-ID: <20160120101724.GM8573@e106622-lin>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-16-git-send-email-juri.lelli@arm.com>
+ <20160112110658.GG1084@ubuntu>
+ <20160115163031.GU18603@e106622-lin>
+ <20160118055034.GC30762@vireshk>
+ <20160119164941.GI8573@e106622-lin>
+ <20160120072933.GF22443@vireshk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:61923 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933901AbcATJNy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 04:13:54 -0500
-In-reply-to: <CAPDyKFpcckcRqHGR-J-nb9+O3yTjU4k4KyLqNwKT2M4RvTgq7w@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:44286 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934187AbcATKQ4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Jan 2016 05:16:56 -0500
+Content-Disposition: inline
+In-Reply-To: <20160120072933.GF22443@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anand Moon <linux.amoon@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Kurtz <djkurtz@chromium.org>, Nicolas Boichat <drinkcat@chromium.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-During genpd_poweron, genpd->lock is acquired recursively for each
-parent (master) domain, which are separate objects. This confuses
-lockdep, which considers every operation on genpd->lock as being done on
-the same lock class. This leads to the following false positive warning:
+On 20/01/16 12:59, Viresh Kumar wrote:
+> On 19-01-16, 16:49, Juri Lelli wrote:
+> > I'm actually hitting this running sp2, on linux-pm/linux-next :/.
+> 
+> That's really bad .. Are you hitting this on Juno or x86 ?
+> 
 
-=============================================
-[ INFO: possible recursive locking detected ]
-4.4.0-rc4-xu3s #32 Not tainted
----------------------------------------------
-swapper/0/1 is trying to acquire lock:
- (&genpd->lock){+.+...}, at: [<c0361550>] __genpd_poweron+0x64/0x108
+That's on TC2. I'll try to run the same on Juno and x86.
 
-but task is already holding lock:
- (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
+> And I am sure you would have hit that with your changes as well, but
+> now its on the currently merged patches :(
+> 
+> >  ======================================================
+> >  [ INFO: possible circular locking dependency detected ]
+> >  4.4.0+ #445 Not tainted
+> >  -------------------------------------------------------
+> >  trace.sh/1723 is trying to acquire lock:
+> >   (s_active#48){++++.+}, at: [<c01f78c8>] kernfs_remove_by_name_ns+0x4c/0x94
+> > 
+> >  but task is already holding lock:
+> >   (od_dbs_cdata.mutex){+.+.+.}, at: [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
+> > 
+> >  which lock already depends on the new lock.
+> > 
+> > 
+> >  the existing dependency chain (in reverse order) is:
+> > 
+> > -> #2 (od_dbs_cdata.mutex){+.+.+.}:
+> >         [<c075b040>] mutex_lock_nested+0x7c/0x434
+> >         [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
+> >         [<c0017c10>] return_to_handler+0x0/0x18
+> > 
+> > -> #1 (&policy->rwsem){+++++.}:
+> >         [<c075ca8c>] down_read+0x58/0x94
+> >         [<c057c244>] show+0x30/0x60
+> >         [<c01f934c>] sysfs_kf_seq_show+0x90/0xfc
+> >         [<c01f7ad8>] kernfs_seq_show+0x34/0x38
+> >         [<c01a22ec>] seq_read+0x1e4/0x4e4
+> >         [<c01f8694>] kernfs_fop_read+0x120/0x1a0
+> >         [<c01794b4>] __vfs_read+0x3c/0xe0
+> >         [<c017a378>] vfs_read+0x98/0x104
+> >         [<c017a434>] SyS_read+0x50/0x90
+> >         [<c000fd40>] ret_fast_syscall+0x0/0x1c
+> > 
+> > -> #0 (s_active#48){++++.+}:
+> >         [<c008238c>] lock_acquire+0xd4/0x20c
+> >         [<c01f6ae4>] __kernfs_remove+0x288/0x328
+> >         [<c01f78c8>] kernfs_remove_by_name_ns+0x4c/0x94
+> >         [<c01fa024>] remove_files+0x44/0x88
+> >         [<c01fa5a4>] sysfs_remove_group+0x50/0xa4
+> >         [<c058285c>] cpufreq_governor_dbs+0x3f0/0x5d4
+> >         [<c0017c10>] return_to_handler+0x0/0x18
+> > 
+> >  other info that might help us debug this:
+> > 
+> >  Chain exists of:
+> >   s_active#48 --> &policy->rwsem --> od_dbs_cdata.mutex
+> > 
+> >   Possible unsafe locking scenario:
+> > 
+> >         CPU0                    CPU1
+> >         ----                    ----
+> >    lock(od_dbs_cdata.mutex);
+> >                                 lock(&policy->rwsem);
+> >                                 lock(od_dbs_cdata.mutex);
+> >    lock(s_active#48);
+> > 
+> >   *** DEADLOCK ***
+> > 
+> >  5 locks held by trace.sh/1723:
+> >   #0:  (sb_writers#6){.+.+.+}, at: [<c017beb8>] __sb_start_write+0xb4/0xc0
+> >   #1:  (&of->mutex){+.+.+.}, at: [<c01f8418>] kernfs_fop_write+0x6c/0x1c8
+> >   #2:  (s_active#35){.+.+.+}, at: [<c01f8420>] kernfs_fop_write+0x74/0x1c8
+> >   #3:  (cpu_hotplug.lock){++++++}, at: [<c0029e6c>] get_online_cpus+0x48/0xb8
+> >   #4:  (od_dbs_cdata.mutex){+.+.+.}, at: [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
+> > 
+> >  stack backtrace:
+> >  CPU: 2 PID: 1723 Comm: trace.sh Not tainted 4.4.0+ #445
+> >  Hardware name: ARM-Versatile Express
+> >  [<c001883c>] (unwind_backtrace) from [<c0013f50>] (show_stack+0x20/0x24)
+> >  [<c0013f50>] (show_stack) from [<c044ad90>] (dump_stack+0x80/0xb4)
+> >  [<c044ad90>] (dump_stack) from [<c0128edc>] (print_circular_bug+0x29c/0x2f0)
+> >  [<c0128edc>] (print_circular_bug) from [<c0081708>] (__lock_acquire+0x163c/0x1d74)
+> >  [<c0081708>] (__lock_acquire) from [<c008238c>] (lock_acquire+0xd4/0x20c)
+> >  [<c008238c>] (lock_acquire) from [<c01f6ae4>] (__kernfs_remove+0x288/0x328)
+> >  [<c01f6ae4>] (__kernfs_remove) from [<c01f78c8>] (kernfs_remove_by_name_ns+0x4c/0x94)
+> >  [<c01f78c8>] (kernfs_remove_by_name_ns) from [<c01fa024>] (remove_files+0x44/0x88)
+> >  [<c01fa024>] (remove_files) from [<c01fa5a4>] (sysfs_remove_group+0x50/0xa4)
+> >  [<c01fa5a4>] (sysfs_remove_group) from [<c058285c>] (cpufreq_governor_dbs+0x3f0/0x5d4)
+> >  [<c058285c>] (cpufreq_governor_dbs) from [<c0017c10>] (return_to_handler+0x0/0x18)
+> > 
+> > Now, I couldn't yet make sense of this, but it seems to be
+> > triggered by setting ondemand, printing its attributes and then
+> > switching to conservative (that's what sp2 does, right?). Also, s_active
+> > seems to come into play only when lockdep is enabled. Are you seeing
+> > this as well?
+> 
+> There is something about the platform you are running this on.. I
+> don't hit it most of the times in my exynos board (Dual A15), but x86
+> and powerpc guys used to report this all the time. I have tried with
+> both have-governor-per-policy and otherwise.
+> 
+> I have explained something similar in the earlier commits I pointed to
+> you, here is the commit log:
+> 
+> http://pastebin.com/JbEJBLzU
+> 
 
-other info that might help us debug this:
- Possible unsafe locking scenario:
+Yeah, saw that. I guess I have to stare at this thing more.
 
-       CPU0
-       ----
-  lock(&genpd->lock);
-  lock(&genpd->lock);
+Thanks,
 
- *** DEADLOCK ***
-
- May be due to missing lock nesting notation
-
-3 locks held by swapper/0/1:
- #0:  (&dev->mutex){......}, at: [<c0350910>] __driver_attach+0x48/0x98
- #1:  (&dev->mutex){......}, at: [<c0350920>] __driver_attach+0x58/0x98
- #2:  (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
-
-stack backtrace:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.4.0-rc4-xu3s #32
-Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-[<c0016c98>] (unwind_backtrace) from [<c00139c4>] (show_stack+0x10/0x14)
-[<c00139c4>] (show_stack) from [<c0270df0>] (dump_stack+0x84/0xc4)
-[<c0270df0>] (dump_stack) from [<c00780b8>] (__lock_acquire+0x1f88/0x215c)
-[<c00780b8>] (__lock_acquire) from [<c007886c>] (lock_acquire+0xa4/0xd0)
-[<c007886c>] (lock_acquire) from [<c0641f2c>] (mutex_lock_nested+0x70/0x4d4)
-[<c0641f2c>] (mutex_lock_nested) from [<c0361550>] (__genpd_poweron+0x64/0x108)
-[<c0361550>] (__genpd_poweron) from [<c0361b00>] (genpd_dev_pm_attach+0x170/0x1b8)
-[<c0361b00>] (genpd_dev_pm_attach) from [<c03520a8>] (platform_drv_probe+0x2c/0xac)
-[<c03520a8>] (platform_drv_probe) from [<c03507d4>] (driver_probe_device+0x208/0x2fc)
-[<c03507d4>] (driver_probe_device) from [<c035095c>] (__driver_attach+0x94/0x98)
-[<c035095c>] (__driver_attach) from [<c034ec14>] (bus_for_each_dev+0x68/0x9c)
-[<c034ec14>] (bus_for_each_dev) from [<c034fec8>] (bus_add_driver+0x1a0/0x218)
-[<c034fec8>] (bus_add_driver) from [<c035115c>] (driver_register+0x78/0xf8)
-[<c035115c>] (driver_register) from [<c0338488>] (exynos_drm_register_drivers+0x28/0x74)
-[<c0338488>] (exynos_drm_register_drivers) from [<c0338594>] (exynos_drm_init+0x6c/0xc4)
-[<c0338594>] (exynos_drm_init) from [<c00097f4>] (do_one_initcall+0x90/0x1dc)
-[<c00097f4>] (do_one_initcall) from [<c0895e08>] (kernel_init_freeable+0x158/0x1f8)
-[<c0895e08>] (kernel_init_freeable) from [<c063ecac>] (kernel_init+0x8/0xe8)
-[<c063ecac>] (kernel_init) from [<c000f7d0>] (ret_from_fork+0x14/0x24)
-
-This patch replaces mutex_lock with mutex_lock_nested() and uses
-recursion depth to annotate each genpd->lock operation with separate
-lockdep subclass.
-
-Reported-by: Anand Moon <linux.amoon@gmail.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
-Tested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b803790..e02ddf6 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -170,16 +170,15 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
- 	queue_work(pm_wq, &genpd->power_off_work);
- }
- 
--static int genpd_poweron(struct generic_pm_domain *genpd);
--
- /**
-  * __genpd_poweron - Restore power to a given PM domain and its masters.
-  * @genpd: PM domain to power up.
-+ * @depth: nesting count for lockdep.
-  *
-  * Restore power to @genpd and all of its masters so that it is possible to
-  * resume a device belonging to it.
-  */
--static int __genpd_poweron(struct generic_pm_domain *genpd)
-+static int __genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
- {
- 	struct gpd_link *link;
- 	int ret = 0;
-@@ -194,11 +193,16 @@ static int __genpd_poweron(struct generic_pm_domain *genpd)
- 	 * with it.
- 	 */
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
--		genpd_sd_counter_inc(link->master);
-+		struct generic_pm_domain *master = link->master;
-+
-+		genpd_sd_counter_inc(master);
-+
-+		mutex_lock_nested(&master->lock, depth + 1);
-+		ret = __genpd_poweron(master, depth + 1);
-+		mutex_unlock(&master->lock);
- 
--		ret = genpd_poweron(link->master);
- 		if (ret) {
--			genpd_sd_counter_dec(link->master);
-+			genpd_sd_counter_dec(master);
- 			goto err;
- 		}
- 	}
-@@ -230,11 +234,12 @@ static int genpd_poweron(struct generic_pm_domain *genpd)
- 	int ret;
- 
- 	mutex_lock(&genpd->lock);
--	ret = __genpd_poweron(genpd);
-+	ret = __genpd_poweron(genpd, 0);
- 	mutex_unlock(&genpd->lock);
- 	return ret;
- }
- 
-+
- static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
- {
- 	return GENPD_DEV_CALLBACK(genpd, int, save_state, dev);
-@@ -482,7 +487,7 @@ static int pm_genpd_runtime_resume(struct device *dev)
- 	}
- 
- 	mutex_lock(&genpd->lock);
--	ret = __genpd_poweron(genpd);
-+	ret = __genpd_poweron(genpd, 0);
- 	mutex_unlock(&genpd->lock);
- 
- 	if (ret)
--- 
-1.9.2
-
+- Juri
