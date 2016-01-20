@@ -1,92 +1,107 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Wed, 20 Jan 2016 12:59:54 +0000
-Message-ID: <20160120125954.GT8573@e106622-lin>
-References: <20160112112409.GJ1084@ubuntu>
- <20160113005452.10884.77606@quark.deferred.io>
- <20160113063148.GJ6050@ubuntu>
- <20160113182131.1168.45753@quark.deferred.io>
- <20160119140036.GG6344@twins.programming.kicks-ass.net>
- <20160119144233.GG8573@e106622-lin>
- <20160119153007.GZ6357@twins.programming.kicks-ass.net>
- <20160119160155.GH8573@e106622-lin>
- <20160119191734.GB6357@twins.programming.kicks-ass.net>
- <20160119192111.GC6373@twins.programming.kicks-ass.net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: sched-freq locking
+Date: Wed, 20 Jan 2016 06:50:27 -0800
+Message-ID: <569F9EB3.60600@linaro.org>
+References: <56984C30.8040402@linaro.org> <20160115104051.GP18603@e106622-lin>
+ <569D568D.5000500@linaro.org>
+ <CAEG3pNDoDHpgO7WdC8n7C8Ri+KNKZqOi9rKHMkTV0c5dkyevOw@mail.gmail.com>
+ <CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
+ <569E90CF.9050503@linaro.org>
+ <CAEG3pND5kHqJhrvwVjsnCnfT-nSrV8SrUaNk2p=ZfEx0MmmB=A@mail.gmail.com>
+ <569EB225.4040707@linaro.org>
+ <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com>
+ <569EE1E1.3050407@linaro.org> <20160120121801.GR8573@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160119192111.GC6373@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:35482 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932744AbcATOua (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 09:50:30 -0500
+Received: by mail-pa0-f51.google.com with SMTP id ho8so5766739pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 06:50:30 -0800 (PST)
+In-Reply-To: <20160120121801.GR8573@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On 19/01/16 20:21, Peter Zijlstra wrote:
-> On Tue, Jan 19, 2016 at 08:17:34PM +0100, Peter Zijlstra wrote:
-> > On Tue, Jan 19, 2016 at 04:01:55PM +0000, Juri Lelli wrote:
-> > > Right, read path is fast, but write path still requires some sort of
-> > > locking (malloc, copy and update). So, I'm wondering if this still pays
-> > > off for a structure that gets written a lot.
-> > 
-> > No, not at all.
-> > 
-> > struct cpufreq_driver *driver;
-> > 
-> > void sched_util_change(unsigned int util)
-> > {
-> > 	struct my_per_cpu_data *foo;
-> > 
-> > 	rcu_read_lock();
-> 
-> That should obviously be:
-> 
-> 	d = rcu_dereference(driver);
-> 	if (d) {
-> 		foo = __this_cpu_ptr(d->data);
-> 
-> > 		if (abs(util - foo->last_util) > 10) {
-> > 			foo->last_util = util;
-> > 			foo->set_util(util);
-> > 		}
-> > 	}
-> > 	rcu_read_unlock();
-> > }
-> > 
-> > 
-> > struct cpufreq_driver *cpufreq_flip_driver(struct cpufreq_driver *new_driver)
-> > {
-> > 	struct cpufreq_driver *old_driver;
-> > 
-> > 	mutex_lock(&cpufreq_driver_lock);
-> > 	old_driver = driver;
-> > 	rcu_assign_driver(driver, new_driver);
-> > 	if (old_driver)
-> > 		synchronize_rcu();
-> > 	mutex_unlock(&cpufreq_driver_lock);
-> > 
-> > 	return old_driver;
-> > }
-> > 
-> > 
-> > 
-> 
+On 01/20/2016 04:18 AM, Juri Lelli wrote:
+> I fear that caching could break thermal. If everybody was already using
+> sched-freq interface to control frequency this won't probably be a
+> problem, but we are not yet there :(. So, IIUC by caching policy->max,
+> for example, we might affect what thermal expects from cpufreq.
 
-Right, this addresses the driver side (modulo what Rafael pointed out
-about setting driver pointer to NULL and then to point to the new
-driver); and for this part I think RCU works well. I'm not concerned
-about the driver side :).
+I think we could probably just access policy->max without rwsem, as long
+as we ensure policy is valid. Cpufreq will take care to cap a frequency
+request to an upper limit put in by thermal anyway so I don't think it's
+a problematic race. But I haven't spent much time thinking about it.
 
-Now, assuming that we move cpufreq_cpu_data inside cpufreq_driver (IIUC
-this is your d->data), we will have per_cpu pointers pointing to the
-different policies. Inside these policy data structures we have
-information regarding current frequency, maximum allowed frequency, cpus
-covered by this policy, and a few more. IIUC this is your foo thing.
-Since the structure pointed to by foo will be shared amongs several
-cpus, we need some way to guarantee mutual exclusion and such. I think
-we were thinking to use RCU for this bit as well and that is what I'm
-concerned about, as curr frequency will change at every frequency
-transition.
+>
+...
+>> Done (added linux-pm, PeterZ and Rafael as well).
+>>
+> 
+> This discussion is pretty interesting, yes. I'm a bit afraid people
+> bumped into this might have troubles understanding context, though.
+> And I'm not sure how to give them that context; maybe start a new thread
+> summarizing what has been discussed so far?
 
-Maybe you are also implying that we need to change cpufreq_cpu_data as
-well. I need to think more about that.
+Yeah, that occurred to me as well. I wasn't sure whether to restart the
+thread or put in the locking I had in mind and just send it with the
+next schedfreq RFC series, which should be in the next few weeks. I was
+going to do the latter but here is a recap of the topic from my side:
+
+Currently schedfreq has to go through two stages of aggregation. The
+first is aggregating the capacity request votes from the different sched
+classes within a CPU. The second is aggregating the capacity request
+votes from the CPUs within a frequency domain. I'm looking to solve the
+locking issues with both of these stages as well as those with calling
+into cpufreq in the fast path.
+
+For the first stage, currently we assume that the rq lock is held. This
+is the case for the existing calls into schedfreq (the load balancer
+required a minor change). There are a few more hooks that need to go
+into migration paths in core.c which will be slightly more painful, but
+they are IMO doable.
+
+For the second stage I believe an internal schedfreq spinlock is
+required, for one thing to protect against competing updates within the
+same frequency domain from different CPUs, but also so that we can
+guarantee the cpufreq policy is valid, which can be done if the
+governor_start/stop callbacks take the spinlock as well.
+
+As for accessing various things in cpufreq->policy and trying to take
+rwsem in the fast path, we should be able to either cache some of the
+items in the governor_start() path, eliminate the references, or access
+them without locking rwsem (as long as we know the policy is valid,
+which we do by taking the spinlock in governor_start()). Here are the
+things we currently reference in the schedfreq set capacity hook and my
+thoughts on each of them:
+
+policy->governor: this is currently tested to see if schedfreq is
+enabled, but this can be tracked internally to schedfreq and set in the
+governor_start/stop callbacks
+
+policy->governor_data: used to access schedfreq's data for the policy,
+could be changed to an internal schedfreq percpu pointer
+
+policy->cpus, policy->freq_table: these can be cached internally to
+schedfreq on governor_start/stop
+
+policy->max: as mentioned above I *think* we could get away with
+accessing this without locking rwsem as discussed above
+
+policy->transition_ongoing: this isn't strictly required as schedfreq
+could track internally whether it has a transition outstanding, but we
+should also be okay to look at this without policy->rwsem since
+schedfreq is the only one queuing transitions, again assuming we take
+care to ensure policy is valid as above
+
+Finally when actually requesting a frequency change in the fast path, we
+can trylock policy->rwsem and fall back to the slow path (kthread) if
+that fails.
+
+thanks,
+Steve
