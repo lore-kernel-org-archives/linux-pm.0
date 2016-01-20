@@ -1,44 +1,62 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Wed, 20 Jan 2016 20:07:18 +0100
-Message-ID: <20160120190718.GS6357@twins.programming.kicks-ass.net>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
- <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Wed, 20 Jan 2016 14:17:57 -0500 (EST)
+Message-ID: <alpine.LFD.2.20.1601201408430.2140@knanqh.ubzr>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org> <20160120190205.GR6357@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:59106 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbcATTHW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 14:07:22 -0500
-Content-Disposition: inline
-In-Reply-To: <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-qg0-f52.google.com ([209.85.192.52]:34169 "EHLO
+	mail-qg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbcATTSA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 14:18:00 -0500
+Received: by mail-qg0-f52.google.com with SMTP id 6so14175570qgy.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 11:18:00 -0800 (PST)
+In-Reply-To: <20160120190205.GR6357@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: tglx@linutronix.de, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, tglx@linutronix.de, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On Wed, Jan 20, 2016 at 05:00:32PM +0100, Daniel Lezcano wrote:
-> +++ b/kernel/irq/handle.c
-> @@ -165,6 +165,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
->  			/* Fall through to add to randomness */
->  		case IRQ_HANDLED:
->  			flags |= action->flags;
-> +			handle_irqtiming(irq, action->dev_id);
->  			break;
->  
->  		default:
+On Wed, 20 Jan 2016, Peter Zijlstra wrote:
 
-> +++ b/kernel/irq/internals.h
+> On Wed, Jan 20, 2016 at 05:00:33PM +0100, Daniel Lezcano wrote:
+> > +static void sched_irq_timing_handler(unsigned int irq, ktime_t timestamp, void *dev_id)
+> > +{
+> > +	u32 diff;
+> > +	unsigned int cpu = raw_smp_processor_id();
+> > +	struct wakeup *w = per_cpu(wakeups[irq], cpu);
+> > +
+> > +	/*
+> > +	 * It is the first time the interrupt occurs of the series, we
+> > +	 * can't do any stats as we don't have an interval, just store
+> > +	 * the timestamp and exit.
+> > +	 */
+> > +	if (ktime_equal(w->timestamp, ktime_set(0, 0))) {
+> > +		w->timestamp = timestamp;
+> > +		return;
+> > +	}
+> > +
+> > +	/*
+> > +	 * Microsec resolution is enough for our purpose.
+> > +	 */
+> 
+> It is also a friggin pointless /1000. The cpuidle code also loves to do
+> this, and its silly, u64 add/sub are _way_ cheaper than u64 / 1000.
 
-> +static inline void handle_irqtiming(unsigned int irq, void *dev_id)
-> +{
-> +	if (__irqtimings->handler)
-> +		__irqtimings->handler(irq, ktime_get(), dev_id);
-> +}
+For the purpose of this code, nanoseconds simply provides too many bits 
+for what we care.  Computing the variance implies squared values.
 
-Here too, ktime_get() is daft.
+*However* we can simply do diff = (timestamp - w->timestamp) >> 10 
+instead.  No need to have an exact microsecs base.
 
-Also, you really want to take the timestamp _before_ we call the
-handlers, not after, otherwise you mix in whatever variance exist in the
-handler duration.
+> > +	ktime_t now = ktime_get();
+> 
+> Why !?! do we care about NTP correct timestamps?
+
+Not at all. Using sched_clock() instead would be more than good enough 
+indeed.
+
+
+Nicolas
