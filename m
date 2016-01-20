@@ -1,195 +1,64 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] power: genpd: fix lockdep issue for all subdomains
-Date: Wed, 20 Jan 2016 07:40:45 +0100
-Message-ID: <569F2BED.3060504@samsung.com>
-References: <1451903982-1598-1-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFqQDV9v0WB78QTkv=1_9APBo-J9F7LPBDfDOSNGYbVbOw@mail.gmail.com>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v5 0/2] power: act8945a: add charger driver for the sub-device of ACT8945A MFD
+Date: Wed, 20 Jan 2016 15:04:23 +0800
+Message-ID: <1453273465-24060-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:33754 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbcATGku (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 01:40:50 -0500
-In-reply-to: <CAPDyKFqQDV9v0WB78QTkv=1_9APBo-J9F7LPBDfDOSNGYbVbOw@mail.gmail.com>
+Received: from eusmtp01.atmel.com ([212.144.249.242]:31301 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758237AbcATHHn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 02:07:43 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anand Moon <linux.amoon@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Kurtz <djkurtz@chromium.org>, Nicolas Boichat <drinkcat@chromium.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Javier Martinez Canillas <javier@dowhile0.org>, Lee Jones <lee.jones@linaro.org>, Peter Korsgaard <jacmet@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
-Hello,
+The ACT8945A is a Multi Function Device with the following subdevices:
+ - Regulator
+ - Charger
 
-On 2016-01-19 16:25, Ulf Hansson wrote:
-> +linux-pm, Daniel Kurtz, Nicolas Boichat
->
-> On 4 January 2016 at 11:39, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->> During genpd_poweron, genpd->lock is acquired recursively for each
->> parent (master) domain, which are separate obejcts. This confuses
->> lockdep, which considers every operation on genpd->lock as being done on
->> the same lock class. This leads to the following false positive warning:
->>
->> =============================================
->> [ INFO: possible recursive locking detected ]
->> 4.4.0-rc4-xu3s #32 Not tainted
->> ---------------------------------------------
->> swapper/0/1 is trying to acquire lock:
->>   (&genpd->lock){+.+...}, at: [<c0361550>] __genpd_poweron+0x64/0x108
->>
->> but task is already holding lock:
->>   (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
->>
->> other info that might help us debug this:
->>   Possible unsafe locking scenario:
->>
->>         CPU0
->>         ----
->>    lock(&genpd->lock);
->>    lock(&genpd->lock);
->>
->>   *** DEADLOCK ***
->>
->>   May be due to missing lock nesting notation
->>
->> 3 locks held by swapper/0/1:
->>   #0:  (&dev->mutex){......}, at: [<c0350910>] __driver_attach+0x48/0x98
->>   #1:  (&dev->mutex){......}, at: [<c0350920>] __driver_attach+0x58/0x98
->>   #2:  (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
->>
->> stack backtrace:
->> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.4.0-rc4-xu3s #32
->> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
->> [<c0016c98>] (unwind_backtrace) from [<c00139c4>] (show_stack+0x10/0x14)
->> [<c00139c4>] (show_stack) from [<c0270df0>] (dump_stack+0x84/0xc4)
->> [<c0270df0>] (dump_stack) from [<c00780b8>] (__lock_acquire+0x1f88/0x215c)
->> [<c00780b8>] (__lock_acquire) from [<c007886c>] (lock_acquire+0xa4/0xd0)
->> [<c007886c>] (lock_acquire) from [<c0641f2c>] (mutex_lock_nested+0x70/0x4d4)
->> [<c0641f2c>] (mutex_lock_nested) from [<c0361550>] (__genpd_poweron+0x64/0x108)
->> [<c0361550>] (__genpd_poweron) from [<c0361b00>] (genpd_dev_pm_attach+0x170/0x1b8)
->> [<c0361b00>] (genpd_dev_pm_attach) from [<c03520a8>] (platform_drv_probe+0x2c/0xac)
->> [<c03520a8>] (platform_drv_probe) from [<c03507d4>] (driver_probe_device+0x208/0x2fc)
->> [<c03507d4>] (driver_probe_device) from [<c035095c>] (__driver_attach+0x94/0x98)
->> [<c035095c>] (__driver_attach) from [<c034ec14>] (bus_for_each_dev+0x68/0x9c)
->> [<c034ec14>] (bus_for_each_dev) from [<c034fec8>] (bus_add_driver+0x1a0/0x218)
->> [<c034fec8>] (bus_add_driver) from [<c035115c>] (driver_register+0x78/0xf8)
->> [<c035115c>] (driver_register) from [<c0338488>] (exynos_drm_register_drivers+0x28/0x74)
->> [<c0338488>] (exynos_drm_register_drivers) from [<c0338594>] (exynos_drm_init+0x6c/0xc4)
->> [<c0338594>] (exynos_drm_init) from [<c00097f4>] (do_one_initcall+0x90/0x1dc)
->> [<c00097f4>] (do_one_initcall) from [<c0895e08>] (kernel_init_freeable+0x158/0x1f8)
->> [<c0895e08>] (kernel_init_freeable) from [<c063ecac>] (kernel_init+0x8/0xe8)
->> [<c063ecac>] (kernel_init) from [<c000f7d0>] (ret_from_fork+0x14/0x24)
->>
->> This patch replaces mutex_lock with mutex_lock_nested() and uses
->> recursion depth to annotate each genpd->lock operation with separate
->> lockdep subclass.
->>
->> Reported-by: Anand Moon <linux.amoon@gmail.com>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Thanks for looking into this!
->
-> Daniel Kurtz, did also run into this issue [1] and reported it a while ago.
-> There where some discussions and Daniel also posted a patch trying to
-> solve the issue [2]. That approach didn't work out, and unfortunate I
-> haven't yet been able to look closer into the issue. Sorry about that!
->
->> ---
->>   drivers/base/power/domain.c | 21 +++++++++++++--------
->>   1 file changed, 13 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index b803790..e02ddf6 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -170,16 +170,15 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
->>          queue_work(pm_wq, &genpd->power_off_work);
->>   }
->>
->> -static int genpd_poweron(struct generic_pm_domain *genpd);
->> -
->>   /**
->>    * __genpd_poweron - Restore power to a given PM domain and its masters.
->>    * @genpd: PM domain to power up.
->> + * @depth: nesting count for lockdep.
->>    *
->>    * Restore power to @genpd and all of its masters so that it is possible to
->>    * resume a device belonging to it.
->>    */
->> -static int __genpd_poweron(struct generic_pm_domain *genpd)
->> +static int __genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
->>   {
->>          struct gpd_link *link;
->>          int ret = 0;
->> @@ -194,11 +193,16 @@ static int __genpd_poweron(struct generic_pm_domain *genpd)
->>           * with it.
->>           */
->>          list_for_each_entry(link, &genpd->slave_links, slave_node) {
->> -               genpd_sd_counter_inc(link->master);
->> +               struct generic_pm_domain *master = link->master;
->> +
->> +               genpd_sd_counter_inc(master);
->> +
->> +               mutex_lock_nested(&master->lock, depth + 1);
-> Nested locks isn't a solution to a problem, but instead this tricks
-> lockdep about what goes on. Right?
+This patch set is to add regulator driver for ACT8945A.
+It is based on the patch set:
+	http://lists.infradead.org/pipermail/linux-arm-kernel/2016-January/400534.html
 
-The only difference between mutex_lock_nested and mutex_lock is the way
-it is interpreted by deplock. The additional argument is deplock subclass
-of the lock. The name of this function is imho a bit misleading.
+Changes in v5:
+ - remove spare spaces after #define.
+ - add OF match table.
+ - collect Reviewed-by from Krzysztof.
 
-> I am wondering whether there's another option available which better
-> can instruct lockdep to not treat this as an error.
+Changes in v4:
+ - use spaces after #define, not tabs.
+ - use BIT(n) macros to substitute (0x01 << x).
+ - change dt properties with more legible name.
+ - change the properties with more legible name, clearer description.
 
-Similar solution is already applied in regulators and i2c cores, see
-regulator_lock_supply() and i2c_del_adapter() functions.
+Changes in v3:
+ - update the file header with short version license and author line.
+ - remove unused member of struct act8945a_charger, dev.
+ - action due to removing the member of stuct act8945a_dev, dev.
+ - remove the unnecessary print out.
+ - remove the unnecessary act8945a_charger_remove().
+ - fix align of the code-style.
 
->> +               ret = __genpd_poweron(master, depth + 1);
->> +               mutex_unlock(&master->lock);
->>
->> -               ret = genpd_poweron(link->master);
->>                  if (ret) {
->> -                       genpd_sd_counter_dec(link->master);
->> +                       genpd_sd_counter_dec(master);
->>                          goto err;
->>                  }
->>          }
->> @@ -230,11 +234,12 @@ static int genpd_poweron(struct generic_pm_domain *genpd)
->>          int ret;
->>
->>          mutex_lock(&genpd->lock);
->> -       ret = __genpd_poweron(genpd);
->> +       ret = __genpd_poweron(genpd, 0);
->>          mutex_unlock(&genpd->lock);
->>          return ret;
->>   }
->>
->> +
->>   static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
->>   {
->>          return GENPD_DEV_CALLBACK(genpd, int, save_state, dev);
->> @@ -482,7 +487,7 @@ static int pm_genpd_runtime_resume(struct device *dev)
->>          }
->>
->>          mutex_lock(&genpd->lock);
->> -       ret = __genpd_poweron(genpd);
->> +       ret = __genpd_poweron(genpd, 0);
->>          mutex_unlock(&genpd->lock);
->>
->>          if (ret)
->> --
->> 1.9.2
->>
-> Kind regards
-> Uffe
->
-> [1]
-> http://www.spinics.net/lists/arm-kernel/msg471025.html
-> [2]
-> http://www.spinics.net/lists/stable/msg113650.html
->
->
+Changes in v2:
+ 1./ Substitute of_property_read_bool() for of_get_property().
+ 2./ Substitute devm_power_supply_register() for power_supply_register().
+ 3./ Use module_platform_driver(), instead of subsys_initcall().
+ 4./ Substitute MODULE_LICENSE("GPL") for MODULE_LICENSE("GPL v2").
 
-Best regards
+Wenyou Yang (2):
+  power: act8945a: add charger driver for ACT8945A
+  power: add documentation for ACT8945A's charger DT bindings
+
+ .../devicetree/bindings/power/act8945a-charger.txt |   33 ++
+ drivers/power/Kconfig                              |    7 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/act8945a_charger.c                   |  375 ++++++++++++++++++++
+ 4 files changed, 416 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/act8945a-charger.txt
+ create mode 100644 drivers/power/act8945a_charger.c
+
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+1.7.9.5
 
