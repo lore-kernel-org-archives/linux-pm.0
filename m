@@ -1,114 +1,39 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/4] dt-bindings: power: reset: add document for
- reboot-mode driver
-Date: Wed, 20 Jan 2016 12:28:40 -0600
-Message-ID: <20160120182840.GA15741@rob-hp-laptop>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
- <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Wed, 20 Jan 2016 19:44:14 +0100
+Message-ID: <20160120184414.GQ6357@twins.programming.kicks-ass.net>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.LFD.2.20.1601201212170.2140@knanqh.ubzr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:51786 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934679AbcATS2q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Jan 2016 13:28:46 -0500
+Received: from bombadil.infradead.org ([198.137.202.9]:56713 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbcATSoT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 13:44:19 -0500
 Content-Disposition: inline
-In-Reply-To: <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
+In-Reply-To: <alpine.LFD.2.20.1601201212170.2140@knanqh.ubzr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org, linux@roeck-us.net, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, geert+renesas@glider.be, sre@kernel.org, olof@lixom.net, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, f.fainelli@gmail.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org, mark.rutland@arm.com, maxime.ripard@free-electrons.com
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, tglx@linutronix.de, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On Tue, Jan 12, 2016 at 07:29:49PM +0800, Andy Yan wrote:
-> add device tree binding document for reboot-mode driver
+On Wed, Jan 20, 2016 at 12:46:48PM -0500, Nicolas Pitre wrote:
+> > +struct stats {
+> > +	u64           sum;                     /* sum of values */
+> > +	u32           values[STATS_NR_VALUES]; /* array of values */
+> > +	unsigned char w_ptr;                   /* current window pointer */
 > 
-> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+> Why did you change this from an unsigned int?
 > 
-> ---
-> 
-> Changes in v2: None
-> Changes in v1: None
-> 
->  .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++++++++++
->  .../bindings/power/reset/syscon-reboot-mode.txt    | 52 ++++++++++++++++++++++
->  2 files changed, 93 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
->  create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
-> new file mode 100644
-> index 0000000..81d9f66
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
-> @@ -0,0 +1,41 @@
-> +Generic reboot mode core map driver
-> +
-> +This driver get reboot mode arguments and call the write
-> +interface to stores the magic value in special register
-> +or ram . Then the bootloader can read it and take different
-> +action according to the argument stored.
-> +
-> +Required properties:
-> +- compatible: only support "syscon-reboot-mode" now.
-> +
-> +Each mode is represented as a sub-node of reboot_mode:
-> +
-> +Subnode required properties:
-> +- linux,mode: reboot mode command,such as "loader", "recovery", "fastboot".
-> +- loader,magic: magic number for the mode, this is vendor specific.
-> +
-> +Example:
-> +	reboot_mode {
+> This won't provide any memory space saving given that the structure has 
+> to be padded up to the next 64-bit boundary.
 
-reboot-mode instead please.
+Not to mention that loading bytes is more expensive on many archs
+compared to full words.
 
-> +		compatible = "syscon-reboot-mode";
-> +		offset = <0x40>;
+Also, its not a pointer, its an index.
 
-This doc by itself is a little confusing. For example, is a child of the 
-syscon node? I would remove offset (and perhaps compatible) from this 
-example.
-
-> +
-> +		loader {
-> +			linux,mode = "loader";
-> +			loader,magic = <BOOT_LOADER>;
-> +		};
-
-Sorry, my previous suggestion was not clear. I'm suggesting get rid of 
-the subnodes and just do properties like this:
-
-loader = <BOOT_LOADER>;
-maskrom = <BOOT_MASKROM>;
-
-That's the same amount of information unless node names and linux,mode 
-values are going to diverge. Do they need to? I can't see a reason.
-
-
-We need to be clear what loader means. More specifically, it is boot 
-into bootloader shell. 
-
-> +
-> +		maskrom {
-
-In theory, the bootrom could have multiple modes. This typically means a 
-USB download mode. So perhaps a more precise name would be 
-"rom-download". 
-
-In chips I'm familiar with the bootrom mode is selected via a different 
-mechanism than the secondary bootloader modes, but I suppose the same 
-mechanism could be used.
-
-> +			linux,mode = "maskrom";
-> +			loader,magic = <BOOT_MASKROM>;
-> +		};
-> +
-> +		recovery {
-> +			linux,mode = "recovery";
-> +			loader,magic = <BOOT_RECOVERY>;
-> +		};
-> +
-> +		fastboot {
-> +			linux,mode = "fastboot";
-> +			loader,magic = <BOOT_FASTBOOT>;
-> +		};
+So:	unsigned int w_idx;
