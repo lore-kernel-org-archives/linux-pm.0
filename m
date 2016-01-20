@@ -1,409 +1,116 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [RFC PATCH v2] rpm: refining the rpm_suspend function
-Date: Wed, 20 Jan 2016 16:00:55 +0800
-Message-ID: <1453276855-21403-1-git-send-email-zhaoyang.huang@spreadtrum.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:35626 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbcATIBg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 03:01:36 -0500
-Received: by mail-pf0-f177.google.com with SMTP id 65so701141pff.2
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 00:01:36 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] power: genpd: fix lockdep issue for all subdomains
+Date: Wed, 20 Jan 2016 09:41:22 +0100
+Message-ID: <CAPDyKFpcckcRqHGR-J-nb9+O3yTjU4k4KyLqNwKT2M4RvTgq7w@mail.gmail.com>
+References: <1451903982-1598-1-git-send-email-m.szyprowski@samsung.com>
+	<CAPDyKFqQDV9v0WB78QTkv=1_9APBo-J9F7LPBDfDOSNGYbVbOw@mail.gmail.com>
+	<569F2BED.3060504@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <569F2BED.3060504@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anand Moon <linux.amoon@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Kurtz <djkurtz@chromium.org>, Nicolas Boichat <drinkcat@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: zhaoyang.huang@spreadtrum.com, rjw@rjwysocki.net, pavel@ucw.cz, linux-kernel@vger.kernel.org, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org
 
-There are too many branch path within he original rpm_suspend funciton,which make
-the code a little bit hard for understanding and debugging.Just try to split the
-function into some small one to eliminate the goto and make one optimization for
-avoiding transfering from wait to auto when irq_safe flag set.
+[...]
 
-The original rpm_suspend function is divied into bellowing functions, which will
-transfer to corresponding ones like a state machine.
-_rpm_suspend_auto
-_rpm_suspend_wait
-_rpm_suspend_call
-_rpm_suspend_success
-_rpm_suspend_fail
----
- drivers/base/power/runtime.c |  270 +++++++++++++++++++++++++++---------------
- 1 file changed, 173 insertions(+), 97 deletions(-)
+>>> During genpd_poweron, genpd->lock is acquired recursively for each
+>>> parent (master) domain, which are separate obejcts. This confuses
+>>> lockdep, which considers every operation on genpd->lock as being done on
+>>> the same lock class. This leads to the following false positive warning:
+>>>
+>>> =============================================
+>>> [ INFO: possible recursive locking detected ]
+>>> 4.4.0-rc4-xu3s #32 Not tainted
+>>> ---------------------------------------------
+>>> swapper/0/1 is trying to acquire lock:
+>>>   (&genpd->lock){+.+...}, at: [<c0361550>] __genpd_poweron+0x64/0x108
+>>>
+>>> but task is already holding lock:
+>>>   (&genpd->lock){+.+...}, at: [<c0361af8>]
+>>> genpd_dev_pm_attach+0x168/0x1b8
+>>>
+>>> other info that might help us debug this:
+>>>   Possible unsafe locking scenario:
+>>>
+>>>         CPU0
+>>>         ----
+>>>    lock(&genpd->lock);
+>>>    lock(&genpd->lock);
+>>>
+>>>   *** DEADLOCK ***
+>>>
+>>>   May be due to missing lock nesting notation
+>>>
+>>> 3 locks held by swapper/0/1:
+>>>   #0:  (&dev->mutex){......}, at: [<c0350910>] __driver_attach+0x48/0x98
+>>>   #1:  (&dev->mutex){......}, at: [<c0350920>] __driver_attach+0x58/0x98
+>>>   #2:  (&genpd->lock){+.+...}, at: [<c0361af8>]
+>>> genpd_dev_pm_attach+0x168/0x1b8
+>>>
+>>> stack backtrace:
+>>> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.4.0-rc4-xu3s #32
+>>> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+>>> [<c0016c98>] (unwind_backtrace) from [<c00139c4>] (show_stack+0x10/0x14)
+>>> [<c00139c4>] (show_stack) from [<c0270df0>] (dump_stack+0x84/0xc4)
+>>> [<c0270df0>] (dump_stack) from [<c00780b8>]
+>>> (__lock_acquire+0x1f88/0x215c)
+>>> [<c00780b8>] (__lock_acquire) from [<c007886c>] (lock_acquire+0xa4/0xd0)
+>>> [<c007886c>] (lock_acquire) from [<c0641f2c>]
+>>> (mutex_lock_nested+0x70/0x4d4)
+>>> [<c0641f2c>] (mutex_lock_nested) from [<c0361550>]
+>>> (__genpd_poweron+0x64/0x108)
+>>> [<c0361550>] (__genpd_poweron) from [<c0361b00>]
+>>> (genpd_dev_pm_attach+0x170/0x1b8)
+>>> [<c0361b00>] (genpd_dev_pm_attach) from [<c03520a8>]
+>>> (platform_drv_probe+0x2c/0xac)
+>>> [<c03520a8>] (platform_drv_probe) from [<c03507d4>]
+>>> (driver_probe_device+0x208/0x2fc)
+>>> [<c03507d4>] (driver_probe_device) from [<c035095c>]
+>>> (__driver_attach+0x94/0x98)
+>>> [<c035095c>] (__driver_attach) from [<c034ec14>]
+>>> (bus_for_each_dev+0x68/0x9c)
+>>> [<c034ec14>] (bus_for_each_dev) from [<c034fec8>]
+>>> (bus_add_driver+0x1a0/0x218)
+>>> [<c034fec8>] (bus_add_driver) from [<c035115c>]
+>>> (driver_register+0x78/0xf8)
+>>> [<c035115c>] (driver_register) from [<c0338488>]
+>>> (exynos_drm_register_drivers+0x28/0x74)
+>>> [<c0338488>] (exynos_drm_register_drivers) from [<c0338594>]
+>>> (exynos_drm_init+0x6c/0xc4)
+>>> [<c0338594>] (exynos_drm_init) from [<c00097f4>]
+>>> (do_one_initcall+0x90/0x1dc)
+>>> [<c00097f4>] (do_one_initcall) from [<c0895e08>]
+>>> (kernel_init_freeable+0x158/0x1f8)
+>>> [<c0895e08>] (kernel_init_freeable) from [<c063ecac>]
+>>> (kernel_init+0x8/0xe8)
+>>> [<c063ecac>] (kernel_init) from [<c000f7d0>] (ret_from_fork+0x14/0x24)
+>>>
+>>> This patch replaces mutex_lock with mutex_lock_nested() and uses
+>>> recursion depth to annotate each genpd->lock operation with separate
+>>> lockdep subclass.
+>>>
+>>> Reported-by: Anand Moon <linux.amoon@gmail.com>
+>>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>>
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index e1a10a0..bff28c9 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -11,10 +11,18 @@
- #include <linux/export.h>
- #include <linux/pm_runtime.h>
- #include <linux/pm_wakeirq.h>
-+#include <linux/decompress/mm.h>
- #include <trace/events/rpm.h>
- #include "power.h"
- 
-+struct rpm_suspend_retval;
- typedef int (*pm_callback_t)(struct device *);
-+typedef void (*_rpm_suspend_func)(struct device *, int, \
-+		struct rpm_suspend_retval *);
-+typedef struct rpm_suspend_retval{
-+	int retval;
-+	void (*pfun)(struct device *, int, struct rpm_suspend_retval *);
-+} rpm_susp_rv;
- 
- static pm_callback_t __rpm_get_callback(struct device *dev, size_t cb_offset)
- {
-@@ -49,6 +57,17 @@ static pm_callback_t __rpm_get_callback(struct device *dev, size_t cb_offset)
- static int rpm_resume(struct device *dev, int rpmflags);
- static int rpm_suspend(struct device *dev, int rpmflags);
- 
-+static void _rpm_suspend_auto(struct device *dev, int rpmflags, \
-+		struct rpm_suspend_retval *prv);
-+static void _rpm_suspend_wait(struct device *dev, int rpmflags, \
-+		struct rpm_suspend_retval *prv);
-+static void _rpm_suspend_call(struct device *dev, int rpmflags, \
-+		struct rpm_suspend_retval *prv);
-+static void _rpm_suspend_success(struct device *dev, int rpmflags, \
-+		struct rpm_suspend_retval *prv);
-+static void _rpm_suspend_fail(struct device *dev, int rpmflags, \
-+		struct rpm_suspend_retval *prv);
-+
- /**
-  * update_pm_runtime_accounting - Update the time accounting of power states
-  * @dev: Device to update the accounting for
-@@ -391,52 +410,14 @@ static int rpm_callback(int (*cb)(struct device *), struct device *dev)
- 	return retval != -EACCES ? retval : -EIO;
- }
- 
--/**
-- * rpm_suspend - Carry out runtime suspend of given device.
-- * @dev: Device to suspend.
-- * @rpmflags: Flag bits.
-- *
-- * Check if the device's runtime PM status allows it to be suspended.
-- * Cancel a pending idle notification, autosuspend or suspend. If
-- * another suspend has been started earlier, either return immediately
-- * or wait for it to finish, depending on the RPM_NOWAIT and RPM_ASYNC
-- * flags. If the RPM_ASYNC flag is set then queue a suspend request;
-- * otherwise run the ->runtime_suspend() callback directly. When
-- * ->runtime_suspend succeeded, if a deferred resume was requested while
-- * the callback was running then carry it out, otherwise send an idle
-- * notification for its parent (if the suspend succeeded and both
-- * ignore_children of parent->power and irq_safe of dev->power are not set).
-- * If ->runtime_suspend failed with -EAGAIN or -EBUSY, and if the RPM_AUTO
-- * flag is set and the next autosuspend-delay expiration time is in the
-- * future, schedule another autosuspend attempt.
-- *
-- * This function must be called under dev->power.lock with interrupts disabled.
-- */
--static int rpm_suspend(struct device *dev, int rpmflags)
--	__releases(&dev->power.lock) __acquires(&dev->power.lock)
-+static void _rpm_suspend_auto(struct device *dev, int rpmflags,
-+	struct rpm_suspend_retval *prv)
- {
--	int (*callback)(struct device *);
--	struct device *parent = NULL;
--	int retval;
--
--	trace_rpm_suspend(dev, rpmflags);
--
-- repeat:
--	retval = rpm_check_suspend_allowed(dev);
--
--	if (retval < 0)
--		;	/* Conditions are wrong. */
--
--	/* Synchronous suspends are not allowed in the RPM_RESUMING state. */
--	else if (dev->power.runtime_status == RPM_RESUMING &&
--	    !(rpmflags & RPM_ASYNC))
--		retval = -EAGAIN;
--	if (retval)
--		goto out;
-+	prv->pfun = _rpm_suspend_wait;
- 
- 	/* If the autosuspend_delay time hasn't expired yet, reschedule. */
- 	if ((rpmflags & RPM_AUTO)
--	    && dev->power.runtime_status != RPM_SUSPENDING) {
-+		&& dev->power.runtime_status != RPM_SUSPENDING) {
- 		unsigned long expires = pm_runtime_autosuspend_expiration(dev);
- 
- 		if (expires != 0) {
-@@ -444,21 +425,29 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 			dev->power.request = RPM_REQ_NONE;
- 
- 			/*
--			 * Optimization: If the timer is already running and is
--			 * set to expire at or before the autosuspend delay,
--			 * avoid the overhead of resetting it.  Just let it
--			 * expire; pm_suspend_timer_fn() will take care of the
--			 * rest.
--			 */
-+			* Optimization: If the timer is already running and is
-+			* set to expire at or before the autosuspend delay,
-+			* avoid the overhead of resetting it.  Just let it
-+			* expire; pm_suspend_timer_fn() will take care of the
-+			* rest.
-+			*/
- 			if (!(dev->power.timer_expires && time_before_eq(
--			    dev->power.timer_expires, expires))) {
-+				dev->power.timer_expires, expires))) {
- 				dev->power.timer_expires = expires;
- 				mod_timer(&dev->power.suspend_timer, expires);
- 			}
- 			dev->power.timer_autosuspends = 1;
--			goto out;
-+			prv->pfun = NULL;
- 		}
- 	}
-+}
-+
-+static void _rpm_suspend_wait(struct device *dev, int rpmflags,
-+       struct rpm_suspend_retval *prv)
-+{
-+	unsigned long expires = 0;
-+
-+	prv->pfun = _rpm_suspend_call;
- 
- 	/* Other scheduled or pending requests need to be canceled. */
- 	pm_runtime_cancel_pending(dev);
-@@ -467,24 +456,30 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 		DEFINE_WAIT(wait);
- 
- 		if (rpmflags & (RPM_ASYNC | RPM_NOWAIT)) {
--			retval = -EINPROGRESS;
--			goto out;
-+			prv->retval = -EINPROGRESS;
-+			prv->pfun = NULL;
-+			return;
- 		}
- 
- 		if (dev->power.irq_safe) {
--			spin_unlock(&dev->power.lock);
-+			while (dev->power.runtime_status ==
-+				RPM_SUSPENDING) {
-+				spin_unlock(&dev->power.lock);
- 
--			cpu_relax();
-+				cpu_relax();
- 
--			spin_lock(&dev->power.lock);
--			goto repeat;
-+				spin_lock(&dev->power.lock);
-+				continue;
-+			}
- 		}
- 
--		/* Wait for the other suspend running in parallel with us. */
-+		/* Wait for the other suspend
-+		running in parallel with us. */
- 		for (;;) {
--			prepare_to_wait(&dev->power.wait_queue, &wait,
--					TASK_UNINTERRUPTIBLE);
--			if (dev->power.runtime_status != RPM_SUSPENDING)
-+			prepare_to_wait(&dev->power.wait_queue,
-+				&wait,	TASK_UNINTERRUPTIBLE);
-+			if (dev->power.runtime_status
-+					!= RPM_SUSPENDING)
- 				break;
- 
- 			spin_unlock_irq(&dev->power.lock);
-@@ -494,35 +489,58 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 			spin_lock_irq(&dev->power.lock);
- 		}
- 		finish_wait(&dev->power.wait_queue, &wait);
--		goto repeat;
-+
-+		/*check expires firstly for auto suspend mode,
-+		if not, just go ahead to the async*/
-+		expires = pm_runtime_autosuspend_expiration(dev);
-+		if (expires != 0)
-+			prv->pfun = _rpm_suspend_auto;
- 	}
-+}
- 
--	if (dev->power.no_callbacks)
--		goto no_callback;	/* Assume success. */
-+/*call the function async or sync by the callback*/
-+static void _rpm_suspend_call(struct device *dev, int rpmflags,
-+	struct rpm_suspend_retval *prv)
-+{
-+	pm_callback_t callback;
-+
-+	prv->pfun = _rpm_suspend_success;
-+
-+	/*if there is no callbacks, no meaning to place a work into workqueue,
-+	go ahead to check the deferd resume and if the parent can suspend*/
-+	if (!dev->power.no_callbacks) {
-+		/* Carry out an asynchronous or a synchronous suspend. */
-+		if (rpmflags & RPM_ASYNC) {
-+			dev->power.request = (rpmflags & RPM_AUTO) ?
-+			RPM_REQ_AUTOSUSPEND : RPM_REQ_SUSPEND;
-+			if (!dev->power.request_pending) {
-+				dev->power.request_pending = true;
-+				queue_work(pm_wq, &dev->power.work);
-+			}
-+			prv->pfun = NULL;
-+		} else {
-+			callback = RPM_GET_CALLBACK(dev, runtime_suspend);
- 
--	/* Carry out an asynchronous or a synchronous suspend. */
--	if (rpmflags & RPM_ASYNC) {
--		dev->power.request = (rpmflags & RPM_AUTO) ?
--		    RPM_REQ_AUTOSUSPEND : RPM_REQ_SUSPEND;
--		if (!dev->power.request_pending) {
--			dev->power.request_pending = true;
--			queue_work(pm_wq, &dev->power.work);
--		}
--		goto out;
--	}
-+			__update_runtime_status(dev, RPM_SUSPENDING);
- 
--	__update_runtime_status(dev, RPM_SUSPENDING);
-+			dev_pm_enable_wake_irq(dev);
- 
--	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
-+			prv->retval = rpm_callback(callback, dev);
- 
--	dev_pm_enable_wake_irq(dev);
--	retval = rpm_callback(callback, dev);
--	if (retval)
--		goto fail;
-+			if (prv->retval)
-+				prv->pfun = _rpm_suspend_fail;
-+		}
-+	}
-+}
-+
-+static void _rpm_suspend_success(struct device *dev, int rpmflags,
-+	struct rpm_suspend_retval *prv)
-+{
-+	struct device *parent;
- 
-- no_callback:
- 	__update_runtime_status(dev, RPM_SUSPENDED);
- 	pm_runtime_deactivate_timer(dev);
-+	prv->pfun = NULL;
- 
- 	if (dev->parent) {
- 		parent = dev->parent;
-@@ -533,8 +551,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 	if (dev->power.deferred_resume) {
- 		dev->power.deferred_resume = false;
- 		rpm_resume(dev, 0);
--		retval = -EAGAIN;
--		goto out;
-+		prv->retval = -EAGAIN;
- 	}
- 
- 	/* Maybe the parent is now able to suspend. */
-@@ -547,34 +564,93 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 
- 		spin_lock(&dev->power.lock);
- 	}
-+}
- 
-- out:
--	trace_rpm_return_int(dev, _THIS_IP_, retval);
--
--	return retval;
--
-- fail:
-+static void _rpm_suspend_fail(struct device *dev, int rpmflags,
-+	struct rpm_suspend_retval *prv)
-+{
- 	dev_pm_disable_wake_irq(dev);
- 	__update_runtime_status(dev, RPM_ACTIVE);
- 	dev->power.deferred_resume = false;
- 	wake_up_all(&dev->power.wait_queue);
- 
--	if (retval == -EAGAIN || retval == -EBUSY) {
-+	if (prv->retval == -EAGAIN || prv->retval == -EBUSY) {
- 		dev->power.runtime_error = 0;
- 
- 		/*
--		 * If the callback routine failed an autosuspend, and
--		 * if the last_busy time has been updated so that there
--		 * is a new autosuspend expiration time, automatically
--		 * reschedule another autosuspend.
--		 */
-+		* If the callback routine failed an autosuspend, and
-+		* if the last_busy time has been updated so that there
-+		* is a new autosuspend expiration time, automatically
-+		* reschedule another autosuspend.
-+		*/
- 		if ((rpmflags & RPM_AUTO) &&
--		    pm_runtime_autosuspend_expiration(dev) != 0)
--			goto repeat;
-+			pm_runtime_autosuspend_expiration(dev) != 0)
-+			prv->pfun = _rpm_suspend_auto;
- 	} else {
- 		pm_runtime_cancel_pending(dev);
-+		prv->pfun = NULL;
-+	}
-+}
-+
-+/**
-+ * rpm_suspend - Carry out runtime suspend of given device.
-+ * @dev: Device to suspend.
-+ * @rpmflags: Flag bits.
-+ *
-+ * Check if the device's runtime PM status allows it to be suspended.
-+ * Cancel a pending idle notification, autosuspend or suspend. If
-+ * another suspend has been started earlier, either return immediately
-+ * or wait for it to finish, depending on the RPM_NOWAIT and RPM_ASYNC
-+ * flags. If the RPM_ASYNC flag is set then queue a suspend request;
-+ * otherwise run the ->runtime_suspend() callback directly. When
-+ * ->runtime_suspend succeeded, if a deferred resume was requested while
-+ * the callback was running then carry it out, otherwise send an idle
-+ * notification for its parent (if the suspend succeeded and both
-+ * ignore_children of parent->power and irq_safe of dev->power are not set).
-+ * If ->runtime_suspend failed with -EAGAIN or -EBUSY, and if the RPM_AUTO
-+ * flag is set and the next autosuspend-delay expiration time is in the
-+ * future, schedule another autosuspend attempt.
-+ *
-+ * This function must be called under dev->power.lock with interrupts disabled.
-+ */
-+static int rpm_suspend(struct device *dev, int rpmflags)
-+	__releases(&dev->power.lock) __acquires(&dev->power.lock)
-+{
-+	rpm_susp_rv *prv = (rpm_susp_rv *)malloc(sizeof(struct rpm_suspend_retval));
-+	_rpm_suspend_func pfun;
-+	int retval;
-+
-+	if (NULL == prv)
-+		return -ENOMEM;
-+
-+	trace_rpm_suspend(dev, rpmflags);
-+
-+	retval = rpm_check_suspend_allowed(dev);
-+
-+	if (retval < 0)
-+		;	/* Conditions are wrong. */
-+
-+	/* Synchronous suspends are not allowed in the RPM_RESUMING state. */
-+	else if (dev->power.runtime_status == RPM_RESUMING &&
-+		!(rpmflags & RPM_ASYNC))
-+		retval = -EAGAIN;
-+
-+	if (retval)
-+		;
-+	else{
-+		prv->retval = 0;
-+		/*start the process from auto*/
-+		pfun = _rpm_suspend_auto;
-+		while (pfun) {
-+			pfun(dev, rpmflags, prv);
-+			pfun = prv->pfun;
-+		}
-+		retval = prv->retval;
- 	}
--	goto out;
-+	trace_rpm_return_int(dev, _THIS_IP_, retval);
-+
-+	free(prv);
-+	return retval;
- }
- 
- /**
--- 
-1.7.9.5
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
+You didn't send this to linux-pm so probably you should resend it, so
+Rafael can pick it up.
+
+[...]
+
+>
+> The only difference between mutex_lock_nested and mutex_lock is the way
+> it is interpreted by deplock. The additional argument is deplock subclass
+> of the lock. The name of this function is imho a bit misleading.
+
+:-) Of course you are absolutely right. Thanks!
+
+[...]
+
+Kind regards
+Uffe
