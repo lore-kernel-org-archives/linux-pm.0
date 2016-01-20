@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Wed, 20 Jan 2016 17:00:32 +0100
-Message-ID: <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+Subject: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle period
+Date: Wed, 20 Jan 2016 17:00:33 +0100
+Message-ID: <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
 References: <alpine.DEB.2.11.1601201634520.3575@nanos>
  <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,257 +11,596 @@ To: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-The interrupt framework gives a lot of information and statistics about
-each interrupt.
+Many IRQs are quiet most of the time, or they tend to come in bursts of
+fairly equal time intervals within each burst. It is therefore possible
+to detect those IRQs with stable intervals and guestimate when the next
+IRQ event is most likely to happen.
 
-Unfortunately there is no way to measure when interrupts occur and provide
-a mathematical model for their behavior which could help in predicting
-their next occurence.
+Examples of such IRQs may include audio related IRQs where the FIFO size
+and/or DMA descriptor size with the sample rate create stable intervals,
+block devices during large data transfers, etc.  Even network streaming
+of multimedia content creates patterns of periodic network interface IRQs
+in some cases.
 
-This framework allows for registering a callback function that is invoked
-when an interrupt occurs. Each time, the callback will be called with the
-timestamp.
+This patch adds code to track the mean interval and variance for each IRQ
+over a window of time intervals between IRQ events. Those statistics can
+be used to assist cpuidle in selecting the most appropriate sleep state
+by predicting the most likely time for the next interrupt.
 
-The main objective is to track and detect the periodic interrupts in order
-to predict the next event on a cpu and anticipate the sleeping time when
-entering idle. This fine grain approach allows to simplify and rationalize
-a wake up event prediction without IPIs interference, thus letting the
-scheduler to be smarter with the wakeup IPIs regarding the idle period.
-
-The irq timing feature must be enabled by the subsytem at compile time and
-this one must use the DECLARE_IRQ_TIMINGS(ops) macro in order to declare
-the ops to be used. Without this, the kernel will fail to compile with an
-unresolved symbol. That is the guarantee the irq timings is not enabled
-for nothing and will be used if it is defined in the config file.
-
-Moreover, using a global ops variable, encapsulated in the irq code via the
-DECLARE_IRQ_TIMINGS macro, allows to have the ops to be called at init
-time, before the interrupts are setup. That prevents to introduce complex
-code to update the subsystem's irq tracking table *after* the irqs init
-happened.
-
-The ops are as the following:
- - alloc   : called when an irqdesc is allocated
- - free    : called when an irqdesc is freed
- - setup   : called when an irq is registered with the irq handler
- - remove  : called when an irq is removed
- - handler : called when an irq was handled
-
-A static key will be introduced when the irq prediction is switched on at
-runtime in order to reduce an overhead near to zero when the kernel is not
-using it.
+Because the stats are gathered in interrupt context, the core computation
+is as light as possible.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- include/linux/interrupt.h  | 26 ++++++++++++++++++++++++++
- include/linux/irqhandler.h |  1 +
- kernel/irq/Kconfig         |  4 ++++
- kernel/irq/handle.c        |  1 +
- kernel/irq/internals.h     | 43 +++++++++++++++++++++++++++++++++++++++++++
- kernel/irq/irqdesc.c       |  6 ++++++
- kernel/irq/manage.c        | 10 +++++++++-
- 7 files changed, 90 insertions(+), 1 deletion(-)
+ drivers/cpuidle/Kconfig   |   9 +
+ kernel/sched/Makefile     |   1 +
+ kernel/sched/idle-sched.c | 529 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 539 insertions(+)
+ create mode 100644 kernel/sched/idle-sched.c
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index ad16809..f7ff6fe 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -123,6 +123,32 @@ struct irqaction {
- 	struct proc_dir_entry	*dir;
- } ____cacheline_internodealigned_in_smp;
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index 8c7930b..a606106 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -25,6 +25,15 @@ config CPU_IDLE_GOV_MENU
+ 	bool "Menu governor (for tickless system)"
+ 	default y
  
-+#ifdef CONFIG_IRQ_TIMINGS
-+/**
-+ * struct irqt_ops - structure to be used by the subsystem to track
-+ *                   irq timings
-+ * @alloc:    called when an irqdesc is allocated
-+ * @free:     called when an irqdesc is free
-+ * @setup:    called when an irq is setup, this is called under lock
-+ * @remove:   called when an irq is removed
-+ * @handler:  called when an interrupt is handled
++config CPU_IDLE_GOV_SCHED
++	bool "Sched idle governor"
++	select IRQ_TIMINGS
++	help
++	  Enables an irq timings tracking mechanism to track the wakeup sources
++	  of the platform.
++
++	  If you are unsure, it is safe to say N.
++
+ config DT_IDLE_STATES
+ 	bool
+ 
+diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
+index 6768797..f7d5a35 100644
+--- a/kernel/sched/Makefile
++++ b/kernel/sched/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
++obj-$(CONFIG_CPU_IDLE_GOV_SCHED) += idle-sched.o
+diff --git a/kernel/sched/idle-sched.c b/kernel/sched/idle-sched.c
+new file mode 100644
+index 0000000..c2b8568
+--- /dev/null
++++ b/kernel/sched/idle-sched.c
+@@ -0,0 +1,529 @@
++/*
++ *  Copyright (C) 2016 Linaro Ltd, Daniel Lezcano <daniel.lezcano@linaro.org>
++ *                                 Nicolas Pitre <nicolas.pitre@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
 + */
-+struct irqtimings_ops {
-+	int (*alloc)(unsigned int);
-+	void (*free)(unsigned int);
-+	int (*setup)(unsigned int, struct irqaction *act);
-+	void (*remove)(unsigned int, void *dev_id);
-+	irqt_handler_t handler;
++#include <linux/cpuidle.h>
++#include <linux/interrupt.h>
++#include <linux/irqdesc.h>
++#include <linux/ktime.h>
++#include <linux/slab.h>
++#include <linux/tick.h>
++#include <linux/time64.h>
++
++/*
++ * Define the number of samples over which the average and variance
++ * are computed. A power of 2 is preferred so to let the compiler
++ * optimize divisions by that number with simple arithmetic shifts.
++ */
++#define STATS_NR_VALUES 4
++
++/**
++ * struct stats - internal structure to encapsulate stats informations
++ *
++ * @sum: sum of the values
++ * @values: array of values to do stats on
++ * @w_ptr: current buffer pointer
++ */
++struct stats {
++	u64           sum;                     /* sum of values */
++	u32           values[STATS_NR_VALUES]; /* array of values */
++	unsigned char w_ptr;                   /* current window pointer */
 +};
 +
 +/**
-+ * This macro *must* be used by the subsystem interested by the irq
-+ * timing information.
++ * struct wakeup - internal structure describing a source of wakeup
++ *
++ * @stats: the stats structure on the different event intervals
++ * @timestamp: latest update timestamp
 + */
-+#define DECLARE_IRQ_TIMINGS(__ops)				\
-+	const struct irqtimings_ops *__irqtimings = __ops;
-+#endif
++struct wakeup {
++	struct stats stats;
++	ktime_t timestamp;
++};
 +
- extern irqreturn_t no_action(int cpl, void *dev_id);
- 
- extern int __must_check
-diff --git a/include/linux/irqhandler.h b/include/linux/irqhandler.h
-index 661bed0..4c1c77e 100644
---- a/include/linux/irqhandler.h
-+++ b/include/linux/irqhandler.h
-@@ -10,5 +10,6 @@ struct irq_desc;
- struct irq_data;
- typedef	void (*irq_flow_handler_t)(struct irq_desc *desc);
- typedef	void (*irq_preflow_handler_t)(struct irq_data *data);
-+typedef	void (*irqt_handler_t)(unsigned int, ktime_t, void *);
- 
- #endif
-diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
-index 3b48dab..3f68619 100644
---- a/kernel/irq/Kconfig
-+++ b/kernel/irq/Kconfig
-@@ -77,6 +77,10 @@ config GENERIC_MSI_IRQ_DOMAIN
- config HANDLE_DOMAIN_IRQ
- 	bool
- 
-+config IRQ_TIMINGS
-+        bool
-+	default n
++/*
++ * Per cpu and irq statistics. Each cpu receives interrupts and those
++ * ones can be distributed following an irq chip specific
++ * algorithm. Random irq distribution is the worst case to predict
++ * interruption behavior but usually that does not happen or could be
++ * fixed from userspace by setting the irq affinity.
++ */
++static DEFINE_PER_CPU(struct wakeup, *wakeups[NR_IRQS]);
 +
- config IRQ_DOMAIN_DEBUG
- 	bool "Expose hardware/virtual IRQ mapping via debugfs"
- 	depends on IRQ_DOMAIN && DEBUG_FS
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index a302cf9..cfc76fd 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -165,6 +165,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
- 			/* Fall through to add to randomness */
- 		case IRQ_HANDLED:
- 			flags |= action->flags;
-+			handle_irqtiming(irq, action->dev_id);
- 			break;
- 
- 		default:
-diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
-index fcab63c..cd4f61a 100644
---- a/kernel/irq/internals.h
-+++ b/kernel/irq/internals.h
-@@ -20,6 +20,49 @@ extern bool noirqdebug;
- 
- extern struct irqaction chained_action;
- 
-+#ifdef CONFIG_IRQ_TIMINGS
++static DECLARE_BITMAP(enabled_irq, NR_IRQS);
 +
-+extern const struct irqtimings_ops *__irqtimings;
-+
-+static inline int alloc_irqtiming(unsigned int irq)
++/**
++ * stats_add - add a new value in the statistic structure
++ *
++ * @s: the statistic structure
++ * @value: the new value to be added
++ *
++ * Adds the value to the array, if the array is full, the oldest value
++ * is replaced.
++ */
++static void stats_add(struct stats *s, u32 value)
 +{
-+	if (__irqtimings->alloc)
-+		return __irqtimings->alloc(irq);
++	/*
++	 * This is a circular buffer, so the oldest value is the next
++	 * one in the buffer. Let's compute the next pointer to
++	 * retrieve the oldest value and re-use it to update the w_ptr
++	 * after adding the new value.
++	 */
++	s->w_ptr = (s->w_ptr + 1) % STATS_NR_VALUES;
++
++	/*
++	 * Remove the oldest value from the summing. If this is the
++	 * first time we go through this array slot, the previous
++	 * value will be zero and we won't substract anything from the
++	 * current sum. Hence this code relies on a zero-ed stat
++	 * structure at init time via memset or kzalloc.
++	 */
++	s->sum -= s->values[s->w_ptr];
++	s->values[s->w_ptr] = value;
++
++	/*
++	 * In order to reduce the overhead and to prevent value
++	 * derivation due to the integer computation, we just sum the
++	 * value and do the division when the average and the variance
++	 * are requested.
++	 */
++	s->sum += value;
++}
++
++/**
++ * stats_reset - reset the stats
++ *
++ * @s: the statistic structure
++ *
++ * Reset the statistics and reset the values
++ */
++static inline void stats_reset(struct stats *s)
++{
++	memset(s, 0, sizeof(*s));
++}
++
++/**
++ * stats_mean - compute the average
++ *
++ * @s: the statistics structure
++ *
++ * Returns an u32 corresponding to the mean value, or zero if there is
++ * no data
++ */
++static inline u32 stats_mean(struct stats *s)
++{
++	/*
++	 * gcc is smart enough to convert to a bits shift when the
++	 * divisor is constant and multiple of 2^x.
++	 *
++	 * The number of values could have not reached STATS_NR_VALUES
++	 * yet, but we can consider it acceptable as the situation is
++	 * only at the beginning of the burst of irqs.
++	 */
++	return s->sum / STATS_NR_VALUES;
++}
++
++/**
++ * stats_variance - compute the variance
++ *
++ * @s: the statistic structure
++ *
++ * Returns an u64 corresponding to the variance, or zero if there is
++ * no data
++ */
++static u64 stats_variance(struct stats *s, u32 mean)
++{
++	int i;
++	u64 variance = 0;
++
++	/*
++	 * The variance is the sum of the squared difference to the
++	 * average divided by the number of elements.
++	 */
++	for (i = 0; i < STATS_NR_VALUES; i++) {
++		s64 diff = s->values[i] - mean;
++		variance += (u64)diff * diff;
++	}
++
++	return variance / STATS_NR_VALUES;
++}
++
++/**
++ * sched_idle_irq - irq timestamp callback
++ *
++ * @irq: the irq number
++ * @timestamp: when the interrupt occured
++ * @dev_id: device id for shared interrupt (not yet used)
++ *
++ * Interrupt callback called when an interrupt happens. This function
++ * is critical as it is called under an interrupt section: minimum
++ * operations as possible are done here:
++ */
++static void sched_irq_timing_handler(unsigned int irq, ktime_t timestamp, void *dev_id)
++{
++	u32 diff;
++	unsigned int cpu = raw_smp_processor_id();
++	struct wakeup *w = per_cpu(wakeups[irq], cpu);
++
++	/*
++	 * It is the first time the interrupt occurs of the series, we
++	 * can't do any stats as we don't have an interval, just store
++	 * the timestamp and exit.
++	 */
++	if (ktime_equal(w->timestamp, ktime_set(0, 0))) {
++		w->timestamp = timestamp;
++		return;
++	}
++
++	/*
++	 * Microsec resolution is enough for our purpose.
++	 */
++	diff = ktime_us_delta(timestamp, w->timestamp);
++	w->timestamp = timestamp;
++
++	/*
++	 * There is no point attempting predictions on interrupts more
++	 * than ~1 second apart. This has no benefit for sleep state
++	 * selection and increases the risk of overflowing our variance
++	 * computation. Reset all stats in that case.
++	 */
++	if (diff > (1 << 20)) {
++		stats_reset(&w->stats);
++		return;
++	}
++
++	stats_add(&w->stats, diff);
++}
++
++static ktime_t next_irq_event(void)
++{
++	unsigned int irq, cpu = raw_smp_processor_id();
++	ktime_t diff, next, min = ktime_set(KTIME_SEC_MAX, 0);
++	ktime_t now = ktime_get();
++	struct wakeup *w;
++	u32 interval, mean;
++	u64 variance;
++
++	/*
++	 * Lookup the interrupt array for this cpu and search for the
++	 * earlier expected interruption.
++	 */
++	for (irq = 0; irq < NR_IRQS; irq = find_next_bit(enabled_irq, NR_IRQS, irq)) {
++
++		w = per_cpu(wakeups[irq], cpu);
++
++		/*
++		 * The interrupt was not setup as a source of a wakeup
++		 * or the wakeup source is not considered at this
++		 * moment stable enough to do a prediction.
++		 */
++		if (!w)
++			continue;
++
++		/*
++		 * No statistics available yet.
++		 */
++		if (ktime_equal(w->timestamp, ktime_set(0, 0)))
++			continue;
++
++		diff = ktime_sub(now, w->timestamp);
++
++		/*
++		 * There is no point attempting predictions on interrupts more
++		 * than 1 second apart. This has no benefit for sleep state
++		 * selection and increases the risk of overflowing our variance
++		 * computation. Reset all stats in that case.
++		 */
++		if (unlikely(ktime_after(diff, ktime_set(1, 0)))) {
++			stats_reset(&w->stats);
++			continue;
++		}
++
++		/*
++		 * If the mean value is null, just ignore this wakeup
++		 * source.
++		 */
++		mean = stats_mean(&w->stats);
++		if (!mean)
++			continue;
++
++		variance = stats_variance(&w->stats, mean);
++		/*
++		 * We want to check the last interval is:
++		 *
++		 *  mean - stddev < interval < mean + stddev
++		 *
++		 * That simplifies to:
++		 *
++		 * -stddev < interval - mean < stddev
++		 *
++		 * abs(interval - mean) < stddev
++		 *
++		 * The standard deviation is the sqrt of the variance:
++		 *
++		 * abs(interval - mean) < sqrt(variance)
++		 *
++		 * and we want to prevent to do an sqrt, so we square
++		 * the equation:
++		 *
++		 * (interval - mean)^2 < variance
++		 *
++		 * So if the latest value of the stats complies with
++		 * this condition, then the wakeup source is
++		 * considered predictable and can be used to predict
++		 * the next event.
++		 */
++		interval = w->stats.values[w->stats.w_ptr];
++		if ((u64)((interval - mean) * (interval - mean)) > variance)
++			continue;
++
++		/*
++		 * Let's compute the next event: the wakeup source is
++		 * considered predictable, we add the average interval
++		 * time added to the latest interruption event time.
++		 */
++		next = ktime_add_us(w->timestamp, stats_mean(&w->stats));
++
++		/*
++		 * If the interrupt is supposed to happen before the
++		 * minimum time, then it becomes the minimum.
++		 */
++		if (ktime_before(next, min))
++			min = next;
++	}
++
++	/*
++	 * At this point, we have our prediction but the caller is
++	 * expecting the remaining time before the next event, so
++	 * compute the expected sleep length.
++	 */
++	diff = ktime_sub(min, now);
++
++	/*
++	 * The result could be negative for different reasons:
++	 *  - the prediction is incorrect
++	 *  - the prediction was too near now and expired while we were
++	 *    in this function
++	 *
++	 * In both cases, we return KTIME_MAX as a failure to do a
++	 * prediction
++	 */
++	if (ktime_compare(diff, ktime_set(0, 0)) <= 0)
++		return ktime_set(KTIME_SEC_MAX, 0);
++
++	return diff;
++}
++
++/**
++ * sched_idle_next_wakeup - Predict the next wakeup on the current cpu
++ *
++ * The next event on the cpu is based on a statistic approach of the
++ * interrupt events and the timer deterministic value. From the timer
++ * or the irqs, we return the one expected to occur first.
++ *
++ * Returns the expected remaining idle time before being woken up by
++ * an interruption.
++ */
++s64 sched_idle_next_wakeup(void)
++{
++	s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
++	s64 next_irq = ktime_to_us(next_irq_event());
++
++	return min(next_irq, next_timer);
++}
++
++/**
++ * sched_idle - go to idle for a specified amount of time
++ *
++ * @duration: the idle duration time
++ * @latency: the latency constraint
++ *
++ * Returns 0 on success, < 0 otherwise.
++ */
++int sched_idle(s64 duration, unsigned int latency)
++{
++	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
++	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++	struct cpuidle_state_usage *su;
++	struct cpuidle_state *s;
++	int i, ret = 0, index = -1;
++
++	rcu_idle_enter();
++
++	/*
++	 * No cpuidle driver is available, let's use the default arch
++	 * idle function.
++	 */
++	if (cpuidle_not_available(drv, dev))
++		goto default_idle;
++
++	/*
++	 * Find the idle state with the lowest power while satisfying
++	 * our constraints. We will save energy if the duration of the
++	 * idle time is bigger than the target residency which is the
++	 * break even point. The choice will be modulated by the
++	 * latency.
++	 */
++	for (i = 0; i < drv->state_count; i++) {
++
++		s = &drv->states[i];
++
++		su = &dev->states_usage[i];
++
++		if (s->disabled || su->disable)
++			continue;
++		if (s->target_residency > duration)
++			continue;
++		if (s->exit_latency > latency)
++			continue;
++
++		index = i;
++	}
++
++	/*
++	 * The idle task must be scheduled, it is pointless to go to
++	 * idle, just re-enable the interrupt and return.
++	 */
++	if (current_clr_polling_and_test()) {
++		local_irq_enable();
++		goto out;
++	}
++
++	if (index < 0) {
++		/*
++		 * No idle callbacks fulfilled the constraints, jump
++		 * to the default function like there wasn't any
++		 * cpuidle driver.
++		 */
++		goto default_idle;
++	} else {
++		/*
++		 * Enter the idle state previously returned by the
++		 * governor decision.  This function will block until
++		 * an interrupt occurs and will take care of
++		 * re-enabling the local interrupts
++		 */
++		return cpuidle_enter(drv, dev, index);
++	}
++
++default_idle:
++	default_idle_call();
++out:
++	rcu_idle_exit();
++	return ret;
++}
++
++/**
++ * sched_irq_timing_remove - disable the tracking of the specified irq
++ *
++ * Clear the irq table slot to stop tracking the interrupt.
++ *
++ * @irq: the irq number to stop tracking
++ * @dev_id: the device id for shared irq
++ *
++ * This function will remove from the wakeup source prediction table.
++ */
++static void sched_irq_timing_remove(unsigned int irq, void *dev_id)
++{
++	clear_bit(irq, enabled_irq);
++}
++
++/**
++ * sched_irq_timing_setup - enable the tracking of the specified irq
++ *
++ * Function is called with the corresponding irqdesc lock taken. It is
++ * not allowed to do any memory allocation or blocking call. Flag the
++ * irq table slot to be tracked in order to predict the next event.
++ *
++ * @irq: the interrupt numbe to be tracked
++ * @act: the new irq action to be set to this interrupt
++ *
++ * Returns zero on success, < 0 otherwise.
++ */
++static int sched_irq_timing_setup(unsigned int irq, struct irqaction *act)
++{
++	/*
++	 * No interrupt set for this descriptor or related to a timer.
++	 * Timers are deterministic, so no need to try to do any
++	 * prediction on them. No error for both cases, we are just not
++	 * interested.
++	 */
++	if (!(act->flags & __IRQF_TIMER))
++		return 0;
++
++	set_bit(irq, enabled_irq);
++
 +	return 0;
 +}
 +
-+static inline void free_irqtiming(unsigned int irq)
++/**
++ * sched_irq_timing_free - free memory previously allocated
++ *
++ * @irq: the interrupt number
++ */
++static void sched_irq_timing_free(unsigned int irq)
 +{
-+	if (__irqtimings->free)
-+		__irqtimings->free(irq);
++	struct wakeup *w;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++
++		w = per_cpu(wakeups[irq], cpu);
++		if (!w)
++			continue;
++
++		per_cpu(wakeups[irq], cpu) = NULL;
++		kfree(w);
++	}
 +}
 +
-+static inline int setup_irqtiming(unsigned int irq, struct irqaction *act)
++/**
++ * sched_irq_timing_alloc - allocates memory for irq tracking
++ *
++ * Allocates the memory to track the specified irq.
++ *
++ * @irq: the interrupt number
++ *
++ * Returns 0 on success, -ENOMEM on error.
++ */
++static int sched_irq_timing_alloc(unsigned int irq)
 +{
-+	if (__irqtimings->setup)
-+		return __irqtimings->setup(irq, act);
-+	return 0;
++	struct wakeup *w;
++	int cpu, ret = -ENOMEM;
++
++	/*
++	 * Allocates the wakeup structure and the stats structure. As
++	 * the interrupt can occur on any cpu, allocate the wakeup
++	 * structure per cpu basis.
++	 */
++	for_each_possible_cpu(cpu) {
++
++		w = kzalloc(sizeof(*w), GFP_KERNEL);
++		if (!w)
++			goto out;
++
++		per_cpu(wakeups[irq], cpu) = w;
++	}
++
++	ret = 0;
++out:
++	if (ret)
++		sched_irq_timing_free(irq);
++
++	return ret;
 +}
 +
-+static inline void remove_irqtiming(unsigned int irq, void *dev_id)
-+{
-+	if (__irqtimings->remove)
-+		__irqtimings->remove(irq, dev_id);
-+}
++static struct irqtimings_ops irqt_ops = {
++	.alloc   = sched_irq_timing_alloc,
++	.free    = sched_irq_timing_free,
++	.setup   = sched_irq_timing_setup,
++	.remove  = sched_irq_timing_remove,
++	.handler = sched_irq_timing_handler,
++};
 +
-+static inline void handle_irqtiming(unsigned int irq, void *dev_id)
-+{
-+	if (__irqtimings->handler)
-+		__irqtimings->handler(irq, ktime_get(), dev_id);
-+}
-+#else
-+static inline int alloc_irqtiming(unsigned int irq) { return 0; }
-+static inline int setup_irqtiming(unsigned int irq, void *dev_id) { return 0; }
-+static inline void free_irqtiming(unsigned int irq) {}
-+static inline void remove_irqtiming(unsigned int irq, void *dev_id) { }
-+static inline void handle_irqtiming(unsigned int irq, void *dev_id) { }
-+#endif
-+
- /*
-  * Bits used by threaded handlers:
-  * IRQTF_RUNTHREAD - signals that the interrupt handler thread should run
-diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
-index 239e2ae..dc52f3a 100644
---- a/kernel/irq/irqdesc.c
-+++ b/kernel/irq/irqdesc.c
-@@ -157,6 +157,9 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
- 	if (alloc_masks(desc, gfp, node))
- 		goto err_kstat;
- 
-+	if (alloc_irqtiming(irq))
-+		goto err_mask;
-+
- 	raw_spin_lock_init(&desc->lock);
- 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
- 
-@@ -164,6 +167,8 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
- 
- 	return desc;
- 
-+err_mask:
-+	free_masks(desc);
- err_kstat:
- 	free_percpu(desc->kstat_irqs);
- err_desc:
-@@ -187,6 +192,7 @@ static void free_desc(unsigned int irq)
- 	delete_irq_desc(irq);
- 	mutex_unlock(&sparse_irq_lock);
- 
-+	free_irqtiming(irq);
- 	free_masks(desc);
- 	free_percpu(desc->kstat_irqs);
- 	kfree(desc);
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 6ead200..df1cdb6 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -1282,13 +1282,17 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 
- 		init_waitqueue_head(&desc->wait_for_threads);
- 
-+		ret = setup_irqtiming(irq, new);
-+		if (ret)
-+			goto out_mask;
-+
- 		/* Setup the type (level, edge polarity) if configured: */
- 		if (new->flags & IRQF_TRIGGER_MASK) {
- 			ret = __irq_set_trigger(desc,
- 						new->flags & IRQF_TRIGGER_MASK);
- 
- 			if (ret)
--				goto out_mask;
-+				goto out_irqtiming;
- 		}
- 
- 		desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED | \
-@@ -1373,6 +1377,8 @@ mismatch:
- 	}
- 	ret = -EBUSY;
- 
-+out_irqtiming:
-+	remove_irqtiming(irq, new->dev_id);
- out_mask:
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- 	free_cpumask_var(mask);
-@@ -1483,6 +1489,8 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
- 	/* Make sure it's not being used on another CPU: */
- 	synchronize_irq(irq);
- 
-+	remove_irqtiming(irq, dev_id);
-+
- #ifdef CONFIG_DEBUG_SHIRQ
- 	/*
- 	 * It's a shared IRQ -- the driver ought to be prepared for an IRQ
++DECLARE_IRQ_TIMINGS(&irqt_ops);
 -- 
 1.9.1
