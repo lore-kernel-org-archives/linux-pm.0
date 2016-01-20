@@ -1,82 +1,109 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6 0/2] power: act8945a: add charger driver for the
- sub-device of ACT8945A MFD
-Date: Wed, 20 Jan 2016 11:32:29 +0000
-Message-ID: <20160120113229.GB29000@x1>
-References: <1453274383-24835-1-git-send-email-wenyou.yang@atmel.com>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: sched-freq locking
+Date: Wed, 20 Jan 2016 12:18:01 +0000
+Message-ID: <20160120121801.GR8573@e106622-lin>
+References: <56984C30.8040402@linaro.org>
+ <20160115104051.GP18603@e106622-lin>
+ <569D568D.5000500@linaro.org>
+ <CAEG3pNDoDHpgO7WdC8n7C8Ri+KNKZqOi9rKHMkTV0c5dkyevOw@mail.gmail.com>
+ <CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
+ <569E90CF.9050503@linaro.org>
+ <CAEG3pND5kHqJhrvwVjsnCnfT-nSrV8SrUaNk2p=ZfEx0MmmB=A@mail.gmail.com>
+ <569EB225.4040707@linaro.org>
+ <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com>
+ <569EE1E1.3050407@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:44968 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbcATMRd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Jan 2016 07:17:33 -0500
 Content-Disposition: inline
-In-Reply-To: <1453274383-24835-1-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wenyou Yang <wenyou.yang@atmel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Javier Martinez Canillas <javier@dowhile0.org>, Peter Korsgaard <jacmet@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <569EE1E1.3050407@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-It really is unacceptable to be sending out so many versions at such
-short intervals, essentially spamming the list.  This infraction is
-worsened by the amount of people you have on CC, most of them for no
-reason.  This set shouldn't hit my inbox at all, let alone 4 times in
-one day!
+[+Punit, Javi]
 
-> The ACT8945A is a Multi Function Device with the following subdevices=
-:
->  - Regulator
->  - Charger
->=20
-> This patch set is to add regulator driver for ACT8945A.
-> It is based on the patch set:
-> 	http://lists.infradead.org/pipermail/linux-arm-kernel/2016-January/4=
-00534.html
->=20
-> Changes in v6:
->  - change the type value to unsigned int.
->=20
-> Changes in v5:
->  - remove spare spaces after #define.
->  - add OF match table.
->  - collect Reviewed-by from Krzysztof.
->=20
-> Changes in v4:
->  - use spaces after #define, not tabs.
->  - use BIT(n) macros to substitute (0x01 << x).
->  - change dt properties with more legible name.
->  - change the properties with more legible name, clearer description.
->=20
-> Changes in v3:
->  - update the file header with short version license and author line.
->  - remove unused member of struct act8945a_charger, dev.
->  - action due to removing the member of stuct act8945a_dev, dev.
->  - remove the unnecessary print out.
->  - remove the unnecessary act8945a_charger_remove().
->  - fix align of the code-style.
->=20
-> Changes in v2:
->  1./ Substitute of_property_read_bool() for of_get_property().
->  2./ Substitute devm_power_supply_register() for power_supply_registe=
-r().
->  3./ Use module_platform_driver(), instead of subsys_initcall().
->  4./ Substitute MODULE_LICENSE("GPL") for MODULE_LICENSE("GPL v2").
->=20
-> Wenyou Yang (2):
->   power: act8945a: add charger driver for ACT8945A
->   power: add documentation for ACT8945A's charger DT bindings
->=20
->  .../devicetree/bindings/power/act8945a-charger.txt |   33 ++
->  drivers/power/Kconfig                              |    7 +
->  drivers/power/Makefile                             |    1 +
->  drivers/power/act8945a_charger.c                   |  375 ++++++++++=
-++++++++++
->  4 files changed, 416 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/act8945a-=
-charger.txt
->  create mode 100644 drivers/power/act8945a_charger.c
->=20
+Hi,
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+On 19/01/16 17:24, Steve Muckle wrote:
+> On 01/19/2016 03:40 PM, Michael Turquette wrote:
+> > Right, this was _the_ original impetus behind the design decision to
+> > muck around with struct cpufreq_policy in the hot path which goes al
+> > the way back to v1.
+> > 
+> > An alternative thought is that we can make copies of the relevant bits
+> > of struct cpufreq_policy that we do not expect too change often. These
+> > will not require any locks as they are mostly read-only data on the
+> > scheduler side of the interface. Or we could even go all in and just
+> > make local copies of the struct directly, during the GOV_START
+> > perhaps, with:
+> 
+> I believe this is a good first step as it avoids reworking a huge amount
+> of locking and can get us to something functionally correct. It is what
+> I had proposed earlier, copying the enabled CPUs and freq table in
+> during the governor start callback. Unless there are objections to it
+> I'll add it to the next schedfreq RFC.
+> 
+
+I fear that caching could break thermal. If everybody was already using
+sched-freq interface to control frequency this won't probably be a
+problem, but we are not yet there :(. So, IIUC by caching policy->max,
+for example, we might affect what thermal expects from cpufreq.
+
+> > 
+> ...
+> > 
+> > Well if we're going to try an optimize out every single false-positive
+> > wakeup then I think that the cleanest long term solution would be
+> > rework the per-policy locking around struct cpufreq_policy to use a
+> > raw spinlock.
+> 
+> It would be nice if the policy lock was a spinlock but I don't know how
+> easy that is. From a quick look at cpufreq there's a blocking notifier
+> chain that's called with rwsem held, so it looks messy. Potentially long
+> term indeed.
+> 
+
+Right. Blocking notifiers are one problem, as I was saying to Peter
+yesterday.
+
+> >> Also it'd be good I think to avoid building in an assumption that we'll
+> >> never want to run solely in the fast (atomic) path. Perhaps ARM won't,
+> >> and x86 may never use this, but it's reasonable to think another
+> >> platform might come along which uses cpufreq and has the capability to
+> >> kick off cpufreq transitions swiftly and without sleeping. Maybe ARM
+> >> platforms will evolve to have that capability.
+> > 
+> > The current design of the cpufreq subsystem and its interfaces have
+> > made this choice for us. sched-freq is just another consumer of
+> > cpufreq, and until cpufreq's own locking scheme is improved then we
+> > have no choice.
+> 
+> I did not word that very well - I should have said, we should avoid
+> building in an assumption that we never want to try and run in the fast
+> path.
+> 
+> AFAICS, once we've calculated that a frequency change is required we can
+> down_write_trylock(&policy->rwsem) in the fast path and go ahead with
+> the transition, if the trylock succeeds and the driver supports fast
+> path transitions. We can fall back to the slow path (waking up the
+> kthread) if that fails.
+> 
+> > This discussion is pretty useful. Should we Cc lkml to this thread?
+> 
+> Done (added linux-pm, PeterZ and Rafael as well).
+> 
+
+This discussion is pretty interesting, yes. I'm a bit afraid people
+bumped into this might have troubles understanding context, though.
+And I'm not sure how to give them that context; maybe start a new thread
+summarizing what has been discussed so far?
+
+Best,
+
+- Juri
