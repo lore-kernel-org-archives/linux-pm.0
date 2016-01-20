@@ -1,34 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 15/19] cpufreq: remove useless usage of
- cpufreq_governor_mutex in __cpufreq_governor
-Date: Wed, 20 Jan 2016 16:00:08 +0530
-Message-ID: <20160120103008.GC18097@vireshk>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-16-git-send-email-juri.lelli@arm.com>
- <20160112110658.GG1084@ubuntu>
- <20160115163031.GU18603@e106622-lin>
- <20160118055034.GC30762@vireshk>
- <20160119164941.GI8573@e106622-lin>
- <20160120072933.GF22443@vireshk>
- <20160120101724.GM8573@e106622-lin>
- <20160120101836.GB18097@vireshk>
- <20160120102712.GP8573@e106622-lin>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RESEND] power: genpd: fix lockdep issue for all subdomains
+Date: Wed, 20 Jan 2016 11:50:11 +0100
+Message-ID: <CAPDyKFp13eRwXy35kOJKNanzR3tVHgkqaL-XbGBVbb4RWuBYzw@mail.gmail.com>
+References: <CAPDyKFpcckcRqHGR-J-nb9+O3yTjU4k4KyLqNwKT2M4RvTgq7w@mail.gmail.com>
+	<1453281222-19055-1-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160120102712.GP8573@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f182.google.com ([209.85.160.182]:34790 "EHLO
+	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934843AbcATKuM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 05:50:12 -0500
+Received: by mail-yk0-f182.google.com with SMTP id a85so4888405ykb.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 02:50:12 -0800 (PST)
+In-Reply-To: <1453281222-19055-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anand Moon <linux.amoon@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Kurtz <djkurtz@chromium.org>, Nicolas Boichat <drinkcat@chromium.org>
 
-On 20-01-16, 10:27, Juri Lelli wrote:
-> That is what I expect as well, but you never know ;).
+On 20 January 2016 at 10:13, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> During genpd_poweron, genpd->lock is acquired recursively for each
+> parent (master) domain, which are separate objects. This confuses
+> lockdep, which considers every operation on genpd->lock as being done on
+> the same lock class. This leads to the following false positive warning:
+>
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 4.4.0-rc4-xu3s #32 Not tainted
+> ---------------------------------------------
+> swapper/0/1 is trying to acquire lock:
+>  (&genpd->lock){+.+...}, at: [<c0361550>] __genpd_poweron+0x64/0x108
+>
+> but task is already holding lock:
+>  (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
+>
+> other info that might help us debug this:
+>  Possible unsafe locking scenario:
+>
+>        CPU0
+>        ----
+>   lock(&genpd->lock);
+>   lock(&genpd->lock);
+>
+>  *** DEADLOCK ***
+>
+>  May be due to missing lock nesting notation
+>
+> 3 locks held by swapper/0/1:
+>  #0:  (&dev->mutex){......}, at: [<c0350910>] __driver_attach+0x48/0x98
+>  #1:  (&dev->mutex){......}, at: [<c0350920>] __driver_attach+0x58/0x98
+>  #2:  (&genpd->lock){+.+...}, at: [<c0361af8>] genpd_dev_pm_attach+0x168/0x1b8
+>
+> stack backtrace:
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.4.0-rc4-xu3s #32
+> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+> [<c0016c98>] (unwind_backtrace) from [<c00139c4>] (show_stack+0x10/0x14)
+> [<c00139c4>] (show_stack) from [<c0270df0>] (dump_stack+0x84/0xc4)
+> [<c0270df0>] (dump_stack) from [<c00780b8>] (__lock_acquire+0x1f88/0x215c)
+> [<c00780b8>] (__lock_acquire) from [<c007886c>] (lock_acquire+0xa4/0xd0)
+> [<c007886c>] (lock_acquire) from [<c0641f2c>] (mutex_lock_nested+0x70/0x4d4)
+> [<c0641f2c>] (mutex_lock_nested) from [<c0361550>] (__genpd_poweron+0x64/0x108)
+> [<c0361550>] (__genpd_poweron) from [<c0361b00>] (genpd_dev_pm_attach+0x170/0x1b8)
+> [<c0361b00>] (genpd_dev_pm_attach) from [<c03520a8>] (platform_drv_probe+0x2c/0xac)
+> [<c03520a8>] (platform_drv_probe) from [<c03507d4>] (driver_probe_device+0x208/0x2fc)
+> [<c03507d4>] (driver_probe_device) from [<c035095c>] (__driver_attach+0x94/0x98)
+> [<c035095c>] (__driver_attach) from [<c034ec14>] (bus_for_each_dev+0x68/0x9c)
+> [<c034ec14>] (bus_for_each_dev) from [<c034fec8>] (bus_add_driver+0x1a0/0x218)
+> [<c034fec8>] (bus_add_driver) from [<c035115c>] (driver_register+0x78/0xf8)
+> [<c035115c>] (driver_register) from [<c0338488>] (exynos_drm_register_drivers+0x28/0x74)
+> [<c0338488>] (exynos_drm_register_drivers) from [<c0338594>] (exynos_drm_init+0x6c/0xc4)
+> [<c0338594>] (exynos_drm_init) from [<c00097f4>] (do_one_initcall+0x90/0x1dc)
+> [<c00097f4>] (do_one_initcall) from [<c0895e08>] (kernel_init_freeable+0x158/0x1f8)
+> [<c0895e08>] (kernel_init_freeable) from [<c063ecac>] (kernel_init+0x8/0xe8)
+> [<c063ecac>] (kernel_init) from [<c000f7d0>] (ret_from_fork+0x14/0x24)
+>
+> This patch replaces mutex_lock with mutex_lock_nested() and uses
+> recursion depth to annotate each genpd->lock operation with separate
+> lockdep subclass.
+>
+> Reported-by: Anand Moon <linux.amoon@gmail.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Tested-by: Anand Moon <linux.amoon@gmail.com>
+> Tested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Perhaps not. We are talking about policy->rwsem here being used while
-reading the values of governor's sysfs files. And that lock is only
-taken for single governor case.
+To be consistent with earlier changes, I would prefer to have the
+prefix of the commit message header to "PM / Domains:".
 
--- 
-viresh
+Although you can likely leave that to be amended by Rafael, if he also
+thinks it's good idea.
+
+Kind regards
+Uffe
