@@ -1,7 +1,7 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
 Subject: Re: sched-freq locking
-Date: Wed, 20 Jan 2016 16:39:32 +0000
-Message-ID: <87lh7k2ojf.fsf@e105922-lin.cambridge.arm.com>
+Date: Wed, 20 Jan 2016 16:46:03 +0000
+Message-ID: <87egdc2o8k.fsf@e105922-lin.cambridge.arm.com>
 References: <569D568D.5000500@linaro.org>
 	<CAEG3pNDoDHpgO7WdC8n7C8Ri+KNKZqOi9rKHMkTV0c5dkyevOw@mail.gmail.com>
 	<CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
@@ -13,13 +13,17 @@ References: <569D568D.5000500@linaro.org>
 	<569F9EB3.60600@linaro.org> <20160120155829.GV8573@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55511 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934520AbcATQqf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 11:46:35 -0500
 In-Reply-To: <20160120155829.GV8573@e106622-lin> (Juri Lelli's message of
 	"Wed, 20 Jan 2016 15:58:29 +0000")
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Juri Lelli <Juri.Lelli@arm.com>
 Cc: Steve Muckle <steve.muckle@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
 Juri Lelli <Juri.Lelli@arm.com> writes:
 
@@ -43,11 +47,12 @@ Juri Lelli <Juri.Lelli@arm.com> writes:
 > got it right Punit :)), so we might be able to intercept such sites and
 > do proper update of cached values.
 
-That's correct. In cpu_cooling there is a call to cpufreq_update_policy
-that subsequently calls cpufreq_set_policy.
 
-The max itself is updated via the policy change notifier registered by
-the cooling device.
+That's correct. The cpu cooling device calls cpufreq_update_policy which
+subsequently calls cpufreq_set_policy.
+
+The max itself is changed via the policy notifier callback in the
+cooling device.
 
 >
 >> >
