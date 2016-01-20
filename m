@@ -1,105 +1,77 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH v2 1/4] dt-bindings: power: reset: add document for
- reboot-mode driver
-Date: Wed, 20 Jan 2016 10:47:34 -0800
-Message-ID: <CALAqxLVvJqL60nKfrDiZ+p-1ujxuG72iUN3DCvEE3WJ9bpnGLA@mail.gmail.com>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
-	<1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
-	<20160120182840.GA15741@rob-hp-laptop>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Wed, 20 Jan 2016 20:02:05 +0100
+Message-ID: <20160120190205.GR6357@twins.programming.kicks-ass.net>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f180.google.com ([209.85.160.180]:36204 "EHLO
-	mail-yk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbcATSrf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 13:47:35 -0500
-Received: by mail-yk0-f180.google.com with SMTP id v14so20487017ykd.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 10:47:34 -0800 (PST)
-In-Reply-To: <20160120182840.GA15741@rob-hp-laptop>
+Received: from bombadil.infradead.org ([198.137.202.9]:59025 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbcATTCL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 14:02:11 -0500
+Content-Disposition: inline
+In-Reply-To: <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Andy Yan <andy.yan@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Arnd Bergmann <arnd@arndb.de>, linux@roeck-us.net, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, geert+renesas@glider.be, sre@kernel.org, Olof Johansson <olof@lixom.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jun Nie <jun.nie@linaro.org>, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: tglx@linutronix.de, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On Wed, Jan 20, 2016 at 10:28 AM, Rob Herring <robh@kernel.org> wrote:
-> On Tue, Jan 12, 2016 at 07:29:49PM +0800, Andy Yan wrote:
->> add device tree binding document for reboot-mode driver
->>
->> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
->>
->> ---
->>
->> Changes in v2: None
->> Changes in v1: None
->>
->>  .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++++++++++
->>  .../bindings/power/reset/syscon-reboot-mode.txt    | 52 ++++++++++++++++++++++
->>  2 files changed, 93 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
->>  create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
->> new file mode 100644
->> index 0000000..81d9f66
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
->> @@ -0,0 +1,41 @@
->> +Generic reboot mode core map driver
->> +
->> +This driver get reboot mode arguments and call the write
->> +interface to stores the magic value in special register
->> +or ram . Then the bootloader can read it and take different
->> +action according to the argument stored.
->> +
->> +Required properties:
->> +- compatible: only support "syscon-reboot-mode" now.
->> +
->> +Each mode is represented as a sub-node of reboot_mode:
->> +
->> +Subnode required properties:
->> +- linux,mode: reboot mode command,such as "loader", "recovery", "fastboot".
->> +- loader,magic: magic number for the mode, this is vendor specific.
->> +
->> +Example:
->> +     reboot_mode {
->
-> reboot-mode instead please.
->
->> +             compatible = "syscon-reboot-mode";
->> +             offset = <0x40>;
->
-> This doc by itself is a little confusing. For example, is a child of the
-> syscon node? I would remove offset (and perhaps compatible) from this
-> example.
->
->> +
->> +             loader {
->> +                     linux,mode = "loader";
->> +                     loader,magic = <BOOT_LOADER>;
->> +             };
->
-> Sorry, my previous suggestion was not clear. I'm suggesting get rid of
-> the subnodes and just do properties like this:
->
-> loader = <BOOT_LOADER>;
-> maskrom = <BOOT_MASKROM>;
->
-> That's the same amount of information unless node names and linux,mode
-> values are going to diverge. Do they need to? I can't see a reason.
+On Wed, Jan 20, 2016 at 05:00:33PM +0100, Daniel Lezcano wrote:
+> +static void sched_irq_timing_handler(unsigned int irq, ktime_t timestamp, void *dev_id)
+> +{
+> +	u32 diff;
+> +	unsigned int cpu = raw_smp_processor_id();
+> +	struct wakeup *w = per_cpu(wakeups[irq], cpu);
+> +
+> +	/*
+> +	 * It is the first time the interrupt occurs of the series, we
+> +	 * can't do any stats as we don't have an interval, just store
+> +	 * the timestamp and exit.
+> +	 */
+> +	if (ktime_equal(w->timestamp, ktime_set(0, 0))) {
+> +		w->timestamp = timestamp;
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * Microsec resolution is enough for our purpose.
+> +	 */
 
+It is also a friggin pointless /1000. The cpuidle code also loves to do
+this, and its silly, u64 add/sub are _way_ cheaper than u64 / 1000.
 
-It seems like devices already have a number of various different
-vendor specific commands.  So this sort of flexibility helps us adapt
-the driver to different hardware/system environments (which may use
-different conventions then what Android commonly uses).
+> +	diff = ktime_us_delta(timestamp, w->timestamp);
+> +	w->timestamp = timestamp;
+> +
+> +	/*
+> +	 * There is no point attempting predictions on interrupts more
+> +	 * than ~1 second apart. This has no benefit for sleep state
+> +	 * selection and increases the risk of overflowing our variance
+> +	 * computation. Reset all stats in that case.
+> +	 */
+> +	if (diff > (1 << 20)) {
+> +		stats_reset(&w->stats);
+> +		return;
+> +	}
+> +
+> +	stats_add(&w->stats, diff);
+> +}
+> +
+> +static ktime_t next_irq_event(void)
+> +{
+> +	unsigned int irq, cpu = raw_smp_processor_id();
+> +	ktime_t diff, next, min = ktime_set(KTIME_SEC_MAX, 0);
+> +	ktime_t now = ktime_get();
 
-Unless I'm misunderstanding you and you're instead suggesting we can
-dynamically parse the command mode from the node name?
+Why !?! do we care about NTP correct timestamps?
 
-That said, I agree we should try to push vendors to using the same
-conventions when they are providing the same functionality. But I'm
-not sure we should enforce that by making vendors introduce a new dt
-binding for every new reboot command they want to implement.
+ktime_get() can be horrendously slow, don't use it for statistics.
 
-thanks
--john
+> +		next = ktime_add_us(w->timestamp, stats_mean(&w->stats));
+> +	s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
+> +	s64 next_irq = ktime_to_us(next_irq_event());
+
+more nonsense, just say no.
