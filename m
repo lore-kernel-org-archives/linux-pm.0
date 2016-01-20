@@ -1,15 +1,21 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle period
-Date: Wed, 20 Jan 2016 17:00:33 +0100
-Message-ID: <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
+Date: Wed, 20 Jan 2016 17:00:36 +0100
+Message-ID: <1453305636-22156-6-git-send-email-daniel.lezcano@linaro.org>
 References: <alpine.DEB.2.11.1601201634520.3575@nanos>
  <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:33983 "EHLO
+	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934416AbcATQBX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 11:01:23 -0500
+Received: by mail-wm0-f50.google.com with SMTP id u188so190706448wmu.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Jan 2016 08:01:21 -0800 (PST)
 In-Reply-To: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
 Many IRQs are quiet most of the time, or they tend to come in bursts of
 fairly equal time intervals within each burst. It is therefore possible
@@ -604,3 +610,4 @@ index 0000000..c2b8568
 +DECLARE_IRQ_TIMINGS(&irqt_ops);
 -- 
 1.9.1
+
