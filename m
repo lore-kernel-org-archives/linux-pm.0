@@ -1,79 +1,175 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 1/5] cpufreq: powernv: Hot-plug safe the kworker thread
-Date: Thu, 21 Jan 2016 15:08:55 +0530
-Message-ID: <1453369139-10203-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1453369139-10203-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: sched-freq locking
+Date: Thu, 21 Jan 2016 09:45:13 +0000
+Message-ID: <20160121094513.GW8573@e106622-lin>
+References: <CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
+ <569E90CF.9050503@linaro.org>
+ <CAEG3pND5kHqJhrvwVjsnCnfT-nSrV8SrUaNk2p=ZfEx0MmmB=A@mail.gmail.com>
+ <569EB225.4040707@linaro.org>
+ <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com>
+ <569EE1E1.3050407@linaro.org>
+ <20160120121801.GR8573@e106622-lin>
+ <569F9EB3.60600@linaro.org>
+ <20160120155829.GV8573@e106622-lin>
+ <569FF21C.9070502@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:43349 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759102AbcAUJkH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 04:40:07 -0500
-Received: from localhost
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Thu, 21 Jan 2016 19:40:04 +1000
-In-Reply-To: <1453369139-10203-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from foss.arm.com ([217.140.101.70]:49907 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751224AbcAUJop (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Jan 2016 04:44:45 -0500
+Content-Disposition: inline
+In-Reply-To: <569FF21C.9070502@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-In the kworker_thread powernv_cpufreq_work_fn(), we can end up
-sending an IPI to a cpu going offline. This is a rare corner case
-which is fixed using {get/put}_online_cpus(). Along with this fix,
-this patch adds changes to do oneshot cpumask_{clear/and} operation.
+On 20/01/16 12:46, Steve Muckle wrote:
+> Hi Juri,
+> 
+> On 01/20/2016 07:58 AM, Juri Lelli wrote:
+> > On 20/01/16 06:50, Steve Muckle wrote:
+> >> On 01/20/2016 04:18 AM, Juri Lelli wrote:
+> >>> I fear that caching could break thermal. If everybody was already using
+> >>> sched-freq interface to control frequency this won't probably be a
+> >>> problem, but we are not yet there :(. So, IIUC by caching policy->max,
+> >>> for example, we might affect what thermal expects from cpufreq.
+> >>
+> >> I think we could probably just access policy->max without rwsem, as long
+> >> as we ensure policy is valid. Cpufreq will take care to cap a frequency
+> >> request to an upper limit put in by thermal anyway so I don't think it's
+> >> a problematic race. But I haven't spent much time thinking about it.
+> >>
+> > 
+> > Mmm, can't the fact that the scheduler might think it can still request
+> > a frequency above max be problematic?
+> 
+> I don't think so because cpufreq is going to clamp the incoming request
+> to be within policy->min and policy->max anyway (see
+> __cpufreq_driver_target() near the top). So nothing's going to
+> break/catch fire.
+> 
 
-Suggested-by: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Suggested-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+Right. I wasn't worried about this, but rather by the fact that the
+scheduler might think there is enough space in a CPU (and balance tasks
+accordingly) when that space has actually been restricted by thermal.
+But, I also think there are ways to prevent this from happening, we just
+need to be aware of such a problem.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 547890f..50a5b21 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -423,18 +423,19 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- {
- 	struct chip *chip = container_of(work, struct chip, throttle);
- 	unsigned int cpu;
--	cpumask_var_t mask;
-+	cpumask_t mask;
- 
--	smp_call_function_any(&chip->mask,
-+	get_online_cpus();
-+	cpumask_and(&mask, &chip->mask, cpu_online_mask);
-+	smp_call_function_any(&mask,
- 			      powernv_cpufreq_throttle_check, NULL, 0);
- 
- 	if (!chip->restore)
--		return;
-+		goto out;
- 
- 	chip->restore = false;
--	cpumask_copy(mask, &chip->mask);
--	for_each_cpu_and(cpu, mask, cpu_online_mask) {
--		int index, tcpu;
-+	for_each_cpu(cpu, &mask) {
-+		int index;
- 		struct cpufreq_policy policy;
- 
- 		cpufreq_get_policy(&policy, cpu);
-@@ -442,9 +443,10 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 					       policy.cur,
- 					       CPUFREQ_RELATION_C, &index);
- 		powernv_cpufreq_target_index(&policy, index);
--		for_each_cpu(tcpu, policy.cpus)
--			cpumask_clear_cpu(tcpu, mask);
-+		cpumask_andnot(&mask, &mask, policy.cpus);
- 	}
-+out:
-+	put_online_cpus();
- }
- 
- static char throttle_reason[][30] = {
--- 
-1.9.3
+> The question to me is, if the system gets throttled (or un-throttled)
+> just as you are evaluating capacity requests, are you actually better
+> off using the new policy->max value to scale? I suspect not, because the
+> recent load tracking statistics and hence the capacity requests will
+> have been calculated based on the original policy->max rather than the
+> one that was just written.
+> 
+> Perhaps a decayed version of policy->max could be maintained and used to
+> scale instead. Not sure if this will be enough of an issue in practice
+> though to warrant it...
+> 
 
+Yeah, I can't really see a big issue here at the moment.
+
+> > 
+> ...
+> > 
+> >> Currently schedfreq has to go through two stages of aggregation. The
+> >> first is aggregating the capacity request votes from the different sched
+> >> classes within a CPU. The second is aggregating the capacity request
+> >> votes from the CPUs within a frequency domain. I'm looking to solve the
+> >> locking issues with both of these stages as well as those with calling
+> >> into cpufreq in the fast path.
+> >>
+> >> For the first stage, currently we assume that the rq lock is held. This
+> >> is the case for the existing calls into schedfreq (the load balancer
+> >> required a minor change). There are a few more hooks that need to go
+> >> into migration paths in core.c which will be slightly more painful, but
+> >> they are IMO doable.
+> >>
+> >> For the second stage I believe an internal schedfreq spinlock is
+> >> required, for one thing to protect against competing updates within the
+> >> same frequency domain from different CPUs, but also so that we can
+> >> guarantee the cpufreq policy is valid, which can be done if the
+> >> governor_start/stop callbacks take the spinlock as well.
+> >>
+> > 
+> > Does this need to nest within the rq lock?
+> 
+> I think it will have to because I suspect releasing the rq lock to run
+> the second stage, then re-acquiring it afterwards, will cause breakage
+> in the scheduler paths from which this is all being called.
+> 
+
+Right, that's what I was thinking too. However, we need to be aware that
+we might add some overhead caused by contention on this new spinlock.
+
+> Otherwise I don't see a requirement within schedfreq for it to be nested.
+> 
+
+OTOH, doesn't second stage happen on the kthread (when we need to
+sleep)?
+
+> >
+> >> As for accessing various things in cpufreq->policy and trying to take
+> >> rwsem in the fast path, we should be able to either cache some of the
+> >> items in the governor_start() path, eliminate the references, or access
+> >> them without locking rwsem (as long as we know the policy is valid,
+> > 
+> > If we only need to guarantee existence of the policy, without any direct
+> > updates, RCU might be a good fit.
+> 
+> It must be guaranteed that policy->cpus and policy->freq_table are
+> current/synchronized with cpufreq for the duration of the second stage.
+> I think this precludes the use of RCU.
+> 
+
+Mmm, it seems so yes.
+
+> We're going to need an internal schedfreq spinlock to arbitrate multiple
+> CPUs in a frequency domain trying to go through the hot path
+> concurrently anyway, so we're really just extending that critical
+> section to the governor start and stop callbacks where we can safely
+> cache some of the policy data.
+> 
+> > 
+> >> which we do by taking the spinlock in governor_start()). Here are the
+> >> things we currently reference in the schedfreq set capacity hook and my
+> >> thoughts on each of them:
+> >>
+> >> policy->governor: this is currently tested to see if schedfreq is
+> >> enabled, but this can be tracked internally to schedfreq and set in the
+> >> governor_start/stop callbacks
+> >>
+> >> policy->governor_data: used to access schedfreq's data for the policy,
+> >> could be changed to an internal schedfreq percpu pointer
+> >>
+> >> policy->cpus, policy->freq_table: these can be cached internally to
+> >> schedfreq on governor_start/stop
+> >>
+> >> policy->max: as mentioned above I *think* we could get away with
+> >> accessing this without locking rwsem as discussed above
+> >>
+> >> policy->transition_ongoing: this isn't strictly required as schedfreq
+> >> could track internally whether it has a transition outstanding, but we
+> >> should also be okay to look at this without policy->rwsem since
+> >> schedfreq is the only one queuing transitions, again assuming we take
+> >> care to ensure policy is valid as above
+> >>
+> >> Finally when actually requesting a frequency change in the fast path, we
+> >> can trylock policy->rwsem and fall back to the slow path (kthread) if
+> >> that fails.
+> >>
+> > 
+> > OTOH, all the needed aggregation could make the fast path not so fast in
+> > the end. So, maybe having a fast and a slow path is always good?
+> 
+> Sorry I didn't follow... What do you mean by having a fast and a slow path?
+> 
+
+Sorry, I wasn't clear enough. What I was trying to say is that having
+two different paths, one fast where we aggregate locally and fire a
+request and a second one slower where we aggregate per frequency domain,
+compute the new request and call cpufreq, might be always desirable;
+even on system that could issue frequency changes without sleeping.
