@@ -1,33 +1,101 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: tegra: Set freq in rate callback
-Date: Thu, 21 Jan 2016 09:24:10 +0000 (GMT)
-Message-ID: <1344895371.241491453368249580.JavaMail.weblogic@ep2mlwas01b>
-Reply-To: myungjoo.ham@samsung.com
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Thu, 21 Jan 2016 10:25:56 +0100
+Message-ID: <56A0A424.80306@linaro.org>
+References: <alpine.DEB.2.11.1601201634520.3575@nanos>
+ <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.DEB.2.11.1601201847050.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Tyler Baker <tyler.baker@linaro.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:34995 "EHLO
+	mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757467AbcAUJZ7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 04:25:59 -0500
+Received: by mail-wm0-f53.google.com with SMTP id r129so163735232wmr.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 01:25:58 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.11.1601201847050.3575@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-PkFzIHBlciB0aGUgZG9jdW1lbnRhdGlvbiBvZiB0aGUgZGV2ZnJlcV9kZXZfcHJvZmlsZS50YXJn
-ZXQgY2FsbGJhY2ssIHNldA0KPnRoZSBmcmVxIGFyZ3VtZW50IHRvIHRoZSBuZXcgZnJlcXVlbmN5
-IGJlZm9yZSByZXR1cm5pbmcuDQo+DQo+VGhpcyBjYXVzZWQgZW5kbGVzcyBtZXNzYWdlcyBsaWtl
-IHRoaXMgYWZ0ZXIgcmVjZW50IGNoYW5nZXMgaW4gdGhlIGNvcmU6DQo+DQo+ZGV2ZnJlcSA2MDAw
-YzgwMC5hY3Rtb246IENvdWxkbid0IHVwZGF0ZSBmcmVxdWVuY3kgdHJhbnNpdGlvbiBpbmZvcm1h
-dGlvbi4NCj4NCj5TaWduZWQtb2ZmLWJ5OiBUb21ldSBWaXpvc28gDQo+UmVwb3J0ZWQtYnk6IFR5
-bGVyIEJha2VyIA0KDQpBaC4uIHRoaXMgaXMgY3JpdGljYWwgYW5kIG1hdGVyaWFsIGZvciBMVFMg
-cXVldWUuDQoNClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1
-bmcuY29tPg0KDQo+LS0tDQo+IGRyaXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMgfCAyICsr
-DQo+IDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykNCj4NCj5kaWZmIC0tZ2l0IGEvZHJp
-dmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYyBiL2RyaXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZm
-cmVxLmMNCj5pbmRleCA4NDhiOTNlZTkzMGYuLmZlOWRjZTAyNDViZiAxMDA2NDQNCj4tLS0gYS9k
-cml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jDQo+KysrIGIvZHJpdmVycy9kZXZmcmVxL3Rl
-Z3JhLWRldmZyZXEuYw0KPkBAIC01MDAsNiArNTAwLDggQEAgc3RhdGljIGludCB0ZWdyYV9kZXZm
-cmVxX3RhcmdldChzdHJ1Y3QgZGV2aWNlICpkZXYsIHVuc2lnbmVkIGxvbmcgKmZyZXEsDQo+IGNs
-a19zZXRfbWluX3JhdGUodGVncmEtPmVtY19jbG9jaywgcmF0ZSk7DQo+IGNsa19zZXRfcmF0ZSh0
-ZWdyYS0+ZW1jX2Nsb2NrLCAwKTsNCj4gDQo+KyAqZnJlcSA9IHJhdGU7DQo+Kw0KPiByZXR1cm4g
-MDsNCj4gfQ0KPiANCj4tLSANCj4yLjUuMA0KPg==
+On 01/20/2016 06:55 PM, Thomas Gleixner wrote:
+> On Wed, 20 Jan 2016, Daniel Lezcano wrote:
+>> +#ifdef CONFIG_IRQ_TIMINGS
+>> +/**
+>> + * struct irqt_ops - structure to be used by the subsystem to track
+>> + *                   irq timings
+>> + * @alloc:    called when an irqdesc is allocated
+>> + * @free:     called when an irqdesc is free
+>> + * @setup:    called when an irq is setup, this is called under loc=
+k
+>> + * @remove:   called when an irq is removed
+>> + * @handler:  called when an interrupt is handled
+>> + */
+>> +struct irqtimings_ops {
+>> +	int (*alloc)(unsigned int);
+>> +	void (*free)(unsigned int);
+>> +	int (*setup)(unsigned int, struct irqaction *act);
+>> +	void (*remove)(unsigned int, void *dev_id);
+>> +	irqt_handler_t handler;
+>> +};
+>> +
+>> +/**
+>> + * This macro *must* be used by the subsystem interested by the irq
+>> + * timing information.
+>> + */
+>> +#define DECLARE_IRQ_TIMINGS(__ops)				\
+>> +	const struct irqtimings_ops *__irqtimings =3D __ops;
+>> +#endif
+>
+>> @@ -20,6 +20,49 @@ extern bool noirqdebug;
+>>
+>>   extern struct irqaction chained_action;
+>>
+>> +#ifdef CONFIG_IRQ_TIMINGS
+>> +
+>> +extern const struct irqtimings_ops *__irqtimings;
+>> +
+>> +static inline int alloc_irqtiming(unsigned int irq)
+>> +{
+>> +	if (__irqtimings->alloc)
+>> +		return __irqtimings->alloc(irq);
+>
+> I really have a hard time to understand that indirection. __irqtiming=
+s is
+> statically allocated and compiled in. There can be only one user for =
+this in
+> the system ever and that user has all callbacks populated.
+>
+> Why can't you spare all that pointer muck and simply have:
+>
+> #ifdef CONFIG_IRQ_TIMINGS
+> int irqtiming_alloc(usigned int irq);
+> ....
+> #else
+> static int irqtiming_alloc(usigned int irq) { return 0; }
+> ...
+> #endif
+>
+> and implement those functions in your idle thingy?
+
+Hi Thomas,
+
+yes sure, I can do something simpler.
+
+Just to be sure, do you suggest to put the function declaration in=20
+kernel/irq/internal.h and the function definition in=20
+kernel/sched/idle-sched.c ?
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
