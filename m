@@ -1,175 +1,104 @@
-From: Juri Lelli <Juri.Lelli@arm.com>
-Subject: Re: sched-freq locking
-Date: Thu, 21 Jan 2016 09:45:13 +0000
-Message-ID: <20160121094513.GW8573@e106622-lin>
-References: <CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
- <569E90CF.9050503@linaro.org>
- <CAEG3pND5kHqJhrvwVjsnCnfT-nSrV8SrUaNk2p=ZfEx0MmmB=A@mail.gmail.com>
- <569EB225.4040707@linaro.org>
- <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com>
- <569EE1E1.3050407@linaro.org>
- <20160120121801.GR8573@e106622-lin>
- <569F9EB3.60600@linaro.org>
- <20160120155829.GV8573@e106622-lin>
- <569FF21C.9070502@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Thu, 21 Jan 2016 10:50:27 +0100
+Message-ID: <56A0A9E3.2070306@linaro.org>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+ <20160120190718.GS6357@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.11.1601202050050.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:49907 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751224AbcAUJop (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Jan 2016 04:44:45 -0500
-Content-Disposition: inline
-In-Reply-To: <569FF21C.9070502@linaro.org>
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:37157 "EHLO
+	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759067AbcAUJua (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 04:50:30 -0500
+Received: by mail-wm0-f48.google.com with SMTP id n5so71239804wmn.0
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 01:50:30 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.11.1601202050050.3575@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
+Cc: rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On 20/01/16 12:46, Steve Muckle wrote:
-> Hi Juri,
-> 
-> On 01/20/2016 07:58 AM, Juri Lelli wrote:
-> > On 20/01/16 06:50, Steve Muckle wrote:
-> >> On 01/20/2016 04:18 AM, Juri Lelli wrote:
-> >>> I fear that caching could break thermal. If everybody was already using
-> >>> sched-freq interface to control frequency this won't probably be a
-> >>> problem, but we are not yet there :(. So, IIUC by caching policy->max,
-> >>> for example, we might affect what thermal expects from cpufreq.
-> >>
-> >> I think we could probably just access policy->max without rwsem, as long
-> >> as we ensure policy is valid. Cpufreq will take care to cap a frequency
-> >> request to an upper limit put in by thermal anyway so I don't think it's
-> >> a problematic race. But I haven't spent much time thinking about it.
-> >>
-> > 
-> > Mmm, can't the fact that the scheduler might think it can still request
-> > a frequency above max be problematic?
-> 
-> I don't think so because cpufreq is going to clamp the incoming request
-> to be within policy->min and policy->max anyway (see
-> __cpufreq_driver_target() near the top). So nothing's going to
-> break/catch fire.
-> 
+On 01/20/2016 08:57 PM, Thomas Gleixner wrote:
+> On Wed, 20 Jan 2016, Peter Zijlstra wrote:
+>
+>> On Wed, Jan 20, 2016 at 05:00:32PM +0100, Daniel Lezcano wrote:
+>>> +++ b/kernel/irq/handle.c
+>>> @@ -165,6 +165,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_=
+desc *desc)
+>>>   			/* Fall through to add to randomness */
+>>>   		case IRQ_HANDLED:
+>>>   			flags |=3D action->flags;
+>>> +			handle_irqtiming(irq, action->dev_id);
+>>>   			break;
+>>>
+>>>   		default:
+>>
+>>> +++ b/kernel/irq/internals.h
+>>
+>>> +static inline void handle_irqtiming(unsigned int irq, void *dev_id=
+)
+>>> +{
+>>> +	if (__irqtimings->handler)
+>>> +		__irqtimings->handler(irq, ktime_get(), dev_id);
+>>> +}
+>>
+>> Here too, ktime_get() is daft.
+>
+> What's the problem? ktime_xxx() itself or just the clock monotonic va=
+riant?
+>
+> On 99.9999% of the platforms ktime_get_mono_fast/raw_fast is not any =
+slower
+> than sched_clock(). The only case where sched_clock is faster is if y=
+our TSC
+> is buggered and the box switches to HPET for timekeeping.
+>
+> But I wonder, whether this couldn't do with jiffies in the first plac=
+e. If the
+> interrupt comes faster than a jiffie then you hardly go into some int=
+eresting
+> power state, but I might be wrong as usual :)
+>
+>> Also, you really want to take the timestamp _before_ we call the
+>> handlers, not after, otherwise you mix in whatever variance exist in=
+ the
+>> handler duration.
+>
+> That and we don't want to call it for each handler which returned han=
+dled. The
+> called code would do two samples in a row for the same interrupt in c=
+ase of
+> two shared handlers which get raised at the same time. Not very likel=
+y, but
+> possible.
 
-Right. I wasn't worried about this, but rather by the fact that the
-scheduler might think there is enough space in a CPU (and balance tasks
-accordingly) when that space has actually been restricted by thermal.
-But, I also think there are ways to prevent this from happening, we just
-need to be aware of such a problem.
+Actually, the handle passes dev_id in order to let the irqtimings to=20
+sort out a shared interrupt and prevent double sampling. In other words=
+,=20
+for shared interrupts, statistics should be per t-uple(irq , dev_id) bu=
+t=20
+that is something I did not implemented ATM.
 
-> The question to me is, if the system gets throttled (or un-throttled)
-> just as you are evaluating capacity requests, are you actually better
-> off using the new policy->max value to scale? I suspect not, because the
-> recent load tracking statistics and hence the capacity requests will
-> have been calculated based on the original policy->max rather than the
-> one that was just written.
-> 
-> Perhaps a decayed version of policy->max could be maintained and used to
-> scale instead. Not sure if this will be enough of an issue in practice
-> though to warrant it...
-> 
+IMO, the handler is at the right place. The prediction code does not=20
+take care of the shared interrupts yet.
 
-Yeah, I can't really see a big issue here at the moment.
+I tried to find a platform with shared interrupts in the ones I have=20
+available around me but I did not find any. Are the shared interrupts=20
+something used nowadays or coming from legacy hardware ? What is the=20
+priority to handle the shared interrupts in the prediction code ?
 
-> > 
-> ...
-> > 
-> >> Currently schedfreq has to go through two stages of aggregation. The
-> >> first is aggregating the capacity request votes from the different sched
-> >> classes within a CPU. The second is aggregating the capacity request
-> >> votes from the CPUs within a frequency domain. I'm looking to solve the
-> >> locking issues with both of these stages as well as those with calling
-> >> into cpufreq in the fast path.
-> >>
-> >> For the first stage, currently we assume that the rq lock is held. This
-> >> is the case for the existing calls into schedfreq (the load balancer
-> >> required a minor change). There are a few more hooks that need to go
-> >> into migration paths in core.c which will be slightly more painful, but
-> >> they are IMO doable.
-> >>
-> >> For the second stage I believe an internal schedfreq spinlock is
-> >> required, for one thing to protect against competing updates within the
-> >> same frequency domain from different CPUs, but also so that we can
-> >> guarantee the cpufreq policy is valid, which can be done if the
-> >> governor_start/stop callbacks take the spinlock as well.
-> >>
-> > 
-> > Does this need to nest within the rq lock?
-> 
-> I think it will have to because I suspect releasing the rq lock to run
-> the second stage, then re-acquiring it afterwards, will cause breakage
-> in the scheduler paths from which this is all being called.
-> 
 
-Right, that's what I was thinking too. However, we need to be aware that
-we might add some overhead caused by contention on this new spinlock.
 
-> Otherwise I don't see a requirement within schedfreq for it to be nested.
-> 
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-OTOH, doesn't second stage happen on the kthread (when we need to
-sleep)?
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-> >
-> >> As for accessing various things in cpufreq->policy and trying to take
-> >> rwsem in the fast path, we should be able to either cache some of the
-> >> items in the governor_start() path, eliminate the references, or access
-> >> them without locking rwsem (as long as we know the policy is valid,
-> > 
-> > If we only need to guarantee existence of the policy, without any direct
-> > updates, RCU might be a good fit.
-> 
-> It must be guaranteed that policy->cpus and policy->freq_table are
-> current/synchronized with cpufreq for the duration of the second stage.
-> I think this precludes the use of RCU.
-> 
-
-Mmm, it seems so yes.
-
-> We're going to need an internal schedfreq spinlock to arbitrate multiple
-> CPUs in a frequency domain trying to go through the hot path
-> concurrently anyway, so we're really just extending that critical
-> section to the governor start and stop callbacks where we can safely
-> cache some of the policy data.
-> 
-> > 
-> >> which we do by taking the spinlock in governor_start()). Here are the
-> >> things we currently reference in the schedfreq set capacity hook and my
-> >> thoughts on each of them:
-> >>
-> >> policy->governor: this is currently tested to see if schedfreq is
-> >> enabled, but this can be tracked internally to schedfreq and set in the
-> >> governor_start/stop callbacks
-> >>
-> >> policy->governor_data: used to access schedfreq's data for the policy,
-> >> could be changed to an internal schedfreq percpu pointer
-> >>
-> >> policy->cpus, policy->freq_table: these can be cached internally to
-> >> schedfreq on governor_start/stop
-> >>
-> >> policy->max: as mentioned above I *think* we could get away with
-> >> accessing this without locking rwsem as discussed above
-> >>
-> >> policy->transition_ongoing: this isn't strictly required as schedfreq
-> >> could track internally whether it has a transition outstanding, but we
-> >> should also be okay to look at this without policy->rwsem since
-> >> schedfreq is the only one queuing transitions, again assuming we take
-> >> care to ensure policy is valid as above
-> >>
-> >> Finally when actually requesting a frequency change in the fast path, we
-> >> can trylock policy->rwsem and fall back to the slow path (kthread) if
-> >> that fails.
-> >>
-> > 
-> > OTOH, all the needed aggregation could make the fast path not so fast in
-> > the end. So, maybe having a fast and a slow path is always good?
-> 
-> Sorry I didn't follow... What do you mean by having a fast and a slow path?
-> 
-
-Sorry, I wasn't clear enough. What I was trying to say is that having
-two different paths, one fast where we aggregate locally and fire a
-request and a second one slower where we aggregate per frequency domain,
-compute the new request and call cpufreq, might be always desirable;
-even on system that could issue frequency changes without sleeping.
