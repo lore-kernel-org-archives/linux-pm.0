@@ -1,52 +1,134 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Thu, 21 Jan 2016 14:52:31 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601211128240.3873@nanos>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org> <20160120190718.GS6357@twins.programming.kicks-ass.net> <alpine.DEB.2.11.1601202050050.3575@nanos>
- <56A0A9E3.2070306@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Thu, 21 Jan 2016 14:54:34 +0100
+Message-ID: <56A0E31A.6020001@linaro.org>
+References: <alpine.DEB.2.11.1601201634520.3575@nanos>
+ <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.DEB.2.11.1601201856040.3575@nanos>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:38235 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759002AbcAUNxd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 08:53:33 -0500
-In-Reply-To: <56A0A9E3.2070306@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.11.1601201856040.3575@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On Thu, 21 Jan 2016, Daniel Lezcano wrote:
-> On 01/20/2016 08:57 PM, Thomas Gleixner wrote:
-> > That and we don't want to call it for each handler which returned handled.
-> > The
-> > called code would do two samples in a row for the same interrupt in case of
-> > two shared handlers which get raised at the same time. Not very likely, but
-> > possible.
-> 
-> Actually, the handle passes dev_id in order to let the irqtimings to sort out
-> a shared interrupt and prevent double sampling. In other words, for shared
-> interrupts, statistics should be per t-uple(irq , dev_id) but that is
-> something I did not implemented ATM.
+On 01/20/2016 08:49 PM, Thomas Gleixner wrote:
 
-So my comment about double sampling applies.
+[ ... ]
 
-> IMO, the handler is at the right place. The prediction code does not take care
-> of the shared interrupts yet.
-> 
-> I tried to find a platform with shared interrupts in the ones I have available
-> around me but I did not find any. Are the shared interrupts something used
-> nowadays or coming from legacy hardware ? What is the priority to handle the
-> shared interrupts in the prediction code ?
+Thanks for all your comments. I agree with them.
 
-And why would that thing care about shared interruts at all? It's a legacy
-burden and I really don't see a reason why that new thing which is targeted on
-modern hardware should deal with them. Just treat them as a single interrupt
-for now and be done with it.
+One question below.
 
-Thanks,
+>> +static void sched_irq_timing_free(unsigned int irq)
+>> +{
+>> +	struct wakeup *w;
+>> +	int cpu;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +
+>> +		w =3D per_cpu(wakeups[irq], cpu);
+>> +		if (!w)
+>> +			continue;
+>> +
+>> +		per_cpu(wakeups[irq], cpu) =3D NULL;
+>> +		kfree(w);
+>
+> Your simple array does not work. You need a radix_tree to handle SPAR=
+SE_IRQ
+> and you need proper protection against teardown.
+>
+> So we can avoid all that stuff and simply stick that data into irqdes=
+c and let
+> the core handle it. That allows us to use proper percpu allocations a=
+nd avoid
+> that for_each_possible_cpu() sillyness.
+>
+> That leaves the iterator, but that's a solvable problem. We simply ca=
+n have an
+> iterator function in the irq core, which gives you the next sample
+> structure. Something like this:
+>
+> struct irqtiming_sample *irqtiming_get_next(int *irq)
+> {
+> 	struct irq_desc *desc;
+> 	int next;
+>
+> 	/* Do a racy lookup of the next allocated irq */
+> 	next =3D irq_get_next_irq(*irq);
+> 	if (next >=3D nr_irqs)
+> 	   	 return NULL;
+>
+> 	*irq =3D next + 1;
+>
+> 	/* Now lookup the descriptor. It's RCU protected. */
+> 	desc =3D irq_to_desc(next);
+> 	if (!desc || !desc->irqtimings || !(desc->istate & IRQS_TIMING))
+> 	   	 return NULL;
+>
+> 	return this_cpu_ptr(&desc->irqtimings);
+> }
+>
+> And that needs to be called rcu protected;
+>
+>      	 next =3D 0;
+>      	 rcu_read_lock();
+> 	 sample =3D irqtiming_get_next(&next);
+> 	 while (sample) {
+> 	       ....
+> 	       sample =3D irqtiming_get_next(&next);
+> 	 }
+>      	 rcu_read_unlock();
+>
+> So the interrupt part becomes:
+>
+>           if (desc->istate & IRQS_TIMING)
+> 	       	 irqtimings_handle(__this_cpu_ptr(&desc->irqtimings));
+>
+> So now for the allocation/free of that data. We simply allocate/free =
+it along
+> with the irq descriptor. That IRQS_TIMING bit gets set in __setup_irq=
+() except
+> for timer interrupts. That's simple and avoid _all_ the issues.
 
-	tglx
+Indeed, making this as part of the irq code makes everything much more=20
+simple and self contained. For the shared interrupts, shouldn't we put=20
+the timings samples into the irqaction structure instead of the irqdesc=
+=20
+structure ?
+
+eg.
+
+#define IRQT_MAX_VALUES 4
+
+struct irqaction {
+	...
+#ifdef CONFIG_IRQ_TIMINGS
+	u32 irqtimings_samples[IRQT_MAX_VALUES];
+#endif
+	...
+};
+
+So we don't have to deal with the allocation/free under locks. The=20
+drawback is the array won't be used in the case of the timers.
+
+Does it make sense ?
+
+Thanks Thomas for your help, your time and your suggestions.
 
 
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
