@@ -1,92 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Thu, 21 Jan 2016 14:04:05 +0100
-Message-ID: <56A0D745.9060109@linaro.org>
-References: <alpine.DEB.2.11.1601201634520.3575@nanos>
- <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
- <1453305636-22156-6-git-send-email-daniel.lezcano@linaro.org>
- <alpine.LFD.2.20.1601201509070.2140@knanqh.ubzr>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Thu, 21 Jan 2016 14:52:31 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1601211128240.3873@nanos>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org> <20160120190718.GS6357@twins.programming.kicks-ass.net> <alpine.DEB.2.11.1601202050050.3575@nanos>
+ <56A0A9E3.2070306@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:35793 "EHLO
-	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965130AbcAUNEI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 08:04:08 -0500
-Received: by mail-wm0-f41.google.com with SMTP id r129so171318248wmr.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 05:04:08 -0800 (PST)
-In-Reply-To: <alpine.LFD.2.20.1601201509070.2140@knanqh.ubzr>
+Received: from www.linutronix.de ([62.245.132.108]:38235 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759002AbcAUNxd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 08:53:33 -0500
+In-Reply-To: <56A0A9E3.2070306@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On 01/20/2016 09:14 PM, Nicolas Pitre wrote:
-> On Wed, 20 Jan 2016, Daniel Lezcano wrote:
-> [...]
->
-> One more comment:
->
->> +		/*
->> +		 * If the mean value is null, just ignore this wakeup
->> +		 * source.
->> +		 */
->> +		mean =3D stats_mean(&w->stats);
->> +		if (!mean)
->> +			continue;
->> +
->> +		variance =3D stats_variance(&w->stats, mean);
->> +		/*
->> +		 * We want to check the last interval is:
->> +		 *
->> +		 *  mean - stddev < interval < mean + stddev
->> +		 *
->> +		 * That simplifies to:
->> +		 *
->> +		 * -stddev < interval - mean < stddev
->> +		 *
->> +		 * abs(interval - mean) < stddev
->> +		 *
->> +		 * The standard deviation is the sqrt of the variance:
->> +		 *
->> +		 * abs(interval - mean) < sqrt(variance)
->> +		 *
->> +		 * and we want to prevent to do an sqrt, so we square
->> +		 * the equation:
->> +		 *
->> +		 * (interval - mean)^2 < variance
->> +		 *
->> +		 * So if the latest value of the stats complies with
->> +		 * this condition, then the wakeup source is
->> +		 * considered predictable and can be used to predict
->> +		 * the next event.
->> +		 */
->> +		interval =3D w->stats.values[w->stats.w_ptr];
->> +		if ((u64)((interval - mean) * (interval - mean)) > variance)
->> +			continue;
->> +
->> +		/*
->> +		 * Let's compute the next event: the wakeup source is
->> +		 * considered predictable, we add the average interval
->> +		 * time added to the latest interruption event time.
->> +		 */
->> +		next =3D ktime_add_us(w->timestamp, stats_mean(&w->stats));
->
-> You don't need to call stats_mean() again as you have it in the 'mean=
-'
-> variable already.
+On Thu, 21 Jan 2016, Daniel Lezcano wrote:
+> On 01/20/2016 08:57 PM, Thomas Gleixner wrote:
+> > That and we don't want to call it for each handler which returned handled.
+> > The
+> > called code would do two samples in a row for the same interrupt in case of
+> > two shared handlers which get raised at the same time. Not very likely, but
+> > possible.
+> 
+> Actually, the handle passes dev_id in order to let the irqtimings to sort out
+> a shared interrupt and prevent double sampling. In other words, for shared
+> interrupts, statistics should be per t-uple(irq , dev_id) but that is
+> something I did not implemented ATM.
 
-Good point.
+So my comment about double sampling applies.
 
+> IMO, the handler is at the right place. The prediction code does not take care
+> of the shared interrupts yet.
+> 
+> I tried to find a platform with shared interrupts in the ones I have available
+> around me but I did not find any. Are the shared interrupts something used
+> nowadays or coming from legacy hardware ? What is the priority to handle the
+> shared interrupts in the prediction code ?
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+And why would that thing care about shared interruts at all? It's a legacy
+burden and I really don't see a reason why that new thing which is targeted on
+modern hardware should deal with them. Just treat them as a single interrupt
+for now and be done with it.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+
+	tglx
+
 
