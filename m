@@ -1,59 +1,88 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 17/17] cpufreq: dt: No need to allocate resources anymore
-Date: Wed, 20 Jan 2016 17:18:06 -0800
-Message-ID: <20160121011806.GE12841@codeaurora.org>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <df2534b4ced57791ec3ee42eb34211e132aa423a.1450777582.git.viresh.kumar@linaro.org>
- <20160112022022.GV22188@codeaurora.org>
- <20160112073426.GP1084@ubuntu>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: sched-freq locking
+Date: Thu, 21 Jan 2016 02:22:44 +0100
+Message-ID: <2058083.HonoCMD469@vostro.rjw.lan>
+References: <56984C30.8040402@linaro.org> <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com> <569EE1E1.3050407@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:55784 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbcAUBSI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 20:18:08 -0500
-Content-Disposition: inline
-In-Reply-To: <20160112073426.GP1084@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <569EE1E1.3050407@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 01/12, Viresh Kumar wrote:
-> On 11-01-16, 18:20, Stephen Boyd wrote:
-> > On 12/22, Viresh Kumar wrote:
-> > > OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
-> > > still need to check for availability of resources for deferred probing.
+On Tuesday, January 19, 2016 05:24:49 PM Steve Muckle wrote:
+> On 01/19/2016 03:40 PM, Michael Turquette wrote:
+> > Right, this was _the_ original impetus behind the design decision to
+> > muck around with struct cpufreq_policy in the hot path which goes al
+> > the way back to v1.
 > > 
-> > Why? It seems cleaner to let OPP layer return an error indicating
-> > probe defer or failure when we try to initialize it. That way we
-> > aren't duplicating the same logic in two places to figure out if
-> > a regulator or clock is ready.
+> > An alternative thought is that we can make copies of the relevant bits
+> > of struct cpufreq_policy that we do not expect too change often. These
+> > will not require any locks as they are mostly read-only data on the
+> > scheduler side of the interface. Or we could even go all in and just
+> > make local copies of the struct directly, during the GOV_START
+> > perhaps, with:
 > 
-> cpufreq driver's ->init() callback doesn't return the error value
-> properly to the probe() function, and so it was done this way in the
-> first place. The problem is in subsys framework. I tried to fix it but
-> it was rejected and we need to fix it some other way:
+> I believe this is a good first step as it avoids reworking a huge amount
+> of locking and can get us to something functionally correct. It is what
+> I had proposed earlier, copying the enabled CPUs and freq table in
+> during the governor start callback. Unless there are objections to it
+> I'll add it to the next schedfreq RFC.
 > 
-> http://marc.info/?l=linux-kernel&m=143530948918819&w=2
+> > 
+> ...
+> > 
+> > Well if we're going to try an optimize out every single false-positive
+> > wakeup then I think that the cleanest long term solution would be
+> > rework the per-policy locking around struct cpufreq_policy to use a
+> > raw spinlock.
+> 
+> It would be nice if the policy lock was a spinlock but I don't know how
+> easy that is. From a quick look at cpufreq there's a blocking notifier
+> chain that's called with rwsem held, so it looks messy. Potentially long
+> term indeed.
+> 
+> >> Also it'd be good I think to avoid building in an assumption that we'll
+> >> never want to run solely in the fast (atomic) path. Perhaps ARM won't,
+> >> and x86 may never use this, but it's reasonable to think another
+> >> platform might come along which uses cpufreq and has the capability to
+> >> kick off cpufreq transitions swiftly and without sleeping. Maybe ARM
+> >> platforms will evolve to have that capability.
+> > 
+> > The current design of the cpufreq subsystem and its interfaces have
+> > made this choice for us. sched-freq is just another consumer of
+> > cpufreq, and until cpufreq's own locking scheme is improved then we
+> > have no choice.
+> 
+> I did not word that very well - I should have said, we should avoid
+> building in an assumption that we never want to try and run in the fast
+> path.
+> 
+> AFAICS, once we've calculated that a frequency change is required we can
+> down_write_trylock(&policy->rwsem) in the fast path and go ahead with
+> the transition, if the trylock succeeds and the driver supports fast
+> path transitions. We can fall back to the slow path (waking up the
+> kthread) if that fails.
+> 
+> > This discussion is pretty useful. Should we Cc lkml to this thread?
+> 
+> Done (added linux-pm, PeterZ and Rafael as well).
 
-Yeah I don't understand why we at least can't populate the OPP
-structures and get the clocks and regulators for all the CPU
-devices before we register the dt_cpufreq_driver structure. The
-CPU devices should exist at that point, and we can wait to do
-CPUfreq transitions until the regulators/clocks for all the CPUs
-are registered. Sure we'd need to find the OPPs that are being
-shared in the cpufreq_init callback and populate the cpu
-frequency tables, etc., but that's not a big deal.
+Thanks!
 
-Making a CPU processor driver on ARM/non-ACPI systems would be to
-solve the problem of all these random things like cpuidle-arm and
-cpufreq-dt going through the list of cpu devices and hooking up
-stuff to the cpuidle, cpufreq, and thermal frameworks. That's a
-separate but related problem to probe defering the cpufreq-dt
-driver.
+One comment here (which may be a bit off in which case please ignore it).
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+You seem to be thinking that sched-freq needs to be a cpufreq governor
+and thus be handled in the same way as ondemand, for example.
+
+However, this doesn't have to be the case in principle.  For example,
+if we have a special driver callback specifically to work with sched-freq,
+it may just use that callback and bypass (almost) all of the usual
+cpufreq mechanics.  This way you may avoid worrying about the governor
+locking and related ugliness entirely.
+
+Thanks,
+Rafael
