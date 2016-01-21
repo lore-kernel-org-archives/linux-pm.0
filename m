@@ -1,73 +1,110 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in absence of enter_freeze
-Date: Thu, 21 Jan 2016 11:19:29 +0000
-Message-ID: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Thu, 21 Jan 2016 13:38:02 +0100
+Message-ID: <56A0D12A.1080007@linaro.org>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+ <20160120190718.GS6357@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.11.1601202050050.3575@nanos> <56A0A9E3.2070306@linaro.org>
+ <20160121100834.GM6356@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50364 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759379AbcAULTh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Jan 2016 06:19:37 -0500
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:34686 "EHLO
+	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965226AbcAUMiF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 07:38:05 -0500
+Received: by mail-wm0-f48.google.com with SMTP id u188so224524248wmu.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 04:38:04 -0800 (PST)
+In-Reply-To: <20160121100834.GM6356@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
-from call_cpuidle()") made find_deepest_state() return non-negative
-value and check all the states with index > 0. Also a result,
-find_deepest_state() returns 0 even when enter_freeze callbacks are not
-implemented and enter_freeze_proper is called which ends up crashing
-the kernel.
+On 01/21/2016 11:08 AM, Peter Zijlstra wrote:
+> On Thu, Jan 21, 2016 at 10:50:27AM +0100, Daniel Lezcano wrote:
+>
+>> Actually, the handle passes dev_id in order to let the irqtimings to=
+ sort
+>> out a shared interrupt and prevent double sampling. In other words, =
+for
+>> shared interrupts, statistics should be per t-uple(irq , dev_id) but=
+ that is
+>> something I did not implemented ATM.
+>>
+>> IMO, the handler is at the right place. The prediction code does not=
+ take
+>> care of the shared interrupts yet.
+>
+> That certainly added to the confusion. But if you want per dev_id sta=
+ts,
+> the whole alloc framework is 'broken' too, for it allocates the stuff
+> per irq.
 
-This patch updates the check for index > 0 in cpuidle_enter_freeze and
-cpuidle_idle_call(when idle_should_freeze is true) to restore the
-suspend-to-idle functionality in absence of enter_freeze callback.
+Yep, that's correct. I was planning to re-work it later by handling the=
+=20
+shared interrupts, assuming they were not so common, but regarding the=20
+examples below, that's wrong.
 
-Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpuidle/cpuidle.c | 2 +-
- kernel/sched/idle.c       | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+>> I tried to find a platform with shared interrupts in the ones I have
+>> available around me but I did not find any. Are the shared interrupt=
+s
+>> something used nowadays or coming from legacy hardware ? What is the
+>> priority to handle the shared interrupts in the prediction code ?
+>
+> They're less common (thankfully) than they used to be, but I still ha=
+ve
+> them:
+>
+> root@ivb-ep:~# cat /proc/interrupts | grep ","
+>    59:          0          0          0          0          0        =
+  0
+>    0          0          0          0          0          0          =
+0
+>    0          0          0          0          0          0          =
+0
+>    0          0          0          0          0          0          =
+0
+>    0          0          0          0          0          0          =
+0
+>    0          0          0          0          0          0   IO-APIC
+>    5-fasteoi   i801_smbus, i801_smbus
+>
+> root@wsm-ep:~# cat /proc/interrupts | grep ","
+>   18:          0          0          0          0          0         =
+ 0          0          0          0          0          0          0   =
+IO-APIC  18-fasteoi   ehci_hcd:usb1, uhci_hcd:usb6
+>   19:    9695230   19577242   13205011    3970578     740376    11386=
+93          0          0          0          0          0          0   =
+IO-APIC  19-fasteoi   uhci_hcd:usb5, ata_piix
+>   23:          3          0          0          0        927         =
+ 0          0          0          0          0          0          0   =
+IO-APIC  23-fasteoi   ehci_hcd:usb2, uhci_hcd:usb4
+>
+> root@snb:~# cat /proc/interrupts | grep ","
+>   19:   11058485          0          0          0          0         =
+ 0          0          0   IO-APIC  19-fasteoi   ata_piix, ata_piix
+>
+>
+> Also there's a whole host of SOCs that has them.
 
-Hi Rafael,
+Ah, I see. Thank you very much for these examples.
 
-I assume you prefer to retain find_deepest_state return non-negative
-values, so I took this approach for fixing the bug. Do you think we
-need to support enter_freeze_proper for index 0 ?
+Sounds like, I have to handle the shared interrupts sooner than what I=20
+was expecting ... :)
 
-Regards,
-Sudeep
+   -- Daniel
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 046423b0c5ca..f996efc56605 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -153,7 +153,7 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * be frozen safely.
- 	 */
- 	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
--	if (index >= 0)
-+	if (index > 0)
- 		enter_freeze_proper(drv, dev, index);
 
- 	return index;
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index de0e786b2667..544a7133cbd1 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -162,7 +162,7 @@ static void cpuidle_idle_call(void)
- 	 */
- 	if (idle_should_freeze()) {
- 		entered_state = cpuidle_enter_freeze(drv, dev);
--		if (entered_state >= 0) {
-+		if (entered_state > 0) {
- 			local_irq_enable();
- 			goto exit_idle;
- 		}
---
-1.9.1
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
