@@ -1,159 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC V2 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Thu, 21 Jan 2016 11:03:36 +0100
-Message-ID: <56A0ACF8.3050703@linaro.org>
-References: <alpine.DEB.2.11.1601201634520.3575@nanos>
- <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
- <1453305636-22156-3-git-send-email-daniel.lezcano@linaro.org>
- <alpine.LFD.2.20.1601201212170.2140@knanqh.ubzr>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Thu, 21 Jan 2016 11:08:34 +0100
+Message-ID: <20160121100834.GM6356@twins.programming.kicks-ass.net>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+ <20160120190718.GS6357@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.11.1601202050050.3575@nanos>
+ <56A0A9E3.2070306@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f49.google.com ([74.125.82.49]:34770 "EHLO
-	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758305AbcAUKDj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 05:03:39 -0500
-Received: by mail-wm0-f49.google.com with SMTP id u188so219176316wmu.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 02:03:38 -0800 (PST)
-In-Reply-To: <alpine.LFD.2.20.1601201212170.2140@knanqh.ubzr>
+Received: from bombadil.infradead.org ([198.137.202.9]:50383 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756718AbcAUKIi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 05:08:38 -0500
+Content-Disposition: inline
+In-Reply-To: <56A0A9E3.2070306@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+
+On Thu, Jan 21, 2016 at 10:50:27AM +0100, Daniel Lezcano wrote:
+
+> Actually, the handle passes dev_id in order to let the irqtimings to sort
+> out a shared interrupt and prevent double sampling. In other words, for
+> shared interrupts, statistics should be per t-uple(irq , dev_id) but that is
+> something I did not implemented ATM.
+> 
+> IMO, the handler is at the right place. The prediction code does not take
+> care of the shared interrupts yet.
+
+That certainly added to the confusion. But if you want per dev_id stats,
+the whole alloc framework is 'broken' too, for it allocates the stuff
+per irq.
+
+> I tried to find a platform with shared interrupts in the ones I have
+> available around me but I did not find any. Are the shared interrupts
+> something used nowadays or coming from legacy hardware ? What is the
+> priority to handle the shared interrupts in the prediction code ?
+
+They're less common (thankfully) than they used to be, but I still have
+them:
+
+root@ivb-ep:~# cat /proc/interrupts | grep ","
+  59:          0          0          0          0          0          0
+  0          0          0          0          0          0          0
+  0          0          0          0          0          0          0
+  0          0          0          0          0          0          0
+  0          0          0          0          0          0          0
+  0          0          0          0          0          0   IO-APIC
+  5-fasteoi   i801_smbus, i801_smbus
+
+root@wsm-ep:~# cat /proc/interrupts | grep ","
+ 18:          0          0          0          0          0          0          0          0          0          0          0          0   IO-APIC  18-fasteoi   ehci_hcd:usb1, uhci_hcd:usb6
+ 19:    9695230   19577242   13205011    3970578     740376    1138693          0          0          0          0          0          0   IO-APIC  19-fasteoi   uhci_hcd:usb5, ata_piix
+ 23:          3          0          0          0        927          0          0          0          0          0          0          0   IO-APIC  23-fasteoi   ehci_hcd:usb2, uhci_hcd:usb4
+
+root@snb:~# cat /proc/interrupts | grep ","
+ 19:   11058485          0          0          0          0          0          0          0   IO-APIC  19-fasteoi   ata_piix, ata_piix
 
 
-Hi Nico,
-
-
-On 01/20/2016 06:46 PM, Nicolas Pitre wrote:
-> On Wed, 20 Jan 2016, Daniel Lezcano wrote:
->
->> Many IRQs are quiet most of the time, or they tend to come in bursts=
- of
->> fairly equal time intervals within each burst. It is therefore possi=
-ble
->> to detect those IRQs with stable intervals and guestimate when the n=
-ext
->> IRQ event is most likely to happen.
->>
->> Examples of such IRQs may include audio related IRQs where the FIFO =
-size
->> and/or DMA descriptor size with the sample rate create stable interv=
-als,
->> block devices during large data transfers, etc.  Even network stream=
-ing
->> of multimedia content creates patterns of periodic network interface=
- IRQs
->> in some cases.
->>
->> This patch adds code to track the mean interval and variance for eac=
-h IRQ
->> over a window of time intervals between IRQ events. Those statistics=
- can
->> be used to assist cpuidle in selecting the most appropriate sleep st=
-ate
->> by predicting the most likely time for the next interrupt.
->>
->> Because the stats are gathered in interrupt context, the core comput=
-ation
->> is as light as possible.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
-
-[ ... ]
-
->> +struct stats {
->> +	u64           sum;                     /* sum of values */
->> +	u32           values[STATS_NR_VALUES]; /* array of values */
->> +	unsigned char w_ptr;                   /* current window pointer *=
-/
->
-> Why did you change this from an unsigned int?
->
-> This won't provide any memory space saving given that the structure h=
-as
-> to be padded up to the next 64-bit boundary.
-
-Ok, I will change it back to unsigned int.
-
-[ ... ]
-
->> +	for (i =3D 0; i < STATS_NR_VALUES; i++) {
->> +		s64 diff =3D s->values[i] - mean;
->> +		variance +=3D (u64)diff * diff;
->> +	}
->
-> This is completely wrong.  Even more wrong than it used to be.  I mus=
-t
-> have expressed myself badly about this last time.
->
-> To avoid any confusion, here's what the code should be:
->
-> 	int i;
-> 	u64 variance =3D 0;
->
-> 	for (i =3D 0; i < STATS_NR_VALUES; i++) {
-> 		s32 diff =3D s->values[i] - mean;
-> 		variance +=3D (s64)diff * diff;
-> 	}
->
-> 	[...]
-
-Aah, ok :)
-
-[ ... ]
-
->> +	if (diff > (1 << 20)) {
->
-> You could use the USEC_PER_SEC constant here. It is already widely us=
-ed
-> and would make the code even more obvious.
-
-Indeed.
-
-[ ... ]
-
->> +		/*
->> +		 * There is no point attempting predictions on interrupts more
->> +		 * than 1 second apart. This has no benefit for sleep state
->> +		 * selection and increases the risk of overflowing our variance
->> +		 * computation. Reset all stats in that case.
->> +		 */
->
-> This comment is wrong.  It is relevant in sched_irq_timing_handler() =
-but
-> not here.  Instead this should be something like:
->
-> 		/*
-> 		 * This interrupt last triggered more than a second ago.
-> 		 * It is definitely not predictable for our purpose anymore.
-> 		 */
-
-Ok.
-
-[ ... ]
-
->> +		interval =3D w->stats.values[w->stats.w_ptr];
->> +		if ((u64)((interval - mean) * (interval - mean)) > variance)
->
-> s/u64/s64/ please.
-
-Noted.
-
-Thanks Nico for the review.
-
-
-   -- Daniel
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Also there's a whole host of SOCs that has them.
