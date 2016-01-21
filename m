@@ -1,84 +1,59 @@
-From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Subject: RE: [PATCH v6 0/2] power: act8945a: add charger driver for the
- sub-device of ACT8945A MFD
-Date: Thu, 21 Jan 2016 01:10:59 +0000
-Message-ID: <B256D81BAE5131468A838E5D7A243641D63F6ADA@penmbx01>
-References: <1453274383-24835-1-git-send-email-wenyou.yang@atmel.com>
- <20160120113229.GB29000@x1>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 17/17] cpufreq: dt: No need to allocate resources anymore
+Date: Wed, 20 Jan 2016 17:18:06 -0800
+Message-ID: <20160121011806.GE12841@codeaurora.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <df2534b4ced57791ec3ee42eb34211e132aa423a.1450777582.git.viresh.kumar@linaro.org>
+ <20160112022022.GV22188@codeaurora.org>
+ <20160112073426.GP1084@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.246]:19777 "EHLO
-	DVREDG02.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751285AbcAUBLF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 20:11:05 -0500
-In-Reply-To: <20160120113229.GB29000@x1>
-Content-Language: en-US
+Received: from smtp.codeaurora.org ([198.145.29.96]:55784 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbcAUBSI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 20:18:08 -0500
+Content-Disposition: inline
+In-Reply-To: <20160112073426.GP1084@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Javier Martinez Canillas <javier@dowhile0.org>, Peter Korsgaard <jacmet@gmail.com>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGVlIEpvbmVzIFttYWls
-dG86bGVlLmpvbmVzQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIwMTblubQx5pyIMjDml6UgMTk6MzIN
-Cj4gVG86IFlhbmcsIFdlbnlvdSA8V2VueW91LllhbmdAYXRtZWwuY29tPg0KPiBDYzogU2ViYXN0
-aWFuIFJlaWNoZWwgPHNyZUBrZXJuZWwub3JnPjsgRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3YNCj4g
-PGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlIDxkd213MkBpbmZyYWRlYWQu
-b3JnPjsgUm9iDQo+IEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IFBhd2VsIE1vbGwgPHBh
-d2VsLm1vbGxAYXJtLmNvbT47IE1hcmsNCj4gUnV0bGFuZCA8bWFyay5ydXRsYW5kQGFybS5jb20+
-OyBJYW4gQ2FtcGJlbGwgPGlqYytkZXZpY2V0cmVlQGhlbGxpb24ub3JnLnVrPjsNCj4gS3VtYXIg
-R2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBLcnp5c3p0b2YgS296bG93c2tpDQo+IDxrLmtv
-emxvd3NraUBzYW1zdW5nLmNvbT47IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVyQGRv
-d2hpbGUwLm9yZz47DQo+IFBldGVyIEtvcnNnYWFyZCA8amFjbWV0QGdtYWlsLmNvbT47IEZlcnJl
-LCBOaWNvbGFzDQo+IDxOaWNvbGFzLkZFUlJFQGF0bWVsLmNvbT47IGxpbnV4LWFybS1rZXJuZWxA
-bGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY2IDAvMl0gcG93
-ZXI6IGFjdDg5NDVhOiBhZGQgY2hhcmdlciBkcml2ZXIgZm9yIHRoZSBzdWItDQo+IGRldmljZSBv
-ZiBBQ1Q4OTQ1QSBNRkQNCj4gDQo+IEl0IHJlYWxseSBpcyB1bmFjY2VwdGFibGUgdG8gYmUgc2Vu
-ZGluZyBvdXQgc28gbWFueSB2ZXJzaW9ucyBhdCBzdWNoIHNob3J0DQo+IGludGVydmFscywgZXNz
-ZW50aWFsbHkgc3BhbW1pbmcgdGhlIGxpc3QuICBUaGlzIGluZnJhY3Rpb24gaXMgd29yc2VuZWQg
-YnkgdGhlDQo+IGFtb3VudCBvZiBwZW9wbGUgeW91IGhhdmUgb24gQ0MsIG1vc3Qgb2YgdGhlbSBm
-b3Igbm8gcmVhc29uLiAgVGhpcyBzZXQgc2hvdWxkbid0DQo+IGhpdCBteSBpbmJveCBhdCBhbGws
-IGxldCBhbG9uZSA0IHRpbWVzIGluIG9uZSBkYXkhDQoNClNvcnJ5IQ0KDQpOZXh0IHRpbWUgSSB3
-aWxsIGJlIGNhcmVmdWwuDQoNCj4gDQo+ID4gVGhlIEFDVDg5NDVBIGlzIGEgTXVsdGkgRnVuY3Rp
-b24gRGV2aWNlIHdpdGggdGhlIGZvbGxvd2luZyBzdWJkZXZpY2VzOg0KPiA+ICAtIFJlZ3VsYXRv
-cg0KPiA+ICAtIENoYXJnZXINCj4gPg0KPiA+IFRoaXMgcGF0Y2ggc2V0IGlzIHRvIGFkZCByZWd1
-bGF0b3IgZHJpdmVyIGZvciBBQ1Q4OTQ1QS4NCj4gPiBJdCBpcyBiYXNlZCBvbiB0aGUgcGF0Y2gg
-c2V0Og0KPiA+DQo+ID4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWlsL2xpbnV4
-LWFybS1rZXJuZWwvMjAxNi1KYW51YXJ5LzQwMA0KPiA+IDUzNC5odG1sDQo+ID4NCj4gPiBDaGFu
-Z2VzIGluIHY2Og0KPiA+ICAtIGNoYW5nZSB0aGUgdHlwZSB2YWx1ZSB0byB1bnNpZ25lZCBpbnQu
-DQo+ID4NCj4gPiBDaGFuZ2VzIGluIHY1Og0KPiA+ICAtIHJlbW92ZSBzcGFyZSBzcGFjZXMgYWZ0
-ZXIgI2RlZmluZS4NCj4gPiAgLSBhZGQgT0YgbWF0Y2ggdGFibGUuDQo+ID4gIC0gY29sbGVjdCBS
-ZXZpZXdlZC1ieSBmcm9tIEtyenlzenRvZi4NCj4gPg0KPiA+IENoYW5nZXMgaW4gdjQ6DQo+ID4g
-IC0gdXNlIHNwYWNlcyBhZnRlciAjZGVmaW5lLCBub3QgdGFicy4NCj4gPiAgLSB1c2UgQklUKG4p
-IG1hY3JvcyB0byBzdWJzdGl0dXRlICgweDAxIDw8IHgpLg0KPiA+ICAtIGNoYW5nZSBkdCBwcm9w
-ZXJ0aWVzIHdpdGggbW9yZSBsZWdpYmxlIG5hbWUuDQo+ID4gIC0gY2hhbmdlIHRoZSBwcm9wZXJ0
-aWVzIHdpdGggbW9yZSBsZWdpYmxlIG5hbWUsIGNsZWFyZXIgZGVzY3JpcHRpb24uDQo+ID4NCj4g
-PiBDaGFuZ2VzIGluIHYzOg0KPiA+ICAtIHVwZGF0ZSB0aGUgZmlsZSBoZWFkZXIgd2l0aCBzaG9y
-dCB2ZXJzaW9uIGxpY2Vuc2UgYW5kIGF1dGhvciBsaW5lLg0KPiA+ICAtIHJlbW92ZSB1bnVzZWQg
-bWVtYmVyIG9mIHN0cnVjdCBhY3Q4OTQ1YV9jaGFyZ2VyLCBkZXYuDQo+ID4gIC0gYWN0aW9uIGR1
-ZSB0byByZW1vdmluZyB0aGUgbWVtYmVyIG9mIHN0dWN0IGFjdDg5NDVhX2RldiwgZGV2Lg0KPiA+
-ICAtIHJlbW92ZSB0aGUgdW5uZWNlc3NhcnkgcHJpbnQgb3V0Lg0KPiA+ICAtIHJlbW92ZSB0aGUg
-dW5uZWNlc3NhcnkgYWN0ODk0NWFfY2hhcmdlcl9yZW1vdmUoKS4NCj4gPiAgLSBmaXggYWxpZ24g
-b2YgdGhlIGNvZGUtc3R5bGUuDQo+ID4NCj4gPiBDaGFuZ2VzIGluIHYyOg0KPiA+ICAxLi8gU3Vi
-c3RpdHV0ZSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2woKSBmb3Igb2ZfZ2V0X3Byb3BlcnR5KCkuDQo+
-ID4gIDIuLyBTdWJzdGl0dXRlIGRldm1fcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKCkgZm9yIHBvd2Vy
-X3N1cHBseV9yZWdpc3RlcigpLg0KPiA+ICAzLi8gVXNlIG1vZHVsZV9wbGF0Zm9ybV9kcml2ZXIo
-KSwgaW5zdGVhZCBvZiBzdWJzeXNfaW5pdGNhbGwoKS4NCj4gPiAgNC4vIFN1YnN0aXR1dGUgTU9E
-VUxFX0xJQ0VOU0UoIkdQTCIpIGZvciBNT0RVTEVfTElDRU5TRSgiR1BMIHYyIikuDQo+ID4NCj4g
-PiBXZW55b3UgWWFuZyAoMik6DQo+ID4gICBwb3dlcjogYWN0ODk0NWE6IGFkZCBjaGFyZ2VyIGRy
-aXZlciBmb3IgQUNUODk0NUENCj4gPiAgIHBvd2VyOiBhZGQgZG9jdW1lbnRhdGlvbiBmb3IgQUNU
-ODk0NUEncyBjaGFyZ2VyIERUIGJpbmRpbmdzDQo+ID4NCj4gPiAgLi4uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvcG93ZXIvYWN0ODk0NWEtY2hhcmdlci50eHQgfCAgIDMzICsrDQo+ID4gIGRyaXZlcnMv
-cG93ZXIvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgNyArDQo+ID4g
-IGRyaXZlcnMvcG93ZXIvTWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAg
-MSArDQo+ID4gIGRyaXZlcnMvcG93ZXIvYWN0ODk0NWFfY2hhcmdlci5jICAgICAgICAgICAgICAg
-ICAgIHwgIDM3NSArKysrKysrKysrKysrKysrKysrKw0KPiA+ICA0IGZpbGVzIGNoYW5nZWQsIDQx
-NiBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IERvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1YS1jaGFyZ2VyLnR4dA0KPiA+ICBj
-cmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9hY3Q4OTQ1YV9jaGFyZ2VyLmMNCj4gPg0K
-PiANCj4gLS0NCj4gTGVlIEpvbmVzDQo+IExpbmFybyBTVE1pY3JvZWxlY3Ryb25pY3MgTGFuZGlu
-ZyBUZWFtIExlYWQgTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2UNCj4gc29mdHdhcmUgZm9yIEFS
-TSBTb0NzIEZvbGxvdyBMaW5hcm86IEZhY2Vib29rIHwgVHdpdHRlciB8IEJsb2cNCg0KDQpCZXN0
-IFJlZ2FyZHMsDQpXZW55b3UgWWFuZw0K
+On 01/12, Viresh Kumar wrote:
+> On 11-01-16, 18:20, Stephen Boyd wrote:
+> > On 12/22, Viresh Kumar wrote:
+> > > OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
+> > > still need to check for availability of resources for deferred probing.
+> > 
+> > Why? It seems cleaner to let OPP layer return an error indicating
+> > probe defer or failure when we try to initialize it. That way we
+> > aren't duplicating the same logic in two places to figure out if
+> > a regulator or clock is ready.
+> 
+> cpufreq driver's ->init() callback doesn't return the error value
+> properly to the probe() function, and so it was done this way in the
+> first place. The problem is in subsys framework. I tried to fix it but
+> it was rejected and we need to fix it some other way:
+> 
+> http://marc.info/?l=linux-kernel&m=143530948918819&w=2
+
+Yeah I don't understand why we at least can't populate the OPP
+structures and get the clocks and regulators for all the CPU
+devices before we register the dt_cpufreq_driver structure. The
+CPU devices should exist at that point, and we can wait to do
+CPUfreq transitions until the regulators/clocks for all the CPUs
+are registered. Sure we'd need to find the OPPs that are being
+shared in the cpufreq_init callback and populate the cpu
+frequency tables, etc., but that's not a big deal.
+
+Making a CPU processor driver on ARM/non-ACPI systems would be to
+solve the problem of all these random things like cpuidle-arm and
+cpufreq-dt going through the list of cpu devices and hooking up
+stuff to the cpuidle, cpufreq, and thermal frameworks. That's a
+separate but related problem to probe defering the cpufreq-dt
+driver.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
