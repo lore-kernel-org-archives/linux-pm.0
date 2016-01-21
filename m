@@ -1,74 +1,84 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 04/17] PM / OPP: Introduce
- dev_pm_opp_get_max_volt_latency()
-Date: Wed, 20 Jan 2016 16:20:32 -0800
-Message-ID: <20160121002032.GD12841@codeaurora.org>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <08691b482198b0709fd258d310a5e6ecda2f1a18.1450777582.git.viresh.kumar@linaro.org>
- <20160112012512.GJ22188@codeaurora.org>
- <20160112051058.GJ1084@ubuntu>
- <20160112194537.GZ22188@codeaurora.org>
- <20160113053447.GB6050@ubuntu>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH v6 0/2] power: act8945a: add charger driver for the
+ sub-device of ACT8945A MFD
+Date: Thu, 21 Jan 2016 01:10:59 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641D63F6ADA@penmbx01>
+References: <1453274383-24835-1-git-send-email-wenyou.yang@atmel.com>
+ <20160120113229.GB29000@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:52692 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750781AbcAUAUe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 19:20:34 -0500
-Content-Disposition: inline
-In-Reply-To: <20160113053447.GB6050@ubuntu>
+Received: from nasmtp01.atmel.com ([192.199.1.246]:19777 "EHLO
+	DVREDG02.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751285AbcAUBLF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 20:11:05 -0500
+In-Reply-To: <20160120113229.GB29000@x1>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Javier Martinez Canillas <javier@dowhile0.org>, Peter Korsgaard <jacmet@gmail.com>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 01/13, Viresh Kumar wrote:
-> On 12-01-16, 11:45, Stephen Boyd wrote:
-> > > +	/*
-> > > +	 * Hold our list modification lock here as regulator_set_voltage_time()
-> > > +	 * can possibly take another mutex, which isn't allowed within rcu
-> > > +	 * locks.
-> > > +	 */
-> > > +	mutex_lock(&dev_opp_list_lock);
-> > 
-> > So now we take the list modification mutex. Why can't we
-> > rcu_read_lock(), find the min and max voltage, and then release
-> > the read lock and ask regulator framework for the voltage time?
-> 
-> That was possible before this series came in..
-> 
-> > From what I can tell we're just trying to make sure that the list
-> > is stable when iterating through it to find the min/max voltage.
-> 
-> Hmm, we have pointer to regulator within the dev-opp struct. If we
-> drop the lock, the dev-opp struct can get freed and regulator will be
-> put just before that. So, we may be using an already freed resource.
-> 
-> How do you suggest we fix it ?
-> 
-
-Ok, first off, I don't understand why the regulator and clock
-pointers are in the struct device_opp instead of the struct
-device_list_opp. I thought we wanted to make it possible for two
-devices to share the same OPP table (device_opp), but have
-physically different clocks and regulators (non opp-shared case)?
-If we put the clock and regulator handles in the device_opp then
-the opp table is limited to one device or a set of devices that
-all share the same clock and regulators.
-
-BTW, these structure names confuse me all the time. I have to
-rename dev_pm_opp to opp_entry, device_opp to opp_table, and
-device_list_opp to opp_device_list in my head for anything to
-make sense.
-
-Gripes aside, the clock and regulator pointers should never be
-'put' and go away until the device driver that's using the
-dev_pm_opp_set_rate() API has called dev_pm_opp_remove(). So any
-concerns about that happening during an OPP switch aren't the
-concern of the OPP framework, but the concern of the consumer
-drivers having the proper locking and tear down sequences.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGVlIEpvbmVzIFttYWls
+dG86bGVlLmpvbmVzQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIwMTblubQx5pyIMjDml6UgMTk6MzIN
+Cj4gVG86IFlhbmcsIFdlbnlvdSA8V2VueW91LllhbmdAYXRtZWwuY29tPg0KPiBDYzogU2ViYXN0
+aWFuIFJlaWNoZWwgPHNyZUBrZXJuZWwub3JnPjsgRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3YNCj4g
+PGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlIDxkd213MkBpbmZyYWRlYWQu
+b3JnPjsgUm9iDQo+IEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IFBhd2VsIE1vbGwgPHBh
+d2VsLm1vbGxAYXJtLmNvbT47IE1hcmsNCj4gUnV0bGFuZCA8bWFyay5ydXRsYW5kQGFybS5jb20+
+OyBJYW4gQ2FtcGJlbGwgPGlqYytkZXZpY2V0cmVlQGhlbGxpb24ub3JnLnVrPjsNCj4gS3VtYXIg
+R2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBLcnp5c3p0b2YgS296bG93c2tpDQo+IDxrLmtv
+emxvd3NraUBzYW1zdW5nLmNvbT47IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVyQGRv
+d2hpbGUwLm9yZz47DQo+IFBldGVyIEtvcnNnYWFyZCA8amFjbWV0QGdtYWlsLmNvbT47IEZlcnJl
+LCBOaWNvbGFzDQo+IDxOaWNvbGFzLkZFUlJFQGF0bWVsLmNvbT47IGxpbnV4LWFybS1rZXJuZWxA
+bGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY2IDAvMl0gcG93
+ZXI6IGFjdDg5NDVhOiBhZGQgY2hhcmdlciBkcml2ZXIgZm9yIHRoZSBzdWItDQo+IGRldmljZSBv
+ZiBBQ1Q4OTQ1QSBNRkQNCj4gDQo+IEl0IHJlYWxseSBpcyB1bmFjY2VwdGFibGUgdG8gYmUgc2Vu
+ZGluZyBvdXQgc28gbWFueSB2ZXJzaW9ucyBhdCBzdWNoIHNob3J0DQo+IGludGVydmFscywgZXNz
+ZW50aWFsbHkgc3BhbW1pbmcgdGhlIGxpc3QuICBUaGlzIGluZnJhY3Rpb24gaXMgd29yc2VuZWQg
+YnkgdGhlDQo+IGFtb3VudCBvZiBwZW9wbGUgeW91IGhhdmUgb24gQ0MsIG1vc3Qgb2YgdGhlbSBm
+b3Igbm8gcmVhc29uLiAgVGhpcyBzZXQgc2hvdWxkbid0DQo+IGhpdCBteSBpbmJveCBhdCBhbGws
+IGxldCBhbG9uZSA0IHRpbWVzIGluIG9uZSBkYXkhDQoNClNvcnJ5IQ0KDQpOZXh0IHRpbWUgSSB3
+aWxsIGJlIGNhcmVmdWwuDQoNCj4gDQo+ID4gVGhlIEFDVDg5NDVBIGlzIGEgTXVsdGkgRnVuY3Rp
+b24gRGV2aWNlIHdpdGggdGhlIGZvbGxvd2luZyBzdWJkZXZpY2VzOg0KPiA+ICAtIFJlZ3VsYXRv
+cg0KPiA+ICAtIENoYXJnZXINCj4gPg0KPiA+IFRoaXMgcGF0Y2ggc2V0IGlzIHRvIGFkZCByZWd1
+bGF0b3IgZHJpdmVyIGZvciBBQ1Q4OTQ1QS4NCj4gPiBJdCBpcyBiYXNlZCBvbiB0aGUgcGF0Y2gg
+c2V0Og0KPiA+DQo+ID4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWlsL2xpbnV4
+LWFybS1rZXJuZWwvMjAxNi1KYW51YXJ5LzQwMA0KPiA+IDUzNC5odG1sDQo+ID4NCj4gPiBDaGFu
+Z2VzIGluIHY2Og0KPiA+ICAtIGNoYW5nZSB0aGUgdHlwZSB2YWx1ZSB0byB1bnNpZ25lZCBpbnQu
+DQo+ID4NCj4gPiBDaGFuZ2VzIGluIHY1Og0KPiA+ICAtIHJlbW92ZSBzcGFyZSBzcGFjZXMgYWZ0
+ZXIgI2RlZmluZS4NCj4gPiAgLSBhZGQgT0YgbWF0Y2ggdGFibGUuDQo+ID4gIC0gY29sbGVjdCBS
+ZXZpZXdlZC1ieSBmcm9tIEtyenlzenRvZi4NCj4gPg0KPiA+IENoYW5nZXMgaW4gdjQ6DQo+ID4g
+IC0gdXNlIHNwYWNlcyBhZnRlciAjZGVmaW5lLCBub3QgdGFicy4NCj4gPiAgLSB1c2UgQklUKG4p
+IG1hY3JvcyB0byBzdWJzdGl0dXRlICgweDAxIDw8IHgpLg0KPiA+ICAtIGNoYW5nZSBkdCBwcm9w
+ZXJ0aWVzIHdpdGggbW9yZSBsZWdpYmxlIG5hbWUuDQo+ID4gIC0gY2hhbmdlIHRoZSBwcm9wZXJ0
+aWVzIHdpdGggbW9yZSBsZWdpYmxlIG5hbWUsIGNsZWFyZXIgZGVzY3JpcHRpb24uDQo+ID4NCj4g
+PiBDaGFuZ2VzIGluIHYzOg0KPiA+ICAtIHVwZGF0ZSB0aGUgZmlsZSBoZWFkZXIgd2l0aCBzaG9y
+dCB2ZXJzaW9uIGxpY2Vuc2UgYW5kIGF1dGhvciBsaW5lLg0KPiA+ICAtIHJlbW92ZSB1bnVzZWQg
+bWVtYmVyIG9mIHN0cnVjdCBhY3Q4OTQ1YV9jaGFyZ2VyLCBkZXYuDQo+ID4gIC0gYWN0aW9uIGR1
+ZSB0byByZW1vdmluZyB0aGUgbWVtYmVyIG9mIHN0dWN0IGFjdDg5NDVhX2RldiwgZGV2Lg0KPiA+
+ICAtIHJlbW92ZSB0aGUgdW5uZWNlc3NhcnkgcHJpbnQgb3V0Lg0KPiA+ICAtIHJlbW92ZSB0aGUg
+dW5uZWNlc3NhcnkgYWN0ODk0NWFfY2hhcmdlcl9yZW1vdmUoKS4NCj4gPiAgLSBmaXggYWxpZ24g
+b2YgdGhlIGNvZGUtc3R5bGUuDQo+ID4NCj4gPiBDaGFuZ2VzIGluIHYyOg0KPiA+ICAxLi8gU3Vi
+c3RpdHV0ZSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2woKSBmb3Igb2ZfZ2V0X3Byb3BlcnR5KCkuDQo+
+ID4gIDIuLyBTdWJzdGl0dXRlIGRldm1fcG93ZXJfc3VwcGx5X3JlZ2lzdGVyKCkgZm9yIHBvd2Vy
+X3N1cHBseV9yZWdpc3RlcigpLg0KPiA+ICAzLi8gVXNlIG1vZHVsZV9wbGF0Zm9ybV9kcml2ZXIo
+KSwgaW5zdGVhZCBvZiBzdWJzeXNfaW5pdGNhbGwoKS4NCj4gPiAgNC4vIFN1YnN0aXR1dGUgTU9E
+VUxFX0xJQ0VOU0UoIkdQTCIpIGZvciBNT0RVTEVfTElDRU5TRSgiR1BMIHYyIikuDQo+ID4NCj4g
+PiBXZW55b3UgWWFuZyAoMik6DQo+ID4gICBwb3dlcjogYWN0ODk0NWE6IGFkZCBjaGFyZ2VyIGRy
+aXZlciBmb3IgQUNUODk0NUENCj4gPiAgIHBvd2VyOiBhZGQgZG9jdW1lbnRhdGlvbiBmb3IgQUNU
+ODk0NUEncyBjaGFyZ2VyIERUIGJpbmRpbmdzDQo+ID4NCj4gPiAgLi4uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvcG93ZXIvYWN0ODk0NWEtY2hhcmdlci50eHQgfCAgIDMzICsrDQo+ID4gIGRyaXZlcnMv
+cG93ZXIvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgNyArDQo+ID4g
+IGRyaXZlcnMvcG93ZXIvTWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAg
+MSArDQo+ID4gIGRyaXZlcnMvcG93ZXIvYWN0ODk0NWFfY2hhcmdlci5jICAgICAgICAgICAgICAg
+ICAgIHwgIDM3NSArKysrKysrKysrKysrKysrKysrKw0KPiA+ICA0IGZpbGVzIGNoYW5nZWQsIDQx
+NiBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IERvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1YS1jaGFyZ2VyLnR4dA0KPiA+ICBj
+cmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9hY3Q4OTQ1YV9jaGFyZ2VyLmMNCj4gPg0K
+PiANCj4gLS0NCj4gTGVlIEpvbmVzDQo+IExpbmFybyBTVE1pY3JvZWxlY3Ryb25pY3MgTGFuZGlu
+ZyBUZWFtIExlYWQgTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2UNCj4gc29mdHdhcmUgZm9yIEFS
+TSBTb0NzIEZvbGxvdyBMaW5hcm86IEZhY2Vib29rIHwgVHdpdHRlciB8IEJsb2cNCg0KDQpCZXN0
+IFJlZ2FyZHMsDQpXZW55b3UgWWFuZw0K
