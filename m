@@ -1,80 +1,73 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] PM / devfreq: tegra: Set freq in rate callback
-Date: Thu, 21 Jan 2016 11:54:11 +0100
-Message-ID: <20160121105411.GA32212@ulmo>
-References: <1453362746-9310-1-git-send-email-tomeu.vizoso@collabora.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1453362746-9310-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Tyler Baker <tyler.baker@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in absence of enter_freeze
+Date: Thu, 21 Jan 2016 11:19:29 +0000
+Message-ID: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:50364 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759379AbcAULTh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Jan 2016 06:19:37 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
+Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
+from call_cpuidle()") made find_deepest_state() return non-negative
+value and check all the states with index > 0. Also a result,
+find_deepest_state() returns 0 even when enter_freeze callbacks are not
+implemented and enter_freeze_proper is called which ends up crashing
+the kernel.
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch updates the check for index > 0 in cpuidle_enter_freeze and
+cpuidle_idle_call(when idle_should_freeze is true) to restore the
+suspend-to-idle functionality in absence of enter_freeze callback.
 
-On Thu, Jan 21, 2016 at 08:52:26AM +0100, Tomeu Vizoso wrote:
-> As per the documentation of the devfreq_dev_profile.target callback, set
-> the freq argument to the new frequency before returning.
->=20
-> This caused endless messages like this after recent changes in the core:
->=20
-> devfreq 6000c800.actmon: Couldn't update frequency transition information.
->=20
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Reported-by: Tyler Baker <tyler.baker@linaro.org>
-> ---
->  drivers/devfreq/tegra-devfreq.c | 2 ++
->  1 file changed, 2 insertions(+)
->=20
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devf=
-req.c
-> index 848b93ee930f..fe9dce0245bf 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -500,6 +500,8 @@ static int tegra_devfreq_target(struct device *dev, u=
-nsigned long *freq,
->  	clk_set_min_rate(tegra->emc_clock, rate);
->  	clk_set_rate(tegra->emc_clock, 0);
-> =20
-> +	*freq =3D rate;
-> +
->  	return 0;
->  }
-> =20
+Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpuidle/cpuidle.c | 2 +-
+ kernel/sched/idle.c       | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I had noticed it recently but hadn't got around to look into it, thanks
-for fixing it.
+Hi Rafael,
 
-Tested-by: Thierry Reding <treding@nvidia.com>
-Acked-by: Thierry Reding <treding@nvidia.com>
+I assume you prefer to retain find_deepest_state return non-negative
+values, so I took this approach for fixing the bug. Do you think we
+need to support enter_freeze_proper for index 0 ?
 
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
+Regards,
+Sudeep
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 046423b0c5ca..f996efc56605 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -153,7 +153,7 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	 * be frozen safely.
+ 	 */
+ 	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
+-	if (index >= 0)
++	if (index > 0)
+ 		enter_freeze_proper(drv, dev, index);
 
-iQIcBAABCAAGBQJWoLjQAAoJEN0jrNd/PrOh3VEQAIdcEc8HUjfJ7jxeB5tj0e8y
-u8vnimklWFNtCfG2zTYrVs658UKJph9nwllI9LoUMp5bNusuNAKP+ELfzqQchKzJ
-I5VNoyowmU5U0Ogw3ifpw++4XKNt2pMGXOhXU/XNgbWTm0t3ryFb7/MRj78KwoBg
-fpKEllR6c8g05asdTeIuQq7zJPXxlYTGngjl/Ure3ybOpebkly8HmFSn0eOzwUWr
-rSYWu76peA46LoYSoqsZMhlVQMcl7WkDHieZdePIHoswSF2bXbyAOD6Ix6GFmpLf
-KOavWm0p972z+8WkwB/KrCbpqo4OTzV5IIzbFobPHsFKsDalWyUHz4Q8e2gcZQd7
-S68m2x3dfM+PrSvjkwIWpJJe32Sauk+P0AVk+OsInWJXZRvgc5lrtCTfc7aW1H3P
-R90f88RUCNwUDhs5KH2OouEUTqDbW8NM8JKA5xFBFrYpV5j90aJqskHQ4/vD20W1
-sGfhri1oYc8nfESl8FkZ/mdC9rKEszQu9ez7TUK9gZH0MUswRzmV58mAnV7G8Bot
-alHox2YhQ3L5hgjodxv01eA1OLmqcR3wJOkPWewcaOVqr/EQxEkXR1iviufSAAgf
-08kr63+JB+qTB9lj7Z/HAFNyNdgHVLem10HSwKhTFtsgOyLpTxkN97UJqmARpGjD
-F88cTQ5t8hmGwvqkxRN2
-=SDMw
------END PGP SIGNATURE-----
+ 	return index;
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index de0e786b2667..544a7133cbd1 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -162,7 +162,7 @@ static void cpuidle_idle_call(void)
+ 	 */
+ 	if (idle_should_freeze()) {
+ 		entered_state = cpuidle_enter_freeze(drv, dev);
+-		if (entered_state >= 0) {
++		if (entered_state > 0) {
+ 			local_irq_enable();
+ 			goto exit_idle;
+ 		}
+--
+1.9.1
 
---AhhlLboLdkugWU4S--
