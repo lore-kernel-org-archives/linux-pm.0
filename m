@@ -1,110 +1,48 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Thu, 21 Jan 2016 13:38:02 +0100
-Message-ID: <56A0D12A.1080007@linaro.org>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
- <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
- <20160120190718.GS6357@twins.programming.kicks-ass.net>
- <alpine.DEB.2.11.1601202050050.3575@nanos> <56A0A9E3.2070306@linaro.org>
- <20160121100834.GM6356@twins.programming.kicks-ass.net>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH V2 3/8] genirq: Add runtime power management support
+ for IRQ chips
+Date: Thu, 21 Jan 2016 13:40:58 +0100
+Message-ID: <CAPDyKFrqQO6Mh7ew5YTW011a11LmFW7c+cZpAKmY8tovxjGmOw@mail.gmail.com>
+References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
+	<1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
+	<CAPDyKFqZK4HYWgXam63=eCKAWsjwCiQbT5jdmgjqid_er3Sg1g@mail.gmail.com>
+	<569E1366.8070005@nvidia.com>
+	<alpine.DEB.2.11.1601201620450.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:34686 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965226AbcAUMiF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 07:38:05 -0500
-Received: by mail-wm0-f48.google.com with SMTP id u188so224524248wmu.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Jan 2016 04:38:04 -0800 (PST)
-In-Reply-To: <20160121100834.GM6356@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <alpine.DEB.2.11.1601201620450.3575@nanos>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Jiang Liu <jiang.liu-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On 01/21/2016 11:08 AM, Peter Zijlstra wrote:
-> On Thu, Jan 21, 2016 at 10:50:27AM +0100, Daniel Lezcano wrote:
+[...]
+
+>> > I don't think using __free_irq() is the correct place to decrease the
+>> > runtime PM usage count. It will keep the irqchip runtime resumed even
+>> > if there are no irqs enabled for it.
+>> >
+>> > Instead I would rather allow the irqchip to be runtime suspended, when
+>> > there are no irqs enabled on it.
 >
->> Actually, the handle passes dev_id in order to let the irqtimings to=
- sort
->> out a shared interrupt and prevent double sampling. In other words, =
-for
->> shared interrupts, statistics should be per t-uple(irq , dev_id) but=
- that is
->> something I did not implemented ATM.
->>
->> IMO, the handler is at the right place. The prediction code does not=
- take
->> care of the shared interrupts yet.
->
-> That certainly added to the confusion. But if you want per dev_id sta=
-ts,
-> the whole alloc framework is 'broken' too, for it allocates the stuff
-> per irq.
+> Which is a no no, as you might lose interrupts that way. We disable interrupts
+> lazy, i.e. we do not mask them. So no, you cannot do that from
+> enable/disable_irq().
 
-Yep, that's correct. I was planning to re-work it later by handling the=
-=20
-shared interrupts, assuming they were not so common, but regarding the=20
-examples below, that's wrong.
+Thanks for the input!
 
->> I tried to find a platform with shared interrupts in the ones I have
->> available around me but I did not find any. Are the shared interrupt=
-s
->> something used nowadays or coming from legacy hardware ? What is the
->> priority to handle the shared interrupts in the prediction code ?
->
-> They're less common (thankfully) than they used to be, but I still ha=
-ve
-> them:
->
-> root@ivb-ep:~# cat /proc/interrupts | grep ","
->    59:          0          0          0          0          0        =
-  0
->    0          0          0          0          0          0          =
-0
->    0          0          0          0          0          0          =
-0
->    0          0          0          0          0          0          =
-0
->    0          0          0          0          0          0          =
-0
->    0          0          0          0          0          0   IO-APIC
->    5-fasteoi   i801_smbus, i801_smbus
->
-> root@wsm-ep:~# cat /proc/interrupts | grep ","
->   18:          0          0          0          0          0         =
- 0          0          0          0          0          0          0   =
-IO-APIC  18-fasteoi   ehci_hcd:usb1, uhci_hcd:usb6
->   19:    9695230   19577242   13205011    3970578     740376    11386=
-93          0          0          0          0          0          0   =
-IO-APIC  19-fasteoi   uhci_hcd:usb5, ata_piix
->   23:          3          0          0          0        927         =
- 0          0          0          0          0          0          0   =
-IO-APIC  23-fasteoi   ehci_hcd:usb2, uhci_hcd:usb4
->
-> root@snb:~# cat /proc/interrupts | grep ","
->   19:   11058485          0          0          0          0         =
- 0          0          0   IO-APIC  19-fasteoi   ata_piix, ata_piix
->
->
-> Also there's a whole host of SOCs that has them.
+My main point around the approach suggested in $subject patch, is that
+I don't think it's *enough* fine grained.
 
-Ah, I see. Thank you very much for these examples.
+>From a runtime PM perspective, we should allow the irqchip to enter a
+low power state when there are no IRQs enabled for it.
 
-Sounds like, I have to handle the shared interrupts sooner than what I=20
-was expecting ... :)
+As enable|disable_irq() isn't the place to do runtime PM reference
+counting from, perhaps there is another option? Maybe the irqchip
+driver itself is better suited to take these decisions?
 
-   -- Daniel
+[...]
 
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Kind regards
+Uffe
