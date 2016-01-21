@@ -1,73 +1,119 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Thu, 21 Jan 2016 19:56:36 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601211936260.3886@nanos>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org> <20160120190718.GS6357@twins.programming.kicks-ass.net> <alpine.DEB.2.11.1601202050050.3575@nanos> <56A0A9E3.2070306@linaro.org>
- <alpine.DEB.2.11.1601211128240.3873@nanos> <56A0E8F1.7010409@linaro.org>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: sched-freq locking
+Date: Thu, 21 Jan 2016 11:29:30 -0800
+Message-ID: <56A1319A.80005@linaro.org>
+References: <CAKfTPtCYUWBm_=GQ-NLLZ01xJqG+83vy4uapxRLjqMx_61HSew@mail.gmail.com>
+ <569E90CF.9050503@linaro.org>
+ <CAEG3pND5kHqJhrvwVjsnCnfT-nSrV8SrUaNk2p=ZfEx0MmmB=A@mail.gmail.com>
+ <569EB225.4040707@linaro.org>
+ <CAEG3pNBgpsdX8Lk7_3nHd31_bsq2sLB_f+=4_xiFFbiAWiKsxg@mail.gmail.com>
+ <569EE1E1.3050407@linaro.org> <20160120121801.GR8573@e106622-lin>
+ <569F9EB3.60600@linaro.org> <20160120155829.GV8573@e106622-lin>
+ <569FF21C.9070502@linaro.org> <20160121094513.GW8573@e106622-lin>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56A0E8F1.7010409@linaro.org>
+In-Reply-To: <20160121094513.GW8573@e106622-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 21 Jan 2016, Daniel Lezcano wrote:
-> On 01/21/2016 02:52 PM, Thomas Gleixner wrote:
-
-> > And why would that thing care about shared interruts at all? It's a legacy
-> > burden and I really don't see a reason why that new thing which is
-> > targeted on modern hardware should deal with them. Just treat them as a
-> > single interrupt for now and be done with it.
+On 01/21/2016 01:45 AM, Juri Lelli wrote:
+>>> Mmm, can't the fact that the scheduler might think it can still request
+>>> a frequency above max be problematic?
+>>
+>> I don't think so because cpufreq is going to clamp the incoming request
+>> to be within policy->min and policy->max anyway (see
+>> __cpufreq_driver_target() near the top). So nothing's going to
+>> break/catch fire.
+>>
 > 
-> If the shared interrupts are only related to old hardware, these ones
-> shouldn't have cpuidle, hence there is no need to enable the irq timings. So
-> you are right in this case and we can keep the feature simple.
+> Right. I wasn't worried about this, but rather by the fact that the
+> scheduler might think there is enough space in a CPU (and balance tasks
+> accordingly) when that space has actually been restricted by thermal.
+> But, I also think there are ways to prevent this from happening, we just
+> need to be aware of such a problem.
+
+Ah ok. This seems to me like an issue strictly between scheduler and
+thermal.
+
+>
+...
+>>>> Currently schedfreq has to go through two stages of aggregation. The
+>>>> first is aggregating the capacity request votes from the different sched
+>>>> classes within a CPU. The second is aggregating the capacity request
+>>>> votes from the CPUs within a frequency domain. I'm looking to solve the
+>>>> locking issues with both of these stages as well as those with calling
+>>>> into cpufreq in the fast path.
+>>>>
+>>>> For the first stage, currently we assume that the rq lock is held. This
+>>>> is the case for the existing calls into schedfreq (the load balancer
+>>>> required a minor change). There are a few more hooks that need to go
+>>>> into migration paths in core.c which will be slightly more painful, but
+>>>> they are IMO doable.
+>>>>
+>>>> For the second stage I believe an internal schedfreq spinlock is
+>>>> required, for one thing to protect against competing updates within the
+>>>> same frequency domain from different CPUs, but also so that we can
+>>>> guarantee the cpufreq policy is valid, which can be done if the
+>>>> governor_start/stop callbacks take the spinlock as well.
+>>>>
+>>>
+>>> Does this need to nest within the rq lock?
+>>
+>> I think it will have to because I suspect releasing the rq lock to run
+>> the second stage, then re-acquiring it afterwards, will cause breakage
+>> in the scheduler paths from which this is all being called.
+>>
 > 
-> On a other hand, Peter sent three examples of /proc/interrupts with shared
-> interrupts. I don't know how old are the platforms and what are they, but it
-> seems the shared irq are still used.
+> Right, that's what I was thinking too. However, we need to be aware that
+> we might add some overhead caused by contention on this new spinlock.
+> 
+>> Otherwise I don't see a requirement within schedfreq for it to be nested.
+>>
+> 
+> OTOH, doesn't second stage happen on the kthread (when we need to
+> sleep)?
 
-Well, its still there on x86 but slowly on the way out. What I meant with
-legacy burden is, that the HW people finally got the idea that shared
-interrupts are a horrible concept.
+The second stage of aggregation currently happens in the fast path as well.
 
-So we are seing them go away. My laptop (not the newest thingy) doesn't have
-them anymore. Most devices use MSI now, except for the holdouts:
+The frequency transition occurs either in the fast or slow path
+depending on driver capability, throttling, and whether a request is
+currently in progress.
 
-  0:         20          0          0          0   IO-APIC-edge      timer
-  1:          1          1          5          3   IO-APIC-edge      i8042
-  8:          5          6          0          4   IO-APIC-edge      rtc0
-  9:        294       1231        118        318   IO-APIC-fasteoi   acpi
- 12:         96       1748         55         76   IO-APIC-edge      i8042
- 18:          0          0          0          0   IO-APIC  18-fasteoi   i801_smbus
- 23:         11         12          8         51   IO-APIC  23-fasteoi   ehci_hcd:usb1
+> 
+...
+>>> OTOH, all the needed aggregation could make the fast path not so fast in
+>>> the end. So, maybe having a fast and a slow path is always good?
+>>
+>> Sorry I didn't follow... What do you mean by having a fast and a slow path?
+> 
+> Sorry, I wasn't clear enough. What I was trying to say is that having
+> two different paths, one fast where we aggregate locally and fire a
+> request and a second one slower where we aggregate per frequency domain,
+> compute the new request and call cpufreq, might be always desirable;
+> even on system that could issue frequency changes without sleeping.
 
-My latest server toy still has one shared entry:
+I think this is going to result in too much overhead because you'll have
+to wake up the kthread most of the time. Any time the local CPU's
+capacity request change equates to a different required CPU frequency,
+you'll need to wake up the kthread to aggregate the CPU votes. If
+another CPU in the domain has a higher or equal frequency request (a
+common occurance) the kthread will wake to do nothing. And
+waking/context switching to/running a thread seems very costly.
 
-   18-fasteoi   ehci_hcd:usb1, ehci_hcd:usb2, i801_smbus
+The next step from that is to make a note of the current max request in
+the freq domain as MikeT suggested. This would be done during
+aggregation in the slow path and then the fast path could avoid waking
+the kthread when its capacity change request wouldn't impact the overall
+frequency. I think this will need some further complexity to work such
+as a mask of CPUs which are currently requesting the max frequency (or
+at least a bit saying there's more than one). But it might lessen the
+work in the fast path. I'd like to get the locking addressed and send
+out another RFC prior to exploring that change though. Another internal
+schedfreq lock will be required either way.
 
-which is just a complete braindamage on the hardware side. There are a
-gazillion of free interrupt lines on that beast and of course they must route
-3 devices to the same line.
-
-We really should ignore that sillyness and if people complain, make them
-complain to their HW vendor. That's the only way this crap will go away.
-
-If we just keep on supporting this completely pointless nonsense the HW folks
-will just not fix it.
-
-We've been successful in the past to 'educate' hw people by making features
-not available for mindless designs.
-
-In this case we still support the feature, but it might be suboptimal. The
-real interesting ports on that platform are MSI anyway, so I really couldn't
-care less.
-
-I have no idea how wide spread the shared nonsense is on the relevant ARM
-platforms, but you might be able to figure that out faster than me.
-
-Thanks,
-
-	tglx
+thanks,
+Steve
