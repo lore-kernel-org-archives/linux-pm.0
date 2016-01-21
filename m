@@ -1,55 +1,74 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Thu, 21 Jan 2016 00:33:28 +0100
-Message-ID: <CAJZ5v0iGUbwDSUZDEcszeDaekqaF+Eq83TCkDpaDj9q2O1s5aw@mail.gmail.com>
-References: <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
-	<20160119191734.GB6357@twins.programming.kicks-ass.net>
-	<20160119192111.GC6373@twins.programming.kicks-ass.net>
-	<10535878.57N9JsXUl5@vostro.rjw.lan>
-	<20160120170448.GO6357@twins.programming.kicks-ass.net>
-	<CAJZ5v0hB-HOLBggmih+ffZw=Rqpcdy9dMjh9AVfJKaQC-YHqxQ@mail.gmail.com>
-	<20160120223809.GZ6357@twins.programming.kicks-ass.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 04/17] PM / OPP: Introduce
+ dev_pm_opp_get_max_volt_latency()
+Date: Wed, 20 Jan 2016 16:20:32 -0800
+Message-ID: <20160121002032.GD12841@codeaurora.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <08691b482198b0709fd258d310a5e6ecda2f1a18.1450777582.git.viresh.kumar@linaro.org>
+ <20160112012512.GJ22188@codeaurora.org>
+ <20160112051058.GJ1084@ubuntu>
+ <20160112194537.GZ22188@codeaurora.org>
+ <20160113053447.GB6050@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f67.google.com ([209.85.215.67]:33497 "EHLO
-	mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbcATXda (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 18:33:30 -0500
-In-Reply-To: <20160120223809.GZ6357@twins.programming.kicks-ass.net>
+Received: from smtp.codeaurora.org ([198.145.29.96]:52692 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbcAUAUe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jan 2016 19:20:34 -0500
+Content-Disposition: inline
+In-Reply-To: <20160113053447.GB6050@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, steve.muckle@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On Wed, Jan 20, 2016 at 11:38 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, Jan 20, 2016 at 11:12:45PM +0100, Rafael J. Wysocki wrote:
->> > I would dangle _everything_ off the one driver pointer, that's much
->> > easier.
->>
->> I'm not sure how much easier it is in practice.
->>
->> Even if everything dangles out of the driver pointer, data structures
->> pointed to by those things need not be allocated all in one go by the
->> same entity.  Some of them are allocated by drivers, some of them by
->> the core, at different times.
->
-> Yes, I've noticed, some of that is really bonkers.
->
->> The ordering between those allocations
->> and populating the pointers is what matters, not how all that is laid
->> out in memory.
->
-> I'm thinking getting that ordering right is easier/more natural, if its
-> all contained in one object. But this could be subjective.
+On 01/13, Viresh Kumar wrote:
+> On 12-01-16, 11:45, Stephen Boyd wrote:
+> > > +	/*
+> > > +	 * Hold our list modification lock here as regulator_set_voltage_time()
+> > > +	 * can possibly take another mutex, which isn't allowed within rcu
+> > > +	 * locks.
+> > > +	 */
+> > > +	mutex_lock(&dev_opp_list_lock);
+> > 
+> > So now we take the list modification mutex. Why can't we
+> > rcu_read_lock(), find the min and max voltage, and then release
+> > the read lock and ask regulator framework for the voltage time?
+> 
+> That was possible before this series came in..
+> 
+> > From what I can tell we're just trying to make sure that the list
+> > is stable when iterating through it to find the min/max voltage.
+> 
+> Hmm, we have pointer to regulator within the dev-opp struct. If we
+> drop the lock, the dev-opp struct can get freed and regulator will be
+> put just before that. So, we may be using an already freed resource.
+> 
+> How do you suggest we fix it ?
+> 
 
-I'm trying to look at this from the perspective of making changes.
+Ok, first off, I don't understand why the regulator and clock
+pointers are in the struct device_opp instead of the struct
+device_list_opp. I thought we wanted to make it possible for two
+devices to share the same OPP table (device_opp), but have
+physically different clocks and regulators (non opp-shared case)?
+If we put the clock and regulator handles in the device_opp then
+the opp table is limited to one device or a set of devices that
+all share the same clock and regulators.
 
-It should be possible to change the ordering of how the data
-structures are populated and pointers set without changing the
-existing memory layout of them, which may allow us to minimize the
-amount of changes to cpufreq drivers for old hardware (and therefore
-generally difficult to test), for example.
+BTW, these structure names confuse me all the time. I have to
+rename dev_pm_opp to opp_entry, device_opp to opp_table, and
+device_list_opp to opp_device_list in my head for anything to
+make sense.
 
-Also, this way each individual change may be more limited in scope and
-therefore less error prone IMO.
+Gripes aside, the clock and regulator pointers should never be
+'put' and go away until the device driver that's using the
+dev_pm_opp_set_rate() API has called dev_pm_opp_remove(). So any
+concerns about that happening during an OPP switch aren't the
+concern of the OPP framework, but the concern of the consumer
+drivers having the proper locking and tear down sequences.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
