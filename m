@@ -1,75 +1,45 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in
- absence of enter_freeze
-Date: Fri, 22 Jan 2016 09:20:15 +0000
-Message-ID: <56A1F44F.4040305@arm.com>
-References: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
- <14264394.1r9YeUMTui@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
+Date: Fri, 22 Jan 2016 11:15:11 +0100
+Message-ID: <20160122101511.GP6357@twins.programming.kicks-ass.net>
+References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org>
+ <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org>
+ <20160120190718.GS6357@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.11.1601202050050.3575@nanos>
+ <56A0A9E3.2070306@linaro.org>
+ <alpine.DEB.2.11.1601211128240.3873@nanos>
+ <56A0E8F1.7010409@linaro.org>
+ <alpine.DEB.2.11.1601211936260.3886@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54836 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbcAVJUT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Jan 2016 04:20:19 -0500
-In-Reply-To: <14264394.1r9YeUMTui@vostro.rjw.lan>
+Received: from bombadil.infradead.org ([198.137.202.9]:56883 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbcAVKPQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2016 05:15:16 -0500
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.11.1601211936260.3886@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+
+On Thu, Jan 21, 2016 at 07:56:36PM +0100, Thomas Gleixner wrote:
+
+> We really should ignore that sillyness and if people complain, make them
+> complain to their HW vendor. That's the only way this crap will go away.
+> 
+> If we just keep on supporting this completely pointless nonsense the HW folks
+> will just not fix it.
+> 
+> We've been successful in the past to 'educate' hw people by making features
+> not available for mindless designs.
+> 
+> In this case we still support the feature, but it might be suboptimal. The
+> real interesting ports on that platform are MSI anyway, so I really couldn't
+> care less.
+
+I'm fine with not supporting shared interrupts, as long as the thing is
+consistent.
 
 
-
-On 22/01/16 01:15, Rafael J. Wysocki wrote:
-> On Thursday, January 21, 2016 11:19:29 AM Sudeep Holla wrote:
->> Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
->> from call_cpuidle()") made find_deepest_state() return non-negative
->> value and check all the states with index > 0. Also a result,
->> find_deepest_state() returns 0 even when enter_freeze callbacks are not
->> implemented and enter_freeze_proper is called which ends up crashing
->> the kernel.
->>
->> This patch updates the check for index > 0 in cpuidle_enter_freeze and
->> cpuidle_idle_call(when idle_should_freeze is true) to restore the
->> suspend-to-idle functionality in absence of enter_freeze callback.
->>
->> Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/cpuidle/cpuidle.c | 2 +-
->>   kernel/sched/idle.c       | 2 +-
->>   2 files changed, 2 insertions(+), 2 deletions(-)
->>
->> Hi Rafael,
->
-> Hi,
->
-> Sorry for the breakage.
->
-
-Sorry that I missed to test suspend-to-idle before it got merged.
-
->> I assume you prefer to retain find_deepest_state return non-negative
->> values, so I took this approach for fixing the bug. Do you think we
->> need to support enter_freeze_proper for index 0 ?
->
-> Zero is a special case on x86, so supporting enter_freeze_proper() for it
-> is not necessary.
->
-
-Even on ARM, 0 is used for WFI only, which will not be used for freeze.
-
-> If you think we can also make 0 a special case on ARM, the others should
-> not object to that either.
->
-
-Makes sense and since it's already reserved for WFI on ARM, it should be
-fine. If there are no objections, can you pick up this fix ?
-
--- 
-Regards,
-Sudeep
