@@ -1,179 +1,75 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: [PATCH 5/5] cpufreq: mt8173: Add notifier to handle OPP voltage adjustment
-Date: Fri, 22 Jan 2016 16:40:29 +0800
-Message-ID: <1453452029-20843-6-git-send-email-pi-cheng.chen@linaro.org>
-References: <1453452029-20843-1-git-send-email-pi-cheng.chen@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in
+ absence of enter_freeze
+Date: Fri, 22 Jan 2016 09:20:15 +0000
+Message-ID: <56A1F44F.4040305@arm.com>
+References: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
+ <14264394.1r9YeUMTui@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:33616 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbcAVIlH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2016 03:41:07 -0500
-Received: by mail-pf0-f172.google.com with SMTP id e65so38753950pfe.0
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jan 2016 00:41:07 -0800 (PST)
-In-Reply-To: <1453452029-20843-1-git-send-email-pi-cheng.chen@linaro.org>
+Received: from foss.arm.com ([217.140.101.70]:54836 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751987AbcAVJUT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Jan 2016 04:20:19 -0500
+In-Reply-To: <14264394.1r9YeUMTui@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
-Cc: Kevin Hilman <khilman@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-Add a notifier to receive OPP voltage adjustment event which is
-triggered by voltage change of OPP entries done by Mediatek SVS
-(Smart Voltage Scaling) engine.
 
-CC: Stephen Boyd <sboyd@codeaurora.org>
 
-Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
----
-This patch is modify from the patch which adds[1] a notifier in
-cpufreq-dt to handle OPP voltage adjust event. This patch relies on the
-on the runtime voltage adjustment mechanism of OPP introduced in the
-same patchset.
+On 22/01/16 01:15, Rafael J. Wysocki wrote:
+> On Thursday, January 21, 2016 11:19:29 AM Sudeep Holla wrote:
+>> Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
+>> from call_cpuidle()") made find_deepest_state() return non-negative
+>> value and check all the states with index > 0. Also a result,
+>> find_deepest_state() returns 0 even when enter_freeze callbacks are not
+>> implemented and enter_freeze_proper is called which ends up crashing
+>> the kernel.
+>>
+>> This patch updates the check for index > 0 in cpuidle_enter_freeze and
+>> cpuidle_idle_call(when idle_should_freeze is true) to restore the
+>> suspend-to-idle functionality in absence of enter_freeze callback.
+>>
+>> Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>   drivers/cpuidle/cpuidle.c | 2 +-
+>>   kernel/sched/idle.c       | 2 +-
+>>   2 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> Hi Rafael,
+>
+> Hi,
+>
+> Sorry for the breakage.
+>
 
-[1] https://lkml.org/lkml/2015/9/18/833
----
- drivers/cpufreq/mt8173-cpufreq.c | 55 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+Sorry that I missed to test suspend-to-idle before it got merged.
 
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-index 1ede917..248f6e8 100644
---- a/drivers/cpufreq/mt8173-cpufreq.c
-+++ b/drivers/cpufreq/mt8173-cpufreq.c
-@@ -48,8 +48,11 @@ struct mtk_cpu_dvfs_info {
- 	struct clk *cpu_clk;
- 	struct clk *inter_clk;
- 	struct thermal_cooling_device *cdev;
-+	struct mutex lock;
-+	struct notifier_block opp_nb;
- 	struct list_head list_head;
- 	int intermediate_voltage;
-+	unsigned long opp_freq;
- 	bool need_voltage_tracking;
- };
- 
-@@ -211,6 +214,33 @@ static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
- 					     vproc + VOLT_TOL);
- }
- 
-+static int mtk_cpufreq_opp_notifier(struct notifier_block *nb,
-+				    unsigned long event, void *data)
-+{
-+	struct dev_pm_opp *opp = data;
-+	struct mtk_cpu_dvfs_info *info = container_of(nb,
-+						      struct mtk_cpu_dvfs_info,
-+						      opp_nb);
-+	unsigned long freq, volt;
-+	int ret = 0;
-+
-+	if (event == OPP_EVENT_ADJUST_VOLTAGE) {
-+		freq = dev_pm_opp_get_freq(opp);
-+
-+		if (info->opp_freq == freq) {
-+			volt = dev_pm_opp_get_voltage(opp);
-+			mutex_lock(&info->lock);
-+			ret = mtk_cpufreq_set_voltage(info, volt);
-+			mutex_unlock(&info->lock);
-+			if (ret)
-+				dev_err(info->cpu_dev,
-+					"failed to scale voltage: %d\n", ret);
-+		}
-+	}
-+
-+	return notifier_from_errno(ret);
-+}
-+
- static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 				  unsigned int index)
- {
-@@ -245,6 +275,8 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	vproc = dev_pm_opp_get_voltage(opp);
- 	rcu_read_unlock();
- 
-+	mutex_lock(&info->lock);
-+
- 	/*
- 	 * If the new voltage or the intermediate voltage is higher than the
- 	 * current voltage, scale up voltage first.
-@@ -256,6 +288,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 			pr_err("cpu%d: failed to scale up voltage!\n",
- 			       policy->cpu);
- 			mtk_cpufreq_set_voltage(info, old_vproc);
-+			mutex_unlock(&info->lock);
- 			return ret;
- 		}
- 	}
-@@ -267,6 +300,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 		       policy->cpu);
- 		mtk_cpufreq_set_voltage(info, old_vproc);
- 		WARN_ON(1);
-+		mutex_unlock(&info->lock);
- 		return ret;
- 	}
- 
-@@ -277,6 +311,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 		       policy->cpu);
- 		clk_set_parent(cpu_clk, armpll);
- 		mtk_cpufreq_set_voltage(info, old_vproc);
-+		mutex_unlock(&info->lock);
- 		return ret;
- 	}
- 
-@@ -287,6 +322,7 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 		       policy->cpu);
- 		mtk_cpufreq_set_voltage(info, inter_vproc);
- 		WARN_ON(1);
-+		mutex_unlock(&info->lock);
- 		return ret;
- 	}
- 
-@@ -302,10 +338,14 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 			clk_set_parent(cpu_clk, info->inter_clk);
- 			clk_set_rate(armpll, old_freq_hz);
- 			clk_set_parent(cpu_clk, armpll);
-+			mutex_unlock(&info->lock);
- 			return ret;
- 		}
- 	}
- 
-+	info->opp_freq = freq_hz;
-+	mutex_unlock(&info->lock);
-+
- 	return 0;
- }
- 
-@@ -343,6 +383,7 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 	struct dev_pm_opp *opp;
- 	unsigned long rate;
- 	int ret;
-+	struct srcu_notifier_head *opp_srcu_head;
- 
- 	cpu_dev = get_cpu_device(cpu);
- 	if (!cpu_dev) {
-@@ -417,11 +458,25 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 	info->intermediate_voltage = dev_pm_opp_get_voltage(opp);
- 	rcu_read_unlock();
- 
-+	opp_srcu_head = dev_pm_opp_get_notifier(cpu_dev);
-+	if (IS_ERR(opp_srcu_head)) {
-+		ret = PTR_ERR(opp_srcu_head);
-+		goto out_free_opp_table;
-+	}
-+
-+	info->opp_nb.notifier_call = mtk_cpufreq_opp_notifier;
-+	ret = srcu_notifier_chain_register(opp_srcu_head, &info->opp_nb);
-+	if (ret)
-+		goto out_free_opp_table;
-+
- 	info->cpu_dev = cpu_dev;
- 	info->proc_reg = proc_reg;
- 	info->sram_reg = IS_ERR(sram_reg) ? NULL : sram_reg;
- 	info->cpu_clk = cpu_clk;
- 	info->inter_clk = inter_clk;
-+	info->opp_freq = clk_get_rate(cpu_clk);
-+
-+	mutex_init(&info->lock);
- 
- 	/*
- 	 * If SRAM regulator is present, software "voltage tracking" is needed
+>> I assume you prefer to retain find_deepest_state return non-negative
+>> values, so I took this approach for fixing the bug. Do you think we
+>> need to support enter_freeze_proper for index 0 ?
+>
+> Zero is a special case on x86, so supporting enter_freeze_proper() for it
+> is not necessary.
+>
+
+Even on ARM, 0 is used for WFI only, which will not be used for freeze.
+
+> If you think we can also make 0 a special case on ARM, the others should
+> not object to that either.
+>
+
+Makes sense and since it's already reserved for WFI on ARM, it should be
+fine. If there are no objections, can you pick up this fix ?
+
 -- 
-1.9.1
-
+Regards,
+Sudeep
