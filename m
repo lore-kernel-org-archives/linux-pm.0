@@ -1,74 +1,90 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC V2 1/2] irq: Add a framework to measure interrupt timings
-Date: Thu, 21 Jan 2016 21:27:11 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601212114480.3886@nanos>
-References: <1453305636-22156-1-git-send-email-daniel.lezcano@linaro.org> <1453305636-22156-2-git-send-email-daniel.lezcano@linaro.org> <20160120190718.GS6357@twins.programming.kicks-ass.net> <alpine.DEB.2.11.1601202050050.3575@nanos> <56A0A9E3.2070306@linaro.org>
- <20160121100834.GM6356@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in absence of enter_freeze
+Date: Fri, 22 Jan 2016 02:15:33 +0100
+Message-ID: <14264394.1r9YeUMTui@vostro.rjw.lan>
+References: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:41032 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbcAUU2O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 15:28:14 -0500
-In-Reply-To: <20160121100834.GM6356@twins.programming.kicks-ass.net>
+Received: from v094114.home.net.pl ([79.96.170.134]:64941 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751007AbcAVBOs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 20:14:48 -0500
+In-Reply-To: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Thu, 21 Jan 2016, Peter Zijlstra wrote:
-> On Thu, Jan 21, 2016 at 10:50:27AM +0100, Daniel Lezcano wrote:
+On Thursday, January 21, 2016 11:19:29 AM Sudeep Holla wrote:
+> Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
+> from call_cpuidle()") made find_deepest_state() return non-negative
+> value and check all the states with index > 0. Also a result,
+> find_deepest_state() returns 0 even when enter_freeze callbacks are not
+> implemented and enter_freeze_proper is called which ends up crashing
+> the kernel.
 > 
-> > Actually, the handle passes dev_id in order to let the irqtimings to sort
-> > out a shared interrupt and prevent double sampling. In other words, for
-> > shared interrupts, statistics should be per t-uple(irq , dev_id) but that is
-> > something I did not implemented ATM.
-> > 
-> > IMO, the handler is at the right place. The prediction code does not take
-> > care of the shared interrupts yet.
+> This patch updates the check for index > 0 in cpuidle_enter_freeze and
+> cpuidle_idle_call(when idle_should_freeze is true) to restore the
+> suspend-to-idle functionality in absence of enter_freeze callback.
 > 
-> That certainly added to the confusion. But if you want per dev_id stats,
-> the whole alloc framework is 'broken' too, for it allocates the stuff
-> per irq.
+> Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c | 2 +-
+>  kernel/sched/idle.c       | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> > I tried to find a platform with shared interrupts in the ones I have
-> > available around me but I did not find any. Are the shared interrupts
-> > something used nowadays or coming from legacy hardware ? What is the
-> > priority to handle the shared interrupts in the prediction code ?
+> Hi Rafael,
+
+Hi,
+
+Sorry for the breakage.
+
+> I assume you prefer to retain find_deepest_state return non-negative
+> values, so I took this approach for fixing the bug. Do you think we
+> need to support enter_freeze_proper for index 0 ?
+
+Zero is a special case on x86, so supporting enter_freeze_proper() for it
+is not necessary.
+
+If you think we can also make 0 a special case on ARM, the others should
+not object to that either.
+
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 046423b0c5ca..f996efc56605 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -153,7 +153,7 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  	 * be frozen safely.
+>  	 */
+>  	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
+> -	if (index >= 0)
+> +	if (index > 0)
+>  		enter_freeze_proper(drv, dev, index);
 > 
-> They're less common (thankfully) than they used to be, but I still have
-> them:
+>  	return index;
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index de0e786b2667..544a7133cbd1 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -162,7 +162,7 @@ static void cpuidle_idle_call(void)
+>  	 */
+>  	if (idle_should_freeze()) {
+>  		entered_state = cpuidle_enter_freeze(drv, dev);
+> -		if (entered_state >= 0) {
+> +		if (entered_state > 0) {
+>  			local_irq_enable();
+>  			goto exit_idle;
+>  		}
+> --
+> 1.9.1
 > 
-> root@ivb-ep:~# cat /proc/interrupts | grep ","
->   0   IO-APIC  5-fasteoi   i801_smbus, i801_smbus
-
-Hardly something which is worth to add the extra complexity.
- 
-> root@wsm-ep:~# cat /proc/interrupts | grep ","
->  18:  0   0	 IO-APIC  18-fasteoi   ehci_hcd:usb1, uhci_hcd:usb6
->  23:  3   927  IO-APIC  23-fasteoi   ehci_hcd:usb2, uhci_hcd:usb4
-
-Stick the USB thingy into the XHCI port :)
-
->  19:    9695230   19577242  .... IO-APIC  19-fasteoi   uhci_hcd:usb5, ata_piix
-> root@snb:~# cat /proc/interrupts | grep ","
->  19:   11058485   IO-APIC  19-fasteoi   ata_piix, ata_piix
-
-Go to the BIOS and enable AHCI mode. Both the snb and the wsm-ep chipsets can
-be switched between legacy piix and ahci mode :)
-
-You seem to have a faible for last century hardware.
-
-> Also there's a whole host of SOCs that has them.
-
-And one of the reasons is, that a lot of drivers do not support msi, while
-these embedded beasts support MSI on almost every peripheral, at least the
-newer ones.
 
 Thanks,
-
-	tglx
-
-
+Rafael
 
