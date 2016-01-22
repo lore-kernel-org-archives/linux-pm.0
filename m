@@ -1,71 +1,122 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v6 0/5] cpufreq: powernv: Redesign the presentation of throttle notification and solve bug-fixes in the driver
-Date: Fri, 22 Jan 2016 12:49:00 +0530
-Message-ID: <1453447145-17722-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v6 2/5] cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+Date: Fri, 22 Jan 2016 12:49:02 +0530
+Message-ID: <1453447145-17722-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1453447145-17722-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:46479 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273AbcAVHUF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2016 02:20:05 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:44305 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbcAVHUN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2016 02:20:13 -0500
 Received: from localhost
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Fri, 22 Jan 2016 17:20:02 +1000
+	Fri, 22 Jan 2016 17:20:11 +1000
+In-Reply-To: <1453447145-17722-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
-CPU when the chip crosses its thermal and power limits. Currently,
-powernv-cpufreq driver detects and reports this event as a console
-message. Some machines may not sustain the max turbo frequency in all
-conditions and can be throttled frequently. This can lead to the
-flooding of console with throttle messages. So this patchset aims to
-redesign the presentation of this event via sysfs counters and
-tracepoints. And it also fixes couple of bugs reported in the driver.
+cpu_to_chip_id() does a DT walk through to find out the chip id by
+taking a contended device tree lock. This adds an unnecessary overhead
+in a hot path. So instead of calling cpu_to_chip_id() everytime cache
+the chip ids for all cores in the array 'core_to_chip_map' and use it
+in the hotpath.
 
-- Patch [1] fixes the cpu hot-plug bug in powernv_cpufreq_work_fn().
-- Patch [2] solves a bug in powernv_cpufreq_throttle_check(), which
-  calls in to cpu_to_chip_id() in hot path which reads DT every time
-  to find the chip id.
-- Patches [3] to [5] will add a perf trace point
-  "power:powernv_throttle" and sysfs throttle counter stats in
-  /sys/devices/system/cpu/cpufreq/chipN.
-
-Changes from v5:
-- Fix kbuild error:
-drivers/cpufreq/powernv-cpufreq.c:428:2: error: implicit declaration of
-function 'get_online_cpus' [-Werror=implicit-function-declaration]
+Reported-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+No changes from v5.
 
 Changes from v4:
-- Fix a hot-plug bug in powernv_cpufreq_work_fn()
-- Changes wrt Gautham's and Shreyas's comments 
+- Taken care of Shreyas's comments to add a core_to_chip_map array to
+  store the chip id.
 
-Changes from v3:
-- Add a fix to replace cpu_to_chip_id() with simpler PIR shift to 
-  obtain the chip id.
-- Break patch2 in to two patches separating the tracepoint and sysfs
-  attribute changes.
+ drivers/cpufreq/powernv-cpufreq.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-Changes from v2:
-- Fixed kbuild test warning.
-drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
-value of 'kstrtoint', declared with attribute warn_unused_result
-[-Wunused-result]
-
-Shilpasri G Bhat (5):
-  cpufreq: powernv: Hot-plug safe the kworker thread
-  cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
-  cpufreq: powernv/tracing: Add powernv_throttle tracepoint
-  cpufreq: powernv: Replace pr_info with trace print for throttle event
-  cpufreq: powernv: Add sysfs attributes to show throttle stats
-
- drivers/cpufreq/powernv-cpufreq.c | 313 +++++++++++++++++++++++++++++++-------
- include/trace/events/power.h      |  22 +++
- kernel/trace/power-traces.c       |   1 +
- 3 files changed, 281 insertions(+), 55 deletions(-)
-
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 140c75f..6f186dc 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -43,6 +43,7 @@
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
++static unsigned int *core_to_chip_map;
+ 
+ static struct chip {
+ 	unsigned int id;
+@@ -313,13 +314,14 @@ static inline unsigned int get_nominal_index(void)
+ static void powernv_cpufreq_throttle_check(void *data)
+ {
+ 	unsigned int cpu = smp_processor_id();
++	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
+ 	unsigned long pmsr;
+ 	int pmsr_pmax, i;
+ 
+ 	pmsr = get_pmspr(SPRN_PMSR);
+ 
+ 	for (i = 0; i < nr_chips; i++)
+-		if (chips[i].id == cpu_to_chip_id(cpu))
++		if (chips[i].id == chip_id)
+ 			break;
+ 
+ 	/* Check for Pmax Capping */
+@@ -559,19 +561,29 @@ static int init_chip_info(void)
+ 	unsigned int chip[256];
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id = UINT_MAX;
++	cpumask_t cpu_mask;
++	int ret = -ENOMEM;
+ 
+-	for_each_possible_cpu(cpu) {
++	cpumask_copy(&cpu_mask, cpu_possible_mask);
++	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
++				   GFP_KERNEL);
++	if (!core_to_chip_map)
++		goto out;
++
++	for_each_cpu(cpu, &cpu_mask) {
+ 		unsigned int id = cpu_to_chip_id(cpu);
+ 
+ 		if (prev_chip_id != id) {
+ 			prev_chip_id = id;
+ 			chip[nr_chips++] = id;
+ 		}
++		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
++		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
+ 	}
+ 
+ 	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips)
+-		return -ENOMEM;
++		goto free_chip_map;
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+@@ -582,6 +594,10 @@ static int init_chip_info(void)
+ 	}
+ 
+ 	return 0;
++free_chip_map:
++	kfree(core_to_chip_map);
++out:
++	return ret;
+ }
+ 
+ static int __init powernv_cpufreq_init(void)
+@@ -615,6 +631,8 @@ static void __exit powernv_cpufreq_exit(void)
+ 	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	opal_message_notifier_unregister(OPAL_MSG_OCC,
+ 					 &powernv_cpufreq_opal_nb);
++	kfree(chips);
++	kfree(core_to_chip_map);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
 -- 
 1.9.3
 
