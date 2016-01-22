@@ -1,75 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in absence of enter_freeze
-Date: Fri, 22 Jan 2016 14:45:43 +0100
-Message-ID: <2076590.ZZHhJNCxGK@vostro.rjw.lan>
-References: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com> <14264394.1r9YeUMTui@vostro.rjw.lan> <56A1F44F.4040305@arm.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC PATCH 3/5] dt-bindings: thermal: Add optional properties of
+ Mediatek thermal controller
+Date: Fri, 22 Jan 2016 16:31:36 -0600
+Message-ID: <20160122223136.GA21819@rob-hp-laptop>
+References: <1453452029-20843-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1453452029-20843-4-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60406 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753627AbcAVNo5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jan 2016 08:44:57 -0500
-In-Reply-To: <56A1F44F.4040305@arm.com>
+Received: from mail.kernel.org ([198.145.29.136]:59275 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754534AbcAVWbl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Jan 2016 17:31:41 -0500
+Content-Disposition: inline
+In-Reply-To: <1453452029-20843-4-git-send-email-pi-cheng.chen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Kevin Hilman <khilman@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Friday, January 22, 2016 09:20:15 AM Sudeep Holla wrote:
+On Fri, Jan 22, 2016 at 04:40:27PM +0800, Pi-Cheng Chen wrote:
+> This adds optional properties of Mediatek thermal controller which are
+> required by SVS engine integrated with Mediatek thermal controller.
 > 
-> On 22/01/16 01:15, Rafael J. Wysocki wrote:
-> > On Thursday, January 21, 2016 11:19:29 AM Sudeep Holla wrote:
-> >> Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
-> >> from call_cpuidle()") made find_deepest_state() return non-negative
-> >> value and check all the states with index > 0. Also a result,
-> >> find_deepest_state() returns 0 even when enter_freeze callbacks are not
-> >> implemented and enter_freeze_proper is called which ends up crashing
-> >> the kernel.
-> >>
-> >> This patch updates the check for index > 0 in cpuidle_enter_freeze and
-> >> cpuidle_idle_call(when idle_should_freeze is true) to restore the
-> >> suspend-to-idle functionality in absence of enter_freeze callback.
-> >>
-> >> Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
-> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> >> Cc: Ingo Molnar <mingo@redhat.com>
-> >> Cc: Peter Zijlstra <peterz@infradead.org>
-> >> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> >> ---
-> >>   drivers/cpuidle/cpuidle.c | 2 +-
-> >>   kernel/sched/idle.c       | 2 +-
-> >>   2 files changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> Hi Rafael,
-> >
-> > Hi,
-> >
-> > Sorry for the breakage.
-> >
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> ---
+>  .../bindings/thermal/mediatek-thermal.txt          | 23 ++++++++++++++++------
+>  1 file changed, 17 insertions(+), 6 deletions(-)
 > 
-> Sorry that I missed to test suspend-to-idle before it got merged.
-> 
-> >> I assume you prefer to retain find_deepest_state return non-negative
-> >> values, so I took this approach for fixing the bug. Do you think we
-> >> need to support enter_freeze_proper for index 0 ?
-> >
-> > Zero is a special case on x86, so supporting enter_freeze_proper() for it
-> > is not necessary.
-> >
-> 
-> Even on ARM, 0 is used for WFI only, which will not be used for freeze.
-> 
-> > If you think we can also make 0 a special case on ARM, the others should
-> > not object to that either.
-> >
-> 
-> Makes sense and since it's already reserved for WFI on ARM, it should be
-> fine. If there are no objections, can you pick up this fix ?
+> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> index 81f9a51..acaacaa 100644
+> --- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> @@ -7,6 +7,11 @@ this device needs phandles to the AUXADC. Also it controls a mux in the
+>  apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+>  is also needed.
+>  
+> +There is another hardware engine, SVS (Smart Voltage Scaling) which shares the
+> +same block of banked registers with Mediatek thermal controller. Hence the
+> +driver of SVS is integrated with the driver of Mediatek thermal controller. The
+> +properties required by SVS engine are optional for Mediatek thermal controller.
+> +
+>  Required properties:
+>  - compatible: "mediatek,mt8173-thermal"
+>  - reg: Address range of the thermal controller
+> @@ -21,9 +26,15 @@ Required properties:
+>  - #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
+>  
+>  Optional properties:
+> -- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
+> -               unspecified default values shall be used.
+> -- nvmem-cell-names: Should be "calibration-data"
+> +- clocks, clock-names: Clocks that are optional for the thermal controller.
+> +	       Specify to enable SVS engine.
+> +	       "svs_pll": The PLL clock should be switched to during
+> +			  initialization stage of SVS engine.
+> +	       "svs_mux": The MUX clock controls the clock input of SVS engine.
+> +- nvmem-cells: A list of phandles to the calibration data provided by a nvmem
+> +	       device. If unspecified default values shall be used. The SVS
+> +	       engine will be disabled if no SVS calibration data is specified.
+> +- nvmem-cell-names: Should be "calibration-data" and "svs-calibration-data"
+>  
+>  Example:
+>  
+> @@ -33,11 +44,11 @@ Example:
+>  		reg = <0 0x1100b000 0 0x1000>;
+>  		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
+>  		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> -		clock-names = "therm", "auxadc";
+> +		clock-names = "therm", "auxadc", ;
 
-Yes, I've already done that.
+Huh?
 
-Thanks,
-Rafael
-
+>  		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+>  		reset-names = "therm";
+>  		mediatek,auxadc = <&auxadc>;
+>  		mediatek,apmixedsys = <&apmixedsys>;
+> -		nvmem-cells = <&thermal_calibration_data>;
+> -		nvmem-cell-names = "calibration-data";
+> +		nvmem-cells = <&thermal_calibration_data>, <&svs-calibration>;
+> +		nvmem-cell-names = "calibration-data", "svs-calibration-data";
+>  	};
+> -- 
+> 1.9.1
+> 
