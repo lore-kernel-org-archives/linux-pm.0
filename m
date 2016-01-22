@@ -1,89 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: fix fallback mechanism for suspend to idle in absence of enter_freeze
-Date: Fri, 22 Jan 2016 02:15:33 +0100
-Message-ID: <14264394.1r9YeUMTui@vostro.rjw.lan>
-References: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
+Subject: Re: sched-freq locking
+Date: Fri, 22 Jan 2016 02:21:50 +0100
+Message-ID: <2223980.TtBr1NiYl7@vostro.rjw.lan>
+References: <56984C30.8040402@linaro.org> <5334719.Agh48cz3NL@vostro.rjw.lan> <20160121104958.GX8573@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64941 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:62808 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751007AbcAVBOs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 20:14:48 -0500
-In-Reply-To: <1453375169-14768-1-git-send-email-sudeep.holla@arm.com>
+	with SMTP id S1751084AbcAVBVE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jan 2016 20:21:04 -0500
+In-Reply-To: <20160121104958.GX8573@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Javi Merino <Javi.Merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Thursday, January 21, 2016 11:19:29 AM Sudeep Holla wrote:
-> Commit 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback
-> from call_cpuidle()") made find_deepest_state() return non-negative
-> value and check all the states with index > 0. Also a result,
-> find_deepest_state() returns 0 even when enter_freeze callbacks are not
-> implemented and enter_freeze_proper is called which ends up crashing
-> the kernel.
-> 
-> This patch updates the check for index > 0 in cpuidle_enter_freeze and
-> cpuidle_idle_call(when idle_should_freeze is true) to restore the
-> suspend-to-idle functionality in absence of enter_freeze callback.
-> 
-> Fixes: 51164251f5c3 ("sched / idle: Drop default_idle_call() fallback from call_cpuidle()")
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpuidle/cpuidle.c | 2 +-
->  kernel/sched/idle.c       | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+On Thursday, January 21, 2016 10:49:58 AM Juri Lelli wrote:
+> [+Punit, Javi]
 > 
 > Hi Rafael,
-
-Hi,
-
-Sorry for the breakage.
-
-> I assume you prefer to retain find_deepest_state return non-negative
-> values, so I took this approach for fixing the bug. Do you think we
-> need to support enter_freeze_proper for index 0 ?
-
-Zero is a special case on x86, so supporting enter_freeze_proper() for it
-is not necessary.
-
-If you think we can also make 0 a special case on ARM, the others should
-not object to that either.
-
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 046423b0c5ca..f996efc56605 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -153,7 +153,7 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  	 * be frozen safely.
->  	 */
->  	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
-> -	if (index >= 0)
-> +	if (index > 0)
->  		enter_freeze_proper(drv, dev, index);
 > 
->  	return index;
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index de0e786b2667..544a7133cbd1 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -162,7 +162,7 @@ static void cpuidle_idle_call(void)
->  	 */
->  	if (idle_should_freeze()) {
->  		entered_state = cpuidle_enter_freeze(drv, dev);
-> -		if (entered_state >= 0) {
-> +		if (entered_state > 0) {
->  			local_irq_enable();
->  			goto exit_idle;
->  		}
-> --
-> 1.9.1
+> On 21/01/16 02:46, Rafael J. Wysocki wrote:
+> > On Wednesday, January 20, 2016 05:39:14 PM Steve Muckle wrote:
+> > > On 01/20/2016 05:22 PM, Rafael J. Wysocki wrote:
+> > > > One comment here (which may be a bit off in which case please ignore it).
+> > > > 
+> > > > You seem to be thinking that sched-freq needs to be a cpufreq governor
+> > > > and thus be handled in the same way as ondemand, for example.
+> > > 
+> > > That's true, I hadn't really given much thought to the alternative you
+> > > mention below.
+> > > 
+> > > > 
+> > > > However, this doesn't have to be the case in principle.  For example,
+> > > > if we have a special driver callback specifically to work with sched-freq,
+> > > > it may just use that callback and bypass (almost) all of the usual
+> > > > cpufreq mechanics.  This way you may avoid worrying about the governor
+> > > > locking and related ugliness entirely.
+> > > 
+> > > That sounds good but I'm worried about other consequences of taking
+> > > cpufreq out of the loop. For example wouldn't we need a new way for
+> > > something like thermal to set frequency limits?
+> > 
+> > I don't know from the top of my head, but that's at least worth investigating.
+> > 
 > 
+> Yes, that's an interesting alternative that we have to think through.
+> 
+> > Maybe we can keep the interface for those things unchanged, but handle it
+> > differently under the hood?
+> > 
+> 
+> Let me see if I understand what you are proposing :). If we don't want
+> to duplicate too many things, maybe it is still feasible to just use
+> existing cpufreq mechanics to handle hotplug, sysfs, thermal, etc. (with
+> possibly minor modifications to be notified of events) and only create a
+> new method to ask the driver for frequency changes, since we will have
+> replicated policy and freq_table information inside sched-freq.  Is that
+> what you were also thinking of by saying "bypass (almost) all the usual
+> cpufreq mechanics"? :)
+
+Yes, it is.
 
 Thanks,
 Rafael
