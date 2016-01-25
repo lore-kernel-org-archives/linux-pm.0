@@ -1,39 +1,42 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] power: APM_EMULATION does not depend on PM
-Date: Mon, 25 Jan 2016 16:48:28 +0100
-Message-ID: <1453736913-1959469-1-git-send-email-arnd@arndb.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-arm-kernel@lists.infradead.org, Jiri Kosina <jikos@kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v4 21/22] thermal/intel_powerclamp: Remove duplicated
+ code that starts the kthread
+Date: Mon, 25 Jan 2016 08:23:54 -0800
+Message-ID: <20160125082354.02424350@icelake>
+References: <1453736711-6703-1-git-send-email-pmladek@suse.com>
+	<1453736711-6703-22-git-send-email-pmladek@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1453736711-6703-22-git-send-email-pmladek@suse.com>
+Sender: owner-linux-mm@kvack.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-The APM emulation code does multiple things, and some of them depend on
-PM_SLEEP, while the battery management does not. However, selecting
-the symbol like SHARPSL_PM does causes a Kconfig warning:
+On Mon, 25 Jan 2016 16:45:10 +0100
+Petr Mladek <pmladek@suse.com> wrote:
 
-warning: (SHARPSL_PM && PMAC_APM_EMU) selects APM_EMULATION which has unmet direct dependencies (PM && SYS_SUPPORTS_APM_EMULATION)
+> This patch removes a code duplication. It does not modify
+> the functionality.
+> 
+Acked-by:Jacob Pan <jacob.jun.pan@linux.intel.com>
 
->From all I can tell, this is completely harmless, and we can simply allow
-APM_EMULATION to be enabled here, even if PM is not.
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
+> CC: Zhang Rui <rui.zhang@intel.com>
+> CC: Eduardo Valentin <edubezval@gmail.com>
+> CC: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> CC: linux-pm@vger.kernel.org
+> ---
+>  drivers/thermal/intel_powerclamp.c | 45
+> +++++++++++++++++--------------------- 1 file changed, 20
+> insertions(+), 25 deletions(-)
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- kernel/power/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[Jacob Pan]
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 02e8dfaa1ce2..68d3ebc12601 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -235,7 +235,7 @@ config PM_TRACE_RTC
- 
- config APM_EMULATION
- 	tristate "Advanced Power Management Emulation"
--	depends on PM && SYS_SUPPORTS_APM_EMULATION
-+	depends on SYS_SUPPORTS_APM_EMULATION
- 	help
- 	  APM is a BIOS specification for saving power using several different
- 	  techniques. This is mostly useful for battery powered laptops with
--- 
-2.7.0
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
