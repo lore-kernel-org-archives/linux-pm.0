@@ -1,59 +1,95 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: pxa2xx: fix pxa_cpufreq_change_voltage prototype
-Date: Mon, 25 Jan 2016 22:05:23 +0530
-Message-ID: <20160125163523.GD3322@vireshk>
-References: <1453736683-1959283-1-git-send-email-arnd@arndb.de>
+Subject: Re: [PATCH] cpufreq: cpufreq-dt: avoid uninitialized variable
+ warnings:
+Date: Mon, 25 Jan 2016 22:07:20 +0530
+Message-ID: <20160125163720.GE3322@vireshk>
+References: <1453736756-1959377-1-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:36305 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbcAYQf0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 11:35:26 -0500
-Received: by mail-pf0-f178.google.com with SMTP id n128so84264213pfn.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 08:35:26 -0800 (PST)
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:36200 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbcAYQhY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 11:37:24 -0500
+Received: by mail-pa0-f46.google.com with SMTP id yy13so82961700pab.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 08:37:23 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1453736683-1959283-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <1453736756-1959377-1-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Joe Perches <joe@perches.com>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 25-01-16, 16:44, Arnd Bergmann wrote:
-> There are two definitions of pxa_cpufreq_change_voltage, with slightly
-> different prototypes after one of them had its argument marked 'const'.
-> Now the other one (for !CONFIG_REGULATOR) produces a harmless warning:
+On 25-01-16, 16:45, Arnd Bergmann wrote:
+> gcc warns quite a bit about values returned from allocate_resources()
+> in cpufreq-dt.c:
 > 
-> drivers/cpufreq/pxa2xx-cpufreq.c: In function 'pxa_set_target':
-> drivers/cpufreq/pxa2xx-cpufreq.c:291:36: warning: passing argument 1 of 'pxa_cpufreq_change_voltage' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
->    ret = pxa_cpufreq_change_voltage(&pxa_freq_settings[idx]);
->                                     ^
-> drivers/cpufreq/pxa2xx-cpufreq.c:205:12: note: expected 'struct pxa_freqs *' but argument is of type 'const struct pxa_freqs *'
->  static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
->             ^
+> cpufreq-dt.c: In function 'cpufreq_init':
+> cpufreq-dt.c:327:6: error: 'cpu_dev' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+> cpufreq-dt.c:197:17: note: 'cpu_dev' was declared here
+> cpufreq-dt.c:376:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+> cpufreq-dt.c:199:14: note: 'cpu_clk' was declared here
+> cpufreq-dt.c: In function 'dt_cpufreq_probe':
+> cpufreq-dt.c:461:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+> cpufreq-dt.c:447:14: note: 'cpu_clk' was declared here
 > 
-> This changes the prototype in the same way as the other, which
-> avoids the warning.
+> The problem is that it's slightly hard for gcc to follow return
+> codes across PTR_ERR() calls.
+> This patch uses explicit assignments to the "ret" variable to make
+> it easier for gcc to verify that the code is actually correct,
+> without the need to add a bogus initialization.
 > 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 03c229906311 ("cpufreq: pxa: make pxa_freqs arrays const")
 > ---
->  drivers/cpufreq/pxa2xx-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/cpufreq-dt.c | 15 +++++++--------
+>  1 file changed, 7 insertions(+), 8 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-> index efe3b215fd34..46fee1539cc8 100644
-> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
-> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-> @@ -202,7 +202,7 @@ static void __init pxa_cpufreq_init_voltages(void)
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 9bc37c437874..0ca74d070058 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -142,15 +142,16 @@ static int allocate_resources(int cpu, struct device **cdev,
+>  
+>  try_again:
+>  	cpu_reg = regulator_get_optional(cpu_dev, reg);
+> -	if (IS_ERR(cpu_reg)) {
+> +	ret = PTR_ERR_OR_ZERO(cpu_reg);
+> +	if (ret) {
+>  		/*
+>  		 * If cpu's regulator supply node is present, but regulator is
+>  		 * not yet registered, we should try defering probe.
+>  		 */
+> -		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
+> +		if (ret == -EPROBE_DEFER) {
+>  			dev_dbg(cpu_dev, "cpu%d regulator not ready, retry\n",
+>  				cpu);
+> -			return -EPROBE_DEFER;
+> +			return ret;
+>  		}
+>  
+>  		/* Try with "cpu-supply" */
+> @@ -159,18 +160,16 @@ try_again:
+>  			goto try_again;
+>  		}
+>  
+> -		dev_dbg(cpu_dev, "no regulator for cpu%d: %ld\n",
+> -			cpu, PTR_ERR(cpu_reg));
+> +		dev_dbg(cpu_dev, "no regulator for cpu%d: %d\n", cpu, ret);
 >  	}
->  }
->  #else
-> -static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
-> +static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
->  {
->  	return 0;
->  }
+>  
+>  	cpu_clk = clk_get(cpu_dev, NULL);
+> -	if (IS_ERR(cpu_clk)) {
+> +	ret = PTR_ERR_OR_ZERO(cpu_clk);
+> +	if (ret) {
+>  		/* put regulator */
+>  		if (!IS_ERR(cpu_reg))
+>  			regulator_put(cpu_reg);
+>  
+> -		ret = PTR_ERR(cpu_clk);
+> -
+>  		/*
+>  		 * If cpu's clk node is present, but clock is not yet
+>  		 * registered, we should try defering probe.
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
