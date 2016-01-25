@@ -1,97 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq-dt: avoid uninitialized variable
- warnings:
-Date: Mon, 25 Jan 2016 22:07:20 +0530
-Message-ID: <20160125163720.GE3322@vireshk>
-References: <1453736756-1959377-1-git-send-email-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:36200 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbcAYQhY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 11:37:24 -0500
-Received: by mail-pa0-f46.google.com with SMTP id yy13so82961700pab.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 08:37:23 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1453736756-1959377-1-git-send-email-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 2/3] thermal: allow spear-thermal driver to be a module
+Date: Mon, 25 Jan 2016 17:44:11 +0100
+Message-ID: <1453740264-1972562-3-git-send-email-arnd@arndb.de>
+References: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, spear-devel@list.st.com, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 25-01-16, 16:45, Arnd Bergmann wrote:
-> gcc warns quite a bit about values returned from allocate_resources()
-> in cpufreq-dt.c:
-> 
-> cpufreq-dt.c: In function 'cpufreq_init':
-> cpufreq-dt.c:327:6: error: 'cpu_dev' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-> cpufreq-dt.c:197:17: note: 'cpu_dev' was declared here
-> cpufreq-dt.c:376:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-> cpufreq-dt.c:199:14: note: 'cpu_clk' was declared here
-> cpufreq-dt.c: In function 'dt_cpufreq_probe':
-> cpufreq-dt.c:461:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-> cpufreq-dt.c:447:14: note: 'cpu_clk' was declared here
-> 
-> The problem is that it's slightly hard for gcc to follow return
-> codes across PTR_ERR() calls.
-> This patch uses explicit assignments to the "ret" variable to make
-> it easier for gcc to verify that the code is actually correct,
-> without the need to add a bogus initialization.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 15 +++++++--------
->  1 file changed, 7 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index 9bc37c437874..0ca74d070058 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -142,15 +142,16 @@ static int allocate_resources(int cpu, struct device **cdev,
->  
->  try_again:
->  	cpu_reg = regulator_get_optional(cpu_dev, reg);
-> -	if (IS_ERR(cpu_reg)) {
-> +	ret = PTR_ERR_OR_ZERO(cpu_reg);
-> +	if (ret) {
->  		/*
->  		 * If cpu's regulator supply node is present, but regulator is
->  		 * not yet registered, we should try defering probe.
->  		 */
-> -		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
-> +		if (ret == -EPROBE_DEFER) {
->  			dev_dbg(cpu_dev, "cpu%d regulator not ready, retry\n",
->  				cpu);
-> -			return -EPROBE_DEFER;
-> +			return ret;
->  		}
->  
->  		/* Try with "cpu-supply" */
-> @@ -159,18 +160,16 @@ try_again:
->  			goto try_again;
->  		}
->  
-> -		dev_dbg(cpu_dev, "no regulator for cpu%d: %ld\n",
-> -			cpu, PTR_ERR(cpu_reg));
-> +		dev_dbg(cpu_dev, "no regulator for cpu%d: %d\n", cpu, ret);
->  	}
->  
->  	cpu_clk = clk_get(cpu_dev, NULL);
-> -	if (IS_ERR(cpu_clk)) {
-> +	ret = PTR_ERR_OR_ZERO(cpu_clk);
-> +	if (ret) {
->  		/* put regulator */
->  		if (!IS_ERR(cpu_reg))
->  			regulator_put(cpu_reg);
->  
-> -		ret = PTR_ERR(cpu_clk);
-> -
->  		/*
->  		 * If cpu's clk node is present, but clock is not yet
->  		 * registered, we should try defering probe.
+When the thermal subsystem is a loadable module, the spear driver
+fails to build:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+drivers/thermal/built-in.o: In function `spear_thermal_exit':
+spear_thermal.c:(.text+0xf8): undefined reference to `thermal_zone_device_unregister'
+drivers/thermal/built-in.o: In function `spear_thermal_probe':
+spear_thermal.c:(.text+0x230): undefined reference to `thermal_zone_device_register'
 
+This changes the symbol to a tristate, so Kconfig can track the
+dependency correctly.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 8cc4ac64a91c..0852fd028dc9 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -195,7 +195,7 @@ config IMX_THERMAL
+ 	  passive trip is crossed.
+ 
+ config SPEAR_THERMAL
+-	bool "SPEAr thermal sensor driver"
++	tristate "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR || COMPILE_TEST
+ 	depends on OF
+ 	help
 -- 
-viresh
+2.7.0
