@@ -1,123 +1,113 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/4] dt-bindings: power: reset: add document for
- reboot-mode driver
-Date: Mon, 25 Jan 2016 11:11:34 -0600
-Message-ID: <20160125171134.GA21713@rob-hp-laptop>
-References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
- <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
- <20160120182840.GA15741@rob-hp-laptop>
- <56A07A6D.3010406@rock-chips.com>
+From: Richard Weinberger <richard@nod.at>
+Subject: [PATCH 19/22] thermal: Fix dependencies for !HAS_IOMEM
+	archs
+Date: Mon, 25 Jan 2016 23:24:18 +0100
+Message-ID: <1453760661-1444-20-git-send-email-richard@nod.at>
+References: <1453760661-1444-1-git-send-email-richard@nod.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54130 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbcAYRLq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Jan 2016 12:11:46 -0500
-Content-Disposition: inline
-In-Reply-To: <56A07A6D.3010406@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <user-mode-linux-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <1453760661-1444-1-git-send-email-richard@nod.at>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/user-mode-linux-devel>,
+	<mailto:user-mode-linux-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=user-mode-linux-devel>
+List-Post: <mailto:user-mode-linux-devel@lists.sourceforge.net>
+List-Help: <mailto:user-mode-linux-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/user-mode-linux-devel>,
+	<mailto:user-mode-linux-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: user-mode-linux-devel-bounces@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, Richard Weinberger <richard@nod.at>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org, linux@roeck-us.net, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, geert+renesas@glider.be, sre@kernel.org, olof@lixom.net, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, f.fainelli@gmail.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org, mark.rutland@arm.com, maxime.ripard@free-electrons.com
 
-On Thu, Jan 21, 2016 at 02:27:57PM +0800, Andy Yan wrote:
-> Hi Rob:
->    thanks for your review.
-> On 2016=E5=B9=B401=E6=9C=8821=E6=97=A5 02:28, Rob Herring wrote:
-> >On Tue, Jan 12, 2016 at 07:29:49PM +0800, Andy Yan wrote:
-> >>add device tree binding document for reboot-mode driver
-> >>
-> >>Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
-> >>
-> >>---
-> >>
-> >>Changes in v2: None
-> >>Changes in v1: None
-> >>
-> >>  .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++=
-++++++++
-> >>  .../bindings/power/reset/syscon-reboot-mode.txt    | 52 +++++++++=
-+++++++++++++
-> >>  2 files changed, 93 insertions(+)
-> >>  create mode 100644 Documentation/devicetree/bindings/power/reset/=
-reboot-mode.txt
-> >>  create mode 100644 Documentation/devicetree/bindings/power/reset/=
-syscon-reboot-mode.txt
-> >>
-> >>diff --git a/Documentation/devicetree/bindings/power/reset/reboot-m=
-ode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
-> >>new file mode 100644
-> >>index 0000000..81d9f66
-> >>--- /dev/null
-> >>+++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
-> >>@@ -0,0 +1,41 @@
-> >>+Generic reboot mode core map driver
+Not every arch has io memory.
+So, unbreak the build by fixing the dependencies.
 
-[...]
+Signed-off-by: Richard Weinberger <richard@nod.at>
+---
+ drivers/thermal/Kconfig                | 7 +++++++
+ drivers/thermal/ti-soc-thermal/Kconfig | 1 +
+ 2 files changed, 8 insertions(+)
 
-> >>+		compatible =3D "syscon-reboot-mode";
-> >>+		offset =3D <0x40>;
-> >This doc by itself is a little confusing. For example, is a child of=
- the
-> >syscon node? I would remove offset (and perhaps compatible) from thi=
-s
-> >example.
->=20
->    Yes, is a child of a syscon mapped node. For example, Rockchip pla=
-tform
-> use a register of PMU(rk3066/rk3288) or GRF(rk3036), PMU and GRF are =
-aleady
-> mapped by syscon.
->    offset and compatible are used by write interface driver like
-> syscon-reboot-mode.c. If you don't like it appear in the core map doc=
-, I
-> will move it to the syscon-reboot-mode.txt?
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 8cc4ac6..8876c7e 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -178,6 +178,7 @@ config THERMAL_EMULATION
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	help
+ 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
+ 	  thermal framework. cpufreq is used as the cooling device to throttle
+@@ -198,6 +199,7 @@ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR || COMPILE_TEST
+ 	depends on OF
++	depends on HAS_IOMEM
+ 	help
+ 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+ 	  thermal framework.
+@@ -206,6 +208,7 @@ config ROCKCHIP_THERMAL
+ 	tristate "Rockchip thermal driver"
+ 	depends on ARCH_ROCKCHIP || COMPILE_TEST
+ 	depends on RESET_CONTROLLER
++	depends on HAS_IOMEM
+ 	help
+ 	  Rockchip thermal driver provides support for Temperature sensor
+ 	  ADC (TS-ADC) found on Rockchip SoCs. It supports one critical
+@@ -224,6 +227,7 @@ config KIRKWOOD_THERMAL
+ 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+ 	depends on MACH_KIRKWOOD || COMPILE_TEST
+ 	depends on OF
++	depends on HAS_IOMEM
+ 	help
+ 	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+ 	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
+@@ -232,6 +236,7 @@ config DOVE_THERMAL
+ 	tristate "Temperature sensor on Marvell Dove SoCs"
+ 	depends on ARCH_DOVE || MACH_DOVE || COMPILE_TEST
+ 	depends on OF
++	depends on HAS_IOMEM
+ 	help
+ 	  Support for the Dove thermal sensor driver in the Linux thermal
+ 	  framework.
+@@ -250,6 +255,7 @@ config ARMADA_THERMAL
+ 	tristate "Armada 370/XP thermal management"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
+ 	depends on OF
++	depends on HAS_IOMEM
+ 	help
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
+@@ -372,6 +378,7 @@ endmenu
+ 
+ menu "Samsung thermal drivers"
+ depends on ARCH_EXYNOS || COMPILE_TEST
++depends on HAS_IOMEM
+ source "drivers/thermal/samsung/Kconfig"
+ endmenu
+ 
+diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
+index ea8283f..283d794 100644
+--- a/drivers/thermal/ti-soc-thermal/Kconfig
++++ b/drivers/thermal/ti-soc-thermal/Kconfig
+@@ -1,5 +1,6 @@
+ config TI_SOC_THERMAL
+ 	tristate "Texas Instruments SoCs temperature sensor driver"
++	depends on HAS_IOMEM
+ 	help
+ 	  If you say yes here you get support for the Texas Instruments
+ 	  OMAP4460+ on die bandgap temperature sensor support. The register
+-- 
+1.8.4.5
 
-Yes, try to make this doc stand on its own. It will obviously be=20
-incomplete lacking information on where in the DT it goes. So perhaps a=
-=20
-note stating reboot-mode node location is defined in platform specific=20
-binding docs.
 
-> >>+
-> >>+		loader {
-> >>+			linux,mode =3D "loader";
-> >>+			loader,magic =3D <BOOT_LOADER>;
-> >>+		};
-> >Sorry, my previous suggestion was not clear. I'm suggesting get rid =
-of
-> >the subnodes and just do properties like this:
-> >
-> >loader =3D <BOOT_LOADER>;
-> >maskrom =3D <BOOT_MASKROM>;
-> >
-> >That's the same amount of information unless node names and linux,mo=
-de
-> >values are going to diverge. Do they need to? I can't see a reason.
->=20
->     Because the command"linux,mode" and value"loader,magic" is vendor
-> specific. I don't know what commands and how many mode other platform=
- will
-> use. So as John says in his reply, this sort of flexibility help us a=
-dapt
-> the driver to different hardware/system environments.
-
-The only part of "reboot to fastboot" that is vendor specific would be=20
-the magic value. While we can have custom modes, we should standardize=20
-the common ones as much as possible. As I pointed out in my reply to=20
-John, we can still support vendor specific modes with just a property.
-
-> >
-> >We need to be clear what loader means. More specifically, it is boot
-> >into bootloader shell.
->     Actually, Rockchip platform will reboot into a bootloader downloa=
-d mode
-> with this command. This mode can download faster than maskrom downloa=
-d mode.
-
-My point is proven. I assumed one thing and you meant something else.=20
-Doesn't matter what the mode is, just needs to be clear.
-
-Rob
+------------------------------------------------------------------------------
+Site24x7 APM Insight: Get Deep Visibility into Application Performance
+APM + Mobile APM + RUM: Monitor 3 App instances at just $35/Month
+Monitor end-to-end web transactions and take corrective actions now
+Troubleshoot faster and improve end-user experience. Signup Now!
+http://pubads.g.doubleclick.net/gampad/clk?id=267308311&iu=/4140
