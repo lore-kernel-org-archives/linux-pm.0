@@ -1,137 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Fix NULL reference crash while accessing policy->governor_data
-Date: Mon, 25 Jan 2016 22:33:46 +0530
-Message-ID: <1297c8fc8135f8b5359f9c49d220a939c0ee640e.1453741314.git.viresh.kumar@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/4] dt-bindings: power: reset: add document for
+ reboot-mode driver
+Date: Mon, 25 Jan 2016 11:11:34 -0600
+Message-ID: <20160125171134.GA21713@rob-hp-laptop>
+References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
+ <1452598189-8272-1-git-send-email-andy.yan@rock-chips.com>
+ <20160120182840.GA15741@rob-hp-laptop>
+ <56A07A6D.3010406@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35962 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753348AbcAYRDy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 12:03:54 -0500
-Received: by mail-pa0-f49.google.com with SMTP id yy13so83288030pab.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 09:03:54 -0800 (PST)
+Received: from mail.kernel.org ([198.145.29.136]:54130 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757928AbcAYRLq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Jan 2016 12:11:46 -0500
+Content-Disposition: inline
+In-Reply-To: <56A07A6D.3010406@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "# v4 . 2+" <stable@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, open list <linux-kernel@vger.kernel.org>
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org, linux@roeck-us.net, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, geert+renesas@glider.be, sre@kernel.org, olof@lixom.net, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, f.fainelli@gmail.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org, mark.rutland@arm.com, maxime.ripard@free-electrons.com
 
-There is a little race discovered by Juri, where we are able to:
-- create and read a sysfs file before policy->governor_data is being set
-  to a non NULL value.
-  OR
-- set policy->governor_data to NULL, and reading a file before being
-  destroyed.
+On Thu, Jan 21, 2016 at 02:27:57PM +0800, Andy Yan wrote:
+> Hi Rob:
+>    thanks for your review.
+> On 2016=E5=B9=B401=E6=9C=8821=E6=97=A5 02:28, Rob Herring wrote:
+> >On Tue, Jan 12, 2016 at 07:29:49PM +0800, Andy Yan wrote:
+> >>add device tree binding document for reboot-mode driver
+> >>
+> >>Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+> >>
+> >>---
+> >>
+> >>Changes in v2: None
+> >>Changes in v1: None
+> >>
+> >>  .../bindings/power/reset/reboot-mode.txt           | 41 +++++++++=
+++++++++
+> >>  .../bindings/power/reset/syscon-reboot-mode.txt    | 52 +++++++++=
++++++++++++++
+> >>  2 files changed, 93 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/power/reset/=
+reboot-mode.txt
+> >>  create mode 100644 Documentation/devicetree/bindings/power/reset/=
+syscon-reboot-mode.txt
+> >>
+> >>diff --git a/Documentation/devicetree/bindings/power/reset/reboot-m=
+ode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> >>new file mode 100644
+> >>index 0000000..81d9f66
+> >>--- /dev/null
+> >>+++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> >>@@ -0,0 +1,41 @@
+> >>+Generic reboot mode core map driver
 
-And so such a crash is reported:
+[...]
 
-Unable to handle kernel NULL pointer dereference at virtual address 0000000c
-pgd = edfc8000
-[0000000c] *pgd=bfc8c835
-Internal error: Oops: 17 [#1] SMP ARM
-Modules linked in:
-CPU: 4 PID: 1730 Comm: cat Not tainted 4.5.0-rc1+ #463
-Hardware name: ARM-Versatile Express
-task: ee8e8480 ti: ee930000 task.ti: ee930000
-PC is at show_ignore_nice_load_gov_pol+0x24/0x34
-LR is at show+0x4c/0x60
-pc : [<c058f1bc>]    lr : [<c058ae88>]    psr: a0070013
-sp : ee931dd0  ip : ee931de0  fp : ee931ddc
-r10: ee4bc290  r9 : 00001000  r8 : ef2cb000
-r7 : ee4bc200  r6 : ef2cb000  r5 : c0af57b0  r4 : ee4bc2e0
-r3 : 00000000  r2 : 00000000  r1 : c0928df4  r0 : ef2cb000
-Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment none
-Control: 10c5387d  Table: adfc806a  DAC: 00000051
-Process cat (pid: 1730, stack limit = 0xee930210)
-Stack: (0xee931dd0 to 0xee932000)
-1dc0:                                     ee931dfc ee931de0 c058ae88 c058f1a4
-1de0: edce3bc0 c07bfca4 edce3ac0 00001000 ee931e24 ee931e00 c01fcb90 c058ae48
-1e00: 00000001 edce3bc0 00000000 00000001 ee931e50 ee8ff480 ee931e34 ee931e28
-1e20: c01fb33c c01fcb0c ee931e8c ee931e38 c01a5210 c01fb314 ee931e9c ee931e48
-1e40: 00000000 edce3bf0 befe4a00 ee931f78 00000000 00000000 000001e4 00000000
-1e60: c00545a8 edce3ac0 00001000 00001000 befe4a00 ee931f78 00000000 00001000
-1e80: ee931ed4 ee931e90 c01fbed8 c01a5038 ed085a58 00020000 00000000 00000000
-1ea0: c0ad72e4 ee931f78 ee8ff488 ee8ff480 c077f3fc 00001000 befe4a00 ee931f78
-1ec0: 00000000 00001000 ee931f44 ee931ed8 c017c328 c01fbdc4 00001000 00000000
-1ee0: ee8ff480 00001000 ee931f44 ee931ef8 c017c65c c03deb10 ee931fac ee931f08
-1f00: c0009270 c001f290 c0a8d968 ef2cb000 ef2cb000 ee8ff480 00000020 ee8ff480
-1f20: ee8ff480 befe4a00 00001000 ee931f78 00000000 00000000 ee931f74 ee931f48
-1f40: c017d1ec c017c2f8 c019c724 c019c684 ee8ff480 ee8ff480 00001000 befe4a00
-1f60: 00000000 00000000 ee931fa4 ee931f78 c017d2a8 c017d160 00000000 00000000
-1f80: 000a9f20 00001000 befe4a00 00000003 c000ffe4 ee930000 00000000 ee931fa8
-1fa0: c000fe40 c017d264 000a9f20 00001000 00000003 befe4a00 00001000 00000000
-Unable to handle kernel NULL pointer dereference at virtual address 0000000c
-1fc0: 000a9f20 00001000 befe4a00 00000003 00000000 00000000 00000003 00000001
-pgd = edfc4000
-[0000000c] *pgd=bfcac835
-1fe0: 00000000 befe49dc 000197f8 b6e35dfc 60070010 00000003 3065b49d 134ac2c9
+> >>+		compatible =3D "syscon-reboot-mode";
+> >>+		offset =3D <0x40>;
+> >This doc by itself is a little confusing. For example, is a child of=
+ the
+> >syscon node? I would remove offset (and perhaps compatible) from thi=
+s
+> >example.
+>=20
+>    Yes, is a child of a syscon mapped node. For example, Rockchip pla=
+tform
+> use a register of PMU(rk3066/rk3288) or GRF(rk3036), PMU and GRF are =
+aleady
+> mapped by syscon.
+>    offset and compatible are used by write interface driver like
+> syscon-reboot-mode.c. If you don't like it appear in the core map doc=
+, I
+> will move it to the syscon-reboot-mode.txt?
 
-[<c058f1bc>] (show_ignore_nice_load_gov_pol) from [<c058ae88>] (show+0x4c/0x60)
-[<c058ae88>] (show) from [<c01fcb90>] (sysfs_kf_seq_show+0x90/0xfc)
-[<c01fcb90>] (sysfs_kf_seq_show) from [<c01fb33c>] (kernfs_seq_show+0x34/0x38)
-[<c01fb33c>] (kernfs_seq_show) from [<c01a5210>] (seq_read+0x1e4/0x4e4)
-[<c01a5210>] (seq_read) from [<c01fbed8>] (kernfs_fop_read+0x120/0x1a0)
-[<c01fbed8>] (kernfs_fop_read) from [<c017c328>] (__vfs_read+0x3c/0xe0)
-[<c017c328>] (__vfs_read) from [<c017d1ec>] (vfs_read+0x98/0x104)
-[<c017d1ec>] (vfs_read) from [<c017d2a8>] (SyS_read+0x50/0x90)
-[<c017d2a8>] (SyS_read) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
-Code: e5903044 e1a00001 e3081df4 e34c1092 (e593300c)
----[ end trace 5994b9a5111f35ee ]---
+Yes, try to make this doc stand on its own. It will obviously be=20
+incomplete lacking information on where in the DT it goes. So perhaps a=
+=20
+note stating reboot-mode node location is defined in platform specific=20
+binding docs.
 
-Fix that by making sure, policy->governor_data is updated at the right
-places only.
+> >>+
+> >>+		loader {
+> >>+			linux,mode =3D "loader";
+> >>+			loader,magic =3D <BOOT_LOADER>;
+> >>+		};
+> >Sorry, my previous suggestion was not clear. I'm suggesting get rid =
+of
+> >the subnodes and just do properties like this:
+> >
+> >loader =3D <BOOT_LOADER>;
+> >maskrom =3D <BOOT_MASKROM>;
+> >
+> >That's the same amount of information unless node names and linux,mo=
+de
+> >values are going to diverge. Do they need to? I can't see a reason.
+>=20
+>     Because the command"linux,mode" and value"loader,magic" is vendor
+> specific. I don't know what commands and how many mode other platform=
+ will
+> use. So as John says in his reply, this sort of flexibility help us a=
+dapt
+> the driver to different hardware/system environments.
 
-Cc: <stable@vger.kernel.org> # v4.2+
-Reported-by: Juri Lelli <juri.lelli@arm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_governor.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+The only part of "reboot to fastboot" that is vendor specific would be=20
+the magic value. While we can have custom modes, we should standardize=20
+the common ones as much as possible. As I pointed out in my reply to=20
+John, we can still support vendor specific modes with just a property.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index bab3a514ec12..e0d111024d48 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -387,16 +387,18 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
- 	if (!have_governor_per_policy())
- 		cdata->gdbs_data = dbs_data;
- 
-+	policy->governor_data = dbs_data;
-+
- 	ret = sysfs_create_group(get_governor_parent_kobj(policy),
- 				 get_sysfs_attr(dbs_data));
- 	if (ret)
- 		goto reset_gdbs_data;
- 
--	policy->governor_data = dbs_data;
--
- 	return 0;
- 
- reset_gdbs_data:
-+	policy->governor_data = NULL;
-+
- 	if (!have_governor_per_policy())
- 		cdata->gdbs_data = NULL;
- 	cdata->exit(dbs_data, !policy->governor->initialized);
-@@ -417,16 +419,19 @@ static int cpufreq_governor_exit(struct cpufreq_policy *policy,
- 	if (!cdbs->shared || cdbs->shared->policy)
- 		return -EBUSY;
- 
--	policy->governor_data = NULL;
- 	if (!--dbs_data->usage_count) {
- 		sysfs_remove_group(get_governor_parent_kobj(policy),
- 				   get_sysfs_attr(dbs_data));
- 
-+		policy->governor_data = NULL;
-+
- 		if (!have_governor_per_policy())
- 			cdata->gdbs_data = NULL;
- 
- 		cdata->exit(dbs_data, policy->governor->initialized == 1);
- 		kfree(dbs_data);
-+	} else {
-+		policy->governor_data = NULL;
- 	}
- 
- 	free_common_dbs_info(policy, cdata);
--- 
-2.7.0.79.gdc08a19
+> >
+> >We need to be clear what loader means. More specifically, it is boot
+> >into bootloader shell.
+>     Actually, Rockchip platform will reboot into a bootloader downloa=
+d mode
+> with this command. This mode can download faster than maskrom downloa=
+d mode.
 
+My point is proven. I assumed one thing and you meant something else.=20
+Doesn't matter what the mode is, just needs to be clear.
+
+Rob
