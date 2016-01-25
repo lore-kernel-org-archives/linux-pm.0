@@ -1,63 +1,68 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 02/16] soc: tegra: pmc: Add missing structure members
- to kernel-doc
-Date: Mon, 25 Jan 2016 14:20:57 +0100
-Message-ID: <20160125132057.GP20452@ulmo.nvidia.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH V4 03/16] soc: tegra: pmc: Fix sparse warning for
+ tegra_pmc_init_tsense_reset
+Date: Mon, 25 Jan 2016 14:21:57 +0100
+Message-ID: <20160125132157.GQ20452@ulmo.nvidia.com>
 References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-3-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-4-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="TRkqPRiqIDKgfg/F"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="ubuMVesmirrCclZT"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:32824 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932090AbcAYNWC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 08:22:02 -0500
 Content-Disposition: inline
-In-Reply-To: <1449241037-22193-3-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1449241037-22193-4-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---TRkqPRiqIDKgfg/F
+--ubuMVesmirrCclZT
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Dec 04, 2015 at 02:57:03PM +0000, Jon Hunter wrote:
-> Some members of the tegra_pmc structure are missing from the kernel-doc
-> comment for this structure. Add the missing members.
+On Fri, Dec 04, 2015 at 02:57:04PM +0000, Jon Hunter wrote:
+> Sparse reports the following warning for tegra_pmc_init_tsense_reset:
 >=20
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> drivers/soc/tegra/pmc.c:741:6: warning: symbol
+> 'tegra_pmc_init_tsense_reset' was not declared. Should it be static?
+>=20
+> This function is only used internally by the PMC driver and so fix this
+> by making it static.
+>=20
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 > ---
->  drivers/soc/tegra/pmc.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/soc/tegra/pmc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Applied, thanks.
 
 Thierry
 
---TRkqPRiqIDKgfg/F
+--ubuMVesmirrCclZT
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJWpiE2AAoJEN0jrNd/PrOhzmYP/2IHL7zYJhmJJeAVfNVL9FWZ
-ejXzhgXcv9+LSw2EUdIdHkuU9e9bXULQ8mH6mVGvfgm0rKHwKcV+zylIW5PXha2c
-HQ1jjIXYNPCrAtXuQ/qhr06G7xx0HQjSZy9V98cjpWx4SRsn+JFPDGfwq3d7ONGg
-vLdgaPZ0rI6NNyr3aQCORPdAYIP1zHWSwNJ63wVsemeQ2CRwXByIzgsBpOsT0pid
-p/mK/zyv4vqknZF3oBUnHGbFLHpqESvNoh03lSwahnyP2gCDiQZbZ5oJkj7g/Evn
-3cgu78glFhDHKbZHRe/KpzRjcxg9MS2p1TqBTBVrXzpdUrtRy79zZN/fZUhI0lvg
-qbZIgqZwrJvih9JgGXGd+nJXBK22/VrY7I/HDGzwp9lpLknkmO6NNERjQlcYOarO
-GiRUBXuvbKGfVeai6r80PFh7yoNcZx2g5NbIlmg9dRV+p4Tp7ewCNvwvnxQn0v6q
-YullkJWpO8vPBIXDI+9I8WPGCIEQ6QR6yGzsKd99hb+p5DbzpGhX5iwu1NBP69Yj
-Z/TAxRBHV4HBHcmZKeHHS8Zq/eNw8zohOf1qpO7f3un5Rv46hHXIOU7d3lNGR+q3
-YlGbCZbbJc6KOJhQb85L436WWAvzWRUsviCzk4NmkTHXR09dTaYmxoltdkBugnBM
-Eci+dL8YQ0mn7WtD3nZx
-=129t
+iQIcBAABCAAGBQJWpiF1AAoJEN0jrNd/PrOhdB0P/RNfaAqivqwB0FW9sxq48lKz
+T1qpLmm1j3pAEWtRfA4swjXc7ARMmskZpKbuijNEwn8Ioga+no1fxwZOXa7+6Rq0
+MDLgZitqPOb2SUjlOewDdMbR13kh4pEYxF1Qe+uijsO7sOuWzjtHK7Ohn2A2Go0K
+O+JnkSuDR631FOHQY7XoS9UpjYytSdYglveSycjO7d9AvokxEHgrn2g2yzPw3Oxu
+m/IgQY57VQ9krOmlyMUhOBSJPk63/63Oxo4W+J44GkjusqiPjpGT1ThqWYGHgtsC
+5LMEO5WGi1hNsBg/458l1ECqF72KXmJnOAdCw0HCdoVK0X2aqeZVmtP17vEtdbs7
+acmk5sC11ZIfIeo+BQ3IYBPoPvnWISUHbvUvjDwfAVgWLhafEX+yEmek77KvTev4
+a4Qpe5qYQTSV3Bbw5S+rMNKoVzp3wXOwI5pIlAnx4YyMNS3XJNoQihQ1sYIwNcmg
+CFBCvxdtbxOD1rh6YLl3qg6eq8xsGRi37UWHQPY3AzGCHS67krdM8r1BeO77wsal
+6pJ3Cy1l/rFN5FetX3qN8CbTeF+aAVCZUVSJm+lCPK9bUEsNbWoxovXTviORs6yk
+bZy/5hyExCPewj2o01ok6ZvgJjs8A/sI7bUp0dW/DuDIZ60g12Oh+NavjRsB0Q4i
+evwxyRwpL6dvGIYNqDAK
+=VmBC
 -----END PGP SIGNATURE-----
 
---TRkqPRiqIDKgfg/F--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--ubuMVesmirrCclZT--
