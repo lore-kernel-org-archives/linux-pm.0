@@ -1,57 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Use list_is_last() to check last entry of the
- policy list
-Date: Mon, 25 Jan 2016 15:20:29 +0530
-Message-ID: <20160125095029.GE3183@vireshk>
-References: <1453715167-26165-1-git-send-email-ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 17/17] cpufreq: dt: No need to allocate resources anymore
+Date: Mon, 25 Jan 2016 16:03:16 +0530
+Message-ID: <20160125103316.GA9155@vireshk>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <df2534b4ced57791ec3ee42eb34211e132aa423a.1450777582.git.viresh.kumar@linaro.org>
+ <20160112022022.GV22188@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:36273 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbcAYJud (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 04:50:33 -0500
-Received: by mail-pf0-f181.google.com with SMTP id n128so79510257pfn.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 01:50:32 -0800 (PST)
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35918 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932142AbcAYKdT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 05:33:19 -0500
+Received: by mail-pf0-f182.google.com with SMTP id n128so80057930pfn.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 Jan 2016 02:33:19 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1453715167-26165-1-git-send-email-ego@linux.vnet.ibm.com>
+In-Reply-To: <20160112022022.GV22188@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Juri Lelli <juri.lelli@arm.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 25-01-16, 15:16, Gautham R. Shenoy wrote:
-> Currently next_policy() explicitly checks if a policy is the last
-> policy in the cpufreq_policy_list. Use the standard list_is_last
-> primitive instead.
+On 11-01-16, 18:20, Stephen Boyd wrote:
+> > @@ -241,9 +234,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	}
+> >  
+> >  	priv->cpu_dev = cpu_dev;
+> > -	priv->cpu_reg = cpu_reg;
+> >  	policy->driver_data = priv;
+> > -
+> >  	policy->clk = cpu_clk;
 > 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 78b1e2f..b3059a3 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -67,11 +67,11 @@ static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
->  {
->  	lockdep_assert_held(&cpufreq_driver_lock);
->  	do {
-> -		policy = list_next_entry(policy, policy_list);
-> -
->  		/* No more policies in the list */
-> -		if (&policy->policy_list == &cpufreq_policy_list)
-> +		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
->  			return NULL;
-> +
-> +		policy = list_next_entry(policy, policy_list);
->  	} while (!suitable_policy(policy, active));
->  
->  	return policy;
+> Maybe we can have an dev_pm_opp_get_rate() API and a
+> cpufreq_generic_opp_get() so we can get rid of policy->clk usage
+> in this driver?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I thought about this today and couldn't get to a sane solution.
+If we implement dev_pm_opp_get_rate(), then it should return the
+cached value of the currently programmed OPP. If the OPP isn't set
+yet, it can call clk_get_rate() and return that instead. But it
+doesn't make any sense to always call clk_get_rate() from
+dev_pm_opp_get_rate(), as that doesn't match its name.
+
+OTOH, cpufreq really really needs a clk_get_rate() to happen, there
+can be cases where the clk is changed by some other entity, specially
+during suspend/resume and there are special checks in cpufreq about
+that.
+
+We can surely add a patch later if we get answer to this, but for now,
+I will keep this patch as is.
 
 -- 
 viresh
