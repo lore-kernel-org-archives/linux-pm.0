@@ -1,62 +1,59 @@
-From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Subject: RE: [PATCH 1/2] dt: power: Add support for TI BQ24261 charger
-Date: Mon, 25 Jan 2016 05:14:53 +0000
-Message-ID: <D854C92F57B1B347B57E531E78D05EAD57A27BE7@BGSMSX104.gar.corp.intel.com>
-References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
-	<1446136625-20845-2-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPcDea5vjX+-tDg=7Z2kPrtsEABybA0+nEPGJDVwaYvb1Q@mail.gmail.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 2/5] cpufreq: powernv: Remove cpu_to_chip_id() from
+ hot-path
+Date: Mon, 25 Jan 2016 11:08:05 +0530
+Message-ID: <20160125053804.GA5599@in.ibm.com>
+References: <1453447145-17722-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1453447145-17722-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160123195920.552990ed@cotter.ozlabs.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:33795 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbcAYFPG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Jan 2016 00:15:06 -0500
-In-Reply-To: <CAJKOXPcDea5vjX+-tDg=7Z2kPrtsEABybA0+nEPGJDVwaYvb1Q@mail.gmail.com>
-Content-Language: en-US
+Received: from e31.co.us.ibm.com ([32.97.110.149]:48854 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbcAYFiP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jan 2016 00:38:15 -0500
+Received: from localhost
+	by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Sun, 24 Jan 2016 22:38:14 -0700
+Content-Disposition: inline
+In-Reply-To: <20160123195920.552990ed@cotter.ozlabs.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com
 
-SGkgS3J6eXN6dG9mLA0KDQo+IDIwMTUtMTAtMzAgMTozNyBHTVQrMDk6MDAgUmFtYWtyaXNobmEg
-UGFsbGFsYQ0KPiA8cmFtYWtyaXNobmEucGFsbGFsYUBpbnRlbC5jb20+Og0KPiA+IFRoaXMgcGF0
-Y2ggYWRkcyB0aGUgZGV2aWNlIHRyZWUgZG9jdW1lbnRhdGlvbiBmb3IgVEkgQlEyNDI2MSBjaGFy
-Z2VyLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogUmFtYWtyaXNobmEgUGFsbGFsYSA8cmFtYWty
-aXNobmEucGFsbGFsYUBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmVubnkgVEMgPGpl
-bm55LnRjQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3Mv
-cG93ZXIvYnEyNDI2MS50eHQgICAgICAgICAgfCAgIDM0DQo+ICsrKysrKysrKysrKysrKysrKysr
-DQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAzNCBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2Rl
-IDEwMDY0NA0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9icTI0
-MjYxLnR4dA0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9wb3dlci9icTI0MjYxLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
-L2JpbmRpbmdzL3Bvd2VyL2JxMjQyNjEudHh0DQo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4g
-PiBpbmRleCAwMDAwMDAwLi5lMThmNmRjDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL0Rv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9icTI0MjYxLnR4dA0KPiA+IEBA
-IC0wLDAgKzEsMzQgQEANCj4gPiArQmluZGluZyBmb3IgVEkgYnEyNDI2MSBMaS1Jb24gQ2hhcmdl
-cg0KPiA+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiArLSBjb21wYXRpYmxlOiBT
-aG91bGQgY29udGFpbiBvbmUgb2YgdGhlIGZvbGxvd2luZzoNCj4gPiArICAgICogInRpLGJxMjQy
-NjEiDQo+IA0KPiBKdXN0OiAnc2hvdWxkIGJlICJ0aSxicTI0MjYxIicuDQpPay4NCg0KPiA+ICst
-IHJlZzogaW50ZWdlciwgaTJjIGFkZHJlc3Mgb2YgdGhlIGRldmljZS4NCj4gPiArLSB0aSxiYXR0
-ZXJ5LXJlZ3VsYXRpb24tdm9sdGFnZTogaW50ZWdlciwgbWF4aW11bSBjaGFyZ2luZyB2b2x0YWdl
-IGluIHVWLg0KPiA+ICstIHRpLGNoYXJnZS1jdXJyZW50OiBpbnRlZ2VyLCBtYXhpbXVtIGNoYXJn
-aW5nIGN1cnJlbnQgaW4gdUEuDQo+ID4gKy0gdGksdGVybWluYXRpb24tY3VycmVudDogaW50ZWdl
-ciwgY2hhcmdlIHdpbGwgYmUgdGVybWluYXRlZCB3aGVuIGN1cnJlbnQgaW4NCj4gPiArICAgIGNv
-bnN0YW50LXZvbHRhZ2UgcGhhc2UgZHJvcHMgYmVsb3cgdGhpcyB2YWx1ZSAoaW4gdUEpLg0KPiAN
-Cj4gU2FtZSBhcyBwcm9wb3NlZCBleHRlbnNpb24gb2YgYnEyNDI1Ny50eHQuIEkgbGlrZSBpdC4N
-Cj4gDQo+ID4gKw0KPiA+ICtPcHRpb25hbCBwcm9wZXJ0aWVzOg0KPiA+ICstIHRpLG1heC1jaGFy
-Z2UtY3VycmVudDogaW50ZWdlciwgbWF4aW11bSBjaGFyZ2luZyBjdXJyZW50IChpbiB1QSk7DQo+
-IA0KPiBJIGRpZCBub3QgbG9vayBhdCB0aGUgY29kZSB5ZXQgYnV0IGRlc2NyaXB0aW9uIG9mIHBy
-b3BlcnR5IGlzIGV4YWN0bHkgdGhlIHNhbWUgYXMNCj4gInRpLGNoYXJnZS1jdXJyZW50Ii4uLiBU
-d28gZGlmZmVyZW50IHByb3BlcnRpZXMgd2l0aCBzYW1lIGRlc2NyaXB0aW9uPw0KPiANCj4gPiAr
-LSB0aSxtYXgtY2hhcmdlLXZvbHRhZ2U6IGludGVnZXIsIG1heGltdW0gY2hhcmdpbmcgdm9sdGFn
-ZSAoaW4gdVYpOw0KPiANCj4gRGl0dG8uDQpJIHdpbGwgZml4IGl0Lg0KDQo+ID4gKy0gdGksbWlu
-LWNoYXJnZS10ZW1wZXJhdHVyZTogaW50ZWdlciwgbWluaW11bSBjaGFyZ2luZyB0ZW1wZXJhdHVy
-ZQ0KPiA+ICsoaW4gRGVnQyk7DQo+ID4gKy0gdGksbWF4LWNoYXJnZS10ZW1wZXJhdHVyZTogaW50
-ZWdlciwgbWF4aW11bSBjaGFyZ2luZyB0ZW1wZXJhdHVyZSAoaW4NCj4gRGVnQykuDQo+ID4gKy0g
-dGksdGhlcm1hbC1zZW5zaW5nOiBpbnRlZ2VyLCBlbmFibGUoMSkgb3IgZGlzYWJsZSgwKSBKRUlU
-QSB0aGVybWFsIGNvbnRyb2wuDQo+IA0KPiBZb3UgbWFkZSBpdCBpbnRlZ2VyIGluc3RlYWQgb2Yg
-Ym9vbGVhbiwgc28ganVzdCB0byBiZSBzdXJlIC0geW91IGV4cGVjdCB0aGUNCj4gcG9zc2liaWxp
-dHkgb2Ygb3ZlcnJpZGluZyB0aGlzIHByb3BlcnR5IG9yIGV4dGVuZGluZyBpdCBpbiBmdXJ0aGVy
-IGRldmljZXM/DQpZZXMuIFRoYW5rcy4NCg0KVGhhbmtzLA0KUmFtDQo=
+Hello Balbir,
+
+On Sat, Jan 23, 2016 at 07:59:20PM +1100, Balbir Singh wrote:
+> On Fri, 22 Jan 2016 12:49:02 +0530
+> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
+> 
+> > cpu_to_chip_id() does a DT walk through to find out the chip id by
+> > taking a contended device tree lock. This adds an unnecessary overhead
+> > in a hot path. So instead of calling cpu_to_chip_id() everytime cache
+> > the chip ids for all cores in the array 'core_to_chip_map' and use it
+> > in the hotpath.
+> > 
+> > Reported-by: Anton Blanchard <anton@samba.org>
+> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> snip
+> 
+> Does the core_to_chip_map need to be updated/refreshed on/after/ a
+> cpu (core) hotplug? I presume id's don't change
+
+No, the id's don't change on cpu/core hotplug. The core_to_chip_map is
+initialized in init_chip_info() where we use for_each_possible_cpu().
+
+Thanks for the review!
+> 
+> Balbir
+> 
+--
+Thanks and Regards
+gautham.
+
