@@ -1,61 +1,62 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v7 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 25 Jan 2016 12:14:56 +0800
-Message-ID: <CAMz4kuJOfze8r-4XUoPaSQmNyn1074G4Kdw=1kAsWn13Y6yqsg@mail.gmail.com>
-References: <cover.1451876014.git.baolin.wang@linaro.org>
-	<20160125034405.GA25279@kroah.com>
+From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Subject: RE: [PATCH 1/2] dt: power: Add support for TI BQ24261 charger
+Date: Mon, 25 Jan 2016 05:14:53 +0000
+Message-ID: <D854C92F57B1B347B57E531E78D05EAD57A27BE7@BGSMSX104.gar.corp.intel.com>
+References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
+	<1446136625-20845-2-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPcDea5vjX+-tDg=7Z2kPrtsEABybA0+nEPGJDVwaYvb1Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f169.google.com ([209.85.160.169]:33442 "EHLO
-	mail-yk0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755110AbcAYEO5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Jan 2016 23:14:57 -0500
-Received: by mail-yk0-f169.google.com with SMTP id k129so149331712yke.0
-        for <linux-pm@vger.kernel.org>; Sun, 24 Jan 2016 20:14:56 -0800 (PST)
-In-Reply-To: <20160125034405.GA25279@kroah.com>
+Received: from mga11.intel.com ([192.55.52.93]:33795 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbcAYFPG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Jan 2016 00:15:06 -0500
+In-Reply-To: <CAJKOXPcDea5vjX+-tDg=7Z2kPrtsEABybA0+nEPGJDVwaYvb1Q@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Felipe Balbi <balbi@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
 
-On 25 January 2016 at 11:44, Greg KH <gregkh@linuxfoundation.org> wrote:
-> On Mon, Jan 04, 2016 at 11:04:26AM +0800, Baolin Wang wrote:
->> Currently the Linux kernel does not provide any standard integration of this
->> feature that integrates the USB subsystem with the system power regulation
->> provided by PMICs meaning that either vendors must add this in their kernels
->> or USB gadget devices based on Linux (such as mobile phones) may not behave
->> as they should. Thus provide a standard framework for doing this in kernel.
->>
->> Now introduce one user with wm831x_power to support and test the usb charger,
->> which is pending testing. Moreover there may be other potential users will use
->> it in future.
->>
->> Changes since v5:
->>  - Remove the notifier chain things from the gadget and introduce one callback
->>  function to report to the usb charger when the gadget state is changed.
->>  - Flesh out the port type detection which combines the USB negotiation and
->>  PMICs detection.
->>  - Supply the notification mechanism to userspace when charger state is changed.
->>  - Integrate with the vbus staff in the gadget API.
->>  - Spilt up the functionality for userspace with one file per USB charger type.
->>  - Rebase on "4.4-rc7".
->
-> You already sent out v7, so this should be v8, right?  What changed
-> since v7?  Why resend it if nothing changed?
-
-I'm sorry for confusing, This is v7 without any changing, but I'm not
-sure maintainers have seen the big improvements since v5, so I resend
-it for catching attentions. Sorry again for confusing.
-
->
-> confused,
->
-> greg k-h
-
-
-
--- 
-Baolin.wang
-Best Regards
+SGkgS3J6eXN6dG9mLA0KDQo+IDIwMTUtMTAtMzAgMTozNyBHTVQrMDk6MDAgUmFtYWtyaXNobmEg
+UGFsbGFsYQ0KPiA8cmFtYWtyaXNobmEucGFsbGFsYUBpbnRlbC5jb20+Og0KPiA+IFRoaXMgcGF0
+Y2ggYWRkcyB0aGUgZGV2aWNlIHRyZWUgZG9jdW1lbnRhdGlvbiBmb3IgVEkgQlEyNDI2MSBjaGFy
+Z2VyLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogUmFtYWtyaXNobmEgUGFsbGFsYSA8cmFtYWty
+aXNobmEucGFsbGFsYUBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmVubnkgVEMgPGpl
+bm55LnRjQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3Mv
+cG93ZXIvYnEyNDI2MS50eHQgICAgICAgICAgfCAgIDM0DQo+ICsrKysrKysrKysrKysrKysrKysr
+DQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAzNCBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2Rl
+IDEwMDY0NA0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9icTI0
+MjYxLnR4dA0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9wb3dlci9icTI0MjYxLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3Bvd2VyL2JxMjQyNjEudHh0DQo+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4g
+PiBpbmRleCAwMDAwMDAwLi5lMThmNmRjDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9icTI0MjYxLnR4dA0KPiA+IEBA
+IC0wLDAgKzEsMzQgQEANCj4gPiArQmluZGluZyBmb3IgVEkgYnEyNDI2MSBMaS1Jb24gQ2hhcmdl
+cg0KPiA+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiArLSBjb21wYXRpYmxlOiBT
+aG91bGQgY29udGFpbiBvbmUgb2YgdGhlIGZvbGxvd2luZzoNCj4gPiArICAgICogInRpLGJxMjQy
+NjEiDQo+IA0KPiBKdXN0OiAnc2hvdWxkIGJlICJ0aSxicTI0MjYxIicuDQpPay4NCg0KPiA+ICst
+IHJlZzogaW50ZWdlciwgaTJjIGFkZHJlc3Mgb2YgdGhlIGRldmljZS4NCj4gPiArLSB0aSxiYXR0
+ZXJ5LXJlZ3VsYXRpb24tdm9sdGFnZTogaW50ZWdlciwgbWF4aW11bSBjaGFyZ2luZyB2b2x0YWdl
+IGluIHVWLg0KPiA+ICstIHRpLGNoYXJnZS1jdXJyZW50OiBpbnRlZ2VyLCBtYXhpbXVtIGNoYXJn
+aW5nIGN1cnJlbnQgaW4gdUEuDQo+ID4gKy0gdGksdGVybWluYXRpb24tY3VycmVudDogaW50ZWdl
+ciwgY2hhcmdlIHdpbGwgYmUgdGVybWluYXRlZCB3aGVuIGN1cnJlbnQgaW4NCj4gPiArICAgIGNv
+bnN0YW50LXZvbHRhZ2UgcGhhc2UgZHJvcHMgYmVsb3cgdGhpcyB2YWx1ZSAoaW4gdUEpLg0KPiAN
+Cj4gU2FtZSBhcyBwcm9wb3NlZCBleHRlbnNpb24gb2YgYnEyNDI1Ny50eHQuIEkgbGlrZSBpdC4N
+Cj4gDQo+ID4gKw0KPiA+ICtPcHRpb25hbCBwcm9wZXJ0aWVzOg0KPiA+ICstIHRpLG1heC1jaGFy
+Z2UtY3VycmVudDogaW50ZWdlciwgbWF4aW11bSBjaGFyZ2luZyBjdXJyZW50IChpbiB1QSk7DQo+
+IA0KPiBJIGRpZCBub3QgbG9vayBhdCB0aGUgY29kZSB5ZXQgYnV0IGRlc2NyaXB0aW9uIG9mIHBy
+b3BlcnR5IGlzIGV4YWN0bHkgdGhlIHNhbWUgYXMNCj4gInRpLGNoYXJnZS1jdXJyZW50Ii4uLiBU
+d28gZGlmZmVyZW50IHByb3BlcnRpZXMgd2l0aCBzYW1lIGRlc2NyaXB0aW9uPw0KPiANCj4gPiAr
+LSB0aSxtYXgtY2hhcmdlLXZvbHRhZ2U6IGludGVnZXIsIG1heGltdW0gY2hhcmdpbmcgdm9sdGFn
+ZSAoaW4gdVYpOw0KPiANCj4gRGl0dG8uDQpJIHdpbGwgZml4IGl0Lg0KDQo+ID4gKy0gdGksbWlu
+LWNoYXJnZS10ZW1wZXJhdHVyZTogaW50ZWdlciwgbWluaW11bSBjaGFyZ2luZyB0ZW1wZXJhdHVy
+ZQ0KPiA+ICsoaW4gRGVnQyk7DQo+ID4gKy0gdGksbWF4LWNoYXJnZS10ZW1wZXJhdHVyZTogaW50
+ZWdlciwgbWF4aW11bSBjaGFyZ2luZyB0ZW1wZXJhdHVyZSAoaW4NCj4gRGVnQykuDQo+ID4gKy0g
+dGksdGhlcm1hbC1zZW5zaW5nOiBpbnRlZ2VyLCBlbmFibGUoMSkgb3IgZGlzYWJsZSgwKSBKRUlU
+QSB0aGVybWFsIGNvbnRyb2wuDQo+IA0KPiBZb3UgbWFkZSBpdCBpbnRlZ2VyIGluc3RlYWQgb2Yg
+Ym9vbGVhbiwgc28ganVzdCB0byBiZSBzdXJlIC0geW91IGV4cGVjdCB0aGUNCj4gcG9zc2liaWxp
+dHkgb2Ygb3ZlcnJpZGluZyB0aGlzIHByb3BlcnR5IG9yIGV4dGVuZGluZyBpdCBpbiBmdXJ0aGVy
+IGRldmljZXM/DQpZZXMuIFRoYW5rcy4NCg0KVGhhbmtzLA0KUmFtDQo=
