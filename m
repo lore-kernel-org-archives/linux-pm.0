@@ -1,81 +1,47 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] cpufreq: cpufreq-dt: avoid uninitialized variable warnings:
-Date: Mon, 25 Jan 2016 16:45:48 +0100
-Message-ID: <1453736756-1959377-1-git-send-email-arnd@arndb.de>
+Subject: [PATCH] power: collie_battery: hide unused variable
+Date: Mon, 25 Jan 2016 16:45:49 +0100
+Message-ID: <1453736756-1959377-2-git-send-email-arnd@arndb.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-gcc warns quite a bit about values returned from allocate_resources()
-in cpufreq-dt.c:
+The 'wakeup_enabled' variable in this driver is only accessed
+by the optional power management functions and we get a warning
+when they are disabled:
 
-cpufreq-dt.c: In function 'cpufreq_init':
-cpufreq-dt.c:327:6: error: 'cpu_dev' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-cpufreq-dt.c:197:17: note: 'cpu_dev' was declared here
-cpufreq-dt.c:376:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-cpufreq-dt.c:199:14: note: 'cpu_clk' was declared here
-cpufreq-dt.c: In function 'dt_cpufreq_probe':
-cpufreq-dt.c:461:2: error: 'cpu_clk' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-cpufreq-dt.c:447:14: note: 'cpu_clk' was declared here
+drivers/power/collie_battery.c:29:12: error: 'wakeup_enabled' defined but not used [-Werror=unused-variable]
 
-The problem is that it's slightly hard for gcc to follow return
-codes across PTR_ERR() calls.
-This patch uses explicit assignments to the "ret" variable to make
-it easier for gcc to verify that the code is actually correct,
-without the need to add a bogus initialization.
+This moves the definition next to the users inside the same #ifdef,
+which avoids the warning.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/cpufreq/cpufreq-dt.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ drivers/power/collie_battery.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 9bc37c437874..0ca74d070058 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -142,15 +142,16 @@ static int allocate_resources(int cpu, struct device **cdev,
+diff --git a/drivers/power/collie_battery.c b/drivers/power/collie_battery.c
+index 8a971b3dbe58..3a0bc608d4b5 100644
+--- a/drivers/power/collie_battery.c
++++ b/drivers/power/collie_battery.c
+@@ -26,7 +26,6 @@
+ static DEFINE_MUTEX(bat_lock); /* protects gpio pins */
+ static struct work_struct bat_work;
+ static struct ucb1x00 *ucb;
+-static int wakeup_enabled;
  
- try_again:
- 	cpu_reg = regulator_get_optional(cpu_dev, reg);
--	if (IS_ERR(cpu_reg)) {
-+	ret = PTR_ERR_OR_ZERO(cpu_reg);
-+	if (ret) {
- 		/*
- 		 * If cpu's regulator supply node is present, but regulator is
- 		 * not yet registered, we should try defering probe.
- 		 */
--		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
-+		if (ret == -EPROBE_DEFER) {
- 			dev_dbg(cpu_dev, "cpu%d regulator not ready, retry\n",
- 				cpu);
--			return -EPROBE_DEFER;
-+			return ret;
- 		}
+ struct collie_bat {
+ 	int status;
+@@ -291,6 +290,8 @@ static struct gpio collie_batt_gpios[] = {
+ };
  
- 		/* Try with "cpu-supply" */
-@@ -159,18 +160,16 @@ try_again:
- 			goto try_again;
- 		}
- 
--		dev_dbg(cpu_dev, "no regulator for cpu%d: %ld\n",
--			cpu, PTR_ERR(cpu_reg));
-+		dev_dbg(cpu_dev, "no regulator for cpu%d: %d\n", cpu, ret);
- 	}
- 
- 	cpu_clk = clk_get(cpu_dev, NULL);
--	if (IS_ERR(cpu_clk)) {
-+	ret = PTR_ERR_OR_ZERO(cpu_clk);
-+	if (ret) {
- 		/* put regulator */
- 		if (!IS_ERR(cpu_reg))
- 			regulator_put(cpu_reg);
- 
--		ret = PTR_ERR(cpu_clk);
--
- 		/*
- 		 * If cpu's clk node is present, but clock is not yet
- 		 * registered, we should try defering probe.
+ #ifdef CONFIG_PM
++static int wakeup_enabled;
++
+ static int collie_bat_suspend(struct ucb1x00_dev *dev)
+ {
+ 	/* flush all pending status updates */
 -- 
 2.7.0
