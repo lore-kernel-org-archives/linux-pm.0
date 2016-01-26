@@ -1,50 +1,48 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 26 Jan 2016 14:50:13 -0800
-Message-ID: <20160126225013.GC19432@atomide.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Wed, 27 Jan 2016 00:14:54 +0100
+Message-ID: <CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
 References: <20160126224804.GB19432@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:57764 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbcAZWuQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Jan 2016 17:50:16 -0500
-Content-Disposition: inline
+Received: from mail-lb0-f181.google.com ([209.85.217.181]:36820 "EHLO
+	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbcAZXO4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 18:14:56 -0500
 In-Reply-To: <20160126224804.GB19432@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Kevin Hilman <khilman@baylibre.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-* Tony Lindgren <tony@atomide.com> [160126 14:49]:
+On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
 > Hi,
-> 
+>
 > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
 > PM states at probe error and driver unbind") broke PM on at least
 > omap3. It seems we now need to additionally also call
 > pm_runtime_dont_use_autosuspend() to get things working again?
-> 
+>
 > The following fixes idling on omap3, but I'm wondering if we
 > should do something in pm_runtime_reinit() instead?
 
-Oh one more thing, this happens as we get -EPROBE_DEFER with
-the regulators initially.
+Well, does it actually help if you add
+pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
 
 > 8< ---------------------
 > --- a/drivers/mmc/host/omap_hsmmc.c
 > +++ b/drivers/mmc/host/omap_hsmmc.c
 > @@ -2232,6 +2232,7 @@ err_irq:
->  		dma_release_channel(host->tx_chan);
->  	if (host->rx_chan)
->  		dma_release_channel(host->rx_chan);
-> +	pm_runtime_dont_use_autosuspend(host->dev);
->  	pm_runtime_put_sync(host->dev);
->  	pm_runtime_disable(host->dev);
->  	if (host->dbclk)
+>                 dma_release_channel(host->tx_chan);
+>         if (host->rx_chan)
+>                 dma_release_channel(host->rx_chan);
+> +       pm_runtime_dont_use_autosuspend(host->dev);
+>         pm_runtime_put_sync(host->dev);
+>         pm_runtime_disable(host->dev);
+>         if (host->dbclk)
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+
+
+Thanks,
+Rafael
