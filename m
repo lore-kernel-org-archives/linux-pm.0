@@ -1,1082 +1,367 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 2/2] power: ucs1002: Add support for Programmable USB Port Power Controller
-Date: Tue, 26 Jan 2016 10:12:21 +0100
-Message-ID: <1453799541-5445-3-git-send-email-enric.balletbo@collabora.com>
-References: <1453799541-5445-1-git-send-email-enric.balletbo@collabora.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH] cpufreq: Fix NULL reference crash while accessing
+ policy->governor_data
+Date: Tue, 26 Jan 2016 09:57:51 +0000
+Message-ID: <20160126095751.GJ10898@e106622-lin>
+References: <1297c8fc8135f8b5359f9c49d220a939c0ee640e.1453741314.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:33366 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756909AbcAZJMf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 04:12:35 -0500
-In-Reply-To: <1453799541-5445-1-git-send-email-enric.balletbo@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1297c8fc8135f8b5359f9c49d220a939c0ee640e.1453741314.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, "# v4 . 2+" <stable@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
 
-The UCS1002-2 provides a USB port power switch for precise control of u=
-p
-to 2.5 amperes continuous current with over-current limit (OCL), dynami=
-c
-thermal management, latch or auto-recovery (low test current) fault
-handling, selectable active low or high enable, under- and over-voltage
-lockout, back-drive protection, and back-voltage protection.
+Hi Viresh,
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- drivers/power/Kconfig         |   7 +
- drivers/power/Makefile        |   1 +
- drivers/power/ucs1002_power.c | 979 ++++++++++++++++++++++++++++++++++=
-++++++++
- 3 files changed, 987 insertions(+)
- create mode 100644 drivers/power/ucs1002_power.c
+On 25/01/16 22:33, Viresh Kumar wrote:
+> There is a little race discovered by Juri, where we are able to:
+> - create and read a sysfs file before policy->governor_data is being set
+>   to a non NULL value.
+>   OR
+> - set policy->governor_data to NULL, and reading a file before being
+>   destroyed.
+> 
+> And so such a crash is reported:
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address 0000000c
+> pgd = edfc8000
+> [0000000c] *pgd=bfc8c835
+> Internal error: Oops: 17 [#1] SMP ARM
+> Modules linked in:
+> CPU: 4 PID: 1730 Comm: cat Not tainted 4.5.0-rc1+ #463
+> Hardware name: ARM-Versatile Express
+> task: ee8e8480 ti: ee930000 task.ti: ee930000
+> PC is at show_ignore_nice_load_gov_pol+0x24/0x34
+> LR is at show+0x4c/0x60
+> pc : [<c058f1bc>]    lr : [<c058ae88>]    psr: a0070013
+> sp : ee931dd0  ip : ee931de0  fp : ee931ddc
+> r10: ee4bc290  r9 : 00001000  r8 : ef2cb000
+> r7 : ee4bc200  r6 : ef2cb000  r5 : c0af57b0  r4 : ee4bc2e0
+> r3 : 00000000  r2 : 00000000  r1 : c0928df4  r0 : ef2cb000
+> Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment none
+> Control: 10c5387d  Table: adfc806a  DAC: 00000051
+> Process cat (pid: 1730, stack limit = 0xee930210)
+> Stack: (0xee931dd0 to 0xee932000)
+> 1dc0:                                     ee931dfc ee931de0 c058ae88 c058f1a4
+> 1de0: edce3bc0 c07bfca4 edce3ac0 00001000 ee931e24 ee931e00 c01fcb90 c058ae48
+> 1e00: 00000001 edce3bc0 00000000 00000001 ee931e50 ee8ff480 ee931e34 ee931e28
+> 1e20: c01fb33c c01fcb0c ee931e8c ee931e38 c01a5210 c01fb314 ee931e9c ee931e48
+> 1e40: 00000000 edce3bf0 befe4a00 ee931f78 00000000 00000000 000001e4 00000000
+> 1e60: c00545a8 edce3ac0 00001000 00001000 befe4a00 ee931f78 00000000 00001000
+> 1e80: ee931ed4 ee931e90 c01fbed8 c01a5038 ed085a58 00020000 00000000 00000000
+> 1ea0: c0ad72e4 ee931f78 ee8ff488 ee8ff480 c077f3fc 00001000 befe4a00 ee931f78
+> 1ec0: 00000000 00001000 ee931f44 ee931ed8 c017c328 c01fbdc4 00001000 00000000
+> 1ee0: ee8ff480 00001000 ee931f44 ee931ef8 c017c65c c03deb10 ee931fac ee931f08
+> 1f00: c0009270 c001f290 c0a8d968 ef2cb000 ef2cb000 ee8ff480 00000020 ee8ff480
+> 1f20: ee8ff480 befe4a00 00001000 ee931f78 00000000 00000000 ee931f74 ee931f48
+> 1f40: c017d1ec c017c2f8 c019c724 c019c684 ee8ff480 ee8ff480 00001000 befe4a00
+> 1f60: 00000000 00000000 ee931fa4 ee931f78 c017d2a8 c017d160 00000000 00000000
+> 1f80: 000a9f20 00001000 befe4a00 00000003 c000ffe4 ee930000 00000000 ee931fa8
+> 1fa0: c000fe40 c017d264 000a9f20 00001000 00000003 befe4a00 00001000 00000000
+> Unable to handle kernel NULL pointer dereference at virtual address 0000000c
+> 1fc0: 000a9f20 00001000 befe4a00 00000003 00000000 00000000 00000003 00000001
+> pgd = edfc4000
+> [0000000c] *pgd=bfcac835
+> 1fe0: 00000000 befe49dc 000197f8 b6e35dfc 60070010 00000003 3065b49d 134ac2c9
+> 
+> [<c058f1bc>] (show_ignore_nice_load_gov_pol) from [<c058ae88>] (show+0x4c/0x60)
+> [<c058ae88>] (show) from [<c01fcb90>] (sysfs_kf_seq_show+0x90/0xfc)
+> [<c01fcb90>] (sysfs_kf_seq_show) from [<c01fb33c>] (kernfs_seq_show+0x34/0x38)
+> [<c01fb33c>] (kernfs_seq_show) from [<c01a5210>] (seq_read+0x1e4/0x4e4)
+> [<c01a5210>] (seq_read) from [<c01fbed8>] (kernfs_fop_read+0x120/0x1a0)
+> [<c01fbed8>] (kernfs_fop_read) from [<c017c328>] (__vfs_read+0x3c/0xe0)
+> [<c017c328>] (__vfs_read) from [<c017d1ec>] (vfs_read+0x98/0x104)
+> [<c017d1ec>] (vfs_read) from [<c017d2a8>] (SyS_read+0x50/0x90)
+> [<c017d2a8>] (SyS_read) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+> Code: e5903044 e1a00001 e3081df4 e34c1092 (e593300c)
+> ---[ end trace 5994b9a5111f35ee ]---
+> 
+> Fix that by making sure, policy->governor_data is updated at the right
+> places only.
+> 
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 1ddd13c..1ef2c23 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -502,6 +502,13 @@ config AXP20X_POWER
- 	  This driver provides support for the power supply features of
- 	  AXP20x PMIC.
-=20
-+config POWER_UCS1002
-+	tristate "UCS1002-2 power supply driver"
-+	select REGMAP_I2C
-+	help
-+	  This driver provices support for UCS1002-2 Programmable USB Port
-+	  Power Controller.
-+
- endif # POWER_SUPPLY
-=20
- source "drivers/power/reset/Kconfig"
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 0e4eab5..79b29b4 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -73,3 +73,4 @@ obj-$(CONFIG_CHARGER_TPS65217)	+=3D tps65217_charger.=
-o
- obj-$(CONFIG_POWER_RESET)	+=3D reset/
- obj-$(CONFIG_AXP288_FUEL_GAUGE) +=3D axp288_fuel_gauge.o
- obj-$(CONFIG_AXP288_CHARGER)	+=3D axp288_charger.o
-+obj-$(CONFIG_POWER_UCS1002)	+=3D ucs1002_power.o
-diff --git a/drivers/power/ucs1002_power.c b/drivers/power/ucs1002_powe=
-r.c
-new file mode 100644
-index 0000000..eba1ce0
---- /dev/null
-+++ b/drivers/power/ucs1002_power.c
-@@ -0,0 +1,979 @@
-+/*
-+ * Driver for UCS1002 Programmable USB Port Power Controller
-+ *
-+ * Copyright (C) 2016 Zodiac Inflight Innovations
-+ *
-+ * This program is free software; you can redistribute it and/or modif=
-y it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITH=
-OUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY =
-or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licen=
-se for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/=
->.
-+ *
-+ */
-+#include <linux/freezer.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/kthread.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+
-+#define POLL_INTERVAL		(HZ * 2)
-+
-+/* UCS1002 Registers */
-+#define UCS1002_REG_CURRENT_MEASUREMENT	0x00
-+
-+/*
-+ * The Total Accumulated Charge registers store the total accumulated =
-charge
-+ * delivered from the VS source to a portable device. The total value =
-is
-+ * calculated using four registers, from 01h to 04h. The bit weighting=
- of
-+ * the registers is given in mA/hrs.
-+ */
-+#define UCS1002_REG_TOTAL_ACC_CHARGE	0x01
-+
-+/* Other Status Register */
-+#define UCS1020_REG_OTHER_STATUS	0x0f
-+#  define F_ALERT_PIN			BIT(5)
-+#  define F_ADET_PIN			BIT(4)
-+#  define F_CHG_ACT			BIT(3)
-+#  define F_EM_ACT			BIT(2)
-+#  define F_EM_STEP_MASK		0x03
-+
-+/* Interrupt Status */
-+#define UCS1002_REG_INTERRUPT_STATUS	0x10
-+#  define F_DISCHARGE_ERR		BIT(6)
-+#  define F_RESET			BIT(5)
-+#  define F_MIN_KEEP_OUT		BIT(4)
-+#  define F_TSD				BIT(3)
-+#  define F_OVER_VOLT			BIT(2)
-+#  define F_BACK_VOLT			BIT(1)
-+#  define F_OVER_ILIM			BIT(0)
-+
-+/* Pin Status Register */
-+#define UCS1002_REG_PIN_STATUS		0x14
-+#  define UCS1002_PWR_STATE_MASK	0x03
-+#  define F_PWR_EN_PIN			BIT(6)
-+#  define F_M2_PIN			BIT(5)
-+#  define F_M1_PIN			BIT(4)
-+#  define F_EM_EN_PIN			BIT(3)
-+#  define F_SEL_PIN			BIT(2)
-+#  define F_ACTIVE_MODE_MASK		0x38
-+#  define F_ACTIVE_MODE_SHIFT		3
-+
-+/* General Configuration Register */
-+#define UCS1002_REG_GENERAL_CFG	0x15
-+#  define F_ALERT_MASK			BIT(6)
-+#  define F_ALERT_LINK			BIT(5)
-+#  define F_DISCHARGE			BIT(4)
-+#  define F_RATION_EN			BIT(3)
-+#  define F_RATION_RST			BIT(2)
-+#  define F_RATION_BEH_MASK		0x03
-+#  define F_RATION_BEH_REPORT		0x00
-+#  define F_RATION_BEH_REPORT_DISCON	0x01
-+#  define F_RATION_BEH_DISCON_SLEEP	0x02
-+#  define F_RATION_BEH_IGNORE		0x03
-+
-+/* Emulation Configuration Register */
-+#define UCS1002_REG_EMU_CFG		0x16
-+
-+/* Switch Configuration Register */
-+#define UCS1002_REG_SWITCH_CFG		0x17
-+#  define F_PIN_IGNORE			BIT(7)
-+#  define F_EM_EN_SET			BIT(5)
-+#  define F_M2_SET			BIT(4)
-+#  define F_M1_SET			BIT(3)
-+#  define F_S0_SET			BIT(2)
-+#  define F_PWR_EN_SET			BIT(1)
-+#  define F_LATCH_SET			BIT(0)
-+#  define V_SET_ACTIVE_MODE_MASK	0x38
-+#  define V_SET_ACTIVE_MODE_PASSTHROUGH	F_M2_SET
-+#  define V_SET_ACTIVE_MODE_DEDICATED	F_EM_EN_SET
-+#  define V_SET_ACTIVE_MODE_BC12_DCP	(F_M2_SET | F_EM_EN_SET)
-+#  define V_SET_ACTIVE_MODE_BC12_SDP	F_M1_SET
-+#  define V_SET_ACTIVE_MODE_BC12_CDP	(F_M1_SET | F_M2_SET | F_EM_EN_SE=
-T)
-+
-+/* Current Limit Register */
-+#define UCS1002_REG_ILIMIT		0x19
-+#  define UCS1002_ILIM_SW_MASK		0x07
-+
-+/* High-speed Switch Configuration Register */
-+#define UCS1002_REG_HS_SWITCH_CFG	0x25
-+
-+/* Custom Emulation Configuration Register */
-+#define UCS1002_REG_CUSTOM_EMU_CFG_BASE	0x40
-+#define V_CUSTOM_EMU_CFG_NREGS		12
-+
-+/* Custom Current Limiting Behavior Config */
-+#define UCS1002_REG_CUSTOM_ILIMIT_CFG	0x51
-+
-+/* Product ID */
-+#define UCS1002_REG_PRODUCT_ID		0xfd
-+#  define UCS1002_PRODUCT_ID		0x4e
-+
-+/* Manufacture name */
-+#define UCS1002_MANUFACTURER		"SMSC"
-+
-+/* Number of registers to set a custom profile */
-+#define UCS1002_PROFILE_NREGS		17
-+
-+struct ucs1002_platform_data {
-+	struct gpio_desc *gpiod_em;
-+	struct gpio_desc *gpiod_m1;
-+	struct gpio_desc *gpiod_m2;
-+	struct gpio_desc *gpiod_pwr;
-+};
-+
-+struct ucs1002_info {
-+	struct power_supply *charger;
-+	struct i2c_client *client;
-+	struct regmap *regmap;
-+	struct ucs1002_platform_data *pdata;
-+	struct task_struct *poll_task;
-+
-+	bool curr_alarm;
-+	bool enabled;
-+	bool present;
-+	/* Interrupts */
-+	int irq_a_det;
-+	int irq_alert;
-+};
-+
-+static const struct regmap_config ucs1002_regmap_config =3D {
-+	.reg_bits =3D 8,
-+	.val_bits =3D 8,
-+};
-+
-+static enum power_supply_property ucs1002_props[] =3D {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_PRESENT, /* the presence of PED */
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
-+/*
-+ * Iterate through each element of the 'map' array until an element wh=
-ose value
-+ * is equal to 'value' is found. Return the index of the respective el=
-ement or
-+ * -EINVAL if no such element is found.
-+ */
-+static int ucs1002_find_idx(int value, const int *map, int map_size)
-+{
-+	int idx;
-+
-+	for (idx =3D 0; idx < map_size; idx++)
-+		if (value =3D=3D map[idx])
-+			return idx;
-+
-+	return -EINVAL;
-+}
-+
-+static int ucs1002_power_enable(struct ucs1002_info *info, bool enable=
-)
-+{
-+	int ret, regval;
-+	unsigned int val;
-+
-+	/* Read the polarity setting determined by the SEL pin */
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (regval & F_SEL_PIN)
-+		val =3D enable ? F_PWR_EN_SET : 0;
-+	else
-+		val =3D enable ? 0 : F_PWR_EN_SET;
-+
-+	if (info->pdata) {
-+		ret =3D regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-+					 F_PWR_EN_SET, val);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		gpiod_set_value_cansleep(info->pdata->gpiod_pwr, val ? 0 : 1);
-+	}
-+
-+	info->enabled =3D enable;
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_online(struct ucs1002_info *info,
-+			      union power_supply_propval *val)
-+{
-+	int ret, regval;
-+
-+	ret =3D regmap_read(info->regmap, UCS1020_REG_OTHER_STATUS, &regval);
-+	if (ret < 0)
-+		return -EINVAL;
-+
-+	val->intval =3D (regval & F_CHG_ACT) ? 1 : 0;
-+
-+	return 0;
-+}
-+
-+/*
-+ * To fit within 32 bits some values are rounded (uA/h)
-+ *
-+ * For Total Accumulated Charge Middle Low Byte register, addr 03h, by=
-te 2
-+ *
-+ *   B0: 0.01084 mA/h rounded to 11 uA/h
-+ *   B1: 0.02169 mA/h rounded to 22 uA/h
-+ *   B2: 0.04340 mA/h rounded to 43 uA/h
-+ *   B3: 0.08676 mA/h rounded to 87 uA/h
-+ *   B4: 0.17350 mA/h rounded to 173 u=C3=81/h
-+ *
-+ * For Total Accumulated Charge Low Byte register, addr 04h, byte 3
-+ *
-+ *   B6: 0.00271 mA/h rounded to 3 uA/h
-+ *   B7: 0.005422 mA/h rounded to 5 uA/h
-+ */
-+static const u32 ucs1002_charge_byte_values[4][8] =3D {
-+	[0] =3D {
-+		710700, 1421000, 2843000, 5685000, 11371000, 22742000,
-+		45484000, 90968000
-+	      },
-+	[1] =3D {
-+		2776, 5552, 11105, 22210, 44420, 88840, 177700, 355400
-+	      },
-+	[2] =3D {
-+		11, 22, 43, 87, 173, 347, 694, 1388
-+	      },
-+	[3] =3D {
-+		0, 0, 0, 0, 0, 0, 3, 5
-+	      }
-+};
-+
-+static int ucs1002_get_charge(struct ucs1002_info *info,
-+			      union power_supply_propval *val)
-+{
-+	int i, j, ret, regval;
-+	unsigned int total =3D 0;
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_GENERAL_CFG, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (i =3D 0; i < 4; i++) {
-+		ret =3D regmap_read(info->regmap,
-+				  UCS1002_REG_TOTAL_ACC_CHARGE + i,
-+				  &regval);
-+		if (ret < 0)
-+			return -EINVAL;
-+
-+		for (j =3D 0; j < 8; j++)
-+			if (regval & BIT(j))
-+				total +=3D ucs1002_charge_byte_values[i][j];
-+	}
-+
-+	val->intval =3D total;
-+
-+	return 0;
-+}
-+
-+/*
-+ * The Current Measurement register stores the measured current value
-+ * delivered to the portable device. The range is from 9.76 mA to 2.5 =
-A.
-+ * Following values are in uA.
-+ */
-+static const u32 ucs1002_current_measurement_values[] =3D {
-+	9760, 19500, 39000, 78100, 156200, 312300, 624600,
-+	1249300
-+};
-+
-+static int ucs1002_get_current(struct ucs1002_info *info,
-+			       union power_supply_propval *val)
-+{
-+	int n, ret, regval;
-+	unsigned int total =3D 0;
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_CURRENT_MEASUREMENT,
-+			  &regval);
-+	if (ret < 0)
-+		return -EINVAL;
-+
-+	for (n =3D 0; n < ARRAY_SIZE(ucs1002_current_measurement_values); n++=
-)
-+		if (regval & BIT(n))
-+			total +=3D ucs1002_current_measurement_values[n];
-+
-+	val->intval =3D total;
-+
-+	return 0;
-+}
-+
-+/*
-+ * The Current Limit register stores the maximum current used by the p=
-ort
-+ * switch. The range is from 500mA to 2.5 A. Following values are in u=
-A.
-+ */
-+static const u32 ucs1002_current_limit_values[] =3D {
-+	500000, 900000, 1000000, 1200000, 1500000, 1800000, 2000000, 2500000
-+};
-+
-+static int ucs1002_get_max_current(struct ucs1002_info *info,
-+				   union power_supply_propval *val)
-+{
-+	int ret, regval;
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_ILIMIT, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	regval &=3D UCS1002_ILIM_SW_MASK;
-+	val->intval =3D ucs1002_current_limit_values[regval];
-+
-+	return 0;
-+}
-+
-+static int ucs1002_set_max_current(struct ucs1002_info *info, u32 val)
-+{
-+	int ret, idx;
-+
-+	idx =3D ucs1002_find_idx(val, ucs1002_current_limit_values,
-+			       ARRAY_SIZE(ucs1002_current_limit_values));
-+	if (idx < 0) {
-+		dev_err(&info->client->dev,
-+			"%d is an invalid max current value\n", val);
-+		return -EINVAL;
-+	}
-+
-+	ret =3D regmap_write(info->regmap, UCS1002_REG_ILIMIT, idx);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				union power_supply_propval *val)
-+{
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		return ucs1002_get_online(info, val);
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		return ucs1002_get_charge(info, val);
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		return ucs1002_get_current(info, val);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return ucs1002_get_max_current(info, val);
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval =3D info->present ? 1 : 0;
-+		return 0;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval =3D UCS1002_MANUFACTURER;
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int ucs1002_set_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				const union power_supply_propval *val)
-+{
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return ucs1002_set_max_current(info, val->intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int ucs1002_property_is_writeable(struct power_supply *psy,
-+					 enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct power_supply_desc ucs1002_charger_desc =3D {
-+	.name			=3D "ucs1002",
-+	.type			=3D POWER_SUPPLY_TYPE_MAINS,
-+	.get_property		=3D ucs1002_get_property,
-+	.set_property		=3D ucs1002_set_property,
-+	.property_is_writeable	=3D ucs1002_property_is_writeable,
-+	.properties		=3D ucs1002_props,
-+	.num_properties		=3D ARRAY_SIZE(ucs1002_props),
-+};
-+
-+static ssize_t ucs1002_sysfs_show_curr_alarm(struct device *dev,
-+					     struct device_attribute *attr,
-+					     char *buf)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", info->curr_alarm);
-+}
-+
-+static ssize_t ucs1002_sysfs_show_active_mode(struct device *dev,
-+					      struct device_attribute *attr,
-+					      char *buf)
-+{
-+	int ret, regval;
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &regval);
-+	if (ret < 0)
-+		return -EINVAL;
-+
-+	regval &=3D F_ACTIVE_MODE_MASK;
-+	regval =3D regval >> F_ACTIVE_MODE_SHIFT;
-+
-+	switch (regval) {
-+	/* Dedicated Charger Emulation Cycle */
-+	case 1:
-+	case 3:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "dedicated");
-+	/* Data Pass-through */
-+	case 4:
-+	case 6:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "pass-through");
-+	/* BC1.2 SDP */
-+	case 2:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "BC1.2-SDP");
-+	/* BC1.2 DCP */
-+	case 5:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "BC1.2-DCP");
-+	/* BC1.2 CDP */
-+	case 7:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "BC1.2-CDP");
-+	default:
-+		return scnprintf(buf, PAGE_SIZE, "%s\n", "unknown");
-+	};
-+}
-+
-+static ssize_t ucs1002_sysfs_set_active_mode(struct device *dev,
-+					     struct device_attribute *attr,
-+					     const char *buf, size_t count)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+	int mode, ret =3D 0;
-+
-+	if (strncmp(buf, "dedicated", 9) =3D=3D 0)
-+		mode =3D V_SET_ACTIVE_MODE_DEDICATED;
-+	else if (strncmp(buf, "pass-through", 12) =3D=3D 0)
-+		mode =3D V_SET_ACTIVE_MODE_PASSTHROUGH;
-+	else if (strncmp(buf, "BC1.2-DCP", 9) =3D=3D 0)
-+		mode =3D V_SET_ACTIVE_MODE_BC12_DCP;
-+	else if (strncmp(buf, "BC1.2-SDP", 9) =3D=3D 0)
-+		mode =3D V_SET_ACTIVE_MODE_BC12_SDP;
-+	else if (strncmp(buf, "BC1.2-CDP", 9) =3D=3D 0)
-+		mode =3D V_SET_ACTIVE_MODE_BC12_CDP;
-+	else
-+		return -EINVAL;
-+
-+	if (info->pdata) {
-+		gpiod_set_value_cansleep(info->pdata->gpiod_em,
-+					 (mode & F_EM_EN_SET) ? 1 : 0);
-+		gpiod_set_value_cansleep(info->pdata->gpiod_m1,
-+					 (mode & F_M1_SET) ? 1 : 0);
-+		gpiod_set_value_cansleep(info->pdata->gpiod_m2,
-+					 (mode & F_M2_SET) ? 1 : 0);
-+	} else {
-+		ret =3D regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-+					 V_SET_ACTIVE_MODE_MASK, mode);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	return count;
-+}
-+
-+static ssize_t ucs1002_sysfs_show_enabled(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", info->enabled);
-+}
-+
-+static ssize_t ucs1002_sysfs_set_enabled(struct device *dev,
-+					 struct device_attribute *attr,
-+					 const char *buf, size_t count)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+	long val;
-+	int ret;
-+
-+	if (kstrtol(buf, 10, &val) < 0)
-+		return -EINVAL;
-+
-+	ret =3D ucs1002_power_enable(info, val ? true : false);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static ssize_t ucs1002_sysfs_show_profile(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+	int idx, regval, ret, len =3D 0;
-+
-+	/*
-+	 * Read Custom Emulation Profile
-+	 */
-+
-+	/* read registers 40h-4Ch (Custom Emulation Configuration) */
-+	for (idx =3D 0; idx < V_CUSTOM_EMU_CFG_NREGS; idx++) {
-+		ret =3D regmap_read(info->regmap,
-+				  UCS1002_REG_CUSTOM_EMU_CFG_BASE + idx,
-+				  &regval);
-+		if (ret < 0)
-+			return ret;
-+
-+		len +=3D scnprintf(&buf[len], PAGE_SIZE, "%02x ", regval);
-+	}
-+
-+	/* read register 16h (Emulation Configuration) */
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_EMU_CFG, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	len +=3D scnprintf(&buf[len], PAGE_SIZE, "%02x ", regval);
-+
-+	/* read register 19h (Current Limit) */
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_ILIMIT, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	len +=3D scnprintf(&buf[len], PAGE_SIZE, "%02x ", regval);
-+
-+	/* read register 25h (High-speed Switch Configuration) */
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_HS_SWITCH_CFG, &regval)=
-;
-+	if (ret < 0)
-+		return ret;
-+
-+	len +=3D scnprintf(&buf[len], PAGE_SIZE, "%02x ", regval);
-+
-+	/* read register 51h (Custom Current Limiting Behavior Config) */
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_CUSTOM_ILIMIT_CFG,
-+			  &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	len +=3D scnprintf(&buf[len], PAGE_SIZE, "%02x\n", regval);
-+
-+	return len;
-+}
-+
-+static ssize_t ucs1002_sysfs_set_profile(struct device *dev,
-+					 struct device_attribute *attr,
-+					 const char *buf, size_t count)
-+{
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+	const char *delim =3D " ";
-+	char profile_data[256];
-+	char *token, *str_ptr;
-+	int regval[UCS1002_PROFILE_NREGS];
-+	int idx =3D 0, ret;
-+
-+	strncpy(profile_data, buf, 256);
-+	str_ptr =3D &profile_data[0];
-+
-+	while (str_ptr && (idx < UCS1002_PROFILE_NREGS)) {
-+		token =3D strsep(&str_ptr, delim);
-+		if (kstrtoint(token, 0, &regval[idx])) {
-+			dev_dbg(dev, "failed to convert %s to integer\n",
-+				token);
-+			return -EINVAL;
-+		}
-+		idx++;
-+	}
-+
-+	if (idx !=3D UCS1002_PROFILE_NREGS) {
-+		dev_dbg(dev, "failed to set emulation profile (%d)\n", idx);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Write Custom Emulation Profile
-+	 */
-+
-+	/* write registers 40h-4Ch (Custom Emulation Configuration) */
-+	for (idx =3D 0; idx < V_CUSTOM_EMU_CFG_NREGS; idx++) {
-+		ret =3D regmap_write(info->regmap,
-+				   UCS1002_REG_CUSTOM_EMU_CFG_BASE + idx,
-+				   regval[idx]);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	/* write register 16h (Emulation Configuration) */
-+	ret =3D regmap_write(info->regmap, UCS1002_REG_EMU_CFG,
-+			   regval[idx++]);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* write register 19h (Current Limit) */
-+	ret =3D regmap_write(info->regmap, UCS1002_REG_ILIMIT, regval[idx++])=
-;
-+	if (ret < 0)
-+		return ret;
-+
-+	/* write register 25h (High-speed Switch Configuration) */
-+	ret =3D regmap_write(info->regmap, UCS1002_REG_HS_SWITCH_CFG,
-+			   regval[idx++]);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* write register 51h (Custom Current Limiting Behavior Config) */
-+	ret =3D regmap_write(info->regmap, UCS1002_REG_CUSTOM_ILIMIT_CFG,
-+			   regval[idx]);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+const char * const ucs1002_pwr_state_values[] =3D {
-+	"sleep", "detect", "active", "error"
-+};
-+
-+static ssize_t ucs1002_sysfs_show_state(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	int ret, regval;
-+	struct power_supply *psy =3D dev_get_drvdata(dev);
-+	struct ucs1002_info *info =3D power_supply_get_drvdata(psy);
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &regval);
-+	if (ret < 0)
-+		return -EINVAL;
-+
-+	regval &=3D UCS1002_PWR_STATE_MASK;
-+
-+	return scnprintf(buf, PAGE_SIZE, "%s\n",
-+			 ucs1002_pwr_state_values[regval]);
-+}
-+
-+static DEVICE_ATTR(curr_alarm, S_IRUGO, ucs1002_sysfs_show_curr_alarm,=
- NULL);
-+static DEVICE_ATTR(enabled, S_IWUSR | S_IRUGO, ucs1002_sysfs_show_enab=
-led,
-+		   ucs1002_sysfs_set_enabled);
-+static DEVICE_ATTR(mode, S_IWUSR | S_IRUGO, ucs1002_sysfs_show_active_=
-mode,
-+		   ucs1002_sysfs_set_active_mode);
-+static DEVICE_ATTR(profile, S_IWUSR | S_IRUGO, ucs1002_sysfs_show_prof=
-ile,
-+		   ucs1002_sysfs_set_profile);
-+static DEVICE_ATTR(state, S_IRUGO, ucs1002_sysfs_show_state, NULL);
-+
-+static struct attribute *ucs1002_specific_attr[] =3D {
-+	&dev_attr_curr_alarm.attr,
-+	&dev_attr_enabled.attr,
-+	&dev_attr_mode.attr,
-+	&dev_attr_profile.attr,
-+	&dev_attr_state.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group ucs1002_attr_group =3D {
-+	.attrs =3D ucs1002_specific_attr,
-+};
-+
-+static irqreturn_t ucs1002_charger_irq(int irq, void *data)
-+{
-+	int ret, regval;
-+	bool present;
-+	struct ucs1002_info *info =3D data;
-+
-+	present =3D info->present;
-+
-+	ret =3D regmap_read(info->regmap, UCS1020_REG_OTHER_STATUS, &regval);
-+	if (ret < 0)
-+		return IRQ_HANDLED;
-+
-+	/* update attached status */
-+	info->present =3D (regval & F_ADET_PIN) ? true : false;
-+
-+	/* notify the change */
-+	if (present !=3D info->present)
-+		power_supply_changed(info->charger);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t ucs1002_alert_irq(int irq, void *data)
-+{
-+	int ret, regval;
-+	struct ucs1002_info *info =3D data;
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_INTERRUPT_STATUS, &regv=
-al);
-+	if (ret < 0)
-+		return IRQ_HANDLED;
-+
-+	/* update current alarm status */
-+	info->curr_alarm =3D (regval & F_OVER_ILIM) ? true : false;
-+
-+	/* over current alarm */
-+	if (regval & F_OVER_ILIM)
-+		power_supply_changed(info->charger);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int ucs1002_poll_task(void *data)
-+{
-+	set_freezable();
-+
-+	while (!kthread_should_stop()) {
-+		schedule_timeout_interruptible(POLL_INTERVAL);
-+		try_to_freeze();
-+		ucs1002_charger_irq(-1, data);
-+		ucs1002_alert_irq(-1, data);
-+	}
-+	return 0;
-+}
-+
-+static int ucs1002_probe(struct i2c_client *client,
-+			 const struct i2c_device_id *dev_id)
-+{
-+	int ret, regval;
-+	u32 property;
-+	struct ucs1002_info *info;
-+	struct device *dev =3D &client->dev;
-+	struct power_supply_config ucs1002_charger_config =3D {};
-+
-+	info =3D devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->regmap =3D devm_regmap_init_i2c(client, &ucs1002_regmap_config)=
-;
-+	if (IS_ERR(info->regmap)) {
-+		ret =3D PTR_ERR(info->regmap);
-+		dev_err(dev, "regmap initialization failed: %d\n", ret);
-+		return ret;
-+	}
-+
-+	info->client =3D client;
-+	info->curr_alarm =3D false;
-+	info->enabled =3D false;
-+	info->present =3D false;
-+
-+	info->irq_a_det =3D irq_of_parse_and_map(dev->of_node, 0);
-+	info->irq_alert =3D irq_of_parse_and_map(dev->of_node, 1);
-+
-+	i2c_set_clientdata(client, info);
-+
-+	ucs1002_charger_config.of_node =3D dev->of_node;
-+	ucs1002_charger_config.drv_data =3D info;
-+
-+	ret =3D regmap_read(info->regmap, UCS1002_REG_PRODUCT_ID, &regval);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (regval !=3D UCS1002_PRODUCT_ID) {
-+		dev_err(dev,
-+			"Product ID does not match (0x%02x !=3D 0x%02x)\n",
-+			regval, UCS1002_PRODUCT_ID);
-+		return -ENODEV;
-+	}
-+
-+	dev_info(dev, "registered with product id 0x%02x\n",
-+		 UCS1002_PRODUCT_ID);
-+
-+	/* Enable charge rationing by default */
-+	ret =3D regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
-+				 F_RATION_EN, F_RATION_EN);
-+	if (ret < 0)
-+		return ret;
-+
-+	info->charger =3D devm_power_supply_register(dev, &ucs1002_charger_de=
-sc,
-+						   &ucs1002_charger_config);
-+	if (IS_ERR(info->charger)) {
-+		dev_err(dev, "failed to register power supply\n");
-+		return PTR_ERR(info->charger);
-+	}
-+
-+	ret =3D sysfs_create_group(&info->charger->dev.kobj, &ucs1002_attr_gr=
-oup);
-+	if (ret < 0) {
-+		dev_err(dev, "can't create sysfs entries\n");
-+		return ret;
-+	}
-+
-+	/* Optional properties */
-+
-+	if (device_property_read_bool(dev, "microchip,pin-ignore")) {
-+		dev_dbg(dev, "set active mode selection through i2c\n");
-+		/*
-+		 * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
-+		 * mode selection to Dedicated Charger Emulation Cycle.
-+		 *
-+		 * #M1    #M2    EM_EN
-+		 *  0      0       1   - Dedicated Charger Emulation Cycle
-+		 *
-+		 */
-+		ret =3D regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-+					 F_PIN_IGNORE | F_EM_EN_SET | F_M2_SET |
-+					 F_M1_SET, F_PIN_IGNORE | F_EM_EN_SET);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		dev_dbg(dev, "set active mode selection through pins\n");
-+		/*
-+		 * PIN_IGNORE mode not set, so EM, M1 and M2 pins must be
-+		 * defined
-+		 */
-+		info->pdata =3D devm_kzalloc(dev,
-+					sizeof(struct ucs1002_platform_data),
-+					GFP_KERNEL);
-+		if (!info->pdata)
-+			return -ENOMEM;
-+
-+		/* gpio for chip EM_EN pin */
-+		info->pdata->gpiod_em =3D devm_gpiod_get(dev, "em",
-+						       GPIOD_OUT_HIGH);
-+		if (IS_ERR(info->pdata->gpiod_em)) {
-+			dev_err(dev, "unable to claim EM_EN gpio\n");
-+			return PTR_ERR(info->pdata->gpiod_em);
-+		}
-+
-+		/* Read the polarity setting determined by the SEL pin */
-+		ret =3D regmap_read(info->regmap, UCS1002_REG_PIN_STATUS,
-+				  &regval);
-+		if (ret < 0)
-+			return ret;
-+
-+		/* gpio for chip PWR_EN pin - power off */
-+		info->pdata->gpiod_pwr =3D devm_gpiod_get(dev, "pwr",
-+							(regval & F_SEL_PIN) ?
-+							GPIOD_OUT_LOW :
-+							GPIOD_OUT_HIGH);
-+		if (IS_ERR(info->pdata->gpiod_pwr)) {
-+			dev_err(dev, "unable to claim PWR_EN gpio\n");
-+			return PTR_ERR(info->pdata->gpiod_pwr);
-+		}
-+
-+		/* gpio for chip M1 pin */
-+		info->pdata->gpiod_m1 =3D devm_gpiod_get(dev, "m1",
-+						       GPIOD_OUT_LOW);
-+		if (IS_ERR(info->pdata->gpiod_m1)) {
-+			dev_err(dev, "unable to claim M1 gpio\n");
-+			return PTR_ERR(info->pdata->gpiod_m1);
-+		}
-+
-+		/* gpio for chip M2 pin */
-+		info->pdata->gpiod_m2 =3D devm_gpiod_get(dev, "m2",
-+						       GPIOD_OUT_LOW);
-+		if (IS_ERR(info->pdata->gpiod_m2)) {
-+			dev_err(dev, "unable to claim EM_EN gpio\n");
-+			return PTR_ERR(info->pdata->gpiod_m2);
-+		}
-+	}
-+
-+	/*
-+	 * The current limit is based on the resistor on the COMM_SEL / ILIM
-+	 * pin and this value cannot be changed to be higher than hardware
-+	 * set value. If the property is not set, the value set by hardware i=
-s
-+	 * the default.
-+	 */
-+	ret =3D device_property_read_u32(dev, "microchip,current-limit",
-+				       &property);
-+	if (ret =3D=3D 0)
-+		ucs1002_set_max_current(info, property);
-+
-+	/* Turn on the port power switch */
-+	ucs1002_power_enable(info, true);
-+
-+	if (info->irq_a_det && info->irq_alert) {
-+		ret =3D devm_request_threaded_irq(dev, info->irq_a_det, NULL,
-+						ucs1002_charger_irq,
-+						IRQF_TRIGGER_FALLING |
-+						IRQF_TRIGGER_RISING |
-+						IRQF_ONESHOT,
-+						"ucs1002-a_det", info);
-+		if (ret) {
-+			dev_err(dev, "failed to request A_DET threaded irq\n");
-+			return ret;
-+		}
-+
-+		ret =3D devm_request_threaded_irq(dev, info->irq_alert, NULL,
-+						ucs1002_alert_irq,
-+						IRQF_TRIGGER_FALLING |
-+						IRQF_TRIGGER_RISING |
-+						IRQF_ONESHOT,
-+						"ucs1002-alert", info);
-+		if (ret) {
-+			dev_err(dev, "failed to request ALERT threaded irq\n");
-+			return ret;
-+		}
-+	} else {
-+		dev_warn(dev, "no IRQ support, using polling mode\n");
-+		info->poll_task =3D kthread_run(ucs1002_poll_task, info,
-+					      "kucs1002");
-+		if (IS_ERR(info->poll_task)) {
-+			ret =3D PTR_ERR(info->poll_task);
-+			dev_err(dev, "unable to run kthread err (%d)\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int ucs1002_remove(struct i2c_client *client)
-+{
-+	struct ucs1002_info *info =3D i2c_get_clientdata(client);
-+
-+	if (info->poll_task)
-+		kthread_stop(info->poll_task);
-+
-+	sysfs_remove_group(&info->charger->dev.kobj, &ucs1002_attr_group);
-+
-+	return 0;
-+}
-+
-+#if IS_ENABLED(CONFIG_OF)
-+static const struct of_device_id ucs1002_of_match[] =3D {
-+	{ .compatible =3D "microchip,ucs1002", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(of, ucs1002_of_match);
-+#endif
-+
-+static const struct i2c_device_id ucs1002_ids[] =3D {
-+	{"ucs1002", 0},
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(i2c, ucs1002_ids);
-+
-+static struct i2c_driver ucs1002_driver =3D {
-+	.driver =3D {
-+		   .name =3D "ucs1002",
-+		   .of_match_table =3D of_match_ptr(ucs1002_of_match),
-+	},
-+	.probe =3D ucs1002_probe,
-+	.remove =3D ucs1002_remove,
-+	.id_table =3D ucs1002_ids,
-+};
-+module_i2c_driver(ucs1002_driver);
-+
-+MODULE_DESCRIPTION("Microchip UCS1002 Programmable USB Port Power Cont=
-roller");
-+MODULE_AUTHOR("Enric Balletbo Serra <enric.balletbo@collabora.com>");
-+MODULE_LICENSE("GPL v2");
---=20
-2.1.0
+This patch fixes the crash I was seeing.
 
+Tested-by: Juri Lelli <juri.lelli@arm.com>
+
+However, it exposes another problem (running the concurrent lockdep test
+that you merged in your tests). After the test is finished there is
+always at least one task spinning. Do you think it might be related to
+the race we are already discussing in the thread related to my cleanups
+patches? This is what I see:
+
+[   37.963599] ======================================================
+[   37.982113] [ INFO: possible circular locking dependency detected ]
+[   38.000890] 4.5.0-rc1+ #468 Not tainted
+[   38.012368] -------------------------------------------------------
+[   38.031137] runme.sh/1710 is trying to acquire lock:
+[   38.045999]  (s_active#41){++++.+}, at: [<c01fb12c>] kernfs_remove_by_name_ns+0x4c/0x94
+[   38.070063]
+[   38.070063] but task is already holding lock:
+[   38.087530]  (od_dbs_cdata.mutex){+.+.+.}, at: [<c0591050>] cpufreq_governor_dbs+0x34/0x5d0
+[   38.112615]
+[   38.112615] which lock already depends on the new lock.
+[   38.112615]
+[   38.137114]
+[   38.137114] the existing dependency chain (in reverse order) is:
+[   38.159528]
+-> #2 (od_dbs_cdata.mutex){+.+.+.}:
+[   38.173664]        [<c0769ae8>] mutex_lock_nested+0x7c/0x420
+[   38.190637]        [<c0591050>] cpufreq_governor_dbs+0x34/0x5d0
+[   38.208380]        [<c058ed10>] od_cpufreq_governor_dbs+0x20/0x28
+[   38.226641]        [<c058c094>] __cpufreq_governor+0x98/0x1bc
+[   38.243861]        [<c058c91c>] cpufreq_set_policy+0x150/0x204
+[   38.261341]        [<c058cd98>] store_scaling_governor+0x70/0x8c
+[   38.279343]        [<c058aa70>] store+0x88/0xa4
+[   38.292917]        [<c01fca54>] sysfs_kf_write+0x5c/0x60
+[   38.308835]        [<c01fbccc>] kernfs_fop_write+0xdc/0x1c8
+[   38.325535]        [<c017c170>] __vfs_write+0x3c/0xe4
+[   38.340678]        [<c017d0b0>] vfs_write+0xb0/0x154
+[   38.355555]        [<c017d338>] SyS_write+0x50/0x90
+[   38.370170]        [<c000fe40>] ret_fast_syscall+0x0/0x1c
+[   38.386354]
+-> #1 (&policy->rwsem){+++++.}:
+[   38.399441]        [<c076b498>] down_read+0x58/0x94
+[   38.414058]        [<c058ae6c>] show+0x30/0x60
+[   38.427372]        [<c01fcb90>] sysfs_kf_seq_show+0x90/0xfc
+[   38.444079]        [<c01fb33c>] kernfs_seq_show+0x34/0x38
+[   38.460266]        [<c01a5210>] seq_read+0x1e4/0x4e4
+[   38.475149]        [<c01fbed8>] kernfs_fop_read+0x120/0x1a0
+[   38.491844]        [<c017c328>] __vfs_read+0x3c/0xe0
+[   38.506721]        [<c017d1ec>] vfs_read+0x98/0x104
+[   38.521456]        [<c017d2a8>] SyS_read+0x50/0x90
+[   38.535812]        [<c000fe40>] ret_fast_syscall+0x0/0x1c
+[   38.551993]
+-> #0 (s_active#41){++++.+}:
+[   38.564311]        [<c0082038>] lock_acquire+0xd4/0x20c
+[   38.579975]        [<c01fa348>] __kernfs_remove+0x288/0x328
+[   38.596677]        [<c01fb12c>] kernfs_remove_by_name_ns+0x4c/0x94
+[   38.615199]        [<c01fd868>] remove_files+0x44/0x88
+[   38.630594]        [<c01fdde8>] sysfs_remove_group+0x50/0xa4
+[   38.647554]        [<c0591408>] cpufreq_governor_dbs+0x3ec/0x5d0
+[   38.665556]        [<c058ed10>] od_cpufreq_governor_dbs+0x20/0x28
+[   38.683815]        [<c058c094>] __cpufreq_governor+0x98/0x1bc
+[   38.701032]        [<c058c8f4>] cpufreq_set_policy+0x128/0x204
+[   38.718513]        [<c058cd98>] store_scaling_governor+0x70/0x8c
+[   38.736511]        [<c058aa70>] store+0x88/0xa4
+[   38.750176]        [<c01fca54>] sysfs_kf_write+0x5c/0x60
+[   38.766128]        [<c01fbccc>] kernfs_fop_write+0xdc/0x1c8
+[   38.782844]        [<c017c170>] __vfs_write+0x3c/0xe4
+[   38.797981]        [<c017d0b0>] vfs_write+0xb0/0x154
+[   38.812855]        [<c017d338>] SyS_write+0x50/0x90
+[   38.827468]        [<c000fe40>] ret_fast_syscall+0x0/0x1c
+[   38.843648]
+[   38.843648] other info that might help us debug this:
+[   38.843648]
+[   38.867627] Chain exists of:
+  s_active#41 --> &policy->rwsem --> od_dbs_cdata.mutex
+
+[   38.891693]  Possible unsafe locking scenario:
+[   38.891693]
+[   38.909419]        CPU0                    CPU1
+[   38.922978]        ----                    ----
+[   38.936535]   lock(od_dbs_cdata.mutex);
+[   38.948146]                                lock(&policy->rwsem);
+[   38.966168]                                lock(od_dbs_cdata.mutex);
+[   38.985219]   lock(s_active#41);
+[   38.994923]
+[   38.994923]  *** DEADLOCK ***
+[   38.994923]
+[   39.012669] 5 locks held by runme.sh/1710:
+[   39.024925]  #0:  (sb_writers#7){.+.+.+}, at: [<c017ed30>] __sb_start_write+0xb8/0xc4
+[   39.048456]  #1:  (&of->mutex){+.+.+.}, at: [<c01fbc5c>] kernfs_fop_write+0x6c/0x1c8
+[   39.071715]  #2:  (s_active#35){.+.+.+}, at: [<c01fbc64>] kernfs_fop_write+0x74/0x1c8
+[   39.095274]  #3:  (cpu_hotplug.lock){++++++}, at: [<c0029eec>] get_online_cpus+0x48/0xb8
+[   39.119579]  #4:  (od_dbs_cdata.mutex){+.+.+.}, at: [<c0591050>] cpufreq_governor_dbs+0x34/0x5d0
+[   39.145965]
+[   39.145965] stack backtrace:
+[   39.159008] CPU: 1 PID: 1710 Comm: runme.sh Not tainted 4.5.0-rc1+ #468
+[   39.178816] Hardware name: ARM-Versatile Express
+[   39.192652] [<c0018948>] (unwind_backtrace) from [<c001404c>] (show_stack+0x20/0x24)
+[   39.215863] [<c001404c>] (show_stack) from [<c04583d8>] (dump_stack+0x80/0xb4)
+[   39.237511] [<c04583d8>] (dump_stack) from [<c0128324>] (print_circular_bug+0x29c/0x2f0)
+[   39.261767] [<c0128324>] (print_circular_bug) from [<c00813dc>] (__lock_acquire+0x1670/0x1d74)
+[   39.287580] [<c00813dc>] (__lock_acquire) from [<c0082038>] (lock_acquire+0xd4/0x20c)
+[   39.311049] [<c0082038>] (lock_acquire) from [<c01fa348>] (__kernfs_remove+0x288/0x328)
+[   39.335040] [<c01fa348>] (__kernfs_remove) from [<c01fb12c>] (kernfs_remove_by_name_ns+0x4c/0x94)
+[   39.361635] [<c01fb12c>] (kernfs_remove_by_name_ns) from [<c01fd868>] (remove_files+0x44/0x88)
+[   39.387445] [<c01fd868>] (remove_files) from [<c01fdde8>] (sysfs_remove_group+0x50/0xa4)
+[   39.411696] [<c01fdde8>] (sysfs_remove_group) from [<c0591408>] (cpufreq_governor_dbs+0x3ec/0x5d0)
+[   39.438547] [<c0591408>] (cpufreq_governor_dbs) from [<c058ed10>] (od_cpufreq_governor_dbs+0x20/0x28)
+[   39.466241] [<c058ed10>] (od_cpufreq_governor_dbs) from [<c058c094>] (__cpufreq_governor+0x98/0x1bc)
+[   39.493705] [<c058c094>] (__cpufreq_governor) from [<c058c8f4>] (cpufreq_set_policy+0x128/0x204)
+[   39.520034] [<c058c8f4>] (cpufreq_set_policy) from [<c058cd98>] (store_scaling_governor+0x70/0x8c)
+[   39.546884] [<c058cd98>] (store_scaling_governor) from [<c058aa70>] (store+0x88/0xa4)
+[   39.570345] [<c058aa70>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   39.591720] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   39.616228] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   39.639691] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   39.661589] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   39.682707] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   81.100358] NMI watchdog: BUG: soft lockup - CPU#4 stuck for 22s! [runme.sh:1710]
+[   81.122790] Modules linked in:
+[   81.131959] irq event stamp: 6981
+[   81.141905] hardirqs last  enabled at (6981): [<c0769fa4>] __mutex_unlock_slowpath+0x118/0x1ac
+[   81.167788] hardirqs last disabled at (6980): [<c0769ee8>] __mutex_unlock_slowpath+0x5c/0x1ac
+[   81.193345] softirqs last  enabled at (4864): [<c002ed90>] __do_softirq+0x338/0x58c
+[   81.216299] softirqs last disabled at (4859): [<c002f374>] irq_exit+0xd4/0x140
+[   81.237957] CPU: 4 PID: 1710 Comm: runme.sh Not tainted 4.5.0-rc1+ #468
+[   81.257767] Hardware name: ARM-Versatile Express
+[   81.271625] task: ee8dd080 ti: ee92a000 task.ti: ee92a000
+[   81.287879] PC is at srcu_notifier_chain_register+0x58/0xe4
+[   81.304570] LR is at trace_hardirqs_on_caller+0x1c/0x1f4
+[   81.320489] pc : [<c004ea9c>]    lr : [<c00829b8>]    psr: a00f0013
+[   81.320489] sp : ee92bba8  ip : ee92bb28  fp : ee92bbbc
+[   81.354896] r10: ee92bf78  r9 : 00000000  r8 : c0af5860
+[   81.370542] r7 : 00000000  r6 : 00000000  r5 : c0af58a4  r4 : c130d03c
+[   81.390103] r3 : c0af58a4  r2 : 00000000  r1 : c0af58a8  r0 : 00000000
+[   81.409657] Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment none
+[   81.431033] Control: 10c5387d  Table: adde406a  DAC: 00000051
+[   81.448244] CPU: 4 PID: 1710 Comm: runme.sh Not tainted 4.5.0-rc1+ #468
+[   81.468054] Hardware name: ARM-Versatile Express
+[   81.481917] [<c0018948>] (unwind_backtrace) from [<c001404c>] (show_stack+0x20/0x24)
+[   81.505138] [<c001404c>] (show_stack) from [<c04583d8>] (dump_stack+0x80/0xb4)
+[   81.526782] [<c04583d8>] (dump_stack) from [<c0010c3c>] (show_regs+0x1c/0x20)
+[   81.548168] [<c0010c3c>] (show_regs) from [<c00ea6f0>] (watchdog_timer_fn+0x1dc/0x258)
+[   81.571919] [<c00ea6f0>] (watchdog_timer_fn) from [<c00aa8b8>] (__hrtimer_run_queues+0x1b0/0x5dc)
+[   81.598527] [<c00aa8b8>] (__hrtimer_run_queues) from [<c00ab740>] (hrtimer_interrupt+0xd4/0x234)
+[   81.624861] [<c00ab740>] (hrtimer_interrupt) from [<c05ad290>] (arch_timer_handler_virt+0x38/0x40)
+[   81.651806] [<c05ad290>] (arch_timer_handler_virt) from [<c0093548>] (handle_percpu_devid_irq+0xe4/0x310)
+[   81.680563] [<c0093548>] (handle_percpu_devid_irq) from [<c008ec00>] (generic_handle_irq+0x28/0x38)
+[   81.707676] [<c008ec00>] (generic_handle_irq) from [<c008ed54>] (__handle_domain_irq+0x64/0xbc)
+[   81.733745] [<c008ed54>] (__handle_domain_irq) from [<c00094dc>] (gic_handle_irq+0x54/0xa0)
+[   81.758774] [<c00094dc>] (gic_handle_irq) from [<c0014bf8>] (__irq_svc+0x58/0x78)
+[   81.781191] Exception stack(0xee92bb58 to 0xee92bba0)
+[   81.796320] bb40:                                                       00000000 c0af58a8
+[   81.820826] bb60: 00000000 c0af58a4 c130d03c c0af58a4 00000000 00000000 c0af5860 00000000
+[   81.845331] bb80: ee92bf78 ee92bbbc ee92bb28 ee92bba8 c00829b8 c004ea9c a00f0013 ffffffff
+[   81.869841] [<c0014bf8>] (__irq_svc) from [<c004ea9c>] (srcu_notifier_chain_register+0x58/0xe4)
+[   81.895911] [<c004ea9c>] (srcu_notifier_chain_register) from [<c058b30c>] (cpufreq_register_notifier+0x64/0x9c)
+[   81.926150] [<c058b30c>] (cpufreq_register_notifier) from [<c05908bc>] (cs_init+0x94/0xc0)
+[   81.950920] [<c05908bc>] (cs_init) from [<c05914e0>] (cpufreq_governor_dbs+0x4c4/0x5d0)
+[   81.974909] [<c05914e0>] (cpufreq_governor_dbs) from [<c058fda0>] (cs_cpufreq_governor_dbs+0x20/0x28)
+[   82.002541] [<c058fda0>] (cs_cpufreq_governor_dbs) from [<c058c094>] (__cpufreq_governor+0x98/0x1bc)
+[   82.029914] [<c058c094>] (__cpufreq_governor) from [<c058c91c>] (cpufreq_set_policy+0x150/0x204)
+[   82.056244] [<c058c91c>] (cpufreq_set_policy) from [<c058cd98>] (store_scaling_governor+0x70/0x8c)
+[   82.083095] [<c058cd98>] (store_scaling_governor) from [<c058aa70>] (store+0x88/0xa4)
+[   82.106561] [<c058aa70>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   82.127945] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   82.152455] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   82.175922] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   82.197825] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   82.218947] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   83.940245] INFO: rcu_sched self-detected stall on CPU
+[   83.955652]  4-...: (2485 ticks this GP) idle=7f5/140000000000001/0 softirq=6279/6282 fqs=2484
+[   83.981748]   (t=2600 jiffies g=1205 c=1204 q=4709)
+[   83.996422] Task dump for CPU 4:
+[   84.006077] runme.sh        R running      0  1710      1 0x00000002
+[   84.025148] [<c0018948>] (unwind_backtrace) from [<c001404c>] (show_stack+0x20/0x24)
+[   84.048356] [<c001404c>] (show_stack) from [<c005d9d0>] (sched_show_task+0x15c/0x264)
+[   84.071826] [<c005d9d0>] (sched_show_task) from [<c0060944>] (dump_cpu_task+0x48/0x4c)
+[   84.095556] [<c0060944>] (dump_cpu_task) from [<c009c690>] (rcu_dump_cpu_stacks+0xa8/0xd8)
+[   84.120326] [<c009c690>] (rcu_dump_cpu_stacks) from [<c00a3398>] (rcu_check_callbacks+0x564/0xa14)
+[   84.147179] [<c00a3398>] (rcu_check_callbacks) from [<c00a9b8c>] (update_process_times+0x40/0x6c)
+[   84.173772] [<c00a9b8c>] (update_process_times) from [<c00bce64>] (tick_sched_handle+0x64/0x70)
+[   84.199842] [<c00bce64>] (tick_sched_handle) from [<c00bcf6c>] (tick_sched_timer+0x54/0x94)
+[   84.224870] [<c00bcf6c>] (tick_sched_timer) from [<c00aa8b8>] (__hrtimer_run_queues+0x1b0/0x5dc)
+[   84.251201] [<c00aa8b8>] (__hrtimer_run_queues) from [<c00ab740>] (hrtimer_interrupt+0xd4/0x234)
+[   84.277534] [<c00ab740>] (hrtimer_interrupt) from [<c05ad290>] (arch_timer_handler_virt+0x38/0x40)
+[   84.304387] [<c05ad290>] (arch_timer_handler_virt) from [<c0093548>] (handle_percpu_devid_irq+0xe4/0x310)
+[   84.333062] [<c0093548>] (handle_percpu_devid_irq) from [<c008ec00>] (generic_handle_irq+0x28/0x38)
+[   84.360175] [<c008ec00>] (generic_handle_irq) from [<c008ed54>] (__handle_domain_irq+0x64/0xbc)
+[   84.386245] [<c008ed54>] (__handle_domain_irq) from [<c00094dc>] (gic_handle_irq+0x54/0xa0)
+[   84.411295] [<c00094dc>] (gic_handle_irq) from [<c0014bf8>] (__irq_svc+0x58/0x78)
+[   84.433831] Exception stack(0xee92bb58 to 0xee92bba0)
+[   84.448957] bb40:                                                       00000000 c0af58a8
+[   84.473461] bb60: 00000000 c0af58a4 c130d03c c0af58a4 00000000 00000000 c0af5860 00000000
+[   84.497966] bb80: ee92bf78 ee92bbbc ee92bb28 ee92bba8 c00829b8 c004eaa0 a00f0013 ffffffff
+[   84.522474] [<c0014bf8>] (__irq_svc) from [<c004eaa0>] (srcu_notifier_chain_register+0x5c/0xe4)
+[   84.548544] [<c004eaa0>] (srcu_notifier_chain_register) from [<c058b30c>] (cpufreq_register_notifier+0x64/0x9c)
+[   84.578782] [<c058b30c>] (cpufreq_register_notifier) from [<c05908bc>] (cs_init+0x94/0xc0)
+[   84.603551] [<c05908bc>] (cs_init) from [<c05914e0>] (cpufreq_governor_dbs+0x4c4/0x5d0)
+[   84.627539] [<c05914e0>] (cpufreq_governor_dbs) from [<c058fda0>] (cs_cpufreq_governor_dbs+0x20/0x28)
+[   84.655171] [<c058fda0>] (cs_cpufreq_governor_dbs) from [<c058c094>] (__cpufreq_governor+0x98/0x1bc)
+[   84.682542] [<c058c094>] (__cpufreq_governor) from [<c058c91c>] (cpufreq_set_policy+0x150/0x204)
+[   84.708872] [<c058c91c>] (cpufreq_set_policy) from [<c058cd98>] (store_scaling_governor+0x70/0x8c)
+[   84.735721] [<c058cd98>] (store_scaling_governor) from [<c058aa70>] (store+0x88/0xa4)
+[   84.759187] [<c058aa70>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   84.780569] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   84.805077] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   84.828543] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   84.850445] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   84.871619] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   92.891647] INFO: task runme.sh:1708 blocked for more than 30 seconds.
+[   92.911227]       Tainted: G             L  4.5.0-rc1+ #468
+[   92.927938] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[   92.951408] runme.sh        D c07674b4     0  1708      1 0x00000000
+[   92.970570] [<c07674b4>] (__schedule) from [<c0767d78>] (schedule+0x50/0xcc)
+[   92.991720] [<c0767d78>] (schedule) from [<c0768038>] (schedule_preempt_disabled+0x30/0x4c)
+[   93.016771] [<c0768038>] (schedule_preempt_disabled) from [<c0769c54>] (mutex_lock_nested+0x1e8/0x420)
+[   93.044692] [<c0769c54>] (mutex_lock_nested) from [<c0591050>] (cpufreq_governor_dbs+0x34/0x5d0)
+[   93.071035] [<c0591050>] (cpufreq_governor_dbs) from [<c058fda0>] (cs_cpufreq_governor_dbs+0x20/0x28)
+[   93.098695] [<c058fda0>] (cs_cpufreq_governor_dbs) from [<c058c094>] (__cpufreq_governor+0x98/0x1bc)
+[   93.126076] [<c058c094>] (__cpufreq_governor) from [<c058c91c>] (cpufreq_set_policy+0x150/0x204)
+[   93.152425] [<c058c91c>] (cpufreq_set_policy) from [<c058cd98>] (store_scaling_governor+0x70/0x8c)
+[   93.179290] [<c058cd98>] (store_scaling_governor) from [<c058aa70>] (store+0x88/0xa4)
+[   93.202782] [<c058aa70>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   93.224178] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   93.248706] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   93.272183] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   93.294103] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   93.315241] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   93.337939] INFO: lockdep is turned off.
+[   93.349690] INFO: task runme.sh:1709 blocked for more than 30 seconds.
+[   93.369263]       Tainted: G             L  4.5.0-rc1+ #468
+[   93.385961] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[   93.409440] runme.sh        D c07674b4     0  1709      1 0x00000000
+[   93.428564] [<c07674b4>] (__schedule) from [<c0767d78>] (schedule+0x50/0xcc)
+[   93.449710] [<c0767d78>] (schedule) from [<c076bd80>] (rwsem_down_write_failed+0x1ec/0x4a4)
+[   93.474749] [<c076bd80>] (rwsem_down_write_failed) from [<c076b438>] (down_write+0xa8/0xb0)
+[   93.499796] [<c076b438>] (down_write) from [<c058aa50>] (store+0x68/0xa4)
+[   93.520156] [<c058aa50>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   93.541560] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   93.566077] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   93.589566] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   93.611476] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   93.632615] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   93.655302] INFO: lockdep is turned off.
+[   93.667064] INFO: task runme.sh:1711 blocked for more than 30 seconds.
+[   93.686628]       Tainted: G             L  4.5.0-rc1+ #468
+[   93.703334] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[   93.726808] runme.sh        D c07674b4     0  1711      1 0x00000000
+[   93.745909] [<c07674b4>] (__schedule) from [<c0767d78>] (schedule+0x50/0xcc)
+[   93.767051] [<c0767d78>] (schedule) from [<c076bd80>] (rwsem_down_write_failed+0x1ec/0x4a4)
+[   93.792089] [<c076bd80>] (rwsem_down_write_failed) from [<c076b438>] (down_write+0xa8/0xb0)
+[   93.817135] [<c076b438>] (down_write) from [<c058aa50>] (store+0x68/0xa4)
+[   93.837483] [<c058aa50>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   93.858887] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   93.883408] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   93.906892] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   93.928803] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   93.949942] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+[   93.972630] INFO: lockdep is turned off.
+[   93.984396] INFO: task runme.sh:1712 blocked for more than 30 seconds.
+[   94.003960]       Tainted: G             L  4.5.0-rc1+ #468
+[   94.020667] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[   94.044137] runme.sh        D c07674b4     0  1712      1 0x00000000
+[   94.063237] [<c07674b4>] (__schedule) from [<c0767d78>] (schedule+0x50/0xcc)
+[   94.084378] [<c0767d78>] (schedule) from [<c076bd80>] (rwsem_down_write_failed+0x1ec/0x4a4)
+[   94.109416] [<c076bd80>] (rwsem_down_write_failed) from [<c076b438>] (down_write+0xa8/0xb0)
+[   94.134467] [<c076b438>] (down_write) from [<c058aa50>] (store+0x68/0xa4)
+[   94.154816] [<c058aa50>] (store) from [<c01fca54>] (sysfs_kf_write+0x5c/0x60)
+[   94.176214] [<c01fca54>] (sysfs_kf_write) from [<c01fbccc>] (kernfs_fop_write+0xdc/0x1c8)
+[   94.200733] [<c01fbccc>] (kernfs_fop_write) from [<c017c170>] (__vfs_write+0x3c/0xe4)
+[   94.224216] [<c017c170>] (__vfs_write) from [<c017d0b0>] (vfs_write+0xb0/0x154)
+[   94.246127] [<c017d0b0>] (vfs_write) from [<c017d338>] (SyS_write+0x50/0x90)
+[   94.267271] [<c017d338>] (SyS_write) from [<c000fe40>] (ret_fast_syscall+0x0/0x1c)
+
+Now, you already pointed me at a possible fix. I'm going to test that
+(even if I have questions about that patch :)) and see if it makes this
+go away. 
+
+Thanks,
+
+- Juri
