@@ -1,65 +1,57 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH 2/2] power: ucs1002: Add support for Programmable USB
- Port Power Controller
-Date: Tue, 26 Jan 2016 21:10:38 +0800
-Message-ID: <201601262113.QMsv6ZED%fengguang.wu@intel.com>
-References: <1453799541-5445-3-git-send-email-enric.balletbo@collabora.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH V2] PM / Domains: Fix potential deadlock while
+ adding/removing subdomains
+Date: Tue, 26 Jan 2016 14:13:52 +0100
+Message-ID: <CAMuHMdUfSCRh6Nxrfm9pSY2HvC3WKJ6_ZtFgzscv=9GoYR+puQ@mail.gmail.com>
+References: <1453288059-1988-1-git-send-email-ulf.hansson@linaro.org>
+	<1538718.ZBD87lgpJv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:51175 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965726AbcAZNLY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Jan 2016 08:11:24 -0500
-Content-Disposition: inline
-In-Reply-To: <1453799541-5445-3-git-send-email-enric.balletbo@collabora.com>
+Received: from mail-ig0-f193.google.com ([209.85.213.193]:33584 "EHLO
+	mail-ig0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965961AbcAZNNx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 08:13:53 -0500
+Received: by mail-ig0-f193.google.com with SMTP id h5so7384135igh.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2016 05:13:52 -0800 (PST)
+In-Reply-To: <1538718.ZBD87lgpJv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: kbuild-all@01.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hi Enric,
+Hi Rafael,
 
-[auto build test WARNING on battery/master]
-[also build test WARNING on v4.5-rc1 next-20160125]
-[if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+On Sun, Jan 24, 2016 at 2:20 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, January 20, 2016 12:07:39 PM Ulf Hansson wrote:
+>> We must preserve the same order of how we acquire and release the lock for
+>> genpd, as otherwise we may encounter deadlocks.
+>>
+>> The power on phase of a genpd starts by acquiring its lock. Then it walks
+>> the hierarchy of its parent domains to be able to power on these first, as
+>> per design of genpd.
+>>
+>> From a locking perspective this means the locks of the parents becomes
+>> acquired after the lock of the subdomain.
+>>
+>> Let's fix pm_genpd_add|remove_subdomain() to maintain the same order of
+>> acquiring/releasing the genpd lock as being applied in the power on/off
+>> sequence.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Applied, thanks!
 
-url:    https://github.com/0day-ci/linux/commits/Enric-Balletbo-i-Serra/Add-UCS1002-USB-Port-Power-Controller/20160126-171717
-base:   git://git.infradead.org/battery-2.6.git master
+It looks like you accidentally applied v1, introducing the lockdep warnings
+fixed in v2?
 
+Gr{oetje,eeting}s,
 
-coccinelle warnings: (new ones prefixed by >>)
+                        Geert
 
->> drivers/power/ucs1002_power.c:203:40-49: ERROR: info -> pdata is NULL but dereferenced.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-vim +203 drivers/power/ucs1002_power.c
-
-   187		/* Read the polarity setting determined by the SEL pin */
-   188		ret = regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &regval);
-   189		if (ret < 0)
-   190			return ret;
-   191	
-   192		if (regval & F_SEL_PIN)
-   193			val = enable ? F_PWR_EN_SET : 0;
-   194		else
-   195			val = enable ? 0 : F_PWR_EN_SET;
-   196	
-   197		if (info->pdata) {
-   198			ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-   199						 F_PWR_EN_SET, val);
-   200			if (ret < 0)
-   201				return ret;
-   202		} else {
- > 203			gpiod_set_value_cansleep(info->pdata->gpiod_pwr, val ? 0 : 1);
-   204		}
-   205	
-   206		info->enabled = enable;
-   207	
-   208		return 0;
-   209	}
-   210	
-   211	static int ucs1002_get_online(struct ucs1002_info *info,
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
