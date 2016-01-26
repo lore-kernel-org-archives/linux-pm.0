@@ -1,126 +1,45 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Tue, 26 Jan 2016 17:01:22 +0000
-Message-ID: <56A7A662.4090203@nvidia.com>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <8579242.omBpg1aLr2@wuerfel>
- <CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
- <11122786.kKumQ3Dhls@wuerfel> <5697D7E2.3030209@nvidia.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH V2 3/8] genirq: Add runtime power management support
+ for IRQ chips
+Date: Tue, 26 Jan 2016 18:17:26 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1601261803410.3886@nanos>
+References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com> <1450349309-8107-4-git-send-email-jonathanh@nvidia.com> <CAPDyKFqZK4HYWgXam63=eCKAWsjwCiQbT5jdmgjqid_er3Sg1g@mail.gmail.com> <569E1366.8070005@nvidia.com> <alpine.DEB.2.11.1601201620450.3575@nanos>
+ <CAPDyKFrqQO6Mh7ew5YTW011a11LmFW7c+cZpAKmY8tovxjGmOw@mail.gmail.com> <alpine.DEB.2.11.1601212026230.3886@nanos> <CAPDyKFoNcARZRZfXM1Rdn2PZqtnUdbfn1Fb4PzKZs_DKkxKtSw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:7622 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933738AbcAZRBd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 12:01:33 -0500
-In-Reply-To: <5697D7E2.3030209@nvidia.com>
+Received: from www.linutronix.de ([62.245.132.108]:37750 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965001AbcAZRSl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 12:18:41 -0500
+In-Reply-To: <CAPDyKFoNcARZRZfXM1Rdn2PZqtnUdbfn1Fb4PzKZs_DKkxKtSw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Jon Hunter <jonathanh@nvidia.com>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Jiang Liu <jiang.liu@linux.intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Lars-Peter Clausen <lars@metafoo.de>, Linus Walleij <linus.walleij@linaro.org>, Soren Brinkmann <soren.brinkmann@xilinx.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi Arnd, Ulf,
-
-On 14/01/16 17:16, Jon Hunter wrote:
+On Fri, 22 Jan 2016, Ulf Hansson wrote:
+> Here's a small collection of drivers that I easily picked up as
+> candidates for using these new APIs.
+> In principle, they would invoke these new APIs from their runtime PM callbacks.
 > 
-> On 14/01/16 09:21, Arnd Bergmann wrote:
->> On Thursday 14 January 2016 09:57:14 Ulf Hansson wrote:
->>> On 13 January 2016 at 21:43, Arnd Bergmann <arnd@arndb.de> wrote:
->>>> On Wednesday 13 January 2016 18:03:24 Thierry Reding wrote:
->>>>> On Fri, Dec 04, 2015 at 02:57:17PM +0000, Jon Hunter wrote:
->>>>>> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
->>>>>> dependent upon a particular power-domain are only probed when that power
->>>>>> domain has been powered up, requires that PM is made mandatory for tegra
->>>>>> 64-bit devices and so select this option for tegra as well.
->>>>>>
->>>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->>>>>> ---
->>>>>>  arch/arm64/Kconfig.platforms | 2 ++
->>>>>>  1 file changed, 2 insertions(+)
->>>>>>
->>>>>> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
->>>>>> index 9806324fa215..e0b5bd0aff0f 100644
->>>>>> --- a/arch/arm64/Kconfig.platforms
->>>>>> +++ b/arch/arm64/Kconfig.platforms
->>>>>> @@ -93,6 +93,8 @@ config ARCH_TEGRA
->>>>>>       select GENERIC_CLOCKEVENTS
->>>>>>       select HAVE_CLK
->>>>>>       select PINCTRL
->>>>>> +     select PM
->>>>>> +     select PM_GENERIC_DOMAINS
->>>>>>       select RESET_CONTROLLER
->>>>>>       help
->>>>>>         This enables support for the NVIDIA Tegra SoC family.
->>>>>
->>>>> This has potential consequences for multi-platform builds, doesn't it?
->>>>> All of a sudden any combination of builds that includes Tegra won't be
->>>>> possible to build without PM support.
->>>>>
->>>>> Adding linux-arm-kernel@lists.infradead.org for visibility.
->>>>>
->>>>>
->>>>
->>>> Agreed, it would be better to add 'depends on PM_GENERIC_DOMAINS'
->>>> dependencies in the drivers that require it.
->>>>
->>>
->>> The problem with that approach is that if those drivers are cross SoC
->>> drivers. In some cases PM isn't needed and it is.
->>>
->>> Of course I don't have the in depth knowledge about the drivers being
->>> used in Tegra which may need PM, perhaps it's not that many?
->>>
->>> Anyway, to me it seems like ARCH_TEGRA should depend on PM instead.
->>> Would that work?
->>
->> That seems a little over-restrictive, as it prevents you from
->> building a tegra kernel even if none of the drivers that rely
->> on the pm domains are used, but it would work.
->>
->> I've looked again at how other platforms (on arm32) do it, and
->> a lot of them use "select PM_GENERIC_DOMAINS if PM", so they don't
->> automatically enable PM, but they enable the pmdomain code if
->> PM is already set. No driver really "depends on PM_GENERIC_DOMAINS",
->> so we shouldn't really start that now or we end up with circular
->> dependencies in the long run.
-> 
-> What I am not a fan of in the current gen-pd implementation, is if we
-> have !PM but the platform has power-domains, then there is no way to
-> determine if a device within a power-domain can be probed safely. Some
-> arm platforms force all the power-domains on during early init in the
-> case of !PM. IMO this is still not ideal, because if a power-domain
-> failed to turn on during early init, then you should probably call
-> BUG(). Ideally the kernel should be able to boot and only probe the
-> devices you know that can be probed safely.
-> 
-> So for platforms have use PM_GENERIC_DOMAINS, I think really they should
-> select PM and not "select PM_GENERIC_DOMAINS if PM". IMO, "select
-> PM_GENERIC_DOMAINS if PM" seems fragile.
+> drivers/spi/spi-atmel.c
+> drivers/spi/spi-pl022.c
+> drivers/i2c/busses/i2c-omap.c
+> drivers/i2c/busses/i2c-nomadik.c
+> drivers/i2c/busses/i2c-sh_mobile.c
+> drivers/mmc/host/mtk-sd.c
+> drivers/mmc/host/mmci.c
 
-Any more thoughts on this?
+Instead of adding those calls to each driver, we can be smart and flag the
+interrupt as AUTO_RUNTIME_SUSPEND or such.
 
-I have been discussing with Thierry and we think that selecting PM for
-tegra still makes the most sense. The question is, is this ok for
-multi-configs?
+So the runtime_pm core can handle it when invoking the
+dev_pm_ops->runtime_suspend()/resume() callbacks.
 
-The only other suggestion/thought I have is to allow
-PM_GENERIC_DOMAINS_OF to be selected independently of PM so that we can
-have minimal support for PM domains that allows you to register PM
-domains with the kernel and their current state, but does not allow you
-to control them, etc. This way tegra could always select
-PM_GENERIC_DOMAINS_OF regardless of PM, and we would be able to
-determine if we can probe a device safely.
+Unfortunately the devres stuff is exceptionally bad to be used for this, but
+with some surgery it should be doable.
 
-I am not sure that Rafael is too keen on this approach but that is the
-only alternative I have come up with.
+Thanks,
 
-I have a rough outline of a patch for this here [0] FWIW.
-
-Cheers
-Jon
-
-[0] https://github.com/jonhunter/linux/commits/gpd
-
-
-
+	tglx
