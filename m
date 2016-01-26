@@ -1,53 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 27 Jan 2016 00:37:24 +0100
-Message-ID: <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
-References: <20160126224804.GB19432@atomide.com>
-	<CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
-	<20160126232212.GE19432@atomide.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / Domains: Fix typo in comment
+Date: Tue, 26 Jan 2016 15:51:20 -0800
+Message-ID: <7hmvrrnblz.fsf@baylibre.com>
+References: <1450979471-26623-1-git-send-email-moritz.fischer@ettus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f53.google.com ([209.85.215.53]:32815 "EHLO
-	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbcAZXh0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 18:37:26 -0500
-In-Reply-To: <20160126232212.GE19432@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1450979471-26623-1-git-send-email-moritz.fischer@ettus.com>
+	(Moritz Fischer's message of "Thu, 24 Dec 2015 09:51:11 -0800")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Moritz Fischer <moritz.fischer@ettus.com>
+Cc: ulf.hansson@linaro.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Jan 27, 2016 at 12:22 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * Rafael J. Wysocki <rafael@kernel.org> [160126 15:15]:
->> On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
->> > Hi,
->> >
->> > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
->> > PM states at probe error and driver unbind") broke PM on at least
->> > omap3. It seems we now need to additionally also call
->> > pm_runtime_dont_use_autosuspend() to get things working again?
->> >
->> > The following fixes idling on omap3, but I'm wondering if we
->> > should do something in pm_runtime_reinit() instead?
->>
->> Well, does it actually help if you add
->> pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
->
-> No adding it to pm_runtime_reinit() does not help.
++ Rafael, linux-pm
 
-Yes, I realized that it wouldn't help only after sending the previous
-message, sorry about that.
+Hi Moritz,
 
-The reason why it helps in the driver code seems to be that
-autosuspend_delay happens to be negative, so update_autosuspend()
-decrements the usage counter that would have stayed incremented
-otherwise.  Or at least that's the only way it can help I see ATM.
+Moritz Fischer <moritz.fischer@ettus.com> writes:
 
-> Looks like we have RPM_ACTIVE set in pm_runtime_reinit() if that
-> gives any clues.
+> Signed-off-by: Moritz Fischer <moritz.fischer@ettus.com>
 
-It looks like pm_runtime_reinit() should clear the usage counter too.
+Looks like this isn't yet applied.  It was likely missed because I've
+been away and/or wasn't sent to linux-pm or Rafael.
+
+Anyways, could you please re-send including them so Rafael has it in his
+inbox and can apply directly.
+
+Also, feel free to add
+
+Acked-by: Kevin Hilman <khilman@baylibre.com>
 
 Thanks,
-Rafael
+
+Kevin
+
+> ---
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 65f50ec..53e81ac 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -160,7 +160,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+>  
+>  /**
+>   * genpd_queue_power_off_work - Queue up the execution of genpd_poweroff().
+> - * @genpd: PM domait to power off.
+> + * @genpd: PM domain to power off.
+>   *
+>   * Queue up the execution of genpd_poweroff() unless it's already been done
+>   * before.
