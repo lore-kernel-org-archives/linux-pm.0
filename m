@@ -1,38 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Fix NULL reference crash while accessing policy->governor_data
-Date: Tue, 26 Jan 2016 23:49:48 +0100
-Message-ID: <30317803.WdZJECVyOY@vostro.rjw.lan>
-References: <1297c8fc8135f8b5359f9c49d220a939c0ee640e.1453741314.git.viresh.kumar@linaro.org> <20160126095751.GJ10898@e106622-lin> <20160126180119.GK10898@e106622-lin>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Tue, 26 Jan 2016 14:50:13 -0800
+Message-ID: <20160126225013.GC19432@atomide.com>
+References: <20160126224804.GB19432@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20160126180119.GK10898@e106622-lin>
-Sender: stable-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, "# v4 . 2+" <stable@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Juri Lelli <Juri.Lelli@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:57764 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbcAZWuQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Jan 2016 17:50:16 -0500
+Content-Disposition: inline
+In-Reply-To: <20160126224804.GB19432@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Kevin Hilman <khilman@baylibre.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, January 26, 2016 06:01:19 PM Juri Lelli wrote:
-> On 26/01/16 09:57, Juri Lelli wrote:
-> > Hi Viresh,
-> > 
-> > On 25/01/16 22:33, Viresh Kumar wrote:
-> > > There is a little race discovered by Juri, where we are able to:
-> > > - create and read a sysfs file before policy->governor_data is being set
-> > >   to a non NULL value.
-> > >   OR
-> > > - set policy->governor_data to NULL, and reading a file before being
-> > >   destroyed.
-> > > 
-
-[cut]
-
+* Tony Lindgren <tony@atomide.com> [160126 14:49]:
+> Hi,
 > 
-> So, this goes away with your patch (that I forward ported) and a small
-> additional fix on top of that.
+> Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
+> PM states at probe error and driver unbind") broke PM on at least
+> omap3. It seems we now need to additionally also call
+> pm_runtime_dont_use_autosuspend() to get things working again?
+> 
+> The following fixes idling on omap3, but I'm wondering if we
+> should do something in pm_runtime_reinit() instead?
 
-Which patch exactly is that?
+Oh one more thing, this happens as we get -EPROBE_DEFER with
+the regulators initially.
 
-Thanks,
-Rafael
+> 8< ---------------------
+> --- a/drivers/mmc/host/omap_hsmmc.c
+> +++ b/drivers/mmc/host/omap_hsmmc.c
+> @@ -2232,6 +2232,7 @@ err_irq:
+>  		dma_release_channel(host->tx_chan);
+>  	if (host->rx_chan)
+>  		dma_release_channel(host->rx_chan);
+> +	pm_runtime_dont_use_autosuspend(host->dev);
+>  	pm_runtime_put_sync(host->dev);
+>  	pm_runtime_disable(host->dev);
+>  	if (host->dbclk)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
