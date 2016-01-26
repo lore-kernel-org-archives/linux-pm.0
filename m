@@ -1,55 +1,53 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 01/22] power: reset: Fix dependencies for !HAS_IOMEM archs
-Date: Tue, 26 Jan 2016 15:34:07 -0800
-Message-ID: <56A8026F.8090001@gmail.com>
-References: <1453760661-1444-1-git-send-email-richard@nod.at> <1453760661-1444-2-git-send-email-richard@nod.at>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Wed, 27 Jan 2016 00:37:24 +0100
+Message-ID: <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
+References: <20160126224804.GB19432@atomide.com>
+	<CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
+	<20160126232212.GE19432@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34379 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbcAZXe7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 18:34:59 -0500
-In-Reply-To: <1453760661-1444-2-git-send-email-richard@nod.at>
+Received: from mail-lf0-f53.google.com ([209.85.215.53]:32815 "EHLO
+	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbcAZXh0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 18:37:26 -0500
+In-Reply-To: <20160126232212.GE19432@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org
-Cc: user-mode-linux-devel@lists.sourceforge.net, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Moritz Fischer <moritz.fischer@ettus.com>, Jun Nie <jun.nie@linaro.org>, linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 25/01/16 14:24, Richard Weinberger wrote:
-> Not every arch has io memory.
-> So, unbreak the build by fixing the dependencies.
-> 
-> Signed-off-by: Richard Weinberger <richard@nod.at>
-> ---
->  drivers/power/reset/Kconfig | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index 1131cf7..0a6408a 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -148,6 +148,7 @@ config POWER_RESET_KEYSTONE
->  config POWER_RESET_SYSCON
->  	bool "Generic SYSCON regmap reset driver"
->  	depends on OF
-> +	depends on HAS_IOMEM
->  	select MFD_SYSCON
+On Wed, Jan 27, 2016 at 12:22 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Rafael J. Wysocki <rafael@kernel.org> [160126 15:15]:
+>> On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> > Hi,
+>> >
+>> > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
+>> > PM states at probe error and driver unbind") broke PM on at least
+>> > omap3. It seems we now need to additionally also call
+>> > pm_runtime_dont_use_autosuspend() to get things working again?
+>> >
+>> > The following fixes idling on omap3, but I'm wondering if we
+>> > should do something in pm_runtime_reinit() instead?
+>>
+>> Well, does it actually help if you add
+>> pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
+>
+> No adding it to pm_runtime_reinit() does not help.
 
-Should this dependency go into REGMAP_MMIO instead? MFD_SYSCON in itself
-does not issue I/O accesses per-se, but does use helpers from regmap,
-which in turn do it.
+Yes, I realized that it wouldn't help only after sending the previous
+message, sorry about that.
 
->  	help
->  	  Reboot support for generic SYSCON mapped register reset.
-> @@ -155,6 +156,7 @@ config POWER_RESET_SYSCON
->  config POWER_RESET_SYSCON_POWEROFF
->  	bool "Generic SYSCON regmap poweroff driver"
->  	depends on OF
-> +	depends on HAS_IOMEM
->  	select MFD_SYSCON
+The reason why it helps in the driver code seems to be that
+autosuspend_delay happens to be negative, so update_autosuspend()
+decrements the usage counter that would have stayed incremented
+otherwise.  Or at least that's the only way it can help I see ATM.
 
-Likewise.
--- 
-Florian
+> Looks like we have RPM_ACTIVE set in pm_runtime_reinit() if that
+> gives any clues.
+
+It looks like pm_runtime_reinit() should clear the usage counter too.
+
+Thanks,
+Rafael
