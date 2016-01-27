@@ -1,47 +1,59 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Wed, 27 Jan 2016 07:19:22 -0800
-Message-ID: <20160127151921.GG19432@atomide.com>
-References: <20160126224804.GB19432@atomide.com>
- <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
- <20160126235222.GF19432@atomide.com>
- <2779316.34ov6YOQgv@vostro.rjw.lan>
- <CAPDyKFo-itpp1JUVANSFNiyhKcv1XLUqx1GwRk532LaT+ija0g@mail.gmail.com>
+From: Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] PM / devfreq: tegra: Set freq in rate callback
+Date: Wed, 27 Jan 2016 11:20:00 -0800
+Message-ID: <CANMBJr4_Ee5khJJocJ90D3fgrARWrpm1f1KHkOOjGkf-7XWcLw@mail.gmail.com>
+References: <1453362746-9310-1-git-send-email-tomeu.vizoso@collabora.com>
+	<20160121105411.GA32212@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFo-itpp1JUVANSFNiyhKcv1XLUqx1GwRk532LaT+ija0g@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160121105411.GA32212@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-* Ulf Hansson <ulf.hansson@linaro.org> [160127 00:18]:
-> On 27 January 2016 at 08:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Tuesday, January 26, 2016 03:52:23 PM Tony Lindgren wrote:
-> >> Yeah if we do this when !pm_runtime_enabled(dev) it seems it's
-> >> safe to pretty much reset everything?
-> >
-> > Not only safe, but also a good idea apparently. :-)
-> 
-> I happy to send a patch, extending pm_runtime_reinit() with some more
-> data to be reset.
-> 
-> Or, you or Tony intend to send a patch?
+Hi Thierry,
 
-Please do, I'll be glad to test it!
+On 21 January 2016 at 02:54, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> On Thu, Jan 21, 2016 at 08:52:26AM +0100, Tomeu Vizoso wrote:
+>> As per the documentation of the devfreq_dev_profile.target callback, set
+>> the freq argument to the new frequency before returning.
+>>
+>> This caused endless messages like this after recent changes in the core:
+>>
+>> devfreq 6000c800.actmon: Couldn't update frequency transition information.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+>> Reported-by: Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> ---
+>>  drivers/devfreq/tegra-devfreq.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+>> index 848b93ee930f..fe9dce0245bf 100644
+>> --- a/drivers/devfreq/tegra-devfreq.c
+>> +++ b/drivers/devfreq/tegra-devfreq.c
+>> @@ -500,6 +500,8 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>>       clk_set_min_rate(tegra->emc_clock, rate);
+>>       clk_set_rate(tegra->emc_clock, 0);
+>>
+>> +     *freq = rate;
+>> +
+>>       return 0;
+>>  }
+>>
+>
+> I had noticed it recently but hadn't got around to look into it, thanks
+> for fixing it.
+>
+> Tested-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Regards,
+I don't see this patch in -next yet, so I'm guess it hasn't been
+applied. Any chance you could pick it up? This issue is now
+manifesting in mainline, and causing ton of noise in the boot reports.
 
-Tony
+Cheers,
+
+Tyler
