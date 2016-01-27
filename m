@@ -1,59 +1,37 @@
-From: Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] PM / devfreq: tegra: Set freq in rate callback
-Date: Wed, 27 Jan 2016 11:20:00 -0800
-Message-ID: <CANMBJr4_Ee5khJJocJ90D3fgrARWrpm1f1KHkOOjGkf-7XWcLw@mail.gmail.com>
-References: <1453362746-9310-1-git-send-email-tomeu.vizoso@collabora.com>
-	<20160121105411.GA32212@ulmo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160121105411.GA32212@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Anders Roxell <anders.roxell@linaro.org>
+Subject: [PATCH] drivers/cpuidle: coupled: remove unused define cpuidle_coupled_lock
+Date: Wed, 27 Jan 2016 20:26:54 +0100
+Message-ID: <1453922814-3173-1-git-send-email-anders.roxell@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thierry,
+This was found with the -RT patch enabled, but the fix should apply to
+non-RT also.
 
-On 21 January 2016 at 02:54, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> On Thu, Jan 21, 2016 at 08:52:26AM +0100, Tomeu Vizoso wrote:
->> As per the documentation of the devfreq_dev_profile.target callback, set
->> the freq argument to the new frequency before returning.
->>
->> This caused endless messages like this after recent changes in the core:
->>
->> devfreq 6000c800.actmon: Couldn't update frequency transition information.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
->> Reported-by: Tyler Baker <tyler.baker-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> ---
->>  drivers/devfreq/tegra-devfreq.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->> index 848b93ee930f..fe9dce0245bf 100644
->> --- a/drivers/devfreq/tegra-devfreq.c
->> +++ b/drivers/devfreq/tegra-devfreq.c
->> @@ -500,6 +500,8 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
->>       clk_set_min_rate(tegra->emc_clock, rate);
->>       clk_set_rate(tegra->emc_clock, 0);
->>
->> +     *freq = rate;
->> +
->>       return 0;
->>  }
->>
->
-> I had noticed it recently but hadn't got around to look into it, thanks
-> for fixing it.
->
-> Tested-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Used multi_v7_defconfig+PREEMPT_RT_FULL=y and this caused a compilation
+warning without this fix:
+../drivers/cpuidle/coupled.c:122:21: warning: 'cpuidle_coupled_lock'
+defined but not used [-Wunused-variable]
 
-I don't see this patch in -next yet, so I'm guess it hasn't been
-applied. Any chance you could pick it up? This issue is now
-manifesting in mainline, and causing ton of noise in the boot reports.
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+---
+ drivers/cpuidle/coupled.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Cheers,
-
-Tyler
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 344058f..d5657d5 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -119,7 +119,6 @@ struct cpuidle_coupled {
+ 
+ #define CPUIDLE_COUPLED_NOT_IDLE	(-1)
+ 
+-static DEFINE_MUTEX(cpuidle_coupled_lock);
+ static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
+ 
+ /*
+-- 
+2.1.4
