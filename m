@@ -1,55 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH RESEND] cpufreq: Use list_is_last() to check last entry
- of the policy list
-Date: Wed, 27 Jan 2016 12:06:11 +0530
-Message-ID: <20160127063611.GM3322@vireshk>
-References: <1453715167-26165-1-git-send-email-ego@linux.vnet.ibm.com>
- <1453876346-21869-1-git-send-email-ego@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1453876346-21869-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Juri Lelli <Lelli" <juri.lelli@arm.com>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Subject: [RESEND][PATCH] PM / Domains: Fix typo in comment
+Date: Wed, 27 Jan 2016 08:29:27 +0100
+Message-ID: <1453879767-2447-1-git-send-email-moritz.fischer@ettus.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:32995 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753775AbcA0HaP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2016 02:30:15 -0500
+Received: by mail-wm0-f54.google.com with SMTP id 123so138350874wmz.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2016 23:30:14 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Moritz Fischer <moritz.fischer@ettus.com>
 
-On 27-01-16, 12:02, Gautham R. Shenoy wrote:
-> Currently next_policy() explicitly checks if a policy is the last
-> policy in the cpufreq_policy_list. Use the standard list_is_last
-> primitive instead.
-> 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
-> The earlier version one was based on an Juri's experimental branch. 
-> I have based this one on linux-pm.git linux-next branch.
-> 
->  drivers/cpufreq/cpufreq.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index c35e7da..e979ec7 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -48,11 +48,11 @@ static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
->  					  bool active)
->  {
->  	do {
-> -		policy = list_next_entry(policy, policy_list);
-> -
->  		/* No more policies in the list */
-> -		if (&policy->policy_list == &cpufreq_policy_list)
-> +		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
->  			return NULL;
-> +
-> +		policy = list_next_entry(policy, policy_list);
->  	} while (!suitable_policy(policy, active));
->  
->  	return policy;
+Acked-by: Kevin Hilman <khilman@baylibre.com>
+Signed-off-by: Moritz Fischer <moritz.fischer@ettus.com>
+---
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 167418e..f23c036 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -160,7 +160,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+ 
+ /**
+  * genpd_queue_power_off_work - Queue up the execution of genpd_poweroff().
+- * @genpd: PM domait to power off.
++ * @genpd: PM domain to power off.
+  *
+  * Queue up the execution of genpd_poweroff() unless it's already been done
+  * before.
 -- 
-viresh
+2.7.0
+
