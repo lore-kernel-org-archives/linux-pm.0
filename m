@@ -1,39 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix NULL reference crash while accessing
- policy->governor_data
-Date: Wed, 27 Jan 2016 08:42:00 +0530
-Message-ID: <20160127031200.GI3322@vireshk>
-References: <1297c8fc8135f8b5359f9c49d220a939c0ee640e.1453741314.git.viresh.kumar@linaro.org>
- <20160126095751.GJ10898@e106622-lin>
- <20160126180119.GK10898@e106622-lin>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: Use list_is_last() to check last entry of the
+ policy list
+Date: Wed, 27 Jan 2016 11:27:51 +0530
+Message-ID: <20160127055751.GA28238@in.ibm.com>
+References: <1453715167-26165-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20160125095029.GE3183@vireshk>
+ <20160125111824.GH10898@e106622-lin>
+ <20160125112215.GB9155@vireshk>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:32775 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751333AbcA0DME (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 22:12:04 -0500
-Received: by mail-pf0-f172.google.com with SMTP id x125so4357420pfb.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2016 19:12:03 -0800 (PST)
+Received: from e37.co.us.ibm.com ([32.97.110.158]:35334 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbcA0F6B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2016 00:58:01 -0500
+Received: from localhost
+	by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Tue, 26 Jan 2016 22:57:59 -0700
 Content-Disposition: inline
-In-Reply-To: <20160126180119.GK10898@e106622-lin>
+In-Reply-To: <20160125112215.GB9155@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, "# v4 . 2+" <stable@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-On 26-01-16, 18:01, Juri Lelli wrote:
-> So, this goes away with your patch (that I forward ported) and a small
-> additional fix on top of that. I pushed all that here (so that it is
-> also tested by 0-day):
-
-I am surprised :)
-
->  git://linux-arm.org/linux-jl.git fixes/cpufreq/policy_exit_race 
+On Mon, Jan 25, 2016 at 04:52:15PM +0530, Viresh Kumar wrote:
+> On 25-01-16, 11:18, Juri Lelli wrote:
+> > Hi,
+> > 
+> > On 25/01/16 15:20, Viresh Kumar wrote:
+> > > On 25-01-16, 15:16, Gautham R. Shenoy wrote:
+> > > > Currently next_policy() explicitly checks if a policy is the last
+> > > > policy in the cpufreq_policy_list. Use the standard list_is_last
+> > > > primitive instead.
+> > > > 
+> > > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > > > ---
+> > > >  drivers/cpufreq/cpufreq.c | 6 +++---
+> > > >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > > index 78b1e2f..b3059a3 100644
+> > > > --- a/drivers/cpufreq/cpufreq.c
+> > > > +++ b/drivers/cpufreq/cpufreq.c
+> > > > @@ -67,11 +67,11 @@ static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+> > > >  {
+> > > >  	lockdep_assert_held(&cpufreq_driver_lock);
+> > 
+> > Which branch is this patch based on?
 > 
-> However, I can still see what below :/.
+> Dude, what's going on here? How come you rebased on Juri's patches ?
+> :)
 
-That's bad :(
+Ah right! I found this issue while reviewing Juri's patches from the
+cpufreq-cleanups branch and didn't switch back to pm-next before
+making this change. Shall resend the patch.
 
--- 
-viresh
+> 
+> -- 
+> viresh
+> 
+
+--
+Thanks and Regards
+gautham.
+
