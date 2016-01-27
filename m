@@ -1,71 +1,56 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 27 Jan 2016 09:17:45 +0100
-Message-ID: <CAPDyKFo-itpp1JUVANSFNiyhKcv1XLUqx1GwRk532LaT+ija0g@mail.gmail.com>
-References: <20160126224804.GB19432@atomide.com>
-	<CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
-	<20160126235222.GF19432@atomide.com>
-	<2779316.34ov6YOQgv@vostro.rjw.lan>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Wed, 27 Jan 2016 10:43:10 +0100
+Message-ID: <CAPDyKFqmWRY4vb=JAqwBmGqRhpq0MrdiAt4jCt5tdhYsxz0ziw@mail.gmail.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+	<8579242.omBpg1aLr2@wuerfel>
+	<CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
+	<11122786.kKumQ3Dhls@wuerfel>
+	<5697D7E2.3030209@nvidia.com>
+	<56A7A662.4090203@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f182.google.com ([209.85.160.182]:34274 "EHLO
-	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbcA0IRq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2016 03:17:46 -0500
-Received: by mail-yk0-f182.google.com with SMTP id a85so232014963ykb.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jan 2016 00:17:45 -0800 (PST)
-In-Reply-To: <2779316.34ov6YOQgv@vostro.rjw.lan>
+Received: from mail-yk0-f172.google.com ([209.85.160.172]:33639 "EHLO
+	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbcA0JnM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2016 04:43:12 -0500
+Received: by mail-yk0-f172.google.com with SMTP id k129so3502991yke.0
+        for <linux-pm@vger.kernel.org>; Wed, 27 Jan 2016 01:43:11 -0800 (PST)
+In-Reply-To: <56A7A662.4090203@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 27 January 2016 at 08:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, January 26, 2016 03:52:23 PM Tony Lindgren wrote:
->> * Rafael J. Wysocki <rafael@kernel.org> [160126 15:38]:
->> > On Wed, Jan 27, 2016 at 12:22 AM, Tony Lindgren <tony@atomide.com> wrote:
->> > > * Rafael J. Wysocki <rafael@kernel.org> [160126 15:15]:
->> > >> On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
->> > >> > Hi,
->> > >> >
->> > >> > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
->> > >> > PM states at probe error and driver unbind") broke PM on at least
->> > >> > omap3. It seems we now need to additionally also call
->> > >> > pm_runtime_dont_use_autosuspend() to get things working again?
->> > >> >
->> > >> > The following fixes idling on omap3, but I'm wondering if we
->> > >> > should do something in pm_runtime_reinit() instead?
->> > >>
->> > >> Well, does it actually help if you add
->> > >> pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
->> > >
->> > > No adding it to pm_runtime_reinit() does not help.
->> >
->> > Yes, I realized that it wouldn't help only after sending the previous
->> > message, sorry about that.
->> >
->> > The reason why it helps in the driver code seems to be that
->> > autosuspend_delay happens to be negative, so update_autosuspend()
->> > decrements the usage counter that would have stayed incremented
->> > otherwise.  Or at least that's the only way it can help I see ATM.
->>
->> Oh OK.
->>
->> > > Looks like we have RPM_ACTIVE set in pm_runtime_reinit() if that
->> > > gives any clues.
->> >
->> > It looks like pm_runtime_reinit() should clear the usage counter too.
->>
->> Yeah if we do this when !pm_runtime_enabled(dev) it seems it's
->> safe to pretty much reset everything?
+[...]
+
 >
-> Not only safe, but also a good idea apparently. :-)
+> Any more thoughts on this?
+>
+> I have been discussing with Thierry and we think that selecting PM for
+> tegra still makes the most sense. The question is, is this ok for
+> multi-configs?
 
-I happy to send a patch, extending pm_runtime_reinit() with some more
-data to be reset.
+Yes, this is too me the best option.
 
-Or, you or Tony intend to send a patch?
+Additionally, for those tegra SoCs/platforms that needs
+PM_GENERIC_DOMAINS, it can safely select that as well.
+
+>
+> The only other suggestion/thought I have is to allow
+> PM_GENERIC_DOMAINS_OF to be selected independently of PM so that we can
+> have minimal support for PM domains that allows you to register PM
+> domains with the kernel and their current state, but does not allow you
+> to control them, etc. This way tegra could always select
+> PM_GENERIC_DOMAINS_OF regardless of PM, and we would be able to
+> determine if we can probe a device safely.
+>
+> I am not sure that Rafael is too keen on this approach but that is the
+> only alternative I have come up with.
+
+I think Rafael already made his point around this approach, which is a
+clear no. And I fully agree with it.
 
 Kind regards
 Uffe
