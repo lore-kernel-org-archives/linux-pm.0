@@ -1,63 +1,107 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 26 Jan 2016 15:52:23 -0800
-Message-ID: <20160126235222.GF19432@atomide.com>
-References: <20160126224804.GB19432@atomide.com>
- <CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
- <20160126232212.GE19432@atomide.com>
- <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Tue, 26 Jan 2016 17:14:56 -0800
+Message-ID: <56A81A10.4020802@linaro.org>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+ <CAAJzSMfrtFuj2kZQh5j6KD_Nj4NMgbSH+k38LG+_n8U4epbG6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:57808 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbcAZXwZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Jan 2016 18:52:25 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35096 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbcA0BO7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jan 2016 20:14:59 -0500
+Received: by mail-pa0-f54.google.com with SMTP id ho8so106405666pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jan 2016 17:14:58 -0800 (PST)
+In-Reply-To: <CAAJzSMfrtFuj2kZQh5j6KD_Nj4NMgbSH+k38LG+_n8U4epbG6A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Ricky Liang <jcliang@chromium.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-* Rafael J. Wysocki <rafael@kernel.org> [160126 15:38]:
-> On Wed, Jan 27, 2016 at 12:22 AM, Tony Lindgren <tony@atomide.com> wrote:
-> > * Rafael J. Wysocki <rafael@kernel.org> [160126 15:15]:
-> >> On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
-> >> > Hi,
-> >> >
-> >> > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
-> >> > PM states at probe error and driver unbind") broke PM on at least
-> >> > omap3. It seems we now need to additionally also call
-> >> > pm_runtime_dont_use_autosuspend() to get things working again?
-> >> >
-> >> > The following fixes idling on omap3, but I'm wondering if we
-> >> > should do something in pm_runtime_reinit() instead?
-> >>
-> >> Well, does it actually help if you add
-> >> pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
-> >
-> > No adding it to pm_runtime_reinit() does not help.
+Hi Ricky,
+
+On 01/25/2016 04:06 AM, Ricky Liang wrote:
+>> +       do {
+>> +               set_current_state(TASK_INTERRUPTIBLE);
+>> +               new_request = gd->requested_freq;
+>> +               if (new_request == last_request) {
+>> +                       schedule();
 > 
-> Yes, I realized that it wouldn't help only after sending the previous
-> message, sorry about that.
->
-> The reason why it helps in the driver code seems to be that
-> autosuspend_delay happens to be negative, so update_autosuspend()
-> decrements the usage counter that would have stayed incremented
-> otherwise.  Or at least that's the only way it can help I see ATM.
-
-Oh OK.
-
-> > Looks like we have RPM_ACTIVE set in pm_runtime_reinit() if that
-> > gives any clues.
+> Should we check kthread_should_stop() after
+> set_current_state(TASK_INTERRUPTIBLE), probably right before
+> schedule()? Something like:
 > 
-> It looks like pm_runtime_reinit() should clear the usage counter too.
+>                set_current_state(TASK_INTERRUPTIBLE);
+>                new_request = gd->requested_freq;
+>                if (new_request == last_request) {
+>                        if (kthread_should_stop())
+>                                break;
+>                        schedule();
+>                } else {
+>                        ...
+>                }
+> 
+> On the previous version of the scheduler-driver cpu frequency
+> selection I had the following:
+> 
+> <3>[ 1920.233598] INFO: task autotest:32443 blocked for more than 120 seconds.
+> <3>[ 1920.233625]       Not tainted 3.18.0-09696-g4312b25 #1
+> <3>[ 1920.233641] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+> disables this message.
+> <6>[ 1920.233659] autotest        D ffffffc0002057a0     0 32443
+> 32403 0x00400000
+> <0>[ 1920.233693] Call trace:
+> <4>[ 1920.233724] [<ffffffc0002057a0>] __switch_to+0x80/0x8c
+> <4>[ 1920.233748] [<ffffffc000897908>] __schedule+0x550/0x7d8
+> <4>[ 1920.233769] [<ffffffc000897c08>] schedule+0x78/0x84
+> <4>[ 1920.233786] [<ffffffc00089bf9c>] schedule_timeout+0x40/0x2ac
+> <4>[ 1920.233804] [<ffffffc000898960>] wait_for_common+0x154/0x18c
+> <4>[ 1920.233820] [<ffffffc0008989bc>] wait_for_completion+0x24/0x34
+> <4>[ 1920.233840] [<ffffffc000242f84>] kthread_stop+0x130/0x22c
+> <4>[ 1920.233859] [<ffffffc00026ce84>] cpufreq_sched_setup+0x21c/0x308
+> <4>[ 1920.233881] [<ffffffc0006dcd30>] __cpufreq_governor+0x114/0x1c8
+> <4>[ 1920.233901] [<ffffffc0006dd168>] cpufreq_set_policy+0x120/0x1b8
+> <4>[ 1920.233920] [<ffffffc0006ddb64>] store_scaling_governor+0x8c/0xd4
+> <4>[ 1920.233937] [<ffffffc0006dc494>] store+0x98/0xd0
+> <4>[ 1920.233958] [<ffffffc0003b4158>] sysfs_kf_write+0x54/0x64
+> <4>[ 1920.233977] [<ffffffc0003b34d0>] kernfs_fop_write+0x108/0x150
+> <4>[ 1920.233999] [<ffffffc000344d2c>] vfs_write+0xc4/0x1a0
+> <4>[ 1920.234018] [<ffffffc000345478>] SyS_write+0x60/0xb4
+> <4>[ 1920.234031] INFO: lockdep is turned off.
+> <6>[ 1920.234043]   task                        PC stack   pid father
+> <6>[ 1920.234161] autotest        D ffffffc0002057a0     0 32443
+> 32403 0x00400000
+> <0>[ 1920.234193] Call trace:
+> <4>[ 1920.234211] [<ffffffc0002057a0>] __switch_to+0x80/0x8c
+> <4>[ 1920.234232] [<ffffffc000897908>] __schedule+0x550/0x7d8
+> <4>[ 1920.234251] [<ffffffc000897c08>] schedule+0x78/0x84
+> <4>[ 1920.234268] [<ffffffc00089bf9c>] schedule_timeout+0x40/0x2ac
+> <4>[ 1920.234285] [<ffffffc000898960>] wait_for_common+0x154/0x18c
+> <4>[ 1920.234301] [<ffffffc0008989bc>] wait_for_completion+0x24/0x34
+> <4>[ 1920.234319] [<ffffffc000242f84>] kthread_stop+0x130/0x22c
+> <4>[ 1920.234335] [<ffffffc00026ce84>] cpufreq_sched_setup+0x21c/0x308
+> <4>[ 1920.234355] [<ffffffc0006dcd30>] __cpufreq_governor+0x114/0x1c8
+> <4>[ 1920.234375] [<ffffffc0006dd168>] cpufreq_set_policy+0x120/0x1b8
+> <4>[ 1920.234395] [<ffffffc0006ddb64>] store_scaling_governor+0x8c/0xd4
+> <4>[ 1920.234413] [<ffffffc0006dc494>] store+0x98/0xd0
+> <4>[ 1920.234432] [<ffffffc0003b4158>] sysfs_kf_write+0x54/0x64
+> <4>[ 1920.234449] [<ffffffc0003b34d0>] kernfs_fop_write+0x108/0x150
+> <4>[ 1920.234470] [<ffffffc000344d2c>] vfs_write+0xc4/0x1a0
+> <4>[ 1920.234489] [<ffffffc000345478>] SyS_write+0x60/0xb4
+> 
+> This happened while the kernel is switching from the sched governor to
+> the userspace governor. There's a race between kthread_stop() and
+> cpufreq_sched_thread(). On the previous version I was testing, I can
+> easily reproduce the lockup if I add a msleep(100) right before
+> set_current_state(TASK_INTERRUPTIBLE), and then switching between the
+> two governors through sysfs.
 
-Yeah if we do this when !pm_runtime_enabled(dev) it seems it's
-safe to pretty much reset everything?
+Yes thanks for pointing this out. I've incorporated your fix, it will be
+part of the next RFC series I send out.
 
-Regards,
-
-Tony
+thanks,
+Steve
