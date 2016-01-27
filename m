@@ -1,56 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Wed, 27 Jan 2016 10:43:10 +0100
-Message-ID: <CAPDyKFqmWRY4vb=JAqwBmGqRhpq0MrdiAt4jCt5tdhYsxz0ziw@mail.gmail.com>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
-	<8579242.omBpg1aLr2@wuerfel>
-	<CAPDyKFrewx5CbS9QKZAxqq0Gu+TywQ3nkDGZFURR=PJLtkDuyQ@mail.gmail.com>
-	<11122786.kKumQ3Dhls@wuerfel>
-	<5697D7E2.3030209@nvidia.com>
-	<56A7A662.4090203@nvidia.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH] cpufreq: Use list_is_last() to check last entry of the
+ policy list
+Date: Wed, 27 Jan 2016 10:10:20 +0000
+Message-ID: <20160127101020.GL10898@e106622-lin>
+References: <1453715167-26165-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20160125095029.GE3183@vireshk>
+ <20160125111824.GH10898@e106622-lin>
+ <20160127060923.GB28238@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f172.google.com ([209.85.160.172]:33639 "EHLO
-	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbcA0JnM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jan 2016 04:43:12 -0500
-Received: by mail-yk0-f172.google.com with SMTP id k129so3502991yke.0
-        for <linux-pm@vger.kernel.org>; Wed, 27 Jan 2016 01:43:11 -0800 (PST)
-In-Reply-To: <56A7A662.4090203@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160127060923.GB28238@in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-[...]
+On 27/01/16 11:39, Gautham R Shenoy wrote:
+> On Mon, Jan 25, 2016 at 11:18:24AM +0000, Juri Lelli wrote:
+> > Hi,
+> > 
+> > On 25/01/16 15:20, Viresh Kumar wrote:
+> > > On 25-01-16, 15:16, Gautham R. Shenoy wrote:
+> > > > Currently next_policy() explicitly checks if a policy is the last
+> > > > policy in the cpufreq_policy_list. Use the standard list_is_last
+> > > > primitive instead.
+> > > > 
+> > > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > > > ---
+> > > >  drivers/cpufreq/cpufreq.c | 6 +++---
+> > > >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > > index 78b1e2f..b3059a3 100644
+> > > > --- a/drivers/cpufreq/cpufreq.c
+> > > > +++ b/drivers/cpufreq/cpufreq.c
+> > > > @@ -67,11 +67,11 @@ static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+> > > >  {
+> > > >  	lockdep_assert_held(&cpufreq_driver_lock);
+> > 
+> > Which branch is this patch based on?
+> 
+> My bad! This is based on your branch  git://linux-arm.org/linux-jl.git
+> upstream/cpufreq_cleanups. I found this issue while reviewing your
+> cleanup patches.
+> 
 
->
-> Any more thoughts on this?
->
-> I have been discussing with Thierry and we think that selecting PM for
-> tegra still makes the most sense. The question is, is this ok for
-> multi-configs?
+No problem, and thanks for reviewing those! Any feedback? :)
 
-Yes, this is too me the best option.
+Best,
 
-Additionally, for those tegra SoCs/platforms that needs
-PM_GENERIC_DOMAINS, it can safely select that as well.
-
->
-> The only other suggestion/thought I have is to allow
-> PM_GENERIC_DOMAINS_OF to be selected independently of PM so that we can
-> have minimal support for PM domains that allows you to register PM
-> domains with the kernel and their current state, but does not allow you
-> to control them, etc. This way tegra could always select
-> PM_GENERIC_DOMAINS_OF regardless of PM, and we would be able to
-> determine if we can probe a device safely.
->
-> I am not sure that Rafael is too keen on this approach but that is the
-> only alternative I have come up with.
-
-I think Rafael already made his point around this approach, which is a
-clear no. And I fully agree with it.
-
-Kind regards
-Uffe
+- Juri
