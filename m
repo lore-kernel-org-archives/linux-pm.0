@@ -1,100 +1,97 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V5 05/14] soc: tegra: pmc: Wait for powergate state to change
-Date: Thu, 28 Jan 2016 16:33:43 +0000
-Message-ID: <1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH V5 08/14] PM / Domains: Add function to remove a pm-domain
+Date: Thu, 28 Jan 2016 16:33:46 +0000
+Message-ID: <1453998832-27383-9-git-send-email-jonathanh@nvidia.com>
 References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1453998832-27383-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:19870 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945947AbcA1Qei (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 11:34:38 -0500
+In-Reply-To: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jon Hunter <jonathanh@nvidia.com>
 
-Currently, the function tegra_powergate_set() simply sets the desired
-powergate state but does not wait for the state to change. In most cases
-we should wait for the state to change before proceeding. Currently, there
-is a case for tegra114 and tegra124 devices where we do not wait when
-starting the secondary CPU as this is not necessary. However, this is only
-done at boot time and so waiting here will only have a small impact on
-boot time. Therefore, update tegra_powergate_set() to wait when setting
-the powergate.
+The genpd framework allows users to add power-domains via the
+pm_genpd_init() function, however, there is no corresponding function
+to remove a power-domain. For most devices this may be fine as the power
+domains are never removed, however, for devices that wish to populate
+the power-domains from within a driver, having the ability to remove a
+power domain if the probing of the device fails or the driver is unloaded
+is necessary. Therefore, add a function to remove a power-domain. Please
+note that the power domain can only be removed if there are no devices
+using the power-domain and it is not linked to another domain.
 
-By adding this feature, we can also eliminate the polling loop from
-tegra30_boot_secondary().
-
-A function has been added for checking the status of the powergate and
-so update the tegra_powergate_is_powered() to use this macro as well.
-
-Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- arch/arm/mach-tegra/platsmp.c | 16 +++-------------
- drivers/soc/tegra/pmc.c       |  9 ++++++++-
- 2 files changed, 11 insertions(+), 14 deletions(-)
+ drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  5 +++++
+ 2 files changed, 31 insertions(+)
 
-diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
-index f3f61dbbda97..75620ae73913 100644
---- a/arch/arm/mach-tegra/platsmp.c
-+++ b/arch/arm/mach-tegra/platsmp.c
-@@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
- 	 * be un-gated by un-toggling the power gate register
- 	 * manually.
- 	 */
--	if (!tegra_pmc_cpu_is_powered(cpu)) {
--		ret = tegra_pmc_cpu_power_on(cpu);
--		if (ret)
--			return ret;
--
--		/* Wait for the power to come up. */
--		timeout = jiffies + msecs_to_jiffies(100);
--		while (!tegra_pmc_cpu_is_powered(cpu)) {
--			if (time_after(jiffies, timeout))
--				return -ETIMEDOUT;
--			udelay(10);
--		}
--	}
-+	ret = tegra_pmc_cpu_power_on(cpu);
-+	if (ret)
-+		return ret;
- 
- remove_clamps:
- 	/* CPU partition is powered. Enable the CPU clock. */
-diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 99cb2fdd29e1..35ee60fd17be 100644
---- a/drivers/soc/tegra/pmc.c
-+++ b/drivers/soc/tegra/pmc.c
-@@ -28,6 +28,7 @@
- #include <linux/export.h>
- #include <linux/init.h>
- #include <linux/io.h>
-+#include <linux/iopoll.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -186,6 +187,9 @@ static inline bool tegra_powergate_state(int id)
-  */
- static int tegra_powergate_set(unsigned int id, bool new_state)
- {
-+	bool status;
-+	int err;
-+
- 	mutex_lock(&pmc->powergates_lock);
- 
- 	if (tegra_powergate_state(id) == new_state) {
-@@ -195,9 +199,12 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
- 
- 	tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
- 
-+	err = readx_poll_timeout(tegra_powergate_state, id, status,
-+				 status == new_state, 10, 100000);
-+
- 	mutex_unlock(&pmc->powergates_lock);
- 
--	return 0;
-+	return err;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 45e3641b427d..b4120121bcac 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1529,6 +1529,32 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
  }
+ EXPORT_SYMBOL_GPL(pm_genpd_init);
  
- /**
++/**
++ * pm_genpd_remove - Remove a generic I/O PM domain object.
++ * @genpd: PM domain object to remove.
++ */
++int pm_genpd_remove(struct generic_pm_domain *genpd)
++{
++	if (IS_ERR_OR_NULL(genpd))
++		return -EINVAL;
++
++	mutex_lock(&genpd->lock);
++
++	if (!list_empty(&genpd->master_links)
++	    || !list_empty(&genpd->slave_links) || genpd->device_count) {
++		mutex_unlock(&genpd->lock);
++		return -EBUSY;
++	}
++
++	mutex_lock_nested(&gpd_list_lock, SINGLE_DEPTH_NESTING);
++	list_del(&genpd->gpd_list_node);
++	mutex_unlock(&gpd_list_lock);
++	mutex_unlock(&genpd->lock);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pm_genpd_remove);
++
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+ /*
+  * Device Tree based PM domain providers.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index db21d3995f7e..0d661998fa74 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -123,6 +123,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+ 				     struct generic_pm_domain *target);
+ extern void pm_genpd_init(struct generic_pm_domain *genpd,
+ 			  struct dev_power_governor *gov, bool is_off);
++extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -161,6 +162,10 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+ 				 struct dev_power_governor *gov, bool is_off)
+ {
+ }
++static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
++{
++	return -ENOTSUPP;
++}
+ #endif
+ 
+ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
 -- 
 2.1.4
+
