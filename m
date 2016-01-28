@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 02/16] PM / OPP: Disable OPPs that aren't supported by the regulator
-Date: Thu, 28 Jan 2016 13:50:31 +0530
-Message-ID: <16ba415d52ce9c967201f9fca1385014334e1be3.1453965717.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 07/16] PM / OPP: Add dev_pm_opp_set_rate()
+Date: Thu, 28 Jan 2016 13:50:36 +0530
+Message-ID: <9151a47d7235855032be559372398edf809fe52b.1453965717.git.viresh.kumar@linaro.org>
 References: <cover.1453965717.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1453965717.git.viresh.kumar@linaro.org>
@@ -12,54 +12,229 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Disable any OPPs where the connected regulator isn't able to provide the
-specified voltage.
+This adds a routine, dev_pm_opp_set_rate(), responsible for configuring
+power-supply and clock source for an OPP.
+
+The OPP is found by matching against the target_freq passed to the
+routine. This shall replace similar code present in most of the OPP
+users and help simplify them a lot.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ drivers/base/power/opp/core.c | 176 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h        |   6 ++
+ 2 files changed, 182 insertions(+)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 1e22b71abf1e..71545becfca1 100644
+index 7d7749ce1ce4..2672f4bfec41 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -687,6 +687,22 @@ static struct dev_pm_opp *_allocate_opp(struct device *dev,
- 	return opp;
+@@ -529,6 +529,182 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
  }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
  
-+static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
-+					 struct device_opp *dev_opp)
++/*
++ * The caller needs to ensure that device_opp (and hence the clk) isn't freed,
++ * while clk returned here is used.
++ */
++static struct clk *_get_opp_clk(struct device *dev)
 +{
-+	struct regulator *reg = dev_opp->regulator;
++	struct device_opp *dev_opp;
++	struct clk *clk;
 +
-+	if (!IS_ERR(reg) &&
-+	    !regulator_is_supported_voltage(reg, opp->u_volt_min,
-+					    opp->u_volt_max)) {
-+		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
-+			__func__, opp->u_volt_min, opp->u_volt_max);
-+		return false;
++	rcu_read_lock();
++
++	dev_opp = _find_device_opp(dev);
++	if (IS_ERR(dev_opp)) {
++		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
++		clk = (struct clk *)dev_opp;
++		goto unlock;
 +	}
 +
-+	return true;
++	clk = dev_opp->clk;
++	if (IS_ERR(clk))
++		dev_err(dev, "%s: No clock available for the device\n",
++			__func__);
++
++unlock:
++	rcu_read_unlock();
++	return clk;
 +}
 +
- static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 		    struct device_opp *dev_opp)
- {
-@@ -728,6 +744,12 @@ static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
- 			__func__, ret);
- 
-+	if (!_opp_supported_by_regulators(new_opp, dev_opp)) {
-+		new_opp->available = false;
-+		dev_warn(dev, "%s: OPP not supported by regulators (%lu)\n",
-+			 __func__, new_opp->rate);
++static int _set_opp_voltage(struct device *dev, struct regulator *reg,
++			    unsigned long u_volt, unsigned long u_volt_min,
++			    unsigned long u_volt_max)
++{
++	int ret;
++
++	/* Regulator not be available for device */
++	if (IS_ERR(reg)) {
++		dev_dbg(dev, "%s: regulator not available: %ld\n", __func__,
++			PTR_ERR(reg));
++		return 0;
 +	}
 +
- 	return 0;
- }
++	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__, u_volt_min,
++		u_volt, u_volt_max);
++
++	ret = regulator_set_voltage_triplet(reg, u_volt_min, u_volt,
++					    u_volt_max);
++	if (ret)
++		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
++			__func__, u_volt_min, u_volt, u_volt_max, ret);
++
++	return ret;
++}
++
++/**
++ * dev_pm_opp_set_rate() - Configure new OPP based on frequency
++ * @dev:	 device for which we do this operation
++ * @target_freq: frequency to achieve
++ *
++ * This configures the power-supplies and clock source to the levels specified
++ * by the OPP corresponding to the target_freq.
++ *
++ * Locking: This function takes rcu_read_lock().
++ */
++int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
++{
++	struct device_opp *dev_opp;
++	struct dev_pm_opp *old_opp, *opp;
++	struct regulator *reg;
++	struct clk *clk;
++	unsigned long freq, old_freq;
++	unsigned long u_volt, u_volt_min, u_volt_max;
++	unsigned long ou_volt, ou_volt_min, ou_volt_max;
++	int ret;
++
++	if (unlikely(!target_freq)) {
++		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
++			target_freq);
++		return -EINVAL;
++	}
++
++	clk = _get_opp_clk(dev);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++
++	freq = clk_round_rate(clk, target_freq);
++	if ((long)freq <= 0)
++		freq = target_freq;
++
++	old_freq = clk_get_rate(clk);
++
++	/* Return early if nothing to do */
++	if (old_freq == freq) {
++		dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
++			__func__, freq);
++		return 0;
++	}
++
++	rcu_read_lock();
++
++	dev_opp = _find_device_opp(dev);
++	if (IS_ERR(dev_opp)) {
++		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
++		ret = PTR_ERR(dev_opp);
++		goto unlock;
++	}
++
++	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
++	if (!IS_ERR(old_opp)) {
++		ou_volt = old_opp->u_volt;
++		ou_volt_min = old_opp->u_volt_min;
++		ou_volt_max = old_opp->u_volt_max;
++	} else {
++		dev_err(dev, "%s: failed to find Current OPP for freq %lu (%ld)\n",
++			__func__, old_freq, PTR_ERR(old_opp));
++	}
++
++	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
++	if (IS_ERR(opp)) {
++		ret = PTR_ERR(opp);
++		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
++			__func__, freq, ret);
++		goto unlock;
++	}
++
++	u_volt = opp->u_volt;
++	u_volt_min = opp->u_volt_min;
++	u_volt_max = opp->u_volt_max;
++
++	reg = dev_opp->regulator;
++
++	rcu_read_unlock();
++
++	/* Scaling up? Scale voltage before frequency */
++	if (freq > old_freq) {
++		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
++				       u_volt_max);
++		if (ret)
++			goto restore_voltage;
++	}
++
++	/* Change frequency */
++
++	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n",
++		__func__, old_freq, freq);
++
++	ret = clk_set_rate(clk, freq);
++	if (ret) {
++		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
++			ret);
++		goto restore_voltage;
++	}
++
++	/* Scaling down? Scale voltage after frequency */
++	if (freq < old_freq) {
++		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
++				       u_volt_max);
++		if (ret)
++			goto restore_freq;
++	}
++
++	return 0;
++
++restore_freq:
++	if (clk_set_rate(clk, old_freq))
++		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
++			__func__, old_freq);
++restore_voltage:
++	/* This shouldn't harm even if the voltages weren't updated earlier */
++	if (!IS_ERR(old_opp))
++		_set_opp_voltage(dev, reg, ou_volt, ou_volt_min, ou_volt_max);
++unlock:
++	rcu_read_unlock();
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_rate);
++
+ /* List-dev Helpers */
+ static void _kfree_list_dev_rcu(struct rcu_head *head)
+ {
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 59da3d9e11ea..cccaf4a29e9f 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -64,6 +64,7 @@ int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct device *dev);
+ int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+ void dev_pm_opp_put_regulator(struct device *dev);
++int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -172,6 +173,11 @@ static inline int dev_pm_opp_set_regulator(struct device *dev, const char *name)
  
+ static inline void dev_pm_opp_put_regulator(struct device *dev) {}
+ 
++static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
++{
++	return -EINVAL;
++}
++
+ #endif		/* CONFIG_PM_OPP */
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
 -- 
 2.7.0.79.gdc08a19
