@@ -1,72 +1,206 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v7 4/6] cpufreq: powernv/tracing: Add powernv_throttle tracepoint
-Date: Thu, 28 Jan 2016 12:55:39 +0530
-Message-ID: <1453965941-7363-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v7 5/6] cpufreq: powernv: Replace pr_info with trace print for throttle event
+Date: Thu, 28 Jan 2016 12:55:40 +0530
+Message-ID: <1453965941-7363-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:54762 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932647AbcA1H1S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 02:27:18 -0500
+Received: from localhost
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Thu, 28 Jan 2016 17:27:17 +1000
 In-Reply-To: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-This patch adds the powernv_throttle tracepoint to trace the CPU
-frequency throttling event, which is used by the powernv-cpufreq
-driver in POWER8.
+Currently we use printk message to notify the throttle event. But this
+can flood the console if the cpu is throttled frequently. So replace the
+printk with the tracepoint to notify the throttle event. And also events
+like throttle below nominal frequency and OCC_RESET are reduced to
+pr_warn/pr_warn_once as pointed by MFG to not mark them as critical
+messages. This patch adds 'throttle_reason' to struct chip to store the
+throttle reason.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
 ---
-No changes since v2.
+Changes from v6:
+- Rename struct chip member 'throt_reason' to 'throttle_reason'
 
- include/trace/events/power.h | 22 ++++++++++++++++++++++
- kernel/trace/power-traces.c  |  1 +
- 2 files changed, 23 insertions(+)
+No changes from v5.
 
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 284244e..19e5030 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -38,6 +38,28 @@ DEFINE_EVENT(cpu, cpu_idle,
- 	TP_ARGS(state, cpu_id)
- );
+Changes from v4:
+- Taken care of Gautham's comments to remove the new function
+  powernv_cpufreq_check_pmax()
+- Modified commit message
+
+Changes from v3:
+- Separate this patch to contain trace_point changes
+- Move struct chip member 'restore' of type bool above 'mask' to reduce
+  structure padding.
+
+No changes from v2.
+
+Changes from v1:
+- As suggested by Paul Clarke replaced char * throttle_reason[][30] by 
+  const char * const throttle_reason[].
+
+ drivers/cpufreq/powernv-cpufreq.c | 73 ++++++++++++++++++---------------------
+ 1 file changed, 34 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index c670314..1bbc10a 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -29,6 +29,7 @@
+ #include <linux/reboot.h>
+ #include <linux/slab.h>
+ #include <linux/cpu.h>
++#include <trace/events/power.h>
  
-+TRACE_EVENT(powernv_throttle,
-+
-+	TP_PROTO(int chip_id, const char *reason, int pmax),
-+
-+	TP_ARGS(chip_id, reason, pmax),
-+
-+	TP_STRUCT__entry(
-+		__field(int, chip_id)
-+		__string(reason, reason)
-+		__field(int, pmax)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->chip_id = chip_id;
-+		__assign_str(reason, reason);
-+		__entry->pmax = pmax;
-+	),
-+
-+	TP_printk("Chip %d Pmax %d %s", __entry->chip_id,
-+		  __entry->pmax, __get_str(reason))
-+);
-+
- TRACE_EVENT(pstate_sample,
+ #include <asm/cputhreads.h>
+ #include <asm/firmware.h>
+@@ -45,12 +46,22 @@ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
+ static unsigned int *core_to_chip_map;
  
- 	TP_PROTO(u32 core_busy,
-diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
-index eb4220a..81b8745 100644
---- a/kernel/trace/power-traces.c
-+++ b/kernel/trace/power-traces.c
-@@ -15,4 +15,5 @@
++static const char * const throttle_reason[] = {
++	"No throttling",
++	"Power Cap",
++	"Processor Over Temperature",
++	"Power Supply Failure",
++	"Over Current",
++	"OCC Reset"
++};
++
+ static struct chip {
+ 	unsigned int id;
+ 	bool throttled;
++	bool restore;
++	u8 throttle_reason;
+ 	cpumask_t mask;
+ 	struct work_struct throttle;
+-	bool restore;
+ } *chips;
  
- EXPORT_TRACEPOINT_SYMBOL_GPL(suspend_resume);
- EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_idle);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(powernv_throttle);
+ static int nr_chips;
+@@ -331,17 +342,17 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 			goto next;
+ 		chips[i].throttled = true;
+ 		if (pmsr_pmax < powernv_pstate_info.nominal)
+-			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+-				cpu, chips[i].id, pmsr_pmax,
+-				powernv_pstate_info.nominal);
+-		else
+-			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
+-				cpu, chips[i].id, pmsr_pmax,
+-				powernv_pstate_info.max);
++			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
++				     cpu, chips[i].id, pmsr_pmax,
++				     powernv_pstate_info.nominal);
++		trace_powernv_throttle(chips[i].id,
++				      throttle_reason[chips[i].throttle_reason],
++				      pmsr_pmax);
+ 	} else if (chips[i].throttled) {
+ 		chips[i].throttled = false;
+-		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+-			chips[i].id, pmsr_pmax);
++		trace_powernv_throttle(chips[i].id,
++				      throttle_reason[chips[i].throttle_reason],
++				      pmsr_pmax);
+ 	}
  
+ 	/* Check if Psafe_mode_active is set in PMSR. */
+@@ -359,7 +370,7 @@ next:
+ 
+ 	if (throttled) {
+ 		pr_info("PMSR = %16lx\n", pmsr);
+-		pr_crit("CPU Frequency could be throttled\n");
++		pr_warn("CPU Frequency could be throttled\n");
+ 	}
+ }
+ 
+@@ -452,15 +463,6 @@ out:
+ 	put_online_cpus();
+ }
+ 
+-static char throttle_reason[][30] = {
+-					"No throttling",
+-					"Power Cap",
+-					"Processor Over Temperature",
+-					"Power Supply Failure",
+-					"Over Current",
+-					"OCC Reset"
+-				     };
+-
+ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 				   unsigned long msg_type, void *_msg)
+ {
+@@ -486,7 +488,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 		 */
+ 		if (!throttled) {
+ 			throttled = true;
+-			pr_crit("CPU frequency is throttled for duration\n");
++			pr_warn("CPU frequency is throttled for duration\n");
+ 		}
+ 
+ 		break;
+@@ -510,23 +512,18 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 			return 0;
+ 		}
+ 
+-		if (omsg.throttle_status &&
++		for (i = 0; i < nr_chips; i++)
++			if (chips[i].id == omsg.chip)
++				break;
++
++		if (omsg.throttle_status >= 0 &&
+ 		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
+-			pr_info("OCC: Chip %u Pmax reduced due to %s\n",
+-				(unsigned int)omsg.chip,
+-				throttle_reason[omsg.throttle_status]);
+-		else if (!omsg.throttle_status)
+-			pr_info("OCC: Chip %u %s\n", (unsigned int)omsg.chip,
+-				throttle_reason[omsg.throttle_status]);
+-		else
+-			return 0;
++			chips[i].throttle_reason = omsg.throttle_status;
+ 
+-		for (i = 0; i < nr_chips; i++)
+-			if (chips[i].id == omsg.chip) {
+-				if (!omsg.throttle_status)
+-					chips[i].restore = true;
+-				schedule_work(&chips[i].throttle);
+-			}
++		if (!omsg.throttle_status)
++			chips[i].restore = true;
++
++		schedule_work(&chips[i].throttle);
+ 	}
+ 	return 0;
+ }
+@@ -581,16 +578,14 @@ static int init_chip_info(void)
+ 		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
+ 	}
+ 
+-	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
++	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips)
+ 		goto free_chip_map;
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+-		chips[i].throttled = false;
+ 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+ 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+-		chips[i].restore = false;
+ 	}
+ 
+ 	return 0;
 -- 
 1.9.3
+
