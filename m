@@ -1,91 +1,172 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V5 01/14] soc: tegra: pmc: Restore base address on probe failure
-Date: Thu, 28 Jan 2016 16:33:39 +0000
-Message-ID: <1453998832-27383-2-git-send-email-jonathanh@nvidia.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH V5 02/14] soc: tegra: pmc: Protect public functions from potential race conditions
+Date: Thu, 28 Jan 2016 16:33:40 +0000
+Message-ID: <1453998832-27383-3-git-send-email-jonathanh@nvidia.com>
 References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1453998832-27383-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:9363 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945947AbcA1QeP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 11:34:15 -0500
+In-Reply-To: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jon Hunter <jonathanh@nvidia.com>
 
-During early initialisation, the PMC registers are mapped and the PMC SoC
-data is populated in the PMC data structure. This allows other drivers
-access the PMC register space, via the public tegra PMC APIs, prior to
-probing the PMC device.
+The PMC base address pointer is initialised during early boot so that
+early platform code may used the PMC public functions. During the probe
+of the PMC driver the base address pointer is mapped again and the initial
+mapping is freed. This exposes a window where a device accessing the PMC
+registers via one of the public functions, could race with the updating
+of the pointer and lead to a invalid access. Furthermore, the only
+protection between multiple devices attempting to access the PMC registers
+is when setting the powergate state to on or off. None of the other public
+functions that access the PMC registers are protected.
 
-When the PMC device is probed, the PMC registers are mapped again and if
-successful the initial mapping is freed. If the probing of the PMC device
-fails after the registers are remapped, then the registers will be
-unmapped and hence the pointer to the PMC registers will be invalid. This
-could lead to a potential crash, because once the PMC SoC data pointer is
-populated, the driver assumes that the PMC register mapping is also valid
-and a user calling any of the public tegra PMC APIs could trigger an
-exception because these APIs don't check that the mapping is still valid.
+Use the existing mutex to protect paths that may race with regard to
+accessing the PMC registers.
 
-Fix this by restoring the original mapping for the PMC registers if the
-probe on the PMC device fails and only unmapping the original mapping if
-the probe succeeds.
-
-Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- drivers/soc/tegra/pmc.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/soc/tegra/pmc.c | 44 +++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 35 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 88c7e506177e..85b4e166273a 100644
+index 85b4e166273a..f8cdb7ce9755 100644
 --- a/drivers/soc/tegra/pmc.c
 +++ b/drivers/soc/tegra/pmc.c
-@@ -821,13 +821,11 @@ static int tegra_pmc_probe(struct platform_device *pdev)
- 	if (IS_ERR(pmc->base))
- 		return PTR_ERR(pmc->base);
+@@ -235,7 +235,10 @@ int tegra_powergate_is_powered(int id)
+ 	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
+ 		return -EINVAL;
  
--	iounmap(base);
--
- 	pmc->clk = devm_clk_get(&pdev->dev, "pclk");
- 	if (IS_ERR(pmc->clk)) {
- 		err = PTR_ERR(pmc->clk);
- 		dev_err(&pdev->dev, "failed to get pclk: %d\n", err);
--		return err;
-+		goto error;
- 	}
- 
- 	pmc->dev = &pdev->dev;
-@@ -839,7 +837,7 @@ static int tegra_pmc_probe(struct platform_device *pdev)
- 	if (IS_ENABLED(CONFIG_DEBUG_FS)) {
- 		err = tegra_powergate_debugfs_init();
- 		if (err < 0)
--			return err;
-+			goto error;
- 	}
- 
- 	err = register_restart_handler(&tegra_pmc_restart_handler);
-@@ -847,10 +845,17 @@ static int tegra_pmc_probe(struct platform_device *pdev)
- 		debugfs_remove(pmc->debugfs);
- 		dev_err(&pdev->dev, "unable to register restart handler, %d\n",
- 			err);
--		return err;
-+		goto error;
- 	}
- 
-+	iounmap(base);
++	mutex_lock(&pmc->powergates_lock);
+ 	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
++	mutex_unlock(&pmc->powergates_lock);
 +
- 	return 0;
-+
-+error:
-+	pmc->base = base;
-+
-+	return err;
+ 	return !!status;
  }
  
- #if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ARM)
+@@ -250,6 +253,8 @@ int tegra_powergate_remove_clamping(int id)
+ 	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
+ 		return -EINVAL;
+ 
++	mutex_lock(&pmc->powergates_lock);
++
+ 	/*
+ 	 * On Tegra124 and later, the clamps for the GPU are controlled by a
+ 	 * separate register (with different semantics).
+@@ -257,7 +262,7 @@ int tegra_powergate_remove_clamping(int id)
+ 	if (id == TEGRA_POWERGATE_3D) {
+ 		if (pmc->soc->has_gpu_clamps) {
+ 			tegra_pmc_writel(0, GPU_RG_CNTRL);
+-			return 0;
++			goto out;
+ 		}
+ 	}
+ 
+@@ -274,6 +279,9 @@ int tegra_powergate_remove_clamping(int id)
+ 
+ 	tegra_pmc_writel(mask, REMOVE_CLAMPING);
+ 
++out:
++	mutex_unlock(&pmc->powergates_lock);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(tegra_powergate_remove_clamping);
+@@ -520,9 +528,11 @@ int tegra_io_rail_power_on(int id)
+ 	unsigned int bit, mask;
+ 	int err;
+ 
++	mutex_lock(&pmc->powergates_lock);
++
+ 	err = tegra_io_rail_prepare(id, &request, &status, &bit);
+ 	if (err < 0)
+-		return err;
++		goto error;
+ 
+ 	mask = 1 << bit;
+ 
+@@ -535,12 +545,15 @@ int tegra_io_rail_power_on(int id)
+ 	err = tegra_io_rail_poll(status, mask, 0, 250);
+ 	if (err < 0) {
+ 		pr_info("tegra_io_rail_poll() failed: %d\n", err);
+-		return err;
++		goto error;
+ 	}
+ 
+ 	tegra_io_rail_unprepare();
+ 
+-	return 0;
++error:
++	mutex_unlock(&pmc->powergates_lock);
++
++	return err < 0 ? err : 0;
+ }
+ EXPORT_SYMBOL(tegra_io_rail_power_on);
+ 
+@@ -550,10 +563,12 @@ int tegra_io_rail_power_off(int id)
+ 	unsigned int bit, mask;
+ 	int err;
+ 
++	mutex_lock(&pmc->powergates_lock);
++
+ 	err = tegra_io_rail_prepare(id, &request, &status, &bit);
+ 	if (err < 0) {
+ 		pr_info("tegra_io_rail_prepare() failed: %d\n", err);
+-		return err;
++		goto error;
+ 	}
+ 
+ 	mask = 1 << bit;
+@@ -566,11 +581,14 @@ int tegra_io_rail_power_off(int id)
+ 
+ 	err = tegra_io_rail_poll(status, mask, mask, 250);
+ 	if (err < 0)
+-		return err;
++		goto error;
+ 
+ 	tegra_io_rail_unprepare();
+ 
+-	return 0;
++error:
++	mutex_unlock(&pmc->powergates_lock);
++
++	return err < 0 ? err : 0;
+ }
+ EXPORT_SYMBOL(tegra_io_rail_power_off);
+ 
+@@ -817,9 +835,15 @@ static int tegra_pmc_probe(struct platform_device *pdev)
+ 
+ 	/* take over the memory region from the early initialization */
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
++	mutex_lock(&pmc->powergates_lock);
+ 	pmc->base = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(pmc->base))
+-		return PTR_ERR(pmc->base);
++	mutex_unlock(&pmc->powergates_lock);
++
++	if (IS_ERR(pmc->base)) {
++		err = PTR_ERR(pmc->base);
++		goto error;
++	}
+ 
+ 	pmc->clk = devm_clk_get(&pdev->dev, "pclk");
+ 	if (IS_ERR(pmc->clk)) {
+@@ -853,7 +877,9 @@ static int tegra_pmc_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ error:
++	mutex_lock(&pmc->powergates_lock);
+ 	pmc->base = base;
++	mutex_unlock(&pmc->powergates_lock);
+ 
+ 	return err;
+ }
 -- 
 2.1.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
