@@ -1,62 +1,70 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 4/9] drm/edid: convert to use match_string() helper
-Date: Thu, 28 Jan 2016 15:14:20 +0200
-Message-ID: <1453986865-133572-5-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 9/9] usb: common: convert to use match_string() helper
+Date: Thu, 28 Jan 2016 15:14:25 +0200
+Message-ID: <1453986865-133572-10-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:28149 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967733AbcA1NPJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Jan 2016 08:15:09 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
+
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
 The new helper returns index of the mathing string in an array. We would use it
 here.
 
+Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ drivers/usb/common/common.c | 22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_edid_load.c b/drivers/gpu/drm/drm_edid_load.c
-index 698b8c3..9a401ae 100644
---- a/drivers/gpu/drm/drm_edid_load.c
-+++ b/drivers/gpu/drm/drm_edid_load.c
-@@ -170,16 +170,11 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	int i, valid_extensions = 0;
- 	bool print_bad_edid = !connector->bad_edid_counter || (drm_debug & DRM_UT_KMS);
+diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+index 49fbfe8..e3d0161 100644
+--- a/drivers/usb/common/common.c
++++ b/drivers/usb/common/common.c
+@@ -65,18 +65,15 @@ EXPORT_SYMBOL_GPL(usb_speed_string);
+ enum usb_device_speed usb_get_maximum_speed(struct device *dev)
+ {
+ 	const char *maximum_speed;
+-	int err;
+-	int i;
++	int ret;
  
--	builtin = 0;
--	for (i = 0; i < GENERIC_EDIDS; i++) {
--		if (strcmp(name, generic_edid_name[i]) == 0) {
--			fwdata = generic_edid[i];
--			fwsize = sizeof(generic_edid[i]);
--			builtin = 1;
--			break;
--		}
--	}
--	if (!builtin) {
-+	builtin = match_string(generic_edid_name, GENERIC_EDIDS, name);
-+	if (builtin >= 0) {
-+		fwdata = generic_edid[builtin];
-+		fwsize = sizeof(generic_edid[builtin]);
-+	} else {
- 		struct platform_device *pdev;
- 		int err;
+-	err = device_property_read_string(dev, "maximum-speed", &maximum_speed);
+-	if (err < 0)
++	ret = device_property_read_string(dev, "maximum-speed", &maximum_speed);
++	if (ret < 0)
+ 		return USB_SPEED_UNKNOWN;
  
-@@ -252,7 +247,7 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	}
+-	for (i = 0; i < ARRAY_SIZE(speed_names); i++)
+-		if (strcmp(maximum_speed, speed_names[i]) == 0)
+-			return i;
++	ret = match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
  
- 	DRM_INFO("Got %s EDID base block and %d extension%s from "
--	    "\"%s\" for connector \"%s\"\n", builtin ? "built-in" :
-+	    "\"%s\" for connector \"%s\"\n", (builtin >= 0) ? "built-in" :
- 	    "external", valid_extensions, valid_extensions == 1 ? "" : "s",
- 	    name, connector_name);
+-	return USB_SPEED_UNKNOWN;
++	return (ret < 0) ? USB_SPEED_UNKNOWN : ret;
+ }
+ EXPORT_SYMBOL_GPL(usb_get_maximum_speed);
  
+@@ -110,13 +107,10 @@ static const char *const usb_dr_modes[] = {
+ 
+ static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
+ {
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(usb_dr_modes); i++)
+-		if (!strcmp(usb_dr_modes[i], str))
+-			return i;
++	int ret;
+ 
+-	return USB_DR_MODE_UNKNOWN;
++	ret = match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
++	return (ret < 0) ? USB_DR_MODE_UNKNOWN : ret;
+ }
+ 
+ enum usb_dr_mode usb_get_dr_mode(struct device *dev)
 -- 
 2.7.0.rc3
-
