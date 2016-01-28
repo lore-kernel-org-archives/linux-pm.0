@@ -1,110 +1,90 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Thu, 28 Jan 2016 15:29:36 +0100
-Message-ID: <CAPDyKFqD6Y6HcgVds_oWBZ8L7Kdh2VX_WZCGApf-1a_6GHCQ5g@mail.gmail.com>
-References: <20160126224804.GB19432@atomide.com>
-	<CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
-	<20160126232212.GE19432@atomide.com>
-	<CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
-	<20160126235222.GF19432@atomide.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH V5 00/14] Add generic PM domain support for Tegra
+Date: Thu, 28 Jan 2016 16:33:38 +0000
+Message-ID: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f175.google.com ([209.85.160.175]:36381 "EHLO
-	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755168AbcA1O3h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 09:29:37 -0500
-Received: by mail-yk0-f175.google.com with SMTP id v14so32064993ykd.3
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jan 2016 06:29:37 -0800 (PST)
-In-Reply-To: <20160126235222.GF19432@atomide.com>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:9067 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945942AbcA1QeH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 11:34:07 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jon Hunter <jonathanh@nvidia.com>
 
-On 27 January 2016 at 00:52, Tony Lindgren <tony@atomide.com> wrote:
-> * Rafael J. Wysocki <rafael@kernel.org> [160126 15:38]:
->> On Wed, Jan 27, 2016 at 12:22 AM, Tony Lindgren <tony@atomide.com> wrote:
->> > * Rafael J. Wysocki <rafael@kernel.org> [160126 15:15]:
->> >> On Tue, Jan 26, 2016 at 11:48 PM, Tony Lindgren <tony@atomide.com> wrote:
->> >> > Hi,
->> >> >
->> >> > Looks like commit 5de85b9d57ab ("PM / runtime: Re-init runtime
->> >> > PM states at probe error and driver unbind") broke PM on at least
+Adds generic PM domain support for Tegra SoCs but this series only
+enables support for it on Tegra 64-bit devices. There is no reason why
+this cannot be enable for Tegra 32-bit devices, but to keep the patch
+series to a minimum only 64-bit devices are enabled so far.
 
-I need to understand the issue here in a bit more detail, could you
-please try to fill out some of my gaps!?
+This series has been boot tested on Tegra210 as well as various 32-bit
+Tegra platforms.
 
-In *what way* did it break PM?
+Summary of changes since V4 [1]:
+- Re-worked fix to handle base address on probe failure
+- Added patch to lock around simultaneuous accesses to PMC registers
+- Added patch to change powergate and rail IDs to unsigned type
+- Added patch to fix testing of powergate state
+- Updated patch to check for valid powergates to use a bitmap
+- Updated Tegra DT PMC bindings per Rob H's feedback
+- Updated Tegra power domains binding per Thierry's feedback
+- Updated Tegra generic power domain support per Thierry's feedback
 
-Did the driver not probe successfully the second try? If so, what happened.
+Summary of changes since V3 [0]:
+- Dropped tegra124 support for now
+- Removed MC flush support per feedback from Thierry
+- Cleaned up the PMC changes per feedback from Thierry
+- Added support for tegra210
 
->> >> > omap3. It seems we now need to additionally also call
->> >> > pm_runtime_dont_use_autosuspend() to get things working again?
->> >> >
->> >> > The following fixes idling on omap3, but I'm wondering if we
->> >> > should do something in pm_runtime_reinit() instead?
+Series Summary:
+Patch 1-7:  PMC clean-up and fixes
+Patch 8:    Adds function to remove a generic PM domain
+Patch 9:    Updates DT documentation for tegra PMC
+Patch 10:   Adds DT documentation for tegra generic PM domains
+Patch 11:   Adds PMC generic DM domains support
+Patch 12:   Adds audio clock for Tegra210 audio power-domain
+Patch 13:   Adds DT bindings for Tegra210 audio power-domain
+Patch 14:   Enable generic PM domains for tegra64
 
-I understand this as the second (or third, forth, whatever) probing
-attempt actually succeeds, right!?
+[0] http://comments.gmane.org/gmane.linux.ports.tegra/22944
+[1] http://marc.info/?l=linux-tegra&m=144924153600529&w=2
 
-Is the issue you are seeing, that the device never becomes runtime
-suspended due to commit 5de85b9d57ab ("PM / runtime: Re-init runtime
-PM states at probe error and driver unbind")?
+Jon Hunter (14):
+  soc: tegra: pmc: Restore base address on probe failure
+  soc: tegra: pmc: Protect public functions from potential race
+    conditions
+  soc: tegra: pmc: Change powergate and rail IDs to be an unsigned type
+  soc: tegra: pmc: Fix testing of powergate state
+  soc: tegra: pmc: Wait for powergate state to change
+  soc: tegra: pmc: Fix checking of valid partitions
+  soc: tegra: pmc: Ensure partitions can be toggled on/off by PMC
+  PM / Domains: Add function to remove a pm-domain
+  Documentation: DT: bindings: Update NVIDIA PMC for Tegra
+  Documentation: DT: bindings: Add power domain info for NVIDIA PMC
+  soc: tegra: pmc: Add generic PM domain support
+  clk: tegra210: Add the APB2APE audio clock
+  ARM64: tegra: Add audio PM domain device node for Tegra210
+  ARM64: tegra: select PM_GENERIC_DOMAINS
 
->> >>
->> >> Well, does it actually help if you add
->> >> pm_runtime_dont_use_autosuspend(dev) to pm_runtime_reinit()?
->> >
->> > No adding it to pm_runtime_reinit() does not help.
->>
->> Yes, I realized that it wouldn't help only after sending the previous
->> message, sorry about that.
->>
->> The reason why it helps in the driver code seems to be that
->> autosuspend_delay happens to be negative, so update_autosuspend()
->> decrements the usage counter that would have stayed incremented
->> otherwise.  Or at least that's the only way it can help I see ATM.
->
-> Oh OK.
->
->> > Looks like we have RPM_ACTIVE set in pm_runtime_reinit() if that
->> > gives any clues.
+ .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      |  67 ++-
+ arch/arm/mach-tegra/platsmp.c                      |  16 +-
+ arch/arm64/Kconfig.platforms                       |   2 +
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi           |  11 +-
+ drivers/base/power/domain.c                        |  26 +
+ drivers/clk/tegra/clk-id.h                         |   1 +
+ drivers/clk/tegra/clk-tegra-periph.c               |   1 +
+ drivers/clk/tegra/clk-tegra210.c                   |   1 +
+ drivers/gpu/drm/tegra/drm.h                        |   2 +-
+ drivers/soc/tegra/pmc.c                            | 603 ++++++++++++++++++---
+ include/dt-bindings/clock/tegra210-car.h           |   2 +-
+ include/dt-bindings/power/tegra-powergate.h        |  36 ++
+ include/linux/pm_domain.h                          |   5 +
+ include/soc/tegra/pmc.h                            |  73 +--
+ 14 files changed, 709 insertions(+), 137 deletions(-)
+ create mode 100644 include/dt-bindings/power/tegra-powergate.h
 
-That's a good clue. Although, there could be several reasons to why.
+-- 
+2.1.4
 
-Rafael has pointed out one valid potential case, but I want to be sure
-that's really what happening here.
-
-*If* the problem is that the device doesn't becomes runtime suspended,
-that will anyway be prevented as long as the autosuspend_delay has
-been set to a negative value. That's why I wonder whether this really
-is the case here.
-
-For omap3, I assume there's a PM domain (the so called hwmod) being
-attached to the omap_hsmmc device at device registration point!?
-In that path depending on a specific hwmod flag, the device will be
-given the an initial *active* runtime PM status, via invoking
-pm_runtime_set_active().
-
-*If* that's the case, it affects the probing sequence, as the
-pm_runtime_get_sync() won't trigger the ->runtime_resume() callbacks
-to be invoked in the first probe attempt.
-
-Moreover, according to the data I received in this regression report
-so far, it seems like probing the second time has *always* been done
-with the device in runtime PM active state. Could that be the reason
-to why it "happens" to work?
-
->>
->> It looks like pm_runtime_reinit() should clear the usage counter too.
->
-> Yeah if we do this when !pm_runtime_enabled(dev) it seems it's
-> safe to pretty much reset everything?
->
-> Regards,
->
-> Tony
-
-Kind regards
-Uffe
