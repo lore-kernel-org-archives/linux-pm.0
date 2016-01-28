@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 8/9] ide: hpt366: convert to use match_string() helper
-Date: Thu, 28 Jan 2016 15:14:24 +0200
-Message-ID: <1453986865-133572-9-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 7/9] ata: hpt366: convert to use match_string() helper
+Date: Thu, 28 Jan 2016 15:14:23 +0200
+Message-ID: <1453986865-133572-8-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -14,30 +14,37 @@ The new helper returns index of the mathing string in an array. We would use it
 here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Tejun Heo <tj@kernel.org>
 ---
- drivers/ide/hpt366.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/ata/pata_hpt366.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/ide/hpt366.c b/drivers/ide/hpt366.c
-index 696b6c1..f94baad 100644
---- a/drivers/ide/hpt366.c
-+++ b/drivers/ide/hpt366.c
-@@ -531,14 +531,9 @@ static const struct hpt_info hpt371n = {
- 	.timings	= &hpt37x_timings
- };
- 
--static int check_in_drive_list(ide_drive_t *drive, const char **list)
-+static bool check_in_drive_list(ide_drive_t *drive, const char **list)
+diff --git a/drivers/ata/pata_hpt366.c b/drivers/ata/pata_hpt366.c
+index 0038dc4..e5fb752 100644
+--- a/drivers/ata/pata_hpt366.c
++++ b/drivers/ata/pata_hpt366.c
+@@ -176,17 +176,14 @@ static int hpt_dma_blacklisted(const struct ata_device *dev, char *modestr,
+ 			       const char * const list[])
  {
--	char *m = (char *)&drive->id[ATA_ID_PROD];
--
--	while (*list)
--		if (!strcmp(*list++, m))
--			return 1;
--	return 0;
-+	return match_string(list, -1, (char *)&drive->id[ATA_ID_PROD]) >= 0;
- }
+ 	unsigned char model_num[ATA_ID_PROD_LEN + 1];
+-	int i = 0;
++	int i;
  
- static struct hpt_info *hpt3xx_get_info(struct device *dev)
+ 	ata_id_c_string(dev->id, model_num, ATA_ID_PROD, sizeof(model_num));
+ 
+-	while (list[i] != NULL) {
+-		if (!strcmp(list[i], model_num)) {
+-			pr_warn("%s is not supported for %s\n",
+-				modestr, list[i]);
+-			return 1;
+-		}
+-		i++;
++	i = match_string(list, -1, model_num);
++	if (i >= 0) {
++		pr_warn("%s is not supported for %s\n", modestr, list[i]);
++		return 1;
+ 	}
+ 	return 0;
+ }
 -- 
 2.7.0.rc3
