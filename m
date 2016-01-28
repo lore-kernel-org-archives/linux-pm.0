@@ -1,70 +1,55 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 0/9] lib/string: introduce match_string() helper
-Date: Thu, 28 Jan 2016 15:14:16 +0200
-Message-ID: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 0/2] reboot: Introduce emergency_poweroff function
+Date: Thu, 28 Jan 2016 13:24:47 +0000
+Message-ID: <20160128132447.6b8bec2c@lxorguk.ukuu.org.uk>
+References: <1453986389-15887-1-git-send-email-j-keerthy@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:3144 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754877AbcA1NOe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Jan 2016 08:14:34 -0500
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:58312 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbcA1NZV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jan 2016 08:25:21 -0500
+In-Reply-To: <1453986389-15887-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Keerthy <j-keerthy@ti.com>
+Cc: linux-kernel@vger.kernel.org, oleg@redhat.com, toshi.kani@hp.com, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-patch-review@list.ti.com, nm@ti.com, grygorii.strashko@ti.com, mingo@kernel.org, josh@joshtriplett.org, rui.zhang@intel.com, edubezval@gmail.com
 
-There are users of a simple string matching in the array. Let's do a common
-helper for that.
+On Thu, 28 Jan 2016 18:36:27 +0530
+Keerthy <j-keerthy@ti.com> wrote:
 
-Several users are updated in the series.
+> The series introduces a new function emergency_poweroff which shuts
+> down the system after a configurable period of time. emergency_poweroff
+> is appropriate in case of thermal shutdown scenario.
 
-The series is compile tested.
+That depends upon the system. 
 
-There is still a question what function should return. There are variants:
--1, -EINVAL, -ENODATA, something else?
+If your hardware has its own built in thermal reset protection then it
+will merely make things worse by causing unneeded crashes.
 
-Since v3:
-- rebase on top of latest linux-next
-- add Rafael's Ack
+If your device doesn't have protection then you have bigger problems
+because a kernel crash or spin in interrupt space could easily mean that
+the thermal thermals but doesn't ever run any delayed work. On those that
+have a watchdog as well it should be using the hardware watchdog for
+protection not relying upon schedule_delayed_work to get work done.
 
-Since v2:
-- slightly modify implementation of the helper:
-  - rename len -> n in prototype (Sergey)
-  - move to for-loop (Rasmus)
-  - change 0 -> -1 to iterate over NULL-terminated arrays (Rasmus)
-- add patch 9 from Heikki
-- append tags
+So IMHO this should get a resounding NAK as it stands. For most systems
+it's a backward change, for most of those that need more protection it
+doesn't look the right answer.
 
-Since v1:
-- convert few more users to get helper useful
+In particular if you need to be sure the box goes off *right now* you
+don't want to schedule work because there are so many ways that it might
+never execute the work when the box is failing.
 
-Andy Shevchenko (8):
-  lib/string: introduce match_string() helper
-  device property: convert to use match_string() helper
-  pinctrl: convert to use match_string() helper
-  drm/edid: convert to use match_string() helper
-  power: charger_manager: convert to use match_string() helper
-  power: ab8500: convert to use match_string() helper
-  ata: hpt366: convert to use match_string() helper
-  ide: hpt366: convert to use match_string() helper
+Do your devices actually *really* need this, are you saying that someone
+who roots the device can disable this code and physically destroy the
+product ? If they do then I'd much rather see thermal_core call
+thermal_poweroff(), and define that on a platform basis - so for x86 it
+would be orderly_poweroff(), for your platform it might well be a
+function that right that instant bangs the registers to force power off,
+devices with watchdogs might write the watchdog with a 5 second timer and
+then try and do an orderly_poweroff and so forth.
 
-Heikki Krogerus (1):
-  usb: common: convert to use match_string() helper
-
- drivers/ata/pata_hpt366.c       | 13 +++++--------
- drivers/base/property.c         | 10 ++--------
- drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
- drivers/ide/hpt366.c            |  9 ++-------
- drivers/pinctrl/pinmux.c        | 13 +++----------
- drivers/power/ab8500_btemp.c    | 15 +++++----------
- drivers/power/ab8500_charger.c  | 16 +++++-----------
- drivers/power/ab8500_fg.c       | 15 +++++----------
- drivers/power/abx500_chargalg.c | 14 +++++---------
- drivers/power/charger-manager.c | 27 ++++-----------------------
- drivers/usb/common/common.c     | 22 ++++++++--------------
- include/linux/string.h          |  2 ++
- lib/string.c                    | 26 ++++++++++++++++++++++++++
- 13 files changed, 78 insertions(+), 121 deletions(-)
-
--- 
-2.7.0.rc3
-
+Alan
