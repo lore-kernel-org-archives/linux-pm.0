@@ -1,7 +1,7 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v7 2/6] cpufreq: powernv: Hot-plug safe the kworker thread
-Date: Thu, 28 Jan 2016 12:55:37 +0530
-Message-ID: <1453965941-7363-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v7 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+Date: Thu, 28 Jan 2016 12:55:38 +0530
+Message-ID: <1453965941-7363-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
@@ -10,77 +10,107 @@ To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-In the kworker_thread powernv_cpufreq_work_fn(), we can end up
-sending an IPI to a cpu going offline. This is a rare corner case
-which is fixed using {get/put}_online_cpus(). Along with this fix,
-this patch adds changes to do oneshot cpumask_{clear/and} operation.
+cpu_to_chip_id() does a DT walk through to find out the chip id by
+taking a contended device tree lock. This adds an unnecessary overhead
+in a hot path. So instead of calling cpu_to_chip_id() everytime cache
+the chip ids for all cores in the array 'core_to_chip_map' and use it
+in the hotpath.
 
-Suggested-by: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Suggested-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Reported-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-No changes from v6.
+Changes from v6:
+- Minor changes to move the code 'cpumask_copy()' after 'core_to_chip_map'
+  is allocated.
+- Move 'kfree(chips)' to a separate patch.
 
-Changes form v5:
-- Fix the kbuild-error:
-drivers/cpufreq/powernv-cpufreq.c:428:2: error: implicit declaration of
-function 'get_online_cpus' [-Werror=implicit-function-declaration
+No changes from v5.
 
- drivers/cpufreq/powernv-cpufreq.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+Changes from v4:
+- Taken care of Shreyas's comments to add a core_to_chip_map array to
+  store the chip id.
+
+ drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 53f980b..a271b0f 100644
+index a271b0f..c670314 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -28,6 +28,7 @@
- #include <linux/of.h>
- #include <linux/reboot.h>
- #include <linux/slab.h>
-+#include <linux/cpu.h>
+@@ -43,6 +43,7 @@
  
- #include <asm/cputhreads.h>
- #include <asm/firmware.h>
-@@ -423,18 +424,19 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
++static unsigned int *core_to_chip_map;
+ 
+ static struct chip {
+ 	unsigned int id;
+@@ -313,13 +314,14 @@ static inline unsigned int get_nominal_index(void)
+ static void powernv_cpufreq_throttle_check(void *data)
  {
- 	struct chip *chip = container_of(work, struct chip, throttle);
- 	unsigned int cpu;
--	cpumask_var_t mask;
-+	cpumask_t mask;
+ 	unsigned int cpu = smp_processor_id();
++	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
+ 	unsigned long pmsr;
+ 	int pmsr_pmax, i;
  
--	smp_call_function_any(&chip->mask,
-+	get_online_cpus();
-+	cpumask_and(&mask, &chip->mask, cpu_online_mask);
-+	smp_call_function_any(&mask,
- 			      powernv_cpufreq_throttle_check, NULL, 0);
+ 	pmsr = get_pmspr(SPRN_PMSR);
  
- 	if (!chip->restore)
--		return;
+ 	for (i = 0; i < nr_chips; i++)
+-		if (chips[i].id == cpu_to_chip_id(cpu))
++		if (chips[i].id == chip_id)
+ 			break;
+ 
+ 	/* Check for Pmax Capping */
+@@ -559,19 +561,29 @@ static int init_chip_info(void)
+ 	unsigned int chip[256];
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id = UINT_MAX;
++	cpumask_t cpu_mask;
++	int ret = -ENOMEM;
+ 
+-	for_each_possible_cpu(cpu) {
++	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
++				   GFP_KERNEL);
++	if (!core_to_chip_map)
 +		goto out;
++
++	cpumask_copy(&cpu_mask, cpu_possible_mask);
++	for_each_cpu(cpu, &cpu_mask) {
+ 		unsigned int id = cpu_to_chip_id(cpu);
  
- 	chip->restore = false;
--	cpumask_copy(mask, &chip->mask);
--	for_each_cpu_and(cpu, mask, cpu_online_mask) {
--		int index, tcpu;
-+	for_each_cpu(cpu, &mask) {
-+		int index;
- 		struct cpufreq_policy policy;
- 
- 		cpufreq_get_policy(&policy, cpu);
-@@ -442,9 +444,10 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 					       policy.cur,
- 					       CPUFREQ_RELATION_C, &index);
- 		powernv_cpufreq_target_index(&policy, index);
--		for_each_cpu(tcpu, policy.cpus)
--			cpumask_clear_cpu(tcpu, mask);
-+		cpumask_andnot(&mask, &mask, policy.cpus);
+ 		if (prev_chip_id != id) {
+ 			prev_chip_id = id;
+ 			chip[nr_chips++] = id;
+ 		}
++		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
++		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
  	}
+ 
+ 	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips)
+-		return -ENOMEM;
++		goto free_chip_map;
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+@@ -582,6 +594,10 @@ static int init_chip_info(void)
+ 	}
+ 
+ 	return 0;
++free_chip_map:
++	kfree(core_to_chip_map);
 +out:
-+	put_online_cpus();
++	return ret;
  }
  
- static char throttle_reason[][30] = {
+ static int __init powernv_cpufreq_init(void)
+@@ -616,6 +632,7 @@ static void __exit powernv_cpufreq_exit(void)
+ 	opal_message_notifier_unregister(OPAL_MSG_OCC,
+ 					 &powernv_cpufreq_opal_nb);
+ 	kfree(chips);
++	kfree(core_to_chip_map);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
 -- 
 1.9.3
