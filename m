@@ -1,50 +1,39 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v6 0/7] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Thu, 28 Jan 2016 19:50:41 +0900
-Message-ID: <56A9F281.2080906@samsung.com>
-References: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
- <20151216021446.GC3111@ubuntu> <56A9F205.1060302@samsung.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v7 0/6] cpufreq: powernv: Redesign the presentation of
+ throttle notification and solve bug-fixes in the driver
+Date: Thu, 28 Jan 2016 22:10:57 +1100
+Message-ID: <CAKTCnzn6o6fxP+f4FzsBr3+F9_cBubtUs6sQZod0A6BWdBZzmA@mail.gmail.com>
+References: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <56A9F205.1060302@samsung.com>
+In-Reply-To: <1453965941-7363-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, Anton Blanchard <anton@samba.org>, Gautham R Shenoy <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, mpe@ellerman.id.au
 List-Id: linux-pm@vger.kernel.org
 
-On 28.01.2016 19:48, Krzysztof Kozlowski wrote:
-> On 16.12.2015 11:14, Viresh Kumar wrote:
->> On 15-12-15, 18:33, Bartlomiej Zolnierkiewicz wrote:
->>> Hi,
->>>
->>> This patch series adds generic cpufreq-dt driver support for
->>> Exynos542x/5800 (using the new CPU clock type which allows it).
->>>
->>> It has been tested on Exynos5422 based ODROID-XU3 Lite board.
->>>
->>> Depends on:
->>> - next-20151211 branch of linux-next kernel tree
->>> - "[PATCH] ARM: dts: Make CPU configuration more readable for
->>>   exynos542x/5800" patch (https://lkml.org/lkml/2015/12/11/107)
->>>
->>> Changes since v5:
->>> - rebased over next-20151211 branch (something is broken in
->>>   newer branches, namely next-2015121[45])
->>> - rebased on top of "ARM: dts: Make CPU configuration more
->>>   readable for exynos542x/5800" patch
->>> - renamed cpu0_opp_table to cluster_a15_opp_table and
->>>   cpu1_opp_table to cluster_a7_opp_table
->>> - added Reviewed-by from Krzysztof
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Applied entire patchset to my krzk repo.
+On Thu, Jan 28, 2016 at 6:25 PM, Shilpasri G Bhat
+<shilpa.bhat@linux.vnet.ibm.com> wrote:
+> In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
+> CPU when the chip crosses its thermal and power limits. Currently,
+> powernv-cpufreq driver detects and reports this event as a console
+> message. Some machines may not sustain the max turbo frequency in all
+> conditions and can be throttled frequently. This can lead to the
+> flooding of console with throttle messages. So this patchset aims to
+> redesign the presentation of this event via sysfs counters and
+> tracepoints. And it also fixes couple of bugs reported in the driver.
+>
+> - Patch [1] fixes a memory leak bug
+> - Patch [2] fixes the cpu hot-plug bug in powernv_cpufreq_work_fn().
+> - Patch [3] solves a bug in powernv_cpufreq_throttle_check(), which
+>   calls in to cpu_to_chip_id() in hot path which reads DT every time
+>   to find the chip id.
+> - Patches [4] to [6] will add a perf trace point
+>   "power:powernv_throttle" and sysfs throttle counter stats in
+>   /sys/devices/system/cpu/cpufreq/chipN.
+>
 
-Wrong. Applied only Exynos part, which is DTS + mach-exynos. The clock
-stuff was already in v4.5-rc1.
+Looks good to me. You've got the reviews and acks you need.
 
-Best regards,
-Krzysztof
+Balbir Singh
