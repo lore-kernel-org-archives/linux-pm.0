@@ -1,120 +1,103 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for v4.5-rc2
-Date: Fri, 29 Jan 2016 22:51:15 +0100
-Message-ID: <CAJZ5v0g0qXYh6ENymGgUv2CkJKPTJ=sJAoFiaaRQ+P6nnXLfgg@mail.gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH v4 00/13] arm64: kernel: Add support for hibernate/suspend-to-disk
+Date: Fri, 29 Jan 2016 14:34:53 -0800
+Message-ID: <7hvb6chv5e.fsf@baylibre.com>
+References: <1453977766-20907-1-git-send-email-james.morse@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:33695 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755262AbcA2Wez (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Jan 2016 17:34:55 -0500
+Received: by mail-pa0-f52.google.com with SMTP id cy9so48043707pac.0
+        for <linux-pm@vger.kernel.org>; Fri, 29 Jan 2016 14:34:55 -0800 (PST)
+In-Reply-To: <1453977766-20907-1-git-send-email-james.morse@arm.com> (James
+	Morse's message of "Thu, 28 Jan 2016 10:42:33 +0000")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: James Morse <james.morse@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Marc Zyngier <marc.zyngier@arm.com>
 
-Hi Linus,
+Hi James,
 
-Please pull from
+James Morse <james.morse@arm.com> writes:
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.5-rc2
+> This version of hibernate is rebased onto v4.5-rc1, including updated patches
+> shared with kexec v13 [0] (1-5, 10).
 
-to receive the second batch of power management and ACPI updates for
-v4.5-rc2 with top-most commit ad1ac94767aa9d74c6533e33e768a14d2715162f
+Thanks for this series!
 
- Merge branches 'pm-cpuidle', 'pm-cpufreq', 'pm-domains' and 'pm-sleep'
+I'd like to help in testing this so I'm just curious which platforms
+you've been testing this on.  I'm assuming a Juno (r2?), anything else?
 
-on top of commit 92e963f50fc74041b5e9e744c330dca48e04f08d
+Are you testing the resume from cold boot, or just from kexec?
 
- Linux 4.5-rc1
+For cold boot on Juno, I'm assuming there would be some
+booloader/firmware changes needed to find and boot from the hibernation
+image?  Is that being worked on?  If not Juno, are you aware of any
+other platforms that could be tested with resume from cold boot?
 
-These are: cpuidle fixes (including one fix for a recent regression),
-cpufreq fixes (including fixes for two issues introduced during the
-4.2 cycle), generic power domains framework fixes (two locking
-fixes and one cleanup), one locking fix in the ACPI-based PCI
-hotplug framework (ACPIPHP), removal of one ACPI backlight
-blacklist entry that isn't necessary any more and a PM Kconfig
-cleanup.
+Not knowing the answers to the above, I tested your branch using arm64
+defconfig + CONFIG_HIBERNATION=y on my Juno and noticed that it didn't
+stay suspended (full suspend log below) so I'm looking for
+ideas/recommenations on how to test this.
 
-Specifics:
+FWIW, my Juno is running the latest ATF + u-boot firmware from the
+Linaro ARM landing team.
 
- - Fix a recent cpuidle core regression that broke suspend-to-idle
-   on all systems where cpuidle drivers don't provide ->enter_freeze
-   callbacks for any states (Sudeep Holla).
+Kevin
 
- - Drop an unnecessary symbol definition from the cpuidle core code
-   handling coupled CPU cores (Anders Roxell).
-
- - Fix a race condition related to governor initialization and removal
-   in the cpufreq core (Viresh Kumar).
-
- - Clean up the cpufreq core to use list_is_last() for checking if
-   the given policy object is the last element of a list instead of
-   open coding that in a clumsy way (Gautham R Shenoy).
-
- - Fix compiler warnings in the pxa2xx and cpufreq-dt cpufreq drivers
-   (Arnd Bergmann).
-
- - Fix two locking issues and clean up a comment in the generic power
-   domains framework (Ulf Hansson, Marek Szyprowski, Moritz Fischer).
-
- - Fix the error code path of one function in the ACPI-based PCI
-   hotplug framework (ACPIPHP) that forgets to release a lock
-   acquired previously (Insu Yun).
-
- - Drop the ACPI backlight blacklist entry for Dell Inspiron 5737
-   that is not necessary any more (Hans de Goede).
-
- - Clean up the top-level PM Kconfig to stop requiring APM emulation
-   to depend on PM which in fact isn't necessary (Arnd Bergmann).
-
-Thanks!
-
-
----------------
-
-Anders Roxell (1):
-      cpuidle: coupled: remove unused define cpuidle_coupled_lock
-
-Arnd Bergmann (3):
-      PM: APM_EMULATION does not depend on PM
-      cpufreq: pxa2xx: fix pxa_cpufreq_change_voltage prototype
-      cpufreq: cpufreq-dt: avoid uninitialized variable warnings:
-
-Gautham R Shenoy (1):
-      cpufreq: Use list_is_last() to check last entry of the policy list
-
-Hans de Goede (1):
-      ACPI: Revert "ACPI / video: Add Dell Inspiron 5737 to the blacklist"
-
-Insu Yun (1):
-      ACPI / PCI / hotplug: unlock in error path in acpiphp_enable_slot()
-
-Marek Szyprowski (1):
-      PM / domains: fix lockdep issue for all subdomains
-
-Moritz Fischer (1):
-      PM / Domains: Fix typo in comment
-
-Sudeep Holla (1):
-      cpuidle: fix fallback mechanism for suspend to idle in absence
-of enter_freeze
-
-Ulf Hansson (1):
-      PM / Domains: Fix potential deadlock while adding/removing subdomains
-
-Viresh Kumar (1):
-      cpufreq: Fix NULL reference crash while accessing policy->governor_data
-
----------------
-
- drivers/acpi/video_detect.c        |  8 --------
- drivers/base/power/domain.c        | 37 ++++++++++++++++++++-----------------
- drivers/cpufreq/cpufreq-dt.c       | 15 +++++++--------
- drivers/cpufreq/cpufreq.c          |  6 +++---
- drivers/cpufreq/cpufreq_governor.c | 11 ++++++++---
- drivers/cpufreq/pxa2xx-cpufreq.c   |  2 +-
- drivers/cpuidle/coupled.c          |  1 -
- drivers/cpuidle/cpuidle.c          |  2 +-
- drivers/pci/hotplug/acpiphp_glue.c |  4 +++-
- kernel/power/Kconfig               |  2 +-
- kernel/sched/idle.c                |  2 +-
- 11 files changed, 45 insertions(+), 45 deletions(-)
+/ # echo disk > /sys/power/state
+[   29.563430] PM: Syncing filesystems ... done.
+[   29.567901] Freezing user space processes ... (elapsed 0.001 seconds) done.
+[   29.576989] PM: Preallocating image memory... done (allocated 65512 pages)
+[   31.969977] PM: Allocated 262048 kbytes in 2.38 seconds (110.10 MB/s)
+[   31.976362] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+[   31.985303] Suspending console(s) (use no_console_suspend to debug)
+[   31.992900] PM: freeze of devices complete after 1.370 msecs
+[   31.993877] PM: late freeze of devices complete after 0.960 msecs
+[   31.995109] PM: noirq freeze of devices complete after 1.225 msecs
+[   31.995112] Disabling non-boot CPUs ...
+[   32.012751] CPU1: shutdown
+[   32.028584] psci: Retrying again to check for CPU kill
+[   32.028587] psci: CPU1 killed.
+[   32.060689] CPU2: shutdown
+[   32.076579] psci: Retrying again to check for CPU kill
+[   32.076583] psci: CPU2 killed.
+[   32.108734] CPU3: shutdown
+[   32.124579] psci: Retrying again to check for CPU kill
+[   32.124582] psci: CPU3 killed.
+[   32.160690] CPU4: shutdown
+[   32.176578] psci: Retrying again to check for CPU kill
+[   32.176581] psci: CPU4 killed.
+[   32.212685] CPU5: shutdown
+[   32.228580] psci: Retrying again to check for CPU kill
+[   32.228584] psci: CPU5 killed.
+[   32.241393] PM: Creating hibernation image:
+[   32.241393] PM: Need to copy 63772 pages
+[   32.241393] PM: Hibernation image created (63772 pages copied)
+[   32.241440] Enabling non-boot CPUs ...
+[   32.274634] Detected PIPT I-cache on CPU1
+[   32.274680] CPU1: Booted secondary processor [410fd080]
+[   32.274896]  cache: parent cpu1 should not be sleeping
+[   32.275095] CPU1 is up
+[   32.306712] Detected PIPT I-cache on CPU2
+[   32.306738] CPU2: Booted secondary processor [410fd080]
+[   32.306922]  cache: parent cpu2 should not be sleeping
+[   32.307120] CPU2 is up
+[   32.338913] Detected VIPT I-cache on CPU3
+[   32.338959] CPU3: Booted secondary processor [410fd033]
+[   32.339184]  cache: parent cpu3 should not be sleeping
+[   32.339378] CPU3 is up
+[   32.371098] Detected VIPT I-cache on CPU4
+[   32.371125] CPU4: Booted secondary processor [410fd033]
+[   32.371341]  cache: parent cpu4 should not be sleeping
+[   32.371536] CPU4 is up
+[   32.403281] Detected VIPT I-cache on CPU5
+[   32.403309] CPU5: Booted secondary processor [410fd033]
+[   32.403531]  cache: parent cpu5 should not be sleeping
+[   32.403741] CPU5 is up
+[   32.404202] PM: noirq thaw of devices complete after 0.454 msecs
+[   32.404979] PM: early thaw of devices complete after 0.723 msecs
+[...]
