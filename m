@@ -1,121 +1,142 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
-Subject: Re: [PATCH V5 05/14] soc: tegra: pmc: Wait for powergate state to change
-Date: Fri, 29 Jan 2016 09:58:03 -0700
-Message-ID: <CANLsYkycbEo+wyMX8RJ9H-S5kDTjQR4nnDZc5gvf2kShOZAv9w@mail.gmail.com>
+From: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V5 06/14] soc: tegra: pmc: Fix checking of valid partitions
+Date: Fri, 29 Jan 2016 10:08:30 -0700
+Message-ID: <CANLsYkxY5P2wQxGev0veN39nD-1cTVkZCVpX9jca7da39JJpWg@mail.gmail.com>
 References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
-	<1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
+	<1453998832-27383-7-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:34495 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932495AbcA2Q6E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Jan 2016 11:58:04 -0500
-Received: by mail-ob0-f178.google.com with SMTP id wb13so35008482obb.1
-        for <linux-pm@vger.kernel.org>; Fri, 29 Jan 2016 08:58:03 -0800 (PST)
-In-Reply-To: <1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1453998832-27383-7-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 28 January 2016 at 09:33, Jon Hunter <jonathanh@nvidia.com> wrote:
-> Currently, the function tegra_powergate_set() simply sets the desired
-> powergate state but does not wait for the state to change. In most cases
-> we should wait for the state to change before proceeding. Currently, there
-> is a case for tegra114 and tegra124 devices where we do not wait when
-> starting the secondary CPU as this is not necessary. However, this is only
-> done at boot time and so waiting here will only have a small impact on
-> boot time. Therefore, update tegra_powergate_set() to wait when setting
-> the powergate.
+On 28 January 2016 at 09:33, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> The tegra power partitions are referenced by a numerical ID which are
+> the same values programmed into the PMC registers for controlling the
+> partition. For a given device, the valid partition IDs may not be
+> contiguous and so simply checking that an ID is not greater than the
+> maximum ID supported may not mean it is valid. Fix this by adding a
+> bitmap for representing the valid partitions of a device and add a
+> helper function will test if the partition is valid.
 >
-> By adding this feature, we can also eliminate the polling loop from
-> tegra30_boot_secondary().
->
-> A function has been added for checking the status of the powergate and
-> so update the tegra_powergate_is_powered() to use this macro as well.
->
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > ---
->  arch/arm/mach-tegra/platsmp.c | 16 +++-------------
->  drivers/soc/tegra/pmc.c       |  9 ++++++++-
->  2 files changed, 11 insertions(+), 14 deletions(-)
+>  drivers/soc/tegra/pmc.c | 21 +++++++++++++++++----
+>  include/soc/tegra/pmc.h |  1 +
+>  2 files changed, 18 insertions(+), 4 deletions(-)
 >
-> diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
-> index f3f61dbbda97..75620ae73913 100644
-> --- a/arch/arm/mach-tegra/platsmp.c
-> +++ b/arch/arm/mach-tegra/platsmp.c
-> @@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
->          * be un-gated by un-toggling the power gate register
->          * manually.
->          */
-> -       if (!tegra_pmc_cpu_is_powered(cpu)) {
-> -               ret = tegra_pmc_cpu_power_on(cpu);
-> -               if (ret)
-> -                       return ret;
-> -
-> -               /* Wait for the power to come up. */
-> -               timeout = jiffies + msecs_to_jiffies(100);
-> -               while (!tegra_pmc_cpu_is_powered(cpu)) {
-> -                       if (time_after(jiffies, timeout))
-> -                               return -ETIMEDOUT;
-> -                       udelay(10);
-> -               }
-> -       }
-> +       ret = tegra_pmc_cpu_power_on(cpu);
-> +       if (ret)
-> +               return ret;
->
->  remove_clamps:
->         /* CPU partition is powered. Enable the CPU clock. */
 > diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-> index 99cb2fdd29e1..35ee60fd17be 100644
+> index 35ee60fd17be..032dd5c17130 100644
 > --- a/drivers/soc/tegra/pmc.c
 > +++ b/drivers/soc/tegra/pmc.c
-> @@ -28,6 +28,7 @@
->  #include <linux/export.h>
->  #include <linux/init.h>
->  #include <linux/io.h>
-> +#include <linux/iopoll.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
->  #include <linux/platform_device.h>
-> @@ -186,6 +187,9 @@ static inline bool tegra_powergate_state(int id)
+> @@ -132,6 +132,7 @@ struct tegra_pmc_soc {
+>   * @cpu_pwr_good_en: CPU power good signal is enabled
+>   * @lp0_vec_phys: physical base address of the LP0 warm boot code
+>   * @lp0_vec_size: size of the LP0 warm boot code
+> + * @powergates_valid: Bitmap of valid power gates
+>   * @powergates_lock: mutex for power gate register access
 >   */
->  static int tegra_powergate_set(unsigned int id, bool new_state)
->  {
-> +       bool status;
-> +       int err;
-> +
->         mutex_lock(&pmc->powergates_lock);
+>  struct tegra_pmc {
+> @@ -156,6 +157,7 @@ struct tegra_pmc {
+>         bool cpu_pwr_good_en;
+>         u32 lp0_vec_phys;
+>         u32 lp0_vec_size;
+> +       DECLARE_BITMAP(powergates_valid, TEGRA_POWERGATE_MAX);
 >
->         if (tegra_powergate_state(id) == new_state) {
-> @@ -195,9 +199,12 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
->
->         tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
->
-> +       err = readx_poll_timeout(tegra_powergate_state, id, status,
-> +                                status == new_state, 10, 100000);
-> +
-
-I understand (and agree) with the goal of this patch but I wonder (and
-I don't know much about the system/context) if holding a mutex while
-sleeping won't incur adverse effect on other parts of the system that
-weren't use to see this wait.  One way to fix this might be to use
-"mutex_trylock()" and let callers retry as they see fit if an
-operation is already in progress.
-
->         mutex_unlock(&pmc->powergates_lock);
->
-> -       return 0;
-> +       return err;
+>         struct mutex powergates_lock;
+>  };
+> @@ -180,6 +182,11 @@ static inline bool tegra_powergate_state(int id)
+>         return (tegra_pmc_readl(PWRGATE_STATUS) & BIT(id)) != 0;
 >  }
 >
+> +static inline bool tegra_powergate_is_valid(int id)
+> +{
+> +       return test_bit(id, pmc->powergates_valid);
+> +}
+> +
 >  /**
+>   * tegra_powergate_set() - set the state of a partition
+>   * @id: partition ID
+> @@ -213,7 +220,7 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
+>   */
+>  int tegra_powergate_power_on(unsigned int id)
+>  {
+> -       if (!pmc->soc || id >= pmc->soc->num_powergates)
+> +       if (!tegra_powergate_is_valid(id))
+>                 return -EINVAL;
+
+The "!pmc-soc" condition is no longer needed?  If so the changelog
+should reflect that or a new patch that deals with just that should be
+etched.  The same comment applies for the rest of the patch.
+
+>
+>         return tegra_powergate_set(id, true);
+> @@ -225,7 +232,7 @@ int tegra_powergate_power_on(unsigned int id)
+>   */
+>  int tegra_powergate_power_off(unsigned int id)
+>  {
+> -       if (!pmc->soc || id >= pmc->soc->num_powergates)
+> +       if (!tegra_powergate_is_valid(id))
+>                 return -EINVAL;
+>
+>         return tegra_powergate_set(id, false);
+> @@ -240,7 +247,7 @@ int tegra_powergate_is_powered(unsigned int id)
+>  {
+>         int status;
+>
+> -       if (!pmc->soc || id >= pmc->soc->num_powergates)
+> +       if (!tegra_powergate_is_valid(id))
+>                 return -EINVAL;
+>
+>         mutex_lock(&pmc->powergates_lock);
+> @@ -258,7 +265,7 @@ int tegra_powergate_remove_clamping(unsigned int id)
+>  {
+>         u32 mask;
+>
+> -       if (!pmc->soc || id >= pmc->soc->num_powergates)
+> +       if (!tegra_powergate_is_valid(id))
+>                 return -EINVAL;
+>
+>         mutex_lock(&pmc->powergates_lock);
+> @@ -1118,6 +1125,7 @@ static int __init tegra_pmc_early_init(void)
+>         const struct of_device_id *match;
+>         struct device_node *np;
+>         struct resource regs;
+> +       unsigned int i;
+>         bool invert;
+>         u32 value;
+>
+> @@ -1167,6 +1175,11 @@ static int __init tegra_pmc_early_init(void)
+>                 return -ENXIO;
+>         }
+>
+> +       /* Create a bit-mask of the valid partitions */
+> +       for (i = 0; i < pmc->soc->num_powergates; i++)
+> +               if (pmc->soc->powergates[i])
+> +                       set_bit(i, pmc->powergates_valid);
+> +
+>         mutex_init(&pmc->powergates_lock);
+>
+>         /*
+> diff --git a/include/soc/tegra/pmc.h b/include/soc/tegra/pmc.h
+> index 07e332dd44fb..e9e53473a63e 100644
+> --- a/include/soc/tegra/pmc.h
+> +++ b/include/soc/tegra/pmc.h
+> @@ -72,6 +72,7 @@ int tegra_pmc_cpu_remove_clamping(unsigned int cpuid);
+>  #define TEGRA_POWERGATE_AUD    27
+>  #define TEGRA_POWERGATE_DFD    28
+>  #define TEGRA_POWERGATE_VE2    29
+> +#define TEGRA_POWERGATE_MAX    TEGRA_POWERGATE_VE2
+>
+>  #define TEGRA_POWERGATE_3D0    TEGRA_POWERGATE_3D
+>
 > --
 > 2.1.4
 >
 > --
 > To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
