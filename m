@@ -1,253 +1,124 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCHv2 2/2] mm/page_poisoning.c: Allow for zero poisoning
-Date: Thu, 28 Jan 2016 20:46:52 -0800
-Message-ID: <CAGXu5jL2MJkJS8H7Gxbtw1P+FREa2XgF_7xkVMgqSvGXRLWAJw@mail.gmail.com>
-References: <1454035099-31583-1-git-send-email-labbott@fedoraproject.org>
-	<1454035099-31583-3-git-send-email-labbott@fedoraproject.org>
+From: Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 1/2] devicetree: Add UCS1002 USB Port Power Controller binding
+Date: Fri, 29 Jan 2016 07:33:52 +0100
+Message-ID: <CAFqH_52ZsWNfxwrfTMreG1u19Eu=0oMA09S2TStm4zjGJNi9Lw@mail.gmail.com>
+References: <1453799541-5445-1-git-send-email-enric.balletbo@collabora.com>
+	<1453799541-5445-2-git-send-email-enric.balletbo@collabora.com>
+	<20160129023539.GA3092@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1454035099-31583-3-git-send-email-labbott@fedoraproject.org>
-Sender: owner-linux-mm@kvack.org
-To: Laura Abbott <labbott@fedoraproject.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux-MM <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, linux-pm@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160129023539.GA3092@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Sjoerd Simons <sjoerd.simons-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Martyn Welch <martyn.welch-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 28, 2016 at 6:38 PM, Laura Abbott <labbott@fedoraproject.org> wrote:
-> By default, page poisoning uses a poison value (0xaa) on free. If this
-> is changed to 0, the page is not only sanitized but zeroing on alloc
-> with __GFP_ZERO can be skipped as well. The tradeoff is that detecting
-> corruption from the poisoning is harder to detect. This feature also
-> cannot be used with hibernation since pages are not guaranteed to be
-> zeroed after hibernation.
->
-> Credit to Grsecurity/PaX team for inspiring this work
->
-> Signed-off-by: Laura Abbott <labbott@fedoraproject.org>
-> ---
->  include/linux/mm.h       |  2 ++
->  include/linux/poison.h   |  4 ++++
->  kernel/power/hibernate.c | 17 +++++++++++++++++
->  mm/Kconfig.debug         | 14 ++++++++++++++
->  mm/page_alloc.c          | 11 ++++++++++-
->  mm/page_ext.c            | 10 ++++++++--
->  mm/page_poison.c         |  7 +++++--
->  7 files changed, 60 insertions(+), 5 deletions(-)
->
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 966bf0e..59ce0dc 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2177,10 +2177,12 @@ extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
->  #ifdef CONFIG_PAGE_POISONING
->  extern bool page_poisoning_enabled(void);
->  extern void kernel_poison_pages(struct page *page, int numpages, int enable);
-> +extern bool page_is_poisoned(struct page *page);
->  #else
->  static inline bool page_poisoning_enabled(void) { return false; }
->  static inline void kernel_poison_pages(struct page *page, int numpages,
->                                         int enable) { }
-> +static inline bool page_is_poisoned(struct page *page) { return false; }
->  #endif
->
->  #ifdef CONFIG_DEBUG_PAGEALLOC
-> diff --git a/include/linux/poison.h b/include/linux/poison.h
-> index 4a27153..51334ed 100644
-> --- a/include/linux/poison.h
-> +++ b/include/linux/poison.h
-> @@ -30,7 +30,11 @@
->  #define TIMER_ENTRY_STATIC     ((void *) 0x300 + POISON_POINTER_DELTA)
->
->  /********** mm/debug-pagealloc.c **********/
-> +#ifdef CONFIG_PAGE_POISONING_ZERO
-> +#define PAGE_POISON 0x00
-> +#else
->  #define PAGE_POISON 0xaa
-> +#endif
->
->  /********** mm/page_alloc.c ************/
->
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index b7342a2..aa0f26b 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -1158,6 +1158,22 @@ static int __init kaslr_nohibernate_setup(char *str)
->         return nohibernate_setup(str);
->  }
->
-> +static int __init page_poison_nohibernate_setup(char *str)
-> +{
-> +#ifdef CONFIG_PAGE_POISONING_ZERO
-> +       /*
-> +        * The zeroing option for page poison skips the checks on alloc.
-> +        * since hibernation doesn't save free pages there's no way to
-> +        * guarantee the pages will still be zeroed.
-> +        */
-> +       if (!strcmp(str, "on")) {
-> +               pr_info("Disabling hibernation due to page poisoning\n");
-> +               return nohibernate_setup(str);
-> +       }
-> +#endif
-> +       return 1;
-> +}
-> +
->  __setup("noresume", noresume_setup);
->  __setup("resume_offset=", resume_offset_setup);
->  __setup("resume=", resume_setup);
-> @@ -1166,3 +1182,4 @@ __setup("resumewait", resumewait_setup);
->  __setup("resumedelay=", resumedelay_setup);
->  __setup("nohibernate", nohibernate_setup);
->  __setup("kaslr", kaslr_nohibernate_setup);
-> +__setup("page_poison=", page_poison_nohibernate_setup);
-> diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
-> index 25c98ae..3d3b954 100644
-> --- a/mm/Kconfig.debug
-> +++ b/mm/Kconfig.debug
-> @@ -48,3 +48,17 @@ config PAGE_POISONING_NO_SANITY
->
->            If you are only interested in sanitization, say Y. Otherwise
->            say N.
-> +
-> +config PAGE_POISONING_ZERO
-> +       bool "Use zero for poisoning instead of random data"
-> +       depends on PAGE_POISONING
-> +       ---help---
-> +          Instead of using the existing poison value, fill the pages with
-> +          zeros. This makes it harder to detect when errors are occurring
-> +          due to sanitization but the zeroing at free means that it is
-> +          no longer necessary to write zeros when GFP_ZERO is used on
-> +          allocation.
+Hi Rob,
 
-May be worth noting the security benefit in this help text.
+Thanks for the review.
 
-> +
-> +          Enabling page poisoning with this option will disable hibernation
-
-This isn't obvious to me. It looks like you need to both use
-CONFIG_PAGE_POISOING_ZERO and put "page_poison=on" on the command line
-to enable it?
-
--Kees
-
-> +
-> +          If unsure, say N
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index cc4762a..59bd9dc 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1382,15 +1382,24 @@ static inline int check_new_page(struct page *page)
->         return 0;
->  }
+2016-01-29 3:35 GMT+01:00 Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>:
+> On Tue, Jan 26, 2016 at 10:12:20AM +0100, Enric Balletbo i Serra wrote:
+>> The UCS1002-2 provides a USB port power switch for precise control of up
+>> to 2.5 amperes continuous current.
+>>
+>> You can add support to your board with current binding.
+>>
+>> Example:
+>>
+>>     ucs1002: ucs1002@57 {
+>>              compatible = "microchip,ucs1002";
+>>              reg = <0x57>;
+>>              microchip,pin-ignore;
+>>     };
+>>
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/power/ucs1002.txt          | 47 ++++++++++++++++++++++
+>>  1 file changed, 47 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/ucs1002.txt b/Documentation/devicetree/bindings/power/ucs1002.txt
+>> new file mode 100644
+>> index 0000000..1b89f0a
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/ucs1002.txt
+>> @@ -0,0 +1,47 @@
+>> +UCS1002-2 Programmable USB Port Power Controller with Charger Emulation bindings
+>> +
+>> +Required properties:
+>> +- compatible: "microchip,ucs1002"
+>> +- reg: integer, the I2C address of the device.
+>> +
+>> +Required properties (if pin-ignore functionality is not set):
+>> +- em-gpios: which GPIO to use for EM_EN pin.
+>> +- pwr-gpios: which GPIO to use for PWR_EN pin.
+>> +- m1-gpios: which GPIO to use for M1 pin.
+>> +- m2-gpios: which GPIO to use for M2 pin.
+>> +
+>> +Optional properties:
+>> +- interrupt-parent: the phandle of the interrupt controller that services
+>> +    interrupts for this device.
+>> +- interrupts: interrupt specifiers for two interrupt sources.
+>> +    - First interrupt specifier is for A_DET interrupt.
+>> +    - Second interrupt specifier is for ALERT interrupt.
+>> +- microchip,current-limit: integer, maximum current in mA. Note that the default
 >
-> +static inline bool free_pages_prezeroed(bool poisoned)
-> +{
-> +       return IS_ENABLED(CONFIG_PAGE_POISONING_ZERO) &&
-> +               page_poisoning_enabled() && poisoned;
-> +}
-> +
->  static int prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
->                                                                 int alloc_flags)
->  {
->         int i;
-> +       bool poisoned = true;
+> mA or ...
 >
->         for (i = 0; i < (1 << order); i++) {
->                 struct page *p = page + i;
->                 if (unlikely(check_new_page(p)))
->                         return 1;
-> +               if (poisoned)
-> +                       poisoned &= page_is_poisoned(p);
->         }
+>> +    value is based on the resistor on the COMM_SEL/ILIM pin and this value cannot
+>> +    be changed to be higher than hardware set value. Accepted values are: 500000,
+>> +    900000, 1000000, 1200000, 1500000, 1800000, 2000000, 2500000 (uA)
 >
->         set_page_private(page, 0);
-> @@ -1401,7 +1410,7 @@ static int prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
->         kernel_poison_pages(page, 1 << order, 1);
->         kasan_alloc_pages(page, order);
+> uA?
 >
-> -       if (gfp_flags & __GFP_ZERO)
-> +       if (!free_pages_prezeroed(poisoned) && (gfp_flags & __GFP_ZERO))
->                 for (i = 0; i < (1 << order); i++)
->                         clear_highpage(page + i);
->
-> diff --git a/mm/page_ext.c b/mm/page_ext.c
-> index 292ca7b..2d864e6 100644
-> --- a/mm/page_ext.c
-> +++ b/mm/page_ext.c
-> @@ -106,12 +106,15 @@ struct page_ext *lookup_page_ext(struct page *page)
->         struct page_ext *base;
->
->         base = NODE_DATA(page_to_nid(page))->node_page_ext;
-> -#ifdef CONFIG_DEBUG_VM
-> +#if defined(CONFIG_DEBUG_VM) || defined(CONFIG_PAGE_POISONING)
->         /*
->          * The sanity checks the page allocator does upon freeing a
->          * page can reach here before the page_ext arrays are
->          * allocated when feeding a range of pages to the allocator
->          * for the first time during bootup or memory hotplug.
-> +        *
-> +        * This check is also necessary for ensuring page poisoning
-> +        * works as expected when enabled
->          */
->         if (unlikely(!base))
->                 return NULL;
-> @@ -180,12 +183,15 @@ struct page_ext *lookup_page_ext(struct page *page)
->  {
->         unsigned long pfn = page_to_pfn(page);
->         struct mem_section *section = __pfn_to_section(pfn);
-> -#ifdef CONFIG_DEBUG_VM
-> +#if defined(CONFIG_DEBUG_VM) || defined(CONFIG_PAGE_POISONING)
->         /*
->          * The sanity checks the page allocator does upon freeing a
->          * page can reach here before the page_ext arrays are
->          * allocated when feeding a range of pages to the allocator
->          * for the first time during bootup or memory hotplug.
-> +        *
-> +        * This check is also necessary for ensuring page poisoning
-> +        * works as expected when enabled
->          */
->         if (!section->page_ext)
->                 return NULL;
-> diff --git a/mm/page_poison.c b/mm/page_poison.c
-> index 89d3bc7..479e7ea 100644
-> --- a/mm/page_poison.c
-> +++ b/mm/page_poison.c
-> @@ -71,11 +71,14 @@ static inline void clear_page_poison(struct page *page)
->         __clear_bit(PAGE_EXT_DEBUG_POISON, &page_ext->flags);
->  }
->
-> -static inline bool page_poison(struct page *page)
-> +bool page_is_poisoned(struct page *page)
->  {
->         struct page_ext *page_ext;
->
->         page_ext = lookup_page_ext(page);
-> +       if (!page_ext)
-> +               return false;
-> +
->         return test_bit(PAGE_EXT_DEBUG_POISON, &page_ext->flags);
->  }
->
-> @@ -137,7 +140,7 @@ static void unpoison_page(struct page *page)
->  {
->         void *addr;
->
-> -       if (!page_poison(page))
-> +       if (!page_is_poisoned(page))
->                 return;
->
->         addr = kmap_atomic(page);
-> --
-> 2.5.0
+> Either way append units (-microamps)
 >
 
+Right, should be  microamps, will change in next version
 
+>> +- microchip,pin-ignore: boolean, if present uses I2C for configuration, otherwise,
+>> +    we must provide EM_EN, M1 and M2 gpio mapping.
+>
+> Wouldn't this be implied by absence of gpio properties?
+>
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+Yes, would you prefer I get rid of this propriety and simply check if
+gpio properties are absence or not in the driver ?
 
+In such case I'll do in next version.
+
+>> +
+>> +Example (poll):
+>> +
+>> +     ucs1002: ucs1002@57 {
+>> +             compatible = "microchip,ucs1002";
+>> +             reg = <0x57>;
+>> +             microchip,current-limit = <2000000>;
+>> +             microchip,pin-ignore;
+>> +     };
+>> +
+>> +Example (interrupts + pin control):
+>> +
+>> +     ucs1002: ucs1002@57 {
+>> +             compatible = "microchip,ucs1002";
+>> +             reg = <0x57>;
+>> +             interrupt-parent = <&gpio0>;
+>> +             interrupts = <30 0>, <31 0>;
+>> +             microchip,current-limit = <2000000>;
+>> +             em-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+>> +             m1-gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+>> +             m2-gpios = <&gpio1 17 GPIO_ACTIVE_HIGH>;
+>> +             pwr-gpios = <&gpio1 19 0>;
+>> +     };
+>> --
+>> 2.1.0
+>>
+
+Best regards,
+Enric
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
