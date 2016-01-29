@@ -1,410 +1,250 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3] cpufreq: governor: Replace timers with utilization update callbacks
-Date: Fri, 29 Jan 2016 23:59:43 +0100
-Message-ID: <4043287.vvCjrxyEmh@vostro.rjw.lan>
+Subject: [PATCH 2/3] cpufreq: intel_pstate: Replace timers with utilization update callbacks
+Date: Fri, 29 Jan 2016 23:56:39 +0100
+Message-ID: <3694727.XWdGyiGaMJ@vostro.rjw.lan>
 References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50440 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753036AbcA2W7a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Jan 2016 17:59:30 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Instead of using a per-CPU deferrable timer for queuing up governor
-work items, register a utilization update callback that will be
-invoked from the scheduler on utilization changes.
+Instead of using a per-CPU deferrable timer for utilization sampling
+and P-states adjustments, register a utilization update callback that
+will be invoked from the scheduler on utilization changes.
 
-The sampling rate is still the same as what was used for the
-deferrable timers and the added irq_work overhead should be offset by
-the eliminated timers overhead, so in theory the functional impact of
-this patch should not be significant.
+The sampling rate is still the same as what was used for the deferrable
+timers, so the functional impact of this patch should be negligible.
+
+Based on an earlier patch from Srinivas Pandruvada.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq_conservative.c |    6 -
- drivers/cpufreq/cpufreq_governor.c     |  129 +++++++++++++++------------------
- drivers/cpufreq/cpufreq_governor.h     |   13 ++-
- drivers/cpufreq/cpufreq_ondemand.c     |   25 +++---
- 4 files changed, 81 insertions(+), 92 deletions(-)
+ drivers/cpufreq/intel_pstate.c |  103 +++++++++++++++--------------------------
+ 1 file changed, 39 insertions(+), 64 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -18,6 +18,7 @@
- #define _CPUFREQ_GOVERNOR_H
- 
- #include <linux/atomic.h>
-+#include <linux/irq_work.h>
- #include <linux/cpufreq.h>
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
-@@ -139,7 +140,9 @@ struct cpu_common_dbs_info {
- 	struct mutex timer_mutex;
- 
- 	ktime_t time_stamp;
-+	s64 sample_delay_ns;
- 	atomic_t skip_work;
-+	struct irq_work irq_work;
- 	struct work_struct work;
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -71,7 +71,7 @@ struct sample {
+ 	u64 mperf;
+ 	u64 tsc;
+ 	int freq;
+-	ktime_t time;
++	u64 time;
  };
  
-@@ -155,7 +158,8 @@ struct cpu_dbs_info {
- 	 * wake-up from idle.
- 	 */
- 	unsigned int prev_load;
--	struct timer_list timer;
-+	u64 last_sample_time;
-+	struct update_util_data update_util;
- 	struct cpu_common_dbs_info *shared;
- };
- 
-@@ -212,8 +216,7 @@ struct common_dbs_data {
- 
- 	struct cpu_dbs_info *(*get_cpu_cdbs)(int cpu);
- 	void *(*get_cpu_dbs_info_s)(int cpu);
--	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy,
--				      bool modify_all);
-+	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
- 	void (*gov_check_cpu)(int cpu, unsigned int load);
- 	int (*init)(struct dbs_data *dbs_data, bool notify);
- 	void (*exit)(struct dbs_data *dbs_data, bool notify);
-@@ -270,8 +273,8 @@ static ssize_t show_sampling_rate_min_go
- }
- 
- extern struct mutex cpufreq_governor_lock;
--
--void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay);
-+void gov_set_update_util(struct cpu_common_dbs_info *shared,
-+			 unsigned int delay_us);
- void gov_cancel_work(struct cpu_common_dbs_info *shared);
- void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
- int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -128,10 +128,10 @@ void dbs_check_cpu(struct dbs_data *dbs_
- 		 * dropped down. So we perform the copy only once, upon the
- 		 * first wake-up from idle.)
- 		 *
--		 * Detecting this situation is easy: the governor's deferrable
--		 * timer would not have fired during CPU-idle periods. Hence
--		 * an unusually large 'wall_time' (as compared to the sampling
--		 * rate) indicates this scenario.
-+		 * Detecting this situation is easy: the governor's utilization
-+		 * update handler would not have run during CPU-idle periods.
-+		 * Hence, an unusually large 'wall_time' (as compared to the
-+		 * sampling rate) indicates this scenario.
- 		 *
- 		 * prev_load can be zero in two cases and we must recalculate it
- 		 * for both cases:
-@@ -161,21 +161,26 @@ void dbs_check_cpu(struct dbs_data *dbs_
- }
- EXPORT_SYMBOL_GPL(dbs_check_cpu);
- 
--void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay)
-+void gov_set_update_util(struct cpu_common_dbs_info *shared,
-+			 unsigned int delay_us)
- {
-+	struct cpufreq_policy *policy = shared->policy;
- 	struct dbs_data *dbs_data = policy->governor_data;
--	struct cpu_dbs_info *cdbs;
+ struct pstate_data {
+@@ -103,13 +103,13 @@ struct _pid {
+ struct cpudata {
  	int cpu;
  
-+	shared->sample_delay_ns = delay_us * NSEC_PER_USEC;
-+	shared->time_stamp = ktime_get();
-+
- 	for_each_cpu(cpu, policy->cpus) {
--		cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
--		cdbs->timer.expires = jiffies + delay;
--		add_timer_on(&cdbs->timer, cpu);
-+		struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-+
-+		cdbs->last_sample_time = 0;
-+		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
- 	}
- }
--EXPORT_SYMBOL_GPL(gov_add_timers);
-+EXPORT_SYMBOL_GPL(gov_set_update_util);
+-	struct timer_list timer;
++	struct update_util_data update_util;
  
--static inline void gov_cancel_timers(struct cpufreq_policy *policy)
-+static inline void gov_clear_update_util_data(struct cpufreq_policy *policy)
+ 	struct pstate_data pstate;
+ 	struct vid_data vid;
+ 	struct _pid pid;
+ 
+-	ktime_t last_sample_time;
++	u64	last_sample_time;
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+ 	u64	prev_tsc;
+@@ -120,6 +120,7 @@ struct cpudata {
+ static struct cpudata **all_cpu_data;
+ struct pstate_adjust_policy {
+ 	int sample_rate_ms;
++	s64 sample_rate_ns;
+ 	int deadband;
+ 	int setpoint;
+ 	int p_gain_pct;
+@@ -712,7 +713,7 @@ static void core_set_pstate(struct cpuda
+ 	if (limits->no_turbo && !limits->turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+-	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
++	wrmsrl(MSR_IA32_PERF_CTL, val);
+ }
+ 
+ static int knl_get_turbo_pstate(void)
+@@ -883,7 +884,7 @@ static inline void intel_pstate_calc_bus
+ 	sample->core_pct_busy = (int32_t)core_pct;
+ }
+ 
+-static inline void intel_pstate_sample(struct cpudata *cpu)
++static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
  {
- 	struct dbs_data *dbs_data = policy->governor_data;
- 	struct cpu_dbs_info *cdbs;
-@@ -183,51 +188,26 @@ static inline void gov_cancel_timers(str
+ 	u64 aperf, mperf;
+ 	unsigned long flags;
+@@ -900,7 +901,7 @@ static inline void intel_pstate_sample(s
+ 	local_irq_restore(flags);
  
- 	for_each_cpu(i, policy->cpus) {
- 		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
--		del_timer_sync(&cdbs->timer);
-+		cpufreq_set_update_util_data(i, NULL);
- 	}
-+	synchronize_rcu();
+ 	cpu->last_sample_time = cpu->sample.time;
+-	cpu->sample.time = ktime_get();
++	cpu->sample.time = time;
+ 	cpu->sample.aperf = aperf;
+ 	cpu->sample.mperf = mperf;
+ 	cpu->sample.tsc =  tsc;
+@@ -915,22 +916,6 @@ static inline void intel_pstate_sample(s
+ 	cpu->prev_tsc = tsc;
  }
  
- void gov_cancel_work(struct cpu_common_dbs_info *shared)
- {
--	/* Tell dbs_timer_handler() to skip queuing up work items. */
-+	/* Tell dbs_update_util_handler() to skip queuing up work items. */
- 	atomic_inc(&shared->skip_work);
- 	/*
--	 * If dbs_timer_handler() is already running, it may not notice the
--	 * incremented skip_work, so wait for it to complete to prevent its work
--	 * item from being queued up after the cancel_work_sync() below.
--	 */
--	gov_cancel_timers(shared->policy);
--	/*
--	 * In case dbs_timer_handler() managed to run and spawn a work item
--	 * before the timers have been canceled, wait for that work item to
--	 * complete and then cancel all of the timers set up by it.  If
--	 * dbs_timer_handler() runs again at that point, it will see the
--	 * positive value of skip_work and won't spawn any more work items.
-+	 * If dbs_update_util_handler() is already running, it may not notice
-+	 * the incremented skip_work, so wait for it to complete to prevent its
-+	 * work item from being queued up after the cancel_work_sync() below.
- 	 */
-+	gov_clear_update_util_data(shared->policy);
- 	cancel_work_sync(&shared->work);
--	gov_cancel_timers(shared->policy);
- 	atomic_set(&shared->skip_work, 0);
- }
- EXPORT_SYMBOL_GPL(gov_cancel_work);
- 
--/* Will return if we need to evaluate cpu load again or not */
--static bool need_load_eval(struct cpu_common_dbs_info *shared,
--			   unsigned int sampling_rate)
+-static inline void intel_hwp_set_sample_time(struct cpudata *cpu)
 -{
--	if (policy_is_shared(shared->policy)) {
--		ktime_t time_now = ktime_get();
--		s64 delta_us = ktime_us_delta(time_now, shared->time_stamp);
+-	int delay;
 -
--		/* Do nothing if we recently have sampled */
--		if (delta_us < (s64)(sampling_rate / 2))
--			return false;
--		else
--			shared->time_stamp = time_now;
--	}
--
--	return true;
+-	delay = msecs_to_jiffies(50);
+-	mod_timer_pinned(&cpu->timer, jiffies + delay);
 -}
 -
- static void dbs_work_handler(struct work_struct *work)
- {
- 	struct cpu_common_dbs_info *shared = container_of(work, struct
-@@ -235,14 +215,10 @@ static void dbs_work_handler(struct work
- 	struct cpufreq_policy *policy;
- 	struct dbs_data *dbs_data;
- 	unsigned int sampling_rate, delay;
--	bool eval_load;
- 
- 	policy = shared->policy;
- 	dbs_data = policy->governor_data;
- 
--	/* Kill all timers */
--	gov_cancel_timers(policy);
+-static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+-{
+-	int delay;
 -
- 	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
- 		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+-	delay = msecs_to_jiffies(pid_params.sample_rate_ms);
+-	mod_timer_pinned(&cpu->timer, jiffies + delay);
+-}
+-
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+@@ -970,8 +955,7 @@ static inline int32_t get_target_pstate_
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ {
+ 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+-	s64 duration_us;
+-	u32 sample_time;
++	u64 duration_ns;
  
-@@ -253,37 +229,53 @@ static void dbs_work_handler(struct work
- 		sampling_rate = od_tuners->sampling_rate;
+ 	/*
+ 	 * core_busy is the ratio of actual performance to max
+@@ -990,18 +974,16 @@ static inline int32_t get_target_pstate_
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ 
+ 	/*
+-	 * Since we have a deferred timer, it will not fire unless
+-	 * we are in C0.  So, determine if the actual elapsed time
+-	 * is significantly greater (3x) than our sample interval.  If it
+-	 * is, then we were idle for a long enough period of time
+-	 * to adjust our busyness.
++	 * Since our utilization update callback will not run unless we are
++	 * in C0, check if the actual elapsed time is significantly greater (3x)
++	 * than our sample interval.  If it is, then we were idle for a long
++	 * enough period of time to adjust our busyness.
+ 	 */
+-	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+-	duration_us = ktime_us_delta(cpu->sample.time,
+-				     cpu->last_sample_time);
+-	if (duration_us > sample_time * 3) {
+-		sample_ratio = div_fp(int_tofp(sample_time),
+-				      int_tofp(duration_us));
++	duration_ns = cpu->sample.time - cpu->last_sample_time;
++	if ((s64)duration_ns > pid_params.sample_rate_ns * 3
++	    && cpu->last_sample_time > 0) {
++		sample_ratio = div_fp(int_tofp(pid_params.sample_rate_ns),
++				      int_tofp(duration_ns));
+ 		core_busy = mul_fp(core_busy, sample_ratio);
  	}
  
--	eval_load = need_load_eval(shared, sampling_rate);
--
- 	/*
--	 * Make sure cpufreq_governor_limits() isn't evaluating load in
-+	 * Make sure cpufreq_governor_limits() isn't evaluating load or the
-+	 * ondemand governor isn't reading the time stamp and sampling rate in
- 	 * parallel.
- 	 */
- 	mutex_lock(&shared->timer_mutex);
--	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
-+	delay = dbs_data->cdata->gov_dbs_timer(policy);
-+	shared->sample_delay_ns = jiffies_to_nsecs(delay);
-+	shared->time_stamp = ktime_get();
- 	mutex_unlock(&shared->timer_mutex);
- 
-+	smp_mb__before_atomic();
- 	atomic_dec(&shared->skip_work);
-+}
-+
-+static void dbs_irq_work(struct irq_work *irq_work)
-+{
-+	struct cpu_common_dbs_info *shared;
- 
--	gov_add_timers(policy, delay);
-+	shared = container_of(irq_work, struct cpu_common_dbs_info, irq_work);
-+	schedule_work(&shared->work);
+@@ -1031,23 +1013,17 @@ static inline void intel_pstate_adjust_b
+ 		sample->freq);
  }
  
--static void dbs_timer_handler(unsigned long data)
-+static void dbs_update_util_handler(struct update_util_data *data, u64 time,
-+				    unsigned long util, unsigned long max)
+-static void intel_hwp_timer_func(unsigned long __data)
+-{
+-	struct cpudata *cpu = (struct cpudata *) __data;
+-
+-	intel_pstate_sample(cpu);
+-	intel_hwp_set_sample_time(cpu);
+-}
+-
+-static void intel_pstate_timer_func(unsigned long __data)
++static void intel_pstate_update_util(struct update_util_data *data, u64 time,
++				     unsigned long util, unsigned long max)
  {
--	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
-+	struct cpu_dbs_info *cdbs = container_of(data, struct cpu_dbs_info, update_util);
- 	struct cpu_common_dbs_info *shared = cdbs->shared;
+-	struct cpudata *cpu = (struct cpudata *) __data;
+-
+-	intel_pstate_sample(cpu);
++	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
++	u64 delta_ns = time - cpu->sample.time;
  
- 	/*
--	 * Timer handler may not be allowed to queue the work at the moment,
--	 * because:
--	 * - Another timer handler has done that
--	 * - We are stopping the governor
--	 * - Or we are updating the sampling rate of the ondemand governor
-+	 * The work may not be allowed to be queued up right now.
-+	 * Possible reasons:
-+	 * - Work has already been queued up or is in progress.
-+	 * - The governor is being stopped.
-+	 * - It is too early (too little time from the previous sample).
- 	 */
--	if (atomic_inc_return(&shared->skip_work) > 1)
--		atomic_dec(&shared->skip_work);
--	else
--		queue_work(system_wq, &shared->work);
-+	if (atomic_inc_return(&shared->skip_work) == 1) {
-+		u64 delta_ns;
-+
-+		delta_ns = time - cdbs->last_sample_time;
-+		if ((s64)delta_ns >= shared->sample_delay_ns) {
-+			cdbs->last_sample_time = time;
-+			irq_work_queue_on(&shared->irq_work, smp_processor_id());
-+			return;
-+		}
+-	intel_pstate_adjust_busy_pstate(cpu);
+-
+-	intel_pstate_set_sample_time(cpu);
++	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
++		intel_pstate_sample(cpu, time);
++		if (!hwp_active)
++			intel_pstate_adjust_busy_pstate(cpu);
 +	}
-+	atomic_dec(&shared->skip_work);
  }
  
- static void set_sampling_rate(struct dbs_data *dbs_data,
-@@ -462,9 +454,6 @@ static int cpufreq_governor_start(struct
- 		io_busy = od_tuners->io_is_busy;
- 	}
+ #define ICPU(model, policy) \
+@@ -1095,24 +1071,19 @@ static int intel_pstate_init_cpu(unsigne
  
--	shared->policy = policy;
--	shared->time_stamp = ktime_get();
+ 	cpu->cpu = cpunum;
+ 
+-	if (hwp_active)
++	if (hwp_active) {
+ 		intel_pstate_hwp_enable(cpu);
++		pid_params.sample_rate_ms = 50;
++		pid_params.sample_rate_ns = 50 * NSEC_PER_MSEC;
++	}
+ 
+ 	intel_pstate_get_cpu_pstates(cpu);
+ 
+-	init_timer_deferrable(&cpu->timer);
+-	cpu->timer.data = (unsigned long)cpu;
+-	cpu->timer.expires = jiffies + HZ/100;
 -
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
- 		unsigned int prev_load;
-@@ -480,10 +469,10 @@ static int cpufreq_governor_start(struct
- 		if (ignore_nice)
- 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+-	if (!hwp_active)
+-		cpu->timer.function = intel_pstate_timer_func;
+-	else
+-		cpu->timer.function = intel_hwp_timer_func;
+-
+ 	intel_pstate_busy_pid_reset(cpu);
+-	intel_pstate_sample(cpu);
++	intel_pstate_sample(cpu, 0);
  
--		__setup_timer(&j_cdbs->timer, dbs_timer_handler,
--			      (unsigned long)j_cdbs,
--			      TIMER_DEFERRABLE | TIMER_IRQSAFE);
-+		j_cdbs->update_util.func = dbs_update_util_handler;
- 	}
-+	shared->policy = policy;
-+	init_irq_work(&shared->irq_work, dbs_irq_work);
+-	add_timer_on(&cpu->timer, cpunum);
++	cpu->update_util.func = intel_pstate_update_util;
++	cpufreq_set_update_util_data(cpunum, &cpu->update_util);
  
- 	if (cdata->governor == GOV_CONSERVATIVE) {
- 		struct cs_cpu_dbs_info_s *cs_dbs_info =
-@@ -500,7 +489,7 @@ static int cpufreq_governor_start(struct
- 		od_ops->powersave_bias_init_cpu(cpu);
- 	}
+ 	pr_debug("intel_pstate: controlling: cpu %d\n", cpunum);
  
--	gov_add_timers(policy, delay_for_sampling_rate(sampling_rate));
-+	gov_set_update_util(shared, sampling_rate);
- 	return 0;
- }
+@@ -1196,7 +1167,9 @@ static void intel_pstate_stop_cpu(struct
  
-Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-@@ -191,7 +191,7 @@ static void od_check_cpu(int cpu, unsign
- 	}
- }
+ 	pr_debug("intel_pstate: CPU %d exiting\n", cpu_num);
  
--static unsigned int od_dbs_timer(struct cpufreq_policy *policy, bool modify_all)
-+static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
+-	del_timer_sync(&all_cpu_data[cpu_num]->timer);
++	cpufreq_set_update_util_data(cpu_num, NULL);
++	synchronize_rcu();
++
+ 	if (hwp_active)
+ 		return;
+ 
+@@ -1260,6 +1233,7 @@ static int intel_pstate_msrs_not_valid(v
+ static void copy_pid_params(struct pstate_adjust_policy *policy)
  {
- 	struct dbs_data *dbs_data = policy->governor_data;
- 	unsigned int cpu = policy->cpu;
-@@ -200,9 +200,6 @@ static unsigned int od_dbs_timer(struct
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	int delay = 0, sample_type = dbs_info->sample_type;
- 
--	if (!modify_all)
--		goto max_delay;
--
- 	/* Common NORMAL_SAMPLE setup */
- 	dbs_info->sample_type = OD_NORMAL_SAMPLE;
- 	if (sample_type == OD_SUB_SAMPLE) {
-@@ -218,7 +215,6 @@ static unsigned int od_dbs_timer(struct
+ 	pid_params.sample_rate_ms = policy->sample_rate_ms;
++	pid_params.sample_rate_ns = pid_params.sample_rate_ms * NSEC_PER_MSEC;
+ 	pid_params.p_gain_pct = policy->p_gain_pct;
+ 	pid_params.i_gain_pct = policy->i_gain_pct;
+ 	pid_params.d_gain_pct = policy->d_gain_pct;
+@@ -1451,7 +1425,8 @@ out:
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+ 		if (all_cpu_data[cpu]) {
+-			del_timer_sync(&all_cpu_data[cpu]->timer);
++			cpufreq_set_update_util_data(cpu, NULL);
++			synchronize_rcu();
+ 			kfree(all_cpu_data[cpu]);
  		}
  	}
- 
--max_delay:
- 	if (!delay)
- 		delay = delay_for_sampling_rate(od_tuners->sampling_rate
- 				* dbs_info->rate_mult);
-@@ -264,7 +260,7 @@ static void update_sampling_rate(struct
- 		struct od_cpu_dbs_info_s *dbs_info;
- 		struct cpu_dbs_info *cdbs;
- 		struct cpu_common_dbs_info *shared;
--		unsigned long next_sampling, appointed_at;
-+		ktime_t next_sampling, appointed_at;
- 
- 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- 		cdbs = &dbs_info->cdbs;
-@@ -292,16 +288,19 @@ static void update_sampling_rate(struct
- 			continue;
- 
- 		/*
--		 * Checking this for any CPU should be fine, timers for all of
--		 * them are scheduled together.
-+		 * Checking this for any CPU sharing the policy should be fine,
-+		 * they are all scheduled to sample at the same time.
- 		 */
--		next_sampling = jiffies + usecs_to_jiffies(new_rate);
--		appointed_at = dbs_info->cdbs.timer.expires;
-+		next_sampling = ktime_add_us(ktime_get(), new_rate);
- 
--		if (time_before(next_sampling, appointed_at)) {
--			gov_cancel_work(shared);
--			gov_add_timers(policy, usecs_to_jiffies(new_rate));
-+		mutex_lock(&shared->timer_mutex);
-+		appointed_at = ktime_add_ns(shared->time_stamp,
-+					    shared->sample_delay_ns);
-+		mutex_unlock(&shared->timer_mutex);
- 
-+		if (ktime_before(next_sampling, appointed_at)) {
-+			gov_cancel_work(shared);
-+			gov_set_update_util(shared, new_rate);
- 		}
- 	}
- 
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -115,14 +115,12 @@ static void cs_check_cpu(int cpu, unsign
- 	}
- }
- 
--static unsigned int cs_dbs_timer(struct cpufreq_policy *policy, bool modify_all)
-+static unsigned int cs_dbs_timer(struct cpufreq_policy *policy)
- {
- 	struct dbs_data *dbs_data = policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 
--	if (modify_all)
--		dbs_check_cpu(dbs_data, policy->cpu);
--
-+	dbs_check_cpu(dbs_data, policy->cpu);
- 	return delay_for_sampling_rate(cs_tuners->sampling_rate);
- }
- 
-
