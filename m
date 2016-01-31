@@ -1,65 +1,37 @@
-From: Abhilash Jindal <klock.android@gmail.com>
-Subject: [PATCH] PM/freezer: y2038, use boottime to compare tstamps
-Date: Sun, 31 Jan 2016 14:29:01 -0500
-Message-ID: <1454268541-28064-1-git-send-email-klock.android@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM/freezer: y2038, use boottime to compare tstamps
+Date: Sun, 31 Jan 2016 20:42:55 +0100
+Message-ID: <20160131194255.GA31180@amd>
+References: <1454268541-28064-1-git-send-email-klock.android@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f180.google.com ([209.85.213.180]:35476 "EHLO
-	mail-ig0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933307AbcAaT3J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jan 2016 14:29:09 -0500
-Received: by mail-ig0-f180.google.com with SMTP id t15so21104337igr.0
-        for <linux-pm@vger.kernel.org>; Sun, 31 Jan 2016 11:29:09 -0800 (PST)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40341 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757432AbcAaTnI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jan 2016 14:43:08 -0500
+Content-Disposition: inline
+In-Reply-To: <1454268541-28064-1-git-send-email-klock.android@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, Abhilash Jindal <klock.android@gmail.com>
+To: Abhilash Jindal <klock.android@gmail.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-Wall time obtained from do_gettimeofday gives 32 bit timeval which can only
-represent time until January 2038. This patch moves to ktime_t, a 64-bit time.
+On Sun 2016-01-31 14:29:01, Abhilash Jindal wrote:
+> Wall time obtained from do_gettimeofday gives 32 bit timeval which can only
+> represent time until January 2038. This patch moves to ktime_t, a 64-bit time.
+> 
+> Also, wall time is susceptible to sudden jumps due to user setting the time or
+> due to NTP.  Boot time is constantly increasing time better suited for
+> subtracting two timestamps.
 
-Also, wall time is susceptible to sudden jumps due to user setting the time or
-due to NTP.  Boot time is constantly increasing time better suited for
-subtracting two timestamps.
+Umm. Setting time while we are freezeing is probably not going to be a
+problem, but ok, why not... Code is simpler as well, and 2038 is
+coming ;-).
 
-Signed-off-by: Abhilash Jindal <klock.android@gmail.com>
----
- kernel/power/process.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 564f786..df058be 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -30,13 +30,12 @@ static int try_to_freeze_tasks(bool user_only)
- 	unsigned long end_time;
- 	unsigned int todo;
- 	bool wq_busy = false;
--	struct timeval start, end;
--	u64 elapsed_msecs64;
-+	ktime_t start, end, elapsed;
- 	unsigned int elapsed_msecs;
- 	bool wakeup = false;
- 	int sleep_usecs = USEC_PER_MSEC;
- 
--	do_gettimeofday(&start);
-+	start = ktime_get_boottime();
- 
- 	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
- 
-@@ -78,10 +77,9 @@ static int try_to_freeze_tasks(bool user_only)
- 			sleep_usecs *= 2;
- 	}
- 
--	do_gettimeofday(&end);
--	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
--	do_div(elapsed_msecs64, NSEC_PER_MSEC);
--	elapsed_msecs = elapsed_msecs64;
-+	end = ktime_get_boottime();
-+	elapsed = ktime_sub(end, start);
-+	elapsed_msecs = ktime_to_ms(elapsed);
- 
- 	if (todo) {
- 		pr_cont("\n");
+									Pavel
 -- 
-1.7.9.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
