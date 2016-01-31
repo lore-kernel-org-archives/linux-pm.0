@@ -1,39 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v4 11/13] PM / Hibernate: Call flush_icache_range() on
- pages restored in-place
-Date: Sun, 31 Jan 2016 18:25:51 +0100
-Message-ID: <20160131172551.GB3721@amd>
-References: <1453977766-20907-1-git-send-email-james.morse@arm.com>
- <1453977766-20907-12-git-send-email-james.morse@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Abhilash Jindal <klock.android@gmail.com>
+Subject: [PATCH] PM/freezer: y2038, use boottime to compare tstamps
+Date: Sun, 31 Jan 2016 14:29:01 -0500
+Message-ID: <1454268541-28064-1-git-send-email-klock.android@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36762 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757309AbcAaR0G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jan 2016 12:26:06 -0500
-Content-Disposition: inline
-In-Reply-To: <1453977766-20907-12-git-send-email-james.morse@arm.com>
+Received: from mail-ig0-f180.google.com ([209.85.213.180]:35476 "EHLO
+	mail-ig0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933307AbcAaT3J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jan 2016 14:29:09 -0500
+Received: by mail-ig0-f180.google.com with SMTP id t15so21104337igr.0
+        for <linux-pm@vger.kernel.org>; Sun, 31 Jan 2016 11:29:09 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, Abhilash Jindal <klock.android@gmail.com>
 
-On Thu 2016-01-28 10:42:44, James Morse wrote:
-> Some architectures require code written to memory as if it were data to be
-> 'cleaned' from any data caches before the processor can fetch them as new
-> instructions.
-> 
-> During resume from hibernate, the snapshot code copies some pages directly,
-> meaning these architectures do not get a chance to perform their cache
-> maintenance. Modify the read and decompress code to call
-> flush_icache_range() on all pages that are restored, so that the restored
-> in-place pages are guaranteed to be executable on these architectures.
-> 
-> Signed-off-by: James Morse <james.morse@arm.com>
+Wall time obtained from do_gettimeofday gives 32 bit timeval which can only
+represent time until January 2038. This patch moves to ktime_t, a 64-bit time.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Also, wall time is susceptible to sudden jumps due to user setting the time or
+due to NTP.  Boot time is constantly increasing time better suited for
+subtracting two timestamps.
 
+Signed-off-by: Abhilash Jindal <klock.android@gmail.com>
+---
+ kernel/power/process.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 564f786..df058be 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -30,13 +30,12 @@ static int try_to_freeze_tasks(bool user_only)
+ 	unsigned long end_time;
+ 	unsigned int todo;
+ 	bool wq_busy = false;
+-	struct timeval start, end;
+-	u64 elapsed_msecs64;
++	ktime_t start, end, elapsed;
+ 	unsigned int elapsed_msecs;
+ 	bool wakeup = false;
+ 	int sleep_usecs = USEC_PER_MSEC;
+ 
+-	do_gettimeofday(&start);
++	start = ktime_get_boottime();
+ 
+ 	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
+ 
+@@ -78,10 +77,9 @@ static int try_to_freeze_tasks(bool user_only)
+ 			sleep_usecs *= 2;
+ 	}
+ 
+-	do_gettimeofday(&end);
+-	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
+-	do_div(elapsed_msecs64, NSEC_PER_MSEC);
+-	elapsed_msecs = elapsed_msecs64;
++	end = ktime_get_boottime();
++	elapsed = ktime_sub(end, start);
++	elapsed_msecs = ktime_to_ms(elapsed);
+ 
+ 	if (todo) {
+ 		pr_cont("\n");
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
+
