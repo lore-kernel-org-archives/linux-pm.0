@@ -1,135 +1,75 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Mon, 1 Feb 2016 10:11:35 -0800
-Message-ID: <20160201181135.GL19432@atomide.com>
-References: <20160126224804.GB19432@atomide.com>
- <CAJZ5v0i79X5JjOZiu4cOZ0Esd5BxAvutF8d17asDzq9ECcML-g@mail.gmail.com>
- <20160126232212.GE19432@atomide.com>
- <CAJZ5v0gTRvyWHVmYNb8Q1QZzhVhokXo541+48mFyDRYv7Hi-Uw@mail.gmail.com>
- <20160126235222.GF19432@atomide.com>
- <CAPDyKFqD6Y6HcgVds_oWBZ8L7Kdh2VX_WZCGApf-1a_6GHCQ5g@mail.gmail.com>
- <20160128165810.GA19432@atomide.com>
- <CAPDyKFoQHpqdCa4fzHycP0OT2KsNTxWm7JZSe8Mauh+rxqGtGg@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 00/16] PM / OPP: Introduce APIs to transition OPPs
+Date: Mon, 1 Feb 2016 11:41:26 -0800
+Message-ID: <20160201194126.GJ4848@codeaurora.org>
+References: <cover.1453965717.git.viresh.kumar@linaro.org>
+ <20160130014842.GI4848@codeaurora.org>
+ <20160201040857.GB13476@vireshk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59310 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbcBASLi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Feb 2016 13:11:38 -0500
+Received: from smtp.codeaurora.org ([198.145.29.96]:53714 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbcBATl2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 14:41:28 -0500
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFoQHpqdCa4fzHycP0OT2KsNTxWm7JZSe8Mauh+rxqGtGg@mail.gmail.com>
+In-Reply-To: <20160201040857.GB13476@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-* Ulf Hansson <ulf.hansson@linaro.org> [160201 08:45]:
-> On 28 January 2016 at 17:58, Tony Lindgren <tony@atomide.com> wrote:
-> >
-> > The MMC hardware will not get idled properly any longer blocking any
-> > deeper idle states.
-> >
-> >> Did the driver not probe successfully the second try? If so, what happened.
-> >
-> > It probes fine after a -EPROBE_DEFER on the vmmc i2c regulator.
-> > But the PM runtime usecounts are wrong.
+On 02/01, Viresh Kumar wrote:
+> On 29-01-16, 17:48, Stephen Boyd wrote:
+> > Just a note for future work, I think we're going to need to add
+> > some sort of enable/disable into the OPP layer. At least in qcom
+> > designs, if a clock is off we don't want the voltage requirement
+> > for that clock to factor into the final voltage on the regulator.
+> > Furthermore, we want to disable the regulator with
+> > regulator_disable() if all the clocks are off.
 > 
-> Okay. How did you verify this?
+> Hmm, we need to discuss more on this, maybe in a HO sometime or at
+> connect :)
 
-Well that was just based on what I see in the dmesg:
+Sure.
 
-omap_device: omap_device_enable() called from invalid state 1
-
-> I think the easiest way would be to make sure the usage count is
-> *one*, just before the omap_hsmmc calls mmc_add_host() in its
-> ->probe() function.
 > 
-> If it's *two*, that confirms this theory.
-
-Here's with use count dumped for one MMC:
-
-omap_hsmmc 4809c000.mmc: GPIO lookup for consumer cd
-omap_hsmmc 4809c000.mmc: using device tree for GPIO lookup
-omap_hsmmc 4809c000.mmc: Got CD GPIO
-omap_hsmmc 4809c000.mmc: GPIO lookup for consumer wp
-omap_hsmmc 4809c000.mmc: using device tree for GPIO lookup
-omap_hsmmc 4809c000.mmc: using lookup tables for GPIO lookup
-omap_hsmmc 4809c000.mmc: lookup for GPIO wp failed
-omap_hsmmc 4809c000.mmc: GPIO lookup for consumer cd
-omap_hsmmc 4809c000.mmc: using device tree for GPIO lookup
-omap_hsmmc 4809c000.mmc: Got CD GPIO
-omap_hsmmc 4809c000.mmc: GPIO lookup for consumer wp
-omap_hsmmc 4809c000.mmc: using device tree for GPIO lookup
-omap_hsmmc 4809c000.mmc: using lookup tables for GPIO lookup
-omap_hsmmc 4809c000.mmc: lookup for GPIO wp failed
-omap_hsmmc 4809c000.mmc: omap_device: omap_device_enable() called from invalid state 1
-omap_hsmmc 4809c000.mmc: PM runtime use count: 0
-
-So it seems you're right, it's the state not the count.
-
-> > So one of the failing cases seems to be:
-> >
-> > 1. Device driver probe sets pm_runtime_set_autosuspend_delay()
+> > This is also a problem with cpufreq-dt. The regulators and clocks
+> > are assumed to be enabled out of the bootloader, which may not
+> > even be true. Now that OPP layer is managing all the clocks and
+> > regulators here we're going to need to do something to make sure
+> > they're on and controllable.
 > 
-> Only when "someone" in-before has set the autosuspend delay to a
-> negative value, this will affect the usage count.
+> Also, I fail to understand, how the clock of a 'online' CPU can be
+> off?
 > 
-> I didn't find any in-kernel user that would set this for the
-> omap_hsmmc device, so it needs to be done from userspace via sysfs. It
-> would be really great if you could help to confirm this.
 
-No nothing is setting that from userspace.
+Hmm right. The problem is the clock and regulator frameworks
+aren't aware that they're enabled already. In the case of the
+clocks, if we switch a mux from one source to another while
+frequency switching and the framework doesn't know the clock is
+on, it won't turn on the new source for the CPU, effectively
+killing the CPU.
 
-> But more importantly, I fail to understand why commit 5de85b9d57ab
-> ("PM / runtime: Re-init runtime PM states at probe error and driver
-> unbind"), is changing the behaviour in this regards.
-> Potentially we might have a different runtime PM status than we had
-> before when probing the second try, but how could that mess up the
-> usage count...?
+In the regulator case I ran into a problem with qcom's RPM
+regulator implementation where the voltage isn't sent when the
+regulator is disabled (the driver has some check for that case).
 
-Yes I think you're right here, it's the state, not the count.
+I suppose in both cases these could be fixed in the frameworks if
+they detected on/off state at boot. That's fine, but it doesn't
+seem like that will work for things like GPU where the clock may
+not be on in the first place. If we don't want to clk_get() and
+regulator_get() in two places (OPP and drivers) then we'll need
+on/off in OPP code.
 
-> Although, I wondering whether it could be that it's the PM domain
-> that's preventing the omap_hsmmc device from becoming runtime
-> suspended.
-> 
-> Perhaps the PM domain returns an error code from its
-> ->runtime_suspend() callback?
+In the CPU case, we've turned clocks on and off when CPUs are
+hotplugged in and out on qcom platforms so that we can drop the
+clock and voltage requirements of a particular CPU. If we had
+that CPU driver on ARM platforms it would be similar to the GPU
+case then. We could get the clocks and regulators in two places
+and we could put the clock/regulator on/off code in the CPU
+driver instead of the OPP layer.
 
-We certainly see a warning there.
-
-> Okay, so we definitely seem to have an issue with the changed runtime
-> PM status (suspended) the second probe time.
-> 
-> That's indeed caused by 5de85b9d57ab ("PM / runtime: Re-init runtime
-> PM states at probe error and driver unbind").
-
-Yup.
-
-> For example due to commit 5de85b9d57ab ("PM / runtime: Re-init runtime
-> PM states at probe error and driver unbind"), the ->runtime_resume()
-> callback seems now to be called twice in a row, without in-between
-> having the ->runtime_suspend() callback being invoked. Does really the
-> PM domain cope with that correctly?
-
-That might explain the warning above.
-
-> > BTW, do you have some hardware to test with that has PM runtime
-> > implemnted and actually working with mainline kernel?
-> 
-> Oh, yes. Although I don't have an omap3, I wish I had.
-
-OK good to hear. Anyways, getting an omap3 should be in tens of
-whatever units if you need one to test with.
-
-> Also, I have locally a "runtime PM test driver", which helps me to
-> test various runtime PM sequences.
-
-Now that would be good to have in the mainline kernel. Of course it
-still is a very limited test.
-
-Regards,
-
-Tony
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
