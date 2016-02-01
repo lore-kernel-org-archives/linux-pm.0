@@ -1,42 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: mark genpd_poweron as __maybe_unused
-Date: Mon, 1 Feb 2016 14:57:36 +0100
-Message-ID: <CAPDyKFpHBgaQEz6kYvhV=2pLPLAtVxQjbnqL4CPv0vyvHZbHWA@mail.gmail.com>
-References: <3864075.BdhPDUQ9fB@wuerfel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3864075.BdhPDUQ9fB@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/1] PM: Avoid false-positive warnings in dev_pm_domain_set()
+Date: Mon,  1 Feb 2016 16:12:58 +0200
+Message-ID: <1454335978-21467-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:42225 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932244AbcBAONe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 1 Feb 2016 09:13:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On 1 February 2016 at 11:38, Arnd Bergmann <arnd@arndb.de> wrote:
-> The rework of the power domain code has made the genpd_poweron()
-> function local to the file it's defined in, and the only remaining
-> caller is conditionally compiled based on CONFIG_PM_GENERIC_DOMAINS_OF,
-> so we get a warning when that is disabled:
->
-> drivers/base/power/domain.c:234:12: error: 'genpd_poweron' defined but not used [-Werror=unused-function]
->
-> This adds a __maybe_unused annotation to the function so gcc can
-> figure out by itself that it should silently remove the definition
-> in this case.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: ea823c7cbffa ("PM / Domains: Remove pm_genpd_poweron() API")
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Arnd,
+There is a WARN_ON() in dev_pm_domain_set() that triggers on attempts
+to set the pm_domain pointer for devices with a driver bound.
 
-Thanks for fixing and reporting!
+However, that WARN_ON() triggers on attempts to clear the pointer
+too and the test it uses is based on checking the device's
+p->knode_driver pointer which still is set when the device bus
+type's/driver's ->remove callback has been executed.  This
+leads to false-positive warnings when bus type code calls
+dev_pm_domain_set() to clear the pm_domain pointer after
+invoking the driver's ->remove() callback.
 
-Looking a bit closer to the genpd code in this reagrds, made me
-realize that I think there's a better approach to fix this.
-Instead of going into the details for how, I decided to send a
-separate patch. You are on cc.
+To avoid those false-positives, make dev_pm_domain_set() check
+if the pointer passed to it is NULL and skip the warning in
+that case.
 
-"[PATCH] PM / Domains: Silence compiler warning for an unused function".
+Fixes: 989561de9b51 (PM / Domains: add setter for dev.pm_domain)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/base/power/common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kind regards
-Uffe
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index 93ed14c..f6a9ad5 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -146,7 +146,7 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
+ 	if (dev->pm_domain == pd)
+ 		return;
+ 
+-	WARN(device_is_bound(dev),
++	WARN(pd && device_is_bound(dev),
+ 	     "PM domains can only be changed for unbound devices\n");
+ 	dev->pm_domain = pd;
+ 	device_pm_check_callbacks(dev);
+-- 
+2.7.0
+
