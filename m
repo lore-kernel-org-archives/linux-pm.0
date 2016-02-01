@@ -1,177 +1,111 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V5 02/14] soc: tegra: pmc: Protect public functions from
- potential race conditions
-Date: Mon, 1 Feb 2016 13:42:55 +0000
-Message-ID: <56AF60DF.6050409@nvidia.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 05/14] soc: tegra: pmc: Wait for powergate state to
+ change
+Date: Mon, 1 Feb 2016 13:44:26 +0000
+Message-ID: <56AF613A.1000909@nvidia.com>
 References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-3-git-send-email-jonathanh@nvidia.com>
- <CANLsYkwpkDsdZ+6B-N8RWWWLJcJuoMLYmvw-VaCJdma4O6SPhg@mail.gmail.com>
+ <1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
+ <CANLsYkycbEo+wyMX8RJ9H-S5kDTjQR4nnDZc5gvf2kShOZAv9w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:5613 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932324AbcBANnF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 08:43:05 -0500
-In-Reply-To: <CANLsYkwpkDsdZ+6B-N8RWWWLJcJuoMLYmvw-VaCJdma4O6SPhg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CANLsYkycbEo+wyMX8RJ9H-S5kDTjQR4nnDZc5gvf2kShOZAv9w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
 
-On 29/01/16 16:20, Mathieu Poirier wrote:
-> On 28 January 2016 at 09:33, Jon Hunter <jonathanh@nvidia.com> wrote:
->> The PMC base address pointer is initialised during early boot so that
->> early platform code may used the PMC public functions. During the probe
->> of the PMC driver the base address pointer is mapped again and the initial
->> mapping is freed. This exposes a window where a device accessing the PMC
->> registers via one of the public functions, could race with the updating
->> of the pointer and lead to a invalid access. Furthermore, the only
->> protection between multiple devices attempting to access the PMC registers
->> is when setting the powergate state to on or off. None of the other public
->> functions that access the PMC registers are protected.
+On 29/01/16 16:58, Mathieu Poirier wrote:
+> On 28 January 2016 at 09:33, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> Currently, the function tegra_powergate_set() simply sets the desired
+>> powergate state but does not wait for the state to change. In most cases
+>> we should wait for the state to change before proceeding. Currently, there
+>> is a case for tegra114 and tegra124 devices where we do not wait when
+>> starting the secondary CPU as this is not necessary. However, this is only
+>> done at boot time and so waiting here will only have a small impact on
+>> boot time. Therefore, update tegra_powergate_set() to wait when setting
+>> the powergate.
 >>
->> Use the existing mutex to protect paths that may race with regard to
->> accessing the PMC registers.
+>> By adding this feature, we can also eliminate the polling loop from
+>> tegra30_boot_secondary().
 >>
->> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>> A function has been added for checking the status of the powergate and
+>> so update the tegra_powergate_is_powered() to use this macro as well.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 >> ---
->>  drivers/soc/tegra/pmc.c | 44 +++++++++++++++++++++++++++++++++++---------
->>  1 file changed, 35 insertions(+), 9 deletions(-)
+>>  arch/arm/mach-tegra/platsmp.c | 16 +++-------------
+>>  drivers/soc/tegra/pmc.c       |  9 ++++++++-
+>>  2 files changed, 11 insertions(+), 14 deletions(-)
 >>
+>> diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
+>> index f3f61dbbda97..75620ae73913 100644
+>> --- a/arch/arm/mach-tegra/platsmp.c
+>> +++ b/arch/arm/mach-tegra/platsmp.c
+>> @@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
+>>          * be un-gated by un-toggling the power gate register
+>>          * manually.
+>>          */
+>> -       if (!tegra_pmc_cpu_is_powered(cpu)) {
+>> -               ret = tegra_pmc_cpu_power_on(cpu);
+>> -               if (ret)
+>> -                       return ret;
+>> -
+>> -               /* Wait for the power to come up. */
+>> -               timeout = jiffies + msecs_to_jiffies(100);
+>> -               while (!tegra_pmc_cpu_is_powered(cpu)) {
+>> -                       if (time_after(jiffies, timeout))
+>> -                               return -ETIMEDOUT;
+>> -                       udelay(10);
+>> -               }
+>> -       }
+>> +       ret = tegra_pmc_cpu_power_on(cpu);
+>> +       if (ret)
+>> +               return ret;
+>>
+>>  remove_clamps:
+>>         /* CPU partition is powered. Enable the CPU clock. */
 >> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
->> index 85b4e166273a..f8cdb7ce9755 100644
+>> index 99cb2fdd29e1..35ee60fd17be 100644
 >> --- a/drivers/soc/tegra/pmc.c
 >> +++ b/drivers/soc/tegra/pmc.c
->> @@ -235,7 +235,10 @@ int tegra_powergate_is_powered(int id)
->>         if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
->>                 return -EINVAL;
->>
->> +       mutex_lock(&pmc->powergates_lock);
->>         status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
->> +       mutex_unlock(&pmc->powergates_lock);
+>> @@ -28,6 +28,7 @@
+>>  #include <linux/export.h>
+>>  #include <linux/init.h>
+>>  #include <linux/io.h>
+>> +#include <linux/iopoll.h>
+>>  #include <linux/of.h>
+>>  #include <linux/of_address.h>
+>>  #include <linux/platform_device.h>
+>> @@ -186,6 +187,9 @@ static inline bool tegra_powergate_state(int id)
+>>   */
+>>  static int tegra_powergate_set(unsigned int id, bool new_state)
+>>  {
+>> +       bool status;
+>> +       int err;
 >> +
->>         return !!status;
->>  }
+>>         mutex_lock(&pmc->powergates_lock);
 >>
->> @@ -250,6 +253,8 @@ int tegra_powergate_remove_clamping(int id)
->>         if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
->>                 return -EINVAL;
+>>         if (tegra_powergate_state(id) == new_state) {
+>> @@ -195,9 +199,12 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
 >>
->> +       mutex_lock(&pmc->powergates_lock);
+>>         tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
+>>
+>> +       err = readx_poll_timeout(tegra_powergate_state, id, status,
+>> +                                status == new_state, 10, 100000);
 >> +
->>         /*
->>          * On Tegra124 and later, the clamps for the GPU are controlled by a
->>          * separate register (with different semantics).
->> @@ -257,7 +262,7 @@ int tegra_powergate_remove_clamping(int id)
->>         if (id == TEGRA_POWERGATE_3D) {
->>                 if (pmc->soc->has_gpu_clamps) {
->>                         tegra_pmc_writel(0, GPU_RG_CNTRL);
->> -                       return 0;
->> +                       goto out;
->>                 }
->>         }
->>
->> @@ -274,6 +279,9 @@ int tegra_powergate_remove_clamping(int id)
->>
->>         tegra_pmc_writel(mask, REMOVE_CLAMPING);
->>
->> +out:
->> +       mutex_unlock(&pmc->powergates_lock);
->> +
->>         return 0;
->>  }
->>  EXPORT_SYMBOL(tegra_powergate_remove_clamping);
->> @@ -520,9 +528,11 @@ int tegra_io_rail_power_on(int id)
->>         unsigned int bit, mask;
->>         int err;
->>
->> +       mutex_lock(&pmc->powergates_lock);
->> +
->>         err = tegra_io_rail_prepare(id, &request, &status, &bit);
->>         if (err < 0)
->> -               return err;
->> +               goto error;
->>
->>         mask = 1 << bit;
->>
->> @@ -535,12 +545,15 @@ int tegra_io_rail_power_on(int id)
->>         err = tegra_io_rail_poll(status, mask, 0, 250);
->>         if (err < 0) {
->>                 pr_info("tegra_io_rail_poll() failed: %d\n", err);
->> -               return err;
->> +               goto error;
->>         }
->>
->>         tegra_io_rail_unprepare();
->>
->> -       return 0;
->> +error:
->> +       mutex_unlock(&pmc->powergates_lock);
->> +
->> +       return err < 0 ? err : 0;
 > 
-> Is this necessary?  Why simply not returning 'err'?  From what I see
-> 'tegra_io_rail_power_on()' can only return a negative value or '0'.
+> I understand (and agree) with the goal of this patch but I wonder (and
+> I don't know much about the system/context) if holding a mutex while
+> sleeping won't incur adverse effect on other parts of the system that
+> weren't use to see this wait.  One way to fix this might be to use
+> "mutex_trylock()" and let callers retry as they see fit if an
+> operation is already in progress.
 
-Right, this is probably not necessary and so I could simplify this.
+I could unlock the mutex after writing the TOGGLE_START register. I
+don't believe that we need to waiting for a powergate to change before
+writing again.
 
->>  }
->>  EXPORT_SYMBOL(tegra_io_rail_power_on);
->>
->> @@ -550,10 +563,12 @@ int tegra_io_rail_power_off(int id)
->>         unsigned int bit, mask;
->>         int err;
->>
->> +       mutex_lock(&pmc->powergates_lock);
->> +
->>         err = tegra_io_rail_prepare(id, &request, &status, &bit);
->>         if (err < 0) {
->>                 pr_info("tegra_io_rail_prepare() failed: %d\n", err);
->> -               return err;
->> +               goto error;
->>         }
->>
->>         mask = 1 << bit;
->> @@ -566,11 +581,14 @@ int tegra_io_rail_power_off(int id)
->>
->>         err = tegra_io_rail_poll(status, mask, mask, 250);
->>         if (err < 0)
->> -               return err;
->> +               goto error;
->>
->>         tegra_io_rail_unprepare();
->>
->> -       return 0;
->> +error:
->> +       mutex_unlock(&pmc->powergates_lock);
->> +
->> +       return err < 0 ? err : 0;
-> 
-> Same comment as above.
-> 
->>  }
->>  EXPORT_SYMBOL(tegra_io_rail_power_off);
->>
->> @@ -817,9 +835,15 @@ static int tegra_pmc_probe(struct platform_device *pdev)
->>
->>         /* take over the memory region from the early initialization */
->>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +
->> +       mutex_lock(&pmc->powergates_lock);
->>         pmc->base = devm_ioremap_resource(&pdev->dev, res);
->> -       if (IS_ERR(pmc->base))
->> -               return PTR_ERR(pmc->base);
->> +       mutex_unlock(&pmc->powergates_lock);
-> 
-> Since the mutex is released there is a window of opportunity for
-> devices to access an erroneous pointer.  A better approach might be to
-> use a temporary variable, do all the initialisation that is required
-> and when things look good set pmc-base to that temporary variable.
-
-Thanks. Not sure what I was thinking here. I will fix that.
-
-Cheers
 Jon
