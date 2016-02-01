@@ -1,78 +1,42 @@
-From: Ricky Liang <jcliang@chromium.org>
-Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency selection
-Date: Tue, 2 Feb 2016 01:10:19 +0800
-Message-ID: <CAAJzSMervH=-Z0__i_nC2ubUJAcb4J-YP1bWwo5-z4z9RyLcMg@mail.gmail.com>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
-	<1449641971-20827-4-git-send-email-smuckle@linaro.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 0/4] introduce new put_getdisk() call
+Date: Mon, 1 Feb 2016 12:16:42 -0500
+Message-ID: <20160201171642.GC14091@mtj.duckdns.org>
+References: <1454338315-13465-1-git-send-email-roman.penyaev@profitbricks.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <1454338315-13465-1-git-send-email-roman.penyaev@profitbricks.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Roman Pen <roman.penyaev@profitbricks.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexander Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Gi-Oh Kim <gi-oh.kim@profitbricks.com>, Jens Axboe <axboe@kernel.dk>, Len Brown <len.brown@intel.com>, Ming Lei <tom.leiming@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sagi Grimberg <sagig@mellanox.com>, Vishal Verma <vishal.l.verma@intel.com>, linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Steve,
+On Mon, Feb 01, 2016 at 03:51:51PM +0100, Roman Pen wrote:
+> Hello.
+> 
+> In this patchset in the first patch I fixed module reference leak inside
+> blk-cgroup.c.  In other patches I switched to a new put_getdisk() call,
+> which should be used if the disk was received by get_disk() or get_gendisk()
+> functions, which internally increase module reference.
+> 
+> The idea is to avoid confusion in the future and to have symmetric calls:
+> 
+> 	alloc_disk() -> put_disk() [as it is done in all the block drivers]
+> 
+> and
+> 
+> 	get_gendisk() -> put_gendisk() [if you need to find a disk by minor,major]
+> 
+> The second sequence internally increases disk owner module reference on
+> get and decreases it on put.
 
-On Wed, Dec 9, 2015 at 2:19 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+For the entire series,
 
-[snip...]
+ Acked-by: Tejun Heo <tj@kernel.org>
 
-> +static int cpufreq_sched_policy_init(struct cpufreq_policy *policy)
-> +{
-> +       struct gov_data *gd;
-> +       int cpu;
-> +
-> +       for_each_cpu(cpu, policy->cpus)
-> +               memset(&per_cpu(cpu_sched_capacity_reqs, cpu), 0,
-> +                      sizeof(struct sched_capacity_reqs));
-> +
-> +       gd = kzalloc(sizeof(*gd), GFP_KERNEL);
-> +       if (!gd)
-> +               return -ENOMEM;
-> +
-> +       gd->throttle_nsec = policy->cpuinfo.transition_latency ?
-> +                           policy->cpuinfo.transition_latency :
-> +                           THROTTLE_NSEC;
-> +       pr_debug("%s: throttle threshold = %u [ns]\n",
-> +                 __func__, gd->throttle_nsec);
-> +
-> +       if (cpufreq_driver_is_slow()) {
-> +               cpufreq_driver_slow = true;
-> +               gd->task = kthread_create(cpufreq_sched_thread, policy,
-> +                                         "kschedfreq:%d",
-> +                                         cpumask_first(policy->related_cpus));
-> +               if (IS_ERR_OR_NULL(gd->task)) {
-> +                       pr_err("%s: failed to create kschedfreq thread\n",
-> +                              __func__);
-> +                       goto err;
-> +               }
-> +               get_task_struct(gd->task);
-> +               kthread_bind_mask(gd->task, policy->related_cpus);
-> +               wake_up_process(gd->task);
-> +               init_irq_work(&gd->irq_work, cpufreq_sched_irq_work);
-> +       }
-> +
-> +       policy->governor_data = gd;
+Nice catch, thanks!
 
-This should be moved before if(cpufreq_driver_is_slow()) {...}. I've
-seen NULL pointer deference at boot in cpufreq_sched_thread() when it
-tried to run sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param).
-
-> +       set_sched_freq();
-> +
-> +       return 0;
-> +
-> +err:
-
-And probably also set policy->governor_data to NULL here.
-
-> +       kfree(gd);
-> +       return -ENOMEM;
-> +}
-
-[snip...]
-
-Best,
-Ricky
+-- 
+tejun
