@@ -1,30 +1,56 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 00/19] cpufreq locking cleanups and documentation
-Date: Mon, 1 Feb 2016 11:32:56 +0530
-Message-ID: <20160201060256.GG13476@vireshk>
+Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
+ __cpufreq_governor
+Date: Mon, 1 Feb 2016 11:39:43 +0530
+Message-ID: <20160201060943.GH13476@vireshk>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <56AC0A5E.1010505@codeaurora.org>
+ <20160112102025.GC1084@ubuntu>
+ <56AC04E3.8090900@codeaurora.org>
+ <1703921.2AHaiQoggk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:35070 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbcBAGC7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 01:02:59 -0500
-Received: by mail-pf0-f179.google.com with SMTP id 65so77645639pfd.2
-        for <linux-pm@vger.kernel.org>; Sun, 31 Jan 2016 22:02:59 -0800 (PST)
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33691 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbcBAGJq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 01:09:46 -0500
+Received: by mail-pf0-f175.google.com with SMTP id x125so78167913pfb.0
+        for <linux-pm@vger.kernel.org>; Sun, 31 Jan 2016 22:09:46 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <56AC0A5E.1010505@codeaurora.org>
+In-Reply-To: <1703921.2AHaiQoggk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On 29-01-16, 16:57, Saravana Kannan wrote:
-> I haven't looked at the cpufreq-tests, but I doubt they do hotplug testing
-> where they remove all the CPUs of a policy (to trigger a policy exit).
+On 30-01-16, 12:49, Rafael J. Wysocki wrote:
+> On Friday, January 29, 2016 04:33:39 PM Saravana Kannan wrote:
+> > AFAIR, the ABBA issue was between the sysfs lock and the policy lock. 
 
-They do.
+Yeah, to be precise here it is:
+
+CPU0 (sysfs read)               CPU1 (exit governor)
+
+sysfs-read                      set_policy()-> lock policy->rwsem
+sysfs-active lock               Remove sysfs files
+lock policy->rwsem              sysfs-active lock
+Actual read
+
+> > The fix for that issue should not be dropping the lock around 
+> > POLICY_EXIT.
+> 
+> Right.  Dropping the lock is a mistake (which I overlooked, sadly).
+
+I joined the party at around time of 3.10, and we had this problem and
+hacky solution then as well. We tried to get rid of it multiple times,
+but sadly failed.
+
+> > The proper fix is to have the governor "export" the
+> > attributes it wants to add/remove and have the cpufreq framework do
+> > the adding/removing of the attributes from sysfs for the governor.
+
+I failed to understand your solution, sorry. Care to explain this a
+bit more?
 
 -- 
 viresh
