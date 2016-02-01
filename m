@@ -1,83 +1,112 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V5 06/14] soc: tegra: pmc: Fix checking of valid
- partitions
-Date: Mon, 1 Feb 2016 13:45:07 +0000
-Message-ID: <56AF6163.4070204@nvidia.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-7-git-send-email-jonathanh@nvidia.com>
- <CANLsYkxY5P2wQxGev0veN39nD-1cTVkZCVpX9jca7da39JJpWg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CANLsYkxY5P2wQxGev0veN39nD-1cTVkZCVpX9jca7da39JJpWg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Silence compiler warning for an unused function
+Date: Mon,  1 Feb 2016 14:52:41 +0100
+Message-ID: <1454334761-13678-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f52.google.com ([209.85.215.52]:33055 "EHLO
+	mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbcBANws (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 08:52:48 -0500
+Received: by mail-lf0-f52.google.com with SMTP id m1so21619209lfg.0
+        for <linux-pm@vger.kernel.org>; Mon, 01 Feb 2016 05:52:48 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>
 
+The only remaining caller of genpd_poweron() is conditionally compiled
+based on CONFIG_PM_GENERIC_DOMAINS_OF, so we get a warning when that is
+unset.
 
-On 29/01/16 17:08, Mathieu Poirier wrote:
-> On 28 January 2016 at 09:33, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->> The tegra power partitions are referenced by a numerical ID which are
->> the same values programmed into the PMC registers for controlling the
->> partition. For a given device, the valid partition IDs may not be
->> contiguous and so simply checking that an ID is not greater than the
->> maximum ID supported may not mean it is valid. Fix this by adding a
->> bitmap for representing the valid partitions of a device and add a
->> helper function will test if the partition is valid.
->>
->> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->> ---
->>  drivers/soc/tegra/pmc.c | 21 +++++++++++++++++----
->>  include/soc/tegra/pmc.h |  1 +
->>  2 files changed, 18 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
->> index 35ee60fd17be..032dd5c17130 100644
->> --- a/drivers/soc/tegra/pmc.c
->> +++ b/drivers/soc/tegra/pmc.c
->> @@ -132,6 +132,7 @@ struct tegra_pmc_soc {
->>   * @cpu_pwr_good_en: CPU power good signal is enabled
->>   * @lp0_vec_phys: physical base address of the LP0 warm boot code
->>   * @lp0_vec_size: size of the LP0 warm boot code
->> + * @powergates_valid: Bitmap of valid power gates
->>   * @powergates_lock: mutex for power gate register access
->>   */
->>  struct tegra_pmc {
->> @@ -156,6 +157,7 @@ struct tegra_pmc {
->>         bool cpu_pwr_good_en;
->>         u32 lp0_vec_phys;
->>         u32 lp0_vec_size;
->> +       DECLARE_BITMAP(powergates_valid, TEGRA_POWERGATE_MAX);
->>
->>         struct mutex powergates_lock;
->>  };
->> @@ -180,6 +182,11 @@ static inline bool tegra_powergate_state(int id)
->>         return (tegra_pmc_readl(PWRGATE_STATUS) & BIT(id)) != 0;
->>  }
->>
->> +static inline bool tegra_powergate_is_valid(int id)
->> +{
->> +       return test_bit(id, pmc->powergates_valid);
->> +}
->> +
->>  /**
->>   * tegra_powergate_set() - set the state of a partition
->>   * @id: partition ID
->> @@ -213,7 +220,7 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
->>   */
->>  int tegra_powergate_power_on(unsigned int id)
->>  {
->> -       if (!pmc->soc || id >= pmc->soc->num_powergates)
->> +       if (!tegra_powergate_is_valid(id))
->>                 return -EINVAL;
-> 
-> The "!pmc-soc" condition is no longer needed?  If so the changelog
-> should reflect that or a new patch that deals with just that should be
-> etched.  The same comment applies for the rest of the patch.
+By moving the locking/unlocking of the genpd outside genpd_poweron(), thus
+to the caller, genpd_poweron() becomes redundant.
 
-Yes it is not necessary. I will update the changelog.
+Within this context let's then rename the wrapper function,
+__genpd_poweron(), to genpd_poweron() as it will then be consistent with
+its friend genpd_poweroff().
 
-Cheers
-Jon
+This change silence the warning about the unused function.
+
+Reported-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: ea823c7cbffa ("PM / Domains: Remove pm_genpd_poweron() API")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 784dbe8..301b785 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -173,14 +173,14 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+ }
+ 
+ /**
+- * __genpd_poweron - Restore power to a given PM domain and its masters.
++ * genpd_poweron - Restore power to a given PM domain and its masters.
+  * @genpd: PM domain to power up.
+  * @depth: nesting count for lockdep.
+  *
+  * Restore power to @genpd and all of its masters so that it is possible to
+  * resume a device belonging to it.
+  */
+-static int __genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
++static int genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
+ {
+ 	struct gpd_link *link;
+ 	int ret = 0;
+@@ -200,7 +200,7 @@ static int __genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
+ 		genpd_sd_counter_inc(master);
+ 
+ 		mutex_lock_nested(&master->lock, depth + 1);
+-		ret = __genpd_poweron(master, depth + 1);
++		ret = genpd_poweron(master, depth + 1);
+ 		mutex_unlock(&master->lock);
+ 
+ 		if (ret) {
+@@ -227,21 +227,6 @@ static int __genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
+ 	return ret;
+ }
+ 
+-/**
+- * genpd_poweron - Restore power to a given PM domain and its masters.
+- * @genpd: PM domain to power up.
+- */
+-static int genpd_poweron(struct generic_pm_domain *genpd)
+-{
+-	int ret;
+-
+-	mutex_lock(&genpd->lock);
+-	ret = __genpd_poweron(genpd, 0);
+-	mutex_unlock(&genpd->lock);
+-	return ret;
+-}
+-
+-
+ static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
+ {
+ 	return GENPD_DEV_CALLBACK(genpd, int, save_state, dev);
+@@ -489,7 +474,7 @@ static int pm_genpd_runtime_resume(struct device *dev)
+ 	}
+ 
+ 	mutex_lock(&genpd->lock);
+-	ret = __genpd_poweron(genpd, 0);
++	ret = genpd_poweron(genpd, 0);
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	if (ret)
+@@ -1821,8 +1806,10 @@ int genpd_dev_pm_attach(struct device *dev)
+ 
+ 	dev->pm_domain->detach = genpd_dev_pm_detach;
+ 	dev->pm_domain->sync = genpd_dev_pm_sync;
+-	ret = genpd_poweron(pd);
+ 
++	mutex_lock(&pd->lock);
++	ret = genpd_poweron(pd, 0);
++	mutex_unlock(&pd->lock);
+ out:
+ 	return ret ? -EPROBE_DEFER : 0;
+ }
+-- 
+1.9.1
+
