@@ -1,75 +1,86 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 00/16] PM / OPP: Introduce APIs to transition OPPs
-Date: Mon, 1 Feb 2016 11:41:26 -0800
-Message-ID: <20160201194126.GJ4848@codeaurora.org>
-References: <cover.1453965717.git.viresh.kumar@linaro.org>
- <20160130014842.GI4848@codeaurora.org>
- <20160201040857.GB13476@vireshk>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in __cpufreq_governor
+Date: Mon, 01 Feb 2016 12:24:05 -0800
+Message-ID: <56AFBEE5.70501@codeaurora.org>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com> <20160112102025.GC1084@ubuntu> <56AC04E3.8090900@codeaurora.org> <1703921.2AHaiQoggk@vostro.rjw.lan> <20160201060943.GH13476@vireshk> <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53714 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:55829 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbcBATl2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 14:41:28 -0500
-Content-Disposition: inline
-In-Reply-To: <20160201040857.GB13476@vireshk>
+	with ESMTP id S1753085AbcBAUYH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Feb 2016 15:24:07 -0500
+In-Reply-To: <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
 
-On 02/01, Viresh Kumar wrote:
-> On 29-01-16, 17:48, Stephen Boyd wrote:
-> > Just a note for future work, I think we're going to need to add
-> > some sort of enable/disable into the OPP layer. At least in qcom
-> > designs, if a clock is off we don't want the voltage requirement
-> > for that clock to factor into the final voltage on the regulator.
-> > Furthermore, we want to disable the regulator with
-> > regulator_disable() if all the clocks are off.
-> 
-> Hmm, we need to discuss more on this, maybe in a HO sometime or at
-> connect :)
+On 02/01/2016 02:22 AM, Rafael J. Wysocki wrote:
+> On Mon, Feb 1, 2016 at 7:09 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 30-01-16, 12:49, Rafael J. Wysocki wrote:
+>>> On Friday, January 29, 2016 04:33:39 PM Saravana Kannan wrote:
+>>>> AFAIR, the ABBA issue was between the sysfs lock and the policy lock.
+>>
+>> Yeah, to be precise here it is:
+>>
+>> CPU0 (sysfs read)               CPU1 (exit governor)
+>>
+>> sysfs-read                      set_policy()-> lock policy->rwsem
+>> sysfs-active lock               Remove sysfs files
+>> lock policy->rwsem              sysfs-active lock
+>> Actual read
+>>
+>>>> The fix for that issue should not be dropping the lock around
+>>>> POLICY_EXIT.
+>>>
+>>> Right.  Dropping the lock is a mistake (which I overlooked, sadly).
+>>
+>> I joined the party at around time of 3.10, and we had this problem and
+>> hacky solution then as well. We tried to get rid of it multiple times,
+>> but sadly failed.
+>
+> I kind of like your idea of accessing governor attributes without
+> holding the policy rwsem.
 
-Sure.
+I'm not sure whose idea you are referring to. Viresh's (I don't think I 
+saw his proposal) or mine.
 
-> 
-> > This is also a problem with cpufreq-dt. The regulators and clocks
-> > are assumed to be enabled out of the bootloader, which may not
-> > even be true. Now that OPP layer is managing all the clocks and
-> > regulators here we're going to need to do something to make sure
-> > they're on and controllable.
-> 
-> Also, I fail to understand, how the clock of a 'online' CPU can be
-> off?
-> 
+> I looked at that code and it seems doable to me.  The problem to solve
+> there would be to ensure that the dbs_data pointer is valid when
+> show/store runs for those attributes.
+>
+> The fact that we make the distinction between global and policy
+> governors in there doesn't really help, but it looks like getting rid
+> of that bit wouldn't be too much effort.  Let me take a deeper look at
+> that.
+>
 
-Hmm right. The problem is the clock and regulator frameworks
-aren't aware that they're enabled already. In the case of the
-clocks, if we switch a mux from one source to another while
-frequency switching and the framework doesn't know the clock is
-on, it won't turn on the new source for the CPU, effectively
-killing the CPU.
+Anyway, to explain my suggestion better, I'm proposing to make it so 
+that we don't have a need for the AB BA locking. The only reason the 
+governor needs to even grab the sysfs lock is to add/remove the sysfs 
+attribute files.
 
-In the regulator case I ran into a problem with qcom's RPM
-regulator implementation where the voltage isn't sent when the
-regulator is disabled (the driver has some check for that case).
+That can be easily achieved if the policy struct has some "gov_attrs" 
+field(s) that each governor populates. Then the framework just has to 
+create them after POLICY_INIT is processed by the governor and remove 
+them before POILICY_EXIT is sent to the governor.
 
-I suppose in both cases these could be fixed in the frameworks if
-they detected on/off state at boot. That's fine, but it doesn't
-seem like that will work for things like GPU where the clock may
-not be on in the first place. If we don't want to clk_get() and
-regulator_get() in two places (OPP and drivers) then we'll need
-on/off in OPP code.
+That way, we also avoid having to worry about the gov attributes 
+accessed by the show/store disappearing while the files are being 
+accessed. Since we remove those files before we even ask the gov to 
+clean up, that situation can never happen.
 
-In the CPU case, we've turned clocks on and off when CPUs are
-hotplugged in and out on qcom platforms so that we can drop the
-clock and voltage requirements of a particular CPU. If we had
-that CPU driver on ARM platforms it would be similar to the GPU
-case then. We could get the clocks and regulators in two places
-and we could put the clock/regulator on/off code in the CPU
-driver instead of the OPP layer.
+The current problem is that there is no good place for the governor to 
+populate this "gov_attrs" field(s). Maybe the governor register might be 
+one place for it to provide the data to the framework and the framework 
+can later fill it up itself when switching governors.
+
+Thanks,
+Saravana
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 a Linux Foundation Collaborative Project
