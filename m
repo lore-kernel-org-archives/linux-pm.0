@@ -1,86 +1,100 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 11/16] cpufreq: dt: Pass regulator name to the OPP core
-Date: Mon, 1 Feb 2016 18:34:18 -0800
-Message-ID: <20160202023418.GK4848@codeaurora.org>
-References: <cover.1453965717.git.viresh.kumar@linaro.org>
- <d59a1d27c9e2f4cc023dfc9a2b72cb920cbac43a.1453965717.git.viresh.kumar@linaro.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Mon, 1 Feb 2016 19:05:34 -0800
+Message-ID: <20160202030533.GT19432@atomide.com>
+References: <20160201232833.GR19432@atomide.com>
+ <Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:59449 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751779AbcBBDFh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 1 Feb 2016 22:05:37 -0500
 Content-Disposition: inline
-In-Reply-To: <d59a1d27c9e2f4cc023dfc9a2b72cb920cbac43a.1453965717.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, open list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 01/28, Viresh Kumar wrote:
-> @@ -119,6 +120,49 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
->  	return ret;
->  }
->  
-> +/*
-> + * An earlier version of opp-v1 bindings used to name the regulator
-> + * "cpu0-supply", we still need to handle that for backwards compatibility.
-> + */
-> +static const char *find_supply_name(struct device *dev)
-> +{
-> +	struct regulator *cpu_reg;
-> +	char *reg_cpu0 = "cpu0", *reg_cpu = "cpu", *reg;
-> +	int cpu = dev->id, ret;
-> +
-> +	/* Try "cpu0" for older DTs */
-> +	if (!cpu)
-> +		reg = reg_cpu0;
-> +	else
-> +		reg = reg_cpu;
-> +
-> +try_again:
-> +	cpu_reg = regulator_get_optional(dev, reg);
-> +	ret = PTR_ERR_OR_ZERO(cpu_reg);
-> +	if (!ret) {
-> +		regulator_put(cpu_reg);
+Hi,
 
-What's the point of creating a regulator just to find the name?
-It seems like we should just look in the DT node of the CPU for
-cpu-supply vs cpu0-supply. Then we don't need to involve the
-regulator framework at all.
+* Alan Stern <stern@rowland.harvard.edu> [160201 15:50]:
+> 
+> You get here only if runtime PM is disabled, right?  So the rpm_idle 
+> call won't do anything -- "disabled" means don't make any callbacks.
 
-> +		return reg;
-> +	}
-> +
-> +	/*
-> +	 * If cpu's regulator supply node is present, but regulator is not yet
-> +	 * registered, we should try defering probe.
-> +	 */
-> +	if (ret == -EPROBE_DEFER) {
-> +		dev_dbg(dev, "cpu%d regulator not ready, retry\n", cpu);
-> +		return ERR_PTR(ret);
-> +	}
-> +
-> +	/* Try with "cpu-supply" */
-> +	if (reg == reg_cpu0) {
-> +		reg = reg_cpu;
-> +		goto try_again;
-> +	}
-> +
-> +	dev_dbg(dev, "no regulator for cpu%d: %d\n", cpu, ret);
-> +	return NULL;
-> +}
-> +
->  static int allocate_resources(int cpu, struct device **cdev,
->  			      struct regulator **creg, struct clk **cclk)
->  {
-> @@ -383,6 +450,9 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
->  	cpufreq_cooling_unregister(priv->cdev);
->  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->  	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
-> +	if (priv->reg_name)
-> +		dev_pm_opp_put_regulator(priv->cpu_dev);
+Hmm sorry yes I'm confused again. Yeah it looks like calling rpm_idle
+just has a side effect that makes a difference here.
 
-Let's hope this goes away because it's always right next to
-dev_pm_opp_of_cpumask_remove_table() anyway. Same for reg_name.
+> Tony, exactly what are you trying to do here?  Do you want this to 
+> invoke a runtime-PM callback in the subsystem, power domain, or driver?  
+> (Is there even a driver bound to the device when this function runs?)
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+I guess I need to add more printks to figure out what's going on here.
+But yeah, I'm not seeing the callback happening at the interconnect
+level so hardware and PM runtime states won't match on the following
+probe after -EPROBE_DEFER.
+
+> The function's name suggests that it merely resets the data stored in 
+> dev->power without actually touching the hardware.  Is that what you 
+> really want?
+
+I guess you mean pm_runtime_set_suspended() above? I'm seeing a state
+where we now set pm_runtime_set_suspended() between failed device
+probes and the device is still active in hardware.
+
+The patch below also helps with the problem and leaves out the
+rpm_suspend() call from loop so it might give more hints.
+
+The difference here from what Rafael suggested earlier is calling
+__pm_runtime_use_autosuspend() and then not calling
+pm_runtime_set_suspended().
+
+However, it seems the below patch keeps hardware active in the
+autoidle case though, so chances are there is more that needs to
+be done here. Anyways, I'll try to debug it more tomorrow.
+
+Regards,
+
+Tony
+
+8< ------------------
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1425,17 +1425,25 @@ void pm_runtime_init(struct device *dev)
+  */
+ void pm_runtime_reinit(struct device *dev)
+ {
+-	if (!pm_runtime_enabled(dev)) {
+-		if (dev->power.runtime_status == RPM_ACTIVE)
++	if (pm_runtime_enabled(dev))
++		return;
++
++	if (dev->power.runtime_status == RPM_ACTIVE) {
++		if (dev->power.use_autosuspend) {
++			pm_runtime_set_autosuspend_delay(dev, 0);
++			__pm_runtime_use_autosuspend(dev, false);
++		} else {
+ 			pm_runtime_set_suspended(dev);
+-		if (dev->power.irq_safe) {
+-			spin_lock_irq(&dev->power.lock);
+-			dev->power.irq_safe = 0;
+-			spin_unlock_irq(&dev->power.lock);
+-			if (dev->parent)
+-				pm_runtime_put(dev->parent);
+ 		}
+ 	}
++
++	if (dev->power.irq_safe) {
++		spin_lock_irq(&dev->power.lock);
++		dev->power.irq_safe = 0;
++		spin_unlock_irq(&dev->power.lock);
++		if (dev->parent)
++			pm_runtime_put(dev->parent);
++	}
+ }
+ 
+ /**
