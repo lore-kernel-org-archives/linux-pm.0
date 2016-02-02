@@ -1,173 +1,274 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 15/16] cpufreq: dt: drop references to DT node
-Date: Tue, 2 Feb 2016 11:41:32 +0530
-Message-ID: <20160202061132.GD31828@vireshk>
+Subject: Re: [PATCH V2 16/16] cpufreq: dt: No need to allocate resources
+ anymore
+Date: Tue, 2 Feb 2016 11:42:28 +0530
+Message-ID: <20160202061228.GE31828@vireshk>
 References: <cover.1453965717.git.viresh.kumar@linaro.org>
- <b0f0134c9d2488db1971d7be4b8bcdc27356eee4.1453965717.git.viresh.kumar@linaro.org>
+ <6c45d5257ba11485719d3cb3a795ccb6ca1670d5.1453965717.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <b0f0134c9d2488db1971d7be4b8bcdc27356eee4.1453965717.git.viresh.kumar@linaro.org>
+In-Reply-To: <6c45d5257ba11485719d3cb3a795ccb6ca1670d5.1453965717.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 28-01-16, 13:50, Viresh Kumar wrote:
-> We don't need to get reference to DT node now, lets drop it.
+> OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
+> still need to check for availability of resources for deferred probing.
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-And because of changes in 11/16, this got updated as well:
+Got updated due to 11/16 ..
 
 -------------------------8<-------------------------
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 8 Sep 2015 17:34:26 +0530
-Subject: [PATCH 08/20] cpufreq: dt: No need to fetch voltage-tolerance
+Date: Wed, 9 Sep 2015 10:41:26 +0530
+Subject: [PATCH 09/20] cpufreq: dt: No need to allocate resources anymore
 
-Its already done by core and we don't need to get it anymore.  And so,
-we don't need to get of node in cpufreq_init() anymore, move that to
-find_supply_name() instead.
+OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
+still need to check for availability of resources for deferred probing.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 48 ++++++++++++++++++++++----------------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+ drivers/cpufreq/cpufreq-dt.c | 116 ++++++++++++++++++-------------------------
+ 1 file changed, 48 insertions(+), 68 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 35c5ec3b333c..3c43fda48bdf 100644
+index 3c43fda48bdf..1beb484b4bbe 100644
 --- a/drivers/cpufreq/cpufreq-dt.c
 +++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -33,7 +33,6 @@ struct private_data {
+@@ -31,7 +31,6 @@
+ 
+ struct private_data {
  	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
+-	struct regulator *cpu_reg;
  	struct thermal_cooling_device *cdev;
--	unsigned int voltage_tolerance; /* in percentage */
  	const char *reg_name;
  };
- 
-@@ -55,24 +54,38 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
-  * An earlier version of opp-v1 bindings used to name the regulator
-  * "cpu0-supply", we still need to handle that for backwards compatibility.
-  */
--static const char *find_supply_name(struct device *dev, struct device_node *np)
-+static const char *find_supply_name(struct device *dev)
- {
-+	struct device_node *np;
- 	struct property *pp;
- 	int cpu = dev->id;
-+	const char *name = NULL;
-+
-+	np = of_node_get(dev->of_node);
-+	if (!np) {
-+		dev_err(dev, "failed to find cpu%d node\n", cpu);
-+		return ERR_PTR(-ENOENT);
-+	}
- 
- 	/* Try "cpu0" for older DTs */
- 	if (!cpu) {
- 		pp = of_find_property(np, "cpu0-supply", NULL);
--		if (pp)
--			return "cpu0";
-+		if (pp) {
-+			name = "cpu0";
-+			goto node_put;
-+		}
- 	}
- 
- 	pp = of_find_property(np, "cpu-supply", NULL);
--	if (pp)
--		return "cpu";
-+	if (pp) {
-+		name = "cpu";
-+		goto node_put;
-+	}
- 
- 	dev_dbg(dev, "no regulator for cpu%d\n", cpu);
--	return NULL;
-+node_put:
-+	of_node_put(np);
-+	return name;
+@@ -88,73 +87,61 @@ static const char *find_supply_name(struct device *dev)
+ 	return name;
  }
  
- static int allocate_resources(int cpu, struct device **cdev,
-@@ -147,7 +160,6 @@ static int allocate_resources(int cpu, struct device **cdev,
- static int cpufreq_init(struct cpufreq_policy *policy)
+-static int allocate_resources(int cpu, struct device **cdev,
+-			      struct regulator **creg, struct clk **cclk)
++static int resources_available(void)
  {
- 	struct cpufreq_frequency_table *freq_table;
--	struct device_node *np;
- 	struct private_data *priv;
  	struct device *cpu_dev;
  	struct regulator *cpu_reg;
-@@ -164,13 +176,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	struct clk *cpu_clk;
+ 	int ret = 0;
+-	char *reg_cpu0 = "cpu0", *reg_cpu = "cpu", *reg;
++	const char *name;
+ 
+-	cpu_dev = get_cpu_device(cpu);
++	cpu_dev = get_cpu_device(0);
+ 	if (!cpu_dev) {
+-		pr_err("failed to get cpu%d device\n", cpu);
++		pr_err("failed to get cpu0 device\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	/* Try "cpu0" for older DTs */
+-	if (!cpu)
+-		reg = reg_cpu0;
+-	else
+-		reg = reg_cpu;
+-
+-try_again:
+-	cpu_reg = regulator_get_optional(cpu_dev, reg);
+-	ret = PTR_ERR_OR_ZERO(cpu_reg);
++	cpu_clk = clk_get(cpu_dev, NULL);
++	ret = PTR_ERR_OR_ZERO(cpu_clk);
+ 	if (ret) {
+ 		/*
+-		 * If cpu's regulator supply node is present, but regulator is
+-		 * not yet registered, we should try defering probe.
++		 * If cpu's clk node is present, but clock is not yet
++		 * registered, we should try defering probe.
+ 		 */
+-		if (ret == -EPROBE_DEFER) {
+-			dev_dbg(cpu_dev, "cpu%d regulator not ready, retry\n",
+-				cpu);
+-			return ret;
+-		}
+-
+-		/* Try with "cpu-supply" */
+-		if (reg == reg_cpu0) {
+-			reg = reg_cpu;
+-			goto try_again;
+-		}
++		if (ret == -EPROBE_DEFER)
++			dev_dbg(cpu_dev, "clock not ready, retry\n");
++		else
++			dev_err(cpu_dev, "failed to get clock: %d\n", ret);
+ 
+-		dev_dbg(cpu_dev, "no regulator for cpu%d: %d\n", cpu, ret);
++		return ret;
+ 	}
+ 
+-	cpu_clk = clk_get(cpu_dev, NULL);
+-	ret = PTR_ERR_OR_ZERO(cpu_clk);
+-	if (ret) {
+-		/* put regulator */
+-		if (!IS_ERR(cpu_reg))
+-			regulator_put(cpu_reg);
++	clk_put(cpu_clk);
++
++	name = find_supply_name(cpu_dev);
++	if (IS_ERR(name))
++		return PTR_ERR(name);
++
++	if (!name)
++		return 0;
+ 
++	cpu_reg = regulator_get_optional(cpu_dev, name);
++	ret = PTR_ERR_OR_ZERO(cpu_reg);
++	if (ret) {
+ 		/*
+-		 * If cpu's clk node is present, but clock is not yet
+-		 * registered, we should try defering probe.
++		 * If cpu's regulator supply node is present, but regulator is
++		 * not yet registered, we should try defering probe.
+ 		 */
+ 		if (ret == -EPROBE_DEFER)
+-			dev_dbg(cpu_dev, "cpu%d clock not ready, retry\n", cpu);
++			dev_dbg(cpu_dev, "cpu0 regulator not ready, retry\n");
+ 		else
+-			dev_err(cpu_dev, "failed to get cpu%d clock: %d\n", cpu,
+-				ret);
+-	} else {
+-		*cdev = cpu_dev;
+-		*creg = cpu_reg;
+-		*cclk = cpu_clk;
++			dev_dbg(cpu_dev, "no regulator for cpu0: %d\n", ret);
++
++		return ret;
+ 	}
+ 
+-	return ret;
++	regulator_put(cpu_reg);
++	return 0;
+ }
+ 
+ static int cpufreq_init(struct cpufreq_policy *policy)
+@@ -162,7 +149,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *freq_table;
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+-	struct regulator *cpu_reg;
+ 	struct clk *cpu_clk;
+ 	struct dev_pm_opp *suspend_opp;
+ 	unsigned int transition_latency;
+@@ -170,9 +156,16 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	const char *name = NULL;
+ 	int ret;
+ 
+-	ret = allocate_resources(policy->cpu, &cpu_dev, &cpu_reg, &cpu_clk);
+-	if (ret) {
+-		pr_err("%s: Failed to allocate resources: %d\n", __func__, ret);
++	cpu_dev = get_cpu_device(policy->cpu);
++	if (!cpu_dev) {
++		pr_err("failed to get cpu%d device\n", policy->cpu);
++		return -ENODEV;
++	}
++
++	cpu_clk = clk_get(cpu_dev, NULL);
++	if (IS_ERR(cpu_clk)) {
++		ret = PTR_ERR(cpu_clk);
++		dev_err(cpu_dev, "%s: failed to get clk: %d\n", __func__, ret);
  		return ret;
  	}
  
--	np = of_node_get(cpu_dev->of_node);
--	if (!np) {
--		dev_err(cpu_dev, "failed to find cpu%d node\n", policy->cpu);
--		ret = -ENOENT;
--		goto out_put_reg_clk;
--	}
--
- 	/* Get OPP-sharing information from "operating-points-v2" bindings */
- 	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
- 	if (ret) {
-@@ -181,17 +186,17 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+@@ -186,7 +179,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  		if (ret == -ENOENT)
  			opp_v1 = true;
  		else
--			goto out_node_put;
-+			goto out_put_reg_clk;
+-			goto out_put_reg_clk;
++			goto out_put_clk;
  	}
  
  	/*
- 	 * OPP layer will be taking care of regulators now, but it needs to know
- 	 * the name of the regulator first.
- 	 */
--	name = find_supply_name(cpu_dev, np);
-+	name = find_supply_name(cpu_dev);
+@@ -196,7 +189,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	name = find_supply_name(cpu_dev);
  	if (IS_ERR(name)) {
  		ret = PTR_ERR(name);
--		goto out_node_put;
-+		goto out_put_reg_clk;
+-		goto out_put_reg_clk;
++		goto out_put_clk;
  	}
  
  	if (name) {
-@@ -199,7 +204,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+@@ -204,7 +197,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  		if (ret) {
  			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
  				policy->cpu, ret);
--			goto out_node_put;
-+			goto out_put_reg_clk;
+-			goto out_put_reg_clk;
++			goto out_put_clk;
  		}
  	}
  
-@@ -249,7 +254,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+@@ -262,9 +255,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  	}
  
- 	priv->reg_name = name;
--	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
- 
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
-@@ -291,8 +295,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 
- 	policy->cpuinfo.transition_latency = transition_latency;
- 
--	of_node_put(np);
+ 	priv->cpu_dev = cpu_dev;
+-	priv->cpu_reg = cpu_reg;
+ 	policy->driver_data = priv;
 -
- 	return 0;
+ 	policy->clk = cpu_clk;
  
- out_free_cpufreq_table:
-@@ -303,8 +305,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	rcu_read_lock();
+@@ -305,10 +296,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
  	if (name)
  		dev_pm_opp_put_regulator(cpu_dev);
--out_node_put:
--	of_node_put(np);
- out_put_reg_clk:
+-out_put_reg_clk:
++out_put_clk:
  	clk_put(cpu_clk);
- 	if (!IS_ERR(cpu_reg))
+-	if (!IS_ERR(cpu_reg))
+-		regulator_put(cpu_reg);
+ 
+ 	return ret;
+ }
+@@ -324,8 +313,6 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
+ 		dev_pm_opp_put_regulator(priv->cpu_dev);
+ 
+ 	clk_put(policy->clk);
+-	if (!IS_ERR(priv->cpu_reg))
+-		regulator_put(priv->cpu_reg);
+ 	kfree(priv);
+ 
+ 	return 0;
+@@ -378,9 +365,6 @@ static struct cpufreq_driver dt_cpufreq_driver = {
+ 
+ static int dt_cpufreq_probe(struct platform_device *pdev)
+ {
+-	struct device *cpu_dev;
+-	struct regulator *cpu_reg;
+-	struct clk *cpu_clk;
+ 	int ret;
+ 
+ 	/*
+@@ -390,19 +374,15 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
+ 	 *
+ 	 * FIXME: Is checking this only for CPU0 sufficient ?
+ 	 */
+-	ret = allocate_resources(0, &cpu_dev, &cpu_reg, &cpu_clk);
++	ret = resources_available();
+ 	if (ret)
+ 		return ret;
+ 
+-	clk_put(cpu_clk);
+-	if (!IS_ERR(cpu_reg))
+-		regulator_put(cpu_reg);
+-
+ 	dt_cpufreq_driver.driver_data = dev_get_platdata(&pdev->dev);
+ 
+ 	ret = cpufreq_register_driver(&dt_cpufreq_driver);
+ 	if (ret)
+-		dev_err(cpu_dev, "failed register driver: %d\n", ret);
++		dev_err(&pdev->dev, "failed register driver: %d\n", ret);
+ 
+ 	return ret;
+ }
