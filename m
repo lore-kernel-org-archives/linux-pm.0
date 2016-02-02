@@ -1,107 +1,67 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
-Date: Tue, 02 Feb 2016 14:21:32 -0800
-Message-ID: <56B12BEC.9070603@codeaurora.org>
-References: <cover.1454410226.git.viresh.kumar@linaro.org> <5a012e56b8404e2d07e172b6699ce02f5c5b5f26.1454410226.git.viresh.kumar@linaro.org> <20160202154717.GI3947@e106622-lin> <CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com> <20160202170144.GL3947@e106622-lin> <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH] cpufreq: Add Broadcom BCM2835 CPU frequency control driver
+Date: Tue, 02 Feb 2016 14:48:57 -0800
+Message-ID: <87r3guybhi.fsf@eliezer.anholt.net>
+References: <1444592815-15271-1-git-send-email-lkundrak@v3.sk> <5626FE5F.8060209@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:59314 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbcBBWVg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 17:21:36 -0500
-In-Reply-To: <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5626FE5F.8060209@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Lubomir Rintel <lkundrak@v3.sk>
+Cc: linux-rpi-kernel@lists.infradead.org, Dom Cobley <popcornmix@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee@kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 02/02/2016 11:40 AM, Rafael J. Wysocki wrote:
-> On Tue, Feb 2, 2016 at 6:01 PM, Juri Lelli <juri.lelli@arm.com> wrote:
->> Hi Rafael,
->>
->> On 02/02/16 17:35, Rafael J. Wysocki wrote:
->>> On Tue, Feb 2, 2016 at 4:47 PM, Juri Lelli <juri.lelli@arm.com> wrote:
->>>> Hi Viresh,
->>>>
->>>> On 02/02/16 16:27, Viresh Kumar wrote:
->>>>> Until now, governors (ondemand/conservative) were using the
->>>>> 'global-attr' or 'freq-attr', depending on the sysfs location where we
->>>>> want to create governor's directory.
->>>>>
->>>>> The problem is that, in case of 'freq-attr', we are forced to use
->>>>> show()/store() present in cpufreq.c, which always take policy->rwsem.
->>>>>
->>>>> And because of that we were facing some ABBA lockups during governor
->>>>> callback event CPUFREQ_GOV_POLICY_EXIT. And so we were dropping the
->>>>> rwsem right before calling governor callback for CPUFREQ_GOV_POLICY_EXIT
->>>>> event.
->>>>>
->>>>> That caused further problems and it never worked perfectly.
->>>>>
->>>>> This patch attempts to fix that by creating separate sysfs-ops for
->>>>> cpufreq governors.
->>>>>
->>>>> Because things got much simplified now, we don't need separate
->>>>> show/store callbacks for governor-for-system and governor-per-policy
->>>>> cases.
->>>>>
->>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>
->>>> This patch cleans things up a lot, that's good.
->>>>
->>>> One thing I'm still concerned about, though: don't we need some locking
->>>> in place for some of the store operations on governors attributes? Are
->>>> store_{ignore_nice_load, sampling_down_fact, etc} safe without locking?
->>>
->>> That would require some investigation I suppose.
->>>
->>>> It seems that we can call them from different cpus concurrently.
->>>
->>> Yes, we can.
->>>
->>> One quick-and-dirty way of dealing with that might be to introduce a
->>> "sysfs lock" into struct dbs_data and hold that around the invocation
->>> of gattr->store() in the sysfs_ops's ->store callback.
->>>
->>
->> There is value in trying to solve this issue by using some of the
->> existing locks, IMHO.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Stephen Warren <swarren@wwwdotorg.org> writes:
+
+> On 10/11/2015 01:46 PM, Lubomir Rintel wrote:
+>> +static u32 bcm2835_cpufreq_set_clock(int cur_rate, int arm_rate)
+>> +{
+>> +	int ret =3D 0;
+>> +	struct prop msg =3D {
+>> +		.dev_id =3D VCMSG_ID_ARM_CLOCK,
+>> +		.val =3D arm_rate * 1000,
+>> +	};
+>> +
+>> +	/* send the message */
+>> +	ret =3D rpi_firmware_property(fw, VCMSG_SET_CLOCK_RATE, &msg,
+>> +							sizeof(msg));
 >
-> Some value - maybe.  I'm not sure how much of it, though.
->
-> Finer-grained locking is generally easier to follow, because the locks
-> tend to be used for specific purposes only.
->
->> Can't we actually try to use the policy->rwsem (or one of the core
->> locks) + wait_for_completion approach as we do in cpufreq core?
->
-> No.  Too many things depend on that lock already and some of them work
-> by accident rather than by design.
+> Why does this driver call the firmware directly, rather than using the
+> clock API?
 
-Also, wait_for_completion() and complete() is just another way to 
-implement a lock. So, it won't necessarily solve any deadlock issues.
+The firmware's running a thread, watching our temperature and setting
+the ARM and SDRAM clock according to its policy.  This call asks the
+firmware to kindly go to a higher ARM and SDRAM (note: we can't do SDRAM
+From=20Linux) clock from the default, and it will when it feels it can.
+We do expose the ARM clock from Linux, but we can only really use it
+informatively with the current firmware.
 
-I also don't like this patch because it forces governors to either 
-implement their own macros and management of their attributes or force 
-them to use the governor structs that come with cpufreq_governor.h. 
-cpufreq_governor.h IMHO is very ondemand and conservative governor 
-specific and is very irrelevant for sched-dvfs or any other governors 
-(hint hint).
+I may not like this architecture, the option we have available for now.
 
-The only time this ABBA locking is an issue is when governor are 
-changing and trying to add/remove attributes. That can easily be checked 
-in store_governor and dealt with without holding the policy rwsem if the 
-governors can provide their per sys and per policy attribute arrays as 
-part of registering themselves.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I'm sorry that I just keep talking about the idea and not sending out 
-the patches.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
--Saravana
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+iQIcBAEBCgAGBQJWsTJZAAoJELXWKTbR/J7oK3YP/i+XUhCIOKpoU20q0Mb+gX2U
+lBrzTRsVXRZHcq2JcUXcxyI0DG9/H0mGiVngtmRp9e8zM1d858sjH8+O/GqLkqgx
+EGbLJJbcPrsHknY+4ep/2ChyYeyvNX3ha/3psekImOdH3f0Lcha1P24w0doj0o9Y
+iU0YEK/gc9K5LuG0Nm85qi9y1BE5u01eOrFvHz/1RvtVTfZvAkOohOhkyTeQq8te
+u9IkIpCmVswBOGRmpLccAaNeIVgLYqAuNbZ24d3hYVhMY8cT0UMLS30ltby8Asbs
+PjdxxsGwakHjrnjzl4U98upqmWzdqwUXVOY0nOrQLFh+zUqhNC4v5q8QDxcYeLgg
+uKAwDXHxd2d7Q0ysYpsWg/ohaM1yVXsPYnZJ9g2LgdZsZAbfIa1o5HP6aB1B3c8a
+Cxz213QEBiACscCcMSTJym7Fn5q8zIBuQfWookxo+nSnYn8L9VgCj05OHXHR2Dg7
+vquFJW1sSIWnaudFhReOWotQpQZx/1UDZRqBr6XrnQUs9lXLKkE1lX9+5QgFsCsA
+FTKs71x540hFvzH2LjJB6Dcw3WYwmWYW2RN1YCiGHm2ZLgtCF9uAF7PYwL5Z3uFU
+igm2em0HH4rI9dp9TuLn6QcZuVFxhvmE7Xzu1PRtzG8QvMOkSD5J1ksrs0Bicwxk
+a2FpYys6QYAQ+cdQ3iXH
+=ltVX
+-----END PGP SIGNATURE-----
+--=-=-=--
