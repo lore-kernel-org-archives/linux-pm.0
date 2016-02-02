@@ -1,106 +1,33 @@
 From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Subject: [PATCH v1] power: bq27xxx_battery: Restore device name
-Date: Tue,  2 Feb 2016 14:34:18 +0200
-Message-ID: <1454416458-2541-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+Subject: Re: [PATCH v1] power: bq27xxx_battery: Restore device name
+Date: Tue, 2 Feb 2016 14:37:44 +0200
+Message-ID: <56B0A318.9060306@gmail.com>
 References: <20160202122756.GI4389@pali>
+ <1454416458-2541-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35705 "EHLO
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:36666 "EHLO
 	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779AbcBBMeh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 07:34:37 -0500
-In-Reply-To: <20160202122756.GI4389@pali>
+	with ESMTP id S1754365AbcBBMhs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 07:37:48 -0500
+In-Reply-To: <1454416458-2541-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: pali.rohar@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Cc: pali.rohar@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Patch <703df6c097956d17a818e63961c82e8e9eef9fef> ("power: bq27xxx_battery:
- Reorganize I2C into a module") has removed the device name numbering from
-bq27xxx_battery_i2c_probe. Fix that by restoring the code.
+Guys, sorry for the noise, I got flue over my brain. This patch is 
+broken too, will fix it and will resend.
 
-Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
----
- drivers/power/bq27xxx_battery_i2c.c | 36 +++++++++++++++++++++++++++++++++---
- 1 file changed, 33 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/power/bq27xxx_battery_i2c.c b/drivers/power/bq27xxx_battery_i2c.c
-index b810e08..6b4a7cf 100644
---- a/drivers/power/bq27xxx_battery_i2c.c
-+++ b/drivers/power/bq27xxx_battery_i2c.c
-@@ -21,6 +21,9 @@
- 
- #include <linux/power/bq27xxx_battery.h>
- 
-+static DEFINE_IDR(battery_id);
-+static DEFINE_MUTEX(battery_mutex);
-+
- static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
- {
- 	struct bq27xxx_device_info *di = data;
-@@ -70,19 +73,32 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- {
- 	struct bq27xxx_device_info *di;
- 	int ret;
-+	char *name;
-+	int num;
-+
-+	/* Get new ID for the new battery device */
-+	mutex_lock(&battery_mutex);
-+	num = idr_alloc(&battery_id, client, 0, 0, GFP_KERNEL);
-+	mutex_unlock(&battery_mutex);
-+	if (num < 0)
-+		return num;
-+
-+	name = devm_kasprintf(&client->dev, GFP_KERNEL, "%s-%d", id->name, num);
-+	if (!name)
-+		goto err_mem;
- 
- 	di = devm_kzalloc(&client->dev, sizeof(*di), GFP_KERNEL);
- 	if (!di)
--		return -ENOMEM;
-+		goto err_mem;
- 
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
--	di->name = id->name;
-+	di->name = name;
- 	di->bus.read = bq27xxx_battery_i2c_read;
- 
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
--		return ret;
-+		goto err_failed;
- 
- 	/* Schedule a polling after about 1 min */
- 	schedule_delayed_work(&di->work, 60 * HZ);
-@@ -103,6 +119,16 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	}
- 
- 	return 0;
-+
-+err_mem:
-+	ret = -ENOMEM;
-+
-+err_failed:
-+	mutex_lock(&battery_mutex);
-+	idr_remove(&battery_id, num);
-+	mutex_unlock(&battery_mutex);
-+
-+	return ret;
- }
- 
- static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
-@@ -111,6 +137,10 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
- 
- 	bq27xxx_battery_teardown(di);
- 
-+	mutex_lock(&battery_mutex);
-+	idr_remove(&battery_id, num);
-+	mutex_unlock(&battery_mutex);
-+
- 	return 0;
- }
- 
--- 
-1.9.1
-
+On  2.02.2016 14:34, Ivaylo Dimitrov wrote:
+> Patch <703df6c097956d17a818e63961c82e8e9eef9fef> ("power: bq27xxx_battery:
+>   Reorganize I2C into a module") has removed the device name numbering from
+> bq27xxx_battery_i2c_probe. Fix that by restoring the code.
+>
+> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+> ---
+>   drivers/power/bq27xxx_battery_i2c.c | 36 +++++++++++++++++++++++++++++++++---
+>   1 file changed, 33 insertions(+), 3 deletions(-)
+>
