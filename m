@@ -1,288 +1,166 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v3 2/4] power: reset: add reboot mode driver
-Date: Tue,  2 Feb 2016 18:02:05 +0800
-Message-ID: <1454407325-4804-1-git-send-email-andy.yan@rock-chips.com>
-References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Tue, 2 Feb 2016 11:07:00 +0100
+Message-ID: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+References: <20160201232833.GR19432@atomide.com>
+	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+	<20160202030533.GT19432@atomide.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.140]:39466 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073AbcBBKER (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 05:04:17 -0500
-In-Reply-To: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
+Received: from mail-yk0-f174.google.com ([209.85.160.174]:35536 "EHLO
+	mail-yk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754380AbcBBKHB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 05:07:01 -0500
+Received: by mail-yk0-f174.google.com with SMTP id r207so132973945ykd.2
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 02:07:01 -0800 (PST)
+In-Reply-To: <20160202030533.GT19432@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, arnd@arndb.de, john.stultz@linaro.org
-Cc: moritz.fischer@ettus.com, matthias.bgg@gmail.com, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, heiko@sntech.de, sre@kernel.org, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, richard@nod.at, dwmw2@infradead.org, mark.rutland@arm.com, Andy Yan <andy.yan@rock-chips.com>
+To: Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-This driver parse the reboot commands like "reboot loader"
-and "reboot recovery" to get a boot mode described in the
-device tree , then call the write interfae to store the boot
-mode in some place like special register or sram , which can
-be read by the bootloader after system reboot, then the bootloader
-can take different action according to the mode stored.
+On 2 February 2016 at 04:05, Tony Lindgren <tony@atomide.com> wrote:
+> Hi,
+>
+> * Alan Stern <stern@rowland.harvard.edu> [160201 15:50]:
+>>
+>> You get here only if runtime PM is disabled, right?  So the rpm_idle
+>> call won't do anything -- "disabled" means don't make any callbacks.
+>
+> Hmm sorry yes I'm confused again. Yeah it looks like calling rpm_idle
+> just has a side effect that makes a difference here.
+>
+>> Tony, exactly what are you trying to do here?  Do you want this to
+>> invoke a runtime-PM callback in the subsystem, power domain, or driver?
+>> (Is there even a driver bound to the device when this function runs?)
+>
+> I guess I need to add more printks to figure out what's going on here.
+> But yeah, I'm not seeing the callback happening at the interconnect
+> level so hardware and PM runtime states won't match on the following
+> probe after -EPROBE_DEFER.
+>
+>> The function's name suggests that it merely resets the data stored in
+>> dev->power without actually touching the hardware.  Is that what you
+>> really want?
+>
+> I guess you mean pm_runtime_set_suspended() above? I'm seeing a state
+> where we now set pm_runtime_set_suspended() between failed device
+> probes and the device is still active in hardware.
+>
+> The patch below also helps with the problem and leaves out the
+> rpm_suspend() call from loop so it might give more hints.
+>
+> The difference here from what Rafael suggested earlier is calling
+> __pm_runtime_use_autosuspend() and then not calling
+> pm_runtime_set_suspended().
+>
+> However, it seems the below patch keeps hardware active in the
+> autoidle case though, so chances are there is more that needs to
+> be done here. Anyways, I'll try to debug it more tomorrow.
+>
 
-This is commonly used on Android based devices, in order to
-reboot the device into fastboot or recovery mode.
+Your observations is correct. The hardware will be kept active
+in-between the probe attempts (and thus also if probing fails).
+Although, that's not a regression as that's the behaviour you get from
+runtime PM, when drivers are implemented like omap_hsmmc.
 
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+Instead of the suggested approaches, I think the regression should be
+fixed at the PM domain level (omap hwmod). I have attached a patch
+below, please give it try as it's untested.
 
+To solve the other problem (allowing devices to become inactive
+in-between at probe failures), I see two options (not treated as
+regressions).
+1)
+Change the behaviour of pm_runtime_put_sync(), to *not* respect the
+autosuspend mode.
+I think I prefer this option, as it seems like autosuspend should be
+respected only via the asynchronous runtime PM APIs.
+
+2)
+Change the failing drivers, to before calling pm_runtime_put_sync()
+also invoke pm_runtime_dont_use_autosusend(). Or other similar
+approach.
+
+Kind regards
+Uffe
+
+[...]
+
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 2 Feb 2016 10:05:39 +0100
+Subject: [PATCH] ARM: OMAP2+: omap-device: Allow devices to be pre-enabled
+
+Commit 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
+error and driver unbind") may re-initialize the runtime PM status of the
+device to RPM_SUSPENDED at driver probe failures.
+
+For the omap_hsmmc and likely also other omap drivers, which needs more
+than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
+causes a regression at the PM domain level (omap hwmod).
+
+The reason is that the drivers don't put back the device into low power
+state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
+that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
+status from RPM_ACTIVE to RPM_SUSPENDED.
+
+The next ->probe() attempt then triggers the ->runtime_resume() callback
+to be invoked, which means this happens two times in a row. At the PM
+domain level (omap hwmod) this is being treated as an error and thus the
+runtime PM status of the device isn't correctly synchronized with the
+runtime PM core.
+
+In the end, ->probe() anyway succeeds (as the driver don't checks the
+error code from the runtime PM APIs), but results in that the PM domain
+always stays powered on. This because of the runtime PM core believes the
+device is RPM_SUSPENDED.
+
+Fix this regression by allowing devices to be pre-enabled when the PM
+domain's (omap hwmod) ->runtime_resume() callback is requested to enable
+the device. In such cases, return zero to synchronize the runtime PM
+status with the runtime PM core.
+
+Fixes: 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
+error and driver unbind")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
+ arch/arm/mach-omap2/omap_device.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-Changes in v3:
-- scan multi properities
-- add mask value for some platform which only use some bits of the register
-  to store boot mode magic value
+diff --git a/arch/arm/mach-omap2/omap_device.c
+b/arch/arm/mach-omap2/omap_device.c
+index 0437537..851767f 100644
+--- a/arch/arm/mach-omap2/omap_device.c
++++ b/arch/arm/mach-omap2/omap_device.c
+@@ -717,7 +717,7 @@ int omap_device_register(struct platform_device *pdev)
+  * to be accessible and ready to operate.  This generally involves
+  * enabling clocks, setting SYSCONFIG registers; and in the future may
+  * involve remuxing pins.  Device drivers should call this function
+- * indirectly via pm_runtime_get*().  Returns -EINVAL if called when
++ * indirectly via pm_runtime_get*().  Returns zero if called when
+  * the omap_device is already enabled, or passes along the return
+  * value of _omap_device_enable_hwmods().
+  */
+@@ -728,12 +728,13 @@ int omap_device_enable(struct platform_device *pdev)
 
-Changes in v2:
-- move to dir drivers/power/reset/
-- make syscon-reboot-mode a generic driver
+        od = to_omap_device(pdev);
 
-Changes in v1:
-- fix the embarrassed compile warning
-- correct the maskrom magic number
-- check for the normal reboot
+-       if (od->_state == OMAP_DEVICE_STATE_ENABLED) {
+-               dev_warn(&pdev->dev,
+-                        "omap_device: %s() called from invalid state %d\n",
+-                        __func__, od->_state);
+-               return -EINVAL;
+-       }
++       /*
++        * From the PM domain perspective the device may already be enabled.
++        * In such case, let's return zero to synchronize the state with the
++        * runtime PM core.
++       */
++       if (od->_state == OMAP_DEVICE_STATE_ENABLED)
++               return 0;
 
- drivers/power/reset/Kconfig              |  16 +++++
- drivers/power/reset/Makefile             |   2 +
- drivers/power/reset/reboot-mode.c        | 105 +++++++++++++++++++++++++++++++
- drivers/power/reset/reboot-mode.h        |   6 ++
- drivers/power/reset/syscon-reboot-mode.c |  64 +++++++++++++++++++
- 5 files changed, 193 insertions(+)
- create mode 100644 drivers/power/reset/reboot-mode.c
- create mode 100644 drivers/power/reset/reboot-mode.h
- create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+        ret = _omap_device_enable_hwmods(od);
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 1131cf7..2e6d873 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -173,5 +173,21 @@ config POWER_RESET_ZX
- 	help
- 	  Reboot support for ZTE SoCs.
- 
-+config REBOOT_MODE
-+	tristate
-+	depends on OF
-+	help
-+	 This driver will help to pass the system reboot mode
-+	 to bootloader
-+
-+config SYSCON_REBOOT_MODE
-+	bool "Generic SYSCON regmap reboot mode driver"
-+	select REBOOT_MODE
-+	help
-+	 Say y here will enable reboot mode driver. This will
-+	 get reboot mode arguments and store it in SYSCON mapped
-+	 register, then the bootloader can read it to take different
-+	 action according to the mode.
-+
- endif
- 
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 096fa67..a63865b 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -20,3 +20,5 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
-+obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
-+obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
-diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
-new file mode 100644
-index 0000000..69ba640
---- /dev/null
-+++ b/drivers/power/reset/reboot-mode.c
-@@ -0,0 +1,105 @@
-+/*
-+ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/reboot.h>
-+#include "reboot-mode.h"
-+
-+#define PREFIX "mode-"
-+
-+struct mode_info {
-+	char mode[32];
-+	int magic;
-+	struct list_head list;
-+};
-+
-+struct reboot_mode_driver {
-+	struct list_head head;
-+	int (*write)(int magic);
-+	struct notifier_block reboot_notifier;
-+};
-+
-+static int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
-+				 const char *cmd)
-+{
-+	const char *normal = "normal";
-+	int magic = 0;
-+	struct mode_info *info;
-+
-+	if (!cmd)
-+		cmd = normal;
-+
-+	list_for_each_entry(info, &reboot->head, list) {
-+		if (!strcmp(info->mode, cmd)) {
-+			magic = info->magic;
-+			break;
-+		}
-+	}
-+
-+	return magic;
-+}
-+
-+static int reboot_mode_notify(struct notifier_block *this,
-+			      unsigned long mode, void *cmd)
-+{
-+	struct reboot_mode_driver *reboot;
-+	int magic;
-+
-+	reboot = container_of(this, struct reboot_mode_driver, reboot_notifier);
-+	magic = get_reboot_mode_magic(reboot, cmd);
-+	if (magic)
-+		reboot->write(magic);
-+
-+	return NOTIFY_DONE;
-+}
-+
-+int reboot_mode_register(struct device *dev, int (*write)(int))
-+{
-+	struct reboot_mode_driver *reboot;
-+	struct mode_info *info;
-+	struct property *prop;
-+	size_t len = strlen(PREFIX);
-+	int ret;
-+
-+	reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
-+	if (!reboot)
-+		return -ENOMEM;
-+
-+	reboot->write = write;
-+	INIT_LIST_HEAD(&reboot->head);
-+	for_each_property_of_node(dev->of_node, prop) {
-+		if (len > strlen(prop->name) || strncmp(prop->name, PREFIX, len))
-+			continue;
-+		info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
-+		if (!info)
-+			return -ENOMEM;
-+		strcpy(info->mode, prop->name + len);
-+		if (of_property_read_u32(dev->of_node, prop->name, &info->magic)) {
-+			dev_err(dev, "reboot mode %s without magic number\n",
-+				info->mode);
-+			devm_kfree(dev, info);
-+			continue;
-+		}
-+		list_add_tail(&info->list, &reboot->head);
-+	}
-+	reboot->reboot_notifier.notifier_call = reboot_mode_notify;
-+	ret = register_reboot_notifier(&reboot->reboot_notifier);
-+	if (ret)
-+		dev_err(dev, "can't register reboot notifier\n");
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(reboot_mode_register);
-+
-+MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
-+MODULE_DESCRIPTION("System reboot mode driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/power/reset/reboot-mode.h b/drivers/power/reset/reboot-mode.h
-new file mode 100644
-index 0000000..44ed34f
---- /dev/null
-+++ b/drivers/power/reset/reboot-mode.h
-@@ -0,0 +1,6 @@
-+#ifndef __REBOOT_MODE_H__
-+#define __REBOOT_MODE_H__
-+
-+int reboot_mode_register(struct device *dev, int (*write)(int));
-+
-+#endif
-diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
-new file mode 100644
-index 0000000..8571df3
---- /dev/null
-+++ b/drivers/power/reset/syscon-reboot-mode.c
-@@ -0,0 +1,64 @@
-+/*
-+ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/syscon.h>
-+#include "reboot-mode.h"
-+
-+static struct regmap *map;
-+static u32 offset;
-+static u32 mask = 0xffffffff;
-+
-+static int syscon_reboot_mode_write(int magic)
-+{
-+	regmap_update_bits(map, offset, mask, magic);
-+
-+	return 0;
-+}
-+
-+static int syscon_reboot_mode_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	map = syscon_node_to_regmap(pdev->dev.parent->of_node);
-+	if (IS_ERR(map))
-+		return PTR_ERR(map);
-+	if (of_property_read_u32(pdev->dev.of_node, "offset", &offset))
-+		return -EINVAL;
-+	of_property_read_u32(pdev->dev.of_node, "mask", &mask);
-+	ret = reboot_mode_register(&pdev->dev, syscon_reboot_mode_write);
-+	if (ret)
-+		dev_err(&pdev->dev, "can't register reboot mode\n");
-+
-+	return ret;
-+}
-+
-+static const struct of_device_id syscon_reboot_mode_of_match[] = {
-+	{ .compatible = "syscon-reboot-mode" },
-+	{}
-+};
-+
-+static struct platform_driver syscon_reboot_mode_driver = {
-+	.probe = syscon_reboot_mode_probe,
-+	.driver = {
-+		.name = "syscon-reboot-mode",
-+		.of_match_table = syscon_reboot_mode_of_match,
-+	},
-+};
-+module_platform_driver(syscon_reboot_mode_driver);
-+
-+MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
-+MODULE_DESCRIPTION("SYSCON reboot mode driver");
-+MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
-
-
