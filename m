@@ -1,69 +1,93 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH 0/5] cpufreq: governors: Solve the ABBA lockups
-Date: Tue, 2 Feb 2016 11:25:11 +0000
-Message-ID: <20160202112511.GB3947@e106622-lin>
-References: <cover.1454410226.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1454410226.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Subject: [PATCH] power: bq27xxx_battery: Restore device name
+Date: Tue,  2 Feb 2016 14:15:19 +0200
+Message-ID: <1454415319-31380-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:36044 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754831AbcBBMPw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 07:15:52 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: pali.rohar@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
-Hi Viresh,
+Patch <703df6c097956d17a818e63961c82e8e9eef9fef> ("power: bq27xxx_battery:
+ Reorganize I2C into a module") has removed the device name numbering from
+bq27xxx_battery_i2c_probe. Fix that by restoring the code.
 
-On 02/02/16 16:27, Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> Sorry for doing this, I know you were also looking to fix this in a
-> possibly different way. But I thought, it would be better if we fix
-> that. We can scrap this version and take yours if that looks better.
-> 
-> The root cause of all the issues we were facing, was that we were taking
-> policy->rwsem while accessing governor sysfs attributes. And that
-> happened because we were sharing the show/store calls present in
-> cpufreq.c.
-> 
-> I thought, perhaps the best way to fix it is to give separate sysfs-ops
-> to governors. And that's what I did.
-> 
-> @Juri: I need your help in testing these. My platform doesn't give me
-> those lockups (even without these patches) and Juno/Tc2 would fit
-> better.
-> 
-> Can you please run some tests on these?
-> 
+Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+---
+ drivers/power/bq27xxx_battery_i2c.c | 32 +++++++++++++++++++++++++++++---
+ 1 file changed, 29 insertions(+), 3 deletions(-)
 
-Sure! Will do in the next few days.
+diff --git a/drivers/power/bq27xxx_battery_i2c.c b/drivers/power/bq27xxx_battery_i2c.c
+index b810e08..d98cdc5 100644
+--- a/drivers/power/bq27xxx_battery_i2c.c
++++ b/drivers/power/bq27xxx_battery_i2c.c
+@@ -21,6 +21,9 @@
+ 
+ #include <linux/power/bq27xxx_battery.h>
+ 
++static DEFINE_IDR(battery_id);
++static DEFINE_MUTEX(battery_mutex);
++
+ static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+ {
+ 	struct bq27xxx_device_info *di = data;
+@@ -70,19 +73,32 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ {
+ 	struct bq27xxx_device_info *di;
+ 	int ret;
++	char *name;
++	int num;
++
++	/* Get new ID for the new battery device */
++	mutex_lock(&battery_mutex);
++	num = idr_alloc(&battery_id, client, 0, 0, GFP_KERNEL);
++	mutex_unlock(&battery_mutex);
++	if (num < 0)
++		return num;
++
++	name = devm_kasprintf(&client->dev, GFP_KERNEL, "%s-%d", id->name, num);
++	if (!name)
++		goto err_mem;
+ 
+ 	di = devm_kzalloc(&client->dev, sizeof(*di), GFP_KERNEL);
+ 	if (!di)
+-		return -ENOMEM;
++		goto err_mem;
+ 
+ 	di->dev = &client->dev;
+ 	di->chip = id->driver_data;
+-	di->name = id->name;
++	di->name = name;
+ 	di->bus.read = bq27xxx_battery_i2c_read;
+ 
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
+-		return ret;
++		goto err_failed;
+ 
+ 	/* Schedule a polling after about 1 min */
+ 	schedule_delayed_work(&di->work, 60 * HZ);
+@@ -103,6 +119,16 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	}
+ 
+ 	return 0;
++
++err_mem:
++	ret = -ENOMEM;
++
++err_failed:
++	mutex_lock(&battery_mutex);
++	idr_remove(&battery_id, num);
++	mutex_unlock(&battery_mutex);
++
++	return ret;
+ }
+ 
+ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
+-- 
+1.9.1
 
-Best,
-
-- Juri
-
-> They are pushed here for easy access (and auto test by build-bot):
-> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
-> 
-> --
-> viresh
-> 
-> Viresh Kumar (5):
->   cpufreq: governor: Kill declare_show_sampling_rate_min()
->   cpufreq: governor: Create separate sysfs-ops
->   cpufreq: governor: Remove unused sysfs attribute macros
->   cpufreq: Don't drop rwsem before calling CPUFREQ_GOV_POLICY_EXIT
->   cpufreq: Get rid of ->governor_enabled and its lock
-> 
->  drivers/cpufreq/cpufreq.c              |  29 ----------
->  drivers/cpufreq/cpufreq_conservative.c |  77 ++++++++++---------------
->  drivers/cpufreq/cpufreq_governor.c     |  86 ++++++++++++++++++++--------
->  drivers/cpufreq/cpufreq_governor.h     | 101 +++++++--------------------------
->  drivers/cpufreq/cpufreq_ondemand.c     |  77 ++++++++++---------------
->  include/linux/cpufreq.h                |   5 --
->  6 files changed, 143 insertions(+), 232 deletions(-)
-> 
-> -- 
-> 2.7.0.79.gdc08a19
-> 
