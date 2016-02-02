@@ -1,111 +1,60 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Tue, 2 Feb 2016 11:42:51 +0100
-Message-ID: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
-References: <20160201232833.GR19432@atomide.com>
-	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
-	<20160202030533.GT19432@atomide.com>
-	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/5] cpufreq: governors: Solve the ABBA lockups
+Date: Tue,  2 Feb 2016 16:27:20 +0530
+Message-ID: <cover.1454410226.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:34562 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754382AbcBBKmw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 05:42:52 -0500
-Received: by mail-yk0-f176.google.com with SMTP id u9so48211982ykd.1
-        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 02:42:51 -0800 (PST)
-In-Reply-To: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:34810 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754364AbcBBK5l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 05:57:41 -0500
+Received: by mail-pf0-f171.google.com with SMTP id o185so96542817pfb.1
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 02:57:41 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
->
-> Instead of the suggested approaches, I think the regression should be
-> fixed at the PM domain level (omap hwmod). I have attached a patch
-> below, please give it try as it's untested.
+Hi Rafael,
 
-Realized that version 1 would actually *only* make the PM domain code
-to deal with pre-enabled devices. It would still invoke the driver's
-->runtime_resume() callbacks (via pm_generic_runtime_resume())  for
-these scenarios.
+Sorry for doing this, I know you were also looking to fix this in a
+possibly different way. But I thought, it would be better if we fix
+that. We can scrap this version and take yours if that looks better.
 
-That's not what we want. So I moved the checks to the actual
-->runtime_resume() callback in the PM domain, instead of in the
-omap_device_enable() function. A version 2 is attached. Please give it
-at try.
+The root cause of all the issues we were facing, was that we were taking
+policy->rwsem while accessing governor sysfs attributes. And that
+happened because we were sharing the show/store calls present in
+cpufreq.c.
 
-[...]
+I thought, perhaps the best way to fix it is to give separate sysfs-ops
+to governors. And that's what I did.
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 2 Feb 2016 10:05:39 +0100
-Subject: [PATCH V2] ARM: OMAP2+: omap-device: Allow devices to be pre-enabled
+@Juri: I need your help in testing these. My platform doesn't give me
+those lockups (even without these patches) and Juno/Tc2 would fit
+better.
 
-Commit 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
-error and driver unbind") may re-initialize the runtime PM status of the
-device to RPM_SUSPENDED at driver probe failures.
+Can you please run some tests on these?
 
-For the omap_hsmmc and likely also other omap drivers, which needs more
-than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
-causes a regression at the PM domain level (omap hwmod).
+They are pushed here for easy access (and auto test by build-bot):
+git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
 
-The reason is that the drivers don't put back the device into low power
-state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
-that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
-status from RPM_ACTIVE to RPM_SUSPENDED.
+--
+viresh
 
-The next ->probe() attempt then triggers the ->runtime_resume() callback
-to be invoked, which means this happens two times in a row. At the PM
-domain level (omap hwmod) this is being treated as an error and thus the
-runtime PM status of the device isn't correctly synchronized with the
-runtime PM core.
+Viresh Kumar (5):
+  cpufreq: governor: Kill declare_show_sampling_rate_min()
+  cpufreq: governor: Create separate sysfs-ops
+  cpufreq: governor: Remove unused sysfs attribute macros
+  cpufreq: Don't drop rwsem before calling CPUFREQ_GOV_POLICY_EXIT
+  cpufreq: Get rid of ->governor_enabled and its lock
 
-In the end, ->probe() anyway succeeds (as the driver don't checks the
-error code from the runtime PM APIs), but results in that the PM domain
-always stays powered on. This because of the runtime PM core believes the
-device is RPM_SUSPENDED.
+ drivers/cpufreq/cpufreq.c              |  29 ----------
+ drivers/cpufreq/cpufreq_conservative.c |  77 ++++++++++---------------
+ drivers/cpufreq/cpufreq_governor.c     |  86 ++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq_governor.h     | 101 +++++++--------------------------
+ drivers/cpufreq/cpufreq_ondemand.c     |  77 ++++++++++---------------
+ include/linux/cpufreq.h                |   5 --
+ 6 files changed, 143 insertions(+), 232 deletions(-)
 
-Fix this regression by allowing devices to be pre-enabled when the PM
-domain's (omap hwmod) ->runtime_resume() callback is requested to enable
-the device. In such cases, return zero to synchronize the runtime PM
-status with the runtime PM core.
-
-Fixes: 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
-error and driver unbind")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v2:
-        -Prevent a driver's ->runtime_resume() callbacks from being invoked for
-        a pre-enabled device.
-
----
- arch/arm/mach-omap2/omap_device.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/arch/arm/mach-omap2/omap_device.c
-b/arch/arm/mach-omap2/omap_device.c
-index 0437537..1ad390b 100644
---- a/arch/arm/mach-omap2/omap_device.c
-+++ b/arch/arm/mach-omap2/omap_device.c
-@@ -599,8 +599,17 @@ static int _od_runtime_suspend(struct device *dev)
- static int _od_runtime_resume(struct device *dev)
- {
-        struct platform_device *pdev = to_platform_device(dev);
-+       struct omap_device *od = to_omap_device(pdev);
-        int ret;
-
-+       /*
-+        * From the PM domain perspective the device may already be enabled.
-+        * In such case, let's return zero to synchronize the state with the
-+        * runtime PM core.
-+       */
-+       if (od->_state == OMAP_DEVICE_STATE_ENABLED)
-+               return 0;
-+
-        ret = omap_device_enable(pdev);
-        if (ret)
-                return ret;
 -- 
-1.9.1
+2.7.0.79.gdc08a19
+
