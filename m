@@ -1,59 +1,31 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 2 Feb 2016 10:05:56 -0800
-Message-ID: <20160202180555.GW19432@atomide.com>
-References: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
- <Pine.LNX.4.44L0.1602021112320.1653-100000@iolanthe.rowland.org>
- <20160202164910.GV19432@atomide.com>
+From: Moritz Fischer <moritz.fischer@ettus.com>
+Subject: Re: [PATCH v3 2/4] power: reset: add reboot mode driver
+Date: Tue, 2 Feb 2016 10:16:33 -0800
+Message-ID: <CAAtXAHeg3hmKy1YAfGaNaPnXYxJAkA4zV2J4ELyPStQUeBrZ3w@mail.gmail.com>
+References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
+	<1454407325-4804-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59601 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbcBBSF6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Feb 2016 13:05:58 -0500
-Content-Disposition: inline
-In-Reply-To: <20160202164910.GV19432@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1454407325-4804-1-git-send-email-andy.yan@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Arnd Bergmann <arnd@arndb.de>, John Stultz <john.stultz@linaro.org>, matthias.bgg@gmail.com, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, jun.nie@linaro.org, "pawel.moll@arm.com" <pawel.moll@arm.com>, Will Deacon <will.deacon@arm.com>, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Devicetree List <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, mbrugger@suse.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, lorenzo.pieralisi@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.o>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-* Tony Lindgren <tony@atomide.com> [160202 08:50]:
-> * Alan Stern <stern@rowland.harvard.edu> [160202 08:17]:
-> 
-> > ?  pm_runtime_put_sync() _already_ does not respect the autosuspend 
-> > mode.  If you want to respect it, you have to call 
-> > pm_runtime_put_sync_autosuspend() instead.
-> 
-> I think you found the real bug there. So the right fix is to
-> call pm_runtime_put_sync_autosuspend() at the end of failed
-> probe in omap_hsmmc. Let me give that a try here.
+Hi Andy,
 
-Nope that's not it but getting closer.
+looks good to me. Feel free to add my Reviewed-by
 
-The following seems to make things behave for me. Now the
-question is.. Does it have some undesired side effects?
+On Tue, Feb 2, 2016 at 2:02 AM, Andy Yan <andy.yan@rock-chips.com> wrote:
 
-> Can we add some warning to pm_runtime_put_sync() about that?
+> This is commonly used on Android based devices, in order to
+> reboot the device into fastboot or recovery mode.
+>
+Reviewed-by: Moritz Fischer <moritz.fischer@ettus.com>
+> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
 
-Probably no need for that, I misunderstood the meaning of
-pm_runtime_put_sync_autosuspend().
+Cheers,
 
-Regards,
-
-Tony
-
-8< --------------
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -435,7 +435,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 		goto out;
- 
- 	/* If the autosuspend_delay time hasn't expired yet, reschedule. */
--	if ((rpmflags & RPM_AUTO)
-+	if (((rpmflags & (RPM_ASYNC | RPM_AUTO)) == ((RPM_ASYNC | RPM_AUTO)))
- 	    && dev->power.runtime_status != RPM_SUSPENDING) {
- 		unsigned long expires = pm_runtime_autosuspend_expiration(dev);
- 
+Moritz
