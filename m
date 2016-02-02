@@ -1,64 +1,111 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v3 4/4] ARM64: dts: rockchip: add syscon-reboot-mode DT node
-Date: Tue,  2 Feb 2016 18:13:19 +0800
-Message-ID: <1454407999-5476-1-git-send-email-andy.yan@rock-chips.com>
-References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, arnd@arndb.de, john.stultz@linaro.org
-Cc: moritz.fischer@ettus.com, matthias.bgg@gmail.com, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, heiko@sntech.de, sre@kernel.org, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, richard@nod.at, dwmw2@infradead.org, mark.rutland@arm.com, Andy Yan <andy.yan@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Tue, 2 Feb 2016 11:42:51 +0100
+Message-ID: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+References: <20160201232833.GR19432@atomide.com>
+	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+	<20160202030533.GT19432@atomide.com>
+	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f176.google.com ([209.85.160.176]:34562 "EHLO
+	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbcBBKmw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 05:42:52 -0500
+Received: by mail-yk0-f176.google.com with SMTP id u9so48211982ykd.1
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 02:42:51 -0800 (PST)
+In-Reply-To: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Add syscon-reboot-mode driver DT node for rk3368 platform
+>
+> Instead of the suggested approaches, I think the regression should be
+> fixed at the PM domain level (omap hwmod). I have attached a patch
+> below, please give it try as it's untested.
 
-Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+Realized that version 1 would actually *only* make the PM domain code
+to deal with pre-enabled devices. It would still invoke the driver's
+->runtime_resume() callbacks (via pm_generic_runtime_resume())  for
+these scenarios.
 
+That's not what we want. So I moved the checks to the actual
+->runtime_resume() callback in the PM domain, instead of in the
+omap_device_enable() function. A version 2 is attached. Please give it
+at try.
+
+[...]
+
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 2 Feb 2016 10:05:39 +0100
+Subject: [PATCH V2] ARM: OMAP2+: omap-device: Allow devices to be pre-enabled
+
+Commit 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
+error and driver unbind") may re-initialize the runtime PM status of the
+device to RPM_SUSPENDED at driver probe failures.
+
+For the omap_hsmmc and likely also other omap drivers, which needs more
+than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
+causes a regression at the PM domain level (omap hwmod).
+
+The reason is that the drivers don't put back the device into low power
+state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
+that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
+status from RPM_ACTIVE to RPM_SUSPENDED.
+
+The next ->probe() attempt then triggers the ->runtime_resume() callback
+to be invoked, which means this happens two times in a row. At the PM
+domain level (omap hwmod) this is being treated as an error and thus the
+runtime PM status of the device isn't correctly synchronized with the
+runtime PM core.
+
+In the end, ->probe() anyway succeeds (as the driver don't checks the
+error code from the runtime PM APIs), but results in that the PM domain
+always stays powered on. This because of the runtime PM core believes the
+device is RPM_SUSPENDED.
+
+Fix this regression by allowing devices to be pre-enabled when the PM
+domain's (omap hwmod) ->runtime_resume() callback is requested to enable
+the device. In such cases, return zero to synchronize the runtime PM
+status with the runtime PM core.
+
+Fixes: 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
+error and driver unbind")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
-Changes in v3:
-- descirbe all reboot mode as property instead of subnode
-
 Changes in v2:
-- make this node as a subnode of pmugrf
+        -Prevent a driver's ->runtime_resume() callbacks from being invoked for
+        a pre-enabled device.
 
-Changes in v1: None
+---
+ arch/arm/mach-omap2/omap_device.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- arch/arm64/boot/dts/rockchip/rk3368.dtsi | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+diff --git a/arch/arm/mach-omap2/omap_device.c
+b/arch/arm/mach-omap2/omap_device.c
+index 0437537..1ad390b 100644
+--- a/arch/arm/mach-omap2/omap_device.c
++++ b/arch/arm/mach-omap2/omap_device.c
+@@ -599,8 +599,17 @@ static int _od_runtime_suspend(struct device *dev)
+ static int _od_runtime_resume(struct device *dev)
+ {
+        struct platform_device *pdev = to_platform_device(dev);
++       struct omap_device *od = to_omap_device(pdev);
+        int ret;
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3368.dtsi b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-index 122777b..5213713 100644
---- a/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-@@ -45,6 +45,7 @@
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
-+#include <dt-bindings/soc/rockchip_boot-mode.h>
- #include <dt-bindings/thermal/thermal.h>
- 
- / {
-@@ -554,8 +555,19 @@
- 	};
- 
- 	pmugrf: syscon@ff738000 {
--		compatible = "rockchip,rk3368-pmugrf", "syscon";
-+		compatible = "rockchip,rk3368-pmugrf", "syscon", "simple-mfd";
- 		reg = <0x0 0xff738000 0x0 0x1000>;
++       /*
++        * From the PM domain perspective the device may already be enabled.
++        * In such case, let's return zero to synchronize the state with the
++        * runtime PM core.
++       */
++       if (od->_state == OMAP_DEVICE_STATE_ENABLED)
++               return 0;
 +
-+		reboot-mode {
-+			compatible = "syscon-reboot-mode";
-+			offset = <0x200>;
-+			mode-normal = <BOOT_NORMAL>;
-+			mode-recovery = <BOOT_RECOVERY>;
-+			mode-fastboot = <BOOT_FASTBOOT>;
-+			mode-loader = <BOOT_LOADER>;
-+			mode-maskrom = <BOOT_MASKROM>;
-+
-+		};
- 	};
- 
- 	cru: clock-controller@ff760000 {
+        ret = omap_device_enable(pdev);
+        if (ret)
+                return ret;
 -- 
 1.9.1
