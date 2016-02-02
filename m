@@ -1,67 +1,35 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 2 Feb 2016 16:24:55 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1602021614430.1653-100000@iolanthe.rowland.org>
-References: <CAPDyKFokWcLSCAh_TX-j-df_M1hN8Qw1gbQt--SyWccGCPiN5Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/5] cpufreq: governor: Remove unused sysfs attribute macros
+Date: Tue, 2 Feb 2016 22:34:04 +0100
+Message-ID: <CAJZ5v0ig7Vsafg-6+D9UDJFu+iK2B7Vv+YMBK142nj6kHuK=uA@mail.gmail.com>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+	<5f27ff5cdfd19ca159abc87ad2b52b949e1e4dbc.1454410226.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:43226 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965488AbcBBVY4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 16:24:56 -0500
-In-Reply-To: <CAPDyKFokWcLSCAh_TX-j-df_M1hN8Qw1gbQt--SyWccGCPiN5Q@mail.gmail.com>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:36582 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbcBBVeH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 16:34:07 -0500
+In-Reply-To: <5f27ff5cdfd19ca159abc87ad2b52b949e1e4dbc.1454410226.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 2 Feb 2016, Ulf Hansson wrote:
+On Tue, Feb 2, 2016 at 11:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> The older macros aren't used anymore, remove them.
 
-> > ?  pm_runtime_put_sync() _already_ does not respect the autosuspend
-> > mode.  If you want to respect it, you have to call
-> > pm_runtime_put_sync_autosuspend() instead.
-> 
-> Then there's a bug in the runtime PM core.
-> 
-> From Tony's regression report and from mine own local runtime PM test
-> driver, I can see that the device doesn't get RPM_SUSPENDED (the
-> ->runtime_suspend() callback isn't called), even when the usage count
-> is zero - when pm_runtime_put_sync() is called.
+It doesn't follow from either the subject or the changelog which
+macros *in* *particular* are in question.
 
-Ah, yes -- I see what's going on.  pm_runtime_put_sync() calls 
-__pm_runtime_idle(), rather than __pm_runtime_suspend().  And the idle 
-routine always forces RPM_AUTO on.
+What about changing the subject to something like "cpufreq: governor:
+Drop unused macros for creating governor tunable attributes" and the
+changelog to something like:
 
-So what I said was wrong.  pm_runtime_put_sync() respects the driver's 
-settings for autosuspend, whereas pm_runtime_put_sync_suspend() and 
-pm_runtime_put_sync_autosuspend() override the settings.
+"The previous commit introduced a new set of macros for creating sysfs
+attributes that represent governor tunables and the old macros used
+for this purpose are not needed any more, so drop them."
 
-> To find the sequence of runtime PM commands, go ahead an have look in
-> the omap_hsmmc driver. The problem occurs when the driver bails out in
-> probe, when it receives -EPROBE_DEFER when fetching regulators.
-> 
-> I have some more data to share on this problem from my runtime PM test
-> driver. I will try my best to share it tomorrow.
-
-> >> 2)
-> >> Change the failing drivers, to before calling pm_runtime_put_sync()
-> >> also invoke pm_runtime_dont_use_autosusend(). Or other similar
-> >> approach.
-> >
-> > Given the above, this seems unnecessary.
-> 
-> Okay, so you are saying that the pm_runtime_put_sync() should idle the
-> device even if autosuspend is in use. That seems reasonable, I will
-> look into this problem.
-
-Heh -- you are the person who did it.  :-)  See commit d66e6db28df3 
-("PM / Runtime: Respect autosuspend when idle triggers suspend").
-
-I guess the intention was that if the driver wants to specify whether 
-autosuspend should be respected, it should implement an rpm_idle 
-callback routine.
-
-Alan Stern
-
+Thanks,
+Rafael
