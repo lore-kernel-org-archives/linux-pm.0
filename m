@@ -1,74 +1,57 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v4 1/9] lib/string: introduce match_string() helper
-Date: Tue, 02 Feb 2016 10:00:21 +0200
-Message-ID: <1454400021.23271.4.camel@linux.intel.com>
-References: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <1453986865-133572-2-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <20160201220538.481cb8ee.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: intel_pch_thermal: Enable Skylake PCH thermal
+Date: Tue,  2 Feb 2016 00:03:41 -0800
+Message-ID: <1454400221-10628-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:4086 "EHLO mga09.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:3297 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbcBBH7t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Feb 2016 02:59:49 -0500
-In-Reply-To: <20160201220538.481cb8ee.akpm@linux-foundation.org>
+	id S1753110AbcBBIEW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Feb 2016 03:04:22 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Mon, 2016-02-01 at 22:05 -0800, Andrew Morton wrote:
-> On Thu, 28 Jan 2016 15:14:17 +0200 Andy Shevchenko <andriy.shevchenko
-> @linux.intel.com> wrote:
+Enabled temperature reporting device of Skylake Platform Controller hub.
+The register map is same as the wildcat point thermal currently implemented
+in this driver.
 
-> > + * @array:	array of strings
-> > + * @n:		number of strings in the array or -1 for
-> > NULL terminated arrays
-> > + * @string:	string to match with
-> > + *
-> > + * Return:
-> > + * index of a @string in the @array if matches, or %-ENODATA
-> > otherwise.
-> > + */
-> > +int match_string(const char * const *array, size_t n, const char
-> > *string)
-> > +{
-> > +	int index;
-> > +	const char *item;
-> > +
-> > +	for (index =3D 0; index < n; index++) {
->=20
-> So we're taking an int and comparing that with (size_t)-1, relying
-> upon
-> the compiler promoting the int to an unsigned type because size_t is
-> unsigned.=C2=A0=C2=A0It works, but it isn't pretty - there wasn't rea=
-lly much
-> point in making size have type size_t.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/intel_pch_thermal.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-It was Rasmus' idea [1], before that I used int and tristate branch. I
-agreed that one of that branches wasn't a good idea, but the rest was
-exactly about differentiating size to compare and infinite (till
-terminator) loop.
-
-[1]=C2=A0http://www.spinics.net/lists/kernel/msg2156925.html
-
->=20
->=20
-> > +		item =3D array[index];
-> > +		if (!item)
-> > +			break;
-> > +		if (!strcmp(item, string))
-> > +			return index;
-> > +	}
-> > +
-> > +	return -ENODATA;
-> > +}
-> > +EXPORT_SYMBOL(match_string);
->=20
-
---=20
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
+index 00d81af..6a6ec1c 100644
+--- a/drivers/thermal/intel_pch_thermal.c
++++ b/drivers/thermal/intel_pch_thermal.c
+@@ -24,6 +24,7 @@
+ 
+ /* Intel PCH thermal Device IDs */
+ #define PCH_THERMAL_DID_WPT	0x9CA4 /* Wildcat Point */
++#define PCH_THERMAL_DID_SKL	0x9D31 /* Skylake PCH */
+ 
+ /* Wildcat Point-LP  PCH Thermal registers */
+ #define WPT_TEMP	0x0000	/* Temperature */
+@@ -201,6 +202,10 @@ static int intel_pch_thermal_probe(struct pci_dev *pdev,
+ 		ptd->ops = &pch_dev_ops_wpt;
+ 		dev_name = "pch_wildcat_point";
+ 		break;
++	case PCH_THERMAL_DID_SKL:
++		ptd->ops = &pch_dev_ops_wpt;
++		dev_name = "pch_skylake";
++		break;
+ 	default:
+ 		dev_err(&pdev->dev, "unknown pch thermal device\n");
+ 		return -ENODEV;
+@@ -266,6 +271,7 @@ static void intel_pch_thermal_remove(struct pci_dev *pdev)
+ 
+ static struct pci_device_id intel_pch_thermal_id[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WPT) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL) },
+ 	{ 0, },
+ };
+ MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
+-- 
+2.5.0
 
