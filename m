@@ -1,74 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
-Date: Tue, 2 Feb 2016 17:35:22 +0100
-Message-ID: <CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com>
-References: <cover.1454410226.git.viresh.kumar@linaro.org>
-	<5a012e56b8404e2d07e172b6699ce02f5c5b5f26.1454410226.git.viresh.kumar@linaro.org>
-	<20160202154717.GI3947@e106622-lin>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Tue, 2 Feb 2016 08:35:36 -0800
+Message-ID: <20160202163536.GU19432@atomide.com>
+References: <20160201232833.GR19432@atomide.com>
+ <Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+ <20160202030533.GT19432@atomide.com>
+ <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+ <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:34555 "EHLO
-	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752190AbcBBQfY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 11:35:24 -0500
-In-Reply-To: <20160202154717.GI3947@e106622-lin>
+Received: from muru.com ([72.249.23.125]:59565 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751792AbcBBQfj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Feb 2016 11:35:39 -0500
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Feb 2, 2016 at 4:47 PM, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi Viresh,
->
-> On 02/02/16 16:27, Viresh Kumar wrote:
->> Until now, governors (ondemand/conservative) were using the
->> 'global-attr' or 'freq-attr', depending on the sysfs location where we
->> want to create governor's directory.
->>
->> The problem is that, in case of 'freq-attr', we are forced to use
->> show()/store() present in cpufreq.c, which always take policy->rwsem.
->>
->> And because of that we were facing some ABBA lockups during governor
->> callback event CPUFREQ_GOV_POLICY_EXIT. And so we were dropping the
->> rwsem right before calling governor callback for CPUFREQ_GOV_POLICY_EXIT
->> event.
->>
->> That caused further problems and it never worked perfectly.
->>
->> This patch attempts to fix that by creating separate sysfs-ops for
->> cpufreq governors.
->>
->> Because things got much simplified now, we don't need separate
->> show/store callbacks for governor-for-system and governor-per-policy
->> cases.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> This patch cleans things up a lot, that's good.
->
-> One thing I'm still concerned about, though: don't we need some locking
-> in place for some of the store operations on governors attributes? Are
-> store_{ignore_nice_load, sampling_down_fact, etc} safe without locking?
+Hi,
 
-That would require some investigation I suppose.
+* Ulf Hansson <ulf.hansson@linaro.org> [160202 02:43]:
+> 
+> For the omap_hsmmc and likely also other omap drivers, which needs more
+> than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
+> causes a regression at the PM domain level (omap hwmod).
+> 
+> The reason is that the drivers don't put back the device into low power
+> state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
+> that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
+> status from RPM_ACTIVE to RPM_SUSPENDED.
 
-> It seems that we can call them from different cpus concurrently.
+Yup, that's the bug here. It seems that we never call the runtime_suspend
+callback at the end of a first failed device driver probe if the driver
+has set pm_runtime_use_autosuspend. Only rpm_idle runtime_idle callback
+gets called. So the device stays on.
 
-Yes, we can.
+This does not happen if pm_runtime_dont_use_autosuspend() is added to
+the end of the device driver probe before pm_runtime_put_sync().
 
-One quick-and-dirty way of dealing with that might be to introduce a
-"sysfs lock" into struct dbs_data and hold that around the invocation
-of gattr->store() in the sysfs_ops's ->store callback.
+> The next ->probe() attempt then triggers the ->runtime_resume() callback
+> to be invoked, which means this happens two times in a row. At the PM
+> domain level (omap hwmod) this is being treated as an error and thus the
+> runtime PM status of the device isn't correctly synchronized with the
+> runtime PM core.
 
->
-> Best,
->
-> - Juri
+That's a valid error though, let's not remove it. The reason why we
+call runtime_resume() twice is because runtime_suspend callback never
+gets called like I explain above.
 
-BTW, you could have dropped the stuff below this line from your reply
-message.  That at least would have prevented tools like Patchwork from
-storing useless garbage.
+> In the end, ->probe() anyway succeeds (as the driver don't checks the
+> error code from the runtime PM APIs), but results in that the PM domain
+> always stays powered on. This because of the runtime PM core believes the
+> device is RPM_SUSPENDED.
 
-Thanks,
-Rafael
+FYI, the following allows runtime_suspend callback to get called at the
+end of a failed driver probe so the hardware state matches the PM runtime
+state. Need to debug more.
+
+Regards,
+
+Tony
+
+8< ------------
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -2232,6 +2232,7 @@ err_irq:
+ 		dma_release_channel(host->tx_chan);
+ 	if (host->rx_chan)
+ 		dma_release_channel(host->rx_chan);
++	pm_runtime_dont_use_autosuspend(host->dev);
+ 	pm_runtime_put_sync(host->dev);
+ 	pm_runtime_disable(host->dev);
+ 	if (host->dbclk)
