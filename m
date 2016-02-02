@@ -1,17 +1,17 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
  v4.5-rc1
-Date: Tue, 2 Feb 2016 11:15:55 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1602021112320.1653-100000@iolanthe.rowland.org>
-References: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+Date: Tue, 2 Feb 2016 11:23:48 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1602021116510.1653-100000@iolanthe.rowland.org>
+References: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:33336 "HELO
+Received: from iolanthe.rowland.org ([192.131.102.54]:33368 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754866AbcBBQP5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 11:15:57 -0500
-In-Reply-To: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+	with SMTP id S1756095AbcBBQXt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 11:23:49 -0500
+In-Reply-To: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
@@ -19,78 +19,60 @@ Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "
 
 On Tue, 2 Feb 2016, Ulf Hansson wrote:
 
-> On 2 February 2016 at 04:05, Tony Lindgren <tony@atomide.com> wrote:
-> > Hi,
-> >
-> > * Alan Stern <stern@rowland.harvard.edu> [160201 15:50]:
-> >>
-> >> You get here only if runtime PM is disabled, right?  So the rpm_idle
-> >> call won't do anything -- "disabled" means don't make any callbacks.
-> >
-> > Hmm sorry yes I'm confused again. Yeah it looks like calling rpm_idle
-> > just has a side effect that makes a difference here.
-> >
-> >> Tony, exactly what are you trying to do here?  Do you want this to
-> >> invoke a runtime-PM callback in the subsystem, power domain, or driver?
-> >> (Is there even a driver bound to the device when this function runs?)
-> >
-> > I guess I need to add more printks to figure out what's going on here.
-> > But yeah, I'm not seeing the callback happening at the interconnect
-> > level so hardware and PM runtime states won't match on the following
-> > probe after -EPROBE_DEFER.
-> >
-> >> The function's name suggests that it merely resets the data stored in
-> >> dev->power without actually touching the hardware.  Is that what you
-> >> really want?
-> >
-> > I guess you mean pm_runtime_set_suspended() above? I'm seeing a state
-> > where we now set pm_runtime_set_suspended() between failed device
-> > probes and the device is still active in hardware.
-> >
-> > The patch below also helps with the problem and leaves out the
-> > rpm_suspend() call from loop so it might give more hints.
-> >
-> > The difference here from what Rafael suggested earlier is calling
-> > __pm_runtime_use_autosuspend() and then not calling
-> > pm_runtime_set_suspended().
-> >
-> > However, it seems the below patch keeps hardware active in the
-> > autoidle case though, so chances are there is more that needs to
-> > be done here. Anyways, I'll try to debug it more tomorrow.
-> >
+> That's not what we want. So I moved the checks to the actual
+> ->runtime_resume() callback in the PM domain, instead of in the
+> omap_device_enable() function. A version 2 is attached. Please give it
+> at try.
 > 
-> Your observations is correct. The hardware will be kept active
-> in-between the probe attempts (and thus also if probing fails).
-> Although, that's not a regression as that's the behaviour you get from
-> runtime PM, when drivers are implemented like omap_hsmmc.
-
-Perhaps this is what we should do.  If probing gets deferred a few 
-times, doing runtime suspends and resumes in between will be a waste of 
-time.
-
-> Instead of the suggested approaches, I think the regression should be
-> fixed at the PM domain level (omap hwmod). I have attached a patch
-> below, please give it try as it's untested.
+> [...]
 > 
-> To solve the other problem (allowing devices to become inactive
-> in-between at probe failures), I see two options (not treated as
-> regressions).
-> 1)
-> Change the behaviour of pm_runtime_put_sync(), to *not* respect the
-> autosuspend mode.
-> I think I prefer this option, as it seems like autosuspend should be
-> respected only via the asynchronous runtime PM APIs.
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+> Date: Tue, 2 Feb 2016 10:05:39 +0100
+> Subject: [PATCH V2] ARM: OMAP2+: omap-device: Allow devices to be pre-enabled
+> 
+> Commit 5de85b9d57ab ("PM / runtime: Re-init runtime PM states at probe
+> error and driver unbind") may re-initialize the runtime PM status of the
+> device to RPM_SUSPENDED at driver probe failures.
+> 
+> For the omap_hsmmc and likely also other omap drivers, which needs more
+> than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
+> causes a regression at the PM domain level (omap hwmod).
+> 
+> The reason is that the drivers don't put back the device into low power
+> state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
+> that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
+> status from RPM_ACTIVE to RPM_SUSPENDED.
 
-?  pm_runtime_put_sync() _already_ does not respect the autosuspend 
-mode.  If you want to respect it, you have to call 
-pm_runtime_put_sync_autosuspend() instead.
+But isn't that okay?  When the system starts up, the PM core doesn't 
+know the actual state of any device.  It just marks each device as 
+RPM_SUSPENDED and disabled as it is registered.  It's the job of 
+subsystems and drivers to make sure the stored state agrees with the 
+actual physical state.
 
-> 2)
-> Change the failing drivers, to before calling pm_runtime_put_sync()
-> also invoke pm_runtime_dont_use_autosusend(). Or other similar
-> approach.
+So why shouldn't pm_runtime_reinit() leave the structure the same as it 
+would be if the device had just been registered?
 
-Given the above, this seems unnecessary.
+> The next ->probe() attempt then triggers the ->runtime_resume() callback
+> to be invoked, which means this happens two times in a row. At the PM
+> domain level (omap hwmod) this is being treated as an error and thus the
+> runtime PM status of the device isn't correctly synchronized with the
+> runtime PM core.
+
+Why doesn't the same problem arise the first time the device is probed?  
+Or to put it another, why should a re-probe be any different from the 
+initial probe?
+
+> In the end, ->probe() anyway succeeds (as the driver don't checks the
+> error code from the runtime PM APIs), but results in that the PM domain
+> always stays powered on. This because of the runtime PM core believes the
+> device is RPM_SUSPENDED.
+> 
+> Fix this regression by allowing devices to be pre-enabled when the PM
+> domain's (omap hwmod) ->runtime_resume() callback is requested to enable
+> the device. In such cases, return zero to synchronize the runtime PM
+> status with the runtime PM core.
+
+Is this really the right way to fix the problem?
 
 Alan Stern
 
