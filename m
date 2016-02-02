@@ -1,77 +1,66 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v2 3/3] ARM64: dts: mt8173: Add CPU OPP, clock and
- regulator supply properties
-Date: Tue, 2 Feb 2016 15:09:24 +0100
-Message-ID: <56B0B894.9040706@gmail.com>
-References: <1451197318-12418-1-git-send-email-pi-cheng.chen@linaro.org>
- <1451197318-12418-4-git-send-email-pi-cheng.chen@linaro.org>
- <20151228031340.GD3598@ubuntu> <3310024.mO5K6yH9vU@wuerfel>
- <20160105102455.GA30120@ubuntu> <56B08DA4.8070207@gmail.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH V5 12/14] clk: tegra210: Add the APB2APE audio clock
+Date: Tue, 2 Feb 2016 15:37:02 +0100
+Message-ID: <20160202143702.GA10098@ulmo.nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-13-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <56B08DA4.8070207@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: devicetree@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-mediatek@lists.infradead.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:33582 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbcBBOhI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 09:37:08 -0500
+Content-Disposition: inline
+In-Reply-To: <1453998832-27383-13-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 02/02/16 12:06, Matthias Brugger wrote:
->
->
-> On 05/01/16 11:24, Viresh Kumar wrote:
->> On 05-01-16, 11:21, Arnd Bergmann wrote:
->>> On Monday 28 December 2015 08:43:40 Viresh Kumar wrote:
->>>> On 27-12-15, 14:21, Pi-Cheng Chen wrote:
->>>>> Add operating-points-v2, clock, and regulator supply properties
->>>>> required by mt8173-cpufreq driver to enable it.
->>>>>
->>>>> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
->>>>> ---
->>>>> This patch is based on the patch[1] that adds underlying clock MUX for
->>>>> MT8173 which is needed by mt8173-cpufreq driver but not yet picked.
->>>>>
->>>>> [1] http://article.gmane.org/gmane.linux.kernel.clk/325
->>>>> ---
->>>>>   arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++
->>>>>   arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 90
->>>>> +++++++++++++++++++++++++++++
->>>>>   2 files changed, 108 insertions(+)
->>>>
->>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>
->>>
->>> This patch is now in linux-next through Rafael's pm tree, and it
->>> breaks the
->>> arm64 build:
->>>
->>>          arm64-defconfig
->>> Error: ../arch/arm64/boot/dts/mediatek/mt8173.dtsi:132.24-25 syntax
->>> error
->>>
->>>
->>> Please revert.
->>>
->>> In the future, please send all dts changes through the proper maintainer
->>> channels (-> Mattias -> arm-soc), and make sure they actually build.
->>
->> Rafael has already reverted that, AFAIK, after Mark Brown reported the
->> build issue.
->>
->
-> Applied to v4.5-next/dts
->
+On Thu, Jan 28, 2016 at 04:33:50PM +0000, Jon Hunter wrote:
+> The APB2APE clock for the audio subsystem is required for powering up the
+> audio power domain and accessing the various modules in this subsystem on
+> the tegra210 device. Add this clock for tegra210.
+>=20
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> ---
+>  drivers/clk/tegra/clk-id.h               | 1 +
+>  drivers/clk/tegra/clk-tegra-periph.c     | 1 +
+>  drivers/clk/tegra/clk-tegra210.c         | 1 +
+>  include/dt-bindings/clock/tegra210-car.h | 2 +-
+>  4 files changed, 4 insertions(+), 1 deletion(-)
 
-I oversaw that this needs a clock patch, which is not yet mainlined.
-I deleted this patch from my tree.
+Applied, thanks.
+
+Thierry
+
+--bg08WKrSYDhXBjb5
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWsL8OAAoJEN0jrNd/PrOh/hoQAJVttYAR4oii5jKSlINFsQtZ
+/1ETAlw1MhYfoCP7joV6/lLDtHPgNwoXMZAjB2bly2C1b4bXEu0M0a0xmdeuP/ZM
+yOj8Q7qsb6yDYi8qgtlpaU3VBrg6/0N5ILHwpSgHrDstwqwPAbw5wUSkWOgYHQZm
+l35pwX66wlD/+OWds6VZsdu6ww+Zi3SaOb4kGf3cvGIJitdVLSzCmYFU2eTJOjdZ
+1NEIfeYVM92crFKF2n84YAe0S2Lp9XcReuAGAch2sCxZI2EidEZaLWJWaOgJC11Q
+eVgZgXSbaxRQfeQphNHHs+koOYq9y/PaCGi97RHcXp1hh/YqE7CfecUJMzDjRfEF
+GfoshzuY8ibSL2MJsOkl0/oTbGhzCZ4vewKBT1r8x3hmlr33RnljUsMMkzRIy+A9
+e46CIPskDerqMbzoOI9fvdb3dx0FFnN4FVv5Ns1zbfJD6guDuTi/lJe9i25rh8ZM
+99C+sNf1gSetTmgnsDU6Yf/Z96GWJOlSR3Jyk9icNiIkwnfTxXKYlCrRuJ7XAB1k
+5oicGs1WvN3fqTUa5ofv2aUKSnj81QD5UE1J2B4SIgpHA6jHRDkW0qOP8N64Zpc0
+rtWz/AAvwdt8ed5pMW2tkNrONDNrKe+pLrzJ1DqGFX1Lw3eGC3IomVp/lGuxFkMq
+4JZ2R4sIwvcXz0uhkJbc
+=hCJn
+-----END PGP SIGNATURE-----
+
+--bg08WKrSYDhXBjb5--
