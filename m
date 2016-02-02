@@ -1,85 +1,74 @@
-From: "David.Wu" <wdc@rock-chips.com>
-Subject: Re: [PATCH] PM / AVS: rockchip-io: add GRF and PMUGRF types to
- distinguish
-Date: Tue, 2 Feb 2016 17:38:43 +0800
-Message-ID: <56B07923.9020900@rock-chips.com>
-References: <1454155305-55516-1-git-send-email-david.wu@rock-chips.com>
- <5387650.lAgTxexlF2@phil> <56AF1D4E.40307@rock-chips.com>
- <5354361.hQXgJ7cEGx@diego>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: [PATCH v3 0/4] add reboot mode driver
+Date: Tue,  2 Feb 2016 17:56:21 +0800
+Message-ID: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.130]:49747 "EHLO
-	lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbcBBJin (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 04:38:43 -0500
-In-Reply-To: <5354361.hQXgJ7cEGx@diego>
+Received: from regular1.263xmail.com ([211.150.99.139]:36938 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754193AbcBBJ6m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 04:58:42 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
-Cc: David Wu <david.wu@rock-chips.com>, khilman@kernel.org, nm@ti.com, huangtao@rock-chips.com, cf@rock-chips.com, zyw@rock-chips.com, xjq@rock-chips.com, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: robh+dt@kernel.org, arnd@arndb.de, john.stultz@linaro.org
+Cc: moritz.fischer@ettus.com, matthias.bgg@gmail.com, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, heiko@sntech.de, sre@kernel.org, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, richard@nod.at, dwmw2@infradead.org, mark.rutland@arm.com, Andy Yan <andy.yan@rock-chips.com>
 
-Hi Heiko,
 
-=E5=9C=A8 2016/2/2 5:17, Heiko St=C3=BCbner =E5=86=99=E9=81=93:
-> Hi David,
->
-> Am Montag, 1. Februar 2016, 16:54:38 schrieb David.Wu:
->> =E5=9C=A8 2016/1/30 20:39, Heiko Stuebner =E5=86=99=E9=81=93:
->>> Am Samstag, 30. Januar 2016, 20:01:45 schrieb David Wu:
->>>> As rk3368 contained two separated iodomain areas, this was
->>>> determined to use which regmap base address.
->>>>
->>>> Signed-off-by: David Wu <david.wu@rock-chips.com>
->>> I don't think we need to specify this on a driver level. Both GRF a=
-reas
->>> are
->>> "General register files" only located in two separate power-domains=
-=2E
->>> So the rockchip,grf property should work for both. Especially as no=
-thing
->>> keeps designers from introducing yet another GRF-area somewhere els=
-e ;-)
->>>
->>> >From when I started working on the rk3368, I still have a prelimin=
-ary
->>>
->>> patches for that sitting here, so I've attached on how I envisoned =
-that to
->>> work.
->> Okay, i agree to you, but it make someone a little confused just fro=
-m
->> the drive code,
->> not DT file,  about  pmugrf regmap base address.:-)
->>
->> How do you feel about intergating GRF and PMU drivers in one driver?
->> Thanks!
-> I will very strongly disagree here ;-) .
-> Similar to the power-domains being part of the pmu, the io-domains ar=
-e
-> part of their individual GRFs. So if you want it really clean and tid=
-y the way
-> to go foward will be the attached patches. Compile-tested only.
+This driver parse the reboot commands like "reboot loader"
+and "reboot recovery" to get a boot mode described in the
+device tree , then call the corresponding  write interfae
+to store the boot mode in some place like special register
+or ram , which can be read by the bootloader after system
+reboot.
 
-Thanks for your reply, the patchs look better than mine.
-I have tested them on sdk board and i found something may be wrong.
-"parent->of_node" instead of "parent", as the parent is not null if=20
-parent-node not used.
-         if (parent->of_node) {
-             iod->grf =3D syscon_node_to_regmap(parent->of_node);
-         } else {
-             dev_dbg(&pdev->dev, "falling back to old binding\n");
-             iod->grf =3D syscon_regmap_lookup_by_phandle(np, "rockchip=
-,grf");
-         }
+This is commonly done on Android based devices, in order to
+reboot the device into fastboot or recovery mode.
 
-> Other things like the usbphy control should move there as well in the=
- long
-> run. But that's not immediate necessary.
->
->
-> Heiko
+Changes in v3:
+- descirbe all reboot mode as properity instead of subnode
+- add mask value for some platform which only use some bits of the register
+  to store boot mode magic value
+- add rk3036 support
+
+Changes in v2:
+- move to dir drivers/power/reset/
+- make syscon-reboot-mode a generic driver
+- make this node as a subnode of PMU
+- make this node as a subnode of pmugrf
+
+Changes in v1:
+- fix the embarrassed compile warning
+- correct the maskrom magic number
+- check for the normal reboot
+- correct the maskrom magic number
+- use macro defined in rockchip_boot-mode.h for reboot-mode DT node
+
+Andy Yan (4):
+  dt-bindings: power: reset: add document for reboot-mode driver
+  power: reset: add reboot mode driver
+  ARM: dts: rockchip: add syscon-reboot-mode node
+  ARM64: dts: rockchip: add syscon-reboot-mode DT node
+
+ .../bindings/power/reset/reboot-mode.txt           |  26 +++++
+ .../bindings/power/reset/syscon-reboot-mode.txt    |  36 +++++++
+ arch/arm/boot/dts/rk3036.dtsi                      |  10 +-
+ arch/arm/boot/dts/rk3288.dtsi                      |  11 +++
+ arch/arm/boot/dts/rk3xxx.dtsi                      |  13 ++-
+ arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  14 ++-
+ drivers/power/reset/Kconfig                        |  16 ++++
+ drivers/power/reset/Makefile                       |   2 +
+ drivers/power/reset/reboot-mode.c                  | 105 +++++++++++++++++++++
+ drivers/power/reset/reboot-mode.h                  |   6 ++
+ drivers/power/reset/syscon-reboot-mode.c           |  64 +++++++++++++
+ include/dt-bindings/soc/rockchip_boot-mode.h       |  30 ++++++
+ 12 files changed, 330 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+ create mode 100644 drivers/power/reset/reboot-mode.c
+ create mode 100644 drivers/power/reset/reboot-mode.h
+ create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+ create mode 100644 include/dt-bindings/soc/rockchip_boot-mode.h
+
+-- 
+1.9.1
 
 
