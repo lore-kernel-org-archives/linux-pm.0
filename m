@@ -1,71 +1,83 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4 3/9] pinctrl: convert to use match_string() helper
-Date: Mon, 1 Feb 2016 22:02:30 -0800
-Message-ID: <20160201220230.92810bde.akpm@linux-foundation.org>
+Subject: Re: [PATCH v4 1/9] lib/string: introduce match_string() helper
+Date: Mon, 1 Feb 2016 22:05:38 -0800
+Message-ID: <20160201220538.481cb8ee.akpm@linux-foundation.org>
 References: <1453986865-133572-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	<1453986865-133572-4-git-send-email-andriy.shevchenko@linux.intel.com>
+	<1453986865-133572-2-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:55959 "EHLO
+Received: from mail.linuxfoundation.org ([140.211.169.12]:56043 "EHLO
 	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbcBBF7l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 00:59:41 -0500
-In-Reply-To: <1453986865-133572-4-git-send-email-andriy.shevchenko@linux.intel.com>
+	with ESMTP id S1750953AbcBBGCt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 01:02:49 -0500
+In-Reply-To: <1453986865-133572-2-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-On Thu, 28 Jan 2016 15:14:19 +0200 Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+On Thu, 28 Jan 2016 15:14:17 +0200 Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
 
-> The new helper returns index of the mathing string in an array. We would use it
-> here.
+> >From time to time we have to match a string in an array. Make a simple helper
+> for that purpose.
 > 
-> --- a/drivers/pinctrl/pinmux.c
-> +++ b/drivers/pinctrl/pinmux.c
-> @@ -334,7 +334,6 @@ int pinmux_map_to_setting(struct pinctrl_map const *map,
->  	unsigned num_groups;
->  	int ret;
->  	const char *group;
-> -	int i;
+> ...
+>
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -131,6 +131,8 @@ extern void argv_free(char **argv);
+>  extern bool sysfs_streq(const char *s1, const char *s2);
+>  extern int strtobool(const char *s, bool *res);
 >  
->  	if (!pmxops) {
->  		dev_err(pctldev->dev, "does not support mux function\n");
-> @@ -363,19 +362,13 @@ int pinmux_map_to_setting(struct pinctrl_map const *map,
->  		return -EINVAL;
->  	}
->  	if (map->data.mux.group) {
-> -		bool found = false;
->  		group = map->data.mux.group;
-> -		for (i = 0; i < num_groups; i++) {
-> -			if (!strcmp(group, groups[i])) {
-> -				found = true;
-> -				break;
-> -			}
-> -		}
-> -		if (!found) {
-> +		ret = match_string(groups, num_groups, group);
-> +		if (ret < 0) {
->  			dev_err(pctldev->dev,
->  				"invalid group \"%s\" for function \"%s\"\n",
->  				group, map->data.mux.function);
-> -			return -EINVAL;
-> +			return ret;
+> +int match_string(const char * const *array, size_t n, const char *string);
+> +
+>  #ifdef CONFIG_BINARY_PRINTF
+>  int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
+>  int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
+> diff --git a/lib/string.c b/lib/string.c
+> index 0323c0d..ba01d4f 100644
+> --- a/lib/string.c
+> +++ b/lib/string.c
+> @@ -631,6 +631,32 @@ bool sysfs_streq(const char *s1, const char *s2)
+>  EXPORT_SYMBOL(sysfs_streq);
+>  
+>  /**
+> + * match_string - matches given string in an array
 
-Changes the return value from -EINVAL to -ENODATA.  I'm not reeeeeealy
-sure what ENODATA means - it seems mostly a networking thing?  People
-use it in various places because it kinda sounds like whatever it is
-that just went wrong.
+I can't say I'm in love with the name, but I guess it will suffice. 
+search_string() doesn't seem much better.
 
-But the question is: what will the end user think when this error comes
-out of the kernel?  Given that he/she has just tried to misconfigure
-the pinctrl system, ENODATA will cause much head-scratching.  EINVAL is
-more appropriate?  "You tried to do something invalid".
 
->  		}
->  	} else {
->  		group = groups[0];
-> -- 
-> 2.7.0.rc3
+> + * @array:	array of strings
+> + * @n:		number of strings in the array or -1 for NULL terminated arrays
+> + * @string:	string to match with
+> + *
+> + * Return:
+> + * index of a @string in the @array if matches, or %-ENODATA otherwise.
+> + */
+> +int match_string(const char * const *array, size_t n, const char *string)
+> +{
+> +	int index;
+> +	const char *item;
+> +
+> +	for (index = 0; index < n; index++) {
+
+So we're taking an int and comparing that with (size_t)-1, relying upon
+the compiler promoting the int to an unsigned type because size_t is
+unsigned.  It works, but it isn't pretty - there wasn't really much
+point in making size have type size_t.
+
+
+> +		item = array[index];
+> +		if (!item)
+> +			break;
+> +		if (!strcmp(item, string))
+> +			return index;
+> +	}
+> +
+> +	return -ENODATA;
+> +}
+> +EXPORT_SYMBOL(match_string);
+
