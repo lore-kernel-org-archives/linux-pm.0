@@ -1,274 +1,56 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 16/16] cpufreq: dt: No need to allocate resources
- anymore
-Date: Tue, 2 Feb 2016 11:42:28 +0530
-Message-ID: <20160202061228.GE31828@vireshk>
-References: <cover.1453965717.git.viresh.kumar@linaro.org>
- <6c45d5257ba11485719d3cb3a795ccb6ca1670d5.1453965717.git.viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
+ __cpufreq_governor
+Date: Tue, 2 Feb 2016 12:04:49 +0530
+Message-ID: <20160202063449.GF31828@vireshk>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <20160112102025.GC1084@ubuntu>
+ <56AC04E3.8090900@codeaurora.org>
+ <1703921.2AHaiQoggk@vostro.rjw.lan>
+ <20160201060943.GH13476@vireshk>
+ <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
+ <56AFBEE5.70501@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35800 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbcBBGew (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 01:34:52 -0500
+Received: by mail-pa0-f54.google.com with SMTP id ho8so95809456pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Feb 2016 22:34:52 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <6c45d5257ba11485719d3cb3a795ccb6ca1670d5.1453965717.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, open list <linux-kernel@vger.kernel.org>
+In-Reply-To: <56AFBEE5.70501@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
 
-On 28-01-16, 13:50, Viresh Kumar wrote:
-> OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
-> still need to check for availability of resources for deferred probing.
+On 01-02-16, 12:24, Saravana Kannan wrote:
+> On 02/01/2016 02:22 AM, Rafael J. Wysocki wrote:
+> I'm not sure whose idea you are referring to. Viresh's (I don't think I saw
+> his proposal) or mine.
+
+http://git.linaro.org/people/viresh.kumar/linux.git/commit/57714d5b1778f2f610bcc5c74d85b29ba1cc1995
+
+> Anyway, to explain my suggestion better, I'm proposing to make it so that we
+> don't have a need for the AB BA locking. The only reason the governor needs
+> to even grab the sysfs lock is to add/remove the sysfs attribute files.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> That can be easily achieved if the policy struct has some "gov_attrs"
+> field(s) that each governor populates. Then the framework just has to create
+> them after POLICY_INIT is processed by the governor and remove them before
+> POILICY_EXIT is sent to the governor.
 
-Got updated due to 11/16 ..
+What will that solve? It will stay exactly same then as well, as we
+would be adding/removing these attributes from within the same
+policy->rwsem ..
 
--------------------------8<-------------------------
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 9 Sep 2015 10:41:26 +0530
-Subject: [PATCH 09/20] cpufreq: dt: No need to allocate resources anymore
+> That way, we also avoid having to worry about the gov attributes accessed by
+> the show/store disappearing while the files are being accessed.
 
-OPP layer manages it now and cpufreq-dt driver doesn't need it. But, we
-still need to check for availability of resources for deferred probing.
+It can't happen. S_active lock should be taking care of that, isn't
+it?
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-dt.c | 116 ++++++++++++++++++-------------------------
- 1 file changed, 48 insertions(+), 68 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 3c43fda48bdf..1beb484b4bbe 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -31,7 +31,6 @@
- 
- struct private_data {
- 	struct device *cpu_dev;
--	struct regulator *cpu_reg;
- 	struct thermal_cooling_device *cdev;
- 	const char *reg_name;
- };
-@@ -88,73 +87,61 @@ static const char *find_supply_name(struct device *dev)
- 	return name;
- }
- 
--static int allocate_resources(int cpu, struct device **cdev,
--			      struct regulator **creg, struct clk **cclk)
-+static int resources_available(void)
- {
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
- 	int ret = 0;
--	char *reg_cpu0 = "cpu0", *reg_cpu = "cpu", *reg;
-+	const char *name;
- 
--	cpu_dev = get_cpu_device(cpu);
-+	cpu_dev = get_cpu_device(0);
- 	if (!cpu_dev) {
--		pr_err("failed to get cpu%d device\n", cpu);
-+		pr_err("failed to get cpu0 device\n");
- 		return -ENODEV;
- 	}
- 
--	/* Try "cpu0" for older DTs */
--	if (!cpu)
--		reg = reg_cpu0;
--	else
--		reg = reg_cpu;
--
--try_again:
--	cpu_reg = regulator_get_optional(cpu_dev, reg);
--	ret = PTR_ERR_OR_ZERO(cpu_reg);
-+	cpu_clk = clk_get(cpu_dev, NULL);
-+	ret = PTR_ERR_OR_ZERO(cpu_clk);
- 	if (ret) {
- 		/*
--		 * If cpu's regulator supply node is present, but regulator is
--		 * not yet registered, we should try defering probe.
-+		 * If cpu's clk node is present, but clock is not yet
-+		 * registered, we should try defering probe.
- 		 */
--		if (ret == -EPROBE_DEFER) {
--			dev_dbg(cpu_dev, "cpu%d regulator not ready, retry\n",
--				cpu);
--			return ret;
--		}
--
--		/* Try with "cpu-supply" */
--		if (reg == reg_cpu0) {
--			reg = reg_cpu;
--			goto try_again;
--		}
-+		if (ret == -EPROBE_DEFER)
-+			dev_dbg(cpu_dev, "clock not ready, retry\n");
-+		else
-+			dev_err(cpu_dev, "failed to get clock: %d\n", ret);
- 
--		dev_dbg(cpu_dev, "no regulator for cpu%d: %d\n", cpu, ret);
-+		return ret;
- 	}
- 
--	cpu_clk = clk_get(cpu_dev, NULL);
--	ret = PTR_ERR_OR_ZERO(cpu_clk);
--	if (ret) {
--		/* put regulator */
--		if (!IS_ERR(cpu_reg))
--			regulator_put(cpu_reg);
-+	clk_put(cpu_clk);
-+
-+	name = find_supply_name(cpu_dev);
-+	if (IS_ERR(name))
-+		return PTR_ERR(name);
-+
-+	if (!name)
-+		return 0;
- 
-+	cpu_reg = regulator_get_optional(cpu_dev, name);
-+	ret = PTR_ERR_OR_ZERO(cpu_reg);
-+	if (ret) {
- 		/*
--		 * If cpu's clk node is present, but clock is not yet
--		 * registered, we should try defering probe.
-+		 * If cpu's regulator supply node is present, but regulator is
-+		 * not yet registered, we should try defering probe.
- 		 */
- 		if (ret == -EPROBE_DEFER)
--			dev_dbg(cpu_dev, "cpu%d clock not ready, retry\n", cpu);
-+			dev_dbg(cpu_dev, "cpu0 regulator not ready, retry\n");
- 		else
--			dev_err(cpu_dev, "failed to get cpu%d clock: %d\n", cpu,
--				ret);
--	} else {
--		*cdev = cpu_dev;
--		*creg = cpu_reg;
--		*cclk = cpu_clk;
-+			dev_dbg(cpu_dev, "no regulator for cpu0: %d\n", ret);
-+
-+		return ret;
- 	}
- 
--	return ret;
-+	regulator_put(cpu_reg);
-+	return 0;
- }
- 
- static int cpufreq_init(struct cpufreq_policy *policy)
-@@ -162,7 +149,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	struct cpufreq_frequency_table *freq_table;
- 	struct private_data *priv;
- 	struct device *cpu_dev;
--	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
- 	struct dev_pm_opp *suspend_opp;
- 	unsigned int transition_latency;
-@@ -170,9 +156,16 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	const char *name = NULL;
- 	int ret;
- 
--	ret = allocate_resources(policy->cpu, &cpu_dev, &cpu_reg, &cpu_clk);
--	if (ret) {
--		pr_err("%s: Failed to allocate resources: %d\n", __func__, ret);
-+	cpu_dev = get_cpu_device(policy->cpu);
-+	if (!cpu_dev) {
-+		pr_err("failed to get cpu%d device\n", policy->cpu);
-+		return -ENODEV;
-+	}
-+
-+	cpu_clk = clk_get(cpu_dev, NULL);
-+	if (IS_ERR(cpu_clk)) {
-+		ret = PTR_ERR(cpu_clk);
-+		dev_err(cpu_dev, "%s: failed to get clk: %d\n", __func__, ret);
- 		return ret;
- 	}
- 
-@@ -186,7 +179,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		if (ret == -ENOENT)
- 			opp_v1 = true;
- 		else
--			goto out_put_reg_clk;
-+			goto out_put_clk;
- 	}
- 
- 	/*
-@@ -196,7 +189,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	name = find_supply_name(cpu_dev);
- 	if (IS_ERR(name)) {
- 		ret = PTR_ERR(name);
--		goto out_put_reg_clk;
-+		goto out_put_clk;
- 	}
- 
- 	if (name) {
-@@ -204,7 +197,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		if (ret) {
- 			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
- 				policy->cpu, ret);
--			goto out_put_reg_clk;
-+			goto out_put_clk;
- 		}
- 	}
- 
-@@ -262,9 +255,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	}
- 
- 	priv->cpu_dev = cpu_dev;
--	priv->cpu_reg = cpu_reg;
- 	policy->driver_data = priv;
--
- 	policy->clk = cpu_clk;
- 
- 	rcu_read_lock();
-@@ -305,10 +296,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
- 	if (name)
- 		dev_pm_opp_put_regulator(cpu_dev);
--out_put_reg_clk:
-+out_put_clk:
- 	clk_put(cpu_clk);
--	if (!IS_ERR(cpu_reg))
--		regulator_put(cpu_reg);
- 
- 	return ret;
- }
-@@ -324,8 +313,6 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
- 		dev_pm_opp_put_regulator(priv->cpu_dev);
- 
- 	clk_put(policy->clk);
--	if (!IS_ERR(priv->cpu_reg))
--		regulator_put(priv->cpu_reg);
- 	kfree(priv);
- 
- 	return 0;
-@@ -378,9 +365,6 @@ static struct cpufreq_driver dt_cpufreq_driver = {
- 
- static int dt_cpufreq_probe(struct platform_device *pdev)
- {
--	struct device *cpu_dev;
--	struct regulator *cpu_reg;
--	struct clk *cpu_clk;
- 	int ret;
- 
- 	/*
-@@ -390,19 +374,15 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
- 	 *
- 	 * FIXME: Is checking this only for CPU0 sufficient ?
- 	 */
--	ret = allocate_resources(0, &cpu_dev, &cpu_reg, &cpu_clk);
-+	ret = resources_available();
- 	if (ret)
- 		return ret;
- 
--	clk_put(cpu_clk);
--	if (!IS_ERR(cpu_reg))
--		regulator_put(cpu_reg);
--
- 	dt_cpufreq_driver.driver_data = dev_get_platdata(&pdev->dev);
- 
- 	ret = cpufreq_register_driver(&dt_cpufreq_driver);
- 	if (ret)
--		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-+		dev_err(&pdev->dev, "failed register driver: %d\n", ret);
- 
- 	return ret;
- }
+-- 
+viresh
