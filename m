@@ -1,48 +1,86 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/5] cpufreq: governor: Kill declare_show_sampling_rate_min()
-Date: Tue, 2 Feb 2016 21:23:22 +0100
-Message-ID: <CAJZ5v0jXN46ik4YMd4hZg9ALn9oBOhV=F=+94qZBFqZzFDq5og@mail.gmail.com>
-References: <cover.1454410226.git.viresh.kumar@linaro.org>
-	<bcbdea3dce1ae5e24a40b10239deb6262576cb70.1454410226.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Tue, 2 Feb 2016 21:24:41 +0100
+Message-ID: <CAPDyKFokWcLSCAh_TX-j-df_M1hN8Qw1gbQt--SyWccGCPiN5Q@mail.gmail.com>
+References: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+	<Pine.LNX.4.44L0.1602021112320.1653-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <bcbdea3dce1ae5e24a40b10239deb6262576cb70.1454410226.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f178.google.com ([209.85.160.178]:32800 "EHLO
+	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757868AbcBBUYm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 15:24:42 -0500
+Received: by mail-yk0-f178.google.com with SMTP id z13so93926093ykd.0
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 12:24:41 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.44L0.1602021112320.1653-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Feb 2, 2016 at 11:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> This extra macro is required because the variable min_sampling_rate is
-> made part of 'struct dbs_data' instead of governor specific tunables.
+[...]
+
+>>
+>> Your observations is correct. The hardware will be kept active
+>> in-between the probe attempts (and thus also if probing fails).
+>> Although, that's not a regression as that's the behaviour you get from
+>> runtime PM, when drivers are implemented like omap_hsmmc.
 >
-> For further optimization, its better that we kill
-> declare_show_sampling_rate_min() by moving min_sampling_rate to governor
-> specific tunables.
+> Perhaps this is what we should do.  If probing gets deferred a few
+> times, doing runtime suspends and resumes in between will be a waste of
+> time.
+
+Then you will have to distinguish between -EPROBE_DEFER and other
+errors, as I think leaving the device fully powered from a permanent
+failed probe isn't very good.
+
+Anyway, for sure it's doable by the driver, but let's try to focus on
+the regression here for now.
+
 >
-> Lets do it.
+>> Instead of the suggested approaches, I think the regression should be
+>> fixed at the PM domain level (omap hwmod). I have attached a patch
+>> below, please give it try as it's untested.
+>>
+>> To solve the other problem (allowing devices to become inactive
+>> in-between at probe failures), I see two options (not treated as
+>> regressions).
+>> 1)
+>> Change the behaviour of pm_runtime_put_sync(), to *not* respect the
+>> autosuspend mode.
+>> I think I prefer this option, as it seems like autosuspend should be
+>> respected only via the asynchronous runtime PM APIs.
 >
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ?  pm_runtime_put_sync() _already_ does not respect the autosuspend
+> mode.  If you want to respect it, you have to call
+> pm_runtime_put_sync_autosuspend() instead.
 
-To me, this is not about the macro, but about moving min_sampling_rate
-to governor tunables, so my subject would be something like "cpufreq:
-governor: Treat min_sampling_rate as a governor-specific tunable".
+Then there's a bug in the runtime PM core.
 
-My changelog, then, would be something like the following:
+>From Tony's regression report and from mine own local runtime PM test
+driver, I can see that the device doesn't get RPM_SUSPENDED (the
+->runtime_suspend() callback isn't called), even when the usage count
+is zero - when pm_runtime_put_sync() is called.
 
-"The min_sampling_rate governor tunable is a field in struct dbs_data,
-so it has to be handled in a special way separate from the rest of
-governor tunables.  In particular, that requires a special macro to be
-present for creating its show/store sysfs attribute callbacks.
+To find the sequence of runtime PM commands, go ahead an have look in
+the omap_hsmmc driver. The problem occurs when the driver bails out in
+probe, when it receives -EPROBE_DEFER when fetching regulators.
 
-However, there is no real need for the data structures and code in
-question to be arranged this way and if min_sampling_rate is moved to
-data structures holding the other governor tunables, the sysfs
-attribute creation macros that work with those tunables will also work
-with min_sampling_rate and the special macro for it won't be necessary
-any more.  That will make it easier to modify the governor code going
-forward, so do it."
+I have some more data to share on this problem from my runtime PM test
+driver. I will try my best to share it tomorrow.
 
-Thanks,
-Rafael
+>
+>> 2)
+>> Change the failing drivers, to before calling pm_runtime_put_sync()
+>> also invoke pm_runtime_dont_use_autosusend(). Or other similar
+>> approach.
+>
+> Given the above, this seems unnecessary.
+
+Okay, so you are saying that the pm_runtime_put_sync() should idle the
+device even if autosuspend is in use. That seems reasonable, I will
+look into this problem.
+
+Kind regards
+Uffe
