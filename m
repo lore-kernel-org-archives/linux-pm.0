@@ -1,62 +1,82 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 2 Feb 2016 14:16:30 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1602021402250.1653-100000@iolanthe.rowland.org>
-References: <20160202185450.GY19432@atomide.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
+Date: Tue, 2 Feb 2016 20:40:31 +0100
+Message-ID: <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+	<5a012e56b8404e2d07e172b6699ce02f5c5b5f26.1454410226.git.viresh.kumar@linaro.org>
+	<20160202154717.GI3947@e106622-lin>
+	<CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com>
+	<20160202170144.GL3947@e106622-lin>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:34368 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750994AbcBBTQb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 14:16:31 -0500
-In-Reply-To: <20160202185450.GY19432@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160202170144.GL3947@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, 2 Feb 2016, Tony Lindgren wrote:
+On Tue, Feb 2, 2016 at 6:01 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi Rafael,
+>
+> On 02/02/16 17:35, Rafael J. Wysocki wrote:
+>> On Tue, Feb 2, 2016 at 4:47 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+>> > Hi Viresh,
+>> >
+>> > On 02/02/16 16:27, Viresh Kumar wrote:
+>> >> Until now, governors (ondemand/conservative) were using the
+>> >> 'global-attr' or 'freq-attr', depending on the sysfs location where we
+>> >> want to create governor's directory.
+>> >>
+>> >> The problem is that, in case of 'freq-attr', we are forced to use
+>> >> show()/store() present in cpufreq.c, which always take policy->rwsem.
+>> >>
+>> >> And because of that we were facing some ABBA lockups during governor
+>> >> callback event CPUFREQ_GOV_POLICY_EXIT. And so we were dropping the
+>> >> rwsem right before calling governor callback for CPUFREQ_GOV_POLICY_EXIT
+>> >> event.
+>> >>
+>> >> That caused further problems and it never worked perfectly.
+>> >>
+>> >> This patch attempts to fix that by creating separate sysfs-ops for
+>> >> cpufreq governors.
+>> >>
+>> >> Because things got much simplified now, we don't need separate
+>> >> show/store callbacks for governor-for-system and governor-per-policy
+>> >> cases.
+>> >>
+>> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >
+>> > This patch cleans things up a lot, that's good.
+>> >
+>> > One thing I'm still concerned about, though: don't we need some locking
+>> > in place for some of the store operations on governors attributes? Are
+>> > store_{ignore_nice_load, sampling_down_fact, etc} safe without locking?
+>>
+>> That would require some investigation I suppose.
+>>
+>> > It seems that we can call them from different cpus concurrently.
+>>
+>> Yes, we can.
+>>
+>> One quick-and-dirty way of dealing with that might be to introduce a
+>> "sysfs lock" into struct dbs_data and hold that around the invocation
+>> of gattr->store() in the sysfs_ops's ->store callback.
+>>
+>
+> There is value in trying to solve this issue by using some of the
+> existing locks, IMHO.
 
-> > I'm still not clear on what you want to accomplish.  It sounds like you 
-> > want to perform a runtime suspend following the last probe (if the 
-> > probe fails), and in between probes you don't really care (although it 
-> > would be preferable to avoid suspending).
-> 
-> I'd like to have pm_runtime_put_sync() disable the hardware after
-> the initial failed probe. Currently that does not happen unless
-> pm_runtime_dont_use_autosuspend() is called before pm_runtime_put_sync().
+Some value - maybe.  I'm not sure how much of it, though.
 
-pm_runtime_put_sync() doesn't do anything to the hardware if the usage
-count was > 1, because after the decrement it's still nonzero.  Where
-is the particular call of pm_runtime_put_sync() that you're interested
-in, and what is the usage count when it runs?  It's not at all unusual
-for the usage count to be > 1 during a probe.
+Finer-grained locking is generally easier to follow, because the locks
+tend to be used for specific purposes only.
 
-Also, what is autosuspend_delay set to for your device?  And is 
-runtime_auto set?
+> Can't we actually try to use the policy->rwsem (or one of the core
+> locks) + wait_for_completion approach as we do in cpufreq core?
 
-> > Does pm_runtime_use_autosuspend() get called by the probe routine?  If 
-> > it does, then perhaps you can get what you want by having the probe 
-> > routine call pm_runtime_dont_use_autosuspend() whenever it's about to 
-> > return an error -- particularly -EDEFER.
-> 
-> Yes so far that's the only fix that seems to work like I posted
-> earlier. But is that the right fix though?
+No.  Too many things depend on that lock already and some of them work
+by accident rather than by design.
 
-No, not really.  Ideally you would leave autosuspend turned on.  The 
-delay would be long enough to that after -EDEFER, another probe would 
-start before the delay expired.  But shortly after the last probe 
-attempt, the delay would expire and the device would then be put in low 
-power.
-
-> If we wanted to have some generic fix, it seems we would have to pass
-> a new flag in pm_runtime_put_sync() to ignore any autosuspend
-> configuration. But I don't know if that's what we want to or should
-> do though?
-
-I don't think so.
-
-Alan Stern
-
+Thanks,
+Rafael
