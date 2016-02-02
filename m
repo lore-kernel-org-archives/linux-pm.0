@@ -1,79 +1,87 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 2 Feb 2016 08:35:36 -0800
-Message-ID: <20160202163536.GU19432@atomide.com>
-References: <20160201232833.GR19432@atomide.com>
- <Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
- <20160202030533.GT19432@atomide.com>
- <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
- <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 5/5] cpufreq: Get rid of ->governor_enabled and its lock
+Date: Tue, 2 Feb 2016 16:49:37 +0000
+Message-ID: <20160202164937.GK3947@e106622-lin>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+ <48d24fd180e1fdf1c06a6992748c6365be43e937.1454410226.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59565 "EHLO muru.com"
+Received: from foss.arm.com ([217.140.101.70]:56931 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751792AbcBBQfj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Feb 2016 11:35:39 -0500
+	id S1754377AbcBBQs6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Feb 2016 11:48:58 -0500
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+In-Reply-To: <48d24fd180e1fdf1c06a6992748c6365be43e937.1454410226.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 
-Hi,
+Hi Viresh,
 
-* Ulf Hansson <ulf.hansson@linaro.org> [160202 02:43]:
+On 02/02/16 16:27, Viresh Kumar wrote:
+> Invalid state-transitions is verified by governor core now and there is
+> no need to replicate that in cpufreq core. Also we don't drop
+> policy->rwsem anymore, which makes rest of the races go away.
+
+There are still paths where we call __cpufreq_governor() without holding
+policy->rwsem, but those should be fixed with my cleanups (that I intend
+to refresh and post soon). So, I'm not sure we can safely remove this
+yet.
+
 > 
-> For the omap_hsmmc and likely also other omap drivers, which needs more
-> than one attempt to ->probe() (returning -EPROBE_DEFER), this commit
-> causes a regression at the PM domain level (omap hwmod).
+> Simplify code a bit now.
 > 
-> The reason is that the drivers don't put back the device into low power
-> state while bailing out in ->probe to return -EPROBE_DEFER. This leads to
-> that pm_runtime_reinit() in driver core, is re-initializing the runtime PM
-> status from RPM_ACTIVE to RPM_SUSPENDED.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 24 ------------------------
+>  include/linux/cpufreq.h   |  1 -
+>  2 files changed, 25 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 5f7e24567e0e..052ad1b9372c 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -102,7 +102,6 @@ static LIST_HEAD(cpufreq_governor_list);
+>  static struct cpufreq_driver *cpufreq_driver;
+>  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+>  static DEFINE_RWLOCK(cpufreq_driver_lock);
+> -DEFINE_MUTEX(cpufreq_governor_lock);
+>  
+>  /* Flag to suspend/resume CPUFreq governors */
+>  static bool cpufreq_suspended;
+> @@ -1963,21 +1962,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  
+>  	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
+>  
+> -	mutex_lock(&cpufreq_governor_lock);
+> -	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
+> -	    || (!policy->governor_enabled
+> -	    && (event == CPUFREQ_GOV_LIMITS || event == CPUFREQ_GOV_STOP))) {
+> -		mutex_unlock(&cpufreq_governor_lock);
+> -		return -EBUSY;
+> -	}
+> -
+> -	if (event == CPUFREQ_GOV_STOP)
+> -		policy->governor_enabled = false;
+> -	else if (event == CPUFREQ_GOV_START)
+> -		policy->governor_enabled = true;
+> -
+> -	mutex_unlock(&cpufreq_governor_lock);
+> -
+>  	ret = policy->governor->governor(policy, event);
 
-Yup, that's the bug here. It seems that we never call the runtime_suspend
-callback at the end of a first failed device driver probe if the driver
-has set pm_runtime_use_autosuspend. Only rpm_idle runtime_idle callback
-gets called. So the device stays on.
+So, __cpufreq_governor() becomes effectively a wrapper around
+->governor() calls and governors are left responsible for implementing
+the state machine with appropriate checks.
 
-This does not happen if pm_runtime_dont_use_autosuspend() is added to
-the end of the device driver probe before pm_runtime_put_sync().
+I'm wondering if this approach is completely sane, but what we end up
+with your changes should work (and we kill a lock! :)).
 
-> The next ->probe() attempt then triggers the ->runtime_resume() callback
-> to be invoked, which means this happens two times in a row. At the PM
-> domain level (omap hwmod) this is being treated as an error and thus the
-> runtime PM status of the device isn't correctly synchronized with the
-> runtime PM core.
+Maybe we add a comment somewhere stating exactly how things are meant to
+work?
 
-That's a valid error though, let's not remove it. The reason why we
-call runtime_resume() twice is because runtime_suspend callback never
-gets called like I explain above.
+Thanks,
 
-> In the end, ->probe() anyway succeeds (as the driver don't checks the
-> error code from the runtime PM APIs), but results in that the PM domain
-> always stays powered on. This because of the runtime PM core believes the
-> device is RPM_SUSPENDED.
-
-FYI, the following allows runtime_suspend callback to get called at the
-end of a failed driver probe so the hardware state matches the PM runtime
-state. Need to debug more.
-
-Regards,
-
-Tony
-
-8< ------------
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -2232,6 +2232,7 @@ err_irq:
- 		dma_release_channel(host->tx_chan);
- 	if (host->rx_chan)
- 		dma_release_channel(host->rx_chan);
-+	pm_runtime_dont_use_autosuspend(host->dev);
- 	pm_runtime_put_sync(host->dev);
- 	pm_runtime_disable(host->dev);
- 	if (host->dbclk)
+- Juri
