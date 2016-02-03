@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 7/7] cpufreq: Remove cpufreq_governor_lock
-Date: Wed,  3 Feb 2016 19:32:23 +0530
-Message-ID: <75f5a53c38b1efcfe7dc496525b0e96b6343a93e.1454507872.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 5/7] cpufreq: Merge cpufreq_offline_prepare/finish routines
+Date: Wed,  3 Feb 2016 19:32:21 +0530
+Message-ID: <5e84719b5475f79602e95af524e66e8927a85bc9.1454507872.git.viresh.kumar@linaro.org>
 References: <cover.1454507872.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
@@ -12,70 +12,117 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-We used to drop policy->rwsem just before calling __cpufreq_governor()
-in some cases earlier and so it was possible that __cpufreq_governor()
-runs concurrently via separate threads.
+The offline routine was separated into two halves earlier by
+'commit 1aee40ac9c86 ("cpufreq: Invoke __cpufreq_remove_dev_finish()
+after releasing cpu_hotplug.lock");.
 
-In order to guarantee valid state transitions for governors,
-'governor_enabled' was required to be protected using some locking and
-we created cpufreq_governor_lock for that.
+And the reasons cited were, race issues between accessing policy's sysfs
+files and policy kobject's cleanup.
 
-But now, __cpufreq_governor() is always called from within policy->rwsem
-held and so 'governor_enabled' is protected against races even without
-cpufreq_governor_lock.
+That race isn't valid anymore, as we don't remove the policy & its
+kobject completely on hotplugs, but do that from ->remove() callback of
+subsys framework.
 
-Get rid of the extra lock now.
+These two routines can be merged back now.
+
+This is a preparatory step for the next patch, that will enforce
+policy->rwsem lock around __cpufreq_governor() routines STOP/EXIT
+sequence.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/cpufreq/cpufreq.c | 36 ++++++++++--------------------------
+ 1 file changed, 10 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4fc3889ca7c9..7bc8a5ed97e5 100644
+index 5f7e24567e0e..dc43294e7b31 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -102,7 +102,6 @@ static LIST_HEAD(cpufreq_governor_list);
- static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
--DEFINE_MUTEX(cpufreq_governor_lock);
+@@ -1309,9 +1309,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	return ret;
+ }
  
- /* Flag to suspend/resume CPUFreq governors */
- static bool cpufreq_suspended;
-@@ -1963,11 +1962,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+-static void cpufreq_offline_prepare(unsigned int cpu)
++static void cpufreq_offline(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy;
++	int ret;
  
- 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
  
--	mutex_lock(&cpufreq_governor_lock);
- 	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
- 	    || (!policy->governor_enabled
- 	    && (event == CPUFREQ_GOV_LIMITS || event == CPUFREQ_GOV_STOP))) {
--		mutex_unlock(&cpufreq_governor_lock);
- 		return -EBUSY;
+@@ -1322,7 +1323,7 @@ static void cpufreq_offline_prepare(unsigned int cpu)
  	}
  
-@@ -1976,8 +1973,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	else if (event == CPUFREQ_GOV_START)
- 		policy->governor_enabled = true;
+ 	if (has_target()) {
+-		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret)
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+ 	}
+@@ -1345,34 +1346,23 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+ 	/* Start governor again for active policy */
+ 	if (!policy_is_inactive(policy)) {
+ 		if (has_target()) {
+-			int ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 			if (!ret)
+ 				ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
  
--	mutex_unlock(&cpufreq_governor_lock);
+ 			if (ret)
+ 				pr_err("%s: Failed to start governor\n", __func__);
+ 		}
+-	} else if (cpufreq_driver->stop_cpu) {
+-		cpufreq_driver->stop_cpu(policy);
+-	}
+-}
+ 
+-static void cpufreq_offline_finish(unsigned int cpu)
+-{
+-	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
 -
- 	ret = policy->governor->governor(policy, event);
- 
- 	if (!ret) {
-@@ -1987,12 +1982,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized--;
- 	} else {
- 		/* Restore original values */
--		mutex_lock(&cpufreq_governor_lock);
- 		if (event == CPUFREQ_GOV_STOP)
- 			policy->governor_enabled = true;
- 		else if (event == CPUFREQ_GOV_START)
- 			policy->governor_enabled = false;
--		mutex_unlock(&cpufreq_governor_lock);
+-	if (!policy) {
+-		pr_debug("%s: No cpu_data found\n", __func__);
+ 		return;
  	}
  
- 	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
+-	/* Only proceed for inactive policies */
+-	if (!policy_is_inactive(policy))
+-		return;
++	if (cpufreq_driver->stop_cpu)
++		cpufreq_driver->stop_cpu(policy);
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (has_target()) {
+-		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+ 		if (ret)
+ 			pr_err("%s: Failed to exit governor\n", __func__);
+ 	}
+@@ -1401,10 +1391,8 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (!policy)
+ 		return;
+ 
+-	if (cpu_online(cpu)) {
+-		cpufreq_offline_prepare(cpu);
+-		cpufreq_offline_finish(cpu);
+-	}
++	if (cpu_online(cpu))
++		cpufreq_offline(cpu);
+ 
+ 	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 	remove_cpu_dev_symlink(policy, cpu);
+@@ -2255,11 +2243,7 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+ 		break;
+ 
+ 	case CPU_DOWN_PREPARE:
+-		cpufreq_offline_prepare(cpu);
+-		break;
+-
+-	case CPU_POST_DEAD:
+-		cpufreq_offline_finish(cpu);
++		cpufreq_offline(cpu);
+ 		break;
+ 
+ 	case CPU_DOWN_FAILED:
 -- 
 2.7.0.79.gdc08a19
