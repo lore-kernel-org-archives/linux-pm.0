@@ -1,187 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 6/7] cpufreq: Call __cpufreq_governor() with policy->rwsem held
-Date: Wed,  3 Feb 2016 19:32:22 +0530
-Message-ID: <c7d9903e34dc658025fb20f90c610fa7cc0c8e5d.1454507872.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 4/7] Revert "cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT"
+Date: Wed,  3 Feb 2016 19:32:20 +0530
+Message-ID: <dc9cc32a46664fb49cae5d6f09b4559583cabbbe.1454507872.git.viresh.kumar@linaro.org>
 References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36078 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756009AbcBCOCt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:02:49 -0500
-Received: by mail-pa0-f51.google.com with SMTP id yy13so14027270pab.3
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:02:49 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
 References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-This isn't followed properly by all parts of the core code, some follow
-it, whereas others don't.
+Earlier, when the struct freq-attr was used to represent governor
+attributes, the standard cpufreq show/store sysfs attribute callbacks
+were applied to the governor tunable attributes and they always acquire
+the policy->rwsem lock before carrying out the operation.  That could
+have resulted in an ABBA deadlock if governor tunable attributes are
+removed under policy->rwsem while one of them is being accessed
+concurrently (if sysfs attributes removal wins the race, it will wait
+for the access to complete with policy->rwsem held while the attribute
+callback will block on policy->rwsem indefinitely).
 
-Enforcing it will also enable us to remove cpufreq_governor_lock, that
-is used today because we can't guarantee that __cpufreq_governor() isn't
-executed in parallel.
+We attempted to address this issue by dropping policy->rwsem around
+governor tunable attributes removal (that is, around invocations of the
+->governor callback with the event arg equal to CPUFREQ_GOV_POLICY_EXIT)
+in cpufreq_set_policy(), but that opened up race conditions that had not
+been possible with policy->rwsem held all the time.
 
-We should also ensure that the lock is held across state changes to the
-governors.
+The previous commit, "cpufreq: governor: New sysfs show/store callbacks
+for governor tunables", fixed the original ABBA deadlock by adding new
+governor specific show/store callbacks.
 
-For example, while adding a CPU to the policy on cpu-online path, we
-need to stop the governor, change policy->cpus, start the governor and
-then refresh its limits. The complete sequence must be guaranteed to
-execute without any concurrent races. And that can be achieved using
-policy->rwsem around these use cases.
+We don't have to drop rwsem around invocations of governor event
+CPUFREQ_GOV_POLICY_EXIT anymore, and original fix can be reverted now.
 
-Also note that cpufreq_driver->stop_cpu() and ->exit() can get called
-while policy->rwsem is held. That shouldn't have any side effects
-though.
-
+Fixes: 955ef4833574 ("cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT")
+Reported-by: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 45 ++++++++++++++++++++++++++++++---------------
- 1 file changed, 30 insertions(+), 15 deletions(-)
+ drivers/cpufreq/cpufreq.c | 5 -----
+ include/linux/cpufreq.h   | 4 ----
+ 2 files changed, 9 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index dc43294e7b31..4fc3889ca7c9 100644
+index e979ec78b695..5f7e24567e0e 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -996,30 +996,29 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cp
- 	if (cpumask_test_cpu(cpu, policy->cpus))
- 		return 0;
+@@ -2155,10 +2155,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 			return ret;
+ 		}
  
-+	down_write(&policy->rwsem);
- 	if (has_target()) {
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		up_write(&policy->rwsem);
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-		down_write(&policy->rwsem);
+-
  		if (ret) {
- 			pr_err("%s: Failed to stop governor\n", __func__);
--			return ret;
-+			goto unlock;
- 		}
- 	}
- 
--	down_write(&policy->rwsem);
- 	cpumask_set_cpu(cpu, policy->cpus);
--	up_write(&policy->rwsem);
- 
- 	if (has_target()) {
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 			pr_err("%s: Failed to Exit Governor: %s (%d)\n",
+ 			       __func__, old_gov->name, ret);
+@@ -2174,9 +2171,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
  		if (!ret)
- 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 			goto out;
  
--		if (ret) {
-+		if (ret)
- 			pr_err("%s: Failed to start governor\n", __func__);
--			return ret;
--		}
+-		up_write(&policy->rwsem);
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-		down_write(&policy->rwsem);
  	}
  
--	return 0;
-+unlock:
-+	up_write(&policy->rwsem);
-+	return ret;
- }
- 
- static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
-@@ -1322,13 +1321,13 @@ static void cpufreq_offline(unsigned int cpu)
- 		return;
- 	}
- 
-+	down_write(&policy->rwsem);
- 	if (has_target()) {
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
- 		if (ret)
- 			pr_err("%s: Failed to stop governor\n", __func__);
- 	}
- 
--	down_write(&policy->rwsem);
- 	cpumask_clear_cpu(cpu, policy->cpus);
- 
- 	if (policy_is_inactive(policy)) {
-@@ -1341,7 +1340,6 @@ static void cpufreq_offline(unsigned int cpu)
- 		/* Nominate new CPU */
- 		policy->cpu = cpumask_any(policy->cpus);
- 	}
--	up_write(&policy->rwsem);
- 
- 	/* Start governor again for active policy */
- 	if (!policy_is_inactive(policy)) {
-@@ -1376,6 +1374,7 @@ static void cpufreq_offline(unsigned int cpu)
- 		cpufreq_driver->exit(policy);
- 		policy->freq_table = NULL;
- 	}
-+	up_write(&policy->rwsem);
- }
- 
- /**
-@@ -1572,6 +1571,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
- void cpufreq_suspend(void)
- {
- 	struct cpufreq_policy *policy;
-+	int ret;
- 
- 	if (!cpufreq_driver)
- 		return;
-@@ -1582,7 +1582,11 @@ void cpufreq_suspend(void)
- 	pr_debug("%s: Suspending Governors\n", __func__);
- 
- 	for_each_active_policy(policy) {
--		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
-+		down_write(&policy->rwsem);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		up_write(&policy->rwsem);
-+
-+		if (ret)
- 			pr_err("%s: Failed to stop governor for policy: %p\n",
- 				__func__, policy);
- 		else if (cpufreq_driver->suspend
-@@ -1604,6 +1608,7 @@ void cpufreq_suspend(void)
- void cpufreq_resume(void)
- {
- 	struct cpufreq_policy *policy;
-+	int ret;
- 
- 	if (!cpufreq_driver)
- 		return;
-@@ -1616,13 +1621,20 @@ void cpufreq_resume(void)
- 	pr_debug("%s: Resuming Governors\n", __func__);
- 
- 	for_each_active_policy(policy) {
--		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
-+		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
- 			pr_err("%s: Failed to resume driver: %p\n", __func__,
- 				policy);
--		else if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
--		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
--			pr_err("%s: Failed to start governor for policy: %p\n",
--				__func__, policy);
-+		} else {
-+			down_write(&policy->rwsem);
-+			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-+			if (!ret)
-+				__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+			up_write(&policy->rwsem);
-+
-+			if (ret)
-+				pr_err("%s: Failed to start governor for policy: %p\n",
-+				       __func__, policy);
-+		}
- 	}
- 
- 	/*
-@@ -2276,8 +2288,11 @@ static int cpufreq_boost_set_sw(int state)
- 				       __func__);
- 				break;
- 			}
-+
-+			down_write(&policy->rwsem);
- 			policy->user_policy.max = policy->max;
- 			__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+			up_write(&policy->rwsem);
- 		}
- 	}
+ 	/* new governor failed, so re-start old one */
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 88a4215125bc..79b87cebaa9c 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -100,10 +100,6 @@ struct cpufreq_policy {
+ 	 * - Any routine that will write to the policy structure and/or may take away
+ 	 *   the policy altogether (eg. CPU hotplug), will hold this lock in write
+ 	 *   mode before doing so.
+-	 *
+-	 * Additional rules:
+-	 * - Lock should not be held across
+-	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 	 */
+ 	struct rw_semaphore	rwsem;
  
 -- 
 2.7.0.79.gdc08a19
-
