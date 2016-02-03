@@ -1,48 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
-Date: Wed, 3 Feb 2016 16:25:13 +0530
-Message-ID: <20160203105513.GA3469@vireshk>
-References: <20160202154717.GI3947@e106622-lin>
- <CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com>
- <20160202170144.GL3947@e106622-lin>
- <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com>
- <56B12BEC.9070603@codeaurora.org>
- <CAJZ5v0jjp7stM6O4XbDjATOUjntpYY-85FeiCC-WUeRVaQwTLA@mail.gmail.com>
- <CAJZ5v0i3WLgu8U5cmEQtfUDy6-LXN3g7auSVjOaMEHd_gqVzvg@mail.gmail.com>
- <56B158A0.6060604@codeaurora.org>
- <20160203065442.GV31828@vireshk>
- <20160203105107.GQ3947@e106622-lin>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 10/14] Documentation: DT: bindings: Add power domain
+ info for NVIDIA PMC
+Date: Wed, 3 Feb 2016 11:02:24 +0000
+Message-ID: <56B1DE40.7080403@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-11-git-send-email-jonathanh@nvidia.com>
+ <20160129160625.GA21918@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34152 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbcBCKzQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 05:55:16 -0500
-Received: by mail-pa0-f53.google.com with SMTP id uo6so12031948pac.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 02:55:16 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160203105107.GQ3947@e106622-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160129160625.GA21918@rob-hp-laptop>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 03-02-16, 10:51, Juri Lelli wrote:
-> I also think that sched-dvfs should not use cpufreq_governor.c.  It is
-> useful boilerplate code for ondemand and conservative, as they share lot
-> of data structures and how they work, but it doesn't necessarily suit
-> everybody's needs, IMHO.
+
+On 29/01/16 16:06, Rob Herring wrote:
+> On Thu, Jan 28, 2016 at 04:33:48PM +0000, Jon Hunter wrote:
+>> Add power-domain binding documentation for the NVIDIA PMC driver in
+>> order to support generic power-domains.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 55 ++++++++++++++++++++++
+>>  1 file changed, 55 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>> index 53aa5496c5cf..3c77373aa826 100644
+>> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>> @@ -1,5 +1,7 @@
+>>  NVIDIA Tegra Power Management Controller (PMC)
+>>  
+>> +== Power Management Controller Node ==
+>> +
+>>  The PMC block interacts with an external Power Management Unit. The PMC
+>>  mostly controls the entry and exit of the system from different sleep
+>>  modes. It provides power-gating controllers for SoC and CPU power-islands.
+>> @@ -70,6 +72,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+>>                       Defaults to 0. Valid values are described in section 12.5.2
+>>                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
+>>  
+>> +Optional nodes:
+>> +- powergates : This node contains a hierarchy of power domain nodes, which
+>> +	       should match the powergates on the Tegra SoC.
+>> +
+>>  Example:
+>>  
+>>  / SoC dts including file
+>> @@ -115,3 +121,52 @@ pmc@7000f400 {
+>>  	};
+>>  	...
+>>  };
+>> +
+>> +
+>> +== PM Domain Nodes ==
+>> +
+>> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
+>> +that can be power-gated by the PMC and should be named appropriately.
+>> +
+>> +Required properties:
+>> +  - clocks: Must contain an entry for each clock required by the PMC for
+>> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
+>> +  - resets: Must contain an entry for each reset required by the PMC for
+>> +    controlling a power-gate. See ../reset/reset.txt for details.
+>> +  - nvidia,powergate: Integer cell that contains an identifier for the PMC
+>> +    power-gate that is associated with the power-domain. Please refer to
+>> +    the Tegra TRM for more details.
 > 
-> OTOH, fixing the current issue in the best way we can come up with has
-> still value of course :).
+> Why not make this value be the power-domain cell for consumers and the 
+> pmc be the phandle.
 
-Right. cpufreq_governor.c is more about the technique where we do load
-evaluation using deferred timers and workqueues, which isn't required
-for sched-dvfs.
+Is there anything wrong with using a label for the consumers? Seems
+simpler, if you can just say ...
 
-We can just move the common parts, like, governor_show/governor_store
-routines, and the new macros being added here.
+	adma: adma@702e2000 {
+		...
+		power-domains = <&pd_audio>;
+		...
+	};
 
--- 
-viresh
+> Then use reg property for the subnodes. That avoids a custom property.
+
+That is fine with me.
+
+Jon
