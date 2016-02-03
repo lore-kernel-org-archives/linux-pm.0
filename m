@@ -1,59 +1,61 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Plain DFS (no voltage scaling)
-Date: Wed, 3 Feb 2016 16:35:10 +0100
-Message-ID: <56B21E2E.1070606@free.fr>
-References: <56B11B67.3090600@free.fr> <20160203021052.GK31828@vireshk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Wed, 3 Feb 2016 10:45:34 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
+References: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:58147 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754892AbcBCPfQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 10:35:16 -0500
-In-Reply-To: <20160203021052.GK31828@vireshk>
+Received: from iolanthe.rowland.org ([192.131.102.54]:51080 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756648AbcBCPpf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 10:45:35 -0500
+In-Reply-To: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/02/2016 03:10, Viresh Kumar wrote:
-> On 02-02-16, 22:11, Mason wrote:
->> Hello,
->>
->> I plan to enable the on-demand governor on the tango platform:
->> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
->>
->> I found the cpufreq-dt binding doc:
->>
->> https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
->> https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
->>
->> Something is not clear to me:
->>
->> If my platform cannot scale the voltage, what information
->> should I put in the voltage part of the DT?
+On Wed, 3 Feb 2016, Ulf Hansson wrote:
+
+> > Let me summarize my understanding of this thread so far.
+> >
+> > It looks like the omap3 code initializes hardware in ->probe() and
+> > then it may return -EPROBE_DEFER due to some unmet dependencies.  In
+> > that case the hardware is not reset to the previous state and the
+> > runtime PM framework is left in the state that corresponds to the
+> > current hardware state.  Before we had pm_runtime_reinit(), everything
+> > worked as expected on the second ->probe() call, because things were
+> > in sync then.
 > 
-> Wouldn't matter if there is no regulator. i.e. you should keep 0, but
-> even if they have something non-zero, core code will ignore it. But
-> yeah, it makes sense to keep it zero.
+> Correct!
+> 
+> Before pm_runtime_reinit(), the failing probe case (-EPROBE_DEFER)
+> worked fine because the HW state and the runtime PM status was in
+> sync. The device was powered and the runtime PM status was RPM_ACTIVE.
+> 
+> >
+> > The introduction of pm_runtime_reinit() changed the situation and now
+> > effectively the hardware is required to be reset to the initial state
+> > if -EPROBE_DEFER is to be returned too.
+> 
+> Not correct. The hardware doesn't need a reset as it stays powered
+> after a failed probe.
+> 
+> Instead, only the runtime PM status needs to be synchronized with the
+> HW state the next probe attempt.
 
-Hmmm, I am missing something obvious.
+In other words, the probe routine assumes the actual state is the same
+as the PM status.  This may have been true before pm_runtime_reinit()
+came along, but it's not true now.
 
-My config contains:
+> In other words, when the PM domain's ->runtime_resume() callbacks gets
+> called due to a pm_runtime_get_sync() in the second probe attempt, it
+> may find that the HW is already powered and can return zero instead of
+> resetting it.
 
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_GOV_COMMON=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_STAT_DETAILS=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPUFREQ_DT=y
+What's wrong with going ahead and resetting the hardware anyway?
 
-Yet, neither dt_cpufreq_probe() nor cpufreq_init() are being called.
-
-Could someone please point to my mistake?
-
-Regards.
+Alan Stern
 
