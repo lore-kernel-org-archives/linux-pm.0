@@ -1,56 +1,65 @@
-From: Gautham R Shenoy <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-Date: Wed, 3 Feb 2016 17:32:58 +0530
-Message-ID: <20160203120258.GA32294@in.ibm.com>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160203082700.GZ31828@vireshk>
- <56B1BD71.2050403@linux.vnet.ibm.com>
- <20160203090357.GA31828@vireshk>
-Reply-To: ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM: Avoid false-positive warnings in dev_pm_domain_set()
+Date: Wed, 3 Feb 2016 13:08:14 +0100
+Message-ID: <CAJZ5v0hy_oUGqNRaYtao_WjK5c+ZutnYh-mUJjhc=eCoBum+KA@mail.gmail.com>
+References: <80793506.EZRY3UmSeu@vostro.rjw.lan>
+	<CAPDyKFoCO6DY55+rsEhXqcA6dA12PvejroxDoS8G+SPKZsPWJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160203090357.GA31828@vireshk>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Shilpasri G Bhat <shilpa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pc-r/Jw6+rmf7HQT0dZR+AlfA@public.gmane.org, anton-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org, ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, shreyas-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f52.google.com ([209.85.215.52]:35286 "EHLO
+	mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbcBCMIQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 07:08:16 -0500
+In-Reply-To: <CAPDyKFoCO6DY55+rsEhXqcA6dA12PvejroxDoS8G+SPKZsPWJA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>
 
-Hi Viresh,
+On Wed, Feb 3, 2016 at 10:58 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 30 January 2016 at 12:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> There is a WARN_ON() in dev_pm_domain_set() that triggers on attempts
+>> to set the pm_domain pointer for devices with a driver bound.
+>>
+>> However, that WARN_ON() triggers on attempts to clear the pointer
+>> too and the test it uses is based on checking the device's
+>> p->knode_driver pointer which still is set when the device bus
+>> type's/driver's ->remove callback has been executed.  This
+>> leads to false-positive warnings when bus type code calls
+>> dev_pm_domain_set() to clear the pm_domain pointer after
+>> invoking the driver's ->remove() callback.
+>>
+>> To avoid those false-positives, make dev_pm_domain_set() check
+>> if the pointer passed to it is NULL and skip the warning in
+>> that case.
+>>
+>> Fixes: 989561de9b51 (PM / Domains: add setter for dev.pm_domain)
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/base/power/common.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> Index: linux-pm/drivers/base/power/common.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/power/common.c
+>> +++ linux-pm/drivers/base/power/common.c
+>> @@ -146,7 +146,7 @@ void dev_pm_domain_set(struct device *de
+>>         if (dev->pm_domain == pd)
+>>                 return;
+>>
+>> -       WARN(device_is_bound(dev),
+>> +       WARN(pd && device_is_bound(dev),
+>>              "PM domains can only be changed for unbound devices\n");
+>
+> Perhaps this information then becomes a bit misleading, as it's okay
+> to clear the pointer, but not assign it to a valid PM domain.
 
-> 
-> What I can suggest is:
-> - Move this directory inside cpuX/cpufreq/ directory, in a similar way
->   as to how we create 'stats' directory today.
-> - You can then get policy->cpu, to get chip->id out of it.
-> - The only disadvantage here is that the same chip directory will be
->   replicated in multiple policies, but that makes it more readable.
+Well, this is a "you're doing a wrong thing" warning and it does say
+what the wrong thing is.  Does it have to be more specific?  I don't
+think so.
 
-Thinking about it, having a sysfs group attached to a policy kobject
-looks ok if replication of the same chip information across multiple
-policies is not objectionable.
-
-Regarding the table-format, it breaks the sysfs's one-value-per-file
-rule. So I would still prefer each throttle reason being a separate
-file which gives the number of times the chip frequency was throttled
-due to that reason. We can live without the per-frequency
-throttle stats listed in the throttle_status.
-
-So, would the following be sysfs group structure be acceptable?
-
-$ls -1 /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/
-unthrottle
-powercap
-overtemp
-supply_fault
-overcurrent
-occ_reset
-turbo_stat
-sub_turbo_stat
-
---
-Thanks and Regards
-gautham.
+Thanks,
+Rafael
