@@ -1,75 +1,60 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Plain DFS (no voltage scaling)
-Date: Wed, 3 Feb 2016 19:25:56 +0100
-Message-ID: <56B24634.6060001@free.fr>
-References: <56B11B67.3090600@free.fr> <20160203021052.GK31828@vireshk>
- <56B21E2E.1070606@free.fr> <20160203161428.GJ3469@vireshk>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Wed, 3 Feb 2016 10:28:28 -0800
+Message-ID: <20160203182828.GM19432@atomide.com>
+References: <Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+ <20160202030533.GT19432@atomide.com>
+ <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+ <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+ <20160202163536.GU19432@atomide.com>
+ <CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
+ <20160202234145.GC19432@atomide.com>
+ <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+ <20160203162705.GG19432@atomide.com>
+ <CAPDyKFrsbW+vOoKBDvkNbJa=aUZE1EcikCqrAuO4cv+TkW-FnA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:52416 "EHLO smtp4-g21.free.fr"
+Received: from muru.com ([72.249.23.125]:59954 "EHLO muru.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965121AbcBCS0H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 13:26:07 -0500
-In-Reply-To: <20160203161428.GJ3469@vireshk>
+	id S933435AbcBCS2b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 13:28:31 -0500
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrsbW+vOoKBDvkNbJa=aUZE1EcikCqrAuO4cv+TkW-FnA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/02/2016 17:14, Viresh Kumar wrote:
-> On 03-02-16, 16:35, Mason wrote:
->> On 03/02/2016 03:10, Viresh Kumar wrote:
->>> On 02-02-16, 22:11, Mason wrote:
->>>> Hello,
->>>>
->>>> I plan to enable the on-demand governor on the tango platform:
->>>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
->>>>
->>>> I found the cpufreq-dt binding doc:
->>>>
->>>> https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
->>>> https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
->>>>
->>>> Something is not clear to me:
->>>>
->>>> If my platform cannot scale the voltage, what information
->>>> should I put in the voltage part of the DT?
->>>
->>> Wouldn't matter if there is no regulator. i.e. you should keep 0, but
->>> even if they have something non-zero, core code will ignore it. But
->>> yeah, it makes sense to keep it zero.
->>
->> Hmmm, I am missing something obvious.
->>
->> My config contains:
->>
->> CONFIG_CPU_FREQ=y
->> CONFIG_CPU_FREQ_GOV_COMMON=y
->> CONFIG_CPU_FREQ_STAT=y
->> CONFIG_CPU_FREQ_STAT_DETAILS=y
->> CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
->> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->> CONFIG_CPUFREQ_DT=y
->>
->> Yet, neither dt_cpufreq_probe() nor cpufreq_init() are being called.
->>
->> Could someone please point to my mistake?
+* Ulf Hansson <ulf.hansson@linaro.org> [160203 10:03]:
 > 
-> You need to create a platform device to get cpufreq-dt driver probed.
-> Check other users..
+> One more thing though. I just realized that you have yet another issue
+> to consider going for the approach fixing *only* drivers.
+> 
+> Let me summarize it here:
+> 
+> If userspace has prevented runtime PM (pm_runtime_forbid()) when a
+> driver becomes unbound, the driver will not be able to suspend the
+> device by using any of the pm_runtime_suspend() APIs, as the usage
+> count is isn't zero.
+> 
+> As pm_runtime_reinit() is invoked as part of the driver unbind
+> sequence, the runtime PM status goes out of sync. A following driver
+> rebind will then trigger the warning when the PM domain's
+> ->runtime_resume() callback gets invoked. Again, forever preventing
+> the device from being runtime suspended.
 
-The sunxi guys pointed me in the right direction.
+Hmm yeah that's a good point.
 
-http://lxr.free-electrons.com/source/arch/arm/mach-sunxi/sunxi.c#L20
+> How do you intend to solve this case?
+> I guess there are two options, pick up the patch I posted for omap
+> hwmod or make use of pm_runtime_force_suspend() in the driver.
 
-Why isn't there a compatible string like other drivers?
+My gut feeling right now is we should just have
+BUS_NOTIFY_UNBIND_DRIVER shut down the device on the interconnect
+automatically as it's unused after the driver has unloaded :)
 
-Such as
-  compatible = "cpufreq-dt"
-which would enable cpufreq on the platform?
+Regards,
 
-Regards.
-
+Tony
