@@ -1,429 +1,187 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/7] cpufreq: governor: New sysfs show/store callbacks for governor tunables
-Date: Wed,  3 Feb 2016 19:32:18 +0530
-Message-ID: <0e8ded13e0a8dfa2cc5271be9ea725474dd4be52.1454507872.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 6/7] cpufreq: Call __cpufreq_governor() with policy->rwsem held
+Date: Wed,  3 Feb 2016 19:32:22 +0530
+Message-ID: <c7d9903e34dc658025fb20f90c610fa7cc0c8e5d.1454507872.git.viresh.kumar@linaro.org>
 References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36078 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756009AbcBCOCt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:02:49 -0500
+Received: by mail-pa0-f51.google.com with SMTP id yy13so14027270pab.3
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:02:49 -0800 (PST)
 In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
 References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-The ondemand and conservative governors use the global-attr or freq-attr
-structures to represent sysfs attributes corresponding to their tunables
-(which of them is actually used depends on whether or not different
-policy objects can use the same governor with different tunables at the
-same time and, consequently, on where those attributes are located in
-sysfs).
+This isn't followed properly by all parts of the core code, some follow
+it, whereas others don't.
 
-Unfortunately, in the freq-attr case, the standard cpufreq show/store
-sysfs attribute callbacks are applied to the governor tunable attributes
-and they always acquire the policy->rwsem lock before carrying out the
-operation.  That may lead to an ABBA deadlock if governor tunable
-attributes are removed under policy->rwsem while one of them is being
-accessed concurrently (if sysfs attributes removal wins the race, it
-will wait for the access to complete with policy->rwsem held while the
-attribute callback will block on policy->rwsem indefinitely).
+Enforcing it will also enable us to remove cpufreq_governor_lock, that
+is used today because we can't guarantee that __cpufreq_governor() isn't
+executed in parallel.
 
-We attempted to address this issue by dropping policy->rwsem around
-governor tunable attributes removal (that is, around invocations of the
-->governor callback with the event arg equal to CPUFREQ_GOV_POLICY_EXIT)
-in cpufreq_set_policy(), but that opened up race conditions that had not
-been possible with policy->rwsem held all the time.  Therefore
-policy->rwsem cannot be dropped in cpufreq_set_policy() at any point,
-but the deadlock situation described above must be avoided too.
+We should also ensure that the lock is held across state changes to the
+governors.
 
-To that end, use the observation that in principle governor tunables may
-be represented by the same data type regardless of whether the governor
-is system-wide or per-policy and introduce a new structure, struct
-governor_attr, for representing them and new corresponding macros for
-creating show/store sysfs callbacks for them.  Also make their parent
-kobject use a new kobject type whose default show/store callbacks are
-not related to the standard core cpufreq ones in any way (and they don't
-acquire policy->rwsem in particular).
+For example, while adding a CPU to the policy on cpu-online path, we
+need to stop the governor, change policy->cpus, start the governor and
+then refresh its limits. The complete sequence must be guaranteed to
+execute without any concurrent races. And that can be achieved using
+policy->rwsem around these use cases.
 
-[ Rafael: Written changelog ]
+Also note that cpufreq_driver->stop_cpu() and ->exit() can get called
+while policy->rwsem is held. That shouldn't have any side effects
+though.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_conservative.c | 73 ++++++++++++----------------------
- drivers/cpufreq/cpufreq_governor.c     | 69 +++++++++++++++++++++++++++-----
- drivers/cpufreq/cpufreq_governor.h     | 34 ++++++++++++++--
- drivers/cpufreq/cpufreq_ondemand.c     | 73 ++++++++++++----------------------
- 4 files changed, 142 insertions(+), 107 deletions(-)
+ drivers/cpufreq/cpufreq.c | 45 ++++++++++++++++++++++++++++++---------------
+ 1 file changed, 30 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 57750367bd26..c749fb4fe5d2 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -275,54 +275,33 @@ static ssize_t store_freq_step(struct dbs_data *dbs_data, const char *buf,
- 	return count;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index dc43294e7b31..4fc3889ca7c9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -996,30 +996,29 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cp
+ 	if (cpumask_test_cpu(cpu, policy->cpus))
+ 		return 0;
+ 
++	down_write(&policy->rwsem);
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
++			goto unlock;
+ 		}
+ 	}
+ 
+-	down_write(&policy->rwsem);
+ 	cpumask_set_cpu(cpu, policy->cpus);
+-	up_write(&policy->rwsem);
+ 
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 		if (!ret)
+ 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 
+-		if (ret) {
++		if (ret)
+ 			pr_err("%s: Failed to start governor\n", __func__);
+-			return ret;
+-		}
+ 	}
+ 
+-	return 0;
++unlock:
++	up_write(&policy->rwsem);
++	return ret;
  }
  
--show_store_one(cs, sampling_rate);
--show_store_one(cs, sampling_down_factor);
--show_store_one(cs, up_threshold);
--show_store_one(cs, down_threshold);
--show_store_one(cs, ignore_nice_load);
--show_store_one(cs, freq_step);
--show_one(cs, min_sampling_rate);
--
--gov_sys_pol_attr_rw(sampling_rate);
--gov_sys_pol_attr_rw(sampling_down_factor);
--gov_sys_pol_attr_rw(up_threshold);
--gov_sys_pol_attr_rw(down_threshold);
--gov_sys_pol_attr_rw(ignore_nice_load);
--gov_sys_pol_attr_rw(freq_step);
--gov_sys_pol_attr_ro(min_sampling_rate);
--
--static struct attribute *dbs_attributes_gov_sys[] = {
--	&min_sampling_rate_gov_sys.attr,
--	&sampling_rate_gov_sys.attr,
--	&sampling_down_factor_gov_sys.attr,
--	&up_threshold_gov_sys.attr,
--	&down_threshold_gov_sys.attr,
--	&ignore_nice_load_gov_sys.attr,
--	&freq_step_gov_sys.attr,
-+gov_show_one(cs, sampling_rate);
-+gov_show_one(cs, sampling_down_factor);
-+gov_show_one(cs, up_threshold);
-+gov_show_one(cs, down_threshold);
-+gov_show_one(cs, ignore_nice_load);
-+gov_show_one(cs, freq_step);
-+gov_show_one(cs, min_sampling_rate);
-+
-+gov_attr_rw(sampling_rate);
-+gov_attr_rw(sampling_down_factor);
-+gov_attr_rw(up_threshold);
-+gov_attr_rw(down_threshold);
-+gov_attr_rw(ignore_nice_load);
-+gov_attr_rw(freq_step);
-+gov_attr_ro(min_sampling_rate);
-+
-+static struct attribute *cs_attributes[] = {
-+	&min_sampling_rate.attr,
-+	&sampling_rate.attr,
-+	&sampling_down_factor.attr,
-+	&up_threshold.attr,
-+	&down_threshold.attr,
-+	&ignore_nice_load.attr,
-+	&freq_step.attr,
- 	NULL
- };
+ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+@@ -1322,13 +1321,13 @@ static void cpufreq_offline(unsigned int cpu)
+ 		return;
+ 	}
  
--static struct attribute_group cs_attr_group_gov_sys = {
--	.attrs = dbs_attributes_gov_sys,
--	.name = "conservative",
--};
--
--static struct attribute *dbs_attributes_gov_pol[] = {
--	&min_sampling_rate_gov_pol.attr,
--	&sampling_rate_gov_pol.attr,
--	&sampling_down_factor_gov_pol.attr,
--	&up_threshold_gov_pol.attr,
--	&down_threshold_gov_pol.attr,
--	&ignore_nice_load_gov_pol.attr,
--	&freq_step_gov_pol.attr,
--	NULL
--};
--
--static struct attribute_group cs_attr_group_gov_pol = {
--	.attrs = dbs_attributes_gov_pol,
--	.name = "conservative",
--};
--
- /************************** sysfs end ************************/
++	down_write(&policy->rwsem);
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret)
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+ 	}
  
- static int cs_init(struct dbs_data *dbs_data, bool notify)
-@@ -365,8 +344,8 @@ define_get_cpu_dbs_routines(cs_cpu_dbs_info);
+-	down_write(&policy->rwsem);
+ 	cpumask_clear_cpu(cpu, policy->cpus);
  
- static struct common_dbs_data cs_dbs_cdata = {
- 	.governor = GOV_CONSERVATIVE,
--	.attr_group_gov_sys = &cs_attr_group_gov_sys,
--	.attr_group_gov_pol = &cs_attr_group_gov_pol,
-+	.kobj_name = "conservative",
-+	.kobj_type = { .sysfs_ops = &governor_sysfs_ops, .default_attrs = cs_attributes },
- 	.get_cpu_cdbs = get_cpu_cdbs,
- 	.get_cpu_dbs_info_s = get_cpu_dbs_info_s,
- 	.gov_dbs_timer = cs_dbs_timer,
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 9a7edc91ad57..e7f79d2477fa 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -22,14 +22,58 @@
+ 	if (policy_is_inactive(policy)) {
+@@ -1341,7 +1340,6 @@ static void cpufreq_offline(unsigned int cpu)
+ 		/* Nominate new CPU */
+ 		policy->cpu = cpumask_any(policy->cpus);
+ 	}
+-	up_write(&policy->rwsem);
  
- #include "cpufreq_governor.h"
- 
--static struct attribute_group *get_sysfs_attr(struct dbs_data *dbs_data)
-+static inline struct dbs_data *to_dbs_data(struct kobject *kobj)
- {
--	if (have_governor_per_policy())
--		return dbs_data->cdata->attr_group_gov_pol;
--	else
--		return dbs_data->cdata->attr_group_gov_sys;
-+	return container_of(kobj, struct dbs_data, kobj);
+ 	/* Start governor again for active policy */
+ 	if (!policy_is_inactive(policy)) {
+@@ -1376,6 +1374,7 @@ static void cpufreq_offline(unsigned int cpu)
+ 		cpufreq_driver->exit(policy);
+ 		policy->freq_table = NULL;
+ 	}
++	up_write(&policy->rwsem);
  }
  
-+static inline struct governor_attr *to_gov_attr(struct attribute *attr)
-+{
-+	return container_of(attr, struct governor_attr, attr);
-+}
-+
-+static ssize_t governor_show(struct kobject *kobj, struct attribute *attr,
-+			     char *buf)
-+{
-+	struct dbs_data *dbs_data = to_dbs_data(kobj);
-+	struct governor_attr *gattr = to_gov_attr(attr);
-+	int ret = -EIO;
-+
-+	if (gattr->show)
-+		ret = gattr->show(dbs_data, buf);
-+
-+	return ret;
-+}
-+
-+static ssize_t governor_store(struct kobject *kobj, struct attribute *attr,
-+			      const char *buf, size_t count)
-+{
-+	struct dbs_data *dbs_data = to_dbs_data(kobj);
-+	struct governor_attr *gattr = to_gov_attr(attr);
-+	int ret = -EIO;
-+
-+	mutex_lock(&dbs_data->mutex);
-+
-+	if (gattr->store)
-+		ret = gattr->store(dbs_data, buf, count);
-+
-+	mutex_unlock(&dbs_data->mutex);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Sysfs Ops for accessing governor attributes.
-+ *
-+ * All show/store invocations for governor specific sysfs attributes, will first
-+ * call the below show/store callbacks and the attribute specific callback will
-+ * be called from within it.
-+ */
-+const struct sysfs_ops governor_sysfs_ops = {
-+	.show	= governor_show,
-+	.store	= governor_store,
-+};
-+
- void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ /**
+@@ -1572,6 +1571,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
+ void cpufreq_suspend(void)
  {
- 	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-@@ -383,6 +427,7 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
+ 	struct cpufreq_policy *policy;
++	int ret;
  
- 	dbs_data->cdata = cdata;
- 	dbs_data->usage_count = 1;
-+	mutex_init(&dbs_data->mutex);
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1582,7 +1582,11 @@ void cpufreq_suspend(void)
+ 	pr_debug("%s: Suspending Governors\n", __func__);
  
- 	ret = cdata->init(dbs_data, !policy->governor->initialized);
- 	if (ret)
-@@ -395,10 +440,14 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
- 
- 	policy->governor_data = dbs_data;
- 
--	ret = sysfs_create_group(get_governor_parent_kobj(policy),
--				 get_sysfs_attr(dbs_data));
--	if (ret)
-+	ret = kobject_init_and_add(&dbs_data->kobj, &cdata->kobj_type,
-+				   get_governor_parent_kobj(policy),
-+				   cdata->kobj_name);
-+	if (ret) {
-+		pr_err("cpufreq: Governor initialization failed (dbs_data kobject initialization error %d)\n",
-+		       ret);
- 		goto reset_gdbs_data;
-+	}
- 
- 	return 0;
- 
-@@ -426,8 +475,7 @@ static int cpufreq_governor_exit(struct cpufreq_policy *policy,
- 		return -EBUSY;
- 
- 	if (!--dbs_data->usage_count) {
--		sysfs_remove_group(get_governor_parent_kobj(policy),
--				   get_sysfs_attr(dbs_data));
-+		kobject_put(&dbs_data->kobj);
- 
- 		policy->governor_data = NULL;
- 
-@@ -435,6 +483,7 @@ static int cpufreq_governor_exit(struct cpufreq_policy *policy,
- 			cdata->gdbs_data = NULL;
- 
- 		cdata->exit(dbs_data, policy->governor->initialized == 1);
-+		mutex_destroy(&dbs_data->mutex);
- 		kfree(dbs_data);
- 	} else {
- 		policy->governor_data = NULL;
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index ad44a8546a3a..45a6ac1ecfb0 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -108,6 +108,31 @@ static ssize_t store_##file_name##_gov_pol				\
- show_one(_gov, file_name);						\
- store_one(_gov, file_name)
- 
-+/* Governor's specific attributes */
-+struct dbs_data;
-+struct governor_attr {
-+	struct attribute attr;
-+	ssize_t (*show)(struct dbs_data *dbs_data, char *buf);
-+	ssize_t (*store)(struct dbs_data *dbs_data, const char *buf,
-+			 size_t count);
-+};
+ 	for_each_active_policy(policy) {
+-		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
++		down_write(&policy->rwsem);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		up_write(&policy->rwsem);
 +
-+#define gov_show_one(_gov, file_name)					\
-+static ssize_t show_##file_name						\
-+(struct dbs_data *dbs_data, char *buf)					\
-+{									\
-+	struct _gov##_dbs_tuners *tuners = dbs_data->tuners;		\
-+	return sprintf(buf, "%u\n", tuners->file_name);			\
-+}
-+
-+#define gov_attr_ro(_name)						\
-+static struct governor_attr _name =					\
-+__ATTR(_name, 0444, show_##_name, NULL)
-+
-+#define gov_attr_rw(_name)						\
-+static struct governor_attr _name =					\
-+__ATTR(_name, 0644, show_##_name, store_##_name)
-+
- /* create helper routines */
- #define define_get_cpu_dbs_routines(_dbs_info)				\
- static struct cpu_dbs_info *get_cpu_cdbs(int cpu)			\
-@@ -197,14 +222,13 @@ struct cs_dbs_tuners {
- };
++		if (ret)
+ 			pr_err("%s: Failed to stop governor for policy: %p\n",
+ 				__func__, policy);
+ 		else if (cpufreq_driver->suspend
+@@ -1604,6 +1608,7 @@ void cpufreq_suspend(void)
+ void cpufreq_resume(void)
+ {
+ 	struct cpufreq_policy *policy;
++	int ret;
  
- /* Common Governor data across policies */
--struct dbs_data;
- struct common_dbs_data {
- 	/* Common across governors */
- 	#define GOV_ONDEMAND		0
- 	#define GOV_CONSERVATIVE	1
- 	int governor;
--	struct attribute_group *attr_group_gov_sys; /* one governor - system */
--	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
-+	const char *kobj_name;
-+	struct kobj_type kobj_type;
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1616,13 +1621,20 @@ void cpufreq_resume(void)
+ 	pr_debug("%s: Resuming Governors\n", __func__);
+ 
+ 	for_each_active_policy(policy) {
+-		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
++		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
+ 			pr_err("%s: Failed to resume driver: %p\n", __func__,
+ 				policy);
+-		else if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
+-		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
+-			pr_err("%s: Failed to start governor for policy: %p\n",
+-				__func__, policy);
++		} else {
++			down_write(&policy->rwsem);
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++			if (!ret)
++				__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++			up_write(&policy->rwsem);
++
++			if (ret)
++				pr_err("%s: Failed to start governor for policy: %p\n",
++				       __func__, policy);
++		}
+ 	}
  
  	/*
- 	 * Common data for platforms that don't set
-@@ -234,6 +258,9 @@ struct dbs_data {
- 	struct common_dbs_data *cdata;
- 	int usage_count;
- 	void *tuners;
-+	struct kobject kobj;
-+	/* Protect concurrent updates to governor tunables from sysfs */
-+	struct mutex mutex;
- };
- 
- /* Governor specific ops, will be passed to dbs_data->gov_ops */
-@@ -256,6 +283,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
- }
- 
- extern struct mutex cpufreq_governor_lock;
-+extern const struct sysfs_ops governor_sysfs_ops;
- 
- void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay);
- void gov_cancel_work(struct cpu_common_dbs_info *shared);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index b31f64745232..82ed490f7de0 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -436,54 +436,33 @@ static ssize_t store_powersave_bias(struct dbs_data *dbs_data, const char *buf,
- 	return count;
- }
- 
--show_store_one(od, sampling_rate);
--show_store_one(od, io_is_busy);
--show_store_one(od, up_threshold);
--show_store_one(od, sampling_down_factor);
--show_store_one(od, ignore_nice_load);
--show_store_one(od, powersave_bias);
--show_one(od, min_sampling_rate);
--
--gov_sys_pol_attr_rw(sampling_rate);
--gov_sys_pol_attr_rw(io_is_busy);
--gov_sys_pol_attr_rw(up_threshold);
--gov_sys_pol_attr_rw(sampling_down_factor);
--gov_sys_pol_attr_rw(ignore_nice_load);
--gov_sys_pol_attr_rw(powersave_bias);
--gov_sys_pol_attr_ro(min_sampling_rate);
--
--static struct attribute *dbs_attributes_gov_sys[] = {
--	&min_sampling_rate_gov_sys.attr,
--	&sampling_rate_gov_sys.attr,
--	&up_threshold_gov_sys.attr,
--	&sampling_down_factor_gov_sys.attr,
--	&ignore_nice_load_gov_sys.attr,
--	&powersave_bias_gov_sys.attr,
--	&io_is_busy_gov_sys.attr,
-+gov_show_one(od, sampling_rate);
-+gov_show_one(od, io_is_busy);
-+gov_show_one(od, up_threshold);
-+gov_show_one(od, sampling_down_factor);
-+gov_show_one(od, ignore_nice_load);
-+gov_show_one(od, powersave_bias);
-+gov_show_one(od, min_sampling_rate);
+@@ -2276,8 +2288,11 @@ static int cpufreq_boost_set_sw(int state)
+ 				       __func__);
+ 				break;
+ 			}
 +
-+gov_attr_rw(sampling_rate);
-+gov_attr_rw(io_is_busy);
-+gov_attr_rw(up_threshold);
-+gov_attr_rw(sampling_down_factor);
-+gov_attr_rw(ignore_nice_load);
-+gov_attr_rw(powersave_bias);
-+gov_attr_ro(min_sampling_rate);
-+
-+static struct attribute *od_attributes[] = {
-+	&min_sampling_rate.attr,
-+	&sampling_rate.attr,
-+	&up_threshold.attr,
-+	&sampling_down_factor.attr,
-+	&ignore_nice_load.attr,
-+	&powersave_bias.attr,
-+	&io_is_busy.attr,
- 	NULL
- };
++			down_write(&policy->rwsem);
+ 			policy->user_policy.max = policy->max;
+ 			__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++			up_write(&policy->rwsem);
+ 		}
+ 	}
  
--static struct attribute_group od_attr_group_gov_sys = {
--	.attrs = dbs_attributes_gov_sys,
--	.name = "ondemand",
--};
--
--static struct attribute *dbs_attributes_gov_pol[] = {
--	&min_sampling_rate_gov_pol.attr,
--	&sampling_rate_gov_pol.attr,
--	&up_threshold_gov_pol.attr,
--	&sampling_down_factor_gov_pol.attr,
--	&ignore_nice_load_gov_pol.attr,
--	&powersave_bias_gov_pol.attr,
--	&io_is_busy_gov_pol.attr,
--	NULL
--};
--
--static struct attribute_group od_attr_group_gov_pol = {
--	.attrs = dbs_attributes_gov_pol,
--	.name = "ondemand",
--};
--
- /************************** sysfs end ************************/
- 
- static int od_init(struct dbs_data *dbs_data, bool notify)
-@@ -542,8 +521,8 @@ static struct od_ops od_ops = {
- 
- static struct common_dbs_data od_dbs_cdata = {
- 	.governor = GOV_ONDEMAND,
--	.attr_group_gov_sys = &od_attr_group_gov_sys,
--	.attr_group_gov_pol = &od_attr_group_gov_pol,
-+	.kobj_name = "ondemand",
-+	.kobj_type = { .sysfs_ops = &governor_sysfs_ops, .default_attrs = od_attributes },
- 	.get_cpu_cdbs = get_cpu_cdbs,
- 	.get_cpu_dbs_info_s = get_cpu_dbs_info_s,
- 	.gov_dbs_timer = od_dbs_timer,
 -- 
 2.7.0.79.gdc08a19
+
