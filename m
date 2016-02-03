@@ -1,43 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Plain DFS (no voltage scaling)
-Date: Wed, 3 Feb 2016 07:40:52 +0530
-Message-ID: <20160203021052.GK31828@vireshk>
-References: <56B11B67.3090600@free.fr>
+Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
+ __cpufreq_governor
+Date: Wed, 3 Feb 2016 07:43:59 +0530
+Message-ID: <20160203021359.GL31828@vireshk>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <20160112102025.GC1084@ubuntu>
+ <56AC04E3.8090900@codeaurora.org>
+ <1703921.2AHaiQoggk@vostro.rjw.lan>
+ <20160201060943.GH13476@vireshk>
+ <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
+ <56AFBEE5.70501@codeaurora.org>
+ <20160202063449.GF31828@vireshk>
+ <56B12191.8020407@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:34900 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbcBCCK4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 21:10:56 -0500
-Received: by mail-pf0-f171.google.com with SMTP id 65so4544132pfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 18:10:56 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <56B11B67.3090600@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <56B12191.8020407@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 02-02-16, 22:11, Mason wrote:
-> Hello,
+On 02-02-16, 13:37, Saravana Kannan wrote:
+> On 02/01/2016 10:34 PM, Viresh Kumar wrote:
+> >What will that solve? It will stay exactly same then as well, as we
+> >would be adding/removing these attributes from within the same
+> >policy->rwsem ..
 > 
-> I plan to enable the on-demand governor on the tango platform:
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
-> 
-> I found the cpufreq-dt binding doc:
-> 
-> https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
-> https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
-> 
-> Something is not clear to me:
-> 
-> If my platform cannot scale the voltage, what information
-> should I put in the voltage part of the DT?
+> The problem isn't that you are holding the policy rwsem. The problem is that
+> we are trying to grab the same locks in different order. This is trying to
+> fix that.
 
-Wouldn't matter if there is no regulator. i.e. you should keep 0, but
-even if they have something non-zero, core code will ignore it. But
-yeah, it makes sense to keep it zero.
+That's exactly what I was trying to say, sorry for not being very
+clear.
+
+Even if you would move the sysfs file creation thing into the cpufreq
+core, instead of governor, we will have locks this way:
+
+CPU0                            CPU1
+(sysfs read)                    (sysfs dir remove)
+s_active lock                   policy->rwsem
+policy->rwsem
+                                s_active lock (hang)
+
+
+And so I said, nothing will change.
 
 -- 
 viresh
