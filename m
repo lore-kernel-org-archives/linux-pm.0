@@ -1,106 +1,78 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Wed, 3 Feb 2016 13:51:09 -0800
-Message-ID: <20160203215109.GO19432@atomide.com>
-References: <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
- <20160202163536.GU19432@atomide.com>
- <CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
- <20160202234145.GC19432@atomide.com>
- <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
- <20160203162705.GG19432@atomide.com>
- <CAPDyKFrsbW+vOoKBDvkNbJa=aUZE1EcikCqrAuO4cv+TkW-FnA@mail.gmail.com>
- <20160203182828.GM19432@atomide.com>
- <CAPDyKFonA4AAzx9JaQ2NZViMLvCjoa5vy2WRuhEF_5Hg8gPKeg@mail.gmail.com>
- <20160203184504.GN19432@atomide.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Wed, 03 Feb 2016 23:20:19 +0100
+Message-ID: <18671470.kF8gVcBlTg@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59995 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755824AbcBCVvM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 16:51:12 -0500
-Content-Disposition: inline
-In-Reply-To: <20160203184504.GN19432@atomide.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:61912 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965509AbcBCWTR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 17:19:17 -0500
+In-Reply-To: <3071836.JbNxX8hU6x@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-* Tony Lindgren <tony@atomide.com> [160203 10:46]:
-> * Ulf Hansson <ulf.hansson@linaro.org> [160203 10:38]:
-> > On 3 February 2016 at 19:28, Tony Lindgren <tony@atomide.com> wrote:
-> > > * Ulf Hansson <ulf.hansson@linaro.org> [160203 10:03]:
-> > >>
-> > >> One more thing though. I just realized that you have yet another issue
-> > >> to consider going for the approach fixing *only* drivers.
-> > >>
-> > >> Let me summarize it here:
-> > >>
-> > >> If userspace has prevented runtime PM (pm_runtime_forbid()) when a
-> > >> driver becomes unbound, the driver will not be able to suspend the
-> > >> device by using any of the pm_runtime_suspend() APIs, as the usage
-> > >> count is isn't zero.
-> > >>
-> > >> As pm_runtime_reinit() is invoked as part of the driver unbind
-> > >> sequence, the runtime PM status goes out of sync. A following driver
-> > >> rebind will then trigger the warning when the PM domain's
-> > >> ->runtime_resume() callback gets invoked. Again, forever preventing
-> > >> the device from being runtime suspended.
-> > >
-> > > Hmm yeah that's a good point.
-> > >
-> > >> How do you intend to solve this case?
-> > >> I guess there are two options, pick up the patch I posted for omap
-> > >> hwmod or make use of pm_runtime_force_suspend() in the driver.
-> > >
-> > > My gut feeling right now is we should just have
-> > > BUS_NOTIFY_UNBIND_DRIVER shut down the device on the interconnect
-> > > automatically as it's unused after the driver has unloaded :)
-> > 
-> > BUS_NOTIFY_UNBIND_DRIVER is sent prior the ->remove() callbacks is
-> > invoked from driver core.
-> > So if the driver requires to do a pm_runtime_get_sync() during
-> > ->remove() callback, this won't work.
-> > 
-> > BUS_NOTIFY_UNBOUND_DRIVER may work though.
+On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
+> Hi,
 > 
-> Right sorry that's what I meant. Naturally we can't do it before
-> remove :)
+> The following patch series introduces a mechanism allowing the cpufreq core
+> and "setpolicy" drivers to provide utilization update callbacks to be invoked
+> by the scheduler on utilization changes.  Those callbacks can be used to run
+> the sampling and frequency adjustments code (intel_pstate) or to schedule the
+> execution of that code in process context (cpufreq core) instead of per-CPU
+> deferrable timers used in cpufreq today (which Thomas complained about during
+> the last Kernel Summit).
 > 
-> I'll take a look.
+> [1/3] Introduce a mechanism for calling into cpufreq from the scheduler and
+>       registering callbacks to be executed from there.
+> 
+> [2/3] Modify intel_pstate to use the mechanism introduced by [1/3] instead
+>       of per-CPU deferrable timers to do its work.
+> 
+> This isn't entirely straightforward as the scheduler context running those
+> callbacks is really special.  Among other things it can only use raw
+> spinlocks and cannot invoke wake_up_process() directly.  Also, calling
+> ktime_get() from there may be too expensive on some systems.  All that has to
+> be taken into account, but even then the change allows some lines of code to be
+> cut from the driver.
+> 
+> Some performance and energy consumption measurements have been carried out with
+> an earlier version of this patch and it looks like the changes lead to a
+> slightly better performing system that consumes slightly less energy at the
+> same time overall.
+> 
+> [3/3] Modify the cpufreq core to use the mechanism introduced by [1/3] instead
+>       of per-CPU deferrable timers to queue up the execution of governor work.
+> 
+> Again, this isn't really straightforward for the above reasons, but still the
+> code size is reduced a bit by the changes.
+> 
+> I'm still unsure about the energy consumption and performance impact of [3/3]
+> as earlier versions of it led to inconsistent results (most likely due to bugs
+> in them that hopefully have been fixed in this version).  In particular, the
+> additional irq_work may turn out to be problematic, but more optimizations are
+> possible on top of this one even if it makes things worse by itself.
+> 
+> For example, it should be possible to move the execution of state selection
+> code into the utilization update callback itself, at least in principle, for
+> all governors.  The P-state/OPP adjustment may need to be run from process
+> context still, but for the drivers that can do it without sleeping it should
+> be possible to move that into the utilization update callback as well.
+> 
+> The patches are on top of 4.5-rc1 and have been tested on a couple of x86
+> machines.
 
-This patch below seems to fix this issue. I'll do some more
-testing here and send the driver fixes and this with proper
-commit messages. Thanks for letting me know about that one!
+Well, no responses here, so I'm inclined to believe that this series is fine
+by everybody (at least by everybody in the CC).
 
-Regards,
+I can wait for a few days more, but new material is starting to pile up on top
+of these patches and I'll simply need to move forward at one point.
 
-Tony
+Thanks,
+Rafael
 
-8< -------------------
---- a/arch/arm/mach-omap2/omap_device.c
-+++ b/arch/arm/mach-omap2/omap_device.c
-@@ -191,12 +191,22 @@ static int _omap_device_notifier_call(struct notifier_block *nb,
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct omap_device *od;
-+	int err;
- 
- 	switch (event) {
- 	case BUS_NOTIFY_DEL_DEVICE:
- 		if (pdev->archdata.od)
- 			omap_device_delete(pdev->archdata.od);
- 		break;
-+	case BUS_NOTIFY_UNBOUND_DRIVER:
-+		od = to_omap_device(pdev);
-+		if (od && (od->_state == OMAP_DEVICE_STATE_ENABLED)) {
-+			dev_info(&pdev->dev, "enabled after unload, idling\n");
-+			err = omap_device_idle(pdev);
-+			if (err)
-+				dev_err(&pdev->dev, "failed to idle\n");
-+		}
-+		break;
- 	case BUS_NOTIFY_ADD_DEVICE:
- 		if (pdev->dev.of_node)
- 			omap_device_build_from_dt(pdev);
