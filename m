@@ -1,39 +1,53 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 4/8] thermal: rockchip: fix calculation error for code_to_temp
-Date: Wed,  3 Feb 2016 12:12:43 +0800
-Message-ID: <1454472767-5767-5-git-send-email-wxt@rock-chips.com>
-References: <1454472767-5767-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1454472767-5767-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, edubezval@gmail.com
-Cc: huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, zhangqing@rock-chips.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
+ __cpufreq_governor
+Date: Wed, 3 Feb 2016 10:32:56 +0530
+Message-ID: <20160203050256.GQ31828@vireshk>
+References: <20160112102025.GC1084@ubuntu>
+ <56AC04E3.8090900@codeaurora.org>
+ <1703921.2AHaiQoggk@vostro.rjw.lan>
+ <20160201060943.GH13476@vireshk>
+ <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
+ <56AFBEE5.70501@codeaurora.org>
+ <20160202063449.GF31828@vireshk>
+ <56B12191.8020407@codeaurora.org>
+ <20160203021359.GL31828@vireshk>
+ <56B17C56.1030504@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:34056 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbcBCFDA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 00:03:00 -0500
+Received: by mail-pf0-f174.google.com with SMTP id o185so7029975pfb.1
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 21:03:00 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <56B17C56.1030504@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
 
-From: Elaine Zhang <zhangqing@rock-chips.com>
+On 02-02-16, 20:04, Saravana Kannan wrote:
+> What's the s_active lock in CPU1 coming from?
 
-the calculation use a global table, not their own table.
-so adapt the table to the correct one.
+That's taken by sysfs core while removing the files.
 
-Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
----
+> The only reason it's there
+> today is because of the sysfs dir remove. If you move it before the
+> policy->rwsem, you won't have it after the policy->rwsem too. So, I think it
+> will fix the issue.
 
- drivers/thermal/rockchip_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Its complex and we will end up making ugly..
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 433085a..5c58d48 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -411,7 +411,7 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
- 	 * temperature between 2 table entries is linear and interpolate
- 	 * to produce less granular result.
- 	 */
--	num = table.id[mid].temp - v2_code_table[mid - 1].temp;
-+	num = table.id[mid].temp - table.id[mid - 1].temp;
- 	num *= abs(table.id[mid - 1].code - code);
- 	denom = abs(table.id[mid - 1].code - table.id[mid].code);
- 	*temp = table.id[mid - 1].temp + (num / denom);
+For example, EXIT can be called while switching governors. The
+policy->rwsem is taken at the beginning cpufreq_set_policy(). To
+decide if we should remove the governor sysfs directory so early (i.e.
+before taking rwsem) in the call, is going to be difficult.
+
+Over that the same directory might be shared across multiple policies,
+and all that information is present only with the governor-core.
+
 -- 
-1.9.1
+viresh
