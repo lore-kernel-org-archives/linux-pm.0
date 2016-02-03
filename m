@@ -1,65 +1,56 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM: Avoid false-positive warnings in dev_pm_domain_set()
-Date: Wed, 3 Feb 2016 13:08:14 +0100
-Message-ID: <CAJZ5v0hy_oUGqNRaYtao_WjK5c+ZutnYh-mUJjhc=eCoBum+KA@mail.gmail.com>
-References: <80793506.EZRY3UmSeu@vostro.rjw.lan>
-	<CAPDyKFoCO6DY55+rsEhXqcA6dA12PvejroxDoS8G+SPKZsPWJA@mail.gmail.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Wed, 3 Feb 2016 13:18:18 +0100
+Message-ID: <CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
+References: <20160201232833.GR19432@atomide.com>
+	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+	<20160202030533.GT19432@atomide.com>
+	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+	<CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+	<20160202163536.GU19432@atomide.com>
+	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
+	<20160202234145.GC19432@atomide.com>
+	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+	<CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f52.google.com ([209.85.215.52]:35286 "EHLO
-	mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751952AbcBCMIQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 07:08:16 -0500
-In-Reply-To: <CAPDyKFoCO6DY55+rsEhXqcA6dA12PvejroxDoS8G+SPKZsPWJA@mail.gmail.com>
+Received: from mail-lb0-f179.google.com ([209.85.217.179]:33869 "EHLO
+	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751770AbcBCMST (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 07:18:19 -0500
+In-Reply-To: <CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Feb 3, 2016 at 10:58 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 30 January 2016 at 12:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Feb 3, 2016 at 11:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >>
->> There is a WARN_ON() in dev_pm_domain_set() that triggers on attempts
->> to set the pm_domain pointer for devices with a driver bound.
+>> I don't see the problem, but of course you know omap for better than I do.
 >>
->> However, that WARN_ON() triggers on attempts to clear the pointer
->> too and the test it uses is based on checking the device's
->> p->knode_driver pointer which still is set when the device bus
->> type's/driver's ->remove callback has been executed.  This
->> leads to false-positive warnings when bus type code calls
->> dev_pm_domain_set() to clear the pm_domain pointer after
->> invoking the driver's ->remove() callback.
->>
->> To avoid those false-positives, make dev_pm_domain_set() check
->> if the pointer passed to it is NULL and skip the warning in
->> that case.
->>
->> Fixes: 989561de9b51 (PM / Domains: add setter for dev.pm_domain)
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  drivers/base/power/common.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> Index: linux-pm/drivers/base/power/common.c
->> ===================================================================
->> --- linux-pm.orig/drivers/base/power/common.c
->> +++ linux-pm/drivers/base/power/common.c
->> @@ -146,7 +146,7 @@ void dev_pm_domain_set(struct device *de
->>         if (dev->pm_domain == pd)
->>                 return;
->>
->> -       WARN(device_is_bound(dev),
->> +       WARN(pd && device_is_bound(dev),
->>              "PM domains can only be changed for unbound devices\n");
+>> So if you are concerned about this, perhaps adding a dev_dbg print
+>> when the omap hwmod's ->runtime_suspend() callback returns zero could
 >
-> Perhaps this information then becomes a bit misleading, as it's okay
-> to clear the pointer, but not assign it to a valid PM domain.
+> /s/runtime_suspend/runtime_resume
 
-Well, this is a "you're doing a wrong thing" warning and it does say
-what the wrong thing is.  Does it have to be more specific?  I don't
-think so.
+OK
+
+Let me summarize my understanding of this thread so far.
+
+It looks like the omap3 code initializes hardware in ->probe() and
+then it may return -EPROBE_DEFER due to some unmet dependencies.  In
+that case the hardware is not reset to the previous state and the
+runtime PM framework is left in the state that corresponds to the
+current hardware state.  Before we had pm_runtime_reinit(), everything
+worked as expected on the second ->probe() call, because things were
+in sync then.
+
+The introduction of pm_runtime_reinit() changed the situation and now
+effectively the hardware is required to be reset to the initial state
+if -EPROBE_DEFER is to be returned too.
+
+Is that correct?
 
 Thanks,
 Rafael
