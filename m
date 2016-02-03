@@ -1,40 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
- __cpufreq_governor
-Date: Wed, 3 Feb 2016 12:29:17 +0530
-Message-ID: <20160203065917.GY31828@vireshk>
-References: <1703921.2AHaiQoggk@vostro.rjw.lan>
- <20160201060943.GH13476@vireshk>
- <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com>
- <56AFBEE5.70501@codeaurora.org>
- <20160202063449.GF31828@vireshk>
- <56B12191.8020407@codeaurora.org>
- <20160203021359.GL31828@vireshk>
- <56B17C56.1030504@codeaurora.org>
- <20160203050256.GQ31828@vireshk>
- <56B18ACB.5070704@codeaurora.org>
+Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Date: Wed, 3 Feb 2016 13:57:00 +0530
+Message-ID: <20160203082700.GZ31828@vireshk>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:35272 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933049AbcBCG7U (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 01:59:20 -0500
-Received: by mail-pf0-f178.google.com with SMTP id 65so8773076pfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 22:59:20 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <56B18ACB.5070704@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
 
-On 02-02-16, 21:06, Saravana Kannan wrote:
-> I disagree. I think it's way better and simpler than this patch set. It also
-> doesn't tie into cpufreq_governor.* which is a good thing IMO since it keeps
-> things simpler for sched-dvfs too.
+On 03-02-16, 01:11, Shilpasri G Bhat wrote:
+>  static int init_chip_info(void)
+>  {
+>  	unsigned int chip[256];
+> -	unsigned int cpu, i;
+> +	unsigned int cpu;
+>  	unsigned int prev_chip_id = UINT_MAX;
+>  	cpumask_t cpu_mask;
+> -	int ret = -ENOMEM;
+> +	int i, j, ret = -ENOMEM;
+>  
+>  	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
+>  				   GFP_KERNEL);
+> @@ -583,12 +711,51 @@ static int init_chip_info(void)
+>  		goto free_chip_map;
+>  
+>  	for (i = 0; i < nr_chips; i++) {
+> +		char name[10];
+> +
+>  		chips[i].id = chip[i];
+>  		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+>  		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+> +
+> +		for (j = 0; j <= OCC_MAX_THROTTLE_STATUS; j++) {
+> +			chips[i].reason[j] =
+> +			     kcalloc(powernv_pstate_info.nr_pstates,
+> +				     sizeof(int), GFP_KERNEL);
+> +			if (!chips[i].reason[j]) {
+> +				ret = -ENOMEM;
+> +				goto free_chip;
+> +			}
+> +		}
+> +
+> +		snprintf(name, sizeof(name), "chip%d", chips[i].id);
+> +		ret = kobject_init_and_add(&chips[i].kobj,
+> +					   get_ktype(cpufreq_global_kobject),
 
-Lets discuss it further on the other thread .. 
+Sorry but why do you need to create a kobject here ? A simple
+sysfs_create_group() can create groups (directories) for you.
+
+> +					   cpufreq_global_kobject, name);
+> +		if (ret)
+> +			goto free_chip;
+> +
+> +		ret = sysfs_create_group(&chips[i].kobj, &throttle_stat_group);
+> +		if (ret) {
+> +			pr_info("Chip %d failed to create throttle sysfs group\n",
+> +				chips[i].id);
+> +			goto free_kobject;
+> +		}
+>  	}
 
 -- 
 viresh
