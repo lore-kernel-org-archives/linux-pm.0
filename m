@@ -1,56 +1,106 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 3 Feb 2016 13:18:18 +0100
-Message-ID: <CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
-References: <20160201232833.GR19432@atomide.com>
-	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
-	<20160202030533.GT19432@atomide.com>
-	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
-	<CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
-	<20160202163536.GU19432@atomide.com>
-	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
-	<20160202234145.GC19432@atomide.com>
-	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
-	<CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
+Subject: Re: [PATCH 4/5] cpufreq: Don't drop rwsem before calling CPUFREQ_GOV_POLICY_EXIT
+Date: Wed, 3 Feb 2016 13:24:23 +0100
+Message-ID: <CAJZ5v0j5aXvyZ8kwHCwuABot14piN=tHiODBzqkERDtcUb_+9Q@mail.gmail.com>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+	<3d58d4f0bec5e8e941cf96e159c8c21e68956cad.1454410226.git.viresh.kumar@linaro.org>
+	<CAJZ5v0hMp7XLP2gnAY=9qkj_yE9hDUwyzJ+4H1H6eadZuYDokw@mail.gmail.com>
+	<20160203055126.GR31828@vireshk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f179.google.com ([209.85.217.179]:33869 "EHLO
-	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbcBCMST (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 07:18:19 -0500
-In-Reply-To: <CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:36587 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751952AbcBCMYZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 07:24:25 -0500
+In-Reply-To: <20160203055126.GR31828@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Feb 3, 2016 at 11:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Wed, Feb 3, 2016 at 6:51 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 02-02-16, 22:53, Rafael J. Wysocki wrote:
+>> First of all, this is effectively reverting commit 955ef4833574, so
+>> the subject should be "Revert commit 955ef4833574 (cpufreq: Drop rwsem
+>> lock around CPUFREQ_GOV_POLICY_EXIT)".
 >>
->> I don't see the problem, but of course you know omap for better than I do.
+>> There should be a Fixes: tag pointing to commit 955ef4833574 and a
+>> Reported-by: for Juri.
 >>
->> So if you are concerned about this, perhaps adding a dev_dbg print
->> when the omap hwmod's ->runtime_suspend() callback returns zero could
+>> If there is a link to a bug report related to this, it should be
+>> pointed to by a Link: tag.
+>>
+>> The changelog should say why the original commit was there and why the
+>> way it attempted to solve the problem was incorrect.  It also should
+>> say that the original problem was addressed by a previous commit, so
+>> this one can be reverted without consequences.
 >
-> /s/runtime_suspend/runtime_resume
+> How about this:
+>
+>     Revert "cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT"
+>
+>     Earlier, when the struct freq-attr was used to represent governor
+>     attributes, the standard cpufreq show/store sysfs attribute callbacks
+>     were applied to the governor tunable attributes and they always acquire
+>     the policy->rwsem lock before carrying out the operation.  That could
+>     have resulted in an ABBA deadlock if governor tunable attributes are
+>     removed under policy->rwsem while one of them is being accessed
+>     concurrently (if sysfs attributes removal wins the race, it will wait
+>     for the access to complete with policy->rwsem held while the attribute
+>     callback will block on policy->rwsem indefinitely).
+>
+>     We attempted to address this issue by dropping policy->rwsem around
+>     governor tunable attributes removal (that is, around invocations of the
+>     ->governor callback with the event arg equal to CPUFREQ_GOV_POLICY_EXIT)
+>     in cpufreq_set_policy(), but that opened up race conditions that had not
+>     been possible with policy->rwsem held all the time.
+>
+>     The previous commit, "cpufreq: governor: New sysfs show/store callbacks
+>     for governor tunables", fixed the original ABBA deadlock by adding new
+>     governor specific show/store callbacks.
+>
+>     We don't have to drop rwsem around invocations of governor event
+>     CPUFREQ_GOV_POLICY_EXIT anymore, and original fix can be reverted now.
+>
+>     Fixes: 955ef4833574 ("cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT")
+>     Reported-by: Juri Lelli <juri.lelli@arm.com>
+>     Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-OK
+Much better.
 
-Let me summarize my understanding of this thread so far.
+>> But I'm not going to write that changelog.  I actually am not going to
+>> write any changelogs for you any more, because I'm seriously tired of
+>> doing that.  Moreover, if I see a patch from you with a changelog
+>> that's not acceptable to me, it will immediately go to the "not
+>> applicable" trash bin no matter what the changes below look like.  You
+>> *have* *to* write useful changelogs.  This isn't optional or best
+>> effort.  This is mandatory and important.
+>
+> Will try to improve, sorry about that (again).
+>
+>> Now, I'm not really sure if the ordering of this patchset is right.
+>> Maybe we should just revert upfront with the "we'll address the
+>> original problem in the following commits" statement in the changelog
+>> and fix it in a different way?
+>
+> Wouldn't that break things like 'git bisect'? People running kernels
+> after the reverted commits may start hitting lockdeps.
 
-It looks like the omap3 code initializes hardware in ->probe() and
-then it may return -EPROBE_DEFER due to some unmet dependencies.  In
-that case the hardware is not reset to the previous state and the
-runtime PM framework is left in the state that corresponds to the
-current hardware state.  Before we had pm_runtime_reinit(), everything
-worked as expected on the second ->probe() call, because things were
-in sync then.
+Well, we have at least one bug in there before applying the whole
+series anyway, regardless of the ordering.
 
-The introduction of pm_runtime_reinit() changed the situation and now
-effectively the hardware is required to be reset to the initial state
-if -EPROBE_DEFER is to be returned too.
+>> It looks like patches [1-3/5] fix a
+>> problem that isn't there even, but would appear after the [4/5] if
+>> they were not applied previously, which doesn't sound really
+>> straightforward to me.
+>
+> I am going to fight hard for it, if you feel 4/5 should be the first
+> patch here, I will do that.
 
-Is that correct?
+I guess this was supposed to be "I am not ...".
+
+With the above changelog the current order of patches in the series is fine.
 
 Thanks,
 Rafael
