@@ -1,38 +1,49 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 3 Feb 2016 11:25:23 +0100
-Message-ID: <CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
-References: <20160201232833.GR19432@atomide.com>
-	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
-	<20160202030533.GT19432@atomide.com>
-	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
-	<CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
-	<20160202163536.GU19432@atomide.com>
-	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
-	<20160202234145.GC19432@atomide.com>
-	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
+Date: Wed, 3 Feb 2016 10:51:07 +0000
+Message-ID: <20160203105107.GQ3947@e106622-lin>
+References: <5a012e56b8404e2d07e172b6699ce02f5c5b5f26.1454410226.git.viresh.kumar@linaro.org>
+ <20160202154717.GI3947@e106622-lin>
+ <CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com>
+ <20160202170144.GL3947@e106622-lin>
+ <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com>
+ <56B12BEC.9070603@codeaurora.org>
+ <CAJZ5v0jjp7stM6O4XbDjATOUjntpYY-85FeiCC-WUeRVaQwTLA@mail.gmail.com>
+ <CAJZ5v0i3WLgu8U5cmEQtfUDy6-LXN3g7auSVjOaMEHd_gqVzvg@mail.gmail.com>
+ <56B158A0.6060604@codeaurora.org>
+ <20160203065442.GV31828@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f182.google.com ([209.85.160.182]:35078 "EHLO
-	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbcBCKZY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 05:25:24 -0500
-Received: by mail-yk0-f182.google.com with SMTP id r207so14116273ykd.2
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 02:25:24 -0800 (PST)
-In-Reply-To: <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:33285 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbcBCKu3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 05:50:29 -0500
+Content-Disposition: inline
+In-Reply-To: <20160203065442.GV31828@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
->
-> I don't see the problem, but of course you know omap for better than I do.
->
-> So if you are concerned about this, perhaps adding a dev_dbg print
-> when the omap hwmod's ->runtime_suspend() callback returns zero could
+On 03/02/16 12:24, Viresh Kumar wrote:
+> On 02-02-16, 17:32, Saravana Kannan wrote:
+> > But if we are expecting sched dvfs to come in, why make it worse for it. It
+> > would be completely pointless to try and shoehorn sched dvfs to use
+> > cpufreq_governor.c
+> 
+> We can move the common part to cpufreq core and not make sched-dvfs
+> reuse cpufreq_governor.c
+> 
 
-/s/runtime_suspend/runtime_resume
+I also think that sched-dvfs should not use cpufreq_governor.c.  It is
+useful boilerplate code for ondemand and conservative, as they share lot
+of data structures and how they work, but it doesn't necessarily suit
+everybody's needs, IMHO.
 
-Kind regards
-Uffe
+OTOH, fixing the current issue in the best way we can come up with has
+still value of course :).
+
+Best,
+
+- Juri
