@@ -1,7 +1,7 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 5/8] thermal: rockchip: the rename compatibles for rockchip SoCs
-Date: Wed,  3 Feb 2016 12:12:44 +0800
-Message-ID: <1454472767-5767-6-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 4/8] thermal: rockchip: fix calculation error for code_to_temp
+Date: Wed,  3 Feb 2016 12:12:43 +0800
+Message-ID: <1454472767-5767-5-git-send-email-wxt@rock-chips.com>
 References: <1454472767-5767-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1454472767-5767-1-git-send-email-wxt@rock-chips.com>
@@ -10,176 +10,30 @@ To: Heiko Stuebner <heiko@sntech.de>, edubezval@gmail.com
 Cc: huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, zhangqing@rock-chips.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch renames to be more adapter compatibles since more and more
-SoCs are supported in thermal driver.
+From: Elaine Zhang <zhangqing@rock-chips.com>
 
-Reported-by: Huang,Tao <huangtao@rock-chips.com>
+the calculation use a global table, not their own table.
+so adapt the table to the correct one.
+
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 ---
 
- drivers/thermal/rockchip_thermal.c | 50 +++++++++++++++++++++-----------------
- 1 file changed, 28 insertions(+), 22 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 5c58d48..9cdef62 100644
+index 433085a..5c58d48 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -58,8 +58,8 @@ enum sensor_id {
- 
- /**
-  * The conversion table has the adc value and temperature.
-- * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
-- * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
-+ * ADC_DECREMENT: the adc value is of diminishing.(e.g. rk3288_code_table)
-+ * ADC_INCREMENT: the adc value is incremental.(e.g. rk3368_code_table)
-  */
- enum adc_sort_mode {
- 	ADC_DECREMENT = 0,
-@@ -135,7 +135,13 @@ struct rockchip_thermal_data {
- 	enum tshut_polarity tshut_polarity;
- };
- 
--/* TSADC Sensor info define: */
-+/**
-+ * TSADC Sensor Register description:
-+ *
-+ * TSADCV2_* are used for RK3288 SoCs, the other chips can reuse it.
-+ * TSADCV3_* are used for newer SoCs than RK3288. (e.g: RK3228, RK3399)
-+ *
-+ */
- #define TSADCV2_AUTO_CON			0x04
- #define TSADCV2_INT_EN				0x08
- #define TSADCV2_INT_PD				0x0c
-@@ -154,8 +160,8 @@ struct rockchip_thermal_data {
- #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
- #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
- 
--#define TSADCV1_INT_PD_CLEAR_MASK		~BIT(16)
- #define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
-+#define TSADCV3_INT_PD_CLEAR_MASK		~BIT(16)
- 
- #define TSADCV2_DATA_MASK			0xfff
- #define TSADCV3_DATA_MASK			0x3ff
-@@ -177,7 +183,7 @@ struct tsadc_table {
-  * linearly interpolated.
-  * Code to Temperature mapping should be updated based on sillcon results.
-  */
--static const struct tsadc_table v1_code_table[] = {
-+static const struct tsadc_table rk3228_code_table[] = {
- 	{TSADCV3_DATA_MASK, -40000},
- 	{436, -40000},
- 	{431, -35000},
-@@ -215,7 +221,7 @@ static const struct tsadc_table v1_code_table[] = {
- 	{264, 125000},
- };
- 
--static const struct tsadc_table v2_code_table[] = {
-+static const struct tsadc_table rk3288_code_table[] = {
- 	{TSADCV2_DATA_MASK, -40000},
- 	{3800, -40000},
- 	{3792, -35000},
-@@ -253,7 +259,7 @@ static const struct tsadc_table v2_code_table[] = {
- 	{3421, 125000},
- };
- 
--static const struct tsadc_table v3_code_table[] = {
-+static const struct tsadc_table rk3368_code_table[] = {
- 	{0, -40000},
- 	{106, -40000},
- 	{108, -35000},
-@@ -292,7 +298,7 @@ static const struct tsadc_table v3_code_table[] = {
- 	{TSADCV3_DATA_MASK, 125000},
- };
- 
--static const struct tsadc_table v4_code_table[] = {
-+static const struct tsadc_table rk3399_code_table[] = {
- 	{TSADCV3_DATA_MASK, -40000},
- 	{431, -40000},
- 	{426, -35000},
-@@ -453,20 +459,20 @@ static void rk_tsadcv2_initialize(void __iomem *regs,
- 		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
- }
- 
--static void rk_tsadcv1_irq_ack(void __iomem *regs)
-+static void rk_tsadcv2_irq_ack(void __iomem *regs)
- {
- 	u32 val;
- 
- 	val = readl_relaxed(regs + TSADCV2_INT_PD);
--	writel_relaxed(val & TSADCV1_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
-+	writel_relaxed(val & TSADCV2_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
- }
- 
--static void rk_tsadcv2_irq_ack(void __iomem *regs)
-+static void rk_tsadcv3_irq_ack(void __iomem *regs)
- {
- 	u32 val;
- 
- 	val = readl_relaxed(regs + TSADCV2_INT_PD);
--	writel_relaxed(val & TSADCV2_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
-+	writel_relaxed(val & TSADCV3_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
- }
- 
- static void rk_tsadcv2_control(void __iomem *regs, bool enable)
-@@ -531,15 +537,15 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
- 	.tshut_temp = 95000,
- 
- 	.initialize = rk_tsadcv2_initialize,
--	.irq_ack = rk_tsadcv1_irq_ack,
-+	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
- 	.table = {
--		.id = v1_code_table,
--		.length = ARRAY_SIZE(v1_code_table),
-+		.id = rk3228_code_table,
-+		.length = ARRAY_SIZE(rk3228_code_table),
- 		.data_mask = TSADCV3_DATA_MASK,
- 		.mode = ADC_DECREMENT,
- 	},
-@@ -562,8 +568,8 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
- 	.table = {
--		.id = v2_code_table,
--		.length = ARRAY_SIZE(v2_code_table),
-+		.id = rk3288_code_table,
-+		.length = ARRAY_SIZE(rk3288_code_table),
- 		.data_mask = TSADCV2_DATA_MASK,
- 		.mode = ADC_DECREMENT,
- 	},
-@@ -586,8 +592,8 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
- 	.table = {
--		.id = v3_code_table,
--		.length = ARRAY_SIZE(v3_code_table),
-+		.id = rk3368_code_table,
-+		.length = ARRAY_SIZE(rk3368_code_table),
- 		.data_mask = TSADCV3_DATA_MASK,
- 		.mode = ADC_INCREMENT,
- 	},
-@@ -603,15 +609,15 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
- 	.tshut_temp = 95000,
- 
- 	.initialize = rk_tsadcv2_initialize,
--	.irq_ack = rk_tsadcv1_irq_ack,
-+	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
- 	.table = {
--		.id = v4_code_table,
--		.length = ARRAY_SIZE(v4_code_table),
-+		.id = rk3399_code_table,
-+		.length = ARRAY_SIZE(rk3399_code_table),
- 		.data_mask = TSADCV3_DATA_MASK,
- 		.mode = ADC_DECREMENT,
- 	},
+@@ -411,7 +411,7 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 	 * temperature between 2 table entries is linear and interpolate
+ 	 * to produce less granular result.
+ 	 */
+-	num = table.id[mid].temp - v2_code_table[mid - 1].temp;
++	num = table.id[mid].temp - table.id[mid - 1].temp;
+ 	num *= abs(table.id[mid - 1].code - code);
+ 	denom = abs(table.id[mid - 1].code - table.id[mid].code);
+ 	*temp = table.id[mid - 1].temp + (num / denom);
 -- 
 1.9.1
