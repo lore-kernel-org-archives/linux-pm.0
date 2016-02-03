@@ -1,54 +1,125 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-Date: Wed, 3 Feb 2016 14:33:57 +0530
-Message-ID: <20160203090357.GA31828@vireshk>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160203082700.GZ31828@vireshk>
- <56B1BD71.2050403@linux.vnet.ibm.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 05/14] soc: tegra: pmc: Wait for powergate state to
+ change
+Date: Wed, 3 Feb 2016 09:20:07 +0000
+Message-ID: <56B1C647.4060504@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
+ <CANLsYkycbEo+wyMX8RJ9H-S5kDTjQR4nnDZc5gvf2kShOZAv9w@mail.gmail.com>
+ <56AF613A.1000909@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <56B1BD71.2050403@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <56AF613A.1000909-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 03-02-16, 14:12, Shilpasri G Bhat wrote:
-> I need the chip-id in the <attr>_show(). With just sysfs_create_group() I will
-> get the cpufreq_global_kobject in the <attr>_show() and I will not be able to
-> figure out the chip-id.
 
-The more I look at it, the more I am convinced that keeping this
-'chip' directory in /sys/devices/system/cpu/cpuX/cpufreq/ makes sense.
+On 01/02/16 13:44, Jon Hunter wrote:
+> 
+> On 29/01/16 16:58, Mathieu Poirier wrote:
+>> On 28 January 2016 at 09:33, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>> Currently, the function tegra_powergate_set() simply sets the desired
+>>> powergate state but does not wait for the state to change. In most cases
+>>> we should wait for the state to change before proceeding. Currently, there
+>>> is a case for tegra114 and tegra124 devices where we do not wait when
+>>> starting the secondary CPU as this is not necessary. However, this is only
+>>> done at boot time and so waiting here will only have a small impact on
+>>> boot time. Therefore, update tegra_powergate_set() to wait when setting
+>>> the powergate.
+>>>
+>>> By adding this feature, we can also eliminate the polling loop from
+>>> tegra30_boot_secondary().
+>>>
+>>> A function has been added for checking the status of the powergate and
+>>> so update the tegra_powergate_is_powered() to use this macro as well.
+>>>
+>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>> ---
+>>>  arch/arm/mach-tegra/platsmp.c | 16 +++-------------
+>>>  drivers/soc/tegra/pmc.c       |  9 ++++++++-
+>>>  2 files changed, 11 insertions(+), 14 deletions(-)
+>>>
+>>> diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
+>>> index f3f61dbbda97..75620ae73913 100644
+>>> --- a/arch/arm/mach-tegra/platsmp.c
+>>> +++ b/arch/arm/mach-tegra/platsmp.c
+>>> @@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
+>>>          * be un-gated by un-toggling the power gate register
+>>>          * manually.
+>>>          */
+>>> -       if (!tegra_pmc_cpu_is_powered(cpu)) {
+>>> -               ret = tegra_pmc_cpu_power_on(cpu);
+>>> -               if (ret)
+>>> -                       return ret;
+>>> -
+>>> -               /* Wait for the power to come up. */
+>>> -               timeout = jiffies + msecs_to_jiffies(100);
+>>> -               while (!tegra_pmc_cpu_is_powered(cpu)) {
+>>> -                       if (time_after(jiffies, timeout))
+>>> -                               return -ETIMEDOUT;
+>>> -                       udelay(10);
+>>> -               }
+>>> -       }
+>>> +       ret = tegra_pmc_cpu_power_on(cpu);
+>>> +       if (ret)
+>>> +               return ret;
+>>>
+>>>  remove_clamps:
+>>>         /* CPU partition is powered. Enable the CPU clock. */
+>>> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+>>> index 99cb2fdd29e1..35ee60fd17be 100644
+>>> --- a/drivers/soc/tegra/pmc.c
+>>> +++ b/drivers/soc/tegra/pmc.c
+>>> @@ -28,6 +28,7 @@
+>>>  #include <linux/export.h>
+>>>  #include <linux/init.h>
+>>>  #include <linux/io.h>
+>>> +#include <linux/iopoll.h>
+>>>  #include <linux/of.h>
+>>>  #include <linux/of_address.h>
+>>>  #include <linux/platform_device.h>
+>>> @@ -186,6 +187,9 @@ static inline bool tegra_powergate_state(int id)
+>>>   */
+>>>  static int tegra_powergate_set(unsigned int id, bool new_state)
+>>>  {
+>>> +       bool status;
+>>> +       int err;
+>>> +
+>>>         mutex_lock(&pmc->powergates_lock);
+>>>
+>>>         if (tegra_powergate_state(id) == new_state) {
+>>> @@ -195,9 +199,12 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
+>>>
+>>>         tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
+>>>
+>>> +       err = readx_poll_timeout(tegra_powergate_state, id, status,
+>>> +                                status == new_state, 10, 100000);
+>>> +
+>>
+>> I understand (and agree) with the goal of this patch but I wonder (and
+>> I don't know much about the system/context) if holding a mutex while
+>> sleeping won't incur adverse effect on other parts of the system that
+>> weren't use to see this wait.  One way to fix this might be to use
+>> "mutex_trylock()" and let callers retry as they see fit if an
+>> operation is already in progress.
+> 
+> I could unlock the mutex after writing the TOGGLE_START register. I
+> don't believe that we need to waiting for a powergate to change before
+> writing again.
 
-So, here is the deal:
-- A 'chip' on your platforms can contain multiple group of CPUs, which
-  are represented by policies in cpufreq core. i.e. A chip can have
-  multiple policies.
-- All CPUs present on the same chip are subject to same throttling
-  outcomes.
-- Right now you are putting the 'chip' directory in cpu/cpufreq/
-  directory. Because that directory isn't specific to a policy, but
-  entire cpufreq subsystem, you can't get a policy->cpu in the code
-  for the kobject in question. And so you are *forced* to create a
-  kobject, so that you can do container_of() and get chip->id.
-- And then you also need to unnecessarily add another field in the
-  chip directory 'chip_mask', that is nothing but an bitwise OR
-  operation on policy->related_cpus, so that userspace can know which
-  policies/CPUs are managed by the 'chip'.
+I was not thinking clearly here, the whole reason for the locking is to
+protect the base address as we swap it during the probe.
 
-What I can suggest is:
-- Move this directory inside cpuX/cpufreq/ directory, in a similar way
-  as to how we create 'stats' directory today.
-- You can then get policy->cpu, to get chip->id out of it.
-- The only disadvantage here is that the same chip directory will be
-  replicated in multiple policies, but that makes it more readable.
+In general, I prefer to keep it the way we have it in this patch. By
+using mutex_trylock() would mean that now clients would have to handle
+retrying if they cannot get the lock and make it more complex.
+Powergates should not be turned on and off that frequently and so
+hopefully a delay here should be tolerable. For CPUs, this should only
+be used on cold boot and not during CPU hotplug events.
 
-Thoughts ?
-
--- 
-viresh
+Cheers
+Jon
