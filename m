@@ -1,58 +1,99 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in __cpufreq_governor
-Date: Tue, 02 Feb 2016 21:06:19 -0800
-Message-ID: <56B18ACB.5070704@codeaurora.org>
-References: <20160112102025.GC1084@ubuntu> <56AC04E3.8090900@codeaurora.org> <1703921.2AHaiQoggk@vostro.rjw.lan> <20160201060943.GH13476@vireshk> <CAJZ5v0gzKkoKsbv_KG0qL-7=j4a3DU-nOTCG71fZcoumQ0UZUw@mail.gmail.com> <56AFBEE5.70501@codeaurora.org> <20160202063449.GF31828@vireshk> <56B12191.8020407@codeaurora.org> <20160203021359.GL31828@vireshk> <56B17C56.1030504@codeaurora.org> <20160203050256.GQ31828@vireshk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/5] cpufreq: Don't drop rwsem before calling
+ CPUFREQ_GOV_POLICY_EXIT
+Date: Wed, 3 Feb 2016 11:21:26 +0530
+Message-ID: <20160203055126.GR31828@vireshk>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+ <3d58d4f0bec5e8e941cf96e159c8c21e68956cad.1454410226.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hMp7XLP2gnAY=9qkj_yE9hDUwyzJ+4H1H6eadZuYDokw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45209 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbcBCFGW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 00:06:22 -0500
-In-Reply-To: <20160203050256.GQ31828@vireshk>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36550 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbcBCFvb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 00:51:31 -0500
+Received: by mail-pa0-f51.google.com with SMTP id yy13so7494554pab.3
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 21:51:30 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hMp7XLP2gnAY=9qkj_yE9hDUwyzJ+4H1H6eadZuYDokw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 02/02/2016 09:02 PM, Viresh Kumar wrote:
-> On 02-02-16, 20:04, Saravana Kannan wrote:
->> What's the s_active lock in CPU1 coming from?
->
-> That's taken by sysfs core while removing the files.
->
->> The only reason it's there
->> today is because of the sysfs dir remove. If you move it before the
->> policy->rwsem, you won't have it after the policy->rwsem too. So, I think it
->> will fix the issue.
->
-> Its complex and we will end up making ugly..
+On 02-02-16, 22:53, Rafael J. Wysocki wrote:
+> First of all, this is effectively reverting commit 955ef4833574, so
+> the subject should be "Revert commit 955ef4833574 (cpufreq: Drop rwsem
+> lock around CPUFREQ_GOV_POLICY_EXIT)".
+> 
+> There should be a Fixes: tag pointing to commit 955ef4833574 and a
+> Reported-by: for Juri.
+> 
+> If there is a link to a bug report related to this, it should be
+> pointed to by a Link: tag.
+> 
+> The changelog should say why the original commit was there and why the
+> way it attempted to solve the problem was incorrect.  It also should
+> say that the original problem was addressed by a previous commit, so
+> this one can be reverted without consequences.
 
-I disagree. I think it's way better and simpler than this patch set. It 
-also doesn't tie into cpufreq_governor.* which is a good thing IMO since 
-it keeps things simpler for sched-dvfs too.
+How about this:
 
-> For example, EXIT can be called while switching governors. The
-> policy->rwsem is taken at the beginning cpufreq_set_policy(). To
-> decide if we should remove the governor sysfs directory so early (i.e.
-> before taking rwsem) in the call, is going to be difficult.
+    Revert "cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT"
+    
+    Earlier, when the struct freq-attr was used to represent governor
+    attributes, the standard cpufreq show/store sysfs attribute callbacks
+    were applied to the governor tunable attributes and they always acquire
+    the policy->rwsem lock before carrying out the operation.  That could
+    have resulted in an ABBA deadlock if governor tunable attributes are
+    removed under policy->rwsem while one of them is being accessed
+    concurrently (if sysfs attributes removal wins the race, it will wait
+    for the access to complete with policy->rwsem held while the attribute
+    callback will block on policy->rwsem indefinitely).
+    
+    We attempted to address this issue by dropping policy->rwsem around
+    governor tunable attributes removal (that is, around invocations of the
+    ->governor callback with the event arg equal to CPUFREQ_GOV_POLICY_EXIT)
+    in cpufreq_set_policy(), but that opened up race conditions that had not
+    been possible with policy->rwsem held all the time.
+    
+    The previous commit, "cpufreq: governor: New sysfs show/store callbacks
+    for governor tunables", fixed the original ABBA deadlock by adding new
+    governor specific show/store callbacks.
+    
+    We don't have to drop rwsem around invocations of governor event
+    CPUFREQ_GOV_POLICY_EXIT anymore, and original fix can be reverted now.
+    
+    Fixes: 955ef4833574 ("cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT")
+    Reported-by: Juri Lelli <juri.lelli@arm.com>
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Just check if the governor is changing. And if it is, you just need to 
-remove the policy specific stuff.
+> But I'm not going to write that changelog.  I actually am not going to
+> write any changelogs for you any more, because I'm seriously tired of
+> doing that.  Moreover, if I see a patch from you with a changelog
+> that's not acceptable to me, it will immediately go to the "not
+> applicable" trash bin no matter what the changes below look like.  You
+> *have* *to* write useful changelogs.  This isn't optional or best
+> effort.  This is mandatory and important.
 
-> Over that the same directory might be shared across multiple policies,
-> and all that information is present only with the governor-core.
+Will try to improve, sorry about that (again).
 
-That's why I said the gov needs to register the per pol and system wide 
-attrs list separately.
+> Now, I'm not really sure if the ordering of this patchset is right.
+> Maybe we should just revert upfront with the "we'll address the
+> original problem in the following commits" statement in the changelog
+> and fix it in a different way?
 
-This will also remove the need for ever governor to do this crap.
+Wouldn't that break things like 'git bisect'? People running kernels
+after the reverted commits may start hitting lockdeps.
 
--Saravana
+> It looks like patches [1-3/5] fix a
+> problem that isn't there even, but would appear after the [4/5] if
+> they were not applied previously, which doesn't sound really
+> straightforward to me.
+
+I am going to fight hard for it, if you feel 4/5 should be the first
+patch here, I will do that.
 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+viresh
