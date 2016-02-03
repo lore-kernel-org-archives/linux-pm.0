@@ -1,105 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/7] cpufreq: governor: Drop unused macros for creating governor tunable attributes
-Date: Wed,  3 Feb 2016 19:32:19 +0530
-Message-ID: <5c470e56bd2dbaec62624fb70e321c1d3f084ad2.1454507872.git.viresh.kumar@linaro.org>
-References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
-References: <cover.1454507872.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
+ throttle stats
+Date: Wed, 3 Feb 2016 19:36:00 +0530
+Message-ID: <20160203140600.GG3469@vireshk>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20160203082700.GZ31828@vireshk>
+ <56B1BD71.2050403@linux.vnet.ibm.com>
+ <20160203090357.GA31828@vireshk>
+ <20160203120258.GA32294@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35751 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbcBCOGF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:06:05 -0500
+Received: by mail-pf0-f175.google.com with SMTP id 65so14495478pfd.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:06:04 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20160203120258.GA32294@in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
 
-"The previous commit introduced a new set of macros for creating sysfs
-attributes that represent governor tunables and the old macros used for
-this purpose are not needed any more, so drop them."
+On 03-02-16, 17:32, Gautham R Shenoy wrote:
+> Regarding the table-format, it breaks the sysfs's one-value-per-file
+> rule. So I would still prefer each throttle reason being a separate
+> file which gives the number of times the chip frequency was throttled
+> due to that reason. We can live without the per-frequency
+> throttle stats listed in the throttle_status.
+> 
+> So, would the following be sysfs group structure be acceptable?
+> 
+> $ls -1 /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/
+> unthrottle
+> powercap
+> overtemp
+> supply_fault
+> overcurrent
+> occ_reset
+> turbo_stat
+> sub_turbo_stat
 
-[ Rafael: Written changelog ]
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_governor.h | 68 --------------------------------------
- 1 file changed, 68 deletions(-)
+That was suggested for your convenience only, feel free to keep it the
+way you want it.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 45a6ac1ecfb0..ed328a39c4ac 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -40,74 +40,6 @@
- /* Ondemand Sampling types */
- enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
--/*
-- * Macro for creating governors sysfs routines
-- *
-- * - gov_sys: One governor instance per whole system
-- * - gov_pol: One governor instance per policy
-- */
--
--/* Create attributes */
--#define gov_sys_attr_ro(_name)						\
--static struct global_attr _name##_gov_sys =				\
--__ATTR(_name, 0444, show_##_name##_gov_sys, NULL)
--
--#define gov_sys_attr_rw(_name)						\
--static struct global_attr _name##_gov_sys =				\
--__ATTR(_name, 0644, show_##_name##_gov_sys, store_##_name##_gov_sys)
--
--#define gov_pol_attr_ro(_name)						\
--static struct freq_attr _name##_gov_pol =				\
--__ATTR(_name, 0444, show_##_name##_gov_pol, NULL)
--
--#define gov_pol_attr_rw(_name)						\
--static struct freq_attr _name##_gov_pol =				\
--__ATTR(_name, 0644, show_##_name##_gov_pol, store_##_name##_gov_pol)
--
--#define gov_sys_pol_attr_rw(_name)					\
--	gov_sys_attr_rw(_name);						\
--	gov_pol_attr_rw(_name)
--
--#define gov_sys_pol_attr_ro(_name)					\
--	gov_sys_attr_ro(_name);						\
--	gov_pol_attr_ro(_name)
--
--/* Create show/store routines */
--#define show_one(_gov, file_name)					\
--static ssize_t show_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, char *buf)		\
--{									\
--	struct _gov##_dbs_tuners *tuners = _gov##_dbs_cdata.gdbs_data->tuners; \
--	return sprintf(buf, "%u\n", tuners->file_name);			\
--}									\
--									\
--static ssize_t show_##file_name##_gov_pol				\
--(struct cpufreq_policy *policy, char *buf)				\
--{									\
--	struct dbs_data *dbs_data = policy->governor_data;		\
--	struct _gov##_dbs_tuners *tuners = dbs_data->tuners;		\
--	return sprintf(buf, "%u\n", tuners->file_name);			\
--}
--
--#define store_one(_gov, file_name)					\
--static ssize_t store_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count) \
--{									\
--	struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;		\
--	return store_##file_name(dbs_data, buf, count);			\
--}									\
--									\
--static ssize_t store_##file_name##_gov_pol				\
--(struct cpufreq_policy *policy, const char *buf, size_t count)		\
--{									\
--	struct dbs_data *dbs_data = policy->governor_data;		\
--	return store_##file_name(dbs_data, buf, count);			\
--}
--
--#define show_store_one(_gov, file_name)					\
--show_one(_gov, file_name);						\
--store_one(_gov, file_name)
--
- /* Governor's specific attributes */
- struct dbs_data;
- struct governor_attr {
+I forgot about the one-value-per-file thing really, but we are using
+that for cpufreq-stats as well.
+
+And now that you have mentioned that to me, why shouldn't this stats
+directory be moved to debugfs ? :)
+
+We are never going to perform a store here, isn't it ? And is just for
+information, nothing more.
+
+@Rafael: ??
+
 -- 
-2.7.0.79.gdc08a19
+viresh
