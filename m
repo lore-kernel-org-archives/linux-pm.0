@@ -1,7 +1,7 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v3 1/6] ARM: initialize cpu_scale to its default
-Date: Wed,  3 Feb 2016 11:59:54 +0000
-Message-ID: <1454500799-18451-2-git-send-email-juri.lelli@arm.com>
+Subject: [PATCH v3 4/6] arm64: Enable dynamic CPU capacity initialization
+Date: Wed,  3 Feb 2016 11:59:57 +0000
+Message-ID: <1454500799-18451-5-git-send-email-juri.lelli@arm.com>
 References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
@@ -10,38 +10,34 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Instead of looping through all cpus calling set_capacity_scale, we can
-initialise cpu_scale per-cpu variables to SCHED_CAPACITY_SCALE with their
-definition.
+Define arch_wants_init_cpu_capacity() to return true; so that
+cpufreq_init_cpu_capacity() can go ahead and profile CPU capacities
+at boot time.
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/kernel/topology.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/arm64/kernel/topology.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 08b7847..ec279d1 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -40,7 +40,7 @@
-  * to run the rebalance_domains for all idle cores and the cpu_capacity can be
-  * updated during this sequence.
-  */
--static DEFINE_PER_CPU(unsigned long, cpu_scale);
-+static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 3b75d63..f2513a6 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -35,6 +35,11 @@ void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
  
- unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
++bool arch_wants_init_cpu_capacity(void)
++{
++	return true;
++}
++
+ static int __init get_cpu_for_node(struct device_node *node)
  {
-@@ -306,8 +306,6 @@ void __init init_cpu_topology(void)
- 		cpu_topo->socket_id = -1;
- 		cpumask_clear(&cpu_topo->core_sibling);
- 		cpumask_clear(&cpu_topo->thread_sibling);
--
--		set_capacity_scale(cpu, SCHED_CAPACITY_SCALE);
- 	}
- 	smp_wmb();
- 
+ 	struct device_node *cpu_node;
 -- 
 2.7.0
