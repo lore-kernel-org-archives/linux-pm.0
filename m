@@ -1,78 +1,183 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Wed, 03 Feb 2016 23:20:19 +0100
-Message-ID: <18671470.kF8gVcBlTg@vostro.rjw.lan>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+From: Srikar Srimath Tirumala <srikars@nvidia.com>
+Subject: Re: [PATCHv2 3/3] thermal: improve hot trip handling
+Date: Wed, 3 Feb 2016 23:24:44 +0000 (UTC)
+Message-ID: <loom.20160203T220315-163@post.gmane.org>
+References: <1450379609-7826-1-git-send-email-edubezval@gmail.com> <1450379609-7826-4-git-send-email-edubezval@gmail.com> <CAMuHMdXdyLgM11Em-Vt_Hxidx_T85iT21zk-AAshNxEpgw_5Hg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61912 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965509AbcBCWTR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 17:19:17 -0500
-In-Reply-To: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+Received: from plane.gmane.org ([80.91.229.3]:60136 "EHLO plane.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390AbcBCXaH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 18:30:07 -0500
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1aR6s8-0008PV-Bg
+	for linux-pm@vger.kernel.org; Thu, 04 Feb 2016 00:30:04 +0100
+Received: from searspoint.nvidia.com ([216.228.112.21])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 00:30:04 +0100
+Received: from srikars by searspoint.nvidia.com with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 00:30:04 +0100
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-pm@vger.kernel.org
 
-On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
-> Hi,
-> 
-> The following patch series introduces a mechanism allowing the cpufreq core
-> and "setpolicy" drivers to provide utilization update callbacks to be invoked
-> by the scheduler on utilization changes.  Those callbacks can be used to run
-> the sampling and frequency adjustments code (intel_pstate) or to schedule the
-> execution of that code in process context (cpufreq core) instead of per-CPU
-> deferrable timers used in cpufreq today (which Thomas complained about during
-> the last Kernel Summit).
-> 
-> [1/3] Introduce a mechanism for calling into cpufreq from the scheduler and
->       registering callbacks to be executed from there.
-> 
-> [2/3] Modify intel_pstate to use the mechanism introduced by [1/3] instead
->       of per-CPU deferrable timers to do its work.
-> 
-> This isn't entirely straightforward as the scheduler context running those
-> callbacks is really special.  Among other things it can only use raw
-> spinlocks and cannot invoke wake_up_process() directly.  Also, calling
-> ktime_get() from there may be too expensive on some systems.  All that has to
-> be taken into account, but even then the change allows some lines of code to be
-> cut from the driver.
-> 
-> Some performance and energy consumption measurements have been carried out with
-> an earlier version of this patch and it looks like the changes lead to a
-> slightly better performing system that consumes slightly less energy at the
-> same time overall.
-> 
-> [3/3] Modify the cpufreq core to use the mechanism introduced by [1/3] instead
->       of per-CPU deferrable timers to queue up the execution of governor work.
-> 
-> Again, this isn't really straightforward for the above reasons, but still the
-> code size is reduced a bit by the changes.
-> 
-> I'm still unsure about the energy consumption and performance impact of [3/3]
-> as earlier versions of it led to inconsistent results (most likely due to bugs
-> in them that hopefully have been fixed in this version).  In particular, the
-> additional irq_work may turn out to be problematic, but more optimizations are
-> possible on top of this one even if it makes things worse by itself.
-> 
-> For example, it should be possible to move the execution of state selection
-> code into the utilization update callback itself, at least in principle, for
-> all governors.  The P-state/OPP adjustment may need to be run from process
-> context still, but for the drivers that can do it without sleeping it should
-> be possible to move that into the utilization update callback as well.
-> 
-> The patches are on top of 4.5-rc1 and have been tested on a couple of x86
-> machines.
+Hi Eduardo and Rui,
 
-Well, no responses here, so I'm inclined to believe that this series is fine
-by everybody (at least by everybody in the CC).
+Geert Uytterhoeven <geert <at> linux-m68k.org> writes:
 
-I can wait for a few days more, but new material is starting to pile up on top
-of these patches and I'll simply need to move forward at one point.
+> 
+> Hi Eduardo,
+> 
+> On Thu, Dec 17, 2015 at 8:13 PM, Eduardo Valentin <edubezval <at> 
+gmail.com> wrote:
+> > The idea is to add the choice to be notified only when temperature
+> > crosses trip points. The trip points affected are the non-passive
+> > trip points.
+> >
+
+This is good, how about notifying for non critical trip points as well?  
+This will allow userspace to do workload throttling based on passive 
+thermal trips.
+
+> > It will check last temperature and current temperature against
+> > the trip point temperature and its hysteresis.
+> > In case the check shows temperature has changed enought indicating
+> > a trip point crossing, a uevent will be sent to userspace.
+> >
+> > The uevent contains the thermal zone type, the current temperature,
+> > the last temperature and the trip point in which the current 
+temperature
+> > now resides.
+
+How about adding sysfs_notify on some of the existing attributes like 
+trip_point_*_type instead? Since notifying passive trip points using 
+uevents feels expensive we could maybe use sysfs_notify, which would 
+satisfy the requirements for all type of trip points.
+
+> >
+> > The behavior of ops->notify() callback remains the same.
+> >
+> > Cc: Zhang Rui <rui.zhang <at> intel.com>
+> > Cc: linux-pm <at> vger.kernel.org
+> > Cc: linux-kernel <at> vger.kernel.org
+> > Signed-off-by: Eduardo Valentin <edubezval <at> gmail.com>
+> > ---
+> > V1->V2: none
+> > ---
+> >  drivers/thermal/thermal_core.c | 52 
+++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 52 insertions(+)
+> >
+> > diff --git a/drivers/thermal/thermal_core.c 
+b/drivers/thermal/thermal_core.c
+> > index a229c84..e0f1f4e 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> >  <at>  <at>  -423,6 +423,56  <at>  <at>  static void 
+handle_non_critical_trips(struct thermal_zone_device *tz,
+> >                        def_governor->throttle(tz, trip);
+> >  }
+> >
+> > +static void thermal_tripped_notify(struct thermal_zone_device *tz,
+> > +                                  int trip, enum thermal_trip_type 
+trip_type,
+> > +                                  int trip_temp)
+> > +{
+> > +       char tuv_name[THERMAL_NAME_LENGTH + 15], tuv_temp[25],
+> > +               tuv_ltemp[25], tuv_trip[25], tuv_type[25];
+> > +       char *msg[6] = { tuv_name, tuv_temp, tuv_ltemp, tuv_trip, 
+tuv_type,
+> > +                       NULL };
+> > +       int upper_trip_hyst, upper_trip_temp, trip_hyst = 0;
+> > +       int ret = 0;
+> > +
+> > +       snprintf(tuv_name, sizeof(tuv_name), "THERMAL_ZONE=%s", tz-
+>type);
+> > +       snprintf(tuv_temp, sizeof(tuv_temp), "TEMP=%d", tz-
+>temperature);
+> > +       snprintf(tuv_ltemp, sizeof(tuv_ltemp), "LAST_TEMP=%d",
+> > +                tz->last_temperature);
+> > +       snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip);
+> > +       snprintf(tuv_type, sizeof(tuv_type), "TRIP_TYPE=%d", 
+trip_type);
+> > +
+> > +       mutex_lock(&tz->lock);
+> > +
+> > +       /* crossing up */
+> > +       if (tz->last_temperature < trip_temp && trip_temp < tz-
+>temperature)
+> > +               kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
+> > +
+> > +       if (tz->ops->get_trip_hyst)
+> > +               tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
+> > +
+> > +       /* crossing down, check for hyst */
+> > +       trip_temp -= trip_hyst;
+> > +       if (tz->last_temperature > trip_temp && trip_temp > tz-
+>temperature) {
+> > +               snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip - 
+1);
+> > +               kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
+> > +       }
+> > +
+> > +       ret = tz->ops->get_trip_temp(tz, trip + 1, &upper_trip_temp);
+> 
+> "trip + 1" may be equal to thermal_zone_device.trips and thus out-of-
+range,
+> in which case rcar_thermal_get_trip_temp() will print an error message:
+> 
+>     rcar_thermal e61f0000.thermal: rcar driver trip error
+> 
+> Is the "+ 1" (also below) intentional?
+> If yes, I think the related error messages in rcar_thermal.c should be 
+reduced
+> to debug messages.
+> 
+> > +       if (ret)
+> > +               goto unlock;
+> > +
+> > +       if (tz->ops->get_trip_hyst)
+> > +               tz->ops->get_trip_hyst(tz, trip + 1, &upper_trip_hyst);
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert <at> 
+linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. 
+But
+> when I'm talking to journalists I just say "programmer" or something like 
+that.
+>                                 -- Linus Torvalds
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo <at> vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+
+Alternate Proposal: Initiate a sysfs_notify on cooling_dev*/cur_state from 
+thermal_cdev_update and a sysfs_notify on thermal_zone*/temp from 
+thermal_zone_device_update whenever there is new state or whenever 
+temperature crosses a trip point. 
+
+A userspace app implementing workload throttling would be waiting for these 
+notifications using the poll() method. It could have chosen any combination 
+thermal zone and cooling device cur state to wait on. Upon receiving a 
+notification, it would initiate actions like lowering the frame rate of a 
+camera.
+
+Please let us know your thoughts on the subject.
 
 Thanks,
-Rafael
+Srikar
+
 
