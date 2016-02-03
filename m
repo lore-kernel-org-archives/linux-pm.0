@@ -1,183 +1,182 @@
-From: Srikar Srimath Tirumala <srikars@nvidia.com>
-Subject: Re: [PATCHv2 3/3] thermal: improve hot trip handling
-Date: Wed, 3 Feb 2016 23:24:44 +0000 (UTC)
-Message-ID: <loom.20160203T220315-163@post.gmane.org>
-References: <1450379609-7826-1-git-send-email-edubezval@gmail.com> <1450379609-7826-4-git-send-email-edubezval@gmail.com> <CAMuHMdXdyLgM11Em-Vt_Hxidx_T85iT21zk-AAshNxEpgw_5Hg@mail.gmail.com>
+From: Shilpa Bhat <shilpabhatppc@gmail.com>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Thu, 4 Feb 2016 05:01:03 +0530
+Message-ID: <CAMSceqiFG47G=mvzY8-tUL=sHdkkjVQaWzEA1aN+-ym0F_n6Gw@mail.gmail.com>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+	<20160203155428.GY3947@e106622-lin>
+	<20160203161059.GH3469@vireshk>
+	<20160203172009.GC12132@e106622-lin>
+	<CAJZ5v0hdn6bM8J97O_GFrvi2O7LfuGv0oaZu7KH+cj1TJy+4CQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:60136 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbcBCXaH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 18:30:07 -0500
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1aR6s8-0008PV-Bg
-	for linux-pm@vger.kernel.org; Thu, 04 Feb 2016 00:30:04 +0100
-Received: from searspoint.nvidia.com ([216.228.112.21])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 00:30:04 +0100
-Received: from srikars by searspoint.nvidia.com with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 00:30:04 +0100
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hdn6bM8J97O_GFrvi2O7LfuGv0oaZu7KH+cj1TJy+4CQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Hi Eduardo and Rui,
+Hi,
 
-Geert Uytterhoeven <geert <at> linux-m68k.org> writes:
+On 02/03/2016 10:50 PM, Rafael J. Wysocki wrote:
+> On Wed, Feb 3, 2016 at 6:20 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+>> On 03/02/16 21:40, Viresh Kumar wrote:
+>>> On 03-02-16, 15:54, Juri Lelli wrote:
+>>>> Ouch, I've just got this executing -f basic on Juno. :(
+>>>> It happens with the hotplug_1_by_1 test.
+>>>>
+>>
+>> [...]
+>>
+>>>
+>>> Urg..
+>>>
+>>> I failed to understand it for now though. Please test only the first 4
+>>> patches and leave the bottom three. AFAICT, this is caused by the 6th
+>>> patch.
+>>>
+>>> The first 4 are important for 4.5 and must be tested soonish.
+>>>
+>>
+>> First 4 look ok from a testing viewpoint.
+>
+> Good, thanks for the confirmation!
+>
+> I'm going to apply them and they will go to Linus next week.
+>
+> Thanks,
+> Rafael
 
-> 
-> Hi Eduardo,
-> 
-> On Thu, Dec 17, 2015 at 8:13 PM, Eduardo Valentin <edubezval <at> 
-gmail.com> wrote:
-> > The idea is to add the choice to be notified only when temperature
-> > crosses trip points. The trip points affected are the non-passive
-> > trip points.
-> >
+Sorry for the delayed report. But I see the below backtrace on Power8 box. It
+has 4 chips with 128 cpus.
 
-This is good, how about notifying for non critical trip points as well?  
-This will allow userspace to do workload throttling based on passive 
-thermal trips.
+I see the below trace with the first four patches on running tests
+from Viresh's testcase.
+'./runme.sh -f basic'
+ hit this trace at 'shuffle_governors_for_all_cpus' test.
 
-> > It will check last temperature and current temperature against
-> > the trip point temperature and its hysteresis.
-> > In case the check shows temperature has changed enought indicating
-> > a trip point crossing, a uevent will be sent to userspace.
-> >
-> > The uevent contains the thermal zone type, the current temperature,
-> > the last temperature and the trip point in which the current 
-temperature
-> > now resides.
+[  906.762045] ======================================================
+[  906.762114] [ INFO: possible circular locking dependency detected ]
+[  906.762172] 4.5.0-rc2-sgb+ #96 Not tainted
+[  906.762207] -------------------------------------------------------
+[  906.762263] runme.sh/2840 is trying to acquire lock:
+[  906.762309]  (s_active#91){++++.+}, at: [<c000000000407db8>]
+kernfs_remove+0x48/0x70
+[  906.762419]
+but task is already holding lock:
+[  906.762476]  (od_dbs_cdata.mutex){+.+.+.}, at: [<c000000000ad7594>]
+cpufreq_governor_dbs+0x64/0x7e0
+[  906.762592]
+which lock already depends on the new lock.
 
-How about adding sysfs_notify on some of the existing attributes like 
-trip_point_*_type instead? Since notifying passive trip points using 
-uevents feels expensive we could maybe use sysfs_notify, which would 
-satisfy the requirements for all type of trip points.
+[  906.762659]
+the existing dependency chain (in reverse order) is:
+[  906.762727]
+-> #2 (od_dbs_cdata.mutex){+.+.+.}:
+[  906.762807]        [<c000000000d485b0>] mutex_lock_nested+0x90/0x590
+[  906.762877]        [<c000000000ad57f8>] update_sampling_rate+0x88/0x1c0
+[  906.762946]        [<c000000000ad5990>] store_sampling_rate+0x60/0xa0
+[  906.763013]        [<c000000000ad6af0>] governor_store+0x80/0xc0
+[  906.763070]        [<c00000000040a8a4>] sysfs_kf_write+0x94/0xc0
+[  906.763128]        [<c0000000004094a8>] kernfs_fop_write+0x188/0x1f0
+[  906.763196]        [<c000000000347b8c>] __vfs_write+0x6c/0x180
+[  906.763254]        [<c0000000003490a0>] vfs_write+0xc0/0x200
+[  906.763311]        [<c00000000034a3cc>] SyS_write+0x6c/0x110
+[  906.763369]        [<c00000000000926c>] system_call+0x38/0xd0
+[  906.763427]
+-> #1 (&dbs_data->mutex){+.+...}:
+[  906.763495]        [<c000000000d485b0>] mutex_lock_nested+0x90/0x590
+[  906.763563]        [<c000000000ad6ac0>] governor_store+0x50/0xc0
+[  906.763620]        [<c00000000040a8a4>] sysfs_kf_write+0x94/0xc0
+[  906.763677]        [<c0000000004094a8>] kernfs_fop_write+0x188/0x1f0
+[  906.763745]        [<c000000000347b8c>] __vfs_write+0x6c/0x180
+[  906.763801]        [<c0000000003490a0>] vfs_write+0xc0/0x200
+[  906.763859]        [<c00000000034a3cc>] SyS_write+0x6c/0x110
+[  906.763916]        [<c00000000000926c>] system_call+0x38/0xd0
+[  906.763973]
+-> #0 (s_active#91){++++.+}:
+[  906.764052]        [<c00000000015f318>] lock_acquire+0xd8/0x1a0
+[  906.764111]        [<c0000000004065f4>] __kernfs_remove+0x344/0x410
+[  906.764179]        [<c000000000407db8>] kernfs_remove+0x48/0x70
+[  906.764236]        [<c00000000040b868>] sysfs_remove_dir+0x78/0xd0
+[  906.764304]        [<c0000000005eccec>] kobject_del+0x2c/0x80
+[  906.764362]        [<c0000000005ec9e8>] kobject_release+0xa8/0x250
+[  906.764430]        [<c000000000ad7c28>] cpufreq_governor_dbs+0x6f8/0x7e0
+[  906.764497]        [<c000000000ad4bdc>] od_cpufreq_governor_dbs+0x3c/0x60
+[  906.764567]        [<c000000000acf830>] __cpufreq_governor+0x1d0/0x390
+[  906.764634]        [<c000000000ad0750>] cpufreq_set_policy+0x3b0/0x450
+[  906.764703]        [<c000000000ad12cc>] store_scaling_governor+0x8c/0xf0
+[  906.764771]        [<c000000000aced34>] store+0xb4/0x110
+[  906.764828]        [<c00000000040a8a4>] sysfs_kf_write+0x94/0xc0
+[  906.764885]        [<c0000000004094a8>] kernfs_fop_write+0x188/0x1f0
+[  906.764952]        [<c000000000347b8c>] __vfs_write+0x6c/0x180
+[  906.765048]        [<c0000000003490a0>] vfs_write+0xc0/0x200
+[  906.765160]        [<c00000000034a3cc>] SyS_write+0x6c/0x110
+[  906.765272]        [<c00000000000926c>] system_call+0x38/0xd0
+[  906.765384]
+other info that might help us debug this:
 
-> >
-> > The behavior of ops->notify() callback remains the same.
-> >
-> > Cc: Zhang Rui <rui.zhang <at> intel.com>
-> > Cc: linux-pm <at> vger.kernel.org
-> > Cc: linux-kernel <at> vger.kernel.org
-> > Signed-off-by: Eduardo Valentin <edubezval <at> gmail.com>
-> > ---
-> > V1->V2: none
-> > ---
-> >  drivers/thermal/thermal_core.c | 52 
-++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 52 insertions(+)
-> >
-> > diff --git a/drivers/thermal/thermal_core.c 
-b/drivers/thermal/thermal_core.c
-> > index a229c84..e0f1f4e 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> >  <at>  <at>  -423,6 +423,56  <at>  <at>  static void 
-handle_non_critical_trips(struct thermal_zone_device *tz,
-> >                        def_governor->throttle(tz, trip);
-> >  }
-> >
-> > +static void thermal_tripped_notify(struct thermal_zone_device *tz,
-> > +                                  int trip, enum thermal_trip_type 
-trip_type,
-> > +                                  int trip_temp)
-> > +{
-> > +       char tuv_name[THERMAL_NAME_LENGTH + 15], tuv_temp[25],
-> > +               tuv_ltemp[25], tuv_trip[25], tuv_type[25];
-> > +       char *msg[6] = { tuv_name, tuv_temp, tuv_ltemp, tuv_trip, 
-tuv_type,
-> > +                       NULL };
-> > +       int upper_trip_hyst, upper_trip_temp, trip_hyst = 0;
-> > +       int ret = 0;
-> > +
-> > +       snprintf(tuv_name, sizeof(tuv_name), "THERMAL_ZONE=%s", tz-
->type);
-> > +       snprintf(tuv_temp, sizeof(tuv_temp), "TEMP=%d", tz-
->temperature);
-> > +       snprintf(tuv_ltemp, sizeof(tuv_ltemp), "LAST_TEMP=%d",
-> > +                tz->last_temperature);
-> > +       snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip);
-> > +       snprintf(tuv_type, sizeof(tuv_type), "TRIP_TYPE=%d", 
-trip_type);
-> > +
-> > +       mutex_lock(&tz->lock);
-> > +
-> > +       /* crossing up */
-> > +       if (tz->last_temperature < trip_temp && trip_temp < tz-
->temperature)
-> > +               kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
-> > +
-> > +       if (tz->ops->get_trip_hyst)
-> > +               tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
-> > +
-> > +       /* crossing down, check for hyst */
-> > +       trip_temp -= trip_hyst;
-> > +       if (tz->last_temperature > trip_temp && trip_temp > tz-
->temperature) {
-> > +               snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip - 
-1);
-> > +               kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
-> > +       }
-> > +
-> > +       ret = tz->ops->get_trip_temp(tz, trip + 1, &upper_trip_temp);
-> 
-> "trip + 1" may be equal to thermal_zone_device.trips and thus out-of-
-range,
-> in which case rcar_thermal_get_trip_temp() will print an error message:
-> 
->     rcar_thermal e61f0000.thermal: rcar driver trip error
-> 
-> Is the "+ 1" (also below) intentional?
-> If yes, I think the related error messages in rcar_thermal.c should be 
-reduced
-> to debug messages.
-> 
-> > +       if (ret)
-> > +               goto unlock;
-> > +
-> > +       if (tz->ops->get_trip_hyst)
-> > +               tz->ops->get_trip_hyst(tz, trip + 1, &upper_trip_hyst);
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert <at> 
-linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. 
-But
-> when I'm talking to journalists I just say "programmer" or something like 
-that.
->                                 -- Linus Torvalds
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo <at> vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+[  906.765522] Chain exists of:
+  s_active#91 --> &dbs_data->mutex --> od_dbs_cdata.mutex
 
-Alternate Proposal: Initiate a sysfs_notify on cooling_dev*/cur_state from 
-thermal_cdev_update and a sysfs_notify on thermal_zone*/temp from 
-thermal_zone_device_update whenever there is new state or whenever 
-temperature crosses a trip point. 
+[  906.765768]  Possible unsafe locking scenario:
 
-A userspace app implementing workload throttling would be waiting for these 
-notifications using the poll() method. It could have chosen any combination 
-thermal zone and cooling device cur state to wait on. Upon receiving a 
-notification, it would initiate actions like lowering the frame rate of a 
-camera.
+[  906.765880]        CPU0                    CPU1
+[  906.765969]        ----                    ----
+[  906.766058]   lock(od_dbs_cdata.mutex);
+[  906.766170]                                lock(&dbs_data->mutex);
+[  906.766304]                                lock(od_dbs_cdata.mutex);
+[  906.766461]   lock(s_active#91);
+[  906.766572]
+ *** DEADLOCK ***
 
-Please let us know your thoughts on the subject.
+[  906.766686] 6 locks held by runme.sh/2840:
+[  906.766756]  #0:  (sb_writers#6){.+.+.+}, at: [<c00000000034cf10>]
+__sb_start_write+0x120/0x150
+[  906.767002]  #1:  (&of->mutex){+.+.+.}, at: [<c00000000040939c>]
+kernfs_fop_write+0x7c/0x1f0
+[  906.767225]  #2:  (s_active#82){.+.+.+}, at: [<c0000000004093a8>]
+kernfs_fop_write+0x88/0x1f0
+[  906.767471]  #3:  (cpu_hotplug.lock){++++++}, at: [<c0000000000e06d8>]
+get_online_cpus+0x48/0xc0
+[  906.767676]  #4:  (&policy->rwsem){+++++.}, at: [<c000000000aced04>]
+store+0x84/0x110
+[  906.767878]  #5:  (od_dbs_cdata.mutex){+.+.+.}, at: [<c000000000ad7594>]
+cpufreq_governor_dbs+0x64/0x7e0
+[  906.768124]
+stack backtrace:
+[  906.768215] CPU: 0 PID: 2840 Comm: runme.sh Not tainted 4.5.0-rc2-sgb+ #96
+[  906.768329] Call Trace:
+[  906.768375] [c000007fe3126ec0] [c000000000d56530] dump_stack+0x90/0xbc
+(unreliable)
+[  906.768536] [c000007fe3126ef0] [c00000000015884c]
+print_circular_bug+0x28c/0x3e0
+[  906.768696] [c000007fe3126f90] [c00000000015ed88]
+__lock_acquire+0x2278/0x22d0
+[  906.768853] [c000007fe3127120] [c00000000015f318] lock_acquire+0xd8/0x1a0
+[  906.768987] [c000007fe31271e0] [c0000000004065f4] __kernfs_remove+0x344/0x410
+[  906.769121] [c000007fe31272e0] [c000000000407db8] kernfs_remove+0x48/0x70
+[  906.769256] [c000007fe3127310] [c00000000040b868] sysfs_remove_dir+0x78/0xd0
+[  906.769394] [c000007fe3127350] [c0000000005eccec] kobject_del+0x2c/0x80
+[  906.769528] [c000007fe3127380] [c0000000005ec9e8] kobject_release+0xa8/0x250
+[  906.769607] [c000007fe3127410] [c000000000ad7c28]
+cpufreq_governor_dbs+0x6f8/0x7e0
+[  906.769687] [c000007fe31274c0] [c000000000ad4bdc]
+od_cpufreq_governor_dbs+0x3c/0x60
+[  906.769766] [c000007fe3127500] [c000000000acf830]
+__cpufreq_governor+0x1d0/0x390
+[  906.769845] [c000007fe3127580] [c000000000ad0750]
+cpufreq_set_policy+0x3b0/0x450
+[  906.769924] [c000007fe3127610] [c000000000ad12cc]
+store_scaling_governor+0x8c/0xf0
+[  906.770003] [c000007fe3127c10] [c000000000aced34] store+0xb4/0x110
+[  906.770071] [c000007fe3127c60] [c00000000040a8a4] sysfs_kf_write+0x94/0xc0
+[  906.770139] [c000007fe3127ca0] [c0000000004094a8]
+kernfs_fop_write+0x188/0x1f0
+[  906.770221] [c000007fe3127cf0] [c000000000347b8c] __vfs_write+0x6c/0x180
+[  906.770290] [c000007fe3127d90] [c0000000003490a0] vfs_write+0xc0/0x200
+[  906.770358] [c000007fe3127de0] [c00000000034a3cc] SyS_write+0x6c/0x110
+[  906.770426] [c000007fe3127e30] [c00000000000926c] system_call+0x38/0xd0
 
-Thanks,
-Srikar
-
-
+Thanks and Regards,
+Shilpa
