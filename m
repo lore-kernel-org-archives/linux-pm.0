@@ -1,93 +1,135 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V5 10/14] Documentation: DT: bindings: Add power domain
- info for NVIDIA PMC
-Date: Wed, 3 Feb 2016 09:48:31 -0600
-Message-ID: <CAL_JsqLcoKW2znNNvM=sYLmZ6O6ZWqn7+aXspkXoONw6-O1ygg@mail.gmail.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-11-git-send-email-jonathanh@nvidia.com> <20160129160625.GA21918@rob-hp-laptop>
- <56B1DE40.7080403@nvidia.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Wed, 3 Feb 2016 15:54:28 +0000
+Message-ID: <20160203155428.GY3947@e106622-lin>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56B1DE40.7080403-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1454507872.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 3, 2016 at 5:02 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->
-> On 29/01/16 16:06, Rob Herring wrote:
->> On Thu, Jan 28, 2016 at 04:33:48PM +0000, Jon Hunter wrote:
->>> Add power-domain binding documentation for the NVIDIA PMC driver in
->>> order to support generic power-domains.
->>>
->>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>> ---
->>>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 55 ++++++++++++++++++++++
->>>  1 file changed, 55 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->>> index 53aa5496c5cf..3c77373aa826 100644
->>> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->>> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->>> @@ -1,5 +1,7 @@
->>>  NVIDIA Tegra Power Management Controller (PMC)
->>>
->>> +== Power Management Controller Node ==
->>> +
->>>  The PMC block interacts with an external Power Management Unit. The PMC
->>>  mostly controls the entry and exit of the system from different sleep
->>>  modes. It provides power-gating controllers for SoC and CPU power-islands.
->>> @@ -70,6 +72,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
->>>                       Defaults to 0. Valid values are described in section 12.5.2
->>>                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
->>>
->>> +Optional nodes:
->>> +- powergates : This node contains a hierarchy of power domain nodes, which
->>> +           should match the powergates on the Tegra SoC.
->>> +
->>>  Example:
->>>
->>>  / SoC dts including file
->>> @@ -115,3 +121,52 @@ pmc@7000f400 {
->>>      };
->>>      ...
->>>  };
->>> +
->>> +
->>> +== PM Domain Nodes ==
->>> +
->>> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
->>> +that can be power-gated by the PMC and should be named appropriately.
->>> +
->>> +Required properties:
->>> +  - clocks: Must contain an entry for each clock required by the PMC for
->>> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
->>> +  - resets: Must contain an entry for each reset required by the PMC for
->>> +    controlling a power-gate. See ../reset/reset.txt for details.
->>> +  - nvidia,powergate: Integer cell that contains an identifier for the PMC
->>> +    power-gate that is associated with the power-domain. Please refer to
->>> +    the Tegra TRM for more details.
->>
->> Why not make this value be the power-domain cell for consumers and the
->> pmc be the phandle.
->
-> Is there anything wrong with using a label for the consumers? Seems
-> simpler, if you can just say ...
->
->         adma: adma@702e2000 {
->                 ...
->                 power-domains = <&pd_audio>;
->                 ...
->         };
+Hi Viresh,
 
-Only that is a bit unusual. It would only really matter if we had some
-common parsing that we wanted to share. I'd look at other examples and
-try to align. If there's no clear pattern, then it is fine.
+On 03/02/16 19:32, Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> Here is the V2 with updated patches as suggested by you guys.
+> 
+> These are pushed here:
+> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
+> 
+> The first four patches are for 4.5, if possible and others you can keep
+> for 4.6.
+> 
+> V1->V2:
+> - Improved changelogs, thanks Rafael.
+> - Added new dbs_data->mutex to avoid concurrent updates to tunables.
+> - Moved kobj_type to common_dbs_data.
+> - Updated macros to static inline routines
+> - s/show/governor_show
+> - s/store/governor_store
+> - Improved comments
+> 
+> @Juri: More testing requested :)
+> 
 
->> Then use reg property for the subnodes. That avoids a custom property.
->
-> That is fine with me.
->
-> Jon
+Ouch, I've just got this executing -f basic on Juno. :(
+It happens with the hotplug_1_by_1 test.
+
+
+[ 1086.531252] IRQ1 no longer affine to CPU1
+[ 1086.531495] CPU1: shutdown
+[ 1086.538199] psci: CPU1 killed.
+[ 1086.583396]
+[ 1086.584881] ======================================================
+[ 1086.590999] [ INFO: possible circular locking dependency detected ]
+[ 1086.597205] 4.5.0-rc2+ #37 Not tainted
+[ 1086.600914] -------------------------------------------------------
+[ 1086.607118] runme.sh/1052 is trying to acquire lock:
+[ 1086.612031]  (sb_writers#7){.+.+.+}, at: [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+[ 1086.620090]
+[ 1086.620090] but task is already holding lock:
+[ 1086.625865]  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
+[ 1086.634081]
+[ 1086.634081] which lock already depends on the new lock.
+[ 1086.634081]
+[ 1086.642180]
+[ 1086.642180] the existing dependency chain (in reverse order) is:
+[ 1086.649589]
+-> #1 (&policy->rwsem){+++++.}:
+[ 1086.653929]        [<ffffffc00011d9a4>] check_prev_add+0x670/0x754
+[ 1086.660060]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+[ 1086.666876]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+[ 1086.673001]        [<ffffffc000120b58>] lock_release+0x244/0x570
+[ 1086.678955]        [<ffffffc0007351d0>] __mutex_unlock_slowpath+0xa0/0x18c
+[ 1086.685771]        [<ffffffc0007352dc>] mutex_unlock+0x20/0x2c
+[ 1086.691553]        [<ffffffc0002ccd24>] kernfs_fop_write+0xb0/0x194
+[ 1086.697768]        [<ffffffc00024478c>] __vfs_write+0x48/0x104
+[ 1086.703550]        [<ffffffc0002457a4>] vfs_write+0x98/0x198
+[ 1086.709161]        [<ffffffc0002465e4>] SyS_write+0x54/0xb0
+[ 1086.714684]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+[ 1086.720555]
+-> #0 (sb_writers#7){.+.+.+}:
+[ 1086.724730]        [<ffffffc00011c574>] print_circular_bug+0x80/0x2e4
+[ 1086.731116]        [<ffffffc00011d470>] check_prev_add+0x13c/0x754
+[ 1086.737243]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+[ 1086.744059]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+[ 1086.750184]        [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
+[ 1086.756052]        [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
+[ 1086.762180]        [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+[ 1086.768306]        [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
+[ 1086.774263]        [<ffffffc0002555f8>] do_last+0x660/0xcb8
+[ 1086.779788]        [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
+[ 1086.785570]        [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
+[ 1086.791353]        [<ffffffc000244058>] do_sys_open+0x150/0x214
+[ 1086.797222]        [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
+[ 1086.802831]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+[ 1086.808700]
+[ 1086.808700] other info that might help us debug this:
+[ 1086.808700]
+[ 1086.816627]  Possible unsafe locking scenario:
+[ 1086.816627]
+[ 1086.822488]        CPU0                    CPU1
+[ 1086.826971]        ----                    ----
+[ 1086.831453]   lock(&policy->rwsem);
+[ 1086.834918]                                lock(sb_writers#7);
+[ 1086.840713]                                lock(&policy->rwsem);
+[ 1086.846671]   lock(sb_writers#7);
+[ 1086.849972]
+[ 1086.849972]  *** DEADLOCK ***
+[ 1086.849972]
+[ 1086.855836] 1 lock held by runme.sh/1052:
+[ 1086.859802]  #0:  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
+[ 1086.868453]
+[ 1086.868453] stack backtrace:
+[ 1086.872769] CPU: 5 PID: 1052 Comm: runme.sh Not tainted 4.5.0-rc2+ #37
+[ 1086.879229] Hardware name: ARM Juno development board (r2) (DT)
+[ 1086.885089] Call trace:
+[ 1086.887511] [<ffffffc00008a788>] dump_backtrace+0x0/0x1f4
+[ 1086.892858] [<ffffffc00008a99c>] show_stack+0x20/0x28
+[ 1086.897861] [<ffffffc00041a380>] dump_stack+0x84/0xc0
+[ 1086.902863] [<ffffffc00011c6c8>] print_circular_bug+0x1d4/0x2e4
+[ 1086.908725] [<ffffffc00011d470>] check_prev_add+0x13c/0x754
+[ 1086.914244] [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+[ 1086.920448] [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+[ 1086.925965] [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
+[ 1086.931224] [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
+[ 1086.936742] [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+[ 1086.942260] [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
+[ 1086.947605] [<ffffffc0002555f8>] do_last+0x660/0xcb8
+[ 1086.952520] [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
+[ 1086.957693] [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
+[ 1086.962865] [<ffffffc000244058>] do_sys_open+0x150/0x214
+[ 1086.968123] [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
+[ 1086.973124] [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+[ 1087.019315] Detected PIPT I-cache on CPU1
+[ 1087.019373] CPU1: Booted secondary processor [410fd080]
+
+Best,
+
+- Juri
