@@ -1,62 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v8 6/6] cpufreq: powernv: Add sysfs attributes to show
- throttle stats
-Date: Wed, 3 Feb 2016 19:36:00 +0530
-Message-ID: <20160203140600.GG3469@vireshk>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1454442102-1229-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20160203082700.GZ31828@vireshk>
- <56B1BD71.2050403@linux.vnet.ibm.com>
- <20160203090357.GA31828@vireshk>
- <20160203120258.GA32294@in.ibm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Wed, 3 Feb 2016 15:58:07 +0100
+Message-ID: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
+References: <20160201232833.GR19432@atomide.com>
+	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
+	<20160202030533.GT19432@atomide.com>
+	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
+	<CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
+	<20160202163536.GU19432@atomide.com>
+	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
+	<20160202234145.GC19432@atomide.com>
+	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+	<CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
+	<CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:35751 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbcBCOGF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:06:05 -0500
-Received: by mail-pf0-f175.google.com with SMTP id 65so14495478pfd.2
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:06:04 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160203120258.GA32294@in.ibm.com>
+Received: from mail-yw0-f179.google.com ([209.85.161.179]:34937 "EHLO
+	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbcBCO6J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:58:09 -0500
+Received: by mail-yw0-f179.google.com with SMTP id g127so8429864ywf.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:58:08 -0800 (PST)
+In-Reply-To: <CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, shreyas@linux.vnet.ibm.com, bsingharora@gmail.com, mpe@ellerman.id.au, linux-api@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03-02-16, 17:32, Gautham R Shenoy wrote:
-> Regarding the table-format, it breaks the sysfs's one-value-per-file
-> rule. So I would still prefer each throttle reason being a separate
-> file which gives the number of times the chip frequency was throttled
-> due to that reason. We can live without the per-frequency
-> throttle stats listed in the throttle_status.
-> 
-> So, would the following be sysfs group structure be acceptable?
-> 
-> $ls -1 /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/
-> unthrottle
-> powercap
-> overtemp
-> supply_fault
-> overcurrent
-> occ_reset
-> turbo_stat
-> sub_turbo_stat
+On 3 February 2016 at 13:18, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Feb 3, 2016 at 11:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>
+>>> I don't see the problem, but of course you know omap for better than I do.
+>>>
+>>> So if you are concerned about this, perhaps adding a dev_dbg print
+>>> when the omap hwmod's ->runtime_suspend() callback returns zero could
+>>
+>> /s/runtime_suspend/runtime_resume
+>
+> OK
+>
+> Let me summarize my understanding of this thread so far.
+>
+> It looks like the omap3 code initializes hardware in ->probe() and
+> then it may return -EPROBE_DEFER due to some unmet dependencies.  In
+> that case the hardware is not reset to the previous state and the
+> runtime PM framework is left in the state that corresponds to the
+> current hardware state.  Before we had pm_runtime_reinit(), everything
+> worked as expected on the second ->probe() call, because things were
+> in sync then.
 
-That was suggested for your convenience only, feel free to keep it the
-way you want it.
+Correct!
 
-I forgot about the one-value-per-file thing really, but we are using
-that for cpufreq-stats as well.
+Before pm_runtime_reinit(), the failing probe case (-EPROBE_DEFER)
+worked fine because the HW state and the runtime PM status was in
+sync. The device was powered and the runtime PM status was RPM_ACTIVE.
 
-And now that you have mentioned that to me, why shouldn't this stats
-directory be moved to debugfs ? :)
+>
+> The introduction of pm_runtime_reinit() changed the situation and now
+> effectively the hardware is required to be reset to the initial state
+> if -EPROBE_DEFER is to be returned too.
 
-We are never going to perform a store here, isn't it ? And is just for
-information, nothing more.
+Not correct. The hardware doesn't need a reset as it stays powered
+after a failed probe.
 
-@Rafael: ??
+Instead, only the runtime PM status needs to be synchronized with the
+HW state the next probe attempt.
 
--- 
-viresh
+In other words, when the PM domain's ->runtime_resume() callbacks gets
+called due to a pm_runtime_get_sync() in the second probe attempt, it
+may find that the HW is already powered and can return zero instead of
+resetting it.
+
+Kind regards
+Uffe
