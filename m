@@ -1,72 +1,57 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Wed, 3 Feb 2016 10:45:05 -0800
-Message-ID: <20160203184504.GN19432@atomide.com>
-References: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
- <CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
- <20160202163536.GU19432@atomide.com>
- <CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
- <20160202234145.GC19432@atomide.com>
- <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
- <20160203162705.GG19432@atomide.com>
- <CAPDyKFrsbW+vOoKBDvkNbJa=aUZE1EcikCqrAuO4cv+TkW-FnA@mail.gmail.com>
- <20160203182828.GM19432@atomide.com>
- <CAPDyKFonA4AAzx9JaQ2NZViMLvCjoa5vy2WRuhEF_5Hg8gPKeg@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
+Date: Wed, 03 Feb 2016 12:07:56 -0800
+Message-ID: <56B25E1C.5010000@codeaurora.org>
+References: <20160202154717.GI3947@e106622-lin> <CAJZ5v0h3k_CVDkmc8QKczr0MxCuGd+Rm_wSMXO=UHBvOjae0Uw@mail.gmail.com> <20160202170144.GL3947@e106622-lin> <CAJZ5v0hL4sybqiWCYJpornfJcpMXeAg4E2UNKcCxRB08dhaFPA@mail.gmail.com> <56B12BEC.9070603@codeaurora.org> <CAJZ5v0jjp7stM6O4XbDjATOUjntpYY-85FeiCC-WUeRVaQwTLA@mail.gmail.com> <CAJZ5v0i3WLgu8U5cmEQtfUDy6-LXN3g7auSVjOaMEHd_gqVzvg@mail.gmail.com> <56B158A0.6060604@codeaurora.org> <CAJZ5v0jEKwgXT0nyUR9ksSw29KMbBK6xjAVxkWFCMgTHw8aHVg@mail.gmail.com> <56B17BFC.4070403@codeaurora.org> <20160203065745.GW31828@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59963 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965787AbcBCSpI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 13:45:08 -0500
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFonA4AAzx9JaQ2NZViMLvCjoa5vy2WRuhEF_5Hg8gPKeg@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:51920 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751103AbcBCUH6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 15:07:58 -0500
+In-Reply-To: <20160203065745.GW31828@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-* Ulf Hansson <ulf.hansson@linaro.org> [160203 10:38]:
-> On 3 February 2016 at 19:28, Tony Lindgren <tony@atomide.com> wrote:
-> > * Ulf Hansson <ulf.hansson@linaro.org> [160203 10:03]:
-> >>
-> >> One more thing though. I just realized that you have yet another issue
-> >> to consider going for the approach fixing *only* drivers.
-> >>
-> >> Let me summarize it here:
-> >>
-> >> If userspace has prevented runtime PM (pm_runtime_forbid()) when a
-> >> driver becomes unbound, the driver will not be able to suspend the
-> >> device by using any of the pm_runtime_suspend() APIs, as the usage
-> >> count is isn't zero.
-> >>
-> >> As pm_runtime_reinit() is invoked as part of the driver unbind
-> >> sequence, the runtime PM status goes out of sync. A following driver
-> >> rebind will then trigger the warning when the PM domain's
-> >> ->runtime_resume() callback gets invoked. Again, forever preventing
-> >> the device from being runtime suspended.
-> >
-> > Hmm yeah that's a good point.
-> >
-> >> How do you intend to solve this case?
-> >> I guess there are two options, pick up the patch I posted for omap
-> >> hwmod or make use of pm_runtime_force_suspend() in the driver.
-> >
-> > My gut feeling right now is we should just have
-> > BUS_NOTIFY_UNBIND_DRIVER shut down the device on the interconnect
-> > automatically as it's unused after the driver has unloaded :)
-> 
-> BUS_NOTIFY_UNBIND_DRIVER is sent prior the ->remove() callbacks is
-> invoked from driver core.
-> So if the driver requires to do a pm_runtime_get_sync() during
-> ->remove() callback, this won't work.
-> 
-> BUS_NOTIFY_UNBOUND_DRIVER may work though.
+On 02/02/2016 10:57 PM, Viresh Kumar wrote:
+> On 02-02-16, 20:03, Saravana Kannan wrote:
+>> This is the hotplug case I mentioned. The sysfs file removals will happen
+>> only for the last CPU in that policy (we thankfully optimized that part last
+>> year). We also know that multiple CPUs can't be hotplugged at the same time.
+>> So, in the start of cpufreq_offline_prepare, we just need to check if this
+>> is the last CPU in the policy and if that's the case, do the gov sysfs
+>> remove and then grab the policy lock and do all our crap. If a read is going
+>> on, that's going to finish before the sysfs attr remove can go ahead and it
+>> can grab the policy lock if it needs to and that still won't cause a
+>> deadlock because we haven't yet grabbed the policy lock in
+>> cpufreq_offline_prepare(). If the read comes after the sysfs remove, then
+>> the read is obviously going to fail (we can depend on the sysfs framework on
+>> doing its job there).
+>
+> IMHO, these are all dirty hacks we should stay away from. Adding such
+> hunks in code is considered a band-aid kind of solution and hurts
+> readability badly. The new solution (new governor show/store)
+> implement this in a very clean and proper way I feel..
+>
+> Others are free to disagree though :)
+>
 
-Right sorry that's what I meant. Naturally we can't do it before
-remove :)
+I think it looks clean since we haven't sorted out the race conditions 
+that Juri pointed out. So, it's early to call this series clean :)
 
-I'll take a look.
+Also, I don't see it as a dirty hack at all. What's so hacky about it? 
+We are just identifying conditions when we'll have to remove the sysfs 
+files and removing them before grabbing the policy lock.
 
-Tony
+The unlock/lock that we have now is what is a dirty hack.
+
+-Saravana
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
