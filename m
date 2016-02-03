@@ -1,122 +1,95 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Tue, 2 Feb 2016 15:46:27 -0800
-Message-ID: <20160202234626.GD19432@atomide.com>
-References: <20160202210345.GZ19432@atomide.com>
- <Pine.LNX.4.44L0.1602021626540.1653-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH v4 00/13] arm64: kernel: Add support for hibernate/suspend-to-disk
+Date: Tue, 02 Feb 2016 16:42:20 -0800
+Message-ID: <7hmvrid3pv.fsf@baylibre.com>
+References: <1453977766-20907-1-git-send-email-james.morse@arm.com>
+	<7hvb6chv5e.fsf@baylibre.com> <56AF1D07.3000604@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59706 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbcBBXqa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Feb 2016 18:46:30 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1602021626540.1653-100000@iolanthe.rowland.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:33771 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755303AbcBCAmW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Feb 2016 19:42:22 -0500
+Received: by mail-pf0-f181.google.com with SMTP id w123so3314036pfb.0
+        for <linux-pm@vger.kernel.org>; Tue, 02 Feb 2016 16:42:21 -0800 (PST)
+In-Reply-To: <56AF1D07.3000604@arm.com> (James Morse's message of "Mon, 01 Feb
+	2016 08:53:27 +0000")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: James Morse <james.morse@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Marc Zyngier <marc.zyngier@arm.com>
 
-* Alan Stern <stern@rowland.harvard.edu> [160202 13:46]:
-> On Tue, 2 Feb 2016, Tony Lindgren wrote:
-> 
-> > > Also, what is autosuspend_delay set to for your device?  And is 
-> > > runtime_auto set?
-> > 
-> > It's 100 at that point, see the commented snippet below from
-> > omap_hsmmc_probe():
-> > 
-> > 	pm_runtime_enable(host->dev);
-> > 	pm_runtime_get_sync(host->dev);
-> > 	pm_runtime_set_autosuspend_delay(host->dev, MMC_AUTOSUSPEND_DELAY);
-> > 	/* NOTE: pm_runtime_dont_use_autosuspend(host->dev) needed here? */
-> > 	pm_runtime_use_autosuspend(host->dev);
-> > 	...
-> > 	/* gets -EPROBE_DEFER */
-> > err_irq:
-> > 	...
-> > 	pm_runtime_put_sync(host->dev);
-> 
-> You could try changing this to pm_runtime_put_sync_suspend().  But
-> putting pm_runtime_dont_use_autosuspend() before the put_sync seems
-> like a perfectly reasonable thing to do, especially if you feel you
-> should reverse all the changes you made at the start.
+James Morse <james.morse@arm.com> writes:
 
-They both seem to fix the problem.
+> On 29/01/16 22:34, Kevin Hilman wrote:
+>> James Morse <james.morse@arm.com> writes:
+>> I'd like to help in testing this so I'm just curious which platforms
+>> you've been testing this on.  I'm assuming a Juno (r2?), anything else?
+>
+> That would be great - thanks!
+>
+> I've done most of the testing on a Juno r1, but also gave it a spin on a
+> stray Seattle.
 
-> >         pm_runtime_disable(host->dev);
-> > 	/* NOTE: suspend callback never gets called unless
-> > 	 * pm_runtime_dont_use_autosuspend() is called
-> > 	 * before pm_runtime_put_sync() above.
-> > 	 */
-> > 	 ...
-> > 
-> > > > > Does pm_runtime_use_autosuspend() get called by the probe routine?  If 
-> > > > > it does, then perhaps you can get what you want by having the probe 
-> > > > > routine call pm_runtime_dont_use_autosuspend() whenever it's about to 
-> > > > > return an error -- particularly -EDEFER.
-> > > > 
-> > > > Yes so far that's the only fix that seems to work like I posted
-> > > > earlier. But is that the right fix though?
-> > > 
-> > > No, not really.  Ideally you would leave autosuspend turned on.  The 
-> > > delay would be long enough to that after -EDEFER, another probe would 
-> > > start before the delay expired.  But shortly after the last probe 
-> > > attempt, the delay would expire and the device would then be put in low 
-> > > power.
-> > 
-> > But then what about the new reinit function? To me it seems that
-> > we should not attempt to maintain a state from the earlier failed
-> > probe. Or are you thinking we just skip the reinit if autosuspend
-> > is set?
-> 
-> The reinit function gets called too late to do what you want -- namely, 
-> put the hardware in a low-power state.
+OK, I'm using a very recently arrived Juno R2, and I did get it
+working.  I have a few other arm64 boards around that ar part of
+kernelci.org and will try those as well.
 
-Right, the problem is the lack of suspend on the first probe. But
-for having autosuspend timeout long enough for the next probe
-would mean that we can't reset the PM runtime state in between.
+>> Are you testing the resume from cold boot, or just from kexec?
+>
+> From cold boot. I haven't tried with kexec, but I doubt that's a use-case anyone
+> wants as you would resume immediately. (might be interesting for testing though)
+>
+>
+>> For cold boot on Juno, I'm assuming there would be some
+>> booloader/firmware changes needed to find and boot from the hibernation
+>> image?
+>
+> Not at all! Your firmware only needs to support some mechanism to
+> turning CPUs off.
+>
+> If you add 'resume=/dev/sda2' (or wherever your swap partition is located), the
+> kernel will check this partition for the hibernate-image signature, if found, it
+> will resume from that partition. Otherwise booting is as normal. (there is one
+> hoop to jump through to ensure your rootfs hasn't been mounted before the kernel
+> starts resume, as you could corrupt it - an initramfs in the kernel is the best
+> fix for this).
+>
+> No firmware changes needed.
+>
+>> Is that being worked on?  If not Juno, are you aware of any
+>> other platforms that could be tested with resume from cold boot?
+>
+> Any arm64 platform with persistent storage should work. I've been using a swap
+> partition on a usb drive.
 
-> That _is_ what you want, isn't it?  The alternative is to leave
-> dev->power.rpm_status set to RPM_ACTIVE, to match the hardware's actual 
-> state.
+>> Not knowing the answers to the above, I tested your branch using arm64
+>> defconfig + CONFIG_HIBERNATION=y on my Juno and noticed that it didn't
+>> stay suspended (full suspend log below) so I'm looking for
+>> ideas/recommenations on how to test this.
+>
+> That trace looks quite normal, (one of mine below[0] for comparison). Any
+> failure would have happened after the point you stopped ... did you have a swap
+> partition 'on'?
 
-As far as I can tell things work just fine if the failed probe
-suspend the device at the end of the failed probe.
+I think I must have not setup swap correctly since after testing again
+it's working fine.  Maybe I forgot the 'swapon'?  In any case, being a
+little more careful, testing again and things are working fine on Juno.
 
-> Given that the reinit function is supposed to restore the initial 
-> settings, it probably ought to call pm_runtime_dont_use_autosuspend().  
-> But that won't be enough to fix your problem.
-> 
-> > > > If we wanted to have some generic fix, it seems we would have to pass
-> > > > a new flag in pm_runtime_put_sync() to ignore any autosuspend
-> > > > configuration. But I don't know if that's what we want to or should
-> > > > do though?
-> > > 
-> > > I don't think so.
-> > 
-> > So should we just establish a policy that pm_runtime_use_autosuspend()
-> > needs to be paired with pm_runtime_dont_use_autosuspend() for
-> > pm_runtime_put_sync() to work?
-> 
-> Your understanding is slightly wrong.  pm_runtime_put_sync() _does_
-> work -- that is, it does what it's supposed to do.  The difficulty is
-> that what it's supposed to do doesn't match what you think.
-> 
-> pm_runtime_put_sync() is supposed to follow the driver's wishes.  It
-> invokes the driver's runtime_idle callback if there is one, and the
-> callback routine can start a suspend or an autosuspend.  If there is no
-> callback, it will use whatever autosuspend setting the driver has set
-> up.  If you want to override the autosuspend setting, use
-> pm_runtime_put_sync_suspend() instead.
+I'm also using swap on USB storage for now.
 
-Yes.. That works too. I guess the thing to consider is if we should
-make pm_runtime_put_sync() always sync along the lines of a patch
-I posted earlier today. That could avoid quite a bit of confusion
-as already seen in this thread :)
+> 'syscore' will freeze all processes and stop all devices, then create a
+> copy of the minimum amount of memory it needs to save. Then it starts
+> all the devices again, as it needs to write this image out to swap. This is what
+> you are seeing.
+>
+> Once it has done this it calls poweroff or reboot.
 
-Regards,
+Yeah, I wasn't seeing the call to poweroff, but most likely because it
+was failing to fully write the image due to my missing/incorrect swap
+setup.
 
-Tony
+Thanks for the help,
+
+Kevin
