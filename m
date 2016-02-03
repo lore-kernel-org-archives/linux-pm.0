@@ -1,95 +1,58 @@
 From: Tony Lindgren <tony@atomide.com>
 Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
  v4.5-rc1
-Date: Wed, 3 Feb 2016 08:49:40 -0800
-Message-ID: <20160203164940.GJ19432@atomide.com>
-References: <CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
- <Pine.LNX.4.44L0.1602021112320.1653-100000@iolanthe.rowland.org>
- <CAPDyKFokWcLSCAh_TX-j-df_M1hN8Qw1gbQt--SyWccGCPiN5Q@mail.gmail.com>
- <20160202213916.GA19432@atomide.com>
- <CAJZ5v0if-OCynmN1qzBaWLHOEEHN6kJe1LCbJ=eOwUj6=iZDaw@mail.gmail.com>
+Date: Wed, 3 Feb 2016 09:01:28 -0800
+Message-ID: <20160203170128.GK19432@atomide.com>
+References: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
+ <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
+ <20160203160951.GF19432@atomide.com>
+ <CAPDyKFoNY8xP11n6mFVicYwdy49sB4=H0fTm53754HukFX4HBQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59912 "EHLO muru.com"
+Received: from muru.com ([72.249.23.125]:59924 "EHLO muru.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933626AbcBCQto (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 11:49:44 -0500
+	id S1756338AbcBCRBb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 12:01:31 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0if-OCynmN1qzBaWLHOEEHN6kJe1LCbJ=eOwUj6=iZDaw@mail.gmail.com>
+In-Reply-To: <CAPDyKFoNY8xP11n6mFVicYwdy49sB4=H0fTm53754HukFX4HBQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-* Rafael J. Wysocki <rafael@kernel.org> [160203 05:04]:
-> On Tue, Feb 2, 2016 at 10:39 PM, Tony Lindgren <tony@atomide.com> wrote:
-> > * Ulf Hansson <ulf.hansson@linaro.org> [160202 12:25]:
-> >> >
-> >> > ?  pm_runtime_put_sync() _already_ does not respect the autosuspend
-> >> > mode.  If you want to respect it, you have to call
-> >> > pm_runtime_put_sync_autosuspend() instead.
-> >>
-> >> Then there's a bug in the runtime PM core.
-> >>
-> >> From Tony's regression report and from mine own local runtime PM test
-> >> driver, I can see that the device doesn't get RPM_SUSPENDED (the
-> >> ->runtime_suspend() callback isn't called), even when the usage count
-> >> is zero - when pm_runtime_put_sync() is called.
-> > ...
-> >> Okay, so you are saying that the pm_runtime_put_sync() should idle the
-> >> device even if autosuspend is in use. That seems reasonable, I will
-> >> look into this problem.
-> >
-> > The patch below fixes pm_runtime_put_sync() to not respect the
-> > autosuspend mode to match what Alan is saying above. Seems to also
-> > fixes the $subject issue for me. And seems to behave for PM runtime
-> > for other devices during runtime too based on light testing here.
-> >
-> > Regards,
-> >
-> > Tony
-> >
-> > 8< ---------------
-> > --- a/drivers/base/power/runtime.c
-> > +++ b/drivers/base/power/runtime.c
-> > @@ -353,7 +353,9 @@ static int rpm_idle(struct device *dev, int rpmflags)
-> >
-> >   out:
-> >         trace_rpm_return_int(dev, _THIS_IP_, retval);
-> > -       return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
-> > +       if (!(rpmflags & RPM_IGNORE_AUTO))
-> > +               rpmflags |= RPM_AUTO;
-> > +       return retval ? retval : rpm_suspend(dev, rpmflags);
-> >  }
-> >
-> >  /**
-> > --- a/include/linux/pm_runtime.h
-> > +++ b/include/linux/pm_runtime.h
-> > @@ -23,6 +23,8 @@
-> >                                             usage_count */
-> >  #define RPM_AUTO               0x08    /* Use autosuspend_delay */
-> >
-> > +#define RPM_IGNORE_AUTO                0x10    /* Ignore autosuspend */
-> > +
-> >  #ifdef CONFIG_PM
-> >  extern struct workqueue_struct *pm_wq;
-> >
-> > @@ -241,7 +243,7 @@ static inline int pm_runtime_put_autosuspend(struct device *dev)
-> >
-> >  static inline int pm_runtime_put_sync(struct device *dev)
-> >  {
-> > -       return __pm_runtime_idle(dev, RPM_GET_PUT);
-> > +       return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_IGNORE_AUTO);
-> >  }
-> >
-> >  static inline int pm_runtime_put_sync_suspend(struct device *dev)
-> 
-> This changes a well-documented behavior that someone may be relying on.
-> 
-> Not the safest thing to do I have to say.
+* Ulf Hansson <ulf.hansson@linaro.org> [160203 08:25]:
+> Okay, so I understand that you decided to not pick up the omap hwmod
+> patch I posted.
 
-Yup fine with me.
+I just suggested a solution of patching both drivers and omap_device
+to make it easy for people to fix new drivers, so assuming that sounds
+OK to you..
+
+> If you want some further help in fixing the omap drivers, please just
+> tell me I am at your service. :-)
+
+Heh me too :) It's probably worth checking the non omap_device drivers
+thouhg.
+
+I can check and fix up the omap_device using drivers. So roughly it's
+these ones:
+
+$ git grep pm_runtime_use_autosuspend drivers | cut -d: -f1 | \
+	sort | uniq | grep omap
+drivers/i2c/busses/i2c-omap.c
+drivers/mmc/host/omap_hsmmc.c
+drivers/spi/spi-omap2-mcspi.c
+drivers/tty/serial/8250/8250_omap.c
+drivers/tty/serial/omap-serial.c
+
+> Also, we must not forget to also update their runtime PM calls in
+> their ->remove() callbacks, as those seems to suffer from the same
+> problem as in the -EPROBE_DEFER case.
+
+Yes and any sections within the driver code where clocks really
+should be disabled we must use pm_runtime_put_sync_suspend() if
+pm_runtime_set_autoidle() is set.
 
 Regards,
 
