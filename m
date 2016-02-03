@@ -1,68 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM: Avoid false-positive warnings in dev_pm_domain_set()
-Date: Wed, 3 Feb 2016 14:18:30 +0100
-Message-ID: <CAPDyKFpwyu4OYZo0yyM=8VEE75ONgwX2wF0j2OFZs-YnrWW-DA@mail.gmail.com>
-References: <80793506.EZRY3UmSeu@vostro.rjw.lan>
-	<CAPDyKFoCO6DY55+rsEhXqcA6dA12PvejroxDoS8G+SPKZsPWJA@mail.gmail.com>
-	<CAJZ5v0hy_oUGqNRaYtao_WjK5c+ZutnYh-mUJjhc=eCoBum+KA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/5] cpufreq: governor: Create separate sysfs-ops
+Date: Wed, 3 Feb 2016 18:51:40 +0530
+Message-ID: <20160203132140.GE3469@vireshk>
+References: <cover.1454410226.git.viresh.kumar@linaro.org>
+ <5a012e56b8404e2d07e172b6699ce02f5c5b5f26.1454410226.git.viresh.kumar@linaro.org>
+ <CAJZ5v0j4sjyQJoPCE0-XHCtZRTjSZU+xpJJHU3UBci0_v1BDvw@mail.gmail.com>
+ <20160203065839.GX31828@vireshk>
+ <CAJZ5v0g1ebO_S9YJkZjUNZDHqspBATp3jErRP6RqXCy3zh7NDw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hy_oUGqNRaYtao_WjK5c+ZutnYh-mUJjhc=eCoBum+KA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0g1ebO_S9YJkZjUNZDHqspBATp3jErRP6RqXCy3zh7NDw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3 February 2016 at 13:08, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Feb 3, 2016 at 10:58 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 30 January 2016 at 12:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> There is a WARN_ON() in dev_pm_domain_set() that triggers on attempts
->>> to set the pm_domain pointer for devices with a driver bound.
->>>
->>> However, that WARN_ON() triggers on attempts to clear the pointer
->>> too and the test it uses is based on checking the device's
->>> p->knode_driver pointer which still is set when the device bus
->>> type's/driver's ->remove callback has been executed.  This
->>> leads to false-positive warnings when bus type code calls
->>> dev_pm_domain_set() to clear the pm_domain pointer after
->>> invoking the driver's ->remove() callback.
->>>
->>> To avoid those false-positives, make dev_pm_domain_set() check
->>> if the pointer passed to it is NULL and skip the warning in
->>> that case.
->>>
->>> Fixes: 989561de9b51 (PM / Domains: add setter for dev.pm_domain)
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>  drivers/base/power/common.c |    2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> Index: linux-pm/drivers/base/power/common.c
->>> ===================================================================
->>> --- linux-pm.orig/drivers/base/power/common.c
->>> +++ linux-pm/drivers/base/power/common.c
->>> @@ -146,7 +146,7 @@ void dev_pm_domain_set(struct device *de
->>>         if (dev->pm_domain == pd)
->>>                 return;
->>>
->>> -       WARN(device_is_bound(dev),
->>> +       WARN(pd && device_is_bound(dev),
->>>              "PM domains can only be changed for unbound devices\n");
->>
->> Perhaps this information then becomes a bit misleading, as it's okay
->> to clear the pointer, but not assign it to a valid PM domain.
->
-> Well, this is a "you're doing a wrong thing" warning and it does say
-> what the wrong thing is.  Does it have to be more specific?  I don't
-> think so.
+On 03-02-16, 13:42, Rafael J. Wysocki wrote:
+> > +static ssize_t governor_show(struct kobject *kobj, struct attribute *attr,
+> > +                            char *buf)
+> > +{
+> > +       struct dbs_data *dbs_data = to_dbs_data(kobj);
+> > +       struct governor_attr *gattr = to_gov_attr(attr);
+> > +       int ret = -EIO;
+> > +
+> > +       down_read(&dbs_data->rwsem);
+> > +
+> > +       if (gattr->show)
+> > +               ret = gattr->show(dbs_data, buf);
+> > +
+> > +       up_read(&dbs_data->rwsem);
+> 
+> Do we need the lock here too?
+> 
+> show() is only going to read the value, isn't it?  And everything u32
+> or smaller is read atomically anyway.
 
-Okay! I don't have a strong opinion.
+Okay, will drop it for now.
 
-Feel free to add:
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Apart from this it looks good to me.
+> 
+> When you're ready, please resend the whole series without patch [5/5]
+> which is premature IMO.
 
-Kind regards
-Uffe
+I have changed that patch a bit, and am dropping just the lock now and
+not governor_enable thing. That should be sane enough I believe.
+
+Anyway I will be posting 7 patches now, pick only first 4 if you
+aren't confident about the rest.
+
+-- 
+viresh
