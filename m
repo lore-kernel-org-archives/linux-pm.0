@@ -1,119 +1,74 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
-Date: Wed, 3 Feb 2016 21:40:59 +0530
-Message-ID: <20160203161059.GH3469@vireshk>
-References: <cover.1454507872.git.viresh.kumar@linaro.org>
- <20160203155428.GY3947@e106622-lin>
+Subject: Re: Plain DFS (no voltage scaling)
+Date: Wed, 3 Feb 2016 21:43:31 +0530
+Message-ID: <20160203161331.GI3469@vireshk>
+References: <56B11B67.3090600@free.fr>
+ <56B217C9.1050405@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:33398 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbcBCQNf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 11:13:35 -0500
+Received: by mail-pf0-f174.google.com with SMTP id w123so16191345pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 08:13:34 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160203155428.GY3947@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <56B217C9.1050405@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 03-02-16, 15:54, Juri Lelli wrote:
-> Ouch, I've just got this executing -f basic on Juno. :(
-> It happens with the hotplug_1_by_1 test.
+On 03-02-16, 16:07, Mason wrote:
+> On 02/02/2016 22:11, Mason wrote:
 > 
+> > I plan to enable the on-demand governor on the tango platform:
+> > https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
+> > 
+> > I found the cpufreq-dt binding doc:
+> > 
+> > https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
+> > https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
+> > 
+> > Something is not clear to me:
+> > 
+> > If my platform cannot scale the voltage, what information
+> > should I put in the voltage part of the DT?
 > 
-> [ 1086.531252] IRQ1 no longer affine to CPU1
-> [ 1086.531495] CPU1: shutdown
-> [ 1086.538199] psci: CPU1 killed.
-> [ 1086.583396]
-> [ 1086.584881] ======================================================
-> [ 1086.590999] [ INFO: possible circular locking dependency detected ]
-> [ 1086.597205] 4.5.0-rc2+ #37 Not tainted
-> [ 1086.600914] -------------------------------------------------------
-> [ 1086.607118] runme.sh/1052 is trying to acquire lock:
-> [ 1086.612031]  (sb_writers#7){.+.+.+}, at: [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
-> [ 1086.620090]
-> [ 1086.620090] but task is already holding lock:
-> [ 1086.625865]  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
-> [ 1086.634081]
-> [ 1086.634081] which lock already depends on the new lock.
-> [ 1086.634081]
-> [ 1086.642180]
-> [ 1086.642180] the existing dependency chain (in reverse order) is:
-> [ 1086.649589]
-> -> #1 (&policy->rwsem){+++++.}:
-> [ 1086.653929]        [<ffffffc00011d9a4>] check_prev_add+0x670/0x754
-> [ 1086.660060]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
-> [ 1086.666876]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
-> [ 1086.673001]        [<ffffffc000120b58>] lock_release+0x244/0x570
-> [ 1086.678955]        [<ffffffc0007351d0>] __mutex_unlock_slowpath+0xa0/0x18c
-> [ 1086.685771]        [<ffffffc0007352dc>] mutex_unlock+0x20/0x2c
-> [ 1086.691553]        [<ffffffc0002ccd24>] kernfs_fop_write+0xb0/0x194
-> [ 1086.697768]        [<ffffffc00024478c>] __vfs_write+0x48/0x104
-> [ 1086.703550]        [<ffffffc0002457a4>] vfs_write+0x98/0x198
-> [ 1086.709161]        [<ffffffc0002465e4>] SyS_write+0x54/0xb0
-> [ 1086.714684]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
-> [ 1086.720555]
-> -> #0 (sb_writers#7){.+.+.+}:
-> [ 1086.724730]        [<ffffffc00011c574>] print_circular_bug+0x80/0x2e4
-> [ 1086.731116]        [<ffffffc00011d470>] check_prev_add+0x13c/0x754
-> [ 1086.737243]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
-> [ 1086.744059]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
-> [ 1086.750184]        [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
-> [ 1086.756052]        [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
-> [ 1086.762180]        [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
-> [ 1086.768306]        [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
-> [ 1086.774263]        [<ffffffc0002555f8>] do_last+0x660/0xcb8
-> [ 1086.779788]        [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
-> [ 1086.785570]        [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
-> [ 1086.791353]        [<ffffffc000244058>] do_sys_open+0x150/0x214
-> [ 1086.797222]        [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
-> [ 1086.802831]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
-> [ 1086.808700]
-> [ 1086.808700] other info that might help us debug this:
-> [ 1086.808700]
-> [ 1086.816627]  Possible unsafe locking scenario:
-> [ 1086.816627]
-> [ 1086.822488]        CPU0                    CPU1
-> [ 1086.826971]        ----                    ----
-> [ 1086.831453]   lock(&policy->rwsem);
-> [ 1086.834918]                                lock(sb_writers#7);
-> [ 1086.840713]                                lock(&policy->rwsem);
-> [ 1086.846671]   lock(sb_writers#7);
-> [ 1086.849972]
-> [ 1086.849972]  *** DEADLOCK ***
-> [ 1086.849972]
-> [ 1086.855836] 1 lock held by runme.sh/1052:
-> [ 1086.859802]  #0:  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
-> [ 1086.868453]
-> [ 1086.868453] stack backtrace:
-> [ 1086.872769] CPU: 5 PID: 1052 Comm: runme.sh Not tainted 4.5.0-rc2+ #37
-> [ 1086.879229] Hardware name: ARM Juno development board (r2) (DT)
-> [ 1086.885089] Call trace:
-> [ 1086.887511] [<ffffffc00008a788>] dump_backtrace+0x0/0x1f4
-> [ 1086.892858] [<ffffffc00008a99c>] show_stack+0x20/0x28
-> [ 1086.897861] [<ffffffc00041a380>] dump_stack+0x84/0xc0
-> [ 1086.902863] [<ffffffc00011c6c8>] print_circular_bug+0x1d4/0x2e4
-> [ 1086.908725] [<ffffffc00011d470>] check_prev_add+0x13c/0x754
-> [ 1086.914244] [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
-> [ 1086.920448] [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
-> [ 1086.925965] [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
-> [ 1086.931224] [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
-> [ 1086.936742] [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
-> [ 1086.942260] [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
-> [ 1086.947605] [<ffffffc0002555f8>] do_last+0x660/0xcb8
-> [ 1086.952520] [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
-> [ 1086.957693] [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
-> [ 1086.962865] [<ffffffc000244058>] do_sys_open+0x150/0x214
-> [ 1086.968123] [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
-> [ 1086.973124] [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
-> [ 1087.019315] Detected PIPT I-cache on CPU1
-> [ 1087.019373] CPU1: Booted secondary processor [410fd080]
+> Someone pointed out that tweaking the frequency without tweaking
+> the voltage might be counter-productive.
+> 
+> I measured the power consumption of the entire board (at the power outlet)
+> for 3 CPU frequencies (all other things being equal, I hope).
+> 
+> idle @ 111 MHz = 4.6 W
+> idle @ 333 MHz = 4.6 W
+> idle @ 999 MHz = 4.6 W
+> 
+> load @ 111 MHz = 5.0 W
+> load @ 333 MHz = 5.7 W
+> load @ 999 MHz = 7.7 W
+> 
+> When idle, the kernel calls WFI, which "turns off" most of the CPU
+> (clock gating?) such that the actual frequency does not matter.
+> 
+> At full load (I use cpuburn to jog as many FUs simultaneously as
+> possible) it looks like each additional MHz requires ~3 mW.
+> 
+> So it would appear that an on-demand governor might not help to
+> save power.
 
-Urg..
+Why do you say so ?
 
-I failed to understand it for now though. Please test only the first 4
-patches and leave the bottom three. AFAICT, this is caused by the 6th
-patch.
-
-The first 4 are important for 4.5 and must be tested soonish.
+> But I have another use-case in mind: CPU throttling on over-heating.
+> There's a temperature sensor in the CPU, and I'd like to say:
+> "if temperature exceeds a user-set threshold, don't run at the max
+> frequency until the temperature becomes reasonable".
+> 
+> And I think that requires cpufreq?
+> 
+> Regards.
 
 -- 
 viresh
