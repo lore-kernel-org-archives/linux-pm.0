@@ -1,134 +1,86 @@
-From: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V5 05/14] soc: tegra: pmc: Wait for powergate state to change
-Date: Wed, 3 Feb 2016 08:58:58 -0700
-Message-ID: <CANLsYkyPj+ExhBFffokvtMcZ-OWocMc0Hx3_nfVgRu=uUVvJfg@mail.gmail.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
-	<1453998832-27383-6-git-send-email-jonathanh@nvidia.com>
-	<CANLsYkycbEo+wyMX8RJ9H-S5kDTjQR4nnDZc5gvf2kShOZAv9w@mail.gmail.com>
-	<56AF613A.1000909@nvidia.com>
-	<56B1C647.4060504@nvidia.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Wed, 3 Feb 2016 08:09:51 -0800
+Message-ID: <20160203160951.GF19432@atomide.com>
+References: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
+ <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56B1C647.4060504-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:59874 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755919AbcBCQJy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 11:09:54 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 3 February 2016 at 02:20, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->
-> On 01/02/16 13:44, Jon Hunter wrote:
->>
->> On 29/01/16 16:58, Mathieu Poirier wrote:
->>> On 28 January 2016 at 09:33, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>>> Currently, the function tegra_powergate_set() simply sets the desired
->>>> powergate state but does not wait for the state to change. In most cases
->>>> we should wait for the state to change before proceeding. Currently, there
->>>> is a case for tegra114 and tegra124 devices where we do not wait when
->>>> starting the secondary CPU as this is not necessary. However, this is only
->>>> done at boot time and so waiting here will only have a small impact on
->>>> boot time. Therefore, update tegra_powergate_set() to wait when setting
->>>> the powergate.
->>>>
->>>> By adding this feature, we can also eliminate the polling loop from
->>>> tegra30_boot_secondary().
->>>>
->>>> A function has been added for checking the status of the powergate and
->>>> so update the tegra_powergate_is_powered() to use this macro as well.
->>>>
->>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>>> ---
->>>>  arch/arm/mach-tegra/platsmp.c | 16 +++-------------
->>>>  drivers/soc/tegra/pmc.c       |  9 ++++++++-
->>>>  2 files changed, 11 insertions(+), 14 deletions(-)
->>>>
->>>> diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
->>>> index f3f61dbbda97..75620ae73913 100644
->>>> --- a/arch/arm/mach-tegra/platsmp.c
->>>> +++ b/arch/arm/mach-tegra/platsmp.c
->>>> @@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
->>>>          * be un-gated by un-toggling the power gate register
->>>>          * manually.
->>>>          */
->>>> -       if (!tegra_pmc_cpu_is_powered(cpu)) {
->>>> -               ret = tegra_pmc_cpu_power_on(cpu);
->>>> -               if (ret)
->>>> -                       return ret;
->>>> -
->>>> -               /* Wait for the power to come up. */
->>>> -               timeout = jiffies + msecs_to_jiffies(100);
->>>> -               while (!tegra_pmc_cpu_is_powered(cpu)) {
->>>> -                       if (time_after(jiffies, timeout))
->>>> -                               return -ETIMEDOUT;
->>>> -                       udelay(10);
->>>> -               }
->>>> -       }
->>>> +       ret = tegra_pmc_cpu_power_on(cpu);
->>>> +       if (ret)
->>>> +               return ret;
->>>>
->>>>  remove_clamps:
->>>>         /* CPU partition is powered. Enable the CPU clock. */
->>>> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
->>>> index 99cb2fdd29e1..35ee60fd17be 100644
->>>> --- a/drivers/soc/tegra/pmc.c
->>>> +++ b/drivers/soc/tegra/pmc.c
->>>> @@ -28,6 +28,7 @@
->>>>  #include <linux/export.h>
->>>>  #include <linux/init.h>
->>>>  #include <linux/io.h>
->>>> +#include <linux/iopoll.h>
->>>>  #include <linux/of.h>
->>>>  #include <linux/of_address.h>
->>>>  #include <linux/platform_device.h>
->>>> @@ -186,6 +187,9 @@ static inline bool tegra_powergate_state(int id)
->>>>   */
->>>>  static int tegra_powergate_set(unsigned int id, bool new_state)
->>>>  {
->>>> +       bool status;
->>>> +       int err;
->>>> +
->>>>         mutex_lock(&pmc->powergates_lock);
->>>>
->>>>         if (tegra_powergate_state(id) == new_state) {
->>>> @@ -195,9 +199,12 @@ static int tegra_powergate_set(unsigned int id, bool new_state)
->>>>
->>>>         tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
->>>>
->>>> +       err = readx_poll_timeout(tegra_powergate_state, id, status,
->>>> +                                status == new_state, 10, 100000);
->>>> +
->>>
->>> I understand (and agree) with the goal of this patch but I wonder (and
->>> I don't know much about the system/context) if holding a mutex while
->>> sleeping won't incur adverse effect on other parts of the system that
->>> weren't use to see this wait.  One way to fix this might be to use
->>> "mutex_trylock()" and let callers retry as they see fit if an
->>> operation is already in progress.
->>
->> I could unlock the mutex after writing the TOGGLE_START register. I
->> don't believe that we need to waiting for a powergate to change before
->> writing again.
->
-> I was not thinking clearly here, the whole reason for the locking is to
-> protect the base address as we swap it during the probe.
->
-> In general, I prefer to keep it the way we have it in this patch. By
-> using mutex_trylock() would mean that now clients would have to handle
-> retrying if they cannot get the lock and make it more complex.
+* Alan Stern <stern@rowland.harvard.edu> [160203 07:46]:
+> On Wed, 3 Feb 2016, Ulf Hansson wrote:
+> 
+> > > Let me summarize my understanding of this thread so far.
+> > >
+> > > It looks like the omap3 code initializes hardware in ->probe() and
+> > > then it may return -EPROBE_DEFER due to some unmet dependencies.  In
+> > > that case the hardware is not reset to the previous state and the
+> > > runtime PM framework is left in the state that corresponds to the
+> > > current hardware state.  Before we had pm_runtime_reinit(), everything
+> > > worked as expected on the second ->probe() call, because things were
+> > > in sync then.
+> > 
+> > Correct!
 
-Yes, the complexity is indeed pushed to the caller but that way we
-know exactly what is going on.  Another way to implement this without
-any locks at all would be through RCUs.  I'll let Stephen and Thierry
-make the call here.
+Well not quite correct. After failed probe PM runtime is set to reset
+state while hardware is still enabled.
 
-Thanks,
-Mahtieu
+> > Before pm_runtime_reinit(), the failing probe case (-EPROBE_DEFER)
+> > worked fine because the HW state and the runtime PM status was in
+> > sync. The device was powered and the runtime PM status was RPM_ACTIVE.
+> > 
+> > >
+> > > The introduction of pm_runtime_reinit() changed the situation and now
+> > > effectively the hardware is required to be reset to the initial state
+> > > if -EPROBE_DEFER is to be returned too.
+> > 
+> > Not correct. The hardware doesn't need a reset as it stays powered
+> > after a failed probe.
 
-> Powergates should not be turned on and off that frequently and so
-> hopefully a delay here should be tolerable. For CPUs, this should only
-> be used on cold boot and not during CPU hotplug events.
+It is really best to disable the hardware after a failed probe
+like we do with pm_runtime_put_sync_(suspend)() and pm_runtime_disable().
+
+This is because there may never be another probe attempt and we want
+to have unclaimed devices shut off (or idled) for PM.
+
+> > Instead, only the runtime PM status needs to be synchronized with the
+> > HW state the next probe attempt.
 >
-> Cheers
-> Jon
+> In other words, the probe routine assumes the actual state is the same
+> as the PM status.  This may have been true before pm_runtime_reinit()
+> came along, but it's not true now.
+> 
+> > In other words, when the PM domain's ->runtime_resume() callbacks gets
+> > called due to a pm_runtime_get_sync() in the second probe attempt, it
+> > may find that the HW is already powered and can return zero instead of
+> > resetting it.
+
+Certainly that should at least produce a warning in the hardware
+specific implementation. It's a state mismatch between PM runtime
+and the hardware specific implementation.
+
+And as discussed, the problem does not exist as long as we understand
+that we need to use pm_runtime_put_sync_suspend() if the driver has
+set pm_runtime_use_autoidle(). Or else use the combination of
+pm_runtime_dont_use_autoidle() and pm_runtime_put_sync().
+
+> What's wrong with going ahead and resetting the hardware anyway?
+
+Nothing, unless a state needs to be maintained for things like GPIO
+pins power memory :)
+
+Regards,
+
+Tony
