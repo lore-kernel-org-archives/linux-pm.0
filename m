@@ -1,53 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 3 Feb 2016 18:18:51 +0100
-Message-ID: <CAJZ5v0hdDdFDiieDnsjummg6F+nV7fi=gFa=oFweyP7-ApsHrQ@mail.gmail.com>
-References: <20160202210345.GZ19432@atomide.com>
-	<Pine.LNX.4.44L0.1602021626540.1653-100000@iolanthe.rowland.org>
-	<20160202234626.GD19432@atomide.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Wed, 3 Feb 2016 17:20:09 +0000
+Message-ID: <20160203172009.GC12132@e106622-lin>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <20160203155428.GY3947@e106622-lin>
+ <20160203161059.GH3469@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f44.google.com ([209.85.215.44]:34921 "EHLO
-	mail-lf0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933197AbcBCRSx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 12:18:53 -0500
-In-Reply-To: <20160202234626.GD19432@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160203161059.GH3469@vireshk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Feb 3, 2016 at 12:46 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * Alan Stern <stern@rowland.harvard.edu> [160202 13:46]:
->> On Tue, 2 Feb 2016, Tony Lindgren wrote:
->>
->> > > Also, what is autosuspend_delay set to for your device?  And is
->> > > runtime_auto set?
->> >
->> > It's 100 at that point, see the commented snippet below from
->> > omap_hsmmc_probe():
->> >
->> >     pm_runtime_enable(host->dev);
->> >     pm_runtime_get_sync(host->dev);
->> >     pm_runtime_set_autosuspend_delay(host->dev, MMC_AUTOSUSPEND_DELAY);
->> >     /* NOTE: pm_runtime_dont_use_autosuspend(host->dev) needed here? */
->> >     pm_runtime_use_autosuspend(host->dev);
->> >     ...
->> >     /* gets -EPROBE_DEFER */
->> > err_irq:
->> >     ...
->> >     pm_runtime_put_sync(host->dev);
->>
->> You could try changing this to pm_runtime_put_sync_suspend().  But
->> putting pm_runtime_dont_use_autosuspend() before the put_sync seems
->> like a perfectly reasonable thing to do, especially if you feel you
->> should reverse all the changes you made at the start.
+On 03/02/16 21:40, Viresh Kumar wrote:
+> On 03-02-16, 15:54, Juri Lelli wrote:
+> > Ouch, I've just got this executing -f basic on Juno. :(
+> > It happens with the hotplug_1_by_1 test.
+> > 
 
-FWIW, I'd call pm_runtime_dont_use_autosuspend() before put_sync().
+[...]
 
-After all, the driver doesn't want to use autosuspend going forward,
-so stating that explicitly looks like the right thing to do.
+> 
+> Urg..
+> 
+> I failed to understand it for now though. Please test only the first 4
+> patches and leave the bottom three. AFAICT, this is caused by the 6th
+> patch.
+> 
+> The first 4 are important for 4.5 and must be tested soonish.
+> 
 
-Thanks,
-Rafael
+First 4 look ok from a testing viewpoint.
+
+Best,
+
+- Juri
