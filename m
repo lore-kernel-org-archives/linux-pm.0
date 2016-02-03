@@ -1,48 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
-Date: Wed, 3 Feb 2016 18:20:58 +0100
-Message-ID: <CAJZ5v0hdn6bM8J97O_GFrvi2O7LfuGv0oaZu7KH+cj1TJy+4CQ@mail.gmail.com>
-References: <cover.1454507872.git.viresh.kumar@linaro.org>
-	<20160203155428.GY3947@e106622-lin>
-	<20160203161059.GH3469@vireshk>
-	<20160203172009.GC12132@e106622-lin>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Wed, 3 Feb 2016 09:22:22 -0800
+Message-ID: <20160203172222.GL19432@atomide.com>
+References: <20160202210345.GZ19432@atomide.com>
+ <Pine.LNX.4.44L0.1602021626540.1653-100000@iolanthe.rowland.org>
+ <20160202234626.GD19432@atomide.com>
+ <CAJZ5v0hdDdFDiieDnsjummg6F+nV7fi=gFa=oFweyP7-ApsHrQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:35338 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965092AbcBCRU7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 12:20:59 -0500
-In-Reply-To: <20160203172009.GC12132@e106622-lin>
+Received: from muru.com ([72.249.23.125]:59936 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933812AbcBCRW0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 12:22:26 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hdDdFDiieDnsjummg6F+nV7fi=gFa=oFweyP7-ApsHrQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Feb 3, 2016 at 6:20 PM, Juri Lelli <juri.lelli@arm.com> wrote:
-> On 03/02/16 21:40, Viresh Kumar wrote:
->> On 03-02-16, 15:54, Juri Lelli wrote:
->> > Ouch, I've just got this executing -f basic on Juno. :(
->> > It happens with the hotplug_1_by_1 test.
->> >
->
-> [...]
->
->>
->> Urg..
->>
->> I failed to understand it for now though. Please test only the first 4
->> patches and leave the bottom three. AFAICT, this is caused by the 6th
->> patch.
->>
->> The first 4 are important for 4.5 and must be tested soonish.
->>
->
-> First 4 look ok from a testing viewpoint.
+* Rafael J. Wysocki <rafael@kernel.org> [160203 09:19]:
+> On Wed, Feb 3, 2016 at 12:46 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Alan Stern <stern@rowland.harvard.edu> [160202 13:46]:
+> >> On Tue, 2 Feb 2016, Tony Lindgren wrote:
+> >>
+> >> > > Also, what is autosuspend_delay set to for your device?  And is
+> >> > > runtime_auto set?
+> >> >
+> >> > It's 100 at that point, see the commented snippet below from
+> >> > omap_hsmmc_probe():
+> >> >
+> >> >     pm_runtime_enable(host->dev);
+> >> >     pm_runtime_get_sync(host->dev);
+> >> >     pm_runtime_set_autosuspend_delay(host->dev, MMC_AUTOSUSPEND_DELAY);
+> >> >     /* NOTE: pm_runtime_dont_use_autosuspend(host->dev) needed here? */
+> >> >     pm_runtime_use_autosuspend(host->dev);
+> >> >     ...
+> >> >     /* gets -EPROBE_DEFER */
+> >> > err_irq:
+> >> >     ...
+> >> >     pm_runtime_put_sync(host->dev);
+> >>
+> >> You could try changing this to pm_runtime_put_sync_suspend().  But
+> >> putting pm_runtime_dont_use_autosuspend() before the put_sync seems
+> >> like a perfectly reasonable thing to do, especially if you feel you
+> >> should reverse all the changes you made at the start.
+> 
+> FWIW, I'd call pm_runtime_dont_use_autosuspend() before put_sync().
+> 
+> After all, the driver doesn't want to use autosuspend going forward,
+> so stating that explicitly looks like the right thing to do.
 
-Good, thanks for the confirmation!
+Yeah agreed. FYI, this is what I typed up here into a commit message:
 
-I'm going to apply them and they will go to Linus next week.
+1. For sections of code that needs the device disabled, use
+   pm_runtime_put_sync_suspend() if pm_runtime_set_autosuspend() has
+   been set.
 
-Thanks,
-Rafael
+2. For driver exit code, use pm_runtime_dont_use_autosuspend() before
+   pm_runtime_put_sync() if pm_runtime_use_autosuspend() has been
+   set.
+
+Regards,
+
+Tony
