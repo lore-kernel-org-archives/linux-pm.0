@@ -1,86 +1,119 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Wed, 3 Feb 2016 08:09:51 -0800
-Message-ID: <20160203160951.GF19432@atomide.com>
-References: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
- <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Wed, 3 Feb 2016 21:40:59 +0530
+Message-ID: <20160203161059.GH3469@vireshk>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <20160203155428.GY3947@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59874 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755919AbcBCQJy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Feb 2016 11:09:54 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1602031034360.2041-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160203155428.GY3947@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-* Alan Stern <stern@rowland.harvard.edu> [160203 07:46]:
-> On Wed, 3 Feb 2016, Ulf Hansson wrote:
+On 03-02-16, 15:54, Juri Lelli wrote:
+> Ouch, I've just got this executing -f basic on Juno. :(
+> It happens with the hotplug_1_by_1 test.
 > 
-> > > Let me summarize my understanding of this thread so far.
-> > >
-> > > It looks like the omap3 code initializes hardware in ->probe() and
-> > > then it may return -EPROBE_DEFER due to some unmet dependencies.  In
-> > > that case the hardware is not reset to the previous state and the
-> > > runtime PM framework is left in the state that corresponds to the
-> > > current hardware state.  Before we had pm_runtime_reinit(), everything
-> > > worked as expected on the second ->probe() call, because things were
-> > > in sync then.
-> > 
-> > Correct!
-
-Well not quite correct. After failed probe PM runtime is set to reset
-state while hardware is still enabled.
-
-> > Before pm_runtime_reinit(), the failing probe case (-EPROBE_DEFER)
-> > worked fine because the HW state and the runtime PM status was in
-> > sync. The device was powered and the runtime PM status was RPM_ACTIVE.
-> > 
-> > >
-> > > The introduction of pm_runtime_reinit() changed the situation and now
-> > > effectively the hardware is required to be reset to the initial state
-> > > if -EPROBE_DEFER is to be returned too.
-> > 
-> > Not correct. The hardware doesn't need a reset as it stays powered
-> > after a failed probe.
-
-It is really best to disable the hardware after a failed probe
-like we do with pm_runtime_put_sync_(suspend)() and pm_runtime_disable().
-
-This is because there may never be another probe attempt and we want
-to have unclaimed devices shut off (or idled) for PM.
-
-> > Instead, only the runtime PM status needs to be synchronized with the
-> > HW state the next probe attempt.
->
-> In other words, the probe routine assumes the actual state is the same
-> as the PM status.  This may have been true before pm_runtime_reinit()
-> came along, but it's not true now.
 > 
-> > In other words, when the PM domain's ->runtime_resume() callbacks gets
-> > called due to a pm_runtime_get_sync() in the second probe attempt, it
-> > may find that the HW is already powered and can return zero instead of
-> > resetting it.
+> [ 1086.531252] IRQ1 no longer affine to CPU1
+> [ 1086.531495] CPU1: shutdown
+> [ 1086.538199] psci: CPU1 killed.
+> [ 1086.583396]
+> [ 1086.584881] ======================================================
+> [ 1086.590999] [ INFO: possible circular locking dependency detected ]
+> [ 1086.597205] 4.5.0-rc2+ #37 Not tainted
+> [ 1086.600914] -------------------------------------------------------
+> [ 1086.607118] runme.sh/1052 is trying to acquire lock:
+> [ 1086.612031]  (sb_writers#7){.+.+.+}, at: [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+> [ 1086.620090]
+> [ 1086.620090] but task is already holding lock:
+> [ 1086.625865]  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
+> [ 1086.634081]
+> [ 1086.634081] which lock already depends on the new lock.
+> [ 1086.634081]
+> [ 1086.642180]
+> [ 1086.642180] the existing dependency chain (in reverse order) is:
+> [ 1086.649589]
+> -> #1 (&policy->rwsem){+++++.}:
+> [ 1086.653929]        [<ffffffc00011d9a4>] check_prev_add+0x670/0x754
+> [ 1086.660060]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+> [ 1086.666876]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+> [ 1086.673001]        [<ffffffc000120b58>] lock_release+0x244/0x570
+> [ 1086.678955]        [<ffffffc0007351d0>] __mutex_unlock_slowpath+0xa0/0x18c
+> [ 1086.685771]        [<ffffffc0007352dc>] mutex_unlock+0x20/0x2c
+> [ 1086.691553]        [<ffffffc0002ccd24>] kernfs_fop_write+0xb0/0x194
+> [ 1086.697768]        [<ffffffc00024478c>] __vfs_write+0x48/0x104
+> [ 1086.703550]        [<ffffffc0002457a4>] vfs_write+0x98/0x198
+> [ 1086.709161]        [<ffffffc0002465e4>] SyS_write+0x54/0xb0
+> [ 1086.714684]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+> [ 1086.720555]
+> -> #0 (sb_writers#7){.+.+.+}:
+> [ 1086.724730]        [<ffffffc00011c574>] print_circular_bug+0x80/0x2e4
+> [ 1086.731116]        [<ffffffc00011d470>] check_prev_add+0x13c/0x754
+> [ 1086.737243]        [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+> [ 1086.744059]        [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+> [ 1086.750184]        [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
+> [ 1086.756052]        [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
+> [ 1086.762180]        [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+> [ 1086.768306]        [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
+> [ 1086.774263]        [<ffffffc0002555f8>] do_last+0x660/0xcb8
+> [ 1086.779788]        [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
+> [ 1086.785570]        [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
+> [ 1086.791353]        [<ffffffc000244058>] do_sys_open+0x150/0x214
+> [ 1086.797222]        [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
+> [ 1086.802831]        [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+> [ 1086.808700]
+> [ 1086.808700] other info that might help us debug this:
+> [ 1086.808700]
+> [ 1086.816627]  Possible unsafe locking scenario:
+> [ 1086.816627]
+> [ 1086.822488]        CPU0                    CPU1
+> [ 1086.826971]        ----                    ----
+> [ 1086.831453]   lock(&policy->rwsem);
+> [ 1086.834918]                                lock(sb_writers#7);
+> [ 1086.840713]                                lock(&policy->rwsem);
+> [ 1086.846671]   lock(sb_writers#7);
+> [ 1086.849972]
+> [ 1086.849972]  *** DEADLOCK ***
+> [ 1086.849972]
+> [ 1086.855836] 1 lock held by runme.sh/1052:
+> [ 1086.859802]  #0:  (&policy->rwsem){+++++.}, at: [<ffffffc0005c8ee4>] cpufreq_offline+0x7c/0x278
+> [ 1086.868453]
+> [ 1086.868453] stack backtrace:
+> [ 1086.872769] CPU: 5 PID: 1052 Comm: runme.sh Not tainted 4.5.0-rc2+ #37
+> [ 1086.879229] Hardware name: ARM Juno development board (r2) (DT)
+> [ 1086.885089] Call trace:
+> [ 1086.887511] [<ffffffc00008a788>] dump_backtrace+0x0/0x1f4
+> [ 1086.892858] [<ffffffc00008a99c>] show_stack+0x20/0x28
+> [ 1086.897861] [<ffffffc00041a380>] dump_stack+0x84/0xc0
+> [ 1086.902863] [<ffffffc00011c6c8>] print_circular_bug+0x1d4/0x2e4
+> [ 1086.908725] [<ffffffc00011d470>] check_prev_add+0x13c/0x754
+> [ 1086.914244] [<ffffffc00011e1ac>] validate_chain.isra.36+0x724/0xa0c
+> [ 1086.920448] [<ffffffc00011f904>] __lock_acquire+0x4e4/0xba0
+> [ 1086.925965] [<ffffffc0001207f4>] lock_acquire+0xe4/0x204
+> [ 1086.931224] [<ffffffc000118da0>] percpu_down_read+0x50/0xe4
+> [ 1086.936742] [<ffffffc000249500>] __sb_start_write+0xcc/0xe0
+> [ 1086.942260] [<ffffffc00026ae90>] mnt_want_write+0x28/0x54
+> [ 1086.947605] [<ffffffc0002555f8>] do_last+0x660/0xcb8
+> [ 1086.952520] [<ffffffc000255cdc>] path_openat+0x8c/0x2b0
+> [ 1086.957693] [<ffffffc000256fbc>] do_filp_open+0x78/0xf0
+> [ 1086.962865] [<ffffffc000244058>] do_sys_open+0x150/0x214
+> [ 1086.968123] [<ffffffc0002441a0>] SyS_openat+0x3c/0x48
+> [ 1086.973124] [<ffffffc000085d30>] el0_svc_naked+0x24/0x28
+> [ 1087.019315] Detected PIPT I-cache on CPU1
+> [ 1087.019373] CPU1: Booted secondary processor [410fd080]
 
-Certainly that should at least produce a warning in the hardware
-specific implementation. It's a state mismatch between PM runtime
-and the hardware specific implementation.
+Urg..
 
-And as discussed, the problem does not exist as long as we understand
-that we need to use pm_runtime_put_sync_suspend() if the driver has
-set pm_runtime_use_autoidle(). Or else use the combination of
-pm_runtime_dont_use_autoidle() and pm_runtime_put_sync().
+I failed to understand it for now though. Please test only the first 4
+patches and leave the bottom three. AFAICT, this is caused by the 6th
+patch.
 
-> What's wrong with going ahead and resetting the hardware anyway?
+The first 4 are important for 4.5 and must be tested soonish.
 
-Nothing, unless a state needs to be maintained for things like GPIO
-pins power memory :)
-
-Regards,
-
-Tony
+-- 
+viresh
