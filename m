@@ -1,76 +1,66 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 3 Feb 2016 15:58:07 +0100
-Message-ID: <CAPDyKFpNRc3Nf9ofXhZrfBa54vXMxWboDScCrYFrZy97m8Y5gg@mail.gmail.com>
-References: <20160201232833.GR19432@atomide.com>
-	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
-	<20160202030533.GT19432@atomide.com>
-	<CAPDyKFqQb+jtTpZbq6EvbfAk28yVkgdtiOswngNH_BjCWBDxFg@mail.gmail.com>
-	<CAPDyKFras1o13WBZzaZ_Snnj5TBQQFWKr=PtCjUvwe+yGPQn9w@mail.gmail.com>
-	<20160202163536.GU19432@atomide.com>
-	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
-	<20160202234145.GC19432@atomide.com>
-	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
-	<CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
-	<CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Plain DFS (no voltage scaling)
+Date: Wed, 3 Feb 2016 16:07:53 +0100
+Message-ID: <56B217C9.1050405@free.fr>
+References: <56B11B67.3090600@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f179.google.com ([209.85.161.179]:34937 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbcBCO6J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 09:58:09 -0500
-Received: by mail-yw0-f179.google.com with SMTP id g127so8429864ywf.2
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 06:58:08 -0800 (PST)
-In-Reply-To: <CAJZ5v0iSu9_uNLZstKsC1mHi3A3GRxQc=WPU6Xa7BSiaNChNCA@mail.gmail.com>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:7683 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbcBCPIC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Feb 2016 10:08:02 -0500
+In-Reply-To: <56B11B67.3090600@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 3 February 2016 at 13:18, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Feb 3, 2016 at 11:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>
->>> I don't see the problem, but of course you know omap for better than I do.
->>>
->>> So if you are concerned about this, perhaps adding a dev_dbg print
->>> when the omap hwmod's ->runtime_suspend() callback returns zero could
->>
->> /s/runtime_suspend/runtime_resume
->
-> OK
->
-> Let me summarize my understanding of this thread so far.
->
-> It looks like the omap3 code initializes hardware in ->probe() and
-> then it may return -EPROBE_DEFER due to some unmet dependencies.  In
-> that case the hardware is not reset to the previous state and the
-> runtime PM framework is left in the state that corresponds to the
-> current hardware state.  Before we had pm_runtime_reinit(), everything
-> worked as expected on the second ->probe() call, because things were
-> in sync then.
+On 02/02/2016 22:11, Mason wrote:
 
-Correct!
+> I plan to enable the on-demand governor on the tango platform:
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
+> 
+> I found the cpufreq-dt binding doc:
+> 
+> https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
+> https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
+> 
+> Something is not clear to me:
+> 
+> If my platform cannot scale the voltage, what information
+> should I put in the voltage part of the DT?
 
-Before pm_runtime_reinit(), the failing probe case (-EPROBE_DEFER)
-worked fine because the HW state and the runtime PM status was in
-sync. The device was powered and the runtime PM status was RPM_ACTIVE.
+Someone pointed out that tweaking the frequency without tweaking
+the voltage might be counter-productive.
 
->
-> The introduction of pm_runtime_reinit() changed the situation and now
-> effectively the hardware is required to be reset to the initial state
-> if -EPROBE_DEFER is to be returned too.
+I measured the power consumption of the entire board (at the power outlet)
+for 3 CPU frequencies (all other things being equal, I hope).
 
-Not correct. The hardware doesn't need a reset as it stays powered
-after a failed probe.
+idle @ 111 MHz = 4.6 W
+idle @ 333 MHz = 4.6 W
+idle @ 999 MHz = 4.6 W
 
-Instead, only the runtime PM status needs to be synchronized with the
-HW state the next probe attempt.
+load @ 111 MHz = 5.0 W
+load @ 333 MHz = 5.7 W
+load @ 999 MHz = 7.7 W
 
-In other words, when the PM domain's ->runtime_resume() callbacks gets
-called due to a pm_runtime_get_sync() in the second probe attempt, it
-may find that the HW is already powered and can return zero instead of
-resetting it.
+When idle, the kernel calls WFI, which "turns off" most of the CPU
+(clock gating?) such that the actual frequency does not matter.
 
-Kind regards
-Uffe
+At full load (I use cpuburn to jog as many FUs simultaneously as
+possible) it looks like each additional MHz requires ~3 mW.
+
+So it would appear that an on-demand governor might not help to
+save power.
+
+But I have another use-case in mind: CPU throttling on over-heating.
+There's a temperature sensor in the CPU, and I'd like to say:
+"if temperature exceeds a user-set threshold, don't run at the max
+frequency until the temperature becomes reasonable".
+
+And I think that requires cpufreq?
+
+Regards.
+
