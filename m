@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Wed, 3 Feb 2016 11:23:23 +0100
-Message-ID: <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
+Date: Wed, 3 Feb 2016 11:25:23 +0100
+Message-ID: <CAPDyKFqSVZffQ7WNZqn9qSRibsCgG2rY26z_97agL+LhQRVGcg@mail.gmail.com>
 References: <20160201232833.GR19432@atomide.com>
 	<Pine.LNX.4.44L0.1602011844540.2869-100000@netrider.rowland.org>
 	<20160202030533.GT19432@atomide.com>
@@ -10,93 +10,29 @@ References: <20160201232833.GR19432@atomide.com>
 	<20160202163536.GU19432@atomide.com>
 	<CAPDyKFosQjkHDVSvy67+hstjjFseXQP5WYXrJE19GgVFYJ099w@mail.gmail.com>
 	<20160202234145.GC19432@atomide.com>
+	<CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:34110 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932415AbcBCKXY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 05:23:24 -0500
-Received: by mail-yk0-f178.google.com with SMTP id u9so14021879ykd.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 02:23:24 -0800 (PST)
-In-Reply-To: <20160202234145.GC19432@atomide.com>
+Received: from mail-yk0-f182.google.com ([209.85.160.182]:35078 "EHLO
+	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756020AbcBCKZY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 05:25:24 -0500
+Received: by mail-yk0-f182.google.com with SMTP id r207so14116273ykd.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 02:25:24 -0800 (PST)
+In-Reply-To: <CAPDyKFqLi8xOUeoxUTAmif5QrOjVpV_2CDLv4hjO_C9iOnv+5Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tony Lindgren <tony@atomide.com>
 Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 3 February 2016 at 00:41, Tony Lindgren <tony@atomide.com> wrote:
-> * Ulf Hansson <ulf.hansson@linaro.org> [160202 12:48]:
->> On 2 February 2016 at 17:35, Tony Lindgren <tony@atomide.com> wrote:
->> > That's a valid error though, let's not remove it. The reason why we
->> > call runtime_resume() twice is because runtime_suspend callback never
->> > gets called like I explain above.
->>
->> This isn't an error, it's just a hickup in the synchronization of the
->> runtime PM status.
 >
-> I'd rather not get the hardware state out of sync with PM runtime..
+> I don't see the problem, but of course you know omap for better than I do.
 >
->> Very similar what happens at the first probe, when the driver core has
->> initialized the runtime PM status to RPM_SUSPENDED at the device
->> registration.
->
-> Well we actually pretty much have devices in that state to start
-> with.
+> So if you are concerned about this, perhaps adding a dev_dbg print
+> when the omap hwmod's ->runtime_suspend() callback returns zero could
 
-That's not true, not even for omap.
-
-There are definitely devices which HW state is reflected by RPM_ACTIVE
-at boot. It's the responsible of the subsystem/driver (including PM
-domains) to make sure the runtime PM status is updated accordingly, to
-reflect the real HW state.
-
-For omap hwmod, at device registration in omap_device_build_from_dt()
-it may actually invoke pm_runtime_set_active() if the device is
-enabled. To my understanding, that's done to synchronize the real HW
-state with the runtime PM status, right?
-
->
->> To me, it's the responsible of the PM domain to *help* with the
->> synchronization, not prevent it as it currently does.
->
-> The problem is that the hardware state gets out of sync with
-> PM runtime. And that's going to be a pain to debug later on.
-
-I don't see the problem, but of course you know omap for better than I do.
-
-So if you are concerned about this, perhaps adding a dev_dbg print
-when the omap hwmod's ->runtime_suspend() callback returns zero could
-be a way forward?
-
->
->> > --- a/drivers/mmc/host/omap_hsmmc.c
->> > +++ b/drivers/mmc/host/omap_hsmmc.c
->> > @@ -2232,6 +2232,7 @@ err_irq:
->> >                 dma_release_channel(host->tx_chan);
->> >         if (host->rx_chan)
->> >                 dma_release_channel(host->rx_chan);
->> > +       pm_runtime_dont_use_autosuspend(host->dev);
->>
->> It's good know this works, although do you intend to fix this sequence
->> for all omap drivers/devices that's part of the hwmod PM domain?
->>
->> I haven't checked the number of drivers this would affect, but I
->> imagine there could be quite many with similar behaviour and thus may
->> suffer from the same issue.
->
-> Yeah not sure what the right fix is. But I'd rather patch the
-> few drivers using autosuspend if we come to the conclusion
-> that there is no bug in PM runtime.
->
->> Could you please test my version 2 of the patch I attached earlier. I
->> still believe it's the best way to solve the regression, if it works
->> of course. :-)
->
-> And I don't like it because of the reasons above :) But yeah
-> gave it a quick try and that too works as expected.
-
-Okay, thanks for testing!
+/s/runtime_suspend/runtime_resume
 
 Kind regards
 Uffe
