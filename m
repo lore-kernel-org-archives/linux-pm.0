@@ -1,172 +1,102 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 7/11] cpufreq: governor: Rework cpufreq_governor_dbs()
-Date: Wed, 03 Feb 2016 18:03:20 -0800
-Message-ID: <56B2B168.4000700@codeaurora.org>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <5491751.yYEN5nTL3A@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Plain DFS (no voltage scaling)
+Date: Thu, 4 Feb 2016 08:53:07 +0530
+Message-ID: <20160204032307.GP3469@vireshk>
+References: <56B11B67.3090600@free.fr>
+ <56B217C9.1050405@free.fr>
+ <20160203161331.GI3469@vireshk>
+ <56B244A0.60309@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5491751.yYEN5nTL3A@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:36785 "EHLO
+	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965327AbcBDDXK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 22:23:10 -0500
+Received: by mail-pf0-f176.google.com with SMTP id n128so28533547pfn.3
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 19:23:10 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <56B244A0.60309@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 02/03/2016 03:33 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Since it is possible to obtain a pointer to struct dbs_governor
-> from a pointer to the struct governor embedded in it via
-> container_of(), the second argument of cpufreq_governor_init()
-> is not necessary.  Accordingly, cpufreq_governor_dbs() doesn't
-> need its second argument either and the ->governor callbacks
-> for both the ondemand and conservative governors may be set
-> to cpufreq_governor_dbs() directly.  Make that happen.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   drivers/cpufreq/cpufreq_conservative.c |   11 +----------
->   drivers/cpufreq/cpufreq_governor.c     |   10 +++++-----
->   drivers/cpufreq/cpufreq_governor.h     |    3 +--
->   drivers/cpufreq/cpufreq_ondemand.c     |   11 +----------
->   4 files changed, 8 insertions(+), 27 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> @@ -325,13 +325,10 @@ static void cs_exit(struct dbs_data *dbs
->
->   define_get_cpu_dbs_routines(cs_cpu_dbs_info);
->
-> -static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -				   unsigned int event);
-> -
->   static struct dbs_governor cs_dbs_gov = {
->   	.gov = {
->   		.name = "conservative",
-> -		.governor = cs_cpufreq_governor_dbs,
-> +		.governor = cpufreq_governor_dbs,
->   		.max_transition_latency = TRANSITION_LATENCY_LIMIT,
->   		.owner = THIS_MODULE,
->   	},
-> @@ -348,12 +345,6 @@ static struct dbs_governor cs_dbs_gov =
->
->   #define CPU_FREQ_GOV_CONSERVATIVE	(&cs_dbs_gov.gov)
->
-> -static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -				   unsigned int event)
-> -{
-> -	return cpufreq_governor_dbs(policy, &cs_dbs_gov, event);
-> -}
-> -
->   static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
->   				void *data)
->   {
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -329,9 +329,9 @@ static void free_common_dbs_info(struct
->   	kfree(shared);
->   }
->
-> -static int cpufreq_governor_init(struct cpufreq_policy *policy,
-> -				 struct dbs_governor *gov)
-> +static int cpufreq_governor_init(struct cpufreq_policy *policy)
->   {
-> +	struct dbs_governor *gov;
->   	struct dbs_data *dbs_data;
->   	unsigned int latency;
->   	int ret;
-> @@ -340,6 +340,7 @@ static int cpufreq_governor_init(struct
->   	if (policy->governor_data)
->   		return -EBUSY;
->
-> +	gov = container_of(policy->governor, struct dbs_governor, gov);
->   	if (global_dbs_data) {
->   		if (WARN_ON(have_governor_per_policy()))
->   			return -EINVAL;
-> @@ -538,8 +539,7 @@ static int cpufreq_governor_limits(struc
->   	return 0;
->   }
->
-> -int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -			 struct dbs_governor *gov, unsigned int event)
-> +int cpufreq_governor_dbs(struct cpufreq_policy *policy, unsigned int event)
->   {
->   	int ret = -EINVAL;
->
-> @@ -547,7 +547,7 @@ int cpufreq_governor_dbs(struct cpufreq_
->   	mutex_lock(&dbs_data_mutex);
->
->   	if (event == CPUFREQ_GOV_POLICY_INIT) {
-> -		ret = cpufreq_governor_init(policy, gov);
-> +		ret = cpufreq_governor_init(policy);
->   	} else if (policy->governor_data) {
->   		switch (event) {
->   		case CPUFREQ_GOV_POLICY_EXIT:
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-> @@ -273,8 +273,7 @@ void gov_set_update_util(struct cpu_comm
->   			 unsigned int delay_us);
->   void gov_cancel_work(struct cpu_common_dbs_info *shared);
->   void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
-> -int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -		struct dbs_governor *gov, unsigned int event);
-> +int cpufreq_governor_dbs(struct cpufreq_policy *policy, unsigned int event);
->   void od_register_powersave_bias_handler(unsigned int (*f)
->   		(struct cpufreq_policy *, unsigned int, unsigned int),
->   		unsigned int powersave_bias);
-> Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -539,13 +539,10 @@ static struct od_ops od_ops = {
->   	.freq_increase = dbs_freq_increase,
->   };
->
-> -static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -				   unsigned int event);
-> -
->   static struct dbs_governor od_dbs_gov = {
->   	.gov = {
->   		.name = "ondemand",
-> -		.governor = od_cpufreq_governor_dbs,
-> +		.governor = cpufreq_governor_dbs,
->   		.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
->   		.owner = THIS_MODULE,
->   	},
-> @@ -563,12 +560,6 @@ static struct dbs_governor od_dbs_gov =
->
->   #define CPU_FREQ_GOV_ONDEMAND	(&od_dbs_gov.gov)
->
-> -static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -		unsigned int event)
-> -{
-> -	return cpufreq_governor_dbs(policy, &od_dbs_gov, event);
-> -}
-> -
->   static void od_set_powersave_bias(unsigned int powersave_bias)
->   {
->   	struct cpufreq_policy *policy;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+On 03-02-16, 19:19, Mason wrote:
+> On 03/02/2016 17:13, Viresh Kumar wrote:
+> > On 03-02-16, 16:07, Mason wrote:
+> >> On 02/02/2016 22:11, Mason wrote:
+> >>
+> >>> I plan to enable the on-demand governor on the tango platform:
+> >>> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/tango4-smp8758.dtsi
+> >>>
+> >>> I found the cpufreq-dt binding doc:
+> >>>
+> >>> https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
+> >>> https://www.kernel.org/doc/Documentation/devicetree/bindings/opp/opp.txt
+> >>>
+> >>> Something is not clear to me:
+> >>>
+> >>> If my platform cannot scale the voltage, what information
+> >>> should I put in the voltage part of the DT?
+> >>
+> >> Someone pointed out that tweaking the frequency without tweaking
+> >> the voltage might be counter-productive.
+> >>
+> >> I measured the power consumption of the entire board (at the power outlet)
+> >> for 3 CPU frequencies (all other things being equal, I hope).
+> >>
+> >> idle @ 111 MHz = 4.6 W
+> >> idle @ 333 MHz = 4.6 W
+> >> idle @ 999 MHz = 4.6 W
+> >>
+> >> load @ 111 MHz = 5.0 W
+> >> load @ 333 MHz = 5.7 W
+> >> load @ 999 MHz = 7.7 W
+> >>
+> >> When idle, the kernel calls WFI, which "turns off" most of the CPU
+> >> (clock gating?) such that the actual frequency does not matter.
+> >>
+> >> At full load (I use cpuburn to jog as many FUs simultaneously as
+> >> possible) it looks like each additional MHz requires ~3 mW.
+> >>
+> >> So it would appear that an on-demand governor might not help to
+> >> save power.
 
-Nice!
+IOW, what's so special about how on-demand will behave in your case ?
+If it doesn't work properly, then that's the same for everybody, isn't
+it ?
 
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
+> > Why do you say so ?
+> 
+> Here's my (possibly incorrect) reasoning:
+> 
+> If the CPU is idle, kernel calls WFI and frequency apparently
+> doesn't matter.
 
--Saravana
+Right.
+
+> If the CPU has work to do, the on-demand governor will bump the
+> frequency to the max (I think).
+
+Not always, but it will choose the best frequency based on the load.
+
+> I don't think the CPU spends a lot of time in the intermediate
+> frequencies (neither max nor min).
+
+It does, it was fixed somewhere in v3.* .
+
+> But maybe my logic is flawed?
+
+Yes.
+
+> Also, some users (of our older kernel) reported problems were
+> they considered the on-demand governor was "too slow" to ramp
+> the frequency up. (But I don't know if they'd played with the
+> configuration knobs.)
+
+Shouldn't be the case anymore, or maybe those guys are more in favor
+of the interactive governor :)
 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+viresh
