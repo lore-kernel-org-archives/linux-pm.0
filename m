@@ -1,40 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Plain DFS (no voltage scaling)
-Date: Thu, 4 Feb 2016 08:53:53 +0530
-Message-ID: <20160204032353.GQ3469@vireshk>
-References: <56B11B67.3090600@free.fr>
- <20160203021052.GK31828@vireshk>
- <56B21E2E.1070606@free.fr>
- <20160203161428.GJ3469@vireshk>
- <56B24634.6060001@free.fr>
+Subject: Re: [PATCH 1/3] cpufreq: Add a mechanism for registering utilization
+ update callbacks
+Date: Thu, 4 Feb 2016 09:01:44 +0530
+Message-ID: <20160204033144.GR3469@vireshk>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <1895005.WdX4A2LmI5@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:34663 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965331AbcBDDX4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 22:23:56 -0500
-Received: by mail-pf0-f173.google.com with SMTP id o185so28767432pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 19:23:56 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <56B24634.6060001@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1895005.WdX4A2LmI5@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 03-02-16, 19:25, Mason wrote:
-> The sunxi guys pointed me in the right direction.
+On 29-01-16, 23:53, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> http://lxr.free-electrons.com/source/arch/arm/mach-sunxi/sunxi.c#L20
+> Introduce a mechanism by which parts of the cpufreq subsystem
+> ("setpolicy" drivers or the core) can register callbacks to be
+> executed from cpufreq_update_util() which is invoked by the
+> scheduler's update_load_avg() on CPU utilization changes.
 > 
-> Why isn't there a compatible string like other drivers?
+> This allows the "setpolicy" drivers to dispense with their timers
+> and do all of the computations they need and frequency/voltage
+> adjustments in the update_load_avg() code path, among other things.
 > 
-> Such as
->   compatible = "cpufreq-dt"
-> which would enable cpufreq on the platform?
+> The scheduler changes were suggested by Peter Zijlstra.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h   |    7 +++++++
+>  include/linux/sched.h     |    2 ++
+>  kernel/sched/fair.c       |   29 ++++++++++++++++++++++++++++-
+>  4 files changed, 81 insertions(+), 1 deletion(-)
 
-Because DT can't have nodes for virtual devices :(
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
