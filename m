@@ -1,46 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/11] cpufreq: Clean up default and fallback governor
- setup
-Date: Thu, 4 Feb 2016 10:33:07 +0530
-Message-ID: <20160204050307.GT3469@vireshk>
+Subject: Re: [PATCH 2/11] cpufreq: governor: Use common mutex for dbs_data
+ protection
+Date: Thu, 4 Feb 2016 10:39:54 +0530
+Message-ID: <20160204050954.GU3469@vireshk>
 References: <3705929.bslqXH980s@vostro.rjw.lan>
- <8241294.RLKfcoktTC@vostro.rjw.lan>
+ <1529283.0IedZktI9q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:33961 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbcBDFDK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 00:03:10 -0500
-Received: by mail-pf0-f179.google.com with SMTP id o185so31514843pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 21:03:10 -0800 (PST)
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35193 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbcBDFJ6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 00:09:58 -0500
+Received: by mail-pf0-f180.google.com with SMTP id 65so31748946pfd.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 21:09:57 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <8241294.RLKfcoktTC@vostro.rjw.lan>
+In-Reply-To: <1529283.0IedZktI9q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On 04-02-16, 00:14, Rafael J. Wysocki wrote:
+On 04-02-16, 00:16, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The preprocessor magic used for setting the default cpufreq governor
-> (and for using the performance governor as a fallback one for that
-> matter) is really nasty, so replace it with __weak functions and
-> overrides.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c              |   37 ++++++++++++++++++---------------
->  drivers/cpufreq/cpufreq_conservative.c |   10 +++++---
->  drivers/cpufreq/cpufreq_ondemand.c     |   34 ++++++++++++++++--------------
->  drivers/cpufreq/cpufreq_performance.c  |   18 ++++++++++++----
->  drivers/cpufreq/cpufreq_powersave.c    |   10 +++++---
->  drivers/cpufreq/cpufreq_userspace.c    |   10 +++++---
->  include/linux/cpufreq.h                |   25 +---------------------
->  7 files changed, 73 insertions(+), 71 deletions(-)
+> Every governor relying on the common code in cpufreq_governor.c
+> has to provide its own mutex in struct common_dbs_data.  However,
+> those mutexes are never used at the same time
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Why do you think so? I thought they can always be used in parallel.
+
+Consider 2 or more policies, one can have ondemand as the governor,
+whereas other one can have conservative.
+
+If CPUs go online/offline or if governors are switching in parallel,
+then cpufreq_governor_dbs() can very much run in parallel for ondemand
+and conservative.
+
+Or am I missing something here ?
 
 -- 
 viresh
