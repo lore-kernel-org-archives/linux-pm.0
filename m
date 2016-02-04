@@ -1,105 +1,63 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v3 2/6] drivers/cpufreq: implement init_cpu_capacity_default()
-Date: Thu, 4 Feb 2016 16:46:17 +0100
-Message-ID: <CAKfTPtD4jTmUZoShGBm3oAFywizjp8jsEukmkeZU+x+zk-KZRA@mail.gmail.com>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-3-git-send-email-juri.lelli@arm.com> <CAKfTPtDGk5BC25WqHdhDYDOBgUsuidAMhrXS=eDi6wJPZjfrwA@mail.gmail.com>
- <20160204093559.GA14099@e105550-lin.cambridge.arm.com> <CAKfTPtB4G3bP5N0hU6zWXJTddO34x3RnyGpp-4_otc8O=Wq2hw@mail.gmail.com>
- <20160204121620.GB29586@e106622-lin> <CAKfTPtDVasamRtG2kLxP0HsohmVQTPrXRgx36e+jb3gozDoo6g@mail.gmail.com>
- <20160204141345.GD29586@e106622-lin> <CAKfTPtDWP-AgqXsSuxCfVj33dh+i7oqDTkL=gUy7n-AB1anoow@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Thu, 4 Feb 2016 11:04:50 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
+References: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f177.google.com ([209.85.217.177]:35089 "EHLO
-	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933240AbcBDPqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 10:46:38 -0500
-Received: by mail-lb0-f177.google.com with SMTP id bc4so33537679lbc.2
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 07:46:37 -0800 (PST)
-In-Reply-To: <CAKfTPtDWP-AgqXsSuxCfVj33dh+i7oqDTkL=gUy7n-AB1anoow@mail.gmail.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:33222 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757208AbcBDQEv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 11:04:51 -0500
+In-Reply-To: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 4 February 2016 at 16:44, Vincent Guittot <vincent.guittot@linaro.org> wrote:
-> On 4 February 2016 at 15:13, Juri Lelli <juri.lelli@arm.com> wrote:
->> On 04/02/16 13:35, Vincent Guittot wrote:
->>> On 4 February 2016 at 13:16, Juri Lelli <juri.lelli@arm.com> wrote:
->>> > Hi Vincent,
->>> >
->>> > On 04/02/16 13:03, Vincent Guittot wrote:
->>> >> On 4 February 2016 at 10:36, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
->>> >> > On Wed, Feb 03, 2016 at 10:04:37PM +0100, Vincent Guittot wrote:
->>> >> >> On 3 February 2016 at 12:59, Juri Lelli <juri.lelli@arm.com> wrote:
->>> >>
->>> >> [snip]
->>> >>
->>> >> >> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->>> >> >> > index 9e63fb1..c4025fd 100644
->>> >> >> > --- a/drivers/cpufreq/Makefile
->>> >> >> > +++ b/drivers/cpufreq/Makefile
->>> >> >> > @@ -1,5 +1,5 @@
->>> >> >> >  # CPUfreq core
->>> >> >> > -obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o
->>> >> >> > +obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o cpufreq_capacity.o
->>> >> >>
->>> >> >> Do you really want to have the calibration of capacity dependent of
->>> >> >> cpufreq ? It means that we can't use it without a cpufreq driver.
->>> >> >> IMHO, this creates a unnecessary dependency. I understand that you
->>> >> >> must ensure that core runs at max fequency if a driver is present but
->>> >> >> you should be able to calibrate the capacity if cpufreq is not
->>> >> >> available but you have different capacity because micro architecture
->>> >> >
->>> >> > We could remove the dependency on cpufreq, but it would make things more
->>> >> > complicated for systems which do have frequency scaling as we would have
->>> >> > to either:
->>> >> >
->>> >> > 1) Run the calibration again once cpufreq has been initialized.
->>> >>
->>> >> or wait and let time for a driver to initialize and trig the
->>> >> calibration. If calibration has not been done at the end of the boot,
->>> >> you can force a calibration. If the cpufeq driver is a module and is
->>> >> loaded far later for any good or bad reason, we will have to run the
->>> >> calibration once again but at least the capacity will reflect he
->>> >> current capacity of the CPUs.
->>> >> I'm mainly worried that the compilation of the calibration is
->>> >> dependent of CONFIG_CPU_FREQ not that cpufreq can trig the calibration
->>> >> sequence
->>> >>
->>> >
->>> > Yes, I guess we can make this work in some way. Out of curiosity,
->>> > though, are out there heterogenous platforms that don't use cpufreq?
->>>
->>> At least, you can find several heterogeneous platforms without OPP
->>> table for CPUs in the kernel. That's probably a temporary situation
->>> but which can become a permanent one. It means that we can't calibrate
->>> the CPUs for these platforms.
->>>
->>
->> Sorry, can you make some examples so that I'm sure I understand what you
->> are referring to?
->
-> As an example, the uniphier arm64 Soc doesn't have a cpufreq driver so far
->
->>
->> Anyway, don't these platform still make use of cpufreq (even if without
->> an OPP table) so that we can still control policy->max and min?
->
-> AFAICT, They don't have a dedicated cpufreq driver.
->
-> More generally speaking, it can take time before having
+On Thu, 4 Feb 2016, Ulf Hansson wrote:
 
-email sent before the ne d of the sentence ...
+> Just wanted to add yet some new findings while I was looking into this
+> regression.
+> 
+> So, the reason why pm_runtime_put_sync() doesn't idle the device in
+> these cases, is because autosuspend is respected and for some reason
+> the autosuspend timer hasn't expired.
 
-More generally speaking, it can take time before having a cpufreq
-driver whereas we want to run and test scheduler behavior of these
-heterogenous platform
+No doubt the autosuspend delay is longer than the time it takes for a 
+probe to fail.
 
-Thanks,
-Vincent
->
->>
->> Thanks,
->>
->> - Juri
+> I was wondering *why* the timer isn't considered as expired, because
+> the driver don't call pm_runtime_mark_last_busy() in the failing probe
+> case...
+> 
+> Then I realized the following commit was merged a few releases ago,
+> which makes the runtime PM core to invoke pm_runtime_mark_last_busy()
+> for us.
+> 
+> commit 56f487c78015936097474fd89b2ccb229d500d0f
+> Author: Tony Lindgren <tony@atomide.com>
+> Date:   Wed May 13 16:36:32 2015 -0700
+> PM / Runtime: Update last_busy in rpm_resume
+> 
+> So, this commit actually causes the devices to stay active after a
+> failed probe attempt.
+> 
+> I think it's a good idea to revert this change, but what to you think?
+
+I disagree.  The whole idea of autosuspend is to prevent the device's
+power state from bouncing up and down too rapidly.  This implies that 
+whenever the device gets resumed, we should wait at least the minimum 
+autosuspend delay before allowing the next autosuspend.
+
+Perhaps you think that it's silly to behave that way in this case,
+because the device wasn't accessed at all during the time it was at
+full power.  That's a valid objection, but the proper solution is not
+to revert the 56f487c78015 commit.  Rather, change the driver to avoid
+doing a pm_runtime_resume_sync until you _know_ that the device will be
+accessed soon.
+
+Alan Stern
+
