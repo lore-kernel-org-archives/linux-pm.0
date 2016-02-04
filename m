@@ -1,138 +1,81 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [PATCH v3 2/6] drivers/cpufreq: implement
- init_cpu_capacity_default()
-Date: Thu, 4 Feb 2016 09:36:00 +0000
-Message-ID: <20160204093559.GA14099@e105550-lin.cambridge.arm.com>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-3-git-send-email-juri.lelli@arm.com>
- <CAKfTPtDGk5BC25WqHdhDYDOBgUsuidAMhrXS=eDi6wJPZjfrwA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Thu, 4 Feb 2016 11:20:03 +0100
+Message-ID: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
+References: <20160202210345.GZ19432@atomide.com>
+	<Pine.LNX.4.44L0.1602021626540.1653-100000@iolanthe.rowland.org>
+	<20160202234626.GD19432@atomide.com>
+	<CAJZ5v0hdDdFDiieDnsjummg6F+nV7fi=gFa=oFweyP7-ApsHrQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39662 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbcBDJek (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Feb 2016 04:34:40 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtDGk5BC25WqHdhDYDOBgUsuidAMhrXS=eDi6wJPZjfrwA@mail.gmail.com>
+Received: from mail-yw0-f169.google.com ([209.85.161.169]:34429 "EHLO
+	mail-yw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933856AbcBDKUE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 05:20:04 -0500
+Received: by mail-yw0-f169.google.com with SMTP id h129so23790266ywb.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 02:20:03 -0800 (PST)
+In-Reply-To: <CAJZ5v0hdDdFDiieDnsjummg6F+nV7fi=gFa=oFweyP7-ApsHrQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Feb 03, 2016 at 10:04:37PM +0100, Vincent Guittot wrote:
-> On 3 February 2016 at 12:59, Juri Lelli <juri.lelli@arm.com> wrote:
-> > To get default values for CPUs capacity we profile a simple (bogus)
-> > integer benchmark on such CPUs; then we normalize results to 1024
-> > (highest capacity in the system).
-> >
-> > Architectures that want this during boot have to define a weak function
-> > (arch_wants_init_cpu_capacity) to return true.
-> >
-> > Also, kernel has to boot with init_cpu_capacity parameter if profiling
-> > is needed, as it can be expensive and might add ~1 sec to boot time.
-> >
-> > Cc: Russell King <linux@arm.linux.org.uk>
-> > Cc: Catalin Marinas <catalin.marinas@arm.com>
-> > Cc: Will Deacon <will.deacon@arm.com>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> > Cc: Sudeep Holla <sudeep.holla@arm.com>
-> > Cc: Mark Rutland <mark.rutland@arm.com>
-> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> > ---
-> >  Changes since v1:
-> >  - add kernel command line parameter to enable profiling
-> >  - add define for max trials
-> >
-> >  Documentation/kernel-parameters.txt |   4 +
-> >  arch/arm/kernel/topology.c          |   2 +-
-> >  arch/arm64/kernel/topology.c        |  12 +++
-> >  drivers/cpufreq/Makefile            |   2 +-
-> >  drivers/cpufreq/cpufreq.c           |   1 +
-> >  drivers/cpufreq/cpufreq_capacity.c  | 174 ++++++++++++++++++++++++++++++++++++
-> >  include/linux/cpufreq.h             |   2 +
-> >  7 files changed, 195 insertions(+), 2 deletions(-)
-> >  create mode 100644 drivers/cpufreq/cpufreq_capacity.c
-> >
-> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > index 87d40a7..fad2b89 100644
-> > --- a/Documentation/kernel-parameters.txt
-> > +++ b/Documentation/kernel-parameters.txt
-> > @@ -1570,6 +1570,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
-> >
-> >         initrd=         [BOOT] Specify the location of the initial ramdisk
-> >
-> > +       init_cpu_capacity
-> > +                       [KNL,ARM] Enables dynamic CPUs capacity benchmarking
-> > +                       at boot.
-> > +
-> >         inport.irq=     [HW] Inport (ATI XL and Microsoft) busmouse driver
-> >                         Format: <irq>
-> >
-> > diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-> > index ec279d1..c9c87a5 100644
-> > --- a/arch/arm/kernel/topology.c
-> > +++ b/arch/arm/kernel/topology.c
-> > @@ -47,7 +47,7 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-> >         return per_cpu(cpu_scale, cpu);
-> >  }
-> >
-> > -static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-> > +void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-> >  {
-> >         per_cpu(cpu_scale, cpu) = capacity;
-> >  }
-> > diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-> > index 694f6de..3b75d63 100644
-> > --- a/arch/arm64/kernel/topology.c
-> > +++ b/arch/arm64/kernel/topology.c
-> > @@ -23,6 +23,18 @@
-> >  #include <asm/cputype.h>
-> >  #include <asm/topology.h>
-> >
-> > +static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
-> > +
-> > +unsigned long arm_arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-> > +{
-> > +       return per_cpu(cpu_scale, cpu);
-> > +}
-> > +
-> > +void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-> > +{
-> > +       per_cpu(cpu_scale, cpu) = capacity;
-> > +}
-> > +
-> >  static int __init get_cpu_for_node(struct device_node *node)
-> >  {
-> >         struct device_node *cpu_node;
-> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> > index 9e63fb1..c4025fd 100644
-> > --- a/drivers/cpufreq/Makefile
-> > +++ b/drivers/cpufreq/Makefile
-> > @@ -1,5 +1,5 @@
-> >  # CPUfreq core
-> > -obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o
-> > +obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o cpufreq_capacity.o
-> 
-> Do you really want to have the calibration of capacity dependent of
-> cpufreq ? It means that we can't use it without a cpufreq driver.
-> IMHO, this creates a unnecessary dependency. I understand that you
-> must ensure that core runs at max fequency if a driver is present but
-> you should be able to calibrate the capacity if cpufreq is not
-> available but you have different capacity because micro architecture
+On 3 February 2016 at 18:18, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Feb 3, 2016 at 12:46 AM, Tony Lindgren <tony@atomide.com> wrote:
+>> * Alan Stern <stern@rowland.harvard.edu> [160202 13:46]:
+>>> On Tue, 2 Feb 2016, Tony Lindgren wrote:
+>>>
+>>> > > Also, what is autosuspend_delay set to for your device?  And is
+>>> > > runtime_auto set?
+>>> >
+>>> > It's 100 at that point, see the commented snippet below from
+>>> > omap_hsmmc_probe():
+>>> >
+>>> >     pm_runtime_enable(host->dev);
+>>> >     pm_runtime_get_sync(host->dev);
+>>> >     pm_runtime_set_autosuspend_delay(host->dev, MMC_AUTOSUSPEND_DELAY);
+>>> >     /* NOTE: pm_runtime_dont_use_autosuspend(host->dev) needed here? */
+>>> >     pm_runtime_use_autosuspend(host->dev);
+>>> >     ...
+>>> >     /* gets -EPROBE_DEFER */
+>>> > err_irq:
+>>> >     ...
+>>> >     pm_runtime_put_sync(host->dev);
+>>>
+>>> You could try changing this to pm_runtime_put_sync_suspend().  But
+>>> putting pm_runtime_dont_use_autosuspend() before the put_sync seems
+>>> like a perfectly reasonable thing to do, especially if you feel you
+>>> should reverse all the changes you made at the start.
+>
+> FWIW, I'd call pm_runtime_dont_use_autosuspend() before put_sync().
+>
+> After all, the driver doesn't want to use autosuspend going forward,
+> so stating that explicitly looks like the right thing to do.
 
-We could remove the dependency on cpufreq, but it would make things more
-complicated for systems which do have frequency scaling as we would have
-to either:
+Just wanted to add yet some new findings while I was looking into this
+regression.
 
-1) Run the calibration again once cpufreq has been initialized.
+So, the reason why pm_runtime_put_sync() doesn't idle the device in
+these cases, is because autosuspend is respected and for some reason
+the autosuspend timer hasn't expired.
+I was wondering *why* the timer isn't considered as expired, because
+the driver don't call pm_runtime_mark_last_busy() in the failing probe
+case...
 
-2) Know the frequency of all cpus at calibration time so we can
-determine the correct micro-archicture difference. This option would
-however mean that we have to provide a frequency scaling factor even for
-systems that don't have cpufreq.
+Then I realized the following commit was merged a few releases ago,
+which makes the runtime PM core to invoke pm_runtime_mark_last_busy()
+for us.
 
-3) Find a way to do the calibration anyway if cpufreq doesn't
-initialize. I'm not sure how that would work though.
+commit 56f487c78015936097474fd89b2ccb229d500d0f
+Author: Tony Lindgren <tony@atomide.com>
+Date:   Wed May 13 16:36:32 2015 -0700
+PM / Runtime: Update last_busy in rpm_resume
+
+So, this commit actually causes the devices to stay active after a
+failed probe attempt.
+
+I think it's a good idea to revert this change, but what to you think?
+
+Kind regards
+Uffe
