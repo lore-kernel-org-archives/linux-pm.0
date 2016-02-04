@@ -1,63 +1,63 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Thu, 4 Feb 2016 09:20:25 -0800
-Message-ID: <20160204172025.GQ19432@atomide.com>
-References: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
- <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/11] cpufreq: governor: ondemand/conservative data
+ structures rework
+Date: Thu, 4 Feb 2016 18:22:31 +0100
+Message-ID: <CAJZ5v0j3X1SOp2eXc3T48_RhoBAo9Wk_LyAss7Ni381fHFiU7w@mail.gmail.com>
+References: <3705929.bslqXH980s@vostro.rjw.lan>
+	<20160204054049.GX3469@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:60160 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754394AbcBDRU2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Feb 2016 12:20:28 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:33657 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932857AbcBDRWd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 12:22:33 -0500
+In-Reply-To: <20160204054049.GX3469@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-* Alan Stern <stern@rowland.harvard.edu> [160204 08:05]:
-> On Thu, 4 Feb 2016, Ulf Hansson wrote:
-> 
-> > Just wanted to add yet some new findings while I was looking into this
-> > regression.
-> > 
-> > So, the reason why pm_runtime_put_sync() doesn't idle the device in
-> > these cases, is because autosuspend is respected and for some reason
-> > the autosuspend timer hasn't expired.
-> 
-> No doubt the autosuspend delay is longer than the time it takes for a 
-> probe to fail.
-> 
-> > I was wondering *why* the timer isn't considered as expired, because
-> > the driver don't call pm_runtime_mark_last_busy() in the failing probe
-> > case...
-> > 
-> > Then I realized the following commit was merged a few releases ago,
-> > which makes the runtime PM core to invoke pm_runtime_mark_last_busy()
-> > for us.
-> > 
-> > commit 56f487c78015936097474fd89b2ccb229d500d0f
-> > Author: Tony Lindgren <tony@atomide.com>
-> > Date:   Wed May 13 16:36:32 2015 -0700
-> > PM / Runtime: Update last_busy in rpm_resume
-> > 
-> > So, this commit actually causes the devices to stay active after a
-> > failed probe attempt.
-> > 
-> > I think it's a good idea to revert this change, but what to you think?
-> 
-> I disagree.  The whole idea of autosuspend is to prevent the device's
-> power state from bouncing up and down too rapidly.  This implies that 
-> whenever the device gets resumed, we should wait at least the minimum 
-> autosuspend delay before allowing the next autosuspend.
+On Thu, Feb 4, 2016 at 6:40 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 04-02-16, 00:12, Rafael J. Wysocki wrote:
+>> Hi,
+>>
+>> A few days ago I looked at the common code used by the ondemand and conservative
+>> governors because of the deadlock issue that Viresh has addressed recently
+>> (http://marc.info/?l=linux-pm&m=145450832814058&w=4) and it occurred to me
+>> that the whole thing was really too tangled and might be made easier to follow
+>> at least.  I started to work on this and ended up with the following series.
+>>
+>> I'm not really going to stop here, but first, I'd like to let everybody know
+>> that this is happening and second, I'll need to rebase these patches on the
+>> ones from Viresh (in the series linked above), but that may take some time
+>> and I don't want to sit on them for all that long.
+>>
+>> Overall, I'd like the governor code to be cleaner and easier to follow, so we can
+>> move at least some parts of governor work to utilization update callbacks (invoked
+>> by the scheduler) or to at least to irq_work so as to reduce the usage of process
+>> context in cpufreq to absolute minimum.  That's the plan for the future, but for
+>> now this is just a major cleanup.
+>>
+>> [1/11] Clean up the way in which the default and fallback governors are set up.
+>> [2/11] Use a common global mutex for dbs_data protection.
+>> [3/11] Use common global pointer to dbs_data for system-wide governors.
+>
+> Hi Rafael,
+>
+> I have some very basic doubts on 2nd and 3rd patch, and so have
+> stopped reviewing after that because there is too much dependency I
+> believe on these two.
+>
+> I will review the rest, if my concerns on the earlier ones are
+> incorrect.
 
-Yeah let's not revert 56f487c78015. Without that we have devices
-falling right back to sleep.
+Patch [3/11] is really incorrect (thanks for pointing the problem out
+to me), but it also isn't essential, so I can drop it just fine I
+think.
 
-Regards,
+I don't see issues with the [2/11], though, apart from the changelog
+being inaccurate which should be easy to fix.
 
-Tony
+Thanks,
+Rafael
