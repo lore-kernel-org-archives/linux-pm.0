@@ -1,97 +1,63 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Thu, 4 Feb 2016 18:19:01 +0100
-Message-ID: <CAJZ5v0h+HiY4cMqrfFNYL1gg8MpHf6iHDwX9fuWBTXN-91dMAg@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<18671470.kF8gVcBlTg@vostro.rjw.lan>
-	<20160204105116.GF12132@e106622-lin>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
+ v4.5-rc1
+Date: Thu, 4 Feb 2016 09:20:25 -0800
+Message-ID: <20160204172025.GQ19432@atomide.com>
+References: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
+ <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160204105116.GF12132@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:60160 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754394AbcBDRU2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Feb 2016 12:20:28 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, Feb 4, 2016 at 11:51 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi Rafael,
->
-> On 03/02/16 23:20, Rafael J. Wysocki wrote:
->> On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
->> > Hi,
->> >
->> > The following patch series introduces a mechanism allowing the cpufreq core
->> > and "setpolicy" drivers to provide utilization update callbacks to be invoked
->> > by the scheduler on utilization changes.  Those callbacks can be used to run
->> > the sampling and frequency adjustments code (intel_pstate) or to schedule the
->> > execution of that code in process context (cpufreq core) instead of per-CPU
->> > deferrable timers used in cpufreq today (which Thomas complained about during
->> > the last Kernel Summit).
->> >
->> > [1/3] Introduce a mechanism for calling into cpufreq from the scheduler and
->> >       registering callbacks to be executed from there.
->> >
->> > [2/3] Modify intel_pstate to use the mechanism introduced by [1/3] instead
->> >       of per-CPU deferrable timers to do its work.
->> >
->> > This isn't entirely straightforward as the scheduler context running those
->> > callbacks is really special.  Among other things it can only use raw
->> > spinlocks and cannot invoke wake_up_process() directly.  Also, calling
->> > ktime_get() from there may be too expensive on some systems.  All that has to
->> > be taken into account, but even then the change allows some lines of code to be
->> > cut from the driver.
->> >
->> > Some performance and energy consumption measurements have been carried out with
->> > an earlier version of this patch and it looks like the changes lead to a
->> > slightly better performing system that consumes slightly less energy at the
->> > same time overall.
->> >
->> > [3/3] Modify the cpufreq core to use the mechanism introduced by [1/3] instead
->> >       of per-CPU deferrable timers to queue up the execution of governor work.
->> >
->> > Again, this isn't really straightforward for the above reasons, but still the
->> > code size is reduced a bit by the changes.
->> >
->> > I'm still unsure about the energy consumption and performance impact of [3/3]
->> > as earlier versions of it led to inconsistent results (most likely due to bugs
->> > in them that hopefully have been fixed in this version).  In particular, the
->> > additional irq_work may turn out to be problematic, but more optimizations are
->> > possible on top of this one even if it makes things worse by itself.
->> >
->> > For example, it should be possible to move the execution of state selection
->> > code into the utilization update callback itself, at least in principle, for
->> > all governors.  The P-state/OPP adjustment may need to be run from process
->> > context still, but for the drivers that can do it without sleeping it should
->> > be possible to move that into the utilization update callback as well.
->> >
->> > The patches are on top of 4.5-rc1 and have been tested on a couple of x86
->> > machines.
->>
->> Well, no responses here, so I'm inclined to believe that this series is fine
->> by everybody (at least by everybody in the CC).
->>
->
-> I did intend to test and review this series, but then other patches
-> required attention as well and I didn't find time to have a look at
-> these. Sorry about that. Also, if I can speak for him, I think that
-> Steve is OOO this week.
+* Alan Stern <stern@rowland.harvard.edu> [160204 08:05]:
+> On Thu, 4 Feb 2016, Ulf Hansson wrote:
+> 
+> > Just wanted to add yet some new findings while I was looking into this
+> > regression.
+> > 
+> > So, the reason why pm_runtime_put_sync() doesn't idle the device in
+> > these cases, is because autosuspend is respected and for some reason
+> > the autosuspend timer hasn't expired.
+> 
+> No doubt the autosuspend delay is longer than the time it takes for a 
+> probe to fail.
+> 
+> > I was wondering *why* the timer isn't considered as expired, because
+> > the driver don't call pm_runtime_mark_last_busy() in the failing probe
+> > case...
+> > 
+> > Then I realized the following commit was merged a few releases ago,
+> > which makes the runtime PM core to invoke pm_runtime_mark_last_busy()
+> > for us.
+> > 
+> > commit 56f487c78015936097474fd89b2ccb229d500d0f
+> > Author: Tony Lindgren <tony@atomide.com>
+> > Date:   Wed May 13 16:36:32 2015 -0700
+> > PM / Runtime: Update last_busy in rpm_resume
+> > 
+> > So, this commit actually causes the devices to stay active after a
+> > failed probe attempt.
+> > 
+> > I think it's a good idea to revert this change, but what to you think?
+> 
+> I disagree.  The whole idea of autosuspend is to prevent the device's
+> power state from bouncing up and down too rapidly.  This implies that 
+> whenever the device gets resumed, we should wait at least the minimum 
+> autosuspend delay before allowing the next autosuspend.
 
-No problem at all.
+Yeah let's not revert 56f487c78015. Without that we have devices
+falling right back to sleep.
 
->> I can wait for a few days more, but new material is starting to pile up on top
->> of these patches and I'll simply need to move forward at one point.
->>
->
-> Unfortunately, I can't promise anything at the moment, but, if I find
-> some time, I'll run some tests (BTW, do you have alredy something that I
-> can put to run on my boxes?). I guess I can eventually do that after
-> this gets merged as well.
+Regards,
 
-Thanks!
-
-Well, everything that might regress performance-wise or from the
-energy consumption standpoint would be good to run.
-
-Thanks,
-Rafael
+Tony
