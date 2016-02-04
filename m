@@ -1,84 +1,50 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 3/11] cpufreq: governor: Use common global_dbs_data pointer
-Date: Wed, 03 Feb 2016 17:47:55 -0800
-Message-ID: <56B2ADCB.8030400@codeaurora.org>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <1876466.AY9fn15fDn@vostro.rjw.lan> <56B2A53C.8080503@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 5/7] cpufreq: Merge cpufreq_offline_prepare/finish
+ routines
+Date: Thu, 4 Feb 2016 07:19:27 +0530
+Message-ID: <20160204014927.GL3469@vireshk>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <5e84719b5475f79602e95af524e66e8927a85bc9.1454507872.git.viresh.kumar@linaro.org>
+ <56B26154.9010000@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:37408 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756474AbcBDBr5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 20:47:57 -0500
-In-Reply-To: <56B2A53C.8080503@codeaurora.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35294 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755002AbcBDBtb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 20:49:31 -0500
+Received: by mail-pf0-f182.google.com with SMTP id 65so26187646pfd.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Feb 2016 17:49:31 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <56B26154.9010000@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 
-On 02/03/2016 05:11 PM, Saravana Kannan wrote:
-> On 02/03/2016 03:22 PM, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> If the ondemand and conservative governors cannot use per-policy
->> tunables (CPUFREQ_HAVE_GOVERNOR_PER_POLICY is not set in the cpufreq
->> driver), all policy objects point to the same single dbs_data object.
->> Additionally, that object is pointed to by a global pointer hidden in
->> the governor's data structures.
->>
->> There is no reason for that pointer to be buried in those
->> data structures, though, so make it explicitly global.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>   drivers/cpufreq/cpufreq_governor.c |   20 ++++++++++----------
->>   drivers/cpufreq/cpufreq_governor.h |   20 ++++++++++----------
->>   2 files changed, 20 insertions(+), 20 deletions(-)
->>
->> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
->> ===================================================================
->> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
->> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
->> @@ -78,7 +78,7 @@ __ATTR(_name, 0644, show_##_name##_gov_p
->>   static ssize_t show_##file_name##_gov_sys                \
->>   (struct kobject *kobj, struct attribute *attr, char *buf)        \
->>   {                                    \
->> -    struct _gov##_dbs_tuners *tuners =
->> _gov##_dbs_cdata.gdbs_data->tuners; \
->> +    struct _gov##_dbs_tuners *tuners = global_dbs_data->tuners; \
->>       return sprintf(buf, "%u\n", tuners->file_name);            \
->>   }                                    \
->>                                       \
->> @@ -94,7 +94,7 @@ static ssize_t show_##file_name##_gov_po
->>   static ssize_t store_##file_name##_gov_sys                \
->>   (struct kobject *kobj, struct attribute *attr, const char *buf,
->> size_t count) \
->>   {                                    \
->> -    struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;        \
->> +    struct dbs_data *dbs_data = global_dbs_data;        \
->>       return store_##file_name(dbs_data, buf, count);            \
->>   }                                    \
->>                                       \
->> @@ -201,19 +201,14 @@ struct cs_dbs_tuners {
->>   /* Common Governor data across policies */
->>   struct dbs_data;
->>   struct common_dbs_data {
->> -    /* Common across governors */
->> +    struct cpufreq_governor gov;
->> +
+On 03-02-16, 12:21, Saravana Kannan wrote:
+> On 02/03/2016 06:02 AM, Viresh Kumar wrote:
+> >The offline routine was separated into two halves earlier by
+> >'commit 1aee40ac9c86 ("cpufreq: Invoke __cpufreq_remove_dev_finish()
+> >after releasing cpu_hotplug.lock");.
+> >
+> >And the reasons cited were, race issues between accessing policy's sysfs
+> >files and policy kobject's cleanup.
+> >
+> >That race isn't valid anymore, as we don't remove the policy & its
+> >kobject completely on hotplugs, but do that from ->remove() callback of
+> >subsys framework.
+> >
+> >These two routines can be merged back now.
+> >
+> >This is a preparatory step for the next patch, that will enforce
+> >policy->rwsem lock around __cpufreq_governor() routines STOP/EXIT
+> >sequence.
+> 
+> Is this stale text? Seems like this is now done in the *previous* patch?
 
-Actually, this line is completely unrelated to this patch. Should go on 
-Patch 5?
-
->
-> Cautiously Acked-by: Saravana Kannan <skannan@codeaurora.org>
-
-Good call on the "cautiously" I guess!
-
--Saravana
+No, the previous patch has fixed a single location only. The next
+patch tried to fix others as well.
 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+viresh
