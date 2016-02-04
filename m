@@ -1,336 +1,144 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 1/11] cpufreq: Clean up default and fallback governor
- setup
-Date: Wed, 03 Feb 2016 16:55:35 -0800
-Message-ID: <56B2A187.3080500@codeaurora.org>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <8241294.RLKfcoktTC@vostro.rjw.lan>
+Subject: Re: [PATCH 2/11] cpufreq: governor: Use common mutex for dbs_data
+ protection
+Date: Wed, 03 Feb 2016 16:59:38 -0800
+Message-ID: <56B2A27A.5030303@codeaurora.org>
+References: <3705929.bslqXH980s@vostro.rjw.lan> <1529283.0IedZktI9q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:36033 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:36200 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932897AbcBDAzi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 19:55:38 -0500
-In-Reply-To: <8241294.RLKfcoktTC@vostro.rjw.lan>
+	with ESMTP id S1752863AbcBDA7k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 19:59:40 -0500
+In-Reply-To: <1529283.0IedZktI9q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>
 
-On 02/03/2016 03:14 PM, Rafael J. Wysocki wrote:
+On 02/03/2016 03:16 PM, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> The preprocessor magic used for setting the default cpufreq governor
-> (and for using the performance governor as a fallback one for that
-> matter) is really nasty, so replace it with __weak functions and
-> overrides.
+> Every governor relying on the common code in cpufreq_governor.c
+> has to provide its own mutex in struct common_dbs_data.  However,
+> those mutexes are never used at the same time and doing it this
+> way makes it rather difficult to follow the code.  Moreover,
+> if two governor modules are loaded we end up with two mutexes
+> used for the same purpose one at a time.
+>
+> Introduce a single common mutex for that instead and drop the
+> mutex field from struct common_dbs_data.  That at least will
+> ensure that the mutex is always present and initialized regardless
+> of what the particular governors do.
 >
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->   drivers/cpufreq/cpufreq.c              |   37 ++++++++++++++++++---------------
->   drivers/cpufreq/cpufreq_conservative.c |   10 +++++---
->   drivers/cpufreq/cpufreq_ondemand.c     |   34 ++++++++++++++++--------------
->   drivers/cpufreq/cpufreq_performance.c  |   18 ++++++++++++----
->   drivers/cpufreq/cpufreq_powersave.c    |   10 +++++---
->   drivers/cpufreq/cpufreq_userspace.c    |   10 +++++---
->   include/linux/cpufreq.h                |   25 +---------------------
->   7 files changed, 73 insertions(+), 71 deletions(-)
+>   drivers/cpufreq/cpufreq_conservative.c |    1 -
+>   drivers/cpufreq/cpufreq_governor.c     |    7 +++++--
+>   drivers/cpufreq/cpufreq_governor.h     |    6 +-----
+>   drivers/cpufreq/cpufreq_ondemand.c     |    5 ++---
+>   4 files changed, 8 insertions(+), 11 deletions(-)
 >
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1003,6 +1003,11 @@ static int cpufreq_add_dev_interface(str
->   	return cpufreq_add_dev_symlink(policy);
->   }
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+> @@ -22,6 +22,9 @@
 >
-> +__weak struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return NULL;
-> +}
+>   #include "cpufreq_governor.h"
+>
+> +DEFINE_MUTEX(dbs_data_mutex);
+> +EXPORT_SYMBOL_GPL(dbs_data_mutex);
 > +
->   static int cpufreq_init_policy(struct cpufreq_policy *policy)
+>   static struct attribute_group *get_sysfs_attr(struct dbs_data *dbs_data)
 >   {
->   	struct cpufreq_governor *gov = NULL;
-> @@ -1012,11 +1017,14 @@ static int cpufreq_init_policy(struct cp
->
->   	/* Update governor of new_policy to the governor used before hotplug */
->   	gov = find_governor(policy->last_governor);
-> -	if (gov)
-> +	if (gov) {
->   		pr_debug("Restoring governor %s for cpu %d\n",
->   				policy->governor->name, policy->cpu);
-> -	else
-> -		gov = CPUFREQ_DEFAULT_GOVERNOR;
-> +	} else {
-> +		gov = cpufreq_default_governor();
-> +		if (!gov)
-> +			return -ENODATA;
-> +	}
->
->   	new_policy.governor = gov;
->
-> @@ -1964,21 +1972,16 @@ int cpufreq_driver_target(struct cpufreq
->   }
->   EXPORT_SYMBOL_GPL(cpufreq_driver_target);
->
-> +__weak struct cpufreq_governor *cpufreq_fallback_governor(void)
-> +{
-> +	return NULL;
-> +}
-> +
->   static int __cpufreq_governor(struct cpufreq_policy *policy,
->   					unsigned int event)
->   {
+>   	if (have_governor_per_policy())
+> @@ -542,7 +545,7 @@ int cpufreq_governor_dbs(struct cpufreq_
 >   	int ret;
 >
-> -	/* Only must be defined when default governor is known to have latency
-> -	   restrictions, like e.g. conservative or ondemand.
-> -	   That this is the case is already ensured in Kconfig
-> -	*/
-> -#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
-> -	struct cpufreq_governor *gov = &cpufreq_gov_performance;
-> -#else
-> -	struct cpufreq_governor *gov = NULL;
-> -#endif
-> -
->   	/* Don't start any governor operations if we are entering suspend */
->   	if (cpufreq_suspended)
->   		return 0;
-> @@ -1992,12 +1995,14 @@ static int __cpufreq_governor(struct cpu
->   	if (policy->governor->max_transition_latency &&
->   	    policy->cpuinfo.transition_latency >
->   	    policy->governor->max_transition_latency) {
-> -		if (!gov)
-> -			return -EINVAL;
-> -		else {
-> +		struct cpufreq_governor *gov = cpufreq_fallback_governor();
-> +
-> +		if (gov) {
->   			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
->   				policy->governor->name, gov->name);
->   			policy->governor = gov;
-> +		} else {
-> +			return -EINVAL;
->   		}
+>   	/* Lock governor to block concurrent initialization of governor */
+> -	mutex_lock(&cdata->mutex);
+> +	mutex_lock(&dbs_data_mutex);
+>
+>   	if (have_governor_per_policy())
+>   		dbs_data = policy->governor_data;
+> @@ -575,7 +578,7 @@ int cpufreq_governor_dbs(struct cpufreq_
 >   	}
 >
-> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+>   unlock:
+> -	mutex_unlock(&cdata->mutex);
+> +	mutex_unlock(&dbs_data_mutex);
+>
+>   	return ret;
+>   }
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> @@ -26,10 +26,7 @@ static DEFINE_PER_CPU(struct cs_cpu_dbs_
->   static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
->   				   unsigned int event);
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+> @@ -223,11 +223,6 @@ struct common_dbs_data {
 >
-> -#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_conservative = {
-> +static struct cpufreq_governor cpufreq_gov_conservative = {
->   	.name			= "conservative",
->   	.governor		= cs_cpufreq_governor_dbs,
->   	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
-> @@ -397,6 +394,11 @@ MODULE_DESCRIPTION("'cpufreq_conservativ
->   MODULE_LICENSE("GPL");
+>   	/* Governor specific ops, see below */
+>   	void *gov_ops;
+> -
+> -	/*
+> -	 * Protects governor's data (struct dbs_data and struct common_dbs_data)
+> -	 */
+> -	struct mutex mutex;
+>   };
 >
->   #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_conservative;
-> +}
-> +
->   fs_initcall(cpufreq_gov_dbs_init);
->   #else
->   module_init(cpufreq_gov_dbs_init);
-> Index: linux-pm/include/linux/cpufreq.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/cpufreq.h
-> +++ linux-pm/include/linux/cpufreq.h
-> @@ -471,29 +471,8 @@ int __cpufreq_driver_target(struct cpufr
->   int cpufreq_register_governor(struct cpufreq_governor *governor);
->   void cpufreq_unregister_governor(struct cpufreq_governor *governor);
+>   /* Governor Per policy data */
+> @@ -272,6 +267,7 @@ static ssize_t show_sampling_rate_min_go
+>   	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
+>   }
 >
-> -/* CPUFREQ DEFAULT GOVERNOR */
-> -/*
-> - * Performance governor is fallback governor if any other gov failed to auto
-> - * load due latency restrictions
-> - */
-> -#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
-> -extern struct cpufreq_governor cpufreq_gov_performance;
-> -#endif
-> -#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-> -#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
-> -#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE)
-> -extern struct cpufreq_governor cpufreq_gov_powersave;
-> -#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_powersave)
-> -#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
-> -extern struct cpufreq_governor cpufreq_gov_userspace;
-> -#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_userspace)
-> -#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND)
-> -extern struct cpufreq_governor cpufreq_gov_ondemand;
-> -#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_ondemand)
-> -#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
-> -extern struct cpufreq_governor cpufreq_gov_conservative;
-> -#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
-> -#endif
-> +struct cpufreq_governor *cpufreq_default_governor(void);
-> +struct cpufreq_governor *cpufreq_fallback_governor(void);
->
->   /*********************************************************************
->    *                     FREQUENCY TABLE HELPERS                       *
+> +extern struct mutex dbs_data_mutex;
+>   extern struct mutex cpufreq_governor_lock;
+>   void gov_set_update_util(struct cpu_common_dbs_info *shared,
+>   			 unsigned int delay_us);
 > Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
 > ===================================================================
 > --- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
 > +++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -553,6 +553,19 @@ static struct common_dbs_data od_dbs_cda
->   	.mutex = __MUTEX_INITIALIZER(od_dbs_cdata.mutex),
+> @@ -251,7 +251,7 @@ static void update_sampling_rate(struct
+>   	/*
+>   	 * Lock governor so that governor start/stop can't execute in parallel.
+>   	 */
+> -	mutex_lock(&od_dbs_cdata.mutex);
+> +	mutex_lock(&dbs_data_mutex);
+>
+>   	cpumask_copy(&cpumask, cpu_online_mask);
+>
+> @@ -304,7 +304,7 @@ static void update_sampling_rate(struct
+>   		}
+>   	}
+>
+> -	mutex_unlock(&od_dbs_cdata.mutex);
+> +	mutex_unlock(&dbs_data_mutex);
+>   }
+>
+>   static ssize_t store_sampling_rate(struct dbs_data *dbs_data, const char *buf,
+> @@ -550,7 +550,6 @@ static struct common_dbs_data od_dbs_cda
+>   	.gov_ops = &od_ops,
+>   	.init = od_init,
+>   	.exit = od_exit,
+> -	.mutex = __MUTEX_INITIALIZER(od_dbs_cdata.mutex),
 >   };
 >
-> +static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> +		unsigned int event)
-> +{
-> +	return cpufreq_governor_dbs(policy, &od_dbs_cdata, event);
-> +}
-> +
-> +static struct cpufreq_governor cpufreq_gov_ondemand = {
-> +	.name			= "ondemand",
-> +	.governor		= od_cpufreq_governor_dbs,
-> +	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
-> +	.owner			= THIS_MODULE,
-> +};
-> +
->   static void od_set_powersave_bias(unsigned int powersave_bias)
->   {
->   	struct cpufreq_policy *policy;
-> @@ -604,22 +617,6 @@ void od_unregister_powersave_bias_handle
->   }
->   EXPORT_SYMBOL_GPL(od_unregister_powersave_bias_handler);
->
-> -static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> -		unsigned int event)
-> -{
-> -	return cpufreq_governor_dbs(policy, &od_dbs_cdata, event);
-> -}
-> -
-> -#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_ondemand = {
-> -	.name			= "ondemand",
-> -	.governor		= od_cpufreq_governor_dbs,
-> -	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
-> -	.owner			= THIS_MODULE,
-> -};
-> -
->   static int __init cpufreq_gov_dbs_init(void)
->   {
->   	return cpufreq_register_governor(&cpufreq_gov_ondemand);
-> @@ -637,6 +634,11 @@ MODULE_DESCRIPTION("'cpufreq_ondemand' -
->   MODULE_LICENSE("GPL");
->
->   #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_ondemand;
-> +}
-> +
->   fs_initcall(cpufreq_gov_dbs_init);
->   #else
->   module_init(cpufreq_gov_dbs_init);
-> Index: linux-pm/drivers/cpufreq/cpufreq_performance.c
+>   static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_performance.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_performance.c
-> @@ -33,10 +33,7 @@ static int cpufreq_governor_performance(
->   	return 0;
->   }
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
+> @@ -368,7 +368,6 @@ static struct common_dbs_data cs_dbs_cda
+>   	.gov_check_cpu = cs_check_cpu,
+>   	.init = cs_init,
+>   	.exit = cs_exit,
+> -	.mutex = __MUTEX_INITIALIZER(cs_dbs_cdata.mutex),
+>   };
 >
-> -#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_performance = {
-> +static struct cpufreq_governor cpufreq_gov_performance = {
->   	.name		= "performance",
->   	.governor	= cpufreq_governor_performance,
->   	.owner		= THIS_MODULE,
-> @@ -52,6 +49,19 @@ static void __exit cpufreq_gov_performan
->   	cpufreq_unregister_governor(&cpufreq_gov_performance);
->   }
->
-> +#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_performance;
-> +}
-> +#endif
-> +#ifndef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
-> +struct cpufreq_governor *cpufreq_fallback_governor(void)
-> +{
-> +	return &cpufreq_gov_performance;
-> +}
-> +#endif
-> +
->   MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
->   MODULE_DESCRIPTION("CPUfreq policy governor 'performance'");
->   MODULE_LICENSE("GPL");
-> Index: linux-pm/drivers/cpufreq/cpufreq_powersave.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_powersave.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_powersave.c
-> @@ -33,10 +33,7 @@ static int cpufreq_governor_powersave(st
->   	return 0;
->   }
->
-> -#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_powersave = {
-> +static struct cpufreq_governor cpufreq_gov_powersave = {
->   	.name		= "powersave",
->   	.governor	= cpufreq_governor_powersave,
->   	.owner		= THIS_MODULE,
-> @@ -57,6 +54,11 @@ MODULE_DESCRIPTION("CPUfreq policy gover
->   MODULE_LICENSE("GPL");
->
->   #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_powersave;
-> +}
-> +
->   fs_initcall(cpufreq_gov_powersave_init);
->   #else
->   module_init(cpufreq_gov_powersave_init);
-> Index: linux-pm/drivers/cpufreq/cpufreq_userspace.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_userspace.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_userspace.c
-> @@ -89,10 +89,7 @@ static int cpufreq_governor_userspace(st
->   	return rc;
->   }
->
-> -#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_userspace = {
-> +static struct cpufreq_governor cpufreq_gov_userspace = {
->   	.name		= "userspace",
->   	.governor	= cpufreq_governor_userspace,
->   	.store_setspeed	= cpufreq_set,
-> @@ -116,6 +113,11 @@ MODULE_DESCRIPTION("CPUfreq policy gover
->   MODULE_LICENSE("GPL");
->
->   #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_userspace;
-> +}
-> +
->   fs_initcall(cpufreq_gov_userspace_init);
->   #else
->   module_init(cpufreq_gov_userspace_init);
+>   static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
 >
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
@@ -338,7 +146,6 @@ On 02/03/2016 03:14 PM, Rafael J. Wysocki wrote:
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
 
-Ah, that's so much more cleaner!
 
 Acked-by: Saravana Kannan <skannan@codeaurora.org>
 
