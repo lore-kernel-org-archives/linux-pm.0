@@ -1,46 +1,101 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/11] cpufreq: governor: Use common mutex for dbs_data
- protection
-Date: Wed, 03 Feb 2016 16:59:38 -0800
-Message-ID: <56B2A27A.5030303@codeaurora.org>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <1529283.0IedZktI9q@vostro.rjw.lan>
+Subject: Re: [PATCH 3/11] cpufreq: governor: Use common global_dbs_data pointer
+Date: Wed, 03 Feb 2016 17:11:24 -0800
+Message-ID: <56B2A53C.8080503@codeaurora.org>
+References: <3705929.bslqXH980s@vostro.rjw.lan> <1876466.AY9fn15fDn@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:36200 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbcBDA7k (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Feb 2016 19:59:40 -0500
-In-Reply-To: <1529283.0IedZktI9q@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1876466.AY9fn15fDn@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 02/03/2016 03:16 PM, Rafael J. Wysocki wrote:
+On 02/03/2016 03:22 PM, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Every governor relying on the common code in cpufreq_governor.c
-> has to provide its own mutex in struct common_dbs_data.  However,
-> those mutexes are never used at the same time and doing it this
-> way makes it rather difficult to follow the code.  Moreover,
-> if two governor modules are loaded we end up with two mutexes
-> used for the same purpose one at a time.
+> If the ondemand and conservative governors cannot use per-policy
+> tunables (CPUFREQ_HAVE_GOVERNOR_PER_POLICY is not set in the cpufreq
+> driver), all policy objects point to the same single dbs_data object.
+> Additionally, that object is pointed to by a global pointer hidden in
+> the governor's data structures.
 >
-> Introduce a single common mutex for that instead and drop the
-> mutex field from struct common_dbs_data.  That at least will
-> ensure that the mutex is always present and initialized regardless
-> of what the particular governors do.
+> There is no reason for that pointer to be buried in those
+> data structures, though, so make it explicitly global.
 >
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->   drivers/cpufreq/cpufreq_conservative.c |    1 -
->   drivers/cpufreq/cpufreq_governor.c     |    7 +++++--
->   drivers/cpufreq/cpufreq_governor.h     |    6 +-----
->   drivers/cpufreq/cpufreq_ondemand.c     |    5 ++---
->   4 files changed, 8 insertions(+), 11 deletions(-)
+>   drivers/cpufreq/cpufreq_governor.c |   20 ++++++++++----------
+>   drivers/cpufreq/cpufreq_governor.h |   20 ++++++++++----------
+>   2 files changed, 20 insertions(+), 20 deletions(-)
 >
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+> @@ -78,7 +78,7 @@ __ATTR(_name, 0644, show_##_name##_gov_p
+>   static ssize_t show_##file_name##_gov_sys				\
+>   (struct kobject *kobj, struct attribute *attr, char *buf)		\
+>   {									\
+> -	struct _gov##_dbs_tuners *tuners = _gov##_dbs_cdata.gdbs_data->tuners; \
+> +	struct _gov##_dbs_tuners *tuners = global_dbs_data->tuners; \
+>   	return sprintf(buf, "%u\n", tuners->file_name);			\
+>   }									\
+>   									\
+> @@ -94,7 +94,7 @@ static ssize_t show_##file_name##_gov_po
+>   static ssize_t store_##file_name##_gov_sys				\
+>   (struct kobject *kobj, struct attribute *attr, const char *buf, size_t count) \
+>   {									\
+> -	struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;		\
+> +	struct dbs_data *dbs_data = global_dbs_data;		\
+>   	return store_##file_name(dbs_data, buf, count);			\
+>   }									\
+>   									\
+> @@ -201,19 +201,14 @@ struct cs_dbs_tuners {
+>   /* Common Governor data across policies */
+>   struct dbs_data;
+>   struct common_dbs_data {
+> -	/* Common across governors */
+> +	struct cpufreq_governor gov;
+> +
+>   	#define GOV_ONDEMAND		0
+>   	#define GOV_CONSERVATIVE	1
+>   	int governor;
+>   	struct attribute_group *attr_group_gov_sys; /* one governor - system */
+>   	struct attribute_group *attr_group_gov_pol; /* one governor - policy */
+>
+> -	/*
+> -	 * Common data for platforms that don't set
+> -	 * CPUFREQ_HAVE_GOVERNOR_PER_POLICY
+> -	 */
+> -	struct dbs_data *gdbs_data;
+> -
+>   	struct cpu_dbs_info *(*get_cpu_cdbs)(int cpu);
+>   	void *(*get_cpu_dbs_info_s)(int cpu);
+>   	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
+> @@ -233,6 +228,11 @@ struct dbs_data {
+>   	void *tuners;
+>   };
+>
+> +/*
+> + * Common governor data for platforms without CPUFREQ_HAVE_GOVERNOR_PER_POLICY.
+> + */
+> +extern struct dbs_data *global_dbs_data;
+> +
+>   /* Governor specific ops, will be passed to dbs_data->gov_ops */
+>   struct od_ops {
+>   	void (*powersave_bias_init_cpu)(int cpu);
+> @@ -256,7 +256,7 @@ static inline int delay_for_sampling_rat
+>   static ssize_t show_sampling_rate_min_gov_sys				\
+>   (struct kobject *kobj, struct attribute *attr, char *buf)		\
+>   {									\
+> -	struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;		\
+> +	struct dbs_data *dbs_data = global_dbs_data;			\
+>   	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
+>   }									\
+>   									\
 > Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
 > ===================================================================
 > --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
@@ -49,96 +104,67 @@ On 02/03/2016 03:16 PM, Rafael J. Wysocki wrote:
 >
 >   #include "cpufreq_governor.h"
 >
-> +DEFINE_MUTEX(dbs_data_mutex);
-> +EXPORT_SYMBOL_GPL(dbs_data_mutex);
+> +struct dbs_data *global_dbs_data;
+> +EXPORT_SYMBOL_GPL(global_dbs_data);
 > +
->   static struct attribute_group *get_sysfs_attr(struct dbs_data *dbs_data)
->   {
->   	if (have_governor_per_policy())
-> @@ -542,7 +545,7 @@ int cpufreq_governor_dbs(struct cpufreq_
->   	int ret;
+>   DEFINE_MUTEX(dbs_data_mutex);
+>   EXPORT_SYMBOL_GPL(dbs_data_mutex);
 >
->   	/* Lock governor to block concurrent initialization of governor */
-> -	mutex_lock(&cdata->mutex);
-> +	mutex_lock(&dbs_data_mutex);
+> @@ -377,22 +380,19 @@ static int cpufreq_governor_init(struct
+>   					latency * LATENCY_MULTIPLIER));
 >
+>   	if (!have_governor_per_policy())
+> -		cdata->gdbs_data = dbs_data;
+> +		global_dbs_data = dbs_data;
+>
+>   	policy->governor_data = dbs_data;
+>
+>   	ret = sysfs_create_group(get_governor_parent_kobj(policy),
+>   				 get_sysfs_attr(dbs_data));
+> -	if (ret)
+> -		goto reset_gdbs_data;
+> -
+> -	return 0;
+> +	if (!ret)
+> +		return 0;
+
+I think the previous method of a handling the error is easier to read 
+and more in line with the typical kernel coding style. The successful 
+path ends in an unconditional return statement and the error paths are 
+handled with a goto.
+
+This also doesn't seem relevant to what the patch is trying to do. So, 
+I'd prefer that it be left as is.
+
+
+> -reset_gdbs_data:
+>   	policy->governor_data = NULL;
+> -
+>   	if (!have_governor_per_policy())
+> -		cdata->gdbs_data = NULL;
+> +		global_dbs_data = NULL;
+> +
+>   	cdata->exit(dbs_data, !policy->governor->initialized);
+>   free_common_dbs_info:
+>   	free_common_dbs_info(policy, cdata);
+> @@ -418,7 +418,7 @@ static int cpufreq_governor_exit(struct
+>   		policy->governor_data = NULL;
+>
+>   		if (!have_governor_per_policy())
+> -			cdata->gdbs_data = NULL;
+> +			global_dbs_data = NULL;
+>
+>   		cdata->exit(dbs_data, policy->governor->initialized == 1);
+>   		kfree(dbs_data);
+> @@ -550,7 +550,7 @@ int cpufreq_governor_dbs(struct cpufreq_
 >   	if (have_governor_per_policy())
 >   		dbs_data = policy->governor_data;
-> @@ -575,7 +578,7 @@ int cpufreq_governor_dbs(struct cpufreq_
->   	}
+>   	else
+> -		dbs_data = cdata->gdbs_data;
+> +		dbs_data = global_dbs_data;
 >
->   unlock:
-> -	mutex_unlock(&cdata->mutex);
-> +	mutex_unlock(&dbs_data_mutex);
->
->   	return ret;
->   }
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-> @@ -223,11 +223,6 @@ struct common_dbs_data {
->
->   	/* Governor specific ops, see below */
->   	void *gov_ops;
-> -
-> -	/*
-> -	 * Protects governor's data (struct dbs_data and struct common_dbs_data)
-> -	 */
-> -	struct mutex mutex;
->   };
->
->   /* Governor Per policy data */
-> @@ -272,6 +267,7 @@ static ssize_t show_sampling_rate_min_go
->   	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
->   }
->
-> +extern struct mutex dbs_data_mutex;
->   extern struct mutex cpufreq_governor_lock;
->   void gov_set_update_util(struct cpu_common_dbs_info *shared,
->   			 unsigned int delay_us);
-> Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -251,7 +251,7 @@ static void update_sampling_rate(struct
->   	/*
->   	 * Lock governor so that governor start/stop can't execute in parallel.
->   	 */
-> -	mutex_lock(&od_dbs_cdata.mutex);
-> +	mutex_lock(&dbs_data_mutex);
->
->   	cpumask_copy(&cpumask, cpu_online_mask);
->
-> @@ -304,7 +304,7 @@ static void update_sampling_rate(struct
->   		}
->   	}
->
-> -	mutex_unlock(&od_dbs_cdata.mutex);
-> +	mutex_unlock(&dbs_data_mutex);
->   }
->
->   static ssize_t store_sampling_rate(struct dbs_data *dbs_data, const char *buf,
-> @@ -550,7 +550,6 @@ static struct common_dbs_data od_dbs_cda
->   	.gov_ops = &od_ops,
->   	.init = od_init,
->   	.exit = od_exit,
-> -	.mutex = __MUTEX_INITIALIZER(od_dbs_cdata.mutex),
->   };
->
->   static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> @@ -368,7 +368,6 @@ static struct common_dbs_data cs_dbs_cda
->   	.gov_check_cpu = cs_check_cpu,
->   	.init = cs_init,
->   	.exit = cs_exit,
-> -	.mutex = __MUTEX_INITIALIZER(cs_dbs_cdata.mutex),
->   };
->
->   static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>   	if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+>   		ret = -EINVAL;
 >
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
@@ -146,9 +172,11 @@ On 02/03/2016 03:16 PM, Rafael J. Wysocki wrote:
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
 
+If the minor comment is addressed, this looks okay to me.
 
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
+Cautiously Acked-by: Saravana Kannan <skannan@codeaurora.org>
 
+-Saravana
 
 -- 
 Qualcomm Innovation Center, Inc.
