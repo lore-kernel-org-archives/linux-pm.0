@@ -1,52 +1,58 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] Documentation: cpufreq: Additional interface for acpi-cpufreq
-Date: Mon, 29 Feb 2016 13:06:25 -0800
-Message-ID: <1456779985-20949-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:39556 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750993AbcB2VID (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Feb 2016 16:08:03 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Thu, 4 Feb 2016 17:47:27 +0530
+Message-ID: <20160204121727.GH3469@vireshk>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <20160203155428.GY3947@e106622-lin>
+ <20160203161059.GH3469@vireshk>
+ <20160204062439.GZ3469@vireshk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160204062439.GZ3469@vireshk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added new file for acpi-cpufreq driver, with explanation for
-base_frequency.
+On 04-02-16, 11:54, Viresh Kumar wrote:
+> From the code I still failed to understand this since sometime back
+> and I something just caught my eyes and the 6th patch needs this
+> fixup:
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 7bc8a5ed97e5..ac3348ecde7b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1351,7 +1351,7 @@ static void cpufreq_offline(unsigned int cpu)
+>                                 pr_err("%s: Failed to start governor\n", __func__);
+>                 }
+>  
+> -               return;
+> +               goto unlock;
+>         }
+>  
+>         if (cpufreq_driver->stop_cpu)
+> @@ -1373,6 +1373,8 @@ static void cpufreq_offline(unsigned int cpu)
+>                 cpufreq_driver->exit(policy);
+>                 policy->freq_table = NULL;
+>         }
+> +
+> +unlock:
+>         up_write(&policy->rwsem);
+>  }
+> 
+> I tried the basic tests using './runme' and they aren't reporting the
+> same lockdep now. And yes, your lockdep occurred on my exynos board as
+> well :)
+> 
+> I have re-pushed my patches again to the same branch. All 7 look fine
+> to me now :)
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- Documentation/cpu-freq/acpi-cpufreq-addition.txt | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
- create mode 100644 Documentation/cpu-freq/acpi-cpufreq-addition.txt
+FWIW, Juri has reported on IRC that the above diff fixed the lockdep
+he reported yesterday and all the 7 patches are working fine on his
+test machine, Juno.
 
-diff --git a/Documentation/cpu-freq/acpi-cpufreq-addition.txt b/Documentation/cpu-freq/acpi-cpufreq-addition.txt
-new file mode 100644
-index 0000000..40efb22
---- /dev/null
-+++ b/Documentation/cpu-freq/acpi-cpufreq-addition.txt
-@@ -0,0 +1,20 @@
-+Additional sysfs attribute for acpi-cpufreq
-+
-+In addition to the standard sysfs interface as defined in the
-+user-guide.txt under section "Preferred Interface: sysfs",
-+acpi-cpufreq can have following additional sysfs attribute:
-+
-+base_frequency: 	Max non-turbo frequency
-+For example:
-+scaling_available_frequencies displays list of available frequencies which
-+can be used to set max/min or current scaling frequency.
-+>cat scaling_available_frequencies
-+2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-+1300000 1100000 1000000 900000 800000 600000 500000
-+If the base_frequency attribute is present, then any frequency above is
-+purely opportunistic or turbo frequency. For example
-+>cat base_frequency
-+2200000
-+Then in the above displayed list of scaling_available_frequencies, any
-+frequency 2300000 or 2301000 is opportunistic or turbo frequency.
-+
 -- 
-2.5.0
-
+viresh
