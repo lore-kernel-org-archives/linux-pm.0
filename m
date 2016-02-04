@@ -1,63 +1,45 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Thu, 4 Feb 2016 11:04:50 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1602041059070.1515-100000@iolanthe.rowland.org>
-References: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/11] cpufreq: governor: Use common mutex for dbs_data protection
+Date: Thu, 4 Feb 2016 17:46:07 +0100
+Message-ID: <CAJZ5v0hWj4JgCh76Fg48ex3Svv7BUHR=9+RoA728R9aYU+12Pw@mail.gmail.com>
+References: <3705929.bslqXH980s@vostro.rjw.lan>
+	<1529283.0IedZktI9q@vostro.rjw.lan>
+	<20160204050954.GU3469@vireshk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:33222 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757208AbcBDQEv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 11:04:51 -0500
-In-Reply-To: <CAPDyKFr3jqh5bDFOuKLgomhQ2P9+yN5Ps8E0CH8r-oOjvBuswg@mail.gmail.com>
+Received: from mail-lb0-f196.google.com ([209.85.217.196]:32894 "EHLO
+	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932140AbcBDQqJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 11:46:09 -0500
+In-Reply-To: <20160204050954.GU3469@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On Thu, 4 Feb 2016, Ulf Hansson wrote:
+On Thu, Feb 4, 2016 at 6:09 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 04-02-16, 00:16, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Every governor relying on the common code in cpufreq_governor.c
+>> has to provide its own mutex in struct common_dbs_data.  However,
+>> those mutexes are never used at the same time
+>
+> Why do you think so? I thought they can always be used in parallel.
+>
+> Consider 2 or more policies, one can have ondemand as the governor,
+> whereas other one can have conservative.
+>
+> If CPUs go online/offline or if governors are switching in parallel,
+> then cpufreq_governor_dbs() can very much run in parallel for ondemand
+> and conservative.
+>
+> Or am I missing something here ?
 
-> Just wanted to add yet some new findings while I was looking into this
-> regression.
-> 
-> So, the reason why pm_runtime_put_sync() doesn't idle the device in
-> these cases, is because autosuspend is respected and for some reason
-> the autosuspend timer hasn't expired.
+Well, so perhaps the changelog is inaccurate.
 
-No doubt the autosuspend delay is longer than the time it takes for a 
-probe to fail.
+However, what's wrong with using a single mutex then?
 
-> I was wondering *why* the timer isn't considered as expired, because
-> the driver don't call pm_runtime_mark_last_busy() in the failing probe
-> case...
-> 
-> Then I realized the following commit was merged a few releases ago,
-> which makes the runtime PM core to invoke pm_runtime_mark_last_busy()
-> for us.
-> 
-> commit 56f487c78015936097474fd89b2ccb229d500d0f
-> Author: Tony Lindgren <tony@atomide.com>
-> Date:   Wed May 13 16:36:32 2015 -0700
-> PM / Runtime: Update last_busy in rpm_resume
-> 
-> So, this commit actually causes the devices to stay active after a
-> failed probe attempt.
-> 
-> I think it's a good idea to revert this change, but what to you think?
-
-I disagree.  The whole idea of autosuspend is to prevent the device's
-power state from bouncing up and down too rapidly.  This implies that 
-whenever the device gets resumed, we should wait at least the minimum 
-autosuspend delay before allowing the next autosuspend.
-
-Perhaps you think that it's silly to behave that way in this case,
-because the device wasn't accessed at all during the time it was at
-full power.  That's a valid objection, but the proper solution is not
-to revert the 56f487c78015 commit.  Rather, change the driver to avoid
-doing a pm_runtime_resume_sync until you _know_ that the device will be
-accessed soon.
-
-Alan Stern
-
+Thanks,
+Rafael
