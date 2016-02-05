@@ -1,48 +1,49 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-Date: Fri, 5 Feb 2016 07:54:04 +0100
-Message-ID: <CAPDyKFoawbrj3w_+2p5ugjByrwxwmA1S2God1VAvkRbh2rUtjg@mail.gmail.com>
-References: <CAPDyKFpRnmn+h_VH3jtC3u-BOf7-00nbzD30omaxaaZOOAK8Gg@mail.gmail.com>
-	<Pine.LNX.4.44L0.1602041702550.1515-100000@iolanthe.rowland.org>
-	<CAPDyKFrMZYdeun67FBXdWL16DBOuO16qqOxRsks3QBJhNB8SoQ@mail.gmail.com>
-	<20160205010810.GR19432@atomide.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 3/10] cpufreq: governor: Avoid passing dbs_data
+ pointers around unnecessarily
+Date: Fri, 5 Feb 2016 12:39:17 +0530
+Message-ID: <20160205070917.GF21792@vireshk>
+References: <3705929.bslqXH980s@vostro.rjw.lan>
+ <9008098.QDD8C89zDx@vostro.rjw.lan>
+ <2409601.HbxMdSfn4m@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f174.google.com ([209.85.160.174]:33865 "EHLO
-	mail-yk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbcBEGyG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 01:54:06 -0500
-Received: by mail-yk0-f174.google.com with SMTP id u9so55701340ykd.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 22:54:05 -0800 (PST)
-In-Reply-To: <20160205010810.GR19432@atomide.com>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:34367 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbcBEHJU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 02:09:20 -0500
+Received: by mail-pa0-f43.google.com with SMTP id uo6so30062548pac.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 23:09:20 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <2409601.HbxMdSfn4m@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On 5 February 2016 at 02:08, Tony Lindgren <tony@atomide.com> wrote:
-> * Ulf Hansson <ulf.hansson@linaro.org> [160204 14:35]:
->> On 4 February 2016 at 23:09, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > On Thu, 4 Feb 2016, Ulf Hansson wrote:
->> >
->> >> I am really not questioning the autosuspend feature at all, it's a
->> >> really great feature!
->> >>
->> >> Now, I question the minor benefit we actually gain from having the
->> >> runtime PM core to update the mark in rpm_resume().
->> >
->> > As Tony pointed out, it prevents some devices from going to sleep right
->> > away.
->>
->> Because their drivers don't care to update the last busy mark!?
->
-> Nope. Without that devices may never resume at all so the drivers
-> can't do anything about it.
+On 05-02-16, 03:15, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Do not pass struct dbs_data pointers to the family of functions
+> implementing governor operations in cpufreq_governor.c as they can
+> take that pointer from policy->governor by themselves.
+> 
+> The cpufreq_governor_init() case is slightly more complicated, since
+> policy->governor may be NULL when it is invoked, but then it can reach
+> the pointer in question via its cdata argument just fine.
+> 
+> While at it, rework cpufreq_governor_dbs() to avoid a pointless
+> policy_governor check in the CPUFREQ_GOV_POLICY_INIT case.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |   68 ++++++++++++++-----------------------
+>  1 file changed, 27 insertions(+), 41 deletions(-)
 
-I don't get it. Why not? Because of another abuse of the runtime PM API?
+Took some time to review, but it looks nice cleanup :)
 
-Or we should probably continue to focus on fixing the regression. :-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Kind regards
-Uffe
+-- 
+viresh
