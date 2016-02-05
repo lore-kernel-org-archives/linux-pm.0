@@ -1,51 +1,70 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC] Add cpufreq support
-Date: Fri, 05 Feb 2016 23:24:35 +0100
-Message-ID: <3308645.nrPBoahQ2V@wuerfel>
-References: <56B4D4BE.2040008@free.fr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 9/10] cpufreq: governor: Rearrange governor data structures
+Date: Fri, 05 Feb 2016 23:47:55 +0100
+Message-ID: <2480267.pVUasc5mK9@vostro.rjw.lan>
+References: <3705929.bslqXH980s@vostro.rjw.lan> <13133705.tMsel709A1@vostro.rjw.lan> <20160205091357.GL21792@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.130]:55240 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbcBEWZD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:25:03 -0500
-In-Reply-To: <56B4D4BE.2040008@free.fr>
+Received: from v094114.home.net.pl ([79.96.170.134]:47047 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751035AbcBEWqu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:46:50 -0500
+In-Reply-To: <20160205091357.GL21792@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On Friday 05 February 2016 17:58:38 Mason wrote:
-> I'm throwing this out there to ask:
-> Is this the right way to enable cpufreq on my platform?
-> ---
-
-> @@ -23,6 +24,11 @@ static void tango_l2c_write(unsigned long val, unsigned int reg)
->  		tango_set_l2_control(val);
->  }
->  
-> +static void __init tango_init_late(void)
-> +{
-> +	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-> +}
-> +
->  static const char *const tango_dt_compat[] = { "sigma,tango4", NULL };
->  
->  DT_MACHINE_START(TANGO_DT, "Sigma Tango DT")
-> @@ -30,4 +36,5 @@ DT_MACHINE_START(TANGO_DT, "Sigma Tango DT")
->  	.l2c_aux_mask	= ~0,
->  	.l2c_write_sec	= tango_l2c_write,
->  	.map_io		= tango_map_io,
-> +	.init_late	= tango_init_late,
->  MACHINE_END
+On Friday, February 05, 2016 02:43:57 PM Viresh Kumar wrote:
+> On 05-02-16, 03:21, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > The struct policy_dbs_info objects representing per-policy governor
+> > data are not accessible directly from the corresponding policy
+> > objects.  To access them, one has to get a pointer to the
+> > struct cpu_dbs_info of policy->cpu and use the "shared" field of
+> > that which isn't really straightforward.
+> > 
+> > To address that rearrange the governor data structures so the
+> > governor_data pointer in struct cpufreq_policy will point to
+> > struct policy_dbs_info and that will contain a pointer to
+> > struct dbs_data.
 > 
+> IMHO, this patch has done way too much over what's mentioned here.
+> 
+> > Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+> > @@ -297,16 +298,22 @@ static int alloc_policy_dbs_info(struct
+> >  	/* Allocate memory for the common information for policy->cpus */
+> >  	policy_dbs = kzalloc(sizeof(*policy_dbs), GFP_KERNEL);
+> >  	if (!policy_dbs)
+> > -		return -ENOMEM;
+> > -
+> > -	/* Set policy_dbs for all CPUs, online+offline */
+> > -	for_each_cpu(j, policy->related_cpus)
+> > -		gov->get_cpu_cdbs(j)->shared = policy_dbs;
+> > +		return NULL;
+> >  
+> > +	policy_dbs->policy = policy;
+> 
+> Value of policy_dbs->policy was used to verify the state machine of
+> the governor and so was updated only in start/stop.
+> 
+> You have moved it to INIT first (which shouldn't have been part of
+> this patch at the least),
 
-We no longer call platform_device_register_simple() from platform code, at least
-for new platforms, and we should probably remove the code from the existing
-platforms that still do it. I forget what the replacement was, but I'm not
-going to take this version. Viresh should be able to help you do it the right
-way.
+Why?
 
-	Arnd
+> and then there is no reasoning given on why
+> that isn't required as part of the state machine now, which I believe
+> is still required the way it was.
+
+No, it isn't required.  The whole "state machine" isn't required IMO.
+
+The only user of this is the cpufreq core, so why does the code here have to
+double check what the core is doing?
+
+Thanks,
+Rafael
+
