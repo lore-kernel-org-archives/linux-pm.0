@@ -1,65 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
-Date: Fri, 5 Feb 2016 08:14:28 +0530
-Message-ID: <20160205024428.GB3068@vireshk>
-References: <20160203155428.GY3947@e106622-lin>
- <20160203161059.GH3469@vireshk>
- <20160203172009.GC12132@e106622-lin>
- <CAJZ5v0hdn6bM8J97O_GFrvi2O7LfuGv0oaZu7KH+cj1TJy+4CQ@mail.gmail.com>
- <CAMSceqiFG47G=mvzY8-tUL=sHdkkjVQaWzEA1aN+-ym0F_n6Gw@mail.gmail.com>
- <CAJZ5v0hbhoS+1AaU12SFxz=r1-TOWq10yJ+ST7mVWcUubTbxFw@mail.gmail.com>
- <20160204110907.GE3469@vireshk>
- <56B38DC8.8060606@codeaurora.org>
- <56B38E14.5060705@codeaurora.org>
- <CAJZ5v0hG2CickrbnTn8qJdFHJZ4cuZg1nxJ=8OXN8YFuw=qSFQ@mail.gmail.com>
+Subject: Re: [PATCH V2 1/7] cpufreq: governor: Treat min_sampling_rate as a
+ governor-specific tunable
+Date: Fri, 5 Feb 2016 08:17:13 +0530
+Message-ID: <20160205024713.GC3068@vireshk>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <92be8bede3340aa93549b468528f60244fbc50f2.1454507872.git.viresh.kumar@linaro.org>
+ <5894332.OlEanUAMuU@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:34819 "EHLO
+	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbcBECrQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 21:47:16 -0500
+Received: by mail-pf0-f179.google.com with SMTP id 65so60485322pfd.2
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 18:47:16 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hG2CickrbnTn8qJdFHJZ4cuZg1nxJ=8OXN8YFuw=qSFQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Shilpa Bhat <shilpabhatppc@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <5894332.OlEanUAMuU@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: juri.lelli@arm.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 
-On 04-02-16, 19:18, Rafael J. Wysocki wrote:
-> On Thu, Feb 4, 2016 at 6:44 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
-> > On 02/04/2016 09:43 AM, Saravana Kannan wrote:
-
-> >> No no no no! Let's not open up this can of worms of queuing up the work
-> >> to handle a write to a sysfs file. It *MIGHT* work for this specific
-> >> tunable (I haven't bothered to analyze), but this makes it impossible to
-> >> return a useful/proper error value.
-> >
-> >
-> > Sent too soon. Not only that, but it can also cause the writes to the sysfs
-> > files to get processed in a different order and I don't know what other
-> > issues/races THAT will open up.
+On 05-02-16, 03:31, Rafael J. Wysocki wrote:
+> I'm having some second thoughts about the utility of this patch to be honest.
 > 
-> Well, I don't like this too.
+> I actually would like to move some tunables in the opposite direction.  That is,
+> from struct od_dbs_tuners and struct cs_dbs_tuners to struct dbs_data.  The
+> tuners field in that will then become something like gov_tunables (in analogy
+> with gov_ops in struct common_dbs_data) and it will point to governor-specific
+> tunables.
+> 
+> The reason why I'd like to do that is to make it easier to get rid of the
+> super-ugly governor == GOV_CONSERVATIVE etc tests in the common code.
+> 
+> Also I think that governor-specific tunables should be defined in the .c file
+> for that governor rather than in the common header.
+> 
+> We will need two set of macros for their sysfs attributes then, but that's
+> not a big deal IMO.
 
-I expected similar responses only, so no surprises for me :)
+I agree with that, no issues from my side.
 
-Though there are few things I would like to tell here:
-- There wouldn't be any race for updating the file, as that is done
-  directly from store_sampling_rate(). It updates the *real* file we
-  wanted to.
-
-- What's offloaded to the work-handler is something very special about
-  ondemand governor and sampling rate. The same is not done for
-  conservative governor as well, don't know why though.
-
-- After updating the sampling rate, we assess if we need to reschedule
-  the timers/workqueue to a different time for better efficiency. I
-  don't think there can be a race there and it can be safely done in a
-  work..
-
-> I actually do have an idea about how to fix these deadlocks, but it is
-> on top of my cleanup series.
-
-I would like to hear that, if you can, to save your time. I have tried
-so many different ways of fixing this yesterday and found issue
-everywhere :(
+But, this patch was actually required to kill the ugly macros. So, if
+we are planning to take this series as is, then maybe we can keep it
+for now and fix everything together with your patches :)
 
 -- 
 viresh
