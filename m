@@ -1,53 +1,51 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH 0/5] ARM: rockchip: move io-domains under GRF
-Date: Fri,  5 Feb 2016 22:20:13 +0100
-Message-ID: <1454707218-23676-1-git-send-email-heiko@sntech.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Fri, 05 Feb 2016 23:24:35 +0100
+Message-ID: <3308645.nrPBoahQ2V@wuerfel>
+References: <56B4D4BE.2040008@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:60367 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754996AbcBEVUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Feb 2016 16:20:30 -0500
+Received: from mout.kundenserver.de ([212.227.126.130]:55240 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbcBEWZD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:25:03 -0500
+In-Reply-To: <56B4D4BE.2040008@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, khilman@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, sjoerd.simons@collabora.co.uk, dianders@chromium.org, david.wu@rock-chips.com, Heiko Stuebner <heiko@sntech.de>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-The GRF contains both individual settings-bits as well as somewhat more
-fully blocks like different phy-controls and also the io-voltage selection.
-Similar to the power-domains living under the pmu, things like said
-io-voltage selection should live under the grf instead of separate
-nodes higher up.
+On Friday 05 February 2016 17:58:38 Mason wrote:
+> I'm throwing this out there to ask:
+> Is this the right way to enable cpufreq on my platform?
+> ---
 
-This is even more important now that socs like the rk3368 and probably
-more future socs seem to contain more than one GRF-area (a second one
-under the PMU power-domain) with each containing a part of the voltage
-selection. So having that in the correct place also prevents confusion.
+> @@ -23,6 +24,11 @@ static void tango_l2c_write(unsigned long val, unsigned int reg)
+>  		tango_set_l2_control(val);
+>  }
+>  
+> +static void __init tango_init_late(void)
+> +{
+> +	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> +}
+> +
+>  static const char *const tango_dt_compat[] = { "sigma,tango4", NULL };
+>  
+>  DT_MACHINE_START(TANGO_DT, "Sigma Tango DT")
+> @@ -30,4 +36,5 @@ DT_MACHINE_START(TANGO_DT, "Sigma Tango DT")
+>  	.l2c_aux_mask	= ~0,
+>  	.l2c_write_sec	= tango_l2c_write,
+>  	.map_io		= tango_map_io,
+> +	.init_late	= tango_init_late,
+>  MACHINE_END
+> 
 
+We no longer call platform_device_register_simple() from platform code, at least
+for new platforms, and we should probably remove the code from the existing
+platforms that still do it. I forget what the replacement was, but I'm not
+going to take this version. Viresh should be able to help you do it the right
+way.
 
-Ideally patch1 would go into 4.6 through the power or avs tree and the
-devicetree-related things should wait until after the next merge window
-due to the updated binding, which I can then simply apply to my dts
-branches.
-
-
-Heiko Stuebner (5):
-  PM / AVS: rockchip-io: make io-domains a child of the GRF
-  ARM: dts: rockchip: make rk3288-grf a simple-mfd
-  ARM: dts: rockchip: move rk3288 io-domain nodes to the grf
-  arm64: dts: rockchip: make rk3368 grf syscons simple-mfds as well
-  arm64: dts: rockchip: add rk3368 iodomains
-
- .../bindings/power/rockchip-io-domain.txt          |  4 ++-
- arch/arm/boot/dts/rk3288-firefly.dtsi              | 33 +++++++++++----------
- arch/arm/boot/dts/rk3288-popmetal.dts              | 34 ++++++++++++----------
- arch/arm/boot/dts/rk3288-rock2-som.dtsi            | 34 ++++++++++++----------
- arch/arm/boot/dts/rk3288-veyron.dtsi               | 28 +++++++++---------
- arch/arm/boot/dts/rk3288.dtsi                      |  2 +-
- arch/arm64/boot/dts/rockchip/rk3368-r88.dts        | 22 ++++++++++++++
- arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  4 +--
- drivers/power/avs/rockchip-io-domain.c             | 10 ++++++-
- 9 files changed, 105 insertions(+), 66 deletions(-)
-
--- 
-2.6.4
-
+	Arnd
