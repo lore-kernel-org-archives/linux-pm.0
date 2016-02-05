@@ -1,104 +1,94 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 6/6] arm64: add sysfs cpu_capacity attribute
-Date: Fri, 5 Feb 2016 17:49:44 +0000
-Message-ID: <20160205174944.GG11415@e106622-lin>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-7-git-send-email-juri.lelli@arm.com>
- <56B4D98F.3090103@arm.com>
+From: Benson Leung <bleung@chromium.org>
+Subject: Re: [PATCH v1 3/6] power_supply: Add types for USB Type C and PD chargers
+Date: Fri, 5 Feb 2016 10:38:44 -0800
+Message-ID: <CANLzEktsLH_hMPoaspuP1tZue-HkA3rqY2PbqOPOAOB7qm5+pA@mail.gmail.com>
+References: <1454679181-8949-1-git-send-email-tomeu.vizoso@collabora.com>
+	<1454679181-8949-4-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <56B4D98F.3090103-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f170.google.com ([209.85.223.170]:36716 "EHLO
+	mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754517AbcBESip (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 13:38:45 -0500
+Received: by mail-io0-f170.google.com with SMTP id g73so138098132ioe.3
+        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2016 10:38:45 -0800 (PST)
+In-Reply-To: <1454679181-8949-4-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-Hi,
+Thanks for putting this up Tomeu!
 
-On 05/02/16 17:19, Dietmar Eggemann wrote:
-> Hi Juri,
->=20
-> On 03/02/16 11:59, Juri Lelli wrote:
-> > Add a sysfs cpu_capacity attribute with which it is possible to rea=
-d and
-> > write (thus over-writing default values) CPUs capacity. This might =
-be
-> > useful in situation where there is no way to get proper default val=
-ues
-> > at boot time.
-> >=20
-> > The new attribute shows up as:
-> >=20
-> >  /sys/devices/system/cpu/cpu*/cpu_capacity
-> >=20
-> > Cc: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
-> > Cc: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-> > Cc: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-> > Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-> > ---
-> >  arch/arm64/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++=
-++++++++++++
-> >  1 file changed, 68 insertions(+)
-> >=20
-> > diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topol=
-ogy.c
-> > index f2513a6..f05cc07 100644
-> > --- a/arch/arm64/kernel/topology.c
-> > +++ b/arch/arm64/kernel/topology.c
-> > @@ -40,6 +40,74 @@ bool arch_wants_init_cpu_capacity(void)
-> >  	return true;
-> >  }
-> > =20
-> > +#ifdef CONFIG_PROC_SYSCTL
-> > +#include <asm/cpu.h>
-> > +#include <linux/string.h>
-> > +static ssize_t show_cpu_capacity(struct device *dev,
-> > +				 struct device_attribute *attr,
-> > +				 char *buf)
-> > +{
-> > +	struct cpu *cpu =3D container_of(dev, struct cpu, dev);
-> > +	ssize_t rc;
-> > +	int cpunum =3D cpu->dev.id;
-> > +	unsigned long capacity =3D arch_scale_cpu_capacity(NULL, cpunum);
->=20
-> Gives me an implicit declaration of function =E2=80=98arch_scale_cpu_=
-capacity=E2=80=99
-> error [without the commit fbc899610e1a ("arm64: Update
-> arch_scale_cpu_capacity() to reflect change to define") on your
-> git://linux-arm.org/linux-jl.git upstream/default_caps_v3 branch].
->=20
-> Why don't you just return cpu_scale
->=20
-> @@ -49,10 +49,8 @@ static ssize_t show_cpu_capacity(struct device *de=
-v,
->  {
->         struct cpu *cpu =3D container_of(dev, struct cpu, dev);
->         ssize_t rc;
-> -       int cpunum =3D cpu->dev.id;
-> -       unsigned long capacity =3D arch_scale_cpu_capacity(NULL, cpun=
-um);
->=20
-> -       rc =3D sprintf(buf, "%lu\n", capacity);
-> +       rc =3D sprintf(buf, "%lu\n", per_cpu(cpu_scale, cpu->dev.id))=
-;
->=20
->         return rc;
->  }
->=20
-> to get rid of this dependency?
->=20
 
-Right! I'll fix this in the next version.
+On Fri, Feb 5, 2016 at 5:32 AM, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> From: Benson Leung <bleung@chromium.org>
+>
+> This adds power supply types for USB chargers defined in
+> the USB Type-C Specification 1.1 and in the
+> USB Power Delivery Specification Revision 2.0 V1.1.
+>
+> The following are added :
+> POWER_SUPPLY_TYPE_USB_TYPE_C,   /* Type C Port */
+> POWER_SUPPLY_TYPE_USB_PD,       /* Type C Power Delivery Port */
+> POWER_SUPPLY_TYPE_USB_PD_DRP,   /* Type C PD Dual Role Port */
 
-Thanks,
+I authored this patch, but in looking back, the comments should be tweaked.
+USB_PD and USB_PD_DRP are not necessarily Type-C ports, as you may
+have USB_PD ports that are either Type-A or Type-B as well.
 
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Could you change these to be "USB Power Delivery Port" and "USB PD
+Dual Role Port"?
+
+>
+> Signed-off-by: Benson Leung <bleung@chromium.org>
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Reviewed-by: Alec Berg <alecaberg@chromium.org>
+> Reviewed-by: Vincent Palatin <vpalatin@chromium.org>
+> Reviewed-by: Todd Broch <tbroch@chromium.org>
+> ---
+>
+>  drivers/power/power_supply_sysfs.c | 3 ++-
+>  include/linux/power_supply.h       | 3 +++
+>  2 files changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+> index ed2d7fd0c734..80fed98832f9 100644
+> --- a/drivers/power/power_supply_sysfs.c
+> +++ b/drivers/power/power_supply_sysfs.c
+> @@ -45,7 +45,8 @@ static ssize_t power_supply_show_property(struct device *dev,
+>                                           char *buf) {
+>         static char *type_text[] = {
+>                 "Unknown", "Battery", "UPS", "Mains", "USB",
+> -               "USB_DCP", "USB_CDP", "USB_ACA"
+> +               "USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
+> +               "USB_PD", "USB_PD_DRP"
+>         };
+>         static char *status_text[] = {
+>                 "Unknown", "Charging", "Discharging", "Not charging", "Full"
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index ef9f1592185d..206c3384c6fa 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -163,6 +163,9 @@ enum power_supply_type {
+>         POWER_SUPPLY_TYPE_USB_DCP,      /* Dedicated Charging Port */
+>         POWER_SUPPLY_TYPE_USB_CDP,      /* Charging Downstream Port */
+>         POWER_SUPPLY_TYPE_USB_ACA,      /* Accessory Charger Adapters */
+> +       POWER_SUPPLY_TYPE_USB_TYPE_C,   /* Type C Port */
+> +       POWER_SUPPLY_TYPE_USB_PD,       /* Type C Power Delivery Port */
+> +       POWER_SUPPLY_TYPE_USB_PD_DRP,   /* Type C PD Dual Role Port */
+
+Same change as in commit message. Thanks!
+
+>  };
+>
+>  enum power_supply_notifier_events {
+
+
+
+
+-- 
+Benson Leung
+Senior Software Engineer, Chrom* OS
+bleung@chromium.org
