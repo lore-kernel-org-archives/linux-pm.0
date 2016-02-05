@@ -1,38 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 5/10] cpufreq: governor: Rename some data types and
- variables
-Date: Fri, 5 Feb 2016 12:47:37 +0530
-Message-ID: <20160205071737.GH21792@vireshk>
+Subject: Re: [PATCH v2 6/10] cpufreq: governor: Rework cpufreq_governor_dbs()
+Date: Fri, 5 Feb 2016 13:44:55 +0530
+Message-ID: <20160205081455.GI21792@vireshk>
 References: <3705929.bslqXH980s@vostro.rjw.lan>
  <9008098.QDD8C89zDx@vostro.rjw.lan>
- <3702180.uHU6PQUSgm@vostro.rjw.lan>
+ <41589956.sxJrHjYhQ2@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:36575 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752330AbcBEHRk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 02:17:40 -0500
-Received: by mail-pa0-f52.google.com with SMTP id yy13so29599917pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 23:17:40 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3702180.uHU6PQUSgm@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <41589956.sxJrHjYhQ2@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 05-02-16, 03:17, Rafael J. Wysocki wrote:
+On 05-02-16, 03:18, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The ondemand and conservative governors are represented by
-> struct common_dbs_data whose name doesn't reflect the purpose it
-> is used for, so rename it to struct dbs_governor and rename
-> variables of that type accordingly.
-> 
-> No functional changes.
+> Since it is possible to obtain a pointer to struct dbs_governor
+> from a pointer to the struct governor embedded in it via
+> container_of(), the second argument of cpufreq_governor_init()
+> is not necessary.  Accordingly, cpufreq_governor_dbs() doesn't
+> need its second argument either and the ->governor callbacks
+> for both the ondemand and conservative governors may be set
+> to cpufreq_governor_dbs() directly.  Make that happen.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c |   11 +----------
+>  drivers/cpufreq/cpufreq_governor.c     |   10 +++++-----
+>  drivers/cpufreq/cpufreq_governor.h     |    3 +--
+>  drivers/cpufreq/cpufreq_ondemand.c     |   11 +----------
+>  4 files changed, 8 insertions(+), 27 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
