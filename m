@@ -1,56 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 2/10] cpufreq: governor: Use common mutex for dbs_data protection
-Date: Fri, 05 Feb 2016 23:59:11 +0100
-Message-ID: <4787292.dQnn9ZTm9B@vostro.rjw.lan>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <76588769.1gWBaNHTiQ@vostro.rjw.lan> <20160205065341.GE21792@vireshk>
+Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with utilization update callbacks
+Date: Sat, 06 Feb 2016 00:01:23 +0100
+Message-ID: <3346220.PhsC7fhrI6@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <20160205065037.GD21792@vireshk> <CAJZ5v0im=K5zVQMgOTKDUnXUTZ-ursAOQ+cu_YYAZisUbvx++g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51249 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:49042 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751733AbcBEW6F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:58:05 -0500
-In-Reply-To: <20160205065341.GE21792@vireshk>
+	with SMTP id S1753251AbcBEXAR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 18:00:17 -0500
+In-Reply-To: <CAJZ5v0im=K5zVQMgOTKDUnXUTZ-ursAOQ+cu_YYAZisUbvx++g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Friday, February 05, 2016 12:23:41 PM Viresh Kumar wrote:
-> On 05-02-16, 03:14, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Every governor relying on the common code in cpufreq_governor.c
-> > has to provide its own mutex in struct common_dbs_data.  However,
-> > there actually is no need to have a separate mutex per governor
-> > for this purpose, they may be using the same global mutex just
-> > fine.  Accordingly, introduce a single common mutex for that and
-> > drop the mutex field from struct common_dbs_data.
-> > 
-> > That at least will ensure that the mutex is always present and
-> > initialized regardless of what the particular governors do.
-> > 
-> > Another benefit is that the common code does not need a pointer to
-> > a governor-related structure to get to the mutex which sometimes
-> > helps.
-> > 
-> > Finally, it makes the code generally easier to follow.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Acked-by: Saravana Kannan <skannan@codeaurora.org>
+On Friday, February 05, 2016 02:36:54 PM Rafael J. Wysocki wrote:
+> On Fri, Feb 5, 2016 at 7:50 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Will suck some more blood, sorry about that :)
+> >
+> > On 05-02-16, 02:28, Rafael J. Wysocki wrote:
+> >> The v3 addresses some review comments from Viresh and a couple of issues found
+> >> by me.  Changes from the previous version:
+> >> - Synchronize gov_cancel_work() with the (new) irq_work properly.
+> >> - Add a comment about the (new) memory barrier.
+> >> - Move samle_delay_ns to "shared" (struct cpu_common_dbs_info) so it is the
+> >
+> > sample_delay_ns was already there, you moved last_sample_time instead :)
+> >
+> >> @@ -139,7 +141,11 @@ struct cpu_common_dbs_info {
+> >>       struct mutex timer_mutex;
+> >>
+> >>       ktime_t time_stamp;
+> >> +     u64 last_sample_time;
+> >> +     s64 sample_delay_ns;
+> >>       atomic_t skip_work;
+> >> +     struct irq_work irq_work;
+> >
+> > Just for my understanding, why can't we schedule a normal work directly? Is it
+> > because of scheduler's hotpath and queue_work() is slow?
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> No, that's not the reason.
+> 
+> That path can't call wake_up_process() as it may be holding the locks
+> this would have attempted to grab.
 
-Thanks!
+My answer wasn't really to the point here.
 
-One more observation here.
-
-If we are able to eliminate dbs_data_mutex from update_sampling_rate(),
-then cpufreq_governor_dbs() becomes the only user of that lock.  Further,
-if we can guarantee that the governor's ->governor callback will always
-be invoked under policy->rwsem, dbs_data_mutex becomes unnecessary and
-may be dropped.
+Among other things, the scheduler path cannot use normal spinlocks.  It can
+only use raw spinlocks and this means no work queuing from it.
 
 Thanks,
 Rafael
