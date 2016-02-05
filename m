@@ -1,572 +1,441 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [pm:pm-cpufreq-rjw 7/13] drivers/cpufreq/cpufreq_ondemand.c:35:32:
- warning: 'cpufreq_gov_ondemand' defined but not used
-Date: Fri, 5 Feb 2016 09:14:43 +0800
-Message-ID: <201602050939.BpQui1rM%fengguang.wu@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/3 v3] cpufreq: governor: Replace timers with utilization update callbacks
+Date: Fri, 05 Feb 2016 02:28:16 +0100
+Message-ID: <1486401.1RcnnVKZNP@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <4043287.vvCjrxyEmh@vostro.rjw.lan> <2546395.Be1INkvQBN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="bp/iNruPH9dso1Pn"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:4857 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbcBEBQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Feb 2016 20:16:03 -0500
-Content-Disposition: inline
+Received: from v094114.home.net.pl ([79.96.170.134]:59270 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751733AbcBEB1L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 20:27:11 -0500
+In-Reply-To: <2546395.Be1INkvQBN@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Instead of using a per-CPU deferrable timer for queuing up governor
+work items, register a utilization update callback that will be
+invoked from the scheduler on utilization changes.
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-cpufreq-rjw
-head:   5e636bcbccdde4974c8b03d213db761b32bd564f
-commit: d8f8fd02914c97b93d86fb981f34c1694a4cb523 [7/13] cpufreq: governor: Put governor structure into common_dbs_data
-config: x86_64-randconfig-x008-02040646 (attached as .config)
-reproduce:
-        git checkout d8f8fd02914c97b93d86fb981f34c1694a4cb523
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+The sampling rate is still the same as what was used for the
+deferrable timers and the added irq_work overhead should be offset by
+the eliminated timers overhead, so in theory the functional impact of
+this patch should not be significant.
 
-All warnings (new ones prefixed by >>):
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
->> drivers/cpufreq/cpufreq_ondemand.c:35:32: warning: 'cpufreq_gov_ondemand' defined but not used [-Wunused-variable]
-    static struct cpufreq_governor cpufreq_gov_ondemand;
-                                   ^
+The v3 addresses some review comments from Viresh and a couple of issues found
+by me.  Changes from the previous version:
+- Synchronize gov_cancel_work() with the (new) irq_work properly.
+- Add a comment about the (new) memory barrier.
+- Move samle_delay_ns to "shared" (struct cpu_common_dbs_info) so it is the
+  same for all policy CPUs (without this modification we may end up taking
+  samples too often).
+- Drop some more unused code (in dbs_work_handler()).
 
-vim +/cpufreq_gov_ondemand +35 drivers/cpufreq/cpufreq_ondemand.c
-
-4471a34f9 Viresh Kumar                  2012-10-26  19  #include "cpufreq_governor.h"
-^1da177e4 Linus Torvalds                2005-04-16  20  
-06eb09d17 Stratos Karafotis             2013-02-08  21  /* On-demand governor macros */
-^1da177e4 Linus Torvalds                2005-04-16  22  #define DEF_FREQUENCY_UP_THRESHOLD		(80)
-3f78a9f7f David C Niemi                 2010-10-06  23  #define DEF_SAMPLING_DOWN_FACTOR		(1)
-3f78a9f7f David C Niemi                 2010-10-06  24  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
-808009131 venkatesh.pallipadi@intel.com 2008-08-04  25  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
-cef9615a8 Thomas Renninger              2009-04-22  26  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
-c29f14030 Dave Jones                    2005-05-31  27  #define MIN_FREQUENCY_UP_THRESHOLD		(11)
-^1da177e4 Linus Torvalds                2005-04-16  28  #define MAX_FREQUENCY_UP_THRESHOLD		(100)
-^1da177e4 Linus Torvalds                2005-04-16  29  
-4471a34f9 Viresh Kumar                  2012-10-26  30  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
-^1da177e4 Linus Torvalds                2005-04-16  31  
-fb30809ef Jacob Shin                    2013-04-02  32  static struct od_ops od_ops;
-fb30809ef Jacob Shin                    2013-04-02  33  
-3e33ee9e0 Fabio Baltieri                2012-11-26  34  #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-3e33ee9e0 Fabio Baltieri                2012-11-26 @35  static struct cpufreq_governor cpufreq_gov_ondemand;
-3e33ee9e0 Fabio Baltieri                2012-11-26  36  #endif
-3e33ee9e0 Fabio Baltieri                2012-11-26  37  
-c28375583 Jacob Shin                    2013-06-25  38  static unsigned int default_powersave_bias;
-c28375583 Jacob Shin                    2013-06-25  39  
-4471a34f9 Viresh Kumar                  2012-10-26  40  static void ondemand_powersave_bias_init_cpu(int cpu)
-6b8fcd902 Arjan van de Ven              2010-05-09  41  {
-4471a34f9 Viresh Kumar                  2012-10-26  42  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-6b8fcd902 Arjan van de Ven              2010-05-09  43  
-
-:::::: The code at line 35 was first introduced by commit
-:::::: 3e33ee9e0804748f1b7a01af9ba0e8e1e10f772f cpufreq: ondemand: update sampling rate only on right CPUs
-
-:::::: TO: Fabio Baltieri <fabio.baltieri@linaro.org>
-:::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Thanks,
+Rafael
 
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/cpufreq/cpufreq_conservative.c |    6 -
+ drivers/cpufreq/cpufreq_governor.c     |  157 ++++++++++++++-------------------
+ drivers/cpufreq/cpufreq_governor.h     |   15 ++-
+ drivers/cpufreq/cpufreq_ondemand.c     |   25 ++---
+ 4 files changed, 95 insertions(+), 108 deletions(-)
 
---bp/iNruPH9dso1Pn
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -18,6 +18,8 @@
+ #define _CPUFREQ_GOVERNOR_H
+ 
+ #include <linux/atomic.h>
++#include <linux/irq_work.h>
++#include <linux/completion.h>
+ #include <linux/cpufreq.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/module.h>
+@@ -139,7 +141,11 @@ struct cpu_common_dbs_info {
+ 	struct mutex timer_mutex;
+ 
+ 	ktime_t time_stamp;
++	u64 last_sample_time;
++	s64 sample_delay_ns;
+ 	atomic_t skip_work;
++	struct irq_work irq_work;
++	struct completion irq_work_done;
+ 	struct work_struct work;
+ };
+ 
+@@ -155,7 +161,7 @@ struct cpu_dbs_info {
+ 	 * wake-up from idle.
+ 	 */
+ 	unsigned int prev_load;
+-	struct timer_list timer;
++	struct update_util_data update_util;
+ 	struct cpu_common_dbs_info *shared;
+ };
+ 
+@@ -212,8 +218,7 @@ struct common_dbs_data {
+ 
+ 	struct cpu_dbs_info *(*get_cpu_cdbs)(int cpu);
+ 	void *(*get_cpu_dbs_info_s)(int cpu);
+-	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy,
+-				      bool modify_all);
++	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
+ 	void (*gov_check_cpu)(int cpu, unsigned int load);
+ 	int (*init)(struct dbs_data *dbs_data, bool notify);
+ 	void (*exit)(struct dbs_data *dbs_data, bool notify);
+@@ -270,8 +275,8 @@ static ssize_t show_sampling_rate_min_go
+ }
+ 
+ extern struct mutex cpufreq_governor_lock;
+-
+-void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay);
++void gov_set_update_util(struct cpu_common_dbs_info *shared,
++			 unsigned int delay_us);
+ void gov_cancel_work(struct cpu_common_dbs_info *shared);
+ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -128,10 +128,10 @@ void dbs_check_cpu(struct dbs_data *dbs_
+ 		 * dropped down. So we perform the copy only once, upon the
+ 		 * first wake-up from idle.)
+ 		 *
+-		 * Detecting this situation is easy: the governor's deferrable
+-		 * timer would not have fired during CPU-idle periods. Hence
+-		 * an unusually large 'wall_time' (as compared to the sampling
+-		 * rate) indicates this scenario.
++		 * Detecting this situation is easy: the governor's utilization
++		 * update handler would not have run during CPU-idle periods.
++		 * Hence, an unusually large 'wall_time' (as compared to the
++		 * sampling rate) indicates this scenario.
+ 		 *
+ 		 * prev_load can be zero in two cases and we must recalculate it
+ 		 * for both cases:
+@@ -161,129 +161,116 @@ void dbs_check_cpu(struct dbs_data *dbs_
+ }
+ EXPORT_SYMBOL_GPL(dbs_check_cpu);
+ 
+-void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay)
++void gov_set_update_util(struct cpu_common_dbs_info *shared,
++			 unsigned int delay_us)
+ {
++	struct cpufreq_policy *policy = shared->policy;
+ 	struct dbs_data *dbs_data = policy->governor_data;
+-	struct cpu_dbs_info *cdbs;
+ 	int cpu;
+ 
++	shared->sample_delay_ns = delay_us * NSEC_PER_USEC;
++	shared->time_stamp = ktime_get();
++	shared->last_sample_time = 0;
++
+ 	for_each_cpu(cpu, policy->cpus) {
+-		cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+-		cdbs->timer.expires = jiffies + delay;
+-		add_timer_on(&cdbs->timer, cpu);
++		struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
++
++		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(gov_add_timers);
++EXPORT_SYMBOL_GPL(gov_set_update_util);
+ 
+-static inline void gov_cancel_timers(struct cpufreq_policy *policy)
++static inline void gov_clear_update_util(struct cpufreq_policy *policy)
+ {
+-	struct dbs_data *dbs_data = policy->governor_data;
+-	struct cpu_dbs_info *cdbs;
+ 	int i;
+ 
+-	for_each_cpu(i, policy->cpus) {
+-		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
+-		del_timer_sync(&cdbs->timer);
+-	}
++	for_each_cpu(i, policy->cpus)
++		cpufreq_set_update_util_data(i, NULL);
++
++	synchronize_rcu();
+ }
+ 
+ void gov_cancel_work(struct cpu_common_dbs_info *shared)
+ {
+-	/* Tell dbs_timer_handler() to skip queuing up work items. */
++	/* Tell dbs_update_util_handler() to skip queuing up work items. */
+ 	atomic_inc(&shared->skip_work);
+ 	/*
+-	 * If dbs_timer_handler() is already running, it may not notice the
+-	 * incremented skip_work, so wait for it to complete to prevent its work
+-	 * item from being queued up after the cancel_work_sync() below.
+-	 */
+-	gov_cancel_timers(shared->policy);
+-	/*
+-	 * In case dbs_timer_handler() managed to run and spawn a work item
+-	 * before the timers have been canceled, wait for that work item to
+-	 * complete and then cancel all of the timers set up by it.  If
+-	 * dbs_timer_handler() runs again at that point, it will see the
+-	 * positive value of skip_work and won't spawn any more work items.
++	 * If dbs_update_util_handler() is already running, it may not notice
++	 * the incremented skip_work, so wait for it to complete to prevent its
++	 * work item from being queued up after the cancel_work_sync() below.
+ 	 */
++	gov_clear_update_util(shared->policy);
++	wait_for_completion(&shared->irq_work_done);
+ 	cancel_work_sync(&shared->work);
+-	gov_cancel_timers(shared->policy);
+ 	atomic_set(&shared->skip_work, 0);
+ }
+ EXPORT_SYMBOL_GPL(gov_cancel_work);
+ 
+-/* Will return if we need to evaluate cpu load again or not */
+-static bool need_load_eval(struct cpu_common_dbs_info *shared,
+-			   unsigned int sampling_rate)
+-{
+-	if (policy_is_shared(shared->policy)) {
+-		ktime_t time_now = ktime_get();
+-		s64 delta_us = ktime_us_delta(time_now, shared->time_stamp);
+-
+-		/* Do nothing if we recently have sampled */
+-		if (delta_us < (s64)(sampling_rate / 2))
+-			return false;
+-		else
+-			shared->time_stamp = time_now;
+-	}
+-
+-	return true;
+-}
+-
+ static void dbs_work_handler(struct work_struct *work)
+ {
+ 	struct cpu_common_dbs_info *shared = container_of(work, struct
+ 					cpu_common_dbs_info, work);
+ 	struct cpufreq_policy *policy;
+ 	struct dbs_data *dbs_data;
+-	unsigned int sampling_rate, delay;
+-	bool eval_load;
++	unsigned int delay;
+ 
+ 	policy = shared->policy;
+ 	dbs_data = policy->governor_data;
+ 
+-	/* Kill all timers */
+-	gov_cancel_timers(policy);
+-
+-	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
+-		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+-
+-		sampling_rate = cs_tuners->sampling_rate;
+-	} else {
+-		struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+-
+-		sampling_rate = od_tuners->sampling_rate;
+-	}
+-
+-	eval_load = need_load_eval(shared, sampling_rate);
+-
+ 	/*
+-	 * Make sure cpufreq_governor_limits() isn't evaluating load in
++	 * Make sure cpufreq_governor_limits() isn't evaluating load or the
++	 * ondemand governor isn't reading the time stamp and sampling rate in
+ 	 * parallel.
+ 	 */
+ 	mutex_lock(&shared->timer_mutex);
+-	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
++	delay = dbs_data->cdata->gov_dbs_timer(policy);
++	shared->sample_delay_ns = jiffies_to_nsecs(delay);
++	shared->time_stamp = ktime_get();
+ 	mutex_unlock(&shared->timer_mutex);
+ 
++	/*
++	 * If the atomic operation below is reordered with respect to the
++	 * sample delay modification, the utilization update handler may end
++	 * up using a stale sample delay value.
++	 */
++	smp_mb__before_atomic();
+ 	atomic_dec(&shared->skip_work);
++}
+ 
+-	gov_add_timers(policy, delay);
++static void dbs_irq_work(struct irq_work *irq_work)
++{
++	struct cpu_common_dbs_info *shared;
++
++	shared = container_of(irq_work, struct cpu_common_dbs_info, irq_work);
++	schedule_work(&shared->work);
++	complete(&shared->irq_work_done);
+ }
+ 
+-static void dbs_timer_handler(unsigned long data)
++static void dbs_update_util_handler(struct update_util_data *data, u64 time,
++				    unsigned long util, unsigned long max)
+ {
+-	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
++	struct cpu_dbs_info *cdbs = container_of(data, struct cpu_dbs_info, update_util);
+ 	struct cpu_common_dbs_info *shared = cdbs->shared;
+ 
+ 	/*
+-	 * Timer handler may not be allowed to queue the work at the moment,
+-	 * because:
+-	 * - Another timer handler has done that
+-	 * - We are stopping the governor
+-	 * - Or we are updating the sampling rate of the ondemand governor
++	 * The work may not be allowed to be queued up right now.
++	 * Possible reasons:
++	 * - Work has already been queued up or is in progress.
++	 * - The governor is being stopped.
++	 * - It is too early (too little time from the previous sample).
+ 	 */
+-	if (atomic_inc_return(&shared->skip_work) > 1)
+-		atomic_dec(&shared->skip_work);
+-	else
+-		queue_work(system_wq, &shared->work);
++	if (atomic_inc_return(&shared->skip_work) == 1) {
++		u64 delta_ns;
++
++		delta_ns = time - shared->last_sample_time;
++		if ((s64)delta_ns >= shared->sample_delay_ns) {
++			shared->last_sample_time = time;
++			reinit_completion(&shared->irq_work_done);
++			irq_work_queue_on(&shared->irq_work, smp_processor_id());
++			return;
++		}
++	}
++	atomic_dec(&shared->skip_work);
+ }
+ 
+ static void set_sampling_rate(struct dbs_data *dbs_data,
+@@ -467,9 +454,6 @@ static int cpufreq_governor_start(struct
+ 		io_busy = od_tuners->io_is_busy;
+ 	}
+ 
+-	shared->policy = policy;
+-	shared->time_stamp = ktime_get();
+-
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
+ 		unsigned int prev_load;
+@@ -485,10 +469,11 @@ static int cpufreq_governor_start(struct
+ 		if (ignore_nice)
+ 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ 
+-		__setup_timer(&j_cdbs->timer, dbs_timer_handler,
+-			      (unsigned long)j_cdbs,
+-			      TIMER_DEFERRABLE | TIMER_IRQSAFE);
++		j_cdbs->update_util.func = dbs_update_util_handler;
+ 	}
++	shared->policy = policy;
++	init_irq_work(&shared->irq_work, dbs_irq_work);
++	init_completion(&shared->irq_work_done);
+ 
+ 	if (cdata->governor == GOV_CONSERVATIVE) {
+ 		struct cs_cpu_dbs_info_s *cs_dbs_info =
+@@ -505,7 +490,7 @@ static int cpufreq_governor_start(struct
+ 		od_ops->powersave_bias_init_cpu(cpu);
+ 	}
+ 
+-	gov_add_timers(policy, delay_for_sampling_rate(sampling_rate));
++	gov_set_update_util(shared, sampling_rate);
+ 	return 0;
+ }
+ 
+Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -191,7 +191,7 @@ static void od_check_cpu(int cpu, unsign
+ 	}
+ }
+ 
+-static unsigned int od_dbs_timer(struct cpufreq_policy *policy, bool modify_all)
++static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
+ {
+ 	struct dbs_data *dbs_data = policy->governor_data;
+ 	unsigned int cpu = policy->cpu;
+@@ -200,9 +200,6 @@ static unsigned int od_dbs_timer(struct
+ 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+ 	int delay = 0, sample_type = dbs_info->sample_type;
+ 
+-	if (!modify_all)
+-		goto max_delay;
+-
+ 	/* Common NORMAL_SAMPLE setup */
+ 	dbs_info->sample_type = OD_NORMAL_SAMPLE;
+ 	if (sample_type == OD_SUB_SAMPLE) {
+@@ -218,7 +215,6 @@ static unsigned int od_dbs_timer(struct
+ 		}
+ 	}
+ 
+-max_delay:
+ 	if (!delay)
+ 		delay = delay_for_sampling_rate(od_tuners->sampling_rate
+ 				* dbs_info->rate_mult);
+@@ -264,7 +260,7 @@ static void update_sampling_rate(struct
+ 		struct od_cpu_dbs_info_s *dbs_info;
+ 		struct cpu_dbs_info *cdbs;
+ 		struct cpu_common_dbs_info *shared;
+-		unsigned long next_sampling, appointed_at;
++		ktime_t next_sampling, appointed_at;
+ 
+ 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 		cdbs = &dbs_info->cdbs;
+@@ -292,16 +288,19 @@ static void update_sampling_rate(struct
+ 			continue;
+ 
+ 		/*
+-		 * Checking this for any CPU should be fine, timers for all of
+-		 * them are scheduled together.
++		 * Checking this for any CPU sharing the policy should be fine,
++		 * they are all scheduled to sample at the same time.
+ 		 */
+-		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+-		appointed_at = dbs_info->cdbs.timer.expires;
++		next_sampling = ktime_add_us(ktime_get(), new_rate);
+ 
+-		if (time_before(next_sampling, appointed_at)) {
+-			gov_cancel_work(shared);
+-			gov_add_timers(policy, usecs_to_jiffies(new_rate));
++		mutex_lock(&shared->timer_mutex);
++		appointed_at = ktime_add_ns(shared->time_stamp,
++					    shared->sample_delay_ns);
++		mutex_unlock(&shared->timer_mutex);
+ 
++		if (ktime_before(next_sampling, appointed_at)) {
++			gov_cancel_work(shared);
++			gov_set_update_util(shared, new_rate);
+ 		}
+ 	}
+ 
+Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
++++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
+@@ -115,14 +115,12 @@ static void cs_check_cpu(int cpu, unsign
+ 	}
+ }
+ 
+-static unsigned int cs_dbs_timer(struct cpufreq_policy *policy, bool modify_all)
++static unsigned int cs_dbs_timer(struct cpufreq_policy *policy)
+ {
+ 	struct dbs_data *dbs_data = policy->governor_data;
+ 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+ 
+-	if (modify_all)
+-		dbs_check_cpu(dbs_data, policy->cpu);
+-
++	dbs_check_cpu(dbs_data, policy->cpu);
+ 	return delay_for_sampling_rate(cs_tuners->sampling_rate);
+ }
+ 
 
-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
-0UXYiAEA
-
---bp/iNruPH9dso1Pn--
