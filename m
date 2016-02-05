@@ -1,46 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 7/10] cpufreq: governor: Drop the gov pointer from
- struct dbs_data
-Date: Fri, 5 Feb 2016 13:58:45 +0530
-Message-ID: <20160205082845.GJ21792@vireshk>
+Subject: Re: [PATCH v2 8/10] cpufreq: governor: Rename cpu_common_dbs_info to
+ policy_dbs_info
+Date: Fri, 5 Feb 2016 14:04:06 +0530
+Message-ID: <20160205083406.GK21792@vireshk>
 References: <3705929.bslqXH980s@vostro.rjw.lan>
  <9008098.QDD8C89zDx@vostro.rjw.lan>
- <1822486.GZrV4YiqWF@vostro.rjw.lan>
+ <2973464.jyrWv0qA55@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:33804 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbcBEI2s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 03:28:48 -0500
-Received: by mail-pa0-f52.google.com with SMTP id uo6so31149288pac.1
-        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2016 00:28:48 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1822486.GZrV4YiqWF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <2973464.jyrWv0qA55@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 05-02-16, 03:19, Rafael J. Wysocki wrote:
+On 05-02-16, 03:20, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Since it is possible to obtain a pointer to struct dbs_governor
-> from a pointer to the struct governor embedded in it with the help
-> of container_of(), the additional gov pointer in struct dbs_data
-> isn't really necessary.
+> The struct cpu_common_dbs_info structure represents the per-policy
+> part of the governor data (for the ondemand and conservative
+> governors), but its name doesn't reflect its purpose.
 > 
-> Drop that pointer and make the code using it reach the dbs_governor
-> object via policy->governor.
+> Rename it to struct policy_dbs_info and rename variables related to
+> it accordingly.
+> 
+> No functional changes.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/cpufreq/amd_freq_sensitivity.c |    2 -
->  drivers/cpufreq/cpufreq_conservative.c |    2 -
->  drivers/cpufreq/cpufreq_governor.c     |   63 +++++++++++++++------------------
->  drivers/cpufreq/cpufreq_governor.h     |    8 +++-
->  drivers/cpufreq/cpufreq_ondemand.c     |    2 -
->  5 files changed, 39 insertions(+), 38 deletions(-)
+>  drivers/cpufreq/cpufreq_governor.c |  120 ++++++++++++++++++-------------------
+>  drivers/cpufreq/cpufreq_governor.h |    8 +-
+>  drivers/cpufreq/cpufreq_ondemand.c |   32 ++++-----
+>  3 files changed, 80 insertions(+), 80 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+> @@ -132,7 +132,7 @@ static void *get_cpu_dbs_info_s(int cpu)
+>   */
+>  
+>  /* Common to all CPUs of a policy */
+> -struct cpu_common_dbs_info {
+> +struct policy_dbs_info {
+>  	struct cpufreq_policy *policy;
+>  	/*
+>  	 * Per policy mutex that serializes load evaluation from limit-change
+> @@ -162,7 +162,7 @@ struct cpu_dbs_info {
+>  	 */
+>  	unsigned int prev_load;
+>  	struct update_util_data update_util;
+> -	struct cpu_common_dbs_info *shared;
+> +	struct policy_dbs_info *shared;
+
+You should replaced shared with policy_dbs here as well ? Apart from
+that:
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
