@@ -1,116 +1,129 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 2/6] drivers/cpufreq: implement
- init_cpu_capacity_default()
-Date: Fri, 5 Feb 2016 09:30:40 +0000
-Message-ID: <20160205093040.GG29586@e106622-lin>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-3-git-send-email-juri.lelli@arm.com>
- <CAKfTPtDGk5BC25WqHdhDYDOBgUsuidAMhrXS=eDi6wJPZjfrwA@mail.gmail.com>
- <20160204093559.GA14099@e105550-lin.cambridge.arm.com>
- <CAKfTPtB4G3bP5N0hU6zWXJTddO34x3RnyGpp-4_otc8O=Wq2hw@mail.gmail.com>
- <20160204121620.GB29586@e106622-lin>
- <CAKfTPtDVasamRtG2kLxP0HsohmVQTPrXRgx36e+jb3gozDoo6g@mail.gmail.com>
- <20160204141345.GD29586@e106622-lin>
- <CAKfTPtDWP-AgqXsSuxCfVj33dh+i7oqDTkL=gUy7n-AB1anoow@mail.gmail.com>
- <CAKfTPtD4jTmUZoShGBm3oAFywizjp8jsEukmkeZU+x+zk-KZRA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Fri, 5 Feb 2016 15:19:25 +0530
+Message-ID: <20160205094925.GN21792@vireshk>
+References: <cover.1454507872.git.viresh.kumar@linaro.org>
+ <56B38E14.5060705@codeaurora.org>
+ <CAJZ5v0hG2CickrbnTn8qJdFHJZ4cuZg1nxJ=8OXN8YFuw=qSFQ@mail.gmail.com>
+ <3866963.E19P3EGEHd@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtD4jTmUZoShGBm3oAFywizjp8jsEukmkeZU+x+zk-KZRA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <3866963.E19P3EGEHd@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Shilpa Bhat <shilpabhatppc@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/02/16 16:46, Vincent Guittot wrote:
-> On 4 February 2016 at 16:44, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> > On 4 February 2016 at 15:13, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> >> On 04/02/16 13:35, Vincent Guittot wrote:
-> >>> On 4 February 2016 at 13:16, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>> > Hi Vincent,
-> >>> >
-> >>> > On 04/02/16 13:03, Vincent Guittot wrote:
-> >>> >> On 4 February 2016 at 10:36, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>> >> > On Wed, Feb 03, 2016 at 10:04:37PM +0100, Vincent Guittot wrote:
-> >>> >> >> On 3 February 2016 at 12:59, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>> >>
-> >>> >> [snip]
-> >>> >>
-> >>> >> >> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> >>> >> >> > index 9e63fb1..c4025fd 100644
-> >>> >> >> > --- a/drivers/cpufreq/Makefile
-> >>> >> >> > +++ b/drivers/cpufreq/Makefile
-> >>> >> >> > @@ -1,5 +1,5 @@
-> >>> >> >> >  # CPUfreq core
-> >>> >> >> > -obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o
-> >>> >> >> > +obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o cpufreq_capacity.o
-> >>> >> >>
-> >>> >> >> Do you really want to have the calibration of capacity dependent of
-> >>> >> >> cpufreq ? It means that we can't use it without a cpufreq driver.
-> >>> >> >> IMHO, this creates a unnecessary dependency. I understand that you
-> >>> >> >> must ensure that core runs at max fequency if a driver is present but
-> >>> >> >> you should be able to calibrate the capacity if cpufreq is not
-> >>> >> >> available but you have different capacity because micro architecture
-> >>> >> >
-> >>> >> > We could remove the dependency on cpufreq, but it would make things more
-> >>> >> > complicated for systems which do have frequency scaling as we would have
-> >>> >> > to either:
-> >>> >> >
-> >>> >> > 1) Run the calibration again once cpufreq has been initialized.
-> >>> >>
-> >>> >> or wait and let time for a driver to initialize and trig the
-> >>> >> calibration. If calibration has not been done at the end of the boot,
-> >>> >> you can force a calibration. If the cpufeq driver is a module and is
-> >>> >> loaded far later for any good or bad reason, we will have to run the
-> >>> >> calibration once again but at least the capacity will reflect he
-> >>> >> current capacity of the CPUs.
-> >>> >> I'm mainly worried that the compilation of the calibration is
-> >>> >> dependent of CONFIG_CPU_FREQ not that cpufreq can trig the calibration
-> >>> >> sequence
-> >>> >>
-> >>> >
-> >>> > Yes, I guess we can make this work in some way. Out of curiosity,
-> >>> > though, are out there heterogenous platforms that don't use cpufreq?
-> >>>
-> >>> At least, you can find several heterogeneous platforms without OPP
-> >>> table for CPUs in the kernel. That's probably a temporary situation
-> >>> but which can become a permanent one. It means that we can't calibrate
-> >>> the CPUs for these platforms.
-> >>>
-> >>
-> >> Sorry, can you make some examples so that I'm sure I understand what you
-> >> are referring to?
-> >
-> > As an example, the uniphier arm64 Soc doesn't have a cpufreq driver so far
-> >
-> >>
-> >> Anyway, don't these platform still make use of cpufreq (even if without
-> >> an OPP table) so that we can still control policy->max and min?
-> >
-> > AFAICT, They don't have a dedicated cpufreq driver.
-> >
-> > More generally speaking, it can take time before having
+On 05-02-16, 04:54, Rafael J. Wysocki wrote:
+> Having actually posted that series again after cleaning it up I can say
+> what I'm thinking about hopefully without confusing anyone too much.  So
+> please bear in mind that I'm going to refer to this series below:
 > 
-> email sent before the ne d of the sentence ...
+> http://marc.info/?l=linux-pm&m=145463901630950&w=4
 > 
-> More generally speaking, it can take time before having a cpufreq
-> driver whereas we want to run and test scheduler behavior of these
-> heterogenous platform
+> Also this is more of a brain dump rather than actual design description,
+> so there may be holes etc in it.  Please let me know if you can see any.
 > 
+> The problem at hand is that policy->rwsem needs to be held around *all*
+> operations in cpufreq_set_policy().  In particular, it cannot be dropped
+> around invocations of __cpufreq_governor() with the event arg equal to
+> _EXIT as that leads to interesting races.
+> 
+> Unfortunately, we know that holding policy->rwsem in those places leads
+> to a deadlock with governor sysfs attributes removal in cpufreq_governor_exit().
+> 
+> Viresh attempted to fix this by avoiding to acquire policy->rwsem for governor
+> attributes access (as holding it is not necessary for them in principle).  That
+> was a nice try, but it turned out to be insufficient because of another deadlock
+> scenario uncovered by it.
 
-I'm not familiar with this platform, but from what you are saying and
-what I could find online, it looks like full Linux support is not
-finished yet. Can we consider that as still in development? And if we
-can do that, maybe is fair enough that we use the sysfs interface to
-play with that platform until support is complete.
+Not really.
 
-Do others have any opinion on this point?
+The other deadlock wasn't uncovered by it, its just that Shilpa tested
+directly after my patches and reported the issue. Later yesterday, she
+was hitting the exactly same issue on pm/linux-next as well (i.e.
+without my patches). And ofcourse Juri has also reported the same
+issue on linux-next few days back.
 
-Thanks,
+> Namely, since the ondemand governor's update_sampling_rate()
+> acquires the governor mutex (called dbs_data_mutex after my patches mentioned
+> above), it may deadlock with exactly the same piece of code in cpufreq_governor_exit()
+> in almost exactly the same way.
 
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Right.
+
+> To avoid that other deadlock, we'd either need to drop dbs_data_mutex from
+> update_sampling_rate(),
+
+And my so called 'ugly' 8th patch tried to do just that :)
+
+But as I also mentioned in reply to the update-util patchset of yours,
+its possible somewhat.
+
+> or drop it for the removal of the governor sysfs
+> attributes in cpufreq_governor_exit().  I don't think the former is an option
+> at least at this point, so it looks like we pretty much have to do the latter.
+> 
+> With that in mind, I'd start with the changes made by Viresh (maybe without the
+> first patch which really isn't essential here).
+
+That was just to cleanup the macro mess a bit, nothing more. Over
+that, I think the first 7 patches can be picked as it is without any
+changes. Ofcourse they are required to be rebased over your 13
+patches, if those are going in first :)
+
+> That is, introduce a separate
+> kobject type for the governor attributes kobject and register that in
+> cpufreq_governor_init().  The show/store callbacks for that kobject type won't
+> acquire policy->rwsem so the first deadlock will be avoided.
+> 
+> But in addition to that, I'd drop dbs_data_mutex before the removal of governor
+> sysfs attributes.  That actually happens in two places, in cpufreq_governor_exit()
+> and in the error path of cpufreq_governor_init().
+> 
+> To that end, I'd move the locking from cpufreq_governor_dbs() to the functions
+> called by it.  That should be readily doable and they can do all of the
+> necessary checks themselves.  cpufreq_governor_dbs() would become a pure mux then,
+> but that's not such a big deal.
+> 
+> With that, cpufreq_governor_exit() may just drop the lock before it does the
+> final kobject_put().  The danger here is that the sysfs show/store callbacks of
+> the governor attributes kobject may see invalid dbs_data for a while, after the
+> lock has been dropped and before the kobject is deleted.  That may be addressed
+> by checking, for example, the presence of the dbs_data's "tuners" pointer in those
+> callbacks.  If it is NULL, they can simply return -EAGAIN or similar.
+
+So you mean something like this (consider only !governor_per_policy
+case with ondemand governor for now):
+
+exit()
+{
+       lock-dbs_data_mutex;
+       ...
+       dbs_data->tuners = NULL; //so that sysfs files can return early
+       dbs_governor->gdbs_data = NULL; //For !governor_per_policy case
+       unlock-dbs_data_mutex;
+
+       /*
+        * Problem: Who is stopping us to set ondemand as governor for
+        * another policy, which can try create a kobject which will
+        * try to create sysfs directory at the same path ?
+        *
+        * Though another field in dbs_governor can be used to fix this
+        * I think, which needs to block the other INIT operation.
+        */
+        
+       kobject_put(dbs_data->kobj); //This should wait for all sysfs operations to end.
+
+       kfree(dbs_data);
+}
+
+And the sysfs operations show/store need to take dbs_data_mutex() for
+their entire operations.
+
+??
+
+-- 
+viresh
