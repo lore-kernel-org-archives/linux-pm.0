@@ -1,44 +1,52 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH v4 00/13] arm64: kernel: Add support for hibernate/suspend-to-disk
-Date: Fri, 05 Feb 2016 14:18:18 +0000
-Message-ID: <56B4AF2A.2070503@arm.com>
-References: <1453977766-20907-1-git-send-email-james.morse@arm.com>	<7hvb6chv5e.fsf@baylibre.com> <56AF1D07.3000604@arm.com> <7hmvrid3pv.fsf@baylibre.com>
+From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH V2 3/8] genirq: Add runtime power management support
+ for IRQ chips
+Date: Fri, 5 Feb 2016 15:37:17 +0100
+Message-ID: <CACRpkdbE-Ny585yK+DBkNENpWyk8rSEvdRdvLgMTCBp13grp4w@mail.gmail.com>
+References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
+	<1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
+	<CAPDyKFqZK4HYWgXam63=eCKAWsjwCiQbT5jdmgjqid_er3Sg1g@mail.gmail.com>
+	<569E1366.8070005@nvidia.com>
+	<alpine.DEB.2.11.1601201620450.3575@nanos>
+	<CAPDyKFrqQO6Mh7ew5YTW011a11LmFW7c+cZpAKmY8tovxjGmOw@mail.gmail.com>
+	<alpine.DEB.2.11.1601212026230.3886@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48172 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932080AbcBEOTe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Feb 2016 09:19:34 -0500
-In-Reply-To: <7hmvrid3pv.fsf@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <alpine.DEB.2.11.1601212026230.3886@nanos>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Jiang Liu <jiang.liu-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Marc Zyngier <marc.zyngier@arm.com>
 
-Hi Kevin,
+On Thu, Jan 21, 2016 at 8:51 PM, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org> wrote:
 
-On 03/02/16 00:42, Kevin Hilman wrote:
-> James Morse <james.morse@arm.com> writes:
->> On 29/01/16 22:34, Kevin Hilman wrote:
->>> James Morse <james.morse@arm.com> writes:
->>> I'd like to help in testing this so I'm just curious which platforms
->>> you've been testing this on.  I'm assuming a Juno (r2?), anything else?
->>
->> That would be great - thanks!
->>
->> I've done most of the testing on a Juno r1, but also gave it a spin on a
->> stray Seattle.
-> 
-> OK, I'm using a very recently arrived Juno R2, and I did get it
-> working.  I have a few other arm64 boards around that ar part of
-> kernelci.org and will try those as well.
+> So as long as an interrupt handler is installed, there is no sane way that we
+> can decide to power down the irq chip, unless that chip has the magic ability
+> to relay incoming interrupts while powered down :)
 
-Great,
-It would be good to have a Tested-by if it works to your satisfaction...
+Actually isn't that exactly what almost every SoC that supports
+deepsleep does?
 
+They power off the primary interrupt controller and arm the padring
+of the SoC with an asynchronous edge detector to wake up as soon
+as something happens on a few select lines, like a keypad button
+or whatnot.
 
-Thanks,
+The asynchronous edge detector is handled by the ROM or some
+power-management microcontroller, which wakes up the system
+and restores power to the CPU and primary interrupt controller.
+That is the magic ability right there.
 
-James
+Of course as the wakeup signal may be deasserted at the
+point the system actually comes back up, so the magic ROM
+power management unit then needs to latch
+any latent IRQs from some shadow register to the primary interrupt
+controller, which as far as I've seen is done by out-of-tree hacks
+similar to the irq_[get/set]_irqchip_state() implemented
+by Marc Zyngier, albeit for virtualization.
+
+I've not seen it on any non-primary interrupt controller though.
+
+Yours,
+Linus Walleij
