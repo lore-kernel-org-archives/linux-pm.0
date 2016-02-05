@@ -1,113 +1,148 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 10/10] cpufreq: governor: Drop cpu argument from dbs_check_cpu()
-Date: Fri, 05 Feb 2016 03:21:56 +0100
-Message-ID: <2367498.ClbHvSsNAg@vostro.rjw.lan>
+Subject: [PATCH v2 6/10] cpufreq: governor: Rework cpufreq_governor_dbs()
+Date: Fri, 05 Feb 2016 03:18:26 +0100
+Message-ID: <41589956.sxJrHjYhQ2@vostro.rjw.lan>
 References: <3705929.bslqXH980s@vostro.rjw.lan> <9008098.QDD8C89zDx@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50127 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751951AbcBECVe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 21:21:34 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <9008098.QDD8C89zDx@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since policy->cpu is always passed as the second argument to
-dbs_check_cpu(), it is not really necessary to pass it, because
-the function can obtain that value via its first argument just fine.
+Since it is possible to obtain a pointer to struct dbs_governor
+from a pointer to the struct governor embedded in it via
+container_of(), the second argument of cpufreq_governor_init()
+is not necessary.  Accordingly, cpufreq_governor_dbs() doesn't
+need its second argument either and the ->governor callbacks
+for both the ondemand and conservative governors may be set
+to cpufreq_governor_dbs() directly.  Make that happen.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Saravana Kannan <skannan@codeaurora.org>
 ---
- drivers/cpufreq/cpufreq_conservative.c |    2 +-
- drivers/cpufreq/cpufreq_governor.c     |    5 +++--
- drivers/cpufreq/cpufreq_governor.h     |    2 +-
- drivers/cpufreq/cpufreq_ondemand.c     |    6 ++----
- 4 files changed, 7 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c |   11 +----------
+ drivers/cpufreq/cpufreq_governor.c     |   10 +++++-----
+ drivers/cpufreq/cpufreq_governor.h     |    3 +--
+ drivers/cpufreq/cpufreq_ondemand.c     |   11 +----------
+ 4 files changed, 8 insertions(+), 27 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -282,7 +282,7 @@ extern struct mutex cpufreq_governor_loc
- void gov_set_update_util(struct policy_dbs_info *policy_dbs,
- 			 unsigned int delay_us);
- void gov_cancel_work(struct policy_dbs_info *policy_dbs);
--void dbs_check_cpu(struct cpufreq_policy *policy, int cpu);
-+void dbs_check_cpu(struct cpufreq_policy *policy);
- int cpufreq_governor_dbs(struct cpufreq_policy *policy, unsigned int event);
- void od_register_powersave_bias_handler(unsigned int (*f)
- 		(struct cpufreq_policy *, unsigned int, unsigned int),
-Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-@@ -194,9 +194,7 @@ static unsigned int od_dbs_timer(struct
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
--	unsigned int cpu = policy->cpu;
--	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
--			cpu);
-+	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	int delay = 0, sample_type = dbs_info->sample_type;
- 
-@@ -207,7 +205,7 @@ static unsigned int od_dbs_timer(struct
- 		__cpufreq_driver_target(policy, dbs_info->freq_lo,
- 					CPUFREQ_RELATION_H);
- 	} else {
--		dbs_check_cpu(policy, cpu);
-+		dbs_check_cpu(policy);
- 		if (dbs_info->freq_lo) {
- 			/* Setup timer for SUB_SAMPLE */
- 			dbs_info->sample_type = OD_SUB_SAMPLE;
 Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
 +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -109,7 +109,7 @@ static unsigned int cs_dbs_timer(struct
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+@@ -325,13 +325,10 @@ static void cs_exit(struct dbs_data *dbs
  
--	dbs_check_cpu(policy, policy->cpu);
-+	dbs_check_cpu(policy);
- 	return delay_for_sampling_rate(cs_tuners->sampling_rate);
- }
+ define_get_cpu_dbs_routines(cs_cpu_dbs_info);
  
+-static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-				   unsigned int event);
+-
+ static struct dbs_governor cs_dbs_gov = {
+ 	.gov = {
+ 		.name = "conservative",
+-		.governor = cs_cpufreq_governor_dbs,
++		.governor = cpufreq_governor_dbs,
+ 		.max_transition_latency = TRANSITION_LATENCY_LIMIT,
+ 		.owner = THIS_MODULE,
+ 	},
+@@ -348,12 +345,6 @@ static struct dbs_governor cs_dbs_gov =
+ 
+ #define CPU_FREQ_GOV_CONSERVATIVE	(&cs_dbs_gov.gov)
+ 
+-static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-				   unsigned int event)
+-{
+-	return cpufreq_governor_dbs(policy, &cs_dbs_gov, event);
+-}
+-
+ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 				void *data)
+ {
 Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
 +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -31,13 +31,14 @@ static struct attribute_group *get_sysfs
- 		gov->attr_group_gov_pol : gov->attr_group_gov_sys;
+@@ -324,9 +324,10 @@ static void free_common_dbs_info(struct
+ 	kfree(shared);
  }
  
--void dbs_check_cpu(struct cpufreq_policy *policy, int cpu)
-+void dbs_check_cpu(struct cpufreq_policy *policy)
+-static int cpufreq_governor_init(struct cpufreq_policy *policy,
+-				 struct dbs_governor *gov)
++static int cpufreq_governor_init(struct cpufreq_policy *policy)
  {
- 	struct dbs_governor *gov = dbs_governor_of(policy);
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-+	int cpu = policy->cpu;
- 	unsigned int sampling_rate;
- 	unsigned int max_load = 0;
- 	unsigned int ignore_nice;
-@@ -515,7 +516,7 @@ static int cpufreq_governor_limits(struc
- 		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
- 	else if (policy->min > policy->cur)
- 		__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
--	dbs_check_cpu(policy, policy->cpu);
-+	dbs_check_cpu(policy);
- 	mutex_unlock(&policy_dbs->timer_mutex);
- 
++	struct dbs_governor *gov = container_of(policy->governor,
++						struct dbs_governor, gov);
+ 	struct dbs_data *dbs_data = gov->gdbs_data;
+ 	unsigned int latency;
+ 	int ret;
+@@ -537,8 +538,7 @@ static int cpufreq_governor_limits(struc
  	return 0;
-
+ }
+ 
+-int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-			 struct dbs_governor *gov, unsigned int event)
++int cpufreq_governor_dbs(struct cpufreq_policy *policy, unsigned int event)
+ {
+ 	int ret = -EINVAL;
+ 
+@@ -546,7 +546,7 @@ int cpufreq_governor_dbs(struct cpufreq_
+ 	mutex_lock(&dbs_data_mutex);
+ 
+ 	if (event == CPUFREQ_GOV_POLICY_INIT) {
+-		ret = cpufreq_governor_init(policy, gov);
++		ret = cpufreq_governor_init(policy);
+ 	} else if (policy->governor_data) {
+ 		switch (event) {
+ 		case CPUFREQ_GOV_POLICY_EXIT:
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -276,8 +276,7 @@ void gov_set_update_util(struct cpu_comm
+ 			 unsigned int delay_us);
+ void gov_cancel_work(struct cpu_common_dbs_info *shared);
+ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+-int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-		struct dbs_governor *gov, unsigned int event);
++int cpufreq_governor_dbs(struct cpufreq_policy *policy, unsigned int event);
+ void od_register_powersave_bias_handler(unsigned int (*f)
+ 		(struct cpufreq_policy *, unsigned int, unsigned int),
+ 		unsigned int powersave_bias);
+Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -535,13 +535,10 @@ static struct od_ops od_ops = {
+ 	.freq_increase = dbs_freq_increase,
+ };
+ 
+-static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-				   unsigned int event);
+-
+ static struct dbs_governor od_dbs_gov = {
+ 	.gov = {
+ 		.name = "ondemand",
+-		.governor = od_cpufreq_governor_dbs,
++		.governor = cpufreq_governor_dbs,
+ 		.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
+ 		.owner = THIS_MODULE,
+ 	},
+@@ -559,12 +556,6 @@ static struct dbs_governor od_dbs_gov =
+ 
+ #define CPU_FREQ_GOV_ONDEMAND	(&od_dbs_gov.gov)
+ 
+-static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+-		unsigned int event)
+-{
+-	return cpufreq_governor_dbs(policy, &od_dbs_gov, event);
+-}
+-
+ static void od_set_powersave_bias(unsigned int powersave_bias)
+ {
+ 	struct cpufreq_policy *policy;
