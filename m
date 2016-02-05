@@ -1,51 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
-Date: Fri, 5 Feb 2016 08:19:26 +0530
-Message-ID: <20160205024926.GD3068@vireshk>
-References: <cover.1454507872.git.viresh.kumar@linaro.org>
- <20160203155428.GY3947@e106622-lin>
- <20160203161059.GH3469@vireshk>
- <20160204062439.GZ3469@vireshk>
- <20160204121727.GH3469@vireshk>
- <56B3B9B0.4010401@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/11] cpufreq: governor: Use common mutex for dbs_data
+ protection
+Date: Fri, 5 Feb 2016 08:29:48 +0530
+Message-ID: <20160205025948.GE3068@vireshk>
+References: <3705929.bslqXH980s@vostro.rjw.lan>
+ <1529283.0IedZktI9q@vostro.rjw.lan>
+ <20160204050954.GU3469@vireshk>
+ <CAJZ5v0hWj4JgCh76Fg48ex3Svv7BUHR=9+RoA728R9aYU+12Pw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34106 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbcBECta (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 21:49:30 -0500
-Received: by mail-pa0-f46.google.com with SMTP id uo6so26405066pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 18:49:29 -0800 (PST)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:33667 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbcBEC7w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Feb 2016 21:59:52 -0500
+Received: by mail-pf0-f181.google.com with SMTP id w123so60852717pfb.0
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 18:59:51 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <56B3B9B0.4010401@linux.vnet.ibm.com>
+In-Reply-To: <CAJZ5v0hWj4JgCh76Fg48ex3Svv7BUHR=9+RoA728R9aYU+12Pw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: Juri Lelli <juri.lelli@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-On 05-02-16, 02:20, Shilpasri G Bhat wrote:
-> I could see the previous lockdep warnings on pm/next and on top of patch[4].
-> On Patch[5-7] I see the below lockdep trace on running './runme' on a Power8 box.
-
-> [  710.336130] Chain exists of:
->   s_active#91 --> &dbs_data->mutex --> od_dbs_cdata.mutex
+On 04-02-16, 17:46, Rafael J. Wysocki wrote:
+> On Thu, Feb 4, 2016 at 6:09 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 04-02-16, 00:16, Rafael J. Wysocki wrote:
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> Every governor relying on the common code in cpufreq_governor.c
+> >> has to provide its own mutex in struct common_dbs_data.  However,
+> >> those mutexes are never used at the same time
+> >
+> > Why do you think so? I thought they can always be used in parallel.
+> >
+> > Consider 2 or more policies, one can have ondemand as the governor,
+> > whereas other one can have conservative.
+> >
+> > If CPUs go online/offline or if governors are switching in parallel,
+> > then cpufreq_governor_dbs() can very much run in parallel for ondemand
+> > and conservative.
+> >
+> > Or am I missing something here ?
 > 
-> [  710.336376]  Possible unsafe locking scenario:
+> Well, so perhaps the changelog is inaccurate.
 > 
-> [  710.336488]        CPU0                    CPU1
-> [  710.336577]        ----                    ----
-> [  710.336666]   lock(od_dbs_cdata.mutex);
-> [  710.336778]                                lock(&dbs_data->mutex);
-> [  710.336911]                                lock(od_dbs_cdata.mutex);
-> [  710.337064]   lock(s_active#91);
-> [  710.337176]
+> However, what's wrong with using a single mutex then?
 
-This is the same lockdep, just that we have added another mutex
-(dbs_data->mutex) to it.
+You are killing the possibility of running the code faster. Consider
+this:
+- A 16 policy system with N CPUs in every policy (IBM has something
+  similar only :) )..
+- 4 policies using ondemand, 4 using conservative, 4 using powersave
+  and 4 with performance.
+- Now if we try to change governors for all of them in parallel, only
+  one will be done at a time and others have to wait for this
+  BIG-kernel lock.
+- Ideally the lock shouldn't have been in cdata itself, but dbs_data
+  only. But there was a specific race because of which we were
+  required to move it to a higher level, i.e. cdata. And so we killed
+  the possibility of parallelism of multiple governors of same type
+  (ofcourse only of update-sampling-rate and cpufreq_governor_dbs()..
 
-Have you tried if all the lockdeps go away with the 8th patch that I
-provided yesterday ?
+So, it makes thing much slower..
 
 -- 
 viresh
