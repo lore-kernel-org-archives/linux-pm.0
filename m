@@ -1,44 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/10] cpufreq: governor: Use common mutex for dbs_data
- protection
-Date: Fri, 5 Feb 2016 12:23:41 +0530
-Message-ID: <20160205065341.GE21792@vireshk>
-References: <3705929.bslqXH980s@vostro.rjw.lan>
- <9008098.QDD8C89zDx@vostro.rjw.lan>
- <76588769.1gWBaNHTiQ@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+Date: Fri, 5 Feb 2016 07:54:04 +0100
+Message-ID: <CAPDyKFoawbrj3w_+2p5ugjByrwxwmA1S2God1VAvkRbh2rUtjg@mail.gmail.com>
+References: <CAPDyKFpRnmn+h_VH3jtC3u-BOf7-00nbzD30omaxaaZOOAK8Gg@mail.gmail.com>
+	<Pine.LNX.4.44L0.1602041702550.1515-100000@iolanthe.rowland.org>
+	<CAPDyKFrMZYdeun67FBXdWL16DBOuO16qqOxRsks3QBJhNB8SoQ@mail.gmail.com>
+	<20160205010810.GR19432@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <76588769.1gWBaNHTiQ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f174.google.com ([209.85.160.174]:33865 "EHLO
+	mail-yk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbcBEGyG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 01:54:06 -0500
+Received: by mail-yk0-f174.google.com with SMTP id u9so55701340ykd.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Feb 2016 22:54:05 -0800 (PST)
+In-Reply-To: <20160205010810.GR19432@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 05-02-16, 03:14, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Every governor relying on the common code in cpufreq_governor.c
-> has to provide its own mutex in struct common_dbs_data.  However,
-> there actually is no need to have a separate mutex per governor
-> for this purpose, they may be using the same global mutex just
-> fine.  Accordingly, introduce a single common mutex for that and
-> drop the mutex field from struct common_dbs_data.
-> 
-> That at least will ensure that the mutex is always present and
-> initialized regardless of what the particular governors do.
-> 
-> Another benefit is that the common code does not need a pointer to
-> a governor-related structure to get to the mutex which sometimes
-> helps.
-> 
-> Finally, it makes the code generally easier to follow.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Saravana Kannan <skannan@codeaurora.org>
+On 5 February 2016 at 02:08, Tony Lindgren <tony@atomide.com> wrote:
+> * Ulf Hansson <ulf.hansson@linaro.org> [160204 14:35]:
+>> On 4 February 2016 at 23:09, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Thu, 4 Feb 2016, Ulf Hansson wrote:
+>> >
+>> >> I am really not questioning the autosuspend feature at all, it's a
+>> >> really great feature!
+>> >>
+>> >> Now, I question the minor benefit we actually gain from having the
+>> >> runtime PM core to update the mark in rpm_resume().
+>> >
+>> > As Tony pointed out, it prevents some devices from going to sleep right
+>> > away.
+>>
+>> Because their drivers don't care to update the last busy mark!?
+>
+> Nope. Without that devices may never resume at all so the drivers
+> can't do anything about it.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I don't get it. Why not? Because of another abuse of the runtime PM API?
 
--- 
-viresh
+Or we should probably continue to focus on fixing the regression. :-)
+
+Kind regards
+Uffe
