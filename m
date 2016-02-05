@@ -1,59 +1,75 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: PM regression with commit 5de85b9d57ab PM runtime re-init in
- v4.5-rc1
-Date: Fri, 5 Feb 2016 11:10:42 -0800
-Message-ID: <20160205191042.GT19432@atomide.com>
-References: <CAPDyKFpRnmn+h_VH3jtC3u-BOf7-00nbzD30omaxaaZOOAK8Gg@mail.gmail.com>
- <Pine.LNX.4.44L0.1602041702550.1515-100000@iolanthe.rowland.org>
- <CAPDyKFrMZYdeun67FBXdWL16DBOuO16qqOxRsks3QBJhNB8SoQ@mail.gmail.com>
- <20160205010810.GR19432@atomide.com>
- <CAPDyKFoawbrj3w_+2p5ugjByrwxwmA1S2God1VAvkRbh2rUtjg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: [PATCH 1/5] PM / AVS: rockchip-io: make io-domains a child of the GRF
+Date: Fri,  5 Feb 2016 22:20:14 +0100
+Message-ID: <1454707218-23676-2-git-send-email-heiko@sntech.de>
+References: <1454707218-23676-1-git-send-email-heiko@sntech.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:60388 "EHLO muru.com"
+Received: from gloria.sntech.de ([95.129.55.99]:60365 "EHLO gloria.sntech.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756030AbcBETKq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Feb 2016 14:10:46 -0500
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFoawbrj3w_+2p5ugjByrwxwmA1S2God1VAvkRbh2rUtjg@mail.gmail.com>
+	id S1750752AbcBEVUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Feb 2016 16:20:30 -0500
+In-Reply-To: <1454707218-23676-1-git-send-email-heiko@sntech.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: rjw@rjwysocki.net, khilman@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, sjoerd.simons@collabora.co.uk, dianders@chromium.org, david.wu@rock-chips.com, Heiko Stuebner <heiko@sntech.de>
 
-* Ulf Hansson <ulf.hansson@linaro.org> [160204 22:55]:
-> On 5 February 2016 at 02:08, Tony Lindgren <tony@atomide.com> wrote:
-> > * Ulf Hansson <ulf.hansson@linaro.org> [160204 14:35]:
-> >> On 4 February 2016 at 23:09, Alan Stern <stern@rowland.harvard.edu> wrote:
-> >> > On Thu, 4 Feb 2016, Ulf Hansson wrote:
-> >> >
-> >> >> I am really not questioning the autosuspend feature at all, it's a
-> >> >> really great feature!
-> >> >>
-> >> >> Now, I question the minor benefit we actually gain from having the
-> >> >> runtime PM core to update the mark in rpm_resume().
-> >> >
-> >> > As Tony pointed out, it prevents some devices from going to sleep right
-> >> > away.
-> >>
-> >> Because their drivers don't care to update the last busy mark!?
-> >
-> > Nope. Without that devices may never resume at all so the drivers
-> > can't do anything about it.
-> 
-> I don't get it. Why not? Because of another abuse of the runtime PM API?
+IO-domain handling is part of the general register files, so should live
+under the grf directly. This change allows the grf to be a simple-mfd and
+the io-domains fetching the syscon regmap from that parent-node.
 
-I think you should be able to test this case in your test driver by
-calling pm_runtime_resume() for your test driver after your
-test drive has autosuspended. Probably you need some delayed_work to
-do this in your test driver unless you have some test bus to go with it.
+The old binding is of course preserved, though deprecated.
 
-> Or we should probably continue to focus on fixing the regression. :-)
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ Documentation/devicetree/bindings/power/rockchip-io-domain.txt |  4 +++-
+ drivers/power/avs/rockchip-io-domain.c                         | 10 +++++++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-Naturally we should fix up things yeah :) Having a test driver
-that works on any architecture sure makes things easier to verify.
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index b8627e7..7ed5518 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -35,8 +35,10 @@ Required properties:
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
+   - "rockchip,rk3368-io-voltage-domain" for rk3368
+   - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
+-- rockchip,grf: phandle to the syscon managing the "general register files"
+ 
++Deprecated properties:
++- rockchip,grf: phandle to the syscon managing the "general register files"
++    Systems should move the io-domains to a sub-node of the grf simple-mfd.
+ 
+ You specify supplies using the standard regulator bindings by including
+ a phandle the relevant regulator.  All specified supplies must be able
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 8099456..a5a07d8 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -278,6 +278,7 @@ static int rockchip_iodomain_probe(struct platform_device *pdev)
+ 	struct device_node *np = pdev->dev.of_node;
+ 	const struct of_device_id *match;
+ 	struct rockchip_iodomain *iod;
++	struct device *parent;
+ 	int i, ret = 0;
+ 
+ 	if (!np)
+@@ -293,7 +294,14 @@ static int rockchip_iodomain_probe(struct platform_device *pdev)
+ 	match = of_match_node(rockchip_iodomain_match, np);
+ 	iod->soc_data = (struct rockchip_iodomain_soc_data *)match->data;
+ 
+-	iod->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
++	parent = pdev->dev.parent;
++	if (parent && parent->of_node) {
++		iod->grf = syscon_node_to_regmap(parent->of_node);
++	} else {
++		dev_dbg(&pdev->dev, "falling back to old binding\n");
++		iod->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
++	}
++
+ 	if (IS_ERR(iod->grf)) {
+ 		dev_err(&pdev->dev, "couldn't find grf regmap\n");
+ 		return PTR_ERR(iod->grf);
+-- 
+2.6.4
 
-Regards,
-
-Tony
