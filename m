@@ -1,70 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 9/10] cpufreq: governor: Rearrange governor data structures
-Date: Fri, 05 Feb 2016 23:47:55 +0100
-Message-ID: <2480267.pVUasc5mK9@vostro.rjw.lan>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <13133705.tMsel709A1@vostro.rjw.lan> <20160205091357.GL21792@vireshk>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 1/5] PM / AVS: rockchip-io: make io-domains a child of the GRF
+Date: Fri, 05 Feb 2016 14:47:08 -0800
+Message-ID: <7hio22bwr7.fsf@baylibre.com>
+References: <1454707218-23676-1-git-send-email-heiko@sntech.de>
+	<1454707218-23676-2-git-send-email-heiko@sntech.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47047 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751035AbcBEWqu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:46:50 -0500
-In-Reply-To: <20160205091357.GL21792@vireshk>
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:36810 "EHLO
+	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753976AbcBEWrK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Feb 2016 17:47:10 -0500
+Received: by mail-pf0-f177.google.com with SMTP id n128so75397591pfn.3
+        for <linux-pm@vger.kernel.org>; Fri, 05 Feb 2016 14:47:10 -0800 (PST)
+In-Reply-To: <1454707218-23676-2-git-send-email-heiko@sntech.de> (Heiko
+	Stuebner's message of "Fri, 5 Feb 2016 22:20:14 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Heiko Stuebner <heiko@sntech.de>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, sjoerd.simons@collabora.co.uk, dianders@chromium.org, david.wu@rock-chips.com
 
-On Friday, February 05, 2016 02:43:57 PM Viresh Kumar wrote:
-> On 05-02-16, 03:21, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The struct policy_dbs_info objects representing per-policy governor
-> > data are not accessible directly from the corresponding policy
-> > objects.  To access them, one has to get a pointer to the
-> > struct cpu_dbs_info of policy->cpu and use the "shared" field of
-> > that which isn't really straightforward.
-> > 
-> > To address that rearrange the governor data structures so the
-> > governor_data pointer in struct cpufreq_policy will point to
-> > struct policy_dbs_info and that will contain a pointer to
-> > struct dbs_data.
-> 
-> IMHO, this patch has done way too much over what's mentioned here.
-> 
-> > Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> > @@ -297,16 +298,22 @@ static int alloc_policy_dbs_info(struct
-> >  	/* Allocate memory for the common information for policy->cpus */
-> >  	policy_dbs = kzalloc(sizeof(*policy_dbs), GFP_KERNEL);
-> >  	if (!policy_dbs)
-> > -		return -ENOMEM;
-> > -
-> > -	/* Set policy_dbs for all CPUs, online+offline */
-> > -	for_each_cpu(j, policy->related_cpus)
-> > -		gov->get_cpu_cdbs(j)->shared = policy_dbs;
-> > +		return NULL;
-> >  
-> > +	policy_dbs->policy = policy;
-> 
-> Value of policy_dbs->policy was used to verify the state machine of
-> the governor and so was updated only in start/stop.
-> 
-> You have moved it to INIT first (which shouldn't have been part of
-> this patch at the least),
+Heiko Stuebner <heiko@sntech.de> writes:
 
-Why?
+> IO-domain handling is part of the general register files, so should live
+> under the grf directly. This change allows the grf to be a simple-mfd and
+> the io-domains fetching the syscon regmap from that parent-node.
+>
+> The old binding is of course preserved, though deprecated.
+>
+> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 
-> and then there is no reasoning given on why
-> that isn't required as part of the state machine now, which I believe
-> is still required the way it was.
+Acked-by: Kevin Hilman <khilman@baylibre.com>
 
-No, it isn't required.  The whole "state machine" isn't required IMO.
-
-The only user of this is the cpufreq core, so why does the code here have to
-double check what the core is doing?
-
-Thanks,
-Rafael
-
+> ---
+>  Documentation/devicetree/bindings/power/rockchip-io-domain.txt |  4 +++-
+>  drivers/power/avs/rockchip-io-domain.c                         | 10 +++++++++-
+>  2 files changed, 12 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+> index b8627e7..7ed5518 100644
+> --- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+> +++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+> @@ -35,8 +35,10 @@ Required properties:
+>    - "rockchip,rk3288-io-voltage-domain" for rk3288
+>    - "rockchip,rk3368-io-voltage-domain" for rk3368
+>    - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
+> -- rockchip,grf: phandle to the syscon managing the "general register files"
+>  
+> +Deprecated properties:
+> +- rockchip,grf: phandle to the syscon managing the "general register files"
+> +    Systems should move the io-domains to a sub-node of the grf simple-mfd.
+>  
+>  You specify supplies using the standard regulator bindings by including
+>  a phandle the relevant regulator.  All specified supplies must be able
+> diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+> index 8099456..a5a07d8 100644
+> --- a/drivers/power/avs/rockchip-io-domain.c
+> +++ b/drivers/power/avs/rockchip-io-domain.c
+> @@ -278,6 +278,7 @@ static int rockchip_iodomain_probe(struct platform_device *pdev)
+>  	struct device_node *np = pdev->dev.of_node;
+>  	const struct of_device_id *match;
+>  	struct rockchip_iodomain *iod;
+> +	struct device *parent;
+>  	int i, ret = 0;
+>  
+>  	if (!np)
+> @@ -293,7 +294,14 @@ static int rockchip_iodomain_probe(struct platform_device *pdev)
+>  	match = of_match_node(rockchip_iodomain_match, np);
+>  	iod->soc_data = (struct rockchip_iodomain_soc_data *)match->data;
+>  
+> -	iod->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
+> +	parent = pdev->dev.parent;
+> +	if (parent && parent->of_node) {
+> +		iod->grf = syscon_node_to_regmap(parent->of_node);
+> +	} else {
+> +		dev_dbg(&pdev->dev, "falling back to old binding\n");
+> +		iod->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
+> +	}
+> +
+>  	if (IS_ERR(iod->grf)) {
+>  		dev_err(&pdev->dev, "couldn't find grf regmap\n");
+>  		return PTR_ERR(iod->grf);
