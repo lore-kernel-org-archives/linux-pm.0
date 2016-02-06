@@ -1,59 +1,86 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH v2] power: bq27xxx_battery: Restore device name
-Date: Sat, 6 Feb 2016 11:35:49 +0100
-Message-ID: <201602061135.49665@pali>
-References: <56B0A318.9060306@gmail.com> <1454417257-10992-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/10] cpufreq: governor: ondemand/conservative data structures rework
+Date: Sat, 06 Feb 2016 13:44:03 +0100
+Message-ID: <1637173.en0L0YzDpX@vostro.rjw.lan>
+References: <3705929.bslqXH980s@vostro.rjw.lan> <9008098.QDD8C89zDx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3756145.XszZvKC3sU";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34179 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbcBFKfx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Feb 2016 05:35:53 -0500
-In-Reply-To: <1454417257-10992-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9008098.QDD8C89zDx@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nextPart3756145.XszZvKC3sU
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Friday, February 05, 2016 03:07:27 AM Rafael J. Wysocki wrote:
+> On Thursday, February 04, 2016 12:12:52 AM Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > A few days ago I looked at the common code used by the ondemand and conservative
+> > governors because of the deadlock issue that Viresh has addressed recently
+> > (http://marc.info/?l=linux-pm&m=145450832814058&w=4) and it occurred to me
+> > that the whole thing was really too tangled and might be made easier to follow
+> > at least.  I started to work on this and ended up with the following series.
+> > 
+> > I'm not really going to stop here, but first, I'd like to let everybody know
+> > that this is happening and second, I'll need to rebase these patches on the
+> > ones from Viresh (in the series linked above), but that may take some time
+> > and I don't want to sit on them for all that long.
+> > 
+> > Overall, I'd like the governor code to be cleaner and easier to follow, so we can
+> > move at least some parts of governor work to utilization update callbacks (invoked
+> > by the scheduler) or to at least to irq_work so as to reduce the usage of process
+> > context in cpufreq to absolute minimum.  That's the plan for the future, but for
+> > now this is just a major cleanup.
+> > 
+> > [1/11] Clean up the way in which the default and fallback governors are set up.
+> > [2/11] Use a common global mutex for dbs_data protection.
+> > [3/11] Use common global pointer to dbs_data for system-wide governors.
+> > [4/11] Avoid passing dbs_data pointers to functions that can get them by themselves.
+> > [5/11] Make struct governor be a member of struct common_dbs_data.
+> > [6/11] Rename struct common_dbs_data to struct dbs_governor.
+> > [7/11] Rework cpufreq_governor_dbs() so it can be used as a governor callback directly.
+> > [8/11] Drop the dbs_governor (former cdata) pointer from struct dbs_data.
+> > [9/11] Rename struct cpu_common_dbs_info to struct policy_dbs_info.
+> > [10/11] Rearrange data structures so policy->governor_data points to struct policy_dbs_info.
+> > [11/11] Drop the second argument of dbs_check_cpu().
+> > 
+> > The patches are on top of 4.5-rc2 with my earlier series replacing timers with
+> > utilization update callbacks (http://marc.info/?l=linux-kernel&m=145410842801883&w=4)
+> > applied.
+> 
+> Some bugs fixed, some comments addressed.  It's time for a v2. :-)
+> 
+> The most significant difference from the previous one is that I've dropped patch
+> [3/11] (so there are 10 of them in the series now) due to a problem with it pointed
+> out by Viresh.  Fortunately, this particular one was completely not essential and
+> the dependencies on it were rather cosmetic.
+> 
+> In addition to that I've rebased the series on top of
+> https://patchwork.kernel.org/patch/8229901/ as that differs from its previous
+> version quite a bit.
+> 
+> I've already queued up [1/10] for 4.6 as it seems totally uncontroversial.
+> 
+> The whole series (along with some patches it depends on) is available from the
+> git branch at
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-cpufreq-rjw
+> 
+> in case someone wants to try it.  I've tested it (very lightly) on an x86 laptop
+> with the ACPI cpufreq driver and the ondemand governor.
 
-On Tuesday 02 February 2016 13:47:37 Ivaylo Dimitrov wrote:
-> Patch <703df6c097956d17a818e63961c82e8e9eef9fef> ("power:
-> bq27xxx_battery: Reorganize I2C into a module") has removed the
-> device name numbering from bq27xxx_battery_i2c_probe. Fix that by
-> restoring the code.
->=20
-> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+I'm going to tentatively queue up patches [2-8,10/10] with Viresh's ACKs (thanks
+Viresh!) for 4.6 (tentatively, because they depend on the timers elimination
+series which is still under ongoing review, but that seems to be reaching
+conclusion).
 
-=46ixes: 703df6c097956d17a818e63961c82e8e9eef9fef
-Reviewed-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-Tested-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+Patches [8,10/10] needed a non-trivial rebase, so I'll post the new versions
+shortly for completeness.
 
-Please apply this patch and backport to stable kernels with already has=20
-patch 703df6c097956d17a818e63961c82e8e9eef9fef.
+I'm going to rework patch [9/10] on top of that into a few separate patches
+that will hopefully be easier to digest.
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart3756145.XszZvKC3sU
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAla1zIUACgkQi/DJPQPkQ1IKpACffa/ADbsu6Av07WTkNE+WgGNm
-ffwAoJtOjfhn9kLasUWxodSC3f1moZcc
-=BW2A
------END PGP SIGNATURE-----
-
---nextPart3756145.XszZvKC3sU--
+Thanks,
+Rafael
