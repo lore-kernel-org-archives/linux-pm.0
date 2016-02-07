@@ -1,43 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 10/10] cpufreq: governor: Drop cpu argument from
- dbs_check_cpu()
-Date: Sun, 7 Feb 2016 15:02:38 +0530
-Message-ID: <20160207093238.GD19059@vireshk>
-References: <3705929.bslqXH980s@vostro.rjw.lan>
- <9008098.QDD8C89zDx@vostro.rjw.lan>
- <2367498.ClbHvSsNAg@vostro.rjw.lan>
- <3908268.r5qEEZP0qG@vostro.rjw.lan>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Sun, 7 Feb 2016 17:52:12 +0530
+Message-ID: <20160207122212.GA3808@vireshk>
+References: <56B4D4BE.2040008@free.fr>
+ <3308645.nrPBoahQ2V@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:34668 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753453AbcBGJcm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Feb 2016 04:32:42 -0500
-Received: by mail-pf0-f178.google.com with SMTP id o185so93492114pfb.1
-        for <linux-pm@vger.kernel.org>; Sun, 07 Feb 2016 01:32:42 -0800 (PST)
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35302 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbcBGMWS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Feb 2016 07:22:18 -0500
+Received: by mail-pa0-f49.google.com with SMTP id ho8so59143132pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 07 Feb 2016 04:22:17 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <3908268.r5qEEZP0qG@vostro.rjw.lan>
+In-Reply-To: <3308645.nrPBoahQ2V@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On 06-02-16, 13:50, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Since policy->cpu is always passed as the second argument to
-> dbs_check_cpu(), it is not really necessary to pass it, because
-> the function can obtain that value via its first argument just fine.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Changes from v2:
-> - Rebase on top of https://patchwork.kernel.org/patch/8241231/
->   and on the v3 of [8/10] without [9/10].
+On 05-02-16, 23:24, Arnd Bergmann wrote:
+> We no longer call platform_device_register_simple() from platform code, at least
+> for new platforms, and we should probably remove the code from the existing
+> platforms that still do it. I forget what the replacement was, but I'm not
+> going to take this version. Viresh should be able to help you do it the right
+> way.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+We thought initially that opp-v2's compatible string can be used to probe the
+drivers, but that was denied later and all we do today is add platform devices
+for cpufreq.
+
+What do you have in mind Arnd ?
 
 -- 
 viresh
