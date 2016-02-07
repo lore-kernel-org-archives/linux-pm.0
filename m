@@ -1,42 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/3] cpufreq: governor: Data structure rearrangement
-Date: Sun, 07 Feb 2016 16:22:49 +0100
-Message-ID: <2998470.K7oslgfuja@vostro.rjw.lan>
-References: <3705929.bslqXH980s@vostro.rjw.lan> <9008098.QDD8C89zDx@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3 v5] cpufreq: governor: Replace timers with
+ utilization update callbacks
+Date: Sun, 7 Feb 2016 21:06:30 +0530
+Message-ID: <20160207153630.GE3808@vireshk>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <1486401.1RcnnVKZNP@vostro.rjw.lan>
+ <2848076.UWJmIl2O1K@vostro.rjw.lan>
+ <2448026.UXsVxjJmrX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58722 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753902AbcBGPYH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Feb 2016 10:24:07 -0500
-In-Reply-To: <9008098.QDD8C89zDx@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2448026.UXsVxjJmrX@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
 
-Hi,
+On 07-02-16, 15:50, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Instead of using a per-CPU deferrable timer for queuing up governor
+> work items, register a utilization update callback that will be
+> invoked from the scheduler on utilization changes.
+> 
+> The sampling rate is still the same as what was used for the
+> deferrable timers and the added irq_work overhead should be offset by
+> the eliminated timers overhead, so in theory the functional impact of
+> this patch should not be significant.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> 
+> Changes from v4:
+> - Moved init_irq_work() to alloc_common_dbs_info() so it is done along with
+>   the INIT_WORK() on the main work structure (which seems more logical to me).
+> - Added the ACK from Viresh (in the hope that it still applied).
 
-This was part of my recent cleanup series
-(http://marc.info/?l=linux-pm&m=145463901630950&w=4), but Viresh had a good
-point about the patch doing too much and possibly going too far, so I've
-reworked it into a series of three smaller patches and dropped some more
-aggressive changes.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-[1/3] simplifies cpufreq_governor_limits() to access the policy via its
-      argument directly.
-[2/3] rearranges the data structures so policy->governor_data points to the
-      struct policy_dbs corresponding to that policy and the latter points
-      to a struct dbs_data.
-[3/3] makes the initialization and cleanup of struct cpu_dbs_info more
-      symmetrical.
-
-Patches are on top of my bleeding-edge branch (and there is a separate
-pm-cpufreq-test branch with cpufreq patches only in case someone wants/needs
-to test those alone).
-
-Thanks,
-Rafael
-
+-- 
+viresh
