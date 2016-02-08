@@ -1,49 +1,36 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: governor: Drop pointless goto from cpufreq_governor_init()
-Date: Mon, 08 Feb 2016 23:57:22 +0100
-Message-ID: <121264863.5TXTuENuar@vostro.rjw.lan>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 16/16] cpufreq: dt: No need to allocate resources
+ anymore
+Date: Mon, 8 Feb 2016 14:58:11 -0800
+Message-ID: <20160208225811.GH10791@codeaurora.org>
+References: <cover.1453965717.git.viresh.kumar@linaro.org>
+ <6c45d5257ba11485719d3cb3a795ccb6ca1670d5.1453965717.git.viresh.kumar@linaro.org>
+ <20160202061228.GE31828@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:49910 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755975AbcBHW6M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 17:58:12 -0500
+Content-Disposition: inline
+In-Reply-To: <20160202061228.GE31828@vireshk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, open list <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 02/02, Viresh Kumar wrote:
+> +	name = find_supply_name(cpu_dev);
+> +	if (IS_ERR(name))
+> +		return PTR_ERR(name);
+> +
 
-It is silly to jump around "return 0", so don't do that.
+Same IS_ERR question as before. Otherwise the patch looks ok.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-On top of the bleeding-edge branch of linux-pm.git.
-
-Thanks,
-Rafael
-
----
- drivers/cpufreq/cpufreq_governor.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -394,12 +394,11 @@ static int cpufreq_governor_init(struct
- 
- 	ret = sysfs_create_group(get_governor_parent_kobj(policy),
- 				 get_sysfs_attr(gov));
--	if (ret)
--		goto reset_gdbs_data;
-+	if (!ret)
-+		return 0;
- 
--	return 0;
-+	/* Failure, so roll back. */
- 
--reset_gdbs_data:
- 	policy->governor_data = NULL;
- 
- 	if (!have_governor_per_policy())
+> +	if (!name)
+> +		return 0;
+>  
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
