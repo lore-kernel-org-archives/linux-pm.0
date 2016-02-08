@@ -1,42 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with utilization
- update callbacks
-Date: Mon, 8 Feb 2016 13:52:28 +0100
-Message-ID: <CAJZ5v0gVffRb33CJcrTY5KEPY04MQNp=uqsGFwMevZAEuYBGfg@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<20160207091040.GA6112@vireshk>
-	<1855005.ZFAA5ekheo@vostro.rjw.lan>
-	<2172360.cldhrkXzeh@vostro.rjw.lan>
-	<20160208115248.GC8294@vireshk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 00/13] cpufreq: governors: Fix ABBA lockups
+Date: Mon, 8 Feb 2016 18:24:59 +0530
+Message-ID: <20160208125459.GG8294@vireshk>
+References: <cover.1454931188.git.viresh.kumar@linaro.org>
+ <56B88F4D.2030307@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160208115248.GC8294@vireshk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:36751 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbcBHMzD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 07:55:03 -0500
+Received: by mail-pa0-f42.google.com with SMTP id yy13so73372245pab.3
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 04:55:02 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <56B88F4D.2030307@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 
-On Mon, Feb 8, 2016 at 12:52 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 08-02-16, 03:08, Rafael J. Wysocki wrote:
->> Moreover, update_sampling_rate() doesn't need to walk the cpu_dbs_infos,
->> it may walk policies instead.  Like after the (untested) appended patch.
->>
->> Then, if we have a governor_data_lock in struct policy, we can use that
->> to protect policy_dbs while it is being access there and we're done.
->>
->> I'll try to prototype something along these lines tomorrow.
->
-> I have solved that in a different way, and dropped the lock from
-> update_sampling_rate(). Please see if that looks good.
+On 08-02-16, 18:21, Shilpasri G Bhat wrote:
+> Hi,
+> 
+> On 02/08/2016 05:09 PM, Viresh Kumar wrote:
+> > Hi Rafael,
+> > 
+> > Things look much much better now. I have rebased this series over
+> > pm/bleeding-edge, that has all your patches.
+> > 
+> > I have moved ahead and done few more changes in this series, that should
+> > get rid of all the lockdeps we were getting earlier, that includes
+> > fixing lockdep issue in update_sampling_rate() that we were chasing.
+> > 
+> > These are pushed here again:
+> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
+> > 
+> > @Juri/Shilpa: Can you please confirm if all the issues got resolved now
+> > ?
+> 
+> I have tested this patchset on Power8 box and did not find any lockdep warnings.
 
-Well, almost.
+Awesome news Shilpa. Thanks a lot for helping us out :)
 
-I like the list approach, but you need to be careful about it.  Let me
-comment more on the patches in the series.
-
-I have a gut feeling that my idea of walking policies will end up
-being simpler in the end, but let's see. :-)
-
-Thanks,
-Rafael
+-- 
+viresh
