@@ -1,46 +1,41 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with utilization
- update callbacks
-Date: Mon, 8 Feb 2016 14:40:39 +0100
-Message-ID: <CAJZ5v0hGHUSUnQmr+uQHjS-4xHL8PFXmMDJ-e2ShxPxH0hPFAA@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<20160207091040.GA6112@vireshk>
-	<1855005.ZFAA5ekheo@vostro.rjw.lan>
-	<2172360.cldhrkXzeh@vostro.rjw.lan>
-	<20160208115248.GC8294@vireshk>
-	<CAJZ5v0gVffRb33CJcrTY5KEPY04MQNp=uqsGFwMevZAEuYBGfg@mail.gmail.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 4/6] arm64: Enable dynamic CPU capacity initialization
+Date: Mon, 8 Feb 2016 13:41:25 +0000
+Message-ID: <56B89B05.4090207@arm.com>
+References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
+ <1454500799-18451-5-git-send-email-juri.lelli@arm.com> <56B889F7.306@arm.com>
+ <20160208131320.GA7265@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gVffRb33CJcrTY5KEPY04MQNp=uqsGFwMevZAEuYBGfg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:60839 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753388AbcBHNl3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Feb 2016 08:41:29 -0500
+In-Reply-To: <20160208131320.GA7265@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com
 
-On Mon, Feb 8, 2016 at 1:52 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Mon, Feb 8, 2016 at 12:52 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 08-02-16, 03:08, Rafael J. Wysocki wrote:
->>> Moreover, update_sampling_rate() doesn't need to walk the cpu_dbs_infos,
->>> it may walk policies instead.  Like after the (untested) appended patch.
->>>
->>> Then, if we have a governor_data_lock in struct policy, we can use that
->>> to protect policy_dbs while it is being access there and we're done.
->>>
->>> I'll try to prototype something along these lines tomorrow.
->>
->> I have solved that in a different way, and dropped the lock from
->> update_sampling_rate(). Please see if that looks good.
->
-> Well, almost.
->
-> I like the list approach, but you need to be careful about it.  Let me
-> comment more on the patches in the series.
->
-> I have a gut feeling that my idea of walking policies will end up
-> being simpler in the end, but let's see. :-)
+On 08/02/16 13:13, Mark Brown wrote:
+> On Mon, Feb 08, 2016 at 12:28:39PM +0000, Dietmar Eggemann wrote:
+>> On 03/02/16 11:59, Juri Lelli wrote:
+> 
+>>> +bool arch_wants_init_cpu_capacity(void)
+>>> +{
+>>> +	return true;
+> 
+>> Isn't this a little bit too simple? Not every ARM/ARM64 platform is a
+>> heterogeneous one.
+> 
+> Does it matter?  Is there any problem with doing the callibration and
+> having it say that all the CPUs performs very similarly?  My
+> understanding was that this was simply saying it was worth checking to
+> see if there was some asymmetry.
+> 
 
-Well, my gut feeling seems to have been incorrect, as often happens.
+No, the calibration would work on any platform. I can see your point,
+you want to have this feature not depend on dt.
 
-Thanks,
-Rafael
