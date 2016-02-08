@@ -1,32 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 01/13] cpufreq: governor: Create generic macro for
- global tuners
-Date: Mon, 8 Feb 2016 17:33:14 +0100
-Message-ID: <CAJZ5v0jndrALsqo6KSDCUNchn-jK45=UwjcG4_56u5SLQ50pHA@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH V3 00/13] cpufreq: governors: Fix ABBA lockups
+Date: Mon, 8 Feb 2016 16:39:04 +0000
+Message-ID: <20160208163904.GN11415@e106622-lin>
 References: <cover.1454931188.git.viresh.kumar@linaro.org>
-	<85b57a75b97bb7d900c9c7323e2e3e03c3d0e8d1.1454931188.git.viresh.kumar@linaro.org>
+ <56B88F4D.2030307@linux.vnet.ibm.com>
+ <20160208125459.GG8294@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <85b57a75b97bb7d900c9c7323e2e3e03c3d0e8d1.1454931188.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20160208125459.GG8294@vireshk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 8, 2016 at 12:39 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Some tunables are present in governor specific structures, whereas one
-> (min_sampling_rate) is present in global 'struct dbs_data'.
+Hi,
 
-To me, the word "global" is not the best one to express that.
-"Common" would probably be better.  Or "generic" or similar.
+On 08/02/16 18:24, Viresh Kumar wrote:
+> On 08-02-16, 18:21, Shilpasri G Bhat wrote:
+> > Hi,
+> > 
+> > On 02/08/2016 05:09 PM, Viresh Kumar wrote:
+> > > Hi Rafael,
+> > > 
+> > > Things look much much better now. I have rebased this series over
+> > > pm/bleeding-edge, that has all your patches.
+> > > 
+> > > I have moved ahead and done few more changes in this series, that should
+> > > get rid of all the lockdeps we were getting earlier, that includes
+> > > fixing lockdep issue in update_sampling_rate() that we were chasing.
+> > > 
+> > > These are pushed here again:
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
+> > > 
+> > > @Juri/Shilpa: Can you please confirm if all the issues got resolved now
+> > > ?
+> > 
+> > I have tested this patchset on Power8 box and did not find any lockdep warnings.
+> 
 
-It's just that these tunables apply to both governors (or "all"
-governors if you will) as opposed to some other ones specific to a
-particular governor type.
+Everything looks good on TC2/Juno as well :).
 
-So I'd suggest replacing "global" with "common" in the patch in the
-names of the macros too.
+Best,
 
-Thanks,
-Rafael
+- Juri
