@@ -1,144 +1,184 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
-Date: Mon, 08 Feb 2016 03:20:03 +0100
-Message-ID: <6941844.eWerKNtl0q@vostro.rjw.lan>
-References: <cover.1454507872.git.viresh.kumar@linaro.org> <3866963.E19P3EGEHd@vostro.rjw.lan> <20160205094925.GN21792@vireshk>
+Date: Mon, 08 Feb 2016 03:28:13 +0100
+Message-ID: <14418694.vd8JTxlxro@vostro.rjw.lan>
+References: <cover.1454507872.git.viresh.kumar@linaro.org> <3866963.E19P3EGEHd@vostro.rjw.lan> <56B558EB.6070408@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160205094925.GN21792@vireshk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Shilpa Bhat <shilpabhatppc@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55822 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753052AbcBHC1E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Feb 2016 21:27:04 -0500
+In-Reply-To: <56B558EB.6070408@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Shilpa Bhat <shilpabhatppc@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, February 05, 2016 03:19:25 PM Viresh Kumar wrote:
-> On 05-02-16, 04:54, Rafael J. Wysocki wrote:
+On Friday, February 05, 2016 06:22:35 PM Saravana Kannan wrote:
+> On 02/04/2016 07:54 PM, Rafael J. Wysocki wrote:
+> > On Thursday, February 04, 2016 07:18:32 PM Rafael J. Wysocki wrote:
+> >> On Thu, Feb 4, 2016 at 6:44 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+> >>> On 02/04/2016 09:43 AM, Saravana Kannan wrote:
+> >>>>
+> >>>> On 02/04/2016 03:09 AM, Viresh Kumar wrote:
+> >>>>>
+> >>>>> On 04-02-16, 00:50, Rafael J. Wysocki wrote:
+> >>>>>>
+> >>>>>> This is exactly right.  We've avoided one deadlock only to trip into
+> >>>>>> another one.
+> >>>>>>
+> >>>>>> This happens because update_sampling_rate() acquires
+> >>>>>> od_dbs_cdata.mutex which is held around cpufreq_governor_exit() by
+> >>>>>> cpufreq_governor_dbs().
+> >>>>>>
+> >>>>>> Worse yet, a deadlock can still happen without (the new)
+> >>>>>> dbs_data->mutex, just between s_active and od_dbs_cdata.mutex if
+> >>>>>> update_sampling_rate() runs in parallel with
+> >>>>>> cpufreq_governor_dbs()->cpufreq_governor_exit() and the latter wins
+> >>>>>> the race.
+> >>>>>>
+> >>>>>> It looks like we need to drop the governor mutex before putting the
+> >>>>>> kobject in cpufreq_governor_exit().
+> >>>>>
+> >>
+> >> [cut]
+> >>
+> >>>>
+> >>>> No no no no! Let's not open up this can of worms of queuing up the work
+> >>>> to handle a write to a sysfs file. It *MIGHT* work for this specific
+> >>>> tunable (I haven't bothered to analyze), but this makes it impossible to
+> >>>> return a useful/proper error value.
+> >>>
+> >>>
+> >>> Sent too soon. Not only that, but it can also cause the writes to the sysfs
+> >>> files to get processed in a different order and I don't know what other
+> >>> issues/races THAT will open up.
+> >>
+> >> Well, I don't like this too.
+> >>
+> >> I actually do have an idea about how to fix these deadlocks, but it is
+> >> on top of my cleanup series.
+> >>
+> >> I'll write more about it later today.
+> >
 > > Having actually posted that series again after cleaning it up I can say
 > > what I'm thinking about hopefully without confusing anyone too much.  So
 > > please bear in mind that I'm going to refer to this series below:
-> > 
+> >
 > > http://marc.info/?l=linux-pm&m=145463901630950&w=4
-> > 
+> >
 > > Also this is more of a brain dump rather than actual design description,
 > > so there may be holes etc in it.  Please let me know if you can see any.
-> > 
+> >
 > > The problem at hand is that policy->rwsem needs to be held around *all*
 > > operations in cpufreq_set_policy().  In particular, it cannot be dropped
 > > around invocations of __cpufreq_governor() with the event arg equal to
 > > _EXIT as that leads to interesting races.
-> > 
+> >
 > > Unfortunately, we know that holding policy->rwsem in those places leads
 > > to a deadlock with governor sysfs attributes removal in cpufreq_governor_exit().
-> > 
+> >
 > > Viresh attempted to fix this by avoiding to acquire policy->rwsem for governor
 > > attributes access (as holding it is not necessary for them in principle).  That
 > > was a nice try, but it turned out to be insufficient because of another deadlock
-> > scenario uncovered by it.
-> 
-> Not really.
-> 
-> The other deadlock wasn't uncovered by it, its just that Shilpa tested
-> directly after my patches and reported the issue. Later yesterday, she
-> was hitting the exactly same issue on pm/linux-next as well (i.e.
-> without my patches). And ofcourse Juri has also reported the same
-> issue on linux-next few days back.
-
-OK, fair enough.
-
-> > Namely, since the ondemand governor's update_sampling_rate()
+> > scenario uncovered by it.  Namely, since the ondemand governor's update_sampling_rate()
 > > acquires the governor mutex (called dbs_data_mutex after my patches mentioned
 > > above), it may deadlock with exactly the same piece of code in cpufreq_governor_exit()
 > > in almost exactly the same way.
-> 
-> Right.
-> 
+> >
 > > To avoid that other deadlock, we'd either need to drop dbs_data_mutex from
-> > update_sampling_rate(),
-> 
-> And my so called 'ugly' 8th patch tried to do just that :)
-> 
-> But as I also mentioned in reply to the update-util patchset of yours,
-> its possible somewhat.
-
-Yes, it should be possible and not even too difficult.
-
-> > or drop it for the removal of the governor sysfs
+> > update_sampling_rate(), or drop it for the removal of the governor sysfs
 > > attributes in cpufreq_governor_exit().  I don't think the former is an option
 > > at least at this point, so it looks like we pretty much have to do the latter.
-> > 
+> >
 > > With that in mind, I'd start with the changes made by Viresh (maybe without the
-> > first patch which really isn't essential here).
-> 
-> That was just to cleanup the macro mess a bit, nothing more. Over
-> that, I think the first 7 patches can be picked as it is without any
-> changes. Ofcourse they are required to be rebased over your 13
-> patches, if those are going in first :)
-
-Yes, please rebase.
-
-Also please skip the first one that was moving min_sampling_rate around,
-at least for now.
-
-As I said, we may be moving other attributes in the opposite direction,
-so two sets of macros may be necessary anyway.
-
-> > That is, introduce a separate
+> > first patch which really isn't essential here).  That is, introduce a separate
 > > kobject type for the governor attributes kobject and register that in
 > > cpufreq_governor_init().  The show/store callbacks for that kobject type won't
 > > acquire policy->rwsem so the first deadlock will be avoided.
-> > 
+> >
 > > But in addition to that, I'd drop dbs_data_mutex before the removal of governor
 > > sysfs attributes.  That actually happens in two places, in cpufreq_governor_exit()
 > > and in the error path of cpufreq_governor_init().
-> > 
+> >
 > > To that end, I'd move the locking from cpufreq_governor_dbs() to the functions
 > > called by it.  That should be readily doable and they can do all of the
 > > necessary checks themselves.  cpufreq_governor_dbs() would become a pure mux then,
 > > but that's not such a big deal.
-> > 
+> >
 > > With that, cpufreq_governor_exit() may just drop the lock before it does the
 > > final kobject_put().  The danger here is that the sysfs show/store callbacks of
 > > the governor attributes kobject may see invalid dbs_data for a while, after the
 > > lock has been dropped and before the kobject is deleted.  That may be addressed
 > > by checking, for example, the presence of the dbs_data's "tuners" pointer in those
 > > callbacks.  If it is NULL, they can simply return -EAGAIN or similar.
+> >
+> > Now, that means, though, that they need to acquire the same lock as
+> > cpufreq_governor_exit(), or they may see things go away while they are running.
+> > The simplest approach here would be to take dbs_data_mutex in them too, although
+> > that's a bit of a sledgehammer.  It might be better to have a per-policy lock
+> > in struct policy_dbs_info for that, for example, but then the governor attribute
+> > sysfs callbacks would need to get that object instead of dbs_data.
+> >
+> > On the flip side, it might be possible to migrate update_sampling_rate() to
+> > that lock too.  And maybe we can get rid of dbs_data_mutex even, who knows?
 > 
-> So you mean something like this (consider only !governor_per_policy
-> case with ondemand governor for now):
+> I'm glad you've analyzed it this far. So, the rest of my comments will 
+> be easier to understand.
 > 
-> exit()
+> I'm going to go back to my point of NOT doing the sysfs add/remove 
+> inside the governor at all (that includes cpufreq_governor.c) and doing 
+> it in cpufreq.c. That suggestion was confusing to explain/understand 
+> before when we were using policy rwsem inside the show/store ops for the 
+> governor attributes. Now that has been removed, my suggestion would be 
+> even easier/cleaner to implement/understand and you don't have to worry 
+> about ANY races in the governor.
+> 
+> I'll just talk about the have_governor_per_policy() case. It can be 
+> easily extended to the global case.
+> 
+> In cpufreq_governor.c:
+> cpufreq_governor_init(...)
 > {
->        lock-dbs_data_mutex;
->        ...
->        dbs_data->tuners = NULL; //so that sysfs files can return early
->        dbs_governor->gdbs_data = NULL; //For !governor_per_policy case
->        unlock-dbs_data_mutex;
-> 
->        /*
->         * Problem: Who is stopping us to set ondemand as governor for
->         * another policy, which can try create a kobject which will
->         * try to create sysfs directory at the same path ?
->         *
->         * Though another field in dbs_governor can be used to fix this
->         * I think, which needs to block the other INIT operation.
->         */
->         
->        kobject_put(dbs_data->kobj); //This should wait for all sysfs operations to end.
-> 
->        kfree(dbs_data);
+>   ...
+>   /* NOT kobject_init_and_add */
+>   kobject_init();
+>   /* New field */
+>   policy->gov_kobj = &dbs_data->kobj);
+>   ...
 > }
 > 
-> And the sysfs operations show/store need to take dbs_data_mutex() for
-> their entire operations.
+> In cpufreq.c:
+> __cpufreq_governor(...)
+> {
 > 
-> ??
+>     if (event == POLICY_EXIT) {
+>        kobject_put(policy->gov_kobj);
+>     }
+>     ret = policy->governor->governor(policy, event);
+>     if (event == POLICY_INIT) {
+>        kobj_add(policy->gov_kobj, policy->kobj, policy->governor->name);
+>     }
+> }
+> 
+> This guarantees that there can be no races of the governor specific data 
+> structures going away while being accessed from sysfs because the first 
+> thing we do once we decide to "kill" a governor is to remove the sysfs 
+> files and the accesses to governor data (and flush out all on going 
+> accesses) and THEN ask the governor to exit.
+> 
+> Thoughts?
 
-Yes, roughly.
+The core would then have to rely on the governor code to populate the gov_kobj
+field correctly which doesn't look really straightforward to me.  It is better
+if each code layer arranges the data structures it is going to use by itself.
 
-But it shouldn't be necessary after all, because dropping the mutex from
-update_sampling_rate() looks easier than I thought previously.
+Besides, ondemand and conservative are the only governors that use the governor
+kobject at all, so I'm not sure if that really belongs to the core.
 
 Thanks,
 Rafael
+
