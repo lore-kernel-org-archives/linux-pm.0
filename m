@@ -1,39 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with
- utilization update callbacks
-Date: Mon, 8 Feb 2016 17:22:48 +0530
-Message-ID: <20160208115248.GC8294@vireshk>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <20160207091040.GA6112@vireshk>
- <1855005.ZFAA5ekheo@vostro.rjw.lan>
- <2172360.cldhrkXzeh@vostro.rjw.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Mon, 08 Feb 2016 13:24:24 +0100
+Message-ID: <2425296.hvcP5NDLXy@wuerfel>
+References: <56B4D4BE.2040008@free.fr> <3308645.nrPBoahQ2V@wuerfel> <20160207122212.GA3808@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:36504 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbcBHLwv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 06:52:51 -0500
-Received: by mail-pf0-f170.google.com with SMTP id e127so13319186pfe.3
-        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 03:52:51 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <2172360.cldhrkXzeh@vostro.rjw.lan>
+Received: from mout.kundenserver.de ([212.227.126.135]:56606 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbcBHMYv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 07:24:51 -0500
+In-Reply-To: <20160207122212.GA3808@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On 08-02-16, 03:08, Rafael J. Wysocki wrote:
-> Moreover, update_sampling_rate() doesn't need to walk the cpu_dbs_infos,
-> it may walk policies instead.  Like after the (untested) appended patch.
+On Sunday 07 February 2016 17:52:12 Viresh Kumar wrote:
+> On 05-02-16, 23:24, Arnd Bergmann wrote:
+> > We no longer call platform_device_register_simple() from platform code, at least
+> > for new platforms, and we should probably remove the code from the existing
+> > platforms that still do it. I forget what the replacement was, but I'm not
+> > going to take this version. Viresh should be able to help you do it the right
+> > way.
 > 
-> Then, if we have a governor_data_lock in struct policy, we can use that
-> to protect policy_dbs while it is being access there and we're done.
+> We thought initially that opp-v2's compatible string can be used to probe the
+> drivers, but that was denied later and all we do today is add platform devices
+> for cpufreq.
 > 
-> I'll try to prototype something along these lines tomorrow.
+> What do you have in mind Arnd ?
+> 
 
-I have solved that in a different way, and dropped the lock from
-update_sampling_rate(). Please see if that looks good.
+Whatever you want to do in drivers/cpufreq that keeps this out of arch/arm/
 
--- 
-viresh
+As I have said numerous times, there is absolutely no point in having a
+platform device for this, but if you insist on having one, just write one
+file that has an early_initcall() function and move all the code creating
+those devices in there for platforms using DT, e.g. by matching on the
+root compatible string the same way the platform code does today.
+
+For new platforms, please come up with a way to not need that and create
+a generic binding that anyone can follow.
+
+	Arnd
