@@ -1,92 +1,70 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Mon, 8 Feb 2016 11:54:17 +0100
-Message-ID: <20160208105417.GD2220@tetsubishi>
-References: <56B204CB.60602@osg.samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="i7F3eY7HS/tUJxUd"
-Return-path: <linux-media-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <56B204CB.60602@osg.samsung.com>
-Sender: linux-media-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 00/13] cpufreq: governors: Fix ABBA lockups
+Date: Mon,  8 Feb 2016 17:09:14 +0530
+Message-ID: <cover.1454931188.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:36758 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbcBHLkD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 06:40:03 -0500
+Received: by mail-pa0-f50.google.com with SMTP id yy13so72535040pab.3
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 03:40:03 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
+Hi Rafael,
 
---i7F3eY7HS/tUJxUd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Things look much much better now. I have rebased this series over
+pm/bleeding-edge, that has all your patches.
 
-On Wed, Feb 03, 2016 at 10:46:51AM -0300, Javier Martinez Canillas wrote:
-> Hello Wolfram,
->=20
-> I've a issue with a I2C video decoder driver (drivers/media/i2c/tvp5150.c=
-).
->=20
-> In v4.5-rc1, the driver gets I2C read / writes timeouts when accessing the
-> device I2C registers:
->=20
-> tvp5150 1-005c: i2c i/o error: rc =3D=3D -110
-> tvp5150: probe of 1-005c failed with error -110
->=20
-> The driver used to work up to v4.4 so this is a regression in v4.5-rc1:
->=20
-> tvp5150 1-005c: tvp5151 (1.0) chip found @ 0xb8 (OMAP I2C adapter)
-> tvp5150 1-005c: tvp5151 detected.
->=20
-> I tracked down to commit 9f924169c035 ("i2c: always enable RuntimePM for
-> the adapter device") and reverting that commit makes things to work again.
->=20
-> The tvp5150 driver doesn't have runtime PM support but the I2C controller
-> driver does (drivers/i2c/busses/i2c-omap.c) FWIW.
->=20
-> I tried adding runtime PM support to tvp5150 (basically calling pm_runtime
-> enable/get on probe before the first I2C read to resume the controller) b=
-ut
-> that it did not work.
->=20
-> Not filling the OMAP I2C driver's runtime PM callbacks does not help eith=
-er.
->=20
-> Any hints about the proper way to fix this issue?
+I have moved ahead and done few more changes in this series, that should
+get rid of all the lockdeps we were getting earlier, that includes
+fixing lockdep issue in update_sampling_rate() that we were chasing.
 
-Asking linux-pm for help:
+These are pushed here again:
+git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
 
-The commit in question enables RuntimePM for the logical adapter device
-which sits between the HW I2C controller and the I2C client device. This
-adapter device has been used with pm_runtime_no_callbacks before
-enabling RPM. Now, Alan explained to me that "suspend events will
-propagate from the I2C clients all the way up to the adapter's parent."
-with RPM enabled for the adapter device. Which should be a no-op if the
-client doesn't do any PM at all? What do I miss?
+@Juri/Shilpa: Can you please confirm if all the issues got resolved now
+?
 
-Thanks,
+V2->V3:
+- The first patch from V2, that was moving min_sampling_rate to
+  per governor structure was dropped, as you suggested.
+- Also, I have moved common tunables to struct dbs_data now, which you
+  also suggested sometime back.
+- Last 5 patches are all new and fix rest of the issues we were facing.
 
-   Wolfram
+--
+viresh
 
+Viresh Kumar (13):
+  cpufreq: governor: Create generic macro for global tuners
+  cpufreq: governor: Move common tunables to 'struct dbs_data'
+  cpufreq: governor: New sysfs show/store callbacks for governor
+    tunables
+  cpufreq: governor: Drop unused macros for creating governor tunable
+    attributes
+  Revert "cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT"
+  cpufreq: Merge cpufreq_offline_prepare/finish routines
+  cpufreq: Call __cpufreq_governor() with policy->rwsem held
+  cpufreq: Remove cpufreq_governor_lock
+  cpufreq: governor: Move common sysfs tunables to cpufreq_governor.c
+  cpufreq: governor: No need to manage state machine now
+  cpufreq: governor: Keep list of policy_dbs within dbs_data
+  cpufreq: ondemand: Traverse list of policy_dbs in
+    update_sampling_rate()
+  cpufreq: conservative: Update sample_delay_ns immediately
 
---i7F3eY7HS/tUJxUd
-Content-Type: application/pgp-signature; name="signature.asc"
+ drivers/cpufreq/cpufreq.c              |  98 ++++++------
+ drivers/cpufreq/cpufreq_conservative.c | 143 ++++--------------
+ drivers/cpufreq/cpufreq_governor.c     | 266 +++++++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq_governor.h     | 156 ++++++++-----------
+ drivers/cpufreq/cpufreq_ondemand.c     | 241 +++++------------------------
+ include/linux/cpufreq.h                |   4 -
+ 6 files changed, 381 insertions(+), 527 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+-- 
+2.7.1.370.gb2aa7f8
 
-iQIcBAEBAgAGBQJWuHPZAAoJEBQN5MwUoCm2YTgP/Rf7A5fE0r5RO35C+SzKhqxf
-OfWaBW14ZyhelbuRFhGKc2MhnnSQ+5ndfb4hPmSY6pE/nxUsNsDNQWTKKrWOM41f
-5JiNeC+Mub1ybSXukWm58+l00WyIM79/30XeoO+mZWw1oeh3E0janTpbatCnZl7m
-n3kyOF1lfI7C/tlF3Q4CjKpQHjn2p237x9dzSBWKbvshx+Nc0eUpLgP1Ct0PgAdT
-MuGSY24gPDcQeKXTE8d1IcN+yh5NJkgX2cBpcjwpuIvC4TFfYLh8ElDt1Q5XmCZm
-k5eh41F92koZOY0Z1GN1uFd75fit2lmaee8O3/RS/FPEnr2y9GgEwQRYwavmfHaF
-RWjciIBz8hlLXO2zTo1Y6bayVP82/8nBLOw7bhitMt9s4qwyQgo1R8dNai2PzTVq
-hKFBzpIeRkyt30KP1KhSTWk+gQoc7kDOaUkNmqcAvGASSbUsPAhNScx15LT7d0KI
-w06IlsnrqsVIzPxjf8Xb+BgRi6zyDNFgOnjopS365fReM5WoiYEhvTnBWzRS9d8g
-lhBxUTcatOWmRHid5vJxaLfj2nftWCckRJajHkQHQJpYt6JQ2MA55pc1sfjQPONa
-docCUOZ7VwvVejTDCUo4ug1T0HZIYpTSsC/r+tqqXLsxGHjQ5fYi148wOcFLwq87
-Vsfe9nfyLQX8LhJ8lLoI
-=tpVa
------END PGP SIGNATURE-----
-
---i7F3eY7HS/tUJxUd--
