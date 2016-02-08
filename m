@@ -1,34 +1,49 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 15/16] cpufreq: dt: drop references to DT node
-Date: Mon, 8 Feb 2016 14:56:05 -0800
-Message-ID: <20160208225605.GG10791@codeaurora.org>
-References: <cover.1453965717.git.viresh.kumar@linaro.org>
- <b0f0134c9d2488db1971d7be4b8bcdc27356eee4.1453965717.git.viresh.kumar@linaro.org>
- <20160202061132.GD31828@vireshk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: governor: Drop pointless goto from cpufreq_governor_init()
+Date: Mon, 08 Feb 2016 23:57:22 +0100
+Message-ID: <121264863.5TXTuENuar@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160202061132.GD31828@vireshk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, open list <linux-kernel@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/02, Viresh Kumar wrote:
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Tue, 8 Sep 2015 17:34:26 +0530
-> Subject: [PATCH 08/20] cpufreq: dt: No need to fetch voltage-tolerance
-> 
-> Its already done by core and we don't need to get it anymore.  And so,
-> we don't need to get of node in cpufreq_init() anymore, move that to
-> find_supply_name() instead.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+It is silly to jump around "return 0", so don't do that.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+On top of the bleeding-edge branch of linux-pm.git.
+
+Thanks,
+Rafael
+
+---
+ drivers/cpufreq/cpufreq_governor.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -394,12 +394,11 @@ static int cpufreq_governor_init(struct
+ 
+ 	ret = sysfs_create_group(get_governor_parent_kobj(policy),
+ 				 get_sysfs_attr(gov));
+-	if (ret)
+-		goto reset_gdbs_data;
++	if (!ret)
++		return 0;
+ 
+-	return 0;
++	/* Failure, so roll back. */
+ 
+-reset_gdbs_data:
+ 	policy->governor_data = NULL;
+ 
+ 	if (!have_governor_per_policy())
