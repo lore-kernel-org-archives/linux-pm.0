@@ -1,48 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 09/13] cpufreq: governor: Move common sysfs tunables
- to cpufreq_governor.c
-Date: Mon, 8 Feb 2016 18:33:30 +0530
-Message-ID: <20160208130330.GH8294@vireshk>
-References: <cover.1454931188.git.viresh.kumar@linaro.org>
- <5934f94cccdd9bd512b9ebdb0fd7134aedc8f1b5.1454931189.git.viresh.kumar@linaro.org>
- <CAJZ5v0gwaO0yBWKODdEzMwYUGgQvoaBv8Qt9_yCSJub5P1ftMg@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Mon, 08 Feb 2016 14:10:31 +0100
+Message-ID: <22002072.L04zy0K2AP@wuerfel>
+References: <56B4D4BE.2040008@free.fr> <45004963.Im3DmqJ5ez@wuerfel> <20160208124127.GF8294@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:33919 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbcBHNDd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 08:03:33 -0500
-Received: by mail-pa0-f54.google.com with SMTP id uo6so74781019pac.1
-        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 05:03:33 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gwaO0yBWKODdEzMwYUGgQvoaBv8Qt9_yCSJub5P1ftMg@mail.gmail.com>
+Received: from mout.kundenserver.de ([217.72.192.75]:62408 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbcBHNK6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 08:10:58 -0500
+In-Reply-To: <20160208124127.GF8294@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On 08-02-16, 13:58, Rafael J. Wysocki wrote:
-> My most fundamental concern here is that attributes that don't apply
-> to a particular governor should not appear in sysfs at all when that
-> governor is in use (instead of appearing and always returning -EINVAL
+On Monday 08 February 2016 18:11:27 Viresh Kumar wrote:
+> On 08-02-16, 13:34, Arnd Bergmann wrote:
+> > Maybe add a opp-v3 compatible string?
+> 
+> How will that help?
+> 
+> The problem was that the compatibility string of "opp-v2" specifies
+> the way we need to parse the bindings and shouldn't be (ab)used to
+> probe a driver like cpufreq-dt. And so we got stuck.
 
-s/is in use/is not in use/ ??
+I don't remember the exact discussion, but the compatible string is
+exactly meant to do one thing: it tells you what you can or cannot do
+with one device.
 
-> which is sort of silly).
+I had not realized that we don't even have a compatible string
+for opp-v2, so if we are missing that, we obviously can't compare
+against that string.
 
-But who said that I have made them available always ? Sorry, I didn't
-understood your input.
+> > I really don't care what you
+> > match on, as long we don't need any code in arch/arm/ to create a
+> > device we don't need.
+> 
+> Sure.
+> 
+> > Don't add the device to DT, we really don't want that.
+> 
+> I agree.
+> 
+> > If there
+> > is too much opposition to looking at the cpus nodes in the initcall,
+> 
+> I didn't get this one, what can we do by looking at CPUs nodes ?
 
-I have just moved the show/store callbacks and the struct
-governor_attr definition to cpufreq_governor.c. And sysfs files are
-created only for the ones that are valid for a governor.
+I thought there was a compatible property in there that told us
+whether the operating-points-v2/cooling-min-level/#cooling-cells/...
+properties were considered valid.
 
-> That doesn't mean the common code cannot access them, though.  They
-> still can be present in the data structure, but it may be a good idea
-> to set them to special values clearly meaning "invalid" then.
+> > start with a whitelist for known machines, that at least keeps the
+> > existing behavior.
+> 
+> That can be a valid solution I would say, but that separate driver
+> (cpufreq-dt-device.c) needs to be changed for every new platform.
 
-Or are you saying that we should move all the tunables to dbs_data ?
+Until we can agree on a way to describe in the DT whether the opp
+properties are reliable or not.
 
--- 
-viresh
+	Arnd
