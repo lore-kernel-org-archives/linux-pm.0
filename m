@@ -1,53 +1,52 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 4/6] arm64: Enable dynamic CPU capacity initialization
-Date: Mon, 8 Feb 2016 12:28:39 +0000
-Message-ID: <56B889F7.306@arm.com>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-5-git-send-email-juri.lelli@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Mon, 8 Feb 2016 18:01:12 +0530
+Message-ID: <20160208123111.GE8294@vireshk>
+References: <56B4D4BE.2040008@free.fr>
+ <3308645.nrPBoahQ2V@wuerfel>
+ <20160207122212.GA3808@vireshk>
+ <2425296.hvcP5NDLXy@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60301 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbcBHM2o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Feb 2016 07:28:44 -0500
-In-Reply-To: <1454500799-18451-5-git-send-email-juri.lelli@arm.com>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:33200 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbcBHMbQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 07:31:16 -0500
+Received: by mail-pf0-f170.google.com with SMTP id q63so5444250pfb.0
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 04:31:15 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <2425296.hvcP5NDLXy@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, broonie@kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On 03/02/16 11:59, Juri Lelli wrote:
-> Define arch_wants_init_cpu_capacity() to return true; so that
-> cpufreq_init_cpu_capacity() can go ahead and profile CPU capacities
-> at boot time.
-
-[...]
-
->  
-> +bool arch_wants_init_cpu_capacity(void)
-> +{
-> +	return true;
-
-Isn't this a little bit too simple? Not every ARM/ARM64 platform is a
-heterogeneous one.
-
-You could add code to compare the cpu node 'compatible' properties
-(required) and only return true if they differ, which would let you
-detect uarch based heterogeneity.
-
-In case of max. frequency based heterogeneity (clusters consisting of
-same cpu types but running at different max. frequency), you're at the
-mercy of cpu node 'clock-frequency' properties (optional).
-We might argue that for these platforms, providing cpu node
-'clock-frequency' properties is necessary.
-The 'struct cpu_efficiency table_efficiency[]' based approach in ARM
-already faces this problem.
-
-> +}
-> +
->  static int __init get_cpu_for_node(struct device_node *node)
->  {
->  	struct device_node *cpu_node;
+On 08-02-16, 13:24, Arnd Bergmann wrote:
+> Whatever you want to do in drivers/cpufreq that keeps this out of arch/arm/
 > 
+> As I have said numerous times, there is absolutely no point in having a
+> platform device for this, but if you insist on having one
+
+No, I don't insist on that. I just hate it.
+
+But the problem was that we never agreed to a way, by which we could
+have probed cpufreq-dt. We were talking about compatible string from
+'opp-v2' earlier, but that was soon discarded.
+
+> just write one
+> file that has an early_initcall() function and move all the code creating
+> those devices in there for platforms using DT, e.g. by matching on the
+> root compatible string the same way the platform code does today.
+>
+> For new platforms, please come up with a way to not need that and create
+> a generic binding that anyone can follow.
+
+Do you have any suggestions ?
+- We aren't allowed to (re)use opp-v2 compatibility string
+- We can't add a DT node for virtual device - cpufreq
+
+What else can be done ?
+
+-- 
+viresh
