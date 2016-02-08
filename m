@@ -1,41 +1,66 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 4/6] arm64: Enable dynamic CPU capacity initialization
-Date: Mon, 8 Feb 2016 13:41:25 +0000
-Message-ID: <56B89B05.4090207@arm.com>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <1454500799-18451-5-git-send-email-juri.lelli@arm.com> <56B889F7.306@arm.com>
- <20160208131320.GA7265@sirena.org.uk>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Mon, 08 Feb 2016 14:45:23 +0100
+Message-ID: <7910928.pmJjZiV1Lk@wuerfel>
+References: <56B4D4BE.2040008@free.fr> <22002072.L04zy0K2AP@wuerfel> <20160208131625.GI8294@vireshk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60839 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753388AbcBHNl3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Feb 2016 08:41:29 -0500
-In-Reply-To: <20160208131320.GA7265@sirena.org.uk>
+Received: from mout.kundenserver.de ([212.227.17.13]:62964 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbcBHNvA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 08:51:00 -0500
+In-Reply-To: <20160208131625.GI8294@vireshk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On 08/02/16 13:13, Mark Brown wrote:
-> On Mon, Feb 08, 2016 at 12:28:39PM +0000, Dietmar Eggemann wrote:
->> On 03/02/16 11:59, Juri Lelli wrote:
+On Monday 08 February 2016 18:46:25 Viresh Kumar wrote:
+> On 08-02-16, 14:10, Arnd Bergmann wrote:
+> > I don't remember the exact discussion, but the compatible string is
+> > exactly meant to do one thing: it tells you what you can or cannot do
+> > with one device.
 > 
->>> +bool arch_wants_init_cpu_capacity(void)
->>> +{
->>> +	return true;
+> Yeah, and many people argued that we can't add two values to that
+> string like: "cpufreq-dt" and "cpufreq-big-little" for same kind of
+> OPP bindings, as a different compatible string should be required only
+> if there is a difference in the bindings.
 > 
->> Isn't this a little bit too simple? Not every ARM/ARM64 platform is a
->> heterogeneous one.
+> For example, if a platform (like ST did recently) adds more
+> platform-specific properties, then they can define a new value of
+> those strings.
+>
+> > I had not realized that we don't even have a compatible string
+> > for opp-v2, so if we are missing that, we obviously can't compare
+> > against that string.
 > 
-> Does it matter?  Is there any problem with doing the callibration and
-> having it say that all the CPUs performs very similarly?  My
-> understanding was that this was simply saying it was worth checking to
-> see if there was some asymmetry.
-> 
+> The binding says that we can have a string, but its not compulsory
+> yet. Its only used by STM as they have some specific properties of
+> their own.
 
-No, the calibration would work on any platform. I can see your point,
-you want to have this feature not depend on dt.
+Right, so when those properties are required for that machine,
+that makes it incompatible with the generic driver, and it should
+really have its own compatible string.
 
+That's why I said we could introduce a 'v3' with the meaning
+it should have had to start with: compatible means actually
+compatible with the driver.
+
+I guess we could also start a blacklist and list all machines
+that are not compatible with the generic binding before falling
+back to using that driver.
+
+> > I thought there was a compatible property in there that told us
+> > whether the operating-points-v2/cooling-min-level/#cooling-cells/...
+> > properties were considered valid.
+> 
+> Yeah, "OPP-v2" DT node can have a compatible string, which isn't
+> compulsory as of now, but because of the reasons mentioned earlier, we
+> can't use it to differentiate between drivers that use exactly same
+> version of bindings.
+
+Right, unless we introduce a new compatible string for future machines.
+
+	Arnd
