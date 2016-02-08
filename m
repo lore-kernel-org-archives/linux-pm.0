@@ -1,126 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 04/13] cpufreq: governor: Drop unused macros for creating governor tunable attributes
-Date: Mon,  8 Feb 2016 17:09:18 +0530
-Message-ID: <ead31da43e4497fd6ba9743c24928221dcd3fd0d.1454931188.git.viresh.kumar@linaro.org>
-References: <cover.1454931188.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1454931188.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1454931188.git.viresh.kumar@linaro.org>
-References: <cover.1454931188.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with
+ utilization update callbacks
+Date: Mon, 8 Feb 2016 17:22:48 +0530
+Message-ID: <20160208115248.GC8294@vireshk>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <20160207091040.GA6112@vireshk>
+ <1855005.ZFAA5ekheo@vostro.rjw.lan>
+ <2172360.cldhrkXzeh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:36504 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbcBHLwv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 06:52:51 -0500
+Received: by mail-pf0-f170.google.com with SMTP id e127so13319186pfe.3
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 03:52:51 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <2172360.cldhrkXzeh@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-"The previous commit introduced a new set of macros for creating sysfs
-attributes that represent governor tunables and the old macros used for
-this purpose are not needed any more, so drop them."
+On 08-02-16, 03:08, Rafael J. Wysocki wrote:
+> Moreover, update_sampling_rate() doesn't need to walk the cpu_dbs_infos,
+> it may walk policies instead.  Like after the (untested) appended patch.
+> 
+> Then, if we have a governor_data_lock in struct policy, we can use that
+> to protect policy_dbs while it is being access there and we're done.
+> 
+> I'll try to prototype something along these lines tomorrow.
 
-[ Rafael: Written changelog ]
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_governor.h | 89 --------------------------------------
- 1 file changed, 89 deletions(-)
+I have solved that in a different way, and dropped the lock from
+update_sampling_rate(). Please see if that looks good.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index a3afac5d8ab2..f164437f235e 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -41,95 +41,6 @@
- /* Ondemand Sampling types */
- enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
--/*
-- * Macro for creating governors sysfs routines
-- *
-- * - gov_sys: One governor instance per whole system
-- * - gov_pol: One governor instance per policy
-- */
--
--/* Create attributes */
--#define gov_sys_attr_ro(_name)						\
--static struct global_attr _name##_gov_sys =				\
--__ATTR(_name, 0444, show_##_name##_gov_sys, NULL)
--
--#define gov_sys_attr_rw(_name)						\
--static struct global_attr _name##_gov_sys =				\
--__ATTR(_name, 0644, show_##_name##_gov_sys, store_##_name##_gov_sys)
--
--#define gov_pol_attr_ro(_name)						\
--static struct freq_attr _name##_gov_pol =				\
--__ATTR(_name, 0444, show_##_name##_gov_pol, NULL)
--
--#define gov_pol_attr_rw(_name)						\
--static struct freq_attr _name##_gov_pol =				\
--__ATTR(_name, 0644, show_##_name##_gov_pol, store_##_name##_gov_pol)
--
--#define gov_sys_pol_attr_rw(_name)					\
--	gov_sys_attr_rw(_name);						\
--	gov_pol_attr_rw(_name)
--
--#define gov_sys_pol_attr_ro(_name)					\
--	gov_sys_attr_ro(_name);						\
--	gov_pol_attr_ro(_name)
--
--/* Create show/store routines */
--#define show_one(_gov, file_name)					\
--static ssize_t show_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, char *buf)		\
--{									\
--	struct _gov##_dbs_tuners *tuners = _gov##_dbs_gov.gdbs_data->tuners; \
--	return sprintf(buf, "%u\n", tuners->file_name);			\
--}									\
--									\
--static ssize_t show_##file_name##_gov_pol				\
--(struct cpufreq_policy *policy, char *buf)				\
--{									\
--	struct policy_dbs_info *policy_dbs = policy->governor_data;	\
--	struct dbs_data *dbs_data = policy_dbs->dbs_data;		\
--	struct _gov##_dbs_tuners *tuners = dbs_data->tuners;		\
--	return sprintf(buf, "%u\n", tuners->file_name);			\
--}
--
--#define store_one(_gov, file_name)					\
--static ssize_t store_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count) \
--{									\
--	struct dbs_data *dbs_data = _gov##_dbs_gov.gdbs_data;		\
--	return store_##file_name(dbs_data, buf, count);			\
--}									\
--									\
--static ssize_t store_##file_name##_gov_pol				\
--(struct cpufreq_policy *policy, const char *buf, size_t count)		\
--{									\
--	struct policy_dbs_info *policy_dbs = policy->governor_data;	\
--	return store_##file_name(policy_dbs->dbs_data, buf, count);			\
--}
--
--#define show_store_one(_gov, file_name)					\
--show_one(_gov, file_name);						\
--store_one(_gov, file_name)
--
--#define show_one_global(_gov, file_name)				\
--static ssize_t show_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, char *buf)		\
--{									\
--	struct dbs_data *dbs_data = _gov##_dbs_gov.gdbs_data;		\
--	return sprintf(buf, "%u\n", dbs_data->file_name);		\
--}									\
--									\
--static ssize_t show_##file_name##_gov_pol				\
--(struct cpufreq_policy *policy, char *buf)				\
--{									\
--	struct policy_dbs_info *policy_dbs = policy->governor_data;	\
--	struct dbs_data *dbs_data = policy_dbs->dbs_data;		\
--	return sprintf(buf, "%u\n", dbs_data->file_name);		\
--}
--
--#define show_store_one_global(_gov, file_name)				\
--show_one_global(_gov, file_name);					\
--store_one(_gov, file_name)
--
- /* create helper routines */
- #define define_get_cpu_dbs_routines(_dbs_info)				\
- static struct cpu_dbs_info *get_cpu_cdbs(int cpu)			\
 -- 
-2.7.1.370.gb2aa7f8
+viresh
