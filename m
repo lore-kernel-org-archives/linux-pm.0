@@ -1,50 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 09/13] cpufreq: governor: Move common sysfs tunables to cpufreq_governor.c
-Date: Mon, 8 Feb 2016 14:24:39 +0100
-Message-ID: <CAJZ5v0gqCiBj3uPoe6dzA6c6pLXJx5Mpyz0Na2ZX9-YJ_KyVgg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 11/13] cpufreq: governor: Keep list of policy_dbs
+ within dbs_data
+Date: Mon, 8 Feb 2016 19:00:06 +0530
+Message-ID: <20160208133006.GJ8294@vireshk>
 References: <cover.1454931188.git.viresh.kumar@linaro.org>
-	<5934f94cccdd9bd512b9ebdb0fd7134aedc8f1b5.1454931189.git.viresh.kumar@linaro.org>
-	<CAJZ5v0gwaO0yBWKODdEzMwYUGgQvoaBv8Qt9_yCSJub5P1ftMg@mail.gmail.com>
-	<20160208130330.GH8294@vireshk>
+ <b260aaa932e50d6f00eaa3d8f2422a29e061286b.1454931189.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gWhXEcwowPW1O00-7R-Ru4+2DdoRmdYQ-4nLKDf0wyUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f196.google.com ([209.85.217.196]:34477 "EHLO
-	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbcBHNYl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 08:24:41 -0500
-In-Reply-To: <20160208130330.GH8294@vireshk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gWhXEcwowPW1O00-7R-Ru4+2DdoRmdYQ-4nLKDf0wyUw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Mon, Feb 8, 2016 at 2:03 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 08-02-16, 13:58, Rafael J. Wysocki wrote:
->> My most fundamental concern here is that attributes that don't apply
->> to a particular governor should not appear in sysfs at all when that
->> governor is in use (instead of appearing and always returning -EINVAL
->
-> s/is in use/is not in use/ ??
->
->> which is sort of silly).
->
-> But who said that I have made them available always ? Sorry, I didn't
-> understood your input.
->
-> I have just moved the show/store callbacks and the struct
-> governor_attr definition to cpufreq_governor.c. And sysfs files are
-> created only for the ones that are valid for a governor.
+On 08-02-16, 14:21, Rafael J. Wysocki wrote:
+> On Mon, Feb 8, 2016 at 12:39 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > An instance of 'struct dbs_data' can support multiple 'struct
+> > policy_dbs_info' instances. To traverse all policy_dbs supported by a
+> > dbs_data, create a list of policy_dbs within dbs_data.
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Good idea overall, I like this.
 
-OK, I need to look at it more carefully then.
+Thanks.
 
->> That doesn't mean the common code cannot access them, though.  They
->> still can be present in the data structure, but it may be a good idea
->> to set them to special values clearly meaning "invalid" then.
->
-> Or are you saying that we should move all the tunables to dbs_data ?
+> > ---
+> >  drivers/cpufreq/cpufreq_governor.c | 12 ++++++++++++
+> >  drivers/cpufreq/cpufreq_governor.h |  7 ++++++-
+> >  2 files changed, 18 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> > index ee3c2d92da53..e267acc67067 100644
+> > --- a/drivers/cpufreq/cpufreq_governor.c
+> > +++ b/drivers/cpufreq/cpufreq_governor.c
+> > @@ -489,6 +489,11 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
+> >                 dbs_data->usage_count++;
+> >                 policy_dbs->dbs_data = dbs_data;
+> >                 policy->governor_data = policy_dbs;
+> > +
+> > +               mutex_lock(&dbs_data->mutex);
+> > +               list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
+> > +               mutex_unlock(&dbs_data->mutex);
+> 
+> The previous statements should be under the mutex too IMO, at least
+> the usage count incrementation in case two instances of this happen at
+> the same time.
+> 
+> That can't happen now, but if we want to get rid of dbs_data_mutex
+> going forward, having it under the mutex will be actually useful.
 
-Well, maybe.  I'm not sure, but that may be done later in any case.
+I think we should keep it precise for now. Right now, we are only
+concerned about the list modification, so just lock around that.
 
-Thanks,
-Rafael
+Once we are going to remove dbs_data_mutex, then we can cover more
+things under it.
+
+Is there anything that is broken right now ?
+
+> > +
+> >                 return 0;
+> >         }
+> >
+> > @@ -500,8 +505,11 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
+> >
+> >         dbs_data->usage_count = 1;
+> >         dbs_data->gov = gov;
+> > +       INIT_LIST_HEAD(&dbs_data->policy_dbs_list);
+> >         mutex_init(&dbs_data->mutex);
+> >
+> > +       list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
+> 
+> That line should go to where policy_dbs->dbs_data is set so it is
+> clear that they go together.
+
+Okay.
+
+> And I'd set the usage count to 1 in
+> there too for consistency.
+
+I am not sure about including any updates within the lock, which don't
+need protection in current state of code.
+
+-- 
+viresh
