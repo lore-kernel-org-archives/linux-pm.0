@@ -1,76 +1,46 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: [PATCH] thermal: of: use for_each_available_child_of_node for child iterator
-Date: Mon, 8 Feb 2016 18:58:34 +0530
-Message-ID: <1454938114-28507-1-git-send-email-ldewangan@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/3 v3] cpufreq: governor: Replace timers with utilization
+ update callbacks
+Date: Mon, 8 Feb 2016 14:40:39 +0100
+Message-ID: <CAJZ5v0hGHUSUnQmr+uQHjS-4xHL8PFXmMDJ-e2ShxPxH0hPFAA@mail.gmail.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+	<20160207091040.GA6112@vireshk>
+	<1855005.ZFAA5ekheo@vostro.rjw.lan>
+	<2172360.cldhrkXzeh@vostro.rjw.lan>
+	<20160208115248.GC8294@vireshk>
+	<CAJZ5v0gVffRb33CJcrTY5KEPY04MQNp=uqsGFwMevZAEuYBGfg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gVffRb33CJcrTY5KEPY04MQNp=uqsGFwMevZAEuYBGfg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Use for_each_available_child_of_node() for iterating over each
-available child instead of iterating over each child and then
-checking their status.
+On Mon, Feb 8, 2016 at 1:52 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Mon, Feb 8, 2016 at 12:52 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 08-02-16, 03:08, Rafael J. Wysocki wrote:
+>>> Moreover, update_sampling_rate() doesn't need to walk the cpu_dbs_infos,
+>>> it may walk policies instead.  Like after the (untested) appended patch.
+>>>
+>>> Then, if we have a governor_data_lock in struct policy, we can use that
+>>> to protect policy_dbs while it is being access there and we're done.
+>>>
+>>> I'll try to prototype something along these lines tomorrow.
+>>
+>> I have solved that in a different way, and dropped the lock from
+>> update_sampling_rate(). Please see if that looks good.
+>
+> Well, almost.
+>
+> I like the list approach, but you need to be careful about it.  Let me
+> comment more on the patches in the series.
+>
+> I have a gut feeling that my idea of walking policies will end up
+> being simpler in the end, but let's see. :-)
 
-Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
----
- drivers/thermal/of-thermal.c | 18 +++---------------
- 1 file changed, 3 insertions(+), 15 deletions(-)
+Well, my gut feeling seems to have been incorrect, as often happens.
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index be4eedc..9043f8f 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -475,14 +475,10 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 
- 	sensor_np = of_node_get(dev->of_node);
- 
--	for_each_child_of_node(np, child) {
-+	for_each_available_child_of_node(np, child) {
- 		struct of_phandle_args sensor_specs;
- 		int ret, id;
- 
--		/* Check whether child is enabled or not */
--		if (!of_device_is_available(child))
--			continue;
--
- 		/* For now, thermal framework supports only 1 sensor per zone */
- 		ret = of_parse_phandle_with_args(child, "thermal-sensors",
- 						 "#thermal-sensor-cells",
-@@ -881,16 +877,12 @@ int __init of_parse_thermal_zones(void)
- 		return 0; /* Run successfully on systems without thermal DT */
- 	}
- 
--	for_each_child_of_node(np, child) {
-+	for_each_available_child_of_node(np, child) {
- 		struct thermal_zone_device *zone;
- 		struct thermal_zone_params *tzp;
- 		int i, mask = 0;
- 		u32 prop;
- 
--		/* Check whether child is enabled or not */
--		if (!of_device_is_available(child))
--			continue;
--
- 		tz = thermal_of_build_thermal_zone(child);
- 		if (IS_ERR(tz)) {
- 			pr_err("failed to build thermal zone %s: %ld\n",
-@@ -968,13 +960,9 @@ void of_thermal_destroy_zones(void)
- 		return;
- 	}
- 
--	for_each_child_of_node(np, child) {
-+	for_each_available_child_of_node(np, child) {
- 		struct thermal_zone_device *zone;
- 
--		/* Check whether child is enabled or not */
--		if (!of_device_is_available(child))
--			continue;
--
- 		zone = thermal_zone_get_zone_by_name(child->name);
- 		if (IS_ERR(zone))
- 			continue;
--- 
-2.1.4
+Thanks,
+Rafael
