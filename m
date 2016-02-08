@@ -1,56 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 00/13] cpufreq: governors: Fix ABBA lockups
-Date: Mon, 8 Feb 2016 22:25:13 +0530
-Message-ID: <20160208165512.GS8294@vireshk>
+Subject: Re: [PATCH V3 03/13] cpufreq: governor: New sysfs show/store
+ callbacks for governor tunables
+Date: Mon, 8 Feb 2016 22:37:36 +0530
+Message-ID: <20160208170736.GT8294@vireshk>
 References: <cover.1454931188.git.viresh.kumar@linaro.org>
- <56B88F4D.2030307@linux.vnet.ibm.com>
- <20160208125459.GG8294@vireshk>
- <20160208163904.GN11415@e106622-lin>
+ <89c003851ca3be77cf3656805303bf4f36d585ea.1454931188.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:33475 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbcBHQzR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 11:55:17 -0500
-Received: by mail-pf0-f179.google.com with SMTP id q63so8552870pfb.0
-        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 08:55:16 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160208163904.GN11415@e106622-lin>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <89c003851ca3be77cf3656805303bf4f36d585ea.1454931188.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, linux-kernel@vger.kernel.org
 
-On 08-02-16, 16:39, Juri Lelli wrote:
-> Hi,
-> 
-> On 08/02/16 18:24, Viresh Kumar wrote:
-> > On 08-02-16, 18:21, Shilpasri G Bhat wrote:
-> > > Hi,
-> > > 
-> > > On 02/08/2016 05:09 PM, Viresh Kumar wrote:
-> > > > Hi Rafael,
-> > > > 
-> > > > Things look much much better now. I have rebased this series over
-> > > > pm/bleeding-edge, that has all your patches.
-> > > > 
-> > > > I have moved ahead and done few more changes in this series, that should
-> > > > get rid of all the lockdeps we were getting earlier, that includes
-> > > > fixing lockdep issue in update_sampling_rate() that we were chasing.
-> > > > 
-> > > > These are pushed here again:
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/governor-kobject
-> > > > 
-> > > > @Juri/Shilpa: Can you please confirm if all the issues got resolved now
-> > > > ?
-> > > 
-> > > I have tested this patchset on Power8 box and did not find any lockdep warnings.
-> > 
-> 
-> Everything looks good on TC2/Juno as well :).
+On 08-02-16, 17:09, Viresh Kumar wrote:
+> +gov_show_one(sampling_rate);
+> +gov_show_one(sampling_down_factor);
+> +gov_show_one(up_threshold);
+> +gov_show_one(ignore_nice_load);
+> +gov_show_one(min_sampling_rate);
+> +gov_show_one_tunable(cs, down_threshold);
+> +gov_show_one_tunable(cs, freq_step);
 
-Yeah, we finally solved the puzzle :)
+Based on the review comments on 1/13, I will do:
+- s/gov_show_one/gov_show_one_common
+- s/gov_show_one_tunable/gov_show_one
 
 -- 
 viresh
