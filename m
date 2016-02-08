@@ -1,66 +1,58 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH RFC] Add cpufreq support
-Date: Mon, 08 Feb 2016 14:10:31 +0100
-Message-ID: <22002072.L04zy0K2AP@wuerfel>
-References: <56B4D4BE.2040008@free.fr> <45004963.Im3DmqJ5ez@wuerfel> <20160208124127.GF8294@vireshk>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 4/6] arm64: Enable dynamic CPU capacity initialization
+Date: Mon, 8 Feb 2016 13:13:20 +0000
+Message-ID: <20160208131320.GA7265@sirena.org.uk>
+References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
+ <1454500799-18451-5-git-send-email-juri.lelli@arm.com>
+ <56B889F7.306@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.75]:62408 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752782AbcBHNK6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 08:10:58 -0500
-In-Reply-To: <20160208124127.GF8294@vireshk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <56B889F7.306-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>
+Cc: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, Mason <slash.tmp@free.fr>, linux-pm <linux-pm@vger.kernel.org>
 
-On Monday 08 February 2016 18:11:27 Viresh Kumar wrote:
-> On 08-02-16, 13:34, Arnd Bergmann wrote:
-> > Maybe add a opp-v3 compatible string?
-> 
-> How will that help?
-> 
-> The problem was that the compatibility string of "opp-v2" specifies
-> the way we need to parse the bindings and shouldn't be (ab)used to
-> probe a driver like cpufreq-dt. And so we got stuck.
 
-I don't remember the exact discussion, but the compatible string is
-exactly meant to do one thing: it tells you what you can or cannot do
-with one device.
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I had not realized that we don't even have a compatible string
-for opp-v2, so if we are missing that, we obviously can't compare
-against that string.
+On Mon, Feb 08, 2016 at 12:28:39PM +0000, Dietmar Eggemann wrote:
+> On 03/02/16 11:59, Juri Lelli wrote:
 
-> > I really don't care what you
-> > match on, as long we don't need any code in arch/arm/ to create a
-> > device we don't need.
-> 
-> Sure.
-> 
-> > Don't add the device to DT, we really don't want that.
-> 
-> I agree.
-> 
-> > If there
-> > is too much opposition to looking at the cpus nodes in the initcall,
-> 
-> I didn't get this one, what can we do by looking at CPUs nodes ?
+> > +bool arch_wants_init_cpu_capacity(void)
+> > +{
+> > +	return true;
 
-I thought there was a compatible property in there that told us
-whether the operating-points-v2/cooling-min-level/#cooling-cells/...
-properties were considered valid.
+> Isn't this a little bit too simple? Not every ARM/ARM64 platform is a
+> heterogeneous one.
 
-> > start with a whitelist for known machines, that at least keeps the
-> > existing behavior.
-> 
-> That can be a valid solution I would say, but that separate driver
-> (cpufreq-dt-device.c) needs to be changed for every new platform.
+Does it matter?  Is there any problem with doing the callibration and
+having it say that all the CPUs performs very similarly?  My
+understanding was that this was simply saying it was worth checking to
+see if there was some asymmetry.
 
-Until we can agree on a way to describe in the DT whether the opp
-properties are reliable or not.
+--T4sUOijqQbZv57TR
+Content-Type: application/pgp-signature; name="signature.asc"
 
-	Arnd
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWuJRtAAoJECTWi3JdVIfQUD8H/iZc9YYBDMzZWkZsDW2IrWBo
+mDB9Z9DscDFYhmPG71m4uDBk9HFx3FtdJWU5TZ6UBXLrsVcPCys7CS9PG3BGHv/s
+OgIGl3tXNIjh23IejucCofWy/6ER9v+vYlfCnJ39sE0jcD9OT55w5T3wjhbC9/EC
+2hW2q80MvlBRLK8NtYby9PvRlvIGD631R/VoBRFCANTxLVvHvxY/kvxOKXCsYnaj
+j17sETQbOh0MkS+gAXunXg3jVbUasVCN//gCBjsa1NyGRcZVven2L4bHDrmaT4jN
+ZZcJPTtmw6HXatCNf4j6tPOYtxNfumLsahV4/wX7VLbtaAmAgjq0H18YDUCJHa0=
+=aRfM
+-----END PGP SIGNATURE-----
+
+--T4sUOijqQbZv57TR--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
