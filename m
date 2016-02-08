@@ -1,48 +1,76 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 12/13] cpufreq: ondemand: Traverse list of policy_dbs
- in update_sampling_rate()
-Date: Mon, 8 Feb 2016 14:37:03 +0100
-Message-ID: <CAJZ5v0iS_YKyuZhbP1cA7cVEFZZAH1h0867sJEeFzTUkMikmwg@mail.gmail.com>
-References: <cover.1454931188.git.viresh.kumar@linaro.org>
-	<bb6f1b48f09cfe1f0322b1718bf797f8cf5e108c.1454931189.git.viresh.kumar@linaro.org>
-	<CAJZ5v0iVbzuPdNLyTcih5-U7c7AJOZ_zqmHkLN0AckCPzZpDFw@mail.gmail.com>
-	<20160208133446.GK8294@vireshk>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: [PATCH] thermal: of: use for_each_available_child_of_node for child iterator
+Date: Mon, 8 Feb 2016 18:58:34 +0530
+Message-ID: <1454938114-28507-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160208133446.GK8294@vireshk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 8, 2016 at 2:34 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 08-02-16, 14:32, Rafael J. Wysocki wrote:
->> > - * If new rate is smaller than the old, simply updating
->> > - * dbs_tuners_int.sampling_rate might not be appropriate. For example, if the
->> > - * original sampling_rate was 1 second and the requested new sampling rate is 10
->> > - * ms because the user needs immediate reaction from ondemand governor, but not
->> > - * sure if higher frequency will be required or not, then, the governor may
->> > - * change the sampling rate too late; up to 1 second later. Thus, if we are
->> > - * reducing the sampling rate, we need to make the new value effective
->> > - * immediately.
->>
->> The comment still applies.
->
-> Why? It talks about the case where we have reduced sampling rate, but
-> that's not the case anymore. We *always* update sample_delay_ns now.
+Use for_each_available_child_of_node() for iterating over each
+available child instead of iterating over each child and then
+checking their status.
 
-But the comment explains *why* we do that, doesn't it?
+Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+---
+ drivers/thermal/of-thermal.c | 18 +++---------------
+ 1 file changed, 3 insertions(+), 15 deletions(-)
 
-If it doesn't apply, then why do we need this function at all?
-
->> Moreover, please extend it to say that this must be called with
->> dbs_data->mutex held (or it looks racy otherwise).
->
-> Yeah, that can be done.
-
-
-OK
-
-Thanks,
-Rafael
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index be4eedc..9043f8f 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -475,14 +475,10 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+ 
+ 	sensor_np = of_node_get(dev->of_node);
+ 
+-	for_each_child_of_node(np, child) {
++	for_each_available_child_of_node(np, child) {
+ 		struct of_phandle_args sensor_specs;
+ 		int ret, id;
+ 
+-		/* Check whether child is enabled or not */
+-		if (!of_device_is_available(child))
+-			continue;
+-
+ 		/* For now, thermal framework supports only 1 sensor per zone */
+ 		ret = of_parse_phandle_with_args(child, "thermal-sensors",
+ 						 "#thermal-sensor-cells",
+@@ -881,16 +877,12 @@ int __init of_parse_thermal_zones(void)
+ 		return 0; /* Run successfully on systems without thermal DT */
+ 	}
+ 
+-	for_each_child_of_node(np, child) {
++	for_each_available_child_of_node(np, child) {
+ 		struct thermal_zone_device *zone;
+ 		struct thermal_zone_params *tzp;
+ 		int i, mask = 0;
+ 		u32 prop;
+ 
+-		/* Check whether child is enabled or not */
+-		if (!of_device_is_available(child))
+-			continue;
+-
+ 		tz = thermal_of_build_thermal_zone(child);
+ 		if (IS_ERR(tz)) {
+ 			pr_err("failed to build thermal zone %s: %ld\n",
+@@ -968,13 +960,9 @@ void of_thermal_destroy_zones(void)
+ 		return;
+ 	}
+ 
+-	for_each_child_of_node(np, child) {
++	for_each_available_child_of_node(np, child) {
+ 		struct thermal_zone_device *zone;
+ 
+-		/* Check whether child is enabled or not */
+-		if (!of_device_is_available(child))
+-			continue;
+-
+ 		zone = thermal_zone_get_zone_by_name(child->name);
+ 		if (IS_ERR(zone))
+ 			continue;
+-- 
+2.1.4
