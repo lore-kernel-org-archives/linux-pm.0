@@ -1,89 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 5/6] Revert "cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT"
-Date: Tue,  9 Feb 2016 09:01:35 +0530
-Message-ID: <e03b6a7bccda26e5b94dd00c3068fdc4e22c14eb.1454988295.git.viresh.kumar@linaro.org>
-References: <cover.1454988295.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1454988295.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1454988295.git.viresh.kumar@linaro.org>
-References: <cover.1454988295.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 0/7] cpufreq: Locking fixes and cleanups
+Date: Tue,  9 Feb 2016 09:16:12 +0530
+Message-ID: <cover.1454988792.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:35364 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751870AbcBIDrV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 22:47:21 -0500
+Received: by mail-pf0-f178.google.com with SMTP id c10so53699677pfc.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 19:47:20 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Earlier, when the struct freq-attr was used to represent governor
-attributes, the standard cpufreq show/store sysfs attribute callbacks
-were applied to the governor tunable attributes and they always acquire
-the policy->rwsem lock before carrying out the operation.  That could
-have resulted in an ABBA deadlock if governor tunable attributes are
-removed under policy->rwsem while one of them is being accessed
-concurrently (if sysfs attributes removal wins the race, it will wait
-for the access to complete with policy->rwsem held while the attribute
-callback will block on policy->rwsem indefinitely).
+Hi Rafael,
 
-We attempted to address this issue by dropping policy->rwsem around
-governor tunable attributes removal (that is, around invocations of the
-->governor callback with the event arg equal to CPUFREQ_GOV_POLICY_EXIT)
-in cpufreq_set_policy(), but that opened up race conditions that had not
-been possible with policy->rwsem held all the time.
+These are rest of the patches that fix some more locking issues with
+policy->rwsem and do some minor optimization/cleanups.
 
-The previous commit, "cpufreq: governor: New sysfs show/store callbacks
-for governor tunables", fixed the original ABBA deadlock by adding new
-governor specific show/store callbacks.
+These were part of the 13 patch series which was sent earlier. The last
+patch is new, and does what I suggested to one of your commits.
 
-We don't have to drop rwsem around invocations of governor event
-CPUFREQ_GOV_POLICY_EXIT anymore, and original fix can be reverted now.
+V3->V4:
+- Reordered all the patches and created a new series.
+- s/global/common for common tunables
+- One new patch
 
-Fixes: 955ef4833574 ("cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reported-by: Juri Lelli <juri.lelli@arm.com>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
- drivers/cpufreq/cpufreq.c | 5 -----
- include/linux/cpufreq.h   | 4 ----
- 2 files changed, 9 deletions(-)
+@Juri/Shilpa: I have added your Tested-by for the first 6 patches,
+please let me know if you don't want to add that.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 29755fcbf200..9c62bf35b9dc 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2204,10 +2204,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 			return ret;
- 		}
- 
--		up_write(&policy->rwsem);
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--		down_write(&policy->rwsem);
--
- 		if (ret) {
- 			pr_err("%s: Failed to Exit Governor: %s (%d)\n",
- 			       __func__, old_gov->name, ret);
-@@ -2223,9 +2220,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 		if (!ret)
- 			goto out;
- 
--		up_write(&policy->rwsem);
- 		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--		down_write(&policy->rwsem);
- 	}
- 
- 	/* new governor failed, so re-start old one */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 11aa93134493..2a029c587975 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -100,10 +100,6 @@ struct cpufreq_policy {
- 	 * - Any routine that will write to the policy structure and/or may take away
- 	 *   the policy altogether (eg. CPU hotplug), will hold this lock in write
- 	 *   mode before doing so.
--	 *
--	 * Additional rules:
--	 * - Lock should not be held across
--	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
- 	 */
- 	struct rw_semaphore	rwsem;
- 
+Viresh Kumar (7):
+  cpufreq: Merge cpufreq_offline_prepare/finish routines
+  cpufreq: Call __cpufreq_governor() with policy->rwsem held
+  cpufreq: Remove cpufreq_governor_lock
+  cpufreq: governor: Move common sysfs tunables to cpufreq_governor.c
+  cpufreq: governor: No need to manage state machine now
+  cpufreq: conservative: Update sample_delay_ns immediately
+  cpufreq: ondemand: Rearrange od_dbs_timer() to void updating delay
+
+ drivers/cpufreq/cpufreq.c              |  93 +++++++++---------
+ drivers/cpufreq/cpufreq_conservative.c |  80 +++-------------
+ drivers/cpufreq/cpufreq_governor.c     | 170 ++++++++++++++++++++++++++++-----
+ drivers/cpufreq/cpufreq_governor.h     |  16 +++-
+ drivers/cpufreq/cpufreq_ondemand.c     | 153 +++++------------------------
+ 5 files changed, 240 insertions(+), 272 deletions(-)
+
 -- 
 2.7.1.370.gb2aa7f8
+
