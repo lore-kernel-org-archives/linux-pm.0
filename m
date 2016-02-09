@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 05/16] PM / OPP: Parse clock-latency and voltage-tolerance for v1 bindings
-Date: Tue,  9 Feb 2016 10:30:37 +0530
-Message-ID: <953ea13dc8e1249cfe7e26ae122352798a5cab10.1454992186.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 12/16] cpufreq: dt: Unsupported OPPs are already disabled
+Date: Tue,  9 Feb 2016 10:30:44 +0530
+Message-ID: <8289810f97c9350ccb49bbb5b1736d4a5ce1b5fd.1454992187.git.viresh.kumar@linaro.org>
 References: <cover.1454992186.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1454992186.git.viresh.kumar@linaro.org>
@@ -9,102 +9,31 @@ In-Reply-To: <cover.1454992186.git.viresh.kumar@linaro.org>
 References: <cover.1454992186.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-V2 bindings have better support for clock-latency and voltage-tolerance
-and doesn't need special care. To use callbacks, like
-dev_pm_opp_get_max_{transition|volt}_latency(), irrespective of the
-bindings, the core needs to know clock-latency/voltage-tolerance for the
-earlier bindings.
-
-This patch reads clock-latency/voltage-tolerance from the device node,
-irrespective of the bindings (to keep it simple) and use them only for
-V1 bindings.
+The core already have a valid regulator set for the device opp and the
+unsupported OPPs are already disabled by the core. There is no need to
+repeat that in the user drivers, get rid of it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 20 ++++++++++++++++++++
- drivers/base/power/opp/opp.h  |  6 ++++++
- 2 files changed, 26 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index b0f5c72f0fc3..4fafa733a1c7 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -582,6 +582,7 @@ static struct device_opp *_add_device_opp(struct device *dev)
- {
- 	struct device_opp *dev_opp;
- 	struct device_list_opp *list_dev;
-+	struct device_node *np;
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 2af75f8088bb..c3fe89461ff4 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -349,8 +349,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 					min_uV = opp_uV;
+ 				if (opp_uV > max_uV)
+ 					max_uV = opp_uV;
+-			} else {
+-				dev_pm_opp_disable(cpu_dev, opp_freq);
+ 			}
  
- 	/* Check for existing list for 'dev' first */
- 	dev_opp = _find_device_opp(dev);
-@@ -604,6 +605,21 @@ static struct device_opp *_add_device_opp(struct device *dev)
- 		return NULL;
- 	}
- 
-+	/*
-+	 * Only required for backward compatibility with v1 bindings, but isn't
-+	 * harmful for other cases. And so we do it unconditionally.
-+	 */
-+	np = of_node_get(dev->of_node);
-+	if (np) {
-+		u32 val;
-+
-+		if (!of_property_read_u32(np, "clock-latency", &val))
-+			dev_opp->clock_latency_ns_max = val;
-+		of_property_read_u32(np, "voltage-tolerance",
-+				     &dev_opp->voltage_tolerance_v1);
-+		of_node_put(np);
-+	}
-+
- 	srcu_init_notifier_head(&dev_opp->srcu_head);
- 	INIT_LIST_HEAD(&dev_opp->opp_list);
- 
-@@ -861,6 +877,7 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- {
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *new_opp;
-+	unsigned long tol;
- 	int ret;
- 
- 	/* Hold our list modification lock here */
-@@ -874,7 +891,10 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 
- 	/* populate the opp table */
- 	new_opp->rate = freq;
-+	tol = u_volt * dev_opp->voltage_tolerance_v1 / 100;
- 	new_opp->u_volt = u_volt;
-+	new_opp->u_volt_min = u_volt - tol;
-+	new_opp->u_volt_max = u_volt + tol;
- 	new_opp->available = true;
- 	new_opp->dynamic = dynamic;
- 
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 416293b7da23..fe44beb404ba 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -138,6 +138,8 @@ struct device_list_opp {
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-  * @dentry_name: Name of the real dentry.
-  *
-+ * @voltage_tolerance_v1: In percentage, for v1 bindings only.
-+ *
-  * This is an internal data structure maintaining the link to opps attached to
-  * a device. This structure is not meant to be shared to users as it is
-  * meant for book keeping and private to OPP library.
-@@ -156,6 +158,10 @@ struct device_opp {
- 
- 	struct device_node *np;
- 	unsigned long clock_latency_ns_max;
-+
-+	/* For backward compatibility with v1 bindings */
-+	unsigned int voltage_tolerance_v1;
-+
- 	bool shared_opp;
- 	struct dev_pm_opp *suspend_opp;
- 
+ 			opp_freq++;
 -- 
 2.7.1.370.gb2aa7f8
