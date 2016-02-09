@@ -1,51 +1,200 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 0/7] cpufreq: Locking fixes and cleanups
-Date: Tue,  9 Feb 2016 09:16:12 +0530
-Message-ID: <cover.1454988792.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 2/7] cpufreq: Call __cpufreq_governor() with policy->rwsem held
+Date: Tue,  9 Feb 2016 09:16:14 +0530
+Message-ID: <2d9def751daa27c9aba57ab29a54003dd279e5e7.1454988792.git.viresh.kumar@linaro.org>
+References: <cover.1454988792.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:35364 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751870AbcBIDrV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 22:47:21 -0500
-Received: by mail-pf0-f178.google.com with SMTP id c10so53699677pfc.2
-        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 19:47:20 -0800 (PST)
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:34686 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755610AbcBIDra (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Feb 2016 22:47:30 -0500
+Received: by mail-pf0-f173.google.com with SMTP id x65so1049251pfb.1
+        for <linux-pm@vger.kernel.org>; Mon, 08 Feb 2016 19:47:30 -0800 (PST)
+In-Reply-To: <cover.1454988792.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1454988792.git.viresh.kumar@linaro.org>
+References: <cover.1454988792.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Rafael,
+This isn't followed properly by all parts of the core code, some follow
+it, whereas others don't.
 
-These are rest of the patches that fix some more locking issues with
-policy->rwsem and do some minor optimization/cleanups.
+Enforcing it will also enable us to remove cpufreq_governor_lock, that
+is used today because we can't guarantee that __cpufreq_governor() isn't
+executed in parallel.
 
-These were part of the 13 patch series which was sent earlier. The last
-patch is new, and does what I suggested to one of your commits.
+We should also ensure that the lock is held across state changes to the
+governors.
 
-V3->V4:
-- Reordered all the patches and created a new series.
-- s/global/common for common tunables
-- One new patch
+For example, while adding a CPU to the policy on cpu-online path, we
+need to stop the governor, change policy->cpus, start the governor and
+then refresh its limits. The complete sequence must be guaranteed to
+execute without any concurrent races. And that can be achieved using
+policy->rwsem around these use cases.
 
-@Juri/Shilpa: I have added your Tested-by for the first 6 patches,
-please let me know if you don't want to add that.
+Also note that cpufreq_driver->stop_cpu() and ->exit() can get called
+while policy->rwsem is held. That shouldn't have any side effects
+though.
 
-Viresh Kumar (7):
-  cpufreq: Merge cpufreq_offline_prepare/finish routines
-  cpufreq: Call __cpufreq_governor() with policy->rwsem held
-  cpufreq: Remove cpufreq_governor_lock
-  cpufreq: governor: Move common sysfs tunables to cpufreq_governor.c
-  cpufreq: governor: No need to manage state machine now
-  cpufreq: conservative: Update sample_delay_ns immediately
-  cpufreq: ondemand: Rearrange od_dbs_timer() to void updating delay
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Juri Lelli <juri.lelli@arm.com>
+Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/cpufreq.c | 49 +++++++++++++++++++++++++++++++----------------
+ 1 file changed, 33 insertions(+), 16 deletions(-)
 
- drivers/cpufreq/cpufreq.c              |  93 +++++++++---------
- drivers/cpufreq/cpufreq_conservative.c |  80 +++-------------
- drivers/cpufreq/cpufreq_governor.c     | 170 ++++++++++++++++++++++++++++-----
- drivers/cpufreq/cpufreq_governor.h     |  16 +++-
- drivers/cpufreq/cpufreq_ondemand.c     | 153 +++++------------------------
- 5 files changed, 240 insertions(+), 272 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 863ac26c4ecf..51fb47cd38a0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1048,30 +1048,29 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cp
+ 	if (cpumask_test_cpu(cpu, policy->cpus))
+ 		return 0;
+ 
++	down_write(&policy->rwsem);
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
++			goto unlock;
+ 		}
+ 	}
+ 
+-	down_write(&policy->rwsem);
+ 	cpumask_set_cpu(cpu, policy->cpus);
+-	up_write(&policy->rwsem);
+ 
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 		if (!ret)
+ 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 
+-		if (ret) {
++		if (ret)
+ 			pr_err("%s: Failed to start governor\n", __func__);
+-			return ret;
+-		}
+ 	}
+ 
+-	return 0;
++unlock:
++	up_write(&policy->rwsem);
++	return ret;
+ }
+ 
+ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+@@ -1374,13 +1373,13 @@ static void cpufreq_offline(unsigned int cpu)
+ 		return;
+ 	}
+ 
++	down_write(&policy->rwsem);
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret)
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+ 	}
+ 
+-	down_write(&policy->rwsem);
+ 	cpumask_clear_cpu(cpu, policy->cpus);
+ 
+ 	if (policy_is_inactive(policy)) {
+@@ -1393,7 +1392,6 @@ static void cpufreq_offline(unsigned int cpu)
+ 		/* Nominate new CPU */
+ 		policy->cpu = cpumask_any(policy->cpus);
+ 	}
+-	up_write(&policy->rwsem);
+ 
+ 	/* Start governor again for active policy */
+ 	if (!policy_is_inactive(policy)) {
+@@ -1406,7 +1404,7 @@ static void cpufreq_offline(unsigned int cpu)
+ 				pr_err("%s: Failed to start governor\n", __func__);
+ 		}
+ 
+-		return;
++		goto unlock;
+ 	}
+ 
+ 	if (cpufreq_driver->stop_cpu)
+@@ -1428,6 +1426,9 @@ static void cpufreq_offline(unsigned int cpu)
+ 		cpufreq_driver->exit(policy);
+ 		policy->freq_table = NULL;
+ 	}
++
++unlock:
++	up_write(&policy->rwsem);
+ }
+ 
+ /**
+@@ -1624,6 +1625,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
+ void cpufreq_suspend(void)
+ {
+ 	struct cpufreq_policy *policy;
++	int ret;
+ 
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1634,7 +1636,11 @@ void cpufreq_suspend(void)
+ 	pr_debug("%s: Suspending Governors\n", __func__);
+ 
+ 	for_each_active_policy(policy) {
+-		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
++		down_write(&policy->rwsem);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		up_write(&policy->rwsem);
++
++		if (ret)
+ 			pr_err("%s: Failed to stop governor for policy: %p\n",
+ 				__func__, policy);
+ 		else if (cpufreq_driver->suspend
+@@ -1656,6 +1662,7 @@ void cpufreq_suspend(void)
+ void cpufreq_resume(void)
+ {
+ 	struct cpufreq_policy *policy;
++	int ret;
+ 
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1668,13 +1675,20 @@ void cpufreq_resume(void)
+ 	pr_debug("%s: Resuming Governors\n", __func__);
+ 
+ 	for_each_active_policy(policy) {
+-		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
++		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
+ 			pr_err("%s: Failed to resume driver: %p\n", __func__,
+ 				policy);
+-		else if (__cpufreq_governor(policy, CPUFREQ_GOV_START)
+-		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
+-			pr_err("%s: Failed to start governor for policy: %p\n",
+-				__func__, policy);
++		} else {
++			down_write(&policy->rwsem);
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++			if (!ret)
++				__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++			up_write(&policy->rwsem);
++
++			if (ret)
++				pr_err("%s: Failed to start governor for policy: %p\n",
++				       __func__, policy);
++		}
+ 	}
+ 
+ 	/*
+@@ -2325,8 +2339,11 @@ static int cpufreq_boost_set_sw(int state)
+ 				       __func__);
+ 				break;
+ 			}
++
++			down_write(&policy->rwsem);
+ 			policy->user_policy.max = policy->max;
+ 			__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++			up_write(&policy->rwsem);
+ 		}
+ 	}
+ 
 -- 
 2.7.1.370.gb2aa7f8
 
