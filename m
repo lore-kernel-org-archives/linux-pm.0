@@ -1,192 +1,204 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V4 6/6] cpufreq: governor: Create and traverse list of policy_dbs to fix lockdep
-Date: Tue, 09 Feb 2016 21:23:04 +0100
-Message-ID: <1643885.vh1AZTynbP@vostro.rjw.lan>
-References: <cover.1454988295.git.viresh.kumar@linaro.org> <4ad189a1cd04b05fbfd659ec81b4793a1c7b0189.1454988295.git.viresh.kumar@linaro.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH V2 0/7] cpufreq: governors: Fix ABBA lockups
+Date: Tue, 09 Feb 2016 13:02:51 -0800
+Message-ID: <56BA53FB.8050204@codeaurora.org>
+References: <cover.1454507872.git.viresh.kumar@linaro.org> <3866963.E19P3EGEHd@vostro.rjw.lan> <56B558EB.6070408@codeaurora.org> <14418694.vd8JTxlxro@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41621 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755077AbcBIUVw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 15:21:52 -0500
-In-Reply-To: <4ad189a1cd04b05fbfd659ec81b4793a1c7b0189.1454988295.git.viresh.kumar@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:33080 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932222AbcBIVCy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 16:02:54 -0500
+In-Reply-To: <14418694.vd8JTxlxro@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: juri.lelli@arm.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Shilpa Bhat <shilpabhatppc@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, February 09, 2016 09:01:36 AM Viresh Kumar wrote:
-> An instance of 'struct dbs_data' can support multiple 'struct
-> policy_dbs_info' instances. To traverse all policy_dbs supported by a
-> dbs_data, create a list of policy_dbs within dbs_data.
-> 
-> We can traverse this list now, instead of traversing the loop for all
-> online CPUs in update_sampling_rate(), to solve the circular dependency
-> lockdep reported by Juri (and verified by Shilpa) earlier:
-> 
->  ======================================================
->  [ INFO: possible circular locking dependency detected ]
->  4.4.0+ #445 Not tainted
->  -------------------------------------------------------
->  trace.sh/1723 is trying to acquire lock:
->   (s_active#48){++++.+}, at: [<c01f78c8>] kernfs_remove_by_name_ns+0x4c/0x94
-> 
->  but task is already holding lock:
->   (od_dbs_cdata.mutex){+.+.+.}, at: [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
-> 
->  which lock already depends on the new lock.
-> 
->  the existing dependency chain (in reverse order) is:
-> 
-> -> #2 (od_dbs_cdata.mutex){+.+.+.}:
->         [<c075b040>] mutex_lock_nested+0x7c/0x434
->         [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
->         [<c0017c10>] return_to_handler+0x0/0x18
-> 
-> -> #1 (&policy->rwsem){+++++.}:
->         [<c075ca8c>] down_read+0x58/0x94
->         [<c057c244>] show+0x30/0x60
->         [<c01f934c>] sysfs_kf_seq_show+0x90/0xfc
->         [<c01f7ad8>] kernfs_seq_show+0x34/0x38
->         [<c01a22ec>] seq_read+0x1e4/0x4e4
->         [<c01f8694>] kernfs_fop_read+0x120/0x1a0
->         [<c01794b4>] __vfs_read+0x3c/0xe0
->         [<c017a378>] vfs_read+0x98/0x104
->         [<c017a434>] SyS_read+0x50/0x90
->         [<c000fd40>] ret_fast_syscall+0x0/0x1c
-> 
-> -> #0 (s_active#48){++++.+}:
->         [<c008238c>] lock_acquire+0xd4/0x20c
->         [<c01f6ae4>] __kernfs_remove+0x288/0x328
->         [<c01f78c8>] kernfs_remove_by_name_ns+0x4c/0x94
->         [<c01fa024>] remove_files+0x44/0x88
->         [<c01fa5a4>] sysfs_remove_group+0x50/0xa4
->         [<c058285c>] cpufreq_governor_dbs+0x3f0/0x5d4
->         [<c0017c10>] return_to_handler+0x0/0x18
-> 
->  other info that might help us debug this:
-> 
->  Chain exists of:
->   s_active#48 --> &policy->rwsem --> od_dbs_cdata.mutex
-> 
->   Possible unsafe locking scenario:
-> 
->         CPU0                    CPU1
->         ----                    ----
->    lock(od_dbs_cdata.mutex);
->                                 lock(&policy->rwsem);
->                                 lock(od_dbs_cdata.mutex);
->    lock(s_active#48);
-> 
->   *** DEADLOCK ***
-> 
->  5 locks held by trace.sh/1723:
->   #0:  (sb_writers#6){.+.+.+}, at: [<c017beb8>] __sb_start_write+0xb4/0xc0
->   #1:  (&of->mutex){+.+.+.}, at: [<c01f8418>] kernfs_fop_write+0x6c/0x1c8
->   #2:  (s_active#35){.+.+.+}, at: [<c01f8420>] kernfs_fop_write+0x74/0x1c8
->   #3:  (cpu_hotplug.lock){++++++}, at: [<c0029e6c>] get_online_cpus+0x48/0xb8
->   #4:  (od_dbs_cdata.mutex){+.+.+.}, at: [<c05824a0>] cpufreq_governor_dbs+0x34/0x5d4
-> 
->  stack backtrace:
->  CPU: 2 PID: 1723 Comm: trace.sh Not tainted 4.4.0+ #445
->  Hardware name: ARM-Versatile Express
->  [<c001883c>] (unwind_backtrace) from [<c0013f50>] (show_stack+0x20/0x24)
->  [<c0013f50>] (show_stack) from [<c044ad90>] (dump_stack+0x80/0xb4)
->  [<c044ad90>] (dump_stack) from [<c0128edc>] (print_circular_bug+0x29c/0x2f0)
->  [<c0128edc>] (print_circular_bug) from [<c0081708>] (__lock_acquire+0x163c/0x1d74)
->  [<c0081708>] (__lock_acquire) from [<c008238c>] (lock_acquire+0xd4/0x20c)
->  [<c008238c>] (lock_acquire) from [<c01f6ae4>] (__kernfs_remove+0x288/0x328)
->  [<c01f6ae4>] (__kernfs_remove) from [<c01f78c8>] (kernfs_remove_by_name_ns+0x4c/0x94)
->  [<c01f78c8>] (kernfs_remove_by_name_ns) from [<c01fa024>] (remove_files+0x44/0x88)
->  [<c01fa024>] (remove_files) from [<c01fa5a4>] (sysfs_remove_group+0x50/0xa4)
->  [<c01fa5a4>] (sysfs_remove_group) from [<c058285c>] (cpufreq_governor_dbs+0x3f0/0x5d4)
->  [<c058285c>] (cpufreq_governor_dbs) from [<c0017c10>] (return_to_handler+0x0/0x18)
-> 
-> This also updates the comment above update_sampling_rate() to make it
-> more relevant to the current state of code.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reported-by: Juri Lelli <juri.lelli@arm.com>
-> Tested-by: Juri Lelli <juri.lelli@arm.com>
-> Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 22 ++++++++--
->  drivers/cpufreq/cpufreq_governor.h |  7 ++-
->  drivers/cpufreq/cpufreq_ondemand.c | 89 +++++++++++++-------------------------
->  3 files changed, 54 insertions(+), 64 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index bba9d3fb8103..8e53f804a5af 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -384,9 +384,14 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
->  			ret = -EINVAL;
->  			goto free_policy_dbs_info;
->  		}
-> -		dbs_data->usage_count++;
->  		policy_dbs->dbs_data = dbs_data;
->  		policy->governor_data = policy_dbs;
-> +
-> +		mutex_lock(&dbs_data->mutex);
-> +		dbs_data->usage_count++;
-> +		list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
-> +		mutex_unlock(&dbs_data->mutex);
-> +
->  		return 0;
->  	}
->  
-> @@ -396,7 +401,7 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
->  		goto free_policy_dbs_info;
->  	}
->  
-> -	dbs_data->usage_count = 1;
-> +	INIT_LIST_HEAD(&dbs_data->policy_dbs_list);
->  	mutex_init(&dbs_data->mutex);
->  
->  	ret = gov->init(dbs_data, !policy->governor->initialized);
-> @@ -417,9 +422,12 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
->  	if (!have_governor_per_policy())
->  		gov->gdbs_data = dbs_data;
->  
-> -	policy_dbs->dbs_data = dbs_data;
->  	policy->governor_data = policy_dbs;
->  
-> +	policy_dbs->dbs_data = dbs_data;
-> +	dbs_data->usage_count = 1;
-> +	list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
-> +
->  	gov->kobj_type.sysfs_ops = &governor_sysfs_ops;
->  	ret = kobject_init_and_add(&dbs_data->kobj, &gov->kobj_type,
->  				   get_governor_parent_kobj(policy),
-> @@ -450,12 +458,18 @@ static int cpufreq_governor_exit(struct cpufreq_policy *policy)
->  	struct dbs_governor *gov = dbs_governor_of(policy);
->  	struct policy_dbs_info *policy_dbs = policy->governor_data;
->  	struct dbs_data *dbs_data = policy_dbs->dbs_data;
-> +	int count;
->  
->  	/* State should be equivalent to INIT */
->  	if (policy_dbs->policy)
->  		return -EBUSY;
->  
-> -	if (!--dbs_data->usage_count) {
-> +	mutex_lock(&dbs_data->mutex);
-> +	list_del(&policy_dbs->list);
-> +	count = dbs_data->usage_count--;
+On 02/07/2016 06:28 PM, Rafael J. Wysocki wrote:
+> On Friday, February 05, 2016 06:22:35 PM Saravana Kannan wrote:
+>> On 02/04/2016 07:54 PM, Rafael J. Wysocki wrote:
+>>> On Thursday, February 04, 2016 07:18:32 PM Rafael J. Wysocki wrote:
+>>>> On Thu, Feb 4, 2016 at 6:44 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+>>>>> On 02/04/2016 09:43 AM, Saravana Kannan wrote:
+>>>>>>
+>>>>>> On 02/04/2016 03:09 AM, Viresh Kumar wrote:
+>>>>>>>
+>>>>>>> On 04-02-16, 00:50, Rafael J. Wysocki wrote:
+>>>>>>>>
+>>>>>>>> This is exactly right.  We've avoided one deadlock only to trip into
+>>>>>>>> another one.
+>>>>>>>>
+>>>>>>>> This happens because update_sampling_rate() acquires
+>>>>>>>> od_dbs_cdata.mutex which is held around cpufreq_governor_exit() by
+>>>>>>>> cpufreq_governor_dbs().
+>>>>>>>>
+>>>>>>>> Worse yet, a deadlock can still happen without (the new)
+>>>>>>>> dbs_data->mutex, just between s_active and od_dbs_cdata.mutex if
+>>>>>>>> update_sampling_rate() runs in parallel with
+>>>>>>>> cpufreq_governor_dbs()->cpufreq_governor_exit() and the latter wins
+>>>>>>>> the race.
+>>>>>>>>
+>>>>>>>> It looks like we need to drop the governor mutex before putting the
+>>>>>>>> kobject in cpufreq_governor_exit().
+>>>>>>>
+>>>>
+>>>> [cut]
+>>>>
+>>>>>>
+>>>>>> No no no no! Let's not open up this can of worms of queuing up the work
+>>>>>> to handle a write to a sysfs file. It *MIGHT* work for this specific
+>>>>>> tunable (I haven't bothered to analyze), but this makes it impossible to
+>>>>>> return a useful/proper error value.
+>>>>>
+>>>>>
+>>>>> Sent too soon. Not only that, but it can also cause the writes to the sysfs
+>>>>> files to get processed in a different order and I don't know what other
+>>>>> issues/races THAT will open up.
+>>>>
+>>>> Well, I don't like this too.
+>>>>
+>>>> I actually do have an idea about how to fix these deadlocks, but it is
+>>>> on top of my cleanup series.
+>>>>
+>>>> I'll write more about it later today.
+>>>
+>>> Having actually posted that series again after cleaning it up I can say
+>>> what I'm thinking about hopefully without confusing anyone too much.  So
+>>> please bear in mind that I'm going to refer to this series below:
+>>>
+>>> http://marc.info/?l=linux-pm&m=145463901630950&w=4
+>>>
+>>> Also this is more of a brain dump rather than actual design description,
+>>> so there may be holes etc in it.  Please let me know if you can see any.
+>>>
+>>> The problem at hand is that policy->rwsem needs to be held around *all*
+>>> operations in cpufreq_set_policy().  In particular, it cannot be dropped
+>>> around invocations of __cpufreq_governor() with the event arg equal to
+>>> _EXIT as that leads to interesting races.
+>>>
+>>> Unfortunately, we know that holding policy->rwsem in those places leads
+>>> to a deadlock with governor sysfs attributes removal in cpufreq_governor_exit().
+>>>
+>>> Viresh attempted to fix this by avoiding to acquire policy->rwsem for governor
+>>> attributes access (as holding it is not necessary for them in principle).  That
+>>> was a nice try, but it turned out to be insufficient because of another deadlock
+>>> scenario uncovered by it.  Namely, since the ondemand governor's update_sampling_rate()
+>>> acquires the governor mutex (called dbs_data_mutex after my patches mentioned
+>>> above), it may deadlock with exactly the same piece of code in cpufreq_governor_exit()
+>>> in almost exactly the same way.
+>>>
+>>> To avoid that other deadlock, we'd either need to drop dbs_data_mutex from
+>>> update_sampling_rate(), or drop it for the removal of the governor sysfs
+>>> attributes in cpufreq_governor_exit().  I don't think the former is an option
+>>> at least at this point, so it looks like we pretty much have to do the latter.
+>>>
+>>> With that in mind, I'd start with the changes made by Viresh (maybe without the
+>>> first patch which really isn't essential here).  That is, introduce a separate
+>>> kobject type for the governor attributes kobject and register that in
+>>> cpufreq_governor_init().  The show/store callbacks for that kobject type won't
+>>> acquire policy->rwsem so the first deadlock will be avoided.
+>>>
+>>> But in addition to that, I'd drop dbs_data_mutex before the removal of governor
+>>> sysfs attributes.  That actually happens in two places, in cpufreq_governor_exit()
+>>> and in the error path of cpufreq_governor_init().
+>>>
+>>> To that end, I'd move the locking from cpufreq_governor_dbs() to the functions
+>>> called by it.  That should be readily doable and they can do all of the
+>>> necessary checks themselves.  cpufreq_governor_dbs() would become a pure mux then,
+>>> but that's not such a big deal.
+>>>
+>>> With that, cpufreq_governor_exit() may just drop the lock before it does the
+>>> final kobject_put().  The danger here is that the sysfs show/store callbacks of
+>>> the governor attributes kobject may see invalid dbs_data for a while, after the
+>>> lock has been dropped and before the kobject is deleted.  That may be addressed
+>>> by checking, for example, the presence of the dbs_data's "tuners" pointer in those
+>>> callbacks.  If it is NULL, they can simply return -EAGAIN or similar.
+>>>
+>>> Now, that means, though, that they need to acquire the same lock as
+>>> cpufreq_governor_exit(), or they may see things go away while they are running.
+>>> The simplest approach here would be to take dbs_data_mutex in them too, although
+>>> that's a bit of a sledgehammer.  It might be better to have a per-policy lock
+>>> in struct policy_dbs_info for that, for example, but then the governor attribute
+>>> sysfs callbacks would need to get that object instead of dbs_data.
+>>>
+>>> On the flip side, it might be possible to migrate update_sampling_rate() to
+>>> that lock too.  And maybe we can get rid of dbs_data_mutex even, who knows?
+>>
+>> I'm glad you've analyzed it this far. So, the rest of my comments will
+>> be easier to understand.
+>>
+>> I'm going to go back to my point of NOT doing the sysfs add/remove
+>> inside the governor at all (that includes cpufreq_governor.c) and doing
+>> it in cpufreq.c. That suggestion was confusing to explain/understand
+>> before when we were using policy rwsem inside the show/store ops for the
+>> governor attributes. Now that has been removed, my suggestion would be
+>> even easier/cleaner to implement/understand and you don't have to worry
+>> about ANY races in the governor.
+>>
+>> I'll just talk about the have_governor_per_policy() case. It can be
+>> easily extended to the global case.
+>>
+>> In cpufreq_governor.c:
+>> cpufreq_governor_init(...)
+>> {
+>>    ...
+>>    /* NOT kobject_init_and_add */
+>>    kobject_init();
+>>    /* New field */
+>>    policy->gov_kobj = &dbs_data->kobj);
+>>    ...
+>> }
+>>
+>> In cpufreq.c:
+>> __cpufreq_governor(...)
+>> {
+>>
+>>      if (event == POLICY_EXIT) {
+>>         kobject_put(policy->gov_kobj);
+>>      }
+>>      ret = policy->governor->governor(policy, event);
+>>      if (event == POLICY_INIT) {
+>>         kobj_add(policy->gov_kobj, policy->kobj, policy->governor->name);
+>>      }
+>> }
+>>
+>> This guarantees that there can be no races of the governor specific data
+>> structures going away while being accessed from sysfs because the first
+>> thing we do once we decide to "kill" a governor is to remove the sysfs
+>> files and the accesses to governor data (and flush out all on going
+>> accesses) and THEN ask the governor to exit.
+>>
+>> Thoughts?
+>
+> The core would then have to rely on the governor code to populate the gov_kobj
+> field correctly which doesn't look really straightforward to me.  It is better
+> if each code layer arranges the data structures it is going to use by itself.
 
-This appears to be planting a bug.
+The core depends a lot on the drivers and governors filling up some 
+fields correctly. This isn't any worse than that. It just seems way more 
+logical to me to remove the interface to changing governor attributes 
+(the sysfs files) before we start "exiting" a governor. But it looks 
+like there's a v3 series of patches from Viresh that people seem to 
+agree is fixing the race in a different method -- I haven't had time to 
+look at it. So, I'm not going to keep pushing my point about removing 
+the sysfs files at the core level. I'll jump back to it if we later find 
+another race with this v3 patch series :)
 
-The way you wrote it the decrementation will take place after the assignment, so
-count will contain the old value.
+> Besides, ondemand and conservative are the only governors that use the governor
+> kobject at all, so I'm not sure if that really belongs to the core.
 
-> +	mutex_unlock(&dbs_data->mutex);
-> +
-> +	if (!count) {
->  		kobject_put(&dbs_data->kobj);
->  
->  		policy->governor_data = NULL;
+Technically userspace should be using kobject and sysfs attributes for 
+set speed, but for whatever reason (legacy/historical I assume) we let 
+the core add/remove sysfs files for an op that's supported only by 
+userspace governor.
 
-Thanks,
-Rafael
+-Saravana
 
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
