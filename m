@@ -1,78 +1,63 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 3/3] thermal: allow u8500-thermal driver to be a module
-Date: Tue, 9 Feb 2016 14:10:27 -0800
-Message-ID: <20160209221026.GD28102@localhost.localdomain>
+Subject: Re: [PATCH 0/3] randconfig warning fixes for thermal
+Date: Tue, 9 Feb 2016 14:18:16 -0800
+Message-ID: <20160209221815.GE28102@localhost.localdomain>
 References: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
- <1453740264-1972562-4-git-send-email-arnd@arndb.de>
- <20160127073300.GJ3368@x1>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="48TaNjbzBVislYPb"
+	protocol="application/pgp-signature"; boundary="nHwqXXcoX0o6fKCv"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35014 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568AbcBIWKa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 17:10:30 -0500
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:33817 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932512AbcBIWSV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 17:18:21 -0500
+Received: by mail-pa0-f47.google.com with SMTP id kp3so689335pab.1
+        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2016 14:18:21 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160127073300.GJ3368@x1>
+In-Reply-To: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, spear-devel@list.st.com, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, spear-devel@list.st.com
 
 
---48TaNjbzBVislYPb
+--nHwqXXcoX0o6fKCv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jan 27, 2016 at 07:33:00AM +0000, Lee Jones wrote:
-> On Mon, 25 Jan 2016, Arnd Bergmann wrote:
+On Mon, Jan 25, 2016 at 05:44:09PM +0100, Arnd Bergmann wrote:
+> These are three simple fixes for ARM randconfig builds:
 >=20
-> > When the thermal subsystem is a loadable module, the u8500 driver
-> > fails to build:
-> >=20
-> > drivers/thermal/built-in.o: In function `db8500_thermal_probe':
-> > db8500_thermal.c:(.text+0x96c): undefined reference to `thermal_zone_de=
-vice_register'
-> > drivers/thermal/built-in.o: In function `db8500_thermal_work':
-> > db8500_thermal.c:(.text+0xab4): undefined reference to `thermal_zone_de=
-vice_update'
-> >=20
-> > This changes the symbol to a tristate, so Kconfig can track the
-> > dependency correctly.
-> >=20
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/mfd/db8500-prcmu.c | 3 +++
-> >  drivers/thermal/Kconfig    | 4 ++--
-> >  2 files changed, 5 insertions(+), 2 deletions(-)
+>  [PATCH 1/3] thermal: spear: use __maybe_unused for PM functions
+>  [PATCH 2/3] thermal: allow spear-thermal driver to be a module
+>  [PATCH 3/3] thermal: allow u8500-thermal driver to be a module
 >=20
-> As this touches a core Thermal file, I think it's better off going in
-> via that tree.  If that's a problem, I can take it with the relevant
-> Acks.
+> All three bugs are on configurationsn that are not important and
+> that rarely happen even with randconfig builds.
 >=20
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+> 	Arnd
+
+Thanks a lot for your cleanups Arnd,
+queueing all three.
+
+Eduardo Valentin
 
 
-Thanks, I am adding to linux-next to see how it goes.
-
-
-
---48TaNjbzBVislYPb
+--nHwqXXcoX0o6fKCv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQEcBAEBAgAGBQJWumPQAAoJEMLUO4d9pOJWz4sH/Rjb+aD0dqe1DKOsGE0xD+K3
-VCOCW+bFgLa7oKD2G8KGYQDbANUhG702eY80s8TwYFvpp78KAvcYuVwSwXx05pkU
-24qr/dWg4j9parZW4Nzbbk9nBbH6gobx3SocGm/WEvyTs0LsA+UBtzFNdTYY5ZQz
-Ujy4KOCHHXFVl5yjyHmFdplEaPD/c/QEjhNA1Dmzz4mS5hEgXslnIPk4oZwwTnic
-dwEhXIl0xWJY/zSt0rv5gK6DyUqO9d0uIHbLD7cD7ixi0QEBnj24a9BPtiqhsXks
-w06TDX2D6cvgEXnhPKr6xcIoWKVLK/AHS2mK7hUUggVYsg06s0aYiqQB0x8bw6w=
-=7kl9
+iQEcBAEBAgAGBQJWumWlAAoJEMLUO4d9pOJWvC4H/0joKNhCC0IO7g0RNbDUhSDr
+oOsLpPZf1G6hGEREmhbBjqY2eE6PhFlPVotka+RjijDBpAXz50qt2eXxbqD+67C7
+/ClbljN795UvshnKcBy+Pdsld2s+fHLcLZ8pc06RCm2yhiZBjeViVejuGjhaAVm5
+4pxHVPw8EFUkn9wkApzA6C0FTTgzY8fS3gk+yPK2s2fY9cXruI7l2R+2+Y5HMHMb
+Ek1CEg+S2pvBld7wq4AC6eov7ebHTlF27rN1iZIifkn2f88JWXTElJj+e2vaisGb
+n8T7CrGq2lImKSuyRpJa2Xidh+ZJ4pNExsUdz/EVcoBdgq86q/hXhxDFqJVC27k=
+=qoLj
 -----END PGP SIGNATURE-----
 
---48TaNjbzBVislYPb--
+--nHwqXXcoX0o6fKCv--
