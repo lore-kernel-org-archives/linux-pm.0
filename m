@@ -1,83 +1,152 @@
-From: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-Subject: [PATCH] tools/power turbostat: Fixed turbo ratio stats for Intel Xeon x200 family
-Date: Tue,  9 Feb 2016 15:41:50 +0100
-Message-ID: <1455028910-15049-1-git-send-email-hubert.chrzaniuk@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:35196 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753735AbcBIOl4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Feb 2016 09:41:56 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC] gpio: rcar: Add Runtime PM handling for interrupts
+Date: Tue,  9 Feb 2016 16:19:43 +0100
+Message-ID: <1455031183-18294-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: hubert.chrzaniuk@intel.com, lukasz.anaczkowski@intel.com, len.brown@intel.com, dasaratharaman.chandramouli@intel.com, linux-pm@vger.kernel.org
 
-Algorithm for calculating turbo ratio limits for Intel Xeon x200 family
-has some minor bugs. This patch fixes the routine.
+The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
 
-Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+When using a GPIO purely as an interrupt source, no Runtime PM handling
+is done, and the GPIO module's clock may not be enabled.
+
+To fix this:
+  - Add .irq_request_resources() and .irq_release_resources() callbacks
+    to handle Runtime PM when an interrupt is requested,
+  - Runtime-resume the device before writing to the GPIO module's
+    registers for disabling/enabling an interrupt, or for configuring
+    the interrupt type,
+  - Add checks to warn when the GPIO module's registers are accessed
+    while the device is runtime-suspended.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- tools/power/x86/turbostat/turbostat.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+This fixes ravb Ethernet on r8a7795/Salvator-X, which was "broken" by
+commit d5c3d84657db57bd ("net: phy: Avoid polling PHY with
+PHY_IGNORE_INTERRUPTS").
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 0dac7e0..3a59aec 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1330,12 +1330,13 @@ dump_knl_turbo_ratio_limits(void)
+Does it also fix the HDMI interrupt on r8a7791/Koelsch?
+
+Notes:
+  1. I assume gpio_rcar_irq_{dis,en}able() may be called from contexts
+     where pm_runtime_get_sync() may not be called.
+     However, so far I didn't see any reports from the might_sleep_if()
+     check in __pm_runtime_resume(),
+  2. gpio_rcar_irq_disable() is called from the IRQ core before
+     gpio_rcar_irq_set_type().
+     Else an alternative solution could be to just runtime-resume the
+     device from gpio_rcar_irq_set_type() when an interrupt is setup,
+     and never call pm_runtime_put() again. That would cause issues when
+     compiling gpio-rcar as a module, though.
+---
+ drivers/gpio/gpio-rcar.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
+index cf41440aff91971e..63b679b3af5d6d16 100644
+--- a/drivers/gpio/gpio-rcar.c
++++ b/drivers/gpio/gpio-rcar.c
+@@ -59,12 +59,18 @@ struct gpio_rcar_priv {
  
- 	get_msr(base_cpu, MSR_NHM_TURBO_RATIO_LIMIT, &msr);
- 
--	fprintf(stderr, "cpu%d: MSR_NHM_TURBO_RATIO_LIMIT: 0x%08llx\n",
-+	fprintf(stderr, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n",
- 		base_cpu, msr);
- 
- 	/**
- 	 * Turbo encoding in KNL is as follows:
--	 * [7:0] -- Base value of number of active cores of bucket 1.
-+	 * [0] -- Reserved
-+	 * [7:1] -- Base value of number of active cores of bucket 1.
- 	 * [15:8] -- Base value of freq ratio of bucket 1.
- 	 * [20:16] -- +ve delta of number of active cores of bucket 2.
- 	 * i.e. active cores of bucket 2 =
-@@ -1354,8 +1355,8 @@ dump_knl_turbo_ratio_limits(void)
- 	 * [60:56]-- +ve delta of number of active cores of bucket 7.
- 	 * [63:61]-- -ve delta of freq ratio of bucket 7.
- 	 */
--	cores = msr & 0xFF;
--	ratio = (msr >> 8) && 0xFF;
-+	cores = (msr & 0xFF) >> 1;
-+	ratio = (msr >> 8) & 0xFF;
- 	if (ratio > 0)
- 		fprintf(stderr,
- 			"%d * %.0f = %.0f MHz max turbo %d active cores\n",
-@@ -1363,8 +1364,8 @@ dump_knl_turbo_ratio_limits(void)
- 
- 	for (i = 16; i < 64; i = i + 8) {
- 		delta_cores = (msr >> i) & 0x1F;
--		delta_ratio = (msr >> (i + 5)) && 0x7;
--		if (!delta_cores || !delta_ratio)
-+		delta_ratio = (msr >> (i + 5)) & 0x7;
-+		if (!delta_cores)
- 			return;
- 		cores = cores + delta_cores;
- 		ratio = ratio - delta_ratio;
-@@ -1889,6 +1890,7 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
- 	/* Nehalem compatible, but do not include turbo-ratio limit support */
- 	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
- 	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
-+	case 0x57:	/* PHI - Knights Landing (different MSR definition) */
- 		return 0;
- 	default:
- 		return 1;
-@@ -2599,7 +2601,7 @@ double slm_bclk(void)
- 
- double discover_bclk(unsigned int family, unsigned int model)
+ static inline u32 gpio_rcar_read(struct gpio_rcar_priv *p, int offs)
  {
--	if (has_snb_msrs(family, model))
-+	if (has_snb_msrs(family, model) || is_knl(family, model))
- 		return 100.00;
- 	else if (is_slm(family, model))
- 		return slm_bclk();
++	WARN(pm_runtime_suspended(&p->pdev->dev),
++				  "%s: %s is runtime-suspended\n", __func__,
++				  dev_name(&p->pdev->dev));
+ 	return ioread32(p->base + offs);
+ }
+ 
+ static inline void gpio_rcar_write(struct gpio_rcar_priv *p, int offs,
+ 				   u32 value)
+ {
++	WARN(pm_runtime_suspended(&p->pdev->dev),
++				  "%s: %s is runtime-suspended\n", __func__,
++				  dev_name(&p->pdev->dev));
+ 	iowrite32(value, p->base + offs);
+ }
+ 
+@@ -86,7 +92,11 @@ static void gpio_rcar_irq_disable(struct irq_data *d)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+ 
++	if (pm_runtime_get_sync(&p->pdev->dev) < 0)
++		return;
++
+ 	gpio_rcar_write(p, INTMSK, ~BIT(irqd_to_hwirq(d)));
++	pm_runtime_put(&p->pdev->dev);
+ }
+ 
+ static void gpio_rcar_irq_enable(struct irq_data *d)
+@@ -94,7 +104,11 @@ static void gpio_rcar_irq_enable(struct irq_data *d)
+ 	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+ 	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+ 
++	if (pm_runtime_get_sync(&p->pdev->dev) < 0)
++		return;
++
+ 	gpio_rcar_write(p, MSKCLR, BIT(irqd_to_hwirq(d)));
++	pm_runtime_put(&p->pdev->dev);
+ }
+ 
+ static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+@@ -105,6 +119,9 @@ static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+ {
+ 	unsigned long flags;
+ 
++	if (pm_runtime_get_sync(&p->pdev->dev) < 0)
++		return;
++
+ 	/* follow steps in the GPIO documentation for
+ 	 * "Setting Edge-Sensitive Interrupt Input Mode" and
+ 	 * "Setting Level-Sensitive Interrupt Input Mode"
+@@ -130,6 +147,8 @@ static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+ 		gpio_rcar_write(p, INTCLR, BIT(hwirq));
+ 
+ 	spin_unlock_irqrestore(&p->lock, flags);
++
++	pm_runtime_put(&p->pdev->dev);
+ }
+ 
+ static int gpio_rcar_irq_set_type(struct irq_data *d, unsigned int type)
+@@ -196,6 +215,27 @@ static int gpio_rcar_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	return 0;
+ }
+ 
++static int gpio_rcar_irq_request_resources(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++	int error;
++
++	error = pm_runtime_get_sync(&p->pdev->dev);
++	if (error < 0)
++		return error;
++
++	return 0;
++}
++
++static void gpio_rcar_irq_release_resources(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++
++	pm_runtime_put(&p->pdev->dev);
++}
++
+ static irqreturn_t gpio_rcar_irq_handler(int irq, void *dev_id)
+ {
+ 	struct gpio_rcar_priv *p = dev_id;
+@@ -450,6 +490,8 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+ 	irq_chip->irq_unmask = gpio_rcar_irq_enable;
+ 	irq_chip->irq_set_type = gpio_rcar_irq_set_type;
+ 	irq_chip->irq_set_wake = gpio_rcar_irq_set_wake;
++	irq_chip->irq_request_resources = gpio_rcar_irq_request_resources;
++	irq_chip->irq_release_resources = gpio_rcar_irq_release_resources;
+ 	irq_chip->flags	= IRQCHIP_SET_TYPE_MASKED | IRQCHIP_MASK_ON_SUSPEND;
+ 
+ 	ret = gpiochip_add_data(gpio_chip, p);
 -- 
-1.8.3.1
-
+1.9.1
