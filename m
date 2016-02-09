@@ -1,64 +1,110 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 0/6] CPUs capacity information for heterogeneous
- systems
-Date: Tue, 9 Feb 2016 10:37:48 +0000
-Message-ID: <20160209103748.GP11415@e106622-lin>
-References: <1454500799-18451-1-git-send-email-juri.lelli@arm.com>
- <56B92BF4.4030405@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <56B92BF4.4030405-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Muckle <steve.muckle-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: ahaslam@baylibre.com
+Subject: [RFC v11 0/3] Multiple intermediate states for genpd
+Date: Tue,  9 Feb 2016 14:15:48 +0100
+Message-ID: <1455023751-32521-1-git-send-email-ahaslam@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:38792 "EHLO
+	mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755905AbcBINQN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 08:16:13 -0500
+Received: by mail-wm0-f53.google.com with SMTP id p63so22640492wmp.1
+        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2016 05:16:12 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, lina.iyer@linaro.org
+Cc: khilman@baylibre.com, linux-pm@vger.kernel.org, geert@linux-m68k.org, mtitinger@baylibre.com, rjw@rjwysocki.net, bcousson@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Hi Steve,
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-On 08/02/16 15:59, Steve Muckle wrote:
-> Hi Juri,
-> 
-> On 02/03/2016 03:59 AM, Juri Lelli wrote:
-> >  v1: DT + sysfs [1]
-> > 
-> >  v2: Dynamic profiling at boot [2]
-> > 
-> > Third version of this patchset proposes what seems to be the solution we agreed
-> > upon (see [2] for reference) to the problem of how do we init CPUs original
-> > capacity: we run a bogus benchmark (stealing int_sqrt from lib/ we run that in
-> > a loop to perform some integer computation, better benchmarks are welcome)
-> > on the first cpu of each frequency domain (assuming no u-arch differences
-> > inside domains), measure time to complete a fixed number of iterations and then
-> > normalize results to SCHED_CAPACITY_SCALE (1024). This time around we also
-> > added a boot time parameter to disable profiling at boot (as it can be time
-> > consuming) and sysfs attributes with which default values can be overwritten.
-> > The proposed solution is basically putting together bits of v1 and v2 that are
-> > considered valuable and acceptable for mainline.
-> 
-> I'm still concerned that there's no way to obtain optimal boot time on a
-> heterogeneous system. Either the dynamic benchmarking is enabled, adding
-> 1 sec, or the benchmarking is skipped, and task distribution on the
-> heterogeneous CPUs is determined by the platform's CPU numbering and
-> chance, potentially impacting performance nondeterministically until
-> userspace sets the correct capacity values via sysfs.
-> 
-> I believe you tested the impact on boot time of using equal capacity
-> values and saw little difference. I'm wondering though, what was the CPU
-> numbering on that target?
-> 
+Some architectures may have intermediate power levels between on and off.
 
-My targets (Juno and TC2) had big cluster on 1,2 and little on the
-remaining cpus. Why do you think this might matter?
+This patch set adds the ability to declare multiple states for a given
+generic power domain, the idea is that the deepest state will be entered
+which does not violate any of the device or sub-domain latency constraints.
 
-Anyway, IMHO boot time performance is not what we are targeting here, so
-I wouldn't be too worried about this particular point.
+Changes since v10
+* Several reworks after Ulf Hansson's comments:
+ - merge the governor changes and core changes into a single patch
+ - remove the "name" of the state.
+ - add a default state allocation function
+ - convert governor power done ok function to while loop.
+ - reword commit message
 
-Best,
+Changes since v9
+*rebased on linux-next
 
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Changes since v8
+* rebased to linux-pm next
+
+Changes since v7:
+* rebase to 4.3-rc5
+
+* add genpd_init_simple (Lina's suggestion) for platforms that don't have
+multiple states and don't declare initial latencies. A default OFF
+state with initial 0 latencies will be used in this case.
+
+* Append Mark's patch to add "states" and "timings" to the genpd
+debugfs
+
+Changes since v6:
+* change int to unsigned int were appropriate.
+
+* spelling mistakes, and fix commit message for removal of latencies.
+
+Changes since v5:
+* rebase to 4.1-rc1
+
+* Pass state array as an init argument on pm_genpd_init
+
+* declare a default OFF state with no latencies, that will be used if a
+null state argument is given.
+
+* set the deepest state when using sync_poweroff.
+
+* create and use name allocation function in the debug area
+instead of inline.
+
+Changes since v4:
+* move to power_on/off callbacks out of the state array Platforms can
+check the state_idx to know what state the power on/off corresponds to.
+
+* convert states to pointer,
+Dynamically allocate the states array to save memory on platforms
+with several power domains.
+
+* rename target_state to state_idx and remove init_state.
+
+Changes since v3:
+* remove old power on/off function at the end of the
+series so that compilation will not break in between.
+
+Changes since v2:
+* remove state argument and macros from save/restore callbacks.
+
+* added init_state for platforms to pass the initial state when the genpd
+is initially off.
+
+* convert current genpd users for the structure changes.
+
+Changes since v1:
+* split the changes so that the actual logic that selects the target state
+is a separate patch.
+
+* move the cached logic out of the state function and add
+it back to default_power_down_ok.
+
+* rename default_power_down_ok_state to power_down_ok_for_state
+Axel Haslam (3):
+  PM / Domains: Support for multiple states
+  ARM: imx6: pm: declare pm domain latency on power_state struct.
+  PM / Domains: remove old power on/off latencies.
+
+ arch/arm/mach-imx/gpc.c              | 11 ++++--
+ drivers/base/power/domain.c          | 53 ++++++++++++++++++++++++---
+ drivers/base/power/domain_governor.c | 70 +++++++++++++++++++++++-------------
+ include/linux/pm_domain.h            | 11 ++++--
+ 4 files changed, 112 insertions(+), 33 deletions(-)
+
+-- 
+2.6.3
+
