@@ -1,60 +1,42 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3 v5] cpufreq: governor: Replace timers with
- utilization update callbacks
-Date: Tue, 9 Feb 2016 15:31:03 +0530
-Message-ID: <20160209100103.GB5726@in.ibm.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <1486401.1RcnnVKZNP@vostro.rjw.lan>
- <2848076.UWJmIl2O1K@vostro.rjw.lan>
- <2448026.UXsVxjJmrX@vostro.rjw.lan>
-Reply-To: ego@linux.vnet.ibm.com
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH RFC] Add cpufreq support
+Date: Tue, 9 Feb 2016 11:17:48 +0100
+Message-ID: <56B9BCCC.8060404@free.fr>
+References: <56B4D4BE.2040008@free.fr> <22002072.L04zy0K2AP@wuerfel>
+ <20160208131625.GI8294@vireshk> <7910928.pmJjZiV1Lk@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e31.co.us.ibm.com ([32.97.110.149]:54520 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbcBIKBh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 05:01:37 -0500
-Received: from localhost
-	by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Tue, 9 Feb 2016 03:01:36 -0700
-Content-Disposition: inline
-In-Reply-To: <2448026.UXsVxjJmrX@vostro.rjw.lan>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:15776 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756214AbcBIKRy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Feb 2016 05:17:54 -0500
+In-Reply-To: <7910928.pmJjZiV1Lk@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
 
-Hello Rafael,
+On 08/02/2016 14:45, Arnd Bergmann wrote:
 
-On Sun, Feb 07, 2016 at 03:50:31PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Instead of using a per-CPU deferrable timer for queuing up governor
-> work items, register a utilization update callback that will be
-> invoked from the scheduler on utilization changes.
-> 
-> The sampling rate is still the same as what was used for the
-> deferrable timers and the added irq_work overhead should be offset by
-> the eliminated timers overhead, so in theory the functional impact of
-> this patch should not be significant.
+> That's why I said we could introduce a 'v3' with the meaning
+> it should have had to start with: compatible means actually
+> compatible with the driver.
 
-I tested this patch series (including v5 of PATCH 3) on POWER with
-Viresh's CPUFreq test suite. I didn't see any issues with the
-patchset except for a lockdep splat involving "s_active" and
-"od_dbs_cdata.mutex", which was also observed on 4.5-rc3 and which
-was fixed by Viresh's recent patches. 
+If I understand correctly, something needs to change in the
+framework before I can push cpufreq support for my platform
+upstream, correct?
 
-With a kernbench run, there were no regression when compared to 4.5-rc3.
+Could you CC me if anything happens on that front?
 
-FWIW, Tested-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+In my local 4.4 branch, I think I should use whatever method
+was recommended at the time.
 
-> 
-> Thanks,
-> Rafael
+Was that to define the platform's init_late method, and call
+platform_device_register_simple from there? (Could you take
+a quick glance at the patch, and see if it is acceptable in
+the context of kernel 4.4?)
 
---
-Thanks and Regards
-gautham.
+Regards.
 
