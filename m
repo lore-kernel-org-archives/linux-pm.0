@@ -1,63 +1,53 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/3] randconfig warning fixes for thermal
-Date: Tue, 9 Feb 2016 14:18:16 -0800
-Message-ID: <20160209221815.GE28102@localhost.localdomain>
-References: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V4 6/6] cpufreq: governor: Create and traverse list of
+ policy_dbs to fix lockdep
+Date: Wed, 10 Feb 2016 00:10:53 +0100
+Message-ID: <CAJZ5v0i9JUo3jvj2RvoN+92jfMBWdXn-CkC9AN-rcgFdeum9Zw@mail.gmail.com>
+References: <cover.1454988295.git.viresh.kumar@linaro.org>
+	<4ad189a1cd04b05fbfd659ec81b4793a1c7b0189.1454988295.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="nHwqXXcoX0o6fKCv"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:33817 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932512AbcBIWSV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 17:18:21 -0500
-Received: by mail-pa0-f47.google.com with SMTP id kp3so689335pab.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2016 14:18:21 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1453740264-1972562-1-git-send-email-arnd@arndb.de>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:36649 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbcBIXKz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Feb 2016 18:10:55 -0500
+In-Reply-To: <4ad189a1cd04b05fbfd659ec81b4793a1c7b0189.1454988295.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, spear-devel@list.st.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Tue, Feb 9, 2016 at 4:31 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> An instance of 'struct dbs_data' can support multiple 'struct
+> policy_dbs_info' instances. To traverse all policy_dbs supported by a
+> dbs_data, create a list of policy_dbs within dbs_data.
+>
+> We can traverse this list now, instead of traversing the loop for all
+> online CPUs in update_sampling_rate(), to solve the circular dependency
+> lockdep reported by Juri (and verified by Shilpa) earlier:
 
---nHwqXXcoX0o6fKCv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In addition to the previous comment, here's my changelog for this patch:
 
-On Mon, Jan 25, 2016 at 05:44:09PM +0100, Arnd Bergmann wrote:
-> These are three simple fixes for ARM randconfig builds:
->=20
->  [PATCH 1/3] thermal: spear: use __maybe_unused for PM functions
->  [PATCH 2/3] thermal: allow spear-thermal driver to be a module
->  [PATCH 3/3] thermal: allow u8500-thermal driver to be a module
->=20
-> All three bugs are on configurationsn that are not important and
-> that rarely happen even with randconfig builds.
->=20
-> 	Arnd
+"The dbs_data_mutex lock is currently used in two places.  First,
+cpufreq_governor_dbs() uses it to guarantee mutual exlusion between
+invocations of governor operations from the core.  Second, it is used
+by ondemand governor's update_sampling_rate() to ensure the stability
+of data structures walked by it.
 
-Thanks a lot for your cleanups Arnd,
-queueing all three.
+The second usage is quite problematic, because update_sampling_rate()
+is called from a governor sysfs attribute's ->store callback and
+that leads to a deadlock scenario involving cpufreq_governor_exit()
+which runs under dbs_data_mutex.  Thus it is better to rework
+the code so update_sampling_rate() doesn't need to acquire
+dbs_data_mutex.
 
-Eduardo Valentin
+To that end, rework update_sampling_rate() to walk a list of
+policy_dbs objects supported by the dbs_data one it has been called
+for (instead of walking cpu_dbs_info object for all CPUs).  The list
+manipulation is protected with dbs_data->mutex which also is held
+around the execution of update_sampling_rate(), it is not necessary to
+hold dbs_data_mutex in that function any more."
 
-
---nHwqXXcoX0o6fKCv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAEBAgAGBQJWumWlAAoJEMLUO4d9pOJWvC4H/0joKNhCC0IO7g0RNbDUhSDr
-oOsLpPZf1G6hGEREmhbBjqY2eE6PhFlPVotka+RjijDBpAXz50qt2eXxbqD+67C7
-/ClbljN795UvshnKcBy+Pdsld2s+fHLcLZ8pc06RCm2yhiZBjeViVejuGjhaAVm5
-4pxHVPw8EFUkn9wkApzA6C0FTTgzY8fS3gk+yPK2s2fY9cXruI7l2R+2+Y5HMHMb
-Ek1CEg+S2pvBld7wq4AC6eov7ebHTlF27rN1iZIifkn2f88JWXTElJj+e2vaisGb
-n8T7CrGq2lImKSuyRpJa2Xidh+ZJ4pNExsUdz/EVcoBdgq86q/hXhxDFqJVC27k=
-=qoLj
------END PGP SIGNATURE-----
-
---nHwqXXcoX0o6fKCv--
+Thanks,
+Rafael
