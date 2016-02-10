@@ -1,110 +1,52 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
-Date: Wed, 10 Feb 2016 19:25:08 +0100
-Message-ID: <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
-	<1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
-	<CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
-	<56BB7AF4.8040708@nvidia.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Wed, 10 Feb 2016 11:47:07 -0800
+Message-ID: <56BB93BB.5050405@linaro.org>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <56B93548.9090006@linaro.org>
+ <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+ <5387313.xAhVpzgZCg@vostro.rjw.lan> <56BA8C29.4090905@linaro.org>
+ <CAJZ5v0gBzjz9d7eBLZj3bYNLexTCs+UtNpLwWyZMDTA_Gi=zRg@mail.gmail.com>
+ <CAJZ5v0jF4rJVeauZi08FYbDp6qsB4y3g--O4tx=C15go8z9nbw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56BB7AF4.8040708-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:36623 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbcBJTrK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 14:47:10 -0500
+Received: by mail-pf0-f173.google.com with SMTP id e127so16894140pfe.3
+        for <linux-pm@vger.kernel.org>; Wed, 10 Feb 2016 11:47:10 -0800 (PST)
+In-Reply-To: <CAJZ5v0jF4rJVeauZi08FYbDp6qsB4y3g--O4tx=C15go8z9nbw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 
-[...]
+On 02/09/2016 07:09 PM, Rafael J. Wysocki wrote:
+>>> >> I think additional hooks such as enqueue/dequeue would be needed in
+>>> >> RT/DL. The task tick callbacks will only run if a task in that class is
+>>> >> executing at the time of the tick. There could be intermittent RT/DL
+>>> >> task activity in a frequency domain (the only task activity there, no
+>>> >> CFS tasks) that doesn't happen to overlap the tick. Worst case the task
+>>> >> activity could be periodic in such a way that it never overlaps the tick
+>>> >> and the update is never made.
+>> >
+>> > So if I'm reading this correctly, it would be better to put the hooks
+>> > into update_curr_rt/dl()?
 
->>
->>>  /**
->>>   * tegra_powergate_power_on() - power on partition
->>>   * @id: partition ID
->>> @@ -319,35 +512,20 @@ EXPORT_SYMBOL(tegra_powergate_remove_clamping);
->>>  int tegra_powergate_sequence_power_up(unsigned int id, struct clk *clk,
->>>                                       struct reset_control *rst)
->>
->> There seems to be two viable ways for a driver to control tegra powergates.
->>
->> 1)
->> $Subject patch enables the use of runtime PM.
->>
->> 2)
->> The current tegra_powergate_sequence_power_up() and
->> tegra_powergate_power_off() API.
->>
->> It seems fragile to allow both options, but perhaps your are
->> protecting this with some lock to prevent concurrent accesses?
->
-> There is a lock protecting accesses to the PMC registers which
-> ultimately control the power domain. However, may be it would be better
-> to ensure that any power-domain registered with genpd cannot be
-> controlled by the legacy APIs. I have added a bitmap to mark valid
-> power-domains to ensure that only valid power domains can be controlled
-> by these legacy APIs. I could mark the power-domain invalid after
-> registering with genpd to ensure that it cannot be accessed by the
-> legacy APIs.
-
-That seems like a good way of making it more robust!
+That should AFAICS be sufficient to avoid stalling. It may be more than
+is required as that covers more than just enqueue/dequeue but I'm not
+sure offhand.
 
 >
->> Also, I assume you need the two options in a transition phase, before
->> you have deployed runtime PM for these drivers?
->
-> Right and some of the legacy APIs are entrenched in some drivers. So to
-> keep the patch set manageable it seems best to get some support in place
-> then start migrating the drivers.
+> If done this way, I guess we may pass rq_clock_task(rq) as the time
+> arg to cpufreq_update_util() from there and then the cpu_lock() call
+> I've added to this prototype won't be necessary any more.
 
-Thanks for elaborating on this! I get and like the idea of moving forward!
+Is it rq_clock_task() or rq_clock()? The former can omit irq time so may
+gradually fall behind wall clock time, delaying callbacks in cpufreq.
 
-[...]
-
->>> +
->>> +static void tegra_powergate_remove(struct tegra_pmc *pmc)
->>> +{
->>> +       struct tegra_powergate *pg, *n;
->>> +
->>> +       list_for_each_entry_safe(pg, n, &pmc->powergates_list, node) {
->>
->> The tegra powergate driver will hold a list of nvidia powergates
->> domains, and the generic PM domain will hold a list of all generic PM
->> domains.
->>
->> Perhaps there's a way to allow the generic PM domain to control this
->> by itself. If we for example used the struct device corresponding to
->> the powergate driver, genpd could use it to distinguish between
->> various instances of genpd structs..!? Maybe it would simplify the way
->> to deal with removing domains?
->
-> Yes, that would be ideal. However, would have require changing
-> genpd_init()? I am not sure how genpd would be able to access the device
-> struct for the powergate driver because we don't provide this via any
-> API I am aware of? And I am guessing that you don't wish to expose the
-> gpd_list to the world either.
->
-> If there is an easy way, I am open to it, but looking at it today, I am
-> not sure I see a simple way in which we could add a new API to do this.
-> However, may be I am missing something!
-
-If we add a new __pm_genpd_init() API, that could require a struct
-device to be provided. That API will thus invoke the existing
-pm_genpd_init() but also deal with the extra things needed here.
-
-I would also allow such an API to return an error code.
-
-Correspondingly, pm_genpd_remove() could be required to be provided
-with a struct device.
-
-Existing users of pm_genpd_init() can then convert to
-__pm_genpd_init() whenever suitable.
-
-Of course, another option is just to add new member in the genpd
-struct for the struct *device. The caller of pm_genpd_init() could
-check it, but allow it to be NULL. Although, the pm_genpd_remove() API
-would require that pointer to the struct device to be set...
-
-What do you think?
-
-Kind regards
-Uffe
+thanks,
+Steve
