@@ -1,49 +1,88 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: select IRQ_WORK in Kconfig
-Date: Wed, 10 Feb 2016 16:28:33 +0100
-Message-ID: <CAJZ5v0jqyd41Vzm61BEMeSHs=sAGYghM77nipBMVhQiyRfeqGw@mail.gmail.com>
-References: <1455117265-3007562-1-git-send-email-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1455117265-3007562-1-git-send-email-arnd@arndb.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+Subject: [PATCH 1/2] tools/power turbostat: Fixed turbo ratio stats for Intel Xeon x200 family
+Date: Wed, 10 Feb 2016 16:35:16 +0100
+Message-ID: <1455118517-14180-2-git-send-email-hubert.chrzaniuk@intel.com>
+References: <CAJZ5v0hyAeK9L+NcETZQXJKfmr+TX59bZ+759RbXz_we3wgzpg@mail.gmail.com>
+ <1455118517-14180-1-git-send-email-hubert.chrzaniuk@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:41811 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752453AbcBJPgQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Feb 2016 10:36:16 -0500
+In-Reply-To: <1455118517-14180-1-git-send-email-hubert.chrzaniuk@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: hubert.chrzaniuk@intel.com, lukasz.anaczkowski@intel.com, len.brown@intel.com, dasaratharaman.chandramouli@intel.com, linux-pm@vger.kernel.org
 
-On Wed, Feb 10, 2016 at 4:14 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> The cpufreq core code has started using the irq_work infrastructure, but that
-> can be disabled in Kconfig, causing a link failure:
->
-> drivers/cpufreq/cpufreq_governor.c: In function 'gov_queue_irq_work':
-> drivers/cpufreq/cpufreq_governor.c:251:3: error: implicit declaration of function 'irq_work_queue_on' [-Werror=implicit-function-declaration]
->
-> This adds an explicit 'select' to ensure it's always enabled.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 0144fa03ef46 ("cpufreq: governor: Replace timers with utilization update callbacks")
-> ---
->  drivers/cpufreq/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 3050e8d48887..ca05037dd565 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -3,6 +3,7 @@ menu "CPU Frequency scaling"
->  config CPU_FREQ
->         bool "CPU Frequency scaling"
->         select SRCU
-> +       select IRQ_WORK
->         help
->           CPU Frequency scaling allows you to change the clock speed of
->           CPUs on the fly. This is a nice method to save power, because
-> --
+Following changes have been made:
+- changed MSR_NHM_TURBO_RATIO_LIMIT to MSR_TURBO_RATIO_LIMIT in debug print
+  for consistency with Developer Manual
+- updated definition of bitfields in MSR_TURBO_RATIO_LIMIT and appropriate
+  parsing code
+- added x200 to list of architectures that do not support Nahlem compatible
+  definition of MSR_TURBO_RATIO_LIMIT register (x200 has the register but
+  bits definition is custom)
+- fixed typo in code that parses MSR_TURBO_RATIO_LIMIT
+  (logical instead of bitwise operator)
+- changed loop break condition because two concurrent turbo buckets may
+  have zero delta ratio which would be still valid and no necessarily
+  last bucket
 
-Good catch, thanks!
+Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-I'll update the patch to do that.
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 0dac7e0..765c669 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1330,12 +1330,13 @@ dump_knl_turbo_ratio_limits(void)
+ 
+ 	get_msr(base_cpu, MSR_NHM_TURBO_RATIO_LIMIT, &msr);
+ 
+-	fprintf(stderr, "cpu%d: MSR_NHM_TURBO_RATIO_LIMIT: 0x%08llx\n",
++	fprintf(stderr, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n",
+ 		base_cpu, msr);
+ 
+ 	/**
+ 	 * Turbo encoding in KNL is as follows:
+-	 * [7:0] -- Base value of number of active cores of bucket 1.
++	 * [0] -- Reserved
++	 * [7:1] -- Base value of number of active cores of bucket 1.
+ 	 * [15:8] -- Base value of freq ratio of bucket 1.
+ 	 * [20:16] -- +ve delta of number of active cores of bucket 2.
+ 	 * i.e. active cores of bucket 2 =
+@@ -1354,8 +1355,8 @@ dump_knl_turbo_ratio_limits(void)
+ 	 * [60:56]-- +ve delta of number of active cores of bucket 7.
+ 	 * [63:61]-- -ve delta of freq ratio of bucket 7.
+ 	 */
+-	cores = msr & 0xFF;
+-	ratio = (msr >> 8) && 0xFF;
++	cores = (msr & 0xFF) >> 1;
++	ratio = (msr >> 8) & 0xFF;
+ 	if (ratio > 0)
+ 		fprintf(stderr,
+ 			"%d * %.0f = %.0f MHz max turbo %d active cores\n",
+@@ -1363,8 +1364,8 @@ dump_knl_turbo_ratio_limits(void)
+ 
+ 	for (i = 16; i < 64; i = i + 8) {
+ 		delta_cores = (msr >> i) & 0x1F;
+-		delta_ratio = (msr >> (i + 5)) && 0x7;
+-		if (!delta_cores || !delta_ratio)
++		delta_ratio = (msr >> (i + 5)) & 0x7;
++		if (!delta_cores)
+ 			return;
+ 		cores = cores + delta_cores;
+ 		ratio = ratio - delta_ratio;
+@@ -1889,6 +1890,7 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 	/* Nehalem compatible, but do not include turbo-ratio limit support */
+ 	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
+ 	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
++	case 0x57:	/* PHI - Knights Landing (different MSR definition) */
+ 		return 0;
+ 	default:
+ 		return 1;
+-- 
+1.8.3.1
 
-Thanks,
-Rafael
