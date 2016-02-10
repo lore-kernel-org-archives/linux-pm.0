@@ -1,98 +1,86 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 2/6] drivers/cpufreq: implement
- init_cpu_capacity_default()
-Date: Wed, 10 Feb 2016 14:25:24 +0000
-Message-ID: <20160210142524.GE11415@e106622-lin>
-References: <CAKfTPtDGk5BC25WqHdhDYDOBgUsuidAMhrXS=eDi6wJPZjfrwA@mail.gmail.com>
- <20160204093559.GA14099@e105550-lin.cambridge.arm.com>
- <CAKfTPtB4G3bP5N0hU6zWXJTddO34x3RnyGpp-4_otc8O=Wq2hw@mail.gmail.com>
- <20160204121620.GB29586@e106622-lin>
- <CAKfTPtDVasamRtG2kLxP0HsohmVQTPrXRgx36e+jb3gozDoo6g@mail.gmail.com>
- <20160204141345.GD29586@e106622-lin>
- <CAKfTPtDWP-AgqXsSuxCfVj33dh+i7oqDTkL=gUy7n-AB1anoow@mail.gmail.com>
- <CAKfTPtD4jTmUZoShGBm3oAFywizjp8jsEukmkeZU+x+zk-KZRA@mail.gmail.com>
- <20160205093040.GG29586@e106622-lin>
- <56BA0BCA.6090903@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Wed, 10 Feb 2016 15:26:31 +0100
+Message-ID: <CAJZ5v0jRSxZyKixTvOc3BDVxBLzx1HVeJhNEzX4UZA7txvEM9A@mail.gmail.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+	<56B93548.9090006@linaro.org>
+	<CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+	<5387313.xAhVpzgZCg@vostro.rjw.lan>
+	<20160210123342.GA11415@e106622-lin>
+	<CAJZ5v0gWV+Qc2CM6YN90=s+TE2HCDOZVCRH7nOrKFW+kGiOpDA@mail.gmail.com>
+	<20160210140315.GD11415@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <56BA0BCA.6090903-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>
-Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:33086 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbcBJO0c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 09:26:32 -0500
+In-Reply-To: <20160210140315.GD11415@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 09/02/16 15:54, Dietmar Eggemann wrote:
-> On 05/02/16 09:30, Juri Lelli wrote:
-> > On 04/02/16 16:46, Vincent Guittot wrote:
-> >> On 4 February 2016 at 16:44, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> >>> On 4 February 2016 at 15:13, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>>> On 04/02/16 13:35, Vincent Guittot wrote:
-> >>>>> On 4 February 2016 at 13:16, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>>>>> Hi Vincent,
-> >>>>>>
-> >>>>>> On 04/02/16 13:03, Vincent Guittot wrote:
-> >>>>>>> On 4 February 2016 at 10:36, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org> wrote:
-> >>>>>>>> On Wed, Feb 03, 2016 at 10:04:37PM +0100, Vincent Guittot wrote:
-> >>>>>>>>> On 3 February 2016 at 12:59, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
-> 
-> [...]
-> 
-> >>>
-> >>> AFAICT, They don't have a dedicated cpufreq driver.
-> >>>
-> >>> More generally speaking, it can take time before having
-> >>
-> >> email sent before the ne d of the sentence ...
-> >>
-> >> More generally speaking, it can take time before having a cpufreq
-> >> driver whereas we want to run and test scheduler behavior of these
-> >> heterogenous platform
-> >>
-> > 
-> > I'm not familiar with this platform, but from what you are saying and
-> > what I could find online, it looks like full Linux support is not
-> > finished yet. Can we consider that as still in development? And if we
-> > can do that, maybe is fair enough that we use the sysfs interface to
-> > play with that platform until support is complete.
-> > 
-> > Do others have any opinion on this point?
-> 
-> IMHO, the solution should work for all of heterogeneous systems, (a) w/
-> cpufreq and driver, (b) w/ cpufreq and no driver loaded (yet) or (c) w/o
-> cpufreq.
-> 
-> That means that you can't put the benchmarking only into
-> cpufreq_register_driver() and rely on cpufreq policy topology.
-> 
-> Maybe you could do this for (b) and (c) inside an initcall and use
-> topology_core_cpumask() to figure out which cpu to profile?
-> 
-> This would then happen w/ the cpu frequency set by the fw.
-> 
-> But this then has to be synchronized somehow with the benchmarking
-> approach in cpufreq_register_driver().
-> 
+On Wed, Feb 10, 2016 at 3:03 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+> On 10/02/16 14:23, Rafael J. Wysocki wrote:
+>> On Wed, Feb 10, 2016 at 1:33 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+>> > Hi Rafael,
+>> >
+>> > On 09/02/16 21:05, Rafael J. Wysocki wrote:
+>> >
+>> > [...]
+>> >
+>> >> +/**
+>> >> + * cpufreq_update_util - Take a note about CPU utilization changes.
+>> >> + * @util: Current utilization.
+>> >> + * @max: Utilization ceiling.
+>> >> + *
+>> >> + * This function is called by the scheduler on every invocation of
+>> >> + * update_load_avg() on the CPU whose utilization is being updated.
+>> >> + */
+>> >> +void cpufreq_update_util(unsigned long util, unsigned long max)
+>> >> +{
+>> >> +     struct update_util_data *data;
+>> >> +
+>> >> +     rcu_read_lock();
+>> >> +
+>> >> +     data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
+>> >> +     if (data && data->func)
+>> >> +             data->func(data, cpu_clock(smp_processor_id()), util, max);
+>> >
+>> > Are util and max used anywhere?
+>>
+>> They aren't yet, but they will be.
+>>
+>> Maybe not in this cycle (it it takes too much time to integrate the
+>> preliminary changes), but we definitely are going to use those
+>> numbers.
+>>
+>
+> Oh OK. However, I was under the impression that this set was only
+> proposing a way to get rid of timers and use the scheduler as heartbeat
+> for cpufreq governors. The governors' sample based approach wouldn't
+> change, though. Am I wrong in assuming this?
 
-Yes, I guess the tricky situation is the mixed one, when we might have
-the benchmarking executing in a late_initcall when cpufreq kicks in. Or
-we can also end up doing the benchmarking twice if cpufreq finishes
-initialization after the late_initcall has been executed.
+Your assumption is correct.
 
-I'm not sure how this can be solved in a clean way. Ideally we would
-start benchmarking in the late_initcall (at the frequency set by fw) and
-then bailout if cpufreq kicks in. That should work also for the cpufreq
-driver as a module case. But, we could do the same thing twice if the
-late_initcall is faster or gets executed before cpufreq starts to be
-initialized.
+The sample-based approach doesn't change at this time, simply to avoid
+making too many changes in one go.
 
-Any suggestion anyone? :)
+The next step, as I'm seeing it, would be to use the
+scheduler-provided utilization in the governor computations instead of
+the load estimation made by governors themselves.
 
-Best,
+> Also, is linux-pm/bleeding-edge the one I want to fetch to try this set out?
 
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+You can get it from there, but possibly with some changes unrelated to cpufreq.
+
+You can also pull from the pm-cpufreq-test branch to get the cpufreq
+changes only.
+
+Apart from that, I'm going resend the $subject set with updated patch
+[1/3] for completeness.
+
+Thanks,
+Rafael
