@@ -1,77 +1,107 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [RFC v11 1/3] PM / Domains: Support for multiple states
-Date: Wed, 10 Feb 2016 11:56:59 +0100
-Message-ID: <CAKXjFTOkbK5QkYTQY8+Z7DHyJ1Wf=wyGVdqAckEFt6X=FaV9qg@mail.gmail.com>
-References: <1455023751-32521-1-git-send-email-ahaslam@baylibre.com>
-	<1455023751-32521-2-git-send-email-ahaslam@baylibre.com>
-	<CAPDyKFpyFj=8RAwXH0H7VM=MVrLbVDwm_1hNngPyV6OyNqrm_g@mail.gmail.com>
-	<CAKXjFTMzgy1gp5rG4N8UOKkoUa1qMzzrU2Vy7pNF8+FiNbinUQ@mail.gmail.com>
-	<CAPDyKFqg0YkAvS2xZewpF4EOeeaVP9jWQxcwkDB5ofOrONq6+g@mail.gmail.com>
-	<CAKXjFTNOO8LG6=Wt8M3rnSZ5NeZSmWk4=j0N3=GgbRm=C98Vmw@mail.gmail.com>
-	<CAPDyKFqZ6zZE7gOpgpEozmfU+Wbh2PcR=rpjsDwUBTTa1M0k4A@mail.gmail.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 10/14] Documentation: DT: bindings: Add power domain
+ info for NVIDIA PMC
+Date: Wed, 10 Feb 2016 10:57:11 +0000
+Message-ID: <56BB1787.4050801@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-11-git-send-email-jonathanh@nvidia.com>
+ <20160129160625.GA21918@rob-hp-laptop> <56B1DE40.7080403@nvidia.com>
+ <CAL_JsqLcoKW2znNNvM=sYLmZ6O6ZWqn7+aXspkXoONw6-O1ygg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:33634 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbcBJK5A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 05:57:00 -0500
-Received: by mail-ob0-f176.google.com with SMTP id is5so21788952obc.0
-        for <linux-pm@vger.kernel.org>; Wed, 10 Feb 2016 02:56:59 -0800 (PST)
-In-Reply-To: <CAPDyKFqZ6zZE7gOpgpEozmfU+Wbh2PcR=rpjsDwUBTTa1M0k4A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqLcoKW2znNNvM=sYLmZ6O6ZWqn7+aXspkXoONw6-O1ygg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Jon Hunter <jonathanh@nvidia.com>
 
-On Wed, Feb 10, 2016 at 11:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> + Jon
->
->>>>> >  struct generic_pm_domain {
->>>>> >         struct dev_pm_domain domain;    /* PM domain operations */
->>>>> >         struct list_head gpd_list_node; /* Node in the global PM domains
->>>>> > list */
->>>>> > @@ -66,6 +71,10 @@ struct generic_pm_domain {
->>>>> >         void (*detach_dev)(struct generic_pm_domain *domain,
->>>>> >                            struct device *dev);
->>>>> >         unsigned int flags;             /* Bit field of configs for
->>>>> > genpd */
->>>>> > +       struct genpd_power_state *states;
->>>
->>> I suggest we change this to:
->>>
->>> struct genpd_power_state states[MAX_GENPD_STATES];
->>>
->>> I don't know what value MAX_GENPD_STATES should have but perhaps 8 is
->>> good enough. In that way the number of supported states will be
->>> "static". It's not the nicest thing to do, but I can't figure out a
->>> better option.
+
+On 03/02/16 15:48, Rob Herring wrote:
+> On Wed, Feb 3, 2016 at 5:02 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
 >>
->> Ok understood, i had a doubt because in my first couple of series i was doing
->> that, but there was a suggestion form Geert to rather allocate the
->> states to save the unused memory.
->> Is it ok if i implement it with  static struct for now to keep this
->> series small?
->
-> From my point of view, yes.
-
-
-Ok,, i will go for static state table in v12
-
-Thanks,
-Axel
-
->
+>> On 29/01/16 16:06, Rob Herring wrote:
+>>> On Thu, Jan 28, 2016 at 04:33:48PM +0000, Jon Hunter wrote:
+>>>> Add power-domain binding documentation for the NVIDIA PMC driver in
+>>>> order to support generic power-domains.
+>>>>
+>>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>> ---
+>>>>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 55 ++++++++++++++++++++++
+>>>>  1 file changed, 55 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>>> index 53aa5496c5cf..3c77373aa826 100644
+>>>> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>>> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>>> @@ -1,5 +1,7 @@
+>>>>  NVIDIA Tegra Power Management Controller (PMC)
+>>>>
+>>>> +== Power Management Controller Node ==
+>>>> +
+>>>>  The PMC block interacts with an external Power Management Unit. The PMC
+>>>>  mostly controls the entry and exit of the system from different sleep
+>>>>  modes. It provides power-gating controllers for SoC and CPU power-islands.
+>>>> @@ -70,6 +72,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+>>>>                       Defaults to 0. Valid values are described in section 12.5.2
+>>>>                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
+>>>>
+>>>> +Optional nodes:
+>>>> +- powergates : This node contains a hierarchy of power domain nodes, which
+>>>> +           should match the powergates on the Tegra SoC.
+>>>> +
+>>>>  Example:
+>>>>
+>>>>  / SoC dts including file
+>>>> @@ -115,3 +121,52 @@ pmc@7000f400 {
+>>>>      };
+>>>>      ...
+>>>>  };
+>>>> +
+>>>> +
+>>>> +== PM Domain Nodes ==
+>>>> +
+>>>> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
+>>>> +that can be power-gated by the PMC and should be named appropriately.
+>>>> +
+>>>> +Required properties:
+>>>> +  - clocks: Must contain an entry for each clock required by the PMC for
+>>>> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
+>>>> +  - resets: Must contain an entry for each reset required by the PMC for
+>>>> +    controlling a power-gate. See ../reset/reset.txt for details.
+>>>> +  - nvidia,powergate: Integer cell that contains an identifier for the PMC
+>>>> +    power-gate that is associated with the power-domain. Please refer to
+>>>> +    the Tegra TRM for more details.
+>>>
+>>> Why not make this value be the power-domain cell for consumers and the
+>>> pmc be the phandle.
 >>
->> Otherwise, i will implement the error code return and checking from
->> pm_genpd_init.
+>> Is there anything wrong with using a label for the consumers? Seems
+>> simpler, if you can just say ...
 >>
->
-> You may try that, but it will for sure involve a lot more changes.
->
-> Perhaps we should postpone that until the pm_genpd_remove() API has
-> been merged, as it seems somewhat related.
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2016-February/404504.html
->
-> Kind regards
-> Uffe
+>>         adma: adma@702e2000 {
+>>                 ...
+>>                 power-domains = <&pd_audio>;
+>>                 ...
+>>         };
+> 
+> Only that is a bit unusual. It would only really matter if we had some
+> common parsing that we wanted to share. I'd look at other examples and
+> try to align. If there's no clear pattern, then it is fine.
+
+So I have been having a look at this and it appears to be mixed across
+the various SoCs. It seems that those SoCs that define the generic PM
+domains statically in the machine/soc code use a phandle plus a argument
+to identify the power domain. However, for those that describe the
+power-domain in the DT (listing clocks, resets, etc), they just use a
+phandle to the power-domain itself (like I have above). It looks like if
+you are describing the power domain in DT, then it is much simplier to
+do this.
+
+Given that I wish to keep the description of the power-domain in DT, it
+is much easier to stick with the same conventions that the other SoCs
+are using.
+
+Cheers
+Jon
