@@ -1,229 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v7 1/3] cpufreq: Add mechanism for registering utilization update callbacks
-Date: Thu, 11 Feb 2016 00:01:16 +0100
-Message-ID: <4060202.Yh71UT17sA@vostro.rjw.lan>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <2111826.yKEUOzphHC@vostro.rjw.lan> <37328841.RPntzkbDJG@vostro.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v6 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Wed, 10 Feb 2016 15:11:43 -0800
+Message-ID: <008201d16458$69b2a4f0$3d17eed0$@net>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <2111826.yKEUOzphHC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47844 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750864AbcBJXAE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 18:00:04 -0500
-In-Reply-To: <37328841.RPntzkbDJG@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2111826.yKEUOzphHC@vostro.rjw.lan>
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2016.02.10 07:17 Rafael J. Wysocki wrote:
+> On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
+>>
+>> The following patch series introduces a mechanism allowing the cpufreq core
+>> and "setpolicy" drivers to provide utilization update callbacks to be invoked
+>> by the scheduler on utilization changes.  Those callbacks can be used to run
+>> the sampling and frequency adjustments code (intel_pstate) or to schedule the
+>> execution of that code in process context (cpufreq core) instead of per-CPU
+>> deferrable timers used in cpufreq today (which Thomas complained about during
+>> the last Kernel Summit).
 
-Introduce a mechanism by which parts of the cpufreq subsystem
-("setpolicy" drivers or the core) can register callbacks to be
-executed from cpufreq_update_util() which is invoked by the
-scheduler's update_load_avg() on CPU utilization changes.
+This patch set solves a long standing issue with the intel_pstate driver.
+The issue began with the introduction of the "duration" method for deciding
+if the CPU had been idle for a long time resulting in forcing the
+target pstate downwards. Often this was the correct action, but sometimes this
+was the wrong thing to do, because the cpu was actually very busy, but just so
+happened to be idle on jiffy boundaries (perhaps similar to what Steve Muckle
+was referring to on another branch of this thread).
 
-This allows the "setpolicy" drivers to dispense with their timers
-and do all of the computations they need and frequency/voltage
-adjustments in the update_load_avg() code path, among other things.
+For an idle system, this patch set seems to change the maximum duration from
+4 seconds to 0.5 seconds for most CPUs. However, when using v1 of patches 1
+and 2 of 3 and v5 of 3 of 3, sometimes the durations (time between passes of
+the intel-pstate driver for a given CPU) of upwards of 120 seconds were observed.
+When patches 1, 2, and 3 of 3 v6 were used, the maximum observed durations of an
+idle system were on the order of 500 milliseconds for most CPUs, but CPU 6
+sometimes went to 3.5 seconds and CPU 7 sometimes went to 4 seconds (small
+sample space, I'll consider to run an overnight test for a much much larger
+sample space). Note 4 seconds, is O.K., and what it was before, I'm just noting
+it is all.
 
-The update_load_avg() changes were suggested by Peter Zijlstra.
+I have a bunch of graphs, if anyone wants to see the supporting data.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-
-Changes from v6:
-- Steve suggested to use rq_clock() instead of rq_clock_task() as the time
-  argument for cpufreq_update_util() as that seems to be more suitable for
-  this purpose.
-
-Thanks,
-Rafael
-
----
- drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |   17 +++++++++++++++++
- kernel/sched/deadline.c   |    3 +++
- kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
- kernel/sched/rt.c         |    3 +++
- kernel/sched/sched.h      |    1 +
- 6 files changed, 94 insertions(+), 1 deletion(-)
-
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -151,6 +151,19 @@ static inline bool policy_is_shared(stru
- extern struct kobject *cpufreq_global_kobject;
- 
- #ifdef CONFIG_CPU_FREQ
-+void cpufreq_update_util(u64 time, unsigned long util, unsigned long max);
-+static inline void cpufreq_trigger_update(u64 time)
-+{
-+	cpufreq_update_util(time, ULONG_MAX, 0);
-+}
-+
-+struct update_util_data {
-+	void (*func)(struct update_util_data *data,
-+		     u64 time, unsigned long util, unsigned long max);
-+};
-+
-+void cpufreq_set_update_util_data(int cpu, struct update_util_data *data);
-+
- unsigned int cpufreq_get(unsigned int cpu);
- unsigned int cpufreq_quick_get(unsigned int cpu);
- unsigned int cpufreq_quick_get_max(unsigned int cpu);
-@@ -162,6 +175,10 @@ int cpufreq_update_policy(unsigned int c
- bool have_governor_per_policy(void);
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
- #else
-+static inline void cpufreq_update_util(u64 time, unsigned long util,
-+				       unsigned long max) {}
-+static inline void cpufreq_trigger_update(u64 time) {}
-+
- static inline unsigned int cpufreq_get(unsigned int cpu)
- {
- 	return 0;
-Index: linux-pm/kernel/sched/sched.h
-===================================================================
---- linux-pm.orig/kernel/sched/sched.h
-+++ linux-pm/kernel/sched/sched.h
-@@ -9,6 +9,7 @@
- #include <linux/irq_work.h>
- #include <linux/tick.h>
- #include <linux/slab.h>
-+#include <linux/cpufreq.h>
- 
- #include "cpupri.h"
- #include "cpudeadline.h"
-Index: linux-pm/kernel/sched/fair.c
-===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -2824,7 +2824,8 @@ static inline void update_load_avg(struc
- {
- 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
- 	u64 now = cfs_rq_clock_task(cfs_rq);
--	int cpu = cpu_of(rq_of(cfs_rq));
-+	struct rq *rq = rq_of(cfs_rq);
-+	int cpu = cpu_of(rq);
- 
- 	/*
- 	 * Track task load average for carrying it to new CPU after migrated, and
-@@ -2836,6 +2837,29 @@ static inline void update_load_avg(struc
- 
- 	if (update_cfs_rq_load_avg(now, cfs_rq) && update_tg)
- 		update_tg_load_avg(cfs_rq, 0);
-+
-+	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
-+		unsigned long max = rq->cpu_capacity_orig;
-+
-+		/*
-+		 * There are a few boundary cases this might miss but it should
-+		 * get called often enough that that should (hopefully) not be
-+		 * a real problem -- added to that it only calls on the local
-+		 * CPU, so if we enqueue remotely we'll miss an update, but
-+		 * the next tick/schedule should update.
-+		 *
-+		 * It will not get called when we go idle, because the idle
-+		 * thread is a different class (!fair), nor will the utilization
-+		 * number include things like RT tasks.
-+		 *
-+		 * As is, the util number is not freq-invariant (we'd have to
-+		 * implement arch_scale_freq_capacity() for that).
-+		 *
-+		 * See cpu_util().
-+		 */
-+		cpufreq_update_util(rq_clock(rq),
-+				    min(cfs_rq->avg.util_avg, max), max);
-+	}
- }
- 
- static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
-Index: linux-pm/kernel/sched/deadline.c
-===================================================================
---- linux-pm.orig/kernel/sched/deadline.c
-+++ linux-pm/kernel/sched/deadline.c
-@@ -726,6 +726,9 @@ static void update_curr_dl(struct rq *rq
- 	if (!dl_task(curr) || !on_dl_rq(dl_se))
- 		return;
- 
-+	/* Kick a cpufreq update to prevent it from stalling. */
-+	cpufreq_trigger_update(rq_clock(rq));
-+
- 	/*
- 	 * Consumed budget is computed considering the time as
- 	 * observed by schedulable tasks (excluding time spent
-Index: linux-pm/kernel/sched/rt.c
-===================================================================
---- linux-pm.orig/kernel/sched/rt.c
-+++ linux-pm/kernel/sched/rt.c
-@@ -949,6 +949,9 @@ static void update_curr_rt(struct rq *rq
- 	if (unlikely((s64)delta_exec <= 0))
- 		return;
- 
-+	/* Kick a cpufreq update to prevent it from stalling. */
-+	cpufreq_trigger_update(rq_clock(rq));
-+
- 	schedstat_set(curr->se.statistics.exec_max,
- 		      max(curr->se.statistics.exec_max, delta_exec));
- 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -102,6 +102,51 @@ static LIST_HEAD(cpufreq_governor_list);
- static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
-+
-+static DEFINE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
-+
-+/**
-+ * cpufreq_set_update_util_data - Populate the CPU's update_util_data pointer.
-+ * @cpu: The CPU to set the pointer for.
-+ * @data: New pointer value.
-+ *
-+ * Set and publish the update_util_data pointer for the given CPU.  That pointer
-+ * points to a struct update_util_data object containing a callback function
-+ * to call from cpufreq_update_util().  That function will be called from an RCU
-+ * read-side critical section, so it must not sleep.
-+ *
-+ * Callers must use RCU callbacks to free any memory that might be accessed
-+ * via the old update_util_data pointer or invoke synchronize_rcu() right after
-+ * this function to avoid use-after-free.
-+ */
-+void cpufreq_set_update_util_data(int cpu, struct update_util_data *data)
-+{
-+	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_set_update_util_data);
-+
-+/**
-+ * cpufreq_update_util - Take a note about CPU utilization changes.
-+ * @time: Current time.
-+ * @util: Current utilization.
-+ * @max: Utilization ceiling.
-+ *
-+ * This function is called by the scheduler on every invocation of
-+ * update_load_avg() on the CPU whose utilization is being updated.
-+ */
-+void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
-+{
-+	struct update_util_data *data;
-+
-+	rcu_read_lock();
-+
-+	data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
-+	if (data && data->func)
-+		data->func(data, time, util, max);
-+
-+	rcu_read_unlock();
-+}
-+
- DEFINE_MUTEX(cpufreq_governor_lock);
- 
- /* Flag to suspend/resume CPUFreq governors */
-
+My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
