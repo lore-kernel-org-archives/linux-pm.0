@@ -1,72 +1,36 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/10] cpufreq: Clean up default and fallback governor
- setup
-Date: Wed, 10 Feb 2016 10:45:14 +0530
-Message-ID: <20160210051514.GA31787@in.ibm.com>
-References: <3705929.bslqXH980s@vostro.rjw.lan>
- <9008098.QDD8C89zDx@vostro.rjw.lan>
- <7056089.34C11T15Ra@vostro.rjw.lan>
-Reply-To: ego@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 6/6] cpufreq: governor: Create and traverse list of
+ policy_dbs to fix lockdep
+Date: Wed, 10 Feb 2016 10:46:05 +0530
+Message-ID: <20160210051605.GO22111@vireshk>
+References: <cover.1454988295.git.viresh.kumar@linaro.org>
+ <4ad189a1cd04b05fbfd659ec81b4793a1c7b0189.1454988295.git.viresh.kumar@linaro.org>
+ <1643885.vh1AZTynbP@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:39086 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbcBJFPl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 00:15:41 -0500
-Received: from localhost
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-	Tue, 9 Feb 2016 22:15:41 -0700
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:35373 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbcBJFQI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 00:16:08 -0500
+Received: by mail-pa0-f45.google.com with SMTP id ho8so5896158pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 09 Feb 2016 21:16:08 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <7056089.34C11T15Ra@vostro.rjw.lan>
+In-Reply-To: <1643885.vh1AZTynbP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Saravana Kannan <skannan@codeaurora.org>
+Cc: juri.lelli@arm.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, peterz@infradead.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
 
-Hello Rafael,
-
-On Fri, Feb 05, 2016 at 03:11:54AM +0100, Rafael J. Wysocki wrote:
-[..snip..]
-> Index: linux-pm/drivers/cpufreq/cpufreq_performance.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_performance.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_performance.c
-> @@ -33,10 +33,7 @@ static int cpufreq_governor_performance(
->  	return 0;
->  }
+On 09-02-16, 21:23, Rafael J. Wysocki wrote:
+> > +	count = dbs_data->usage_count--;
 > 
-> -#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
-> -static
-> -#endif
-> -struct cpufreq_governor cpufreq_gov_performance = {
-> +static struct cpufreq_governor cpufreq_gov_performance = {
->  	.name		= "performance",
->  	.governor	= cpufreq_governor_performance,
->  	.owner		= THIS_MODULE,
-> @@ -52,6 +49,19 @@ static void __exit cpufreq_gov_performan
->  	cpufreq_unregister_governor(&cpufreq_gov_performance);
->  }
+> This appears to be planting a bug.
 > 
-> +#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-> +struct cpufreq_governor *cpufreq_default_governor(void)
-> +{
-> +	return &cpufreq_gov_performance;
-> +}
-> +#endif
-> +#ifndef CONFIG_CPU_FREQ_GOV_PERFORMANCE_MODULE
+> The way you wrote it the decrementation will take place after the assignment, so
+> count will contain the old value.
 
-Shouldn't this be #ifdef ?
+Oh crap, what was I smoking :)
 
-> +struct cpufreq_governor *cpufreq_fallback_governor(void)
-> +{
-> +	return &cpufreq_gov_performance;
-> +}
-> +#endif
-
-
---
-Thanks and Regards
-gautham.
-
+-- 
+viresh
