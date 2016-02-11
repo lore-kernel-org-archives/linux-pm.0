@@ -1,55 +1,119 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] PM / OPP: Fix NULL pointer dereference when no regulator is
- defined
-Date: Thu, 11 Feb 2016 17:13:07 +0100
-Message-ID: <6387373.HWURUPOrgK@amdc1976>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
+Date: Thu, 11 Feb 2016 16:38:36 +0000
+Message-ID: <56BCB90C.8000302@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+ <56BB7AF4.8040708@nvidia.com>
+ <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
+ <56BC50C2.7050609@nvidia.com>
+ <CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng@mail.gmail.com>
+ <56BC5EE0.2040804@nvidia.com>
+ <CAPDyKFq_0t4tcvkgMBW8p8ubJDALWMjdhgGM+_Z6auRxEkSPdA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:47057 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbcBKQNz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 11:13:55 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFq_0t4tcvkgMBW8p8ubJDALWMjdhgGM+_Z6auRxEkSPdA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Commit 7d34d56ef334 ("PM / OPP: Disable OPPs that aren't
-supported by the regulator") causes NULL pointer dereference
-OOPS when no regulator for OPP is defined.  Fix it by
-replacing IS_ERR() check with IS_ERR_OR_NULL() one (since
-providing regulator for OPP is optional).
-
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Fixes: 7d34d56ef334 ("PM / OPP: Disable OPPs that aren't supported by the regulator")
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
-This fixes linux-pm/linux-next tree boot hang regression on
-Exynos4412 SoC based Odroid-U3 board.
-
-Rafael, please apply.  Thank you!
-
- drivers/base/power/opp/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index ab711c2..d7cd4e2 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -975,7 +975,7 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- {
- 	struct regulator *reg = dev_opp->regulator;
- 
--	if (!IS_ERR(reg) &&
-+	if (!IS_ERR_OR_NULL(reg) &&
- 	    !regulator_is_supported_voltage(reg, opp->u_volt_min,
- 					    opp->u_volt_max)) {
- 		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
--- 
-1.9.1
 
 
+On 11/02/16 10:28, Ulf Hansson wrote:
+> On 11 February 2016 at 11:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>
+>> On 11/02/16 09:57, Ulf Hansson wrote:
+>>> On 11 February 2016 at 10:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>>
+>>>> On 10/02/16 18:25, Ulf Hansson wrote:
+>>>>
+>>>> [snip]
+>>>>
+>>>>>>> Perhaps there's a way to allow the generic PM domain to control this
+>>>>>>> by itself. If we for example used the struct device corresponding to
+>>>>>>> the powergate driver, genpd could use it to distinguish between
+>>>>>>> various instances of genpd structs..!? Maybe it would simplify the way
+>>>>>>> to deal with removing domains?
+>>>>>>
+>>>>>> Yes, that would be ideal. However, would have require changing
+>>>>>> genpd_init()? I am not sure how genpd would be able to access the device
+>>>>>> struct for the powergate driver because we don't provide this via any
+>>>>>> API I am aware of? And I am guessing that you don't wish to expose the
+>>>>>> gpd_list to the world either.
+>>>>>>
+>>>>>> If there is an easy way, I am open to it, but looking at it today, I am
+>>>>>> not sure I see a simple way in which we could add a new API to do this.
+>>>>>> However, may be I am missing something!
+>>>>>
+>>>>> If we add a new __pm_genpd_init() API, that could require a struct
+>>>>> device to be provided. That API will thus invoke the existing
+>>>>> pm_genpd_init() but also deal with the extra things needed here.
+>>>>>
+>>>>> I would also allow such an API to return an error code.
+>>>>>
+>>>>> Correspondingly, pm_genpd_remove() could be required to be provided
+>>>>> with a struct device.
+>>>>>
+>>>>> Existing users of pm_genpd_init() can then convert to
+>>>>> __pm_genpd_init() whenever suitable.
+>>>>>
+>>>>> Of course, another option is just to add new member in the genpd
+>>>>> struct for the struct *device. The caller of pm_genpd_init() could
+>>>>> check it, but allow it to be NULL. Although, the pm_genpd_remove() API
+>>>>> would require that pointer to the struct device to be set...
+>>>>>
+>>>>> What do you think?
+>>>>
+>>>> Yes, sounds good. May be it is simpler just to add a new member and let
+>>>> the platform genpd driver handle it.
+>>>>
+>>>> I am wondering if in addition to pm_genpd_remove(), we then just have a
+>>>> function called pm_genpd_remove_tail(), which allows you to pass the
+>>>> struct device pointer and will remove the last pm-domain from the
+>>>> gpd_list and return the genpd pointer if successful. Internally, it will
+>>>> call pm_genpd_remove(). It seems to me that if there are nested
+>>>> pm-domains, then we probably want to remove them starting from the tail
+>>>> as opposed to the head.
+>>>>
+>>>> How does that sound?
+>>>
+>>> Why not make pm_genpd_remove() to behave as you describe for
+>>> pm_genpd_remove_tail()?
+>>> That's probably the only sane way to remove genpds anyhow!?
+>>
+>> Simply to offer flexibility. I could see that for some devices that have
+>> no dependencies between pm-domains and have a static list of pm-domains,
+>> they can simply call pm_genpd_remove() for a given pm-domain. However,
+>> that said, I can envision a case where a single pm-domain would be
+>> removed by itself and so may be there is no benefit?
+> 
+> If I understand correctly, you agree to try with the most simple
+> approach first and thus without providing too much flexibility.
+> 
+> Anyway, I am looking forward to review your next version of the patchset! :-)
+
+So one snag I hit with this, is that in order to remove a pm-domain, I
+first need to check if it is a subdomain of any other domains and if so
+remove it as a subdomain first. Before, this was simple because I called
+pm_genpd_remove_subdomain if the domain had a parent, and then called
+pm_genpd_remove().
+
+With the proposal we have discussed, I no longer have any knowledge of
+whether the pm-domain is a subdomain or not because pm_genpd_remove()
+would remove the tail and then return it. So this means that I now need
+to handle the removal of the subdomain within pm_genpd_remove(), which
+is ok, but creates more changes as I need to parse the slave_links list,
+etc.
+
+I am wondering if it would be better to add a simple function called
+pm_genpd_list_get_tail(struct device *dev) that would return the last
+pm-domain register for a given device and then simply call
+pm_genpd_remove_subdomain() (if needed) and pm_genpd_remove()?
+
+Let me know what you think.
+
+Cheers
+Jon
