@@ -1,85 +1,54 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Thu, 11 Feb 2016 19:23:55 +0100
-Message-ID: <CAKfTPtCRAyqx96rNuotHD2qtxBQkBa6K+-kk5bGQB2VbMq+k2A@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <56B93548.9090006@linaro.org>
- <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
- <5387313.xAhVpzgZCg@vostro.rjw.lan> <56BA8C29.4090905@linaro.org>
- <20160211115959.GI6357@twins.programming.kicks-ass.net> <20160211122429.GM11415@e106622-lin>
- <20160211152625.GM6357@twins.programming.kicks-ass.net>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: fix out of bounds access in
+ time_in_idle
+Date: Thu, 11 Feb 2016 18:45:04 +0000
+Message-ID: <20160211184503.GA5200@e104805>
+References: <1455192051-6430-1-git-send-email-javi.merino@arm.com>
+ <20160211150027.GA24955@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:34468 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbcBKSYR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 13:24:17 -0500
-Received: by mail-lb0-f182.google.com with SMTP id cw1so32709500lbb.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 10:24:16 -0800 (PST)
-In-Reply-To: <20160211152625.GM6357@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160211150027.GA24955@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: akpm@linux-foundation.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, drinkcat@chromium.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 11 February 2016 at 16:26, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, Feb 11, 2016 at 12:24:29PM +0000, Juri Lelli wrote:
->> Hi Peter,
->>
->> On 11/02/16 12:59, Peter Zijlstra wrote:
->> >
->> > No, for RT (RR/FIFO) we do not have enough information to do anything
->> > useful. Basically RR/FIFO should result in running 100% whenever we
->> > schedule such a task.
->> >
->> > That means RR/FIFO want a hook in pick_next_task_rt() to bump the freq
->> > to 100% and leave it there until something else gets to run.
->> >
->>
->> Vincent is trying to play with rt_avg (in the last sched-freq thread) to
->> see if we can get some information about RT as well. I understand that
->> from a theoretical perspective that's not much we can say of such tasks,
->> and bumping to max can be the only sensible thing to do, but there are
->> users of RT (ehm, Android) that will probably see differences in energy
->> consumption if we do so. Yeah, maybe the should use a different policy,
->> yes.
->
-> Can't we just leave broken people get broken results? Trying to use
-> rt_avg for this is just insane. We should ensure that people using this
-> thing correctly get correct results, the rest can take a hike.
->
-> Using rt_avg gets us to the place where people who want to do the right
-> thing cannot, and that is bad.
+On Thu, Feb 11, 2016 at 07:00:28AM -0800, Eduardo Valentin wrote:
+> On Thu, Feb 11, 2016 at 12:00:51PM +0000, Javi Merino wrote:
+> > In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
+> > and time_in_idle_timestamp to be as big as the number of cpus in this
+> > cpufreq device.  However, in get_load() we access this array using the
+> > cpu number as index, which can result in an out of bound access.
+> > 
+> > Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
+> > allowed_cpus mask, as we do for the load_cpu array in
+> > cpufreq_get_requested_power()
+> > 
+> > Reported-by: Nicolas Boichat <drinkcat@chromium.org>
+> > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Tested-by: Nicolas Boichat <drinkcat@chromium.org>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> 
+> 
+> > ---
+> > Hi Andrew,
+> > 
+> > This patch fixes an out of bounds access found by Nicolas Boichat
+> > using KASAN.  It is acked by Viresh, comaintainer of the cpu cooling
+> > device and tested by the reporter.  It's been in the list[0] for more
+> > than a month, I've pinged the thermal maintainers three times but they
+> > haven't replied.
+> > 
+> > Can you merge it via your tree?  Thanks,
+> > Javi
+> 
+> Somehow this patch was marked as accepted in patchwork and I missed it,
+> apologize for this. I am adding it to thermal-soc.
 
-I agree that using rt_avg is not the best choice to evaluate the
-capacity that is used by RT tasks but it has the advantage of been
-already there. Do you mean that we should use another way to compute
-the capacity that is used by rt tasks to then select the frequency  ?
-Or do you mean that we can't do anything else than asking for max
-frequency ?
-
-Trying to set max frequency just before scheduling RT task is not
-really doable on a lot of platform because the sequence that changes
-the frequency can sleep and takes more time than the run time of the
-task. At the end, we will have set max frequency once the task has
-finished to run. There is no other solution than increasing the
-min_freq of cpufreq to a level that will ensure enough compute
-capacity for RT task with such high constraints that cpufreq can't
-react. For other RT tasks, we can probably found a way to set a
-frequency that can fit both RT constraints and power consumption.
-
->
->> > For DL it basically wants to set a minimum freq based on reserved
->> > utilization, so that is __setparam_dl() or somewhere around there.
->> >
->>
->> I think we could do better than this once Luca's reclaiming stuff gets
->> in. The reserved bw is usually somewhat pessimistic. But this is a
->> different discussion, maybe.
->
-> Sure, there's cleverer things that can be done. But a simple one would
-> indeed be the min guarantee based on accepted bandwidth.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Great, thanks!
+Javi
