@@ -1,38 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/7] cpufreq: Merge cpufreq_offline_prepare/finish
- routines
-Date: Thu, 11 Feb 2016 17:16:33 +0530
-Message-ID: <20160211114633.GB28558@vireshk>
-References: <cover.1454988792.git.viresh.kumar@linaro.org>
- <e773903ed5010cb3a9e445e2cf3a96db3942ff28.1454988792.git.viresh.kumar@linaro.org>
- <CAJZ5v0hbZMmgN2q-eR6dXK=rgLSDK_WEbD-mFB12Agb1RMm8-w@mail.gmail.com>
- <CAJZ5v0iWxdP9qYZow2yJ2CF8GD-HTO5W1w6e8baJunXEQpMjQA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Thu, 11 Feb 2016 12:51:57 +0100
+Message-ID: <20160211115157.GH6357@twins.programming.kicks-ass.net>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <56B93548.9090006@linaro.org>
+ <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+ <5387313.xAhVpzgZCg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:34156 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbcBKLqg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 06:46:36 -0500
-Received: by mail-pf0-f182.google.com with SMTP id x65so28404328pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 03:46:36 -0800 (PST)
+Received: from casper.infradead.org ([85.118.1.10]:59904 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbcBKLwF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 06:52:05 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iWxdP9qYZow2yJ2CF8GD-HTO5W1w6e8baJunXEQpMjQA@mail.gmail.com>
+In-Reply-To: <5387313.xAhVpzgZCg@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On 11-02-16, 02:15, Rafael J. Wysocki wrote:
-> And one question tangentially related to this patch: Would it be
-> possible to avoid calling __cpufreq_governor(_EXIT) for CPU offline?
+On Tue, Feb 09, 2016 at 09:05:05PM +0100, Rafael J. Wysocki wrote:
+> > > One concern I had was, given that the lone scheduler update hook is in
+> > > CFS, is it possible for governor updates to be stalled due to RT or DL
+> > > task activity?
+> > 
+> > I don't think they may be completely stalled, but I'd prefer Peter to
+> > answer that as he suggested to do it this way.
 > 
-> The fact that we still carry out the whole governor teardown at that
-> point is slightly disturbing, as in theory it should be possible to
-> keep the governor attributes in place across offline/online.
+> In any case, if that concern turns out to be significant in practice, it may
+> be addressed like in the appended modification of patch [1/3] from the $subject
+> series.
+> 
+> With that things look like before from the cpufreq side, but the other sched
+> classes also get a chance to trigger a cpufreq update.  The drawback is the
+> cpu_clock() call instead of passing the time value from update_load_avg(), but
+> I guess we can live with that if necessary.
+> 
+> FWIW, this modification doesn't seem to break things on my test machine.
 
-Will think about that after the current code is stable a bit. It should be
-possible, but need to see if it is worth it.
+Not really pretty though. It blows a bit that you require this callback
+to be periodic (in order to replace a timer).
 
--- 
-viresh
+Ideally we'd not have to call this if state doesn't change.
+
+
+> +++ linux-pm/include/linux/sched.h
+> @@ -3207,4 +3207,11 @@ static inline unsigned long rlimit_max(u
+>  	return task_rlimit_max(current, limit);
+>  }
+>  
+> +void cpufreq_update_util(unsigned long util, unsigned long max);
+
+Didn't you have a timestamp in there?
+
+> +
+> +static inline void cpufreq_kick(void)
+> +{
+> +	cpufreq_update_util(ULONG_MAX, ULONG_MAX);
+> +}
+> +
+>  #endif
