@@ -1,79 +1,85 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
- callbacks
-Date: Thu, 11 Feb 2016 12:24:29 +0000
-Message-ID: <20160211122429.GM11415@e106622-lin>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <56B93548.9090006@linaro.org>
- <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
- <5387313.xAhVpzgZCg@vostro.rjw.lan>
- <56BA8C29.4090905@linaro.org>
- <20160211115959.GI6357@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53717 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751017AbcBKMXn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Feb 2016 07:23:43 -0500
-Content-Disposition: inline
-In-Reply-To: <20160211115959.GI6357@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: [PATCH] i2c: designware: Prevent runtime suspend during adapter registration
+Date: Thu, 11 Feb 2016 16:36:03 +0200
+Message-ID: <1455201363-3278-1-git-send-email-jarkko.nikula@linux.intel.com>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-Hi Peter,
+There can be unnecessary runtime suspend-resume cycle during
+i2c-designware-platdrv probe when it registers the I2C adapter device. This
+happens because i2c-designware-platdrv is set to initially active platform
+device in its probe function and is a parent of I2C adapter.
 
-On 11/02/16 12:59, Peter Zijlstra wrote:
-> On Tue, Feb 09, 2016 at 05:02:33PM -0800, Steve Muckle wrote:
-> > > Index: linux-pm/kernel/sched/deadline.c
-> > > ===================================================================
-> > > --- linux-pm.orig/kernel/sched/deadline.c
-> > > +++ linux-pm/kernel/sched/deadline.c
-> > > @@ -1197,6 +1197,9 @@ static void task_tick_dl(struct rq *rq,
-> > >  {
-> > >  	update_curr_dl(rq);
-> > >  
-> > > +	/* Kick cpufreq to prevent it from stalling. */
-> > > +	cpufreq_kick();
-> > > +
-> > >  	/*
-> > >  	 * Even when we have runtime, update_curr_dl() might have resulted in us
-> > >  	 * not being the leftmost task anymore. In that case NEED_RESCHED will
-> > 
-> > I think additional hooks such as enqueue/dequeue would be needed in
-> > RT/DL. The task tick callbacks will only run if a task in that class is
-> > executing at the time of the tick. There could be intermittent RT/DL
-> > task activity in a frequency domain (the only task activity there, no
-> > CFS tasks) that doesn't happen to overlap the tick. Worst case the task
-> > activity could be periodic in such a way that it never overlaps the tick
-> > and the update is never made.
-> 
-> No, for RT (RR/FIFO) we do not have enough information to do anything
-> useful. Basically RR/FIFO should result in running 100% whenever we
-> schedule such a task.
-> 
-> That means RR/FIFO want a hook in pick_next_task_rt() to bump the freq
-> to 100% and leave it there until something else gets to run.
-> 
+In that case power.usage_count of i2c-designware device is zero and
+pm_runtime_get()/pm_runtime_put() cycle during probe could put it into
+runtime suspend. This happens when the i2c_register_adapter() calls the
+device_register():
 
-Vincent is trying to play with rt_avg (in the last sched-freq thread) to
-see if we can get some information about RT as well. I understand that
-from a theoretical perspective that's not much we can say of such tasks,
-and bumping to max can be the only sensible thing to do, but there are
-users of RT (ehm, Android) that will probably see differences in energy
-consumption if we do so. Yeah, maybe the should use a different policy,
-yes.
+i2c_register_adapter
+  device_register
+    device_add
+      bus_probe_device
+        device_initial_probe
+          __device_attach
+            if (dev->parent) pm_runtime_get_sync(dev->parent)
+            ...
+            if (dev->parent) pm_runtime_put(dev->parent)
 
-> For DL it basically wants to set a minimum freq based on reserved
-> utilization, so that is __setparam_dl() or somewhere around there.
-> 
+After that the i2c_register_adapter() continues registering I2C slave
+devices. In case slave device probe does I2C transfers the parent will
+resume again and thus get a needless runtime suspend/resume cycle during
+adapter registration.
 
-I think we could do better than this once Luca's reclaiming stuff gets
-in. The reserved bw is usually somewhat pessimistic. But this is a
-different discussion, maybe.
+Prevent this while retaining the runtime PM status of i2c-designware by
+only incrementing/decrementing device power usage count during I2C
+adapter registration. That makes sure there won't be spurious runtime PM
+status changes and lets the driver core to idle the device after probe
+finishes.
 
-Best,
+Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+---
+I sent earlier an RFC doing the same in i2c-core because it looked a few
+other I2C bus drivers might benefit too. However, as Alan pointed, it's
+bad form to do PM on your parent:
+http://www.spinics.net/lists/linux-i2c/msg22587.html
 
-- Juri
+After hacking a bit with PM in i2c-designware-pcidrv.c I can say this is
+only for i2c-designware-platdrv case. Runtime PM settings are a little
+different between platform and PCI devices. For instance runtime PM is
+enabled by default for PCI devices but forbidded and there seems be no
+reason to move runtime PM calls in i2c_dw_pci_probe().
+
+Anyway, I decided to put PM usage count increment/decrement calls to
+i2c-designware-core.c: i2c_dw_probe() because change lines are more
+clear there, are more future proof and don't harm PCI case.
+---
+ drivers/i2c/busses/i2c-designware-core.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/i2c/busses/i2c-designware-core.c b/drivers/i2c/busses/i2c-designware-core.c
+index 10fbd6d841e0..dfe35087b40d 100644
+--- a/drivers/i2c/busses/i2c-designware-core.c
++++ b/drivers/i2c/busses/i2c-designware-core.c
+@@ -883,9 +883,17 @@ int i2c_dw_probe(struct dw_i2c_dev *dev)
+ 		return r;
+ 	}
+ 
++	/*
++	 * Increment PM usage count during adapter registration in order to
++	 * avoid possible spurious runtime suspend when adapter device is
++	 * registered to the device core and immediate resume in case bus has
++	 * registered I2C slaves that do I2C transfers in their probe.
++	 */
++	pm_runtime_get_noresume(dev->dev);
+ 	r = i2c_add_numbered_adapter(adap);
+ 	if (r)
+ 		dev_err(dev->dev, "failure adding adapter: %d\n", r);
++	pm_runtime_put_noidle(dev->dev);
+ 
+ 	return r;
+ }
+-- 
+2.7.0
