@@ -1,77 +1,66 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Wed, 10 Feb 2016 20:44:47 -0800
-Message-ID: <56BC11BF.90104@linaro.org>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-4-git-send-email-smuckle@linaro.org>
- <CAAJzSMervH=-Z0__i_nC2ubUJAcb4J-YP1bWwo5-z4z9RyLcMg@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v6 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Wed, 10 Feb 2016 22:02:49 -0800
+Message-ID: <56BC2409.2050609@linux.intel.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <2111826.yKEUOzphHC@vostro.rjw.lan> <008201d16458$69b2a4f0$3d17eed0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAJzSMervH=-Z0__i_nC2ubUJAcb4J-YP1bWwo5-z4z9RyLcMg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ricky Liang <jcliang@chromium.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:17925 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750757AbcBKGDP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Feb 2016 01:03:15 -0500
+In-Reply-To: <008201d16458$69b2a4f0$3d17eed0$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
 
-Hi Ricky,
 
-On 02/01/2016 09:10 AM, Ricky Liang wrote:
->> +static int cpufreq_sched_policy_init(struct cpufreq_policy *policy)
->> > +{
->> > +       struct gov_data *gd;
->> > +       int cpu;
->> > +
->> > +       for_each_cpu(cpu, policy->cpus)
->> > +               memset(&per_cpu(cpu_sched_capacity_reqs, cpu), 0,
->> > +                      sizeof(struct sched_capacity_reqs));
->> > +
->> > +       gd = kzalloc(sizeof(*gd), GFP_KERNEL);
->> > +       if (!gd)
->> > +               return -ENOMEM;
->> > +
->> > +       gd->throttle_nsec = policy->cpuinfo.transition_latency ?
->> > +                           policy->cpuinfo.transition_latency :
->> > +                           THROTTLE_NSEC;
->> > +       pr_debug("%s: throttle threshold = %u [ns]\n",
->> > +                 __func__, gd->throttle_nsec);
->> > +
->> > +       if (cpufreq_driver_is_slow()) {
->> > +               cpufreq_driver_slow = true;
->> > +               gd->task = kthread_create(cpufreq_sched_thread, policy,
->> > +                                         "kschedfreq:%d",
->> > +                                         cpumask_first(policy->related_cpus));
->> > +               if (IS_ERR_OR_NULL(gd->task)) {
->> > +                       pr_err("%s: failed to create kschedfreq thread\n",
->> > +                              __func__);
->> > +                       goto err;
->> > +               }
->> > +               get_task_struct(gd->task);
->> > +               kthread_bind_mask(gd->task, policy->related_cpus);
->> > +               wake_up_process(gd->task);
->> > +               init_irq_work(&gd->irq_work, cpufreq_sched_irq_work);
->> > +       }
->> > +
->> > +       policy->governor_data = gd;
+
+On 02/10/2016 03:11 PM, Doug Smythies wrote:
+> On 2016.02.10 07:17 Rafael J. Wysocki wrote:
+>> On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
+>>> The following patch series introduces a mechanism allowing the cpufreq core
+>>> and "setpolicy" drivers to provide utilization update callbacks to be invoked
+>>> by the scheduler on utilization changes.  Those callbacks can be used to run
+>>> the sampling and frequency adjustments code (intel_pstate) or to schedule the
+>>> execution of that code in process context (cpufreq core) instead of per-CPU
+>>> deferrable timers used in cpufreq today (which Thomas complained about during
+>>> the last Kernel Summit).
+> This patch set solves a long standing issue with the intel_pstate driver.
+> The issue began with the introduction of the "duration" method for deciding
+> if the CPU had been idle for a long time resulting in forcing the
+> target pstate downwards. Often this was the correct action, but sometimes this
+> was the wrong thing to do, because the cpu was actually very busy, but just so
+> happened to be idle on jiffy boundaries (perhaps similar to what Steve Muckle
+> was referring to on another branch of this thread).
 >
-> This should be moved before if(cpufreq_driver_is_slow()) {...}. I've
-> seen NULL pointer deference at boot in cpufreq_sched_thread() when it
-> tried to run sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param).
+> For an idle system, this patch set seems to change the maximum duration from
+> 4 seconds to 0.5 seconds for most CPUs. However, when using v1 of patches 1
+> and 2 of 3 and v5 of 3 of 3, sometimes the durations (time between passes of
+> the intel-pstate driver for a given CPU) of upwards of 120 seconds were observed.
+> When patches 1, 2, and 3 of 3 v6 were used, the maximum observed durations of an
+> idle system were on the order of 500 milliseconds for most CPUs, but CPU 6
+> sometimes went to 3.5 seconds and CPU 7 sometimes went to 4 seconds (small
+> sample space, I'll consider to run an overnight test for a much much larger
+> sample space). Note 4 seconds, is O.K., and what it was before, I'm just noting
+> it is all.
+>
+> I have a bunch of graphs, if anyone wants to see the supporting data.
+>
+> My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
+Thanks Doug. If you have specific workloads, please compare performance.
 
-Agreed, this has been addressed during various cleanups and
-reorganization since the last posting.
+- Srinivas
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-> 
->> > +       set_sched_freq();
->> > +
->> > +       return 0;
->> > +
->> > +err:
-> And probably also set policy->governor_data to NULL here.
-
-Changed. Thanks for the comments.
-
-thanks,
-Steve
