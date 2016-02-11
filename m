@@ -1,31 +1,34 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
-Date: Thu, 11 Feb 2016 10:26:53 +0000
-Message-ID: <56BC61ED.6000201@nvidia.com>
+Date: Thu, 11 Feb 2016 11:28:19 +0100
+Message-ID: <CAPDyKFq_0t4tcvkgMBW8p8ubJDALWMjdhgGM+_Z6auRxEkSPdA@mail.gmail.com>
 References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
- <56BB7AF4.8040708@nvidia.com>
- <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
- <56BC50C2.7050609@nvidia.com>
- <CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng@mail.gmail.com>
- <56BC5EE0.2040804@nvidia.com>
+	<1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+	<CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+	<56BB7AF4.8040708@nvidia.com>
+	<CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
+	<56BC50C2.7050609@nvidia.com>
+	<CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng@mail.gmail.com>
+	<56BC5EE0.2040804@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56BC5EE0.2040804-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f176.google.com ([209.85.160.176]:35739 "EHLO
+	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbcBKK2U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 05:28:20 -0500
+Received: by mail-yk0-f176.google.com with SMTP id r207so18944331ykd.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 02:28:20 -0800 (PST)
+In-Reply-To: <56BC5EE0.2040804@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-
-
-On 11/02/16 10:13, Jon Hunter wrote:
-> 
+On 11 February 2016 at 11:13, Jon Hunter <jonathanh@nvidia.com> wrote:
+>
 > On 11/02/16 09:57, Ulf Hansson wrote:
->> On 11 February 2016 at 10:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> On 11 February 2016 at 10:13, Jon Hunter <jonathanh@nvidia.com> wrote:
 >>>
 >>> On 10/02/16 18:25, Ulf Hansson wrote:
 >>>
@@ -82,17 +85,17 @@ On 11/02/16 10:13, Jon Hunter wrote:
 >> Why not make pm_genpd_remove() to behave as you describe for
 >> pm_genpd_remove_tail()?
 >> That's probably the only sane way to remove genpds anyhow!?
-> 
+>
 > Simply to offer flexibility. I could see that for some devices that have
 > no dependencies between pm-domains and have a static list of pm-domains,
 > they can simply call pm_genpd_remove() for a given pm-domain. However,
 > that said, I can envision a case where a single pm-domain would be
 > removed by itself and so may be there is no benefit?
 
-By the way, do you think that instead of passing the struct device * to
-pm_genpd_remove(), we should just have a void *dev_id in the same way
-the request_irq()/free_irq() work? In other words, it would allow people
-to use the struct device or struct device_node, etc?
+If I understand correctly, you agree to try with the most simple
+approach first and thus without providing too much flexibility.
 
-Cheers
-Jon
+Anyway, I am looking forward to review your next version of the patchset! :-)
+
+Kind regards
+Uffe
