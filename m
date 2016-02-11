@@ -1,44 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 2/7] cpufreq: Call __cpufreq_governor() with
- policy->rwsem held
-Date: Thu, 11 Feb 2016 17:22:54 +0530
-Message-ID: <20160211115254.GC28558@vireshk>
-References: <cover.1454988792.git.viresh.kumar@linaro.org>
- <2d9def751daa27c9aba57ab29a54003dd279e5e7.1454988792.git.viresh.kumar@linaro.org>
- <CAJZ5v0hVhVyDvk1Vj5NAh1w1nXEZ6eF0v9x+8CfZ6pyKSu=k9g@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Thu, 11 Feb 2016 12:59:59 +0100
+Message-ID: <20160211115959.GI6357@twins.programming.kicks-ass.net>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <56B93548.9090006@linaro.org>
+ <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+ <5387313.xAhVpzgZCg@vostro.rjw.lan>
+ <56BA8C29.4090905@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:36642 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbcBKLw5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 06:52:57 -0500
-Received: by mail-pa0-f50.google.com with SMTP id yy13so27866035pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 03:52:57 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hVhVyDvk1Vj5NAh1w1nXEZ6eF0v9x+8CfZ6pyKSu=k9g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <56BA8C29.4090905@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 11-02-16, 10:48, Rafael J. Wysocki wrote:
-> On Tue, Feb 9, 2016 at 4:46 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Also note that cpufreq_driver->stop_cpu() and ->exit() can get called
-> > while policy->rwsem is held. That shouldn't have any side effects
-> > though.
+On Tue, Feb 09, 2016 at 05:02:33PM -0800, Steve Muckle wrote:
+> > Index: linux-pm/kernel/sched/deadline.c
+> > ===================================================================
+> > --- linux-pm.orig/kernel/sched/deadline.c
+> > +++ linux-pm/kernel/sched/deadline.c
+> > @@ -1197,6 +1197,9 @@ static void task_tick_dl(struct rq *rq,
+> >  {
+> >  	update_curr_dl(rq);
+> >  
+> > +	/* Kick cpufreq to prevent it from stalling. */
+> > +	cpufreq_kick();
+> > +
+> >  	/*
+> >  	 * Even when we have runtime, update_curr_dl() might have resulted in us
+> >  	 * not being the leftmost task anymore. In that case NEED_RESCHED will
 > 
-> The last paragraph is unclear.
-> 
-> Is it supposed to mean that the change will cause
-> cpufreq_driver->stop_cpu() and ->exit() to be called under
-> policy->rwsem sometimes?
+> I think additional hooks such as enqueue/dequeue would be needed in
+> RT/DL. The task tick callbacks will only run if a task in that class is
+> executing at the time of the tick. There could be intermittent RT/DL
+> task activity in a frequency domain (the only task activity there, no
+> CFS tasks) that doesn't happen to overlap the tick. Worst case the task
+> activity could be periodic in such a way that it never overlaps the tick
+> and the update is never made.
 
-Yeah, reworded it a bit ..
+No, for RT (RR/FIFO) we do not have enough information to do anything
+useful. Basically RR/FIFO should result in running 100% whenever we
+schedule such a task.
 
-Also note that, after this patch cpufreq_driver->stop_cpu() and ->exit()
-will get called while policy->rwsem is held, which wasn't the case
-earlier. That shouldn't have any side effects though.
+That means RR/FIFO want a hook in pick_next_task_rt() to bump the freq
+to 100% and leave it there until something else gets to run.
 
--- 
-viresh
+For DL it basically wants to set a minimum freq based on reserved
+utilization, so that is __setparam_dl() or somewhere around there.
+
+And we should either use CPPC hints for min freq or manually ensure that
+the CFS callback will not select something less than this.
