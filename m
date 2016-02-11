@@ -1,61 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Thu, 11 Feb 2016 00:17:48 +0100
-Message-ID: <7442347.PCmPlrAvBe@vostro.rjw.lan>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <2111826.yKEUOzphHC@vostro.rjw.lan> <008201d16458$69b2a4f0$3d17eed0$@net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V4 1/7] cpufreq: Merge cpufreq_offline_prepare/finish routines
+Date: Thu, 11 Feb 2016 01:59:24 +0100
+Message-ID: <CAJZ5v0hbZMmgN2q-eR6dXK=rgLSDK_WEbD-mFB12Agb1RMm8-w@mail.gmail.com>
+References: <cover.1454988792.git.viresh.kumar@linaro.org>
+	<e773903ed5010cb3a9e445e2cf3a96db3942ff28.1454988792.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56245 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750897AbcBJXQg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 18:16:36 -0500
-In-Reply-To: <008201d16458$69b2a4f0$3d17eed0$@net>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:33093 "EHLO
+	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752258AbcBKA70 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Feb 2016 19:59:26 -0500
+In-Reply-To: <e773903ed5010cb3a9e445e2cf3a96db3942ff28.1454988792.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wednesday, February 10, 2016 03:11:43 PM Doug Smythies wrote:
-> On 2016.02.10 07:17 Rafael J. Wysocki wrote:
-> > On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
-> >>
-> >> The following patch series introduces a mechanism allowing the cpufreq core
-> >> and "setpolicy" drivers to provide utilization update callbacks to be invoked
-> >> by the scheduler on utilization changes.  Those callbacks can be used to run
-> >> the sampling and frequency adjustments code (intel_pstate) or to schedule the
-> >> execution of that code in process context (cpufreq core) instead of per-CPU
-> >> deferrable timers used in cpufreq today (which Thomas complained about during
-> >> the last Kernel Summit).
-> 
-> This patch set solves a long standing issue with the intel_pstate driver.
+On Tue, Feb 9, 2016 at 4:46 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> The offline routine was separated into two halves earlier by
+> 'commit 1aee40ac9c86 ("cpufreq: Invoke __cpufreq_remove_dev_finish()
+> after releasing cpu_hotplug.lock");.
+>
+> And the reasons cited were, race issues between accessing policy's sysfs
+> files and policy kobject's cleanup.
+>
+> That race isn't valid anymore, as we don't remove the policy & its
+> kobject completely on hotplugs, but do that from ->remove() callback of
+> subsys framework.
 
-Good to hear that, thanks!
+Governor sysfs attributes are still removed in
+__cpufreq_governor(_EXIT), though, so had store() been used for them,
+the deadlock described in the changelog of commit 1aee40ac9c86 would
+have been possible.
 
-> The issue began with the introduction of the "duration" method for deciding
-> if the CPU had been idle for a long time resulting in forcing the
-> target pstate downwards. Often this was the correct action, but sometimes this
-> was the wrong thing to do, because the cpu was actually very busy, but just so
-> happened to be idle on jiffy boundaries (perhaps similar to what Steve Muckle
-> was referring to on another branch of this thread).
-> 
-> For an idle system, this patch set seems to change the maximum duration from
-> 4 seconds to 0.5 seconds for most CPUs. However, when using v1 of patches 1
-> and 2 of 3 and v5 of 3 of 3, sometimes the durations (time between passes of
-> the intel-pstate driver for a given CPU) of upwards of 120 seconds were observed.
-> When patches 1, 2, and 3 of 3 v6 were used, the maximum observed durations of an
-> idle system were on the order of 500 milliseconds for most CPUs, but CPU 6
-> sometimes went to 3.5 seconds and CPU 7 sometimes went to 4 seconds (small
-> sample space, I'll consider to run an overnight test for a much much larger
-> sample space). Note 4 seconds, is O.K., and what it was before, I'm just noting
-> it is all.
-> 
-> I have a bunch of graphs, if anyone wants to see the supporting data.
+Fortunately, we don't use store() (which still does get_online_cpus())
+for those attributes now.  We use governor_store() for them and that
+doesn't call get_online_cpus().  So in fact this patch is only correct
+after the recent rework of the governor attributes handling.
 
-It would be good to see how the data with and without the patchset compare
-to each other if you have that.
+Please modify the changelog to explain that more thoroughly.
 
 Thanks,
 Rafael
-
