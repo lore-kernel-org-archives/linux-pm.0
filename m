@@ -1,66 +1,74 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v6 0/3] cpufreq: Replace timers with utilization update
- callbacks
-Date: Wed, 10 Feb 2016 22:02:49 -0800
-Message-ID: <56BC2409.2050609@linux.intel.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <2111826.yKEUOzphHC@vostro.rjw.lan> <008201d16458$69b2a4f0$3d17eed0$@net>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
+Date: Thu, 11 Feb 2016 09:13:38 +0000
+Message-ID: <56BC50C2.7050609@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+ <56BB7AF4.8040708@nvidia.com>
+ <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:17925 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbcBKGDP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Feb 2016 01:03:15 -0500
-In-Reply-To: <008201d16458$69b2a4f0$3d17eed0$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>
-Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
 
 
+On 10/02/16 18:25, Ulf Hansson wrote:
 
-On 02/10/2016 03:11 PM, Doug Smythies wrote:
-> On 2016.02.10 07:17 Rafael J. Wysocki wrote:
->> On Friday, January 29, 2016 11:52:15 PM Rafael J. Wysocki wrote:
->>> The following patch series introduces a mechanism allowing the cpufreq core
->>> and "setpolicy" drivers to provide utilization update callbacks to be invoked
->>> by the scheduler on utilization changes.  Those callbacks can be used to run
->>> the sampling and frequency adjustments code (intel_pstate) or to schedule the
->>> execution of that code in process context (cpufreq core) instead of per-CPU
->>> deferrable timers used in cpufreq today (which Thomas complained about during
->>> the last Kernel Summit).
-> This patch set solves a long standing issue with the intel_pstate driver.
-> The issue began with the introduction of the "duration" method for deciding
-> if the CPU had been idle for a long time resulting in forcing the
-> target pstate downwards. Often this was the correct action, but sometimes this
-> was the wrong thing to do, because the cpu was actually very busy, but just so
-> happened to be idle on jiffy boundaries (perhaps similar to what Steve Muckle
-> was referring to on another branch of this thread).
->
-> For an idle system, this patch set seems to change the maximum duration from
-> 4 seconds to 0.5 seconds for most CPUs. However, when using v1 of patches 1
-> and 2 of 3 and v5 of 3 of 3, sometimes the durations (time between passes of
-> the intel-pstate driver for a given CPU) of upwards of 120 seconds were observed.
-> When patches 1, 2, and 3 of 3 v6 were used, the maximum observed durations of an
-> idle system were on the order of 500 milliseconds for most CPUs, but CPU 6
-> sometimes went to 3.5 seconds and CPU 7 sometimes went to 4 seconds (small
-> sample space, I'll consider to run an overnight test for a much much larger
-> sample space). Note 4 seconds, is O.K., and what it was before, I'm just noting
-> it is all.
->
-> I have a bunch of graphs, if anyone wants to see the supporting data.
->
-> My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
-Thanks Doug. If you have specific workloads, please compare performance.
+[snip]
 
-- Srinivas
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+>>> Perhaps there's a way to allow the generic PM domain to control this
+>>> by itself. If we for example used the struct device corresponding to
+>>> the powergate driver, genpd could use it to distinguish between
+>>> various instances of genpd structs..!? Maybe it would simplify the way
+>>> to deal with removing domains?
+>>
+>> Yes, that would be ideal. However, would have require changing
+>> genpd_init()? I am not sure how genpd would be able to access the device
+>> struct for the powergate driver because we don't provide this via any
+>> API I am aware of? And I am guessing that you don't wish to expose the
+>> gpd_list to the world either.
+>>
+>> If there is an easy way, I am open to it, but looking at it today, I am
+>> not sure I see a simple way in which we could add a new API to do this.
+>> However, may be I am missing something!
+> 
+> If we add a new __pm_genpd_init() API, that could require a struct
+> device to be provided. That API will thus invoke the existing
+> pm_genpd_init() but also deal with the extra things needed here.
+> 
+> I would also allow such an API to return an error code.
+> 
+> Correspondingly, pm_genpd_remove() could be required to be provided
+> with a struct device.
+> 
+> Existing users of pm_genpd_init() can then convert to
+> __pm_genpd_init() whenever suitable.
+> 
+> Of course, another option is just to add new member in the genpd
+> struct for the struct *device. The caller of pm_genpd_init() could
+> check it, but allow it to be NULL. Although, the pm_genpd_remove() API
+> would require that pointer to the struct device to be set...
+> 
+> What do you think?
 
+Yes, sounds good. May be it is simpler just to add a new member and let
+the platform genpd driver handle it.
+
+I am wondering if in addition to pm_genpd_remove(), we then just have a
+function called pm_genpd_remove_tail(), which allows you to pass the
+struct device pointer and will remove the last pm-domain from the
+gpd_list and return the genpd pointer if successful. Internally, it will
+call pm_genpd_remove(). It seems to me that if there are nested
+pm-domains, then we probably want to remove them starting from the tail
+as opposed to the head.
+
+How does that sound?
+
+Cheers
+Jon
