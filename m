@@ -1,54 +1,35 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: fix out of bounds access in
- time_in_idle
-Date: Thu, 11 Feb 2016 18:45:04 +0000
-Message-ID: <20160211184503.GA5200@e104805>
-References: <1455192051-6430-1-git-send-email-javi.merino@arm.com>
- <20160211150027.GA24955@localhost.localdomain>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Thu, 11 Feb 2016 10:52:20 -0800
+Message-ID: <56BCD864.6030207@linaro.org>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <56B93548.9090006@linaro.org>
+ <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+ <5387313.xAhVpzgZCg@vostro.rjw.lan> <56BA8C29.4090905@linaro.org>
+ <20160211115959.GI6357@twins.programming.kicks-ass.net>
+ <56BCBF7C.2080404@linaro.org>
+ <20160211173033.GP6357@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160211150027.GA24955@localhost.localdomain>
+In-Reply-To: <20160211173033.GP6357@twins.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: akpm@linux-foundation.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, drinkcat@chromium.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 11, 2016 at 07:00:28AM -0800, Eduardo Valentin wrote:
-> On Thu, Feb 11, 2016 at 12:00:51PM +0000, Javi Merino wrote:
-> > In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
-> > and time_in_idle_timestamp to be as big as the number of cpus in this
-> > cpufreq device.  However, in get_load() we access this array using the
-> > cpu number as index, which can result in an out of bound access.
-> > 
-> > Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
-> > allowed_cpus mask, as we do for the load_cpu array in
-> > cpufreq_get_requested_power()
-> > 
-> > Reported-by: Nicolas Boichat <drinkcat@chromium.org>
-> > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Tested-by: Nicolas Boichat <drinkcat@chromium.org>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> 
-> 
-> > ---
-> > Hi Andrew,
-> > 
-> > This patch fixes an out of bounds access found by Nicolas Boichat
-> > using KASAN.  It is acked by Viresh, comaintainer of the cpu cooling
-> > device and tested by the reporter.  It's been in the list[0] for more
-> > than a month, I've pinged the thermal maintainers three times but they
-> > haven't replied.
-> > 
-> > Can you merge it via your tree?  Thanks,
-> > Javi
-> 
-> Somehow this patch was marked as accepted in patchwork and I missed it,
-> apologize for this. I am adding it to thermal-soc.
+On 02/11/2016 09:30 AM, Peter Zijlstra wrote:
+>> My concern above is that pokes are guaranteed to keep occurring when
+>> > there is only RT or DL activity so nothing breaks.
+>
+> The hook in their respective tick handler should ensure stuff is called
+> sporadically and isn't stalled.
 
-Great, thanks!
-Javi
+But that's only true if the RT/DL tasks happen to be running when the
+tick arrives right?
+
+Couldn't we have RT/DL activity which doesn't overlap with the tick? And
+if no CFS tasks happen to be executing on that CPU, we'll never trigger
+the cpufreq update. This could go on for an arbitrarily long time
+depending on the periodicity of the work.
