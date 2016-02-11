@@ -1,49 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Thu, 11 Feb 2016 20:04:54 +0100
-Message-ID: <CAJZ5v0jiEkdA6HQEtabpcOPmsXDOKov46gZ=FyXjFmNf+9E9LQ@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<56B93548.9090006@linaro.org>
-	<CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
-	<5387313.xAhVpzgZCg@vostro.rjw.lan>
-	<56BA8C29.4090905@linaro.org>
-	<20160211115959.GI6357@twins.programming.kicks-ass.net>
-	<56BCBF7C.2080404@linaro.org>
-	<20160211173033.GP6357@twins.programming.kicks-ass.net>
-	<56BCD864.6030207@linaro.org>
+From: Belisko Marek <marek.belisko@gmail.com>
+Subject: generic-adc-battery volatge-to-percent formula
+Date: Thu, 11 Feb 2016 21:38:21 +0100
+Message-ID: <CAAfyv37rjchL=FtvgGhjrfXnCvhfbYCext48QmSuOgJ5RjTwAQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:33907 "EHLO
-	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbcBKTE4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 14:04:56 -0500
-In-Reply-To: <56BCD864.6030207@linaro.org>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:34281 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbcBKUiX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 15:38:23 -0500
+Received: by mail-wm0-f49.google.com with SMTP id 128so37287955wmz.1
+        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 12:38:22 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Sebastian Reichel <sre@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On Thu, Feb 11, 2016 at 7:52 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> On 02/11/2016 09:30 AM, Peter Zijlstra wrote:
->>> My concern above is that pokes are guaranteed to keep occurring when
->>> > there is only RT or DL activity so nothing breaks.
->>
->> The hook in their respective tick handler should ensure stuff is called
->> sporadically and isn't stalled.
->
-> But that's only true if the RT/DL tasks happen to be running when the
-> tick arrives right?
->
-> Couldn't we have RT/DL activity which doesn't overlap with the tick? And
-> if no CFS tasks happen to be executing on that CPU, we'll never trigger
-> the cpufreq update. This could go on for an arbitrarily long time
-> depending on the periodicity of the work.
+Hi,
 
-I'm thinking that two additional hooks in enqueue_task_rt/dl() might
-help here.  Then, we will hit either the tick or enqueue and that
-should do the trick.
+some time ago I did post series which added some conversion table from
+voltage to percent for charging and discharging states [1] in
+twl4030_madc driver. This approach was not accepted and we still want
+to have something like that in kernel. We re-think re-thinking
+original idea and also get reference where Pavel point us to formula
+which could be used for computing voltage-to-percent conversion [2]
 
-Peter, what do you think?
+What about adding this formula as a default for the
+voltage-to-percent-conversion to
+the generic-adc-battery driver (and converting it to DT)? Would that
+be a better solution than a table driven and twl4030 only driver?
 
-Rafael
+[1] - http://www.serverphorums.com/read.php?12,1127548
+[2] - https://lkml.org/lkml/2015/4/1/557
+
+Many thanks.
+
+BR,
+
+marek
+
+-- 
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
+
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+twitter: #opennandra
+web: http://open-nandra.com
