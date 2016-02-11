@@ -1,119 +1,125 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
-Date: Thu, 11 Feb 2016 16:38:36 +0000
-Message-ID: <56BCB90C.8000302@nvidia.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
- <56BB7AF4.8040708@nvidia.com>
- <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
- <56BC50C2.7050609@nvidia.com>
- <CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng@mail.gmail.com>
- <56BC5EE0.2040804@nvidia.com>
- <CAPDyKFq_0t4tcvkgMBW8p8ubJDALWMjdhgGM+_Z6auRxEkSPdA@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 1/4] dt-bindings: power: reset: add document for
+ reboot-mode driver
+Date: Thu, 11 Feb 2016 11:04:57 -0600
+Message-ID: <20160211170457.GA19851@rob-hp-laptop>
+References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
+ <1454407151-4751-1-git-send-email-andy.yan@rock-chips.com>
+ <20160204230814.GA4847@rob-hp-laptop>
+ <CALAqxLVyznpLd2MLgGr28TDECpLZ=RpmhxH-SHqntXfBsctcmQ@mail.gmail.com>
+ <20160205043507.GB4847@rob-hp-laptop>
+ <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFq_0t4tcvkgMBW8p8ubJDALWMjdhgGM+_Z6auRxEkSPdA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:39445 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbcBKRFE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Feb 2016 12:05:04 -0500
+Content-Disposition: inline
+In-Reply-To: <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: John Stultz <john.stultz@linaro.org>
+Cc: Andy Yan <andy.yan@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, Moritz Fischer <moritz.fischer@ettus.com>, Matthias Brugger <matthias.bgg@gmail.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jun Nie <jun.nie@linaro.org>, =?utf-8?B?UGF3ZcWC?= Moll <pawel.moll@arm.com>, Will Deacon <will.deacon@arm.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, mbrugger@suse.com, "linux-arm-kernel@lists.infradead.org" <linux-ar>
 
-
-On 11/02/16 10:28, Ulf Hansson wrote:
-> On 11 February 2016 at 11:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>
->> On 11/02/16 09:57, Ulf Hansson wrote:
->>> On 11 February 2016 at 10:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>>>
->>>> On 10/02/16 18:25, Ulf Hansson wrote:
->>>>
->>>> [snip]
->>>>
->>>>>>> Perhaps there's a way to allow the generic PM domain to control this
->>>>>>> by itself. If we for example used the struct device corresponding to
->>>>>>> the powergate driver, genpd could use it to distinguish between
->>>>>>> various instances of genpd structs..!? Maybe it would simplify the way
->>>>>>> to deal with removing domains?
->>>>>>
->>>>>> Yes, that would be ideal. However, would have require changing
->>>>>> genpd_init()? I am not sure how genpd would be able to access the device
->>>>>> struct for the powergate driver because we don't provide this via any
->>>>>> API I am aware of? And I am guessing that you don't wish to expose the
->>>>>> gpd_list to the world either.
->>>>>>
->>>>>> If there is an easy way, I am open to it, but looking at it today, I am
->>>>>> not sure I see a simple way in which we could add a new API to do this.
->>>>>> However, may be I am missing something!
->>>>>
->>>>> If we add a new __pm_genpd_init() API, that could require a struct
->>>>> device to be provided. That API will thus invoke the existing
->>>>> pm_genpd_init() but also deal with the extra things needed here.
->>>>>
->>>>> I would also allow such an API to return an error code.
->>>>>
->>>>> Correspondingly, pm_genpd_remove() could be required to be provided
->>>>> with a struct device.
->>>>>
->>>>> Existing users of pm_genpd_init() can then convert to
->>>>> __pm_genpd_init() whenever suitable.
->>>>>
->>>>> Of course, another option is just to add new member in the genpd
->>>>> struct for the struct *device. The caller of pm_genpd_init() could
->>>>> check it, but allow it to be NULL. Although, the pm_genpd_remove() API
->>>>> would require that pointer to the struct device to be set...
->>>>>
->>>>> What do you think?
->>>>
->>>> Yes, sounds good. May be it is simpler just to add a new member and let
->>>> the platform genpd driver handle it.
->>>>
->>>> I am wondering if in addition to pm_genpd_remove(), we then just have a
->>>> function called pm_genpd_remove_tail(), which allows you to pass the
->>>> struct device pointer and will remove the last pm-domain from the
->>>> gpd_list and return the genpd pointer if successful. Internally, it will
->>>> call pm_genpd_remove(). It seems to me that if there are nested
->>>> pm-domains, then we probably want to remove them starting from the tail
->>>> as opposed to the head.
->>>>
->>>> How does that sound?
->>>
->>> Why not make pm_genpd_remove() to behave as you describe for
->>> pm_genpd_remove_tail()?
->>> That's probably the only sane way to remove genpds anyhow!?
->>
->> Simply to offer flexibility. I could see that for some devices that have
->> no dependencies between pm-domains and have a static list of pm-domains,
->> they can simply call pm_genpd_remove() for a given pm-domain. However,
->> that said, I can envision a case where a single pm-domain would be
->> removed by itself and so may be there is no benefit?
+On Thu, Feb 04, 2016 at 09:03:44PM -0800, John Stultz wrote:
+> On Thu, Feb 4, 2016 at 8:35 PM, Rob Herring <robh@kernel.org> wrote:
+> > On Thu, Feb 04, 2016 at 03:46:15PM -0800, John Stultz wrote:
+> >> On Thu, Feb 4, 2016 at 3:08 PM, Rob Herring <robh@kernel.org> wrote:
+> >> > On Tue, Feb 02, 2016 at 05:59:11PM +0800, Andy Yan wrote:
+> >> >> +Example:
+> >> >> +     reboot-mode {
+> >> >> +             mode-normal = <BOOT_NORMAL>;
+> >> >> +             mode-recovery = <BOOT_RECOVERY>;
+> >> >> +             mode-fastboot = <BOOT_FASTBOOT>;
+> >> >
+> >> > I tend to agree with John on calling this mode-bootloader.
+> >> >
+> >> > OTOH, fastboot is more specific about what the mode is. The name in DT
+> >> > and the userspace name don't necessarily have to be the same.
+> >>
+> >> Wait. This is a bit confusing. The utility of adding a property name
+> >> and using that name be the reboot command parsed for made sense
+> >> (compared to earlier versions which had command strings) as it made
+> >> the dts more terse.   But it sounds here like you're suggesting we
+> >> should have some logic in the driver that translates "reboot fastboot"
+> >> to mode-bootloader or vice versa.
+> >
+> > I said early on the DT names and kernel-userspace names should not
+> > necessarily be linked. They can be, but we shouldn't require that.
 > 
-> If I understand correctly, you agree to try with the most simple
-> approach first and thus without providing too much flexibility.
+> Sigh. Ok. It seemed it was due to earlier comments (maybe from others,
+> but I thought it was you), that we moved from specifying a command
+> string, to using the label. But if you think the label name and the
+> commands shouldn't be linked, it seems like we should re-introduce
+> that. No?
 > 
-> Anyway, I am looking forward to review your next version of the patchset! :-)
+> Unless your thinking we need some sort of static in-kernel mapping of
+> commands to label names? But that just seems painfully indirect for
+> little gain ("Its obvious! For that mode, you use this term here, and
+> that different term over there!").
 
-So one snag I hit with this, is that in order to remove a pm-domain, I
-first need to check if it is a subdomain of any other domains and if so
-remove it as a subdomain first. Before, this was simple because I called
-pm_genpd_remove_subdomain if the domain had a parent, and then called
-pm_genpd_remove().
+Tying it to a Linux ABI makes the binding Linux specific. I don't have a 
+problem that the strings happen to be the same, but we should have some 
+understanding that they may not be and allow for that.
 
-With the proposal we have discussed, I no longer have any knowledge of
-whether the pm-domain is a subdomain or not because pm_genpd_remove()
-would remove the tail and then return it. So this means that I now need
-to handle the removal of the subdomain within pm_genpd_remove(), which
-is ok, but creates more changes as I need to parse the slave_links list,
-etc.
+> > My concern with mode-bootloader is what if you can boot into multiple
+> > bootloader modes. Say USB mass storage is one option. "bootloader" is
+> > not real specific.
+> 
+> True. But as I think we agreed below, "bootloader" and "recovery" are
+> basically defacto standards, and I think it would be a bad idea to try
+> to declare all the existing android tooling and docs wrong just
+> because the command is vague, technically.
 
-I am wondering if it would be better to add a simple function called
-pm_genpd_list_get_tail(struct device *dev) that would return the last
-pm-domain register for a given device and then simply call
-pm_genpd_remove_subdomain() (if needed) and pm_genpd_remove()?
+Okay, as long as they are clearly documented what they mean.
 
-Let me know what you think.
 
-Cheers
-Jon
+> >> >> +             mode-loader = <BOOT_LOADER>;
+> >> >
+> >> > This one needs a better name. Maybe it should be 'rockchip,mode-loader'
+> >> > as it is vendor specific. Either way, loader is vague. Perhaps
+> >> > rockchip,mode-bl-download?
+> >>
+> >> Hrm. So how what reboot command do you expect to trigger that?
+> >
+> > Whatever your OS has defined to map to that.
+> >
+> > We could just decide the kernel will strip <vendor> and 'mode-' and
+> > match commands against what remains.
+> 
+> That part sounds sane, although I do think having vendor prefixes are
+> reasonable for actual commands as well.
+
+Well, you could still have "rockchip,mode-rockchip-bl-download"... 
+
+We can bikeshed that when get there.
+
+The other way random custom modes could be done is just allow the raw 
+value to be passed from userspace converting the string to a number. 
+Then we have no abstraction rather than half way abstracting it.
+
+> >> I think one of the difficult things here is that there's no real
+> >> standards for all bios/bootloader modes. So they are somewhat
+> >> firmware/bootloader/device specific, and thus we need something that
+> >> is flexible enough to allow lots of different modes to be easily
+> >> specified.  That said, this does expose a userspace interface (though
+> >> one could argue kernel ABI doesn't cross reboots :) so we should try
+> >> to have some consistency so the same userspace can work on various
+> >> devices.
+> >
+> > There is: UEFI. Boot mode efivars are standard. But then they are pretty
+> > much PC oriented though. It is more which device to boot off of, but
+> > there is network boot or boot to bios setup.
+> 
+> Well, there's a partial standard there.  I'm told for android on x86,
+> there is no UEFI standard way to communicate rebooting to fastboot or
+> recovery. Every device does its own device specific driver.
+
+So much for standards. However, while these specific modes have not been 
+standardized, there is a set of standard modes and these could have been 
+added to the existing mechanism. So there at least exists some model to 
+draw inspiration from.
+
+Rob
