@@ -1,100 +1,89 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v1 3/6] power_supply: Add types for USB Type C and PD chargers
-Date: Thu, 11 Feb 2016 11:00:59 +0100
-Message-ID: <CAAObsKBdtQ0Je4cnU=tQKNgsGRoMJPF9gkSywu+EXH476uXudA@mail.gmail.com>
-References: <1454679181-8949-1-git-send-email-tomeu.vizoso@collabora.com>
- <1454679181-8949-4-git-send-email-tomeu.vizoso@collabora.com> <CANLzEktsLH_hMPoaspuP1tZue-HkA3rqY2PbqOPOAOB7qm5+pA@mail.gmail.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
+Date: Thu, 11 Feb 2016 10:13:52 +0000
+Message-ID: <56BC5EE0.2040804@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+ <56BB7AF4.8040708@nvidia.com>
+ <CAPDyKFrZ6tWBsQC0tyWWeChiZja3h_zcbaiX25ak-Zyp4MzqVw@mail.gmail.com>
+ <56BC50C2.7050609@nvidia.com>
+ <CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36824 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbcBKKBU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 05:01:20 -0500
-In-Reply-To: <CANLzEktsLH_hMPoaspuP1tZue-HkA3rqY2PbqOPOAOB7qm5+pA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFrdmufsMqNL0U7q5gPEUqsg3SrkrNChcziQjEOjvd30Ng-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Benson Leung <bleung@chromium.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 5 February 2016 at 19:38, Benson Leung <bleung@chromium.org> wrote:
-> Thanks for putting this up Tomeu!
 
-No problem, thanks for the encouragement.
-
-> On Fri, Feb 5, 2016 at 5:32 AM, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
->> From: Benson Leung <bleung@chromium.org>
+On 11/02/16 09:57, Ulf Hansson wrote:
+> On 11 February 2016 at 10:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
 >>
->> This adds power supply types for USB chargers defined in
->> the USB Type-C Specification 1.1 and in the
->> USB Power Delivery Specification Revision 2.0 V1.1.
+>> On 10/02/16 18:25, Ulf Hansson wrote:
 >>
->> The following are added :
->> POWER_SUPPLY_TYPE_USB_TYPE_C,   /* Type C Port */
->> POWER_SUPPLY_TYPE_USB_PD,       /* Type C Power Delivery Port */
->> POWER_SUPPLY_TYPE_USB_PD_DRP,   /* Type C PD Dual Role Port */
->
-> I authored this patch, but in looking back, the comments should be tweaked.
-> USB_PD and USB_PD_DRP are not necessarily Type-C ports, as you may
-> have USB_PD ports that are either Type-A or Type-B as well.
->
-> Could you change these to be "USB Power Delivery Port" and "USB PD
-> Dual Role Port"?
-
-I have gone with omitting the USB prefix, following the lead of the
-existing entries, do you agree with that?
-
-Thanks,
-
-Tomeu
-
->> Signed-off-by: Benson Leung <bleung@chromium.org>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> Reviewed-by: Alec Berg <alecaberg@chromium.org>
->> Reviewed-by: Vincent Palatin <vpalatin@chromium.org>
->> Reviewed-by: Todd Broch <tbroch@chromium.org>
->> ---
+>> [snip]
 >>
->>  drivers/power/power_supply_sysfs.c | 3 ++-
->>  include/linux/power_supply.h       | 3 +++
->>  2 files changed, 5 insertions(+), 1 deletion(-)
+>>>>> Perhaps there's a way to allow the generic PM domain to control this
+>>>>> by itself. If we for example used the struct device corresponding to
+>>>>> the powergate driver, genpd could use it to distinguish between
+>>>>> various instances of genpd structs..!? Maybe it would simplify the way
+>>>>> to deal with removing domains?
+>>>>
+>>>> Yes, that would be ideal. However, would have require changing
+>>>> genpd_init()? I am not sure how genpd would be able to access the device
+>>>> struct for the powergate driver because we don't provide this via any
+>>>> API I am aware of? And I am guessing that you don't wish to expose the
+>>>> gpd_list to the world either.
+>>>>
+>>>> If there is an easy way, I am open to it, but looking at it today, I am
+>>>> not sure I see a simple way in which we could add a new API to do this.
+>>>> However, may be I am missing something!
+>>>
+>>> If we add a new __pm_genpd_init() API, that could require a struct
+>>> device to be provided. That API will thus invoke the existing
+>>> pm_genpd_init() but also deal with the extra things needed here.
+>>>
+>>> I would also allow such an API to return an error code.
+>>>
+>>> Correspondingly, pm_genpd_remove() could be required to be provided
+>>> with a struct device.
+>>>
+>>> Existing users of pm_genpd_init() can then convert to
+>>> __pm_genpd_init() whenever suitable.
+>>>
+>>> Of course, another option is just to add new member in the genpd
+>>> struct for the struct *device. The caller of pm_genpd_init() could
+>>> check it, but allow it to be NULL. Although, the pm_genpd_remove() API
+>>> would require that pointer to the struct device to be set...
+>>>
+>>> What do you think?
 >>
->> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
->> index ed2d7fd0c734..80fed98832f9 100644
->> --- a/drivers/power/power_supply_sysfs.c
->> +++ b/drivers/power/power_supply_sysfs.c
->> @@ -45,7 +45,8 @@ static ssize_t power_supply_show_property(struct device *dev,
->>                                           char *buf) {
->>         static char *type_text[] = {
->>                 "Unknown", "Battery", "UPS", "Mains", "USB",
->> -               "USB_DCP", "USB_CDP", "USB_ACA"
->> +               "USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
->> +               "USB_PD", "USB_PD_DRP"
->>         };
->>         static char *status_text[] = {
->>                 "Unknown", "Charging", "Discharging", "Not charging", "Full"
->> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
->> index ef9f1592185d..206c3384c6fa 100644
->> --- a/include/linux/power_supply.h
->> +++ b/include/linux/power_supply.h
->> @@ -163,6 +163,9 @@ enum power_supply_type {
->>         POWER_SUPPLY_TYPE_USB_DCP,      /* Dedicated Charging Port */
->>         POWER_SUPPLY_TYPE_USB_CDP,      /* Charging Downstream Port */
->>         POWER_SUPPLY_TYPE_USB_ACA,      /* Accessory Charger Adapters */
->> +       POWER_SUPPLY_TYPE_USB_TYPE_C,   /* Type C Port */
->> +       POWER_SUPPLY_TYPE_USB_PD,       /* Type C Power Delivery Port */
->> +       POWER_SUPPLY_TYPE_USB_PD_DRP,   /* Type C PD Dual Role Port */
->
-> Same change as in commit message. Thanks!
->
->>  };
+>> Yes, sounds good. May be it is simpler just to add a new member and let
+>> the platform genpd driver handle it.
 >>
->>  enum power_supply_notifier_events {
->
->
->
->
-> --
-> Benson Leung
-> Senior Software Engineer, Chrom* OS
-> bleung@chromium.org
+>> I am wondering if in addition to pm_genpd_remove(), we then just have a
+>> function called pm_genpd_remove_tail(), which allows you to pass the
+>> struct device pointer and will remove the last pm-domain from the
+>> gpd_list and return the genpd pointer if successful. Internally, it will
+>> call pm_genpd_remove(). It seems to me that if there are nested
+>> pm-domains, then we probably want to remove them starting from the tail
+>> as opposed to the head.
+>>
+>> How does that sound?
+> 
+> Why not make pm_genpd_remove() to behave as you describe for
+> pm_genpd_remove_tail()?
+> That's probably the only sane way to remove genpds anyhow!?
+
+Simply to offer flexibility. I could see that for some devices that have
+no dependencies between pm-domains and have a static list of pm-domains,
+they can simply call pm_genpd_remove() for a given pm-domain. However,
+that said, I can envision a case where a single pm-domain would be
+removed by itself and so may be there is no benefit?
+
+Cheers
+Jon
