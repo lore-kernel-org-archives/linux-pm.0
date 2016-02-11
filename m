@@ -1,125 +1,58 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/4] dt-bindings: power: reset: add document for
- reboot-mode driver
-Date: Thu, 11 Feb 2016 11:04:57 -0600
-Message-ID: <20160211170457.GA19851@rob-hp-laptop>
-References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
- <1454407151-4751-1-git-send-email-andy.yan@rock-chips.com>
- <20160204230814.GA4847@rob-hp-laptop>
- <CALAqxLVyznpLd2MLgGr28TDECpLZ=RpmhxH-SHqntXfBsctcmQ@mail.gmail.com>
- <20160205043507.GB4847@rob-hp-laptop>
- <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update
+ callbacks
+Date: Thu, 11 Feb 2016 09:06:04 -0800
+Message-ID: <56BCBF7C.2080404@linaro.org>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <56B93548.9090006@linaro.org>
+ <CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+ <5387313.xAhVpzgZCg@vostro.rjw.lan> <56BA8C29.4090905@linaro.org>
+ <20160211115959.GI6357@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39445 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbcBKRFE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Feb 2016 12:05:04 -0500
-Content-Disposition: inline
-In-Reply-To: <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36351 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751002AbcBKRGH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 12:06:07 -0500
+Received: by mail-pa0-f43.google.com with SMTP id yy13so31599001pab.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 09:06:06 -0800 (PST)
+In-Reply-To: <20160211115959.GI6357@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Andy Yan <andy.yan@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, Moritz Fischer <moritz.fischer@ettus.com>, Matthias Brugger <matthias.bgg@gmail.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Jun Nie <jun.nie@linaro.org>, =?utf-8?B?UGF3ZcWC?= Moll <pawel.moll@arm.com>, Will Deacon <will.deacon@arm.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, mbrugger@suse.com, "linux-arm-kernel@lists.infradead.org" <linux-ar>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Thu, Feb 04, 2016 at 09:03:44PM -0800, John Stultz wrote:
-> On Thu, Feb 4, 2016 at 8:35 PM, Rob Herring <robh@kernel.org> wrote:
-> > On Thu, Feb 04, 2016 at 03:46:15PM -0800, John Stultz wrote:
-> >> On Thu, Feb 4, 2016 at 3:08 PM, Rob Herring <robh@kernel.org> wrote:
-> >> > On Tue, Feb 02, 2016 at 05:59:11PM +0800, Andy Yan wrote:
-> >> >> +Example:
-> >> >> +     reboot-mode {
-> >> >> +             mode-normal = <BOOT_NORMAL>;
-> >> >> +             mode-recovery = <BOOT_RECOVERY>;
-> >> >> +             mode-fastboot = <BOOT_FASTBOOT>;
-> >> >
-> >> > I tend to agree with John on calling this mode-bootloader.
-> >> >
-> >> > OTOH, fastboot is more specific about what the mode is. The name in DT
-> >> > and the userspace name don't necessarily have to be the same.
-> >>
-> >> Wait. This is a bit confusing. The utility of adding a property name
-> >> and using that name be the reboot command parsed for made sense
-> >> (compared to earlier versions which had command strings) as it made
-> >> the dts more terse.   But it sounds here like you're suggesting we
-> >> should have some logic in the driver that translates "reboot fastboot"
-> >> to mode-bootloader or vice versa.
-> >
-> > I said early on the DT names and kernel-userspace names should not
-> > necessarily be linked. They can be, but we shouldn't require that.
+Hi Peter,
+
+On 02/11/2016 03:59 AM, Peter Zijlstra wrote:
+>> I think additional hooks such as enqueue/dequeue would be needed in
+>> > RT/DL. The task tick callbacks will only run if a task in that class is
+>> > executing at the time of the tick. There could be intermittent RT/DL
+>> > task activity in a frequency domain (the only task activity there, no
+>> > CFS tasks) that doesn't happen to overlap the tick. Worst case the task
+>> > activity could be periodic in such a way that it never overlaps the tick
+>> > and the update is never made.
+>
+> No, for RT (RR/FIFO) we do not have enough information to do anything
+> useful. Basically RR/FIFO should result in running 100% whenever we
+> schedule such a task.
 > 
-> Sigh. Ok. It seemed it was due to earlier comments (maybe from others,
-> but I thought it was you), that we moved from specifying a command
-> string, to using the label. But if you think the label name and the
-> commands shouldn't be linked, it seems like we should re-introduce
-> that. No?
+> That means RR/FIFO want a hook in pick_next_task_rt() to bump the freq
+> to 100% and leave it there until something else gets to run.
+>
+> For DL it basically wants to set a minimum freq based on reserved
+> utilization, so that is __setparam_dl() or somewhere around there.
 > 
-> Unless your thinking we need some sort of static in-kernel mapping of
-> commands to label names? But that just seems painfully indirect for
-> little gain ("Its obvious! For that mode, you use this term here, and
-> that different term over there!").
+> And we should either use CPPC hints for min freq or manually ensure that
+> the CFS callback will not select something less than this.
 
-Tying it to a Linux ABI makes the binding Linux specific. I don't have a 
-problem that the strings happen to be the same, but we should have some 
-understanding that they may not be and allow for that.
+Rafael's changes aren't specifying particular frequencies/capacities in
+the scheduler hooks. They're just pokes to get cpufreq to run, in order
+to eliminate cpufreq's timers.
 
-> > My concern with mode-bootloader is what if you can boot into multiple
-> > bootloader modes. Say USB mass storage is one option. "bootloader" is
-> > not real specific.
-> 
-> True. But as I think we agreed below, "bootloader" and "recovery" are
-> basically defacto standards, and I think it would be a bad idea to try
-> to declare all the existing android tooling and docs wrong just
-> because the command is vague, technically.
+My concern above is that pokes are guaranteed to keep occurring when
+there is only RT or DL activity so nothing breaks.
 
-Okay, as long as they are clearly documented what they mean.
-
-
-> >> >> +             mode-loader = <BOOT_LOADER>;
-> >> >
-> >> > This one needs a better name. Maybe it should be 'rockchip,mode-loader'
-> >> > as it is vendor specific. Either way, loader is vague. Perhaps
-> >> > rockchip,mode-bl-download?
-> >>
-> >> Hrm. So how what reboot command do you expect to trigger that?
-> >
-> > Whatever your OS has defined to map to that.
-> >
-> > We could just decide the kernel will strip <vendor> and 'mode-' and
-> > match commands against what remains.
-> 
-> That part sounds sane, although I do think having vendor prefixes are
-> reasonable for actual commands as well.
-
-Well, you could still have "rockchip,mode-rockchip-bl-download"... 
-
-We can bikeshed that when get there.
-
-The other way random custom modes could be done is just allow the raw 
-value to be passed from userspace converting the string to a number. 
-Then we have no abstraction rather than half way abstracting it.
-
-> >> I think one of the difficult things here is that there's no real
-> >> standards for all bios/bootloader modes. So they are somewhat
-> >> firmware/bootloader/device specific, and thus we need something that
-> >> is flexible enough to allow lots of different modes to be easily
-> >> specified.  That said, this does expose a userspace interface (though
-> >> one could argue kernel ABI doesn't cross reboots :) so we should try
-> >> to have some consistency so the same userspace can work on various
-> >> devices.
-> >
-> > There is: UEFI. Boot mode efivars are standard. But then they are pretty
-> > much PC oriented though. It is more which device to boot off of, but
-> > there is network boot or boot to bios setup.
-> 
-> Well, there's a partial standard there.  I'm told for android on x86,
-> there is no UEFI standard way to communicate rebooting to fastboot or
-> recovery. Every device does its own device specific driver.
-
-So much for standards. However, while these specific modes have not been 
-standardized, there is a set of standard modes and these could have been 
-added to the existing mechanism. So there at least exists some model to 
-draw inspiration from.
-
-Rob
+thanks,
+Steve
