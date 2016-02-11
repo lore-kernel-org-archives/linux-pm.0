@@ -1,56 +1,41 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: fix out of bounds access in
- time_in_idle
-Date: Thu, 11 Feb 2016 07:00:28 -0800
-Message-ID: <20160211150027.GA24955@localhost.localdomain>
-References: <1455192051-6430-1-git-send-email-javi.merino@arm.com>
+From: Benson Leung <bleung@chromium.org>
+Subject: Re: [PATCH v1 3/6] power_supply: Add types for USB Type C and PD chargers
+Date: Thu, 11 Feb 2016 07:05:20 -0800
+Message-ID: <CANLzEktCcUe9cGfSQsRZuF_SB_puqK4czNgETJfa+JCN5gmubw@mail.gmail.com>
+References: <1454679181-8949-1-git-send-email-tomeu.vizoso@collabora.com>
+	<1454679181-8949-4-git-send-email-tomeu.vizoso@collabora.com>
+	<CANLzEktsLH_hMPoaspuP1tZue-HkA3rqY2PbqOPOAOB7qm5+pA@mail.gmail.com>
+	<CAAObsKBdtQ0Je4cnU=tQKNgsGRoMJPF9gkSywu+EXH476uXudA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:34273 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbcBKPAd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 10:00:33 -0500
-Content-Disposition: inline
-In-Reply-To: <1455192051-6430-1-git-send-email-javi.merino@arm.com>
+Received: from mail-ig0-f179.google.com ([209.85.213.179]:37829 "EHLO
+	mail-ig0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbcBKPFV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Feb 2016 10:05:21 -0500
+Received: by mail-ig0-f179.google.com with SMTP id 5so38253201igt.0
+        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 07:05:20 -0800 (PST)
+In-Reply-To: <CAAObsKBdtQ0Je4cnU=tQKNgsGRoMJPF9gkSywu+EXH476uXudA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: akpm@linux-foundation.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, drinkcat@chromium.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Feb 11, 2016 at 12:00:51PM +0000, Javi Merino wrote:
-> In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
-> and time_in_idle_timestamp to be as big as the number of cpus in this
-> cpufreq device.  However, in get_load() we access this array using the
-> cpu number as index, which can result in an out of bound access.
-> 
-> Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
-> allowed_cpus mask, as we do for the load_cpu array in
-> cpufreq_get_requested_power()
-> 
-> Reported-by: Nicolas Boichat <drinkcat@chromium.org>
-> Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Tested-by: Nicolas Boichat <drinkcat@chromium.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
+On Thu, Feb 11, 2016 at 2:00 AM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+>> Could you change these to be "USB Power Delivery Port" and "USB PD
+>> Dual Role Port"?
+>
+> I have gone with omitting the USB prefix, following the lead of the
+> existing entries, do you agree with that?
 
 
-> ---
-> Hi Andrew,
-> 
-> This patch fixes an out of bounds access found by Nicolas Boichat
-> using KASAN.  It is acked by Viresh, comaintainer of the cpu cooling
-> device and tested by the reporter.  It's been in the list[0] for more
-> than a month, I've pinged the thermal maintainers three times but they
-> haven't replied.
-> 
-> Can you merge it via your tree?  Thanks,
-> Javi
+Sounds good to me!
 
-Somehow this patch was marked as accepted in patchwork and I missed it,
-apologize for this. I am adding it to thermal-soc.
+Thanks,
+Benson
 
-BR,
-Eduardo
+-- 
+Benson Leung
+Senior Software Engineer, Chrom* OS
+bleung@chromium.org
