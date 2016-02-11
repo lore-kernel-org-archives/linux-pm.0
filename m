@@ -1,75 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
-Date: Thu, 11 Feb 2016 02:25:15 +0100
-Message-ID: <2946666.LCVBdOefy1@vostro.rjw.lan>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Wed, 10 Feb 2016 20:44:47 -0800
+Message-ID: <56BC11BF.90104@linaro.org>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+ <CAAJzSMervH=-Z0__i_nC2ubUJAcb4J-YP1bWwo5-z4z9RyLcMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAAJzSMervH=-Z0__i_nC2ubUJAcb4J-YP1bWwo5-z4z9RyLcMg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Ricky Liang <jcliang@chromium.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Ricky,
 
-The show() and store() routines in the cpufreq core don't need to
-acquire all of the locks to check if the struct freq_attr they want
-to use really provides the callbacks they need as expected, so change
-them to avoid doing that.
+On 02/01/2016 09:10 AM, Ricky Liang wrote:
+>> +static int cpufreq_sched_policy_init(struct cpufreq_policy *policy)
+>> > +{
+>> > +       struct gov_data *gd;
+>> > +       int cpu;
+>> > +
+>> > +       for_each_cpu(cpu, policy->cpus)
+>> > +               memset(&per_cpu(cpu_sched_capacity_reqs, cpu), 0,
+>> > +                      sizeof(struct sched_capacity_reqs));
+>> > +
+>> > +       gd = kzalloc(sizeof(*gd), GFP_KERNEL);
+>> > +       if (!gd)
+>> > +               return -ENOMEM;
+>> > +
+>> > +       gd->throttle_nsec = policy->cpuinfo.transition_latency ?
+>> > +                           policy->cpuinfo.transition_latency :
+>> > +                           THROTTLE_NSEC;
+>> > +       pr_debug("%s: throttle threshold = %u [ns]\n",
+>> > +                 __func__, gd->throttle_nsec);
+>> > +
+>> > +       if (cpufreq_driver_is_slow()) {
+>> > +               cpufreq_driver_slow = true;
+>> > +               gd->task = kthread_create(cpufreq_sched_thread, policy,
+>> > +                                         "kschedfreq:%d",
+>> > +                                         cpumask_first(policy->related_cpus));
+>> > +               if (IS_ERR_OR_NULL(gd->task)) {
+>> > +                       pr_err("%s: failed to create kschedfreq thread\n",
+>> > +                              __func__);
+>> > +                       goto err;
+>> > +               }
+>> > +               get_task_struct(gd->task);
+>> > +               kthread_bind_mask(gd->task, policy->related_cpus);
+>> > +               wake_up_process(gd->task);
+>> > +               init_irq_work(&gd->irq_work, cpufreq_sched_irq_work);
+>> > +       }
+>> > +
+>> > +       policy->governor_data = gd;
+>
+> This should be moved before if(cpufreq_driver_is_slow()) {...}. I've
+> seen NULL pointer deference at boot in cpufreq_sched_thread() when it
+> tried to run sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param).
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
+Agreed, this has been addressed during various cleanups and
+reorganization since the last posting.
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -862,13 +862,11 @@ static ssize_t show(struct kobject *kobj
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret;
- 
--	down_read(&policy->rwsem);
--
--	if (fattr->show)
--		ret = fattr->show(policy, buf);
--	else
--		ret = -EIO;
-+	if (!fattr->show)
-+		return -EIO;
- 
-+	down_read(&policy->rwsem);
-+	ret = fattr->show(policy, buf);
- 	up_read(&policy->rwsem);
- 
- 	return ret;
-@@ -881,20 +879,17 @@ static ssize_t store(struct kobject *kob
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret = -EINVAL;
- 
--	get_online_cpus();
--
--	if (!cpu_online(policy->cpu))
--		goto unlock;
-+	if (!fattr->store)
-+		return -EIO;
- 
--	down_write(&policy->rwsem);
-+	get_online_cpus();
- 
--	if (fattr->store)
-+	if (cpu_online(policy->cpu)) {
-+		down_write(&policy->rwsem);
- 		ret = fattr->store(policy, buf, count);
--	else
--		ret = -EIO;
-+		up_write(&policy->rwsem);
-+	}
- 
--	up_write(&policy->rwsem);
--unlock:
- 	put_online_cpus();
- 
- 	return ret;
+> 
+>> > +       set_sched_freq();
+>> > +
+>> > +       return 0;
+>> > +
+>> > +err:
+> And probably also set policy->governor_data to NULL here.
+
+Changed. Thanks for the comments.
+
+thanks,
+Steve
