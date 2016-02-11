@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 1/6] cpufreq: Merge cpufreq_offline_prepare/finish routines
-Date: Thu, 11 Feb 2016 17:31:11 +0530
-Message-ID: <4266bafe3c9baad4996352e3f7780344e854b002.1455191663.git.viresh.kumar@linaro.org>
+Subject: [PATCH V5 4/6] cpufreq: governor: No need to manage state machine now
+Date: Thu, 11 Feb 2016 17:31:14 +0530
+Message-ID: <36f3adcb78ff16deeab8db5104f25dfd96b3a631.1455191663.git.viresh.kumar@linaro.org>
 References: <cover.1455191663.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1455191663.git.viresh.kumar@linaro.org>
@@ -12,115 +12,105 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Governor sysfs attributes are still removed in
-__cpufreq_governor(_EXIT), though, so had store() been used for them,
-the deadlock described in the changelog of commit 1aee40ac9c86 would
-have been possible.
+The cpufreq core now guarantees that policy->rwsem won't be dropped
+while running the ->governor callback for the CPUFREQ_GOV_POLICY_EXIT
+event and will be held acquired until the complete sequence of governor
+state changes has finished.
 
-Fortunately, we don't use store() (which still does get_online_cpus())
-for those attributes now.  We use governor_store() for them and that
-doesn't call get_online_cpus().
+This allows governor state machine checks to be dropped from multiple
+functions in cpufreq_governor.c.
 
-And so we don't need to split cpufreq-offline functionality into
-DOWN_PREPARE and POST_DEAD hotplug notifiers anymore.
+This also means that policy_dbs->policy can be initialized upfront, so
+the entire initialization of struct policy_dbs is carried out in one
+place.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-[ rjw: Changelog ]
 Tested-by: Juri Lelli <juri.lelli@arm.com>
 Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/cpufreq.c | 36 ++++++++++--------------------------
- 1 file changed, 10 insertions(+), 26 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9c62bf35b9dc..863ac26c4ecf 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1361,9 +1361,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	return ret;
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 3a9dab752148..481585611097 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -233,8 +233,10 @@ static inline void gov_clear_update_util(struct cpufreq_policy *policy)
+ 	synchronize_rcu();
  }
  
--static void cpufreq_offline_prepare(unsigned int cpu)
-+static void cpufreq_offline(unsigned int cpu)
+-static void gov_cancel_work(struct policy_dbs_info *policy_dbs)
++static void gov_cancel_work(struct cpufreq_policy *policy)
  {
- 	struct cpufreq_policy *policy;
-+	int ret;
++	struct policy_dbs_info *policy_dbs = policy->governor_data;
++
+ 	/* Tell dbs_update_util_handler() to skip queuing up work items. */
+ 	atomic_inc(&policy_dbs->skip_work);
+ 	/*
+@@ -330,6 +332,7 @@ static struct policy_dbs_info *alloc_policy_dbs_info(struct cpufreq_policy *poli
+ 	if (!policy_dbs)
+ 		return NULL;
  
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
++	policy_dbs->policy = policy;
+ 	mutex_init(&policy_dbs->timer_mutex);
+ 	atomic_set(&policy_dbs->skip_work, 0);
+ 	init_irq_work(&policy_dbs->irq_work, dbs_irq_work);
+@@ -460,10 +463,6 @@ static int cpufreq_governor_exit(struct cpufreq_policy *policy)
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+ 	int count;
  
-@@ -1374,7 +1375,7 @@ static void cpufreq_offline_prepare(unsigned int cpu)
- 	}
- 
- 	if (has_target()) {
--		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
- 		if (ret)
- 			pr_err("%s: Failed to stop governor\n", __func__);
- 	}
-@@ -1397,34 +1398,23 @@ static void cpufreq_offline_prepare(unsigned int cpu)
- 	/* Start governor again for active policy */
- 	if (!policy_is_inactive(policy)) {
- 		if (has_target()) {
--			int ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-+			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
- 			if (!ret)
- 				ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
- 
- 			if (ret)
- 				pr_err("%s: Failed to start governor\n", __func__);
- 		}
--	} else if (cpufreq_driver->stop_cpu) {
--		cpufreq_driver->stop_cpu(policy);
--	}
--}
- 
--static void cpufreq_offline_finish(unsigned int cpu)
--{
--	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+-	/* State should be equivalent to INIT */
+-	if (policy_dbs->policy)
+-		return -EBUSY;
 -
--	if (!policy) {
--		pr_debug("%s: No cpu_data found\n", __func__);
- 		return;
- 	}
+ 	mutex_lock(&dbs_data->mutex);
+ 	list_del(&policy_dbs->list);
+ 	count = --dbs_data->usage_count;
+@@ -499,10 +498,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy)
+ 	if (!policy->cur)
+ 		return -EINVAL;
  
--	/* Only proceed for inactive policies */
--	if (!policy_is_inactive(policy))
--		return;
-+	if (cpufreq_driver->stop_cpu)
-+		cpufreq_driver->stop_cpu(policy);
- 
- 	/* If cpu is last user of policy, free policy */
- 	if (has_target()) {
--		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
- 		if (ret)
- 			pr_err("%s: Failed to exit governor\n", __func__);
- 	}
-@@ -1453,10 +1443,8 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- 	if (!policy)
- 		return;
- 
--	if (cpu_online(cpu)) {
--		cpufreq_offline_prepare(cpu);
--		cpufreq_offline_finish(cpu);
--	}
-+	if (cpu_online(cpu))
-+		cpufreq_offline(cpu);
- 
- 	cpumask_clear_cpu(cpu, policy->real_cpus);
- 	remove_cpu_dev_symlink(policy, cpu);
-@@ -2304,11 +2292,7 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
- 		break;
- 
- 	case CPU_DOWN_PREPARE:
--		cpufreq_offline_prepare(cpu);
--		break;
+-	/* State should be equivalent to INIT */
+-	if (policy_dbs->policy)
+-		return -EBUSY;
 -
--	case CPU_POST_DEAD:
--		cpufreq_offline_finish(cpu);
-+		cpufreq_offline(cpu);
- 		break;
+ 	sampling_rate = dbs_data->sampling_rate;
+ 	ignore_nice = dbs_data->ignore_nice_load;
  
- 	case CPU_DOWN_FAILED:
+@@ -527,7 +522,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy)
+ 		if (ignore_nice)
+ 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ 	}
+-	policy_dbs->policy = policy;
+ 
+ 	if (gov->governor == GOV_CONSERVATIVE) {
+ 		struct cs_cpu_dbs_info_s *cs_dbs_info =
+@@ -550,14 +544,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy)
+ 
+ static int cpufreq_governor_stop(struct cpufreq_policy *policy)
+ {
+-	struct policy_dbs_info *policy_dbs = policy->governor_data;
+-
+-	/* State should be equivalent to START */
+-	if (!policy_dbs->policy)
+-		return -EBUSY;
+-
+-	gov_cancel_work(policy_dbs);
+-	policy_dbs->policy = NULL;
++	gov_cancel_work(policy);
+ 
+ 	return 0;
+ }
+@@ -566,10 +553,6 @@ static int cpufreq_governor_limits(struct cpufreq_policy *policy)
+ {
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 
+-	/* State should be equivalent to START */
+-	if (!policy_dbs->policy)
+-		return -EBUSY;
+-
+ 	mutex_lock(&policy_dbs->timer_mutex);
+ 	if (policy->max < policy->cur)
+ 		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
 -- 
 2.7.1.370.gb2aa7f8
