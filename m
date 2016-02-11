@@ -1,38 +1,126 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 0/6] cpufreq: Locking fixes and cleanups
-Date: Thu, 11 Feb 2016 17:31:10 +0530
-Message-ID: <cover.1455191663.git.viresh.kumar@linaro.org>
+Subject: [PATCH V5 1/6] cpufreq: Merge cpufreq_offline_prepare/finish routines
+Date: Thu, 11 Feb 2016 17:31:11 +0530
+Message-ID: <4266bafe3c9baad4996352e3f7780344e854b002.1455191663.git.viresh.kumar@linaro.org>
+References: <cover.1455191663.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1455191663.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1455191663.git.viresh.kumar@linaro.org>
+References: <cover.1455191663.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, juri.lelli@arm.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Governor sysfs attributes are still removed in
+__cpufreq_governor(_EXIT), though, so had store() been used for them,
+the deadlock described in the changelog of commit 1aee40ac9c86 would
+have been possible.
 
-These are rest of the patches that fix some more locking issues with
-policy->rwsem and do some minor optimization/cleanups.
+Fortunately, we don't use store() (which still does get_online_cpus())
+for those attributes now.  We use governor_store() for them and that
+doesn't call get_online_cpus().
 
-V4->V5:
-- Changelog updated for 1-2 as suggested by Rafael
-- 4th patch is dropped, which moved common tunable callbacks to
-  cpufreq_governor.c
-- 5-7 are resend on the V5 sent earlier, as reply to V4 of the series.
+And so we don't need to split cpufreq-offline functionality into
+DOWN_PREPARE and POST_DEAD hotplug notifiers anymore.
 
-Viresh Kumar (6):
-  cpufreq: Merge cpufreq_offline_prepare/finish routines
-  cpufreq: Call __cpufreq_governor() with policy->rwsem held
-  cpufreq: Remove cpufreq_governor_lock
-  cpufreq: governor: No need to manage state machine now
-  cpufreq: conservative: Update sample_delay_ns immediately
-  cpufreq: ondemand: Rearrange od_dbs_timer() to avoid updating delay
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+[ rjw: Changelog ]
+Tested-by: Juri Lelli <juri.lelli@arm.com>
+Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/cpufreq.c | 36 ++++++++++--------------------------
+ 1 file changed, 10 insertions(+), 26 deletions(-)
 
- drivers/cpufreq/cpufreq.c              | 93 ++++++++++++++++------------------
- drivers/cpufreq/cpufreq_conservative.c | 14 -----
- drivers/cpufreq/cpufreq_governor.c     | 90 ++++++++++++++++++++++++--------
- drivers/cpufreq/cpufreq_governor.h     |  3 +-
- drivers/cpufreq/cpufreq_ondemand.c     | 78 ++--------------------------
- 5 files changed, 117 insertions(+), 161 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 9c62bf35b9dc..863ac26c4ecf 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1361,9 +1361,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	return ret;
+ }
+ 
+-static void cpufreq_offline_prepare(unsigned int cpu)
++static void cpufreq_offline(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy;
++	int ret;
+ 
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+ 
+@@ -1374,7 +1375,7 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+ 	}
+ 
+ 	if (has_target()) {
+-		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret)
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+ 	}
+@@ -1397,34 +1398,23 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+ 	/* Start governor again for active policy */
+ 	if (!policy_is_inactive(policy)) {
+ 		if (has_target()) {
+-			int ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 			if (!ret)
+ 				ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 
+ 			if (ret)
+ 				pr_err("%s: Failed to start governor\n", __func__);
+ 		}
+-	} else if (cpufreq_driver->stop_cpu) {
+-		cpufreq_driver->stop_cpu(policy);
+-	}
+-}
+ 
+-static void cpufreq_offline_finish(unsigned int cpu)
+-{
+-	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+-
+-	if (!policy) {
+-		pr_debug("%s: No cpu_data found\n", __func__);
+ 		return;
+ 	}
+ 
+-	/* Only proceed for inactive policies */
+-	if (!policy_is_inactive(policy))
+-		return;
++	if (cpufreq_driver->stop_cpu)
++		cpufreq_driver->stop_cpu(policy);
+ 
+ 	/* If cpu is last user of policy, free policy */
+ 	if (has_target()) {
+-		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
++		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+ 		if (ret)
+ 			pr_err("%s: Failed to exit governor\n", __func__);
+ 	}
+@@ -1453,10 +1443,8 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 	if (!policy)
+ 		return;
+ 
+-	if (cpu_online(cpu)) {
+-		cpufreq_offline_prepare(cpu);
+-		cpufreq_offline_finish(cpu);
+-	}
++	if (cpu_online(cpu))
++		cpufreq_offline(cpu);
+ 
+ 	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 	remove_cpu_dev_symlink(policy, cpu);
+@@ -2304,11 +2292,7 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+ 		break;
+ 
+ 	case CPU_DOWN_PREPARE:
+-		cpufreq_offline_prepare(cpu);
+-		break;
+-
+-	case CPU_POST_DEAD:
+-		cpufreq_offline_finish(cpu);
++		cpufreq_offline(cpu);
+ 		break;
+ 
+ 	case CPU_DOWN_FAILED:
 -- 
 2.7.1.370.gb2aa7f8
