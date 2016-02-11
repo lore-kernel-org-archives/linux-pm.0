@@ -1,50 +1,75 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V4 1/7] cpufreq: Merge cpufreq_offline_prepare/finish routines
-Date: Thu, 11 Feb 2016 02:15:19 +0100
-Message-ID: <CAJZ5v0iWxdP9qYZow2yJ2CF8GD-HTO5W1w6e8baJunXEQpMjQA@mail.gmail.com>
-References: <cover.1454988792.git.viresh.kumar@linaro.org>
-	<e773903ed5010cb3a9e445e2cf3a96db3942ff28.1454988792.git.viresh.kumar@linaro.org>
-	<CAJZ5v0hbZMmgN2q-eR6dXK=rgLSDK_WEbD-mFB12Agb1RMm8-w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
+Date: Thu, 11 Feb 2016 02:25:15 +0100
+Message-ID: <2946666.LCVBdOefy1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hbZMmgN2q-eR6dXK=rgLSDK_WEbD-mFB12Agb1RMm8-w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 11, 2016 at 1:59 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Feb 9, 2016 at 4:46 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> The offline routine was separated into two halves earlier by
->> 'commit 1aee40ac9c86 ("cpufreq: Invoke __cpufreq_remove_dev_finish()
->> after releasing cpu_hotplug.lock");.
->>
->> And the reasons cited were, race issues between accessing policy's sysfs
->> files and policy kobject's cleanup.
->>
->> That race isn't valid anymore, as we don't remove the policy & its
->> kobject completely on hotplugs, but do that from ->remove() callback of
->> subsys framework.
->
-> Governor sysfs attributes are still removed in
-> __cpufreq_governor(_EXIT), though, so had store() been used for them,
-> the deadlock described in the changelog of commit 1aee40ac9c86 would
-> have been possible.
->
-> Fortunately, we don't use store() (which still does get_online_cpus())
-> for those attributes now.  We use governor_store() for them and that
-> doesn't call get_online_cpus().  So in fact this patch is only correct
-> after the recent rework of the governor attributes handling.
->
-> Please modify the changelog to explain that more thoroughly.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-And one question tangentially related to this patch: Would it be
-possible to avoid calling __cpufreq_governor(_EXIT) for CPU offline?
+The show() and store() routines in the cpufreq core don't need to
+acquire all of the locks to check if the struct freq_attr they want
+to use really provides the callbacks they need as expected, so change
+them to avoid doing that.
 
-The fact that we still carry out the whole governor teardown at that
-point is slightly disturbing, as in theory it should be possible to
-keep the governor attributes in place across offline/online.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |   27 +++++++++++----------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
 
-Thanks,
-Rafael
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -862,13 +862,11 @@ static ssize_t show(struct kobject *kobj
+ 	struct freq_attr *fattr = to_attr(attr);
+ 	ssize_t ret;
+ 
+-	down_read(&policy->rwsem);
+-
+-	if (fattr->show)
+-		ret = fattr->show(policy, buf);
+-	else
+-		ret = -EIO;
++	if (!fattr->show)
++		return -EIO;
+ 
++	down_read(&policy->rwsem);
++	ret = fattr->show(policy, buf);
+ 	up_read(&policy->rwsem);
+ 
+ 	return ret;
+@@ -881,20 +879,17 @@ static ssize_t store(struct kobject *kob
+ 	struct freq_attr *fattr = to_attr(attr);
+ 	ssize_t ret = -EINVAL;
+ 
+-	get_online_cpus();
+-
+-	if (!cpu_online(policy->cpu))
+-		goto unlock;
++	if (!fattr->store)
++		return -EIO;
+ 
+-	down_write(&policy->rwsem);
++	get_online_cpus();
+ 
+-	if (fattr->store)
++	if (cpu_online(policy->cpu)) {
++		down_write(&policy->rwsem);
+ 		ret = fattr->store(policy, buf, count);
+-	else
+-		ret = -EIO;
++		up_write(&policy->rwsem);
++	}
+ 
+-	up_write(&policy->rwsem);
+-unlock:
+ 	put_online_cpus();
+ 
+ 	return ret;
