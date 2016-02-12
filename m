@@ -1,67 +1,84 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH v6 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Fri, 12 Feb 2016 09:33:26 -0800
-Message-ID: <001601d165bb$7bf4de30$73de9a90$@net>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>	<2111826.yKEUOzphHC@vostro.rjw.lan>	<008201d16458$69b2a4f0$3d17eed0$@net>	<7442347.PCmPlrAvBe@vostro.rjw.lan>	<002101d1651e$8ff027c0$afd07740$@net>	<002601d16566$88455610$98d00230$@net> <CAJZ5v0h=CNVwEe4VQTreUvPucUnpkpndrUSU89vUCf7hkuEg-A@mail.gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH] i2c: designware: Prevent runtime suspend during adapter
+ registration
+Date: Fri, 12 Feb 2016 20:04:10 +0100
+Message-ID: <20160212190410.GK1520@katana>
+References: <1455201363-3278-1-git-send-email-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h=CNVwEe4VQTreUvPucUnpkpndrUSU89vUCf7hkuEg-A@mail.gmail.com>
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yr6OvWOSyJed8q4v"
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1455201363-3278-1-git-send-email-jarkko.nikula@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2016.02.12 05:39 Rafael J. Wysocki wrote:
-> On Fri, Feb 12, 2016 at 8:25 AM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2016.02.11 14:50 Doug Smythies wrote:
->>> On 2016.02.10 22:03 Srinivas Pandruvada wrote:
->>>> On Wednesday, February 10, 2016 03:11:43 PM Doug Smythies wrote:
->>
->>>>> My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
->>> Thanks Doug. If you have specific workloads, please compare performance.
->>
->>> My work so far has been testing functionality, with unrealistic workloads specifically
->>> designed to exaggerate issues, in this case the duration problem.
->>>
->>> I'll look at some real world workload scenarios.
->>
->> Turbostat used for package power, starts before Phoronix tests starts,
->> and ends after Phoronix test ends.
->>
->> Control Sample: Kernel 4.5-rc3:
->> Phoronix ffmpeg: turbostat 180 Sec. 12.07 Sec. Ave. 27.14 Watts.
->> Phoronix apache: turbostat 200 Sec. 19797.0 R.P.S. Ave. 34.01 Watts.
->> Phoronix kernel: turbostat 180 Sec. 139.93 Sec. 49.09 Watts.
->> Phoronix Postmark (Disk Test): turbostat 200 Sec. 5813 T.P.S. Ave. 21.33 Watts.
->>
->> Kernel 4.5-rc3 + RJW 3 patch set version 7:
->> Phoronix ffmpeg: turbostat 180 Sec. 11.67 Sec. Ave. 27.35 Watts.
->> Phoronix apache: turbostat 200 Sec. 19430.7 R.P.S. Ave. 34.18 Watts.
->> Phoronix kernel: turbostat 180 Sec. 139.81 Sec. 48.80 Watts.
->> Phoronix Postmark (Disk Test): turbostat 200 Sec. 5683 T.P.S. Ave. 22.41 Watts.
 
-> Thanks for the results!
->
-> The Postmark result is somewhat below expectations (especially with
-> respect to the energy consumption), but we should be able to improve
-> that by using the util numbers intelligently.
->
-> Do you have full turbostat reports from those runs by any chance?  I'm
-> wondering what happens to the idle state residencies, for example.
+--yr6OvWOSyJed8q4v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I did not keep the turbostat output, however it is easy enough to
-re-do the tests. I'll send you the stuff off-list, and copy
-Srinivas.
+On Thu, Feb 11, 2016 at 04:36:03PM +0200, Jarkko Nikula wrote:
+> There can be unnecessary runtime suspend-resume cycle during
+> i2c-designware-platdrv probe when it registers the I2C adapter device. Th=
+is
+> happens because i2c-designware-platdrv is set to initially active platform
+> device in its probe function and is a parent of I2C adapter.
+>=20
+> In that case power.usage_count of i2c-designware device is zero and
+> pm_runtime_get()/pm_runtime_put() cycle during probe could put it into
+> runtime suspend. This happens when the i2c_register_adapter() calls the
+> device_register():
+>=20
+> i2c_register_adapter
+>   device_register
+>     device_add
+>       bus_probe_device
+>         device_initial_probe
+>           __device_attach
+>             if (dev->parent) pm_runtime_get_sync(dev->parent)
+>             ...
+>             if (dev->parent) pm_runtime_put(dev->parent)
+>=20
+> After that the i2c_register_adapter() continues registering I2C slave
+> devices. In case slave device probe does I2C transfers the parent will
+> resume again and thus get a needless runtime suspend/resume cycle during
+> adapter registration.
+>=20
+> Prevent this while retaining the runtime PM status of i2c-designware by
+> only incrementing/decrementing device power usage count during I2C
+> adapter registration. That makes sure there won't be spurious runtime PM
+> status changes and lets the driver core to idle the device after probe
+> finishes.
+>=20
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-By the way, there is an anomaly in my 2 hour idle data (v7), where
-CPU 7 should have had sample passes through the intel_pstate driver.
-It did not, rather hitting the 4 second time limit instead.
-10 occurrences in 7200 seconds. I sent you an off-list html format
-e-mail with more details. There may be other anomalies I didn't
-find yet.
+Applied to for-next, thanks!
 
-... Doug
+
+--yr6OvWOSyJed8q4v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWviyqAAoJEBQN5MwUoCm23KsP/AvtJLHZ52nbF4FlCEdO6Bre
+YA2plkN2t/UQ7EbetcLbeWRQyIF1xdW5tnzefUJaABIzwoOK2noiTYm5cpD5ULp/
+ysyJAvjO68+YyRkweiQ1vwiYmILcbCPyKid7Kz8imbnlKHLIKN1qynMZn+I5j6kt
+ef24YmVz8nEdLNsO1TR8TYWrft0ebDSfnfS1m21Td67gSYvCFkNhC2Hnw79ZV8Um
+vACoYKd5LNiSmC0nd+bozkaTKesXaEf2SGUDxbGWhNxs8X1o8qDcRuqPPRv93iVM
+g6ZHKBLp1/R0i0clB8nKvdIxTgayKOPzSfDcpx6RgmVXEKqKE2tc/SILVsXhBev2
+MQPy4etQDvNhpy4WFIwGltcPsqflBuMOyt9A3RivLTiX0JF/G3RMdBsHp2DYHJHs
+EL/6iWTnT/4oCB482rGGHf/ruFE1gi23zY3ZaBDVfGtg8rxEed4OmUYJPBelNy3t
+6yqdATR8jfNVR+nkTdrDwSGmDhmSLbO6jVQJv0ge9gbF/mzYBSCxrwsCy99b3Scz
+8Pxu38+5/lexfZqGi2TwTKDTCPRvbjc8/lhRX3VuHGvXwtY2VvNOamMnGghIV1CW
+GOkYUZmSDOLpJ5MV4ThHjmQcPrijRmWPojpM2itKfKdmVByB8RfVBy0k90Uj1nWr
+hYmCKymJT6TErUC1zSpY
+=rYki
+-----END PGP SIGNATURE-----
+
+--yr6OvWOSyJed8q4v--
