@@ -1,160 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
-Date: Fri, 12 Feb 2016 14:18:52 +0100
-Message-ID: <16931364.qnKxgPucoY@vostro.rjw.lan>
-References: <2946666.LCVBdOefy1@vostro.rjw.lan> <20160212063115.GE16949@vireshk-i7>
+Subject: [PATCH 1/2] cpufreq: governor: Simplify gov_cancel_work() slightly
+Date: Fri, 12 Feb 2016 14:28:13 +0100
+Message-ID: <2337921.T3qTZn9cXM@vostro.rjw.lan>
+References: <5225538.XnBMjjCp2q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65385 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:48356 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752459AbcBLNRh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 08:17:37 -0500
-In-Reply-To: <20160212063115.GE16949@vireshk-i7>
+	with SMTP id S1752426AbcBLNcN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 08:32:13 -0500
+In-Reply-To: <5225538.XnBMjjCp2q@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Shilpasri G Bhat <shilpabhatppc@gmail.com>
 
-On Friday, February 12, 2016 12:01:15 PM Viresh Kumar wrote:
-> On 11-02-16, 02:25, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The show() and store() routines in the cpufreq core don't need to
-> > acquire all of the locks to check if the struct freq_attr they want
-> > to use really provides the callbacks they need as expected, so change
-> > them to avoid doing that.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c |   27 +++++++++++----------------
-> >  1 file changed, 11 insertions(+), 16 deletions(-)
-> > 
-> > Index: linux-pm/drivers/cpufreq/cpufreq.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> > +++ linux-pm/drivers/cpufreq/cpufreq.c
-> > @@ -862,13 +862,11 @@ static ssize_t show(struct kobject *kobj
-> >  	struct freq_attr *fattr = to_attr(attr);
-> >  	ssize_t ret;
-> >  
-> > -	down_read(&policy->rwsem);
-> > -
-> > -	if (fattr->show)
-> > -		ret = fattr->show(policy, buf);
-> > -	else
-> > -		ret = -EIO;
-> > +	if (!fattr->show)
-> > +		return -EIO;
-> >  
-> > +	down_read(&policy->rwsem);
-> > +	ret = fattr->show(policy, buf);
-> >  	up_read(&policy->rwsem);
-> >  
-> >  	return ret;
-> > @@ -881,20 +879,17 @@ static ssize_t store(struct kobject *kob
-> >  	struct freq_attr *fattr = to_attr(attr);
-> >  	ssize_t ret = -EINVAL;
-> >  
-> > -	get_online_cpus();
-> > -
-> > -	if (!cpu_online(policy->cpu))
-> > -		goto unlock;
-> > +	if (!fattr->store)
-> > +		return -EIO;
-> >  
-> > -	down_write(&policy->rwsem);
-> > +	get_online_cpus();
-> >  
-> > -	if (fattr->store)
-> > +	if (cpu_online(policy->cpu)) {
-> > +		down_write(&policy->rwsem);
-> >  		ret = fattr->store(policy, buf, count);
-> > -	else
-> > -		ret = -EIO;
-> > +		up_write(&policy->rwsem);
-> > +	}
-> >  
-> > -	up_write(&policy->rwsem);
-> > -unlock:
-> 
-> I have no problems with the patch as is, but how are we going to benefit from it
-> ?
-> 
-> 'if (fattr->show/store)' is never ever going to fail, unless we have a bug here.
-
-Well, having a check that never fails is certainly unuseful.
-
-> So, even we may want to add a WARN_ON() for that case instead.
-
-I can add WARN_ON()s just fine.
-
----
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
 
-The show() and store() routines in the cpufreq core don't need to
-acquire all of the locks to check if the struct freq_attr they want
-to use really provides the callbacks they need as expected, so change
-them to avoid doing that.
-
-While at it, add WARN_ON()s around those checks as they are only supposed
-to ever fail if there's a bug in the code.
+The atomic work counter incrementation in gov_cancel_work() is not
+necessary any more, because work items won't be queued up after
+gov_clear_update_util() anyway, so drop it along with the comment
+about how it may be missed by the gov_clear_update_util().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |   27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -862,13 +862,11 @@ static ssize_t show(struct kobject *kobj
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret;
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -195,13 +195,6 @@ static inline void gov_clear_update_util
  
--	down_read(&policy->rwsem);
--
--	if (fattr->show)
--		ret = fattr->show(policy, buf);
--	else
--		ret = -EIO;
-+	if (WARN_ON(!fattr->show))
-+		return -EIO;
- 
-+	down_read(&policy->rwsem);
-+	ret = fattr->show(policy, buf);
- 	up_read(&policy->rwsem);
- 
- 	return ret;
-@@ -881,20 +879,17 @@ static ssize_t store(struct kobject *kob
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret = -EINVAL;
- 
--	get_online_cpus();
--
--	if (!cpu_online(policy->cpu))
--		goto unlock;
-+	if (WARN_ON(!fattr->store))
-+		return -EIO;
- 
--	down_write(&policy->rwsem);
-+	get_online_cpus();
- 
--	if (fattr->store)
-+	if (cpu_online(policy->cpu)) {
-+		down_write(&policy->rwsem);
- 		ret = fattr->store(policy, buf, count);
--	else
--		ret = -EIO;
-+		up_write(&policy->rwsem);
-+	}
- 
--	up_write(&policy->rwsem);
--unlock:
- 	put_online_cpus();
- 
- 	return ret;
+ static void gov_cancel_work(struct policy_dbs_info *policy_dbs)
+ {
+-	/* Tell dbs_update_util_handler() to skip queuing up work items. */
+-	atomic_inc(&policy_dbs->work_count);
+-	/*
+-	 * If dbs_update_util_handler() is already running, it may not notice
+-	 * the incremented work_count, so wait for it to complete to prevent its
+-	 * work item from being queued up after the cancel_work_sync() below.
+-	 */
+ 	gov_clear_update_util(policy_dbs->policy);
+ 	irq_work_sync(&policy_dbs->irq_work);
+ 	cancel_work_sync(&policy_dbs->work);
+@@ -264,7 +257,6 @@ static void dbs_update_util_handler(stru
+ 	 * The work may not be allowed to be queued up right now.
+ 	 * Possible reasons:
+ 	 * - Work has already been queued up or is in progress.
+-	 * - The governor is being stopped.
+ 	 * - It is too early (too little time from the previous sample).
+ 	 */
+ 	if (atomic_inc_return(&policy_dbs->work_count) == 1) {
 
