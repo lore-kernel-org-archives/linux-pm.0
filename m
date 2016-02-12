@@ -1,98 +1,73 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [RFC v2 12/12] ARM64: dts: Define CPU power domain for MSM8916
-Date: Fri, 12 Feb 2016 13:50:38 -0700
-Message-ID: <1455310238-8963-13-git-send-email-lina.iyer@linaro.org>
-References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:34965 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbcBLUvt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 15:51:49 -0500
-Received: by mail-pf0-f182.google.com with SMTP id c10so53777247pfc.2
-        for <linux-pm@vger.kernel.org>; Fri, 12 Feb 2016 12:51:49 -0800 (PST)
-In-Reply-To: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Fri, 12 Feb 2016 19:09:00 -0300
+Message-ID: <56BE57FC.3020407@osg.samsung.com>
+References: <56B204CB.60602@osg.samsung.com>
+ <20160208105417.GD2220@tetsubishi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20160208105417.GD2220@tetsubishi>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org
 
-Define power domain and the power states for the domain as defined by
-the PSCI firmware. The 8916 firmware supports OS initiated method of
-powering off the CPU clusters.
+Hello,
 
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
-Changes since RFC v1 -
-- no cpu-map topology node
+On 02/08/2016 07:54 AM, Wolfram Sang wrote:
+> On Wed, Feb 03, 2016 at 10:46:51AM -0300, Javier Martinez Canillas wrote:
+>> Hello Wolfram,
+>>
+>> I've a issue with a I2C video decoder driver (drivers/media/i2c/tvp5150.c).
+>>
+>> In v4.5-rc1, the driver gets I2C read / writes timeouts when accessing the
+>> device I2C registers:
+>>
+>> tvp5150 1-005c: i2c i/o error: rc == -110
+>> tvp5150: probe of 1-005c failed with error -110
+>>
+>> The driver used to work up to v4.4 so this is a regression in v4.5-rc1:
+>>
+>> tvp5150 1-005c: tvp5151 (1.0) chip found @ 0xb8 (OMAP I2C adapter)
+>> tvp5150 1-005c: tvp5151 detected.
+>>
+>> I tracked down to commit 9f924169c035 ("i2c: always enable RuntimePM for
+>> the adapter device") and reverting that commit makes things to work again.
+>>
+>> The tvp5150 driver doesn't have runtime PM support but the I2C controller
+>> driver does (drivers/i2c/busses/i2c-omap.c) FWIW.
+>>
+>> I tried adding runtime PM support to tvp5150 (basically calling pm_runtime
+>> enable/get on probe before the first I2C read to resume the controller) but
+>> that it did not work.
+>>
+>> Not filling the OMAP I2C driver's runtime PM callbacks does not help either.
+>>
+>> Any hints about the proper way to fix this issue?
+>
+> Asking linux-pm for help:
+>
+> The commit in question enables RuntimePM for the logical adapter device
+> which sits between the HW I2C controller and the I2C client device. This
+> adapter device has been used with pm_runtime_no_callbacks before
+> enabling RPM. Now, Alan explained to me that "suspend events will
+> propagate from the I2C clients all the way up to the adapter's parent."
+> with RPM enabled for the adapter device. Which should be a no-op if the
+> client doesn't do any PM at all? What do I miss?
+>
+> Thanks,
+>
+>     Wolfram
+>
 
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+I'm adding Tony Lindgren to the cc list as well since he is the OMAP
+maintainer and I see that has struggled lately with runtime PM issues
+so maybe he has more ideas.
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index b7839a8..62dade8 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -63,6 +63,7 @@
- 			reg = <0x0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU1: cpu@1 {
-@@ -71,6 +72,7 @@
- 			reg = <0x1>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU2: cpu@2 {
-@@ -79,6 +81,7 @@
- 			reg = <0x2>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU3: cpu@3 {
-@@ -87,6 +90,7 @@
- 			reg = <0x3>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		idle-states {
-@@ -101,6 +105,27 @@
- 		};
- 	};
- 
-+	CPU_PD: cpu-pd@0 {
-+		#power-domain-cells = <0>;
-+		power-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
-+	};
-+
-+	pd-power-states {
-+		CLUSTER_RET: power-state@1 {
-+			state-param = <0x1000010>;
-+			entry-latency-us = <500>;
-+			exit-latency-us = <500>;
-+			residency-us = <2000>;
-+		 };
-+
-+		CLUSTER_PWR_DWN: power-state@2 {
-+			state-param = <0x1000030>;
-+			entry-latency-us = <2000>;
-+			exit-latency-us = <2000>;
-+			residency-us = <6000>;
-+		};
-+	};
-+
- 	psci {
- 		compatible = "arm,psci-1.0";
- 		method = "smc";
+Best regards,
 -- 
-2.1.4
-
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
