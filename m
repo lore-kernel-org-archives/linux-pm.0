@@ -1,62 +1,60 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 0/3] cpufreq: Replace timers with utilization update callbacks
-Date: Fri, 12 Feb 2016 14:39:26 +0100
-Message-ID: <CAJZ5v0h=CNVwEe4VQTreUvPucUnpkpndrUSU89vUCf7hkuEg-A@mail.gmail.com>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Fri, 12 Feb 2016 14:43:13 +0100
+Message-ID: <CAJZ5v0gzozCcxdKr_wftpXVFcGTBR3A5HQ9XAOaTry4wUrzVDw@mail.gmail.com>
 References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<2111826.yKEUOzphHC@vostro.rjw.lan>
-	<008201d16458$69b2a4f0$3d17eed0$@net>
-	<7442347.PCmPlrAvBe@vostro.rjw.lan>
-	<002101d1651e$8ff027c0$afd07740$@net>
-	<002601d16566$88455610$98d00230$@net>
+	<56B93548.9090006@linaro.org>
+	<CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+	<5387313.xAhVpzgZCg@vostro.rjw.lan>
+	<56BA8C29.4090905@linaro.org>
+	<20160211115959.GI6357@twins.programming.kicks-ass.net>
+	<56BCBF7C.2080404@linaro.org>
+	<20160211173033.GP6357@twins.programming.kicks-ass.net>
+	<56BCD864.6030207@linaro.org>
+	<CAJZ5v0jiEkdA6HQEtabpcOPmsXDOKov46gZ=FyXjFmNf+9E9LQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:34235 "EHLO
-	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbcBLNj2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 08:39:28 -0500
-In-Reply-To: <002601d16566$88455610$98d00230$@net>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:33799 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbcBLNnP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 08:43:15 -0500
+In-Reply-To: <CAJZ5v0jiEkdA6HQEtabpcOPmsXDOKov46gZ=FyXjFmNf+9E9LQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Fri, Feb 12, 2016 at 8:25 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2016.02.11 14:50 Doug Smythies wrote:
->> On 2016.02.10 22:03 Srinivas Pandruvada wrote:
->>> On Wednesday, February 10, 2016 03:11:43 PM Doug Smythies wrote:
->
->>>> My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
->>> Thanks Doug. If you have specific workloads, please compare performance.
->
->> My work so far has been testing functionality, with unrealistic workloads specifically
->> designed to exaggerate issues, in this case the duration problem.
+On Thu, Feb 11, 2016 at 8:04 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Feb 11, 2016 at 7:52 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+>> On 02/11/2016 09:30 AM, Peter Zijlstra wrote:
+>>>> My concern above is that pokes are guaranteed to keep occurring when
+>>>> > there is only RT or DL activity so nothing breaks.
+>>>
+>>> The hook in their respective tick handler should ensure stuff is called
+>>> sporadically and isn't stalled.
 >>
->> I'll look at some real world workload scenarios.
+>> But that's only true if the RT/DL tasks happen to be running when the
+>> tick arrives right?
+>>
+>> Couldn't we have RT/DL activity which doesn't overlap with the tick? And
+>> if no CFS tasks happen to be executing on that CPU, we'll never trigger
+>> the cpufreq update. This could go on for an arbitrarily long time
+>> depending on the periodicity of the work.
 >
-> Turbostat used for package power, starts before Phoronix tests starts,
-> and ends after Phoronix test ends.
+> I'm thinking that two additional hooks in enqueue_task_rt/dl() might
+> help here.  Then, we will hit either the tick or enqueue and that
+> should do the trick.
 >
-> Control Sample: Kernel 4.5-rc3:
-> Phoronix ffmpeg: turbostat 180 Sec. 12.07 Sec. Ave. 27.14 Watts.
-> Phoronix apache: turbostat 200 Sec. 19797.0 R.P.S. Ave. 34.01 Watts.
-> Phoronix kernel: turbostat 180 Sec. 139.93 Sec. 49.09 Watts.
-> Phoronix Postmark (Disk Test): turbostat 200 Sec. 5813 T.P.S. Ave. 21.33 Watts.
->
-> Kernel 4.5-rc3 + RJW 3 patch set version 7:
-> Phoronix ffmpeg: turbostat 180 Sec. 11.67 Sec. Ave. 27.35 Watts.
-> Phoronix apache: turbostat 200 Sec. 19430.7 R.P.S. Ave. 34.18 Watts.
-> Phoronix kernel: turbostat 180 Sec. 139.81 Sec. 48.80 Watts.
-> Phoronix Postmark (Disk Test): turbostat 200 Sec. 5683 T.P.S. Ave. 22.41 Watts.
+> Peter, what do you think?
 
-Thanks for the results!
+In any case I posted a v9 with those changes
+(https://patchwork.kernel.org/patch/8290791/).
 
-The Postmark result is somewhat below expectations (especially with
-respect to the energy consumption), but we should be able to improve
-that by using the util numbers intelligently.
+Again, it doesn't appear to break things.
 
-Do you have full turbostat reports from those runs by any chance?  I'm
-wondering what happens to the idle state residencies, for example.
+If the enqueue hooks are bad (unwanted at all or in wrong places),
+please let me know.
 
 Thanks,
 Rafael
