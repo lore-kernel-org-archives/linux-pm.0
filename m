@@ -1,90 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
-Date: Fri, 12 Feb 2016 12:01:15 +0530
-Message-ID: <20160212063115.GE16949@vireshk-i7>
-References: <2946666.LCVBdOefy1@vostro.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v6 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Thu, 11 Feb 2016 23:25:18 -0800
+Message-ID: <002601d16566$88455610$98d00230$@net>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <2111826.yKEUOzphHC@vostro.rjw.lan> <008201d16458$69b2a4f0$3d17eed0$@net> <7442347.PCmPlrAvBe@vostro.rjw.lan> <002101d1651e$8ff027c0$afd07740$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:34516 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbcBLGbT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 01:31:19 -0500
-Received: by mail-pf0-f176.google.com with SMTP id x65so42602426pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Feb 2016 22:31:18 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <2946666.LCVBdOefy1@vostro.rjw.lan>
+Received: from cmta4.telus.net ([209.171.16.77]:52496 "EHLO cmta4.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbcBLHZX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Feb 2016 02:25:23 -0500
+In-Reply-To: <002101d1651e$8ff027c0$afd07740$@net>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
+Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Thomas Gleixner' <tglx@linutronix.de>
 
-On 11-02-16, 02:25, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The show() and store() routines in the cpufreq core don't need to
-> acquire all of the locks to check if the struct freq_attr they want
-> to use really provides the callbacks they need as expected, so change
-> them to avoid doing that.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |   27 +++++++++++----------------
->  1 file changed, 11 insertions(+), 16 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -862,13 +862,11 @@ static ssize_t show(struct kobject *kobj
->  	struct freq_attr *fattr = to_attr(attr);
->  	ssize_t ret;
->  
-> -	down_read(&policy->rwsem);
-> -
-> -	if (fattr->show)
-> -		ret = fattr->show(policy, buf);
-> -	else
-> -		ret = -EIO;
-> +	if (!fattr->show)
-> +		return -EIO;
->  
-> +	down_read(&policy->rwsem);
-> +	ret = fattr->show(policy, buf);
->  	up_read(&policy->rwsem);
->  
->  	return ret;
-> @@ -881,20 +879,17 @@ static ssize_t store(struct kobject *kob
->  	struct freq_attr *fattr = to_attr(attr);
->  	ssize_t ret = -EINVAL;
->  
-> -	get_online_cpus();
-> -
-> -	if (!cpu_online(policy->cpu))
-> -		goto unlock;
-> +	if (!fattr->store)
-> +		return -EIO;
->  
-> -	down_write(&policy->rwsem);
-> +	get_online_cpus();
->  
-> -	if (fattr->store)
-> +	if (cpu_online(policy->cpu)) {
-> +		down_write(&policy->rwsem);
->  		ret = fattr->store(policy, buf, count);
-> -	else
-> -		ret = -EIO;
-> +		up_write(&policy->rwsem);
-> +	}
->  
-> -	up_write(&policy->rwsem);
-> -unlock:
+On 2016.02.11 14:50 Doug Smythies wrote:
+> On 2016.02.10 22:03 Srinivas Pandruvada wrote:
+>> On Wednesday, February 10, 2016 03:11:43 PM Doug Smythies wrote:
 
-I have no problems with the patch as is, but how are we going to benefit from it
-?
+>>> My test computer has an older model i7 (Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz)
+>> Thanks Doug. If you have specific workloads, please compare performance.
 
-'if (fattr->show/store)' is never ever going to fail, unless we have a bug here.
-So, even we may want to add a WARN_ON() for that case instead.
+> My work so far has been testing functionality, with unrealistic workloads specifically
+> designed to exaggerate issues, in this case the duration problem.
+>
+> I'll look at some real world workload scenarios.
 
--- 
-viresh
+Turbostat used for package power, starts before Phoronix tests starts,
+and ends after Phoronix test ends.
+
+Control Sample: Kernel 4.5-rc3:
+Phoronix ffmpeg: turbostat 180 Sec. 12.07 Sec. Ave. 27.14 Watts.
+Phoronix apache: turbostat 200 Sec. 19797.0 R.P.S. Ave. 34.01 Watts.
+Phoronix kernel: turbostat 180 Sec. 139.93 Sec. 49.09 Watts.
+Phoronix Postmark (Disk Test): turbostat 200 Sec. 5813 T.P.S. Ave. 21.33 Watts.
+
+Kernel 4.5-rc3 + RJW 3 patch set version 7:
+Phoronix ffmpeg: turbostat 180 Sec. 11.67 Sec. Ave. 27.35 Watts.
+Phoronix apache: turbostat 200 Sec. 19430.7 R.P.S. Ave. 34.18 Watts.
+Phoronix kernel: turbostat 180 Sec. 139.81 Sec. 48.80 Watts.
+Phoronix Postmark (Disk Test): turbostat 200 Sec. 5683 T.P.S. Ave. 22.41 Watts.
+
+... Doug
+
+
