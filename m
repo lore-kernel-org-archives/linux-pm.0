@@ -1,85 +1,85 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Fri, 12 Feb 2016 20:08:32 -0300
-Message-ID: <56BE65F0.8040600@osg.samsung.com>
-References: <56B204CB.60602@osg.samsung.com>
- <20160208105417.GD2220@tetsubishi> <56BE57FC.3020407@osg.samsung.com>
- <20160212221352.GY3500@atomide.com> <56BE5C97.9070607@osg.samsung.com>
- <20160212224018.GZ3500@atomide.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
+Date: Fri, 12 Feb 2016 15:14:04 -0800
+Message-ID: <7hh9hdzflv.fsf@baylibre.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+	<1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+	<CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <20160212224018.GZ3500@atomide.com>
-Sender: linux-media-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35148 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbcBLXOH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 18:14:07 -0500
+Received: by mail-pa0-f41.google.com with SMTP id ho8so53876597pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 12 Feb 2016 15:14:05 -0800 (PST)
+In-Reply-To: <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+	(Ulf Hansson's message of "Thu, 4 Feb 2016 16:44:59 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Jon Hunter <jonathanh@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hello Tony,
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-On 02/12/2016 07:40 PM, Tony Lindgren wrote:
-> * Javier Martinez Canillas <javier@osg.samsung.com> [160212 14:29]:
->> On 02/12/2016 07:13 PM, Tony Lindgren wrote:
->>> Hmm yeah I wonder if this canned solution helps here too:
->>>
->>> 1. Check if the driver(s) are using pm_runtime_use_autosuspend()
->>>
+> On 28 January 2016 at 17:33, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> Adds generic PM support to the PMC driver where the PM domains are
+>> populated from device-tree and the PM domain consumer devices are
+>> bound to their relevant PM domains via device-tree as well.
 >>
->> By driver do you mean the OMAP GPIO driver or the tvp5150 I2C driver?
->> The latter does not have runtime PM support.
->
-> Sounds like OMAP GPIO then.
->
-
-Ok.
-  
->>> 2. If so, you must use pm_runtime_dont_use_autosuspend() before
->>>     pm_runtime_put_sync() to make sure that pm_runtime_put_sync()
->>>     works.
->>>
->>> 3. Or you can use pm_runtime_put_sync_suspend() instead of
->>>     pm_runtime_put_sync() for sections of code where the clocks
->>>     need to be stopped.
->>>
+>> Update the tegra_powergate_sequence_power_up() API so that internally
+>> it calls the same tegra_powergate_xxx functions that are used by the
+>> tegra generic power domain code for consistency.
 >>
->> I can check if the OMAP GPIO is following these and give a try but
->> don't have access to the board right now so I'll do it on Monday.
+>> This is based upon work by Thierry Reding <treding@nvidia.com>
+>> and Vince Hsu <vinceh@nvidia.com>.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+
+[...]
+
+>> +static void tegra_powergate_disable_clocks(struct tegra_powergate *pg)
+>> +{
+>> +       unsigned int i;
+>> +
+>> +       for (i = 0; i < pg->num_clks; i++)
+>> +               clk_disable_unprepare(pg->clks[i]);
+>> +}
+>> +
+>> +static int tegra_powergate_enable_clocks(struct tegra_powergate *pg)
+>> +{
+>> +       unsigned int i;
+>> +       int err;
+>> +
+>> +       for (i = 0; i < pg->num_clks; i++) {
+>> +               err = clk_prepare_enable(pg->clks[i]);
+>> +               if (err)
+>> +                       goto out;
+>> +       }
+>> +
+>> +       return 0;
+>> +
+>> +out:
+>> +       while (i--)
+>> +               clk_disable_unprepare(pg->clks[i]);
+>> +
+>> +       return err;
+>> +}
 >
-> It does not seem to be using pm_runtime_autosuspend(). Did you
-> try reverting commit de85b9d57ab ("PM / runtime: Re-init runtime
-> PM states at probe error and driver unbind") and see if that
-> helps?
->
+> I have seen similar code around in other PM domains, dealing with
+> enabling/disabling a *list* of clocks.
+> Perhaps we should invent a new clock API that helps with this to
+> prevents code duplication!?
 
-Yes, that's the first thing I tried when I noticed your patch:
+What about the pm_clk_* API which was built for tracking clocks
+associated with devices for runtime PM.
 
-("i2c: omap: Fix PM regression with deferred probe for
-pm_runtime_reinit")
+IOW, you could pm_clk_add(pg->pmc->dev, pg->clks[i]) and then your
+_enable_clocks() would become pm_clk_suspend() an dyour
+_disable_clocks() would become pm_clk_resume().
 
-But neither reverting commit de85b9d57ab nor your fix made a
-difference.
-  
-> If it does, then sounds like we may have some other regression
-> as well.
->
+I might not be following the mapping between PMC and PGs though so not
+sure pg->pmc->dev is the right struct device, but you get the idea.
 
-It seems that is not related but I hope that given you were
-looking at the runtime PM core lately, maybe you can figure
-out what we are missing.
-
-I'm far from being familiar with the runtime PM framework
-but I've looked and can't figure out why Wolfram's commit
-make this driver to fail and reverting his commit make its
-work again.
-
-> Regards,
->
-> Tony
->
-
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+Kevin
