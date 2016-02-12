@@ -1,146 +1,98 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [RFC v2 10/12] ARM64: psci: Support cluster idle states for OS-Initiated
-Date: Fri, 12 Feb 2016 13:50:36 -0700
-Message-ID: <1455310238-8963-11-git-send-email-lina.iyer@linaro.org>
+Subject: [RFC v2 12/12] ARM64: dts: Define CPU power domain for MSM8916
+Date: Fri, 12 Feb 2016 13:50:38 -0700
+Message-ID: <1455310238-8963-13-git-send-email-lina.iyer@linaro.org>
 References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:34965 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbcBLUvt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 15:51:49 -0500
+Received: by mail-pf0-f182.google.com with SMTP id c10so53777247pfc.2
+        for <linux-pm@vger.kernel.org>; Fri, 12 Feb 2016 12:51:49 -0800 (PST)
 In-Reply-To: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org
 
-PSCI OS initiated firmware may allow Linux to determine the state of the
-CPU cluster and the cluster at coherency level to enter idle states when
-there are no active CPUs. Since Linux has a better idea of the QoS and
-the wakeup pattern of the CPUs, the cluster idle states may be better
-determined by the OS instead of the firmware.
+Define power domain and the power states for the domain as defined by
+the PSCI firmware. The 8916 firmware supports OS initiated method of
+powering off the CPU clusters.
 
-The last CPU entering idle in a cluster, is responsible for selecting
-the state of the cluster. Only one CPU in a cluster may provide the
-cluster idle state to the firmware. Similarly, the last CPU in the
-system may provide the state of the coherency domain along with the
-cluster and the CPU state IDs.
-
-Utilize the CPU PM domain framework's helper functions to build up the
-hierarchy of cluster topology using Generic PM domains. We provide
-callbacks for domain power_on and power_off. By appending the state IDs
-at each domain level in the -power_off() callbacks, we build up a
-composite state ID that can be passed onto the firmware to idle the CPU,
-the cluster and the coherency interface.
-
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: <devicetree@vger.kernel.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
 Changes since RFC v1 -
-- initializes CPU PM domains based on OSI support in FW
-- simplified initialization and cluster state id determination
+- no cpu-map topology node
 
- arch/arm64/kernel/psci.c | 46 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 43 insertions(+), 3 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index f67f35b..75b1707 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -15,6 +15,7 @@
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index b7839a8..62dade8 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -63,6 +63,7 @@
+ 			reg = <0x0>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
  
- #define pr_fmt(fmt) "psci: " fmt
+ 		CPU1: cpu@1 {
+@@ -71,6 +72,7 @@
+ 			reg = <0x1>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
  
-+#include <linux/cpu_domains.h>
- #include <linux/init.h>
- #include <linux/of.h>
- #include <linux/smp.h>
-@@ -31,6 +32,24 @@
- #include <asm/suspend.h>
+ 		CPU2: cpu@2 {
+@@ -79,6 +81,7 @@
+ 			reg = <0x2>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
  
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+static DEFINE_PER_CPU(u32, cluster_state_id);
-+
-+static inline u32 psci_get_composite_state_id(u32 cpu_state)
-+{
-+	return cpu_state | this_cpu_read(cluster_state_id);
-+}
-+
-+static inline void psci_reset_composite_state_id(void)
-+{
-+	this_cpu_write(cluster_state_id, 0);
-+}
-+
-+static int psci_pd_power_off(u32 state_idx, u32 param,
-+		const struct cpumask *mask)
-+{
-+	__this_cpu_add(cluster_state_id, param);
-+	return 0;
-+}
+ 		CPU3: cpu@3 {
+@@ -87,6 +90,7 @@
+ 			reg = <0x3>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
  
- static int __maybe_unused cpu_psci_cpu_init_idle(unsigned int cpu)
- {
-@@ -89,6 +108,19 @@ static int __maybe_unused cpu_psci_cpu_init_idle(unsigned int cpu)
- 	}
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
+ 		idle-states {
+@@ -101,6 +105,27 @@
+ 		};
+ 	};
+ 
++	CPU_PD: cpu-pd@0 {
++		#power-domain-cells = <0>;
++		power-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
++	};
 +
-+	if (psci_has_osi_pd_support()) {
-+		const struct cpu_pd_ops psci_pd_ops = {
-+			.power_off = psci_pd_power_off,
++	pd-power-states {
++		CLUSTER_RET: power-state@1 {
++			state-param = <0x1000010>;
++			entry-latency-us = <500>;
++			exit-latency-us = <500>;
++			residency-us = <2000>;
++		 };
++
++		CLUSTER_PWR_DWN: power-state@2 {
++			state-param = <0x1000030>;
++			entry-latency-us = <2000>;
++			exit-latency-us = <2000>;
++			residency-us = <6000>;
 +		};
++	};
 +
-+		ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
-+		if (!ret)
-+			ret = psci_set_suspend_mode_osi(true);
-+		if (ret)
-+			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
-+	}
-+
- 	return 0;
- 
- free_mem:
-@@ -117,6 +149,8 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
- 	if (err)
- 		pr_err("failed to boot CPU%d (%d)\n", cpu, err);
- 
-+	/* Reset CPU cluster states */
-+	psci_reset_composite_state_id();
- 	return err;
- }
- 
-@@ -181,15 +215,16 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
- static int psci_suspend_finisher(unsigned long index)
- {
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 
--	return psci_ops.cpu_suspend(state[index - 1],
--				    virt_to_phys(cpu_resume));
-+	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
- }
- 
- static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
- {
- 	int ret;
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 	/*
- 	 * idle state index 0 corresponds to wfi, should never be called
- 	 * from the cpu_suspend operations
-@@ -198,10 +233,15 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
- 		return -EINVAL;
- 
- 	if (!psci_power_state_loses_context(state[index - 1]))
--		ret = psci_ops.cpu_suspend(state[index - 1], 0);
-+		ret = psci_ops.cpu_suspend(ext_state, 0);
- 	else
- 		ret = cpu_suspend(index, psci_suspend_finisher);
- 
-+	/*
-+	 * Clear the CPU's cluster states, we start afresh after coming
-+	 * out of idle.
-+	 */
-+	psci_reset_composite_state_id();
- 	return ret;
- }
- 
+ 	psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
 -- 
 2.1.4
+
