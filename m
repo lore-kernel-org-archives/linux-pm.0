@@ -1,145 +1,148 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [RFC v2 06/12] PM / cpu_domains: Record CPUs that are part of the domain
-Date: Fri, 12 Feb 2016 13:50:32 -0700
-Message-ID: <1455310238-8963-7-git-send-email-lina.iyer@linaro.org>
+Subject: [RFC v2 09/12] drivers: firmware: psci: Allow OS Initiated suspend mode
+Date: Fri, 12 Feb 2016 13:50:35 -0700
+Message-ID: <1455310238-8963-10-git-send-email-lina.iyer@linaro.org>
 References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-In order to power down a CPU domain, the domain needs information about
-the CPUs in that domain. The reference counting for the CPU devices in a
-domain is done by genpd. In order to understand the idle time for the
-domain, it is necessary to know which CPUs are part of the domain, so
-the domain governor may understand the sleep durations of the comprising
-CPU devices and make a judicious decision on the domain's idle state.
-This extends to the parent of such domains, which may have multiple such
-CPU domains and therefore would need to know the sleep patterns of all
-the CPUs in all the CPU domains.
+PSCI firmware v1.0 onwards may support 2 different modes for
+CPU_SUSPEND. Platform coordinated mode is the default and every firmware
+should support it. The firmware shall also be the default mode.
 
-To aid this functionality, traverse up the parent chain and set the CPU
-in the cpumasks while attaching a CPU to its domain. This mask is
-provided in the callback to the platform driver to help identify the
-CPUs in the domain that is being powered off.
+With the kernel capable of deciding the state for CPU cluster and
+coherency domains, the OS Initiated mode may now be used by the kernel,
+provided the firmware supports it. SET_SUSPEND_MODE is a PSCI function
+available on v1.0 onwards and can be used to set the mode in the
+firmware.
 
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/cpu_domains.c | 27 ++++++++++++++++++++++++---
- include/linux/cpu_domains.h      |  4 +++-
- 2 files changed, 27 insertions(+), 4 deletions(-)
+ drivers/firmware/psci.c   | 45 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/psci.h      |  2 ++
+ include/uapi/linux/psci.h |  5 +++++
+ 3 files changed, 51 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
-index 981592f..c99710c 100644
---- a/drivers/base/power/cpu_domains.c
-+++ b/drivers/base/power/cpu_domains.c
-@@ -9,6 +9,7 @@
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index f25cd79..03c084e 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -49,12 +49,19 @@
+  * require cooperation with a Trusted OS driver.
   */
+ static int resident_cpu = -1;
++static bool has_osi_pd;
++static bool psci_suspend_mode_is_osi;
  
- #include <linux/cpu.h>
-+#include <linux/cpumask.h>
- #include <linux/cpu_domains.h>
- #include <linux/cpu_pm.h>
- #include <linux/device.h>
-@@ -27,6 +28,7 @@ struct cpu_pm_domain {
- 	struct cpu_pd_ops ops;
- 	struct generic_pm_domain *genpd;
- 	struct cpu_pm_domain *parent;
-+	cpumask_var_t cpus;
- };
- 
- /* List of CPU PM domains we care about */
-@@ -50,7 +52,7 @@ struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
- 	return res;
- }
- 
--static int cpu_pd_attach_cpu(int cpu)
-+static int cpu_pd_attach_cpu(struct cpu_pm_domain *cpu_pd, int cpu)
+ bool psci_tos_resident_on(int cpu)
  {
- 	int ret;
- 	struct device *cpu_dev;
-@@ -70,6 +72,11 @@ static int cpu_pd_attach_cpu(int cpu)
- 	else
- 		dev_dbg(cpu_dev, "Attached to domain\n");
- 
-+	while (!ret && cpu_pd) {
-+		cpumask_set_cpu(cpu, cpu_pd->cpus);
-+		cpu_pd = cpu_pd->parent;
-+	};
-+
- 	return ret;
+ 	return cpu == resident_cpu;
  }
  
-@@ -85,7 +92,8 @@ static int cpu_pd_power_off(struct generic_pm_domain *genpd)
- 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
++bool psci_has_osi_pd_support(void)
++{
++	return has_osi_pd;
++}
++
+ struct psci_operations psci_ops;
  
- 	return pd->ops.power_off(genpd->state_idx,
--			genpd->states[genpd->state_idx].param);
-+			genpd->states[genpd->state_idx].param,
-+			pd->cpus);
+ typedef unsigned long (psci_fn)(unsigned long, unsigned long,
+@@ -250,6 +257,26 @@ static int psci_system_suspend(unsigned long unused)
+ 			      virt_to_phys(cpu_resume), 0, 0);
  }
  
- /**
-@@ -118,6 +126,9 @@ static struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 	if (!pd)
- 		goto fail;
- 
-+	if (!zalloc_cpumask_var(&pd->cpus, GFP_KERNEL))
-+		goto fail;
++int psci_set_suspend_mode_osi(bool enable)
++{
++	int ret;
++	int mode;
 +
- 	pd->genpd = genpd;
- 	pd->genpd->power_off = cpu_pd_power_off;
- 	pd->genpd->power_on = cpu_pd_power_on;
-@@ -148,6 +159,8 @@ fail:
- 
- 	kfree(genpd);
- 	kfree(genpd->name);
-+	if (pd)
-+		kfree(pd->cpus);
- 	kfree(pd);
- 	return ERR_PTR(ret);
++	if (enable && !psci_has_osi_pd_support())
++		return -ENODEV;
++
++	if (enable == psci_suspend_mode_is_osi)
++		return 0;
++
++	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
++	ret = invoke_psci_fn(PSCI_FN_NATIVE(1_0, SET_SUSPEND_MODE),
++			     mode, 0, 0);
++	if (!ret)
++		psci_suspend_mode_is_osi = enable;
++
++	return psci_to_linux_errno(ret);
++}
++
+ static int psci_system_suspend_enter(suspend_state_t state)
+ {
+ 	return cpu_suspend(0, psci_system_suspend);
+@@ -443,10 +470,26 @@ out_put_node:
+ 	return err;
  }
-@@ -224,6 +237,7 @@ int of_setup_cpu_pd_single(int cpu, const struct cpu_pd_ops *ops)
  
- 	struct device_node *dn;
- 	struct generic_pm_domain *genpd;
-+	struct cpu_pm_domain *cpu_pd;
- 
- 	dn = of_get_cpu_node(cpu, NULL);
- 	if (!dn)
-@@ -239,7 +253,14 @@ int of_setup_cpu_pd_single(int cpu, const struct cpu_pd_ops *ops)
- 	if (IS_ERR(genpd))
- 		return PTR_ERR(genpd);
- 
--	return cpu_pd_attach_cpu(cpu);
-+	cpu_pd = to_cpu_pd(genpd);
-+	if (!cpu_pd) {
-+		pr_err("%s: Genpd was created outside CPU PM domains\n",
-+				__func__);
-+		return -ENOENT;
-+	}
++static int __init psci_1_0_init(struct device_node *np)
++{
++	int ret;
 +
-+	return cpu_pd_attach_cpu(cpu_pd, cpu);
- }
- EXPORT_SYMBOL(of_setup_cpu_pd_single);
- 
-diff --git a/include/linux/cpu_domains.h b/include/linux/cpu_domains.h
-index bab4846..0c539f0 100644
---- a/include/linux/cpu_domains.h
-+++ b/include/linux/cpu_domains.h
-@@ -11,8 +11,10 @@
- #ifndef __CPU_DOMAINS_H__
- #define __CPU_DOMAINS_H__
- 
-+#include <linux/cpumask.h>
++	ret = psci_0_2_init(np);
++	if (ret)
++		return ret;
 +
- struct cpu_pd_ops {
--	int (*power_off)(u32 state_idx, u32 param);
-+	int (*power_off)(u32 state_idx, u32 param, const struct cpumask *mask);
- 	int (*power_on)(void);
++	/* Check if PSCI OSI mode is available */
++	ret = psci_features(PSCI_FN_NATIVE(0_2, CPU_SUSPEND));
++	if (ret & PSCI_1_0_OS_INITIATED)
++		has_osi_pd = true;
++
++	return 0;
++}
++
+ static const struct of_device_id const psci_of_match[] __initconst = {
+ 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
+ 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
+-	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
++	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
+ 	{},
  };
  
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 12c4865..deae633 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -23,6 +23,8 @@
+ bool psci_tos_resident_on(int cpu);
+ bool psci_power_state_loses_context(u32 state);
+ bool psci_power_state_is_valid(u32 state);
++bool psci_has_osi_pd_support(void);
++int psci_set_suspend_mode_osi(bool enable);
+ 
+ struct psci_operations {
+ 	int (*cpu_suspend)(u32 state, unsigned long entry_point);
+diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
+index 3d7a0fc..eaab6e3 100644
+--- a/include/uapi/linux/psci.h
++++ b/include/uapi/linux/psci.h
+@@ -50,6 +50,7 @@
+ #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
+ 
+ #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
++#define PSCI_1_0_FN64_SET_SUSPEND_MODE		PSCI_0_2_FN64(15)
+ 
+ /* PSCI v0.2 power state encoding for CPU_SUSPEND function */
+ #define PSCI_0_2_POWER_STATE_ID_MASK		0xffff
+@@ -93,6 +94,10 @@
+ #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
+ 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
+ 
++#define PSCI_1_0_OS_INITIATED			BIT(0)
++#define PSCI_1_0_SUSPEND_MODE_PC		0
++#define PSCI_1_0_SUSPEND_MODE_OSI		1
++
+ /* PSCI return values (inclusive of all PSCI versions) */
+ #define PSCI_RET_SUCCESS			0
+ #define PSCI_RET_NOT_SUPPORTED			-1
 -- 
 2.1.4
