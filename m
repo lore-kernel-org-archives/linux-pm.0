@@ -1,28 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Avoid unnecessary locking in show() and store()
-Date: Fri, 12 Feb 2016 21:28:29 +0530
-Message-ID: <20160212155829.GA32705@vireshk-i7>
-References: <2946666.LCVBdOefy1@vostro.rjw.lan>
- <20160212063115.GE16949@vireshk-i7>
- <16931364.qnKxgPucoY@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/3] cpufreq: Replace timers with utilization update callbacks
+Date: Fri, 12 Feb 2016 17:01:20 +0100
+Message-ID: <CAJZ5v0giM=CMkQN770TLv5wgdUQ2o0D152HFG6-nX-rr483G+A@mail.gmail.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+	<56B93548.9090006@linaro.org>
+	<CAJZ5v0gJwLVezLTLwGX=GDrsGeH6X040JmOaW6_uX2XzQwO9mg@mail.gmail.com>
+	<5387313.xAhVpzgZCg@vostro.rjw.lan>
+	<56BA8C29.4090905@linaro.org>
+	<20160211115959.GI6357@twins.programming.kicks-ass.net>
+	<56BCBF7C.2080404@linaro.org>
+	<20160211173033.GP6357@twins.programming.kicks-ass.net>
+	<56BCD864.6030207@linaro.org>
+	<20160212141009.GT6357@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <16931364.qnKxgPucoY@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f196.google.com ([209.85.217.196]:33966 "EHLO
+	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbcBLQBV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Feb 2016 11:01:21 -0500
+In-Reply-To: <20160212141009.GT6357@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On 12-02-16, 14:18, Rafael J. Wysocki wrote:
-> Well, having a check that never fails is certainly unuseful.
-> 
-> > So, even we may want to add a WARN_ON() for that case instead.
-> 
-> I can add WARN_ON()s just fine.
+On Fri, Feb 12, 2016 at 3:10 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Feb 11, 2016 at 10:52:20AM -0800, Steve Muckle wrote:
+>> On 02/11/2016 09:30 AM, Peter Zijlstra wrote:
+>> >> My concern above is that pokes are guaranteed to keep occurring when
+>> >> > there is only RT or DL activity so nothing breaks.
+>> >
+>> > The hook in their respective tick handler should ensure stuff is called
+>> > sporadically and isn't stalled.
+>>
+>> But that's only true if the RT/DL tasks happen to be running when the
+>> tick arrives right?
+>>
+>> Couldn't we have RT/DL activity which doesn't overlap with the tick? And
+>> if no CFS tasks happen to be executing on that CPU, we'll never trigger
+>> the cpufreq update. This could go on for an arbitrarily long time
+>> depending on the periodicity of the work.
+>
+> Possible yes, but why do we care? Such a CPU would be so much idle that
+> cpufreq doesn't matter one way or another, right?
 
-What about dropping the check completely ?
-
--- 
-viresh
+Well, in theory you can get 50% or so of the time active in bursts
+that happen to fit between ticks.  If we happen to do those in the
+lowest P-state, we may burn more energy than necessary on platforms
+where more idle is preferred.
