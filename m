@@ -1,66 +1,67 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/2] tools/power turbostat: changed bclk discovery path
- for Intel Xeon x200 Architecture
-Date: Sat, 13 Feb 2016 01:21:24 -0500
-Message-ID: <CAJvTdKmOdxhfYzytGu4xw+qSU+28+SCCQ7gn_ULahGPLz2FYOw@mail.gmail.com>
-References: <CAJZ5v0hyAeK9L+NcETZQXJKfmr+TX59bZ+759RbXz_we3wgzpg@mail.gmail.com>
-	<1455118517-14180-1-git-send-email-hubert.chrzaniuk@intel.com>
-	<1455118517-14180-3-git-send-email-hubert.chrzaniuk@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal management updates for v4.5-rc4
+Date: Sat, 13 Feb 2016 09:52:07 -0800
+Message-ID: <20160213175205.GA19191@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:36511 "EHLO
-	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbcBMGVZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Feb 2016 01:21:25 -0500
-Received: by mail-lf0-f68.google.com with SMTP id h198so5087222lfh.3
-        for <linux-pm@vger.kernel.org>; Fri, 12 Feb 2016 22:21:25 -0800 (PST)
-In-Reply-To: <1455118517-14180-3-git-send-email-hubert.chrzaniuk@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-Cc: lukasz.anaczkowski@intel.com, "Brown, Len" <len.brown@intel.com>, dasaratharaman.chandramouli@intel.com, Linux PM list <linux-pm@vger.kernel.org>
 
-Applied.
+Hello Linus,
 
-thanks,
--Len
+Please, consider pulling from
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
-On Wed, Feb 10, 2016 at 10:35 AM, Hubert Chrzaniuk
-<hubert.chrzaniuk@intel.com> wrote:
-> x200 does not enable any way to programmatically obtain bus clock
-> speed. Bclk for the architecture has a fixed value of 100 MHz.
-> At the same time x200 cannot be included in has_snb_msrs since
-> it does not support C7 idle state.
->
-> Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-> ---
->  tools/power/x86/turbostat/turbostat.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index 765c669..3a59aec 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -2601,7 +2601,7 @@ double slm_bclk(void)
->
->  double discover_bclk(unsigned int family, unsigned int model)
->  {
-> -       if (has_snb_msrs(family, model))
-> +       if (has_snb_msrs(family, model) || is_knl(family, model))
->                 return 100.00;
->         else if (is_slm(family, model))
->                 return slm_bclk();
-> --
-> 1.8.3.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+to receive Thermal Management updates for v4.5-rc4 with top-most
 
+a53b8394ec3c67255928df6ee9cc99dd1cd452e3:
 
+  thermal: cpu_cooling: fix out of bounds access in time_in_idle (2016-02-11 07:13:29 -0800)
 
--- 
-Len Brown, Intel Open Source Technology Center
+on top of commit 765bdb406de4b6132e349c5d4e077866536a9cc0:
+
+  Merge tag 'for-linus' of git://git.kernel.org/pub/scm/virt/kvm/kvm (2016-02-08 10:32:30 -0800)
+
+Specifics in this pull request:
+- Compilation fixes on SPEAR, and U8500 thermal drivers.
+- RCAR thermal driver now recognizes OF-thermal based thermal zones.
+- Small code rework on OF-thermal.
+- These change have been CI tested using KernelCI bot [1,2]. \o/
+
+I am taking over on Rui's behalf while he is out. Happy New Chinese Year!
+
+[1] - https://kernelci.org/build/evalenti/kernel/v4.5-rc3-16-ga53b8394ec3c/
+[2] - https://kernelci.org/boot/all/job/evalenti/kernel/v4.5-rc3-16-ga53b8394ec3c/
+
+BR,
+
+Eduardo Valentin
+
+----------------------------------------------------------------
+Arnd Bergmann (3):
+      thermal: spear: use __maybe_unused for PM functions
+      thermal: allow spear-thermal driver to be a module
+      thermal: allow u8500-thermal driver to be a module
+
+Javi Merino (1):
+      thermal: cpu_cooling: fix out of bounds access in time_in_idle
+
+Kuninori Morimoto (1):
+      thermal: rcar: enable to use thermal-zone on DT
+
+Laxman Dewangan (1):
+      thermal: of: use for_each_available_child_of_node for child iterator
+
+ .../devicetree/bindings/thermal/rcar-thermal.txt   | 37 +++++++++++++++++-
+ drivers/mfd/db8500-prcmu.c                         |  3 ++
+ drivers/thermal/Kconfig                            |  6 +--
+ drivers/thermal/cpu_cooling.c                      | 14 ++++---
+ drivers/thermal/of-thermal.c                       | 18 ++-------
+ drivers/thermal/rcar_thermal.c                     | 45 +++++++++++++++++++---
+ drivers/thermal/spear_thermal.c                    |  6 +--
+ 7 files changed, 94 insertions(+), 35 deletions(-)
