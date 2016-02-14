@@ -1,58 +1,37 @@
-From: Arjun Sreedharan <arjun024@gmail.com>
-Subject: [PATCH] cpupower: fix potential memory leak
-Date: Sun, 14 Feb 2016 13:29:05 +0530
-Message-ID: <1455436745-22444-1-git-send-email-arjun024@gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Regard of thermal power allocator's coefficients
+Date: Sun, 14 Feb 2016 19:00:41 +0800
+Message-ID: <20160214110041.GB26920@leoy-linaro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34981 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbcBNH7U (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Feb 2016 02:59:20 -0500
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35922 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbcBNLAt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Feb 2016 06:00:49 -0500
+Received: by mail-pf0-f180.google.com with SMTP id e127so71785132pfe.3
+        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2016 03:00:49 -0800 (PST)
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>, Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org
 
-Signed-off-by: Arjun Sreedharan <arjun024@gmail.com>
----
- tools/power/cpupower/bench/parse.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+Hi there,
 
-diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
-index f503fb5..058a351 100644
---- a/tools/power/cpupower/bench/parse.c
-+++ b/tools/power/cpupower/bench/parse.c
-@@ -65,7 +65,7 @@ FILE *prepare_output(const char *dirname)
- {
- 	FILE *output = NULL;
- 	int len;
--	char *filename;
-+	char *filename, *filename_tmp;
- 	struct utsname sysdata;
- 	DIR *dir;
- 
-@@ -80,17 +80,19 @@ FILE *prepare_output(const char *dirname)
- 	}
- 
- 	len = strlen(dirname) + 30;
--	filename = malloc(sizeof(char) * len);
-+	filename = malloc(sizeof(*filename) * len);
- 
- 	if (uname(&sysdata) == 0) {
- 		len += strlen(sysdata.nodename) + strlen(sysdata.release);
--		filename = realloc(filename, sizeof(char) * len);
-+		filename_tmp = realloc(filename, sizeof(*filename) * len);
- 
--		if (filename == NULL) {
-+		if (filename_tmp == NULL) {
-+			free(filename);
- 			perror("realloc");
- 			return NULL;
- 		}
- 
-+		filename = filename_tmp;
- 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
- 			dirname, sysdata.nodename, sysdata.release, time(NULL));
- 	} else {
--- 
-2.4.5
+I'm trying to upstreaming IPA patches for 96board Hikey, but so far
+there have no standard DT binding for passing IPA coefficients for
+power modeling.
 
+So want to firstly to confirm if should we pass coefficients by using
+device tree? Is someone working on related work for this?
+
+Here has another more straightforward method is to directly to
+include power model's coefficients in thermal sensor driver (such like
+drivers/thermal/hisi_thermal.c), but my concern is this method will
+include SoC specific data in the common thermal sensor driver,
+so is this doable?
+
+Welcome any suggestion.
+
+Thanks,
+Leo Yan
