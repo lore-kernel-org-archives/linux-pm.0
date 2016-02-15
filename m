@@ -1,76 +1,65 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] bq24735_charger: add status property to
- view/enable/disable charging
-Date: Mon, 15 Feb 2016 05:58:26 +0100
-Message-ID: <20160215045826.GA28626@earth>
-References: <1452630659-4935-1-git-send-email-peda@lysator.liu.se>
+Subject: Re: [PATCH] power: collie_battery: hide unused variable
+Date: Mon, 15 Feb 2016 06:03:09 +0100
+Message-ID: <20160215050308.GD28626@earth>
+References: <1453736756-1959377-2-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
+	protocol="application/pgp-signature"; boundary="BRE3mIcgqKzpedwo"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41676 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:41935 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579AbcBOE6b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 14 Feb 2016 23:58:31 -0500
+	id S1750716AbcBOFDN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Feb 2016 00:03:13 -0500
 Content-Disposition: inline
-In-Reply-To: <1452630659-4935-1-git-send-email-peda@lysator.liu.se>
+In-Reply-To: <1453736756-1959377-2-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@lysator.liu.se>
-Cc: linux-pm@vger.kernel.org, Peter Rosin <peda@axentia.se>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---UugvWAfsgieZRqgk
+--BRE3mIcgqKzpedwo
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jan 12, 2016 at 09:30:59PM +0100, Peter Rosin wrote:
-> From: Peter Rosin <peda@axentia.se>
+On Mon, Jan 25, 2016 at 04:45:49PM +0100, Arnd Bergmann wrote:
+> The 'wakeup_enabled' variable in this driver is only accessed
+> by the optional power management functions and we get a warning
+> when they are disabled:
 >=20
-> Signed-off-by: Peter Rosin <peda@axentia.se>
-> ---
+> drivers/power/collie_battery.c:29:12: error: 'wakeup_enabled' defined but=
+ not used [-Werror=3Dunused-variable]
 >=20
-> Hi!
->=20
-> The hw I have tested this on does not have the IRQ line of the
-> charger connected, so I have not actually tested how setting the
-> chargeing status interacts with the threaded interrupt handler.
->=20
-> I hope it's ok to grab a mutex in a threaded interrupt handler?
->=20
-> Cheers,
-> Peter
->=20
->  drivers/power/bq24735-charger.c | 90 +++++++++++++++++++++++++++++++++++=
-+++++-
->  1 file changed, 89 insertions(+), 1 deletion(-)
+> This moves the definition next to the users inside the same #ifdef,
+> which avoids the warning.
 
 Thanks, queued.
 
 -- Sebastian
 
---UugvWAfsgieZRqgk
+--BRE3mIcgqKzpedwo
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWwVrvAAoJENju1/PIO/qa/V0QAIT6XJWbPhwTHyMHYk1Pd78j
-q1QOQ2D0cEWaD1//R0kiQQd4ZB/yvZuf9mqa1YF8gia2wWOyoOJa4uqrWwSaReuG
-/1G1jcYOV6l4nmp2q+2Zb5qhEKO7Az03EQ6fkSGLB+UFSVApYN1bTMf4O2R+zq4K
-r3h/m+IYrSLUACiDCYc5CXhjV8w8WzVyDcQWkuYFOStWY9yitLiyR+npaoG6jEE6
-aFdnU6nGO0qiaxu9IIVPEL4ByoYvdGBr+sKu8fYjjUcyqMmmRS6onrQlfBRZ0Vaw
-iy+JxqXyGxSVNlxjPL9CaFHZehSIWkuzRWnfvQ3eo3v3fKKxcdhfkSjR8Q5NE/CK
-79Ms8kde0QPCAwddifg8Oa/EzNIMRwVhaD/ULYJEm7OdMXvmnFWCDV5lcOOzW45B
-bfiOQbLdrYda7Ib+bbAAyZ4KxQJWxzJGk+xJiDIhyd8lrrG1iKCA5sZACfCMhL/V
-JYpfFsJliftYkIcJKs0iFjdaFQE7xje1WZu6JlwlCpmtLRjVu8kU2mwHRyMHbwVE
-8bfxBSBmWu17TZGVwyIJHeDUWECCPM/AD0iYU2wJDNQbl8Z/BDNVuBCQr0nCUYln
-xM/QAnETeVYjyU+r6Efj4YEnMctkwwnh/80Gvg3y95N6bHR884+QEiJZAW4SdvI0
-QfL30LjEYcFsChqHEMMx
-=vrK1
+iQIcBAEBCgAGBQJWwVwMAAoJENju1/PIO/qamFUP/ie81KfItzRtPLgGvqreBMx9
+oKA9iXqA+8e4CwRa5kGShkpYVwCteFMiTOog5dq0UgzNzu29DN5mcN8XxLjg9Q32
+1pNvzzc+Kazz3HU8O38srw2N840kPrE5B7jpADsQGIuqAkYJk/97ASr2dCaHDOBW
+pbkeNguPEAXGJE6PQl+5yKyFoeEoXTVS5gGsR7wSDuoKLuEeYk3T8Xh/OE1XSEsc
+WbBqlVwSKUhuoTz61jdpCV78ZEzshYLegbg5jHECyX8xvaBWNgSKlc3ch8YPQuto
+E/zIMQfKwqCdT1fu6W9vFUkgot8axPa8JH3zyVYfVFoIlz9daQToNwyTL5RRowmq
+HxhHtGseEeC3b1gyDxUtWQkPeAGRSb3YdcDzpF7f5qJ++TDaZwwYfwtFJ2c/NfKc
+tMPUKeL+lQW7ulo65EheSw3VZ/ZMD62SCdtkTv58T0vWv4VUtI+inu0cg/ujlhAI
+jENNzSKBOpd28gSbrGidfva3lzOlGcjCKDtTOTtiyGr+HNPwtoq6cFOPcsuZoUPB
+U5Fux0IPvuxjo5AoB/PJtAXRrkX94fp5xsE03rCWW91eDJuW3OHM8WoNOX8bnA+f
+mgs0jbyY4rA9nYj7sC3B5Nm/NUvmaxmRbJruJKm/hwb1TVO/3MP4b8KPKXXfoQFf
+I5JGiBAJfhti+FFhgtL3
+=XIWf
 -----END PGP SIGNATURE-----
 
---UugvWAfsgieZRqgk--
+--BRE3mIcgqKzpedwo--
