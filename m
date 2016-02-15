@@ -1,58 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 01/22] power: reset: Fix dependencies for !HAS_IOMEM archs
-Date: Mon, 15 Feb 2016 06:57:30 +0100
-Message-ID: <20160215055730.GE28626@earth>
-References: <1453760661-1444-1-git-send-email-richard@nod.at>
- <1453760661-1444-2-git-send-email-richard@nod.at>
+Subject: Re: [PATCH 0/3] power: bq24735-charger: chromebook fixes
+Date: Mon, 15 Feb 2016 06:58:04 +0100
+Message-ID: <20160215055803.GF28626@earth>
+References: <1454479426-6437-1-git-send-email-sctincman@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wchHw8dVAp53YPj8"
+	protocol="application/pgp-signature"; boundary="z0eOaCaDLjvTGF2l"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44278 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:44356 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbcBOF5f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Feb 2016 00:57:35 -0500
+	id S1751800AbcBOF6I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Feb 2016 00:58:08 -0500
 Content-Disposition: inline
-In-Reply-To: <1453760661-1444-2-git-send-email-richard@nod.at>
+In-Reply-To: <1454479426-6437-1-git-send-email-sctincman@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Richard Weinberger <richard@nod.at>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Moritz Fischer <moritz.fischer@ettus.com>, Florian Fainelli <f.fainelli@gmail.com>, Jun Nie <jun.nie@linaro.org>, linux-pm@vger.kernel.org
+To: Jonathan Tinkham <sctincman@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org
 
 
---wchHw8dVAp53YPj8
+--z0eOaCaDLjvTGF2l
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Jan 25, 2016 at 11:24:00PM +0100, Richard Weinberger wrote:
-> Not every arch has io memory.
-> So, unbreak the build by fixing the dependencies.
+On Tue, Feb 02, 2016 at 11:03:43PM -0700, Jonathan Tinkham wrote:
+> On Acer Chromebook 13 (CB5-311) this module fails to load if the charger
+> is not inserted, and will error when it is removed.
+>=20
+> These fixes are adapted from Acer's downstream kernel.
 
-Thanks, queued.
+Thanks, queued for 4.6.
 
 -- Sebastian
 
---wchHw8dVAp53YPj8
+--z0eOaCaDLjvTGF2l
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWwWjHAAoJENju1/PIO/qaEP8QAIEMqJX+gWC7az87uPN0XgzT
-k4ua10B568quYnUmHBcTsdOUwdjjc7MzIxGKTZkVpLf7iupTEvjM9HMNt6qgXnKX
-GzGle2zNkh1aRCbuH1USTAPfa+3kvGRSgpM/Ax55BbT8kVsKhC+2scAeIVZD+0qX
-FOCebfCCJwDQLbiwrW2sKE8YIPZ3UR9kbXm+dbVxeTbOsl87k3INtRu4huPz8QpP
-Gi02aCE/X3NZabjn2j9tK23EvsJk2XNONq9HU8uOfb4IJM6mhdZ3SE9XTDwsxBSk
-uZW8IPjghPmDkoU7wUKUDcVWvL4QSJM8oL5HHlJg9PVuSSWahJ1A3jWbKvifbCK1
-XSLmumjxfagrTeAV5FYY3jaSz7Pu672+h9y/1ucw0v/vLJLakQDKlDwLM1Jbn+k4
-qWEZ/auRk6YQ+nkDLbM8b9NszsMpbiCD7ucHT2xzcEpvI+MciHeqsdlX138MIcAQ
-UMVVQ+TMd5xMmfweDUFvhmNM/sH1ATE0lsZFaP+Kt8ivRSNNNzyLyY23lbE/htTi
-txn6znkoSIPaFwyHbkJOgmhir7ZbpcqBcyV8C9pLt0ksg/SAvMdrlaBYrjsaJbj0
-zvI9Fr59ZMBRBw/erXHSk+sBIP64VYxIlYb1S3tOKuGqbO43PpZppnqWFjkDXqBY
-QU+WGISeWtgjucNVCZFU
-=sBrp
+iQIcBAEBCgAGBQJWwWjrAAoJENju1/PIO/qanXcQAKYaqEnfe7kCttdz4mF1ugTC
+1FFkyudrUyHo5tjSVF6s3YA8nQn41adZj7hME1InCKMXgvG8Ada1tqHdtk9L4KVQ
+ltH/3AD64Kgro9xqb/N7zChp1L13DRFtmSxnTQjM4wtlgoG0v5zT+qfZ2g8Rrgvl
+t6TsBwX9gFa7iKMK8JTJqP8uqP7bMm8yuxEcg5t01yZXv86L1YLXudKVyA8PubbV
+uf+S1CM4Tq/MompngtzfTgwm8tEmC1es0mohPeqWYTpC8KzMs0ZN20+10DZpObDT
+ngj9LI/2gP3zhst/ztrYbQcjCVMTc5K9/bRSNMi+V8Q63HDJmnmBv4EnxHXu3JST
+pJo2EF/SOrXQOuGhbBzi56iTGOYi5wfwe21ZuDfk8PkqjzjxjUBgHIB8/Tkxje1l
+n/0miPc6VpfueT4LVe8bnDtp/4v7T5kXHTqwVQ4tn0Cr/albMphHwtOrIeehEOw9
+9Zsr/uqY68Ic4dsb+d4CzkmmAYa7eZPANTigHSyub1UXuq7McG+EqgJOiCIAKyaj
+IlS7saC6XpRwmdqO533TSe5hJAumHBQDDFElkSXUrExgWHo68EwCuF8VPF+HcGYB
+Ey4vkjt3EP6trffWGqIyOGa4z9Mv5wxle6wLVeV63YmgcsCgJiur52+CD1YRzwOY
+Whey4hipawZbq2f+v0Vs
+=uD/y
 -----END PGP SIGNATURE-----
 
---wchHw8dVAp53YPj8--
+--z0eOaCaDLjvTGF2l--
