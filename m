@@ -1,65 +1,74 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: collie_battery: hide unused variable
-Date: Mon, 15 Feb 2016 06:03:09 +0100
-Message-ID: <20160215050308.GD28626@earth>
-References: <1453736756-1959377-2-git-send-email-arnd@arndb.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/9] cpufreq: governor: Simplify gov_cancel_work()
+ slightly
+Date: Mon, 15 Feb 2016 11:10:35 +0530
+Message-ID: <20160215054035.GB6334@vireshk-i7>
+References: <3329748.lhJgppdTt9@vostro.rjw.lan>
+ <1696919.WxyrSFSFde@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="BRE3mIcgqKzpedwo"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41935 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbcBOFDN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Feb 2016 00:03:13 -0500
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:33878 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751968AbcBOFko (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 00:40:44 -0500
+Received: by mail-pa0-f51.google.com with SMTP id fy10so40593304pac.1
+        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2016 21:40:43 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1453736756-1959377-2-git-send-email-arnd@arndb.de>
+In-Reply-To: <1696919.WxyrSFSFde@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>
+
+On 15-02-16, 02:12, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The atomic work counter incrementation in gov_cancel_work() is not
+> necessary any more, because work items won't be queued up after
+> gov_clear_update_util() anyway, so drop it along with the comment
+> about how it may be missed by the gov_clear_update_util().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> This is a new version of https://patchwork.kernel.org/patch/8291021/ .
+> 
+> Changes from the previous version:
+> - Rebase.
+> 
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |    8 --------
+>  1 file changed, 8 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+> @@ -300,13 +300,6 @@ static void gov_cancel_work(struct cpufr
+>  {
+>  	struct policy_dbs_info *policy_dbs = policy->governor_data;
+>  
+> -	/* Tell dbs_update_util_handler() to skip queuing up work items. */
+> -	atomic_inc(&policy_dbs->work_count);
+> -	/*
+> -	 * If dbs_update_util_handler() is already running, it may not notice
+> -	 * the incremented work_count, so wait for it to complete to prevent its
+> -	 * work item from being queued up after the cancel_work_sync() below.
+> -	 */
+>  	gov_clear_update_util(policy_dbs->policy);
+>  	irq_work_sync(&policy_dbs->irq_work);
+>  	cancel_work_sync(&policy_dbs->work);
+> @@ -369,7 +362,6 @@ static void dbs_update_util_handler(stru
+>  	 * The work may not be allowed to be queued up right now.
+>  	 * Possible reasons:
+>  	 * - Work has already been queued up or is in progress.
+> -	 * - The governor is being stopped.
+>  	 * - It is too early (too little time from the previous sample).
+>  	 */
+>  	if (atomic_inc_return(&policy_dbs->work_count) == 1) {
 
 
---BRE3mIcgqKzpedwo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Mon, Jan 25, 2016 at 04:45:49PM +0100, Arnd Bergmann wrote:
-> The 'wakeup_enabled' variable in this driver is only accessed
-> by the optional power management functions and we get a warning
-> when they are disabled:
->=20
-> drivers/power/collie_battery.c:29:12: error: 'wakeup_enabled' defined but=
- not used [-Werror=3Dunused-variable]
->=20
-> This moves the definition next to the users inside the same #ifdef,
-> which avoids the warning.
-
-Thanks, queued.
-
--- Sebastian
-
---BRE3mIcgqKzpedwo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWwVwMAAoJENju1/PIO/qamFUP/ie81KfItzRtPLgGvqreBMx9
-oKA9iXqA+8e4CwRa5kGShkpYVwCteFMiTOog5dq0UgzNzu29DN5mcN8XxLjg9Q32
-1pNvzzc+Kazz3HU8O38srw2N840kPrE5B7jpADsQGIuqAkYJk/97ASr2dCaHDOBW
-pbkeNguPEAXGJE6PQl+5yKyFoeEoXTVS5gGsR7wSDuoKLuEeYk3T8Xh/OE1XSEsc
-WbBqlVwSKUhuoTz61jdpCV78ZEzshYLegbg5jHECyX8xvaBWNgSKlc3ch8YPQuto
-E/zIMQfKwqCdT1fu6W9vFUkgot8axPa8JH3zyVYfVFoIlz9daQToNwyTL5RRowmq
-HxhHtGseEeC3b1gyDxUtWQkPeAGRSb3YdcDzpF7f5qJ++TDaZwwYfwtFJ2c/NfKc
-tMPUKeL+lQW7ulo65EheSw3VZ/ZMD62SCdtkTv58T0vWv4VUtI+inu0cg/ujlhAI
-jENNzSKBOpd28gSbrGidfva3lzOlGcjCKDtTOTtiyGr+HNPwtoq6cFOPcsuZoUPB
-U5Fux0IPvuxjo5AoB/PJtAXRrkX94fp5xsE03rCWW91eDJuW3OHM8WoNOX8bnA+f
-mgs0jbyY4rA9nYj7sC3B5Nm/NUvmaxmRbJruJKm/hwb1TVO/3MP4b8KPKXXfoQFf
-I5JGiBAJfhti+FFhgtL3
-=XIWf
------END PGP SIGNATURE-----
-
---BRE3mIcgqKzpedwo--
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+-- 
+viresh
