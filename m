@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 4/9] cpufreq: governor: Clean up load-related computations
-Date: Mon, 15 Feb 2016 02:18:48 +0100
-Message-ID: <1482979.EeN5cMzyR7@vostro.rjw.lan>
+Subject: [PATCH 8/9] cpufreq: ondemand: Simplify conditionals in od_dbs_timer()
+Date: Mon, 15 Feb 2016 02:21:35 +0100
+Message-ID: <19952608.TanrAGEnqx@vostro.rjw.lan>
 References: <3329748.lhJgppdTt9@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,59 +15,59 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Clean up some load-related computations in dbs_check_cpu() and
-cpufreq_governor_start() to get rid of unnecessary operations and
-type casts and make the code easier to read.
+Reduce the indentation level in the conditionals in od_dbs_timer()
+and drop the delay variable from it.
 
 No functional changes.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq_governor.c |   24 ++++++++++--------------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c |   24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -186,16 +186,15 @@ void dbs_check_cpu(struct cpufreq_policy
- 			io_busy = od_tuners->io_is_busy;
- 		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
+--- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -194,7 +194,7 @@ static unsigned int od_dbs_timer(struct
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+ 	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
+-	int delay, sample_type = dbs_info->sample_type;
++	int sample_type = dbs_info->sample_type;
  
--		wall_time = (unsigned int)
--			(cur_wall_time - j_cdbs->prev_cpu_wall);
-+		wall_time = cur_wall_time - j_cdbs->prev_cpu_wall;
- 		j_cdbs->prev_cpu_wall = cur_wall_time;
+ 	/* Common NORMAL_SAMPLE setup */
+ 	dbs_info->sample_type = OD_NORMAL_SAMPLE;
+@@ -203,22 +203,20 @@ static unsigned int od_dbs_timer(struct
+ 	 * it then.
+ 	 */
+ 	if (sample_type == OD_SUB_SAMPLE && policy_dbs->sample_delay_ns > 0) {
+-		delay = dbs_info->freq_lo_jiffies;
+ 		__cpufreq_driver_target(policy, dbs_info->freq_lo,
+ 					CPUFREQ_RELATION_H);
+-	} else {
+-		od_update(policy);
+-		if (dbs_info->freq_lo) {
+-			/* Setup timer for SUB_SAMPLE */
+-			dbs_info->sample_type = OD_SUB_SAMPLE;
+-			delay = dbs_info->freq_hi_jiffies;
+-		} else {
+-			delay = delay_for_sampling_rate(dbs_data->sampling_rate
+-							* policy_dbs->rate_mult);
+-		}
++		return dbs_info->freq_lo_jiffies;
+ 	}
  
--		if (cur_idle_time < j_cdbs->prev_cpu_idle)
--			cur_idle_time = j_cdbs->prev_cpu_idle;
--
--		idle_time = (unsigned int)
--			(cur_idle_time - j_cdbs->prev_cpu_idle);
--		j_cdbs->prev_cpu_idle = cur_idle_time;
-+		if (cur_idle_time <= j_cdbs->prev_cpu_idle) {
-+			idle_time = 0;
-+		} else {
-+			idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
-+			j_cdbs->prev_cpu_idle = cur_idle_time;
-+		}
+-	return delay;
++	od_update(policy);
++
++	if (dbs_info->freq_lo) {
++		/* Setup timer for SUB_SAMPLE */
++		dbs_info->sample_type = OD_SUB_SAMPLE;
++		return dbs_info->freq_hi_jiffies;
++	}
++
++	return delay_for_sampling_rate(dbs_data->sampling_rate * policy_dbs->rate_mult);
+ }
  
- 		if (ignore_nice) {
- 			u64 cur_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-@@ -571,13 +570,10 @@ static int cpufreq_governor_start(struct
- 		struct cpu_dbs_info *j_cdbs = gov->get_cpu_cdbs(j);
- 		unsigned int prev_load;
- 
--		j_cdbs->prev_cpu_idle =
--			get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
-+		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
- 
--		prev_load = (unsigned int)(j_cdbs->prev_cpu_wall -
--					    j_cdbs->prev_cpu_idle);
--		j_cdbs->prev_load = 100 * prev_load /
--				    (unsigned int)j_cdbs->prev_cpu_wall;
-+		prev_load = j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle;
-+		j_cdbs->prev_load = 100 * prev_load / j_cdbs->prev_cpu_wall;
- 
- 		if (ignore_nice)
- 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ /************************** sysfs interface ************************/
