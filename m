@@ -1,30 +1,30 @@
-From: Guenter Roeck <linux@roeck-us.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: Crashes in arm qemu emulations due to 'cpufreq: governor: Replace
  timers with utilization ...'
-Date: Mon, 15 Feb 2016 12:09:44 -0800
-Message-ID: <56C23088.8050400@roeck-us.net>
+Date: Mon, 15 Feb 2016 21:37:39 +0100
+Message-ID: <CAJZ5v0hzVB0+H4nuCun3mmrES3UQ3+Rs1uz5YGu5sv4G3XU+nQ@mail.gmail.com>
 References: <20160215170527.GA24453@roeck-us.net>
- <CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
- <20160215190116.GX19432@atomide.com> <56C229A5.8020901@roeck-us.net>
- <20160215195839.GA19432@atomide.com>
+	<CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
+	<20160215190116.GX19432@atomide.com>
+	<56C229A5.8020901@roeck-us.net>
+	<20160215195839.GA19432@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-next-owner@vger.kernel.org>
 In-Reply-To: <20160215195839.GA19432@atomide.com>
 Sender: linux-next-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Tony Lindgren <tony@atomide.com>, Guenter Roeck <linux@roeck-us.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/15/2016 11:58 AM, Tony Lindgren wrote:
+On Mon, Feb 15, 2016 at 8:58 PM, Tony Lindgren <tony@atomide.com> wrote:
 > * Guenter Roeck <linux@roeck-us.net> [160215 11:41]:
 >> On 02/15/2016 11:01 AM, Tony Lindgren wrote:
->>>
->>> https://kernelci.org/boot/all/job/next/kernel/next-20160215/
->>>
->>> The SMP ones seem to fail with some regulator issues?
->>>
+>> >
+>> >https://kernelci.org/boot/all/job/next/kernel/next-20160215/
+>> >
+>> >The SMP ones seem to fail with some regulator issues?
+>> >
 >>
 >> There is another problem, introduced with 6a0712f6f199e ("PM / OPP: Add
 >> dev_pm_opp_set_rate()"). The kernelci boot log for next-20160212:omap3-overo-tobi
@@ -35,9 +35,12 @@ On 02/15/2016 11:58 AM, Tony Lindgren wrote:
 >> that problem a minute ago.
 >
 > Yes that fixed it thanks.
->
 
-Confirmed. With this patch plus mine, all arm qemu tests are again passing for me.
+Can you please also check if this alternative fix from Viresh works:
+
+https://patchwork.kernel.org/patch/8316611/
+
+?
 
 Thanks,
-Guenter
+Rafael
