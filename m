@@ -1,55 +1,39 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: Crashes in arm qemu emulations due to 'cpufreq: governor: Replace
- timers with utilization ...'
-Date: Mon, 15 Feb 2016 15:19:57 -0800
-Message-ID: <56C25D1D.5080409@roeck-us.net>
-References: <20160215170527.GA24453@roeck-us.net>
- <CAFEAcA9Xy2L+edFAdUCpZFiO5NLGyrQPTQ6DgmuScbwEty-nzg@mail.gmail.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [RESEND PATCH 0/8] Support and fixes the rk3228 SoCS for thermal
+Date: Tue, 16 Feb 2016 00:25:39 +0100
+Message-ID: <3650760.H1YezDtoUE@phil>
+References: <1455521613-27340-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:45836 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751987AbcBOXUC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 18:20:02 -0500
-In-Reply-To: <CAFEAcA9Xy2L+edFAdUCpZFiO5NLGyrQPTQ6DgmuScbwEty-nzg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1455521613-27340-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>, edubezval@gmail.com
+Cc: huangtao@rock-chips.com, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, zhangqing@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Maydell <peter.maydell@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-next@vger.kernel.org, lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>, arm-mail-list <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On 02/15/2016 02:29 PM, Peter Maydell wrote:
-> On 15 February 2016 at 17:05, Guenter Roeck <linux@roeck-us.net> wrote:
->> I see crashes in various arm qemu tests due to 'cpufreq: governor: Replace
->> timers with utilization update callbacks' with next-20160215. An example
->> crash log and bisect results are attached below.
->>
->> Please let me know if there is anything I can do to help tracking down
->> the problem.
->>
->> Thanks,
->> Guenter
->>
->> ---
->>
->> Building arm:beagle:multi_v7_defconfig:omap3-beagle ... running ..... failed (crashed)
->> ------------
->> qemu log:
->
-> You're using the QEMU beagle board emulation? Can I ask which
-> QEMU you're using (qemu-linaro?). If the OMAP3 emulation is still
-> actively useful to people I might have another stab at getting
-> it into upstream QEMU some day...
->
+Am Montag, 15. Februar 2016, 15:33:25 schrieb Caesar Wang:
+> Hello Eduardo, Heiko, Michael & Stephen:
+> 
+> This series pacthes to support the rk3228 SoCs thermal.
+> 
+> They have the following patches to work on rk3228 SoCs.
+> 
 
-Yes, I use qemu-linaro for those tests.
+> 1a6f334 clk: rockchip: add id of the tsadc clock found on rk3228 SoCs
+> 8cf2d1b clk: rockchip: add the tsadc clocks found on rk3228 SoCs
+> bdc79c0 ARM: dts: rockchip: add the thermal main info found on rk3228
+> 22ea3c3 ARM: dts: rockchip: enable the tsadc for rk3228 evb
 
-Is it useful ? Obviously for me, yes. It lets me test images in qemu,
-and I don't need real hardware to run those tests. That means that
-I don't depend on the hardware really working, and I am not hosed
-if the hardware breaks down and I don't have a replacement. Plus,
-of course, I don't need a lab with 90+ pieces of hardware.
+clk and devicetree patches look good and I'll pick those up once Eduardo is 
+ok with (and has taken) the thermal-specific changes:
 
-Guenter
+> bd2720c thermal: rockchip: fix a impossible condition caused by the
+> warning df9c1bd thermal: rockchip: fix calculation error for code_to_temp
+> fb11fbd thermal: rockchip: the rename compatibles for rockchip SoCs
+> b907b75 thermal: rockchip: fix the tsadc sequence output on rk3228/rk3399
+
+
+Heiko
 
