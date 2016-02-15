@@ -1,150 +1,187 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH/RFC v2 05/11] soc: renesas: rcar: Handle clock domain devices in SYSC PM domains
-Date: Tue, 16 Feb 2016 00:08:16 +0200
-Message-ID: <2087210.c20JsV3rp3@avalon>
-References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be> <1455571020-18968-6-git-send-email-geert+renesas@glider.be>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH/RFC] gpio: rcar: Add Runtime PM handling for interrupts
+Date: Mon, 15 Feb 2016 23:10:48 +0100
+Message-ID: <CACRpkdYPdjFzMW7YfObjmmaLk9=K-DkyJprsz0v0eAg+c-_y=A@mail.gmail.com>
+References: <1455031183-18294-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:56573 "EHLO
-	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbcBOWHt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 17:07:49 -0500
-In-Reply-To: <1455571020-18968-6-git-send-email-geert+renesas@glider.be>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:33630 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbcBOWKt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 17:10:49 -0500
+Received: by mail-ob0-f173.google.com with SMTP id jq7so46789815obb.0
+        for <linux-pm@vger.kernel.org>; Mon, 15 Feb 2016 14:10:48 -0800 (PST)
+In-Reply-To: <1455031183-18294-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>, linux-renesas-soc@vger.kernel.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 
-Hi Geert,
+On Tue, Feb 9, 2016 at 4:19 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 
-Thank you for the patch.
+Quoting in verbatim as we add new recipients.
 
-On Monday 15 February 2016 22:16:54 Geert Uytterhoeven wrote:
-> R-Car H3 contains some hardware modules (e.g. VSP and FCP_V) that are
-> not only located in a power area controlled by the SYSC system
-> controller, but that are also part of the generic CPG/MSSR clock domain.
-> Make sure both are handled by enabling module clock PM when the device
-> for such a hardware module is attached to the SYSC PM Domain.
+I don't know about any runtime_pm_get():s from the irqchip functions:
+Ulf and others are discussing with Thomas Gleixner about a more general
+solution here.
 
-Can't we specify both power domains in the DT power-domains attribute instead 
-?
+But since it's a regression I guess we need quick decisions.
 
-> FIXME Share code with the renesas-cpg-mssr driver.
-> 
+> The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
+>
+> When using a GPIO purely as an interrupt source, no Runtime PM handling
+> is done, and the GPIO module's clock may not be enabled.
+>
+> To fix this:
+>   - Add .irq_request_resources() and .irq_release_resources() callbacks
+>     to handle Runtime PM when an interrupt is requested,
+
+This is pretty OK since they are slowpath.
+
+>   - Runtime-resume the device before writing to the GPIO module's
+>     registers for disabling/enabling an interrupt, or for configuring
+>     the interrupt type,
+
+Will that have *any* effect now that .irq_request_resources has increased
+usecount to 1?
+
+Isn't it enough with the patches to .irq_request/release_resources to get
+this working?
+
+>   - Add checks to warn when the GPIO module's registers are accessed
+>     while the device is runtime-suspended.
+>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
-> v2:
->   - New.
+> This fixes ravb Ethernet on r8a7795/Salvator-X, which was "broken" by
+> commit d5c3d84657db57bd ("net: phy: Avoid polling PHY with
+> PHY_IGNORE_INTERRUPTS").
+>
+> Does it also fix the HDMI interrupt on r8a7791/Koelsch?
+>
+> Notes:
+>   1. I assume gpio_rcar_irq_{dis,en}able() may be called from contexts
+>      where pm_runtime_get_sync() may not be called.
+>      However, so far I didn't see any reports from the might_sleep_if()
+>      check in __pm_runtime_resume(),
+>   2. gpio_rcar_irq_disable() is called from the IRQ core before
+>      gpio_rcar_irq_set_type().
+>      Else an alternative solution could be to just runtime-resume the
+>      device from gpio_rcar_irq_set_type() when an interrupt is setup,
+>      and never call pm_runtime_put() again. That would cause issues when
+>      compiling gpio-rcar as a module, though.
 > ---
-> drivers/soc/renesas/pm-rcar.c | 68 +++++++++++++++++++++++++++++++++++++++++
-> 1 file changed, 68 insertions(+)
-> 
-> diff --git a/drivers/soc/renesas/pm-rcar.c b/drivers/soc/renesas/pm-rcar.c
-> index c0540934126e58eb..d1bf8c231540b11d 100644
-> --- a/drivers/soc/renesas/pm-rcar.c
-> +++ b/drivers/soc/renesas/pm-rcar.c
-> @@ -9,16 +9,20 @@
->   * for more details.
->   */
-> 
-> +#include <linux/clk.h>
->  #include <linux/delay.h>
->  #include <linux/err.h>
->  #include <linux/mm.h>
->  #include <linux/of_address.h>
-> +#include <linux/pm_clock.h>
->  #include <linux/pm_domain.h>
->  #include <linux/slab.h>
->  #include <linux/spinlock.h>
->  #include <linux/io.h>
->  #include <linux/soc/renesas/pm-rcar.h>
-> 
-> +#include <dt-bindings/clock/renesas-cpg-mssr.h>
-> +
->  /* SYSC Common */
->  #define SYSCSR			0x00	/* SYSC Status Register */
->  #define SYSCISR			0x04	/* Interrupt Status Register */
-> @@ -248,11 +252,75 @@ static int rcar_pd_power_up(struct generic_pm_domain
-> *genpd) return rcar_sysc_power_up(&to_rcar_pd(genpd)->ch);
->  }
-> 
-> +#ifdef CONFIG_ARCH_R8A7795
-> +static int rcar_clk_pd_attach_dev(struct generic_pm_domain *genpd,
-> +				  struct device *dev)
-> +{
-> +	struct device_node *np = dev->of_node;
-> +	struct of_phandle_args clkspec;
-> +	struct clk *clk;
-> +	int i = 0;
-> +	int error;
-> +
-> +	while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
-> +					   &clkspec)) {
-> +		if (clkspec.args_count == 2 && clkspec.args[0] == CPG_MOD &&
-> +		    of_device_is_compatible(clkspec.np,
-> +					    "renesas,r8a7795-cpg-mssr"))
-> +			goto found;
-> +
-> +		of_node_put(clkspec.np);
-> +		i++;
-> +	}
-> +
-> +	return 0;
-> +
-> +found:
-> +	clk = of_clk_get_from_provider(&clkspec);
-> +	of_node_put(clkspec.np);
-> +
-> +	if (IS_ERR(clk))
-> +		return PTR_ERR(clk);
-> +
-> +	error = pm_clk_create(dev);
-> +	if (error) {
-> +		dev_err(dev, "pm_clk_create failed %d\n", error);
-> +		goto fail_put;
-> +	}
-> +
-> +	error = pm_clk_add_clk(dev, clk);
-> +	if (error) {
-> +		dev_err(dev, "pm_clk_add_clk %pC failed %d\n", clk, error);
-> +		goto fail_destroy;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail_destroy:
-> +	pm_clk_destroy(dev);
-> +fail_put:
-> +	clk_put(clk);
-> +	return error;
-> +}
-> +
-> +static void rcar_clk_pd_detach_dev(struct generic_pm_domain *genpd,
-> +				   struct device *dev)
-> +{
-> +	if (!list_empty(&dev->power.subsys_data->clock_list))
-> +		pm_clk_destroy(dev);
-> +}
-> +#endif /* CONFIG_ARCH_R8A7795 */
-> +
->  static void rcar_init_pm_domain(struct rcar_pm_domain *rcar_pd)
+>  drivers/gpio/gpio-rcar.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+>
+> diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
+> index cf41440aff91971e..63b679b3af5d6d16 100644
+> --- a/drivers/gpio/gpio-rcar.c
+> +++ b/drivers/gpio/gpio-rcar.c
+> @@ -59,12 +59,18 @@ struct gpio_rcar_priv {
+>
+>  static inline u32 gpio_rcar_read(struct gpio_rcar_priv *p, int offs)
 >  {
->  	struct generic_pm_domain *genpd = &rcar_pd->genpd;
->  	struct dev_power_governor *gov = rcar_pd->gov;
-> 
-> +#ifdef CONFIG_ARCH_R8A7795
-> +	genpd->flags = GENPD_FLAG_PM_CLK;
-> +	genpd->attach_dev = rcar_clk_pd_attach_dev;
-> +	genpd->detach_dev = rcar_clk_pd_detach_dev;
-> +#endif
->  	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
->  	genpd->dev_ops.active_wakeup	= rcar_pd_active_wakeup;
->  	genpd->power_off		= rcar_pd_power_down;
+> +       WARN(pm_runtime_suspended(&p->pdev->dev),
+> +                                 "%s: %s is runtime-suspended\n", __func__,
+> +                                 dev_name(&p->pdev->dev));
+>         return ioread32(p->base + offs);
+>  }
+>
+>  static inline void gpio_rcar_write(struct gpio_rcar_priv *p, int offs,
+>                                    u32 value)
+>  {
+> +       WARN(pm_runtime_suspended(&p->pdev->dev),
+> +                                 "%s: %s is runtime-suspended\n", __func__,
+> +                                 dev_name(&p->pdev->dev));
+>         iowrite32(value, p->base + offs);
+>  }
+>
+> @@ -86,7 +92,11 @@ static void gpio_rcar_irq_disable(struct irq_data *d)
+>         struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+>         struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+>
+> +       if (pm_runtime_get_sync(&p->pdev->dev) < 0)
+> +               return;
+> +
+>         gpio_rcar_write(p, INTMSK, ~BIT(irqd_to_hwirq(d)));
+> +       pm_runtime_put(&p->pdev->dev);
+>  }
+>
+>  static void gpio_rcar_irq_enable(struct irq_data *d)
+> @@ -94,7 +104,11 @@ static void gpio_rcar_irq_enable(struct irq_data *d)
+>         struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+>         struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+>
+> +       if (pm_runtime_get_sync(&p->pdev->dev) < 0)
+> +               return;
+> +
+>         gpio_rcar_write(p, MSKCLR, BIT(irqd_to_hwirq(d)));
+> +       pm_runtime_put(&p->pdev->dev);
+>  }
+>
+>  static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+> @@ -105,6 +119,9 @@ static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+>  {
+>         unsigned long flags;
+>
+> +       if (pm_runtime_get_sync(&p->pdev->dev) < 0)
+> +               return;
+> +
+>         /* follow steps in the GPIO documentation for
+>          * "Setting Edge-Sensitive Interrupt Input Mode" and
+>          * "Setting Level-Sensitive Interrupt Input Mode"
+> @@ -130,6 +147,8 @@ static void gpio_rcar_config_interrupt_input_mode(struct gpio_rcar_priv *p,
+>                 gpio_rcar_write(p, INTCLR, BIT(hwirq));
+>
+>         spin_unlock_irqrestore(&p->lock, flags);
+> +
+> +       pm_runtime_put(&p->pdev->dev);
+>  }
+>
+>  static int gpio_rcar_irq_set_type(struct irq_data *d, unsigned int type)
+> @@ -196,6 +215,27 @@ static int gpio_rcar_irq_set_wake(struct irq_data *d, unsigned int on)
+>         return 0;
+>  }
+>
+> +static int gpio_rcar_irq_request_resources(struct irq_data *d)
+> +{
+> +       struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+> +       struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+> +       int error;
+> +
+> +       error = pm_runtime_get_sync(&p->pdev->dev);
+> +       if (error < 0)
+> +               return error;
+> +
+> +       return 0;
+> +}
+> +
+> +static void gpio_rcar_irq_release_resources(struct irq_data *d)
+> +{
+> +       struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
+> +       struct gpio_rcar_priv *p = gpiochip_get_data(gc);
+> +
+> +       pm_runtime_put(&p->pdev->dev);
+> +}
+> +
+>  static irqreturn_t gpio_rcar_irq_handler(int irq, void *dev_id)
+>  {
+>         struct gpio_rcar_priv *p = dev_id;
+> @@ -450,6 +490,8 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+>         irq_chip->irq_unmask = gpio_rcar_irq_enable;
+>         irq_chip->irq_set_type = gpio_rcar_irq_set_type;
+>         irq_chip->irq_set_wake = gpio_rcar_irq_set_wake;
+> +       irq_chip->irq_request_resources = gpio_rcar_irq_request_resources;
+> +       irq_chip->irq_release_resources = gpio_rcar_irq_release_resources;
+>         irq_chip->flags = IRQCHIP_SET_TYPE_MASKED | IRQCHIP_MASK_ON_SUSPEND;
+>
+>         ret = gpiochip_add_data(gpio_chip, p);
+> --
+> 1.9.1
+>
 
--- 
-Regards,
-
-Laurent Pinchart
-
+Yours,
+Linus Walleij
