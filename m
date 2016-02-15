@@ -1,65 +1,110 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
-Date: Mon, 15 Feb 2016 22:13:30 +0100
-Message-ID: <CAJZ5v0hEc7730-JgWvNp1Pntzz51kL5GQvk11cR-u8_iQ+ZcKw@mail.gmail.com>
-References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com>
-	<743509d913cbc0e725bea52281be03b009e02bb5.1455553501.git.viresh.kumar@linaro.org>
-	<17646703.2nZXD4icYj@wuerfel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <17646703.2nZXD4icYj@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 06/11] ARM: dts: r8a7779: Add SYSC PM domains
+Date: Mon, 15 Feb 2016 22:16:55 +0100
+Message-ID: <1455571020-18968-7-git-send-email-geert+renesas@glider.be>
+References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:60583 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752520AbcBOVRM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 16:17:12 -0500
+In-Reply-To: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Mon, Feb 15, 2016 at 9:38 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Monday 15 February 2016 21:56:42 Viresh Kumar wrote:
->> We are currently required to do two checks for regulator pointer:
->> IS_ERR() and IS_NULL().
->>
->> And multiple instances are reported, about both of these not being used
->> consistently and so resulting in crashes.
->>
->> Fix that by initializing regulator pointer with an error value and
->> checking it only against an error.
->>
->> This makes code consistent and efficient.
->
-> There is usually something else wrong if you have to check for both.
-> Why exactly do you need to check for both IS_ERR and NULL?
->
->> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
->> index d7cd4e265766..146b6197d598 100644
->> --- a/drivers/base/power/opp/core.c
->> +++ b/drivers/base/power/opp/core.c
->> @@ -257,7 +257,7 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
->>       }
->>
->>       reg = dev_opp->regulator;
->> -     if (IS_ERR_OR_NULL(reg)) {
->> +     if (IS_ERR(reg)) {
->>               /* Regulator may not be required for device */
->>               if (reg)
->>                       dev_err(dev, "%s: Invalid regulator (%ld)\n", __func__,
->> @@ -798,6 +798,9 @@ static struct device_opp *_add_device_opp(struct device *dev)
->>               of_node_put(np);
->>       }
->>
->> +     /* Set regulator to a non-NULL error value */
->> +     dev_opp->regulator = ERR_PTR(-EFAULT);
->> +
->>       /* Find clk for the device */
->>       dev_opp->clk = clk_get(dev, NULL);
->>       if (IS_ERR(dev_opp->clk)) {
->
-> -EFAULT has a very specific meaning (accessing an invalid pointer from
-> user space), I don't think you want that one.
+Add a device node for the System Controller, with subnodes that
+represent the hardware power area hierarchy.
+Hook up ARM CPU cores 1-3 to their respective PM domains.
+Note that ARM CPU core 0 cannot be shut off.
 
-Yeah, agreed.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Correct sysc "reg" property (#address/size-cells = 1, not 2),
+  - Change one-line summary prefix to match current arm-soc practices,
+  - Update compatible values.
+---
+ arch/arm/boot/dts/r8a7779.dtsi | 48 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
-That should be something like -ENXIO IMO.
+diff --git a/arch/arm/boot/dts/r8a7779.dtsi b/arch/arm/boot/dts/r8a7779.dtsi
+index a0cc08e6295b0396..14b28c225bb3587c 100644
+--- a/arch/arm/boot/dts/r8a7779.dtsi
++++ b/arch/arm/boot/dts/r8a7779.dtsi
+@@ -34,18 +34,21 @@
+ 			compatible = "arm,cortex-a9";
+ 			reg = <1>;
+ 			clock-frequency = <1000000000>;
++			power-domains = <&pd_arm1>;
+ 		};
+ 		cpu@2 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <2>;
+ 			clock-frequency = <1000000000>;
++			power-domains = <&pd_arm2>;
+ 		};
+ 		cpu@3 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <3>;
+ 			clock-frequency = <1000000000>;
++			power-domains = <&pd_arm3>;
+ 		};
+ 	};
+ 
+@@ -591,4 +594,49 @@
+ 				"mmc1", "mmc0";
+ 		};
+ 	};
++
++	sysc: system-controller@ffd85000 {
++		compatible = "renesas,r8a7779-sysc";
++		reg = <0xffd85000 0x0200>;
++
++		pm-domains {
++			#address-cells = <2>;
++			#size-cells = <0>;
++
++			pd_arm1: cpu@1 {
++				reg = <1 0x41>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_arm2: cpu@2 {
++				reg = <2 0x42>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_arm3: cpu@3 {
++				reg = <3 0x43>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_sh: sh@16 {
++				reg = <16 0x80>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_sgx: sgx@20 {
++				reg = <20 0xc0>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_vdp: vdp@21 {
++				reg = <21 0x100>;
++				#power-domain-cells = <0>;
++			};
++
++			pd_imp: imp@24 {
++				reg = <24 0x140>;
++				#power-domain-cells = <0>;
++			};
++		};
++	};
+ };
+-- 
+1.9.1
 
-Thanks,
-Rafael
