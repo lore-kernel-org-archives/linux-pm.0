@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH/RFC v2 07/11] ARM: dts: r8a7790: Add SYSC PM domains
-Date: Mon, 15 Feb 2016 22:16:56 +0100
-Message-ID: <1455571020-18968-8-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 11/11] arm64: dts: r8a7795: Add SYSC PM domains
+Date: Mon, 15 Feb 2016 22:17:00 +0100
+Message-ID: <1455571020-18968-12-git-send-email-geert+renesas@glider.be>
 References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1455571020-18968-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
@@ -12,186 +12,212 @@ List-Id: linux-pm@vger.kernel.org
 
 Add a device node for the System Controller, with subnodes that
 represent the hardware power area hierarchy.
-Hook up the Cortex-A15 and Cortex-A7 CPU cores and L2 caches/SCUs to
-their respective PM domains.
+Hook up the Cortex-A57 CPU cores and the Cortex-A57 and Cortex A53 L2
+caches/SCUs to their respective PM domains.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
-v2:
-  - Change one-line summary prefix to match current arm-soc practices,
-  - Update compatible values.
----
- arch/arm/boot/dts/r8a7790.dtsi | 89 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 89 insertions(+)
+The SH core was dropped in datasheet rev. 0.5E?
 
-diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
-index e40aa6585831c520..3e5a97c70480cbbc 100644
---- a/arch/arm/boot/dts/r8a7790.dtsi
-+++ b/arch/arm/boot/dts/r8a7790.dtsi
-@@ -52,6 +52,7 @@
- 			voltage-tolerance = <1>; /* 1% */
- 			clocks = <&cpg_clocks R8A7790_CLK_Z>;
- 			clock-latency = <300000>; /* 300 us */
-+			power-domains = <&pd_ca15_cpu0>;
- 			next-level-cache = <&L2_CA15>;
- 
- 			/* kHz - uV - OPPs unknown yet */
-@@ -68,6 +69,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <1>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu1>;
- 			next-level-cache = <&L2_CA15>;
+v2:
+  - New.
+---
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi | 142 +++++++++++++++++++++++++++++++
+ 1 file changed, 142 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+index c572527afec3403a..69f400e0d478b285 100644
+--- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+@@ -39,6 +39,7 @@
+ 			compatible = "arm,cortex-a57", "arm,armv8";
+ 			reg = <0x0>;
+ 			device_type = "cpu";
++			power-domains = <&pd_ca57_cpu0>;
+ 			next-level-cache = <&L2_CA57>;
+ 			enable-method = "psci";
  		};
- 
-@@ -76,6 +78,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <2>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu2>;
- 			next-level-cache = <&L2_CA15>;
+@@ -47,6 +48,7 @@
+ 			compatible = "arm,cortex-a57","arm,armv8";
+ 			reg = <0x1>;
+ 			device_type = "cpu";
++			power-domains = <&pd_ca57_cpu1>;
+ 			next-level-cache = <&L2_CA57>;
+ 			enable-method = "psci";
  		};
- 
-@@ -84,6 +87,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <3>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu3>;
- 			next-level-cache = <&L2_CA15>;
+@@ -54,6 +56,7 @@
+ 			compatible = "arm,cortex-a57","arm,armv8";
+ 			reg = <0x2>;
+ 			device_type = "cpu";
++			power-domains = <&pd_ca57_cpu2>;
+ 			next-level-cache = <&L2_CA57>;
+ 			enable-method = "psci";
  		};
- 
-@@ -92,6 +96,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x100>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu0>;
- 			next-level-cache = <&L2_CA7>;
+@@ -61,6 +64,7 @@
+ 			compatible = "arm,cortex-a57","arm,armv8";
+ 			reg = <0x3>;
+ 			device_type = "cpu";
++			power-domains = <&pd_ca57_cpu3>;
+ 			next-level-cache = <&L2_CA57>;
+ 			enable-method = "psci";
  		};
+@@ -68,12 +72,14 @@
  
-@@ -100,6 +105,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x101>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu1>;
- 			next-level-cache = <&L2_CA7>;
- 		};
- 
-@@ -108,6 +114,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x102>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu2>;
- 			next-level-cache = <&L2_CA7>;
- 		};
- 
-@@ -116,18 +123,21 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x103>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu3>;
- 			next-level-cache = <&L2_CA7>;
- 		};
- 	};
- 
- 	L2_CA15: cache-controller@0 {
+ 	L2_CA57: cache-controller@0 {
  		compatible = "cache";
-+		power-domains = <&pd_ca15_scu>;
++		power-domains = <&pd_ca57_scu>;
  		cache-unified;
  		cache-level = <2>;
  	};
  
- 	L2_CA7: cache-controller@1 {
+ 	L2_CA53: cache-controller@1 {
  		compatible = "cache";
-+		power-domains = <&pd_ca7_scu>;
++		power-domains = <&pd_ca53_scu>;
  		cache-unified;
  		cache-level = <2>;
  	};
-@@ -1441,6 +1451,85 @@
+@@ -968,5 +974,141 @@
+ 			#dma-cells = <1>;
+ 			dma-channels = <2>;
  		};
- 	};
- 
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,r8a7790-sysc", "renesas,rcar-gen2-sysc";
-+		reg = <0 0xe6180000 0 0x0200>;
 +
-+		pm-domains {
-+			#address-cells = <2>;
-+			#size-cells = <0>;
++		sysc: system-controller@e6180000 {
++			compatible = "renesas,r8a7795-sysc",
++				     "renesas,rcar-gen3-sysc";
++			reg = <0 0xe6180000 0 0x0400>;
 +
-+			pd_ca15_scu: scu@12 {
-+				reg = <12 0x180>;
++			pm-domains {
 +				#address-cells = <2>;
 +				#size-cells = <0>;
-+				#power-domain-cells = <0>;
 +
-+				pd_ca15_cpu0: cpu@0 {
-+					reg = <0 0x40>;
++				pd_ca57_scu: ca57_scu@12 {
++					reg = <12 0x1c0>;
++					#address-cells = <2>;
++					#size-cells = <0>;
++					#power-domain-cells = <0>;
++
++					pd_ca57_cpu0: ca57_cpu@0 {
++						reg = <0 0x80>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca57_cpu1: ca57_cpu@1 {
++						reg = <1 0x81>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca57_cpu2: ca57_cpu@2 {
++						reg = <2 0x82>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca57_cpu3: ca57_cpu@3 {
++						reg = <3 0x83>;
++						#power-domain-cells = <0>;
++					};
++				};
++
++				pd_ca53_scu: ca53_scu@21 {
++					reg = <21 0x140>;
++					#address-cells = <2>;
++					#size-cells = <0>;
++					#power-domain-cells = <0>;
++
++					pd_ca53_cpu0: ca53_cpu@5 {
++						reg = <5 0x200>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca53_cpu1: ca53_cpu@6 {
++						reg = <6 0x201>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca53_cpu2: ca53_cpu@7 {
++						reg = <7 0x202>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_ca53_cpu3: ca53_cpu@8 {
++						reg = <8 0x203>;
++						#power-domain-cells = <0>;
++					};
++				};
++
++				pd_a3vp: a3vp@9 {
++					reg = <9 0x340>;
 +					#power-domain-cells = <0>;
 +				};
 +
-+				pd_ca15_cpu1: cpu@1 {
-+					reg = <1 0x41>;
++
++				pd_cr7: cr7@13 {
++					reg = <13 0x240>;
 +					#power-domain-cells = <0>;
 +				};
 +
-+				pd_ca15_cpu2: cpu@2 {
-+					reg = <2 0x42>;
++				pd_a3vc: a3vc@14 {
++					reg = <14 0x380>;
++					#address-cells = <2>;
++					#size-cells = <0>;
++					#power-domain-cells = <0>;
++
++					pd_a2vc0: a2vc@25 {
++						reg = <25 0x3c0>;
++						#power-domain-cells = <0>;
++					};
++
++					pd_a2vc1: a2vc@26 {
++						reg = <26 0x3c1>;
++						#power-domain-cells = <0>;
++					};
++				};
++
++				pd_a3sh: a3sh@16 {
++					reg = <16 0xc0>;
 +					#power-domain-cells = <0>;
 +				};
 +
-+				pd_ca15_cpu3: cpu@3 {
-+					reg = <3 0x43>;
++				pd_3dg_a: 3dg@17 {
++					reg = <17 0x100>;
++					#address-cells = <2>;
++					#size-cells = <0>;
++					#power-domain-cells = <0>;
++
++					pd_3dg_b: 3dg@18 {
++						reg = <18 0x101>;
++						#address-cells = <2>;
++						#size-cells = <0>;
++						#power-domain-cells = <0>;
++
++						pd_3dg_c: 3dg@19 {
++							reg = <19 0x102>;
++							#address-cells = <2>;
++							#size-cells = <0>;
++							#power-domain-cells = <0>;
++
++							pd_3dg_d: 3dg@20 {
++								reg = <20 0x103>;
++								#address-cells = <2>;
++								#size-cells = <0>;
++								#power-domain-cells = <0>;
++
++								pd_3dg_e: 3dg@22 {
++									reg = <22 0x104>;
++									#power-domain-cells = <0>;
++								};
++							};
++						};
++					};
++				};
++
++				pd_a3ir: a3ir@24 {
++					reg = <24 0x180>;
 +					#power-domain-cells = <0>;
 +				};
-+			};
-+
-+			pd_ca7_scu: scu@21 {
-+				reg = <21 0x100>;
-+				#address-cells = <2>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_ca7_cpu0: cpu@5 {
-+					reg = <5 0x1c0>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu1: cpu@6 {
-+					reg = <6 0x1c1>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu2: cpu@7 {
-+					reg = <7 0x1c2>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu3: cpu@8 {
-+					reg = <8 0x1c3>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+
-+			pd_sh: sh@16 {
-+				reg = <16 0x80>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_rgx: rgx@20 {
-+				reg = <20 0xc0>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_imp: imp@24 {
-+				reg = <24 0x140>;
-+				#power-domain-cells = <0>;
 +			};
 +		};
-+	};
-+
- 	qspi: spi@e6b10000 {
- 		compatible = "renesas,qspi-r8a7790", "renesas,qspi";
- 		reg = <0 0xe6b10000 0 0x2c>;
+ 	};
+ };
 -- 
 1.9.1
 
