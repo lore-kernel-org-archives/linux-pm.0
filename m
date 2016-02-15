@@ -1,44 +1,88 @@
-From: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: =?utf-8?Q?=D0=9A=D0=9B=D0=98=D0=95=D0=9D=D0=A2=D0=A1=D0?=
-	=?utf-8?Q?=9A=D0=98=D0=95_=D0=91=D0=90=D0=97=D0=AB!_=D0?=
-	=?utf-8?Q?=A2=D0=B5=D0=BB=5CViber=5CWhatsapp=3A_+79133913?=
-	=?utf-8?Q?837_Email=3A_vfalatov=40gmail=2Ecom_Skype=3A_pr?=
-	=?utf-8?Q?odawez389?=
-Date: Mon, 15 Feb 2016 05:57:20 +0600
-Message-ID: <6D9622FA28FCD310CCC9803FCB8C1D30@vger.kernel.org>
-Reply-To: "linux-pm@vger.kernel.org" <vfalatov@gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: Regard of thermal power allocator's coefficients
+Date: Mon, 15 Feb 2016 12:47:51 +0800
+Message-ID: <20160215044751.GA5660@leoy-linaro>
+References: <20160214110041.GB26920@leoy-linaro>
+ <20160214171217.GA5924@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from host191-225-58-185.static.arubacloud.com ([185.58.225.191]:59658
-	"EHLO RichUK2.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751327AbcBOCtM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Feb 2016 21:49:12 -0500
-Received: from 185.58.225.191 (localhost [IPv6:::1])
-	by RichUK2.localdomain (Postfix) with SMTP id 263709483
-	for <linux-pm@vger.kernel.org>; Mon, 15 Feb 2016 00:57:33 +0100 (CET)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160214171217.GA5924@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-=D0=9A=D0=9B=D0=98=D0=95=D0=9D=D0=A2=D0=A1=D0=9A=D0=98=D0=95 =D0=91=D0=90=
-=D0=97=D0=AB!
+Hi Eduardo,
 
-=D0=A1=D0=BE=D0=B1=D0=B5=D1=80=D0=B5=D0=BC =D0=B4=D0=BB=D1=8F =D0=92=D0=
-=B0=D1=81 =D0=BF=D0=BE =D0=B8=D0=BD=D1=82=D0=B5=D1=80=D0=BD=D0=B5=D1=82=
- =D0=B1=D0=B0=D0=B7=D1=83 =D0=B4=D0=B0=D0=BD=D0=BD=D1=8B=D1=85 =D0=BF=D0=
-=BE=D1=82=D0=B5=D0=BD=D1=86=D0=B8=D0=B0=D0=BB=D1=8C=D0=BD=D1=8B=D1=85 =D0=
-=BA=D0=BB=D0=B8=D0=B5=D0=BD=D1=82=D0=BE=D0=B2=20
-=D0=B4=D0=BB=D1=8F =D0=92=D0=B0=D1=88=D0=B5=D0=B3=D0=BE =D0=91=D0=B8=D0=
-=B7=D0=BD=D0=B5=D1=81=D0=B0!
-=D0=9C=D0=BD=D0=BE=D0=B3=D0=BE! =D0=91=D1=8B=D1=81=D1=82=D1=80=D0=BE! =D0=
-=9D=D0=B5=D0=B4=D0=BE=D1=80=D0=BE=D0=B3=D0=BE!=20
-=D0=A3=D0=B7=D0=BD=D0=B0=D0=B9=D1=82=D0=B5 =D0=BE=D0=B1 =D1=8D=D1=82=D0=
-=BE=D0=BC =D0=BF=D0=BE=D0=B4=D1=80=D0=BE=D0=B1=D0=BD=D0=B5=D0=B5 =D0=BF=
-=D0=BE=20
-=D0=A2=D0=B5=D0=BB: +79133913837
-Viber: +79133913837
-Whatsapp: +79133913837
-Skype: prodawez389
-Email: vfalatov@gmail.com
+Thanks for replying.
+
+On Sun, Feb 14, 2016 at 09:12:19AM -0800, Eduardo Valentin wrote:
+> On Sun, Feb 14, 2016 at 07:00:41PM +0800, Leo Yan wrote:
+
+[...]
+
+> > So want to firstly to confirm if should we pass coefficients by using
+> > device tree? Is someone working on related work for this?
+> 
+> We pass the sustainable power, but not the coefficients. IIRC, the IPA
+> coefficients were considered (SW) implementation details. Sustainable power,
+> on the other hand, still describes hardware capabilities.
+> 
+> So, I don't think they will go via DT.
+
+I'd like clarify one thing: "coefficients" are used to calculate
+static leakage and dynamic power but not PID's term constants. They
+are quite dependent on silicon's process; this is similiar with
+sustainable power. So do you think we should take these "coefficients"
+as software paramters?
+
+The code is written in drivers/thermal/hisi_thermal.c like below:
+
+---8<---
+
+struct cluster_power_coefficients cluster_data = {
+	.dyn_coeff      = 266,
+	.static_cpu     = 14,
+	.static_cluster = 5,
+};
+
+/* voltage in uV and temperature in mC */
+static int get_static_power(cpumask_t *cpumask, int interval,
+		unsigned long u_volt, u32 *power)
+{
+	int nr_cpus = cpumask_weight(cpumask);
+
+	*power  = nr_cpus * cluster_data.static_cpu;
+	*power += 2 * cluster_data.static_cluster;
+
+	return 0;
+}
+
+static int hisi_thermal_register_cooling_device(struct platform_device *pdev,
+						struct hisi_thermal_data *data)
+{
+	struct device_node *np;
+
+	np = of_find_node_by_name(NULL, "cluster0");
+	if (!np) {
+		dev_err(&pdev->dev, "Cluster0 node not founds\n");
+		return -ENODEV;
+	}
+
+	data->cdevs = of_cpufreq_power_cooling_register(np,
+			cpu_present_mask, cluster_data.dyn_coeff,
+			get_static_power);
+	if (IS_ERR(data->cdevs)) {
+		dev_err(&pdev->dev,
+			"Error registering cooling device: %ld\n",
+			PTR_ERR(data->cdevs));
+		return PTR_ERR(data->cdevs);
+	}
+
+	return 0;
+}
+
+Thanks,
+Leo Yan
