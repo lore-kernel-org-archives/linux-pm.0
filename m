@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH/RFC v2 11/11] arm64: dts: r8a7795: Add SYSC PM domains
-Date: Mon, 15 Feb 2016 22:17:00 +0100
-Message-ID: <1455571020-18968-12-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 04/11] soc: renesas: rcar: Add DT support for SYSC PM domains
+Date: Mon, 15 Feb 2016 22:16:53 +0100
+Message-ID: <1455571020-18968-5-git-send-email-geert+renesas@glider.be>
 References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <1455571020-18968-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
@@ -10,214 +10,402 @@ To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <m
 Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a device node for the System Controller, with subnodes that
-represent the hardware power area hierarchy.
-Hook up the Cortex-A57 CPU cores and the Cortex-A57 and Cortex A53 L2
-caches/SCUs to their respective PM domains.
+Populate the SYSC PM domains from DT.
+
+Special cases, like PM domains containing CPU cores or SCUs, are
+handled by scanning the DT topology.
+
+The SYSCIER register value is derived from the PM domains found in DT,
+which will allow to get rid of the hardcoded values in pm-rcar-gen2.c.
+However, this means we have to scan for PM domains even if CONFIG_PM=n.
+
+FIXME:
+  - This needs better integration with the PM code in pm-rcar-gen2, the
+    SMP code in smp-r8a7790, and Magnus' DT APMU series.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
-The SH core was dropped in datasheet rev. 0.5E?
-
 v2:
-  - New.
+  - Add missing definitions for SYSC_PWR_CA15_CPU and SYSC_PWR_CA7_CPU,
+  - Add R-Car H3 (r8a7795) support,
+  - Drop tests for CONFIG_ARCH_SHMOBILE_LEGACY,
+  - Add missing break statements in rcar_sysc_pwr_on_off(),
+  - Add missing calls to of_node_put() in error paths,
+  - Fix build if CONFIG_PM=n,
+  - Update compatible values,
+  - Update copyright.
 ---
- arch/arm64/boot/dts/renesas/r8a7795.dtsi | 142 +++++++++++++++++++++++++++++++
- 1 file changed, 142 insertions(+)
+ drivers/soc/renesas/pm-rcar.c | 327 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 327 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-index c572527afec3403a..69f400e0d478b285 100644
---- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-@@ -39,6 +39,7 @@
- 			compatible = "arm,cortex-a57", "arm,armv8";
- 			reg = <0x0>;
- 			device_type = "cpu";
-+			power-domains = <&pd_ca57_cpu0>;
- 			next-level-cache = <&L2_CA57>;
- 			enable-method = "psci";
- 		};
-@@ -47,6 +48,7 @@
- 			compatible = "arm,cortex-a57","arm,armv8";
- 			reg = <0x1>;
- 			device_type = "cpu";
-+			power-domains = <&pd_ca57_cpu1>;
- 			next-level-cache = <&L2_CA57>;
- 			enable-method = "psci";
- 		};
-@@ -54,6 +56,7 @@
- 			compatible = "arm,cortex-a57","arm,armv8";
- 			reg = <0x2>;
- 			device_type = "cpu";
-+			power-domains = <&pd_ca57_cpu2>;
- 			next-level-cache = <&L2_CA57>;
- 			enable-method = "psci";
- 		};
-@@ -61,6 +64,7 @@
- 			compatible = "arm,cortex-a57","arm,armv8";
- 			reg = <0x3>;
- 			device_type = "cpu";
-+			power-domains = <&pd_ca57_cpu3>;
- 			next-level-cache = <&L2_CA57>;
- 			enable-method = "psci";
- 		};
-@@ -68,12 +72,14 @@
+diff --git a/drivers/soc/renesas/pm-rcar.c b/drivers/soc/renesas/pm-rcar.c
+index cc684e9cc8db5d1c..c0540934126e58eb 100644
+--- a/drivers/soc/renesas/pm-rcar.c
++++ b/drivers/soc/renesas/pm-rcar.c
+@@ -2,6 +2,7 @@
+  * R-Car SYSC Power management support
+  *
+  * Copyright (C) 2014  Magnus Damm
++ * Copyright (C) 2015-2016 Glider bvba
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+  * License.  See the file "COPYING" in the main directory of this archive
+@@ -11,6 +12,9 @@
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/mm.h>
++#include <linux/of_address.h>
++#include <linux/pm_domain.h>
++#include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/soc/renesas/pm-rcar.h>
+@@ -38,6 +42,18 @@
+ #define PWRONSR_OFFS		0x10	/* Power Resume Status Register */
+ #define PWRER_OFFS		0x14	/* Power Shutoff/Resume Error */
  
- 	L2_CA57: cache-controller@0 {
- 		compatible = "cache";
-+		power-domains = <&pd_ca57_scu>;
- 		cache-unified;
- 		cache-level = <2>;
- 	};
++/*
++ * SYSC Power Control Register Base Addresses (R-Car Gen2)
++ */
++#define SYSC_PWR_CA15_CPU	0x40	/* CA15 cores (incl. L1C) (H2/M2/V2H) */
++#define SYSC_PWR_CA7_CPU	0x1c0	/* CA7 cores (incl. L1C) (H2/E2) */
++
++/*
++ * SYSC Power Control Register Base Addresses (R-Car Gen3)
++ */
++#define SYSC_PWR_CA57_CPU	0x80	/* CA57 cores (incl. L1C) (H3) */
++#define SYSC_PWR_CA53_CPU	0x200	/* CA53 cores (incl. L1C) (H3) */
++
  
- 	L2_CA53: cache-controller@1 {
- 		compatible = "cache";
-+		power-domains = <&pd_ca53_scu>;
- 		cache-unified;
- 		cache-level = <2>;
- 	};
-@@ -968,5 +974,141 @@
- 			#dma-cells = <1>;
- 			dma-channels = <2>;
- 		};
+ #define SYSCSR_RETRIES		100
+ #define SYSCSR_DELAY_US		1
+@@ -51,11 +67,40 @@
+ static void __iomem *rcar_sysc_base;
+ static DEFINE_SPINLOCK(rcar_sysc_lock); /* SMP CPUs + I/O devices */
+ 
++static unsigned int rcar_gen;
 +
-+		sysc: system-controller@e6180000 {
-+			compatible = "renesas,r8a7795-sysc",
-+				     "renesas,rcar-gen3-sysc";
-+			reg = <0 0xe6180000 0 0x0400>;
+ static int rcar_sysc_pwr_on_off(const struct rcar_sysc_ch *sysc_ch, bool on)
+ {
+ 	unsigned int sr_bit, reg_offs;
+ 	int k;
+ 
++	/*
++	 * Only R-Car H1 can control power to CPUs
++	 * Use WFI to power off, CPG/APMU to resume ARM cores on later R-Car
++	 * Generations
++	 */
++	switch (rcar_gen) {
++	case 2:
++		/* FIXME Check rcar_pm_domain.cpu instead? */
++		switch (sysc_ch->chan_offs) {
++		case SYSC_PWR_CA15_CPU:
++		case SYSC_PWR_CA7_CPU:
++			pr_err("%s: Cannot control power to CPU\n", __func__);
++			return -EINVAL;
++		}
++		break;
 +
-+			pm-domains {
-+				#address-cells = <2>;
-+				#size-cells = <0>;
++	case 3:
++		/* FIXME Check rcar_pm_domain.cpu instead? */
++		switch (sysc_ch->chan_offs) {
++		case SYSC_PWR_CA57_CPU:
++		case SYSC_PWR_CA53_CPU:
++			pr_err("%s: Cannot control power to CPU\n", __func__);
++			return -EINVAL;
++		}
++		break;
++	}
 +
-+				pd_ca57_scu: ca57_scu@12 {
-+					reg = <12 0x1c0>;
-+					#address-cells = <2>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
+ 	if (on) {
+ 		sr_bit = SYSCSR_PONENB;
+ 		reg_offs = PWRONCR_OFFS;
+@@ -162,3 +207,285 @@ void __iomem *rcar_sysc_init(phys_addr_t base)
+ 
+ 	return rcar_sysc_base;
+ }
 +
-+					pd_ca57_cpu0: ca57_cpu@0 {
-+						reg = <0 0x80>;
-+						#power-domain-cells = <0>;
-+					};
++#ifdef CONFIG_PM_GENERIC_DOMAINS
++struct rcar_pm_domain {
++	struct generic_pm_domain genpd;
++	struct dev_power_governor *gov;
++	struct rcar_sysc_ch ch;
++	unsigned busy:1;		/* Set if always -EBUSY */
++	unsigned cpu:1;			/* Set if domain contains CPU */
++	char name[0];
++};
 +
-+					pd_ca57_cpu1: ca57_cpu@1 {
-+						reg = <1 0x81>;
-+						#power-domain-cells = <0>;
-+					};
++static inline struct rcar_pm_domain *to_rcar_pd(struct generic_pm_domain *d)
++{
++	return container_of(d, struct rcar_pm_domain, genpd);
++}
 +
-+					pd_ca57_cpu2: ca57_cpu@2 {
-+						reg = <2 0x82>;
-+						#power-domain-cells = <0>;
-+					};
++static bool rcar_pd_active_wakeup(struct device *dev)
++{
++	return true;
++}
 +
-+					pd_ca57_cpu3: ca57_cpu@3 {
-+						reg = <3 0x83>;
-+						#power-domain-cells = <0>;
-+					};
-+				};
++static int rcar_pd_power_down(struct generic_pm_domain *genpd)
++{
++	struct rcar_pm_domain *rcar_pd = to_rcar_pd(genpd);
 +
-+				pd_ca53_scu: ca53_scu@21 {
-+					reg = <21 0x140>;
-+					#address-cells = <2>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
++	pr_debug("%s: %s\n", __func__, genpd->name);
 +
-+					pd_ca53_cpu0: ca53_cpu@5 {
-+						reg = <5 0x200>;
-+						#power-domain-cells = <0>;
-+					};
++	if (rcar_pd->busy) {
++		pr_debug("%s: %s busy\n", __func__, genpd->name);
++		return -EBUSY;
++	}
 +
-+					pd_ca53_cpu1: ca53_cpu@6 {
-+						reg = <6 0x201>;
-+						#power-domain-cells = <0>;
-+					};
++	return rcar_sysc_power_down(&rcar_pd->ch);
++}
 +
-+					pd_ca53_cpu2: ca53_cpu@7 {
-+						reg = <7 0x202>;
-+						#power-domain-cells = <0>;
-+					};
++static int rcar_pd_power_up(struct generic_pm_domain *genpd)
++{
++	pr_debug("%s: %s\n", __func__, genpd->name);
++	return rcar_sysc_power_up(&to_rcar_pd(genpd)->ch);
++}
 +
-+					pd_ca53_cpu3: ca53_cpu@8 {
-+						reg = <8 0x203>;
-+						#power-domain-cells = <0>;
-+					};
-+				};
++static void rcar_init_pm_domain(struct rcar_pm_domain *rcar_pd)
++{
++	struct generic_pm_domain *genpd = &rcar_pd->genpd;
++	struct dev_power_governor *gov = rcar_pd->gov;
 +
-+				pd_a3vp: a3vp@9 {
-+					reg = <9 0x340>;
-+					#power-domain-cells = <0>;
-+				};
++	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
++	genpd->dev_ops.active_wakeup	= rcar_pd_active_wakeup;
++	genpd->power_off		= rcar_pd_power_down;
++	genpd->power_on			= rcar_pd_power_up;
 +
++	if (rcar_sysc_power_is_off(&rcar_pd->ch))
++		rcar_sysc_power_up(&rcar_pd->ch);
++}
 +
-+				pd_cr7: cr7@13 {
-+					reg = <13 0x240>;
-+					#power-domain-cells = <0>;
-+				};
++enum pd_types {
++	PD_NORMAL,
++	PD_CPU,
++	PD_SCU,
++};
 +
-+				pd_a3vc: a3vc@14 {
-+					reg = <14 0x380>;
-+					#address-cells = <2>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
++#define MAX_NUM_SPECIAL_PDS	16
 +
-+					pd_a2vc0: a2vc@25 {
-+						reg = <25 0x3c0>;
-+						#power-domain-cells = <0>;
-+					};
++static struct special_pd {
++	struct device_node *pd;
++	enum pd_types type;
++} special_pds[MAX_NUM_SPECIAL_PDS] __initdata;
 +
-+					pd_a2vc1: a2vc@26 {
-+						reg = <26 0x3c1>;
-+						#power-domain-cells = <0>;
-+					};
-+				};
++static unsigned int num_special_pds __initdata;
 +
-+				pd_a3sh: a3sh@16 {
-+					reg = <16 0xc0>;
-+					#power-domain-cells = <0>;
-+				};
++static void __init add_special_pd(struct device_node *np, enum pd_types type)
++{
++	unsigned int i;
++	struct device_node *pd;
 +
-+				pd_3dg_a: 3dg@17 {
-+					reg = <17 0x100>;
-+					#address-cells = <2>;
-+					#size-cells = <0>;
-+					#power-domain-cells = <0>;
++	pd = of_parse_phandle(np, "power-domains", 0);
++	if (!pd)
++		return;
 +
-+					pd_3dg_b: 3dg@18 {
-+						reg = <18 0x101>;
-+						#address-cells = <2>;
-+						#size-cells = <0>;
-+						#power-domain-cells = <0>;
++	for (i = 0; i < num_special_pds; i++)
++		if (pd == special_pds[i].pd && type == special_pds[i].type) {
++			of_node_put(pd);
++			return;
++		}
 +
-+						pd_3dg_c: 3dg@19 {
-+							reg = <19 0x102>;
-+							#address-cells = <2>;
-+							#size-cells = <0>;
-+							#power-domain-cells = <0>;
++	if (num_special_pds == ARRAY_SIZE(special_pds)) {
++		pr_warn("Too many special PM domains\n");
++		of_node_put(pd);
++		return;
++	}
 +
-+							pd_3dg_d: 3dg@20 {
-+								reg = <20 0x103>;
-+								#address-cells = <2>;
-+								#size-cells = <0>;
-+								#power-domain-cells = <0>;
++	pr_debug("Special PM domain %s type %d for %s\n", pd->name, type,
++		 np->full_name);
 +
-+								pd_3dg_e: 3dg@22 {
-+									reg = <22 0x104>;
-+									#power-domain-cells = <0>;
-+								};
-+							};
-+						};
-+					};
-+				};
++	special_pds[num_special_pds].pd = pd;
++	special_pds[num_special_pds].type = type;
++	num_special_pds++;
++}
 +
-+				pd_a3ir: a3ir@24 {
-+					reg = <24 0x180>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+		};
- 	};
- };
++static void __init get_special_pds(void)
++{
++	struct device_node *cpu, *scu;
++
++	/* PM domains containing CPUs */
++	for_each_node_by_type(cpu, "cpu") {
++		add_special_pd(cpu, PD_CPU);
++
++		/* SCU, represented by an L2 node */
++		scu = of_parse_phandle(cpu, "next-level-cache", 0);
++		if (scu) {
++			add_special_pd(scu, PD_SCU);
++			of_node_put(scu);
++		}
++	}
++}
++
++static void __init put_special_pds(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < num_special_pds; i++)
++		of_node_put(special_pds[i].pd);
++}
++
++static enum pd_types __init pd_type(const struct device_node *pd)
++{
++	unsigned int i;
++
++	for (i = 0; i < num_special_pds; i++)
++		if (pd == special_pds[i].pd)
++			return special_pds[i].type;
++
++	return PD_NORMAL;
++}
++
++static void __init rcar_setup_pm_domain(struct device_node *np,
++					struct rcar_pm_domain *pd)
++{
++	const char *name = pd->genpd.name;
++
++	switch (pd_type(np)) {
++	case PD_CPU:
++		/*
++		 * This domain contains a CPU core and therefore it should
++		 * only be turned off if the CPU is not in use.
++		 */
++		pr_debug("PM domain %s contains CPU\n", name);
++		pd->gov = &pm_domain_always_on_gov;
++		pd->busy = true;
++		pd->cpu = true;
++		break;
++
++	case PD_SCU:
++		/*
++		 * This domain contains an SCU and cache-controller, and
++		 * therefore it should only be turned off if the CPU cores are
++		 * not in use.
++		 */
++		pr_debug("PM domain %s contains SCU\n", name);
++		pd->gov = &pm_domain_always_on_gov;
++		pd->busy = true;
++		break;
++
++	case PD_NORMAL:
++		break;
++	}
++
++	rcar_init_pm_domain(pd);
++}
++
++static int __init rcar_add_pm_domains(struct device_node *parent,
++				      struct generic_pm_domain *genpd_parent,
++				      u32 *syscier)
++{
++	struct device_node *np;
++
++	for_each_child_of_node(parent, np) {
++		struct rcar_pm_domain *pd;
++		u32 reg[2];
++		int n;
++
++		if (of_property_read_u32_array(np, "reg", reg,
++					       ARRAY_SIZE(reg))) {
++			of_node_put(np);
++			return -EINVAL;
++		}
++
++		*syscier |= BIT(reg[0]);
++
++		if (!IS_ENABLED(CONFIG_PM)) {
++			/* Just continue parsing "reg" to update *syscier */
++			rcar_add_pm_domains(np, NULL, syscier);
++			continue;
++		}
++
++		n = snprintf(NULL, 0, "%s@%u", np->name, reg[0]) + 1;
++
++		pd = kzalloc(sizeof(*pd) + n, GFP_KERNEL);
++		if (!pd) {
++			of_node_put(np);
++			return -ENOMEM;
++		}
++
++		snprintf(pd->name, n, "%s@%u", np->name, reg[0]);
++		pd->genpd.name = pd->name;
++		pd->ch.chan_offs = reg[1] & ~31;
++		pd->ch.chan_bit = reg[1] & 31;
++		pd->ch.isr_bit = reg[0];
++
++		rcar_setup_pm_domain(np, pd);
++		if (genpd_parent)
++			pm_genpd_add_subdomain(genpd_parent, &pd->genpd);
++		of_genpd_add_provider_simple(np, &pd->genpd);
++
++		rcar_add_pm_domains(np, &pd->genpd, syscier);
++	}
++	return 0;
++}
++
++static const struct of_device_id rcar_sysc_matches[] = {
++	{ .compatible = "renesas,r8a7779-sysc", .data = (void *)1 },
++	{ .compatible = "renesas,rcar-gen2-sysc", .data = (void *)2 },
++	{ .compatible = "renesas,rcar-gen3-sysc", .data = (void *)3 },
++	{ /* sentinel */ }
++};
++
++static int __init rcar_init_pm_domains(void)
++{
++	const struct of_device_id *match;
++	struct device_node *np, *pmd;
++	bool scanned = false;
++	void __iomem *base;
++	int ret = 0;
++
++	for_each_matching_node_and_match(np, rcar_sysc_matches, &match) {
++		u32 syscier = 0;
++
++		rcar_gen = (uintptr_t)match->data;
++
++		base = of_iomap(np, 0);
++		if (!base) {
++			pr_warn("%s cannot map reg 0\n", np->full_name);
++			continue;
++		}
++
++		rcar_sysc_base = base;	// FIXME conflicts with rcar_sysc_init()
++
++		pmd = of_get_child_by_name(np, "pm-domains");
++		if (!pmd) {
++			pr_warn("%s lacks pm-domains node\n", np->full_name);
++			continue;
++		}
++
++		if (!scanned) {
++			/* Find PM domains containing special blocks */
++			get_special_pds();
++			scanned = true;
++		}
++
++		ret = rcar_add_pm_domains(pmd, NULL, &syscier);
++		of_node_put(pmd);
++		if (ret) {
++			of_node_put(np);
++			break;
++		}
++
++		/*
++		 * Enable all interrupt sources, but do not use interrupt
++		 * handler
++		 */
++		pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
++		iowrite32(syscier, rcar_sysc_base + SYSCIER);
++		iowrite32(0, rcar_sysc_base + SYSCIMR);
++	}
++
++	put_special_pds();
++
++	return ret;
++}
++
++core_initcall(rcar_init_pm_domains);
++#endif /* PM_GENERIC_DOMAINS */
 -- 
 1.9.1
 
