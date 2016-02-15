@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2 01/11] PM / Domains: Add DT bindings for the R-Car System Controller
-Date: Mon, 15 Feb 2016 22:16:50 +0100
-Message-ID: <1455571020-18968-2-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 05/11] soc: renesas: rcar: Handle clock domain devices in SYSC PM domains
+Date: Mon, 15 Feb 2016 22:16:54 +0100
+Message-ID: <1455571020-18968-6-git-send-email-geert+renesas@glider.be>
 References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
@@ -10,156 +10,122 @@ To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laur
 Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-The Renesas R-Car System Controller provides power management for the
-CPU cores and various coprocessors, following the generic PM domain
-bindings in Documentation/devicetree/bindings/power/power_domain.txt.
+R-Car H3 contains some hardware modules (e.g. VSP and FCP_V) that are
+not only located in a power area controlled by the SYSC system
+controller, but that are also part of the generic CPG/MSSR clock domain.
+Make sure both are handled by enabling module clock PM when the device
+for such a hardware module is attached to the SYSC PM Domain.
 
-This supports R-Car Gen1, Gen2, and Gen3.
+FIXME Share code with the renesas-cpg-mssr driver.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Alternatives I considered:
-
-  - Using a single node per power register block, even if it contains
-    multiple domains, e.g.:
-
-	    pd_ca15_scu: ca15_scu@180 {
-		    reg = <0x180 0x20>;
-		    #address-cells = <1>;
-		    #size-cells = <0>;
-		    #power-domain-cells = <0>;
-		    renesas,interrupt-bits = <12>;
-
-		    pd_ca15_cpu: ca15_cpu@40 {
-			    reg = <0x40 0x20>;
-			    #power-domain-cells = <1>;
-			    renesas,pm-domain-indices = <0 1>;
-			    renesas,pm-domain-names =
-				    "ca15_cpu0", "ca15_cpu1";
-			    renesas,interrupt-bits = <0 1>;
-		    };
-	    };
-
-    Notes:
-      - You cannot just have a property with the number of domains, as
-	index 0 is not used on R-Car H1. Hence the need for
-	"renesas,pm-domain-indices" and "renesas,interrupt-bits",
-      - "#power-domain-cells = <1>" for nodes with multiple domains,
-	which allows typos in "power-domains = <&pd_ca15_cpu n>", using
-	an invalid value of "n".
-
-  - Using a linear description in DT:
-      - Needs parent links for subdomains,
-      - More complicated to parse (lesson learned from R-Mobile PM
-	Domain support).
-
-  - Keeping the power register block offset and the bit number as separate
-    "reg" cells, increasing "#address-cells" from 2 to 3,
-
-  - Merging the interrupt bit (which needs only 5 bits) in the other "reg"
-    cell, decreasing "#address-cells" from 2 to 1.
-
 v2:
-  - Add R-Car H3 (r8a7795) support,
-  - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
-  - Add fallback compatibility strings for R-Car Gen2 and Gen3.
+  - New.
 ---
- .../bindings/power/renesas,sysc-rcar.txt           | 87 ++++++++++++++++++++++
- 1 file changed, 87 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/renesas,sysc-rcar.txt
+ drivers/soc/renesas/pm-rcar.c | 68 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/renesas,sysc-rcar.txt b/Documentation/devicetree/bindings/power/renesas,sysc-rcar.txt
-new file mode 100644
-index 0000000000000000..92ddc0da7b755215
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/renesas,sysc-rcar.txt
-@@ -0,0 +1,87 @@
-+DT bindings for the Renesas R-Car System Controller
+diff --git a/drivers/soc/renesas/pm-rcar.c b/drivers/soc/renesas/pm-rcar.c
+index c0540934126e58eb..d1bf8c231540b11d 100644
+--- a/drivers/soc/renesas/pm-rcar.c
++++ b/drivers/soc/renesas/pm-rcar.c
+@@ -9,16 +9,20 @@
+  * for more details.
+  */
+ 
++#include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/mm.h>
+ #include <linux/of_address.h>
++#include <linux/pm_clock.h>
+ #include <linux/pm_domain.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/soc/renesas/pm-rcar.h>
+ 
++#include <dt-bindings/clock/renesas-cpg-mssr.h>
 +
-+== System Controller Node ==
+ /* SYSC Common */
+ #define SYSCSR			0x00	/* SYSC Status Register */
+ #define SYSCISR			0x04	/* Interrupt Status Register */
+@@ -248,11 +252,75 @@ static int rcar_pd_power_up(struct generic_pm_domain *genpd)
+ 	return rcar_sysc_power_up(&to_rcar_pd(genpd)->ch);
+ }
+ 
++#ifdef CONFIG_ARCH_R8A7795
++static int rcar_clk_pd_attach_dev(struct generic_pm_domain *genpd,
++				  struct device *dev)
++{
++	struct device_node *np = dev->of_node;
++	struct of_phandle_args clkspec;
++	struct clk *clk;
++	int i = 0;
++	int error;
 +
-+The R-Car System Controller provides power management for the CPU cores and
-+various coprocessors.
++	while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
++					   &clkspec)) {
++		if (clkspec.args_count == 2 && clkspec.args[0] == CPG_MOD &&
++		    of_device_is_compatible(clkspec.np,
++					    "renesas,r8a7795-cpg-mssr"))
++			goto found;
 +
-+Required properties:
-+  - compatible: Must contain one or more of the following:
-+      - "renesas,r8a7779-sysc" (R-Car H1)
-+      - "renesas,r8a7790-sysc" (R-Car H2)
-+      - "renesas,r8a7791-sysc" (R-Car M2-W)
-+      - "renesas,r8a7792-sysc" (R-Car V2H)
-+      - "renesas,r8a7793-sysc" (R-Car M2-N)
-+      - "renesas,r8a7794-sysc" (R-Car E2)
-+      - "renesas,r8a7795-sysc" (R-Car H3)
-+      - "renesas,rcar-gen2-sysc" (Generic R-Car Gen2)
-+      - "renesas,rcar-gen3-sysc" (Generic R-Car Gen3)
-+    When compatible with the generic version, nodes must list the SoC-specific
-+    version corresponding to the platform first, followed by the generic
-+    version.
-+  - reg: Address start and address range for the device.
-+  - pm-domains: This node contains a hierarchy of PM Domain Nodes.
-+    Dependencies (e.g. parent SCUs should not be powered off while child CPUs
-+    are on) should be reflected using subnodes.
++		of_node_put(clkspec.np);
++		i++;
++	}
 +
++	return 0;
 +
-+== PM Domain Nodes ==
++found:
++	clk = of_clk_get_from_provider(&clkspec);
++	of_node_put(clkspec.np);
 +
-+Each of the PM domain nodes represents a PM domain, as documented by the
-+generic PM domain bindings in
-+Documentation/devicetree/bindings/power/power_domain.txt.
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
 +
-+Required properties:
-+  - #power-domain-cells: Must be 0.
-+  - reg: This property must contain 2 values:
-+	   - The first value is the number of the interrupt bit representing
-+	     the power area in the various Interrupt Registers (e.g. SYSCISR,
-+	     Interrupt Status Register),
-+	   - The second value encodes the power register block offset (which is
-+	     a multiple of 64), and the number of the bit representing the
-+	     power area in the various Power Control Registers (e.g. PWROFFSR,
-+	     Power Shutoff Status Register). This value is created by ORing
-+	     these two numbers.
-+	 The parent's node must contain the following two properties:
-+	   - #address-cells: Must be 2,
-+	   - #size-cells: Must be 0.
++	error = pm_clk_create(dev);
++	if (error) {
++		dev_err(dev, "pm_clk_create failed %d\n", error);
++		goto fail_put;
++	}
 +
++	error = pm_clk_add_clk(dev, clk);
++	if (error) {
++		dev_err(dev, "pm_clk_add_clk %pC failed %d\n", clk, error);
++		goto fail_destroy;
++	}
 +
-+Example:
++	return 0;
 +
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,r8a7791-sysc", "renesas,rcar-gen2-sysc";
-+		reg = <0 0xe6180000 0 0x0200>;
++fail_destroy:
++	pm_clk_destroy(dev);
++fail_put:
++	clk_put(clk);
++	return error;
++}
 +
-+		pm-domains {
-+			#address-cells = <2>;
-+			#size-cells = <0>;
++static void rcar_clk_pd_detach_dev(struct generic_pm_domain *genpd,
++				   struct device *dev)
++{
++	if (!list_empty(&dev->power.subsys_data->clock_list))
++		pm_clk_destroy(dev);
++}
++#endif /* CONFIG_ARCH_R8A7795 */
 +
-+			pd_ca15_scu: scu@12 {
-+				reg = <12 0x180>;
-+				#address-cells = <2>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_ca15_cpu0: cpu@0 {
-+					reg = <0 0x40>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca15_cpu1: cpu@1 {
-+					reg = <1 0x41>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+
-+			pd_sh: sh@16 {
-+				reg = <16 0x80>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_sgx: sgx@20 {
-+				reg = <20 0xc0>;
-+				#power-domain-cells = <0>;
-+			};
-+		};
-+	};
+ static void rcar_init_pm_domain(struct rcar_pm_domain *rcar_pd)
+ {
+ 	struct generic_pm_domain *genpd = &rcar_pd->genpd;
+ 	struct dev_power_governor *gov = rcar_pd->gov;
+ 
++#ifdef CONFIG_ARCH_R8A7795
++	genpd->flags = GENPD_FLAG_PM_CLK;
++	genpd->attach_dev = rcar_clk_pd_attach_dev;
++	genpd->detach_dev = rcar_clk_pd_detach_dev;
++#endif
+ 	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
+ 	genpd->dev_ops.active_wakeup	= rcar_pd_active_wakeup;
+ 	genpd->power_off		= rcar_pd_power_down;
 -- 
 1.9.1
