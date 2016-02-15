@@ -1,57 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Crashes in arm qemu emulations due to 'cpufreq: governor: Replace
- timers with utilization ...'
-Date: Mon, 15 Feb 2016 21:38:25 +0100
-Message-ID: <CAJZ5v0hqVCXE0kDfr_4zLz_-c-4KJo8bJg8xVVc1Qd66eA+iHQ@mail.gmail.com>
-References: <20160215170527.GA24453@roeck-us.net>
-	<CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
-	<20160215190116.GX19432@atomide.com>
-	<56C229A5.8020901@roeck-us.net>
-	<20160215195839.GA19432@atomide.com>
-	<56C23088.8050400@roeck-us.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
+Date: Mon, 15 Feb 2016 21:38:14 +0100
+Message-ID: <17646703.2nZXD4icYj@wuerfel>
+References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com> <743509d913cbc0e725bea52281be03b009e02bb5.1455553501.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f176.google.com ([209.85.217.176]:33463 "EHLO
-	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbcBOUi1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 15:38:27 -0500
-In-Reply-To: <56C23088.8050400@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <743509d913cbc0e725bea52281be03b009e02bb5.1455553501.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linaro-kernel@lists.linaro.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Feb 15, 2016 at 9:09 PM, Guenter Roeck <linux@roeck-us.net> wrote:
-> On 02/15/2016 11:58 AM, Tony Lindgren wrote:
->>
->> * Guenter Roeck <linux@roeck-us.net> [160215 11:41]:
->>>
->>> On 02/15/2016 11:01 AM, Tony Lindgren wrote:
->>>>
->>>>
->>>> https://kernelci.org/boot/all/job/next/kernel/next-20160215/
->>>>
->>>> The SMP ones seem to fail with some regulator issues?
->>>>
->>>
->>> There is another problem, introduced with 6a0712f6f199e ("PM / OPP: Add
->>> dev_pm_opp_set_rate()"). The kernelci boot log for
->>> next-20160212:omap3-overo-tobi
->>> and others experience that problem.
->>>
->>> Essentially, the code now assumes that a CPU clock always has a voltage
->>> regulator attached to it, which is not correct. I sent out a patch to fix
->>> that problem a minute ago.
->>
->>
->> Yes that fixed it thanks.
->>
->
-> Confirmed. With this patch plus mine, all arm qemu tests are again passing
-> for me.
+On Monday 15 February 2016 21:56:42 Viresh Kumar wrote:
+> We are currently required to do two checks for regulator pointer:
+> IS_ERR() and IS_NULL().
+> 
+> And multiple instances are reported, about both of these not being used
+> consistently and so resulting in crashes.
+> 
+> Fix that by initializing regulator pointer with an error value and
+> checking it only against an error.
+> 
+> This makes code consistent and efficient.
 
-OK, I'll add it to the governor changes branch.
+There is usually something else wrong if you have to check for both.
+Why exactly do you need to check for both IS_ERR and NULL?
 
-Thanks,
-Rafael
+> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> index d7cd4e265766..146b6197d598 100644
+> --- a/drivers/base/power/opp/core.c
+> +++ b/drivers/base/power/opp/core.c
+> @@ -257,7 +257,7 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
+>  	}
+>  
+>  	reg = dev_opp->regulator;
+> -	if (IS_ERR_OR_NULL(reg)) {
+> +	if (IS_ERR(reg)) {
+>  		/* Regulator may not be required for device */
+>  		if (reg)
+>  			dev_err(dev, "%s: Invalid regulator (%ld)\n", __func__,
+> @@ -798,6 +798,9 @@ static struct device_opp *_add_device_opp(struct device *dev)
+>  		of_node_put(np);
+>  	}
+>  
+> +	/* Set regulator to a non-NULL error value */
+> +	dev_opp->regulator = ERR_PTR(-EFAULT);
+> +
+>  	/* Find clk for the device */
+>  	dev_opp->clk = clk_get(dev, NULL);
+>  	if (IS_ERR(dev_opp->clk)) {
+
+-EFAULT has a very specific meaning (accessing an invalid pointer from
+user space), I don't think you want that one.
+
+	Arnd
