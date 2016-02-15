@@ -1,74 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/9] cpufreq: governor: Simplify gov_cancel_work()
- slightly
-Date: Mon, 15 Feb 2016 11:10:35 +0530
-Message-ID: <20160215054035.GB6334@vireshk-i7>
-References: <3329748.lhJgppdTt9@vostro.rjw.lan>
- <1696919.WxyrSFSFde@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 01/22] power: reset: Fix dependencies for !HAS_IOMEM archs
+Date: Mon, 15 Feb 2016 06:57:30 +0100
+Message-ID: <20160215055730.GE28626@earth>
+References: <1453760661-1444-1-git-send-email-richard@nod.at>
+ <1453760661-1444-2-git-send-email-richard@nod.at>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="wchHw8dVAp53YPj8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33878 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968AbcBOFko (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 00:40:44 -0500
-Received: by mail-pa0-f51.google.com with SMTP id fy10so40593304pac.1
-        for <linux-pm@vger.kernel.org>; Sun, 14 Feb 2016 21:40:43 -0800 (PST)
+Received: from mail.kernel.org ([198.145.29.136]:44278 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbcBOF5f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Feb 2016 00:57:35 -0500
 Content-Disposition: inline
-In-Reply-To: <1696919.WxyrSFSFde@vostro.rjw.lan>
+In-Reply-To: <1453760661-1444-2-git-send-email-richard@nod.at>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>
-
-On 15-02-16, 02:12, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The atomic work counter incrementation in gov_cancel_work() is not
-> necessary any more, because work items won't be queued up after
-> gov_clear_update_util() anyway, so drop it along with the comment
-> about how it may be missed by the gov_clear_update_util().
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> This is a new version of https://patchwork.kernel.org/patch/8291021/ .
-> 
-> Changes from the previous version:
-> - Rebase.
-> 
-> ---
->  drivers/cpufreq/cpufreq_governor.c |    8 --------
->  1 file changed, 8 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -300,13 +300,6 @@ static void gov_cancel_work(struct cpufr
->  {
->  	struct policy_dbs_info *policy_dbs = policy->governor_data;
->  
-> -	/* Tell dbs_update_util_handler() to skip queuing up work items. */
-> -	atomic_inc(&policy_dbs->work_count);
-> -	/*
-> -	 * If dbs_update_util_handler() is already running, it may not notice
-> -	 * the incremented work_count, so wait for it to complete to prevent its
-> -	 * work item from being queued up after the cancel_work_sync() below.
-> -	 */
->  	gov_clear_update_util(policy_dbs->policy);
->  	irq_work_sync(&policy_dbs->irq_work);
->  	cancel_work_sync(&policy_dbs->work);
-> @@ -369,7 +362,6 @@ static void dbs_update_util_handler(stru
->  	 * The work may not be allowed to be queued up right now.
->  	 * Possible reasons:
->  	 * - Work has already been queued up or is in progress.
-> -	 * - The governor is being stopped.
->  	 * - It is too early (too little time from the previous sample).
->  	 */
->  	if (atomic_inc_return(&policy_dbs->work_count) == 1) {
+To: Richard Weinberger <richard@nod.at>
+Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Moritz Fischer <moritz.fischer@ettus.com>, Florian Fainelli <f.fainelli@gmail.com>, Jun Nie <jun.nie@linaro.org>, linux-pm@vger.kernel.org
 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
--- 
-viresh
+--wchHw8dVAp53YPj8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi,
+
+On Mon, Jan 25, 2016 at 11:24:00PM +0100, Richard Weinberger wrote:
+> Not every arch has io memory.
+> So, unbreak the build by fixing the dependencies.
+
+Thanks, queued.
+
+-- Sebastian
+
+--wchHw8dVAp53YPj8
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWwWjHAAoJENju1/PIO/qaEP8QAIEMqJX+gWC7az87uPN0XgzT
+k4ua10B568quYnUmHBcTsdOUwdjjc7MzIxGKTZkVpLf7iupTEvjM9HMNt6qgXnKX
+GzGle2zNkh1aRCbuH1USTAPfa+3kvGRSgpM/Ax55BbT8kVsKhC+2scAeIVZD+0qX
+FOCebfCCJwDQLbiwrW2sKE8YIPZ3UR9kbXm+dbVxeTbOsl87k3INtRu4huPz8QpP
+Gi02aCE/X3NZabjn2j9tK23EvsJk2XNONq9HU8uOfb4IJM6mhdZ3SE9XTDwsxBSk
+uZW8IPjghPmDkoU7wUKUDcVWvL4QSJM8oL5HHlJg9PVuSSWahJ1A3jWbKvifbCK1
+XSLmumjxfagrTeAV5FYY3jaSz7Pu672+h9y/1ucw0v/vLJLakQDKlDwLM1Jbn+k4
+qWEZ/auRk6YQ+nkDLbM8b9NszsMpbiCD7ucHT2xzcEpvI+MciHeqsdlX138MIcAQ
+UMVVQ+TMd5xMmfweDUFvhmNM/sH1ATE0lsZFaP+Kt8ivRSNNNzyLyY23lbE/htTi
+txn6znkoSIPaFwyHbkJOgmhir7ZbpcqBcyV8C9pLt0ksg/SAvMdrlaBYrjsaJbj0
+zvI9Fr59ZMBRBw/erXHSk+sBIP64VYxIlYb1S3tOKuGqbO43PpZppnqWFjkDXqBY
+QU+WGISeWtgjucNVCZFU
+=sBrp
+-----END PGP SIGNATURE-----
+
+--wchHw8dVAp53YPj8--
