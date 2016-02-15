@@ -1,191 +1,289 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: Re: [PATCH v3 1/4] dt-bindings: power: reset: add document for
- reboot-mode driver
-Date: Mon, 15 Feb 2016 17:43:06 +0800
-Message-ID: <56C19DAA.5030602@rock-chips.com>
-References: <1454406981-4692-1-git-send-email-andy.yan@rock-chips.com>
- <1454407151-4751-1-git-send-email-andy.yan@rock-chips.com>
- <20160204230814.GA4847@rob-hp-laptop>
- <CALAqxLVyznpLd2MLgGr28TDECpLZ=RpmhxH-SHqntXfBsctcmQ@mail.gmail.com>
- <20160205043507.GB4847@rob-hp-laptop>
- <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: ahaslam@baylibre.com
+Subject: [PATCH v12 1/3] PM / Domains: Support for multiple states
+Date: Mon, 15 Feb 2016 11:10:51 +0100
+Message-ID: <1455531053-11291-2-git-send-email-ahaslam@baylibre.com>
+References: <1455531053-11291-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.135]:40506 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbcBOJnU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 04:43:20 -0500
-In-Reply-To: <CALAqxLUnbFHjTuJXYXSruV3W0JJ09Fxz=KBe69tZDTd_3_+rxw@mail.gmail.com>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:34677 "EHLO
+	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbcBOKLH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 05:11:07 -0500
+Received: by mail-wm0-f51.google.com with SMTP id b205so60573389wmb.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 Feb 2016 02:11:06 -0800 (PST)
+In-Reply-To: <1455531053-11291-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>, Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, lkml <linux-kernel@vger.kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Richard Weinberger <richard@nod.at>, Linux PM list <linux-pm@vger.kernel.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, =?UTF-8?Q?Pawe=c5=82_Moll?= <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Moritz
+To: ulf.hansson@linaro.org, lina.iyer@linaro.org
+Cc: khilman@baylibre.com, linux-pm@vger.kernel.org, geert@linux-m68k.org, mtitinger@baylibre.com, rjw@rjwysocki.net, bcousson@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Hi Rob & John:
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-On 2016=E5=B9=B402=E6=9C=8805=E6=97=A5 13:03, John Stultz wrote:
-> On Thu, Feb 4, 2016 at 8:35 PM, Rob Herring <robh@kernel.org> wrote:
->> On Thu, Feb 04, 2016 at 03:46:15PM -0800, John Stultz wrote:
->>> On Thu, Feb 4, 2016 at 3:08 PM, Rob Herring <robh@kernel.org> wrote=
-:
->>>> On Tue, Feb 02, 2016 at 05:59:11PM +0800, Andy Yan wrote:
->>>>> +Example:
->>>>> +     reboot-mode {
->>>>> +             mode-normal =3D <BOOT_NORMAL>;
->>>>> +             mode-recovery =3D <BOOT_RECOVERY>;
->>>>> +             mode-fastboot =3D <BOOT_FASTBOOT>;
->>>> I tend to agree with John on calling this mode-bootloader.
->>>>
->>>> OTOH, fastboot is more specific about what the mode is. The name i=
-n DT
->>>> and the userspace name don't necessarily have to be the same.
->>> Wait. This is a bit confusing. The utility of adding a property nam=
-e
->>> and using that name be the reboot command parsed for made sense
->>> (compared to earlier versions which had command strings) as it made
->>> the dts more terse.   But it sounds here like you're suggesting we
->>> should have some logic in the driver that translates "reboot fastbo=
-ot"
->>> to mode-bootloader or vice versa.
->> I said early on the DT names and kernel-userspace names should not
->> necessarily be linked. They can be, but we shouldn't require that.
-> Sigh. Ok. It seemed it was due to earlier comments (maybe from others=
-,
-> but I thought it was you), that we moved from specifying a command
-> string, to using the label. But if you think the label name and the
-> commands shouldn't be linked, it seems like we should re-introduce
-> that. No?
->
-> Unless your thinking we need some sort of static in-kernel mapping of
-> commands to label names? But that just seems painfully indirect for
-> little gain ("Its obvious! For that mode, you use this term here, and
-> that different term over there!").
->
->> My concern with mode-bootloader is what if you can boot into multipl=
-e
->> bootloader modes. Say USB mass storage is one option. "bootloader" i=
-s
->> not real specific.
-> True. But as I think we agreed below, "bootloader" and "recovery" are
-> basically defacto standards, and I think it would be a bad idea to tr=
-y
-> to declare all the existing android tooling and docs wrong just
-> because the command is vague, technically.
->
->
->>>>> +             mode-loader =3D <BOOT_LOADER>;
->>>> This one needs a better name. Maybe it should be 'rockchip,mode-lo=
-ader'
->>>> as it is vendor specific. Either way, loader is vague. Perhaps
->>>> rockchip,mode-bl-download?
->>> Hrm. So how what reboot command do you expect to trigger that?
->> Whatever your OS has defined to map to that.
->>
->> We could just decide the kernel will strip <vendor> and 'mode-' and
->> match commands against what remains.
-> That part sounds sane, although I do think having vendor prefixes are
-> reasonable for actual commands as well.
->
->
->>> I think one of the difficult things here is that there's no real
->>> standards for all bios/bootloader modes. So they are somewhat
->>> firmware/bootloader/device specific, and thus we need something tha=
-t
->>> is flexible enough to allow lots of different modes to be easily
->>> specified.  That said, this does expose a userspace interface (thou=
-gh
->>> one could argue kernel ABI doesn't cross reboots :) so we should tr=
-y
->>> to have some consistency so the same userspace can work on various
->>> devices.
->> There is: UEFI. Boot mode efivars are standard. But then they are pr=
-etty
->> much PC oriented though. It is more which device to boot off of, but
->> there is network boot or boot to bios setup.
-> Well, there's a partial standard there.  I'm told for android on x86,
-> there is no UEFI standard way to communicate rebooting to fastboot or
-> recovery. Every device does its own device specific driver.
->
->
->>> I do think the "bootloader" and "recovery" arguments are somewhat
->>> defacto standards, well established on most android devices.
->> Yes, otherwise I'd be completely against "mode-bootloader" as the
->> property.
-> Ok.
->
->>> I think here the concern is rockchip probably has some userspace th=
-at
->>> is already using "reboot maskrom" or "reboot loader" for their own
->>> uses. And its a bit of a pain to ask that userspace to be reworked =
-to
->> Perhaps those are only for development and change would not be so
->> painful.
-> Andy: Can you comment here? How critical are the specific commands
-> you've used here for your userspace?
->
-     Have some discussion with my colleague, we decided remove the"=20
-maskrom" mode in next version.
-   Actually, this mode is not so used so often.
-     But "reboot loader" is frequently used  in development by all the=20
-rockchip platform related people, even
-some widely used factory tools use this command.So we really hope it ca=
-n=20
-compatible with the existing tools
-and user experience.
->>> use "reboot rom-download" or "reboot rockchip,rom-download" dependi=
-ng
->>> on how we try to deal with these.  (Granted, non-upstream interface=
-s
->>> aren't official, so that is their risk somewhat, but we avoid being
->>> smug about that :)
->> Or vendor specific modes require vendor specific translation in the
->> kernel.
-> True.
->
->
->> To some extent we need to design what is right and worry about futur=
-e
->> devices rather than cater to past devices. There's always some
->> compromise. What would you design ignoring the existing conditions.
->> Start there and then figure out how to make it work with current
->> designs.
-> Fair enough. I just want to make sure we're not getting too caught up
-> with design purity and are willing the meet the world where it is.
->
->>> Another part of the issue is there isn't really a way to probe for
->>> reboot cmd capability here. As much as I'd rather not complicate
->>> things, one couldn't easily extend existing userspace to work with
->>> current kernels as well as future kernels, since the reboot with an
->>> invalid command won't fail. The machine still resets. So you can't =
-try
->>> one and fallback to the other.
->> Well, that's nice. Maybe we should change that? Or we're stuck with
->> that ABI?
-> Maybe? I'm not sure what might have trouble with reboot failing if it
-> sticks any extra noise in the reboot command.
-> I'd probably lean towards sticking with the existing behavior.
->
->>> Maybe there needs to be a sysfs entry with the list of the supporte=
-d commands?
->> You can just read the DT. Although, the problem then is what happens
->> when we move to the next firmware interface. We see that some with
->> devices having userspace dependencies on ATAGS.
-> Heh. I guess. Thought I suspect "Just read the DT to sort out the
-> available reboot modes" is probably not what most userspace wants to
-> hear. :)
->
-> thanks
-> -john
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
->
->
->
+Some hardware (eg. OMAP), has the ability to enter different low power
+modes for a given power domain. This allows for more fine grained control
+over the power state of the platform. As a typical example, some registers
+of the hardware may be implemented with retention flip-flops and be able
+to retain their state at lower voltages allowing for faster on/off
+latencies and an increased window of opportunity to enter an intermediate
+low power state other than "off"
 
+When trying to set a power domain to off, the genpd governor will choose
+the deepest state that will respect the qos constraints of all the devices
+and sub-domains on the power domain. The state chosen by the governor is
+saved in the "state_idx" field of the generic_pm_domain structure and
+shall be used by the power_off and power_on callbacks to perform the
+necessary actions to set the power domain into (and out of) the state
+indicated by state_idx.
+
+States must be declared in ascending order from shallowest to deepest,
+deepest meaning the state which takes longer to enter and exit.
+
+For platforms that don't declare any states, a single a single "off"
+state is used. Once all platforms are converted to use the state array,
+the legacy on/off latencies will be removed.
+
+[Lina: Modified genpd state initialization and remove use of
+save_state_latency_ns in genpd timing data]
+Suggested-by: Kevin Hilman <khilman@linaro.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+---
+ drivers/base/power/domain.c          | 39 +++++++++++++++++++---
+ drivers/base/power/domain_governor.c | 64 ++++++++++++++++++++++--------------
+ include/linux/pm_domain.h            | 11 +++++++
+ 3 files changed, 85 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 301b785..4c6f46b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -104,6 +104,7 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
+ 
+ static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ {
++	unsigned int state_idx = genpd->state_idx;
+ 	ktime_t time_start;
+ 	s64 elapsed_ns;
+ 	int ret;
+@@ -120,10 +121,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ 		return ret;
+ 
+ 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+-	if (elapsed_ns <= genpd->power_on_latency_ns)
++	if (elapsed_ns <= genpd->states[state_idx].power_on_latency_ns)
+ 		return ret;
+ 
+-	genpd->power_on_latency_ns = elapsed_ns;
++	genpd->states[state_idx].power_on_latency_ns = elapsed_ns;
+ 	genpd->max_off_time_changed = true;
+ 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
+ 		 genpd->name, "on", elapsed_ns);
+@@ -133,6 +134,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ 
+ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+ {
++	unsigned int state_idx = genpd->state_idx;
+ 	ktime_t time_start;
+ 	s64 elapsed_ns;
+ 	int ret;
+@@ -149,10 +151,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+ 		return ret;
+ 
+ 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+-	if (elapsed_ns <= genpd->power_off_latency_ns)
++	if (elapsed_ns <= genpd->states[state_idx].power_off_latency_ns)
+ 		return ret;
+ 
+-	genpd->power_off_latency_ns = elapsed_ns;
++	genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
+ 	genpd->max_off_time_changed = true;
+ 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
+ 		 genpd->name, "off", elapsed_ns);
+@@ -585,6 +587,8 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd,
+ 	    || atomic_read(&genpd->sd_count) > 0)
+ 		return;
+ 
++	/* Choose the deepest state when suspending */
++	genpd->state_idx = genpd->state_count - 1;
+ 	genpd_power_off(genpd, timed);
+ 
+ 	genpd->status = GPD_STATE_POWER_OFF;
+@@ -1508,6 +1512,26 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ 		genpd->dev_ops.start = pm_clk_resume;
+ 	}
+ 
++	if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
++		pr_warn("Initial state index out of bounds.\n");
++		genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
++	}
++
++	if (genpd->state_count > GENPD_MAX_NUM_STATES) {
++		pr_warn("Limiting states to  %d\n", GENPD_MAX_NUM_STATES);
++		genpd->state_count = GENPD_MAX_NUM_STATES;
++	}
++
++	/* Use only one "off" state if there were no states declared */
++	if (genpd->state_count == 0) {
++		genpd->states[0].power_on_latency_ns =
++					genpd->power_on_latency_ns;
++		genpd->states[0].power_off_latency_ns =
++					genpd->power_off_latency_ns;
++
++		genpd->state_count = 1;
++	}
++
+ 	mutex_lock(&gpd_list_lock);
+ 	list_add(&genpd->gpd_list_node, &gpd_list);
+ 	mutex_unlock(&gpd_list_lock);
+@@ -1872,7 +1896,12 @@ static int pm_genpd_summary_one(struct seq_file *s,
+ 
+ 	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
+ 		goto exit;
+-	seq_printf(s, "%-30s  %-15s ", genpd->name, status_lookup[genpd->status]);
++	seq_printf(s, "%-30s  %s", genpd->name, status_lookup[genpd->status]);
++
++	if (genpd->status == GPD_STATE_POWER_OFF)
++		seq_printf(s, " %-13d ", genpd->state_idx);
++	else
++		seq_printf(s, " %-15s ", "");
+ 
+ 	/*
+ 	 * Modifications on the list require holding locks on both
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 1e937ac..00a5436 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -98,7 +98,8 @@ static bool default_stop_ok(struct device *dev)
+  *
+  * This routine must be executed under the PM domain's lock.
+  */
+-static bool default_power_down_ok(struct dev_pm_domain *pd)
++static bool __default_power_down_ok(struct dev_pm_domain *pd,
++				     unsigned int state)
+ {
+ 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
+ 	struct gpd_link *link;
+@@ -106,27 +107,9 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 	s64 min_off_time_ns;
+ 	s64 off_on_time_ns;
+ 
+-	if (genpd->max_off_time_changed) {
+-		struct gpd_link *link;
+-
+-		/*
+-		 * We have to invalidate the cached results for the masters, so
+-		 * use the observation that default_power_down_ok() is not
+-		 * going to be called for any master until this instance
+-		 * returns.
+-		 */
+-		list_for_each_entry(link, &genpd->slave_links, slave_node)
+-			link->master->max_off_time_changed = true;
+-
+-		genpd->max_off_time_changed = false;
+-		genpd->cached_power_down_ok = false;
+-		genpd->max_off_time_ns = -1;
+-	} else {
+-		return genpd->cached_power_down_ok;
+-	}
++	off_on_time_ns = genpd->states[state].power_off_latency_ns +
++		genpd->states[state].power_on_latency_ns;
+ 
+-	off_on_time_ns = genpd->power_off_latency_ns +
+-				genpd->power_on_latency_ns;
+ 
+ 	min_off_time_ns = -1;
+ 	/*
+@@ -186,8 +169,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 			min_off_time_ns = constraint_ns;
+ 	}
+ 
+-	genpd->cached_power_down_ok = true;
+-
+ 	/*
+ 	 * If the computed minimum device off time is negative, there are no
+ 	 * latency constraints, so the domain can spend arbitrary time in the
+@@ -201,10 +182,45 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 	 * time and the time needed to turn the domain on is the maximum
+ 	 * theoretical time this domain can spend in the "off" state.
+ 	 */
+-	genpd->max_off_time_ns = min_off_time_ns - genpd->power_on_latency_ns;
++	genpd->max_off_time_ns = min_off_time_ns -
++		genpd->states[state].power_on_latency_ns;
+ 	return true;
+ }
+ 
++static bool default_power_down_ok(struct dev_pm_domain *pd)
++{
++	struct generic_pm_domain *genpd = pd_to_genpd(pd);
++	struct gpd_link *link;
++
++	if (!genpd->max_off_time_changed)
++		return genpd->cached_power_down_ok;
++
++	/*
++	 * We have to invalidate the cached results for the masters, so
++	 * use the observation that default_power_down_ok() is not
++	 * going to be called for any master until this instance
++	 * returns.
++	 */
++	list_for_each_entry(link, &genpd->slave_links, slave_node)
++		link->master->max_off_time_changed = true;
++
++	genpd->max_off_time_ns = -1;
++	genpd->max_off_time_changed = false;
++	genpd->cached_power_down_ok = true;
++	genpd->state_idx = genpd->state_count - 1;
++
++	/* Find a state to power down to, starting from the deepest. */
++	while (!__default_power_down_ok(pd, genpd->state_idx)) {
++		if (genpd->state_idx == 0) {
++			genpd->cached_power_down_ok = false;
++			break;
++		}
++		genpd->state_idx--;
++	}
++
++	return genpd->cached_power_down_ok;
++}
++
+ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+ {
+ 	return false;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index db21d39..1726c4a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -19,6 +19,8 @@
+ /* Defines used for the flags field in the struct generic_pm_domain */
+ #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+ 
++#define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
++
+ enum gpd_status {
+ 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+ 	GPD_STATE_POWER_OFF,	/* PM domain is off */
+@@ -37,6 +39,11 @@ struct gpd_dev_ops {
+ 	bool (*active_wakeup)(struct device *dev);
+ };
+ 
++struct genpd_power_state {
++	s64 power_off_latency_ns;
++	s64 power_on_latency_ns;
++};
++
+ struct generic_pm_domain {
+ 	struct dev_pm_domain domain;	/* PM domain operations */
+ 	struct list_head gpd_list_node;	/* Node in the global PM domains list */
+@@ -66,6 +73,10 @@ struct generic_pm_domain {
+ 	void (*detach_dev)(struct generic_pm_domain *domain,
+ 			   struct device *dev);
+ 	unsigned int flags;		/* Bit field of configs for genpd */
++	struct genpd_power_state states[GENPD_MAX_NUM_STATES];
++	unsigned int state_count; /* number of states */
++	unsigned int state_idx; /* state that genpd will go to when off */
++
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+-- 
+2.6.3
 
