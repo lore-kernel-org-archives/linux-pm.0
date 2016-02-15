@@ -1,97 +1,53 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH/RFC v2 09/11] ARM: dts: r8a7793: Add SYSC PM domains
-Date: Mon, 15 Feb 2016 22:16:58 +0100
-Message-ID: <1455571020-18968-10-git-send-email-geert+renesas@glider.be>
-References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1455571020-18968-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Crashes in arm qemu emulations due to 'cpufreq: governor:
+ Replace timers with utilization ...'
+Date: Mon, 15 Feb 2016 13:36:07 -0800
+Message-ID: <20160215213606.GD19432@atomide.com>
+References: <20160215170527.GA24453@roeck-us.net>
+ <CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
+ <20160215190116.GX19432@atomide.com>
+ <56C229A5.8020901@roeck-us.net>
+ <20160215195839.GA19432@atomide.com>
+ <CAJZ5v0hzVB0+H4nuCun3mmrES3UQ3+Rs1uz5YGu5sv4G3XU+nQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-next-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hzVB0+H4nuCun3mmrES3UQ3+Rs1uz5YGu5sv4G3XU+nQ@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a device node for the System Controller, with subnodes that
-represent the hardware power area hierarchy.
-Hook up the first Cortex-A15 CPU core and the Cortex-A15 L2 cache/SCU to
-their respective PM domains.
+* Rafael J. Wysocki <rafael@kernel.org> [160215 12:39]:
+> On Mon, Feb 15, 2016 at 8:58 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Guenter Roeck <linux@roeck-us.net> [160215 11:41]:
+> >> On 02/15/2016 11:01 AM, Tony Lindgren wrote:
+> >> >
+> >> >https://kernelci.org/boot/all/job/next/kernel/next-20160215/
+> >> >
+> >> >The SMP ones seem to fail with some regulator issues?
+> >> >
+> >>
+> >> There is another problem, introduced with 6a0712f6f199e ("PM / OPP: Add
+> >> dev_pm_opp_set_rate()"). The kernelci boot log for next-20160212:omap3-overo-tobi
+> >> and others experience that problem.
+> >>
+> >> Essentially, the code now assumes that a CPU clock always has a voltage
+> >> regulator attached to it, which is not correct. I sent out a patch to fix
+> >> that problem a minute ago.
+> >
+> > Yes that fixed it thanks.
+> 
+> Can you please also check if this alternative fix from Viresh works:
+> 
+> https://patchwork.kernel.org/patch/8316611/
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
----
-v2:
-  - Change one-line summary prefix to match current arm-soc practices,
-  - Update compatible values.
----
- arch/arm/boot/dts/r8a7793.dtsi | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+Yes that one too seems to fix the issue on SMP systems for
+me:
 
-diff --git a/arch/arm/boot/dts/r8a7793.dtsi b/arch/arm/boot/dts/r8a7793.dtsi
-index 9a30f650aa515b80..843fd3306f35ebb0 100644
---- a/arch/arm/boot/dts/r8a7793.dtsi
-+++ b/arch/arm/boot/dts/r8a7793.dtsi
-@@ -43,6 +43,7 @@
- 			voltage-tolerance = <1>; /* 1% */
- 			clocks = <&cpg_clocks R8A7793_CLK_Z>;
- 			clock-latency = <300000>; /* 300 us */
-+			power-domains = <&pd_ca15_cpu0>;
- 
- 			/* kHz - uV - OPPs unknown yet */
- 			operating-points = <1500000 1000000>,
-@@ -57,6 +58,7 @@
- 
- 	L2_CA15: cache-controller@0 {
- 		compatible = "cache";
-+		power-domains = <&pd_ca15_scu>;
- 		cache-unified;
- 		cache-level = <2>;
- 	};
-@@ -1144,6 +1146,43 @@
- 		};
- 	};
- 
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,r8a7793-sysc", "renesas,rcar-gen2-sysc";
-+		reg = <0 0xe6180000 0 0x0200>;
-+
-+		pm-domains {
-+			#address-cells = <2>;
-+			#size-cells = <0>;
-+
-+			pd_ca15_scu: scu@12 {
-+				reg = <12 0x180>;
-+				#address-cells = <2>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_ca15_cpu0: cpu@0 {
-+					reg = <0 0x40>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca15_cpu1: cpu@1 {
-+					reg = <1 0x41>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+
-+			pd_sh: sh@16 {
-+				reg = <16 0x80>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_sgx: sgx@20 {
-+				reg = <20 0xc0>;
-+				#power-domain-cells = <0>;
-+			};
-+		};
-+	};
-+
- 	ipmmu_sy0: mmu@e6280000 {
- 		compatible = "renesas,ipmmu-r8a7793", "renesas,ipmmu-vmsa";
- 		reg = <0 0xe6280000 0 0x1000>;
--- 
-1.9.1
+Tested-by: Tony Lindgren <tony@atomide.com>
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Regards,
+
+Tony
