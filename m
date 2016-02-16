@@ -1,87 +1,57 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
-Date: Tue, 16 Feb 2016 16:12:39 +0100
-Message-ID: <10492578.n5ZTGbvbYE@wuerfel>
-References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com> <2628515.OmmYzoeulx@wuerfel> <20160216131108.GK18327@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 2/4] arm64: renesas: Enable PM and PM_GENERIC_DOMAINS for SoCs with PM Domains
+Date: Tue, 16 Feb 2016 16:31:50 +0100
+Message-ID: <1455636712-3040-3-git-send-email-geert+renesas@glider.be>
+References: <1455636712-3040-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.10]:60967 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932640AbcBPPNC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 10:13:02 -0500
-In-Reply-To: <20160216131108.GK18327@sirena.org.uk>
+Received: from xavier.telenet-ops.be ([195.130.132.52]:58503 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755334AbcBPPcD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 10:32:03 -0500
+In-Reply-To: <1455636712-3040-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linaro-kernel@lists.linaro.org
-Cc: Mark Brown <broonie@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Tuesday 16 February 2016 13:11:08 Mark Brown wrote:
-> On Tue, Feb 16, 2016 at 10:10:44AM +0100, Arnd Bergmann wrote:
-> > On Tuesday 16 February 2016 01:56:16 Mark Brown wrote:
-> 
-> > > No, NULL is explicitly not something you can substitute in,
-> > > essentially all the users are just not bothering to implement error
-> > > checking and we don't want to encourage that.  The set of use cases
-> > > where we legitimately have optional supplies is very small, much smaller
-> > > than clocks, because it makes the electrical engineering a lot harder.
-> 
-> > I must have misinterpreted the idea behind that API as well then.
-> 
-> > From this function definition:
-> 
-> > static inline struct regulator *__must_check regulator_get(struct device *dev,
-> >         const char *id)
-> > {       
-> >         /* Nothing except the stubbed out regulator API should be
-> >          * looking at the value except to check if it is an error
-> >          * value. Drivers are free to handle NULL specifically by
-> >          * skipping all regulator API calls, but they don't have to.
-> >          * Drivers which don't, should make sure they properly handle
-> >          * corner cases of the API, such as regulator_get_voltage()
-> >          * returning 0.
-> >          */             
-> >         return NULL;
-> > }
-> 
-> This is the stubbed regulator API which is only ever used with the stub
-> regulator API, it uses NULL to give a non-error pointer it can return to
-> well written callers so they don't know they are running with the stubs.
-> We are explicitly using NULL because callers should treat it as a valid
-> regulator.
+All supported Renesas ARM64 SoCs have clock and power domains. To ensure
+proper operation of on-SoC modules, module clocks must be ungated, and
+power domains must be powered up when needed.
 
-Right, that is what I understood.
+Currently the user can choose to build a kernel with power management
+enabled or disabled:
+  - If CONFIG_PM=y, power domains and/or module clocks are handled
+    dynamically by Runtime PM and the generic power domain.
+  - If CONFIG_PM=n, power domains are assumed to be powered up by reset
+    state or by the boot loader, and module clocks are handled by the
+    legacy clock domain on driver (un)bind.
+    The latter is implemented using a platform bus notifier, which
+    applies not only to all on-SoC devices, but to all platform devices
+    present in the system.
 
-> > my reading was that the expected behavior in any driver was:
-> 
-> > * call regulator_get()
-> > * if IS_ERR(), fail device probe function, never use invalid
-> >   pointer other than PTR_ERR()
-> > * if NULL, and regulator is required, fail probe so we never
-> >   use the regulator
-> 
-> No, drivers should never look at the value of the pointer other than to
-> check it for error.  If there is a problem of any kind an error will be
-> returned.
->
-> > * if NULL, and regulators are optional, continue with the NULL
-> >   value.
-> 
-> No, we always return an error pointer if we fail to get a regulator.
-> The difference with optional regulators is in how we handle the
-> situation where we have full constraints and a regulator is not mapped
-> in, normally we assume there must be one with no software control but we
-> need to work around buggy bindings as the device would be non-functional
-> without power.
+To remove the dependency on implicit assumptions, and to get rid of the
+peculiarities of the legacy clock domain, enable CONFIG_PM and
+CONFIG_PM_GENERIC_DOMAINS unconditionally.
 
-Sorry, I should not have said "optional" here, which has a specific
-meaning in the API. I meant a driver that can work with either
-CONFIG_REGULATOR enabled or disabled (which is something slightly
-different).
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm64/Kconfig.platforms | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I guess a driver needing to know whether regulators are built-in
-should check 'if (IS_ENABLED(CONFIG_REGULATOR))' rather than
-checking the return code for NULL.
+diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+index 21074f674bdeb707..2c0caac053e8c12a 100644
+--- a/arch/arm64/Kconfig.platforms
++++ b/arch/arm64/Kconfig.platforms
+@@ -76,7 +76,8 @@ config ARCH_RENESAS
+ 	bool "Renesas SoC Platforms"
+ 	select ARCH_SHMOBILE
+ 	select PINCTRL
+-	select PM_GENERIC_DOMAINS if PM
++	select PM
++	select PM_GENERIC_DOMAINS
+ 	help
+ 	  This enables support for the ARMv8 based Renesas SoCs.
+ 
+-- 
+1.9.1
 
-	Arnd
