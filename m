@@ -1,144 +1,73 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: omap-thermal: Add notify function to thermal_zone_device_ops
-Date: Tue, 16 Feb 2016 10:35:45 +0530
-Message-ID: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC v2 01/11] PM / Domains: Add DT bindings for the R-Car
+ System Controller
+Date: Tue, 16 Feb 2016 08:15:40 +0100
+Message-ID: <CAMuHMdXJYjde1cqWyqzDL9Cgb-3cWSvJmrG61H6Jf6EOu0-=Fw@mail.gmail.com>
+References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
+	<1455571020-18968-2-git-send-email-geert+renesas@glider.be>
+	<1720075.YOPnCQ3mE1@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:42135 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbcBPFGy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Feb 2016 00:06:54 -0500
+Received: from mail-io0-f182.google.com ([209.85.223.182]:36484 "EHLO
+	mail-io0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754221AbcBPHPl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 02:15:41 -0500
+In-Reply-To: <1720075.YOPnCQ3mE1@avalon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: j-keerthy@ti.com, nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-notify function is used to notify when some temperature thresholds
-are crossed. In case we get notified for a critical trip point then
-schedule an emergency shutdown function to backup orderly_poweroff
-failures.
+Hi Laurent,
 
-orderly_poweroff is triggered when a graceful shutdown
-of system is desired. This may be used in many critical states of the
-kernel such as when subsystems detects conditions such as critical
-temperature conditions. However, in certain conditions in system
-boot up sequences like those in the middle of driver probes being
-initiated, userspace will be unable to power off the system in a clean
-manner and leaves the system in a critical state. In cases like these,
-the /sbin/poweroff will return success (having forked off to attempt
-powering off the system. However, the system overall will fail to
-completely poweroff (since other modules will be probed) and the system
-is still functional with no userspace (since that would have shut itself
-off).
+On Tue, Feb 16, 2016 at 12:08 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/renesas,sysc-rcar.txt
+>> @@ -0,0 +1,87 @@
+>> +DT bindings for the Renesas R-Car System Controller
+>> +
+>> +== System Controller Node ==
+>> +
+>> +The R-Car System Controller provides power management for the CPU cores and
+>> +various coprocessors.
+>> +
+>> +Required properties:
+>> +  - compatible: Must contain one or more of the following:
+>> +      - "renesas,r8a7779-sysc" (R-Car H1)
+>> +      - "renesas,r8a7790-sysc" (R-Car H2)
+>> +      - "renesas,r8a7791-sysc" (R-Car M2-W)
+>> +      - "renesas,r8a7792-sysc" (R-Car V2H)
+>> +      - "renesas,r8a7793-sysc" (R-Car M2-N)
+>> +      - "renesas,r8a7794-sysc" (R-Car E2)
+>> +      - "renesas,r8a7795-sysc" (R-Car H3)
+>> +      - "renesas,rcar-gen2-sysc" (Generic R-Car Gen2)
+>> +      - "renesas,rcar-gen3-sysc" (Generic R-Car Gen3)
+>> +    When compatible with the generic version, nodes must list the
+>> SoC-specific
+>> +    version corresponding to the platform first, followed by the generic
+>> +    version.
+>> +  - reg: Address start and address range for the device.
 
-However, there is no clean way of detecting such failure of userspace
-powering off the system. In such scenarios, it is necessary for a backup
-workqueue to be able to force a shutdown of the system when orderly
-shutdown is not successful after a configurable time period.
+You're quoting the description of the "reg" property for the SYSC device node...
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
+> This isn't correct. I'll refrain from saying we abuse the reg property, as
+> using the first cell as a power domain number should be fine (the second cell
+> feels a bit more of an abuse to me though, but I won't complain too much), but
+> the bindings document should describe what the reg cells contain.
 
-The previous discussion:
+... while the two cell format is for the PM domain nodes, not for the
+SYSC device
+node. Please check the other "reg" description.
 
-https://lkml.org/lkml/2016/1/28/989
+Gr{oetje,eeting}s,
 
-Making use of the notify ops to schedule a backup thermal shutdown.
+                        Geert
 
- drivers/thermal/ti-soc-thermal/Kconfig             | 13 +++++++
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 43 ++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
-index ea8283f..b4b9668 100644
---- a/drivers/thermal/ti-soc-thermal/Kconfig
-+++ b/drivers/thermal/ti-soc-thermal/Kconfig
-@@ -71,3 +71,16 @@ config DRA752_THERMAL
- 
- 	  This includes alert interrupts generation and also the TSHUT
- 	  support.
-+
-+config TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-+	int "Emergency poweroff delay in milli-seconds"
-+	depends on TI_SOC_THERMAL
-+	default 0
-+	help
-+	  The number of milliseconds to delay before emergency
-+	  poweroff kicks in. The delay should be carefully profiled
-+	  so as to give adequate time for orderly_poweroff. In case
-+	  of failure of an orderly_poweroff the emergency poweroff
-+	  kicks in after the delay has elapsed and shuts down the system.
-+
-+	  If set to 0 poweroff will happen immediately.
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index b213a12..d48eb5b1 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -31,6 +31,7 @@
- #include <linux/cpumask.h>
- #include <linux/cpu_cooling.h>
- #include <linux/of.h>
-+#include <linux/reboot.h>
- 
- #include "ti-thermal.h"
- #include "ti-bandgap.h"
-@@ -286,6 +287,47 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
- 	return ti_thermal_get_trip_temp(thermal, OMAP_TRIP_NUMBER - 1, temp);
- }
- 
-+/**
-+ * emergency_poweroff_func - emergency poweroff work after a known delay
-+ * @work: work_struct associated with the emergency poweroff function
-+ *
-+ * This function is called in very critical situations to force
-+ * a kernel poweroff after a configurable timeout value.
-+ */
-+static void emergency_poweroff_func(struct work_struct *work)
-+{
-+	pr_warn("Attempting kernel_power_off\n");
-+	kernel_power_off();
-+
-+	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-+	emergency_restart();
-+}
-+
-+static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
-+
-+/**
-+ * emergency_poweroff - Trigger an emergency system poweroff
-+ *
-+ * This may be called from any critical situation to trigger a system shutdown
-+ * after a known period of time. By default the delay is 0 millisecond
-+ */
-+void ti_thermal_emergency_poweroff(void)
-+{
-+	schedule_delayed_work(&emergency_poweroff_work,
-+	msecs_to_jiffies(CONFIG_TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-+}
-+
-+static int ti_thermal_notify(struct thermal_zone_device *thermal, int temp,
-+			     enum thermal_trip_type type)
-+{
-+	if (type == THERMAL_TRIP_CRITICAL) {
-+		pr_warn("critical temperature %d reached", temp);
-+		ti_thermal_emergency_poweroff();
-+	}
-+
-+	return 0;
-+}
-+
- static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
- 	.get_temp = __ti_thermal_get_temp,
- 	.get_trend = __ti_thermal_get_trend,
-@@ -301,6 +343,7 @@ static struct thermal_zone_device_ops ti_thermal_ops = {
- 	.get_trip_type = ti_thermal_get_trip_type,
- 	.get_trip_temp = ti_thermal_get_trip_temp,
- 	.get_crit_temp = ti_thermal_get_crit_temp,
-+	.notify = ti_thermal_notify,
- };
- 
- static struct ti_thermal_data
--- 
-1.9.1
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
