@@ -1,364 +1,372 @@
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Tue, 16 Feb 2016 11:44:47 -0500 (EST)
-Message-ID: <alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org> <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V3 1/2] irq: Track the interrupt timings
+Date: Tue, 16 Feb 2016 11:45:37 -0500 (EST)
+Message-ID: <alpine.LFD.2.20.1602161145070.13632@knanqh.ubzr>
+References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f50.google.com ([209.85.192.50]:35815 "EHLO
+	mail-qg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbcBPQpl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 11:45:41 -0500
+Received: by mail-qg0-f50.google.com with SMTP id y89so137550201qge.2
+        for <linux-pm@vger.kernel.org>; Tue, 16 Feb 2016 08:45:40 -0800 (PST)
+In-Reply-To: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
 On Tue, 16 Feb 2016, Daniel Lezcano wrote:
 
-> Many IRQs are quiet most of the time, or they tend to come in bursts of
-> fairly equal time intervals within each burst. It is therefore possible
-> to detect those IRQs with stable intervals and guestimate when the next
-> IRQ event is most likely to happen.
+> The interrupt framework gives a lot of information about each interrupt.
+> It does not keep track of when those interrupts occur though.
 > 
-> Examples of such IRQs may include audio related IRQs where the FIFO size
-> and/or DMA descriptor size with the sample rate create stable intervals,
-> block devices during large data transfers, etc.  Even network streaming
-> of multimedia content creates patterns of periodic network interface IRQs
-> in some cases.
+> This patch provides a mean to record the elapsed time between successive
+> interrupt occurrences in a per-IRQ per-CPU circular buffer to help with
+> the prediction of the next occurrence using a statistical model.
 > 
-> This patch adds code to compute the mean interval and variance for each IRQ
-> over a window of time intervals between IRQ events. Those statistics can
-> be used to assist cpuidle in selecting the most appropriate sleep state
-> by predicting the most likely time for the next interrupt.
+> A new function is added to browse the different interrupts and retrieve the
+> timing information stored in it.
+> 
+> A static key will be introduced when the irq prediction is switched on at
+> runtime in order to reduce an overhead near to zero when the kernel is not
+> using it.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The math in next_irq_event() is correct even though I think it could be 
-done more simply.  But that can be optimized at a later time.
+Acked-by: Nicolas Pitre <nico@linaro.org>
 
-Reviewed-by: Nicolas Pitre <nico@linaro.org>
+
 
 > ---
->  drivers/cpuidle/Kconfig   |   9 ++
->  kernel/sched/Makefile     |   1 +
->  kernel/sched/idle-sched.c | 280 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 290 insertions(+)
->  create mode 100644 kernel/sched/idle-sched.c
+>  include/linux/interrupt.h |  17 +++++++
+>  include/linux/irqdesc.h   |   4 ++
+>  kernel/irq/Kconfig        |   3 ++
+>  kernel/irq/Makefile       |   1 +
+>  kernel/irq/handle.c       |   2 +
+>  kernel/irq/internals.h    |  42 ++++++++++++++++++
+>  kernel/irq/irqdesc.c      |  10 +++++
+>  kernel/irq/manage.c       |   3 ++
+>  kernel/irq/timings.c      | 110 ++++++++++++++++++++++++++++++++++++++++++++++
+>  9 files changed, 192 insertions(+)
+>  create mode 100644 kernel/irq/timings.c
 > 
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index 7e48eb5..d64445b 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -23,6 +23,15 @@ config CPU_IDLE_GOV_LADDER
->  config CPU_IDLE_GOV_MENU
->  	bool "Menu governor (for tickless system)"
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index 0e95fcc..f053596 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -665,6 +665,23 @@ static inline void init_irq_proc(void)
+>  }
+>  #endif
 >  
-> +config CPU_IDLE_GOV_SCHED
-> +	bool "Sched idle governor"
-> +	select IRQ_TIMINGS
-> +	help
-> +	  Enables an irq timings tracking mechanism to track the wakeup sources
-> +	  of the platform.
+> +#ifdef CONFIG_IRQ_TIMINGS
 > +
-> +	  If you are unsure, it is safe to say N.
+> +#define IRQ_TIMINGS_SHIFT	2
+> +#define IRQ_TIMINGS_SIZE	(1 << IRQ_TIMINGS_SHIFT)
+> +#define IRQ_TIMINGS_MASK	(IRQ_TIMINGS_SIZE - 1)
 > +
->  config DT_IDLE_STATES
+> +struct irq_timings {
+> +	u32 values[IRQ_TIMINGS_SIZE];	/* our circular buffer */
+> +	u64 sum;			/* sum of values */
+> +	u64 timestamp;			/* latest timestamp */
+> +	unsigned int w_index;		/* current buffer index */
+> +};
+> +
+> +struct irq_timings *irqtiming_get_next(int *irq);
+> +
+> +#endif
+> +
+>  struct seq_file;
+>  int show_interrupts(struct seq_file *p, void *v);
+>  int arch_show_interrupts(struct seq_file *p, int prec);
+> diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+> index dcca77c..f4e29b2 100644
+> --- a/include/linux/irqdesc.h
+> +++ b/include/linux/irqdesc.h
+> @@ -12,6 +12,7 @@ struct proc_dir_entry;
+>  struct module;
+>  struct irq_desc;
+>  struct irq_domain;
+> +struct irq_timings;
+>  struct pt_regs;
+>  
+>  /**
+> @@ -51,6 +52,9 @@ struct irq_desc {
+>  	struct irq_data		irq_data;
+>  	unsigned int __percpu	*kstat_irqs;
+>  	irq_flow_handler_t	handle_irq;
+> +#ifdef CONFIG_IRQ_TIMINGS
+> +	struct irq_timings __percpu *timings;
+> +#endif
+>  #ifdef CONFIG_IRQ_PREFLOW_FASTEOI
+>  	irq_preflow_handler_t	preflow_handler;
+>  #endif
+> diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
+> index 3b48dab..392c9f5 100644
+> --- a/kernel/irq/Kconfig
+> +++ b/kernel/irq/Kconfig
+> @@ -77,6 +77,9 @@ config GENERIC_MSI_IRQ_DOMAIN
+>  config HANDLE_DOMAIN_IRQ
 >  	bool
 >  
-> diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-> index 6768797..f7d5a35 100644
-> --- a/kernel/sched/Makefile
-> +++ b/kernel/sched/Makefile
-> @@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
->  obj-$(CONFIG_SCHEDSTATS) += stats.o
->  obj-$(CONFIG_SCHED_DEBUG) += debug.o
->  obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
-> +obj-$(CONFIG_CPU_IDLE_GOV_SCHED) += idle-sched.o
-> diff --git a/kernel/sched/idle-sched.c b/kernel/sched/idle-sched.c
+> +config IRQ_TIMINGS
+> +	bool
+> +
+>  config IRQ_DOMAIN_DEBUG
+>  	bool "Expose hardware/virtual IRQ mapping via debugfs"
+>  	depends on IRQ_DOMAIN && DEBUG_FS
+> diff --git a/kernel/irq/Makefile b/kernel/irq/Makefile
+> index 2fc9cbd..9c6d3e8 100644
+> --- a/kernel/irq/Makefile
+> +++ b/kernel/irq/Makefile
+> @@ -8,3 +8,4 @@ obj-$(CONFIG_GENERIC_PENDING_IRQ) += migration.o
+>  obj-$(CONFIG_GENERIC_IRQ_MIGRATION) += cpuhotplug.o
+>  obj-$(CONFIG_PM_SLEEP) += pm.o
+>  obj-$(CONFIG_GENERIC_MSI_IRQ) += msi.o
+> +obj-$(CONFIG_IRQ_TIMINGS) += timings.o
+> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+> index a15b548..cd37536 100644
+> --- a/kernel/irq/handle.c
+> +++ b/kernel/irq/handle.c
+> @@ -138,6 +138,8 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
+>  	unsigned int flags = 0, irq = desc->irq_data.irq;
+>  	struct irqaction *action;
+>  
+> +	handle_timings(desc);
+> +
+>  	for_each_action_of_desc(desc, action) {
+>  		irqreturn_t res;
+>  
+> diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+> index eab521fc..3d100af 100644
+> --- a/kernel/irq/internals.h
+> +++ b/kernel/irq/internals.h
+> @@ -56,6 +56,7 @@ enum {
+>  	IRQS_WAITING		= 0x00000080,
+>  	IRQS_PENDING		= 0x00000200,
+>  	IRQS_SUSPENDED		= 0x00000800,
+> +	IRQS_TIMINGS		= 0x00001000,
+>  };
+>  
+>  #include "debug.h"
+> @@ -218,3 +219,44 @@ irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
+>  static inline void
+>  irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action) { }
+>  #endif
+> +
+> +#ifdef CONFIG_IRQ_TIMINGS
+> +static inline int alloc_timings(struct irq_desc *desc)
+> +{
+> +	desc->timings = alloc_percpu(struct irq_timings);
+> +	if (!desc->timings)
+> +		return -ENOMEM;
+> +
+> +	return 0;
+> +}
+> +
+> +static inline void free_timings(struct irq_desc *desc)
+> +{
+> +	free_percpu(desc->timings);
+> +}
+> +
+> +static inline void remove_timings(struct irq_desc *desc)
+> +{
+> +	desc->istate &= ~IRQS_TIMINGS;
+> +}
+> +
+> +static inline void setup_timings(struct irq_desc *desc, struct irqaction *act)
+> +{
+> +	/*
+> +	 * Timers are deterministic, so no need to do any measurement
+> +	 * on them.
+> +	 */
+> +	if (act->flags & __IRQF_TIMER)
+> +		return;
+> +
+> +	desc->istate |= IRQS_TIMINGS;
+> +}
+> +extern void handle_timings(struct irq_desc *desc);
+> +#else
+> +static inline int alloc_timings(struct irq_desc *desc) { return 0; }
+> +static inline void free_timings(struct irq_desc *desc) {}
+> +static inline void handle_timings(struct irq_desc *desc) {}
+> +static inline void remove_timings(struct irq_desc *desc) {}
+> +static inline void setup_timings(struct irq_desc *desc,
+> +				 struct irqaction *act) {};
+> +#endif
+> diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+> index 0ccd028..577686b 100644
+> --- a/kernel/irq/irqdesc.c
+> +++ b/kernel/irq/irqdesc.c
+> @@ -174,6 +174,9 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
+>  	if (alloc_masks(desc, gfp, node))
+>  		goto err_kstat;
+>  
+> +	if (alloc_timings(desc))
+> +		goto err_mask;
+> +
+>  	raw_spin_lock_init(&desc->lock);
+>  	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+>  	init_rcu_head(&desc->rcu);
+> @@ -182,6 +185,8 @@ static struct irq_desc *alloc_desc(int irq, int node, struct module *owner)
+>  
+>  	return desc;
+>  
+> +err_mask:
+> +	free_masks(desc);
+>  err_kstat:
+>  	free_percpu(desc->kstat_irqs);
+>  err_desc:
+> @@ -220,6 +225,11 @@ static void free_desc(unsigned int irq)
+>  	 * the child interrupts.
+>  	 */
+>  	call_rcu(&desc->rcu, delayed_free_desc);
+> +
+> +	free_timings(desc);
+> +	free_masks(desc);
+> +	free_percpu(desc->kstat_irqs);
+> +	kfree(desc);
+>  }
+>  
+>  static int alloc_descs(unsigned int start, unsigned int cnt, int node,
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 3ddd229..132c2d7 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -1343,6 +1343,8 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+>  		__enable_irq(desc);
+>  	}
+>  
+> +	setup_timings(desc, new);
+> +
+>  	raw_spin_unlock_irqrestore(&desc->lock, flags);
+>  
+>  	/*
+> @@ -1465,6 +1467,7 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+>  		irq_settings_clr_disable_unlazy(desc);
+>  		irq_shutdown(desc);
+>  		irq_release_resources(desc);
+> +		remove_timings(desc);
+>  	}
+>  
+>  #ifdef CONFIG_SMP
+> diff --git a/kernel/irq/timings.c b/kernel/irq/timings.c
 > new file mode 100644
-> index 0000000..4dc03da
+> index 0000000..95976fa0
 > --- /dev/null
-> +++ b/kernel/sched/idle-sched.c
-> @@ -0,0 +1,280 @@
+> +++ b/kernel/irq/timings.c
+> @@ -0,0 +1,110 @@
 > +/*
-> + *  Copyright (C) 2016 Linaro Ltd, Daniel Lezcano <daniel.lezcano@linaro.org>
-> + *                                 Nicolas Pitre <nicolas.pitre@linaro.org>
+> + * linux/kernel/irq/timings.c
 > + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
+> + * Copyright (C) 2016, Linaro Ltd - Daniel Lezcano <daniel.lezcano@linaro.org>
 > + *
 > + */
-> +#include <linux/cpuidle.h>
 > +#include <linux/interrupt.h>
-> +#include <linux/ktime.h>
-> +#include <linux/tick.h>
+> +#include <linux/irq.h>
+> +#include <linux/irqdesc.h>
+> +#include <linux/percpu.h>
+> +
+> +#include "internals.h"
 > +
 > +/**
-> + * irqt_mean - compute the average
+> + * handle_timings - stores an irq timing  when an interrupt occurs
 > + *
-> + * @irqt: the irq timings structure
+> + * @desc: the irq descriptor
 > + *
-> + * Returns an u32 corresponding to the mean value, or zero if there is
-> + * no data
+> + * For all interruptions with their IRQS_TIMINGS flag set, the function
+> + * computes the time interval between two interrupt events and store it
+> + * in a circular buffer.
 > + */
-> +static inline u32 irqt_mean(struct irq_timings *irqt)
+> +void handle_timings(struct irq_desc *desc)
 > +{
-> +	return irqt->sum >> IRQ_TIMINGS_SHIFT;
-> +}
+> +	struct irq_timings *timings;
+> +	u64 prev, now, diff;
 > +
-> +/**
-> + * irqt_variance - compute the variance
-> + *
-> + * @irqt: the irq timings structure
-> + *
-> + * Returns an u64 corresponding to the variance, or zero if there is
-> + * no data
-> + */
-> +static u64 irqt_variance(struct irq_timings *irqt, u32 mean)
-> +{
-> +	int i;
-> +	u64 variance = 0;
+> +	if (!(desc->istate & IRQS_TIMINGS))
+> +		return;
 > +
-> +	/*
-> +	 * The variance is the sum of the squared difference to the
-> +	 * average divided by the number of elements.
-> +	 */
-> +	for (i = 0; i < IRQ_TIMINGS_SIZE; i++) {
-> +		s32 diff = irqt->values[i] - mean;
-> +		variance += (s64)diff * diff;
-> +	}
-> +
-> +	return variance >> IRQ_TIMINGS_SHIFT;
-> +}
-> +
-> +/**
-> + * next_irq_event - returns the next irq event
-> + *
-> + * Returns a guess estimate remaining time before an interrupt
-> + * occurs. The type s64 corresponding in a duration in microsecond.
-> + *
-> + * The value is always greater or equal to zero. In case, there is no
-> + * possible prediction, S64_MAX is returned.
-> + */
-> +static s64 next_irq_event(void)
-> +{
-> +	struct irq_timings *irqt;
-> +	unsigned int irq = 0;
-> +	u64 variance, now;
-> +	s64 diff, next = 0, min = S64_MAX;
-> +	u32 interval, mean;
-> +	s32 deviation;
-> +
+> +	timings = this_cpu_ptr(desc->timings);
 > +	now = local_clock();
+> +	prev = timings->timestamp;
+> +	timings->timestamp = now;
 > +
 > +	/*
-> +	 * Search for the earliest expected interruption.
+> +	 * If it is the first interrupt of the series, we can't
+> +	 * compute an interval, just store the timestamp and exit.
 > +	 */
-> +	rcu_read_lock();
-> +	while ((irqt = irqtiming_get_next(&irq))) {
+> +	if (unlikely(!prev))
+> +		return;
 > +
-> +		/*
-> +		 * No values available.
-> +		 */
-> +		if (!irqt->timestamp)
-> +			continue;
-> +
-> +		/*
-> +		 * This interrupt last triggered more than a second ago.
-> +		 * It is definitely not predictable for our purpose anymore.
-> +		 */
-> +		if ((now - irqt->timestamp) > NSEC_PER_SEC)
-> +			continue;
-> +
-> +		/*
-> +		 * If the mean value is null, just ignore this wakeup
-> +		 * source.
-> +		 */
-> +		mean = irqt_mean(irqt);
-> +		if (!mean)
-> +			continue;
-> +
-> +		variance = irqt_variance(irqt, mean);
-> +		/*
-> +		 * We want to check the last interval is:
-> +		 *
-> +		 *  mean - stddev < interval < mean + stddev
-> +		 *
-> +		 * That simplifies to:
-> +		 *
-> +		 * -stddev < interval - mean < stddev
-> +		 *
-> +		 * abs(interval - mean) < stddev
-> +		 *
-> +		 * The standard deviation is the sqrt of the variance:
-> +		 *
-> +		 * abs(interval - mean) < sqrt(variance)
-> +		 *
-> +		 * and we want to avoid the sqrt, so we square the
-> +		 * equation:
-> +		 *
-> +		 * (interval - mean)^2 < variance
-> +		 *
-> +		 * So if the latest value of the stats complies with
-> +		 * this condition, then the wakeup source is
-> +		 * considered predictable and can be used to predict
-> +		 * the next event.
-> +		 */
-> +		interval = irqt->values[irqt->w_index];
-> +		deviation = interval - mean;
-> +		if ((s64)deviation * deviation > variance)
-> +			continue;
-> +
-> +		/*
-> +		 * Let's compute the next event: the wakeup source is
-> +		 * considered predictable, we add the average interval
-> +		 * time added to the latest interruption event
-> +		 * time. Note the timestamp is stored in nsec while
-> +		 * the mean time is microsec.
-> +		 */
-> +		next = irqt->timestamp + (mean << 10);
-> +
-> +		/*
-> +		 * If the interrupt is supposed to happen before the
-> +		 * minimum time, then it becomes the minimum.
-> +		 */
-> +		if (next < min)
-> +			min = next;
-> +	}
-> +	rcu_read_unlock();
+> +	diff = now - prev;
 > +
 > +	/*
-> +	 * There is no prediction for any interrupt, so we return
-> +	 * S64_MAX.
-> +	 */
-> +	if (!next)
-> +		return S64_MAX;
-> +
-> +	/*
-> +	 * At this point, we have our prediction but the caller is
-> +	 * expecting the remaining time before the next event, so
-> +	 * compute the expected sleep length.
-> +	 */
-> +	diff = min - now;
-> +
-> +	/*
-> +	 * min and now are nanosecond units, let's convert to
-> +	 * microsec the result of the diff.
+> +	 * microsec (actually 1024th of a milisec) precision is good
+> +	 * enough for our purpose.
 > +	 */
 > +	diff >>= 10;
 > +
 > +	/*
-> +	 * The result could be negative for different reasons:
-> +	 * - the prediction is incorrect but we can't do anything here
-> +	 *   except assuming the interrupt occured effectively.
-> +	 *    
-> +	 * - the prediction was too near now and expired while we were
-> +	 *   in this function.
-> +	 *
-> +	 * In those cases, we return 0. Otherwise we return the expected
-> +	 * duration before an interrupt occurs.
+> +	 * There is no point to store intervals from interrupts more
+> +	 * than ~1 second apart. Furthermore that increases the risk
+> +	 * of overflowing our variance computation. Reset all values
+> +	 * in that case. Otherwise we know the magnitude of diff is
+> +	 * well within 32 bits.
 > +	 */
-> +	return diff > 0 ? diff : 0;
+> +	if (unlikely(diff > USEC_PER_SEC)) {
+> +		memset(timings, 0, sizeof(*timings));
+> +		timings->timestamp = now;
+> +		return;
+> +	}
+> +
+> +	/* The oldest value corresponds to the next index. */
+> +	timings->w_index = (timings->w_index + 1) & IRQ_TIMINGS_MASK;
+> +
+> +	/*
+> +	 * Remove the oldest value from the summing. If this is the
+> +	 * first time we go through this array slot, the previous
+> +	 * value will be zero and we won't substract anything from the
+> +	 * current sum. Hence this code relies on a zero-ed structure.
+> +	 */
+> +	timings->sum -= timings->values[timings->w_index];
+> +	timings->values[timings->w_index] = diff;
+> +	timings->sum += diff;
 > +}
 > +
 > +/**
-> + * sched_idle_next_wakeup - Predict the next wakeup on the current cpu
+> + * irqtiming_get_next - return the next irq timing
 > + *
-> + * The next event on the cpu is based on a statistic approach of the
-> + * interrupt events and the timer deterministic value. From the timer
-> + * or the irqs, we return the one expected to occur first.
+> + * @int: an integer representing the interrupt number
 > + *
-> + * Returns the expected remaining idle time before being woken up by
-> + * an interruption.
+> + * Returns a struct irq_timings, NULL if we reach the end of the
+> + * interrupts list.
 > + */
-> +s64 sched_idle_next_wakeup(void)
+> +struct irq_timings *irqtiming_get_next(int *irq)
 > +{
-> +	s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
-> +	s64 next_irq = next_irq_event();
+> +	struct irq_desc *desc;
+> +	int next;
 > +
-> +	return min(next_irq, next_timer);
-> +}
+> +again:
+> +	/* Do a racy lookup of the next allocated irq */
+> +	next = irq_get_next_irq(*irq);
+> +	if (next >= nr_irqs)
+> +		return NULL;
 > +
-> +/**
-> + * sched_idle - go to idle for a specified amount of time
-> + *
-> + * @duration: the idle duration time
-> + * @latency: the latency constraint
-> + *
-> + * Returns 0 on success, < 0 otherwise.
-> + */
-> +int sched_idle(s64 duration, unsigned int latency)
-> +{
-> +	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-> +	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> +	struct cpuidle_state_usage *su;
-> +	struct cpuidle_state *s;
-> +	int i, ret = 0, index = -1;
-> +
-> +	rcu_idle_enter();
+> +	*irq = next + 1;
 > +
 > +	/*
-> +	 * No cpuidle driver is available, let's use the default arch
-> +	 * idle function.
+> +	 * Now lookup the descriptor. It's RCU protected. This
+> +	 * descriptor might belong to an uninteresting interrupt or
+> +	 * one that is not measured. Look for the next interrupt in
+> +	 * that case.
 > +	 */
-> +	if (cpuidle_not_available(drv, dev))
-> +		goto default_idle;
+> +	desc = irq_to_desc(next);
+> +	if (!desc || !(desc->istate & IRQS_TIMINGS))
+> +		goto again;
 > +
-> +	/*
-> +	 * Find the idle state with the lowest power while satisfying
-> +	 * our constraints. We will save energy if the duration of the
-> +	 * idle time is bigger than the target residency which is the
-> +	 * break even point. The choice will be modulated by the
-> +	 * latency.
-> +	 */
-> +	for (i = 0; i < drv->state_count; i++) {
-> +
-> +		s = &drv->states[i];
-> +
-> +		su = &dev->states_usage[i];
-> +
-> +		if (s->disabled || su->disable)
-> +			continue;
-> +		if (s->target_residency > duration)
-> +			continue;
-> +		if (s->exit_latency > latency)
-> +			continue;
-> +
-> +		index = i;
-> +	}
-> +
-> +	/*
-> +	 * The idle task must be scheduled, it is pointless to go to
-> +	 * idle, just re-enable the interrupt and return.
-> +	 */
-> +	if (current_clr_polling_and_test()) {
-> +		local_irq_enable();
-> +		goto out;
-> +	}
-> +
-> +	if (index < 0) {
-> +		/*
-> +		 * No idle callbacks fulfilled the constraints, jump
-> +		 * to the default function like there wasn't any
-> +		 * cpuidle driver.
-> +		 */
-> +		goto default_idle;
-> +	} else {
-> +		/*
-> +		 * Enter the idle state previously returned by the
-> +		 * governor decision.  This function will block until
-> +		 * an interrupt occurs and will take care of
-> +		 * re-enabling the local interrupts
-> +		 */
-> +		return cpuidle_enter(drv, dev, index);
-> +	}
-> +
-> +default_idle:
-> +	default_idle_call();
-> +out:
-> +	rcu_idle_exit();
-> +	return ret;
+> +	return this_cpu_ptr(desc->timings);
 > +}
 > -- 
 > 1.9.1
