@@ -1,88 +1,95 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/4] Enable PM and PM_GENERIC_DOMAINS for SoCs with PM Domains
-Date: Tue, 16 Feb 2016 16:31:48 +0100
-Message-ID: <1455636712-3040-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V3 0/2] IRQ based next prediction
+Date: Tue, 16 Feb 2016 16:41:24 +0100
+Message-ID: <1455637286-14285-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: tglx@linutronix.de
+Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-	Hi Simon, Magnus,
+The current approach to select an idle state is based on the idle period
+statistics computation.
 
-All supported Renesas ARM SoCs (except for Emma Mobile EV2) have clock
-domains. Some SoCs also have power domains. To ensure proper operation
-of on-SoC modules, module clocks must be ungated, and power domains must
-be powered up when needed.
+Useless to say this approach satisfied everyone as a solution to find the
+best trade-off between the performances and the energy saving via the menu
+governor.
 
-Currently the user can choose to build a kernel with power management
-enabled or disabled:
-  - If CONFIG_PM=y, power domains and/or module clocks are handled
-    dynamically by Runtime PM and the generic power domain.
-  - If CONFIG_PM=n, power domains are assumed to be powered up by reset
-    state or by the boot loader, and module clocks are handled by the
-    legacy clock domain on driver (un)bind.
-    The latter is implemented using a platform bus notifier, which
-    applies not only to all on-SoC devices, but to all platform devices
-    present in the system.
+However, the kernel is evolving to act pro-actively regarding the energy
+constraints with the scheduler and the different power management subsystems
+are not collaborating with the scheduler as the conductor of the decisions,
+they all act independently.
 
-To remove the dependency on implicit assumptions, and to get rid of the
-peculiarities of the legacy clock domain, enable CONFIG_PM and
-CONFIG_PM_GENERIC_DOMAINS unconditionally, for all Renesas ARM SoCs with
-clock and/or power domains.
+The cpuidle governors are based on idle period statistics, without knowledge
+of what woke up the cpu. In these sources of wakes up, the IPI are of course
+accounted (as well as the timers irq) which results in doing statistics on
+the scheduler behavior too. It is no sense to let the scheduler to take a
+decision based on a next prediction of its own decisions.
 
-Patches:
-  - Patches 1 and 2 enable PM and PM_GENERIC_DOMAINS,
-  - Patch 3 removes the now unused legacy clock domain code for Renesas
-    ARM SoCs,
-  - Patch 4 relieves you from maintaining drivers/sh/, which is no
-    longer used on Renesas ARM SoCs, and returns it to the SuperH
-    people.
+In order to integrate the cpuidle framework into the scheduler, we have to
+radically change the approach by clearly identifying what is causing a wake
+up and how it behaves.
 
-Notes:
-  - This does cause an increase in kernel size.  Given bloat-o-meter
-    reports a modest increase of 26 KiB for an RZ/A1H kernel, this
-    should not be a problem, even when used on RZ/A1H with XIP and
-    internal RAM only.
-  - Patch 3 does break booting R-Car Gen2 boards using pre-v4.3 DTSes
-    that don't have power-domains properties,
-  - Patch 3 may unbreak SuperH-based ARCH_SHMOBILE platforms, which were
-    probably broken since v4.4 by commit 0ba58de231066e47 ("drivers: sh:
-    Get rid of CONFIG_ARCH_SHMOBILE_MULTI"),
-  - Currently CONFIG_PM=n doesn't work anyway on r8a7795 as "drivers:
-    sh: Handle PM_GENERIC_DOMAINS_OF=n with new r8a7795 CPG/MSSR
-    driver" isn't upstream.
+This serie inverts the logic.
 
-For your convenience, I've also pushed this series to
-git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git#topic/mandatory-pm-v1
+Instead of tracking the idle durations and do statistics on them, these
+patches track the interrupt individually and try to predict the next interrupt.
 
-Thanks for your comments!
+By combining the interrupts' next event on a single CPU, we can predict the
+next event for the CPU, hence predict how long we will be sleeping when
+entering idle.
 
-Geert Uytterhoeven (4):
-  ARM: shmobile: Enable PM and PM_GENERIC_DOMAINS for SoCs with PM
-    Domains
-  arm64: renesas: Enable PM and PM_GENERIC_DOMAINS for SoCs with PM
-    Domains
-  drivers: sh: Stop using the legacy clock domain on ARM
-  MAINTAINERS: Drop drivers/sh/ for Renesas ARM
+The IPI and timer interrupts are not taken into account.
 
- MAINTAINERS                    |  1 -
- arch/arm/mach-shmobile/Kconfig | 13 ++++++++-----
- arch/arm64/Kconfig.platforms   |  3 ++-
- drivers/Makefile               |  1 -
- drivers/sh/pm_runtime.c        |  9 ---------
- 5 files changed, 10 insertions(+), 17 deletions(-)
+The first patch computes the interval between each interrupt and fill a
+circular buffer with the values.
+
+The second patch computes the next event when entering idle.
+
+When we the cpu enters idle, it asks for the expected sleep time. Then the
+expected minimum sleep length for all interrupts is used and compared to
+the timer sleep length, again the minimum is taken and gives the expected
+sleep time.
+
+The statistics are very trivial and could be improved later but this first
+step shows we have a nice overall improvement in SMP. In UP the menu governor
+is a bit better which may indicate the next prediction computation could be
+improved but confirms removing the IPI from the equation increase the
+accuracy.
+
+Changelog:
+	V3:
+	  - Drop RFC prefix
+	  - Convert hook approach to native irq code
+	  - Use local_clock instead of ktime_get
+	  - Store time in nanosec
+	  - Remove the ktime dance with u64
+	  - + Take into account different comments
+        RFC V2:
+           - Changed the register_ops approach for the irq subsystem
+           - Fixed Nicolas's comments
+	RFC V1:
+	   - Initial post
+
+Daniel Lezcano (2):
+  irq: Track the interrupt timings
+  sched: idle: IRQ based next prediction for idle period
+
+ drivers/cpuidle/Kconfig   |   9 ++
+ include/linux/interrupt.h |  17 +++
+ include/linux/irqdesc.h   |   4 +
+ kernel/irq/Kconfig        |   3 +
+ kernel/irq/Makefile       |   1 +
+ kernel/irq/handle.c       |   2 +
+ kernel/irq/internals.h    |  42 +++++++
+ kernel/irq/irqdesc.c      |  10 ++
+ kernel/irq/manage.c       |   3 +
+ kernel/irq/timings.c      | 110 ++++++++++++++++++
+ kernel/sched/Makefile     |   1 +
+ kernel/sched/idle-sched.c | 280 ++++++++++++++++++++++++++++++++++++++++++++++
+ 12 files changed, 482 insertions(+)
+ create mode 100644 kernel/irq/timings.c
+ create mode 100644 kernel/sched/idle-sched.c
 
 -- 
 1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
