@@ -1,375 +1,394 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v5 07/15] arm64: Change cpu_resume() to enable mmu early then access sleep_sp by va
-Date: Tue, 16 Feb 2016 15:49:19 +0000
-Message-ID: <1455637767-31561-8-git-send-email-james.morse@arm.com>
+Subject: [PATCH v5 05/15] arm64: kvm: allows kvm cpu hotplug
+Date: Tue, 16 Feb 2016 15:49:17 +0000
+Message-ID: <1455637767-31561-6-git-send-email-james.morse@arm.com>
 References: <1455637767-31561-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54487 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:54471 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755289AbcBPPvm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Feb 2016 10:51:42 -0500
+	id S1755289AbcBPPvg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Feb 2016 10:51:36 -0500
 In-Reply-To: <1455637767-31561-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
 
-By enabling the MMU early in cpu_resume(), the sleep_save_sp and stack can
-be accessed by VA, which avoids the need to convert-addresses and clean to
-PoC on the suspend path.
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
 
-MMU setup is shared with the boot path, meaning the swapper_pg_dir is
-restored directly: ttbr1_el1 is no longer saved/restored.
+The current kvm implementation on arm64 does cpu-specific initialization
+at system boot, and has no way to gracefully shutdown a core in terms of
+kvm. This prevents kexec from rebooting the system at EL2.
 
-struct sleep_save_sp is removed, replacing it with a single array of
-pointers.
+This patch adds a cpu tear-down function and also puts an existing cpu-init
+code into a separate function, kvm_arch_hardware_disable() and
+kvm_arch_hardware_enable() respectively.
+We don't need the arm64 specific cpu hotplug hook any more.
 
-cpu_do_{suspend,resume} could be further reduced to not restore: cpacr_el1,
-mdscr_el1, tcr_el1, vbar_el1 and sctlr_el1, all of which are set by
-__cpu_setup(). However these values all contain res0 bits that may be used
-to enable future features.
+Since this patch modifies common code between arm and arm64, one stub
+definition, __cpu_reset_hyp_mode(), is added on arm side to avoid
+compilation errors.
 
+Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+[Moved __kvm_hyp_reset() to use kvm_call_hyp(), instead of having its own
+ dedicated entry point in el1_sync. Added some comments and a tlbi.]
 Signed-off-by: James Morse <james.morse@arm.com>
 ---
- arch/arm64/include/asm/suspend.h |  9 +++----
- arch/arm64/kernel/asm-offsets.c  |  3 ---
- arch/arm64/kernel/head.S         |  2 +-
- arch/arm64/kernel/setup.c        |  1 -
- arch/arm64/kernel/sleep.S        | 54 ++++++++++++++--------------------------
- arch/arm64/kernel/suspend.c      | 39 ++++++-----------------------
- arch/arm64/mm/proc.S             | 41 +++++++++++-------------------
- 7 files changed, 45 insertions(+), 104 deletions(-)
+This patch comes from v13 of kexec
 
-diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
-index 365d8cdd0073..29d3c71433e1 100644
---- a/arch/arm64/include/asm/suspend.h
-+++ b/arch/arm64/include/asm/suspend.h
-@@ -1,7 +1,7 @@
- #ifndef __ASM_SUSPEND_H
- #define __ASM_SUSPEND_H
- 
--#define NR_CTX_REGS 11
-+#define NR_CTX_REGS 10
- #define NR_CALLEE_SAVED_REGS 12
- 
- /*
-@@ -17,11 +17,6 @@ struct cpu_suspend_ctx {
- 	u64 sp;
- } __aligned(16);
- 
--struct sleep_save_sp {
--	phys_addr_t *save_ptr_stash;
--	phys_addr_t save_ptr_stash_phys;
--};
--
- /*
-  * Memory to save the cpu state is allocated on the stack by
-  * __cpu_suspend_enter()'s caller, and populated by __cpu_suspend_enter().
-@@ -39,6 +34,8 @@ struct sleep_stack_data {
- 	unsigned long		callee_saved_regs[NR_CALLEE_SAVED_REGS];
- };
- 
-+extern unsigned long *sleep_save_stash;
-+
- extern int cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
- extern void cpu_resume(void);
- int __cpu_suspend_enter(struct sleep_stack_data *state);
-diff --git a/arch/arm64/kernel/asm-offsets.c b/arch/arm64/kernel/asm-offsets.c
-index 7d7994774e82..d6119c57f28a 100644
---- a/arch/arm64/kernel/asm-offsets.c
-+++ b/arch/arm64/kernel/asm-offsets.c
-@@ -120,9 +120,6 @@ int main(void)
-   DEFINE(CPU_CTX_SP,		offsetof(struct cpu_suspend_ctx, sp));
-   DEFINE(MPIDR_HASH_MASK,	offsetof(struct mpidr_hash, mask));
-   DEFINE(MPIDR_HASH_SHIFTS,	offsetof(struct mpidr_hash, shift_aff));
--  DEFINE(SLEEP_SAVE_SP_SZ,	sizeof(struct sleep_save_sp));
--  DEFINE(SLEEP_SAVE_SP_PHYS,	offsetof(struct sleep_save_sp, save_ptr_stash_phys));
--  DEFINE(SLEEP_SAVE_SP_VIRT,	offsetof(struct sleep_save_sp, save_ptr_stash));
-   DEFINE(SLEEP_STACK_DATA_SYSTEM_REGS,	offsetof(struct sleep_stack_data, system_regs));
-   DEFINE(SLEEP_STACK_DATA_CALLEE_REGS,	offsetof(struct sleep_stack_data, callee_saved_regs));
- #endif
-diff --git a/arch/arm64/kernel/head.S b/arch/arm64/kernel/head.S
-index 05b98289093e..6fad2f814ecf 100644
---- a/arch/arm64/kernel/head.S
-+++ b/arch/arm64/kernel/head.S
-@@ -636,7 +636,7 @@ ENDPROC(__secondary_switched)
-  * If it isn't, park the CPU
-  */
- 	.section	".idmap.text", "ax"
--__enable_mmu:
-+ENTRY(__enable_mmu)
- 	mrs	x1, ID_AA64MMFR0_EL1
- 	ubfx	x2, x1, #ID_AA64MMFR0_TGRAN_SHIFT, 4
- 	cmp	x2, #ID_AA64MMFR0_TGRAN_SUPPORTED
-diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
-index cfed56f0ad26..ad290601f4da 100644
---- a/arch/arm64/kernel/setup.c
-+++ b/arch/arm64/kernel/setup.c
-@@ -175,7 +175,6 @@ static void __init smp_build_mpidr_hash(void)
- 	 */
- 	if (mpidr_hash_size() > 4 * num_possible_cpus())
- 		pr_warn("Large number of MPIDR hash buckets detected\n");
--	__flush_dcache_area(&mpidr_hash, sizeof(struct mpidr_hash));
+ arch/arm/include/asm/kvm_host.h   | 10 +++-
+ arch/arm/include/asm/kvm_mmu.h    |  1 +
+ arch/arm/kvm/arm.c                | 98 ++++++++++++++++++++++++---------------
+ arch/arm/kvm/mmu.c                |  5 ++
+ arch/arm64/include/asm/kvm_host.h |  1 -
+ arch/arm64/include/asm/kvm_mmu.h  | 20 ++++++++
+ arch/arm64/kvm/hyp-init.S         | 42 +++++++++++++++++
+ 7 files changed, 137 insertions(+), 40 deletions(-)
+
+diff --git a/arch/arm/include/asm/kvm_host.h b/arch/arm/include/asm/kvm_host.h
+index f9f27792d8ed..8af531d64771 100644
+--- a/arch/arm/include/asm/kvm_host.h
++++ b/arch/arm/include/asm/kvm_host.h
+@@ -220,6 +220,15 @@ static inline void __cpu_init_hyp_mode(phys_addr_t boot_pgd_ptr,
+ 	kvm_call_hyp((void*)hyp_stack_ptr, vector_ptr, pgd_ptr);
  }
  
- static void __init setup_machine_fdt(phys_addr_t dt_phys)
-diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
-index dca81612fe90..0e2b36f1fb44 100644
---- a/arch/arm64/kernel/sleep.S
-+++ b/arch/arm64/kernel/sleep.S
-@@ -73,8 +73,8 @@ ENTRY(__cpu_suspend_enter)
- 	str	x2, [x0, #SLEEP_STACK_DATA_SYSTEM_REGS + CPU_CTX_SP]
++static inline void __cpu_reset_hyp_mode(phys_addr_t boot_pgd_ptr,
++					phys_addr_t phys_idmap_start)
++{
++	/*
++	 * TODO
++	 * kvm_call_reset(boot_pgd_ptr, phys_idmap_start);
++	 */
++}
++
+ static inline int kvm_arch_dev_ioctl_check_extension(long ext)
+ {
+ 	return 0;
+@@ -232,7 +241,6 @@ void kvm_mmu_wp_memory_region(struct kvm *kvm, int slot);
  
- 	/* find the mpidr_hash */
--	ldr	x1, =sleep_save_sp
--	ldr	x1, [x1, #SLEEP_SAVE_SP_VIRT]
-+	ldr	x1, =sleep_save_stash
-+	ldr	x1, [x1]
- 	mrs	x7, mpidr_el1
- 	ldr	x9, =mpidr_hash
- 	ldr	x10, [x9, #MPIDR_HASH_MASK]
-@@ -87,40 +87,26 @@ ENTRY(__cpu_suspend_enter)
- 	compute_mpidr_hash x8, x3, x4, x5, x6, x7, x10
- 	add	x1, x1, x8, lsl #3
+ struct kvm_vcpu *kvm_mpidr_to_vcpu(struct kvm *kvm, unsigned long mpidr);
  
-+	str	x0, [x1]
-+	add	x0, x0, #SLEEP_STACK_DATA_SYSTEM_REGS
- 	push	x29, lr
--	bl	__cpu_suspend_save
-+	bl	cpu_do_suspend
- 	pop	x29, lr
- 	mov	x0, #1
- 	ret
- ENDPROC(__cpu_suspend_enter)
+-static inline void kvm_arch_hardware_disable(void) {}
+ static inline void kvm_arch_hardware_unsetup(void) {}
+ static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
+diff --git a/arch/arm/include/asm/kvm_mmu.h b/arch/arm/include/asm/kvm_mmu.h
+index a520b7987a29..4fd9ddb48c0f 100644
+--- a/arch/arm/include/asm/kvm_mmu.h
++++ b/arch/arm/include/asm/kvm_mmu.h
+@@ -66,6 +66,7 @@ void kvm_mmu_free_memory_caches(struct kvm_vcpu *vcpu);
+ phys_addr_t kvm_mmu_get_httbr(void);
+ phys_addr_t kvm_mmu_get_boot_httbr(void);
+ phys_addr_t kvm_get_idmap_vector(void);
++phys_addr_t kvm_get_idmap_start(void);
+ int kvm_mmu_init(void);
+ void kvm_clear_hyp_idmap(void);
+ 
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index 975da6cfbf59..ee1bee7884a1 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -16,7 +16,6 @@
+  * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+  */
+ 
+-#include <linux/cpu.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+@@ -65,6 +64,8 @@ static DEFINE_SPINLOCK(kvm_vmid_lock);
+ 
+ static bool vgic_present;
+ 
++static DEFINE_PER_CPU(unsigned char, kvm_arm_hardware_enabled);
++
+ static void kvm_arm_set_running_vcpu(struct kvm_vcpu *vcpu)
+ {
+ 	BUG_ON(preemptible());
+@@ -89,11 +90,6 @@ struct kvm_vcpu * __percpu *kvm_get_running_vcpus(void)
+ 	return &kvm_arm_running_vcpu;
+ }
+ 
+-int kvm_arch_hardware_enable(void)
+-{
+-	return 0;
+-}
+-
+ int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
+ {
+ 	return kvm_vcpu_exiting_guest_mode(vcpu) == IN_GUEST_MODE;
+@@ -585,7 +581,13 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 		/*
+ 		 * Re-check atomic conditions
+ 		 */
+-		if (signal_pending(current)) {
++		if (unlikely(!__this_cpu_read(kvm_arm_hardware_enabled))) {
++			/* cpu has been torn down */
++			ret = 0;
++			run->exit_reason = KVM_EXIT_FAIL_ENTRY;
++			run->fail_entry.hardware_entry_failure_reason
++					= (u64)-ENOEXEC;
++		} else if (signal_pending(current)) {
+ 			ret = -EINTR;
+ 			run->exit_reason = KVM_EXIT_INTR;
+ 		}
+@@ -967,7 +969,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
+ 	}
+ }
+ 
+-static void cpu_init_hyp_mode(void *dummy)
++static void cpu_init_hyp_mode(void)
+ {
+ 	phys_addr_t boot_pgd_ptr;
+ 	phys_addr_t pgd_ptr;
+@@ -989,36 +991,61 @@ static void cpu_init_hyp_mode(void *dummy)
+ 	kvm_arm_init_debug();
+ }
+ 
+-static int hyp_init_cpu_notify(struct notifier_block *self,
+-			       unsigned long action, void *cpu)
++static void cpu_reset_hyp_mode(void)
+ {
+-	switch (action) {
+-	case CPU_STARTING:
+-	case CPU_STARTING_FROZEN:
+-		if (__hyp_get_vectors() == hyp_default_vectors)
+-			cpu_init_hyp_mode(NULL);
+-		break;
++	phys_addr_t boot_pgd_ptr;
++	phys_addr_t phys_idmap_start;
++
++	boot_pgd_ptr = kvm_mmu_get_boot_httbr();
++	phys_idmap_start = kvm_get_idmap_start();
++
++	__cpu_reset_hyp_mode(boot_pgd_ptr, phys_idmap_start);
++}
++
++int kvm_arch_hardware_enable(void)
++{
++	if (!__this_cpu_read(kvm_arm_hardware_enabled)) {
++		cpu_init_hyp_mode();
++		__this_cpu_write(kvm_arm_hardware_enabled, 1);
+ 	}
+ 
+-	return NOTIFY_OK;
++	return 0;
+ }
+ 
+-static struct notifier_block hyp_init_cpu_nb = {
+-	.notifier_call = hyp_init_cpu_notify,
+-};
++void kvm_arch_hardware_disable(void)
++{
++	if (!__this_cpu_read(kvm_arm_hardware_enabled))
++		return;
++
++	cpu_reset_hyp_mode();
++	__this_cpu_write(kvm_arm_hardware_enabled, 0);
++}
+ 
+ #ifdef CONFIG_CPU_PM
+ static int hyp_init_cpu_pm_notifier(struct notifier_block *self,
+ 				    unsigned long cmd,
+ 				    void *v)
+ {
+-	if (cmd == CPU_PM_EXIT &&
+-	    __hyp_get_vectors() == hyp_default_vectors) {
+-		cpu_init_hyp_mode(NULL);
++	/*
++	 * kvm_arm_hardware_enabled is left with its old value over
++	 * PM_ENTER->PM_EXIT. It is used to indicate PM_EXIT should
++	 * re-enable hyp.
++	 */
++	switch (cmd) {
++	case CPU_PM_ENTER:
++		if (__this_cpu_read(kvm_arm_hardware_enabled))
++			cpu_reset_hyp_mode();
++
++		return NOTIFY_OK;
++	case CPU_PM_EXIT:
++		if (__this_cpu_read(kvm_arm_hardware_enabled))
++			cpu_init_hyp_mode();
++
+ 		return NOTIFY_OK;
+-	}
+ 
+-	return NOTIFY_DONE;
++	default:
++		return NOTIFY_DONE;
++	}
+ }
+ 
+ static struct notifier_block hyp_init_cpu_pm_nb = {
+@@ -1124,14 +1151,20 @@ static int init_hyp_mode(void)
+ 	}
+ 
+ 	/*
+-	 * Execute the init code on each CPU.
++	 * Init this CPU temporarily to execute kvm_hyp_call()
++	 * during kvm_vgic_hyp_init().
+ 	 */
+-	on_each_cpu(cpu_init_hyp_mode, NULL, 1);
++	preempt_disable();
++	cpu_init_hyp_mode();
+ 
+ 	/*
+ 	 * Init HYP view of VGIC
+ 	 */
+ 	err = kvm_vgic_hyp_init();
++
++	cpu_reset_hyp_mode();
++	preempt_enable();
++
+ 	switch (err) {
+ 	case 0:
+ 		vgic_present = true;
+@@ -1215,26 +1248,15 @@ int kvm_arch_init(void *opaque)
+ 		}
+ 	}
+ 
+-	cpu_notifier_register_begin();
+-
+ 	err = init_hyp_mode();
+ 	if (err)
+ 		goto out_err;
+ 
+-	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+-	if (err) {
+-		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+-		goto out_err;
+-	}
+-
+-	cpu_notifier_register_done();
+-
+ 	hyp_cpu_pm_init();
+ 
+ 	kvm_coproc_table_init();
+ 	return 0;
+ out_err:
+-	cpu_notifier_register_done();
+ 	return err;
+ }
+ 
+diff --git a/arch/arm/kvm/mmu.c b/arch/arm/kvm/mmu.c
+index aba61fd3697a..7a3aed62499a 100644
+--- a/arch/arm/kvm/mmu.c
++++ b/arch/arm/kvm/mmu.c
+@@ -1643,6 +1643,11 @@ phys_addr_t kvm_get_idmap_vector(void)
+ 	return hyp_idmap_vector;
+ }
+ 
++phys_addr_t kvm_get_idmap_start(void)
++{
++	return hyp_idmap_start;
++}
++
+ int kvm_mmu_init(void)
+ {
+ 	int err;
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+index e3d67ff8798b..cdf49ce6c1ea 100644
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -332,7 +332,6 @@ static inline void __cpu_init_hyp_mode(phys_addr_t boot_pgd_ptr,
+ 		       hyp_stack_ptr, vector_ptr);
+ }
+ 
+-static inline void kvm_arch_hardware_disable(void) {}
+ static inline void kvm_arch_hardware_unsetup(void) {}
+ static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
+diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
+index 736433912a1e..1be7703f9de6 100644
+--- a/arch/arm64/include/asm/kvm_mmu.h
++++ b/arch/arm64/include/asm/kvm_mmu.h
+@@ -99,6 +99,7 @@ void kvm_mmu_free_memory_caches(struct kvm_vcpu *vcpu);
+ phys_addr_t kvm_mmu_get_httbr(void);
+ phys_addr_t kvm_mmu_get_boot_httbr(void);
+ phys_addr_t kvm_get_idmap_vector(void);
++phys_addr_t kvm_get_idmap_start(void);
+ int kvm_mmu_init(void);
+ void kvm_clear_hyp_idmap(void);
+ 
+@@ -310,5 +311,24 @@ static inline unsigned int kvm_get_vmid_bits(void)
+ 	return (cpuid_feature_extract_field(reg, ID_AA64MMFR1_VMIDBITS_SHIFT) == 2) ? 16 : 8;
+ }
+ 
++void __kvm_hyp_reset(phys_addr_t boot_pgd_ptr, phys_addr_t phys_idmap_start);
++
++/*
++ * Call reset code, and switch back to stub hyp vectors. We need to execute
++ * __kvm_hyp_reset() from the trampoline page, we calculate its address here,
++ * and pass it without kimage_voffset translation.
++ */
++static inline void __cpu_reset_hyp_mode(phys_addr_t boot_pgd_ptr,
++					phys_addr_t phys_idmap_start)
++{
++	unsigned long trampoline_hyp_reset;
++
++	trampoline_hyp_reset = TRAMPOLINE_VA +
++			       ((unsigned long)__kvm_hyp_reset & ~PAGE_MASK);
++
++	__kvm_call_hyp((void *)trampoline_hyp_reset,
++		       boot_pgd_ptr, phys_idmap_start);
++}
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __ARM64_KVM_MMU_H__ */
+diff --git a/arch/arm64/kvm/hyp-init.S b/arch/arm64/kvm/hyp-init.S
+index dc6335a7353e..d20d86c7f9d8 100644
+--- a/arch/arm64/kvm/hyp-init.S
++++ b/arch/arm64/kvm/hyp-init.S
+@@ -150,6 +150,48 @@ merged:
+ 	eret
+ ENDPROC(__kvm_hyp_init)
+ 
++	/*
++	 * x0: HYP boot pgd
++	 * x1: HYP phys_idmap_start
++	 */
++ENTRY(__kvm_hyp_reset)
++	/*
++	 * Retrieve lr from the stack (pushed by el1_sync()), so we can eret
++	 * from here.
++	 */
++	ldp	lr, xzr, [sp], #16
++
++	/* We're in trampoline code in VA, switch back to boot page tables */
++	msr	ttbr0_el2, x0
++	isb
++
++	/* Ensure the PA branch doesn't find a stale tlb entry. */
++	tlbi	alle2
++	dsb	sy
++
++	/* Branch into PA space */
++	adr	x0, 1f
++	bfi	x1, x0, #0, #PAGE_SHIFT
++	br	x1
++
++	/* We're now in idmap, disable MMU */
++1:	mrs	x0, sctlr_el2
++	ldr	x1, =SCTLR_ELx_FLAGS
++	bic	x0, x0, x1		// Clear SCTL_M and etc
++	msr	sctlr_el2, x0
++	isb
++
++	/* Invalidate the old TLBs */
++	tlbi	alle2
++	dsb	sy
++
++	/* Install stub vectors */
++	adr_l	x0, __hyp_stub_vectors
++	msr	vbar_el2, x0
++
++	eret
++ENDPROC(__kvm_hyp_reset)
++
  	.ltorg
  
--/*
-- * x0 must contain the sctlr value retrieved from restored context
-- */
--	.pushsection	".idmap.text", "ax"
--ENTRY(cpu_resume_mmu)
--	ldr	x3, =cpu_resume_after_mmu
--	msr	sctlr_el1, x0		// restore sctlr_el1
--	isb
--	/*
--	 * Invalidate the local I-cache so that any instructions fetched
--	 * speculatively from the PoC are discarded, since they may have
--	 * been dynamically patched at the PoU.
--	 */
--	ic	iallu
--	dsb	nsh
--	isb
--	br	x3			// global jump to virtual address
--ENDPROC(cpu_resume_mmu)
--	.popsection
--cpu_resume_after_mmu:
--	mov	x0, #0			// return zero on success
--	ret
--ENDPROC(cpu_resume_after_mmu)
--
- ENTRY(cpu_resume)
- 	bl	el2_setup		// if in EL2 drop to EL1 cleanly
-+	/* enable the MMU early - so we can access sleep_save_stash by va */
-+	adr_l	lr, __enable_mmu	/* __cpu_setup will return here */
-+	ldr	x27, =_cpu_resume	/* __enable_mmu will branch here */
-+	adrp	x25, idmap_pg_dir
-+	adrp	x26, swapper_pg_dir
-+	b	__cpu_setup
-+
-+ENTRY(_cpu_resume)
- 	mrs	x1, mpidr_el1
- 	adrp	x8, mpidr_hash
- 	add x8, x8, #:lo12:mpidr_hash // x8 = struct mpidr_hash phys address
-@@ -130,29 +116,27 @@ ENTRY(cpu_resume)
- 	ldp	w5, w6, [x8, #(MPIDR_HASH_SHIFTS + 8)]
- 	compute_mpidr_hash x7, x3, x4, x5, x6, x1, x2
-         /* x7 contains hash index, let's use it to grab context pointer */
--	ldr_l	x0, sleep_save_sp + SLEEP_SAVE_SP_PHYS
-+	ldr_l	x0, sleep_save_stash
- 	ldr	x0, [x0, x7, lsl #3]
- 	add	x29, x0, #SLEEP_STACK_DATA_CALLEE_REGS
- 	add	x0, x0, #SLEEP_STACK_DATA_SYSTEM_REGS
- 	/* load sp from context */
- 	ldr	x2, [x0, #CPU_CTX_SP]
--	/* load physical address of identity map page table in x1 */
--	adrp	x1, idmap_pg_dir
- 	mov	sp, x2
- 	/* save thread_info */
- 	and	x2, x2, #~(THREAD_SIZE - 1)
- 	msr	sp_el0, x2
- 	/*
--	 * cpu_do_resume expects x0 to contain context physical address
--	 * pointer and x1 to contain physical address of 1:1 page tables
-+	 * cpu_do_resume expects x0 to contain context address pointer
- 	 */
--	bl	cpu_do_resume		// PC relative jump, MMU off
--	/* Can't access these by physical address once the MMU is on */
-+	bl	cpu_do_resume
-+
- 	ldp	x19, x20, [x29, #16]
- 	ldp	x21, x22, [x29, #32]
- 	ldp	x23, x24, [x29, #48]
- 	ldp	x25, x26, [x29, #64]
- 	ldp	x27, x28, [x29, #80]
- 	ldp	x29, lr, [x29]
--	b	cpu_resume_mmu		// Resume MMU, never returns
-+	mov	x0, #0
-+	ret
- ENDPROC(cpu_resume)
-diff --git a/arch/arm64/kernel/suspend.c b/arch/arm64/kernel/suspend.c
-index 6fe46100685a..2ec2f94d1690 100644
---- a/arch/arm64/kernel/suspend.c
-+++ b/arch/arm64/kernel/suspend.c
-@@ -10,30 +10,12 @@
- #include <asm/suspend.h>
- #include <asm/tlbflush.h>
- 
--
- /*
-- * This is called by __cpu_suspend_enter() to save the state, and do whatever
-- * flushing is required to ensure that when the CPU goes to sleep we have
-- * the necessary data available when the caches are not searched.
-- *
-- * ptr: sleep_stack_data containing cpu state virtual address.
-- * save_ptr: address of the location where the context physical address
-- *           must be saved
-+ * This is allocate by cpu_suspend_init(), and used in cpuidle to store a
-+ * pointer to the 'struct sleep_stack_data' the contains a particular CPUs
-+ * state.
-  */
--void notrace __cpu_suspend_save(struct sleep_stack_data *ptr,
--				phys_addr_t *save_ptr)
--{
--	*save_ptr = virt_to_phys(ptr);
--
--	cpu_do_suspend(&ptr->system_regs);
--	/*
--	 * Only flush the context that must be retrieved with the MMU
--	 * off. VA primitives ensure the flush is applied to all
--	 * cache levels so context is pushed to DRAM.
--	 */
--	__flush_dcache_area(ptr, sizeof(*ptr));
--	__flush_dcache_area(save_ptr, sizeof(*save_ptr));
--}
-+unsigned long *sleep_save_stash;
- 
- /*
-  * This hook is provided so that cpu_suspend code can restore HW
-@@ -137,22 +119,15 @@ int cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
- 	return ret;
- }
- 
--struct sleep_save_sp sleep_save_sp;
--
- static int __init cpu_suspend_init(void)
- {
--	void *ctx_ptr;
--
- 	/* ctx_ptr is an array of physical addresses */
--	ctx_ptr = kcalloc(mpidr_hash_size(), sizeof(phys_addr_t), GFP_KERNEL);
-+	sleep_save_stash = kcalloc(mpidr_hash_size(), sizeof(*sleep_save_stash),
-+				   GFP_KERNEL);
- 
--	if (WARN_ON(!ctx_ptr))
-+	if (WARN_ON(!sleep_save_stash))
- 		return -ENOMEM;
- 
--	sleep_save_sp.save_ptr_stash = ctx_ptr;
--	sleep_save_sp.save_ptr_stash_phys = virt_to_phys(ctx_ptr);
--	__flush_dcache_area(&sleep_save_sp, sizeof(struct sleep_save_sp));
--
- 	return 0;
- }
- early_initcall(cpu_suspend_init);
-diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-index db832c42ae30..a2ef1256a329 100644
---- a/arch/arm64/mm/proc.S
-+++ b/arch/arm64/mm/proc.S
-@@ -24,6 +24,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/hwcap.h>
- #include <asm/pgtable.h>
-+#include <asm/pgtable-hwdef.h>
- 
- #ifdef CONFIG_ARM64_64K_PAGES
- #define TCR_TG_FLAGS	TCR_TG0_64K | TCR_TG1_64K
-@@ -61,62 +62,50 @@ ENTRY(cpu_do_suspend)
- 	mrs	x2, tpidr_el0
- 	mrs	x3, tpidrro_el0
- 	mrs	x4, contextidr_el1
--	mrs	x5, mair_el1
- 	mrs	x6, cpacr_el1
--	mrs	x7, ttbr1_el1
- 	mrs	x8, tcr_el1
- 	mrs	x9, vbar_el1
- 	mrs	x10, mdscr_el1
- 	mrs	x11, oslsr_el1
- 	mrs	x12, sctlr_el1
- 	stp	x2, x3, [x0]
--	stp	x4, x5, [x0, #16]
--	stp	x6, x7, [x0, #32]
--	stp	x8, x9, [x0, #48]
--	stp	x10, x11, [x0, #64]
--	str	x12, [x0, #80]
-+	stp	x4, xzr, [x0, #16]
-+	stp	x6, x8, [x0, #32]
-+	stp	x9, x10, [x0, #48]
-+	stp	x11, x12, [x0, #64]
- 	ret
- ENDPROC(cpu_do_suspend)
- 
- /**
-  * cpu_do_resume - restore CPU register context
-  *
-- * x0: Physical address of context pointer
-- * x1: ttbr0_el1 to be restored
-- *
-- * Returns:
-- *	sctlr_el1 value in x0
-+ * x0: Address of context pointer
-  */
- ENTRY(cpu_do_resume)
--	/*
--	 * Invalidate local tlb entries before turning on MMU
--	 */
--	tlbi	vmalle1
- 	ldp	x2, x3, [x0]
- 	ldp	x4, x5, [x0, #16]
--	ldp	x6, x7, [x0, #32]
--	ldp	x8, x9, [x0, #48]
--	ldp	x10, x11, [x0, #64]
--	ldr	x12, [x0, #80]
-+	ldp	x6, x8, [x0, #32]
-+	ldp	x9, x10, [x0, #48]
-+	ldp	x11, x12, [x0, #64]
- 	msr	tpidr_el0, x2
- 	msr	tpidrro_el0, x3
- 	msr	contextidr_el1, x4
--	msr	mair_el1, x5
- 	msr	cpacr_el1, x6
--	msr	ttbr0_el1, x1
--	msr	ttbr1_el1, x7
--	tcr_set_idmap_t0sz x8, x7
-+
-+	/* Don't change t0sz here, mask those bits when restoring */
-+	mrs	x5, tcr_el1
-+	bfi	x8, x5, TCR_T0SZ_OFFSET, TCR_TxSZ_WIDTH
-+
- 	msr	tcr_el1, x8
- 	msr	vbar_el1, x9
- 	msr	mdscr_el1, x10
-+	msr	sctlr_el1, x12
- 	/*
- 	 * Restore oslsr_el1 by writing oslar_el1
- 	 */
- 	ubfx	x11, x11, #1, #1
- 	msr	oslar_el1, x11
- 	reset_pmuserenr_el0 x0			// Disable PMU access from EL0
--	mov	x0, x12
--	dsb	nsh		// Make sure local tlb invalidation completed
- 	isb
- 	ret
- ENDPROC(cpu_do_resume)
+ 	.popsection
 -- 
 2.6.2
 
