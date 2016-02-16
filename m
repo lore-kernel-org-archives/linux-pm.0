@@ -1,75 +1,94 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 3/4] drivers: sh: Stop using the legacy clock domain on ARM
-Date: Tue, 16 Feb 2016 16:31:51 +0100
-Message-ID: <1455636712-3040-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 1/4] ARM: shmobile: Enable PM and PM_GENERIC_DOMAINS for SoCs with PM Domains
+Date: Tue, 16 Feb 2016 16:31:49 +0100
+Message-ID: <1455636712-3040-2-git-send-email-geert+renesas@glider.be>
 References: <1455636712-3040-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1455636712-3040-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-sh-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Now CONFIG_PM and CONFIG_PM_GENERIC_DOMAINS are enabled unconditionally
-for Renesas ARM-based SoCs, the legacy clock domain is no longer used on
-these SoCs.
-Remove the related support code, and stop entering drivers/sh/ on ARM.
+All supported Renesas ARM SoCs (except for Emma Mobile EV2) have clock
+domains. Some SoCs also have power domains. To ensure proper operation
+of on-SoC modules, module clocks must be ungated, and power domains must
+be powered up when needed.
+
+Currently the user can choose to build a kernel with power management
+enabled or disabled:
+  - If CONFIG_PM=y, power domains and/or module clocks are handled
+    dynamically by Runtime PM and the generic power domain.
+  - If CONFIG_PM=n, power domains are assumed to be powered up by reset
+    state or by the boot loader, and module clocks are handled by the
+    legacy clock domain on driver (un)bind.
+    The latter is implemented using a platform bus notifier, which
+    applies not only to all on-SoC devices, but to all platform devices
+    present in the system.
+
+To remove the dependency on implicit assumptions, and to get rid of the
+peculiarities of the legacy clock domain, enable CONFIG_PM and
+CONFIG_PM_GENERIC_DOMAINS unconditionally, for all Renesas ARM SoCs with
+clock and/or power domains.
+
+This does cause an increase in kernel size.  Given bloat-o-meter reports
+a modest increase of 26 KiB for an RZ/A1H kernel, this should not be a
+problem, even when used on RZ/A1H with XIP and internal RAM only.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Notes:
-  - This does break booting R-Car Gen2 boards using pre-v4.3 DTSes that
-    don't have power-domains properties,
-  - This may unbreak SuperH-based ARCH_SHMOBILE platforms, which were
-    probably broken since v4.4 by commit 0ba58de231066e47 ("drivers: sh:
-    Get rid of CONFIG_ARCH_SHMOBILE_MULTI").
----
- drivers/Makefile        | 1 -
- drivers/sh/pm_runtime.c | 9 ---------
- 2 files changed, 10 deletions(-)
+ arch/arm/mach-shmobile/Kconfig | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 8f5d076baeb0e832..6afdb78e21382538 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -127,7 +127,6 @@ obj-$(CONFIG_SGI_SN)		+= sn/
- obj-y				+= firmware/
- obj-$(CONFIG_CRYPTO)		+= crypto/
- obj-$(CONFIG_SUPERH)		+= sh/
--obj-$(CONFIG_ARCH_SHMOBILE)	+= sh/
- ifndef CONFIG_ARCH_USES_GETTIMEOFFSET
- obj-y				+= clocksource/
- endif
-diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
-index 91a003011acfacb2..c887ecdaf19b7c10 100644
---- a/drivers/sh/pm_runtime.c
-+++ b/drivers/sh/pm_runtime.c
-@@ -34,15 +34,6 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
+diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+index cd5f171f83ce6420..2824b81f1a392d87 100644
+--- a/arch/arm/mach-shmobile/Kconfig
++++ b/arch/arm/mach-shmobile/Kconfig
+@@ -6,28 +6,30 @@ config ARCH_SHMOBILE_MULTI
  
- static int __init sh_pm_runtime_init(void)
- {
--	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE)) {
--		if (!of_find_compatible_node(NULL, NULL,
--					     "renesas,cpg-mstp-clocks"))
--			return 0;
--		if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS_OF) &&
--		    of_find_node_with_property(NULL, "#power-domain-cells"))
--			return 0;
--	}
--
- 	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
- 	return 0;
- }
+ config PM_RCAR
+ 	bool
+-	select PM_GENERIC_DOMAINS if PM
++	select PM
++	select PM_GENERIC_DOMAINS
+ 
+ config PM_RMOBILE
+ 	bool
++	select PM
+ 	select PM_GENERIC_DOMAINS
+ 
+ config ARCH_RCAR_GEN1
+ 	bool
+-	select PM_RCAR if PM || SMP
++	select PM_RCAR
+ 	select RENESAS_INTC_IRQPIN
+ 	select SYS_SUPPORTS_SH_TMU
+ 
+ config ARCH_RCAR_GEN2
+ 	bool
+-	select PM_RCAR if PM || SMP
++	select PM_RCAR
+ 	select RENESAS_IRQC
+ 	select SYS_SUPPORTS_SH_CMT
+ 	select PCI_DOMAINS if PCI
+ 
+ config ARCH_RMOBILE
+ 	bool
+-	select PM_RMOBILE if PM
++	select PM_RMOBILE
+ 	select SYS_SUPPORTS_SH_CMT
+ 	select SYS_SUPPORTS_SH_TMU
+ 
+@@ -55,7 +57,8 @@ config ARCH_EMEV2
+ 
+ config ARCH_R7S72100
+ 	bool "RZ/A1H (R7S72100)"
+-	select PM_GENERIC_DOMAINS if PM
++	select PM
++	select PM_GENERIC_DOMAINS
+ 	select SYS_SUPPORTS_SH_MTU2
+ 
+ config ARCH_R8A73A4
 -- 
 1.9.1
+
