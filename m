@@ -1,40 +1,53 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5 15/15] arm64: hibernate: Prevent resume from a
- different kernel version
-Date: Tue, 16 Feb 2016 21:15:57 +0100
-Message-ID: <20160216201557.GA6526@amd>
-References: <1455637767-31561-1-git-send-email-james.morse@arm.com>
- <1455637767-31561-16-git-send-email-james.morse@arm.com>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [RESEND PATCH 1/8] clk: rockchip: add id of the tsadc clock found on
+ rk3228 SoCs
+Date: Tue, 16 Feb 2016 14:43:01 -0800
+Message-ID: <20160216224301.2278.88600@quark.deferred.io>
+References: <1455521613-27340-1-git-send-email-wxt@rock-chips.com>
+ <1455521613-27340-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42375 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753355AbcBPUQA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 15:16:00 -0500
-Content-Disposition: inline
-In-Reply-To: <1455637767-31561-16-git-send-email-james.morse@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1455521613-27340-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Heiko Stuebner <heiko@sntech.de>, edubezval@gmail.com
+Cc: huangtao@rock-chips.com, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, zhangqing@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Tue 2016-02-16 15:49:27, James Morse wrote:
-> Resuming using a different kernel version is fragile, while there are
-> sufficient details in the hibernate arch-header to perform the restore,
-> changes in the boot process can have a long-lasting impact on the system.
-> In particular, if the EFI stub causes more memory to be allocated, the
-> amount of memory left for linux is reduced. If we are lucky, this will
-> cause restore to fail with the message:
+Quoting Caesar Wang (2016-02-14 23:33:26)
+> This patch adds 'SCLK_TSADC' and 'PCLK_TSADC' id found on rk3228 SoCs.
+> That will be needed by TSADC controller.
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
-Well, this does not close the door completely. 4.6-rc0 is going to be
-very different from 4.6-rc1. Better solution would be to increase
-version every time EFI stub changes, or maybe record ammount of memory
-reserved for EFI.
+Acked-by: Michael Turquette <mturquette@baylibre.com>
 
-Best regards,
-									Pavel
-									
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> ---
+> 
+>  include/dt-bindings/clock/rk3228-cru.h | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/include/dt-bindings/clock/rk3228-cru.h b/include/dt-bindings/clock/rk3228-cru.h
+> index a78dd89..cd2e06b 100644
+> --- a/include/dt-bindings/clock/rk3228-cru.h
+> +++ b/include/dt-bindings/clock/rk3228-cru.h
+> @@ -29,6 +29,7 @@
+>  #define SCLK_SDMMC             68
+>  #define SCLK_SDIO              69
+>  #define SCLK_EMMC              71
+> +#define SCLK_TSADC             72
+>  #define SCLK_UART0             77
+>  #define SCLK_UART1             78
+>  #define SCLK_UART2             79
+> @@ -68,6 +69,7 @@
+>  #define PCLK_UART0             341
+>  #define PCLK_UART1             342
+>  #define PCLK_UART2             343
+> +#define PCLK_TSADC             344
+>  #define PCLK_PWM               350
+>  #define PCLK_TIMER             353
+>  #define PCLK_PERI              363
+> -- 
+> 1.9.1
+> 
