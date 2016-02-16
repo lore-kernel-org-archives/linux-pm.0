@@ -1,81 +1,56 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
-Date: Tue, 16 Feb 2016 06:30:59 +0530
-Message-ID: <20160216010059.GH6334@vireshk-i7>
-References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com>
- <743509d913cbc0e725bea52281be03b009e02bb5.1455553501.git.viresh.kumar@linaro.org>
- <17646703.2nZXD4icYj@wuerfel>
+Subject: Re: Crashes in arm qemu emulations due to 'cpufreq: governor:
+ Replace timers with utilization ...'
+Date: Tue, 16 Feb 2016 06:43:35 +0530
+Message-ID: <20160216011335.GI6334@vireshk-i7>
+References: <20160215170527.GA24453@roeck-us.net>
+ <CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:34377 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbcBPBBJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 20:01:09 -0500
-Received: by mail-pa0-f47.google.com with SMTP id fy10so53984492pac.1
-        for <linux-pm@vger.kernel.org>; Mon, 15 Feb 2016 17:01:09 -0800 (PST)
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34148 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751642AbcBPBNp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 20:13:45 -0500
+Received: by mail-pa0-f46.google.com with SMTP id fy10so54144907pac.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 Feb 2016 17:13:45 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <17646703.2nZXD4icYj@wuerfel>
+In-Reply-To: <CAJZ5v0gLankSuziQq25qTCyNqeOX43yD9jnJu_XXwbdyajfmKg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-next@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
-Cc'ing Mark as well.
-
-On 15-02-16, 21:38, Arnd Bergmann wrote:
-> There is usually something else wrong if you have to check for both.
-> Why exactly do you need to check for both IS_ERR and NULL?
-
-And here is the reasoning behind it:
-- It is normally said that 'NULL' is a valid clk. The same is
-  applicable to regulators as well, right? At least, that is what
-  below says:
-
-  commit 4a511de96d69 ("cpufreq: cpufreq-cpu0: NULL is a valid
-  regulator")
-
-- And so I left the regulator pointer to NULL in OPP core.
-- But then I realized that its not safe to call many regulator core
-  APIs with NULL regulator, as those caused the crashes reported by
-  multiple people now.
-- clk APIs guarantee that they return early when NULL clk is passed to
-  them.
-- Do we need to do the same for regulator core as well ?
-
-- And so I initialized the pointer to an error value now, as
-  initializing it to NULL (possibly a valid regulator, in theory)
-  isn't the right thing to do.
-
-> > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-> > index d7cd4e265766..146b6197d598 100644
-> > --- a/drivers/base/power/opp/core.c
-> > +++ b/drivers/base/power/opp/core.c
-> > @@ -257,7 +257,7 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
-> >  	}
-> >  
-> >  	reg = dev_opp->regulator;
-> > -	if (IS_ERR_OR_NULL(reg)) {
-> > +	if (IS_ERR(reg)) {
-> >  		/* Regulator may not be required for device */
-> >  		if (reg)
-> >  			dev_err(dev, "%s: Invalid regulator (%ld)\n", __func__,
-> > @@ -798,6 +798,9 @@ static struct device_opp *_add_device_opp(struct device *dev)
-> >  		of_node_put(np);
-> >  	}
-> >  
-> > +	/* Set regulator to a non-NULL error value */
-> > +	dev_opp->regulator = ERR_PTR(-EFAULT);
-> > +
-> >  	/* Find clk for the device */
-> >  	dev_opp->clk = clk_get(dev, NULL);
-> >  	if (IS_ERR(dev_opp->clk)) {
+On 15-02-16, 19:41, Rafael J. Wysocki wrote:
+> On Mon, Feb 15, 2016 at 6:05 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > [    1.340000] [<c0958e78>] (__cpufreq_driver_target) from [<c095ca58>] (dbs_check_cpu+0x1ac/0x1e8)
+> > [    1.340000] [<c095ca58>] (dbs_check_cpu) from [<c095cd04>] (cpufreq_governor_dbs+0x1fc/0x608)
+> > [    1.340000] [<c095cd04>] (cpufreq_governor_dbs) from [<c0959c5c>] (__cpufreq_governor+0x1a8/0x204)
+> > [    1.340000] [<c0959c5c>] (__cpufreq_governor) from [<c095a2dc>] (cpufreq_init_policy+0x60/0x8c)
+> > [    1.340000] [<c095a2dc>] (cpufreq_init_policy) from [<c095a5f0>] (cpufreq_online+0x2e8/0x708)
+> > [    1.340000] [<c095a5f0>] (cpufreq_online) from [<c075674c>] (subsys_interface_register+0x80/0xc4)
+> > [    1.340000] [<c075674c>] (subsys_interface_register) from [<c0959764>] (cpufreq_register_driver+0x144/0x1a0)
 > 
-> -EFAULT has a very specific meaning (accessing an invalid pointer from
-> user space), I don't think you want that one.
+> This is the registration of the cpufreq driver (cpufreq-dt in this case).
+> 
+> It does cpufreq_online()->cpufreq_init_policy()->__cpufreq_governor()->cpufreq_governor_dbs()->dbs_check_cpu().
+> 
+> The only way that can happen is when cpufreq_set_policy() finds that
+> the "old" and the "new" policies use the same governor, so it goes and
+> calls __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS), but I'm not sure
+> how this is possible during the initialization ATM.
+> 
+> Viresh, any ideas?
 
-Sorry, wasn't aware of those requirements. What Rafael suggested is
-the right thing to do then.
+You misread probably.
+
+During init, policy->gov is NULL and new_policy->gov is set to the
+default one, probably ondemand/conservative. And in that case, we do:
+- INIT
+- START
+- LIMITS
+
+So above sequence is guaranteed to happen rather.
 
 -- 
 viresh
