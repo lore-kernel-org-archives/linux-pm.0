@@ -1,353 +1,163 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle period
-Date: Tue, 16 Feb 2016 16:43:03 +0100
-Message-ID: <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tglx@linutronix.de
-Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
+From: James Morse <james.morse@arm.com>
+Subject: [PATCH v5 00/15] arm64: kernel: Add support for hibernate/suspend-to-disk
+Date: Tue, 16 Feb 2016 15:49:12 +0000
+Message-ID: <1455637767-31561-1-git-send-email-james.morse@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:54425 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755273AbcBPPvE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Feb 2016 10:51:04 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
 
-Many IRQs are quiet most of the time, or they tend to come in bursts of
-fairly equal time intervals within each burst. It is therefore possible
-to detect those IRQs with stable intervals and guestimate when the next
-IRQ event is most likely to happen.
+Hi all,
 
-Examples of such IRQs may include audio related IRQs where the FIFO size
-and/or DMA descriptor size with the sample rate create stable intervals,
-block devices during large data transfers, etc.  Even network streaming
-of multimedia content creates patterns of periodic network interface IRQs
-in some cases.
+This version of hibernate is based on v4.5-rc4, with the contents of the arm64
+for-next/pgtable branch and Ard's v6sub1 "arm64: split linear and kernel
+mappings" series [0]. The patches shared with kexec still come from v13 [1].
 
-This patch adds code to compute the mean interval and variance for each IRQ
-over a window of time intervals between IRQ events. Those statistics can
-be used to assist cpuidle in selecting the most appropriate sleep state
-by predicting the most likely time for the next interrupt.
+I've renumbered the labels in patch 4, per Akashi Takahiro's suggestion.
+Parts of patch 5 were reworked from Akashi Takahiro's original version, to
+avoid another round of changes to hyp-entry.S:el1_sync.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/Kconfig   |   9 ++
- kernel/sched/Makefile     |   1 +
- kernel/sched/idle-sched.c | 280 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 290 insertions(+)
- create mode 100644 kernel/sched/idle-sched.c
+Resume from hibernate now uses el2_setup() to re-configure el2. This means we
+don't assume the old kernel's versions are valid. (Thanks to Lorenzo for the
+suggestion). Patches 11 and 12 are needed to support this.
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7e48eb5..d64445b 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -23,6 +23,15 @@ config CPU_IDLE_GOV_LADDER
- config CPU_IDLE_GOV_MENU
- 	bool "Menu governor (for tickless system)"
- 
-+config CPU_IDLE_GOV_SCHED
-+	bool "Sched idle governor"
-+	select IRQ_TIMINGS
-+	help
-+	  Enables an irq timings tracking mechanism to track the wakeup sources
-+	  of the platform.
-+
-+	  If you are unsure, it is safe to say N.
-+
- config DT_IDLE_STATES
- 	bool
- 
-diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
-index 6768797..f7d5a35 100644
---- a/kernel/sched/Makefile
-+++ b/kernel/sched/Makefile
-@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
- obj-$(CONFIG_SCHEDSTATS) += stats.o
- obj-$(CONFIG_SCHED_DEBUG) += debug.o
- obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
-+obj-$(CONFIG_CPU_IDLE_GOV_SCHED) += idle-sched.o
-diff --git a/kernel/sched/idle-sched.c b/kernel/sched/idle-sched.c
-new file mode 100644
-index 0000000..4dc03da
---- /dev/null
-+++ b/kernel/sched/idle-sched.c
-@@ -0,0 +1,280 @@
-+/*
-+ *  Copyright (C) 2016 Linaro Ltd, Daniel Lezcano <daniel.lezcano@linaro.org>
-+ *                                 Nicolas Pitre <nicolas.pitre@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/cpuidle.h>
-+#include <linux/interrupt.h>
-+#include <linux/ktime.h>
-+#include <linux/tick.h>
-+
-+/**
-+ * irqt_mean - compute the average
-+ *
-+ * @irqt: the irq timings structure
-+ *
-+ * Returns an u32 corresponding to the mean value, or zero if there is
-+ * no data
-+ */
-+static inline u32 irqt_mean(struct irq_timings *irqt)
-+{
-+	return irqt->sum >> IRQ_TIMINGS_SHIFT;
-+}
-+
-+/**
-+ * irqt_variance - compute the variance
-+ *
-+ * @irqt: the irq timings structure
-+ *
-+ * Returns an u64 corresponding to the variance, or zero if there is
-+ * no data
-+ */
-+static u64 irqt_variance(struct irq_timings *irqt, u32 mean)
-+{
-+	int i;
-+	u64 variance = 0;
-+
-+	/*
-+	 * The variance is the sum of the squared difference to the
-+	 * average divided by the number of elements.
-+	 */
-+	for (i = 0; i < IRQ_TIMINGS_SIZE; i++) {
-+		s32 diff = irqt->values[i] - mean;
-+		variance += (s64)diff * diff;
-+	}
-+
-+	return variance >> IRQ_TIMINGS_SHIFT;
-+}
-+
-+/**
-+ * next_irq_event - returns the next irq event
-+ *
-+ * Returns a guess estimate remaining time before an interrupt
-+ * occurs. The type s64 corresponding in a duration in microsecond.
-+ *
-+ * The value is always greater or equal to zero. In case, there is no
-+ * possible prediction, S64_MAX is returned.
-+ */
-+static s64 next_irq_event(void)
-+{
-+	struct irq_timings *irqt;
-+	unsigned int irq = 0;
-+	u64 variance, now;
-+	s64 diff, next = 0, min = S64_MAX;
-+	u32 interval, mean;
-+	s32 deviation;
-+
-+	now = local_clock();
-+
-+	/*
-+	 * Search for the earliest expected interruption.
-+	 */
-+	rcu_read_lock();
-+	while ((irqt = irqtiming_get_next(&irq))) {
-+
-+		/*
-+		 * No values available.
-+		 */
-+		if (!irqt->timestamp)
-+			continue;
-+
-+		/*
-+		 * This interrupt last triggered more than a second ago.
-+		 * It is definitely not predictable for our purpose anymore.
-+		 */
-+		if ((now - irqt->timestamp) > NSEC_PER_SEC)
-+			continue;
-+
-+		/*
-+		 * If the mean value is null, just ignore this wakeup
-+		 * source.
-+		 */
-+		mean = irqt_mean(irqt);
-+		if (!mean)
-+			continue;
-+
-+		variance = irqt_variance(irqt, mean);
-+		/*
-+		 * We want to check the last interval is:
-+		 *
-+		 *  mean - stddev < interval < mean + stddev
-+		 *
-+		 * That simplifies to:
-+		 *
-+		 * -stddev < interval - mean < stddev
-+		 *
-+		 * abs(interval - mean) < stddev
-+		 *
-+		 * The standard deviation is the sqrt of the variance:
-+		 *
-+		 * abs(interval - mean) < sqrt(variance)
-+		 *
-+		 * and we want to avoid the sqrt, so we square the
-+		 * equation:
-+		 *
-+		 * (interval - mean)^2 < variance
-+		 *
-+		 * So if the latest value of the stats complies with
-+		 * this condition, then the wakeup source is
-+		 * considered predictable and can be used to predict
-+		 * the next event.
-+		 */
-+		interval = irqt->values[irqt->w_index];
-+		deviation = interval - mean;
-+		if ((s64)deviation * deviation > variance)
-+			continue;
-+
-+		/*
-+		 * Let's compute the next event: the wakeup source is
-+		 * considered predictable, we add the average interval
-+		 * time added to the latest interruption event
-+		 * time. Note the timestamp is stored in nsec while
-+		 * the mean time is microsec.
-+		 */
-+		next = irqt->timestamp + (mean << 10);
-+
-+		/*
-+		 * If the interrupt is supposed to happen before the
-+		 * minimum time, then it becomes the minimum.
-+		 */
-+		if (next < min)
-+			min = next;
-+	}
-+	rcu_read_unlock();
-+
-+	/*
-+	 * There is no prediction for any interrupt, so we return
-+	 * S64_MAX.
-+	 */
-+	if (!next)
-+		return S64_MAX;
-+
-+	/*
-+	 * At this point, we have our prediction but the caller is
-+	 * expecting the remaining time before the next event, so
-+	 * compute the expected sleep length.
-+	 */
-+	diff = min - now;
-+
-+	/*
-+	 * min and now are nanosecond units, let's convert to
-+	 * microsec the result of the diff.
-+	 */
-+	diff >>= 10;
-+
-+	/*
-+	 * The result could be negative for different reasons:
-+	 * - the prediction is incorrect but we can't do anything here
-+	 *   except assuming the interrupt occured effectively.
-+	 *    
-+	 * - the prediction was too near now and expired while we were
-+	 *   in this function.
-+	 *
-+	 * In those cases, we return 0. Otherwise we return the expected
-+	 * duration before an interrupt occurs.
-+	 */
-+	return diff > 0 ? diff : 0;
-+}
-+
-+/**
-+ * sched_idle_next_wakeup - Predict the next wakeup on the current cpu
-+ *
-+ * The next event on the cpu is based on a statistic approach of the
-+ * interrupt events and the timer deterministic value. From the timer
-+ * or the irqs, we return the one expected to occur first.
-+ *
-+ * Returns the expected remaining idle time before being woken up by
-+ * an interruption.
-+ */
-+s64 sched_idle_next_wakeup(void)
-+{
-+	s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
-+	s64 next_irq = next_irq_event();
-+
-+	return min(next_irq, next_timer);
-+}
-+
-+/**
-+ * sched_idle - go to idle for a specified amount of time
-+ *
-+ * @duration: the idle duration time
-+ * @latency: the latency constraint
-+ *
-+ * Returns 0 on success, < 0 otherwise.
-+ */
-+int sched_idle(s64 duration, unsigned int latency)
-+{
-+	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
-+	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-+	struct cpuidle_state_usage *su;
-+	struct cpuidle_state *s;
-+	int i, ret = 0, index = -1;
-+
-+	rcu_idle_enter();
-+
-+	/*
-+	 * No cpuidle driver is available, let's use the default arch
-+	 * idle function.
-+	 */
-+	if (cpuidle_not_available(drv, dev))
-+		goto default_idle;
-+
-+	/*
-+	 * Find the idle state with the lowest power while satisfying
-+	 * our constraints. We will save energy if the duration of the
-+	 * idle time is bigger than the target residency which is the
-+	 * break even point. The choice will be modulated by the
-+	 * latency.
-+	 */
-+	for (i = 0; i < drv->state_count; i++) {
-+
-+		s = &drv->states[i];
-+
-+		su = &dev->states_usage[i];
-+
-+		if (s->disabled || su->disable)
-+			continue;
-+		if (s->target_residency > duration)
-+			continue;
-+		if (s->exit_latency > latency)
-+			continue;
-+
-+		index = i;
-+	}
-+
-+	/*
-+	 * The idle task must be scheduled, it is pointless to go to
-+	 * idle, just re-enable the interrupt and return.
-+	 */
-+	if (current_clr_polling_and_test()) {
-+		local_irq_enable();
-+		goto out;
-+	}
-+
-+	if (index < 0) {
-+		/*
-+		 * No idle callbacks fulfilled the constraints, jump
-+		 * to the default function like there wasn't any
-+		 * cpuidle driver.
-+		 */
-+		goto default_idle;
-+	} else {
-+		/*
-+		 * Enter the idle state previously returned by the
-+		 * governor decision.  This function will block until
-+		 * an interrupt occurs and will take care of
-+		 * re-enabling the local interrupts
-+		 */
-+		return cpuidle_enter(drv, dev, index);
-+	}
-+
-+default_idle:
-+	default_idle_call();
-+out:
-+	rcu_idle_exit();
-+	return ret;
-+}
+The enable/disable fiq calls have been removed, these were blindly copied
+from arch/arm, but aren't needed for arch/arm64.
+
+The explicit call to kvm_arch_hardware_disable() is gone, as patch 5's
+hyp_init_cpu_pm_notifier() call will do this for us.
+
+The resume code gained an 'in_suspend = 0'. The hibernate core code has this
+as a __no_save variable, and expects it to keep its initial value. When we
+have KASLR, or resume with a different kernel version, it gets a random
+value from memory instead. x86_64 sets the variable explicitly like this too.
+
+
+Resuming with a different kernel version, (but one with the same page size
+and va bits), does work up until patch 15, which forbids it. Given how
+fragile it is if uefi allocates memory in different places, and how hard it
+would be to debug, I don't think its worth it, but it would be good to hear
+others opinions!
+
+This series can be retrieved from:
+git://linux-arm.org/linux-jm.git -b hibernate/v5
+
+
+Changes since v4:
+ * Mask in current T0SZ bits when restoring tcr_el1.
+ * Use el2_setup() to reconfigure el2.
+ * Remove fiq calls.
+ * Removed kvm_arch_hardware_disable() call.
+ * Added 'in_suspend = 0' to avoid 'if (uninitialised-memory) ...'.
+ * Removed icache-flush from hibernate-asm.S, this was done in hibernate.c.
+ * Commented tlbis.
+ * Removed dsb after copy_page(), this behaviour is guaranteed by the
+   architecture.
+
+Changes since v3:
+ * To work with kaslr:
+   * hibernate now uses the arch-header to store the address of the page
+     tables, and the point to re-enter the resumed kernel.
+   * The el2 vectors are reloaded to point to the 'safe' page, then back to the
+     resumed kernel.
+   * PoC cleaning is done after the jump to the resumed kernel, as we don't
+     know the restored kernel's boundaries in advance.
+   * Some variables are accessed via aliases in the linear map, as the kernel
+     text is not mapped during resume. restore_pblist is one example.
+   * Execute the safe page from the bottom of memory, not the top, so that we
+     can restore the resumed kernel's page tables directly.
+
+ * Rebased the common patches onto v13 of kexec
+ * Changed hibernate-asm.S to use the new copy_page macro.
+ * Changed copy_p?d()s to use the do { } while(); pattern.
+ * Added some missing barriers. (dsb after ic ialluis).
+
+Changes since v2:
+ * Rewrote restore in-place patch - we can't clean pages in copy_page(), we
+   need to publish a list for the architecture to clean
+ * Added missing pgprot_val() in hibernate.c, spotted by STRICT_MM_TYPECHECKS
+ * Removed 'tcr_set_idmap_t0sz' from proc.S - I missed this when rebase-ing
+ * Re-imported the first four patches from kexec v12
+ * Rebased onto v4.4-rc2
+ * Changes from Pavel Machek's comments
+
+Changes since v1:
+ * Removed for_each_process(){ for_each_vma() { } }; cache cleaning, replaced
+   with icache_flush_range() call in core hibernate code
+ * Rebased onto conflicting tcr_ek1.t0sz bug-fix patch
+
+
+[v4] http://www.spinics.net/lists/arm-kernel/msg477769.html
+[v3] http://www.spinics.net/lists/arm-kernel/msg463590.html
+[v2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/376450.html
+[v1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/376450.html
+
+[0] http://www.spinics.net/lists/arm-kernel/msg483446.html
+[1] http://www.spinics.net/lists/arm-kernel/msg474889.html
+
+AKASHI Takahiro (1):
+  arm64: kvm: allows kvm cpu hotplug
+
+Geoff Levand (5):
+  arm64: Fold proc-macros.S into assembler.h
+  arm64: Cleanup SCTLR flags
+  arm64: Convert hcalls to use HVC immediate value
+  arm64: Add new hcall HVC_CALL_FUNC
+  arm64: Add new asm macro copy_page
+
+James Morse (9):
+  arm64: kernel: Rework finisher callback out of __cpu_suspend_enter().
+  arm64: Change cpu_resume() to enable mmu early then access sleep_sp by va
+  arm64: kernel: Include _AC definition in page.h
+  arm64: Promote KERNEL_START/KERNEL_END definitions to a header file
+  arm64: head.S: Change the register el2_setup() returns its result in x0
+  arm64: head.S: el2_setup() to accept sctlr_el1 as an argument
+  PM / Hibernate: Call flush_icache_range() on pages restored in-place
+  arm64: kernel: Add support for hibernate/suspend-to-disk
+  arm64: hibernate: Prevent resume from a different kernel version
+
+ arch/arm/include/asm/kvm_host.h    |  10 +-
+ arch/arm/include/asm/kvm_mmu.h     |   1 +
+ arch/arm/kvm/arm.c                 |  98 +++++---
+ arch/arm/kvm/mmu.c                 |   5 +
+ arch/arm64/Kconfig                 |   7 +
+ arch/arm64/include/asm/assembler.h | 110 ++++++++-
+ arch/arm64/include/asm/kvm_arm.h   |  11 -
+ arch/arm64/include/asm/kvm_host.h  |   1 -
+ arch/arm64/include/asm/kvm_mmu.h   |  20 ++
+ arch/arm64/include/asm/memory.h    |   3 +
+ arch/arm64/include/asm/page.h      |   2 +
+ arch/arm64/include/asm/processor.h |   2 +
+ arch/arm64/include/asm/suspend.h   |  35 ++-
+ arch/arm64/include/asm/sysreg.h    |  19 +-
+ arch/arm64/include/asm/virt.h      |  40 ++++
+ arch/arm64/kernel/Makefile         |   1 +
+ arch/arm64/kernel/asm-offsets.c    |  10 +-
+ arch/arm64/kernel/head.S           |  42 ++--
+ arch/arm64/kernel/hibernate-asm.S  | 149 ++++++++++++
+ arch/arm64/kernel/hibernate.c      | 477 +++++++++++++++++++++++++++++++++++++
+ arch/arm64/kernel/hyp-stub.S       |  49 ++--
+ arch/arm64/kernel/setup.c          |   1 -
+ arch/arm64/kernel/sleep.S          | 146 ++++--------
+ arch/arm64/kernel/suspend.c        |  97 ++++----
+ arch/arm64/kernel/vmlinux.lds.S    |  15 ++
+ arch/arm64/kvm/hyp-init.S          |  47 +++-
+ arch/arm64/kvm/hyp.S               |   3 +-
+ arch/arm64/kvm/hyp/hyp-entry.S     |   9 +-
+ arch/arm64/mm/cache.S              |   2 -
+ arch/arm64/mm/proc-macros.S        |  98 --------
+ arch/arm64/mm/proc.S               |  44 ++--
+ kernel/power/swap.c                |  18 ++
+ 32 files changed, 1193 insertions(+), 379 deletions(-)
+ create mode 100644 arch/arm64/kernel/hibernate-asm.S
+ create mode 100644 arch/arm64/kernel/hibernate.c
+ delete mode 100644 arch/arm64/mm/proc-macros.S
+
 -- 
-1.9.1
+2.6.2
+
