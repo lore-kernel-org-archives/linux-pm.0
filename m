@@ -1,33 +1,229 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
-Date: Tue, 16 Feb 2016 01:50:31 +0100
-Message-ID: <1675907.26pKXjqTm9@vostro.rjw.lan>
-References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com> <CAJZ5v0hEc7730-JgWvNp1Pntzz51kL5GQvk11cR-u8_iQ+ZcKw@mail.gmail.com> <20160216004716.GG6334@vireshk-i7>
+Subject: Re: [PATCH v3] powercap/rapl: reduce ipi calls
+Date: Tue, 16 Feb 2016 01:54 +0100
+Message-ID: <4100978.ozoN0XeYQl@vostro.rjw.lan>
+References: <1452884653-10560-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58508 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:50333 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751491AbcBPAtR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 19:49:17 -0500
-In-Reply-To: <20160216004716.GG6334@vireshk-i7>
+	with SMTP id S1751056AbcBPAwk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 19:52:40 -0500
+In-Reply-To: <1452884653-10560-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Tuesday, February 16, 2016 06:17:16 AM Viresh Kumar wrote:
-> On 15-02-16, 22:13, Rafael J. Wysocki wrote:
-> > That should be something like -ENXIO IMO.
+On Friday, January 15, 2016 11:04:13 AM Jacob Pan wrote:
+> Reduce remote CPU calls for MSR access by combining read
+> modify write into one function. Also optimize search for active CPU on
+> package such that remote CPU is not used if the current CPU is already
+> on the target package.
 > 
-> Thanks for modifying and applying the patch :)
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Well, you're welcome.
+I'm wondering if there are any comments on this one?
 
-I wanted it to be fixed in the tomorrow's linux-next so people can boot their
-systems again.
-
-Thanks,
-Rafael
+> ---
+>  drivers/powercap/intel_rapl.c | 122 ++++++++++++++++++++++++++++++------------
+>  1 file changed, 87 insertions(+), 35 deletions(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 48747c2..2dcd95f 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -133,6 +133,12 @@ struct rapl_domain_data {
+>  	unsigned long timestamp;
+>  };
+>  
+> +struct msrl_action {
+> +	u32 msr_no;
+> +	u64 clear_mask;
+> +	u64 set_mask;
+> +	int err;
+> +};
+>  
+>  #define	DOMAIN_STATE_INACTIVE           BIT(0)
+>  #define	DOMAIN_STATE_POWER_LIMIT_SET    BIT(1)
+> @@ -263,7 +269,11 @@ static struct rapl_package *find_package_by_id(int id)
+>  /* caller to ensure CPU hotplug lock is held */
+>  static int find_active_cpu_on_package(int package_id)
+>  {
+> -	int i;
+> +	/* try to avoid remote cpu call, use raw since we are preemptible */
+> +	int i = raw_smp_processor_id();
+> +
+> +	if (topology_physical_package_id(i) == package_id)
+> +		return i;
+>  
+>  	for_each_online_cpu(i) {
+>  		if (topology_physical_package_id(i) == package_id)
+> @@ -800,35 +810,62 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
+>  	return 0;
+>  }
+>  
+> +
+> +static int msrl_update_safe(u32 msr_no, u64 clear_mask, u64 set_mask)
+> +{
+> +	int err;
+> +	u64 val;
+> +
+> +	err = rdmsrl_safe(msr_no, &val);
+> +	if (err)
+> +		goto out;
+> +
+> +	val &= ~clear_mask;
+> +	val |= set_mask;
+> +
+> +	err = wrmsrl_safe(msr_no, val);
+> +
+> +out:
+> +	return err;
+> +}
+> +
+> +static void msrl_update_func(void *info)
+> +{
+> +	struct msrl_action *ma = info;
+> +
+> +	ma->err = msrl_update_safe(ma->msr_no, ma->clear_mask, ma->set_mask);
+> +}
+> +
+>  /* Similar use of primitive info in the read counterpart */
+>  static int rapl_write_data_raw(struct rapl_domain *rd,
+>  			enum rapl_primitives prim,
+>  			unsigned long long value)
+>  {
+> -	u64 msr_val;
+> -	u32 msr;
+>  	struct rapl_primitive_info *rp = &rpi[prim];
+>  	int cpu;
+> +	u64 bits;
+> +	struct msrl_action ma;
+> +	int ret;
+>  
+>  	cpu = find_active_cpu_on_package(rd->package_id);
+>  	if (cpu < 0)
+>  		return cpu;
+> -	msr = rd->msrs[rp->id];
+> -	if (rdmsrl_safe_on_cpu(cpu, msr, &msr_val)) {
+> -		dev_dbg(&rd->power_zone.dev,
+> -			"failed to read msr 0x%x on cpu %d\n", msr, cpu);
+> -		return -EIO;
+> -	}
+> -	value = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
+> -	msr_val &= ~rp->mask;
+> -	msr_val |= value << rp->shift;
+> -	if (wrmsrl_safe_on_cpu(cpu, msr, msr_val)) {
+> -		dev_dbg(&rd->power_zone.dev,
+> -			"failed to write msr 0x%x on cpu %d\n", msr, cpu);
+> -		return -EIO;
+> -	}
+>  
+> -	return 0;
+> +	bits = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
+> +	bits |= bits << rp->shift;
+> +	memset(&ma, 0, sizeof(ma));
+> +
+> +	ma.msr_no = rd->msrs[rp->id];
+> +	ma.clear_mask = rp->mask;
+> +	ma.set_mask = bits;
+> +
+> +	ret = smp_call_function_single(cpu, msrl_update_func, &ma, 1);
+> +	if (ret)
+> +		WARN_ON_ONCE(ret);
+> +	else
+> +		ret = ma.err;
+> +
+> +	return ret;
+>  }
+>  
+>  /*
+> @@ -893,6 +930,21 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+>  	return 0;
+>  }
+>  
+> +static void power_limit_irq_save_cpu(void *info)
+> +{
+> +	u32 l, h = 0;
+> +	struct rapl_package *rp = (struct rapl_package *)info;
+> +
+> +	/* save the state of PLN irq mask bit before disabling it */
+> +	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+> +	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
+> +		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
+> +		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
+> +	}
+> +	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+> +	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+> +}
+> +
+>  
+>  /* REVISIT:
+>   * When package power limit is set artificially low by RAPL, LVT
+> @@ -906,7 +958,6 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+>  
+>  static void package_power_limit_irq_save(int package_id)
+>  {
+> -	u32 l, h = 0;
+>  	int cpu;
+>  	struct rapl_package *rp;
+>  
+> @@ -920,20 +971,27 @@ static void package_power_limit_irq_save(int package_id)
+>  	cpu = find_active_cpu_on_package(package_id);
+>  	if (cpu < 0)
+>  		return;
+> -	/* save the state of PLN irq mask bit before disabling it */
+> -	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+> -	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
+> -		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
+> -		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
+> -	}
+> -	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+> -	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+> +	smp_call_function_single(cpu, power_limit_irq_save_cpu, rp, 1);
+> +}
+> +
+> +static void power_limit_irq_restore_cpu(void *info)
+> +{
+> +	u32 l, h = 0;
+> +	struct rapl_package *rp = (struct rapl_package *)info;
+> +
+> +	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+> +
+> +	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
+> +		l |= PACKAGE_THERM_INT_PLN_ENABLE;
+> +	else
+> +		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+> +
+> +	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+>  }
+>  
+>  /* restore per package power limit interrupt enable state */
+>  static void package_power_limit_irq_restore(int package_id)
+>  {
+> -	u32 l, h;
+>  	int cpu;
+>  	struct rapl_package *rp;
+>  
+> @@ -951,14 +1009,8 @@ static void package_power_limit_irq_restore(int package_id)
+>  	/* irq enable state not saved, nothing to restore */
+>  	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED))
+>  		return;
+> -	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+> -
+> -	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
+> -		l |= PACKAGE_THERM_INT_PLN_ENABLE;
+> -	else
+> -		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+>  
+> -	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+> +	smp_call_function_single(cpu, power_limit_irq_restore_cpu, rp, 1);
+>  }
+>  
+>  static void set_floor_freq_default(struct rapl_domain *rd, bool mode)
+> 
 
