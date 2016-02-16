@@ -1,60 +1,144 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] PM / OPP: Initialize regulator pointer to an error value
-Date: Tue, 16 Feb 2016 01:56:16 +0000
-Message-ID: <20160216015616.GH18327@sirena.org.uk>
-References: <1455544758-7718-1-git-send-email-jonathanh@nvidia.com>
- <743509d913cbc0e725bea52281be03b009e02bb5.1455553501.git.viresh.kumar@linaro.org>
- <17646703.2nZXD4icYj@wuerfel>
- <20160216010059.GH6334@vireshk-i7>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH] thermal: omap-thermal: Add notify function to thermal_zone_device_ops
+Date: Tue, 16 Feb 2016 10:35:45 +0530
+Message-ID: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="CEUtFxTsmBsHRLs3"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53217 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbcBPB4m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Feb 2016 20:56:42 -0500
-Content-Disposition: inline
-In-Reply-To: <20160216010059.GH6334@vireshk-i7>
+Received: from comal.ext.ti.com ([198.47.26.152]:42135 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753356AbcBPFGy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Feb 2016 00:06:54 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Jon Hunter <jonathanh@nvidia.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: j-keerthy@ti.com, nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
+notify function is used to notify when some temperature thresholds
+are crossed. In case we get notified for a critical trip point then
+schedule an emergency shutdown function to backup orderly_poweroff
+failures.
 
---CEUtFxTsmBsHRLs3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+orderly_poweroff is triggered when a graceful shutdown
+of system is desired. This may be used in many critical states of the
+kernel such as when subsystems detects conditions such as critical
+temperature conditions. However, in certain conditions in system
+boot up sequences like those in the middle of driver probes being
+initiated, userspace will be unable to power off the system in a clean
+manner and leaves the system in a critical state. In cases like these,
+the /sbin/poweroff will return success (having forked off to attempt
+powering off the system. However, the system overall will fail to
+completely poweroff (since other modules will be probed) and the system
+is still functional with no userspace (since that would have shut itself
+off).
 
-On Tue, Feb 16, 2016 at 06:30:59AM +0530, Viresh Kumar wrote:
+However, there is no clean way of detecting such failure of userspace
+powering off the system. In such scenarios, it is necessary for a backup
+workqueue to be able to force a shutdown of the system when orderly
+shutdown is not successful after a configurable time period.
 
-> - And so I left the regulator pointer to NULL in OPP core.
-> - But then I realized that its not safe to call many regulator core
->   APIs with NULL regulator, as those caused the crashes reported by
->   multiple people now.
-> - clk APIs guarantee that they return early when NULL clk is passed to
->   them.
-> - Do we need to do the same for regulator core as well ?
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
 
-No, NULL is explicitly not something you can substitute in,
-essentially all the users are just not bothering to implement error
-checking and we don't want to encourage that.  The set of use cases
-where we legitimately have optional supplies is very small, much smaller
-than clocks, because it makes the electrical engineering a lot harder.
+The previous discussion:
 
---CEUtFxTsmBsHRLs3
-Content-Type: application/pgp-signature; name="signature.asc"
+https://lkml.org/lkml/2016/1/28/989
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Making use of the notify ops to schedule a backup thermal shutdown.
 
-iQEcBAEBCAAGBQJWwoG/AAoJECTWi3JdVIfQa+cH/jRzO97INSqEf0+rYcLc/TPI
-HqUkp+lqmo5dswDTRLtIhajxRL4K23uKP8Q7rxLlystsmOSjiavUs3LIcfjNkx97
-/JdH3z4LwaVsUIZifb/C3q5PB6dyoqUaS9fqit06u6iGXoUAv93jtfAtrkKkiAbG
-mKNvEI32c8nAbi0BSpv5c5Pw2tVVmEikI3l2EgQarkwOt+18KQZqC3ugo2kgHKgE
-63ZDD10TIuDme1gYwvH+xfJ6fuhs4ptGWjYztxr1oaoYUjW0tS6i+lrPtVlKGVm9
-HzIHPVjWHB0B8ql76jCChqqUUEU8A63lmyveiFPrYi073ZjJDbpL62odvvo8WuQ=
-=bYWH
------END PGP SIGNATURE-----
+ drivers/thermal/ti-soc-thermal/Kconfig             | 13 +++++++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 43 ++++++++++++++++++++++
+ 2 files changed, 56 insertions(+)
 
---CEUtFxTsmBsHRLs3--
+diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
+index ea8283f..b4b9668 100644
+--- a/drivers/thermal/ti-soc-thermal/Kconfig
++++ b/drivers/thermal/ti-soc-thermal/Kconfig
+@@ -71,3 +71,16 @@ config DRA752_THERMAL
+ 
+ 	  This includes alert interrupts generation and also the TSHUT
+ 	  support.
++
++config TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS
++	int "Emergency poweroff delay in milli-seconds"
++	depends on TI_SOC_THERMAL
++	default 0
++	help
++	  The number of milliseconds to delay before emergency
++	  poweroff kicks in. The delay should be carefully profiled
++	  so as to give adequate time for orderly_poweroff. In case
++	  of failure of an orderly_poweroff the emergency poweroff
++	  kicks in after the delay has elapsed and shuts down the system.
++
++	  If set to 0 poweroff will happen immediately.
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index b213a12..d48eb5b1 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/of.h>
++#include <linux/reboot.h>
+ 
+ #include "ti-thermal.h"
+ #include "ti-bandgap.h"
+@@ -286,6 +287,47 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+ 	return ti_thermal_get_trip_temp(thermal, OMAP_TRIP_NUMBER - 1, temp);
+ }
+ 
++/**
++ * emergency_poweroff_func - emergency poweroff work after a known delay
++ * @work: work_struct associated with the emergency poweroff function
++ *
++ * This function is called in very critical situations to force
++ * a kernel poweroff after a configurable timeout value.
++ */
++static void emergency_poweroff_func(struct work_struct *work)
++{
++	pr_warn("Attempting kernel_power_off\n");
++	kernel_power_off();
++
++	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
++	emergency_restart();
++}
++
++static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
++
++/**
++ * emergency_poweroff - Trigger an emergency system poweroff
++ *
++ * This may be called from any critical situation to trigger a system shutdown
++ * after a known period of time. By default the delay is 0 millisecond
++ */
++void ti_thermal_emergency_poweroff(void)
++{
++	schedule_delayed_work(&emergency_poweroff_work,
++	msecs_to_jiffies(CONFIG_TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
++}
++
++static int ti_thermal_notify(struct thermal_zone_device *thermal, int temp,
++			     enum thermal_trip_type type)
++{
++	if (type == THERMAL_TRIP_CRITICAL) {
++		pr_warn("critical temperature %d reached", temp);
++		ti_thermal_emergency_poweroff();
++	}
++
++	return 0;
++}
++
+ static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
+ 	.get_temp = __ti_thermal_get_temp,
+ 	.get_trend = __ti_thermal_get_trend,
+@@ -301,6 +343,7 @@ static struct thermal_zone_device_ops ti_thermal_ops = {
+ 	.get_trip_type = ti_thermal_get_trip_type,
+ 	.get_trip_temp = ti_thermal_get_trip_temp,
+ 	.get_crit_temp = ti_thermal_get_crit_temp,
++	.notify = ti_thermal_notify,
+ };
+ 
+ static struct ti_thermal_data
+-- 
+1.9.1
+
