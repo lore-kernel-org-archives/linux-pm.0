@@ -1,42 +1,58 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH/RFC v2 05/11] soc: renesas: rcar: Handle clock domain devices in SYSC PM domains
-Date: Tue, 16 Feb 2016 10:02:36 +0200
-Message-ID: <2269681.nQFpo1ggiB@avalon>
-References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be> <2087210.c20JsV3rp3@avalon> <CAMuHMdUs1cJMZaO8-UkOcBYTy1nd9oR3kLo4q3Z4wxU_t4SDbw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUs1cJMZaO8-UkOcBYTy1nd9oR3kLo4q3Z4wxU_t4SDbw@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] PM / OPP: Fix incorrect comments
+Date: Tue, 16 Feb 2016 14:17:52 +0530
+Message-ID: <a2e646290fdc966d8126176bae51bc648a4eddf8.1455612454.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35317 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754441AbcBPIsN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 03:48:13 -0500
+Received: by mail-pf0-f180.google.com with SMTP id c10so103613607pfc.2
+        for <linux-pm@vger.kernel.org>; Tue, 16 Feb 2016 00:48:13 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 
-Hi Geert,
+Some comments were just copy/pasted from other sections and don't match
+to the routines they were added for. Fix them.
 
-On Tuesday 16 February 2016 08:30:03 Geert Uytterhoeven wrote:
-> On Mon, Feb 15, 2016 at 11:08 PM, Laurent Pinchart wrote:
-> > On Monday 15 February 2016 22:16:54 Geert Uytterhoeven wrote:
-> >> R-Car H3 contains some hardware modules (e.g. VSP and FCP_V) that are
-> >> not only located in a power area controlled by the SYSC system
-> >> controller, but that are also part of the generic CPG/MSSR clock domain.
-> >> Make sure both are handled by enabling module clock PM when the device
-> >> for such a hardware module is attached to the SYSC PM Domain.
-> > 
-> > Can't we specify both power domains in the DT power-domains attribute
-> > instead ?
-> 
-> While the DT property is called "power-domains" (plural), only the first
-> entry is parsed by genpd_dev_pm_attach(). Which makes sense for power areas
-> (if there are multiple, they are nested), but indeed can cause problems
-> when mixed with clock domains.
-> 
-> For R-Mobile, I fixed it in a similar way.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/core.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Still, shouldn't it be fixed in genpd ?
-
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 5fb2f061129e..bdae09c1d8eb 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1254,7 +1254,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_supported_hw);
+ 
+ /**
+  * dev_pm_opp_put_supported_hw() - Releases resources blocked for supported hw
+- * @dev: Device for which supported-hw has to be set.
++ * @dev: Device for which supported-hw has to be put.
+  *
+  * This is required only for the V2 bindings, and is called for a matching
+  * dev_pm_opp_set_supported_hw(). Until this is called, the device_opp structure
+@@ -1303,7 +1303,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
+ 
+ /**
+  * dev_pm_opp_set_prop_name() - Set prop-extn name
+- * @dev: Device for which the regulator has to be set.
++ * @dev: Device for which the prop-name has to be set.
+  * @name: name to postfix to properties.
+  *
+  * This is required only for the V2 bindings, and it enables a platform to
+@@ -1362,7 +1362,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_prop_name);
+ 
+ /**
+  * dev_pm_opp_put_prop_name() - Releases resources blocked for prop-name
+- * @dev: Device for which the regulator has to be set.
++ * @dev: Device for which the prop-name has to be put.
+  *
+  * This is required only for the V2 bindings, and is called for a matching
+  * dev_pm_opp_set_prop_name(). Until this is called, the device_opp structure
 -- 
-Regards,
+2.7.1.410.g6faf27b
 
-Laurent Pinchart
