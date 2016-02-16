@@ -1,40 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 13/15] PM / Hibernate: Call flush_icache_range() on pages restored in-place
-Date: Tue, 16 Feb 2016 20:27:18 +0100
-Message-ID: <2881465.GhJSKR2Hdf@vostro.rjw.lan>
-References: <1455637767-31561-1-git-send-email-james.morse@arm.com> <1455637767-31561-14-git-send-email-james.morse@arm.com>
+Subject: [PATCH 2/2] cpufreq: ondemand: Drop unused callback from struct od_ops
+Date: Tue, 16 Feb 2016 21:01:40 +0100
+Message-ID: <2785243.lPbWKikLZB@vostro.rjw.lan>
+References: <76641630.CimCW8476L@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41475 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55861 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755027AbcBPTZ4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 14:25:56 -0500
-In-Reply-To: <1455637767-31561-14-git-send-email-james.morse@arm.com>
+	with SMTP id S1752086AbcBPUAX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Feb 2016 15:00:23 -0500
+In-Reply-To: <76641630.CimCW8476L@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tuesday, February 16, 2016 03:49:25 PM James Morse wrote:
-> Some architectures require code written to memory as if it were data to be
-> 'cleaned' from any data caches before the processor can fetch them as new
-> instructions.
-> 
-> During resume from hibernate, the snapshot code copies some pages directly,
-> meaning these architectures do not get a chance to perform their cache
-> maintenance. Modify the read and decompress code to call
-> flush_icache_range() on all pages that are restored, so that the restored
-> in-place pages are guaranteed to be executable on these architectures.
-> 
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This is fine by me.
+The ->freq_increase callback in struct od_ops is never invoked,
+so drop it.
 
-Please feel free to add my ACK to it if that helps.
+No functional changes.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq_governor.h |    1 -
+ drivers/cpufreq/cpufreq_ondemand.c |    1 -
+ 2 files changed, 2 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -417,7 +417,6 @@ define_get_cpu_dbs_routines(od_cpu_dbs_i
+ static struct od_ops od_ops = {
+ 	.powersave_bias_init_cpu = ondemand_powersave_bias_init_cpu,
+ 	.powersave_bias_target = generic_powersave_bias_target,
+-	.freq_increase = dbs_freq_increase,
+ };
+ 
+ static struct dbs_governor od_dbs_gov = {
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -220,7 +220,6 @@ struct od_ops {
+ 	void (*powersave_bias_init_cpu)(int cpu);
+ 	unsigned int (*powersave_bias_target)(struct cpufreq_policy *policy,
+ 			unsigned int freq_next, unsigned int relation);
+-	void (*freq_increase)(struct cpufreq_policy *policy, unsigned int freq);
+ };
+ 
+ extern struct mutex dbs_data_mutex;
 
