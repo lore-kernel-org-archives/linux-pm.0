@@ -1,92 +1,58 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v5 13/15] PM / Hibernate: Call flush_icache_range() on pages restored in-place
-Date: Tue, 16 Feb 2016 15:49:25 +0000
-Message-ID: <1455637767-31561-14-git-send-email-james.morse@arm.com>
+Subject: [PATCH v5 15/15] arm64: hibernate: Prevent resume from a different kernel version
+Date: Tue, 16 Feb 2016 15:49:27 +0000
+Message-ID: <1455637767-31561-16-git-send-email-james.morse@arm.com>
 References: <1455637767-31561-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54542 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:54557 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932444AbcBPPwM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Feb 2016 10:52:12 -0500
+	id S932452AbcBPPwS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Feb 2016 10:52:18 -0500
 In-Reply-To: <1455637767-31561-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
 
-Some architectures require code written to memory as if it were data to be
-'cleaned' from any data caches before the processor can fetch them as new
-instructions.
+Resuming using a different kernel version is fragile, while there are
+sufficient details in the hibernate arch-header to perform the restore,
+changes in the boot process can have a long-lasting impact on the system.
+In particular, if the EFI stub causes more memory to be allocated, the
+amount of memory left for linux is reduced. If we are lucky, this will
+cause restore to fail with the message:
+> PM: Image mismatch: memory size
+If we are unlucky, the system will explode sometime later when an EFI
+runtime services call is made.
 
-During resume from hibernate, the snapshot code copies some pages directly,
-meaning these architectures do not get a chance to perform their cache
-maintenance. Modify the read and decompress code to call
-flush_icache_range() on all pages that are restored, so that the restored
-in-place pages are guaranteed to be executable on these architectures.
+Prevent resuming with a different kernel version, by making
+HIBERNATE_VERSION the current kernel version.
 
 Signed-off-by: James Morse <james.morse@arm.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/swap.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ arch/arm64/kernel/hibernate.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 12cd989dadf6..a30645d2e93f 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -37,6 +37,14 @@
- #define HIBERNATE_SIG	"S1SUSPEND"
+diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+index fd2faca358f6..99ebdbb06e85 100644
+--- a/arch/arm64/kernel/hibernate.c
++++ b/arch/arm64/kernel/hibernate.c
+@@ -56,14 +56,9 @@ extern int in_suspend;
  
  /*
-+ * When reading an {un,}compressed image, we may restore pages in place,
-+ * in which case some architectures need these pages cleaning before they
-+ * can be executed. We don't know which pages these may be, so clean the lot.
-+ */
-+bool clean_pages_on_read = false;
-+bool clean_pages_on_decompress = false;
-+
-+/*
-  *	The swap map is a data structure used for keeping track of each page
-  *	written to a swap partition.  It consists of many swap_map_page
-  *	structures that contain each an array of MAP_PAGE_ENTRIES swap entries.
-@@ -241,6 +249,9 @@ static void hib_end_io(struct bio *bio)
+  * This value is written to the hibernate arch header, and prevents resuming
+- * from a hibernate image produced by an incompatible kernel. If you change
+- * a value that isn't saved/restored by hibernate, you should change this value.
+- *
+- * For example, if the mair_el1 values used by the kernel are changed, you
+- * should prevent resuming from a kernel with incompatible attributes, as these
+- * aren't saved/restored.
++ * from a hibernate image produced by a different kernel version.
+  */
+-#define HIBERNATE_VERSION	KERNEL_VERSION(4, 6, 0)
++#define HIBERNATE_VERSION	LINUX_VERSION_CODE
  
- 	if (bio_data_dir(bio) == WRITE)
- 		put_page(page);
-+	else if (clean_pages_on_read)
-+		flush_icache_range((unsigned long)page_address(page),
-+				   (unsigned long)page_address(page) + PAGE_SIZE);
- 
- 	if (bio->bi_error && !hb->error)
- 		hb->error = bio->bi_error;
-@@ -1049,6 +1060,7 @@ static int load_image(struct swap_map_handle *handle,
- 
- 	hib_init_batch(&hb);
- 
-+	clean_pages_on_read = true;
- 	printk(KERN_INFO "PM: Loading image data pages (%u pages)...\n",
- 		nr_to_read);
- 	m = nr_to_read / 10;
-@@ -1124,6 +1136,10 @@ static int lzo_decompress_threadfn(void *data)
- 		d->unc_len = LZO_UNC_SIZE;
- 		d->ret = lzo1x_decompress_safe(d->cmp + LZO_HEADER, d->cmp_len,
- 		                               d->unc, &d->unc_len);
-+		if (clean_pages_on_decompress)
-+			flush_icache_range((unsigned long)d->unc,
-+					   (unsigned long)d->unc + d->unc_len);
-+
- 		atomic_set(&d->stop, 1);
- 		wake_up(&d->done);
- 	}
-@@ -1189,6 +1205,8 @@ static int load_image_lzo(struct swap_map_handle *handle,
- 	}
- 	memset(crc, 0, offsetof(struct crc_data, go));
- 
-+	clean_pages_on_decompress = true;
-+
- 	/*
- 	 * Start the decompression threads.
- 	 */
+ /*
+  * Start/end of the hibernate exit code, this must be copied to a 'safe'
 -- 
 2.6.2
 
