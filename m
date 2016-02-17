@@ -1,68 +1,51 @@
-From: Matt Longnecker <mlongnecker@nvidia.com>
-Subject: Re: [PATCH V5 07/11] of: Add bindings of hw-trip-points for soctherm
-Date: Wed, 17 Feb 2016 12:52:32 -0800
-Message-ID: <56C4DD90.3080506@nvidia.com>
-References: <1454057260-16412-1-git-send-email-wni@nvidia.com>
- <CAL_JsqKwQOxkWyYPcv6sBe8ELUuPx4N+iUF94J8R63bRxsGK4g@mail.gmail.com>
- <56C17AFD.8050203@nvidia.com> <56C4417D.2030409@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle period
+Date: Thu, 18 Feb 2016 00:09:14 +0100
+Message-ID: <CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
+References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
+	<1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
+	<alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56C4417D.2030409@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>, Rob Herring <robh@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, Thierry Reding <thierry.reding@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:36567 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1424285AbcBQXJQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 18:09:16 -0500
+In-Reply-To: <alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-(cc +=3D linux-pm)
-
-Rob,
-
-The Linux thermal framework makes a sharp distinction between "thermal=20
-zones" and "cooling devices". thermal_zones are aware of temperatures=20
-and have trip points. cooling_devices are unaware of temperatures --=20
-they just have a state variable. The thermal framework binds thermal=20
-zones at particular temperatures to particular cooling devices. It does=
-=20
-so *in software*
-
-The SOC_THERM IP block doesn't fit neatly in that paradigm. Yes, it=20
-provides the ability to read temperatures and raise interrupts at=20
-temperatures. However, it also has the ability to take cooling action=20
-_in hardware_ at particular temperatures. It can throttle the CPU & GPU=
-=20
-clock and it can shut down the SOC. Neither of those are graceful=20
-actions, but they are valuable in practice.
-
-In previous incarnations of this driver we have implemented an unholy=20
-mash-up of a cooling device and a thermal zone for configuring the=20
-hardware thermal actions. It was a mess. This patchset from Wei takes a=
-=20
-simpler approach -- allow the thermal hardware cooling actions to be=20
-configured directly via DT. It's simple but it's good enough in=20
-practice. I like it.
-
--Matt
-
-On 02/17/2016 01:46 AM, Wei Ni wrote:
-> On 2016=E5=B9=B402=E6=9C=8815=E6=97=A5 15:15, Wei Ni wrote:
->> >Hi, Rob
->> >
->> >On 2016=E5=B9=B402=E6=9C=8812=E6=97=A5 22:42, Rob Herring wrote:
->>> >>On Fri, Jan 29, 2016 at 2:47 AM, Wei Ni<wni@nvidia.com>  wrote:
->>>> >>>Add hw-trips sub-node for soctherm, which is
->>>> >>>used to describe the hardware trip points for
->>>> >>>each soctherm sensors.
->>> >>
->>> >>I still don't understand why you are doing something custom here.
->>> >>What's wrong with what is defined in:
->>> >>
->>> >>Documentation/devicetree/bindings/thermal/thermal.txt
-> I think it's better to add a .set_trip_temp for of-thermal's
-> thermal_zone_of_device_ops{}, so that we can set trip points on hardw=
-are. I'm
-> preparing patches, and will send out next version.
-> Thanks for your comments.
+On Tue, Feb 16, 2016 at 5:44 PM, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+> On Tue, 16 Feb 2016, Daniel Lezcano wrote:
 >
+>> Many IRQs are quiet most of the time, or they tend to come in bursts of
+>> fairly equal time intervals within each burst. It is therefore possible
+>> to detect those IRQs with stable intervals and guestimate when the next
+>> IRQ event is most likely to happen.
+>>
+>> Examples of such IRQs may include audio related IRQs where the FIFO size
+>> and/or DMA descriptor size with the sample rate create stable intervals,
+>> block devices during large data transfers, etc.  Even network streaming
+>> of multimedia content creates patterns of periodic network interface IRQs
+>> in some cases.
+>>
+>> This patch adds code to compute the mean interval and variance for each IRQ
+>> over a window of time intervals between IRQ events. Those statistics can
+>> be used to assist cpuidle in selecting the most appropriate sleep state
+>> by predicting the most likely time for the next interrupt.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>
+> The math in next_irq_event() is correct even though I think it could be
+> done more simply.  But that can be optimized at a later time.
+>
+> Reviewed-by: Nicolas Pitre <nico@linaro.org>
+
+Well, I'm likely overlooking something, but how is this going to be
+hooked up to the code in idle.c?
+
+Thanks,
+Rafael
