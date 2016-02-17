@@ -1,61 +1,44 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle period
-Date: Thu, 18 Feb 2016 00:21:59 +0100
-Message-ID: <CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
-	<1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
-	<alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
-	<CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 03/12] PM / cpu_domains: Setup PM domains for
+ CPUs/clusters
+Date: Wed, 17 Feb 2016 16:38:30 -0700
+Message-ID: <20160217233830.GA1313@linaro.org>
+References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
+ <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:36580 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965013AbcBQXWB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 18:22:01 -0500
-In-Reply-To: <CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:35395 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423790AbcBQXid (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 18:38:33 -0500
+Received: by mail-pf0-f170.google.com with SMTP id c10so20368286pfc.2
+        for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 15:38:33 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Thu, Feb 18, 2016 at 12:09 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Feb 16, 2016 at 5:44 PM, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
->> On Tue, 16 Feb 2016, Daniel Lezcano wrote:
->>
->>> Many IRQs are quiet most of the time, or they tend to come in bursts of
->>> fairly equal time intervals within each burst. It is therefore possible
->>> to detect those IRQs with stable intervals and guestimate when the next
->>> IRQ event is most likely to happen.
->>>
->>> Examples of such IRQs may include audio related IRQs where the FIFO size
->>> and/or DMA descriptor size with the sample rate create stable intervals,
->>> block devices during large data transfers, etc.  Even network streaming
->>> of multimedia content creates patterns of periodic network interface IRQs
->>> in some cases.
->>>
->>> This patch adds code to compute the mean interval and variance for each IRQ
->>> over a window of time intervals between IRQ events. Those statistics can
->>> be used to assist cpuidle in selecting the most appropriate sleep state
->>> by predicting the most likely time for the next interrupt.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>
->> The math in next_irq_event() is correct even though I think it could be
->> done more simply.  But that can be optimized at a later time.
->>
->> Reviewed-by: Nicolas Pitre <nico@linaro.org>
->
-> Well, I'm likely overlooking something, but how is this going to be
-> hooked up to the code in idle.c?
+On Fri, Feb 12 2016 at 13:51 -0700, Lina Iyer wrote:
 
-My somewhat educated guess is that sched_idle() in your patch is
-intended to replace cpuidle_idle_call(), right?
+>+static int cpu_pd_power_on(struct generic_pm_domain *genpd)
+>+{
+>+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+>+
+>+	return pd->ops.power_on();
 
-If so, why do you want to replace it?
-
-And assuming that you have a good enough reason to do that, you need
-to ensure that suspend-to-idle will work anyway.
+Needs a check for NULL ops.power_on() here.
+>+}
+>+
+>+static int cpu_pd_power_off(struct generic_pm_domain *genpd)
+>+{
+>+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+>+
+>+	return pd->ops.power_off(genpd->state_idx,
+>+			genpd->states[genpd->state_idx].param);
+Needs a check for NULL ops.power_off().
 
 Thanks,
-Rafael
+Lina
