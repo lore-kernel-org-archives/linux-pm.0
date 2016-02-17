@@ -1,54 +1,37 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3] powercap/rapl: reduce ipi calls
-Date: Wed, 17 Feb 2016 19:22:25 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1602171920240.19512@nanos>
-References: <1452884653-10560-1-git-send-email-jacob.jun.pan@linux.intel.com> <4100978.ozoN0XeYQl@vostro.rjw.lan> <alpine.DEB.2.11.1602171652010.19512@nanos> <20160217100404.5a59649a@icelake>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Felipe Franciosi <felipe@nutanix.com>
+Subject: [PATCH] Documentation: cpufreq: intel_pstate: fix typo
+Date: Wed, 17 Feb 2016 18:24:33 +0000
+Message-ID: <1455733473-1856-1-git-send-email-felipe@nutanix.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:45354 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161290AbcBQSXl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 13:23:41 -0500
-In-Reply-To: <20160217100404.5a59649a@icelake>
+Received: from cpc92322-cmbg19-2-0-cust996.5-4.cable.virginm.net ([86.26.35.229]:65186
+	"EHLO centos.localdomain" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933149AbcBQSbn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 13:31:43 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, Felipe Franciosi <felipe@nutanix.com>
 
-On Wed, 17 Feb 2016, Jacob Pan wrote:
-> On Wed, 17 Feb 2016 17:04:41 +0100 (CET)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > > >  
-> > > >  	for_each_online_cpu(i) {
-> > > >  		if (topology_physical_package_id(i) ==
-> > > > package_id)  
-> > 
-> > This is still crap. We really want a proper handling for that which
-> > does not require these silly for_each_cpu() loops.
-> > 
-> > That code already has a hotplug notifier, so you can track one online
-> > cpu in the package like we do in cqm and other facilities.
-> > 
-> > The first online cpu of a package sets itself as 'owner'. On unplug
-> > it looks up:
-> > 
-> > 	rpl->cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
-> > 
-> > So if this is the last cpu then rpl->cpu becomes nr_cpu_ids.
-> > 
-> > So that whole nonsense can be avoided completely.
-> ok, that would work nicely, similar to cqm_pick_event_reader().
-> thanks for the tip. just fyi, unlike perf cqm, rapl runtime change is
-> expected to be low frequency.
+This just fixes a typo in the intel_pstate documentaion.
 
-That still does not justify crap like this. And please use the version of pick
-reader which I posted a couple of hours ago.
+Signed-off-by: Felipe Franciosi <felipe@nutanix.com>
+---
+ Documentation/cpu-freq/intel-pstate.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-       http://marc.info/?l=linux-kernel&m=145572542221627&w=2
-
-Thanks,
-
-	tglx
+diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+index f7b12c0..e6bd1e6 100644
+--- a/Documentation/cpu-freq/intel-pstate.txt
++++ b/Documentation/cpu-freq/intel-pstate.txt
+@@ -25,7 +25,7 @@ callback, so cpufreq core can't request a transition to a specific frequency.
+ The driver provides minimum and maximum frequency limits and callbacks to set a
+ policy. The policy in cpufreq sysfs is referred to as the "scaling governor".
+ The cpufreq core can request the driver to operate in any of the two policies:
+-"performance: and "powersave". The driver decides which frequency to use based
++"performance" and "powersave". The driver decides which frequency to use based
+ on the above policy selection considering minimum and maximum frequency limits.
+ 
+ The Intel P-State driver falls under the latter category, which implements the
+-- 
+1.7.1
 
