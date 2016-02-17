@@ -1,36 +1,47 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] cpupower: Fix build error in cpufreq-info
-Date: Wed, 17 Feb 2016 15:29:45 +0100
-Message-ID: <5255546.ocxDsFsmcy@skinner>
-References: <1453130083-16055-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] thermal: devfreq_cooling: remove impossible condition
+Date: Wed, 17 Feb 2016 15:32:08 +0000
+Message-ID: <87r3gb8i9z.fsf@e105922-lin.cambridge.arm.com>
+References: <1454398326-5365-1-git-send-email-sudipm.mukherjee@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:37862 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423215AbcBQO3r convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 09:29:47 -0500
-In-Reply-To: <1453130083-16055-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:53981 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1423845AbcBQPcP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 10:32:15 -0500
+In-Reply-To: <1454398326-5365-1-git-send-email-sudipm.mukherjee@gmail.com>
+	(Sudip Mukherjee's message of "Tue, 2 Feb 2016 13:02:06 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: rafael.j.wysocki@intel.com, jtanenba@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, January 18, 2016 08:44:43 PM Shreyas B. Prabhu wrote:
-> Fix the following build error by including limits.h -
->=20
-> utils/cpufreq-info.c: In function =E2=80=98get_latency=E2=80=99:
-> utils/cpufreq-info.c:437:29: error: =E2=80=98UINT_MAX=E2=80=99 undecl=
-ared (first use in
-> this function)
->   if (!latency || latency =3D=3D UINT_MAX) {
->                              ^
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Sudip Mukherjee <sudipm.mukherjee@gmail.com> writes:
 
-Signed-off-by: Thomas Renninger <trenn@suse.com>
+> state is an unsigned long and can never be less than 0.
+>
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/thermal/devfreq_cooling.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> index 01f0015..81631b1 100644
+> --- a/drivers/thermal/devfreq_cooling.c
+> +++ b/drivers/thermal/devfreq_cooling.c
+> @@ -312,7 +312,7 @@ static int devfreq_cooling_state2power(struct thermal_cooling_device *cdev,
+>  	unsigned long freq;
+>  	u32 static_power;
+>  
+> -	if (state < 0 || state >= dfc->freq_table_size)
+> +	if (state >= dfc->freq_table_size)
+>  		return -EINVAL;
+>  
+>  	freq = dfc->freq_table[state];
 
-Builds for me by luck, thanks!
+Makes sense.
 
+Acked-by: Punit Agrawal <punit.agrawal@arm.com>
 
-       Thomas
+Thanks for sending the fix.
