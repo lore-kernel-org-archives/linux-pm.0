@@ -1,211 +1,169 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 112621] New: cpupower reports wrong frequencies
-Date: Wed, 17 Feb 2016 19:53:21 +0000
-Message-ID: <bug-112621-137361@https.bugzilla.kernel.org/>
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [RFC 3/3] ARM: dts: Don't overheat the Odroid XU3-Lite on high load
+Date: Thu, 18 Feb 2016 01:23:14 +0530
+Message-ID: <CANAwSgQHiJGSYB7Qhq066Mqfskwrr_3SDQGXH-WN=Wt3SEF-QA@mail.gmail.com>
+References: <1455692128-28504-1-git-send-email-k.kozlowski@samsung.com> <1455692128-28504-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43237 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964976AbcBQTxY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Feb 2016 14:53:24 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 376DE203A0
-	for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 19:53:23 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 2A05320398
-	for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 19:53:22 +0000 (UTC)
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:36657 "EHLO
+	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964976AbcBQTxg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 14:53:36 -0500
+In-Reply-To: <1455692128-28504-4-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-arm-kernel@lists.infradead.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=112621
+Hi Krzysztof,
 
-            Bug ID: 112621
-           Summary: cpupower reports wrong frequencies
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 4.4.1
-          Hardware: Intel
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: low
-          Priority: P1
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: karol@babioch.de
-        Regression: No
+On 17 February 2016 at 12:25, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> After adding cpufreq-dt support to Exynos542x, the Odroid XU3-Lite can
+> be easily overheated when launching eight CPU-intensive tasks:
+>         thermal thermal_zone3: critical temperature reached(121 C),shutting down
+>
+> This seems to be specific to Odroid XU3-Lite board which officially
+> supports lower frequencies than regular XU3 or XU4. When working at
+> maximum CPU speed (1800 MHz big and 1300 MHz LITTLE) in warmer place for
+> longer time, the fan fails to cool down the board and it reaches
+> critical temperature.
+>
+> Add CPU cooling to Exynos5422/5800 to fix this issue. When reaching 95
+> degrees of Celsius, the board will slow down by 3 steps (around
+> 1400/1000 MHz). When reaching 110 degrees of Celsius go to 600 MHz.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi | 41 +++++++++++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> index 2b289d7c0d13..66073ce29aee 100644
+> --- a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> +++ b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> @@ -34,6 +34,16 @@
+>                                         hysteresis = <5000>; /* millicelsius */
+>                                         type = "active";
+>                                 };
+> +                               cpu_alert3: cpu-alert-3 {
+> +                                       temperature = <95000>; /* millicelsius */
+> +                                       hysteresis = <5000>; /* millicelsius */
+> +                                       type = "passive";
+> +                               };
+> +                               cpu_alert4: cpu-alert-4 {
+> +                                       temperature = <110000>; /* millicelsius */
+> +                                       hysteresis = <5000>; /* millicelsius */
+> +                                       type = "passive";
+> +                               };
+>                                 cpu_crit0: cpu-crit-0 {
+>                                         temperature = <120000>; /* millicelsius */
+>                                         hysteresis = <0>; /* millicelsius */
+> @@ -53,6 +63,37 @@
+>                                      trip = <&cpu_alert2>;
+>                                      cooling-device = <&fan0 2 3>;
+>                                 };
+> +
+> +                               /*
+> +                                * When reaching cpu_alert3, reduce CPU
+> +                                * by 3 steps. On Exynos5422/5800 that would
+> +                                * be: 1400 MHz and 1000 MHz.
+> +                                */
+> +                               map3 {
+> +                                    trip = <&cpu_alert3>;
+> +                                    cooling-device = <&cpu0 3 3>;
+> +                               };
+> +                               map4 {
+> +                                    trip = <&cpu_alert3>;
+> +                                    cooling-device = <&cpu4 3 3>;
+> +                               };
+> +
+> +                               /*
+> +                                * When reaching cpu_alert4, reduce CPU
+> +                                * to 600 MHz (11 steps for big, 7 steps for
+> +                                * LITTLE).
+> +                                * Exynos5420 has less OPPs and reversed
+> +                                * numbering of CPUs (big/LITTLE) so this
+> +                                * would not match.
+> +                                */
+> +                               map5 {
+> +                                    trip = <&cpu_alert4>;
+> +                                    cooling-device = <&cpu0 7 7>;
+> +                               };
+> +                               map6 {
+> +                                    trip = <&cpu_alert4>;
+> +                                    cooling-device = <&cpu4 11 11>;
+> +                               };
+>                         };
+>                 };
+>         };
+> --
+> 2.5.0
+>
 
-I already reported this to Thomas Renninger, who is a maintainer of cpupower.
-He confirmed the problem and told me to raise a ticket here, and to add some
-Intel guys, since this seems to be Intel related.
+could you append this patch with following changes.
 
-The output of cpupower looks like this for me:
+diff --git a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+index 66073ce..4e72637 100644
+--- a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
++++ b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+@@ -16,8 +16,8 @@
+        thermal-zones {
+                cpu0_thermal: cpu0-thermal {
+                        thermal-sensors = <&tmu_cpu0 0>;
+-                       polling-delay-passive = <0>;
+-                       polling-delay = <0>;
++                       polling-delay-passive = <250>; /* milliseconds */
++                       polling-delay = <500>; /* milliseconds */
+                        trips {
+                                cpu_alert0: cpu-alert-0 {
+                                        temperature = <50000>; /*
+millicelsius */
+---
+On running linaro pm-qa diagnostic tool
+----------------------------------------------------------
 
-> [kbabioch@vpcs ~]$ LANG=C cpupower frequency-info
-> analyzing CPU 0:
->   driver: acpi-cpufreq
->   CPUs which run at the same hardware frequency: 0
->   CPUs which need to have their frequency coordinated by software: 0
->   maximum transition latency: 10.0 us.
->   hardware limits: 1.20 GHz - 2.53 GHz
->   available frequency steps: 2.53 GHz, 2.53 GHz, 2.40 GHz, 2.27 GHz,
-> 2.13 GHz, 2.00 GHz, 1.87 GHz, 1.73 GHz, 1.60 GHz, 1.47 GHz, 1.33 GHz,
-> 1.20 GHz
->   available cpufreq governors: ondemand, performance
->   current policy: frequency should be within 1.20 GHz and 2.53 GHz.
->                   The governor "ondemand" may decide which speed to use
->                   within this range.
->   current CPU frequency is 1.20 GHz.
->   boost state support:
->     Supported: yes
->     Active: yes
->     25500 MHz max turbo 4 active cores
->     25500 MHz max turbo 3 active cores
->     25500 MHz max turbo 2 active cores
->     25500 MHz max turbo 1 active cores
+thermal_01.28: checking 'thermal_zone2'/'trip_point_2_temp' ='110000'...    Ok
+thermal_01.29: checking 'cdev0_trip_point' exists in
+'/sys/devices/virtual/thermal/thermal_zone0'... Ok
+thermal_01.30: checking 'thermal_zone0/cdev0_trip_point' valid binding...   Ok
+thermal_01.31: checking 'cdev4_trip_point' exists in
+'/sys/devices/virtual/thermal/thermal_zone0'... Ok
+thermal_01.32: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+thermal_01.33: checking 'cdev4_trip_point' exists in
+'/sys/devices/virtual/thermal/thermal_zone0'... Ok
+thermal_01.34: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+thermal_01.35: checking 'cdev4_trip_point' exists in
+'/sys/devices/virtual/thermal/thermal_zone0'... Ok
+thermal_01.36: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+thermal_01.37: checking 'cdev4_trip_point' exists in
+'/sys/devices/virtual/thermal/thermal_zone0'... Ok
+thermal_01.38: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
 
-As you can see my core can be clocked with up to 2.53 GHz, which is something
-like 2530 MHz. But at the very bottom 25500 MHz is displayed. Note that I'm not
-complaining about the .2 GHz difference, but it seems that there is an error in
-magnitude. 1 GHz = 1000 MHz, not 10000 MHz.
+thermal_01: fail
+-------------------------------------------------------
+I also got lot's of error.
 
-Thomas told me that another MSR read might be necessary to get this scaling
-factor right, but I'm not sure about the details on this.
+root@odroidxu4l:~# cpu[ 3050.847663] cpu cpu4: Failed to find dev_opp: -19
+[ 3171.640836] cpu cpu4: device_opp_debug_create_link: Failed to create link
+[ 3171.646197] cpu cpu4: _add_list_dev: Failed to register opp debugfs (-12)
+[ 3171.653574] cpu cpu7: device_opp_debug_create_link: Failed to create link
+[ 3171.659752] cpu cpu7: _add_list_dev: Failed to register opp debugfs (-12)
+[ 3171.697011] cpu cpu5: cpufreq_init: failed to get clk: -2
+[ 3171.732505] cpu cpu6: cpufreq_init: failed to get clk: -2
+[ 3171.768160] cpu cpu7: cpufreq_init: failed to get clk: -2
 
-Here is my /proc/cpuinfo output:
+Tested on Odroid-XU4
 
-[kbabioch@vpcs openvpn]$ cat /proc/cpuinfo 
-processor    : 0
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 37
-model name    : Intel(R) Core(TM) i5 CPU       M 540  @ 2.53GHz
-stepping    : 2
-microcode    : 0xe
-cpu MHz        : 1466.000
-cache size    : 3072 KB
-physical id    : 0
-siblings    : 4
-core id        : 0
-cpu cores    : 2
-apicid        : 0
-initial apicid    : 0
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 11
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr
-pdcm sse4_1 sse4_2 popcnt aes lahf_lm ida arat dtherm tpr_shadow vnmi
-flexpriority ept vpid
-bugs        :
-bogomips    : 5055.39
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+Reviewed-by: Anand Moon <linux.amoon@gmail.com>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 
-processor    : 1
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 37
-model name    : Intel(R) Core(TM) i5 CPU       M 540  @ 2.53GHz
-stepping    : 2
-microcode    : 0xe
-cpu MHz        : 2534.000
-cache size    : 3072 KB
-physical id    : 0
-siblings    : 4
-core id        : 0
-cpu cores    : 2
-apicid        : 1
-initial apicid    : 1
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 11
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr
-pdcm sse4_1 sse4_2 popcnt aes lahf_lm ida arat dtherm tpr_shadow vnmi
-flexpriority ept vpid
-bugs        :
-bogomips    : 5055.39
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+Best Regards
+-Anand Moon
 
-processor    : 2
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 37
-model name    : Intel(R) Core(TM) i5 CPU       M 540  @ 2.53GHz
-stepping    : 2
-microcode    : 0xe
-cpu MHz        : 1199.000
-cache size    : 3072 KB
-physical id    : 0
-siblings    : 4
-core id        : 2
-cpu cores    : 2
-apicid        : 4
-initial apicid    : 4
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 11
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr
-pdcm sse4_1 sse4_2 popcnt aes lahf_lm ida arat dtherm tpr_shadow vnmi
-flexpriority ept vpid
-bugs        :
-bogomips    : 5055.39
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
-
-processor    : 3
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 37
-model name    : Intel(R) Core(TM) i5 CPU       M 540  @ 2.53GHz
-stepping    : 2
-microcode    : 0xe
-cpu MHz        : 1199.000
-cache size    : 3072 KB
-physical id    : 0
-siblings    : 4
-core id        : 2
-cpu cores    : 2
-apicid        : 5
-initial apicid    : 5
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 11
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr
-pdcm sse4_1 sse4_2 popcnt aes lahf_lm ida arat dtherm tpr_shadow vnmi
-flexpriority ept vpid
-bugs        :
-bogomips    : 5055.39
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
