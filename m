@@ -1,91 +1,91 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3] powercap/rapl: reduce ipi calls
-Date: Wed, 17 Feb 2016 17:04:41 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1602171652010.19512@nanos>
-References: <1452884653-10560-1-git-send-email-jacob.jun.pan@linux.intel.com> <4100978.ozoN0XeYQl@vostro.rjw.lan>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 17 Feb 2016 18:05:57 +0100
+Message-ID: <56C4A875.6080908@gmail.com>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+ <20151217193332.GB7999@localhost.localdomain>
+ <20160104141940.GI13058@pengutronix.de>
+ <20160119072917.GA13237@pengutronix.de> <1454295246.22151.6.camel@mtksdaap41>
+ <CAGS+omD9U8tKmb02d_gMMAGX18MJZhz0RrugpBK2EuqgZrBy6g@mail.gmail.com>
+ <CAGS+omArr0_-ziBXWjEcKS0bqnruNzZc2aq2s3zkghUC7_HfGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:44697 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030319AbcBQQF5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 11:05:57 -0500
-In-Reply-To: <4100978.ozoN0XeYQl@vostro.rjw.lan>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:35267 "EHLO
+	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965115AbcBQRGB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 12:06:01 -0500
+In-Reply-To: <CAGS+omArr0_-ziBXWjEcKS0bqnruNzZc2aq2s3zkghUC7_HfGw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-On Tue, 16 Feb 2016, Rafael J. Wysocki wrote:
-> On Friday, January 15, 2016 11:04:13 AM Jacob Pan wrote:
-> > Reduce remote CPU calls for MSR access by combining read
-> > modify write into one function. Also optimize search for active CPU on
-> > package such that remote CPU is not used if the current CPU is already
-> > on the target package.
-> > 
-> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> 
-> I'm wondering if there are any comments on this one?
-
-Yes.
- 
-> > ---
-> >  drivers/powercap/intel_rapl.c | 122 ++++++++++++++++++++++++++++++------------
-> >  1 file changed, 87 insertions(+), 35 deletions(-)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> > index 48747c2..2dcd95f 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -133,6 +133,12 @@ struct rapl_domain_data {
-> >  	unsigned long timestamp;
-> >  };
-> >  
-> > +struct msrl_action {
-> > +	u32 msr_no;
-> > +	u64 clear_mask;
-> > +	u64 set_mask;
-> > +	int err;
-> > +};
-> >  
-> >  #define	DOMAIN_STATE_INACTIVE           BIT(0)
-> >  #define	DOMAIN_STATE_POWER_LIMIT_SET    BIT(1)
-> > @@ -263,7 +269,11 @@ static struct rapl_package *find_package_by_id(int id)
-> >  /* caller to ensure CPU hotplug lock is held */
-> >  static int find_active_cpu_on_package(int package_id)
-> >  {
-> > -	int i;
-> > +	/* try to avoid remote cpu call, use raw since we are preemptible */
-> > +	int i = raw_smp_processor_id();
-> > +
-> > +	if (topology_physical_package_id(i) == package_id)
-> > +		return i;
-> >  
-> >  	for_each_online_cpu(i) {
-> >  		if (topology_physical_package_id(i) == package_id)
-
-This is still crap. We really want a proper handling for that which does
-not require these silly for_each_cpu() loops.
-
-That code already has a hotplug notifier, so you can track one online cpu in
-the package like we do in cqm and other facilities.
-
-The first online cpu of a package sets itself as 'owner'. On unplug it looks
-up:
-
-	rpl->cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
-
-So if this is the last cpu then rpl->cpu becomes nr_cpu_ids.
-
-So that whole nonsense can be avoided completely.
-
-Thanks,
-
-	tglx
+To: Daniel Kurtz <djkurtz@chromium.org>, Eddie Huang <eddie.huang@mediatek.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
 
 
+On 15/02/16 03:14, Daniel Kurtz wrote:
+> On Mon, Feb 15, 2016 at 10:11 AM, Daniel Kurtz <djkurtz@chromium.org> wrote:
+>> Hi Eduardo, Sascha,
+>>
+>> On Mon, Feb 1, 2016 at 10:54 AM, Eddie Huang <eddie.huang@mediatek.com> wrote:
+>>>
+>>> On Tue, 2016-01-19 at 15:29 +0800, Sascha Hauer wrote:
+>>>> Eduardo,
+>>>>
+>>>> On Mon, Jan 04, 2016 at 03:19:40PM +0100, Sascha Hauer wrote:
+>>>>> Hi Eduardo,
+>>>>>
+>>>>>>
+>>>>>> That should remove the policy of computing the maximum from this driver.
+>>>>>> Please have a look on the work being done [1] to add grouping and
+>>>>>> aggregation of thermal zones. With that in place, you should be a matter
+>>>>>> of configuring the grouping and selecting max as the aggregation function,
+>>>>>> from the thermal core, instead in the driver. Which should give the
+>>>>>> system engineer, more flexibility to compose whatever policy based on
+>>>>>> the exposed sensors.
+>>>>>
+>>>>> I think the aggregation of thermal zones is quite useful when it comes
+>>>>> to putting different chips together to a system. I am not so sure how
+>>>>> useful it is to expose different thermal zones of a single SoC to the
+>>>>> device tree.
+>>>>> Currently the only control knob we have is the CPU frequency. When any
+>>>>> of the sensors on the SoC gets too hot then the only thing we can do is
+>>>>> to decrease the CPU frequency. This does not leave much space for
+>>>>> configuration in the device tree.
+>>>>> What I need to be able is to attach multiple sensors to one thermal
+>>>>> zone. The aggregation patch series only partly solves that and I think
+>>>>> is inconsistent, but I commented on the series directly.
+>>>>
+>>>> Any input on this? I really like to get this driver upstream as it is
+>>>> currently blocking other Mediatek drivers.
+>>>>
+>>>
+>>> Hi Eduardo,
+>>>
+>>> Do you have any comment about Sascha's response ? We really hope get
+>>> your comment since Mediatek thermal driver already reviewed in public
+>>> over half years, and we have other patches [0] [1] depend on thermal
+>>> driver.
+>>>
+>>> [0]:
+>>> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-December/394084.html
+>>> [1]:
+>>> http://lists.infradead.org/pipermail/linux-arm-kernel/2016-January/401055.html
+>>
+>> Friendly ping on the Mediatek thermal driver.
+>> The "EFUSE" dependency has now landed in v4.5-rc4.
+>
+> Actually, it landed in char-misc-next, not v4.5-rc4.
+>
+>> So, AFAICT, the only thing left that may be blocking landing Mediatek
+>> thermal driver is resolution of this discussion about thermal zones.
+>> Can we kindly resolve this soon so we have a chance to land it in v4.6.
+>>
 
 
+I think the problem is, that Eduardo wants to see the hierachical 
+thermal zones being used. But there is still a discussion ongoing [1].
 
+[1] https://patchwork.kernel.org/patch/7699971/
