@@ -1,121 +1,228 @@
-From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Subject: CPUfreq lockdep issue
-Date: Thu, 18 Feb 2016 13:06:49 +0200
-Message-ID: <1455793609.9851.45.camel@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:60272 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1425490AbcBRLGs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Feb 2016 06:06:48 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: [PATCH 1/1] intel_pstate: Increase hold-off time before busyness is scaled
+Date: Thu, 18 Feb 2016 11:11:23 +0000
+Message-ID: <1455793883-14214-1-git-send-email-mgorman@techsingularity.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Matt Fleming <matt@codeblueprint.co.uk>, Mike Galbraith <umgwanakikbuti@gmail.com>, Linux-PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mel Gorman <mgorman@techsingularity.net>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@intel.com>
 
-Hi,
+(cc'ing pm and scheduler people as the problem could be blamed on either
+subsystem depending on your point of view)
 
-The Intel P-state driver has a lockdep issue as described below. It
-could in theory cause a deadlock if initialization and suspend were to
-be performed simultaneously. Conflicting calling paths are as follows:
+The PID relies on samples of equal time but this does not apply for
+deferrable timers when the CPU is idle. intel_pstate checks if the actual
+duration between samples is large and if so, the "busyness" of the CPU
+is scaled.
 
-intel_pstate_init(...)
-	...cpufreq_online(...)
-		down_write(&policy->rwsem); // Locks policy->rwsem
-		...
-		cpufreq_init_policy(policy);
-			...intel_pstate_hwp_set();
-				get_online_cpus(); // Temporarily locks cpu_hotplug.lock
-		...
-		up_write(&policy->rwsem);
+This assumes the delay was a deferred timer but a workload may simply have
+been idle for a short time if it's context switching between a server and
+client or waiting very briefly on IO. It's compounded by the problem that
+server/clients migrate between CPUs due to wake-affine trying to maximise
+hot cache usage. In such cases, the cores are not considered busy and the
+frequency is dropped prematurely.
 
-pm_suspend(...)
-	...disable_nonboot_cpus()
-		_cpu_down()
-			cpu_hotplug_begin(); // Locks cpu_hotplug.lock
-			__cpu_notify(CPU_DOWN_PREPARE, ...);
-				...cpufreq_offline_prepare();
-					down_write(&policy->rwsem); // Locks policy->rwsem
+This patch increases the hold-off value before the busyness is scaled. It
+was selected based simply on testing until the desired result was found.
+Tests were conducted with workloads that are either client/server based
+or short-lived IO.
 
-Quickly looking at the code, some refactoring has to be done to fix the
-issue. I think it would a good idea to document some of the driver
-callbacks related to what locks are held etc. in order to avoid future
-situations like this.
+dbench4
+                               4.5.0-rc2             4.5.0-rc2
+                                 vanilla           sample-v1r1
+Hmean    mb/sec-1       309.82 (  0.00%)      327.01 (  5.55%)
+Hmean    mb/sec-2       594.92 (  0.00%)      613.02 (  3.04%)
+Hmean    mb/sec-4       669.17 (  0.00%)      712.27 (  6.44%)
+Hmean    mb/sec-8       700.82 (  0.00%)      724.04 (  3.31%)
+Hmean    mb/sec-64      425.38 (  0.00%)      448.02 (  5.32%)
 
-Because get_online_cpus() is of recursive nature and the way it
-currently works, adding wider get_online_cpus() scope up around
-cpufreq_online() does not fix the issue because it only momentarily
-locks cpu_hotplug.lock and proceeds to do so again at next call.
+               4.5.0-rc2   4.5.0-rc2
+                 vanilla sample-v1r1
+Mean %Busy         27.28       26.81
+Mean CPU%c1        42.50       44.29
+Mean CPU%c3         7.16        7.14
+Mean CPU%c6        23.05       21.76
+Mean CPU%c7         0.00        0.00
+Mean CorWatt        4.60        5.08
+Mean PkgWatt        6.83        7.32
 
-Moving get_online_cpus() completely away from pstate_hwp_set() and
-assuring it is called higher in the call chain might be a viable
-solution. Then it could be made sure get_online_cpus() is not called
-while policy->rwsem is being held already.
+There is fairly sizable performance boost from the modification and while
+the percentage of time spent in C1 is increased, it is not by a substantial
+amount and the power usage increase is tiny.
 
-Do you think that would be an appropriate way of fixing it?
+iozone for small files and varying block sizes. Format is IOOperation-filessize-recordsize
 
-This issue arose on SKL platforms on i915 DRM driver continuous
-integration system when we enabled lockdep debugging.
+                                           4.5.0-rc2             4.5.0-rc2
+                                             vanilla           sample-v1r1
+Hmean    SeqWrite-200704-1       740152.30 (  0.00%)   748432.35 (  1.12%)
+Hmean    SeqWrite-200704-2      1052506.25 (  0.00%)  1169065.30 ( 11.07%)
+Hmean    SeqWrite-200704-4      1450716.41 (  0.00%)  1725335.69 ( 18.93%)
+Hmean    SeqWrite-200704-8      1523917.72 (  0.00%)  1881610.25 ( 23.47%)
+Hmean    SeqWrite-200704-16     1572519.89 (  0.00%)  1750277.07 ( 11.30%)
+Hmean    SeqWrite-200704-32     1611078.69 (  0.00%)  1923796.62 ( 19.41%)
+Hmean    SeqWrite-200704-64     1656755.37 (  0.00%)  1892766.99 ( 14.25%)
+Hmean    SeqWrite-200704-128    1641739.24 (  0.00%)  1952081.27 ( 18.90%)
+Hmean    SeqWrite-200704-256    1660046.05 (  0.00%)  1931237.50 ( 16.34%)
+Hmean    SeqWrite-200704-512    1634394.86 (  0.00%)  1860369.95 ( 13.83%)
+Hmean    SeqWrite-200704-1024   1629526.38 (  0.00%)  1810320.92 ( 11.09%)
+Hmean    SeqWrite-401408-1       828943.43 (  0.00%)   876152.50 (  5.70%)
+Hmean    SeqWrite-401408-2      1231519.20 (  0.00%)  1368986.18 ( 11.16%)
+Hmean    SeqWrite-401408-4      1724109.56 (  0.00%)  1838265.22 (  6.62%)
+Hmean    SeqWrite-401408-8      1806615.84 (  0.00%)  1969611.74 (  9.02%)
+Hmean    SeqWrite-401408-16     1859268.96 (  0.00%)  2003005.51 (  7.73%)
+Hmean    SeqWrite-401408-32     1887759.67 (  0.00%)  2415913.37 ( 27.98%)
+Hmean    SeqWrite-401408-64     1941717.11 (  0.00%)  1971929.24 (  1.56%)
+Hmean    SeqWrite-401408-128    1919515.58 (  0.00%)  2127647.53 ( 10.84%)
+Hmean    SeqWrite-401408-256    1908766.57 (  0.00%)  2067473.02 (  8.31%)
+Hmean    SeqWrite-401408-512    1908999.37 (  0.00%)  2195587.56 ( 15.01%)
+Hmean    SeqWrite-401408-1024   1912232.98 (  0.00%)  2150068.56 ( 12.44%)
+Hmean    Rewrite-200704-1       1151067.57 (  0.00%)  1155309.64 (  0.37%)
+Hmean    Rewrite-200704-2       1786824.53 (  0.00%)  1837093.18 (  2.81%)
+Hmean    Rewrite-200704-4       2539338.19 (  0.00%)  2649019.78 (  4.32%)
+Hmean    Rewrite-200704-8       2687411.53 (  0.00%)  2785202.26 (  3.64%)
+Hmean    Rewrite-200704-16      2709445.97 (  0.00%)  2805580.76 (  3.55%)
+Hmean    Rewrite-200704-32      2735718.43 (  0.00%)  2807532.87 (  2.63%)
+Hmean    Rewrite-200704-64      2782754.97 (  0.00%)  2952024.38 (  6.08%)
+Hmean    Rewrite-200704-128     2791889.73 (  0.00%)  2805048.02 (  0.47%)
+Hmean    Rewrite-200704-256     2711596.34 (  0.00%)  2828896.54 (  4.33%)
+Hmean    Rewrite-200704-512     2665066.25 (  0.00%)  2868058.05 (  7.62%)
+Hmean    Rewrite-200704-1024    2675375.89 (  0.00%)  2685664.19 (  0.38%)
+Hmean    Rewrite-401408-1       1350713.78 (  0.00%)  1358762.21 (  0.60%)
+Hmean    Rewrite-401408-2       2079420.61 (  0.00%)  2097399.02 (  0.86%)
+Hmean    Rewrite-401408-4       2889535.90 (  0.00%)  2912795.03 (  0.80%)
+Hmean    Rewrite-401408-8       3068155.32 (  0.00%)  3090915.84 (  0.74%)
+Hmean    Rewrite-401408-16      3103789.43 (  0.00%)  3162486.65 (  1.89%)
+Hmean    Rewrite-401408-32      3112447.72 (  0.00%)  3243067.63 (  4.20%)
+Hmean    Rewrite-401408-64      3232651.39 (  0.00%)  3227701.02 ( -0.15%)
+Hmean    Rewrite-401408-128     3149556.47 (  0.00%)  3165694.24 (  0.51%)
+Hmean    Rewrite-401408-256     3093348.93 (  0.00%)  3104229.97 (  0.35%)
+Hmean    Rewrite-401408-512     3026305.45 (  0.00%)  3121151.02 (  3.13%)
+Hmean    Rewrite-401408-1024    3005431.18 (  0.00%)  3046910.32 (  1.38%)
 
-Regards, Joonas
+               4.5.0-rc2   4.5.0-rc2
+                 vanilla sample-v1r1
+Mean %Busy          3.10        3.09
+Mean CPU%c1         6.16        5.55
+Mean CPU%c3         0.08        0.10
+Mean CPU%c6        90.65       91.26
+Mean CPU%c7         0.00        0.00
+Mean CorWatt        1.71        1.74
+Mean PkgWatt        3.88        3.91
+Max  %Busy         16.51       16.22
+Max  CPU%c1        17.03       21.99
+Max  CPU%c3         2.57        2.15
+Max  CPU%c6        96.39       96.31
+Max  CPU%c7         0.00        0.00
+Max  CorWatt        5.40        5.42
+Max  PkgWatt        7.53        7.56
 
-FULL TRACE FOR P-STATE INIT
+The other operations are omitted as they showed no performance difference.
+For sequential writes and rewrites there is a massive gain in throughput
+for very small files. The increase in power consumption is negligible.
+It is known that the increase is not universal. Larger core machines see
+a much smaller benefit so the rate of CPU migrations are a factor.
 
-get_online_cpus+0x90/0xa0
-? get_online_cpus+0x2d/0xa0
-intel_pstate_hwp_set+0x40/0x150
-intel_pstate_set_policy+0x135/0x170
-cpufreq_set_policy+0xdb/0x3f0
-cpufreq_init_policy+0x6a/0xc0
-? cpufreq_update_policy+0x1e0/0x1e0
-cpufreq_online+0x314/0xad0
-cpufreq_add_dev+0x5a/0x80
-subsys_interface_register+0xa7/0xf0
-? _raw_write_unlock_irqrestore+0x3d/0x60
-cpufreq_register_driver+0x147/0x210
-intel_pstate_init+0x35b/0x481
-? cpufreq_gov_dbs_init+0x12/0x12
-do_one_initcall+0xa6/0x1d0
-kernel_init_freeable+0x113/0x199
-? rest_init+0x140/0x140
-kernel_init+0x9/0xe0
-ret_from_fork+0x3f/0x70
-? rest_init+0x140/0x140
+netperf-UDP_STREAM
 
-FULL TRACE FOR SUSPEND
+                                4.5.0-rc2             4.5.0-rc2
+                                  vanilla           sample-v1r1
+Hmean    send-64         233.96 (  0.00%)      244.76 (  4.61%)
+Hmean    send-128        466.74 (  0.00%)      479.16 (  2.66%)
+Hmean    send-256        929.12 (  0.00%)      964.00 (  3.75%)
+Hmean    send-1024      3631.36 (  0.00%)     3781.89 (  4.15%)
+Hmean    send-2048      6984.60 (  0.00%)     7169.60 (  2.65%)
+Hmean    send-3312     10792.94 (  0.00%)    11103.42 (  2.88%)
+Hmean    send-4096     12895.57 (  0.00%)    13112.58 (  1.68%)
+Hmean    send-8192     23057.34 (  0.00%)    23443.80 (  1.68%)
+Hmean    send-16384    37871.11 (  0.00%)    38292.60 (  1.11%)
+Hmean    recv-64         233.89 (  0.00%)      244.71 (  4.63%)
+Hmean    recv-128        466.63 (  0.00%)      479.09 (  2.67%)
+Hmean    recv-256        928.88 (  0.00%)      963.74 (  3.75%)
+Hmean    recv-1024      3630.54 (  0.00%)     3780.96 (  4.14%)
+Hmean    recv-2048      6983.20 (  0.00%)     7167.55 (  2.64%)
+Hmean    recv-3312     10790.92 (  0.00%)    11100.63 (  2.87%)
+Hmean    recv-4096     12891.37 (  0.00%)    13110.35 (  1.70%)
+Hmean    recv-8192     23054.79 (  0.00%)    23438.27 (  1.66%)
+Hmean    recv-16384    37866.79 (  0.00%)    38283.73 (  1.10%)
 
-lock_acquire+0xc3/0x1d0
-? cpufreq_offline_prepare+0x92/0x2d0
-down_write+0x3f/0x70
-? cpufreq_offline_prepare+0x92/0x2d0
-cpufreq_offline_prepare+0x92/0x2d0
-cpufreq_cpu_callback+0x45/0x50
-notifier_call_chain+0x39/0xa0
-__raw_notifier_call_chain+0x9/0x10
-_cpu_down+0x9e/0x330
-? vprintk_emit+0x2cb/0x610
-? vprintk_emit+0x324/0x610
-? vprintk_default+0x1a/0x20
-disable_nonboot_cpus+0xc0/0x350
-suspend_devices_and_enter+0x409/0xb30
-pm_suspend+0x53f/0x8c0
-state_store+0x77/0xe0
-kobj_attr_store+0xf/0x20
-sysfs_kf_write+0x40/0x50
-kernfs_fop_write+0x13c/0x180
-__vfs_write+0x23/0xe0
-? percpu_down_read+0x52/0x90
-? __sb_start_write+0xb2/0xf0
-? __sb_start_write+0xb2/0xf0
-vfs_write+0xa2/0x190
-? __fget_light+0x6a/0x90
-SyS_write+0x44/0xb0
-entry_SYSCALL_64_fastpath+0x16/0x73
+               4.5.0-rc2   4.5.0-rc2
+                 vanilla sample-v1r1
+Mean %Busy         37.30       37.10
+Mean CPU%c1        37.52       37.30
+Mean CPU%c3         0.10        0.10
+Mean CPU%c6        25.08       25.49
+Mean CPU%c7         0.00        0.00
+Mean CorWatt       11.20       11.18
+Mean PkgWatt       13.30       13.28
+Max  %Busy         50.64       51.73
+Max  CPU%c1        49.80       50.53
+Max  CPU%c3         9.14        8.95
+Max  CPU%c6        62.46       63.48
+Max  CPU%c7         0.00        0.00
+Max  CorWatt       16.46       16.44
+Max  PkgWatt       18.58       18.55
 
+In this test, the client/server are pinned to cores so the scheduler
+decisions are not a factor. There is still a mild performance boost
+with no impact on power consumption.
+
+cyclictest-pinned
+                            4.5.0-rc2             4.5.0-rc2
+                              vanilla           sample-v1r1
+Amean    LatAvg        3.00 (  0.00%)        2.64 ( 11.94%)
+Amean    LatMax      156.93 (  0.00%)      106.89 ( 31.89%)
+
+               4.5.0-rc2   4.5.0-rc2
+                 vanilla sample-v1r1
+Mean %Busy         99.74       99.73
+Mean CPU%c1         0.02        0.02
+Mean CPU%c3         0.00        0.01
+Mean CPU%c6         0.23        0.24
+Mean CPU%c7         0.00        0.00
+Mean CorWatt        5.06        5.92
+Mean PkgWatt        7.12        7.99
+Max  %Busy        100.00      100.00
+Max  CPU%c1         3.88        3.50
+Max  CPU%c3         0.71        0.99
+Max  CPU%c6        41.79       43.17
+Max  CPU%c7         0.00        0.00
+Max  CorWatt        6.80        8.66
+Max  PkgWatt        8.85       10.71
+
+This test measures how quickly a task wakes up after a timeout. The test
+could be defeated by selecting a different timeout value that is outside
+the new hold-off value. Furthermore, a workload that is very sensitive to
+wakeup latencies should use the performance governor.  Nevertheless it's
+interesting to note the impact of increasing the hold-off value.  There is
+an increase in power usage because the CPU remains active during sleep times.
+
+In all cases, there are some CPU migrations because wakers pull wakees to
+nearby CPUs. It could be argued that the workload should be pinned but this
+puts a burden on the user that may not even be possible in all cases. The
+scheduler could try keeping processes on the same CPUs but that would impact
+cache hotness and cause a different class of issues. It is inevitable that
+there will be some conflict between power management and scheduling decisions
+but there is some gains from delaying idling slightly without a severe impact
+on power consumption.
+
+Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+---
+ drivers/cpufreq/intel_pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index cd83d477e32d..54250084174a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -999,7 +999,7 @@ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ 	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+ 	duration_us = ktime_us_delta(cpu->sample.time,
+ 				     cpu->last_sample_time);
+-	if (duration_us > sample_time * 3) {
++	if (duration_us > sample_time * 12) {
+ 		sample_ratio = div_fp(int_tofp(sample_time),
+ 				      int_tofp(duration_us));
+ 		core_busy = mul_fp(core_busy, sample_ratio);
 -- 
-Joonas Lahtinen
-Open Source Technology Center
-Intel Corporation
-
+2.6.4
