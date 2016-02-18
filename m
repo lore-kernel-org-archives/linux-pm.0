@@ -1,64 +1,64 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH] thermal: hisilicon: increase temperature resolution
-Date: Thu, 18 Feb 2016 17:39:00 +0800
-Message-ID: <20160218093900.GA28887@leoy-linaro>
-References: <1451452382-4498-1-git-send-email-leo.yan@linaro.org>
+Subject: Re: [PATCH] thermal: use %d to print S32 parameters
+Date: Thu, 18 Feb 2016 17:42:22 +0800
+Message-ID: <20160218094222.GB28887@leoy-linaro>
+References: <1452674036-14907-1-git-send-email-leo.yan@linaro.org>
+ <20160113092216.GB2594@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:36040 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1425811AbcBRJjI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 04:39:08 -0500
-Received: by mail-pa0-f41.google.com with SMTP id yy13so27871083pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 01:39:08 -0800 (PST)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34090 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1425910AbcBRJma (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 04:42:30 -0500
+Received: by mail-pa0-f50.google.com with SMTP id fy10so27960727pac.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 01:42:29 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1451452382-4498-1-git-send-email-leo.yan@linaro.org>
+In-Reply-To: <20160113092216.GB2594@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kongxinwei <kong.kongxinwei@hisilicon.com>
+To: Javi Merino <javi.merino@arm.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rui, Eduardo,
-
-On Wed, Dec 30, 2015 at 01:13:02PM +0800, Leo Yan wrote:
-> When calculate temperature, old code firstly do division and then
-> convert to "millicelsius" unit. This will lose resolution and only can
-> read back temperature with "Celsius" unit.
+On Wed, Jan 13, 2016 at 09:22:16AM +0000, Javi Merino wrote:
+> On Wed, Jan 13, 2016 at 04:33:56PM +0800, Leo Yan wrote:
+> > Power allocator's parameters are S32 type, so use %d to print them.
 > 
-> So firstly scale step value to "millicelsius" and then do division, so
-> finally we can increase resolution for temperature value. Also refine
-> the calculation from temperature value to step value.
+> Indeed.  The name of the macro is create_s32_tzp_attr(), it's
+> explicitly saying that the parameter is signed!
 > 
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> 
+> Acked-by: Javi Merino <javi.merino@arm.com>
 
-Could you help merge this patch?
+Rui, Eduardo,
+
+Could you help merge this patch as well?
 
 Thanks,
 Leo Yan
 
-> ---
->  drivers/thermal/hisi_thermal.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 36d0729..5e820b5 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -68,12 +68,12 @@ static inline int _step_to_temp(int step)
->  	 * Every step equals (1 * 200) / 255 celsius, and finally
->  	 * need convert to millicelsius.
->  	 */
-> -	return (HISI_TEMP_BASE + (step * 200 / 255)) * 1000;
-> +	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
->  }
->  
->  static inline long _temp_to_step(long temp)
->  {
-> -	return ((temp / 1000 - HISI_TEMP_BASE) * 255 / 200);
-> +	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
->  }
->  
->  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-> -- 
-> 1.9.1
+> Cheers,
+> Javi
 > 
+> > ---
+> >  drivers/thermal/thermal_core.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index d9e525c..1335df2 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -931,7 +931,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+> >  	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
+> >  									\
+> >  	if (tz->tzp)							\
+> > -		return sprintf(buf, "%u\n", tz->tzp->name);		\
+> > +		return sprintf(buf, "%d\n", tz->tzp->name);		\
+> >  	else								\
+> >  		return -EIO;						\
+> >  	}								\
+> > -- 
+> > 1.9.1
+> > 
