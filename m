@@ -1,37 +1,53 @@
-From: Felipe Franciosi <felipe@nutanix.com>
-Subject: [PATCH v2] Documentation: cpufreq: intel_pstate: fix typo
-Date: Thu, 18 Feb 2016 00:21:27 +0000
-Message-ID: <1455754887-3168-1-git-send-email-felipe@nutanix.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cpc92322-cmbg19-2-0-cust996.5-4.cable.virginm.net ([86.26.35.229]:50955
-	"EHLO centos.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1424695AbcBRKKU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 05:10:20 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Thu, 18 Feb 2016 10:25:54 +0000
+Message-ID: <56C59C32.1000903@linaro.org>
+References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
+ <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
+ <CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
+ <CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, Felipe Franciosi <felipe@nutanix.com>
 
-This just swaps a colon for a quote in the intel_pstate documentation.
+On 02/17/2016 11:21 PM, Rafael J. Wysocki wrote:
 
-Signed-off-by: Felipe Franciosi <felipe@nutanix.com>
----
- Documentation/cpu-freq/intel-pstate.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+[ ... ]
 
-diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
-index f7b12c0..e6bd1e6 100644
---- a/Documentation/cpu-freq/intel-pstate.txt
-+++ b/Documentation/cpu-freq/intel-pstate.txt
-@@ -25,7 +25,7 @@ callback, so cpufreq core can't request a transition to a specific frequency.
- The driver provides minimum and maximum frequency limits and callbacks to set a
- policy. The policy in cpufreq sysfs is referred to as the "scaling governor".
- The cpufreq core can request the driver to operate in any of the two policies:
--"performance: and "powersave". The driver decides which frequency to use based
-+"performance" and "powersave". The driver decides which frequency to use based
- on the above policy selection considering minimum and maximum frequency limits.
- 
- The Intel P-State driver falls under the latter category, which implements the
--- 
-1.7.1
+>>> Reviewed-by: Nicolas Pitre <nico@linaro.org>
+>>
+>> Well, I'm likely overlooking something, but how is this going to be
+>> hooked up to the code in idle.c?
+>
+> My somewhat educated guess is that sched_idle() in your patch is
+> intended to replace cpuidle_idle_call(), right?
 
+Well, no. I was planning to first have it to use a different code path=20
+as experimental code in order to focus improving the accuracy of the=20
+prediction and then merge or replace cpuidle_idle_call() with sched_idl=
+e().
+
+> If so, why do you want to replace it?
+>
+> And assuming that you have a good enough reason to do that, you need
+> to ensure that suspend-to-idle will work anyway.
+
+Yes, sure.
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
