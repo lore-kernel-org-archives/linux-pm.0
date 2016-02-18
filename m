@@ -1,77 +1,133 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Thu, 18 Feb 2016 21:22:37 +0100
-Message-ID: <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<2044559.7ypXocW9OZ@vostro.rjw.lan>
-	<3499355.2JlaSruvOa@vostro.rjw.lan>
-	<16016177.YFqb4gVNBo@vostro.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 1/1] intel_pstate: Increase hold-off time before busyness is scaled
+Date: Thu, 18 Feb 2016 13:09:26 -0800
+Message-ID: <001101d16a90$a7a26e10$f6e74a30$@net>
+References: <1455793883-14214-1-git-send-email-mgorman@techsingularity.net> <CAJZ5v0hSLJRkOKQ0UvJsSs0o-NuHiE+gOnC+f0q8vQtciABP2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <16016177.YFqb4gVNBo@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta12.telus.net ([209.171.16.85]:34200 "EHLO cmta12.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965499AbcBRVJb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Feb 2016 16:09:31 -0500
+In-Reply-To: <CAJZ5v0hSLJRkOKQ0UvJsSs0o-NuHiE+gOnC+f0q8vQtciABP2Q@mail.gmail.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Mel Gorman' <mgorman@techsingularity.net>
+Cc: 'Rafael Wysocki' <rjw@rjwysocki.net>, 'Ingo Molnar' <mingo@kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Matt Fleming' <matt@codeblueprint.co.uk>, 'Mike Galbraith' <umgwanakikbuti@gmail.com>, 'Linux-PM' <linux-pm@vger.kernel.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
 
-On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Introduce a mechanism by which parts of the cpufreq subsystem
-> ("setpolicy" drivers or the core) can register callbacks to be
-> executed from cpufreq_update_util() which is invoked by the
-> scheduler's update_load_avg() on CPU utilization changes.
->
-> This allows the "setpolicy" drivers to dispense with their timers
-> and do all of the computations they need and frequency/voltage
-> adjustments in the update_load_avg() code path, among other things.
->
-> The update_load_avg() changes were suggested by Peter Zijlstra.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->
-> Changes from v9:
-> - Move the additional RT/DL hooks back to update_curr_rt/dl() (Peter says
->   that's OK), but only call them if updating the current CPU's rq, update
->   the cpufreq_trigger_update() kerneldoc.
->
-> Changes from v8:
-> - Peter thinks that cpufreq hooks in update_curr_rt/dl() are overkill so
->   move them to task_tick_rt/dl() and enqueue_task_rt/dl() (in case RT/DL
->   tasks are only active between ticks), update the cpufreq_trigger_update()
->   kerneldoc.
->
-> Changes from v7
-> - cpufreq_trigger_update() has a kerneldoc describing it as a band-aid to
->   be replaced in the future and the comments next to its call sites ask
->   the reader to see that comment.
->
->   No functional changes.
->
-> Changes from v6:
-> - Steve suggested to use rq_clock() instead of rq_clock_task() as the time
->   argument for cpufreq_update_util() as that seems to be more suitable for
->   this purpose.
->
-> ---
->  drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/cpufreq.h   |   34 ++++++++++++++++++++++++++++++++++
->  kernel/sched/deadline.c   |    4 ++++
->  kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
->  kernel/sched/rt.c         |    4 ++++
->  kernel/sched/sched.h      |    1 +
->  6 files changed, 113 insertions(+), 1 deletion(-)
+On 2106.02.18 Rafael J. Wysocki wrote:
+On Thu, Feb 18, 2016 at 12:11 PM, Mel Gorman wrote:
+>>
+>> Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+>> ---
+>>  drivers/cpufreq/intel_pstate.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index cd83d477e32d..54250084174a 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -999,7 +999,7 @@ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+>>         sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+>>         duration_us = ktime_us_delta(cpu->sample.time,
+>>                                      cpu->last_sample_time);
+>> -       if (duration_us > sample_time * 3) {
+>> +       if (duration_us > sample_time * 12) {
+>>                 sample_ratio = div_fp(int_tofp(sample_time),
+>>                                       int_tofp(duration_us));
+>>                 core_busy = mul_fp(core_busy, sample_ratio);
+>> --
 
-So if anyone has any issues with this one, please let me know.
+The immediately preceding comment needs to be changed also.
+Note that with duration related scaling only coming in at such a high
+ratio it might be worth saving the divide and just setting it to 0.
 
-It has been in linux-next for a few days and seems to be doing well.
+> I've been considering making a change like this, but I wasn't quite
+> sure how much greater the multiplier should be, so I've queued this
+> one up for 4.6.
 
-As I said previously, there is a metric ton of cpufreq improvements
-depending on it, so I'd rather not delay integrating it any more.
+> That said please note that we're planning to make one significant
+> change to intel_pstate in the 4.6 cycle that's very likely to affect
+> your results.
 
-Thanks,
-Rafael
+Rafael:
+
+I started to test Mel's change added to your 3 patch set version 10.
+
+I only have one data point so far, I selected the test I did from one of Mel's
+better results (although there is no reason to expect my computer to have
+best results for the same operating conditions):
+
+Stock kernel 4.5-rc4 just for reference:
+Linux s15 4.5.0-040500rc4-generic #201602141731 SMP Sun Feb 14 22:33:37 UTC 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+        Command line used: iozone -s 401408 -r 32 -f bla.bla -i 0
+        Output is in Kbytes/sec
+
+              KB  reclen   write rewrite
+          401408      32 1895293 3035291
+_________________________________________________________________
+
+Kernel 4.5-rc4 + jrw 3 patch set version 10  (nominal 3X duration holdoff)
+Linux s15 4.5.0-rc4-rjwv10 #167 SMP Mon Feb 15 14:23:10 PST 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+        Command line used: iozone -s 401408 -r 32 -f bla.bla -i 0
+        Output is in Kbytes/sec
+
+              KB  reclen   write rewrite
+          401408      32 2010558 3086354
+          401408      32 1945126 3127472
+          401408      32 1944807 3110387
+          401408      32 1948620 3110002
+                     AVE 1962278 3108554
+
+Performance mode, for comparison:
+
+              KB  reclen   write rewrite
+          401408      32 2870111 5023311
+          401408      32 2869642 5149213
+          401408      32 2792053 5100280
+          401408      32 2863887 5149229
+_________________________________________________________________
+
+Kernel 4.5-rc4 + jrw 3 patch set version 10 + mg 12X duration hold-off
+Linux s15 4.5.0-rc4-rjwv10-12 #169 SMP Thu Feb 18 08:15:33 PST 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+        Command line used: iozone -s 401408 -r 32 -f bla.bla -i 0
+        Output is in Kbytes/sec
+
+              KB  reclen   write rewrite
+          401408      32 1989670 3100580
+          401408      32 2062291 3112463
+          401408      32 2107637 3233567
+          401408      32 2111772 3340610
+                     AVE 2067843 3196805
+          Gain Verses 3X    5.4%    2.8%
+_________________________________________________________________
+
+Mel: Did you observe any downside conditions?
+
+For example, here is just an example taken some trace samples from my computer:
+
+Duration kick in = 3X
+Core busy = 101
+Current pstate = 16
+Load = 2.2%
+Duration = 43.815 mSec
+Scaled busy = 48
+Next Pstate = 16 (= minimum for my computer)
+
+If duration kick in = 12X then
+Scaled busy = 214
+Next pstate = 38 (= Max turbo for my computer)
+
+Note: I do NOT have an operational example where it matters in terms
+of energy use or whatever. I just suggesting that we look.
+
+... Doug
+
+
