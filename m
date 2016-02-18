@@ -1,67 +1,118 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
-Date: Thu, 18 Feb 2016 16:31:22 +0000
-Message-ID: <56C5F1DA.2060705@nvidia.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
- <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
- <7hh9hdzflv.fsf@baylibre.com> <56C1B62B.5060708@nvidia.com>
- <CAPDyKFoPrFoMOFxC37zXX4L3VdLKknaw_LUTw7ycr9mfa_=7_A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 12/12] cpufreq: governor: Narrow down the dbs_data_mutex coverage
+Date: Thu, 18 Feb 2016 17:32:45 +0100
+Message-ID: <CAJZ5v0iH_1y4xu-Q1FVAjX21Guv9wmeuMp9aoHV5myw01Kkp7A@mail.gmail.com>
+References: <2938006.67J0esUvOA@vostro.rjw.lan>
+	<8616971.q0P8tF6lFz@vostro.rjw.lan>
+	<20160218062040.GR2610@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFoPrFoMOFxC37zXX4L3VdLKknaw_LUTw7ycr9mfa_=7_A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160218062040.GR2610@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Feb 18, 2016 at 7:20 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 18-02-16, 02:38, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Since cpufreq_governor_dbs() is now always called with policy->rwsem
+>> held, it cannot be executed twice in parallel for the same policy.
+>> Thus it is not necessary to hold dbs_data_mutex around the invocations
+>> of cpufreq_governor_start/stop/limits() from it as those functions
+>> never modify any data that can be shared between different policies.
+>>
+>> However, cpufreq_governor_dbs() may be executed twice in parallal
+>> for different policies using the same gov->gdbs_data object and
+>> dbs_data_mutex is still necessary to protect that object against
+>> concurrent updates.
+>>
+>> For this reason, narrow down the dbs_data_mutex locking to
+>> cpufreq_governor_init/exit() where it is needed and rename the
+>> mutex to gov_dbs_data_mutex to reflect its purpose.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/cpufreq/cpufreq_governor.c |   53 ++++++++++++++++++-------------------
+>>  1 file changed, 27 insertions(+), 26 deletions(-)
+>>
+>> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+>> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+>> @@ -24,7 +24,7 @@
+>>
+>>  static DEFINE_PER_CPU(struct cpu_dbs_info, cpu_dbs);
+>>
+>> -static DEFINE_MUTEX(dbs_data_mutex);
+>> +static DEFINE_MUTEX(gov_dbs_data_mutex);
+>>
+>>  /* Common sysfs tunables */
+>>  /**
+>> @@ -422,10 +422,10 @@ static void free_policy_dbs_info(struct
+>>  static int cpufreq_governor_init(struct cpufreq_policy *policy)
+>>  {
+>>       struct dbs_governor *gov = dbs_governor_of(policy);
+>> -     struct dbs_data *dbs_data = gov->gdbs_data;
+>> +     struct dbs_data *dbs_data;
+>>       struct policy_dbs_info *policy_dbs;
+>>       unsigned int latency;
+>> -     int ret;
+>> +     int ret = 0;
+>>
+>>       /* State should be equivalent to EXIT */
+>>       if (policy->governor_data)
+>> @@ -435,6 +435,10 @@ static int cpufreq_governor_init(struct
+>>       if (!policy_dbs)
+>>               return -ENOMEM;
+>>
+>> +     /* Protect gov->gdbs_data against concurrent updates. */
+>> +     mutex_lock(&gov_dbs_data_mutex);
+>> +
+>> +     dbs_data = gov->gdbs_data;
+>>       if (dbs_data) {
+>>               if (WARN_ON(have_governor_per_policy())) {
+>>                       ret = -EINVAL;
+>> @@ -447,8 +451,7 @@ static int cpufreq_governor_init(struct
+>>               dbs_data->usage_count++;
+>>               list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
+>>               mutex_unlock(&dbs_data->mutex);
+>> -
+>> -             return 0;
+>> +             goto out;
+>>       }
+>>
+>>       dbs_data = kzalloc(sizeof(*dbs_data), GFP_KERNEL);
+>> @@ -488,10 +491,14 @@ static int cpufreq_governor_init(struct
+>>       ret = kobject_init_and_add(&dbs_data->kobj, &gov->kobj_type,
+>>                                  get_governor_parent_kobj(policy),
+>>                                  "%s", gov->gov.name);
+>> -     if (!ret)
+>> -             return 0;
+>> +     if (ret)
+>> +             goto err;
+>>
+>> -     /* Failure, so roll back. */
+>> +out:
+>> +     mutex_unlock(&gov_dbs_data_mutex);
+>> +     return ret;
+>> +
+>> +err:
+>
+> This has turned into an ugly maze, really. I think it would be much
+> better if we sacrifice a bit on consistency in the code, and move the
+> locks in cpufreq_governor_dbs() around invocations to
+> cpufreq_governor_init(). Or maybe create a
+> __cpufreq_governor_init(), or whatever.
+>
+> That routine is hardly readably anymore.
 
-On 18/02/16 16:00, Ulf Hansson wrote:
-> [...]
-> 
->>>
->>> What about the pm_clk_* API which was built for tracking clocks
->>> associated with devices for runtime PM.
->>>
->>> IOW, you could pm_clk_add(pg->pmc->dev, pg->clks[i]) and then your
->>> _enable_clocks() would become pm_clk_suspend() an dyour
->>> _disable_clocks() would become pm_clk_resume().
->>
->> Very interesting, I was not aware of this.
->>
->>> I might not be following the mapping between PMC and PGs though so not
->>> sure pg->pmc->dev is the right struct device, but you get the idea.
->>
->> Yes, so this will not work here as-is, because the pmc->dev is common to
->> all pm-domains (it is the device that creates all the pm-domains). So to
->> make this work, I would need to create a device for each pm-domain and
->> add the clocks to that.
->>
->> I see that this works very well for normal drivers, but it does not feel
->> so natural for pm-domains where we don't have a device struct today. By
->> the way, the rockchip pm-domains implementation is very much in the same
->> boat as tegra, where there are multiple clocks per pm-domain and it is
->> handled by a simple list. So I am not sure if you think that we should
->> be turning all pm-domains registered by pm_genpd_init() into a device
->> and then we can make use of these pm_clk_XXXX() APIs?
->>
->> I have implemented the generic clk APIs that Ulf and I discussed for
->> handling multiple clocks, but if we think that this is a better way,
->> then I will hold off for now.
-> 
-> I think Kevin has a point that we already have PM clocks to build upon.
-> Could we perhaps try to extend that API instead to suite this needs as well?
+Yes, it's not pretty, but I can still read it just fine.  Maybe that's
+because I'm used to things like that. :-)
 
-We certainly could and I am not against it, however, it means that we
-need to create a device structure for each pm-domain. If you and Kevin
-are ok with me adding this to pm_genpd_init(), then I can give it a try.
+But OK, you have a point.  I'll rework this one.
 
-> I do realize that it will make this patchset more complicated. As I
-> stated earlier, this was just an idea I had, so to be clear I won't
-> hold back an ack for this patchset, if you decide to deal with this in
-> separate "improvement" step.
-
-Thanks
-Jon
+Thanks,
+Rafael
