@@ -1,107 +1,73 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC v2] gpio: rcar: Add Runtime PM handling for interrupts
-Date: Thu, 18 Feb 2016 17:06:30 +0100
-Message-ID: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 3/3] ARM64: dts: mt8173: Add thermal/auxadc device nodes
+Date: Thu, 18 Feb 2016 17:18:49 +0100
+Message-ID: <56C5EEE9.4020407@gmail.com>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-4-git-send-email-s.hauer@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1448883753-19068-4-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
+Hi Sascha,
 
-When using a GPIO purely as an interrupt source, no Runtime PM handling
-is done, and the GPIO module's clock may not be enabled.
+On 30/11/15 12:42, Sascha Hauer wrote:
+> This adds the thermal controller and auxadc nodes to the Mediatek MT8173
+> dtsi file.
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+> ---
+>   arch/arm64/boot/dts/mediatek/mt8173.dtsi | 17 +++++++++++++++++
+>   1 file changed, 17 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> index 06a1564..e2ddd03 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -277,6 +277,11 @@
+>   				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+>   		};
+>
+> +		auxadc: auxadc@11001000 {
+> +			compatible = "mediatek,mt8173-auxadc";
 
-To fix this:
-  - Add .irq_request_resources() and .irq_release_resources() callbacks
-    to handle Runtime PM when an interrupt is requested,
-  - Add irq_bus_lock() and sync_unlock() callbacks to handle Runtime PM
-    when e.g. disabling/enabling an interrupt, or configuring the
-    interrupt type.
+Can you please write a small Documentation about the binding.
+I suppose it will be mediatek,auxadc and mediatek,mt8173-auxadc.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-This fixes ravb Ethernet on r8a7795/Salvator-X, which was "broken" by
-commit d5c3d84657db57bd ("net: phy: Avoid polling PHY with
-PHY_IGNORE_INTERRUPTS").
+I can't do it my self, as my datasheet lacks the auxadc registers.
 
-Does it also fix the HDMI interrupt on r8a7791/Koelsch?
+Thanks,
+Matthias
 
-v2:
-  - Handle Runtime PM in .irq_bus_{lock,sync_unlock}() instead of
-    .irq_{dis,en}able() and .irq_set_type(),
-  - Drop WARN() checks, they were just for testing.
-    In case of failures, please re-add
-
-	WARN(pm_runtime_suspended(&p->pdev->dev),
-				  "%s: %s is runtime-suspended\n", __func__,
-				  dev_name(&p->pdev->dev));
-
-    to gpio_rcar_read() and gpio_rcar_write().
----
- drivers/gpio/gpio-rcar.c | 42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
-
-diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
-index cf41440aff91971e..d9ab0cd1d2059635 100644
---- a/drivers/gpio/gpio-rcar.c
-+++ b/drivers/gpio/gpio-rcar.c
-@@ -196,6 +196,44 @@ static int gpio_rcar_irq_set_wake(struct irq_data *d, unsigned int on)
- 	return 0;
- }
- 
-+static void gpio_rcar_irq_bus_lock(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
-+
-+	pm_runtime_get_sync(&p->pdev->dev);
-+}
-+
-+static void gpio_rcar_irq_bus_sync_unlock(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
-+
-+	pm_runtime_put(&p->pdev->dev);
-+}
-+
-+
-+static int gpio_rcar_irq_request_resources(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
-+	int error;
-+
-+	error = pm_runtime_get_sync(&p->pdev->dev);
-+	if (error < 0)
-+		return error;
-+
-+	return 0;
-+}
-+
-+static void gpio_rcar_irq_release_resources(struct irq_data *d)
-+{
-+	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
-+	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
-+
-+	pm_runtime_put(&p->pdev->dev);
-+}
-+
- static irqreturn_t gpio_rcar_irq_handler(int irq, void *dev_id)
- {
- 	struct gpio_rcar_priv *p = dev_id;
-@@ -450,6 +488,10 @@ static int gpio_rcar_probe(struct platform_device *pdev)
- 	irq_chip->irq_unmask = gpio_rcar_irq_enable;
- 	irq_chip->irq_set_type = gpio_rcar_irq_set_type;
- 	irq_chip->irq_set_wake = gpio_rcar_irq_set_wake;
-+	irq_chip->irq_bus_lock = gpio_rcar_irq_bus_lock;
-+	irq_chip->irq_bus_sync_unlock = gpio_rcar_irq_bus_sync_unlock;
-+	irq_chip->irq_request_resources = gpio_rcar_irq_request_resources;
-+	irq_chip->irq_release_resources = gpio_rcar_irq_release_resources;
- 	irq_chip->flags	= IRQCHIP_SET_TYPE_MASKED | IRQCHIP_MASK_ON_SUSPEND;
- 
- 	ret = gpiochip_add_data(gpio_chip, p);
--- 
-1.9.1
+> +			reg = <0 0x11001000 0 0x1000>;
+> +		};
+> +
+>   		uart0: serial@11002000 {
+>   			compatible = "mediatek,mt8173-uart",
+>   				     "mediatek,mt6577-uart";
+> @@ -487,6 +492,18 @@
+>   			clock-names = "source", "hclk";
+>   			status = "disabled";
+>   		};
+> +
+> +		thermal: thermal@1100b000 {
+> +			#thermal-sensor-cells = <0>;
+> +			compatible = "mediatek,mt8173-thermal";
+> +			reg = <0 0x1100b000 0 0x1000>;
+> +			interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
+> +			clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> +			clock-names = "therm", "auxadc";
+> +			resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+> +			mediatek,auxadc = <&auxadc>;
+> +			mediatek,apmixedsys = <&apmixedsys>;
+> +		};
+>   	};
+>   };
+>
+>
