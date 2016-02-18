@@ -1,62 +1,77 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle period
-Date: Thu, 18 Feb 2016 20:57:17 +0100
-Message-ID: <CAJZ5v0icpNoW3SFxvsj5bSo9MnH3cvthece1bMVJRHm7i8HhAw@mail.gmail.com>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
-	<1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
-	<alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
-	<CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
-	<CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
-	<56C59C32.1000903@linaro.org>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
+ utilization update callbacks
+Date: Thu, 18 Feb 2016 21:22:37 +0100
+Message-ID: <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+	<2044559.7ypXocW9OZ@vostro.rjw.lan>
+	<3499355.2JlaSruvOa@vostro.rjw.lan>
+	<16016177.YFqb4gVNBo@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f196.google.com ([209.85.217.196]:33730 "EHLO
-	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946956AbcBRT5T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 14:57:19 -0500
-In-Reply-To: <56C59C32.1000903@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <16016177.YFqb4gVNBo@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Thu, Feb 18, 2016 at 11:25 AM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> On 02/17/2016 11:21 PM, Rafael J. Wysocki wrote:
+On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> [ ... ]
+> Introduce a mechanism by which parts of the cpufreq subsystem
+> ("setpolicy" drivers or the core) can register callbacks to be
+> executed from cpufreq_update_util() which is invoked by the
+> scheduler's update_load_avg() on CPU utilization changes.
 >
->>>> Reviewed-by: Nicolas Pitre <nico@linaro.org>
->>>
->>>
->>> Well, I'm likely overlooking something, but how is this going to be
->>> hooked up to the code in idle.c?
->>
->>
->> My somewhat educated guess is that sched_idle() in your patch is
->> intended to replace cpuidle_idle_call(), right?
+> This allows the "setpolicy" drivers to dispense with their timers
+> and do all of the computations they need and frequency/voltage
+> adjustments in the update_load_avg() code path, among other things.
 >
+> The update_load_avg() changes were suggested by Peter Zijlstra.
 >
-> Well, no. I was planning to first have it to use a different code path as
-> experimental code in order to focus improving the accuracy of the prediction
-> and then merge or replace cpuidle_idle_call() with sched_idle().
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>
+> Changes from v9:
+> - Move the additional RT/DL hooks back to update_curr_rt/dl() (Peter says
+>   that's OK), but only call them if updating the current CPU's rq, update
+>   the cpufreq_trigger_update() kerneldoc.
+>
+> Changes from v8:
+> - Peter thinks that cpufreq hooks in update_curr_rt/dl() are overkill so
+>   move them to task_tick_rt/dl() and enqueue_task_rt/dl() (in case RT/DL
+>   tasks are only active between ticks), update the cpufreq_trigger_update()
+>   kerneldoc.
+>
+> Changes from v7
+> - cpufreq_trigger_update() has a kerneldoc describing it as a band-aid to
+>   be replaced in the future and the comments next to its call sites ask
+>   the reader to see that comment.
+>
+>   No functional changes.
+>
+> Changes from v6:
+> - Steve suggested to use rq_clock() instead of rq_clock_task() as the time
+>   argument for cpufreq_update_util() as that seems to be more suitable for
+>   this purpose.
+>
+> ---
+>  drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/cpufreq.h   |   34 ++++++++++++++++++++++++++++++++++
+>  kernel/sched/deadline.c   |    4 ++++
+>  kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
+>  kernel/sched/rt.c         |    4 ++++
+>  kernel/sched/sched.h      |    1 +
+>  6 files changed, 113 insertions(+), 1 deletion(-)
 
-In that case, what about making it a proper cpuidle governor that
-people can test and play with in a usual way?  Then it may potentially
-benefit everybody and not just your experimental setup and you may get
-coverage on systems you have no access to normally.
+So if anyone has any issues with this one, please let me know.
 
-There is some boilerplate code to add for this purpose, but that's not
-that bad IMO.
+It has been in linux-next for a few days and seems to be doing well.
 
->
->> If so, why do you want to replace it?
->>
-
-So I'm still unsure why you want to replace cpuidle_idle_call() with
-sched_idle().  Is there anything wrong with it that it needs to be
-replaced?
+As I said previously, there is a metric ton of cpufreq improvements
+depending on it, so I'd rather not delay integrating it any more.
 
 Thanks,
 Rafael
