@@ -1,108 +1,190 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 7/12] cpufreq: ondemand: Rework the handling of powersave bias updates
-Date: Thu, 18 Feb 2016 02:28:24 +0100
-Message-ID: <2373952.xlh20cNGZI@vostro.rjw.lan>
-References: <2938006.67J0esUvOA@vostro.rjw.lan>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RFC 3/3] ARM: dts: Don't overheat the Odroid XU3-Lite on high load
+Date: Thu, 18 Feb 2016 10:47:21 +0900
+Message-ID: <56C522A9.8070800@samsung.com>
+References: <1455692128-28504-1-git-send-email-k.kozlowski@samsung.com>
+ <1455692128-28504-4-git-send-email-k.kozlowski@samsung.com>
+ <CANAwSgQHiJGSYB7Qhq066Mqfskwrr_3SDQGXH-WN=Wt3SEF-QA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2938006.67J0esUvOA@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CANAwSgQHiJGSYB7Qhq066Mqfskwrr_3SDQGXH-WN=Wt3SEF-QA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: Kukjin Kim <kgene@kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-arm-kernel@lists.infradead.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 18.02.2016 04:53, Anand Moon wrote:
+> Hi Krzysztof,
+> 
+> On 17 February 2016 at 12:25, Krzysztof Kozlowski
+> <k.kozlowski@samsung.com> wrote:
+>> After adding cpufreq-dt support to Exynos542x, the Odroid XU3-Lite can
+>> be easily overheated when launching eight CPU-intensive tasks:
+>>         thermal thermal_zone3: critical temperature reached(121 C),shutting down
+>>
+>> This seems to be specific to Odroid XU3-Lite board which officially
+>> supports lower frequencies than regular XU3 or XU4. When working at
+>> maximum CPU speed (1800 MHz big and 1300 MHz LITTLE) in warmer place for
+>> longer time, the fan fails to cool down the board and it reaches
+>> critical temperature.
+>>
+>> Add CPU cooling to Exynos5422/5800 to fix this issue. When reaching 95
+>> degrees of Celsius, the board will slow down by 3 steps (around
+>> 1400/1000 MHz). When reaching 110 degrees of Celsius go to 600 MHz.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> ---
+>>  arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi | 41 +++++++++++++++++++++++++++
+>>  1 file changed, 41 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+>> index 2b289d7c0d13..66073ce29aee 100644
+>> --- a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+>> @@ -34,6 +34,16 @@
+>>                                         hysteresis = <5000>; /* millicelsius */
+>>                                         type = "active";
+>>                                 };
+>> +                               cpu_alert3: cpu-alert-3 {
+>> +                                       temperature = <95000>; /* millicelsius */
+>> +                                       hysteresis = <5000>; /* millicelsius */
+>> +                                       type = "passive";
+>> +                               };
+>> +                               cpu_alert4: cpu-alert-4 {
+>> +                                       temperature = <110000>; /* millicelsius */
+>> +                                       hysteresis = <5000>; /* millicelsius */
+>> +                                       type = "passive";
+>> +                               };
+>>                                 cpu_crit0: cpu-crit-0 {
+>>                                         temperature = <120000>; /* millicelsius */
+>>                                         hysteresis = <0>; /* millicelsius */
+>> @@ -53,6 +63,37 @@
+>>                                      trip = <&cpu_alert2>;
+>>                                      cooling-device = <&fan0 2 3>;
+>>                                 };
+>> +
+>> +                               /*
+>> +                                * When reaching cpu_alert3, reduce CPU
+>> +                                * by 3 steps. On Exynos5422/5800 that would
+>> +                                * be: 1400 MHz and 1000 MHz.
+>> +                                */
+>> +                               map3 {
+>> +                                    trip = <&cpu_alert3>;
+>> +                                    cooling-device = <&cpu0 3 3>;
+>> +                               };
+>> +                               map4 {
+>> +                                    trip = <&cpu_alert3>;
+>> +                                    cooling-device = <&cpu4 3 3>;
+>> +                               };
+>> +
+>> +                               /*
+>> +                                * When reaching cpu_alert4, reduce CPU
+>> +                                * to 600 MHz (11 steps for big, 7 steps for
+>> +                                * LITTLE).
+>> +                                * Exynos5420 has less OPPs and reversed
+>> +                                * numbering of CPUs (big/LITTLE) so this
+>> +                                * would not match.
+>> +                                */
+>> +                               map5 {
+>> +                                    trip = <&cpu_alert4>;
+>> +                                    cooling-device = <&cpu0 7 7>;
+>> +                               };
+>> +                               map6 {
+>> +                                    trip = <&cpu_alert4>;
+>> +                                    cooling-device = <&cpu4 11 11>;
+>> +                               };
+>>                         };
+>>                 };
+>>         };
+>> --
+>> 2.5.0
+>>
+> 
+> could you append this patch with following changes.
 
-The ondemand_powersave_bias_init() function used for resetting data
-fields related to the powersave bias tunable of the ondemand governor
-works by walking all of the online CPUs in the system and updating the
-od_cpu_dbs_info_s structures for all of them.
+Could you describe why?
 
-However, if governor tunables are per policy, the update should not
-touch the CPUs that are not associated with the given dbs_data.
+> diff --git a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> index 66073ce..4e72637 100644
+> --- a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> +++ b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
+> @@ -16,8 +16,8 @@
+>         thermal-zones {
+>                 cpu0_thermal: cpu0-thermal {
+>                         thermal-sensors = <&tmu_cpu0 0>;
+> -                       polling-delay-passive = <0>;
+> -                       polling-delay = <0>;
+> +                       polling-delay-passive = <250>; /* milliseconds */
+> +                       polling-delay = <500>; /* milliseconds */
+>                         trips {
+>                                 cpu_alert0: cpu-alert-0 {
+>                                         temperature = <50000>; /*
+> millicelsius */
+> ---
+> On running linaro pm-qa diagnostic tool
+> ----------------------------------------------------------
+> 
+> thermal_01.28: checking 'thermal_zone2'/'trip_point_2_temp' ='110000'...    Ok
+> thermal_01.29: checking 'cdev0_trip_point' exists in
+> '/sys/devices/virtual/thermal/thermal_zone0'... Ok
+> thermal_01.30: checking 'thermal_zone0/cdev0_trip_point' valid binding...   Ok
+> thermal_01.31: checking 'cdev4_trip_point' exists in
+> '/sys/devices/virtual/thermal/thermal_zone0'... Ok
+> thermal_01.32: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+> thermal_01.33: checking 'cdev4_trip_point' exists in
+> '/sys/devices/virtual/thermal/thermal_zone0'... Ok
+> thermal_01.34: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+> thermal_01.35: checking 'cdev4_trip_point' exists in
+> '/sys/devices/virtual/thermal/thermal_zone0'... Ok
+> thermal_01.36: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+> thermal_01.37: checking 'cdev4_trip_point' exists in
+> '/sys/devices/virtual/thermal/thermal_zone0'... Ok
+> thermal_01.38: checking 'thermal_zone0/cdev4_trip_point' valid binding...   Err
+> 
+> thermal_01: fail
+> -------------------------------------------------------
+> I also got lot's of error.
+> 
+> root@odroidxu4l:~# cpu[ 3050.847663] cpu cpu4: Failed to find dev_opp: -19
+> [ 3171.640836] cpu cpu4: device_opp_debug_create_link: Failed to create link
+> [ 3171.646197] cpu cpu4: _add_list_dev: Failed to register opp debugfs (-12)
+> [ 3171.653574] cpu cpu7: device_opp_debug_create_link: Failed to create link
+> [ 3171.659752] cpu cpu7: _add_list_dev: Failed to register opp debugfs (-12)
+> [ 3171.697011] cpu cpu5: cpufreq_init: failed to get clk: -2
+> [ 3171.732505] cpu cpu6: cpufreq_init: failed to get clk: -2
+> [ 3171.768160] cpu cpu7: cpufreq_init: failed to get clk: -2
+> 
+> Tested on Odroid-XU4
+> 
+> Reviewed-by: Anand Moon <linux.amoon@gmail.com>
+> Tested-by: Anand Moon <linux.amoon@gmail.com>
 
-Moreover, since the data fields in question are only ever used for
-policy->cpu in each policy governed by ondemand, the update can be
-limited to those specific CPUs.
+The patch is not sufficient. It does not work the way it should...
 
-Rework the code to take the above observations into account.
+BTW, I found the issue. The order of trip points in DT:
+thermal_zone0/trip_point_0_hyst:5000
+thermal_zone0/trip_point_0_temp:50000
+thermal_zone0/trip_point_0_type:active
+thermal_zone0/trip_point_1_hyst:5000
+thermal_zone0/trip_point_1_temp:60000
+thermal_zone0/trip_point_1_type:active
+thermal_zone0/trip_point_2_hyst:5000
+thermal_zone0/trip_point_2_temp:70000
+thermal_zone0/trip_point_2_type:active
+thermal_zone0/trip_point_3_hyst:0
+thermal_zone0/trip_point_3_temp:120000	<---- this should be last one!
+thermal_zone0/trip_point_3_type:critical
+thermal_zone0/trip_point_4_hyst:5000
+thermal_zone0/trip_point_4_temp:90000
+thermal_zone0/trip_point_4_type:passive
+thermal_zone0/trip_point_5_hyst:5000
+thermal_zone0/trip_point_5_temp:110000
+thermal_zone0/trip_point_5_type:passive
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_ondemand.c |   30 +++++++++++++-----------------
- 1 file changed, 13 insertions(+), 17 deletions(-)
+After fixing the order in DT, the cpu cooler starts working.
 
-Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-@@ -34,14 +34,6 @@ static struct od_ops od_ops;
- 
- static unsigned int default_powersave_bias;
- 
--static void ondemand_powersave_bias_init_cpu(int cpu)
--{
--	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
--
--	dbs_info->freq_table = cpufreq_frequency_get_table(cpu);
--	dbs_info->freq_lo = 0;
--}
--
- /*
-  * Not all CPUs want IO time to be accounted as busy; this depends on how
-  * efficient idling at a higher frequency/voltage is.
-@@ -120,12 +112,13 @@ static unsigned int generic_powersave_bi
- 	return freq_hi;
- }
- 
--static void ondemand_powersave_bias_init(void)
-+static void ondemand_powersave_bias_init(struct cpufreq_policy *policy)
- {
--	int i;
--	for_each_online_cpu(i) {
--		ondemand_powersave_bias_init_cpu(i);
--	}
-+	unsigned int cpu = policy->cpu;
-+	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-+
-+	dbs_info->freq_table = cpufreq_frequency_get_table(cpu);
-+	dbs_info->freq_lo = 0;
- }
- 
- static void dbs_freq_increase(struct cpufreq_policy *policy, unsigned int freq)
-@@ -306,6 +299,7 @@ static ssize_t store_powersave_bias(stru
- 		size_t count)
- {
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-+	struct policy_dbs_info *policy_dbs;
- 	unsigned int input;
- 	int ret;
- 	ret = sscanf(buf, "%u", &input);
-@@ -317,7 +311,10 @@ static ssize_t store_powersave_bias(stru
- 		input = 1000;
- 
- 	od_tuners->powersave_bias = input;
--	ondemand_powersave_bias_init();
-+
-+	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list)
-+		ondemand_powersave_bias_init(policy_dbs->policy);
-+
- 	return count;
- }
- 
-@@ -398,11 +395,10 @@ static void od_exit(struct dbs_data *dbs
- 
- static void od_start(struct cpufreq_policy *policy)
- {
--	unsigned int cpu = policy->cpu;
--	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-+	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
- 
- 	dbs_info->sample_type = OD_NORMAL_SAMPLE;
--	ondemand_powersave_bias_init_cpu(cpu);
-+	ondemand_powersave_bias_init(policy);
- }
- 
- define_get_cpu_dbs_routines(od_cpu_dbs_info);
+Best regards,
+Krzysztof
