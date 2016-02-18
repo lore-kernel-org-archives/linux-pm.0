@@ -1,114 +1,111 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v2 3/3] ARM: dts: Don't overheat the Odroid XU3-Lite on high
- load
-Date: Thu, 18 Feb 2016 14:13:03 +0900
-Message-ID: <1455772383-20598-3-git-send-email-k.kozlowski@samsung.com>
-References: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 3/3] thermal: exynos: Print a message about exceeded number of
+ supported trip-points
+Date: Thu, 18 Feb 2016 14:14:20 +0900
+Message-ID: <1455772460-20684-3-git-send-email-k.kozlowski@samsung.com>
+References: <1455772460-20684-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1455772460-20684-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-After adding cpufreq-dt support to Exynos542x, the Odroid XU3-Lite can
-be easily overheated when launching eight CPU-intensive tasks:
-	thermal thermal_zone3: critical temperature reached(121 C),shutting down
+When DeviveTree contains more trip-points than SoC can configure
+(usually more than four) and polling mode is not enabled, then the
+remaining trip-points will be silently ignored. No interrupts will be
+generated for them.
 
-This seems to be specific to Odroid XU3-Lite board which officially
-supports lower frequencies than regular XU3 or XU4. When working at
-maximum CPU speed (1800 MHz big and 1300 MHz LITTLE) in warmer place for
-longer time, the fan fails to cool down the board and it reaches
-critical temperature.
+This might be quite dangerous when one provides DTB with a
+non-configurable critical trip-point, like (assuming four supported
+thresholds in TMU):
+ - alert @50 C (type: active),
+ - alert @60 C (type: active),
+ - alert @70 C (type: active),
+ - alert @80 C (type: active),
+ - critical @120 C (type: critical) <- no interrupts generated.
 
-Add CPU cooling to Exynos5422/5800 to fix this issue. When reaching last
-interrupt-driven trip-point (70 degrees of Celsius) start passive
-cooling in polling mode (slowing CPU by 2 steps). When reaching 85
-degrees of Celsius, start slowing even more, down to 600 MHz.
+This is a mistake in DTB so print a message in such case.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-
 ---
+ drivers/thermal/samsung/exynos_tmu.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Changes since v1:
-1. Use polling mode for passive cooling (number of configurable trip
-   points in TMU exceeded).
-
-2. Adjust the values (temperature and cooling levels).
----
- arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi | 46 ++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
-index 2b289d7c0d13..3e4c4ad96d63 100644
---- a/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
-+++ b/arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi
-@@ -16,7 +16,7 @@
- 	thermal-zones {
- 		cpu0_thermal: cpu0-thermal {
- 			thermal-sensors = <&tmu_cpu0 0>;
--			polling-delay-passive = <0>;
-+			polling-delay-passive = <250>;
- 			polling-delay = <0>;
- 			trips {
- 				cpu_alert0: cpu-alert-0 {
-@@ -39,6 +39,23 @@
- 					hysteresis = <0>; /* millicelsius */
- 					type = "critical";
- 				};
-+				/*
-+				 * Exyunos542x support only 4 trip-points
-+				 * so for these polling mode is required.
-+				 * Start polling at temperature level of last
-+				 * interrupt-driven trip: cpu_alert2
-+				 */
-+				cpu_alert3: cpu-alert-3 {
-+					temperature = <70000>; /* millicelsius */
-+					hysteresis = <10000>; /* millicelsius */
-+					type = "passive";
-+				};
-+				cpu_alert4: cpu-alert-4 {
-+					temperature = <85000>; /* millicelsius */
-+					hysteresis = <10000>; /* millicelsius */
-+					type = "passive";
-+				};
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index fa61eff88496..6c6f59ba7423 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -184,6 +184,7 @@
+  * @temp_error2: fused value of the second point trim.
+  * @regulator: pointer to the TMU regulator structure.
+  * @reg_conf: pointer to structure to register with core thermal.
++ * @ntrip: number of supported trip points.
+  * @tmu_initialize: SoC specific TMU initialization method
+  * @tmu_control: SoC specific TMU control method
+  * @tmu_read: SoC specific TMU temperature read method
+@@ -203,6 +204,7 @@ struct exynos_tmu_data {
+ 	u16 temp_error1, temp_error2;
+ 	struct regulator *regulator;
+ 	struct thermal_zone_device *tzd;
++	unsigned int ntrip;
+ 
+ 	int (*tmu_initialize)(struct platform_device *pdev);
+ 	void (*tmu_control)(struct platform_device *pdev, bool on);
+@@ -346,6 +348,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+ 	int ret;
+ 
++	if (of_thermal_get_ntrips(data->tzd) > data->ntrip) {
++		dev_info(&pdev->dev,
++			 "More trip points than supported by this TMU.\n");
++		dev_info(&pdev->dev,
++			 "%d trip points should be configured in polling mode.\n",
++			 (of_thermal_get_ntrips(data->tzd) - data->ntrip));
++	}
 +
- 			};
- 			cooling-maps {
- 				map0 {
-@@ -53,6 +70,33 @@
- 				     trip = <&cpu_alert2>;
- 				     cooling-device = <&fan0 2 3>;
- 				};
-+				/*
-+				 * When reaching cpu_alert3, reduce CPU
-+				 * by 2 steps. On Exynos5422/5800 that would
-+				 * be: 1500 MHz and 1100 MHz.
-+				 */
-+				map3 {
-+				     trip = <&cpu_alert3>;
-+				     cooling-device = <&cpu0 0 2>;
-+				};
-+				map4 {
-+				     trip = <&cpu_alert3>;
-+				     cooling-device = <&cpu4 0 2>;
-+				};
-+
-+				/*
-+				 * When reaching cpu_alert4, reduce CPU
-+				 * further, down to 600 MHz (11 steps for big,
-+				 * 7 steps for LITTLE).
-+				 */
-+				map5 {
-+				     trip = <&cpu_alert4>;
-+				     cooling-device = <&cpu0 3 7>;
-+				};
-+				map6 {
-+				     trip = <&cpu_alert4>;
-+				     cooling-device = <&cpu4 3 11>;
-+				};
- 			};
- 		};
- 	};
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
+ 	if (!IS_ERR(data->clk_sec))
+@@ -1210,6 +1220,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_control = exynos4210_tmu_control;
+ 		data->tmu_read = exynos4210_tmu_read;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		data->ntrip = 4;
+ 		break;
+ 	case SOC_ARCH_EXYNOS3250:
+ 	case SOC_ARCH_EXYNOS4412:
+@@ -1222,6 +1233,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos4412_tmu_read;
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		data->ntrip = 4;
+ 		break;
+ 	case SOC_ARCH_EXYNOS5433:
+ 		data->tmu_initialize = exynos5433_tmu_initialize;
+@@ -1229,6 +1241,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos4412_tmu_read;
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		data->ntrip = 8;
+ 		break;
+ 	case SOC_ARCH_EXYNOS5440:
+ 		data->tmu_initialize = exynos5440_tmu_initialize;
+@@ -1236,6 +1249,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos5440_tmu_read;
+ 		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
++		data->ntrip = 4;
+ 		break;
+ 	case SOC_ARCH_EXYNOS7:
+ 		data->tmu_initialize = exynos7_tmu_initialize;
+@@ -1243,6 +1257,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 		data->tmu_read = exynos7_tmu_read;
+ 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
+ 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
++		data->ntrip = 8;
+ 		break;
+ 	default:
+ 		dev_err(&pdev->dev, "Platform not supported\n");
 -- 
 2.5.0
