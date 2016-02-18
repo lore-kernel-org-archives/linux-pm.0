@@ -1,8 +1,7 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 3/3] thermal: exynos: Print a message about exceeded number of
- supported trip-points
-Date: Thu, 18 Feb 2016 14:14:20 +0900
-Message-ID: <1455772460-20684-3-git-send-email-k.kozlowski@samsung.com>
+Subject: [PATCH 2/3] thermal: exynos: Document number of supported trip-points
+Date: Thu, 18 Feb 2016 14:14:19 +0900
+Message-ID: <1455772460-20684-2-git-send-email-k.kozlowski@samsung.com>
 References: <1455772460-20684-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1455772460-20684-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,101 +10,32 @@ To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-When DeviveTree contains more trip-points than SoC can configure
-(usually more than four) and polling mode is not enabled, then the
-remaining trip-points will be silently ignored. No interrupts will be
-generated for them.
-
-This might be quite dangerous when one provides DTB with a
-non-configurable critical trip-point, like (assuming four supported
-thresholds in TMU):
- - alert @50 C (type: active),
- - alert @60 C (type: active),
- - alert @70 C (type: active),
- - alert @80 C (type: active),
- - critical @120 C (type: critical) <- no interrupts generated.
-
-This is a mistake in DTB so print a message in such case.
+Document the number of configurable temperature thresholds (for
+trip-points in interrupt-driven mode).
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index fa61eff88496..6c6f59ba7423 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -184,6 +184,7 @@
-  * @temp_error2: fused value of the second point trim.
-  * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
-+ * @ntrip: number of supported trip points.
-  * @tmu_initialize: SoC specific TMU initialization method
-  * @tmu_control: SoC specific TMU control method
-  * @tmu_read: SoC specific TMU temperature read method
-@@ -203,6 +204,7 @@ struct exynos_tmu_data {
- 	u16 temp_error1, temp_error2;
- 	struct regulator *regulator;
- 	struct thermal_zone_device *tzd;
-+	unsigned int ntrip;
- 
- 	int (*tmu_initialize)(struct platform_device *pdev);
- 	void (*tmu_control)(struct platform_device *pdev, bool on);
-@@ -346,6 +348,14 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 	int ret;
- 
-+	if (of_thermal_get_ntrips(data->tzd) > data->ntrip) {
-+		dev_info(&pdev->dev,
-+			 "More trip points than supported by this TMU.\n");
-+		dev_info(&pdev->dev,
-+			 "%d trip points should be configured in polling mode.\n",
-+			 (of_thermal_get_ntrips(data->tzd) - data->ntrip));
-+	}
+diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+index 34315d7fbfde..faa62059b5c5 100644
+--- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+@@ -44,6 +44,14 @@
+ - vtmu-supply: This entry is optional and provides the regulator node supplying
+ 		voltage to TMU. If needed this entry can be placed inside
+ 		board/platform specific dts file.
 +
- 	mutex_lock(&data->lock);
- 	clk_enable(data->clk);
- 	if (!IS_ERR(data->clk_sec))
-@@ -1210,6 +1220,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_control = exynos4210_tmu_control;
- 		data->tmu_read = exynos4210_tmu_read;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-+		data->ntrip = 4;
- 		break;
- 	case SOC_ARCH_EXYNOS3250:
- 	case SOC_ARCH_EXYNOS4412:
-@@ -1222,6 +1233,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_read = exynos4412_tmu_read;
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-+		data->ntrip = 4;
- 		break;
- 	case SOC_ARCH_EXYNOS5433:
- 		data->tmu_initialize = exynos5433_tmu_initialize;
-@@ -1229,6 +1241,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_read = exynos4412_tmu_read;
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-+		data->ntrip = 8;
- 		break;
- 	case SOC_ARCH_EXYNOS5440:
- 		data->tmu_initialize = exynos5440_tmu_initialize;
-@@ -1236,6 +1249,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_read = exynos5440_tmu_read;
- 		data->tmu_set_emulation = exynos5440_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos5440_tmu_clear_irqs;
-+		data->ntrip = 4;
- 		break;
- 	case SOC_ARCH_EXYNOS7:
- 		data->tmu_initialize = exynos7_tmu_initialize;
-@@ -1243,6 +1257,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		data->tmu_read = exynos7_tmu_read;
- 		data->tmu_set_emulation = exynos4412_tmu_set_emulation;
- 		data->tmu_clear_irqs = exynos4210_tmu_clear_irqs;
-+		data->ntrip = 8;
- 		break;
- 	default:
- 		dev_err(&pdev->dev, "Platform not supported\n");
++The Exynos TMU supports generating interrupts when reaching given
++temperature thresholds. Number of supported thermal trip points depends
++on the SoC (only first trip points defined in DT will be configured):
++ - most of SoC: 4
++ - samsung,exynos5433-tmu: 8
++ - samsung,exynos7-tmu: 8
++
+ Following properties are mandatory (depending on SoC):
+ - samsung,tmu_gain: Gain value for internal TMU operation.
+ - samsung,tmu_reference_voltage: Value of TMU IP block's reference voltage
 -- 
 2.5.0
