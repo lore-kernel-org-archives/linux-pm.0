@@ -1,53 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Thu, 18 Feb 2016 10:25:54 +0000
-Message-ID: <56C59C32.1000903@linaro.org>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
- <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
- <alpine.LFD.2.20.1602161137400.13632@knanqh.ubzr>
- <CAJZ5v0h=BGTn5wFLBEusomSV9ny-CJM1ZA1XkFrJPjz01gzwDg@mail.gmail.com>
- <CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Thu, 18 Feb 2016 11:56:03 +0100
+Message-ID: <20160218105603.GE3939@pengutronix.de>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+ <20151217193332.GB7999@localhost.localdomain>
+ <20160104141940.GI13058@pengutronix.de>
+ <20160119072917.GA13237@pengutronix.de>
+ <1454295246.22151.6.camel@mtksdaap41>
+ <CAGS+omD9U8tKmb02d_gMMAGX18MJZhz0RrugpBK2EuqgZrBy6g@mail.gmail.com>
+ <CAGS+omArr0_-ziBXWjEcKS0bqnruNzZc2aq2s3zkghUC7_HfGw@mail.gmail.com>
+ <56C4A875.6080908@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0id8+8oWLxDTJhewH3rKFvKPuAzMoOeg4xy2J097yCd9w@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <56C4A875.6080908@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Daniel Kurtz <djkurtz@chromium.org>, Eddie Huang <eddie.huang@mediatek.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/17/2016 11:21 PM, Rafael J. Wysocki wrote:
+On Wed, Feb 17, 2016 at 06:05:57PM +0100, Matthias Brugger wrote:
+> 
+> 
+> On 15/02/16 03:14, Daniel Kurtz wrote:
+> >On Mon, Feb 15, 2016 at 10:11 AM, Daniel Kurtz <djkurtz@chromium.org> wrote:
+> >>Hi Eduardo, Sascha,
+> >>
+> >>>>Any input on this? I really like to get this driver upstream as it is
+> >>>>currently blocking other Mediatek drivers.
+> >>>>
+> >>>
+> >>>Hi Eduardo,
+> >>>
+> >>>Do you have any comment about Sascha's response ? We really hope get
+> >>>your comment since Mediatek thermal driver already reviewed in public
+> >>>over half years, and we have other patches [0] [1] depend on thermal
+> >>>driver.
+> >>>
+> >>>[0]:
+> >>>http://lists.infradead.org/pipermail/linux-arm-kernel/2015-December/394084.html
+> >>>[1]:
+> >>>http://lists.infradead.org/pipermail/linux-arm-kernel/2016-January/401055.html
+> >>
+> >>Friendly ping on the Mediatek thermal driver.
+> >>The "EFUSE" dependency has now landed in v4.5-rc4.
+> >
+> >Actually, it landed in char-misc-next, not v4.5-rc4.
+> >
+> >>So, AFAICT, the only thing left that may be blocking landing Mediatek
+> >>thermal driver is resolution of this discussion about thermal zones.
+> >>Can we kindly resolve this soon so we have a chance to land it in v4.6.
+> >>
+> 
+> 
+> I think the problem is, that Eduardo wants to see the hierachical thermal
+> zones being used. But there is still a discussion ongoing [1].
 
-[ ... ]
+It seems the original Author lost interest in the hierarchical thermal
+zones. I am not convinced that we need hierarchical thermal zones for
+the Mediatek driver since from the five sensors we only need the maximum
+temperature (If this ever changes we could still rework it).
 
->>> Reviewed-by: Nicolas Pitre <nico@linaro.org>
->>
->> Well, I'm likely overlooking something, but how is this going to be
->> hooked up to the code in idle.c?
->
-> My somewhat educated guess is that sched_idle() in your patch is
-> intended to replace cpuidle_idle_call(), right?
+Given the current speed of communication I am not willing to add
+another, possibly controversal, dependency to an otherwise simple
+driver. I am even less willing when concerns like these come after *v12*
+of this series.
 
-Well, no. I was planning to first have it to use a different code path=20
-as experimental code in order to focus improving the accuracy of the=20
-prediction and then merge or replace cpuidle_idle_call() with sched_idl=
-e().
+Eduardo, it would really help to get a word from you.
 
-> If so, why do you want to replace it?
->
-> And assuming that you have a good enough reason to do that, you need
-> to ensure that suspend-to-idle will work anyway.
+Sascha
 
-Yes, sure.
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
