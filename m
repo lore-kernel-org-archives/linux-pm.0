@@ -1,60 +1,107 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
-Date: Thu, 18 Feb 2016 17:00:08 +0100
-Message-ID: <CAPDyKFoPrFoMOFxC37zXX4L3VdLKknaw_LUTw7ycr9mfa_=7_A@mail.gmail.com>
-References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
-	<1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
-	<CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
-	<7hh9hdzflv.fsf@baylibre.com>
-	<56C1B62B.5060708@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56C1B62B.5060708-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC v2] gpio: rcar: Add Runtime PM handling for interrupts
+Date: Thu, 18 Feb 2016 17:06:30 +0100
+Message-ID: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
 
->>
->> What about the pm_clk_* API which was built for tracking clocks
->> associated with devices for runtime PM.
->>
->> IOW, you could pm_clk_add(pg->pmc->dev, pg->clks[i]) and then your
->> _enable_clocks() would become pm_clk_suspend() an dyour
->> _disable_clocks() would become pm_clk_resume().
->
-> Very interesting, I was not aware of this.
->
->> I might not be following the mapping between PMC and PGs though so not
->> sure pg->pmc->dev is the right struct device, but you get the idea.
->
-> Yes, so this will not work here as-is, because the pmc->dev is common to
-> all pm-domains (it is the device that creates all the pm-domains). So to
-> make this work, I would need to create a device for each pm-domain and
-> add the clocks to that.
->
-> I see that this works very well for normal drivers, but it does not feel
-> so natural for pm-domains where we don't have a device struct today. By
-> the way, the rockchip pm-domains implementation is very much in the same
-> boat as tegra, where there are multiple clocks per pm-domain and it is
-> handled by a simple list. So I am not sure if you think that we should
-> be turning all pm-domains registered by pm_genpd_init() into a device
-> and then we can make use of these pm_clk_XXXX() APIs?
->
-> I have implemented the generic clk APIs that Ulf and I discussed for
-> handling multiple clocks, but if we think that this is a better way,
-> then I will hold off for now.
+When using a GPIO purely as an interrupt source, no Runtime PM handling
+is done, and the GPIO module's clock may not be enabled.
 
-I think Kevin has a point that we already have PM clocks to build upon.
-Could we perhaps try to extend that API instead to suite this needs as well?
+To fix this:
+  - Add .irq_request_resources() and .irq_release_resources() callbacks
+    to handle Runtime PM when an interrupt is requested,
+  - Add irq_bus_lock() and sync_unlock() callbacks to handle Runtime PM
+    when e.g. disabling/enabling an interrupt, or configuring the
+    interrupt type.
 
-I do realize that it will make this patchset more complicated. As I
-stated earlier, this was just an idea I had, so to be clear I won't
-hold back an ack for this patchset, if you decide to deal with this in
-separate "improvement" step.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This fixes ravb Ethernet on r8a7795/Salvator-X, which was "broken" by
+commit d5c3d84657db57bd ("net: phy: Avoid polling PHY with
+PHY_IGNORE_INTERRUPTS").
 
-Kind regards
-Uffe
+Does it also fix the HDMI interrupt on r8a7791/Koelsch?
+
+v2:
+  - Handle Runtime PM in .irq_bus_{lock,sync_unlock}() instead of
+    .irq_{dis,en}able() and .irq_set_type(),
+  - Drop WARN() checks, they were just for testing.
+    In case of failures, please re-add
+
+	WARN(pm_runtime_suspended(&p->pdev->dev),
+				  "%s: %s is runtime-suspended\n", __func__,
+				  dev_name(&p->pdev->dev));
+
+    to gpio_rcar_read() and gpio_rcar_write().
+---
+ drivers/gpio/gpio-rcar.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
+index cf41440aff91971e..d9ab0cd1d2059635 100644
+--- a/drivers/gpio/gpio-rcar.c
++++ b/drivers/gpio/gpio-rcar.c
+@@ -196,6 +196,44 @@ static int gpio_rcar_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	return 0;
+ }
+ 
++static void gpio_rcar_irq_bus_lock(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++
++	pm_runtime_get_sync(&p->pdev->dev);
++}
++
++static void gpio_rcar_irq_bus_sync_unlock(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++
++	pm_runtime_put(&p->pdev->dev);
++}
++
++
++static int gpio_rcar_irq_request_resources(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++	int error;
++
++	error = pm_runtime_get_sync(&p->pdev->dev);
++	if (error < 0)
++		return error;
++
++	return 0;
++}
++
++static void gpio_rcar_irq_release_resources(struct irq_data *d)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(d);
++	struct gpio_rcar_priv *p = gpiochip_get_data(gc);
++
++	pm_runtime_put(&p->pdev->dev);
++}
++
+ static irqreturn_t gpio_rcar_irq_handler(int irq, void *dev_id)
+ {
+ 	struct gpio_rcar_priv *p = dev_id;
+@@ -450,6 +488,10 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+ 	irq_chip->irq_unmask = gpio_rcar_irq_enable;
+ 	irq_chip->irq_set_type = gpio_rcar_irq_set_type;
+ 	irq_chip->irq_set_wake = gpio_rcar_irq_set_wake;
++	irq_chip->irq_bus_lock = gpio_rcar_irq_bus_lock;
++	irq_chip->irq_bus_sync_unlock = gpio_rcar_irq_bus_sync_unlock;
++	irq_chip->irq_request_resources = gpio_rcar_irq_request_resources;
++	irq_chip->irq_release_resources = gpio_rcar_irq_release_resources;
+ 	irq_chip->flags	= IRQCHIP_SET_TYPE_MASKED | IRQCHIP_MASK_ON_SUSPEND;
+ 
+ 	ret = gpiochip_add_data(gpio_chip, p);
+-- 
+1.9.1
