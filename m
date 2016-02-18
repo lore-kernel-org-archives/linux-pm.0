@@ -1,113 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 12/12] cpufreq: governor: Narrow down the dbs_data_mutex
- coverage
-Date: Thu, 18 Feb 2016 11:50:40 +0530
-Message-ID: <20160218062040.GR2610@vireshk-i7>
-References: <2938006.67J0esUvOA@vostro.rjw.lan>
- <8616971.q0P8tF6lFz@vostro.rjw.lan>
+Subject: Re: [PATCH v2 1/3] ARM: dts: Add cooling levels for CPUs on exynos5420
+Date: Thu, 18 Feb 2016 11:51:13 +0530
+Message-ID: <20160218062113.GS2610@vireshk-i7>
+References: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <8616971.q0P8tF6lFz@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-02-16, 02:38, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 18-02-16, 14:13, Krzysztof Kozlowski wrote:
+> On Exynos5420 we support 8 cpufreq steps (600-1300 MHz) for LITTLE and
+> 12 steps for big core (700-1800 MHz). Add respective cooling cells.
 > 
-> Since cpufreq_governor_dbs() is now always called with policy->rwsem
-> held, it cannot be executed twice in parallel for the same policy.
-> Thus it is not necessary to hold dbs_data_mutex around the invocations
-> of cpufreq_governor_start/stop/limits() from it as those functions
-> never modify any data that can be shared between different policies.
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 > 
-> However, cpufreq_governor_dbs() may be executed twice in parallal
-> for different policies using the same gov->gdbs_data object and
-> dbs_data_mutex is still necessary to protect that object against
-> concurrent updates.
-> 
-> For this reason, narrow down the dbs_data_mutex locking to
-> cpufreq_governor_init/exit() where it is needed and rename the
-> mutex to gov_dbs_data_mutex to reflect its purpose.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/cpufreq/cpufreq_governor.c |   53 ++++++++++++++++++-------------------
->  1 file changed, 27 insertions(+), 26 deletions(-)
 > 
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -24,7 +24,7 @@
->  
->  static DEFINE_PER_CPU(struct cpu_dbs_info, cpu_dbs);
->  
-> -static DEFINE_MUTEX(dbs_data_mutex);
-> +static DEFINE_MUTEX(gov_dbs_data_mutex);
->  
->  /* Common sysfs tunables */
->  /**
-> @@ -422,10 +422,10 @@ static void free_policy_dbs_info(struct
->  static int cpufreq_governor_init(struct cpufreq_policy *policy)
->  {
->  	struct dbs_governor *gov = dbs_governor_of(policy);
-> -	struct dbs_data *dbs_data = gov->gdbs_data;
-> +	struct dbs_data *dbs_data;
->  	struct policy_dbs_info *policy_dbs;
->  	unsigned int latency;
-> -	int ret;
-> +	int ret = 0;
->  
->  	/* State should be equivalent to EXIT */
->  	if (policy->governor_data)
-> @@ -435,6 +435,10 @@ static int cpufreq_governor_init(struct
->  	if (!policy_dbs)
->  		return -ENOMEM;
->  
-> +	/* Protect gov->gdbs_data against concurrent updates. */
-> +	mutex_lock(&gov_dbs_data_mutex);
-> +
-> +	dbs_data = gov->gdbs_data;
->  	if (dbs_data) {
->  		if (WARN_ON(have_governor_per_policy())) {
->  			ret = -EINVAL;
-> @@ -447,8 +451,7 @@ static int cpufreq_governor_init(struct
->  		dbs_data->usage_count++;
->  		list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
->  		mutex_unlock(&dbs_data->mutex);
-> -
-> -		return 0;
-> +		goto out;
->  	}
->  
->  	dbs_data = kzalloc(sizeof(*dbs_data), GFP_KERNEL);
-> @@ -488,10 +491,14 @@ static int cpufreq_governor_init(struct
->  	ret = kobject_init_and_add(&dbs_data->kobj, &gov->kobj_type,
->  				   get_governor_parent_kobj(policy),
->  				   "%s", gov->gov.name);
-> -	if (!ret)
-> -		return 0;
-> +	if (ret)
-> +		goto err;
->  
-> -	/* Failure, so roll back. */
-> +out:
-> +	mutex_unlock(&gov_dbs_data_mutex);
-> +	return ret;
-> +
-> +err:
+> Changes since v1:
+> 1. Add cooling properties to all CPUs (suggested by Viresh).
+> ---
+>  arch/arm/boot/dts/exynos5420-cpus.dtsi | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
 
-This has turned into an ugly maze, really. I think it would be much
-better if we sacrifice a bit on consistency in the code, and move the
-locks in cpufreq_governor_dbs() around invocations to
-cpufreq_governor_init(). Or maybe create a
-__cpufreq_governor_init(), or whatever.
-
-That routine is hardly readably anymore.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
