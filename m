@@ -1,54 +1,37 @@
 From: Felipe Franciosi <felipe@nutanix.com>
-Subject: Re: [PATCH] Documentation: cpufreq: intel_pstate: fix typo
-Date: Thu, 18 Feb 2016 10:04:38 +0000
-Message-ID: <064A1C77-B90D-4A20-8C86-DFC41766FCCA@nutanix.com>
-References: <1455733473-1856-1-git-send-email-felipe@nutanix.com>
- <1455734312.7375.168.camel@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Subject: [PATCH v2] Documentation: cpufreq: intel_pstate: fix typo
+Date: Thu, 18 Feb 2016 00:21:27 +0000
+Message-ID: <1455754887-3168-1-git-send-email-felipe@nutanix.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0138.outbound.protection.outlook.com ([157.56.110.138]:52272
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1425923AbcBRKEk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Feb 2016 05:04:40 -0500
-In-Reply-To: <1455734312.7375.168.camel@linux.intel.com>
-Content-Language: en-US
-Content-ID: <E21000B2211EAC44B8A065ADCC4DFB15@namprd02.prod.outlook.com>
+Received: from cpc92322-cmbg19-2-0-cust996.5-4.cable.virginm.net ([86.26.35.229]:50955
+	"EHLO centos.localdomain" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1424695AbcBRKKU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 05:10:20 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, Felipe Franciosi <felipe@nutanix.com>
 
-TG9sIHlvdSBhcmUgcmlnaHQuIEknbGwgZml4IG15IHR5cG8gYW5kIHNlbmQgYSB2Mi4gOi0pDQoN
-Ckl0J3MgcmVhbGx5IHN3YXBwaW5nIGEgY29sb24gZm9yIGEgcXVvdGUgc3ltYm9sLCBub3QganVz
-dCByZW1vdmluZyB0aGUgY29sb24uIFNvIGl0IGxvb2tzIGxpa2UgdGhlIGN1cnJlbnQgdmVyc2lv
-biBoYXMgYSB0eXBvLiBCdXQgSSdsbCByZXBocmFzZSBzbGlnaHRseS4NCg0KQ2hlZXJzLA0KRmVs
-aXBlDQoNCg0KDQoNCg0KT24gMTcvMDIvMjAxNiAxODozOCwgIlNyaW5pdmFzIFBhbmRydXZhZGEi
-IDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4gd3JvdGU6DQoNCj5PbiBXZWQs
-IDIwMTYtMDItMTcgYXQgMTg6MjQgKzAwMDAsIEZlbGlwZSBGcmFuY2lvc2kgd3JvdGU6DQo+PiBU
-aGlzIGp1c3QgZml4ZXMgYSB0eXBvIGluIHRoZSBpbnRlbF9wc3RhdGUgZG9jdW1lbnRhaW9uLg0K
-Pj4gDQo+WW91IGFyZSBhZGRpbmcgdHlwbyBpbiB0aGUgY29tbWl0IG1lc3NhZ2UuLg0KPkFsc28g
-SSB3aWxsIG5vdCBjYWxsIHRoZSBjaGFuZ2UgYSB0eXBvLCByYXRoZXIgcmVtb3ZlIHRyYWlsaW5n
-IGNvbG9uDQo+ZnJvbSBwb2xpY3kgInBlcmZvcm1hbmNlIi4NCj4NCj4+IFNpZ25lZC1vZmYtYnk6
-IEZlbGlwZSBGcmFuY2lvc2kgPGZlbGlwZUBudXRhbml4LmNvbT4NCj4+IC0tLQ0KPj4gIERvY3Vt
-ZW50YXRpb24vY3B1LWZyZXEvaW50ZWwtcHN0YXRlLnR4dCB8ICAgIDIgKy0NCj4+ICAxIGZpbGVz
-IGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkNCj4+IA0KPj4gZGlmZiAt
-LWdpdCBhL0RvY3VtZW50YXRpb24vY3B1LWZyZXEvaW50ZWwtcHN0YXRlLnR4dA0KPj4gYi9Eb2N1
-bWVudGF0aW9uL2NwdS1mcmVxL2ludGVsLXBzdGF0ZS50eHQNCj4+IGluZGV4IGY3YjEyYzAuLmU2
-YmQxZTYgMTAwNjQ0DQo+PiAtLS0gYS9Eb2N1bWVudGF0aW9uL2NwdS1mcmVxL2ludGVsLXBzdGF0
-ZS50eHQNCj4+ICsrKyBiL0RvY3VtZW50YXRpb24vY3B1LWZyZXEvaW50ZWwtcHN0YXRlLnR4dA0K
-Pj4gQEAgLTI1LDcgKzI1LDcgQEAgY2FsbGJhY2ssIHNvIGNwdWZyZXEgY29yZSBjYW4ndCByZXF1
-ZXN0IGENCj4+IHRyYW5zaXRpb24gdG8gYSBzcGVjaWZpYyBmcmVxdWVuY3kuDQo+PiAgVGhlIGRy
-aXZlciBwcm92aWRlcyBtaW5pbXVtIGFuZCBtYXhpbXVtIGZyZXF1ZW5jeSBsaW1pdHMgYW5kDQo+
-PiBjYWxsYmFja3MgdG8gc2V0IGENCj4+ICBwb2xpY3kuIFRoZSBwb2xpY3kgaW4gY3B1ZnJlcSBz
-eXNmcyBpcyByZWZlcnJlZCB0byBhcyB0aGUgInNjYWxpbmcNCj4+IGdvdmVybm9yIi4NCj4+ICBU
-aGUgY3B1ZnJlcSBjb3JlIGNhbiByZXF1ZXN0IHRoZSBkcml2ZXIgdG8gb3BlcmF0ZSBpbiBhbnkg
-b2YgdGhlIHR3bw0KPj4gcG9saWNpZXM6DQo+PiAtInBlcmZvcm1hbmNlOiBhbmQgInBvd2Vyc2F2
-ZSIuIFRoZSBkcml2ZXIgZGVjaWRlcyB3aGljaCBmcmVxdWVuY3kgdG8NCj4+IHVzZSBiYXNlZA0K
-Pj4gKyJwZXJmb3JtYW5jZSIgYW5kICJwb3dlcnNhdmUiLiBUaGUgZHJpdmVyIGRlY2lkZXMgd2hp
-Y2ggZnJlcXVlbmN5IHRvDQo+PiB1c2UgYmFzZWQNCj4+ICBvbiB0aGUgYWJvdmUgcG9saWN5IHNl
-bGVjdGlvbiBjb25zaWRlcmluZyBtaW5pbXVtIGFuZCBtYXhpbXVtDQo+PiBmcmVxdWVuY3kgbGlt
-aXRzLg0KPj4gIA0KPj4gIFRoZSBJbnRlbCBQLVN0YXRlIGRyaXZlciBmYWxscyB1bmRlciB0aGUg
-bGF0dGVyIGNhdGVnb3J5LCB3aGljaA0KPj4gaW1wbGVtZW50cyB0aGUNCg==
+This just swaps a colon for a quote in the intel_pstate documentation.
+
+Signed-off-by: Felipe Franciosi <felipe@nutanix.com>
+---
+ Documentation/cpu-freq/intel-pstate.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+index f7b12c0..e6bd1e6 100644
+--- a/Documentation/cpu-freq/intel-pstate.txt
++++ b/Documentation/cpu-freq/intel-pstate.txt
+@@ -25,7 +25,7 @@ callback, so cpufreq core can't request a transition to a specific frequency.
+ The driver provides minimum and maximum frequency limits and callbacks to set a
+ policy. The policy in cpufreq sysfs is referred to as the "scaling governor".
+ The cpufreq core can request the driver to operate in any of the two policies:
+-"performance: and "powersave". The driver decides which frequency to use based
++"performance" and "powersave". The driver decides which frequency to use based
+ on the above policy selection considering minimum and maximum frequency limits.
+ 
+ The Intel P-State driver falls under the latter category, which implements the
+-- 
+1.7.1
+
