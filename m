@@ -1,69 +1,47 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 6/12] cpufreq: governor: Fix CPU load information updates
- via ->store
-Date: Thu, 18 Feb 2016 18:37:19 +0100
-Message-ID: <CAJZ5v0hcmz8z9hUXEMEv5oZrU72mK9Tj+ADYVrAs8tsbEsJuLw@mail.gmail.com>
-References: <2938006.67J0esUvOA@vostro.rjw.lan>
-	<1474960.ULEHzzY9qD@vostro.rjw.lan>
-	<20160218054442.GL2610@vireshk-i7>
+Subject: Re: [BUG FIX] PM / cpu_domains: Check for NULL callbacks
+Date: Thu, 18 Feb 2016 18:46:40 +0100
+Message-ID: <CAJZ5v0gXd573OM_xQBsqqaZoRWvT_px64Cx2avR5dCxCwmMWjA@mail.gmail.com>
+References: <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
+	<1455816573-43849-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:35425 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946428AbcBRRhV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 12:37:21 -0500
-In-Reply-To: <20160218054442.GL2610@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1455816573-43849-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ahaslam@baylibre.com, mtitinger@baylibre.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Feb 18, 2016 at 6:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 18-02-16, 02:26, Rafael J. Wysocki wrote:
->> Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
->> ===================================================================
->> --- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
->> +++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
->> @@ -29,6 +29,7 @@
->>
->>  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
->>
->> +static struct dbs_governor od_dbs_gov;
->>  static struct od_ops od_ops;
->>
->>  static unsigned int default_powersave_bias;
->> @@ -222,7 +223,6 @@ static ssize_t store_io_is_busy(struct d
->>  {
->>       unsigned int input;
->>       int ret;
->> -     unsigned int j;
->>
->>       ret = sscanf(buf, "%u", &input);
->>       if (ret != 1)
->> @@ -230,12 +230,8 @@ static ssize_t store_io_is_busy(struct d
->>       dbs_data->io_is_busy = !!input;
->>
->>       /* we need to re-evaluate prev_cpu_idle */
->> -     for_each_online_cpu(j) {
->> -             struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
->> -                                                                     j);
->> -             dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
->> -                     &dbs_info->cdbs.prev_cpu_wall, dbs_data->io_is_busy);
->> -     }
+On Thu, Feb 18, 2016 at 6:29 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Check for NULL platform callback before calling.
 >
-> We weren't doing ignore_nice_load check here, but will be done after
-> this patch. Will that make a different?
-
-Yes, IMO failing to update prev_cpu_nice if ignore_nice_load is set is
-at least inconsistent with the other updates.
-
-> And then this should be mentioned in the log as well ?
-
-OK, I'll update the changelog to mention that.
-
-> Apart from that.
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  drivers/base/power/cpu_domains.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
+> index 7069411..bcaa474 100644
+> --- a/drivers/base/power/cpu_domains.c
+> +++ b/drivers/base/power/cpu_domains.c
+> @@ -157,16 +157,22 @@ static int cpu_pd_power_on(struct generic_pm_domain *genpd)
+>  {
+>         struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+>
+> -       return pd->ops.power_on();
+> +       if (pd->ops.power_on)
+> +               return pd->ops.power_on();
+> +
+> +       return 0;
+>  }
 
-Thanks!
+I usually write things like that as
+
+return pd->ops.power_on ? pd->ops.power_on() : 0;
+
+That gets the job done in just one line of code instead of 4 and in
+one statement instead of 3.
+
+Thanks,
+Rafael
