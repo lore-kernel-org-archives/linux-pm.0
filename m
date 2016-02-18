@@ -1,44 +1,43 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: [PATCH 0/3] thermal: exynos: Fixes for vtmu-supply regulator handling
-Date: Thu, 18 Feb 2016 15:19:08 -0300
-Message-ID: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+Subject: [PATCH 3/3] thermal: exynos: Defer probe if vtmu is present but not registered
+Date: Thu, 18 Feb 2016 15:19:11 -0300
+Message-ID: <1455819551-4666-4-git-send-email-javier@osg.samsung.com>
+References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+The driver doesn't check if the regulator_get_optional return value is
+-EPROBE_DEFER so it will wrongly assume that the regulator couldn't be
+found just because the regulator driver wasn't registered yet, i.e:
 
-On a recent patch series to build a PMIC chip as a module [0], Krzysztof
-asked me to check if all the consumer drivers, using the resources that
-this PMIC provides, already support probe deferral.
+exynos-tmu 10060000.tmu: Regulator node (vtmu) not found
 
-While investigating that, I noticed that the Exynos TMU didn't do it so
-this series fix that bug and other two minor issues that I noticed while
-reviewing the driver and its DT binding.
+In this case the return value should be propagated to allow the driver
+probe function to be deferred until the regulator driver is registered.
 
-The series are on top of Krzysztof's patches [1,2,3] not because there's
-a dependency but to avoid merge conflicts with in-flight patches. Please
-let me know if you prefer to use a different base instead.
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
-[0]: https://lkml.org/lkml/2016/2/11/857
-[1]: https://patchwork.kernel.org/patch/8345791/
-[2]: https://patchwork.kernel.org/patch/8345741/
-[3]: https://patchwork.kernel.org/patch/8345701/
+---
 
-Best regards,
-Javier
+ drivers/thermal/samsung/exynos_tmu.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-
-Javier Martinez Canillas (3):
-  thermal: exynos: List vtmu-supply as optional property in DT binding
-  thermal: exynos: Use devm_regulator_get_optional() for vtmu
-  thermal: exynos: Defer probe if vtmu is present but not registered
-
- Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 9 ++++++---
- drivers/thermal/samsung/exynos_tmu.c                         | 4 +++-
- 2 files changed, 9 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index f4f36bba7be9..f3ce94ec73b5 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -1318,6 +1318,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 			return ret;
+ 		}
+ 	} else {
++		if (PTR_ERR(data->regulator) == -EPROBE_DEFER)
++			return -EPROBE_DEFER;
+ 		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
+ 	}
+ 
 -- 
 2.5.0
