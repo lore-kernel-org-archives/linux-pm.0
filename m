@@ -1,63 +1,123 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 6/12] cpufreq: governor: Fix CPU load information updates
- via ->store
-Date: Thu, 18 Feb 2016 11:14:42 +0530
-Message-ID: <20160218054442.GL2610@vireshk-i7>
+Subject: Re: [PATCH 7/12] cpufreq: ondemand: Rework the handling of powersave
+ bias updates
+Date: Thu, 18 Feb 2016 11:23:54 +0530
+Message-ID: <20160218055354.GM2610@vireshk-i7>
 References: <2938006.67J0esUvOA@vostro.rjw.lan>
- <1474960.ULEHzzY9qD@vostro.rjw.lan>
+ <2373952.xlh20cNGZI@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36693 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1424610AbcBRFoz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 00:44:55 -0500
-Received: by mail-pf0-f179.google.com with SMTP id e127so24947413pfe.3
-        for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 21:44:55 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1474960.ULEHzzY9qD@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <2373952.xlh20cNGZI@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 18-02-16, 02:26, Rafael J. Wysocki wrote:
+On 18-02-16, 02:28, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The ondemand_powersave_bias_init() function used for resetting data
+> fields related to the powersave bias tunable of the ondemand governor
+> works by walking all of the online CPUs in the system and updating the
+> od_cpu_dbs_info_s structures for all of them.
+> 
+> However, if governor tunables are per policy, the update should not
+> touch the CPUs that are not associated with the given dbs_data.
+> 
+> Moreover, since the data fields in question are only ever used for
+> policy->cpu in each policy governed by ondemand, the update can be
+> limited to those specific CPUs.
+
+Now that I am looking at struct **_cpu_dbs_info_s definitions, I think
+we need to change the design of the structures a bit. Only cdbs is
+something that is per-cpu and everything else is per-policy. And so we
+will be able to move the per-cpu structures present in individual
+governors into cpufreq_governor.c and save some memory.
+
+> Rework the code to take the above observations into account.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq_ondemand.c |   30 +++++++++++++-----------------
+>  1 file changed, 13 insertions(+), 17 deletions(-)
+> 
 > Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
 > ===================================================================
 > --- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
 > +++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -29,6 +29,7 @@
->  
->  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
->  
-> +static struct dbs_governor od_dbs_gov;
->  static struct od_ops od_ops;
+> @@ -34,14 +34,6 @@ static struct od_ops od_ops;
 >  
 >  static unsigned int default_powersave_bias;
-> @@ -222,7 +223,6 @@ static ssize_t store_io_is_busy(struct d
+>  
+> -static void ondemand_powersave_bias_init_cpu(int cpu)
+> -{
+> -	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+> -
+> -	dbs_info->freq_table = cpufreq_frequency_get_table(cpu);
+> -	dbs_info->freq_lo = 0;
+> -}
+> -
+>  /*
+>   * Not all CPUs want IO time to be accounted as busy; this depends on how
+>   * efficient idling at a higher frequency/voltage is.
+> @@ -120,12 +112,13 @@ static unsigned int generic_powersave_bi
+>  	return freq_hi;
+>  }
+>  
+> -static void ondemand_powersave_bias_init(void)
+> +static void ondemand_powersave_bias_init(struct cpufreq_policy *policy)
 >  {
+> -	int i;
+> -	for_each_online_cpu(i) {
+> -		ondemand_powersave_bias_init_cpu(i);
+> -	}
+> +	unsigned int cpu = policy->cpu;
+> +	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+> +
+> +	dbs_info->freq_table = cpufreq_frequency_get_table(cpu);
+> +	dbs_info->freq_lo = 0;
+>  }
+>  
+>  static void dbs_freq_increase(struct cpufreq_policy *policy, unsigned int freq)
+> @@ -306,6 +299,7 @@ static ssize_t store_powersave_bias(stru
+>  		size_t count)
+>  {
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+> +	struct policy_dbs_info *policy_dbs;
 >  	unsigned int input;
 >  	int ret;
-> -	unsigned int j;
->  
 >  	ret = sscanf(buf, "%u", &input);
->  	if (ret != 1)
-> @@ -230,12 +230,8 @@ static ssize_t store_io_is_busy(struct d
->  	dbs_data->io_is_busy = !!input;
+> @@ -317,7 +311,10 @@ static ssize_t store_powersave_bias(stru
+>  		input = 1000;
 >  
->  	/* we need to re-evaluate prev_cpu_idle */
-> -	for_each_online_cpu(j) {
-> -		struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
-> -									j);
-> -		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> -			&dbs_info->cdbs.prev_cpu_wall, dbs_data->io_is_busy);
-> -	}
+>  	od_tuners->powersave_bias = input;
+> -	ondemand_powersave_bias_init();
+> +
+> +	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list)
+> +		ondemand_powersave_bias_init(policy_dbs->policy);
+> +
+>  	return count;
+>  }
+>  
+> @@ -398,11 +395,10 @@ static void od_exit(struct dbs_data *dbs
+>  
+>  static void od_start(struct cpufreq_policy *policy)
+>  {
+> -	unsigned int cpu = policy->cpu;
+> -	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+> +	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
+>  
+>  	dbs_info->sample_type = OD_NORMAL_SAMPLE;
+> -	ondemand_powersave_bias_init_cpu(cpu);
+> +	ondemand_powersave_bias_init(policy);
+>  }
+>  
+>  define_get_cpu_dbs_routines(od_cpu_dbs_info);
 
-We weren't doing ignore_nice_load check here, but will be done after
-this patch. Will that make a different? And then this should be
-mentioned in the log as well ?
-
-Apart from that.
+I agree with the patch, but because we have all these fields per-cpu,
+I feel a bit scared while depending on policy->cpu for everything.
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
