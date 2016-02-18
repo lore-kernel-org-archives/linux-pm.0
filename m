@@ -1,44 +1,132 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC v2 03/12] PM / cpu_domains: Setup PM domains for
- CPUs/clusters
-Date: Wed, 17 Feb 2016 16:38:30 -0700
-Message-ID: <20160217233830.GA1313@linaro.org>
-References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
- <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/12] cpufreq: governor: Add a ->start callback for governors
+Date: Thu, 18 Feb 2016 02:21:21 +0100
+Message-ID: <2775883.CEf9mEMdYv@vostro.rjw.lan>
+References: <2938006.67J0esUvOA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:35395 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423790AbcBQXid (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Feb 2016 18:38:33 -0500
-Received: by mail-pf0-f170.google.com with SMTP id c10so20368286pfc.2
-        for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 15:38:33 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2938006.67J0esUvOA@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, Feb 12 2016 at 13:51 -0700, Lina Iyer wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
->+static int cpu_pd_power_on(struct generic_pm_domain *genpd)
->+{
->+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
->+
->+	return pd->ops.power_on();
+To avoid having to check the governor type explicitly in the common
+code in order to initialize data structures specific to the governor
+type properly, add a ->start callback to struct dbs_governor and
+use it to initialize those data structures for the ondemand and
+conservative governors.
 
-Needs a check for NULL ops.power_on() here.
->+}
->+
->+static int cpu_pd_power_off(struct generic_pm_domain *genpd)
->+{
->+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
->+
->+	return pd->ops.power_off(genpd->state_idx,
->+			genpd->states[genpd->state_idx].param);
-Needs a check for NULL ops.power_off().
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq_conservative.c |    9 +++++++++
+ drivers/cpufreq/cpufreq_governor.c     |   16 ++--------------
+ drivers/cpufreq/cpufreq_governor.h     |    1 +
+ drivers/cpufreq/cpufreq_ondemand.c     |   10 ++++++++++
+ 4 files changed, 22 insertions(+), 14 deletions(-)
 
-Thanks,
-Lina
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -517,7 +517,7 @@ static int cpufreq_governor_start(struct
+ 	struct dbs_governor *gov = dbs_governor_of(policy);
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+-	unsigned int sampling_rate, ignore_nice, j, cpu = policy->cpu;
++	unsigned int sampling_rate, ignore_nice, j;
+ 	unsigned int io_busy;
+ 
+ 	if (!policy->cur)
+@@ -543,19 +543,7 @@ static int cpufreq_governor_start(struct
+ 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ 	}
+ 
+-	if (gov->governor == GOV_CONSERVATIVE) {
+-		struct cs_cpu_dbs_info_s *cs_dbs_info =
+-			gov->get_cpu_dbs_info_s(cpu);
+-
+-		cs_dbs_info->down_skip = 0;
+-		cs_dbs_info->requested_freq = policy->cur;
+-	} else {
+-		struct od_ops *od_ops = gov->gov_ops;
+-		struct od_cpu_dbs_info_s *od_dbs_info = gov->get_cpu_dbs_info_s(cpu);
+-
+-		od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
+-		od_ops->powersave_bias_init_cpu(cpu);
+-	}
++	gov->start(policy);
+ 
+ 	gov_set_update_util(policy_dbs, sampling_rate);
+ 	return 0;
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -205,6 +205,7 @@ struct dbs_governor {
+ 	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
+ 	int (*init)(struct dbs_data *dbs_data, bool notify);
+ 	void (*exit)(struct dbs_data *dbs_data, bool notify);
++	void (*start)(struct cpufreq_policy *policy);
+ 
+ 	/* Governor specific ops, see below */
+ 	void *gov_ops;
+Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
+@@ -410,6 +410,15 @@ static void od_exit(struct dbs_data *dbs
+ 	kfree(dbs_data->tuners);
+ }
+ 
++static void od_start(struct cpufreq_policy *policy)
++{
++	unsigned int cpu = policy->cpu;
++	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
++
++	dbs_info->sample_type = OD_NORMAL_SAMPLE;
++	od_ops.powersave_bias_init_cpu(cpu);
++}
++
+ define_get_cpu_dbs_routines(od_cpu_dbs_info);
+ 
+ static struct od_ops od_ops = {
+@@ -432,6 +441,7 @@ static struct dbs_governor od_dbs_gov =
+ 	.gov_ops = &od_ops,
+ 	.init = od_init,
+ 	.exit = od_exit,
++	.start = od_start,
+ };
+ 
+ #define CPU_FREQ_GOV_ONDEMAND	(&od_dbs_gov.gov)
+Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
++++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
+@@ -279,6 +279,14 @@ static void cs_exit(struct dbs_data *dbs
+ 	kfree(dbs_data->tuners);
+ }
+ 
++static void cs_start(struct cpufreq_policy *policy)
++{
++	struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, policy->cpu);
++
++	dbs_info->down_skip = 0;
++	dbs_info->requested_freq = policy->cur;
++}
++
+ define_get_cpu_dbs_routines(cs_cpu_dbs_info);
+ 
+ static struct dbs_governor cs_dbs_gov = {
+@@ -295,6 +303,7 @@ static struct dbs_governor cs_dbs_gov =
+ 	.gov_dbs_timer = cs_dbs_timer,
+ 	.init = cs_init,
+ 	.exit = cs_exit,
++	.start = cs_start,
+ };
+ 
+ #define CPU_FREQ_GOV_CONSERVATIVE	(&cs_dbs_gov.gov)
