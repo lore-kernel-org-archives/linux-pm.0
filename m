@@ -1,53 +1,109 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC 3/3] ARM: dts: Don't overheat the Odroid XU3-Lite on high load
-Date: Thu, 18 Feb 2016 13:42:03 +0900
-Message-ID: <56C54B9B.7030105@samsung.com>
-References: <1455692128-28504-1-git-send-email-k.kozlowski@samsung.com>
- <1455692128-28504-4-git-send-email-k.kozlowski@samsung.com>
- <CANAwSgQHiJGSYB7Qhq066Mqfskwrr_3SDQGXH-WN=Wt3SEF-QA@mail.gmail.com>
- <56C522A9.8070800@samsung.com> <20160218023622.GA2610@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v2 1/3] ARM: dts: Add cooling levels for CPUs on exynos5420
+Date: Thu, 18 Feb 2016 14:13:01 +0900
+Message-ID: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20160218023622.GA2610@vireshk-i7>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Anand Moon <linux.amoon@gmail.com>, Kukjin Kim <kgene@kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-arm-kernel@lists.infradead.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>
+To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18.02.2016 11:36, Viresh Kumar wrote:
->>
->> BTW, I found the issue. The order of trip points in DT:
->> thermal_zone0/trip_point_0_hyst:5000
->> thermal_zone0/trip_point_0_temp:50000
->> thermal_zone0/trip_point_0_type:active
->> thermal_zone0/trip_point_1_hyst:5000
->> thermal_zone0/trip_point_1_temp:60000
->> thermal_zone0/trip_point_1_type:active
->> thermal_zone0/trip_point_2_hyst:5000
->> thermal_zone0/trip_point_2_temp:70000
->> thermal_zone0/trip_point_2_type:active
->> thermal_zone0/trip_point_3_hyst:0
->> thermal_zone0/trip_point_3_temp:120000	<---- this should be last one!
->> thermal_zone0/trip_point_3_type:critical
->> thermal_zone0/trip_point_4_hyst:5000
->> thermal_zone0/trip_point_4_temp:90000
->> thermal_zone0/trip_point_4_type:passive
->> thermal_zone0/trip_point_5_hyst:5000
->> thermal_zone0/trip_point_5_temp:110000
->> thermal_zone0/trip_point_5_type:passive
->>
->> After fixing the order in DT, the cpu cooler starts working.
-> 
-> Ahh, nice.
+On Exynos5420 we support 8 cpufreq steps (600-1300 MHz) for LITTLE and
+12 steps for big core (700-1800 MHz). Add respective cooling cells.
 
-Damn, not entirely. I almost fried my Odroid (it survived 130 degrees of
-C)... The TMU supports only 4 trip points, so when I added two new trip
-points and reordered them... the last two (including critical) was not
-receiving interrupts.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Polling mode is needed. I'll sent some patches soon...
+---
 
-BR,
-Krzysztof
+Changes since v1:
+1. Add cooling properties to all CPUs (suggested by Viresh).
+---
+ arch/arm/boot/dts/exynos5420-cpus.dtsi | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/arch/arm/boot/dts/exynos5420-cpus.dtsi b/arch/arm/boot/dts/exynos5420-cpus.dtsi
+index 261d25173f61..5c052d7ff554 100644
+--- a/arch/arm/boot/dts/exynos5420-cpus.dtsi
++++ b/arch/arm/boot/dts/exynos5420-cpus.dtsi
+@@ -33,6 +33,9 @@
+ 			clock-frequency = <1800000000>;
+ 			cci-control-port = <&cci_control1>;
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <11>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -42,6 +45,9 @@
+ 			clock-frequency = <1800000000>;
+ 			cci-control-port = <&cci_control1>;
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <11>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu2: cpu@2 {
+@@ -51,6 +57,9 @@
+ 			clock-frequency = <1800000000>;
+ 			cci-control-port = <&cci_control1>;
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <11>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -60,6 +69,9 @@
+ 			clock-frequency = <1800000000>;
+ 			cci-control-port = <&cci_control1>;
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <11>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu4: cpu@100 {
+@@ -70,6 +82,9 @@
+ 			clock-frequency = <1000000000>;
+ 			cci-control-port = <&cci_control0>;
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <7>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu5: cpu@101 {
+@@ -79,6 +94,9 @@
+ 			clock-frequency = <1000000000>;
+ 			cci-control-port = <&cci_control0>;
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <7>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu6: cpu@102 {
+@@ -88,6 +106,9 @@
+ 			clock-frequency = <1000000000>;
+ 			cci-control-port = <&cci_control0>;
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <7>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 
+ 		cpu7: cpu@103 {
+@@ -97,6 +118,9 @@
+ 			clock-frequency = <1000000000>;
+ 			cci-control-port = <&cci_control0>;
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
++			cooling-min-level = <0>;
++			cooling-max-level = <7>;
++			#cooling-cells = <2>; /* min followed by max */
+ 		};
+ 	};
+ };
+-- 
+2.5.0
