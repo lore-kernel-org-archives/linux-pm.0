@@ -1,68 +1,67 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH 1/1] intel_pstate: Increase hold-off time before
- busyness is scaled
-Date: Thu, 18 Feb 2016 23:29:51 +0000
-Message-ID: <1455838105.7375.206.camel@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/1] intel_pstate: Increase hold-off time before busyness
+ is scaled
+Date: Fri, 19 Feb 2016 00:33:45 +0100
+Message-ID: <CAJZ5v0gd7cMUWnG4OEH7cKb1ZGQVE3mJ1hTq2_5faoGJeE72hw@mail.gmail.com>
 References: <1455793883-14214-1-git-send-email-mgorman@techsingularity.net>
-	 <CAJZ5v0hSLJRkOKQ0UvJsSs0o-NuHiE+gOnC+f0q8vQtciABP2Q@mail.gmail.com>
+	<CAJZ5v0hSLJRkOKQ0UvJsSs0o-NuHiE+gOnC+f0q8vQtciABP2Q@mail.gmail.com>
+	<1455838105.7375.206.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:20937 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1947103AbcBRX3x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Feb 2016 18:29:53 -0500
-In-Reply-To: <CAJZ5v0hSLJRkOKQ0UvJsSs0o-NuHiE+gOnC+f0q8vQtciABP2Q@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <C4973A19A310B541A0AA38E087550FFF@intel.com>
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:36120 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1947533AbcBRXdr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 18:33:47 -0500
+In-Reply-To: <1455838105.7375.206.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "mgorman@techsingularity.net" <mgorman@techsingularity.net>, "rafael@kernel.org" <rafael@kernel.org>
-Cc: "matt@codeblueprint.co.uk" <matt@codeblueprint.co.uk>, "mingo@kernel.org" <mingo@kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Brandewie, Dirk J" <dirk.j.brandewie@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "umgwanakikbuti@gmail.com" <umgwanakikbuti@gmail.com>
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "mgorman@techsingularity.net" <mgorman@techsingularity.net>, "rafael@kernel.org" <rafael@kernel.org>, "matt@codeblueprint.co.uk" <matt@codeblueprint.co.uk>, "mingo@kernel.org" <mingo@kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Brandewie, Dirk J" <dirk.j.brandewie@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "umgwanakikbuti@gmail.com" <umgwanakikbuti@gmail.com>
 
-T24gVGh1LCAyMDE2LTAyLTE4IGF0IDIwOjQzICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToNCj4gSGkgTWVsLA0KPiANCj4gT24gVGh1LCBGZWIgMTgsIDIwMTYgYXQgMTI6MTEgUE0sIE1l
-bCBHb3JtYW4NCj4gPG1nb3JtYW5AdGVjaHNpbmd1bGFyaXR5Lm5ldD4gd3JvdGU6DQo+IA0KPiBb
-Y3V0XQ0KPiANCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBNZWwgR29ybWFuIDxtZ29ybWFuQHRl
-Y2hzaW5ndWxhcml0eS5uZXQ+DQo+ID4gLS0tDQo+ID4gwqBkcml2ZXJzL2NwdWZyZXEvaW50ZWxf
-cHN0YXRlLmMgfCAyICstDQo+ID4gwqAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEg
-ZGVsZXRpb24oLSkNCj4gPiANCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2ludGVs
-X3BzdGF0ZS5jDQo+ID4gYi9kcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMNCj4gPiBpbmRl
-eCBjZDgzZDQ3N2UzMmQuLjU0MjUwMDg0MTc0YSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2Nw
-dWZyZXEvaW50ZWxfcHN0YXRlLmMNCj4gPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0
-YXRlLmMNCj4gPiBAQCAtOTk5LDcgKzk5OSw3IEBAIHN0YXRpYyBpbmxpbmUgaW50MzJfdA0KPiA+
-IGdldF90YXJnZXRfcHN0YXRlX3VzZV9wZXJmb3JtYW5jZShzdHJ1Y3QgY3B1ZGF0YSAqY3B1KQ0K
-PiA+IMKgwqDCoMKgwqDCoMKgwqBzYW1wbGVfdGltZSA9IHBpZF9wYXJhbXMuc2FtcGxlX3JhdGVf
-bXPCoMKgKiBVU0VDX1BFUl9NU0VDOw0KPiA+IMKgwqDCoMKgwqDCoMKgwqBkdXJhdGlvbl91cyA9
-IGt0aW1lX3VzX2RlbHRhKGNwdS0+c2FtcGxlLnRpbWUsDQo+ID4gwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBj
-cHUtPmxhc3Rfc2FtcGxlX3RpbWUpOw0KPiA+IC3CoMKgwqDCoMKgwqDCoGlmIChkdXJhdGlvbl91
-cyA+IHNhbXBsZV90aW1lICogMykgew0KPiA+ICvCoMKgwqDCoMKgwqDCoGlmIChkdXJhdGlvbl91
-cyA+IHNhbXBsZV90aW1lICogMTIpIHsNCj4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoHNhbXBsZV9yYXRpbyA9IGRpdl9mcChpbnRfdG9mcChzYW1wbGVfdGltZSksDQo+ID4gwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoGludF90b2ZwKGR1cmF0aW9uX3VzKSk7DQo+ID4gwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqBjb3JlX2J1c3kgPSBtdWxfZnAoY29yZV9idXN5LCBzYW1wbGVf
-cmF0aW8pOw0KPiA+IC0tDQo+IA0KPiBJJ3ZlIGJlZW4gY29uc2lkZXJpbmcgbWFraW5nIGEgY2hh
-bmdlIGxpa2UgdGhpcywgYnV0IEkgd2Fzbid0IHF1aXRlDQo+IHN1cmUgaG93IG11Y2ggZ3JlYXRl
-ciB0aGUgbXVsdGlwbGllciBzaG91bGQgYmUsIHNvIEkndmUgcXVldWVkIHRoaXMNCj4gb25lIHVw
-IGZvciA0LjYuDQo+IA0KV2UgbmVlZCB0byB0ZXN0IHBvd2VyIGltcGFjdCBvbiBkaWZmZXJlbnQg
-c2VydmVyIHdvcmtsb2Fkcy4gU28gcGxlYXNlDQpob2xkIG9uLg0KV2UgaGF2ZSBzZXJ2ZXIgZm9s
-a3MgY29tcGxhaW5pbmcgdGhhdCB3ZSBhbHJlYWR5IGNvbnN1bWUgdG9vIG11Y2gNCnBvd2VyLg0K
-DQpUaGFua3MsDQpTcmluaXZhcw0KDQo+IFRoYXQgc2FpZCBwbGVhc2Ugbm90ZSB0aGF0IHdlJ3Jl
-IHBsYW5uaW5nIHRvIG1ha2Ugb25lIHNpZ25pZmljYW50DQo+IGNoYW5nZSB0byBpbnRlbF9wc3Rh
-dGUgaW4gdGhlIDQuNiBjeWNsZSB0aGF0J3MgdmVyeSBsaWtlbHkgdG8gYWZmZWN0DQo+IHlvdXIg
-cmVzdWx0cy4NCj4gDQo+IEl0IGlzIGN1cnJlbnRseSBwcmVzZW50IGluIGxpbnV4LW5leHQgKGNv
-bW1pdCA0MDJjNDNlZDJkNzQgImNwdWZyZXE6DQo+IGludGVsX3BzdGF0ZTogUmVwbGFjZSB0aW1l
-cnMgd2l0aCB1dGlsaXphdGlvbiB1cGRhdGUgY2FsbGJhY2tzIiBpbg0KPiB0aGUNCj4gbGludXgt
-bmV4dCBicmFuY2ggb2YgdGhlIGxpbnV4LXBtLmdpdCB0cmVlLCB0aGF0IGRlcGVuZHMgb24gY29t
-bWl0DQo+IGZlNzAzNDMzOGJhMCAiY3B1ZnJlcTogQWRkIG1lY2hhbmlzbSBmb3IgcmVnaXN0ZXJp
-bmcgdXRpbGl6YXRpb24NCj4gdXBkYXRlIGNhbGxiYWNrcyIgaW4gdGhlIHNhbWUgYnJhbmNoKS7C
-oMKgQWxzbyB5b3UgY2FuIGp1c3QgcHVsbCBmcm9tDQo+IHRoZSBwbS1jcHVmcmVxLXRlc3QgYnJh
-bmNoIGluIGxpbnV4LXBtLmdpdCwgYnV0IHRoYXQgY29udGFpbnMgbXVjaA0KPiBtb3JlIG1hdGVy
-aWFsLg0KPiANCj4gVGhhbmtzLA0KPiBSYWZhZWwNCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJv
-bSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXBtIg0KPiBpbg0K
-PiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiBN
-b3JlIG1ham9yZG9tbyBpbmZvIGF0wqDCoGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21v
-LWluZm8uaHRtbA==
+On Fri, Feb 19, 2016 at 12:29 AM, Pandruvada, Srinivas
+<srinivas.pandruvada@intel.com> wrote:
+> On Thu, 2016-02-18 at 20:43 +0100, Rafael J. Wysocki wrote:
+>> Hi Mel,
+>>
+>> On Thu, Feb 18, 2016 at 12:11 PM, Mel Gorman
+>> <mgorman@techsingularity.net> wrote:
+>>
+>> [cut]
+>>
+>> >
+>> > Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
+>> > ---
+>> >  drivers/cpufreq/intel_pstate.c | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/cpufreq/intel_pstate.c
+>> > b/drivers/cpufreq/intel_pstate.c
+>> > index cd83d477e32d..54250084174a 100644
+>> > --- a/drivers/cpufreq/intel_pstate.c
+>> > +++ b/drivers/cpufreq/intel_pstate.c
+>> > @@ -999,7 +999,7 @@ static inline int32_t
+>> > get_target_pstate_use_performance(struct cpudata *cpu)
+>> >         sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+>> >         duration_us = ktime_us_delta(cpu->sample.time,
+>> >                                      cpu->last_sample_time);
+>> > -       if (duration_us > sample_time * 3) {
+>> > +       if (duration_us > sample_time * 12) {
+>> >                 sample_ratio = div_fp(int_tofp(sample_time),
+>> >                                       int_tofp(duration_us));
+>> >                 core_busy = mul_fp(core_busy, sample_ratio);
+>> > --
+>>
+>> I've been considering making a change like this, but I wasn't quite
+>> sure how much greater the multiplier should be, so I've queued this
+>> one up for 4.6.
+>>
+> We need to test power impact on different server workloads. So please
+> hold on.
+> We have server folks complaining that we already consume too much
+> power.
+
+I'll drop the commit if it turns out to cause too much energy to be consumed.
+
+Thanks,
+Rafael
