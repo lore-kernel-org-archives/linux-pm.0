@@ -1,120 +1,50 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC v2 01/11] PM / Domains: Add DT bindings for the R-Car
- System Controller
-Date: Thu, 18 Feb 2016 18:18:56 +0100
-Message-ID: <CAMuHMdXqVL6_P6Lnea6z8jFtR2v4NFnzn=ibZVyauZ8-ODb6dg@mail.gmail.com>
-References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
-	<1455571020-18968-2-git-send-email-geert+renesas@glider.be>
-	<20160218143826.GB9654@rob-hp-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20160218143826.GB9654@rob-hp-laptop>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [BUG FIX] PM / cpu_domains: Check for NULL callbacks
+Date: Thu, 18 Feb 2016 10:29:33 -0700
+Message-ID: <1455816573-43849-1-git-send-email-lina.iyer@linaro.org>
+References: <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1455310238-8963-4-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+Check for NULL platform callback before calling.
 
-On Thu, Feb 18, 2016 at 3:38 PM, Rob Herring <robh@kernel.org> wrote:
-> On Mon, Feb 15, 2016 at 10:16:50PM +0100, Geert Uytterhoeven wrote:
->> The Renesas R-Car System Controller provides power management for the
->> CPU cores and various coprocessors, following the generic PM domain
->> bindings in Documentation/devicetree/bindings/power/power_domain.txt.
->>
->> This supports R-Car Gen1, Gen2, and Gen3.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> ---
->> Alternatives I considered:
->>
->>   - Using a single node per power register block, even if it contains
->>     multiple domains, e.g.:
->>
->>           pd_ca15_scu: ca15_scu@180 {
->>                   reg = <0x180 0x20>;
->>                   #address-cells = <1>;
->>                   #size-cells = <0>;
->>                   #power-domain-cells = <0>;
->>                   renesas,interrupt-bits = <12>;
->>
->>                   pd_ca15_cpu: ca15_cpu@40 {
->>                           reg = <0x40 0x20>;
->>                           #power-domain-cells = <1>;
->>                           renesas,pm-domain-indices = <0 1>;
->>                           renesas,pm-domain-names =
->>                                   "ca15_cpu0", "ca15_cpu1";
->>                           renesas,interrupt-bits = <0 1>;
->>                   };
->>           };
->>
->>     Notes:
->>       - You cannot just have a property with the number of domains, as
->>       index 0 is not used on R-Car H1. Hence the need for
->>       "renesas,pm-domain-indices" and "renesas,interrupt-bits",
->>       - "#power-domain-cells = <1>" for nodes with multiple domains,
->>       which allows typos in "power-domains = <&pd_ca15_cpu n>", using
->>       an invalid value of "n".
->>
->>   - Using a linear description in DT:
->>       - Needs parent links for subdomains,
->>       - More complicated to parse (lesson learned from R-Mobile PM
->>       Domain support).
->>
->>   - Keeping the power register block offset and the bit number as separate
->>     "reg" cells, increasing "#address-cells" from 2 to 3,
->>
->>   - Merging the interrupt bit (which needs only 5 bits) in the other "reg"
->>     cell, decreasing "#address-cells" from 2 to 1.
->
-> I think I'd move to not encoding mulitple things into reg. This seems
-> like a bit of abuse of reg. Otherwise, I don't have much to comment on.
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ drivers/base/power/cpu_domains.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-Thanks!
-
-(quoting the encoding of the reg properties)
-> +== PM Domain Nodes ==
-> +
-> +Each of the PM domain nodes represents a PM domain, as documented by the
-> +generic PM domain bindings in
-> +Documentation/devicetree/bindings/power/power_domain.txt.
-> +
-> +Required properties:
-> +  - #power-domain-cells: Must be 0.
-> +  - reg: This property must contain 2 values:
-> +          - The first value is the number of the interrupt bit representing
-> +            the power area in the various Interrupt Registers (e.g. SYSCISR,
-> +            Interrupt Status Register),
-> +          - The second value encodes the power register block offset (which is
-> +            a multiple of 64), and the number of the bit representing the
-> +            power area in the various Power Control Registers (e.g. PWROFFSR,
-> +            Power Shutoff Status Register). This value is created by ORing
-> +            these two numbers.
-
-Not encoding multiple things into reg means adding more properties to provide
-that information, iff we want to describe the PM Domain Nodes in DT.
-I considered the reg property a two-dimensional address space.
-
-Taking the lessons from CCF and the new CPG/MSSR bindings into account
-(which was BTW designed after the SYSC DT bindings), perhaps the PM Domain
-hierarchy should be moved from DT to C, in the driver, too?
-
-That would mean we have in DT:
-  1) "#power-domain-cells = <1>"
-  2) defines for the various domains, e.g. "#define R8A7791_PD_CA15_SCU      12"
-  3) e.g. "power-domains = <&sysc R8A7791_PD_CA15_SCU>"
-  4) and we can get rid of the fallback compatibility strings again.
-
-Thoughts?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
+index 7069411..bcaa474 100644
+--- a/drivers/base/power/cpu_domains.c
++++ b/drivers/base/power/cpu_domains.c
+@@ -157,16 +157,22 @@ static int cpu_pd_power_on(struct generic_pm_domain *genpd)
+ {
+ 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+ 
+-	return pd->ops.power_on();
++	if (pd->ops.power_on)
++		return pd->ops.power_on();
++
++	return 0;
+ }
+ 
+ static int cpu_pd_power_off(struct generic_pm_domain *genpd)
+ {
+ 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+ 
+-	return pd->ops.power_off(genpd->state_idx,
++	if (pd->ops.power_off)
++		return pd->ops.power_off(genpd->state_idx,
+ 			genpd->states[genpd->state_idx].param,
+ 			pd->cpus);
++
++	return 0;
+ }
+ 
+ /**
+-- 
+2.1.4
