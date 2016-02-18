@@ -1,88 +1,67 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/12] cpufreq: governor: Close dbs_data update race condition
-Date: Thu, 18 Feb 2016 17:20:52 +0100
-Message-ID: <CAJZ5v0jFP5hdcomAw1GcMgVAhw1mnwpZ3vdM7vN59SFkiug_YA@mail.gmail.com>
-References: <2938006.67J0esUvOA@vostro.rjw.lan>
-	<1592265.QLnTJA45ZD@vostro.rjw.lan>
-	<20160218052409.GG2610@vireshk-i7>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V5 11/14] soc: tegra: pmc: Add generic PM domain support
+Date: Thu, 18 Feb 2016 16:31:22 +0000
+Message-ID: <56C5F1DA.2060705@nvidia.com>
+References: <1453998832-27383-1-git-send-email-jonathanh@nvidia.com>
+ <1453998832-27383-12-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFpnUJA2pLSUOw8rkjyXLY6b__TM=38jsvYAZVhe+DS=zg@mail.gmail.com>
+ <7hh9hdzflv.fsf@baylibre.com> <56C1B62B.5060708@nvidia.com>
+ <CAPDyKFoPrFoMOFxC37zXX4L3VdLKknaw_LUTw7ycr9mfa_=7_A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f196.google.com ([209.85.217.196]:32826 "EHLO
-	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946766AbcBRQUy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 11:20:54 -0500
-In-Reply-To: <20160218052409.GG2610@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFoPrFoMOFxC37zXX4L3VdLKknaw_LUTw7ycr9mfa_=7_A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Feb 18, 2016 at 6:24 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 18-02-16, 02:19, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+On 18/02/16 16:00, Ulf Hansson wrote:
+> [...]
+> 
+>>>
+>>> What about the pm_clk_* API which was built for tracking clocks
+>>> associated with devices for runtime PM.
+>>>
+>>> IOW, you could pm_clk_add(pg->pmc->dev, pg->clks[i]) and then your
+>>> _enable_clocks() would become pm_clk_suspend() an dyour
+>>> _disable_clocks() would become pm_clk_resume().
 >>
->> It is possible for a dbs_data object to be updated after its
->> usage counter has become 0.  That may happen if governor_store()
->> runs (via a govenor tunable sysfs attribute write) in parallel
->> with cpufreq_governor_exit() called for the last cpufreq policy
->> associated with the dbs_data in question.  In that case, if
->> governor_store() acquires dbs_data->mutex right after
->> cpufreq_governor_exit() has released it, the ->store() callback
->> invoked by it may operate on dbs_data with no users.  Although
->> sysfs will cause the kobject_put() in cpufreq_governor_exit() to
->> block until governor_store() has returned, that situation may
->> lead to some unexpected results, depending on the implementation
->> of the ->store callback, and therefore it should be avoided.
+>> Very interesting, I was not aware of this.
 >>
->> To that end, modify governor_store() to check the dbs_data's
->> usage count before invoking the ->store() callback and return
->> an error if it is 0 at that point.
+>>> I might not be following the mapping between PMC and PGs though so not
+>>> sure pg->pmc->dev is the right struct device, but you get the idea.
 >>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  drivers/cpufreq/cpufreq_governor.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> Yes, so this will not work here as-is, because the pmc->dev is common to
+>> all pm-domains (it is the device that creates all the pm-domains). So to
+>> make this work, I would need to create a device for each pm-domain and
+>> add the clocks to that.
 >>
->> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
->> ===================================================================
->> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
->> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
->> @@ -112,7 +112,7 @@ static ssize_t governor_store(struct kob
+>> I see that this works very well for normal drivers, but it does not feel
+>> so natural for pm-domains where we don't have a device struct today. By
+>> the way, the rockchip pm-domains implementation is very much in the same
+>> boat as tegra, where there are multiple clocks per pm-domain and it is
+>> handled by a simple list. So I am not sure if you think that we should
+>> be turning all pm-domains registered by pm_genpd_init() into a device
+>> and then we can make use of these pm_clk_XXXX() APIs?
 >>
->>       mutex_lock(&dbs_data->mutex);
->>
->> -     if (gattr->store)
->> +     if (dbs_data->usage_count && gattr->store)
->
-> That's not gonna be enough. The above lock doesn't guarantee
-> protection with any such races.
+>> I have implemented the generic clk APIs that Ulf and I discussed for
+>> handling multiple clocks, but if we think that this is a better way,
+>> then I will hold off for now.
+> 
+> I think Kevin has a point that we already have PM clocks to build upon.
+> Could we perhaps try to extend that API instead to suite this needs as well?
 
-I'm not really sure what you're talking about to be honest, so please
-be more specific.  You can say "For example, function X decrements the
-usage count without locking" or similar.
+We certainly could and I am not against it, however, it means that we
+need to create a device structure for each pm-domain. If you and Kevin
+are ok with me adding this to pm_genpd_init(), then I can give it a try.
 
-Such vague comments are quite difficult to address, especially if they
-don't hold any water. :-)
+> I do realize that it will make this patchset more complicated. As I
+> stated earlier, this was just an idea I had, so to be clear I won't
+> hold back an ack for this patchset, if you decide to deal with this in
+> separate "improvement" step.
 
-> And so usage_count can become zero
-> just after this check.
-
-But how?
-
-The only place it is decremented is cpufreq_governor_exit() and there
-it is done under dbs_data->mutex (at my direct request, BTW).  So we
-are guaranteed that it won't go down to zero while we're holding
-dbs_data->mutex, aren't we?
-
-> Btw, we should also kill the gattr->store checks here as well, as we
-> did it in cpufreq-core.
->
->>               ret = gattr->store(dbs_data, buf, count);
->>
->>       mutex_unlock(&dbs_data->mutex);
-
-Yeah, they are quite useless.  But not in this patch.
-
-Thanks,
-Rafael
+Thanks
+Jon
