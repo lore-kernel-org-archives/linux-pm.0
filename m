@@ -1,54 +1,55 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 3/3] ARM: dts: Don't overheat the Odroid XU3-Lite on
- high load
-Date: Thu, 18 Feb 2016 11:52:24 +0530
-Message-ID: <20160218062224.GU2610@vireshk-i7>
-References: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
- <1455772383-20598-3-git-send-email-k.kozlowski@samsung.com>
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: Re: suspend resume query
+Date: Thu, 18 Feb 2016 14:54:47 +0800
+Message-ID: <CAN2waFtS2cuWw2oY54-DQN_Nt5c=YvXg9nEn2x4vhzZMru9Vrw@mail.gmail.com>
+References: <CANMsd03Y67iVEtUZaWnjywNxVVSvmpQfh72y8uJeqqgP=PrH=g@mail.gmail.com>
+	<1455700241.7626.10.camel@suse.com>
+	<CANMsd02oPfRZ4dRRF8R61VtN+h62ROfmNCDK=NohKjYWhOL4Hg@mail.gmail.com>
+	<1455702015.7626.13.camel@suse.com>
+	<CANMsd03xShJ4hMajaahTaSQfZyCww+9me-e7X3F2=z1oUPN0Cg@mail.gmail.com>
+	<1455703562.7626.14.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1455772383-20598-3-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f171.google.com ([209.85.161.171]:33651 "EHLO
+	mail-yw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964931AbcBRGys (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 01:54:48 -0500
+Received: by mail-yw0-f171.google.com with SMTP id u200so33274497ywf.0
+        for <linux-pm@vger.kernel.org>; Wed, 17 Feb 2016 22:54:48 -0800 (PST)
+In-Reply-To: <1455703562.7626.14.camel@suse.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Ryan <ryanphilips19@googlemail.com>, linux-pm@vger.kernel.org
 
-On 18-02-16, 14:13, Krzysztof Kozlowski wrote:
-> After adding cpufreq-dt support to Exynos542x, the Odroid XU3-Lite can
-> be easily overheated when launching eight CPU-intensive tasks:
-> 	thermal thermal_zone3: critical temperature reached(121 C),shutting down
-> 
-> This seems to be specific to Odroid XU3-Lite board which officially
-> supports lower frequencies than regular XU3 or XU4. When working at
-> maximum CPU speed (1800 MHz big and 1300 MHz LITTLE) in warmer place for
-> longer time, the fan fails to cool down the board and it reaches
-> critical temperature.
-> 
-> Add CPU cooling to Exynos5422/5800 to fix this issue. When reaching last
-> interrupt-driven trip-point (70 degrees of Celsius) start passive
-> cooling in polling mode (slowing CPU by 2 steps). When reaching 85
-> degrees of Celsius, start slowing even more, down to 600 MHz.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> 
-> ---
-> 
-> Changes since v1:
-> 1. Use polling mode for passive cooling (number of configurable trip
->    points in TMU exceeded).
-> 
-> 2. Adjust the values (temperature and cooling levels).
-> ---
->  arch/arm/boot/dts/exynos5422-cpu-thermal.dtsi | 46 ++++++++++++++++++++++++++-
->  1 file changed, 45 insertions(+), 1 deletion(-)
+Hi Ryan,
+As we already known, STR will let all cores power down after store the
+context(GPR, idmap_gpd, sp etc) of primary core in DDR. It is
+different between ARMv7 and ARMv8
+For ARMv7,
+The boot vector can just be located in 0x00000000 or 0xffff0000, which
+is chosen by sampling VINITHI domain within PMU register during
+bootup. For some SOCs, one of them is used for cold boot while another
+is used for recover from STR or CPU IDLE, which is referred as warm
+reset. For this scenario, an AON RAM is usually placed in one of the
+region mentioned above. Meanwhile, the vendor will place some code
+there for bring the core back to the context where it is powered down.
 
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+For ARMv8,
+All things are covered by PSCI, you can refer the process from ARM's archive.
 
--- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 17 February 2016 at 18:06, Oliver Neukum <oneukum@suse.com> wrote:
+> On Wed, 2016-02-17 at 15:19 +0530, Ryan wrote:
+>> Suspend to ram. I am sorry - I did not provide complete information.
+>
+> STR on ARM is peculiar. I have no idea.
+>
+>         Sorry
+>                 Oliver
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
