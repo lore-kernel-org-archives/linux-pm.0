@@ -1,64 +1,36 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH] thermal: use %d to print S32 parameters
-Date: Thu, 18 Feb 2016 17:42:22 +0800
-Message-ID: <20160218094222.GB28887@leoy-linaro>
-References: <1452674036-14907-1-git-send-email-leo.yan@linaro.org>
- <20160113092216.GB2594@e104805>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCHv2 0/2] Add UCS1002 USB Port Power Controller
+Date: Thu, 18 Feb 2016 10:52:49 +0100
+Message-ID: <1455789171-5093-1-git-send-email-enric.balletbo@collabora.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:34090 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1425910AbcBRJma (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 04:42:30 -0500
-Received: by mail-pa0-f50.google.com with SMTP id fy10so27960727pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 01:42:29 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160113092216.GB2594@e104805>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:46220 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1425770AbcBRJxB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 04:53:01 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
 
-On Wed, Jan 13, 2016 at 09:22:16AM +0000, Javi Merino wrote:
-> On Wed, Jan 13, 2016 at 04:33:56PM +0800, Leo Yan wrote:
-> > Power allocator's parameters are S32 type, so use %d to print them.
-> 
-> Indeed.  The name of the macro is create_s32_tzp_attr(), it's
-> explicitly saying that the parameter is signed!
-> 
-> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> 
-> Acked-by: Javi Merino <javi.merino@arm.com>
+Dear all,
 
-Rui, Eduardo,
+This is the second version of the UCS1002 driver, a Programmable USB Port
+Power Controller with Charger Emulation.
 
-Could you help merge this patch as well?
+Any comments are welcome. Thanks in advance.
 
-Thanks,
-Leo Yan
+Enric Balletbo i Serra (2):
+  devicetree: Add UCS1002 USB Port Power Controller binding
+  power: ucs1002: Add support for Programmable USB Port Power Controller
 
-> 
-> Cheers,
-> Javi
-> 
-> > ---
-> >  drivers/thermal/thermal_core.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > index d9e525c..1335df2 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -931,7 +931,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-> >  	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
-> >  									\
-> >  	if (tz->tzp)							\
-> > -		return sprintf(buf, "%u\n", tz->tzp->name);		\
-> > +		return sprintf(buf, "%d\n", tz->tzp->name);		\
-> >  	else								\
-> >  		return -EIO;						\
-> >  	}								\
-> > -- 
-> > 1.9.1
-> > 
+ .../devicetree/bindings/power/ucs1002.txt          |   41 +
+ drivers/power/Kconfig                              |    7 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/ucs1002_power.c                      | 1004 ++++++++++++++++++++
+ 4 files changed, 1053 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
+ create mode 100644 drivers/power/ucs1002_power.c
+
+-- 
+2.1.0
+
