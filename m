@@ -1,64 +1,66 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 2/3] thermal: exynos: Document number of supported
- trip-points
-Date: Thu, 18 Feb 2016 14:21:32 +0900
-Message-ID: <56C554DC.1040104@samsung.com>
-References: <1455772460-20684-1-git-send-email-k.kozlowski@samsung.com>
- <1455772460-20684-2-git-send-email-k.kozlowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/12] cpufreq: governor: Close dbs_data update race
+ condition
+Date: Thu, 18 Feb 2016 10:54:09 +0530
+Message-ID: <20160218052409.GG2610@vireshk-i7>
+References: <2938006.67J0esUvOA@vostro.rjw.lan>
+ <1592265.QLnTJA45ZD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1455772460-20684-2-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1592265.QLnTJA45ZD@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2016=EB=85=84 02=EC=9B=94 18=EC=9D=BC 14:14, Krzysztof Kozlowski wro=
-te:
-> Document the number of configurable temperature thresholds (for
-> trip-points in interrupt-driven mode).
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+On 18-02-16, 02:19, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> It is possible for a dbs_data object to be updated after its
+> usage counter has become 0.  That may happen if governor_store()
+> runs (via a govenor tunable sysfs attribute write) in parallel
+> with cpufreq_governor_exit() called for the last cpufreq policy
+> associated with the dbs_data in question.  In that case, if
+> governor_store() acquires dbs_data->mutex right after
+> cpufreq_governor_exit() has released it, the ->store() callback
+> invoked by it may operate on dbs_data with no users.  Although
+> sysfs will cause the kobject_put() in cpufreq_governor_exit() to
+> block until governor_store() has returned, that situation may
+> lead to some unexpected results, depending on the implementation
+> of the ->store callback, and therefore it should be avoided.
+> 
+> To that end, modify governor_store() to check the dbs_data's
+> usage count before invoking the ->store() callback and return
+> an error if it is 0 at that point.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 8 +++=
-+++++
->  1 file changed, 8 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal=
-=2Etxt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index 34315d7fbfde..faa62059b5c5 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -44,6 +44,14 @@
->  - vtmu-supply: This entry is optional and provides the regulator nod=
-e supplying
->  		voltage to TMU. If needed this entry can be placed inside
->  		board/platform specific dts file.
-> +
-> +The Exynos TMU supports generating interrupts when reaching given
-> +temperature thresholds. Number of supported thermal trip points depe=
-nds
-> +on the SoC (only first trip points defined in DT will be configured)=
-:
-> + - most of SoC: 4
-> + - samsung,exynos5433-tmu: 8
-> + - samsung,exynos7-tmu: 8
-> +
->  Following properties are mandatory (depending on SoC):
->  - samsung,tmu_gain: Gain value for internal TMU operation.
->  - samsung,tmu_reference_voltage: Value of TMU IP block's reference v=
-oltage
->=20
+>  drivers/cpufreq/cpufreq_governor.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+> @@ -112,7 +112,7 @@ static ssize_t governor_store(struct kob
+>  
+>  	mutex_lock(&dbs_data->mutex);
+>  
+> -	if (gattr->store)
+> +	if (dbs_data->usage_count && gattr->store)
 
-Exynos5433 has the 8 interrupt for thermal. Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+That's not gonna be enough. The above lock doesn't guarantee
+protection with any such races. And so usage_count can become zero
+just after this check.
 
-Best Regards,
-Chanwoo Choi
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Btw, we should also kill the gattr->store checks here as well, as we
+did it in cpufreq-core.
+
+>  		ret = gattr->store(dbs_data, buf, count);
+>  
+>  	mutex_unlock(&dbs_data->mutex);
+
+-- 
+viresh
