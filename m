@@ -1,54 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/12] cpufreq: More governor code reorganization
-Date: Thu, 18 Feb 2016 02:17:50 +0100
-Message-ID: <2938006.67J0esUvOA@vostro.rjw.lan>
+Subject: [PATCH 1/12] cpufreq: governor: Close dbs_data update race condition
+Date: Thu, 18 Feb 2016 02:19 +0100
+Message-ID: <1592265.QLnTJA45ZD@vostro.rjw.lan>
+References: <2938006.67J0esUvOA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2938006.67J0esUvOA@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This series continues the governor code reorganization I've been doing
-for the last couple of weeks.
+It is possible for a dbs_data object to be updated after its
+usage counter has become 0.  That may happen if governor_store()
+runs (via a govenor tunable sysfs attribute write) in parallel
+with cpufreq_governor_exit() called for the last cpufreq policy
+associated with the dbs_data in question.  In that case, if
+governor_store() acquires dbs_data->mutex right after
+cpufreq_governor_exit() has released it, the ->store() callback
+invoked by it may operate on dbs_data with no users.  Although
+sysfs will cause the kobject_put() in cpufreq_governor_exit() to
+block until governor_store() has returned, that situation may
+lead to some unexpected results, depending on the implementation
+of the ->store callback, and therefore it should be avoided.
 
-Again, it doesn't change the way the code works fundamentally, but some
-minor changes in behavior may be noticeable.
+To that end, modify governor_store() to check the dbs_data's
+usage count before invoking the ->store() callback and return
+an error if it is 0 at that point.
 
-[1/12] closes a race condition for dbs_data updates.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq_governor.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[2/12] moves the io_is_busy tunable to struct dbs_data.
-
-[3/12] adds a ->start callback for governors to initialize governor-specific
-       stuff and avoid the ugly governor == GOV_SOMETHING checks in the common
-       code.
-
-[4/12] drops unnecessary things from struct dbs_governor (and related stuff).
-
-[5/12] drops an unnecessary ondemand operation callback.
-
-[6/12] fixes the way some governor tunable sysfs attributes update CPU load info.
-
-[7/12] fixes the way in which powersave bias updates are handled in ondemand.
-
-[8/12] moves some data items from per-CPU structures to per-policy ones.
-
-[9/12] rearranges the per-CPU structures (moves them to the common code which
-       is the only user of them now and drops several related things that
-       aren't necessary any more).
-
-[10/12] moves the definitions of "tuners" structures to governors.
-
-[11/12] makes dbs_data_mutex static.
-
-[12/12] reduces the dbs_data_mutex usage area and renames it.
-
-Patches on top of the current linux-next branch of linux-pm.git, lightly tested
-on Toshiba Portege R500 with the ACPI driver.
-
-Thanks,
-Rafael
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -112,7 +112,7 @@ static ssize_t governor_store(struct kob
+ 
+ 	mutex_lock(&dbs_data->mutex);
+ 
+-	if (gattr->store)
++	if (dbs_data->usage_count && gattr->store)
+ 		ret = gattr->store(dbs_data, buf, count);
+ 
+ 	mutex_unlock(&dbs_data->mutex);
