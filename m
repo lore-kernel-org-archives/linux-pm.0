@@ -1,72 +1,100 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Fri, 19 Feb 2016 08:09:17 +0000
-Message-ID: <20160219080917.GE22643@pablo>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <2044559.7ypXocW9OZ@vostro.rjw.lan>
- <3499355.2JlaSruvOa@vostro.rjw.lan>
- <16016177.YFqb4gVNBo@vostro.rjw.lan>
- <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
+From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Subject: Re: CPUfreq lockdep issue
+Date: Fri, 19 Feb 2016 10:50:52 +0200
+Message-ID: <1455871852.7321.4.camel@linux.intel.com>
+References: <1455793609.9851.45.camel@linux.intel.com>
+	 <20160218113437.GX2610@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44377 "EHLO foss.arm.com"
+Received: from mga01.intel.com ([192.55.52.88]:13279 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1424890AbcBSIJa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 19 Feb 2016 03:09:30 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
+	id S1423611AbcBSIuy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 19 Feb 2016 03:50:54 -0500
+In-Reply-To: <20160218113437.GX2610@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Daniel Vetter <daniel.vetter@intel.com>
 
-Hi Rafael,
+On to, 2016-02-18 at 17:04 +0530, Viresh Kumar wrote:
+> On 18-02-16, 13:06, Joonas Lahtinen wrote:
+> > Hi,
+> >=20
+> > The Intel P-state driver has a lockdep issue as described below. It
+> > could in theory cause a deadlock if initialization and suspend were=
+ to
+> > be performed simultaneously. Conflicting calling paths are as follo=
+ws:
+> >=20
+> > intel_pstate_init(...)
+> > 	...cpufreq_online(...)
+> > 		down_write(&policy->rwsem); // Locks policy->rwsem
+> > 		...
+> > 		cpufreq_init_policy(policy);
+> > 			...intel_pstate_hwp_set();
+> > 				get_online_cpus(); // Temporarily locks cpu_hotplug.lock
+>=20
+> Why is this one required?
 
-On 18/02/16 21:22, Rafael J. Wysocki wrote:
-> On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
+Otherwise CPUs could be added or removed during the execution of
+intel_pstate_hwp_set(), which has the following code:
 
-[...]
+=C2=A0 =C2=A0 =C2=A0 =C2=A0	get_online_cpus();
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 for_each_online_cpu(cpu) {
+		...
+		wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
+	}
+>=20
+> > 		...
+> > 		up_write(&policy->rwsem);
+> >=20
+> > pm_suspend(...)
+> > 	...disable_nonboot_cpus()
+> > 		_cpu_down()
+> > 			cpu_hotplug_begin(); // Locks cpu_hotplug.lock
+> > 			__cpu_notify(CPU_DOWN_PREPARE, ...);
+> > 				...cpufreq_offline_prepare();
+> > 					down_write(&policy->rwsem); // Locks policy->rwsem
+> >=20
+> > Quickly looking at the code, some refactoring has to be done to fix=
+ the
+> > issue. I think it would a good idea to document some of the driver
+> > callbacks related to what locks are held etc. in order to avoid fut=
+ure
+> > situations like this.
+> >=20
+> > Because get_online_cpus() is of recursive nature and the way it
+> > currently works, adding wider get_online_cpus() scope up around
+> > cpufreq_online() does not fix the issue because it only momentarily
+> > locks cpu_hotplug.lock and proceeds to do so again at next call.
+> >=20
+> > Moving get_online_cpus() completely away from pstate_hwp_set() and
+> > assuring it is called higher in the call chain might be a viable
+> > solution. Then it could be made sure get_online_cpus() is not calle=
+d
+> > while policy->rwsem is being held already.
+>=20
+> I don't think that will be a good solution. So what you are
+> essentially saying is, take policy->rwsem after get_online_cpus()
+> only.
 
-> 
-> So if anyone has any issues with this one, please let me know.
-> 
+Yes, grab the policy lock only after we've made sure we can apply the
+policy to the online CPUs.
 
-I'm repeating myself a bit, but I'll try to articulate my only concern
-once again anyway. I run some tests on a couple of arm boxes and I
-didn't notice any regression or improvements for ondemand and
-conservative (FWIW this might also work as a tested-by), so I tend to
-take this series as a way to replace governor timers, making further
-cleanups and fixes possibile. I think you already confirmed this and I
-understand why you'd like this series to go in as I also think that what
-we have on top is beneficial.
+>=20
+> > Do you think that would be an appropriate way of fixing it?
+>=20
+> At least I don't. Why do we need to call get_online_cpus()
+> intel-pstate governor ?
 
-However, I still don't quite get why we want to introduce an interface
-for explicit passing of util and max if we are not using such parameters
-yet. Also, I couldn't find any indication of how such parameters will be
-used in the future. If what we need today is a periodic kick for cpufreq
-governors that need it, we should simply do how we already do for RT and
-DL, IMHO. Also because the places where the current hooks reside might
-not be the correct and useful one once we'll start using the utilization
-parameters. I could probably make a case for DL where we should place
-hooks in admission control path (or somewhere else when more
-sophisticated mechanisms we'll be in place) rather then in the periodic
-tick.
+See above for the code.
 
-> It has been in linux-next for a few days and seems to be doing well.
-> 
-> As I said previously, there is a metric ton of cpufreq improvements
-> depending on it, so I'd rather not delay integrating it any more.
-> 
+Regards, Joonas
 
-As said. I'm not against these changes since they open up to further
-substantial fixes. I'm only wondering if we are doing the right thing
-defining an interface that nobody is using and without an indication of
-how such thing we'll be used in the future.
-
-Best,
-
-- Juri
+>=20
+--=20
+Joonas Lahtinen
+Open Source Technology Center
+Intel Corporation
