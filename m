@@ -1,36 +1,62 @@
-From: Andi Shyti <andi.shyti@samsung.com>
-Subject: Re: [PATCH 0/3] thermal: exynos: Fixes for vtmu-supply regulator
- handling
-Date: Fri, 19 Feb 2016 13:29:54 +0900
-Message-ID: <20160219042954.GD27936@samsunx.samsung>
-References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+From: Henry Chen <henryc.chen@mediatek.com>
+Subject: Re: [RFC PATCH 4/5] PM / AVS: thermal: MT8173: Introduce support
+ for SVS engine
+Date: Fri, 19 Feb 2016 13:08:02 +0800
+Message-ID: <1455858482.17104.13.camel@mtksdaap41>
+References: <1453452029-20843-1-git-send-email-pi-cheng.chen@linaro.org>
+	 <1453452029-20843-5-git-send-email-pi-cheng.chen@linaro.org>
+	 <CAGS+omAYPhJ80kHG=bW4AjFsQzhwUfC6C+nAXa=Ny5UyoCid=w@mail.gmail.com>
+	 <20160218030049.GA8780@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:40747 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757273AbcBSE34 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 23:29:56 -0500
-Content-disposition: inline
-In-reply-to: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:12893 "EHLO
+	mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750708AbcBSFIK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 00:08:10 -0500
+In-Reply-To: <20160218030049.GA8780@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Daniel Kurtz <djkurtz@chromium.org>, dawei.chien@mediatek.com, Nishanth Menon <nm@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Javier,
 
-> Javier Martinez Canillas (3):
->   thermal: exynos: List vtmu-supply as optional property in DT binding
->   thermal: exynos: Use devm_regulator_get_optional() for vtmu
->   thermal: exynos: Defer probe if vtmu is present but not registered
+On Thu, 2016-02-18 at 11:00 +0800, Pi-Cheng Chen wrote:
+
+> > > +               vboot = regulator_get_voltage(svs->reg) / 1000;
+> > > +               if (mvolt_to_config(vboot) !=
+> > > +                   mvolt_to_config(svs_bank_cfgs[i].vboot)) {
+> > > +                       dev_err(svs->dev, "Vboot value mismatch!\n");
+> > > +                       ret = -EINVAL;
+> > > +                       break;
+> > > +               }
+> > > +
+> > > +               ret = regulator_set_mode(svs->reg, REGULATOR_MODE_FAST);
+> > > +               if (ret) {
+> > > +                       dev_err(svs->dev,
+> > > +                               "Failed to set regulator in PWM mode\n");
+> > > +                       ret = -EINVAL;
+> > > +                       break;
+> > > +               }
+> > 
+> > Shouldn't this be best effort?
+> > If we can't set the regulator to fast mode, can we continue anyway?
+> > 
 > 
->  Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 9 ++++++---
->  drivers/thermal/samsung/exynos_tmu.c                         | 4 +++-
->  2 files changed, 9 insertions(+), 4 deletions(-)
+> AFAIK, we need to set the regulator to fast mode to get stable voltage as
+> possible. I am sure about the details.
+> 
+> @Henry,
+> Would you please comment it?
 
-for all of them:
+Hi,
 
-Reviewed-by: Andi Shyti <andi.shyti@samsung.com>
+Yes, as you said, PTPOD need the more precisely voltage as possible when
+driver initialize, there has two mode in mt6397: pwm/auto mode, the pwm
+mode which can get the more stable Vout than auto mode.
 
-Andi
+Thanks,
+Henry
+
+
