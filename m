@@ -1,64 +1,59 @@
-From: Henry Chen <henryc.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [RFC PATCH 4/5] PM / AVS: thermal: MT8173: Introduce support
- for SVS engine
-Date: Fri, 19 Feb 2016 13:31:25 +0800
-Message-ID: <1455859885.17104.21.camel@mtksdaap41>
-References: <1453452029-20843-1-git-send-email-pi-cheng.chen@linaro.org>
-	 <1453452029-20843-5-git-send-email-pi-cheng.chen@linaro.org>
-	 <CAGS+omAYPhJ80kHG=bW4AjFsQzhwUfC6C+nAXa=Ny5UyoCid=w@mail.gmail.com>
-	 <20160218030049.GA8780@gmail.com> <1455858482.17104.13.camel@mtksdaap41>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 3/3] ARM64: dts: mt8173: Add thermal/auxadc device nodes
+Date: Fri, 19 Feb 2016 08:20:00 +0100
+Message-ID: <20160219071959.GL3939@pengutronix.de>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-4-git-send-email-s.hauer@pengutronix.de>
+ <56C5EEE9.4020407@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1455858482.17104.13.camel@mtksdaap41>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "open list:OPEN FIRMWARE AND..." <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:44159 "EHLO
+	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1424240AbcBSHUF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 02:20:05 -0500
+Content-Disposition: inline
+In-Reply-To: <56C5EEE9.4020407@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, 2016-02-19 at 13:08 +0800, Henry Chen wrote:
-> On Thu, 2016-02-18 at 11:00 +0800, Pi-Cheng Chen wrote:
+Hi Matthias,
+
+On Thu, Feb 18, 2016 at 05:18:49PM +0100, Matthias Brugger wrote:
+> Hi Sascha,
 > 
-> > > > +               vboot = regulator_get_voltage(svs->reg) / 1000;
-> > > > +               if (mvolt_to_config(vboot) !=
-> > > > +                   mvolt_to_config(svs_bank_cfgs[i].vboot)) {
-> > > > +                       dev_err(svs->dev, "Vboot value mismatch!\n");
-> > > > +                       ret = -EINVAL;
-> > > > +                       break;
-> > > > +               }
-> > > > +
-> > > > +               ret = regulator_set_mode(svs->reg, REGULATOR_MODE_FAST);
-> > > > +               if (ret) {
-> > > > +                       dev_err(svs->dev,
-> > > > +                               "Failed to set regulator in PWM mode\n");
-> > > > +                       ret = -EINVAL;
-> > > > +                       break;
-> > > > +               }
-> > > 
-> > > Shouldn't this be best effort?
-> > > If we can't set the regulator to fast mode, can we continue anyway?
-> > > 
-> > 
-> > AFAIK, we need to set the regulator to fast mode to get stable voltage as
-> > possible. I am sure about the details.
-> > 
-> > @Henry,
-> > Would you please comment it?
+> On 30/11/15 12:42, Sascha Hauer wrote:
+> >This adds the thermal controller and auxadc nodes to the Mediatek MT8173
+> >dtsi file.
+> >
+> >Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> >Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+> >---
+> >  arch/arm64/boot/dts/mediatek/mt8173.dtsi | 17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> >
+> >diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >index 06a1564..e2ddd03 100644
+> >--- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >@@ -277,6 +277,11 @@
+> >  				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+> >  		};
+> >
+> >+		auxadc: auxadc@11001000 {
+> >+			compatible = "mediatek,mt8173-auxadc";
 > 
+> Can you please write a small Documentation about the binding.
+> I suppose it will be mediatek,auxadc and mediatek,mt8173-auxadc.
 
-Hi,
+Just did that.
 
-Correct typos.Sorry for the wrong module name. 
+Sascha
 
-Yes, as you said, SVS need the more precisely voltage as possible when
-driver initialize, there has two mode in mt6397: pwm/auto mode, the pwm
-mode which can get the more stable Vout than auto mode.
-
-Thanks,
-Henry
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
