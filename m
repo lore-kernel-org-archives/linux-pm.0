@@ -1,58 +1,24 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering utilization update callbacks
-Date: Fri, 19 Feb 2016 23:26:02 +0100
-Message-ID: <1882532.OhsNMeyWOd@vostro.rjw.lan>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <1455900129.7375.231.camel@linux.intel.com> <20160219172545.GA27380@e106622-lin>
+Date: Fri, 19 Feb 2016 23:35:15 +0100
+Message-ID: <1797575.PjqbkdCLyN@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <1455900129.7375.231.camel@linux.intel.com> <56C750B7.6090701@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57042 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61698 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030497AbcBSWYi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 17:24:38 -0500
-In-Reply-To: <20160219172545.GA27380@e106622-lin>
+	with SMTP id S1751985AbcBSWdv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 17:33:51 -0500
+In-Reply-To: <56C750B7.6090701@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Friday, February 19, 2016 05:26:04 PM Juri Lelli wrote:
-> Hi Srinivas,
-> 
-> On 19/02/16 08:42, Srinivas Pandruvada wrote:
-> > On Fri, 2016-02-19 at 08:09 +0000, Juri Lelli wrote:
-> > Hi Juri,
-> > > > 
-> > > Hi Rafael,
-> > > 
-> > > On 18/02/16 21:22, Rafael J. Wysocki wrote:
-> > > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.
-> > > > net> wrote:
-> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > 
-> > > 
-> > [...]
-> > 
-> > > However, I still don't quite get why we want to introduce an
-> > > interface
-> > > for explicit passing of util and max if we are not using such
-> > > parameters
-> > > yet. Also, I couldn't find any indication of how such parameters will
-> > > be
-> > > used in the future. If what we need today is a periodic kick for
-> > > cpufreq
-> > > governors that need it, we should simply do how we already do for RT
-> > > and
-> > > DL, IMHO. Also because the places where the current hooks reside
-> > > might
-> > > not be the correct and useful one once we'll start using the
-> > > utilization
-> > > parameters. I could probably make a case for DL where we should place
-> > > hooks in admission control path (or somewhere else when more
-> > > sophisticated mechanisms we'll be in place) rather then in the
-> > > periodic
-> > > tick.
+On Friday, February 19, 2016 09:28:23 AM Steve Muckle wrote:
+> On 02/19/2016 08:42 AM, Srinivas Pandruvada wrote:
 > > We did experiments using util/max in intel_pstate. For some benchmarks
 > > there were regression of 4 to 5%, for some benchmarks it performed at
 > > par with getting utilization from the processor. Further optimization
@@ -60,428 +26,49 @@ On Friday, February 19, 2016 05:26:04 PM Juri Lelli wrote:
 > > change P-State fast enough and be more reactive. Once I have good data,
 > > I will send to this list. The algorithm can be part of the cpufreq
 > > governor too.
-> > 
 > 
-> Thanks for your answer. What you are experimenting with looks really
-> interesting and I'm certainly more than interested in looking at your
-> findings and patches when they will hit the list.
+> There has been a lot of work in the area of scheduler-driven CPU
+> frequency selection by Linaro and ARM as well. It was posted most
+> recently a couple months ago:
 > 
-> My point was more on what we can look at today, though. Without a clear
-> understanding about how and where util and max will be used and from
-> which scheduler paths such information should come from, it is a bit
-> difficult to tell if the current interface and hooks are fine, IMHO.
+> http://thread.gmane.org/gmane.linux.power-management.general/69176
+> 
+> It was also posted as part of the energy-aware scheduling series last
+> July. There's a new RFC series forthcoming which I had hoped (and
+> failed) to post prior to my business travel this week; it should be out
+> next week. It will address the feedback received thus far along with
+> locking and other things.
+> 
+> The scheduler hooks for utilization-based cpufreq operation deserve a
+> lot more debate I think. They could quite possibly have different
+> requirements than hooks which are chosen just to guarantee periodic
+> callbacks into sampling-based governors.
 
-As I've just said, I may be able to show something shortly.
+Yes, they could.
 
-> I'd suggest we leave this part to the discussion we will have once your
-> proposal will be public; and to facilitate that we should remove those
-> arguments from the current interface.
+The point here, though, is that even the sampling-based governors may 
+benefit from using the numbers provided by the scheduler instead of trying
+to come up with analogous numbers themselves.
 
-I'm not really sure how this will help apart from removing some tiny extra
-overhead that is expected to be temporary anyway.
+> For my part I think it would be best if the util/max parameters are
+> omitted
 
-That said, since both you and Steve are making the point that the utilization
-arguments are problematic and I'd really like to be able to make progress here,
-I don't have any fundamental problems with dropping them for the time being,
-but I'm not going to rebase the 50+ commits I have queued up on top of the
-$subject patch.
+OK, so please see the patch I've just sent to Juri:
 
-So I can apply something like the appended patch if that helps to address
-your concerns.
+https://patchwork.kernel.org/patch/8364621/
+
+> until it's clear whether these same hooks can be effectively
+> used for architecture agnostic scheduler-guided (capacity driven) CPU
+> frequency support.
+
+Well, if they can't, then we'll need to move the hooks, but I'm not sure
+how this is related to the arguments they take.
+
+> My upcoming RFC will provide another opportunity to debate the hooks as
+> well as how scheduler-guided CPU frequency should be structured.
+
+OK, looking forward to seeing the RFC then. :-)
 
 Thanks,
 Rafael
-
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: Rework the scheduler hooks for triggering updates
-
-Commit fe7034338ba0 (cpufreq: Add mechanism for registering
-utilization update callbacks) added cpufreq_update_util() to be
-called by the scheduler (from the CFS part) on utilization updates.
-The goal was to allow CFS to pass utilization information to cpufreq
-and to trigger it to evaluate the frequency/voltage configuration
-(P-state) of every CPU on a regular basis.
-
-However, the last two arguments of that function are never used by
-the current code, so CFS might simply call cpufreq_trigger_update()
-instead of it.
-
-For this reason, drop the last two arguments of cpufreq_update_util(),
-rename it to cpufreq_trigger_update() and modify CFS to call it.
-
-Moreover, since the utilization is not involved in that now, rename
-data types, functions and variables related to cpufreq_trigger_update()
-to reflect that (eg. struct update_util_data becomes struct
-freq_update_hook and so on).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c          |   48 ++++++++++++++++++++++---------------
- drivers/cpufreq/cpufreq_governor.c |   27 ++++++++++----------
- drivers/cpufreq/cpufreq_governor.h |    2 -
- drivers/cpufreq/intel_pstate.c     |   15 +++++------
- include/linux/cpufreq.h            |   32 +++---------------------
- kernel/sched/deadline.c            |    2 -
- kernel/sched/fair.c                |   13 +---------
- kernel/sched/rt.c                  |    2 -
- 8 files changed, 58 insertions(+), 83 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -103,46 +103,56 @@ static struct cpufreq_driver *cpufreq_dr
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
- 
--static DEFINE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
-+static DEFINE_PER_CPU(struct freq_update_hook *, cpufreq_freq_update_hook);
- 
- /**
-- * cpufreq_set_update_util_data - Populate the CPU's update_util_data pointer.
-+ * cpufreq_set_freq_update_hook - Populate the CPU's freq_update_hook pointer.
-  * @cpu: The CPU to set the pointer for.
-  * @data: New pointer value.
-  *
-- * Set and publish the update_util_data pointer for the given CPU.  That pointer
-- * points to a struct update_util_data object containing a callback function
-- * to call from cpufreq_update_util().  That function will be called from an RCU
-- * read-side critical section, so it must not sleep.
-+ * Set and publish the freq_update_hook pointer for the given CPU.  That pointer
-+ * points to a struct freq_update_hook object containing a callback function
-+ * to call from cpufreq_trigger_update().  That function will be called from
-+ * an RCU read-side critical section, so it must not sleep.
-  *
-  * Callers must use RCU callbacks to free any memory that might be accessed
-  * via the old update_util_data pointer or invoke synchronize_rcu() right after
-  * this function to avoid use-after-free.
-  */
--void cpufreq_set_update_util_data(int cpu, struct update_util_data *data)
-+void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook)
- {
--	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
-+	rcu_assign_pointer(per_cpu(cpufreq_freq_update_hook, cpu), hook);
- }
--EXPORT_SYMBOL_GPL(cpufreq_set_update_util_data);
-+EXPORT_SYMBOL_GPL(cpufreq_set_freq_update_hook);
- 
- /**
-- * cpufreq_update_util - Take a note about CPU utilization changes.
-+ * cpufreq_trigger_update - Trigger CPU performance state evaluation if needed.
-  * @time: Current time.
-- * @util: Current utilization.
-- * @max: Utilization ceiling.
-  *
-- * This function is called by the scheduler on every invocation of
-- * update_load_avg() on the CPU whose utilization is being updated.
-+ * The way cpufreq is currently arranged requires it to evaluate the CPU
-+ * performance state (frequency/voltage) on a regular basis.  To facilitate
-+ * that, this function is called by update_load_avg() in CFS when executed for
-+ * the current CPU's runqueue.
-+ *
-+ * However, this isn't sufficient to prevent the CPU from being stuck in a
-+ * completely inadequate performance level for too long, because the calls
-+ * from CFS will not be made if RT or deadline tasks are active all the time
-+ * (or there are RT and DL tasks only).
-+ *
-+ * As a workaround for that issue, this function is called by the RT and DL
-+ * sched classes to trigger extra cpufreq updates to prevent it from stalling,
-+ * but that really is a band-aid.  Going forward it should be replaced with
-+ * solutions targeted more specifically at RT and DL tasks.
-  */
--void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
-+void cpufreq_trigger_update(u64 time)
- {
--	struct update_util_data *data;
-+	struct freq_update_hook *hook;
- 
- 	rcu_read_lock();
- 
--	data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
--	if (data && data->func)
--		data->func(data, time, util, max);
-+	hook = rcu_dereference(*this_cpu_ptr(&cpufreq_freq_update_hook));
-+	if (hook && hook->func)
-+		hook->func(hook, time);
- 
- 	rcu_read_unlock();
- }
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -147,35 +147,13 @@ static inline bool policy_is_shared(stru
- extern struct kobject *cpufreq_global_kobject;
- 
- #ifdef CONFIG_CPU_FREQ
--void cpufreq_update_util(u64 time, unsigned long util, unsigned long max);
-+void cpufreq_trigger_update(u64 time);
- 
--/**
-- * cpufreq_trigger_update - Trigger CPU performance state evaluation if needed.
-- * @time: Current time.
-- *
-- * The way cpufreq is currently arranged requires it to evaluate the CPU
-- * performance state (frequency/voltage) on a regular basis to prevent it from
-- * being stuck in a completely inadequate performance level for too long.
-- * That is not guaranteed to happen if the updates are only triggered from CFS,
-- * though, because they may not be coming in if RT or deadline tasks are active
-- * all the time (or there are RT and DL tasks only).
-- *
-- * As a workaround for that issue, this function is called by the RT and DL
-- * sched classes to trigger extra cpufreq updates to prevent it from stalling,
-- * but that really is a band-aid.  Going forward it should be replaced with
-- * solutions targeted more specifically at RT and DL tasks.
-- */
--static inline void cpufreq_trigger_update(u64 time)
--{
--	cpufreq_update_util(time, ULONG_MAX, 0);
--}
--
--struct update_util_data {
--	void (*func)(struct update_util_data *data,
--		     u64 time, unsigned long util, unsigned long max);
-+struct freq_update_hook {
-+	void (*func)(struct freq_update_hook *hook, u64 time);
- };
- 
--void cpufreq_set_update_util_data(int cpu, struct update_util_data *data);
-+void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook);
- 
- unsigned int cpufreq_get(unsigned int cpu);
- unsigned int cpufreq_quick_get(unsigned int cpu);
-@@ -188,8 +166,6 @@ int cpufreq_update_policy(unsigned int c
- bool have_governor_per_policy(void);
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
- #else
--static inline void cpufreq_update_util(u64 time, unsigned long util,
--				       unsigned long max) {}
- static inline void cpufreq_trigger_update(u64 time) {}
- 
- static inline unsigned int cpufreq_get(unsigned int cpu)
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -62,10 +62,10 @@ ssize_t store_sampling_rate(struct dbs_d
- 		mutex_lock(&policy_dbs->timer_mutex);
- 		/*
- 		 * On 32-bit architectures this may race with the
--		 * sample_delay_ns read in dbs_update_util_handler(), but that
-+		 * sample_delay_ns read in dbs_freq_update_handler(), but that
- 		 * really doesn't matter.  If the read returns a value that's
- 		 * too big, the sample will be skipped, but the next invocation
--		 * of dbs_update_util_handler() (when the update has been
-+		 * of dbs_freq_update_handler() (when the update has been
- 		 * completed) will take a sample.
- 		 *
- 		 * If this runs in parallel with dbs_work_handler(), we may end
-@@ -261,7 +261,7 @@ unsigned int dbs_update(struct cpufreq_p
- }
- EXPORT_SYMBOL_GPL(dbs_update);
- 
--void gov_set_update_util(struct policy_dbs_info *policy_dbs,
-+void gov_set_freq_update_hooks(struct policy_dbs_info *policy_dbs,
- 			 unsigned int delay_us)
- {
- 	struct cpufreq_policy *policy = policy_dbs->policy;
-@@ -273,17 +273,17 @@ void gov_set_update_util(struct policy_d
- 	for_each_cpu(cpu, policy->cpus) {
- 		struct cpu_dbs_info *cdbs = &per_cpu(cpu_dbs, cpu);
- 
--		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
-+		cpufreq_set_freq_update_hook(cpu, &cdbs->update_hook);
- 	}
- }
--EXPORT_SYMBOL_GPL(gov_set_update_util);
-+EXPORT_SYMBOL_GPL(gov_set_freq_update_hooks);
- 
--static inline void gov_clear_update_util(struct cpufreq_policy *policy)
-+static inline void gov_clear_freq_update_hooks(struct cpufreq_policy *policy)
- {
- 	int i;
- 
- 	for_each_cpu(i, policy->cpus)
--		cpufreq_set_update_util_data(i, NULL);
-+		cpufreq_set_freq_update_hook(i, NULL);
- 
- 	synchronize_rcu();
- }
-@@ -292,7 +292,7 @@ static void gov_cancel_work(struct cpufr
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 
--	gov_clear_update_util(policy_dbs->policy);
-+	gov_clear_freq_update_hooks(policy_dbs->policy);
- 	irq_work_sync(&policy_dbs->irq_work);
- 	cancel_work_sync(&policy_dbs->work);
- 	atomic_set(&policy_dbs->work_count, 0);
-@@ -336,10 +336,9 @@ static void dbs_irq_work(struct irq_work
- 	schedule_work(&policy_dbs->work);
- }
- 
--static void dbs_update_util_handler(struct update_util_data *data, u64 time,
--				    unsigned long util, unsigned long max)
-+static void dbs_freq_update_handler(struct freq_update_hook *hook, u64 time)
- {
--	struct cpu_dbs_info *cdbs = container_of(data, struct cpu_dbs_info, update_util);
-+	struct cpu_dbs_info *cdbs = container_of(hook, struct cpu_dbs_info, update_hook);
- 	struct policy_dbs_info *policy_dbs = cdbs->policy_dbs;
- 	u64 delta_ns;
- 
-@@ -397,7 +396,7 @@ static struct policy_dbs_info *alloc_pol
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
- 		j_cdbs->policy_dbs = policy_dbs;
--		j_cdbs->update_util.func = dbs_update_util_handler;
-+		j_cdbs->update_hook.func = dbs_freq_update_handler;
- 	}
- 	return policy_dbs;
- }
-@@ -414,7 +413,7 @@ static void free_policy_dbs_info(struct
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
- 		j_cdbs->policy_dbs = NULL;
--		j_cdbs->update_util.func = NULL;
-+		j_cdbs->update_hook.func = NULL;
- 	}
- 	gov->free(policy_dbs);
- }
-@@ -581,7 +580,7 @@ static int cpufreq_governor_start(struct
- 
- 	gov->start(policy);
- 
--	gov_set_update_util(policy_dbs, sampling_rate);
-+	gov_set_freq_update_hooks(policy_dbs, sampling_rate);
- 	return 0;
- }
- 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -144,7 +144,7 @@ struct cpu_dbs_info {
- 	 * wake-up from idle.
- 	 */
- 	unsigned int prev_load;
--	struct update_util_data update_util;
-+	struct freq_update_hook update_hook;
- 	struct policy_dbs_info *policy_dbs;
- };
- 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -103,7 +103,7 @@ struct _pid {
- struct cpudata {
- 	int cpu;
- 
--	struct update_util_data update_util;
-+	struct freq_update_hook update_hook;
- 
- 	struct pstate_data pstate;
- 	struct vid_data vid;
-@@ -1013,10 +1013,9 @@ static inline void intel_pstate_adjust_b
- 		sample->freq);
- }
- 
--static void intel_pstate_update_util(struct update_util_data *data, u64 time,
--				     unsigned long util, unsigned long max)
-+static void intel_pstate_freq_update(struct freq_update_hook *hook, u64 time)
- {
--	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
-+	struct cpudata *cpu = container_of(hook, struct cpudata, update_hook);
- 	u64 delta_ns = time - cpu->sample.time;
- 
- 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
-@@ -1082,8 +1081,8 @@ static int intel_pstate_init_cpu(unsigne
- 	intel_pstate_busy_pid_reset(cpu);
- 	intel_pstate_sample(cpu, 0);
- 
--	cpu->update_util.func = intel_pstate_update_util;
--	cpufreq_set_update_util_data(cpunum, &cpu->update_util);
-+	cpu->update_hook.func = intel_pstate_freq_update;
-+	cpufreq_set_freq_update_hook(cpunum, &cpu->update_hook);
- 
- 	pr_debug("intel_pstate: controlling: cpu %d\n", cpunum);
- 
-@@ -1167,7 +1166,7 @@ static void intel_pstate_stop_cpu(struct
- 
- 	pr_debug("intel_pstate: CPU %d exiting\n", cpu_num);
- 
--	cpufreq_set_update_util_data(cpu_num, NULL);
-+	cpufreq_set_freq_update_hook(cpu_num, NULL);
- 	synchronize_rcu();
- 
- 	if (hwp_active)
-@@ -1425,7 +1424,7 @@ out:
- 	get_online_cpus();
- 	for_each_online_cpu(cpu) {
- 		if (all_cpu_data[cpu]) {
--			cpufreq_set_update_util_data(cpu, NULL);
-+			cpufreq_set_freq_update_hook(cpu, NULL);
- 			synchronize_rcu();
- 			kfree(all_cpu_data[cpu]);
- 		}
-Index: linux-pm/kernel/sched/fair.c
-===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -2839,8 +2839,6 @@ static inline void update_load_avg(struc
- 		update_tg_load_avg(cfs_rq, 0);
- 
- 	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
--		unsigned long max = rq->cpu_capacity_orig;
--
- 		/*
- 		 * There are a few boundary cases this might miss but it should
- 		 * get called often enough that that should (hopefully) not be
-@@ -2849,16 +2847,9 @@ static inline void update_load_avg(struc
- 		 * the next tick/schedule should update.
- 		 *
- 		 * It will not get called when we go idle, because the idle
--		 * thread is a different class (!fair), nor will the utilization
--		 * number include things like RT tasks.
--		 *
--		 * As is, the util number is not freq-invariant (we'd have to
--		 * implement arch_scale_freq_capacity() for that).
--		 *
--		 * See cpu_util().
-+		 * thread is a different class (!fair).
- 		 */
--		cpufreq_update_util(rq_clock(rq),
--				    min(cfs_rq->avg.util_avg, max), max);
-+		cpufreq_trigger_update(rq_clock(rq));
- 	}
- }
- 
-Index: linux-pm/kernel/sched/deadline.c
-===================================================================
---- linux-pm.orig/kernel/sched/deadline.c
-+++ linux-pm/kernel/sched/deadline.c
-@@ -726,7 +726,7 @@ static void update_curr_dl(struct rq *rq
- 	if (!dl_task(curr) || !on_dl_rq(dl_se))
- 		return;
- 
--	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-+	/* Kick cpufreq (see the comment in drivers/cpufreq/cpufreq.c). */
- 	if (cpu_of(rq) == smp_processor_id())
- 		cpufreq_trigger_update(rq_clock(rq));
- 
-Index: linux-pm/kernel/sched/rt.c
-===================================================================
---- linux-pm.orig/kernel/sched/rt.c
-+++ linux-pm/kernel/sched/rt.c
-@@ -945,7 +945,7 @@ static void update_curr_rt(struct rq *rq
- 	if (curr->sched_class != &rt_sched_class)
- 		return;
- 
--	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-+	/* Kick cpufreq (see the comment in drivers/cpufreq/cpufreq.c). */
- 	if (cpu_of(rq) == smp_processor_id())
- 		cpufreq_trigger_update(rq_clock(rq));
- 
 
