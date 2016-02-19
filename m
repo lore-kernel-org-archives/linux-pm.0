@@ -1,70 +1,95 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v4 2/2] powercap/rapl: reduce ipi calls
-Date: Fri, 19 Feb 2016 23:01:59 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1602192301250.2477@nanos>
-References: <1455914253-18138-1-git-send-email-jacob.jun.pan@linux.intel.com> <1455914253-18138-3-git-send-email-jacob.jun.pan@linux.intel.com> <alpine.DEB.2.11.1602192246070.2477@nanos>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering utilization update callbacks
+Date: Fri, 19 Feb 2016 23:14:01 +0100
+Message-ID: <5324745.ObXn8lTQ9A@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com> <20160219080917.GE22643@pablo>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:56302 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422968AbcBSWDR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 17:03:17 -0500
-In-Reply-To: <alpine.DEB.2.11.1602192246070.2477@nanos>
+Received: from v094114.home.net.pl ([79.96.170.134]:54973 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1422949AbcBSWMh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 17:12:37 -0500
+In-Reply-To: <20160219080917.GE22643@pablo>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Rusty Russell <rusty@rustcorp.com.au>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
+On Friday, February 19, 2016 08:09:17 AM Juri Lelli wrote:
+> Hi Rafael,
+> 
+> On 18/02/16 21:22, Rafael J. Wysocki wrote:
+> > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> 
+> [...]
+> 
+> > 
+> > So if anyone has any issues with this one, please let me know.
+> > 
+> 
+> I'm repeating myself a bit, but I'll try to articulate my only concern
+> once again anyway. I run some tests on a couple of arm boxes and I
+> didn't notice any regression or improvements for ondemand and
+> conservative (FWIW this might also work as a tested-by), so I tend to
+> take this series as a way to replace governor timers, making further
+> cleanups and fixes possibile. I think you already confirmed this and I
+> understand why you'd like this series to go in as I also think that what
+> we have on top is beneficial.
 
+OK
 
-On Fri, 19 Feb 2016, Thomas Gleixner wrote:
+> However, I still don't quite get why we want to introduce an interface
+> for explicit passing of util and max if we are not using such parameters
+> yet. Also, I couldn't find any indication of how such parameters will be
+> used in the future. If what we need today is a periodic kick for cpufreq
+> governors that need it, we should simply do how we already do for RT and
+> DL, IMHO. Also because the places where the current hooks reside might
+> not be the correct and useful one once we'll start using the utilization
+> parameters. I could probably make a case for DL where we should place
+> hooks in admission control path (or somewhere else when more
+> sophisticated mechanisms we'll be in place) rather then in the periodic
+> tick.
 
-> On Fri, 19 Feb 2016, Jacob Pan wrote:
-> > @@ -1380,6 +1375,7 @@ static int rapl_detect_topology(void)
-> >  	int i;
-> >  	int phy_package_id;
-> >  	struct rapl_package *new_package, *rp;
-> > +	int lead_cpu;
-> >  
-> >  	for_each_online_cpu(i) {
-> >  		phy_package_id = topology_physical_package_id(i);
-> > @@ -1392,7 +1388,11 @@ static int rapl_detect_topology(void)
-> >  			/* add the new package to the list */
-> >  			new_package->id = phy_package_id;
-> >  			new_package->nr_cpus = 1;
-> > -
-> > +			/* find the first active cpu of the package */
-> > +			lead_cpu = cpumask_any_and(topology_core_cpumask(i),
-> > +						cpumask_of(i));
-> 
-> Yuck. Why any_and? The result is i, simply because i is online otherwise you
-> would not be there. 
-> 
-> > +			if (lead_cpu < nr_cpu_ids)
-> > +				new_package->lead_cpu = lead_cpu;
-> 
-> So the above is identical to 
-> 
-> 			new_package->lead_cpu = lead_cpu;
+Well, the hook in DL is explicitly denoted as a temporary band-aid.
 
-			new_package->lead_cpu = i;
+I and Srinivas have said for multiple times that we are going to use the
+scheduler's utilization data in intel_pstate.  Admittedly, we haven't shown
+any patches implementing that, but that's because Srinivas doesn't regard
+that work as ready yet.
 
-Copy and paste sucks :)
+I also have something for the general cpufreq in the works.  I may be able
+to send it as an RFC over the weekend, depending on how much time I can
+spend on it.
 
-> Hmm?
+That said, if the concern is that there are plans to change the way the
+scheduler computes the utilization numbers and that may become difficult to
+carry out if cpufreq starts to depend on them in their current form, then I
+may agree that it is valid, but I'm not aware of those plans ATM.
+
+However, if the numbers are going to stay what they are, I don't see why
+passing them to cpufreq may possibly become problematic at any point.
+
+> > It has been in linux-next for a few days and seems to be doing well.
+> > 
+> > As I said previously, there is a metric ton of cpufreq improvements
+> > depending on it, so I'd rather not delay integrating it any more.
+> > 
 > 
-> > @@ -1500,6 +1503,15 @@ static int rapl_cpu_callback(struct notifier_block *nfb,
-> >  			break;
-> >  		if (--rp->nr_cpus == 0)
-> >  			rapl_remove_package(rp);
-> > +		else if (cpu == rp->lead_cpu) {
-> > +			/* choose another active cpu in the package */
-> > +			lead_cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
-> 
-> This part is correct.
-> 
-> Thanks,
-> 
-> 	tglx
-> 
+> As said. I'm not against these changes since they open up to further
+> substantial fixes.
+
+Good. :-)
+
+> I'm only wondering if we are doing the right thing defining an interface
+> that nobody is using and without an indication of how such thing we'll be
+> used in the future.
+
+That indication may be coming though. :-)
+
+Thanks,
+Rafael
+
