@@ -1,71 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 8/12] cpufreq: governor: Make governor private data
- per-policy
-Date: Fri, 19 Feb 2016 08:06:10 +0530
-Message-ID: <20160219023610.GB16983@vireshk-i7>
+Subject: Re: [PATCH v2 10/12] cpufreq: governor: Relocate definitions of
+ tuners structures
+Date: Fri, 19 Feb 2016 08:06:53 +0530
+Message-ID: <20160219023653.GC16983@vireshk-i7>
 References: <2938006.67J0esUvOA@vostro.rjw.lan>
- <1954429.fugFc6iA7T@vostro.rjw.lan>
- <20160218060324.GN2610@vireshk-i7>
- <3406818.qR0GBpdcFz@vostro.rjw.lan>
+ <1878988.D1d202zxB7@vostro.rjw.lan>
+ <20160218060916.GP2610@vireshk-i7>
+ <2038639.HMBFOxnpuP@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:35799 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946891AbcBSCgY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 21:36:24 -0500
-Received: by mail-pf0-f182.google.com with SMTP id c10so43663630pfc.2
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 18:36:24 -0800 (PST)
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36855 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1948422AbcBSChI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 21:37:08 -0500
+Received: by mail-pf0-f172.google.com with SMTP id e127so42435053pfe.3
+        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 18:37:08 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <3406818.qR0GBpdcFz@vostro.rjw.lan>
+In-Reply-To: <2038639.HMBFOxnpuP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On 18-02-16, 18:57, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] cpufreq: governor: Make governor private data per-policy
+> Subject: [PATCH] cpufreq: governor: Relocate definitions of tuners structures
 > 
-> Some fields in struct od_cpu_dbs_info_s and struct cs_cpu_dbs_info_s
-> are only used for a limited set of CPUs.  Namely, if a policy is
-> shared between multiple CPUs, those fields will only be used for one
-> of them (policy->cpu).  This means that they really are per-policy
-> rather than per-CPU and holding room for them in per-CPU data
-> structures is generally wasteful.  Also moving those fields into
-> per-policy data structures will allow some significant simplifications
-> to be made going forward.
+> Move the definitions of struct od_dbs_tuners and struct cs_dbs_tuners
+> from the common governor header to the ondemand and conservative
+> governor code, respectively, as they don't need to be in the common
+> header any more.
 > 
-> For this reason, introduce struct cs_policy_dbs_info and
-> struct od_policy_dbs_info to hold those fields.  Define each of the
-> new structures as an extension of struct policy_dbs_info (such that
-> struct policy_dbs_info is embedded in each of them) and introduce
-> new ->alloc and ->free governor callbacks to allocate and free
-> those structures, respectively, such that ->alloc() will return
-> a pointer to the struct policy_dbs_info embedded in the allocated
-> data structure and ->free() will take that pointer as its argument.
-> 
-> With that, modify the code accessing the data fields in question
-> in per-CPU data objects to look for them in the new structures
-> via the struct policy_dbs_info pointer available to it and drop
-> them from struct od_cpu_dbs_info_s and struct cs_cpu_dbs_info_s.
+> No functional changes.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
 > 
-> This adds a header file for the definitions of data structures shared
-> between ondemand and amd_freq_sensitivity.
-> 
-> The latter is updated to look for the governor tunables in struct od_policy_dbs_info
-> instead of struct od_cpu_dbs_info_s.
+> This had to be update because of the update of [8/12] it depends on.
 > 
 > ---
->  drivers/cpufreq/amd_freq_sensitivity.c |    5 +---
->  drivers/cpufreq/cpufreq_conservative.c |   34 +++++++++++++++++++++++++++++----
->  drivers/cpufreq/cpufreq_governor.c     |    7 ++----
->  drivers/cpufreq/cpufreq_governor.h     |    9 +-------
->  drivers/cpufreq/cpufreq_ondemand.c     |   34 +++++++++++++++++++++++----------
->  drivers/cpufreq/cpufreq_ondemand.h     |   26 +++++++++++++++++++++++++
->  6 files changed, 87 insertions(+), 28 deletions(-)
+>  drivers/cpufreq/cpufreq_conservative.c |    5 +++++
+>  drivers/cpufreq/cpufreq_governor.h     |   10 ----------
+>  drivers/cpufreq/cpufreq_ondemand.h     |    4 ++++
+>  3 files changed, 9 insertions(+), 10 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
