@@ -1,50 +1,36 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 3/3] thermal: exynos: Defer probe if vtmu is present but
- not registered
-Date: Fri, 19 Feb 2016 13:25:05 +0900
-Message-ID: <56C69921.4050201@samsung.com>
+From: Andi Shyti <andi.shyti@samsung.com>
+Subject: Re: [PATCH 0/3] thermal: exynos: Fixes for vtmu-supply regulator
+ handling
+Date: Fri, 19 Feb 2016 13:29:54 +0900
+Message-ID: <20160219042954.GD27936@samsunx.samsung>
 References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
- <1455819551-4666-4-git-send-email-javier@osg.samsung.com>
- <20160219042014.GB27936@samsunx.samsung>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20160219042014.GB27936@samsunx.samsung>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andi Shyti <andi.shyti@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:40747 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757273AbcBSE34 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 23:29:56 -0500
+Content-disposition: inline
+In-reply-to: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-On 19.02.2016 13:20, Andi Shyti wrote:
-> Hi Javier,
+Hi Javier,
+
+> Javier Martinez Canillas (3):
+>   thermal: exynos: List vtmu-supply as optional property in DT binding
+>   thermal: exynos: Use devm_regulator_get_optional() for vtmu
+>   thermal: exynos: Defer probe if vtmu is present but not registered
 > 
-> Just a question...
-> 
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index f4f36bba7be9..f3ce94ec73b5 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -1318,6 +1318,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>  			return ret;
->>  		}
->>  	} else {
->> +		if (PTR_ERR(data->regulator) == -EPROBE_DEFER)
->> +			return -EPROBE_DEFER;
-> 
-> shouldn't we return also in case of -ENOMEM? -ENOMEM is a Kernel
-> failure, not depending on the regulator itself.
+>  Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 9 ++++++---
+>  drivers/thermal/samsung/exynos_tmu.c                         | 4 +++-
+>  2 files changed, 9 insertions(+), 4 deletions(-)
 
-Usually not because that would make this error path quite complicated
-and difficult to keep consistent. If you choose this way then you will
-have to probably extend the black list (e.g. EINVAL, some other)... or
-use a white list.
+for all of them:
 
-Additionally the error codes can come from deeper layers. These layer
-now can return ESOMETHING but later it might change to EDIFFERENT... you
-cannot predict that.
+Reviewed-by: Andi Shyti <andi.shyti@samsung.com>
 
-Whatever the reason was (except defer), just ignore the regulator.
-
-Best regards,
-Krzysztof
+Andi
