@@ -1,66 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/12] cpufreq: governor: Close dbs_data update race
- condition
-Date: Fri, 19 Feb 2016 08:39:54 +0530
-Message-ID: <20160219030954.GA22242@vireshk-i7>
-References: <2938006.67J0esUvOA@vostro.rjw.lan>
- <1592265.QLnTJA45ZD@vostro.rjw.lan>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2 1/3] ARM: dts: Add cooling levels for CPUs on exynos5420
+Date: Fri, 19 Feb 2016 12:51:48 +0900
+Message-ID: <56C69154.40608@samsung.com>
+References: <1455772383-20598-1-git-send-email-k.kozlowski@samsung.com>
+ <87h9h599zi.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:34448 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757165AbcBSDKJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 22:10:09 -0500
-Received: by mail-pf0-f172.google.com with SMTP id x65so42907975pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Feb 2016 19:10:09 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1592265.QLnTJA45ZD@vostro.rjw.lan>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:12820 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423660AbcBSDv4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Feb 2016 22:51:56 -0500
+In-reply-to: <87h9h599zi.fsf@e105922-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 18-02-16, 02:19, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 19.02.2016 02:58, Punit Agrawal wrote:
+> Hi Krzysztof,
 > 
-> It is possible for a dbs_data object to be updated after its
-> usage counter has become 0.  That may happen if governor_store()
-> runs (via a govenor tunable sysfs attribute write) in parallel
-> with cpufreq_governor_exit() called for the last cpufreq policy
-> associated with the dbs_data in question.  In that case, if
-> governor_store() acquires dbs_data->mutex right after
-> cpufreq_governor_exit() has released it, the ->store() callback
-> invoked by it may operate on dbs_data with no users.  Although
-> sysfs will cause the kobject_put() in cpufreq_governor_exit() to
-> block until governor_store() has returned, that situation may
-> lead to some unexpected results, depending on the implementation
-> of the ->store callback, and therefore it should be avoided.
+> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
 > 
-> To that end, modify governor_store() to check the dbs_data's
-> usage count before invoking the ->store() callback and return
-> an error if it is 0 at that point.
+>> On Exynos5420 we support 8 cpufreq steps (600-1300 MHz) for LITTLE and
+>> 12 steps for big core (700-1800 MHz). Add respective cooling cells.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>>
+>> ---
+>>
+>> Changes since v1:
+>> 1. Add cooling properties to all CPUs (suggested by Viresh).
+>> ---
+>>  arch/arm/boot/dts/exynos5420-cpus.dtsi | 24 ++++++++++++++++++++++++
+>>  1 file changed, 24 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5420-cpus.dtsi b/arch/arm/boot/dts/exynos5420-cpus.dtsi
+>> index 261d25173f61..5c052d7ff554 100644
+>> --- a/arch/arm/boot/dts/exynos5420-cpus.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5420-cpus.dtsi
+>> @@ -33,6 +33,9 @@
+>>  			clock-frequency = <1800000000>;
+>>  			cci-control-port = <&cci_control1>;
+>>  			operating-points-v2 = <&cluster_a15_opp_table>;
+>> +			cooling-min-level = <0>;
+>> +			cooling-max-level = <11>;
 > 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Although the above two properties are defined they aren't parsed in the
+> kernel.
 > 
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -112,7 +112,7 @@ static ssize_t governor_store(struct kob
->  
->  	mutex_lock(&dbs_data->mutex);
->  
-> -	if (gattr->store)
-> +	if (dbs_data->usage_count && gattr->store)
->  		ret = gattr->store(dbs_data, buf, count);
->  
->  	mutex_unlock(&dbs_data->mutex);
+> Setting min / max extents for cooling devices via cooling maps does work
+> though.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+It is described as optional property in
+Documentation/devicetree/bindings/thermal/thermal.txt ... but indeed it
+is totally ignored.
 
--- 
-viresh
+So what is the recommendation? Get rid of it from DTS and documentation
+or leave it because it will be implemented someday?
+
+Thanks for feedback!
+
+Best regards,
+Krzysztof
+
