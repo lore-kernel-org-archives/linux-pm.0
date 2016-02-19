@@ -1,61 +1,81 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Fri, 19 Feb 2016 09:28:23 -0800
-Message-ID: <56C750B7.6090701@linaro.org>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <2044559.7ypXocW9OZ@vostro.rjw.lan> <3499355.2JlaSruvOa@vostro.rjw.lan>
- <16016177.YFqb4gVNBo@vostro.rjw.lan>
- <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
- <20160219080917.GE22643@pablo> <1455900129.7375.231.camel@linux.intel.com>
+From: Ryan <ryanphilips19@googlemail.com>
+Subject: Re: suspend resume query
+Date: Sat, 20 Feb 2016 01:27:30 +0530
+Message-ID: <CANMsd01ZDQACG0Hn6_eNVUcxx1e4C3BdbwZ1+2raUZ34wXENzA@mail.gmail.com>
+References: <CANMsd03Y67iVEtUZaWnjywNxVVSvmpQfh72y8uJeqqgP=PrH=g@mail.gmail.com>
+	<1455700241.7626.10.camel@suse.com>
+	<CANMsd02oPfRZ4dRRF8R61VtN+h62ROfmNCDK=NohKjYWhOL4Hg@mail.gmail.com>
+	<1455702015.7626.13.camel@suse.com>
+	<CANMsd03xShJ4hMajaahTaSQfZyCww+9me-e7X3F2=z1oUPN0Cg@mail.gmail.com>
+	<1455703562.7626.14.camel@suse.com>
+	<CAN2waFtS2cuWw2oY54-DQN_Nt5c=YvXg9nEn2x4vhzZMru9Vrw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:38609 "EHLO
-	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1424899AbcBSR22 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 12:28:28 -0500
-Received: by mail-wm0-f41.google.com with SMTP id a4so80667251wme.1
-        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2016 09:28:27 -0800 (PST)
-In-Reply-To: <1455900129.7375.231.camel@linux.intel.com>
+Received: from mail-ig0-f180.google.com ([209.85.213.180]:36677 "EHLO
+	mail-ig0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbcBST5a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 14:57:30 -0500
+Received: by mail-ig0-f180.google.com with SMTP id xg9so42254831igb.1
+        for <linux-pm@vger.kernel.org>; Fri, 19 Feb 2016 11:57:30 -0800 (PST)
+In-Reply-To: <CAN2waFtS2cuWw2oY54-DQN_Nt5c=YvXg9nEn2x4vhzZMru9Vrw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Oliver Neukum <oneukum@suse.com>, linux-pm@vger.kernel.org
 
-On 02/19/2016 08:42 AM, Srinivas Pandruvada wrote:
-> We did experiments using util/max in intel_pstate. For some benchmarks
-> there were regression of 4 to 5%, for some benchmarks it performed at
-> par with getting utilization from the processor. Further optimization
-> in the algorithm is possible and still in progress. Idea is that we can
-> change P-State fast enough and be more reactive. Once I have good data,
-> I will send to this list. The algorithm can be part of the cpufreq
-> governor too.
+Hi zhaoyang,
 
-There has been a lot of work in the area of scheduler-driven CPU
-frequency selection by Linaro and ARM as well. It was posted most
-recently a couple months ago:
+On Thu, Feb 18, 2016 at 12:24 PM, Zhaoyang Huang
+<zhaoyang.huang@linaro.org> wrote:
+> Hi Ryan,
+> As we already known, STR will let all cores power down after store the
+> context(GPR, idmap_gpd, sp etc) of primary core in DDR. It is
+> different between ARMv7 and ARMv8
+> For ARMv7,
+> The boot vector can just be located in 0x00000000 or 0xffff0000, which
+> is chosen by sampling VINITHI domain within PMU register during
+> bootup. For some SOCs, one of them is used for cold boot while another
+> is used for recover from STR or CPU IDLE, which is referred as warm
+> reset. For this scenario, an AON RAM is usually placed in one of the
+> region mentioned above. Meanwhile, the vendor will place some code
+> there for bring the core back to the context where it is powered down.
+>
 
-http://thread.gmane.org/gmane.linux.power-management.general/69176
+I understand that, when the wakeup interrupt arrives - it is not
+actually an interrupt but
+a reset which executes the code from 0x00000000 and then what happens?
 
-It was also posted as part of the energy-aware scheduling series last
-July. There's a new RFC series forthcoming which I had hoped (and
-failed) to post prior to my business travel this week; it should be out
-next week. It will address the feedback received thus far along with
-locking and other things.
+Does it execute the Boot rom and bootloaders all over again - this
+does not happen right?
 
-The scheduler hooks for utilization-based cpufreq operation deserve a
-lot more debate I think. They could quite possibly have different
-requirements than hooks which are chosen just to guarantee periodic
-callbacks into sampling-based governors.
+My Question is what happens when the wakeup interrupt arrives and how
+is it related to
+bootloaders/booting process.
 
-For my part I think it would be best if the util/max parameters are
-omitted until it's clear whether these same hooks can be effectively
-used for architecture agnostic scheduler-guided (capacity driven) CPU
-frequency support. My upcoming RFC will provide another opportunity to
-debate the hooks as well as how scheduler-guided CPU frequency should be
-structured.
+>From what i understand - Warm restart is when the reboot command is
+issues. How different
+is it from cpuidle wakeup or suspend 2 ram wakeup.
 
-thanks,
-Steve
+
+Thanks for your help.
+
+
+
+> For ARMv8,
+> All things are covered by PSCI, you can refer the process from ARM's archive.
+>
+> On 17 February 2016 at 18:06, Oliver Neukum <oneukum@suse.com> wrote:
+>> On Wed, 2016-02-17 at 15:19 +0530, Ryan wrote:
+>>> Suspend to ram. I am sorry - I did not provide complete information.
+>>
+>> STR on ARM is peculiar. I have no idea.
+>>
+>>         Sorry
+>>                 Oliver
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
