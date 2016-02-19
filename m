@@ -1,64 +1,72 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Fri, 19 Feb 2016 08:21:32 +0100
-Message-ID: <20160219072132.GM3939@pengutronix.de>
-References: <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
- <20151217193332.GB7999@localhost.localdomain>
- <20160104141940.GI13058@pengutronix.de>
- <20160119072917.GA13237@pengutronix.de>
- <1454295246.22151.6.camel@mtksdaap41>
- <CAGS+omD9U8tKmb02d_gMMAGX18MJZhz0RrugpBK2EuqgZrBy6g@mail.gmail.com>
- <CAGS+omArr0_-ziBXWjEcKS0bqnruNzZc2aq2s3zkghUC7_HfGw@mail.gmail.com>
- <56C4A875.6080908@gmail.com>
- <20160218105603.GE3939@pengutronix.de>
- <20160218151552.GA1852@localhost.localdomain>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
+ utilization update callbacks
+Date: Fri, 19 Feb 2016 08:09:17 +0000
+Message-ID: <20160219080917.GE22643@pablo>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <2044559.7ypXocW9OZ@vostro.rjw.lan>
+ <3499355.2JlaSruvOa@vostro.rjw.lan>
+ <16016177.YFqb4gVNBo@vostro.rjw.lan>
+ <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:33544 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752043AbcBSHVf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Feb 2016 02:21:35 -0500
+Received: from foss.arm.com ([217.140.101.70]:44377 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1424890AbcBSIJa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 19 Feb 2016 03:09:30 -0500
 Content-Disposition: inline
-In-Reply-To: <20160218151552.GA1852@localhost.localdomain>
+In-Reply-To: <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Eddie Huang <eddie.huang@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Thu, Feb 18, 2016 at 07:15:54AM -0800, Eduardo Valentin wrote:
-> Folks,
+Hi Rafael,
+
+On 18/02/16 21:22, Rafael J. Wysocki wrote:
+> On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+
+[...]
+
 > 
-> > > I think the problem is, that Eduardo wants to see the hierachical thermal
-> > > zones being used. But there is still a discussion ongoing [1].
-> > 
-> > It seems the original Author lost interest in the hierarchical thermal
-> > zones. I am not convinced that we need hierarchical thermal zones for
-> > the Mediatek driver since from the five sensors we only need the maximum
-> > temperature (If this ever changes we could still rework it).
-> > 
-> > Given the current speed of communication I am not willing to add
-> > another, possibly controversal, dependency to an otherwise simple
-> > driver. I am even less willing when concerns like these come after *v12*
-> > of this series.
-> > 
-> > Eduardo, it would really help to get a word from you.
+> So if anyone has any issues with this one, please let me know.
 > 
-> Apologize for the long delays here. In fact I want the hierarchical
-> support on this driver. But given that it is not really a strong
-> dependency and the hierarchical support is still an ongoing development,
-> I don't see why we should not merge this driver.
+
+I'm repeating myself a bit, but I'll try to articulate my only concern
+once again anyway. I run some tests on a couple of arm boxes and I
+didn't notice any regression or improvements for ondemand and
+conservative (FWIW this might also work as a tested-by), so I tend to
+take this series as a way to replace governor timers, making further
+cleanups and fixes possibile. I think you already confirmed this and I
+understand why you'd like this series to go in as I also think that what
+we have on top is beneficial.
+
+However, I still don't quite get why we want to introduce an interface
+for explicit passing of util and max if we are not using such parameters
+yet. Also, I couldn't find any indication of how such parameters will be
+used in the future. If what we need today is a periodic kick for cpufreq
+governors that need it, we should simply do how we already do for RT and
+DL, IMHO. Also because the places where the current hooks reside might
+not be the correct and useful one once we'll start using the utilization
+parameters. I could probably make a case for DL where we should place
+hooks in admission control path (or somewhere else when more
+sophisticated mechanisms we'll be in place) rather then in the periodic
+tick.
+
+> It has been in linux-next for a few days and seems to be doing well.
 > 
-> I also have had the chance to try it out in a board, and seams to work
-> for me. I am adding to my tree.
+> As I said previously, there is a metric ton of cpufreq improvements
+> depending on it, so I'd rather not delay integrating it any more.
+> 
 
-Thanks for applying :)
+As said. I'm not against these changes since they open up to further
+substantial fixes. I'm only wondering if we are doing the right thing
+defining an interface that nobody is using and without an indication of
+how such thing we'll be used in the future.
 
-Sascha
+Best,
 
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+- Juri
