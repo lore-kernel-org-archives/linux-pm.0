@@ -1,124 +1,90 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH 1/3] thermal: hisilicon: support to use any sensor
-Date: Sat, 20 Feb 2016 23:52:07 +0800
-Message-ID: <1455983529-9559-2-git-send-email-leo.yan@linaro.org>
+From: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 3/3] arm64: dts: register Hi6220's thermal zone for power allocator
+Date: Sat, 20 Feb 2016 23:52:09 +0800
+Message-ID: <1455983529-9559-4-git-send-email-leo.yan@linaro.org>
 References: <1455983529-9559-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1455983529-9559-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Leo Yan <leo.yan@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1455983529-9559-1-git-send-email-leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>, Punit Agrawal <Punit.Agrawal-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-In current code sensor driver registers all 4 sensors together and if
-any of them has not bound to thermal zone successfully then driver will
-return failure for driver's initialization. As a result, if DT binds
-thermal zone with only one sensor, then the thermal driver will not work
-well anymore.
+With profiling Hi6220's power modeling so get dynamic coefficient and
+sustainable power. So pass these parameters from DT.
 
-So this patch is to fix this issue. It allows the thermal sensor driver
-can register any number sensors at initialization phase, and fix up code
-for other related code to skip related sensor's accessing if the sensor
-has not been enabled in initialization phase.
+Now enable power allocator wit only one actor for CPU part, so directly
+use cluster0's thermal sensor for monitoring temperature.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
+Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/thermal/hisi_thermal.c | 33 ++++++++++++++++++++-------------
- 1 file changed, 20 insertions(+), 13 deletions(-)
+ arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 36 +++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 5e820b5..7a3e5d8 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -160,7 +160,7 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
- 	struct hisi_thermal_sensor *sensor = _sensor;
- 	struct hisi_thermal_data *data = sensor->thermal;
+diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+index 50ba1b0..3608a3e 100644
+--- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+@@ -6,6 +6,7 @@
  
--	int sensor_id = 0, i;
-+	int sensor_id = -1, i;
- 	long max_temp = 0;
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/hi6220-clock.h>
++#include <dt-bindings/thermal/thermal.h>
  
- 	*temp = hisi_thermal_get_sensor_temp(data, sensor);
-@@ -168,12 +168,19 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
- 	sensor->sensor_temp = *temp;
+ / {
+ 	compatible = "hisilicon,hi6220";
+@@ -87,6 +88,7 @@
+ 			cooling-max-level = <0>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
++			dynamic-power-coefficient = <311>;
+ 		};
  
- 	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-+		if (!data->sensors[i].tzd)
-+			continue;
+ 		cpu1: cpu@1 {
+@@ -322,5 +324,39 @@
+ 			clock-names = "thermal_clk";
+ 			#thermal-sensor-cells = <1>;
+ 		};
 +
- 		if (data->sensors[i].sensor_temp >= max_temp) {
- 			max_temp = data->sensors[i].sensor_temp;
- 			sensor_id = i;
- 		}
- 	}
- 
-+	/* If no sensor has been enabled, then skip to enable irq */
-+	if (sensor_id == -1)
-+		return 0;
++		thermal-zones {
 +
- 	mutex_lock(&data->thermal_lock);
- 	data->irq_bind_sensor = sensor_id;
- 	mutex_unlock(&data->thermal_lock);
-@@ -226,8 +233,12 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- 		 sensor->thres_temp / 1000);
- 	mutex_unlock(&data->thermal_lock);
- 
--	for (i = 0; i < HISI_MAX_SENSORS; i++)
-+	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-+		if (!data->sensors[i].tzd)
-+			continue;
++			cls0: cls0 {
++				polling-delay = <1000>;
++				polling-delay-passive = <100>;
++				sustainable-power = <3326>;
 +
- 		thermal_zone_device_update(data->sensors[i].tzd);
-+	}
- 
- 	return IRQ_HANDLED;
- }
-@@ -247,6 +258,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
- 				sensor, &hisi_of_thermal_ops);
- 	if (IS_ERR(sensor->tzd)) {
- 		ret = PTR_ERR(sensor->tzd);
-+		sensor->tzd = NULL;
- 		dev_err(&pdev->dev, "failed to register sensor id %d: %d\n",
- 			sensor->id, ret);
- 		return ret;
-@@ -334,25 +346,17 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
- 		ret = hisi_thermal_register_sensor(pdev, data,
- 						   &data->sensors[i], i);
--		if (ret) {
-+		if (ret)
- 			dev_err(&pdev->dev,
- 				"failed to register thermal sensor: %d\n", ret);
--			goto err_get_sensor_data;
--		}
-+		else
-+			hisi_thermal_toggle_sensor(&data->sensors[i], true);
- 	}
- 
- 	hisi_thermal_enable_bind_irq_sensor(data);
- 	data->irq_enabled = true;
- 
--	for (i = 0; i < HISI_MAX_SENSORS; i++)
--		hisi_thermal_toggle_sensor(&data->sensors[i], true);
--
- 	return 0;
--
--err_get_sensor_data:
--	clk_disable_unprepare(data->clk);
--
--	return ret;
- }
- 
- static int hisi_thermal_remove(struct platform_device *pdev)
-@@ -363,6 +367,9 @@ static int hisi_thermal_remove(struct platform_device *pdev)
- 	for (i = 0; i < HISI_MAX_SENSORS; i++) {
- 		struct hisi_thermal_sensor *sensor = &data->sensors[i];
- 
-+		if (!sensor->tzd)
-+			continue;
++				/* sensor ID */
++				thermal-sensors = <&tsensor 2>;
 +
- 		hisi_thermal_toggle_sensor(sensor, false);
- 		thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
- 	}
++				trips {
++					threshold: trip-point@0 {
++						temperature = <65000>;
++						hysteresis = <1000>;
++						type = "passive";
++					};
++
++					target: trip-point@1 {
++						temperature = <75000>;
++						hysteresis = <1000>;
++						type = "passive";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&target>;
++						contribution = <1024>;
++						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++		};
+ 	};
+ };
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
