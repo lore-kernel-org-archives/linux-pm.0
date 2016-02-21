@@ -1,50 +1,56 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] thermal: rcar: check for NULL return of of_match_device
-Date: Sat, 20 Feb 2016 22:23:27 +0000
-Message-ID: <1456007007-11200-1-git-send-email-colin.king@canonical.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/2] cpufreq: governor: Make gov_set_update_util() static
+Date: Sun, 21 Feb 2016 03:15:34 +0100
+Message-ID: <1513735.63Kc3ciBeA@vostro.rjw.lan>
+References: <2410542.x6e5Rli2VY@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:37762 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753119AbcBTWX3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Feb 2016 17:23:29 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:47618 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752195AbcBUCOO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Feb 2016 21:14:14 -0500
+In-Reply-To: <2410542.x6e5Rli2VY@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-of_match_device can potentially return NULL, so we need to check for
-this case to avoid a null pointer dereference on of_id
+The gov_set_update_util() routine is only used internally by the
+common governor code and it doesn't need to be exported, so make
+it static.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+No functional changes.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/rcar_thermal.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq_governor.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 0e735ac..5943881 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -431,13 +431,17 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct resource *res, *irq;
- 	const struct of_device_id *of_id = of_match_device(rcar_thermal_dt_ids, dev);
--	unsigned long of_data = (unsigned long)of_id->data;
-+	unsigned long of_data;
- 	int mres = 0;
- 	int i;
- 	int ret = -ENODEV;
- 	int idle = IDLE_INTERVAL;
- 	u32 enr_bits = 0;
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -261,8 +261,8 @@ unsigned int dbs_update(struct cpufreq_p
+ }
+ EXPORT_SYMBOL_GPL(dbs_update);
  
-+	if (!of_id)
-+		return ret;
-+	of_data = (unsigned long)of_id->data;
-+
- 	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
- 	if (!common)
- 		return -ENOMEM;
--- 
-2.7.0
+-void gov_set_update_util(struct policy_dbs_info *policy_dbs,
+-			 unsigned int delay_us)
++static void gov_set_update_util(struct policy_dbs_info *policy_dbs,
++				unsigned int delay_us)
+ {
+ 	struct cpufreq_policy *policy = policy_dbs->policy;
+ 	int cpu;
+@@ -276,7 +276,6 @@ void gov_set_update_util(struct policy_d
+ 		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(gov_set_update_util);
+ 
+ static inline void gov_clear_update_util(struct cpufreq_policy *policy)
+ {
 
