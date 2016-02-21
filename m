@@ -1,41 +1,57 @@
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: [PATCH 2/6] power_supply: isp1704_charger: Add compatible of match for nxp,isp1707
-Date: Sun, 21 Feb 2016 12:28:19 +0100
-Message-ID: <1456054103-19551-3-git-send-email-pali.rohar@gmail.com>
-References: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
+From: Arto Jantunen <viiru@iki.fi>
+Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4
+Date: Sun, 21 Feb 2016 10:45:17 +0200
+Message-ID: <87egc6zc2q.fsf@iki.fi>
+References: <87egc7ahqn.fsf@iki.fi> <000401d16bfc$21338450$639a8cf0$@net>
+	<87a8mv9ujm.fsf@iki.fi>
+	<36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f45.google.com ([74.125.82.45]:38075 "EHLO
-	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbcBUSK6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2016 13:10:58 -0500
-In-Reply-To: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
+Received: from viiru.iki.fi ([185.19.28.114]:41751 "EHLO viiru.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbcBUSNH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 21 Feb 2016 13:13:07 -0500
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
+	(Yu C. Chen's message of "Sat, 20 Feb 2016 18:03:34 +0000")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machel <pavel@ucw.cz>, Aaro Koskinen <aaro.koskinen@iki.fi>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
 
-Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
----
- drivers/power/isp1704_charger.c |    1 +
- 1 file changed, 1 insertion(+)
+"Chen, Yu C" <yu.c.chen@intel.com> writes:
 
-diff --git a/drivers/power/isp1704_charger.c b/drivers/power/isp1704_ch=
-arger.c
-index acaf7cf..4cd6899 100644
---- a/drivers/power/isp1704_charger.c
-+++ b/drivers/power/isp1704_charger.c
-@@ -536,6 +536,7 @@ static int isp1704_charger_remove(struct platform_d=
-evice *pdev)
- #ifdef CONFIG_OF
- static const struct of_device_id omap_isp1704_of_match[] =3D {
- 	{ .compatible =3D "nxp,isp1704", },
-+	{ .compatible =3D "nxp,isp1707", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, omap_isp1704_of_match);
---=20
-1.7.9.5
+>> -----Original Message-----
+>> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>> owner@vger.kernel.org] On Behalf Of Arto Jantunen
+>> Sent: Sunday, February 21, 2016 1:11 AM
+>> To: Doug Smythies
+>> Cc: 'Rafael J. Wysocki'; 'Viresh Kumar'; linux-pm@vger.kernel.org; 'Srinivas
+>> Pandruvada'
+>> Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on
+>> 4.5-rc4
+>> 
+>> "Doug Smythies" <dsmythies@telus.net> writes:
+>> 
+>> > On 2106.02.20 00:50 Arto Jantunen wrote:
+>> >> I can force the frequency down manually with cpufreq-set, so the
+>> >> problem doesn't seem to be with the actual frequency changing.
+>  cpufreq-set modifies the value of scaling_max_freq, it looks like
+> your system always demands for the max freq, can you provide:
+> grep . /sys/devices/system/cpu/intel_pstate/*perf_pct
+> under powersave and performance?
 
+Powersave:
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:22
+
+Performance:
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+
+Also, adding intel_pstate=no_hwp to the command line does not change the
+result. Changing that to intel_pstate=disable does fix the problem, so
+the bug seems to be somewhere in intel_pstate instead of cpufreq core.
+
+-- 
+Arto Jantunen
