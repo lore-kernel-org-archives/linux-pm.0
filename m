@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/2] cpufreq: governor: Make gov_set_update_util() static
-Date: Sun, 21 Feb 2016 03:15:34 +0100
-Message-ID: <1513735.63Kc3ciBeA@vostro.rjw.lan>
+Subject: [PATCH 1/2] cpufreq: governor: Fix race in dbs_update_util_handler()
+Date: Sun, 21 Feb 2016 03:14:35 +0100
+Message-ID: <2648721.JQxjFin8bu@vostro.rjw.lan>
 References: <2410542.x6e5Rli2VY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47618 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60831 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752195AbcBUCOO (ORCPT
+	with SMTP id S1751994AbcBUCOO (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Feb 2016 21:14:14 -0500
 In-Reply-To: <2410542.x6e5Rli2VY@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
@@ -19,38 +19,77 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <vire
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The gov_set_update_util() routine is only used internally by the
-common governor code and it doesn't need to be exported, so make
-it static.
+There is a scenarion that may lead to undesired results in
+dbs_update_util_handler().  Namely, if two CPUs sharing a policy
+enter the funtion at the same time, pass the sample delay check
+and then one of them is stalled until dbs_work_handler() (queued
+up by the other CPU) clears the work counter, it may update the
+work counter and queue up another work item prematurely.
 
-No functional changes.
+To prevent that from happening, use the observation that the CPU
+queuing up a work item in dbs_update_util_handler() updates the
+last sample time.  This means that if another CPU was stalling after
+passing the sample delay check and now successfully updated the work
+counter as a result of the race described above, it will see the new
+value of the last sample time which is different from what it used in
+the sample delay check before.  If that happens, the sample delay
+check passed previously is not valid any more, so the CPU should not
+continue, but leaving the funtion at that point might miss an
+opportunity to take the next sample, so simply clear the work
+counter and jump to the beginning of the function in that case.
 
+Fixes: f17cbb53783c (cpufreq: governor: Avoid atomic operations in hot paths)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq_governor.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c |   22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
 +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -261,8 +261,8 @@ unsigned int dbs_update(struct cpufreq_p
- }
- EXPORT_SYMBOL_GPL(dbs_update);
- 
--void gov_set_update_util(struct policy_dbs_info *policy_dbs,
--			 unsigned int delay_us)
-+static void gov_set_update_util(struct policy_dbs_info *policy_dbs,
-+				unsigned int delay_us)
+@@ -341,8 +341,9 @@ static void dbs_update_util_handler(stru
  {
- 	struct cpufreq_policy *policy = policy_dbs->policy;
- 	int cpu;
-@@ -276,7 +276,6 @@ void gov_set_update_util(struct policy_d
- 		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
- 	}
- }
--EXPORT_SYMBOL_GPL(gov_set_update_util);
+ 	struct cpu_dbs_info *cdbs = container_of(data, struct cpu_dbs_info, update_util);
+ 	struct policy_dbs_info *policy_dbs = cdbs->policy_dbs;
+-	u64 delta_ns;
++	u64 delta_ns, lst;
  
- static inline void gov_clear_update_util(struct cpufreq_policy *policy)
- {
++ start:
+ 	/*
+ 	 * The work may not be allowed to be queued up right now.
+ 	 * Possible reasons:
+@@ -357,7 +358,8 @@ static void dbs_update_util_handler(stru
+ 	 * of sample_delay_ns used in the computation may be stale.
+ 	 */
+ 	smp_rmb();
+-	delta_ns = time - policy_dbs->last_sample_time;
++	lst = ACCESS_ONCE(policy_dbs->last_sample_time);
++	delta_ns = time - lst;
+ 	if ((s64)delta_ns < policy_dbs->sample_delay_ns)
+ 		return;
+ 
+@@ -366,9 +368,19 @@ static void dbs_update_util_handler(stru
+ 	 * at this point.  Otherwise, we need to ensure that only one of the
+ 	 * CPUs sharing the policy will do that.
+ 	 */
+-	if (policy_dbs->is_shared &&
+-	    !atomic_add_unless(&policy_dbs->work_count, 1, 1))
+-		return;
++	if (policy_dbs->is_shared) {
++		if (!atomic_add_unless(&policy_dbs->work_count, 1, 1))
++			return;
++
++		/*
++		 * If another CPU updated last_sample_time in the meantime, we
++		 * shouldn't be here, so clear the work counter and try again.
++		 */
++		if (unlikely(lst != ACCESS_ONCE(policy_dbs->last_sample_time))) {
++			atomic_set(&policy_dbs->work_count, 0);
++			goto start;
++		}
++	}
+ 
+ 	policy_dbs->last_sample_time = time;
+ 	policy_dbs->work_in_progress = true;
 
