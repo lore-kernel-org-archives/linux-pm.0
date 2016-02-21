@@ -1,58 +1,78 @@
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: [PATCH 4/6] power_supply: bq2415x_charger: Add of modalias and match table when CONFIG_OF is enabled
-Date: Sun, 21 Feb 2016 12:28:21 +0100
-Message-ID: <1456054103-19551-5-git-send-email-pali.rohar@gmail.com>
-References: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pavel Machel <pavel@ucw.cz>, Aaro Koskinen <aaro.koskinen@iki.fi>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+From: Eric Biggers <ebiggers3@gmail.com>
+Subject: [PATCH] cpufreq: simplify for_each_suitable_policy() macro
+Date: Sun, 21 Feb 2016 12:53:12 -0600
+Message-ID: <1456080792-22770-1-git-send-email-ebiggers3@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f180.google.com ([209.85.213.180]:33094 "EHLO
+	mail-ig0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbcBUSxa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2016 13:53:30 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Biggers <ebiggers3@gmail.com>
 
-Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+Signed-off-by: Eric Biggers <ebiggers3@gmail.com>
 ---
- drivers/power/bq2415x_charger.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/cpufreq/cpufreq.c | 44 +++-----------------------------------------
+ 1 file changed, 3 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_ch=
-arger.c
-index b0863f4..73e2f0b 100644
---- a/drivers/power/bq2415x_charger.c
-+++ b/drivers/power/bq2415x_charger.c
-@@ -1779,9 +1779,29 @@ static const struct acpi_device_id bq2415x_i2c_a=
-cpi_match[] =3D {
- MODULE_DEVICE_TABLE(acpi, bq2415x_i2c_acpi_match);
- #endif
-=20
-+#ifdef CONFIG_OF
-+static const struct of_device_id bq2415x_of_match_table[] =3D {
-+	{ .compatible =3D "ti,bq24150" },
-+	{ .compatible =3D "ti,bq24150a" },
-+	{ .compatible =3D "ti,bq24151" },
-+	{ .compatible =3D "ti,bq24151a" },
-+	{ .compatible =3D "ti,bq24152" },
-+	{ .compatible =3D "ti,bq24153" },
-+	{ .compatible =3D "ti,bq24153a" },
-+	{ .compatible =3D "ti,bq24155" },
-+	{ .compatible =3D "ti,bq24156" },
-+	{ .compatible =3D "ti,bq24156a" },
-+	{ .compatible =3D "ti,bq24157s" },
-+	{ .compatible =3D "ti,bq24158" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, bq2415x_of_match_table);
-+#endif
-+
- static struct i2c_driver bq2415x_driver =3D {
- 	.driver =3D {
- 		.name =3D "bq2415x-charger",
-+		.of_match_table =3D of_match_ptr(bq2415x_of_match_table),
- 		.acpi_match_table =3D ACPI_PTR(bq2415x_i2c_acpi_match),
- 	},
- 	.probe =3D bq2415x_probe,
---=20
-1.7.9.5
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e979ec7..3aa7b2b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -38,48 +38,10 @@ static inline bool policy_is_inactive(struct cpufreq_policy *policy)
+ 	return cpumask_empty(policy->cpus);
+ }
+ 
+-static bool suitable_policy(struct cpufreq_policy *policy, bool active)
+-{
+-	return active == !policy_is_inactive(policy);
+-}
+-
+-/* Finds Next Acive/Inactive policy */
+-static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+-					  bool active)
+-{
+-	do {
+-		/* No more policies in the list */
+-		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
+-			return NULL;
+-
+-		policy = list_next_entry(policy, policy_list);
+-	} while (!suitable_policy(policy, active));
+-
+-	return policy;
+-}
+-
+-static struct cpufreq_policy *first_policy(bool active)
+-{
+-	struct cpufreq_policy *policy;
+-
+-	/* No policies in the list */
+-	if (list_empty(&cpufreq_policy_list))
+-		return NULL;
+-
+-	policy = list_first_entry(&cpufreq_policy_list, typeof(*policy),
+-				  policy_list);
+-
+-	if (!suitable_policy(policy, active))
+-		policy = next_policy(policy, active);
+-
+-	return policy;
+-}
+-
+ /* Macros to iterate over CPU policies */
+-#define for_each_suitable_policy(__policy, __active)	\
+-	for (__policy = first_policy(__active);		\
+-	     __policy;					\
+-	     __policy = next_policy(__policy, __active))
++#define for_each_suitable_policy(__policy, __active)			 \
++	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
++		if ((__active) == !policy_is_inactive(__policy))
+ 
+ #define for_each_active_policy(__policy)		\
+ 	for_each_suitable_policy(__policy, true)
+-- 
+2.7.1
+
