@@ -1,35 +1,38 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 6/6] ARM: dts: n900: Rename isp1704 to isp1707 to match
- correct name
-Date: Sun, 21 Feb 2016 15:05:17 +0100
-Message-ID: <20160221140517.GA25072@amd>
-References: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
- <1456054103-19551-7-git-send-email-pali.rohar@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM/freezer: y2038, use boottime to compare tstamps
+Date: Sun, 21 Feb 2016 14:46:42 +0100
+Message-ID: <2178100.KqWrTOMtmd@vostro.rjw.lan>
+References: <1454268541-28064-1-git-send-email-klock.android@gmail.com> <20160131194255.GA31180@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1456054103-19551-7-git-send-email-pali.rohar@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
-Cc: =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:44702 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751162AbcBURpN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2016 12:45:13 -0500
+In-Reply-To: <20160131194255.GA31180@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, Abhilash Jindal <klock.android@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On Sun 2016-02-21 12:28:23, Pali Roh=E1r wrote:
-> This change does not break existing userspace or Maemo software becau=
-se
-> isp1704_charger.c always export power supply device under isp1704 nam=
-e.
+On Sunday, January 31, 2016 08:42:55 PM Pavel Machek wrote:
+> On Sun 2016-01-31 14:29:01, Abhilash Jindal wrote:
+> > Wall time obtained from do_gettimeofday gives 32 bit timeval which can only
+> > represent time until January 2038. This patch moves to ktime_t, a 64-bit time.
+> > 
+> > Also, wall time is susceptible to sudden jumps due to user setting the time or
+> > due to NTP.  Boot time is constantly increasing time better suited for
+> > subtracting two timestamps.
+> 
+> Umm. Setting time while we are freezeing is probably not going to be a
+> problem, but ok, why not... Code is simpler as well, and 2038 is
+> coming ;-).
+> 
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-=2E.exports..
+Queued up for 4.6, thanks!
 
-> Signed-off-by: Pali Roh=E1r <pali.rohar@gmail.com>
+Rafael
 
-4,5,6: Acked-by: Pavel Machek <pavel@ucw.cz>
-
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
