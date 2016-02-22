@@ -1,111 +1,116 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Mon, 22 Feb 2016 09:32:44 +0000
-Message-ID: <20160222093244.GB27380@e106622-lin>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
- <20160219080917.GE22643@pablo>
- <5324745.ObXn8lTQ9A@vostro.rjw.lan>
+From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Subject: Re: [PATCH] intel-pstate: Update frequencies of
+ policy->cpus only from ->set_policy()
+Date: Mon, 22 Feb 2016 11:33:53 +0200
+Message-ID: <1456133633.3659.4.camel@linux.intel.com>
+References: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5324745.ObXn8lTQ9A@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: intel-gfx@lists.freedesktop.org, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19/02/16 23:14, Rafael J. Wysocki wrote:
-> On Friday, February 19, 2016 08:09:17 AM Juri Lelli wrote:
-> > Hi Rafael,
-> > 
-> > On 18/02/16 21:22, Rafael J. Wysocki wrote:
-> > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > >
-> > 
-> > [...]
-> > 
-> > > 
-> > > So if anyone has any issues with this one, please let me know.
-> > > 
-> > 
-> > I'm repeating myself a bit, but I'll try to articulate my only concern
-> > once again anyway. I run some tests on a couple of arm boxes and I
-> > didn't notice any regression or improvements for ondemand and
-> > conservative (FWIW this might also work as a tested-by), so I tend to
-> > take this series as a way to replace governor timers, making further
-> > cleanups and fixes possibile. I think you already confirmed this and I
-> > understand why you'd like this series to go in as I also think that what
-> > we have on top is beneficial.
-> 
-> OK
-> 
-> > However, I still don't quite get why we want to introduce an interface
-> > for explicit passing of util and max if we are not using such parameters
-> > yet. Also, I couldn't find any indication of how such parameters will be
-> > used in the future. If what we need today is a periodic kick for cpufreq
-> > governors that need it, we should simply do how we already do for RT and
-> > DL, IMHO. Also because the places where the current hooks reside might
-> > not be the correct and useful one once we'll start using the utilization
-> > parameters. I could probably make a case for DL where we should place
-> > hooks in admission control path (or somewhere else when more
-> > sophisticated mechanisms we'll be in place) rather then in the periodic
-> > tick.
-> 
-> Well, the hook in DL is explicitly denoted as a temporary band-aid.
-> 
-> I and Srinivas have said for multiple times that we are going to use the
-> scheduler's utilization data in intel_pstate.  Admittedly, we haven't shown
-> any patches implementing that, but that's because Srinivas doesn't regard
-> that work as ready yet.
-> 
-> I also have something for the general cpufreq in the works.  I may be able
-> to send it as an RFC over the weekend, depending on how much time I can
-> spend on it.
-> 
-
-Saw that, thanks. Please allow me some time to review and test. :-)
-
-> That said, if the concern is that there are plans to change the way the
-> scheduler computes the utilization numbers and that may become difficult to
-> carry out if cpufreq starts to depend on them in their current form, then I
-> may agree that it is valid, but I'm not aware of those plans ATM.
-> 
-
-No, I don't think there's any substantial discussion going on about the
-utilization numbers.
-
-> However, if the numbers are going to stay what they are, I don't see why
-> passing them to cpufreq may possibly become problematic at any point.
-
-My concern was mostly on the fact that there is already another RFC
-under discussion that uses the same numbers and has different hooks
-placed in scheduler code (Steve's sched-freq); so, additional hooks
-might generate confusion, IMHO.
- 
-> > > It has been in linux-next for a few days and seems to be doing well.
-> > > 
-> > > As I said previously, there is a metric ton of cpufreq improvements
-> > > depending on it, so I'd rather not delay integrating it any more.
-> > > 
-> > 
-> > As said. I'm not against these changes since they open up to further
-> > substantial fixes.
-> 
-> Good. :-)
-> 
-> > I'm only wondering if we are doing the right thing defining an interface
-> > that nobody is using and without an indication of how such thing we'll be
-> > used in the future.
-> 
-> That indication may be coming though. :-)
-> 
-
-Thanks again. I'm going to have a look at that.
-
-Best,
-
-- Juri
+SGksCgpUaGlzIGZpeGVzIHRoZSBpc3N1ZSBmb3IgbXkgbWFjaGluZSwgd2UnbGwgdHJ5IGluIG91
+ciBDSSBzeXN0ZW0sIHRvby4KCkNDJ2QgRGFuaWVsIGZvciB0aGF0LiBCeSBSLWIgYW5kIFQtYiBi
+ZWxvdy4KCk9uIG1hLCAyMDE2LTAyLTIyIGF0IDEwOjI3ICswNTMwLCBWaXJlc2ggS3VtYXIgd3Jv
+dGU6Cj4gVGhlIGludGVsLXBzdGF0ZSBkcml2ZXIgaXMgdXNpbmcgaW50ZWxfcHN0YXRlX2h3cF9z
+ZXQoKSBmcm9tIHR3bwo+IHNlcGFyYXRlIHBhdGhzLCBpLmUuIC0+c2V0X3BvbGljeSgpIGNhbGxi
+YWNrIGFuZCBzeXNmcyB1cGRhdGUgcGF0aCBmb3IKPiB0aGUgZmlsZXMgcHJlc2VudCBpbiAvc3lz
+L2RldmljZXMvc3lzdGVtL2NwdS9pbnRlbF9wc3RhdGUvIGRpcmVjdG9yeS4KPiAKPiBXaGlsZSBh
+biB1cGRhdGUgdG8gdGhlIHN5c2ZzIHBhdGggYXBwbGllcyB0byBhbGwgdGhlIENQVXMgYmVpbmcg
+bWFuYWdlZAo+IGJ5IHRoZSBkcml2ZXIgKHdoaWNoIGVzc2VudGlhbGx5IG1lYW5zIGFsbCB0aGUg
+b25saW5lIENQVXMpLCB0aGUgdXBkYXRlCj4gdmlhIHRoZSAtPnNldF9wb2xpY3koKSBjYWxsYmFj
+ayBhcHBsaWVzIHRvIGEgc21hbGxlciBncm91cCBvZiBDUFVzCj4gbWFuYWdlZCBieSB0aGUgcG9s
+aWN5IGZvciB3aGljaCAtPnNldF9wb2xpY3koKSBpcyBjYWxsZWQuCj4gCj4gQW5kIHNvLCBpbnRl
+bF9wc3RhdGVfaHdwX3NldCgpIHNob3VsZCB1cGRhdGUgZnJlcXVlbmNpZXMgb2Ygb25seSB0aGUK
+PiBDUFVzIHRoYXQgYXJlIHBhcnQgb2YgcG9saWN5LT5jcHVzIG1hc2ssIHdoaWxlIGl0IGlzIGNh
+bGxlZCBmcm9tCj4gLT5zZXRfcG9saWN5KCkgY2FsbGJhY2suCj4gCj4gSW4gb3JkZXIgdG8gZG8g
+dGhhdCwgYWRkIGEgcGFyYW1ldGVyIChjcHVtYXNrKSB0byBpbnRlbF9wc3RhdGVfaHdwX3NldCgp
+Cj4gYW5kIGFwcGx5IHRoZSBmcmVxdWVuY3kgY2hhbmdlcyBvbmx5IHRvIHRoZSBjb25jZXJuZWQg
+Q1BVcy4KPiAKPiBGb3IgLT5zZXRfcG9saWN5KCkgcGF0aCwgd2UgYXJlIG9ubHkgY29uY2VybmVk
+IGFib3V0IHBvbGljeS0+Y3B1cywgYW5kCj4gc28gcG9saWN5LT5yd3NlbSBsb2NrIHRha2VuIGJ5
+IHRoZSBjb3JlIHByaW9yIHRvIGNhbGxpbmcgLT5zZXRfcG9saWN5KCkKPiBpcyBlbm91Z2ggdG8g
+dGFrZSBjYXJlIG9mIGFueSByYWNlcy4gVGhlIGxhcmdlciBsb2NrIGFjcXVpcmVkIGJ5Cj4gZ2V0
+X29ubGluZV9jcHVzKCkgaXMgcmVxdWlyZWQgb25seSBmb3IgdGhlIHVwZGF0ZXMgdG8gc3lzZnMg
+ZmlsZXMuCj4gCj4gQWRkIGFub3RoZXIgcm91dGluZSwgaW50ZWxfcHN0YXRlX2h3cF9zZXRfb25s
+aW5lX2NwdXMoKSwgYW5kIGNhbGwgaXQKPiBmcm9tIHRoZSBzeXNmcyB1cGRhdGUgcGF0aHMuCj4g
+Cj4gVGhpcyBhbHNvIGZpeGVzIGEgbG9ja2RlcCByZXBvcnRlZCByZWNlbnRseSwgd2hlcmUgcG9s
+aWN5LT5yd3NlbSBhbmQKPiBnZXRfb25saW5lX2NwdXMoKSBjb3VsZCBoYXZlIGJlZW4gYWNxdWly
+ZWQgaW4gYW55IG9yZGVyIGNhdXNpbmcgYW4gQUJCQQo+IGRlYWRsb2NrLiBUaGUgc2VxdWVuY2Ug
+b2YgZXZlbnRzIGxlYWRpbmcgdG8gdGhhdCB3YXM6Cj4gCj4gaW50ZWxfcHN0YXRlX2luaXQoLi4u
+KQo+IAkuLi5jcHVmcmVxX29ubGluZSguLi4pCj4gCQlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2Vt
+KTsgLy8gTG9ja3MgcG9saWN5LT5yd3NlbQo+IAkJLi4uCj4gCQljcHVmcmVxX2luaXRfcG9saWN5
+KHBvbGljeSk7Cj4gCQkJLi4uaW50ZWxfcHN0YXRlX2h3cF9zZXQoKTsKPiAJCQkJZ2V0X29ubGlu
+ZV9jcHVzKCk7IC8vIFRlbXBvcmFyaWx5IGxvY2tzIGNwdV9ob3RwbHVnLmxvY2sKPiAJCS4uLgo+
+IAkJdXBfd3JpdGUoJnBvbGljeS0+cndzZW0pOwo+IAo+IHBtX3N1c3BlbmQoLi4uKQo+IAkuLi5k
+aXNhYmxlX25vbmJvb3RfY3B1cygpCj4gCQlfY3B1X2Rvd24oKQo+IAkJCWNwdV9ob3RwbHVnX2Jl
+Z2luKCk7IC8vIExvY2tzIGNwdV9ob3RwbHVnLmxvY2sKPiAJCQlfX2NwdV9ub3RpZnkoQ1BVX0RP
+V05fUFJFUEFSRSwgLi4uKTsKPiAJCQkJLi4uY3B1ZnJlcV9vZmZsaW5lX3ByZXBhcmUoKTsKPiAJ
+CQkJCWRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOyAvLyBMb2NrcyBwb2xpY3ktPnJ3c2VtCj4g
+Cj4gUmVwb3J0ZWQtYnk6IEpvb25hcyBMYWh0aW5lbiA8am9vbmFzLmxhaHRpbmVuQGxpbnV4Lmlu
+dGVsLmNvbT4KClRlc3RlZC1ieTogSm9vbmFzIExhaHRpbmVuIDxqb29uYXMubGFodGluZW5AbGlu
+dXguaW50ZWwuY29tPgpSZXZpZXdlZC1ieTogSm9vbmFzIExhaHRpbmVuIDxqb29uYXMubGFodGlu
+ZW5AbGludXguaW50ZWwuY29tPgoKPiBTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVz
+aC5rdW1hckBsaW5hcm8ub3JnPgo+IC0tLQo+IMKgZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0
+ZS5jIHwgMjEgKysrKysrKysrKysrLS0tLS0tLS0tCj4gwqAxIGZpbGUgY2hhbmdlZCwgMTIgaW5z
+ZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVm
+cmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jCj4gaW5k
+ZXggZjRkODVjMmFlN2IxLi4yZTcwNThhMjQ3OWQgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2ludGVsX3BzdGF0ZS5jCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5j
+Cj4gQEAgLTI4Nyw3ICsyODcsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgdXBkYXRlX3R1cmJvX3N0
+YXRlKHZvaWQpCj4gwqAJCcKgY3B1LT5wc3RhdGUubWF4X3BzdGF0ZSA9PSBjcHUtPnBzdGF0ZS50
+dXJib19wc3RhdGUpOwo+IMKgfQo+IMKgCj4gLXN0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bf
+c2V0KHZvaWQpCj4gK3N0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bfc2V0KGNvbnN0IHN0cnVj
+dCBjcHVtYXNrICpjcHVtYXNrKQo+IMKgewo+IMKgCWludCBtaW4sIGh3X21pbiwgbWF4LCBod19t
+YXgsIGNwdSwgcmFuZ2UsIGFkal9yYW5nZTsKPiDCoAl1NjQgdmFsdWUsIGNhcDsKPiBAQCAtMjk3
+LDkgKzI5Nyw3IEBAIHN0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bfc2V0KHZvaWQpCj4gwqAJ
+aHdfbWF4ID0gSFdQX0hJR0hFU1RfUEVSRihjYXApOwo+IMKgCXJhbmdlID0gaHdfbWF4IC0gaHdf
+bWluOwo+IMKgCj4gLQlnZXRfb25saW5lX2NwdXMoKTsKPiAtCj4gLQlmb3JfZWFjaF9vbmxpbmVf
+Y3B1KGNwdSkgewo+ICsJZm9yX2VhY2hfY3B1KGNwdSwgY3B1bWFzaykgewo+IMKgCQlyZG1zcmxf
+b25fY3B1KGNwdSwgTVNSX0hXUF9SRVFVRVNULCAmdmFsdWUpOwo+IMKgCQlhZGpfcmFuZ2UgPSBs
+aW1pdHMtPm1pbl9wZXJmX3BjdCAqIHJhbmdlIC8gMTAwOwo+IMKgCQltaW4gPSBod19taW4gKyBh
+ZGpfcmFuZ2U7Cj4gQEAgLTMxOCw3ICszMTYsMTIgQEAgc3RhdGljIHZvaWQgaW50ZWxfcHN0YXRl
+X2h3cF9zZXQodm9pZCkKPiDCoAkJdmFsdWUgfD0gSFdQX01BWF9QRVJGKG1heCk7Cj4gwqAJCXdy
+bXNybF9vbl9jcHUoY3B1LCBNU1JfSFdQX1JFUVVFU1QsIHZhbHVlKTsKPiDCoAl9Cj4gK30KPiDC
+oAo+ICtzdGF0aWMgdm9pZCBpbnRlbF9wc3RhdGVfaHdwX3NldF9vbmxpbmVfY3B1cyh2b2lkKQo+
+ICt7Cj4gKwlnZXRfb25saW5lX2NwdXMoKTsKPiArCWludGVsX3BzdGF0ZV9od3Bfc2V0KGNwdV9v
+bmxpbmVfbWFzayk7Cj4gwqAJcHV0X29ubGluZV9jcHVzKCk7Cj4gwqB9Cj4gwqAKPiBAQCAtNDQw
+LDcgKzQ0Myw3IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX25vX3R1cmJvKHN0cnVjdCBrb2JqZWN0
+ICphLCBzdHJ1Y3QgYXR0cmlidXRlICpiLAo+IMKgCWxpbWl0cy0+bm9fdHVyYm8gPSBjbGFtcF90
+KGludCwgaW5wdXQsIDAsIDEpOwo+IMKgCj4gwqAJaWYgKGh3cF9hY3RpdmUpCj4gLQkJaW50ZWxf
+cHN0YXRlX2h3cF9zZXQoKTsKPiArCQlpbnRlbF9wc3RhdGVfaHdwX3NldF9vbmxpbmVfY3B1cygp
+Owo+IMKgCj4gwqAJcmV0dXJuIGNvdW50Owo+IMKgfQo+IEBAIC00NjYsNyArNDY5LDcgQEAgc3Rh
+dGljIHNzaXplX3Qgc3RvcmVfbWF4X3BlcmZfcGN0KHN0cnVjdCBrb2JqZWN0ICphLCBzdHJ1Y3Qg
+YXR0cmlidXRlICpiLAo+IMKgCQkJCcKgwqBpbnRfdG9mcCgxMDApKTsKPiDCoAo+IMKgCWlmICho
+d3BfYWN0aXZlKQo+IC0JCWludGVsX3BzdGF0ZV9od3Bfc2V0KCk7Cj4gKwkJaW50ZWxfcHN0YXRl
+X2h3cF9zZXRfb25saW5lX2NwdXMoKTsKPiDCoAlyZXR1cm4gY291bnQ7Cj4gwqB9Cj4gwqAKPiBA
+QCAtNDkxLDcgKzQ5NCw3IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX21pbl9wZXJmX3BjdChzdHJ1
+Y3Qga29iamVjdCAqYSwgc3RydWN0IGF0dHJpYnV0ZSAqYiwKPiDCoAkJCQnCoMKgaW50X3RvZnAo
+MTAwKSk7Cj4gwqAKPiDCoAlpZiAoaHdwX2FjdGl2ZSkKPiAtCQlpbnRlbF9wc3RhdGVfaHdwX3Nl
+dCgpOwo+ICsJCWludGVsX3BzdGF0ZV9od3Bfc2V0X29ubGluZV9jcHVzKCk7Cj4gwqAJcmV0dXJu
+IGNvdW50Owo+IMKgfQo+IMKgCj4gQEAgLTExMTIsNyArMTExNSw3IEBAIHN0YXRpYyBpbnQgaW50
+ZWxfcHN0YXRlX3NldF9wb2xpY3koc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpCj4gwqAJ
+CXByX2RlYnVnKCJpbnRlbF9wc3RhdGU6IHNldCBwZXJmb3JtYW5jZVxuIik7Cj4gwqAJCWxpbWl0
+cyA9ICZwZXJmb3JtYW5jZV9saW1pdHM7Cj4gwqAJCWlmIChod3BfYWN0aXZlKQo+IC0JCQlpbnRl
+bF9wc3RhdGVfaHdwX3NldCgpOwo+ICsJCQlpbnRlbF9wc3RhdGVfaHdwX3NldChwb2xpY3ktPmNw
+dXMpOwo+IMKgCQlyZXR1cm4gMDsKPiDCoAl9Cj4gwqAKPiBAQCAtMTE0NCw3ICsxMTQ3LDcgQEAg
+c3RhdGljIGludCBpbnRlbF9wc3RhdGVfc2V0X3BvbGljeShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
+KnBvbGljeSkKPiDCoAkJCQnCoMKgaW50X3RvZnAoMTAwKSk7Cj4gwqAKPiDCoAlpZiAoaHdwX2Fj
+dGl2ZSkKPiAtCQlpbnRlbF9wc3RhdGVfaHdwX3NldCgpOwo+ICsJCWludGVsX3BzdGF0ZV9od3Bf
+c2V0KHBvbGljeS0+Y3B1cyk7Cj4gwqAKPiDCoAlyZXR1cm4gMDsKPiDCoH0KLS0gCkpvb25hcyBM
+YWh0aW5lbgpPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlcgpJbnRlbCBDb3Jwb3JhdGlvbgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
+bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
+cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
