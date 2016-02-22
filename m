@@ -1,63 +1,64 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] intel-pstate: Update frequencies of policy->cpus only
- from ->set_policy()
-Date: Mon, 22 Feb 2016 10:17:54 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286C694F@shsmsx102.ccr.corp.intel.com>
-References: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
+ utilization update callbacks
+Date: Mon, 22 Feb 2016 16:15:34 +0530
+Message-ID: <20160222104534.GM28226@vireshk-i7>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <1455900129.7375.231.camel@linux.intel.com>
+ <20160219172545.GA27380@e106622-lin>
+ <1882532.OhsNMeyWOd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35324 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbcBVKpy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 05:45:54 -0500
+Received: by mail-pf0-f180.google.com with SMTP id c10so93932484pfc.2
+        for <linux-pm@vger.kernel.org>; Mon, 22 Feb 2016 02:45:53 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1882532.OhsNMeyWOd@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Juri Lelli <juri.lelli@arm.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-Hi Kumar,
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Viresh Kumar
-> Sent: Monday, February 22, 2016 12:58 PM
-> To: Rafael Wysocki; Srinivas Pandruvada; Len Brown; Viresh Kumar
-> Cc: linaro-kernel@lists.linaro.org; linux-pm@vger.kernel.org; Joonas Lahtinen;
-> linux-kernel@vger.kernel.org
-> Subject: [PATCH] intel-pstate: Update frequencies of policy->cpus only from
-> ->set_policy()
+On 19-02-16, 23:26, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] cpufreq: Rework the scheduler hooks for triggering updates
 > 
-> The intel-pstate driver is using intel_pstate_hwp_set() from two separate
-> paths, i.e. ->set_policy() callback and sysfs update path for the files present
-> in /sys/devices/system/cpu/intel_pstate/ directory.
+> Commit fe7034338ba0 (cpufreq: Add mechanism for registering
+> utilization update callbacks) added cpufreq_update_util() to be
+> called by the scheduler (from the CFS part) on utilization updates.
+> The goal was to allow CFS to pass utilization information to cpufreq
+> and to trigger it to evaluate the frequency/voltage configuration
+> (P-state) of every CPU on a regular basis.
 > 
-> While an update to the sysfs path applies to all the CPUs being managed by
-> the driver (which essentially means all the online CPUs), the update via the -
-> >set_policy() callback applies to a smaller group of CPUs managed by the
-> policy for which ->set_policy() is called.
+> However, the last two arguments of that function are never used by
+> the current code, so CFS might simply call cpufreq_trigger_update()
+> instead of it.
 > 
-> And so, intel_pstate_hwp_set() should update frequencies of only the CPUs
-> that are part of policy->cpus mask, while it is called from
-> ->set_policy() callback.
+> For this reason, drop the last two arguments of cpufreq_update_util(),
+> rename it to cpufreq_trigger_update() and modify CFS to call it.
 > 
-> In order to do that, add a parameter (cpumask) to intel_pstate_hwp_set()
-> and apply the frequency changes only to the concerned CPUs.
+> Moreover, since the utilization is not involved in that now, rename
+> data types, functions and variables related to cpufreq_trigger_update()
+> to reflect that (eg. struct update_util_data becomes struct
+> freq_update_hook and so on).
 > 
-> For ->set_policy() path, we are only concerned about policy->cpus, and so
-> policy->rwsem lock taken by the core prior to calling ->set_policy() is enough
-> to take care of any races. The larger lock acquired by
-> get_online_cpus() is required only for the updates to sysfs files.
-> 
-IIRC,
-1.HWP is  hardwarely per-package, CPUs inside one package have one shared HWP.
-2.Currently all the CPUs share the same HWP settings according to intel_pstate design.
-3.  The policy is per-cpu in intel_pstate driver.(policy->cpus only contains one cpu)
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c          |   48 ++++++++++++++++++++++---------------
+>  drivers/cpufreq/cpufreq_governor.c |   27 ++++++++++----------
+>  drivers/cpufreq/cpufreq_governor.h |    2 -
+>  drivers/cpufreq/intel_pstate.c     |   15 +++++------
+>  include/linux/cpufreq.h            |   32 +++---------------------
+>  kernel/sched/deadline.c            |    2 -
+>  kernel/sched/fair.c                |   13 +---------
+>  kernel/sched/rt.c                  |    2 -
+>  8 files changed, 58 insertions(+), 83 deletions(-)
 
-So with this patch applied,  it is likely CPUs may have different HWP settings?
-For example:
-CPU 0 belongs to package A with policy 0, and CPU 1 belongs to package B with policy 1,
-If you change the policy 0 from powersave to performance, then only CPU0 will update its
-min/max freq in HWP, however we should also update CPU 2's min/max in HWP settings?
-Plz correct me  if I'm wrong..
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-thanks,
-yu
+-- 
+viresh
