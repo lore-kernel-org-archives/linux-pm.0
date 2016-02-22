@@ -1,56 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: governor: Make gov_set_update_util() static
-Date: Mon, 22 Feb 2016 10:54:15 +0530
-Message-ID: <20160222052415.GC28226@vireshk-i7>
-References: <2410542.x6e5Rli2VY@vostro.rjw.lan>
- <1513735.63Kc3ciBeA@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: fix comment about return value of
+ cpufreq_register_driver()
+Date: Mon, 22 Feb 2016 10:54:46 +0530
+Message-ID: <20160222052446.GD28226@vireshk-i7>
+References: <1456026601-31282-1-git-send-email-ebiggers3@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:35146 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbcBVFZF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 00:25:05 -0500
+Received: by mail-pa0-f50.google.com with SMTP id ho8so87229893pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 21 Feb 2016 21:25:04 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1513735.63Kc3ciBeA@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1456026601-31282-1-git-send-email-ebiggers3@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eric Biggers <ebiggers3@gmail.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 21-02-16, 03:15, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 20-02-16, 21:50, Eric Biggers wrote:
+> The comment has been incorrect since commit 4dea5806d332
+> ("cpufreq: return EEXIST instead of EBUSY for second registering").
 > 
-> The gov_set_update_util() routine is only used internally by the
-> common governor code and it doesn't need to be exported, so make
-> it static.
-> 
-> No functional changes.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Eric Biggers <ebiggers3@gmail.com>
 > ---
->  drivers/cpufreq/cpufreq_governor.c |    5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -261,8 +261,8 @@ unsigned int dbs_update(struct cpufreq_p
->  }
->  EXPORT_SYMBOL_GPL(dbs_update);
->  
-> -void gov_set_update_util(struct policy_dbs_info *policy_dbs,
-> -			 unsigned int delay_us)
-> +static void gov_set_update_util(struct policy_dbs_info *policy_dbs,
-> +				unsigned int delay_us)
->  {
->  	struct cpufreq_policy *policy = policy_dbs->policy;
->  	int cpu;
-> @@ -276,7 +276,6 @@ void gov_set_update_util(struct policy_d
->  		cpufreq_set_update_util_data(cpu, &cdbs->update_util);
->  	}
->  }
-> -EXPORT_SYMBOL_GPL(gov_set_update_util);
->  
->  static inline void gov_clear_update_util(struct cpufreq_policy *policy)
->  {
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e979ec7..bfefc91 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2384,7 +2384,7 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+>   * submitted by the CPU Frequency driver.
+>   *
+>   * Registers a CPU Frequency driver to this core code. This code
+> - * returns zero on success, -EBUSY when another driver got here first
+> + * returns zero on success, -EEXIST when another driver got here first
+>   * (and isn't unregistered in the meantime).
+>   *
+>   */
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
