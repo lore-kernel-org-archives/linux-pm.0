@@ -1,116 +1,131 @@
-From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Subject: Re: [PATCH] intel-pstate: Update frequencies of
- policy->cpus only from ->set_policy()
-Date: Mon, 22 Feb 2016 11:33:53 +0200
-Message-ID: <1456133633.3659.4.camel@linux.intel.com>
-References: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
+ utilization update callbacks
+Date: Mon, 22 Feb 2016 09:42:46 +0000
+Message-ID: <20160222094246.GC27380@e106622-lin>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+ <1455900129.7375.231.camel@linux.intel.com>
+ <20160219172545.GA27380@e106622-lin>
+ <1882532.OhsNMeyWOd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: intel-gfx@lists.freedesktop.org, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1882532.OhsNMeyWOd@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpUaGlzIGZpeGVzIHRoZSBpc3N1ZSBmb3IgbXkgbWFjaGluZSwgd2UnbGwgdHJ5IGluIG91
-ciBDSSBzeXN0ZW0sIHRvby4KCkNDJ2QgRGFuaWVsIGZvciB0aGF0LiBCeSBSLWIgYW5kIFQtYiBi
-ZWxvdy4KCk9uIG1hLCAyMDE2LTAyLTIyIGF0IDEwOjI3ICswNTMwLCBWaXJlc2ggS3VtYXIgd3Jv
-dGU6Cj4gVGhlIGludGVsLXBzdGF0ZSBkcml2ZXIgaXMgdXNpbmcgaW50ZWxfcHN0YXRlX2h3cF9z
-ZXQoKSBmcm9tIHR3bwo+IHNlcGFyYXRlIHBhdGhzLCBpLmUuIC0+c2V0X3BvbGljeSgpIGNhbGxi
-YWNrIGFuZCBzeXNmcyB1cGRhdGUgcGF0aCBmb3IKPiB0aGUgZmlsZXMgcHJlc2VudCBpbiAvc3lz
-L2RldmljZXMvc3lzdGVtL2NwdS9pbnRlbF9wc3RhdGUvIGRpcmVjdG9yeS4KPiAKPiBXaGlsZSBh
-biB1cGRhdGUgdG8gdGhlIHN5c2ZzIHBhdGggYXBwbGllcyB0byBhbGwgdGhlIENQVXMgYmVpbmcg
-bWFuYWdlZAo+IGJ5IHRoZSBkcml2ZXIgKHdoaWNoIGVzc2VudGlhbGx5IG1lYW5zIGFsbCB0aGUg
-b25saW5lIENQVXMpLCB0aGUgdXBkYXRlCj4gdmlhIHRoZSAtPnNldF9wb2xpY3koKSBjYWxsYmFj
-ayBhcHBsaWVzIHRvIGEgc21hbGxlciBncm91cCBvZiBDUFVzCj4gbWFuYWdlZCBieSB0aGUgcG9s
-aWN5IGZvciB3aGljaCAtPnNldF9wb2xpY3koKSBpcyBjYWxsZWQuCj4gCj4gQW5kIHNvLCBpbnRl
-bF9wc3RhdGVfaHdwX3NldCgpIHNob3VsZCB1cGRhdGUgZnJlcXVlbmNpZXMgb2Ygb25seSB0aGUK
-PiBDUFVzIHRoYXQgYXJlIHBhcnQgb2YgcG9saWN5LT5jcHVzIG1hc2ssIHdoaWxlIGl0IGlzIGNh
-bGxlZCBmcm9tCj4gLT5zZXRfcG9saWN5KCkgY2FsbGJhY2suCj4gCj4gSW4gb3JkZXIgdG8gZG8g
-dGhhdCwgYWRkIGEgcGFyYW1ldGVyIChjcHVtYXNrKSB0byBpbnRlbF9wc3RhdGVfaHdwX3NldCgp
-Cj4gYW5kIGFwcGx5IHRoZSBmcmVxdWVuY3kgY2hhbmdlcyBvbmx5IHRvIHRoZSBjb25jZXJuZWQg
-Q1BVcy4KPiAKPiBGb3IgLT5zZXRfcG9saWN5KCkgcGF0aCwgd2UgYXJlIG9ubHkgY29uY2VybmVk
-IGFib3V0IHBvbGljeS0+Y3B1cywgYW5kCj4gc28gcG9saWN5LT5yd3NlbSBsb2NrIHRha2VuIGJ5
-IHRoZSBjb3JlIHByaW9yIHRvIGNhbGxpbmcgLT5zZXRfcG9saWN5KCkKPiBpcyBlbm91Z2ggdG8g
-dGFrZSBjYXJlIG9mIGFueSByYWNlcy4gVGhlIGxhcmdlciBsb2NrIGFjcXVpcmVkIGJ5Cj4gZ2V0
-X29ubGluZV9jcHVzKCkgaXMgcmVxdWlyZWQgb25seSBmb3IgdGhlIHVwZGF0ZXMgdG8gc3lzZnMg
-ZmlsZXMuCj4gCj4gQWRkIGFub3RoZXIgcm91dGluZSwgaW50ZWxfcHN0YXRlX2h3cF9zZXRfb25s
-aW5lX2NwdXMoKSwgYW5kIGNhbGwgaXQKPiBmcm9tIHRoZSBzeXNmcyB1cGRhdGUgcGF0aHMuCj4g
-Cj4gVGhpcyBhbHNvIGZpeGVzIGEgbG9ja2RlcCByZXBvcnRlZCByZWNlbnRseSwgd2hlcmUgcG9s
-aWN5LT5yd3NlbSBhbmQKPiBnZXRfb25saW5lX2NwdXMoKSBjb3VsZCBoYXZlIGJlZW4gYWNxdWly
-ZWQgaW4gYW55IG9yZGVyIGNhdXNpbmcgYW4gQUJCQQo+IGRlYWRsb2NrLiBUaGUgc2VxdWVuY2Ug
-b2YgZXZlbnRzIGxlYWRpbmcgdG8gdGhhdCB3YXM6Cj4gCj4gaW50ZWxfcHN0YXRlX2luaXQoLi4u
-KQo+IAkuLi5jcHVmcmVxX29ubGluZSguLi4pCj4gCQlkb3duX3dyaXRlKCZwb2xpY3ktPnJ3c2Vt
-KTsgLy8gTG9ja3MgcG9saWN5LT5yd3NlbQo+IAkJLi4uCj4gCQljcHVmcmVxX2luaXRfcG9saWN5
-KHBvbGljeSk7Cj4gCQkJLi4uaW50ZWxfcHN0YXRlX2h3cF9zZXQoKTsKPiAJCQkJZ2V0X29ubGlu
-ZV9jcHVzKCk7IC8vIFRlbXBvcmFyaWx5IGxvY2tzIGNwdV9ob3RwbHVnLmxvY2sKPiAJCS4uLgo+
-IAkJdXBfd3JpdGUoJnBvbGljeS0+cndzZW0pOwo+IAo+IHBtX3N1c3BlbmQoLi4uKQo+IAkuLi5k
-aXNhYmxlX25vbmJvb3RfY3B1cygpCj4gCQlfY3B1X2Rvd24oKQo+IAkJCWNwdV9ob3RwbHVnX2Jl
-Z2luKCk7IC8vIExvY2tzIGNwdV9ob3RwbHVnLmxvY2sKPiAJCQlfX2NwdV9ub3RpZnkoQ1BVX0RP
-V05fUFJFUEFSRSwgLi4uKTsKPiAJCQkJLi4uY3B1ZnJlcV9vZmZsaW5lX3ByZXBhcmUoKTsKPiAJ
-CQkJCWRvd25fd3JpdGUoJnBvbGljeS0+cndzZW0pOyAvLyBMb2NrcyBwb2xpY3ktPnJ3c2VtCj4g
-Cj4gUmVwb3J0ZWQtYnk6IEpvb25hcyBMYWh0aW5lbiA8am9vbmFzLmxhaHRpbmVuQGxpbnV4Lmlu
-dGVsLmNvbT4KClRlc3RlZC1ieTogSm9vbmFzIExhaHRpbmVuIDxqb29uYXMubGFodGluZW5AbGlu
-dXguaW50ZWwuY29tPgpSZXZpZXdlZC1ieTogSm9vbmFzIExhaHRpbmVuIDxqb29uYXMubGFodGlu
-ZW5AbGludXguaW50ZWwuY29tPgoKPiBTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVz
-aC5rdW1hckBsaW5hcm8ub3JnPgo+IC0tLQo+IMKgZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0
-ZS5jIHwgMjEgKysrKysrKysrKysrLS0tLS0tLS0tCj4gwqAxIGZpbGUgY2hhbmdlZCwgMTIgaW5z
-ZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVm
-cmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jCj4gaW5k
-ZXggZjRkODVjMmFlN2IxLi4yZTcwNThhMjQ3OWQgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVm
-cmVxL2ludGVsX3BzdGF0ZS5jCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5j
-Cj4gQEAgLTI4Nyw3ICsyODcsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgdXBkYXRlX3R1cmJvX3N0
-YXRlKHZvaWQpCj4gwqAJCcKgY3B1LT5wc3RhdGUubWF4X3BzdGF0ZSA9PSBjcHUtPnBzdGF0ZS50
-dXJib19wc3RhdGUpOwo+IMKgfQo+IMKgCj4gLXN0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bf
-c2V0KHZvaWQpCj4gK3N0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bfc2V0KGNvbnN0IHN0cnVj
-dCBjcHVtYXNrICpjcHVtYXNrKQo+IMKgewo+IMKgCWludCBtaW4sIGh3X21pbiwgbWF4LCBod19t
-YXgsIGNwdSwgcmFuZ2UsIGFkal9yYW5nZTsKPiDCoAl1NjQgdmFsdWUsIGNhcDsKPiBAQCAtMjk3
-LDkgKzI5Nyw3IEBAIHN0YXRpYyB2b2lkIGludGVsX3BzdGF0ZV9od3Bfc2V0KHZvaWQpCj4gwqAJ
-aHdfbWF4ID0gSFdQX0hJR0hFU1RfUEVSRihjYXApOwo+IMKgCXJhbmdlID0gaHdfbWF4IC0gaHdf
-bWluOwo+IMKgCj4gLQlnZXRfb25saW5lX2NwdXMoKTsKPiAtCj4gLQlmb3JfZWFjaF9vbmxpbmVf
-Y3B1KGNwdSkgewo+ICsJZm9yX2VhY2hfY3B1KGNwdSwgY3B1bWFzaykgewo+IMKgCQlyZG1zcmxf
-b25fY3B1KGNwdSwgTVNSX0hXUF9SRVFVRVNULCAmdmFsdWUpOwo+IMKgCQlhZGpfcmFuZ2UgPSBs
-aW1pdHMtPm1pbl9wZXJmX3BjdCAqIHJhbmdlIC8gMTAwOwo+IMKgCQltaW4gPSBod19taW4gKyBh
-ZGpfcmFuZ2U7Cj4gQEAgLTMxOCw3ICszMTYsMTIgQEAgc3RhdGljIHZvaWQgaW50ZWxfcHN0YXRl
-X2h3cF9zZXQodm9pZCkKPiDCoAkJdmFsdWUgfD0gSFdQX01BWF9QRVJGKG1heCk7Cj4gwqAJCXdy
-bXNybF9vbl9jcHUoY3B1LCBNU1JfSFdQX1JFUVVFU1QsIHZhbHVlKTsKPiDCoAl9Cj4gK30KPiDC
-oAo+ICtzdGF0aWMgdm9pZCBpbnRlbF9wc3RhdGVfaHdwX3NldF9vbmxpbmVfY3B1cyh2b2lkKQo+
-ICt7Cj4gKwlnZXRfb25saW5lX2NwdXMoKTsKPiArCWludGVsX3BzdGF0ZV9od3Bfc2V0KGNwdV9v
-bmxpbmVfbWFzayk7Cj4gwqAJcHV0X29ubGluZV9jcHVzKCk7Cj4gwqB9Cj4gwqAKPiBAQCAtNDQw
-LDcgKzQ0Myw3IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX25vX3R1cmJvKHN0cnVjdCBrb2JqZWN0
-ICphLCBzdHJ1Y3QgYXR0cmlidXRlICpiLAo+IMKgCWxpbWl0cy0+bm9fdHVyYm8gPSBjbGFtcF90
-KGludCwgaW5wdXQsIDAsIDEpOwo+IMKgCj4gwqAJaWYgKGh3cF9hY3RpdmUpCj4gLQkJaW50ZWxf
-cHN0YXRlX2h3cF9zZXQoKTsKPiArCQlpbnRlbF9wc3RhdGVfaHdwX3NldF9vbmxpbmVfY3B1cygp
-Owo+IMKgCj4gwqAJcmV0dXJuIGNvdW50Owo+IMKgfQo+IEBAIC00NjYsNyArNDY5LDcgQEAgc3Rh
-dGljIHNzaXplX3Qgc3RvcmVfbWF4X3BlcmZfcGN0KHN0cnVjdCBrb2JqZWN0ICphLCBzdHJ1Y3Qg
-YXR0cmlidXRlICpiLAo+IMKgCQkJCcKgwqBpbnRfdG9mcCgxMDApKTsKPiDCoAo+IMKgCWlmICho
-d3BfYWN0aXZlKQo+IC0JCWludGVsX3BzdGF0ZV9od3Bfc2V0KCk7Cj4gKwkJaW50ZWxfcHN0YXRl
-X2h3cF9zZXRfb25saW5lX2NwdXMoKTsKPiDCoAlyZXR1cm4gY291bnQ7Cj4gwqB9Cj4gwqAKPiBA
-QCAtNDkxLDcgKzQ5NCw3IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX21pbl9wZXJmX3BjdChzdHJ1
-Y3Qga29iamVjdCAqYSwgc3RydWN0IGF0dHJpYnV0ZSAqYiwKPiDCoAkJCQnCoMKgaW50X3RvZnAo
-MTAwKSk7Cj4gwqAKPiDCoAlpZiAoaHdwX2FjdGl2ZSkKPiAtCQlpbnRlbF9wc3RhdGVfaHdwX3Nl
-dCgpOwo+ICsJCWludGVsX3BzdGF0ZV9od3Bfc2V0X29ubGluZV9jcHVzKCk7Cj4gwqAJcmV0dXJu
-IGNvdW50Owo+IMKgfQo+IMKgCj4gQEAgLTExMTIsNyArMTExNSw3IEBAIHN0YXRpYyBpbnQgaW50
-ZWxfcHN0YXRlX3NldF9wb2xpY3koc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpCj4gwqAJ
-CXByX2RlYnVnKCJpbnRlbF9wc3RhdGU6IHNldCBwZXJmb3JtYW5jZVxuIik7Cj4gwqAJCWxpbWl0
-cyA9ICZwZXJmb3JtYW5jZV9saW1pdHM7Cj4gwqAJCWlmIChod3BfYWN0aXZlKQo+IC0JCQlpbnRl
-bF9wc3RhdGVfaHdwX3NldCgpOwo+ICsJCQlpbnRlbF9wc3RhdGVfaHdwX3NldChwb2xpY3ktPmNw
-dXMpOwo+IMKgCQlyZXR1cm4gMDsKPiDCoAl9Cj4gwqAKPiBAQCAtMTE0NCw3ICsxMTQ3LDcgQEAg
-c3RhdGljIGludCBpbnRlbF9wc3RhdGVfc2V0X3BvbGljeShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
-KnBvbGljeSkKPiDCoAkJCQnCoMKgaW50X3RvZnAoMTAwKSk7Cj4gwqAKPiDCoAlpZiAoaHdwX2Fj
-dGl2ZSkKPiAtCQlpbnRlbF9wc3RhdGVfaHdwX3NldCgpOwo+ICsJCWludGVsX3BzdGF0ZV9od3Bf
-c2V0KHBvbGljeS0+Y3B1cyk7Cj4gwqAKPiDCoAlyZXR1cm4gMDsKPiDCoH0KLS0gCkpvb25hcyBM
-YWh0aW5lbgpPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlcgpJbnRlbCBDb3Jwb3JhdGlvbgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
-bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+Hi Rafael,
+
+On 19/02/16 23:26, Rafael J. Wysocki wrote:
+> On Friday, February 19, 2016 05:26:04 PM Juri Lelli wrote:
+> > Hi Srinivas,
+> > 
+> > On 19/02/16 08:42, Srinivas Pandruvada wrote:
+> > > On Fri, 2016-02-19 at 08:09 +0000, Juri Lelli wrote:
+> > > Hi Juri,
+> > > > > 
+> > > > Hi Rafael,
+> > > > 
+> > > > On 18/02/16 21:22, Rafael J. Wysocki wrote:
+> > > > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.
+> > > > > net> wrote:
+> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > 
+> > > > 
+> > > [...]
+> > > 
+> > > > However, I still don't quite get why we want to introduce an
+> > > > interface
+> > > > for explicit passing of util and max if we are not using such
+> > > > parameters
+> > > > yet. Also, I couldn't find any indication of how such parameters will
+> > > > be
+> > > > used in the future. If what we need today is a periodic kick for
+> > > > cpufreq
+> > > > governors that need it, we should simply do how we already do for RT
+> > > > and
+> > > > DL, IMHO. Also because the places where the current hooks reside
+> > > > might
+> > > > not be the correct and useful one once we'll start using the
+> > > > utilization
+> > > > parameters. I could probably make a case for DL where we should place
+> > > > hooks in admission control path (or somewhere else when more
+> > > > sophisticated mechanisms we'll be in place) rather then in the
+> > > > periodic
+> > > > tick.
+> > > We did experiments using util/max in intel_pstate. For some benchmarks
+> > > there were regression of 4 to 5%, for some benchmarks it performed at
+> > > par with getting utilization from the processor. Further optimization
+> > > in the algorithm is possible and still in progress. Idea is that we can
+> > > change P-State fast enough and be more reactive. Once I have good data,
+> > > I will send to this list. The algorithm can be part of the cpufreq
+> > > governor too.
+> > > 
+> > 
+> > Thanks for your answer. What you are experimenting with looks really
+> > interesting and I'm certainly more than interested in looking at your
+> > findings and patches when they will hit the list.
+> > 
+> > My point was more on what we can look at today, though. Without a clear
+> > understanding about how and where util and max will be used and from
+> > which scheduler paths such information should come from, it is a bit
+> > difficult to tell if the current interface and hooks are fine, IMHO.
+> 
+> As I've just said, I may be able to show something shortly.
+> 
+> > I'd suggest we leave this part to the discussion we will have once your
+> > proposal will be public; and to facilitate that we should remove those
+> > arguments from the current interface.
+> 
+> I'm not really sure how this will help apart from removing some tiny extra
+> overhead that is expected to be temporary anyway.
+> 
+> That said, since both you and Steve are making the point that the utilization
+> arguments are problematic and I'd really like to be able to make progress here,
+> I don't have any fundamental problems with dropping them for the time being,
+> but I'm not going to rebase the 50+ commits I have queued up on top of the
+> $subject patch.
+> 
+> So I can apply something like the appended patch if that helps to address
+> your concerns.
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] cpufreq: Rework the scheduler hooks for triggering updates
+> 
+> Commit fe7034338ba0 (cpufreq: Add mechanism for registering
+> utilization update callbacks) added cpufreq_update_util() to be
+> called by the scheduler (from the CFS part) on utilization updates.
+> The goal was to allow CFS to pass utilization information to cpufreq
+> and to trigger it to evaluate the frequency/voltage configuration
+> (P-state) of every CPU on a regular basis.
+> 
+> However, the last two arguments of that function are never used by
+> the current code, so CFS might simply call cpufreq_trigger_update()
+> instead of it.
+> 
+> For this reason, drop the last two arguments of cpufreq_update_util(),
+> rename it to cpufreq_trigger_update() and modify CFS to call it.
+> 
+> Moreover, since the utilization is not involved in that now, rename
+> data types, functions and variables related to cpufreq_trigger_update()
+> to reflect that (eg. struct update_util_data becomes struct
+> freq_update_hook and so on).
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+This patch looks good to me. I didn't yet test it, but it shouldn't
+break things AFAICT.
+
+Thanks a lot for taking the time for this cleanup.
+
+Best,
+
+- Juri
