@@ -1,74 +1,81 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
  utilization update callbacks
-Date: Mon, 22 Feb 2016 22:26:47 +0100
-Message-ID: <CAJZ5v0gs3bddvskseh58q+0d+KqXYt=4SYGuiR3vdhdOyhoKmA@mail.gmail.com>
+Date: Mon, 22 Feb 2016 22:41:21 +0100
+Message-ID: <CAJZ5v0ha0_LroBiWfbE1HgRjrvk7zt4M+40JLnNHHLuewTF4hg@mail.gmail.com>
 References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
-	<20160219080917.GE22643@pablo>
-	<5324745.ObXn8lTQ9A@vostro.rjw.lan>
-	<20160222093244.GB27380@e106622-lin>
+	<1455900129.7375.231.camel@linux.intel.com>
+	<20160219172545.GA27380@e106622-lin>
+	<1882532.OhsNMeyWOd@vostro.rjw.lan>
+	<20160222094246.GC27380@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f181.google.com ([209.85.217.181]:35929 "EHLO
-	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755500AbcBVV0t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 16:26:49 -0500
-In-Reply-To: <20160222093244.GB27380@e106622-lin>
+Received: from mail-lf0-f50.google.com ([209.85.215.50]:33535 "EHLO
+	mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755663AbcBVVlX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 16:41:23 -0500
+In-Reply-To: <20160222094246.GC27380@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Mon, Feb 22, 2016 at 10:32 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> On 19/02/16 23:14, Rafael J. Wysocki wrote:
->> On Friday, February 19, 2016 08:09:17 AM Juri Lelli wrote:
->> > Hi Rafael,
->> >
->> > On 18/02/16 21:22, Rafael J. Wysocki wrote:
->> > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> > > >
+On Mon, Feb 22, 2016 at 10:42 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi Rafael,
+>
+> On 19/02/16 23:26, Rafael J. Wysocki wrote:
+>> On Friday, February 19, 2016 05:26:04 PM Juri Lelli wrote:
+>> > Hi Srinivas,
 
 [cut]
 
->> That said, if the concern is that there are plans to change the way the
->> scheduler computes the utilization numbers and that may become difficult to
->> carry out if cpufreq starts to depend on them in their current form, then I
->> may agree that it is valid, but I'm not aware of those plans ATM.
+>> ---
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Subject: [PATCH] cpufreq: Rework the scheduler hooks for triggering updates
 >>
+>> Commit fe7034338ba0 (cpufreq: Add mechanism for registering
+>> utilization update callbacks) added cpufreq_update_util() to be
+>> called by the scheduler (from the CFS part) on utilization updates.
+>> The goal was to allow CFS to pass utilization information to cpufreq
+>> and to trigger it to evaluate the frequency/voltage configuration
+>> (P-state) of every CPU on a regular basis.
+>>
+>> However, the last two arguments of that function are never used by
+>> the current code, so CFS might simply call cpufreq_trigger_update()
+>> instead of it.
+>>
+>> For this reason, drop the last two arguments of cpufreq_update_util(),
+>> rename it to cpufreq_trigger_update() and modify CFS to call it.
+>>
+>> Moreover, since the utilization is not involved in that now, rename
+>> data types, functions and variables related to cpufreq_trigger_update()
+>> to reflect that (eg. struct update_util_data becomes struct
+>> freq_update_hook and so on).
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> No, I don't think there's any substantial discussion going on about the
-> utilization numbers.
-
-OK, so the statement below applies.
-
->> However, if the numbers are going to stay what they are, I don't see why
->> passing them to cpufreq may possibly become problematic at any point.
+> This patch looks good to me. I didn't yet test it, but it shouldn't
+> break things AFAICT.
 >
-> My concern was mostly on the fact that there is already another RFC
-> under discussion that uses the same numbers and has different hooks
-> placed in scheduler code (Steve's sched-freq); so, additional hooks
-> might generate confusion, IMHO.
+> Thanks a lot for taking the time for this cleanup.
 
-So this is about the hooks rather than about their arguments after
-all, isn't it?
+Alas, I don't think I will apply it.
 
-I fail to see why it is better to drop the arguments and leave the hooks, then.
+Peter says that he wants the arguments to stay and he has a point IMO.
 
-OTOH, I see reasons for keeping the arguments along with the hooks,
-but let me address that in my next reply.
+The very idea behind hooking up cpufreq to the scheduler through those
+hooks has always been to make it possible to use the utilization
+information provided by the scheduler in cpufreq.  As it turns out, we
+can make significant improvements even *without* using that
+information, because just having the hooks in there alone makes it
+possible to simplify the code quite a bit in general and make it more
+straightforward, but that's a *bonus* and not the objective. :-)
 
-Now, if the call sites of the hooks change in the future, it won't be
-a problem for me as long as the new hooks are invoked on a regular
-basis or, if they aren't, as long as I can figure out from the
-arguments they pass that I should not expect an update any time soon.
+The objective still is to use the utilization numbers from the scheduler.
 
-If the arguments change, it won't be a problem either as long as they
-are sufficient to be inserted into the frequency selection formula
-used by the schedutil governor I posted and produce sensible
-frequencies for the CPU.
+Both sched-freq and my approach agree on that, so I don't quite see
+why I should pretend that this isn't the case now?
 
 Thanks,
 Rafael
