@@ -1,45 +1,36 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: Thermal governors non-modularity
-Date: Mon, 22 Feb 2016 07:06:17 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092633A963443@SHSMSX101.ccr.corp.intel.com>
-References: <20160220140448.19b749dd@endymion>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v2 0/8] EC-based USB Power Delivery support for Chrome machines
+Date: Mon, 22 Feb 2016 08:56:24 +0100
+Message-ID: <CAAObsKBB8-VR3hGdHqATtKMfpxnFasRvn4ucCxvdNQOfrGQdyg@mail.gmail.com>
+References: <1455281825-23526-1-git-send-email-tomeu.vizoso@collabora.com> <20160220162211.GA4662@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:63037 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926AbcBVHGV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 02:06:21 -0500
-In-Reply-To: <20160220140448.19b749dd@endymion>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20160220162211.GA4662@amd>
+Sender: linux-input-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>
 
-I tried to use them as module in the first place, but failed for some reason. I cannot recall the root cause, but I will try to check this and reply to you later. :)
+On 20 February 2016 at 17:22, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> this series contains a driver that exposes a power_supply to userspace
+>> representing a port that support USB PD charging.
+>
+> Well, if this is meant for userspace, should it add some
+> documentation, too?
+
+Hi Pavel, in v3 I have dropped any new sysfs attributes, so everything
+exposed to userspace is already documented.
 
 Thanks,
-rui
 
-> -----Original Message-----
-> From: Jean Delvare [mailto:jdelvare@suse.de]
-> Sent: Saturday, February 20, 2016 9:05 PM
-> To: linux-pm@vger.kernel.org
-> Cc: Zhang, Rui <rui.zhang@intel.com>; Eduardo Valentin
-> <edubezval@gmail.com>
-> Subject: Thermal governors non-modularity
-> Importance: High
-> 
-> Hi Rui, Eduardo,
-> 
-> Is there any fundamental reason why thermal governors can't be built as
-> modules? We have more and more of them, 5 now, and the most recent is
-> fairly big... Would be much more practical if they could be built as modules
-> and loaded at run-time only as needed.
-> 
+Tomeu
+
 > Thanks,
+>                                                                 Pavel
+>
 > --
-> Jean Delvare
-> SUSE L3 Support
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
