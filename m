@@ -1,88 +1,182 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Mon, 22 Feb 2016 22:46:19 +0100
-Message-ID: <CAJZ5v0gYH3usCAvEyhYZhy_H-oWjhk0e8m+jVMMcs__Sai2uuw@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<2044559.7ypXocW9OZ@vostro.rjw.lan>
-	<3499355.2JlaSruvOa@vostro.rjw.lan>
-	<16016177.YFqb4gVNBo@vostro.rjw.lan>
-	<CAJZ5v0jthTo8rXMp_ad=k5EcFBcwLgKRMnwPsznqDhois84uYA@mail.gmail.com>
-	<20160219080917.GE22643@pablo>
-	<1455900129.7375.231.camel@linux.intel.com>
-	<56C750B7.6090701@linaro.org>
-	<20160222105224.GE6356@twins.programming.kicks-ass.net>
+Subject: Re: [RFC/RFT][PATCH 1/1] cpufreq: New governor using utilization data
+ from the scheduler
+Date: Tue, 23 Feb 2016 00:02:01 +0100
+Message-ID: <CAJZ5v0j7jScr8TStyVHPDgd5qHaFDzUO3KnfxtEoYjrfc8gOQA@mail.gmail.com>
+References: <5059413.77KZsd2lep@vostro.rjw.lan>
+	<2004800.S71i79juRi@vostro.rjw.lan>
+	<20160222141639.GF27380@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f49.google.com ([209.85.215.49]:33596 "EHLO
-	mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbcBVVqV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 16:46:21 -0500
-In-Reply-To: <20160222105224.GE6356@twins.programming.kicks-ass.net>
+Received: from mail-lf0-f50.google.com ([209.85.215.50]:33694 "EHLO
+	mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbcBVXCE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 18:02:04 -0500
+In-Reply-To: <20160222141639.GF27380@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@kernel.org>
 
-On Mon, Feb 22, 2016 at 11:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, Feb 19, 2016 at 09:28:23AM -0800, Steve Muckle wrote:
->> On 02/19/2016 08:42 AM, Srinivas Pandruvada wrote:
->> > We did experiments using util/max in intel_pstate. For some benchmarks
->> > there were regression of 4 to 5%, for some benchmarks it performed at
->> > par with getting utilization from the processor. Further optimization
->> > in the algorithm is possible and still in progress. Idea is that we can
->> > change P-State fast enough and be more reactive. Once I have good data,
->> > I will send to this list. The algorithm can be part of the cpufreq
->> > governor too.
->>
->> There has been a lot of work in the area of scheduler-driven CPU
->> frequency selection by Linaro and ARM as well. It was posted most
->> recently a couple months ago:
->>
->> http://thread.gmane.org/gmane.linux.power-management.general/69176
->>
->> It was also posted as part of the energy-aware scheduling series last
->> July. There's a new RFC series forthcoming which I had hoped (and
->> failed) to post prior to my business travel this week; it should be out
->> next week. It will address the feedback received thus far along with
->> locking and other things.
->
-> Right, so I had a wee look at that again, and had a quick chat with Juri
-> on IRC. So the main difference seems to be that you guys want to know
-> why the utilization changed, as opposed to purely _that_ it changed.
->
-> And hence you have callbacks all over the place.
->
-> I'm not too sure I really like that too much, it bloats the code and
-> somewhat obfuscates the point.
->
-> So I would really like there to be just the one callback when we
-> actually compute a new number, and that is update_load_avg().
->
-> Now I think we can 'easily' propagate the information you want into
-> update_load_avg() (see below), but I would like to see actual arguments
-> for why you would need this.
->
-> For one, the migration bits don't really make sense. We typically do not
-> call migration code local on both cpus, typically just one, but possibly
-> neither. That means you cannot actually update the relevant CPU state
-> from these sites anyway.
->
->> The scheduler hooks for utilization-based cpufreq operation deserve a
->> lot more debate I think. They could quite possibly have different
->> requirements than hooks which are chosen just to guarantee periodic
->> callbacks into sampling-based governors.
->
-> I'll repeat what Rafael said, the periodic callback nature is a
-> 'temporary' hack, simply because current cpufreq depends on that.
->
-> The idea is to wane cpufreq off of that requirement and then drop that
-> part.
+On Mon, Feb 22, 2016 at 3:16 PM, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi Rafael,
 
-Right and I can see at least a couple of ways to do that, but it'll
-depend on where the final hooks will be located and what arguments
-they will pass.
+Hi,
 
-Thanks,
+> thanks for this RFC. I'm going to test it more in the next few days, but
+> I already have some questions from skimming through it. Please find them
+> inline below.
+>
+> On 22/02/16 00:18, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Add a new cpufreq scaling governor, called "schedutil", that uses
+>> scheduler-provided CPU utilization information as input for making
+>> its decisions.
+>>
+>
+> I guess the first (macro) question is why did you decide to go with a
+> complete new governor, where new here is w.r.t. the sched-freq solution.
+
+Probably the most comprehensive answer to this question is my intro
+message: http://marc.info/?l=linux-pm&m=145609673008122&w=2
+
+The executive summary is probably that this was the most
+straightforward way to use the scheduler-provided numbers in cpufreq
+that I could think about.
+
+> AFAICT, it is true that your solution directly builds on top of the
+> latest changes to cpufreq core and governor, but it also seems to have
+> more than a few points in common with sched-freq,
+
+That surely isn't a drawback, is it?
+
+If two people come to the same conclusions in different ways, that's
+an indication that the conclusions may actually be correct.
+
+> and sched-freq has been discussed and evaluated for already quite some time.
+
+Yes, it has.
+
+Does this mean that no one is allowed to try any alternatives to it now?
+
+> Also, it appears to me that they both shares (or they might encounter in the
+> future as development progresses) the same kind of problems, like for
+> example the fact that we can't trigger opp changes from scheduler
+> context ATM.
+
+"Give them a finger and they will ask for the hand."
+
+If you read my intro message linked above, you'll find a paragraph or
+two about that in it.
+
+And the short summary is that I have a plan to actually implement that
+feature in the schedutil governor at least for the ACPI cpufreq
+driver.  It shouldn't be too difficult to do either AFAICS.  So it is
+not "we can't", but rather "we haven't implemented that yet" in this
+particular case.
+
+I may not be able to do that in the next few days, as I have other
+things to do too, but you may expect to see that done at one point.
+
+So it's not a fundamental issue or anything, it's just that I haven't
+done that *yet* at this point, OK?
+
+> Don't get me wrong. I think that looking at different ways to solve a
+> problem is always beneficial, since I guess that the goal in the end is
+> to come up with something that suits everybody's needs.
+
+Precisely.
+
+> I was only curious about your thoughts on sched-freq. But we can also wait for the
+> next RFC from Steve for this macro question. :-)
+
+Right, but I have some thoughts anyway.
+
+My goal, that may be quite different from yours, is to reduce the
+cpufreq's overhead as much as I possibly can.  If I have to change the
+way it drives the CPU frequency selection to achieve that goal, I will
+do that, but if that can stay the way it is, that's fine too.
+
+Some progress has been made already here: we have dealt with the
+timers for good now I think.
+
+This patch deals with the overhead associated with the load tracking
+carried by "traditional" cpufreq governors and with a couple of
+questionable things done by "ondemand" in addition to that (which is
+one of the reasons why I didn't want to modify "ondemand" itself for
+now).
+
+The next step will be to teach the governor and the ACPI driver to
+switch CPU frequencies in the scheduler context, without spawning
+extra work items etc.
+
+Finally, the sampling should go away and that's where I want it to be.
+
+I just don't want to run extra code when that's not necessary and I
+want things to stay simple when that's as good as it can get.  If
+sched-freq can pull that off for me, that's fine, but can it really?
+
+> [...]
+>
+>> +static void sugov_update_commit(struct policy_dbs_info *policy_dbs, u64 time,
+>> +                             unsigned int next_freq)
+>> +{
+>> +     struct sugov_policy *sg_policy = to_sg_policy(policy_dbs);
+>> +
+>> +     sg_policy->next_freq = next_freq;
+>> +     policy_dbs->last_sample_time = time;
+>> +     policy_dbs->work_in_progress = true;
+>> +     irq_work_queue(&policy_dbs->irq_work);
+>
+> Here we basically use the system wq to be able to do the freq transition
+> in process context. CFS is probably fine with this, but don't you think
+> we might get into troubles when, in the future, we will want to service
+> RT/DL requests more properly and they will end up being serviced
+> together with all the others wq users and at !RT priority?
+
+That may be regarded as a problem, but I'm not sure why you're talking
+about it in the context of this particular patch.  That problem has
+been there forever in cpufreq: in theory RT tasks may stall frequency
+changes indefinitely.
+
+Is the problem real, though?
+
+Suppose that that actually happens and there are RT tasks effectively
+stalling frequency updates.  In that case some other important
+activities of the kernel would be stalled too.  Pretty much everything
+run out of regular workqueues would be affected.
+
+OK, so do we need to address that somehow?  Maybe, but then we should
+take care of all of the potentially affected stuff and not about the
+frequency changes only, shouldn't we?
+
+Moreover, I don't really think that having a separate RT process for
+every CPU in the system just for this purpose is the right approach.
+It's just way overkill IMO and doesn't cover the other potentially
+affected stuff at all.
+
+>> +}
+>> +
+>> +static void sugov_update_shared(struct update_util_data *data, u64 time,
+>> +                             unsigned long util, unsigned long max)
+>> +{
+>
+> We don't have a way to tell from which scheduling class this is coming
+> from, do we? And if that is true can't a request from CFS overwrite
+> RT/DL go to max requests?
+
+Yes, it can, but we get updated when the CPU is updating its own rq
+only, so if my understanding of things is correct, an update from a
+different sched class means that the given class is in charge now.
+
+> [...]
+>
+> Anyway, I'm going to start using our existing testing infrastructure
+> used to evaluate sched-freq to try to better understand the implications
+> of your approach.
+
+OK, thanks!
+
 Rafael
