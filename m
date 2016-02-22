@@ -1,88 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: simplify for_each_suitable_policy() macro
-Date: Mon, 22 Feb 2016 11:03:15 +0530
-Message-ID: <20160222053315.GE28226@vireshk-i7>
-References: <1456080792-22770-1-git-send-email-ebiggers3@gmail.com>
-Mime-Version: 1.0
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: generic-adc-battery volatge-to-percent formula
+Date: Mon, 22 Feb 2016 06:58:13 +0100
+Message-ID: <7720041C-DFEC-4592-A5AE-0C2BEEFB6049@goldelico.com>
+References: <CAAfyv37rjchL=FtvgGhjrfXnCvhfbYCext48QmSuOgJ5RjTwAQ@mail.gmail.com> <20160212085157.GA16326@amd> <CAAfyv34=C5NSTuqR9Pf4MT2Z42XvT_1Gw+kyjZZh12zC2cBoFA@mail.gmail.com> <20160215115304.GA5014@amd> <20160221200653.GD15242@earth> <0BD7A329-A8BE-4B3E-B98F-CAB7A25F643F@goldelico.com> <20160221211257.GA26418@amd>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:34957 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbcBVFde (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 00:33:34 -0500
-Received: by mail-pf0-f171.google.com with SMTP id c10so89419672pfc.2
-        for <linux-pm@vger.kernel.org>; Sun, 21 Feb 2016 21:33:34 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1456080792-22770-1-git-send-email-ebiggers3@gmail.com>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.221]:15776 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbcBVF6Y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 00:58:24 -0500
+In-Reply-To: <20160221211257.GA26418@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eric Biggers <ebiggers3@gmail.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Sebastian Reichel <sre@kernel.org>, Belisko Marek <marek.belisko@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On 21-02-16, 12:53, Eric Biggers wrote:
-> Signed-off-by: Eric Biggers <ebiggers3@gmail.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 44 +++-----------------------------------------
->  1 file changed, 3 insertions(+), 41 deletions(-)
+Hi,
+
+Am 21.02.2016 um 22:12 schrieb Pavel Machek <pavel@ucw.cz>:
+
+> Hi!
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e979ec7..3aa7b2b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -38,48 +38,10 @@ static inline bool policy_is_inactive(struct cpufreq_policy *policy)
->  	return cpumask_empty(policy->cpus);
->  }
->  
-> -static bool suitable_policy(struct cpufreq_policy *policy, bool active)
-> -{
-> -	return active == !policy_is_inactive(policy);
-> -}
-> -
-> -/* Finds Next Acive/Inactive policy */
-> -static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
-> -					  bool active)
-> -{
-> -	do {
-> -		/* No more policies in the list */
-> -		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
-> -			return NULL;
-> -
-> -		policy = list_next_entry(policy, policy_list);
-> -	} while (!suitable_policy(policy, active));
-> -
-> -	return policy;
-> -}
-> -
-> -static struct cpufreq_policy *first_policy(bool active)
-> -{
-> -	struct cpufreq_policy *policy;
-> -
-> -	/* No policies in the list */
-> -	if (list_empty(&cpufreq_policy_list))
-> -		return NULL;
-> -
-> -	policy = list_first_entry(&cpufreq_policy_list, typeof(*policy),
-> -				  policy_list);
-> -
-> -	if (!suitable_policy(policy, active))
-> -		policy = next_policy(policy, active);
-> -
-> -	return policy;
-> -}
-> -
->  /* Macros to iterate over CPU policies */
-> -#define for_each_suitable_policy(__policy, __active)	\
-> -	for (__policy = first_policy(__active);		\
-> -	     __policy;					\
-> -	     __policy = next_policy(__policy, __active))
-> +#define for_each_suitable_policy(__policy, __active)			 \
-> +	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
-> +		if ((__active) == !policy_is_inactive(__policy))
->  
->  #define for_each_active_policy(__policy)		\
->  	for_each_suitable_policy(__policy, true)
+>> 
+>> it could be something similar to (I might have made a mistake when applying scaling):
+>> 
+>> /* calculate remaining fuel level (in %) of a LiIon battery assuming
+>> * a standard chemistry model
+>> *    http://cseweb.ucsd.edu/~trosing/lectures/battery.pdf
+>> *
+>> * @mV: voltage measured outside the battery
+>> * @mA: current flowing out of the battery
+>> * @mOhm: assumed series resitance of the battery
+>> *
+>> * returns value between 0 and 100
+>> */
+>> 
+>> static inline int fuel_level_LiIon(int mV, int mA, int mOhm) {
+>> 	int u;
+>> 	/* internal battery voltage is higher than measured */
+> 
+> add " when discharging".
+> 
+>> 	mV += (mOhm * mA) /1000;
+>> 
+>> 	/* apply formula */
+>> 	u = 3870000 - (14523 * (37835 - 10 * mV));
+> 
+> 	/* linear approximation between 3.756V */
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+/* use linear approx. below 3.756V / 19.66% assuming 3.3V / 0% */
 
--- 
-viresh
+> 
+>> 	if (u < 0)
+
+I just recognised that we should for a really robust formula
+also limit the linear approx. to 0 if someone measures <3300 mV.
+
+>> 		return ((mV - 3300) * ((3756 - 3300) * 1966)) / 100000;
+
+		return max(((mV - 3300) * ((3756 - 3300) * 1966)) / 100000, 0);
+
+
+>> 	return (1966 + sqrt(u))/100;
+
+and this should be limited to 100.
+
+return min((1966 + int_sqrt(u))/100, 100);
+
+>> }
+>> 
+
+To which header file should this go?
+
+-- hns
