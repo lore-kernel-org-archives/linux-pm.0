@@ -1,91 +1,99 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: Re: suspend resume query
-Date: Mon, 22 Feb 2016 10:04:40 +0800
-Message-ID: <CAN2waFsNtiUuwmNB=p9N2XRVA-udA=Pt0DkSuBm2gQNtWJ=Bwg@mail.gmail.com>
-References: <CANMsd03Y67iVEtUZaWnjywNxVVSvmpQfh72y8uJeqqgP=PrH=g@mail.gmail.com>
-	<1455700241.7626.10.camel@suse.com>
-	<CANMsd02oPfRZ4dRRF8R61VtN+h62ROfmNCDK=NohKjYWhOL4Hg@mail.gmail.com>
-	<1455702015.7626.13.camel@suse.com>
-	<CANMsd03xShJ4hMajaahTaSQfZyCww+9me-e7X3F2=z1oUPN0Cg@mail.gmail.com>
-	<1455703562.7626.14.camel@suse.com>
-	<CAN2waFtS2cuWw2oY54-DQN_Nt5c=YvXg9nEn2x4vhzZMru9Vrw@mail.gmail.com>
-	<CANMsd01ZDQACG0Hn6_eNVUcxx1e4C3BdbwZ1+2raUZ34wXENzA@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCHv2 1/2] devicetree: Add UCS1002 USB Port Power Controller
+ binding
+Date: Sun, 21 Feb 2016 20:54:46 -0600
+Message-ID: <20160222025446.GN15973@rob-hp-laptop>
+References: <1455789171-5093-1-git-send-email-enric.balletbo@collabora.com>
+ <1455789171-5093-2-git-send-email-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f180.google.com ([209.85.160.180]:34137 "EHLO
-	mail-yk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbcBVCEl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Feb 2016 21:04:41 -0500
-Received: by mail-yk0-f180.google.com with SMTP id u9so56159453ykd.1
-        for <linux-pm@vger.kernel.org>; Sun, 21 Feb 2016 18:04:40 -0800 (PST)
-In-Reply-To: <CANMsd01ZDQACG0Hn6_eNVUcxx1e4C3BdbwZ1+2raUZ34wXENzA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1455789171-5093-2-git-send-email-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ryan <ryanphilips19@googlemail.com>
-Cc: Oliver Neukum <oneukum@suse.com>, linux-pm@vger.kernel.org
 
-On 20 February 2016 at 03:57, Ryan <ryanphilips19@googlemail.com> wrote:
-> Hi zhaoyang,
->
-> On Thu, Feb 18, 2016 at 12:24 PM, Zhaoyang Huang
-> <zhaoyang.huang@linaro.org> wrote:
->> Hi Ryan,
->> As we already known, STR will let all cores power down after store the
->> context(GPR, idmap_gpd, sp etc) of primary core in DDR. It is
->> different between ARMv7 and ARMv8
->> For ARMv7,
->> The boot vector can just be located in 0x00000000 or 0xffff0000, which
->> is chosen by sampling VINITHI domain within PMU register during
->> bootup. For some SOCs, one of them is used for cold boot while another
->> is used for recover from STR or CPU IDLE, which is referred as warm
->> reset. For this scenario, an AON RAM is usually placed in one of the
->> region mentioned above. Meanwhile, the vendor will place some code
->> there for bring the core back to the context where it is powered down.
->>
->
-> I understand that, when the wakeup interrupt arrives - it is not
-> actually an interrupt but
-> a reset which executes the code from 0x00000000 and then what happens?
->
-> Does it execute the Boot rom and bootloaders all over again - this
-> does not happen right?
->
-no
+On Thu, Feb 18, 2016 at 10:52:50AM +0100, Enric Balletbo i Serra wrote:
+> The UCS1002-2 provides a USB port power switch for precise control of up
+> to 2.5 amperes continuous current.
+> 
+> You can add support to your board with current binding.
+> 
+> Example:
+> 
+>     ucs1002: ucs1002@57 {
+>              compatible = "microchip,ucs1002";
+>              reg = <0x57>;
+>     };
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+> Changes since v1:
+>  - Fix units, are microamps (Rob Herring)
+>  - Remove microchip,pin-ignore as is implied by absence of gpio properties (Rob
+>    Herring)
+>  - Group control gpios instead of use separate gpios. All control gpios must be
+>    set together (Enric Balletbo)
+> 
+>  .../devicetree/bindings/power/ucs1002.txt          | 41 ++++++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/ucs1002.txt b/Documentation/devicetree/bindings/power/ucs1002.txt
+> new file mode 100644
+> index 0000000..bb2f91e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/ucs1002.txt
+> @@ -0,0 +1,41 @@
+> +UCS1002-2 Programmable USB Port Power Controller with Charger Emulation bindings
+> +
+> +Required properties:
+> +- compatible: "microchip,ucs1002"
+> +- reg: integer, the I2C address of the device.
+> +
+> +Optional properties:
+> +- interrupt-parent: the phandle of the interrupt controller that services
+> +    interrupts for this device.
+> +- interrupts: interrupt specifiers for two interrupt sources.
+> +    - First interrupt specifier is for A_DET interrupt.
+> +    - Second interrupt specifier is for ALERT interrupt.
+> +- microchip,current-limit: integer, maximum current in microamps. Note that the
 
-> My Question is what happens when the wakeup interrupt arrives and how
-> is it related to
-> bootloaders/booting process.
->
-For some SOC, there is a RAM on AON(always on) is mapped to 0x00000000
-where the resuming codes are placed. The resuming code is responsible for bring
-the core back to kernel(to invoke the cpu_resume which will restore the context)
+This needs a microamps as a suffix (e.g. 
+microchip,current-limit-microamps). That's kind of long, so maybe drop 
+"current" from the name as that is implied with the units.
 
-> From what i understand - Warm restart is when the reboot command is
-> issues. How different
-> is it from cpuidle wakeup or suspend 2 ram wakeup.
-I think the rom code will be just used for hotplug when the SOC has been up.
-
->
->
-> Thanks for your help.
->
->
->
->> For ARMv8,
->> All things are covered by PSCI, you can refer the process from ARM's archive.
->>
->> On 17 February 2016 at 18:06, Oliver Neukum <oneukum@suse.com> wrote:
->>> On Wed, 2016-02-17 at 15:19 +0530, Ryan wrote:
->>>> Suspend to ram. I am sorry - I did not provide complete information.
->>>
->>> STR on ARM is peculiar. I have no idea.
->>>
->>>         Sorry
->>>                 Oliver
->>>
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +    default value is based on the resistor on the COMM_SEL/ILIM pin and this
+> +    value cannot be changed to be higher than hardware set value. Accepted
+> +    values are: 500000, 900000, 1000000, 1200000, 1500000, 1800000, 2000000 and
+> +    2500000 (microamps).
+> +- control-gpios = list of gpios used as pin states when determining the active mode
+> +    selection and power state. Must provide EM_EN, M1, M2 and PWR_EN gpio mapping.
+> +    If this property is not set it uses I2C for configuration.
+> +
+> +Example (polling):
+> +
+> +	ucs1002: ucs1002@57 {
+> +		compatible = "microchip,ucs1002";
+> +		reg = <0x57>;
+> +		microchip,current-limit = <2000000>;
+> +	};
+> +
+> +Example (interrupts + control gpios):
+> +
+> +	ucs1002: ucs1002@57 {
+> +		compatible = "microchip,ucs1002";
+> +		reg = <0x57>;
+> +		interrupt-parent = <&gpio0>;
+> +		interrupts = <30 0>, <31 0>;
+> +		control-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>,	/* EM_EN */
+> +				<&gpio0 3 GPIO_ACTIVE_HIGH>,	/* M1 */
+> +				<&gpio1 17 GPIO_ACTIVE_HIGH>,	/* M2 */
+> +				<&gpio1 19 0>;			/* PWR_EN */
+> +	};
+> -- 
+> 2.1.0
+> 
