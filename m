@@ -1,33 +1,39 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/3] thermal: exynos: List vtmu-supply as optional
- property in DT binding
-Date: Tue, 23 Feb 2016 14:26:12 -0600
-Message-ID: <20160223202612.GA10733@rob-hp-laptop>
-References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
- <1455819551-4666-2-git-send-email-javier@osg.samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v5 1/2] cpumask: export cpumask_any_but
+Date: Tue, 23 Feb 2016 12:59:11 -0800
+Message-ID: <1456261152-21907-2-git-send-email-jacob.jun.pan@linux.intel.com>
+References: <1456261152-21907-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43205 "EHLO mail.kernel.org"
+Received: from mga03.intel.com ([134.134.136.65]:4902 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbcBWU0S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Feb 2016 15:26:18 -0500
-Content-Disposition: inline
-In-Reply-To: <1455819551-4666-2-git-send-email-javier@osg.samsung.com>
+	id S1755162AbcBWVA1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Feb 2016 16:00:27 -0500
+In-Reply-To: <1456261152-21907-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Rusty Russell <rusty@rustcorp.com.au>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Thu, Feb 18, 2016 at 03:19:09PM -0300, Javier Martinez Canillas wrote:
-> The Exynos Thermal Management Unit binding says that the vtmu-supply
-> is optional but is listed in the required properties section. Add an
-> optional properties section and move the regulator property there.
-> 
-> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
-> ---
-> 
->  Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+Export cpumask_any_but() for module use. This will be used by drivers
+such as intel_rapl to locate an active cpu on a socket.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ lib/cpumask.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/cpumask.c b/lib/cpumask.c
+index 5a70f61..81dedaa 100644
+--- a/lib/cpumask.c
++++ b/lib/cpumask.c
+@@ -41,6 +41,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
+ 			break;
+ 	return i;
+ }
++EXPORT_SYMBOL(cpumask_any_but);
+ 
+ /* These are not inline because of header tangles. */
+ #ifdef CONFIG_CPUMASK_OFFSTACK
+-- 
+1.9.1
+
