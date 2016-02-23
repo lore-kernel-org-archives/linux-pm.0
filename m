@@ -1,159 +1,85 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] intel-pstate: Update frequencies of policy->cpus only
- from ->set_policy()
-Date: Mon, 22 Feb 2016 15:41:09 -0800
-Message-ID: <56CB9C95.2090805@linux.intel.com>
-References: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:2453 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756382AbcBVXl2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 22 Feb 2016 18:41:28 -0500
-In-Reply-To: <c94ae8c4f0c9cf30d916aa29a339b793db30aa3a.1456117057.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: [RFCv7 PATCH 02/10] cpufreq: introduce cpufreq_driver_is_slow
+Date: Mon, 22 Feb 2016 17:22:42 -0800
+Message-ID: <1456190570-4475-3-git-send-email-smuckle@linaro.org>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, linux-kernel@vger.kernel.org
 
+From: Michael Turquette <mturquette@baylibre.com>
 
+Some architectures and platforms perform CPU frequency transitions
+through a non-blocking method, while some might block or sleep. Even
+when frequency transitions do not block or sleep they may be very slow.
+This distinction is important when trying to change frequency from
+a non-interruptible context in a scheduler hot path.
 
-On 02/21/2016 08:57 PM, Viresh Kumar wrote:
-> The intel-pstate driver is using intel_pstate_hwp_set() from two
-> separate paths, i.e. ->set_policy() callback and sysfs update path for
-> the files present in /sys/devices/system/cpu/intel_pstate/ directory.
->
-> While an update to the sysfs path applies to all the CPUs being managed
-> by the driver (which essentially means all the online CPUs), the update
-> via the ->set_policy() callback applies to a smaller group of CPUs
-> managed by the policy for which ->set_policy() is called.
->
-> And so, intel_pstate_hwp_set() should update frequencies of only the
-> CPUs that are part of policy->cpus mask, while it is called from
-> ->set_policy() callback.
->
-> In order to do that, add a parameter (cpumask) to intel_pstate_hwp_set()
-> and apply the frequency changes only to the concerned CPUs.
->
-> For ->set_policy() path, we are only concerned about policy->cpus, and
-> so policy->rwsem lock taken by the core prior to calling ->set_policy()
-> is enough to take care of any races. The larger lock acquired by
-> get_online_cpus() is required only for the updates to sysfs files.
->
-> Add another routine, intel_pstate_hwp_set_online_cpus(), and call it
-> from the sysfs update paths.
->
-> This also fixes a lockdep reported recently, where policy->rwsem and
-> get_online_cpus() could have been acquired in any order causing an ABBA
-> deadlock. The sequence of events leading to that was:
->
-> intel_pstate_init(...)
-> 	...cpufreq_online(...)
-> 		down_write(&policy->rwsem); // Locks policy->rwsem
-> 		...
-> 		cpufreq_init_policy(policy);
-> 			...intel_pstate_hwp_set();
-> 				get_online_cpus(); // Temporarily locks cpu_hotplug.lock
-> 		...
-> 		up_write(&policy->rwsem);
->
-> pm_suspend(...)
-> 	...disable_nonboot_cpus()
-> 		_cpu_down()
-> 			cpu_hotplug_begin(); // Locks cpu_hotplug.lock
-> 			__cpu_notify(CPU_DOWN_PREPARE, ...);
-> 				...cpufreq_offline_prepare();
-> 					down_write(&policy->rwsem); // Locks policy->rwsem
->
-> Reported-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->   drivers/cpufreq/intel_pstate.c | 21 ++++++++++++---------
->   1 file changed, 12 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index f4d85c2ae7b1..2e7058a2479d 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -287,7 +287,7 @@ static inline void update_turbo_state(void)
->   		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
->   }
->   
-> -static void intel_pstate_hwp_set(void)
-> +static void intel_pstate_hwp_set(const struct cpumask *cpumask)
->   {
->   	int min, hw_min, max, hw_max, cpu, range, adj_range;
->   	u64 value, cap;
-> @@ -297,9 +297,7 @@ static void intel_pstate_hwp_set(void)
->   	hw_max = HWP_HIGHEST_PERF(cap);
->   	range = hw_max - hw_min;
->   
-> -	get_online_cpus();
-> -
-> -	for_each_online_cpu(cpu) {
-> +	for_each_cpu(cpu, cpumask) {
->   		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
->   		adj_range = limits->min_perf_pct * range / 100;
->   		min = hw_min + adj_range;
-> @@ -318,7 +316,12 @@ static void intel_pstate_hwp_set(void)
->   		value |= HWP_MAX_PERF(max);
->   		wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
->   	}
-> +}
->   
-> +static void intel_pstate_hwp_set_online_cpus(void)
-> +{
-> +	get_online_cpus();
-> +	intel_pstate_hwp_set(cpu_online_mask);
->   	put_online_cpus();
->   }
->   
-> @@ -440,7 +443,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
->   	limits->no_turbo = clamp_t(int, input, 0, 1);
->   
->   	if (hwp_active)
-> -		intel_pstate_hwp_set();
-> +		intel_pstate_hwp_set_online_cpus();
->   
->   	return count;
->   }
-> @@ -466,7 +469,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
->   				  int_tofp(100));
->   
->   	if (hwp_active)
-> -		intel_pstate_hwp_set();
-> +		intel_pstate_hwp_set_online_cpus();
->   	return count;
->   }
->   
-> @@ -491,7 +494,7 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
->   				  int_tofp(100));
->   
->   	if (hwp_active)
-> -		intel_pstate_hwp_set();
-> +		intel_pstate_hwp_set_online_cpus();
->   	return count;
->   }
->   
-> @@ -1112,7 +1115,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->   		pr_debug("intel_pstate: set performance\n");
->   		limits = &performance_limits;
->   		if (hwp_active)
-> -			intel_pstate_hwp_set();
-> +			intel_pstate_hwp_set(policy->cpus);
->   		return 0;
->   	}
->   
-> @@ -1144,7 +1147,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->   				  int_tofp(100));
->   
->   	if (hwp_active)
-> -		intel_pstate_hwp_set();
-> +		intel_pstate_hwp_set(policy->cpus);
->   
->   	return 0;
->   }
+Describe this distinction with a cpufreq driver flag,
+CPUFREQ_DRIVER_FAST. The default is to not have this flag set,
+thus erring on the side of caution.
 
+cpufreq_driver_is_slow() is also introduced in this patch. Setting
+the above flag will allow this function to return false.
+
+[smuckle@linaro.org: change flag/API to include drivers that are too
+ slow for scheduler hot paths, in addition to those that block/sleep]
+
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ include/linux/cpufreq.h   | 9 +++++++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e979ec7..88e63ca 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -154,6 +154,12 @@ bool have_governor_per_policy(void)
+ }
+ EXPORT_SYMBOL_GPL(have_governor_per_policy);
+ 
++bool cpufreq_driver_is_slow(void)
++{
++	return !(cpufreq_driver->flags & CPUFREQ_DRIVER_FAST);
++}
++EXPORT_SYMBOL_GPL(cpufreq_driver_is_slow);
++
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
+ {
+ 	if (have_governor_per_policy())
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 88a4215..93e1c1c 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -160,6 +160,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+ int cpufreq_update_policy(unsigned int cpu);
+ bool have_governor_per_policy(void);
++bool cpufreq_driver_is_slow(void);
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+ #else
+ static inline unsigned int cpufreq_get(unsigned int cpu)
+@@ -316,6 +317,14 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
+ 
++/*
++ * Indicates that it is safe to call cpufreq_driver_target from
++ * non-interruptable context in scheduler hot paths.  Drivers must
++ * opt-in to this flag, as the safe default is that they might sleep
++ * or be too slow for hot path use.
++ */
++#define CPUFREQ_DRIVER_FAST		(1 << 6)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
+-- 
+2.4.10
