@@ -1,7 +1,7 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv7 PATCH 09/10] sched/deadline: split rt_avg in 2 distincts metrics
-Date: Mon, 22 Feb 2016 17:22:49 -0800
-Message-ID: <1456190570-4475-10-git-send-email-smuckle@linaro.org>
+Subject: [RFCv7 PATCH 10/10] sched: rt scheduler sets capacity requirement
+Date: Mon, 22 Feb 2016 17:22:50 -0800
+Message-ID: <1456190570-4475-11-git-send-email-smuckle@linaro.org>
 References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
@@ -12,90 +12,97 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Vincent Guittot <vincent.guittot@linaro.org>
 
-rt_avg monitors the average load of rt tasks, deadline tasks and
-interruptions, when enabled. It's used to calculate the remaining
-capacity for CFS tasks. We split rt_avg in 2 metrics, one for rt and
-interruptions that keeps the name rt_avg and another one for deadline
-tasks that will be named dl_avg.
-Both values are still used to calculate the remaining capacity for cfs
-task. But rt_avg is now also used to request capacity to the sched-freq
-for the rt tasks.
-As the irq time is accounted with rt tasks, it will be taken into account
-in the request of capacity.
+RT tasks don't provide any running constraints like deadline ones
+except their running priority. The only current usable input to
+estimate the capacity needed by RT tasks is the rt_avg metric. We use
+it to estimate the CPU capacity needed for the RT scheduler class.
+
+In order to monitor the evolution for RT task load, we must
+peridiocally check it during the tick.
+
+Then, we use the estimated capacity of the last activity to estimate
+the next one which can not be that accurate but is a good starting
+point without any impact on the wake up path of RT tasks.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/core.c     | 1 +
- kernel/sched/deadline.c | 2 +-
- kernel/sched/fair.c     | 1 +
- kernel/sched/sched.h    | 8 +++++++-
- 4 files changed, 10 insertions(+), 2 deletions(-)
+ kernel/sched/rt.c | 48 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 47 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 747a7af..12a4a3a 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -759,6 +759,7 @@ void sched_avg_update(struct rq *rq)
- 		asm("" : "+rm" (rq->age_stamp));
- 		rq->age_stamp += period;
- 		rq->rt_avg /= 2;
-+		rq->dl_avg /= 2;
- 	}
- }
- 
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index cd64c97..87dcee3 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -747,7 +747,7 @@ static void update_curr_dl(struct rq *rq)
- 	curr->se.exec_start = rq_clock_task(rq);
- 	cpuacct_charge(curr, delta_exec);
- 
--	sched_rt_avg_update(rq, delta_exec);
-+	sched_dl_avg_update(rq, delta_exec);
- 
- 	dl_se->runtime -= dl_se->dl_yielded ? 0 : delta_exec;
- 	if (dl_runtime_exceeded(dl_se)) {
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index cf7ae0a..3a812fa 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6278,6 +6278,7 @@ static unsigned long scale_rt_capacity(int cpu)
- 	 */
- 	age_stamp = READ_ONCE(rq->age_stamp);
- 	avg = READ_ONCE(rq->rt_avg);
-+	avg += READ_ONCE(rq->dl_avg);
- 	delta = __rq_clock_broken(rq) - age_stamp;
- 
- 	if (unlikely(delta < 0))
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 3df21f2..ad6cc8b 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -644,7 +644,7 @@ struct rq {
- 
- 	struct list_head cfs_tasks;
- 
--	u64 rt_avg;
-+	u64 rt_avg, dl_avg;
- 	u64 age_stamp;
- 	u64 idle_stamp;
- 	u64 avg_idle;
-@@ -1499,8 +1499,14 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
- {
- 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
- }
-+
-+static inline void sched_dl_avg_update(struct rq *rq, u64 dl_delta)
-+{
-+	rq->dl_avg += dl_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
-+}
- #else
- static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
-+static inline void sched_dl_avg_update(struct rq *rq, u64 dl_delta) { }
- static inline void sched_avg_update(struct rq *rq) { }
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index 8ec86ab..da9086c 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1426,6 +1426,41 @@ static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int flag
  #endif
+ }
  
++#ifdef CONFIG_CPU_FREQ_GOV_SCHED
++static void sched_rt_update_capacity_req(struct rq *rq)
++{
++	u64 total, used, age_stamp, avg;
++	s64 delta;
++
++	if (!sched_freq())
++		return;
++
++	sched_avg_update(rq);
++	/*
++	 * Since we're reading these variables without serialization make sure
++	 * we read them once before doing sanity checks on them.
++	 */
++	age_stamp = READ_ONCE(rq->age_stamp);
++	avg = READ_ONCE(rq->rt_avg);
++	delta = rq_clock(rq) - age_stamp;
++
++	if (unlikely(delta < 0))
++		delta = 0;
++
++	total = sched_avg_period() + delta;
++
++	used = div_u64(avg, total);
++	if (unlikely(used > SCHED_CAPACITY_SCALE))
++		used = SCHED_CAPACITY_SCALE;
++
++	set_rt_cpu_capacity(rq->cpu, true, (unsigned long)(used));
++}
++#else
++static inline void sched_rt_update_capacity_req(struct rq *rq)
++{ }
++
++#endif
++
+ static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
+ 						   struct rt_rq *rt_rq)
+ {
+@@ -1494,8 +1529,17 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev)
+ 	if (prev->sched_class == &rt_sched_class)
+ 		update_curr_rt(rq);
+ 
+-	if (!rt_rq->rt_queued)
++	if (!rt_rq->rt_queued) {
++		/*
++		 * The next task to be picked on this rq will have a lower
++		 * priority than rt tasks so we can spend some time to update
++		 * the capacity used by rt tasks based on the last activity.
++		 * This value will be the used as an estimation of the next
++		 * activity.
++		 */
++		sched_rt_update_capacity_req(rq);
+ 		return NULL;
++	}
+ 
+ 	put_prev_task(rq, prev);
+ 
+@@ -2212,6 +2256,8 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ 
+ 	update_curr_rt(rq);
+ 
++	sched_rt_update_capacity_req(rq);
++
+ 	watchdog(rq, p);
+ 
+ 	/*
 -- 
 2.4.10
