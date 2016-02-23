@@ -1,51 +1,60 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Mon, 22 Feb 2016 19:58:47 -0800
-Message-ID: <56CBD8F7.3090502@linaro.org>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
- <1455900129.7375.231.camel@linux.intel.com> <56C750B7.6090701@linaro.org>
- <1797575.PjqbkdCLyN@vostro.rjw.lan>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST] BUGFIX for Tegra
+Date: Tue, 23 Feb 2016 06:05:44 +0000 (GMT)
+Message-ID: <603170267.101391456207543850.JavaMail.weblogic@epmlwas03b>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1797575.PjqbkdCLyN@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:53317 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbcBWGF5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Feb 2016 01:05:57 -0500
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0O2Z00CT0KXU0260@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 23 Feb 2016 15:05:54 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+Cc: tomeu.vizoso@collabora.com
 
-On 02/19/2016 02:35 PM, Rafael J. Wysocki wrote:
->> The scheduler hooks for utilization-based cpufreq operation deserve a
->> lot more debate I think. They could quite possibly have different
->> requirements than hooks which are chosen just to guarantee periodic
->> callbacks into sampling-based governors.
-> 
-> Yes, they could.
-> 
-> The point here, though, is that even the sampling-based governors may 
-> benefit from using the numbers provided by the scheduler instead of trying
-> to come up with analogous numbers themselves.
+SGkgUmFmYWVsLA0KDQpIb3BpbmcgdGhpcyBpcyBub3QgdG9vIGxhdGUgZm9yIFRlZ3JhIGRyaXZl
+ciBidWdmaXguDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28uDQotLS0tLUJFR0lOIFBHUCBTSUdORUQg
+TUVTU0FHRS0tLS0tDQpIYXNoOiBTSEExDQoNClRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5jZSBj
+b21taXQgODFmNzBiYTIzM2Q1ZjY2MGUxZWE1ZmUyMzI2MGVlMzIzYWY1ZDUzYToNCg0KICBMaW51
+eCA0LjUtcmM1ICgyMDE2LTAyLTIwIDEzOjM5OjM1IC0wODAwKQ0KDQphcmUgYXZhaWxhYmxlIGlu
+IHRoZSBnaXQgcmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9z
+Y20vbGludXgva2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgZm9yLXJhZmFlbA0KDQpmb3IgeW91
+IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gZGJiMGM3YzQzMGRkYmU0Mjk5ZjM1ODBiYWVjMGUyNTAz
+ZjZmNWE5MzoNCg0KICBQTSAvIGRldmZyZXE6IHRlZ3JhOiBTZXQgZnJlcSBpbiByYXRlIGNhbGxi
+YWNrICgyMDE2LTAyLTIzIDE0OjI3OjQyICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCkJ1Z2ZpeCBwdWxs
+IHJlcXVlc3QgZm9yIFJhZmFlbC9MaW51eC1QTSBmcm9tIGRldmZyZXENCg0KLSAtLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpU
+b21ldSBWaXpvc28gKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogU2V0IGZyZXEgaW4g
+cmF0ZSBjYWxsYmFjaw0KDQogZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYyB8IDIgKysN
+CiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQotLS0tLUJFR0lOIFBHUCBTSUdOQVRV
+UkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKV3kvWDFBQW9KRUJP
+aHVydldCb0NLd0d3UUFJZzZxN3ZtWEkrTjY3SzlkcExVeXhkUw0KM3hnNDNOOVliUGRTZVZmL2lr
+Ty9WSHBNRG16VXBJQnRITXoyZjRURklyUFJGbmZKWnJHbzh0RThVRXpsM2dEWg0KZ2E4TXBTdFFI
+dkpHVWw4bUdtS3MvQ1hVM3EwU2ROd0c5SE5ZMXZ0d1JKQXNDZERCMm9BL2w5YVhTVmZucG9SMA0K
+SzdyVHNIQ0xqdUlmSmw0SWpIQXFlWGVIYTc4aGJ2cUh1RnF1RW5odGQ0RnpOUEFHMERKZFQraUpU
+clV5bkdWbw0KY1FiUG9IbHdWNXl5N1RyOUU0d25MMkRXeHJJdmZxRjdLc0lRaGc3U2puTVBKUi9h
+UGdjUnI5bktNWjdYeHp0Qg0KV2xNL05ZSlRLYUpnY1Q4WE1jdG5tOGRROElUS3poUHd5SzRZWGNB
+RzBaOVhGeGdQaTB5YUEzZmxQOXYzSnBXdQ0KRXdmOTVyVmFQTlJqRkF2QXE1d0hYYTBaa0hhOHdI
+ZXF2dFVwU3BteTFVUjY3SmpJaFBQZDgzK2dUK2dVQWNvbw0KeUN4Qlhybys3bDlONmZWSWZ2elJ0
+L2ZISjFNd211V3BmeHBpUHdTWGRMY2VCVGd1ckl6dkNDajA0SDlFUVZiKw0Kdk90Zm8xMmlsamxa
+ckdoWUdSckNRQWFoN01PVmJnUUFOZjN4aU0zLysrSHFJZ09nRi9RYWlMOEsrVkI2eThFbw0KMHhK
+WUMrMjJJWmZ6cncrL05aR1pnU0ZjUXhydzlFdVhiQTVmYU84bVlWeFQ4bVFEYWQ1MHIzbWRnRHh3
+TGpmNw0KVlNnUzFVWHpWRHp1RWUrVXo0b0ZBYTNTc1FnVFFmVzQxV2FQYUxMMGxvdS9rZjFldkVl
+ZzZsT2xxSG9KRTduaw0KV3UxRDFrcUlPUEd3YTB0NHFOVlINCj1PL2JMDQotLS0tLUVORCBQR1Ag
+U0lHTkFUVVJFLS0tLS0NCg0KDQotLQ0KTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELg0K
+RnJvbnRpZXIgQ1MgTGFiLCBTb2Z0d2FyZSBSJkQgQ2VudGVyDQpTYW1zdW5nIEVsZWN0cm9uaWNz
+DQpDZWxsOiArODItMTAtNjcxNC0yODU4
 
-It seems premature to me to merge supporting infrastructure (the
-utilization hooks) before we have changes, be it modifications to the
-sampling based governors to use utilization or a scheduler-guided
-governor, which are well tested and proven to yield reasonable
-performance and power across various platforms and workloads.
 
-Perhaps I'm a pessimist but I think it's going to be a challenge to get
-utilization-based cpufreq on par, and I think getting the hooks right
-will be part of that challenge.
-
->> For my part I think it would be best if the util/max parameters are
->> omitted
-> 
-> OK, so please see the patch I've just sent to Juri:
-> 
-> https://patchwork.kernel.org/patch/8364621/
-
-Looked good to me.
-
-thanks,
-Steve
