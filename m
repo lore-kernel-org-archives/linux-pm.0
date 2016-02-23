@@ -1,72 +1,72 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH v6 07/12] thermal: of-thermal: allow setting trip_temp
- on hardware
-Date: Tue, 23 Feb 2016 10:16:37 +0800
-Message-ID: <56CBC105.6080703@nvidia.com>
-References: <1456128555-29058-1-git-send-email-wni@nvidia.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 6/6] ARM: dts: n900: Rename isp1704 to isp1707 to match
+ correct name
+Date: Tue, 23 Feb 2016 03:29:00 +0100
+Message-ID: <20160223022900.GA19629@earth>
+References: <1456054103-19551-1-git-send-email-pali.rohar@gmail.com>
+ <1456054103-19551-7-git-send-email-pali.rohar@gmail.com>
+ <20160221140517.GA25072@amd>
+ <20160222190649.GR13417@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:12821 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754795AbcBWCQY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 21:16:24 -0500
-In-Reply-To: <1456128555-29058-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160222190649.GR13417@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: thierry.reding@gmail.com, edubezval@gmail.com, rui.zhang@intel.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Add linux-pm@vger.kernel.org in the CC list.
 
-On 2016=E5=B9=B402=E6=9C=8822=E6=97=A5 16:09, Wei Ni wrote:
-> In current of-thermal, the .set_trip_temp only support to
-> set trip_temp for SW. But some sensors support to set
-> trip_temp on hardware, so that can trigger interrupt,
-> shutdown or any other events.
-> This patch adds .set_trip_temp() callback in
-> thermal_zone_of_device_ops{}, so that the sensor device can
-> use it to set trip_temp on hardware.
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Feb 22, 2016 at 11:06:50AM -0800, Tony Lindgren wrote:
+> * Pavel Machek <pavel@ucw.cz> [160221 06:05]:
+> > On Sun 2016-02-21 12:28:23, Pali Roh=E1r wrote:
+> > > This change does not break existing userspace or Maemo software becau=
+se
+> > > isp1704_charger.c always export power supply device under isp1704 nam=
+e.
+> >=20
+> > ..exports..
+> >=20
+> > > Signed-off-by: Pali Roh=E1r <pali.rohar@gmail.com>
+> >=20
+> > 4,5,6: Acked-by: Pavel Machek <pavel@ucw.cz>
 >=20
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  drivers/thermal/of-thermal.c | 8 ++++++++
->  include/linux/thermal.h      | 1 +
->  2 files changed, 9 insertions(+)
+> Ack for this one to get merged along with the driver changes:
 >=20
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-therma=
-l.c
-> index be4eedcb839a..fbfc5a52dc27 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -331,6 +331,14 @@ static int of_thermal_set_trip_temp(struct therm=
-al_zone_device *tz, int trip,
->  	if (trip >=3D data->ntrips || trip < 0)
->  		return -EDOM;
-> =20
-> +	if (data->ops->set_trip_temp) {
-> +		int ret;
-> +
-> +		ret =3D data->ops->set_trip_temp(data->sensor_data, trip, temp);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
->  	/* thermal framework should take care of data->mask & (1 << trip) *=
-/
->  	data->trips[trip].temperature =3D temp;
-> =20
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index e13a1ace50e9..e69296dc583b 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -338,6 +338,7 @@ struct thermal_zone_of_device_ops {
->  	int (*get_temp)(void *, int *);
->  	int (*get_trend)(void *, long *);
->  	int (*set_emul_temp)(void *, int);
-> +	int (*set_trip_temp)(void *, int, int);
->  };
-> =20
->  /**
->=20
+> Acked-by: Tony Lindgren <tony@atomide.com>
+
+Ok, done.
+
+-- Sebastian
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWy8PpAAoJENju1/PIO/qaNewP/0HO060mDJNPbV/jz5NBJstH
+RQIn+/JpVSZdSmLi/4MOZBQujdoeyiyOv7iI7EG/mvqxmFKRT0hbgqomoq5eJWIm
+DC5a63AOo5qSXgoLv/SjeaAcTiZIy1OK4/AM2t0fQ9epzr4h5Y44GIj+fZVOc2BW
+eS2LuWpRH2T/uqRNklybIv4gJNWx5DSQAXmORXgrjiz9ddl7+UIokmmLdjOJN0zt
+j+1DeK1yFTaytWWr1DYYsLyMMm7XD1G6EW69pFROVPpCBrMW6pbMcdVR3NVCtsXe
+RRTQt+jka8nTHgWmHeeaM01l2KXnqt7fq075oIlMRCsWIWoyVN4UXu0RcHXlVilI
+JVGMeYRm82FFl9Dwo5y0w+tTQFwxpMiNng4/Qvr0Qyhab2BAw5Pm6GEZ65fC47j8
+/s+ZVH/VK6FgckubHAqeed+LrRZTzfp8cxddmx5+eH44u95H8xQl9H5UG1z3vZfg
+ZeSuyG1TXl0uhiJ88xpkpKoN0fI18KHcsJ5XGZPWWSCoxfzKS7NOKXHcxSdMAAXX
+WX4MoSFEQ0daAot/mR6zLdeTJt0ICbUvA0V5n6xvmOrDNlZEQwxzy1vR53o0cYD4
+aC1IexkS3FD1bjny72LFA9wCu8y/mae2D7oZlUALHazG/F0nYmD50INOeRwOeMCb
+kpWIvjDu61VqsELLdi/w
+=vuiw
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
