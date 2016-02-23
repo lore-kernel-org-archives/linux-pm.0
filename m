@@ -1,48 +1,59 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH V3 2/2] sched: idle: IRQ based next prediction for idle
  period
-Date: Tue, 23 Feb 2016 15:38:16 +0530
-Message-ID: <56CC2F90.4040008@linux.vnet.ibm.com>
-References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org> <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org> <56CB22F5.8010808@linux.vnet.ibm.com> <56CB455C.3050701@linaro.org>
+Date: Tue, 23 Feb 2016 11:13:11 +0100
+Message-ID: <56CC30B7.8090304@linaro.org>
+References: <1455637383-14412-1-git-send-email-daniel.lezcano@linaro.org>
+ <1455637383-14412-2-git-send-email-daniel.lezcano@linaro.org>
+ <56CC2F38.5070507@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56CB455C.3050701@linaro.org>
+In-Reply-To: <56CC2F38.5070507@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
+On 02/23/2016 11:06 AM, Shreyas B Prabhu wrote:
+>
+>
+> On 02/16/2016 09:13 PM, Daniel Lezcano wrote:
+> [...]
+>> +	if (index < 0) {
+>> +		/*
+>> +		 * No idle callbacks fulfilled the constraints, jump
+>> +		 * to the default function like there wasn't any
+>> +		 * cpuidle driver.
+>> +		 */
+>> +		goto default_idle;
+>> +	} else {
+>> +		/*
+>> +		 * Enter the idle state previously returned by the
+>> +		 * governor decision.  This function will block until
+>> +		 * an interrupt occurs and will take care of
+>> +		 * re-enabling the local interrupts
+>> +		 */
+>> +		return cpuidle_enter(drv, dev, index);
+>
+> Minor point. You are not calling rcu_idle_exit() in else block. This
+> should probably be
+> 		ret =3D cpuidle_enter(drv, dev, index);
+>                  goto out;
+
+Yes. Right.
+
+Thanks for the review.
+
+   -- Daniel
 
 
-On 02/22/2016 10:59 PM, Daniel Lezcano wrote:
-> On 02/22/2016 04:02 PM, Shreyas B Prabhu wrote:
->> Hi Daniel,
->>
->> On 02/16/2016 09:13 PM, Daniel Lezcano wrote:
->>> +
->>> +/**
->>> + * sched_idle_next_wakeup - Predict the next wakeup on the current cpu
->>> + *
->>> + * The next event on the cpu is based on a statistic approach of the
->>> + * interrupt events and the timer deterministic value. From the timer
->>> + * or the irqs, we return the one expected to occur first.
->>> + *
->>> + * Returns the expected remaining idle time before being woken up by
->>> + * an interruption.
->>> + */
->>> +s64 sched_idle_next_wakeup(void)
->>> +{
->>> +    s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
->>> +    s64 next_irq = next_irq_event();
->>
->> Since next_irq_event() uses RCU and we are in idle this should probably
->> be wrapped in RCU_NONIDLE().
-> 
-> That is a good point but the function is not supposed to be called in
-> the rcu_idle_enter/rcu_idle_exit section which is inside
-> cpuidle_idle_call().
-> 
-> 
-Right. My bad.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
