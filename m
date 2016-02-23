@@ -1,118 +1,101 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv7 PATCH 04/10] sched/fair: add triggers for OPP change requests
-Date: Mon, 22 Feb 2016 17:22:44 -0800
-Message-ID: <1456190570-4475-5-git-send-email-smuckle@linaro.org>
+Subject: [RFCv7 PATCH 09/10] sched/deadline: split rt_avg in 2 distincts metrics
+Date: Mon, 22 Feb 2016 17:22:49 -0800
+Message-ID: <1456190570-4475-10-git-send-email-smuckle@linaro.org>
 References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Juri Lelli <juri.lelli@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
 
-Each time a task is {en,de}queued we might need to adapt the current
-frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
-this purpose.  Only trigger a freq request if we are effectively waking up
-or going to sleep.  Filter out load balancing related calls to reduce the
-number of triggers.
+rt_avg monitors the average load of rt tasks, deadline tasks and
+interruptions, when enabled. It's used to calculate the remaining
+capacity for CFS tasks. We split rt_avg in 2 metrics, one for rt and
+interruptions that keeps the name rt_avg and another one for deadline
+tasks that will be named dl_avg.
+Both values are still used to calculate the remaining capacity for cfs
+task. But rt_avg is now also used to request capacity to the sched-freq
+for the rt tasks.
+As the irq time is accounted with rt tasks, it will be taken into account
+in the request of capacity.
 
-[smuckle@linaro.org: resolve merge conflicts, define task_new,
- use renamed static key sched_freq]
-
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/fair.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 47 insertions(+), 2 deletions(-)
+ kernel/sched/core.c     | 1 +
+ kernel/sched/deadline.c | 2 +-
+ kernel/sched/fair.c     | 1 +
+ kernel/sched/sched.h    | 8 +++++++-
+ 4 files changed, 10 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 747a7af..12a4a3a 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -759,6 +759,7 @@ void sched_avg_update(struct rq *rq)
+ 		asm("" : "+rm" (rq->age_stamp));
+ 		rq->age_stamp += period;
+ 		rq->rt_avg /= 2;
++		rq->dl_avg /= 2;
+ 	}
+ }
+ 
+diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+index cd64c97..87dcee3 100644
+--- a/kernel/sched/deadline.c
++++ b/kernel/sched/deadline.c
+@@ -747,7 +747,7 @@ static void update_curr_dl(struct rq *rq)
+ 	curr->se.exec_start = rq_clock_task(rq);
+ 	cpuacct_charge(curr, delta_exec);
+ 
+-	sched_rt_avg_update(rq, delta_exec);
++	sched_dl_avg_update(rq, delta_exec);
+ 
+ 	dl_se->runtime -= dl_se->dl_yielded ? 0 : delta_exec;
+ 	if (dl_runtime_exceeded(dl_se)) {
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 3437e01..f1f00a4 100644
+index cf7ae0a..3a812fa 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4283,6 +4283,21 @@ static inline void hrtick_update(struct rq *rq)
- }
- #endif
+@@ -6278,6 +6278,7 @@ static unsigned long scale_rt_capacity(int cpu)
+ 	 */
+ 	age_stamp = READ_ONCE(rq->age_stamp);
+ 	avg = READ_ONCE(rq->rt_avg);
++	avg += READ_ONCE(rq->dl_avg);
+ 	delta = __rq_clock_broken(rq) - age_stamp;
  
-+static unsigned long capacity_orig_of(int cpu);
-+static int cpu_util(int cpu);
-+
-+static void update_capacity_of(int cpu)
-+{
-+	unsigned long req_cap;
-+
-+	if (!sched_freq())
-+		return;
-+
-+	/* Convert scale-invariant capacity to cpu. */
-+	req_cap = cpu_util(cpu) * SCHED_CAPACITY_SCALE / capacity_orig_of(cpu);
-+	set_cfs_cpu_capacity(cpu, true, req_cap);
-+}
-+
- /*
-  * The enqueue_task method is called before nr_running is
-  * increased. Here we update the fair scheduling stats and
-@@ -4293,6 +4308,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (unlikely(delta < 0))
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 3df21f2..ad6cc8b 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -644,7 +644,7 @@ struct rq {
+ 
+ 	struct list_head cfs_tasks;
+ 
+-	u64 rt_avg;
++	u64 rt_avg, dl_avg;
+ 	u64 age_stamp;
+ 	u64 idle_stamp;
+ 	u64 avg_idle;
+@@ -1499,8 +1499,14 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
  {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
-+	int task_new = !(flags & ENQUEUE_WAKEUP);
- 
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
-@@ -4324,9 +4340,23 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_cfs_shares(cfs_rq);
- 	}
- 
--	if (!se)
-+	if (!se) {
- 		add_nr_running(rq, 1);
- 
-+		/*
-+		 * We want to potentially trigger a freq switch
-+		 * request only for tasks that are waking up; this is
-+		 * because we get here also during load balancing, but
-+		 * in these cases it seems wise to trigger as single
-+		 * request after load balancing is done.
-+		 *
-+		 * XXX: how about fork()? Do we need a special
-+		 *      flag/something to tell if we are here after a
-+		 *      fork() (wakeup_task_new)?
-+		 */
-+		if (!task_new)
-+			update_capacity_of(cpu_of(rq));
-+	}
- 	hrtick_update(rq);
+ 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
  }
- 
-@@ -4384,9 +4414,24 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		update_cfs_shares(cfs_rq);
- 	}
- 
--	if (!se)
-+	if (!se) {
- 		sub_nr_running(rq, 1);
- 
-+		/*
-+		 * We want to potentially trigger a freq switch
-+		 * request only for tasks that are going to sleep;
-+		 * this is because we get here also during load
-+		 * balancing, but in these cases it seems wise to
-+		 * trigger as single request after load balancing is
-+		 * done.
-+		 */
-+		if (task_sleep) {
-+			if (rq->cfs.nr_running)
-+				update_capacity_of(cpu_of(rq));
-+			else if (sched_freq())
-+				set_cfs_cpu_capacity(cpu_of(rq), false, 0);
-+		}
-+	}
- 	hrtick_update(rq);
- }
++
++static inline void sched_dl_avg_update(struct rq *rq, u64 dl_delta)
++{
++	rq->dl_avg += dl_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
++}
+ #else
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
++static inline void sched_dl_avg_update(struct rq *rq, u64 dl_delta) { }
+ static inline void sched_avg_update(struct rq *rq) { }
+ #endif
  
 -- 
 2.4.10
