@@ -1,85 +1,90 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv7 PATCH 02/10] cpufreq: introduce cpufreq_driver_is_slow
-Date: Mon, 22 Feb 2016 17:22:42 -0800
-Message-ID: <1456190570-4475-3-git-send-email-smuckle@linaro.org>
+Subject: [RFCv7 PATCH 06/10] sched/fair: cpufreq_sched triggers for load balancing
+Date: Mon, 22 Feb 2016 17:22:46 -0800
+Message-ID: <1456190570-4475-7-git-send-email-smuckle@linaro.org>
 References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:35339 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932309AbcBWBXC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Feb 2016 20:23:02 -0500
+Received: by mail-pa0-f46.google.com with SMTP id ho8so103056698pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 22 Feb 2016 17:23:01 -0800 (PST)
 In-Reply-To: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <juri.lelli@arm.com>
 
-From: Michael Turquette <mturquette@baylibre.com>
+From: Juri Lelli <juri.lelli@arm.com>
 
-Some architectures and platforms perform CPU frequency transitions
-through a non-blocking method, while some might block or sleep. Even
-when frequency transitions do not block or sleep they may be very slow.
-This distinction is important when trying to change frequency from
-a non-interruptible context in a scheduler hot path.
+As we don't trigger freq changes from {en,de}queue_task_fair() during load
+balancing, we need to do explicitly so on load balancing paths.
 
-Describe this distinction with a cpufreq driver flag,
-CPUFREQ_DRIVER_FAST. The default is to not have this flag set,
-thus erring on the side of caution.
+[smuckle@linaro.org: move update_capacity_of calls so rq lock is held]
 
-cpufreq_driver_is_slow() is also introduced in this patch. Setting
-the above flag will allow this function to return false.
-
-[smuckle@linaro.org: change flag/API to include drivers that are too
- slow for scheduler hot paths, in addition to those that block/sleep]
-
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 6 ++++++
- include/linux/cpufreq.h   | 9 +++++++++
- 2 files changed, 15 insertions(+)
+ kernel/sched/fair.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e979ec7..88e63ca 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -154,6 +154,12 @@ bool have_governor_per_policy(void)
- }
- EXPORT_SYMBOL_GPL(have_governor_per_policy);
- 
-+bool cpufreq_driver_is_slow(void)
-+{
-+	return !(cpufreq_driver->flags & CPUFREQ_DRIVER_FAST);
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_driver_is_slow);
-+
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index e7fab8f..5531513 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6107,6 +6107,10 @@ static void attach_one_task(struct rq *rq, struct task_struct *p)
  {
- 	if (have_governor_per_policy())
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 88a4215..93e1c1c 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -160,6 +160,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
- int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
- int cpufreq_update_policy(unsigned int cpu);
- bool have_governor_per_policy(void);
-+bool cpufreq_driver_is_slow(void);
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
- #else
- static inline unsigned int cpufreq_get(unsigned int cpu)
-@@ -316,6 +317,14 @@ struct cpufreq_driver {
-  */
- #define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
+ 	raw_spin_lock(&rq->lock);
+ 	attach_task(rq, p);
++	/*
++	 * We want to potentially raise target_cpu's OPP.
++	 */
++	update_capacity_of(cpu_of(rq));
+ 	raw_spin_unlock(&rq->lock);
+ }
  
-+/*
-+ * Indicates that it is safe to call cpufreq_driver_target from
-+ * non-interruptable context in scheduler hot paths.  Drivers must
-+ * opt-in to this flag, as the safe default is that they might sleep
-+ * or be too slow for hot path use.
-+ */
-+#define CPUFREQ_DRIVER_FAST		(1 << 6)
+@@ -6128,6 +6132,11 @@ static void attach_tasks(struct lb_env *env)
+ 		attach_task(env->dst_rq, p);
+ 	}
+ 
++	/*
++	 * We want to potentially raise env.dst_cpu's OPP.
++	 */
++	update_capacity_of(env->dst_cpu);
 +
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 	raw_spin_unlock(&env->dst_rq->lock);
+ }
  
+@@ -7267,6 +7276,11 @@ more_balance:
+ 		 * ld_moved     - cumulative load moved across iterations
+ 		 */
+ 		cur_ld_moved = detach_tasks(&env);
++		/*
++		 * We want to potentially lower env.src_cpu's OPP.
++		 */
++		if (cur_ld_moved)
++			update_capacity_of(env.src_cpu);
+ 
+ 		/*
+ 		 * We've detached some tasks from busiest_rq. Every
+@@ -7631,8 +7645,13 @@ static int active_load_balance_cpu_stop(void *data)
+ 		schedstat_inc(sd, alb_count);
+ 
+ 		p = detach_one_task(&env);
+-		if (p)
++		if (p) {
+ 			schedstat_inc(sd, alb_pushed);
++			/*
++			 * We want to potentially lower env.src_cpu's OPP.
++			 */
++			update_capacity_of(env.src_cpu);
++		}
+ 		else
+ 			schedstat_inc(sd, alb_failed);
+ 	}
 -- 
 2.4.10
+
