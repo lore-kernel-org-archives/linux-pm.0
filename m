@@ -1,91 +1,41 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv7 PATCH 05/10] sched/{core,fair}: trigger OPP change request on fork()
-Date: Mon, 22 Feb 2016 17:22:45 -0800
-Message-ID: <1456190570-4475-6-git-send-email-smuckle@linaro.org>
+Subject: [RFCv7 PATCH 08/10] sched: remove call of sched_avg_update from sched_rt_avg_update
+Date: Mon, 22 Feb 2016 17:22:48 -0800
+Message-ID: <1456190570-4475-9-git-send-email-smuckle@linaro.org>
 References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Juri Lelli <juri.lelli@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
 
-Patch "sched/fair: add triggers for OPP change requests" introduced OPP
-change triggers for enqueue_task_fair(), but the trigger was operating only
-for wakeups. Fact is that it makes sense to consider wakeup_new also (i.e.,
-fork()), as we don't know anything about a newly created task and thus we
-most certainly want to jump to max OPP to not harm performance too much.
+rt_avg is only used to scale the available CPU's capacity for CFS
+tasks.  As the update of this scaling is done during periodic load
+balance, we only have to ensure that sched_avg_update has been called
+before any periodic load balancing. This requirement is already
+fulfilled by __update_cpu_load so the call in sched_rt_avg_update,
+which is part of the hotpath, is useless.
 
-However, it is not currently possible (or at least it wasn't evident to me
-how to do so :/) to tell new wakeups from other (non wakeup) operations.
-
-This patch introduces an additional flag in sched.h that is only set at
-fork() time and it is then consumed in enqueue_task_fair() for our purpose.
-
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/core.c  | 2 +-
- kernel/sched/fair.c  | 9 +++------
- kernel/sched/sched.h | 1 +
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ kernel/sched/sched.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 87ca0be..86297a2 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2553,7 +2553,7 @@ void wake_up_new_task(struct task_struct *p)
- #endif
- 
- 	rq = __task_rq_lock(p);
--	activate_task(rq, p, 0);
-+	activate_task(rq, p, ENQUEUE_WAKEUP_NEW);
- 	p->on_rq = TASK_ON_RQ_QUEUED;
- 	trace_sched_wakeup_new(p);
- 	check_preempt_curr(rq, p, WF_FORK);
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f1f00a4..e7fab8f 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4308,7 +4308,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
--	int task_new = !(flags & ENQUEUE_WAKEUP);
-+	int task_new = flags & ENQUEUE_WAKEUP_NEW;
-+	int task_wakeup = flags & ENQUEUE_WAKEUP;
- 
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
-@@ -4349,12 +4350,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		 * because we get here also during load balancing, but
- 		 * in these cases it seems wise to trigger as single
- 		 * request after load balancing is done.
--		 *
--		 * XXX: how about fork()? Do we need a special
--		 *      flag/something to tell if we are here after a
--		 *      fork() (wakeup_task_new)?
- 		 */
--		if (!task_new)
-+		if (task_new || task_wakeup)
- 			update_capacity_of(cpu_of(rq));
- 	}
- 	hrtick_update(rq);
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 17908dd..9c26be2 100644
+index 59747d8..3df21f2 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -1140,6 +1140,7 @@ extern const u32 sched_prio_to_wmult[40];
- #endif
- #define ENQUEUE_REPLENISH	0x08
- #define ENQUEUE_RESTORE	0x10
-+#define ENQUEUE_WAKEUP_NEW	0x20
- 
- #define DEQUEUE_SLEEP		0x01
- #define DEQUEUE_SAVE		0x02
+@@ -1498,7 +1498,6 @@ static inline void set_dl_cpu_capacity(int cpu, bool request,
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
+ {
+ 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
+-	sched_avg_update(rq);
+ }
+ #else
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
 -- 
 2.4.10
