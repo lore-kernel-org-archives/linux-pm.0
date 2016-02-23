@@ -1,74 +1,52 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] thermal: mediatek: add missing dependencies
-Date: Tue, 23 Feb 2016 09:55:06 +0100
-Message-ID: <20160223085506.GB3939@pengutronix.de>
-References: <1455921381-1881305-1-git-send-email-arnd@arndb.de>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv7 PATCH 01/10] sched: Compute cpu capacity available at
+ current frequency
+Date: Tue, 23 Feb 2016 10:19:16 +0100
+Message-ID: <20160223091916.GF6356@twins.programming.kicks-ass.net>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+ <1456190570-4475-2-git-send-email-smuckle@linaro.org>
+ <CAJZ5v0hB7KeUPiwie10TeB3cMSPDLVHB5PMgjFn91SCjjC_KjQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:44893 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756954AbcBWIze (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Feb 2016 03:55:34 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1455921381-1881305-1-git-send-email-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAJZ5v0hB7KeUPiwie10TeB3cMSPDLVHB5PMgjFn91SCjjC_KjQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 
-Hi Arnd,
-
-On Fri, Feb 19, 2016 at 11:36:06PM +0100, Arnd Bergmann wrote:
-> The newly added mtk_thermal driver uses the generic reset
-> and nvmem infrastructure, but lacks a dependency that enforces
-> them from actually being present:
+On Tue, Feb 23, 2016 at 02:41:20AM +0100, Rafael J. Wysocki wrote:
+> >  /*
+> > + * Returns the current capacity of cpu after applying both
+> > + * cpu and freq scaling.
+> > + */
+> > +static unsigned long capacity_curr_of(int cpu)
+> > +{
+> > +       return cpu_rq(cpu)->cpu_capacity_orig *
+> > +              arch_scale_freq_capacity(NULL, cpu)
 > 
-> drivers/thermal/mtk_thermal.c: In function 'mtk_thermal_probe':
-> drivers/thermal/mtk_thermal.c:560:8: error: implicit declaration of function 'device_reset' [-Werror=implicit-function-declaration]
-> drivers/thermal/built-in.o: In function `mtk_thermal_probe':
-> mtk_thermal.c:(.text+0x7fb0): undefined reference to `nvmem_cell_get'
-> mtk_thermal.c:(.text+0x7fd8): undefined reference to `nvmem_cell_read'
-> mtk_thermal.c:(.text+0x7fe4): undefined reference to `nvmem_cell_put'
-> 
-> Without CONFIG_THERMAL, the driver cannot build, so this needs
-> to be a hard dependency.
+> What about architectures that don't have this?
 
-s/CONFIG_THERMAL/CONFIG_RESET_CONTROLLER/ ?
+They get the 'default' which is a constant SCHED_CAPACITY_SCALE unit.
 
-> 
-> For CONFIG_NVMEM, the header file allows building the driver even
-> when the subsystem is disabled, but we get the link error above
-> when nvmem is built as a module and the thermal driver is built-in,
-> so we can allow compile-testing when NVMEM is completely disabled,
-> but otherwise require the dependency.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/thermal/Kconfig | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 5e7c97a3f1d8..75d164341f0d 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -368,6 +368,8 @@ config INTEL_PCH_THERMAL
->  config MTK_THERMAL
->  	tristate "Temperature sensor driver for mediatek SoCs"
->  	depends on ARCH_MEDIATEK || COMPILE_TEST
-> +	depends on NVMEM || (!NVMEM && COMPILE_TEST)
+> Why is that an architecture feature?
 
-This doesn't work as expected. When NVMEM is off I can still not select
-MTK_THERMAL, even when COMPILE_TEST is enabled.
+Because not all archs can tell the frequency the same way. Some you
+program the DVFS state and they really run at this speed, for those you
+can simply report back.
 
-Even if it would work, do we really want this? It raises eyebrows and
-without reading the commit messages it's probably not clear what's going
-on here. I don't see that much value in it.
+For others, x86 for example, you program a DVFS 'hint' and the hardware
+does whatever, we'd have to do APERF/MPERF samples to get an idea of the
+actual frequency we ran at.
 
-Sascha
+Also, the having of this makes the load tracking slightly more
+expensive, instead of compile time constants we get function calls and
+actual multiplications. Its not _too_ bad, but still.
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> I can easily imagine two x86 platforms using different
+> scale_freq_capacity(), for example.
+
+That's up to the arch, if different x86 platforms need different
+thingies the arch implementation needs to offer a selector -- this isn't
+'hard'.
