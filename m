@@ -1,51 +1,37 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [RFC][PATCH] thermal: add sysfs_notify on some attributes
-Date: Wed, 24 Feb 2016 20:24:09 +0000
-Message-ID: <1456345360.3860.9.camel@intel.com>
-References: <1456287118-32510-1-git-send-email-srikars@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v6 0/4] powercap/rapl: reduce ipi calls and misc clean up
+Date: Wed, 24 Feb 2016 13:31:34 -0800
+Message-ID: <1456349498-1527-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:6877 "EHLO mga11.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:2922 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758568AbcBXUYM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Feb 2016 15:24:12 -0500
-In-Reply-To: <1456287118-32510-1-git-send-email-srikars@nvidia.com>
-Content-Language: en-US
-Content-ID: <2FC03F7A5377734CBB8CFE0D8ED61845@intel.com>
+	id S1752694AbcBXVdH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Feb 2016 16:33:07 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srikars@nvidia.com" <srikars@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Rusty Russell <rusty@rustcorp.com.au>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-T24gVHVlLCAyMDE2LTAyLTIzIGF0IDIwOjExIC0wODAwLCBTcmlrYXIgU3JpbWF0aCBUaXJ1bWFs
-YSB3cm90ZToNCj4gQWRkIGEgc3lzZnNfbm90aWZ5IG9uIHRoZXJtYWxfem9uZSovdGVtcCBhbmQg
-Y29vbGluZ19kZXZpY2UqLw0KPiBjdXJfc3RhdGUgd2hlbmV2ZXIgYSBwYXNzaXZlIG9yIGNyaXRp
-Y2FsIHRyaXAgaXMgdHJpZ2dlcmVkLg0KPiANCj4gVGhpcyBjaGFuZ2UgYWxsb3dzIHVzZXJtb2Rl
-IGFwcHMgdG8gcmVnaXN0ZXIgaXRzZWxmIHRvIGdldCBub3RpZmllZCwNCj4gd2hlbiBjZXJ0YWlu
-IHRoZXJtYWwgY29uZGl0aW9ucyBvY2N1ciBhbmQgcmVkdWNlIHRoZWlyIHdvcmtsb2FkLg0KPiBU
-aGlzIHdvcmtsb2FkIHRocm90dGxpbmcgY2FuIHJlZHVjZVxwcmV2ZW50IHRocm90dGxpbmcgb2Yg
-aGFyZHdhcmUNCj4gY2xvY2tzIHdoaWxlIGFsbG93aW5nIHNvbWUgb3RoZXIgY3JpdGljYWwgYXBw
-cyB0byBydW4gbG9uZ2VyDQo+IHJlbGlhYmx5Lg0KPiBTaWduZWQtb2ZmLWJ5OiBTcmlrYXIgU3Jp
-bWF0aCBUaXJ1bWFsYSA8c3Jpa2Fyc0BudmlkaWEuY29tPg0KPiAtLS0NCj4gwqBkcml2ZXJzL3Ro
-ZXJtYWwvdGhlcm1hbF9jb3JlLmMgfCAzICsrKw0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAzIGluc2Vy
-dGlvbnMoKykNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3Jl
-LmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMNCj4gaW5kZXggYTBhOGZkMS4u
-ZDhkMjU3ZCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+
-ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiBAQCAtNTY3LDYgKzU2Nyw4
-IEBAIHZvaWQgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoc3RydWN0DQo+IHRoZXJtYWxfem9u
-ZV9kZXZpY2UgKnR6KQ0KPiDCoA0KPiDCoAlmb3IgKGNvdW50ID0gMDsgY291bnQgPCB0ei0+dHJp
-cHM7IGNvdW50KyspDQo+IMKgCQloYW5kbGVfdGhlcm1hbF90cmlwKHR6LCBjb3VudCk7DQo+ICsN
-Cj4gKwlzeXNmc19ub3RpZnkoJnR6LT5kZXZpY2Uua29iaiwgTlVMTCwgInRlbXAiKTsNCldoZW4g
-dXNlciBzcGFjZSBnb3Zlcm5vciBpcyB1c2VkIHRoaXMgd2lsbCByZXN1bHQgaW4gdHdvIG5vdGlm
-aWNhdGlvbnMNCnRvIHVzZXIgc3BhY2UuDQpBbHNvIHlvdSB3YW50IHdoZW4gYSB0cmlwIGlzIHZp
-b2xhdGVkLiBGb3Igc29tZSBkcml2ZXIgdGhlcmUgd2lsbCBiZQ0KdG9vIG1hbnkgY2FsbHMgZnJv
-bSBpcnEgdGhyZWFkLCBzbyB5b3UgbWF5IHdhbnQgaW4gaGFuZGxlX3RoZXJtYWxfdHJpcA0Kd2hl
-biBhIHRyaXAgaXMgdmlvbGF0ZWQuDQoNClRoYW5rcywNClNyaW5pdmFzDQo+IMKgfQ0KPiDCoEVY
-UE9SVF9TWU1CT0xfR1BMKHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKTsNCj4gwqANCj4gQEAg
-LTE2MzgsNiArMTY0MCw3IEBAIHZvaWQgdGhlcm1hbF9jZGV2X3VwZGF0ZShzdHJ1Y3QNCj4gdGhl
-cm1hbF9jb29saW5nX2RldmljZSAqY2RldikNCj4gwqAJY2Rldi0+dXBkYXRlZCA9IHRydWU7DQo+
-IMKgCXRyYWNlX2NkZXZfdXBkYXRlKGNkZXYsIHRhcmdldCk7DQo+IMKgCWRldl9kYmcoJmNkZXYt
-PmRldmljZSwgInNldCB0byBzdGF0ZSAlbHVcbiIsIHRhcmdldCk7DQo+ICsJc3lzZnNfbm90aWZ5
-KCZjZGV2LT5kZXZpY2Uua29iaiwgTlVMTCwgImN1cl9zdGF0ZSIpOw0KPiDCoH0NCj4gwqBFWFBP
-UlRfU1lNQk9MKHRoZXJtYWxfY2Rldl91cGRhdGUpOw0KPiDCoA==
+Changes since v5:
+	- Split changes into seprate patches. No code change.
+Changes since V4:
+	- Deleted unnecessary cpumask_any_and() call, assign first cpu as lead
+Changes since V3:
+	- Avoid for_each_online_cpu() search for per package MSR access. This
+	  is achieved by tracking a per package lead cpu via cpumask_xx() calls.
+	    (suggested by Thomas Gleixner <tglx@linutronix.de>)
+	    - Add direct reference of RAPL package for each RAPL domain.
+
+Jacob Pan (4):
+  cpumask: export cpumask_any_but
+  powercap/rapl: reduce ipi calls
+  powercap/rapl: add package reference per domain
+  powercap/rapl: track lead cpu per package
+
+ drivers/powercap/intel_rapl.c | 220 ++++++++++++++++++++++--------------------
+ lib/cpumask.c                 |   1 +
+ 2 files changed, 115 insertions(+), 106 deletions(-)
+
+-- 
+1.9.1
+
