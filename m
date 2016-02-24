@@ -1,90 +1,25 @@
-From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Subject: RE: [PATCH v9 0/2] power: act8945a: add charger driver for the
- sub-device of ACT8945A MFD
-Date: Wed, 24 Feb 2016 09:33:13 +0000
-Message-ID: <B256D81BAE5131468A838E5D7A243641D6428FF2@penmbx01>
-References: <1455524524-9359-1-git-send-email-wenyou.yang@atmel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v5 2/2] powercap/rapl: reduce ipi calls
+Date: Wed, 24 Feb 2016 12:02:50 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1602241202110.3670@nanos>
+References: <1456261152-21907-1-git-send-email-jacob.jun.pan@linux.intel.com> <1456261152-21907-3-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.242]:6824 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbcBXJdi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 04:33:38 -0500
-In-Reply-To: <1455524524-9359-1-git-send-email-wenyou.yang@atmel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1456261152-21907-3-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Rusty Russell <rusty@rustcorp.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Javier Martinez Canillas <javier@dowhile0.org>, Lee Jones <lee.jones@linaro.org>, Peter Korsgaard <jacmet@gmail.com>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-SGVsbG8gU2ViYXN0aWFuLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206
-IFdlbnlvdSBZYW5nIFttYWlsdG86d2VueW91LnlhbmdAYXRtZWwuY29tXQ0KPiBTZW50OiAyMDE2
-xOoy1MIxNcjVIDE2OjIyDQo+IFRvOiBTZWJhc3RpYW4gUmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+
-OyBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdg0KPiA8ZGJhcnlzaGtvdkBnbWFpbC5jb20+OyBEYXZp
-ZCBXb29kaG91c2UgPGR3bXcyQGluZnJhZGVhZC5vcmc+OyBSb2INCj4gSGVycmluZyA8cm9iaCtk
-dEBrZXJuZWwub3JnPjsgUGF3ZWwgTW9sbCA8cGF3ZWwubW9sbEBhcm0uY29tPjsgTWFyayBCcm93
-bg0KPiA8YnJvb25pZUBrZXJuZWwub3JnPjsgSWFuIENhbXBiZWxsIDxpamMrZGV2aWNldHJlZUBo
-ZWxsaW9uLm9yZy51az47IEt1bWFyDQo+IEdhbGEgPGdhbGFrQGNvZGVhdXJvcmEub3JnPg0KPiBD
-YzogS3J6eXN6dG9mIEtvemxvd3NraSA8ay5rb3psb3dza2lAc2Ftc3VuZy5jb20+OyBKYXZpZXIg
-TWFydGluZXogQ2FuaWxsYXMNCj4gPGphdmllckBkb3doaWxlMC5vcmc+OyBMZWUgSm9uZXMgPGxl
-ZS5qb25lc0BsaW5hcm8ub3JnPjsgUGV0ZXIgS29yc2dhYXJkDQo+IDxqYWNtZXRAZ21haWwuY29t
-PjsgRmVycmUsIE5pY29sYXMgPE5pY29sYXMuRkVSUkVAYXRtZWwuY29tPjsgbGludXgtYXJtLQ0K
-PiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZzsgWWFuZywgV2VueW91IDxXZW55b3UuWWFu
-Z0BhdG1lbC5jb20+DQo+IFN1YmplY3Q6IFtQQVRDSCB2OSAwLzJdIHBvd2VyOiBhY3Q4OTQ1YTog
-YWRkIGNoYXJnZXIgZHJpdmVyIGZvciB0aGUgc3ViLWRldmljZQ0KPiBvZiBBQ1Q4OTQ1QSBNRkQN
-Cj4gDQo+IFRoZSBBQ1Q4OTQ1QSBpcyBhIE11bHRpIEZ1bmN0aW9uIERldmljZSB3aXRoIHRoZSBm
-b2xsb3dpbmcgc3ViZGV2aWNlczoNCj4gIC0gUmVndWxhdG9yDQo+ICAtIENoYXJnZXINCg0KSSB3
-b3VsZCBsaWtlIHRvIGtub3cgaWYgdGhpcyBwYXRjaCBzZXQgaXMgb2theSB0byBhcHBseS4gIE9y
-IGFueSBjb21tZW50cz8NCg0KVGhhbmtzLg0KDQo+IA0KPiBUaGlzIHBhdGNoIHNldCBpcyB0byBh
-ZGQgcmVndWxhdG9yIGRyaXZlciBmb3IgQUNUODk0NUEuDQo+IEl0IGlzIGJhc2VkIG9uIHRoZSBw
-YXRjaCBzZXQ6DQo+IAlodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGludXgt
-YXJtLWtlcm5lbC8yMDE2LQ0KPiBGZWJydWFyeS80MDUyNTguaHRtbA0KPiANCj4gQ2hhbmdlcyBp
-biB2OToNCj4gIC0gYWRkIGNoZWNrIGlmIGNoYXJnZXItPnJlZ21hcCBpcyBhIE5VTEwgcG9pbnRl
-ci4NCj4gIC0gY29sbGVjdCBSZXZpZXdlZC1ieSB0YWcuDQo+IA0KPiBDaGFuZ2VzIGluIHY4Og0K
-PiAgLSByZW1vdmUgdGhlIE9GIHRhYmxlLg0KPiAgLSBkdWUgdG8gdGhlIG1mZCBjZWxsIC5vZl9j
-b21wYXRpYmxlIHJlbW92YWwsIHVzZSB0aGUgcGxhdGZvcm0NCj4gICAgZGV2aWNlJ3MgcGFyZW50
-IG9mX25vZGUgdG8gcmVhZCB0aGUgcHJvcGVydHkgYW5kIGFzc2lnbiBpdA0KPiAgICB0byB0aGUg
-cHN5X2NmZy5vZl9ub2RlLg0KPiAgLSBmaXggdGhlIHR5cG8uDQo+ICAtIGR1ZSB0aGUgbWZkIGNl
-bGwgLm9mX2NvbXBhdGlibGUgcmVtb3ZhbCwgdXBkYXRlIHRoZSBjb21wYXRpYmUNCj4gICAgZGVz
-Y3JpcHRpb24gYW5kIGV4YW1wbGUuDQo+IA0KPiBDaGFuZ2VzIGluIHY3Og0KPiAgLSB1c2UgdGhl
-IGhlbHBlciBkZXZfZ2V0X3JlZ21hcChwZGV2LT5kZXYucGFyZW50LCBOVUxMKSB0byBnZXQgcmVn
-bWFwLg0KPiAgLSByZW1vdmUgKmFjdDg5NDVhX2RldiBtZW1iZXIgZnJvbSBzdHJ1Y3QgYWN0ODk0
-NWFfY2hhcmdlci4NCj4gIC0gcmVtb3ZlICpwc3kgbWVtYmVyIGZyb20gc3RydWN0IGFjdDg5NDVh
-X2NoYXJnZXIuDQo+ICAtIG1lcmdlIF9wYXJzZV9kdCgpIGFuZCBfY2hhcmdlcl9jb25maWcoKSBm
-dW5jdGlvbnMsIHJlbW92ZSByZWxldmVudA0KPiAgICBtZW1iZXJzIGZyb20gc3RydWN0IGFjdDg5
-NDVhX2NoYXJnZXIuDQo+ICAtIHJlbW92ZSB1bnVzZWQgcGxhdGZvcm1fc2V0X2RydmRhdGEocGRl
-diwgY2hhcmdlcikgc3RhdGVtZW50Lg0KPiANCj4gQ2hhbmdlcyBpbiB2NjoNCj4gIC0gY2hhbmdl
-IHRoZSB0eXBlIHZhbHVlIHRvIHVuc2lnbmVkIGludC4NCj4gDQo+IENoYW5nZXMgaW4gdjU6DQo+
-ICAtIHJlbW92ZSBzcGFyZSBzcGFjZXMgYWZ0ZXIgI2RlZmluZS4NCj4gIC0gYWRkIE9GIG1hdGNo
-IHRhYmxlLg0KPiAgLSBjb2xsZWN0IFJldmlld2VkLWJ5IGZyb20gS3J6eXN6dG9mLg0KPiANCj4g
-Q2hhbmdlcyBpbiB2NDoNCj4gIC0gdXNlIHNwYWNlcyBhZnRlciAjZGVmaW5lLCBub3QgdGFicy4N
-Cj4gIC0gdXNlIEJJVChuKSBtYWNyb3MgdG8gc3Vic3RpdHV0ZSAoMHgwMSA8PCB4KS4NCj4gIC0g
-Y2hhbmdlIGR0IHByb3BlcnRpZXMgd2l0aCBtb3JlIGxlZ2libGUgbmFtZS4NCj4gIC0gY2hhbmdl
-IHRoZSBwcm9wZXJ0aWVzIHdpdGggbW9yZSBsZWdpYmxlIG5hbWUsIGNsZWFyZXIgZGVzY3JpcHRp
-b24uDQo+IA0KPiBDaGFuZ2VzIGluIHYzOg0KPiAgLSB1cGRhdGUgdGhlIGZpbGUgaGVhZGVyIHdp
-dGggc2hvcnQgdmVyc2lvbiBsaWNlbnNlIGFuZCBhdXRob3IgbGluZS4NCj4gIC0gcmVtb3ZlIHVu
-dXNlZCBtZW1iZXIgb2Ygc3RydWN0IGFjdDg5NDVhX2NoYXJnZXIsIGRldi4NCj4gIC0gYWN0aW9u
-IGR1ZSB0byByZW1vdmluZyB0aGUgbWVtYmVyIG9mIHN0dWN0IGFjdDg5NDVhX2RldiwgZGV2Lg0K
-PiAgLSByZW1vdmUgdGhlIHVubmVjZXNzYXJ5IHByaW50IG91dC4NCj4gIC0gcmVtb3ZlIHRoZSB1
-bm5lY2Vzc2FyeSBhY3Q4OTQ1YV9jaGFyZ2VyX3JlbW92ZSgpLg0KPiAgLSBmaXggYWxpZ24gb2Yg
-dGhlIGNvZGUtc3R5bGUuDQo+IA0KPiBDaGFuZ2VzIGluIHYyOg0KPiAgMS4vIFN1YnN0aXR1dGUg
-b2ZfcHJvcGVydHlfcmVhZF9ib29sKCkgZm9yIG9mX2dldF9wcm9wZXJ0eSgpLg0KPiAgMi4vIFN1
-YnN0aXR1dGUgZGV2bV9wb3dlcl9zdXBwbHlfcmVnaXN0ZXIoKSBmb3IgcG93ZXJfc3VwcGx5X3Jl
-Z2lzdGVyKCkuDQo+ICAzLi8gVXNlIG1vZHVsZV9wbGF0Zm9ybV9kcml2ZXIoKSwgaW5zdGVhZCBv
-ZiBzdWJzeXNfaW5pdGNhbGwoKS4NCj4gIDQuLyBTdWJzdGl0dXRlIE1PRFVMRV9MSUNFTlNFKCJH
-UEwiKSBmb3IgTU9EVUxFX0xJQ0VOU0UoIkdQTCB2MiIpLg0KPiANCj4gV2VueW91IFlhbmcgKDIp
-Og0KPiAgIHBvd2VyOiBhY3Q4OTQ1YTogYWRkIGNoYXJnZXIgZHJpdmVyIGZvciBBQ1Q4OTQ1QQ0K
-PiAgIHBvd2VyOiBhZGQgZG9jdW1lbnRhdGlvbiBmb3IgQUNUODk0NUEncyBjaGFyZ2VyIERUIGJp
-bmRpbmdzDQo+IA0KPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYWN0ODk0NWEtY2hh
-cmdlci50eHQgfCAgIDM1ICsrDQo+ICBkcml2ZXJzL3Bvd2VyL0tjb25maWcgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICB8ICAgIDcgKw0KPiAgZHJpdmVycy9wb3dlci9NYWtlZmlsZSAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgfCAgICAxICsNCj4gIGRyaXZlcnMvcG93ZXIvYWN0ODk0
-NWFfY2hhcmdlci5jICAgICAgICAgICAgICAgICAgIHwgIDM1OSArKysrKysrKysrKysrKysrKysr
-Kw0KPiAgNCBmaWxlcyBjaGFuZ2VkLCA0MDIgaW5zZXJ0aW9ucygrKQ0KPiAgY3JlYXRlIG1vZGUg
-MTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1YS0N
-Cj4gY2hhcmdlci50eHQNCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3Bvd2VyL2FjdDg5
-NDVhX2NoYXJnZXIuYw0KPiANCj4gLS0NCj4gMS43LjkuNQ0KDQoNCkJlc3QgUmVnYXJkcywNCldl
-bnlvdSBZYW5nDQoNCg==
+On Tue, 23 Feb 2016, Jacob Pan wrote:
+
+> Reduce remote CPU calls for MSR access by combining read
+> modify write into one function. Also optimize calling active CPU on
+> package by tracking a lead cpu for each package.
+
+This are two independent changes in one patch. Please split them up.
+ 
+Thanks,
+
+	tglx
