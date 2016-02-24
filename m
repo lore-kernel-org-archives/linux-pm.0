@@ -1,47 +1,82 @@
-From: Srikar Srimath Tirumala <srikars@nvidia.com>
-Subject: [RFC][PATCH] thermal: add sysfs_notify on some attributes
-Date: Tue, 23 Feb 2016 20:11:58 -0800
-Message-ID: <1456287118-32510-1-git-send-email-srikars@nvidia.com>
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: Re: [PATCH 1/1] intel_pstate: Increase hold-off time before samples
+ are scaled v2
+Date: Wed, 24 Feb 2016 09:03:01 +0000
+Message-ID: <20160224090301.GQ2854@techsingularity.net>
+References: <1456237784-17205-1-git-send-email-mgorman@techsingularity.net>
+ <1456264234.8680.155.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1456264234.8680.155.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: srikars@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Stephane Gasparini <stephane.gasparini@linux.intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Matt Fleming <matt@codeblueprint.co.uk>, Mike Galbraith <umgwanakikbuti@gmail.com>, Linux-PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
-cur_state whenever a passive or critical trip is triggered.
+On Tue, Feb 23, 2016 at 01:50:34PM -0800, Srinivas Pandruvada wrote:
+> On Tue, 2016-02-23 at 14:29 +0000, Mel Gorman wrote:
+> > Added a suggested change from Doug Smythies and can add a Signed-of=
+f-
+> > by
+> > if Doug is ok with that.
+> >=20
+> > Changelog since v1
+> > o Remove divide that is likely unnecessary			(ds
+> > mythies)
+> > o Rebase on top of linux-pm/linux-next
+> >=20
+> > The PID relies on samples of equal time but this does not apply for
+> > deferrable timers when the CPU is idle. intel_pstate checks if the
+> > actual
+> > duration between samples is large and if so, the "busyness" of the
+> > CPU
+> > is scaled.
+> >=20
+> > This assumes the delay was a deferred timer but a workload may simp=
+ly
+> > have
+> > been idle for a short time if it's context switching between a serv=
+er
+> > and
+> > client or waiting very briefly on IO. It's compounded by the proble=
+m
+> > that
+> > server/clients migrate between CPUs due to wake-affine trying to
+> > maximise
+> > hot cache usage. In such cases, the cores are not considered busy a=
+nd
+> > the
+> > frequency is dropped prematurely.
+> >=20
+> > This patch increases the hold-off value before the busyness is
+> > scaled. It
+> > was selected based simply on testing until the desired result was
+> > found.
+> > Tests were conducted with workloads that are either client/server
+> > based
+> > or short-lived IO.
+>=20
+> Attached specpower comparison for Haswell EP Grantley server.=A0
+>=20
 
-This change allows usermode apps to register itself to get notified,
-when certain thermal conditions occur and reduce their workload.
-This workload throttling can reduce\prevent throttling of hardware
-clocks while allowing some other critical apps to run longer reliably.
+So this looks like a bust in terms of specpower. It is incredibly
+unfortunate though. There are basic workloads that are simply performin=
+g
+way below what the CPU is capable of unless the user is either willing
+to tune power management or pin tasks to CPUs and hope for the best.
+Ideally we want to reduce those forum postings that suggest disabling
+intel_pstate entirely or setting performance.
 
-Signed-off-by: Srikar Srimath Tirumala <srikars@nvidia.com>
----
- drivers/thermal/thermal_core.c | 3 +++
- 1 file changed, 3 insertions(+)
+Given that I'm very weak in the intel_pstate driver in general and was
+relying on bisection to find problem commits, are there any others with
+"have your cake and eat it twice" options? Ideally it would restore
+performance to simple client/server workloads and ones that idle briefl=
+y
+on IO without getting red flagged by specpower.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index a0a8fd1..d8d257d 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -567,6 +567,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- 
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
-+
-+	sysfs_notify(&tz->device.kobj, NULL, "temp");
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
- 
-@@ -1638,6 +1640,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	cdev->updated = true;
- 	trace_cdev_update(cdev, target);
- 	dev_dbg(&cdev->device, "set to state %lu\n", target);
-+	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
- }
- EXPORT_SYMBOL(thermal_cdev_update);
- 
--- 
-2.1.4
+--=20
+Mel Gorman
+SUSE Labs
