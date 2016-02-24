@@ -1,82 +1,81 @@
-From: Mel Gorman <mgorman@techsingularity.net>
-Subject: Re: [PATCH 1/1] intel_pstate: Increase hold-off time before samples
- are scaled v2
-Date: Wed, 24 Feb 2016 09:03:01 +0000
-Message-ID: <20160224090301.GQ2854@techsingularity.net>
-References: <1456237784-17205-1-git-send-email-mgorman@techsingularity.net>
- <1456264234.8680.155.camel@linux.intel.com>
+From: Axel Haslam <ahaslam@baylibre.com>
+Subject: Re: [PATCH 1/2] PM / Domains: Restore alignment of slaves in debugfs output
+Date: Wed, 24 Feb 2016 10:31:12 +0100
+Message-ID: <CAKXjFTPLi0+L-Q1gaRRWgkLRyi5ArgrsUtn_YoXDExAy8OaQQg@mail.gmail.com>
+References: <1456246158-19673-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1456264234.8680.155.camel@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Stephane Gasparini <stephane.gasparini@linux.intel.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Matt Fleming <matt@codeblueprint.co.uk>, Mike Galbraith <umgwanakikbuti@gmail.com>, Linux-PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:33724 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbcBXJbN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 04:31:13 -0500
+Received: by mail-oi0-f53.google.com with SMTP id j125so11251016oih.0
+        for <linux-pm@vger.kernel.org>; Wed, 24 Feb 2016 01:31:13 -0800 (PST)
+In-Reply-To: <1456246158-19673-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Axel Haslam <ahaslam+renesas@baylibre.com>, Lina Iyer <lina.iyer@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Feb 23, 2016 at 01:50:34PM -0800, Srinivas Pandruvada wrote:
-> On Tue, 2016-02-23 at 14:29 +0000, Mel Gorman wrote:
-> > Added a suggested change from Doug Smythies and can add a Signed-of=
-f-
-> > by
-> > if Doug is ok with that.
-> >=20
-> > Changelog since v1
-> > o Remove divide that is likely unnecessary			(ds
-> > mythies)
-> > o Rebase on top of linux-pm/linux-next
-> >=20
-> > The PID relies on samples of equal time but this does not apply for
-> > deferrable timers when the CPU is idle. intel_pstate checks if the
-> > actual
-> > duration between samples is large and if so, the "busyness" of the
-> > CPU
-> > is scaled.
-> >=20
-> > This assumes the delay was a deferred timer but a workload may simp=
-ly
-> > have
-> > been idle for a short time if it's context switching between a serv=
-er
-> > and
-> > client or waiting very briefly on IO. It's compounded by the proble=
-m
-> > that
-> > server/clients migrate between CPUs due to wake-affine trying to
-> > maximise
-> > hot cache usage. In such cases, the cores are not considered busy a=
-nd
-> > the
-> > frequency is dropped prematurely.
-> >=20
-> > This patch increases the hold-off value before the busyness is
-> > scaled. It
-> > was selected based simply on testing until the desired result was
-> > found.
-> > Tests were conducted with workloads that are either client/server
-> > based
-> > or short-lived IO.
->=20
-> Attached specpower comparison for Haswell EP Grantley server.=A0
->=20
+Hi Geert,
 
-So this looks like a bust in terms of specpower. It is incredibly
-unfortunate though. There are basic workloads that are simply performin=
-g
-way below what the CPU is capable of unless the user is either willing
-to tune power management or pin tasks to CPUs and hope for the best.
-Ideally we want to reduce those forum postings that suggest disabling
-intel_pstate entirely or setting performance.
+On Tue, Feb 23, 2016 at 5:49 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+>
+> The slave domains are no longer aligned with the table header in the
+> /sys/kernel/debug/pm_genpd/pm_genpd_summary output. Worse, the alignment
+> differs depending on the actual name of the state.
+>
+> Format the state name and index into a buffer, and print that like
+> before to restore alignment.
+>
+> Use "%u" for unsigned int while we're at it.
+>
+> Fixes: fc5cbf0c94b6f7fd ("PM / Domains: Support for multiple states")
 
-Given that I'm very weak in the intel_pstate driver in general and was
-relying on bisection to find problem commits, are there any others with
-"have your cake and eat it twice" options? Ideally it would restore
-performance to simple client/server workloads and ones that idle briefl=
-y
-on IO without getting red flagged by specpower.
+Thanks for fixing this. My power domains had all equal size names and
+i had not noticed the unaligned columns on the summary.
 
---=20
-Mel Gorman
-SUSE Labs
+Regards
+Axel
+
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/base/power/domain.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e8ca290dbf9d5ea6..01015d85ab6493fc 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1882,6 +1882,7 @@ static int pm_genpd_summary_one(struct seq_file *s,
+>         struct pm_domain_data *pm_data;
+>         const char *kobj_path;
+>         struct gpd_link *link;
+> +       char state[16];
+>         int ret;
+>
+>         ret = mutex_lock_interruptible(&genpd->lock);
+> @@ -1890,12 +1891,13 @@ static int pm_genpd_summary_one(struct seq_file *s,
+>
+>         if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
+>                 goto exit;
+> -       seq_printf(s, "%-30s  %s", genpd->name, status_lookup[genpd->status]);
+> -
+>         if (genpd->status == GPD_STATE_POWER_OFF)
+> -               seq_printf(s, " %-13d ", genpd->state_idx);
+> +               snprintf(state, sizeof(state), "%s %u",
+> +                        status_lookup[genpd->status], genpd->state_idx);
+>         else
+> -               seq_printf(s, " %-15s ", "");
+> +               snprintf(state, sizeof(state), "%s",
+> +                        status_lookup[genpd->status]);
+> +       seq_printf(s, "%-30s  %-15s ", genpd->name, state);
+>
+>         /*
+>          * Modifications on the list require holding locks on both
+> --
+> 1.9.1
+>
