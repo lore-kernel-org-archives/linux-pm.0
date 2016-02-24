@@ -1,91 +1,99 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH 1/1] cpufreq: New governor using utilization data from the scheduler
-Date: Wed, 24 Feb 2016 02:38:08 +0100
-Message-ID: <2117447.HrQEXp4Ryh@vostro.rjw.lan>
-References: <5059413.77KZsd2lep@vostro.rjw.lan> <CAJZ5v0j7jScr8TStyVHPDgd5qHaFDzUO3KnfxtEoYjrfc8gOQA@mail.gmail.com> <56CC0841.1@linaro.org>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering utilization update callbacks
+Date: Wed, 24 Feb 2016 02:52:47 +0100
+Message-ID: <4898593.Kfjv5WY6No@vostro.rjw.lan>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <CAJZ5v0ha0_LroBiWfbE1HgRjrvk7zt4M+40JLnNHHLuewTF4hg@mail.gmail.com> <20160223111007.GK27380@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57166 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55617 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752835AbcBXBgg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Feb 2016 20:36:36 -0500
-In-Reply-To: <56CC0841.1@linaro.org>
+	with SMTP id S1750850AbcBXBvP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Feb 2016 20:51:15 -0500
+In-Reply-To: <20160223111007.GK27380@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Monday, February 22, 2016 11:20:33 PM Steve Muckle wrote:
-> On 02/22/2016 03:02 PM, Rafael J. Wysocki wrote:
-> >> I guess the first (macro) question is why did you decide to go with a
-> >> complete new governor, where new here is w.r.t. the sched-freq solution.
+On Tuesday, February 23, 2016 11:10:07 AM Juri Lelli wrote:
+> On 22/02/16 22:41, Rafael J. Wysocki wrote:
+> > On Mon, Feb 22, 2016 at 10:42 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> > > Hi Rafael,
+> > >
+> > > On 19/02/16 23:26, Rafael J. Wysocki wrote:
+> > >> On Friday, February 19, 2016 05:26:04 PM Juri Lelli wrote:
+> > >> > Hi Srinivas,
 > > 
-> > Probably the most comprehensive answer to this question is my intro
-> > message: http://marc.info/?l=linux-pm&m=145609673008122&w=2
+> > [cut]
 > > 
-> > The executive summary is probably that this was the most
-> > straightforward way to use the scheduler-provided numbers in cpufreq
-> > that I could think about.
+> > >> ---
+> > >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >> Subject: [PATCH] cpufreq: Rework the scheduler hooks for triggering updates
+> > >>
+> > >> Commit fe7034338ba0 (cpufreq: Add mechanism for registering
+> > >> utilization update callbacks) added cpufreq_update_util() to be
+> > >> called by the scheduler (from the CFS part) on utilization updates.
+> > >> The goal was to allow CFS to pass utilization information to cpufreq
+> > >> and to trigger it to evaluate the frequency/voltage configuration
+> > >> (P-state) of every CPU on a regular basis.
+> > >>
+> > >> However, the last two arguments of that function are never used by
+> > >> the current code, so CFS might simply call cpufreq_trigger_update()
+> > >> instead of it.
+> > >>
+> > >> For this reason, drop the last two arguments of cpufreq_update_util(),
+> > >> rename it to cpufreq_trigger_update() and modify CFS to call it.
+> > >>
+> > >> Moreover, since the utilization is not involved in that now, rename
+> > >> data types, functions and variables related to cpufreq_trigger_update()
+> > >> to reflect that (eg. struct update_util_data becomes struct
+> > >> freq_update_hook and so on).
+> > >>
+> > >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > This patch looks good to me. I didn't yet test it, but it shouldn't
+> > > break things AFAICT.
+> > >
+> > > Thanks a lot for taking the time for this cleanup.
 > > 
-> >> AFAICT, it is true that your solution directly builds on top of the
-> >> latest changes to cpufreq core and governor, but it also seems to have
-> >> more than a few points in common with sched-freq,
+> > Alas, I don't think I will apply it.
 > > 
-> > That surely isn't a drawback, is it?
-> >
-> > If two people come to the same conclusions in different ways, that's
-> > an indication that the conclusions may actually be correct.
+> > Peter says that he wants the arguments to stay and he has a point IMO.
 > > 
-> >> and sched-freq has been discussed and evaluated for already quite some time.
+> > The very idea behind hooking up cpufreq to the scheduler through those
+> > hooks has always been to make it possible to use the utilization
+> > information provided by the scheduler in cpufreq.  As it turns out, we
+> > can make significant improvements even *without* using that
+> > information, because just having the hooks in there alone makes it
+> > possible to simplify the code quite a bit in general and make it more
+> > straightforward, but that's a *bonus* and not the objective. :-)
 > > 
-> > Yes, it has.
+> > The objective still is to use the utilization numbers from the scheduler.
 > > 
-> > Does this mean that no one is allowed to try any alternatives to it now?
+> > Both sched-freq and my approach agree on that, so I don't quite see
+> > why I should pretend that this isn't the case now?
+> > 
 > 
-> As mentioned above they are rather similar so it doesn't really seem
-> like an alternative per se, more like a reimplementation.
+> As I said in the other reply, I'm not at all against having cpufreq
+> hooks in the scheduler. I was only wondering if deciding where such
+> hooks reside and which interface they have before we agreed on how they
+> will be used might cause problems in the future. :-)
 
-If that is the case, I don't quite see where or what the problem is.
+And I have said for a few times that I don't quite see what problems exactly
+those might be.
 
-I posted this mostly because you and Juri were complaining that I wasn't
-telling anyone about how I was going to use util and max going forward.
+Also having the hooks in there and with the util and max arguments allows
+everybody to play with them and see what can be done and whether or not they
+are suitable for particular purposes.  I've already sufficiently demonstrated
+that they are generally useful I think.
 
-So this is how I'd like to use them, more or less.  If that is in alignment
-with the changes you want to make, all should be fine.
-
-> Why do you feel a new starting point for this problem is needed? Are
-> there specific technical concerns?
-
-Well, let me comment the patches you've sent (although not today maybe as I'm
-quite tired already and I'm afraid that my comments may not be much to the
-point).
-
-That aside, this was rather an attempt to see what could be done on top of
-recent fixes in the core and how complicated it would be.
-
-> I see you started looking over the
-> latest schedfreq RFC, thank you for your comments thus far. We'd really
-> appreciate your continued feedback and the chance to collaborate on it
-> to move it forward. I and others have put a fair bit of effort into it
-> over the last year or so and will happily and earnestly work to address
-> any shortcomings you raise.
-> 
-> I will review your RFC in the next day or so as well.
-> 
-> ...
-> > My goal, that may be quite different from yours, is to reduce the
-> > cpufreq's overhead as much as I possibly can.  If I have to change the
-> > way it drives the CPU frequency selection to achieve that goal, I will
-> > do that, but if that can stay the way it is, that's fine too.
-> 
-> Our primary goal has been simply to achieve functional scheduler-driven
-> CPU frequency control with equivalent or better power and performance
-> than what is available today. Reduction of cpufreq overhead fits within
-> this goal (and may be required) so no conflict here.
-
-Good.
+And if they aren't suitable for a particular purpose, one can try different
+types of changes and see what looks good, what's practical and what's not etc.
+intel_pstate can do that, you can do that, I can look at that from the existing
+cpufreq governors perspective and so on.  In other words, it facilitates future
+development.
 
 Thanks,
 Rafael
