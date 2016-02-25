@@ -1,57 +1,101 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
-Date: Thu, 25 Feb 2016 10:07:52 -0800
-Message-ID: <1456423672.17628.9.camel@linux.intel.com>
-References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20151007172343.GE4557@linux> <4807388.hTIoZIhGRk@vostro.rjw.lan>
-	 <20151016054226.GQ19018@linux> <1456344052.8680.208.camel@linux.intel.com>
-	 <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
-	 <1456357073.3860.21.camel@linux.intel.com>
-	 <20160225032700.GA2822@vireshk-i7>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 1/1] intel_pstate: Increase hold-off time before busyness is scaled
+Date: Thu, 25 Feb 2016 11:51:18 -0800
+Message-ID: <002601d17005$e6369820$b2a3c860$@net>
+References: <1455793883-14214-1-git-send-email-mgorman@techsingularity.net> <E45553FF-63B3-4E5B-92A0-B5B00353F6F8@linux.intel.com> <001501d16b33$ff61d200$fe257600$@net> <9E20D36B-1323-41AA-969F-3D2DD5021701@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:44765 "EHLO mga04.intel.com"
+Received: from cmta11.telus.net ([209.171.16.84]:43805 "EHLO cmta11.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933140AbcBYSJX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Feb 2016 13:09:23 -0500
-In-Reply-To: <20160225032700.GA2822@vireshk-i7>
+	id S933629AbcBYTvW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 14:51:22 -0500
+In-Reply-To: <9E20D36B-1323-41AA-969F-3D2DD5021701@linux.intel.com>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: 'Stephane Gasparini' <stephane.gasparini@linux.intel.com>
+Cc: 'Mel Gorman' <mgorman@techsingularity.net>, 'Rafael Wysocki' <rjw@rjwysocki.net>, 'Ingo Molnar' <mingo@kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Matt Fleming' <matt@codeblueprint.co.uk>, 'Mike Galbraith' <umgwanakikbuti@gmail.com>, 'Linux-PM' <linux-pm@vger.kernel.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
 
-On Thu, 2016-02-25 at 08:57 +0530, Viresh Kumar wrote:
-> On 24-02-16, 15:37, Srinivas Pandruvada wrote:
-> > Good I tested again.
-> >=20
-> > Hi Viresh,
-> >=20
-> > Are we no longer allowed to call
-> > 	sysfs_create_file in cpufreq_driver.init() callback?
-> >=20
-> > The following call crashes because of BUG_ON for !kobj->sd:
-> > 	sysfs_create_file(&policy->kobj,
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0
-> > &(cpufreq_attr_base_frequency.attr));
-> >=20
-> > Before I debug further, I want to check with you.
-> > This used to work before.
->=20
-> Haven't checked that yet, but you should be using cpufreq_driver.attr
-> for this
-> kind of stuff, isn't it ?
-If I use=C2=A0cpufreq_driver.attr, then it will create sysfs attribute =
-for
-every system using acpi-cpufreq, whether they can support it or not.
-This change is only needed for the later generation of Intel CPUs
-(IvyBridge and later).=C2=A0
-There is no standard ACPI way to know the base frequency if we add
-attribute for all systems using acpi-cpufreq.
+Hi Steph,
 
-Thanks,
-Srinivas
+On 2016.02.24 08:20 Stephane Gasparini wrote:
+>> On Feb 19, 2016, at 5:38 PM, Doug Smythies <dsmythies@telus.net> wro=
+te:=20
+>>> On 2016.02.19 03:12 Stephane Gasparini wrote:
+>>>=20
+>>> The issue you are reporting looks like one we improved on android b=
+y using=20
+>>> the average pstate instead of using the last requested pstate
+>>>=20
+>>> We know that this is improving the ffmpeg encoding performance when=
+ using the
+>>> load algorithm.
+>>>=20
+>>> see patch attached
+>>>=20
+>>> This patch is only applied on get_target_pstate_use_cpu_load howeve=
+r you can give
+>>> it a try on get_target_pstate_use_performance
+>>=20
+>> Yes, that type of patch works on the load based approach.
+>
+> I=E2=80=99m not talking about using average p-state in the scaled_bus=
+y computation.
+> I=E2=80=99m talking adding the output of the PID (the number of pstat=
+e to ad or subtract)
+> to the average pstate rather than adding this to the current p-sate.
 
->=20
+=46or the situation we are dealing with here, that would actually make =
+it worse,
+wouldn't it?
+
+Let's work through a real very low load example from the Mel V2 patch w=
+here
+the target pstate is increased whereas it should have been decreased:
+
+Mel patch version 2 (12X hold off added to rjw 3 patch v10 set added to=
+ kernel 4.5-rc4):
+
+CPU: 3
+Core busy: 105
+Scaled busy: 143
+Old pstate: 25
+New pstate: 34
+mperf: 52039
+aperf: 55097
+tsc: 335265689
+freq: 3599750 KHz
+Load: 0.02%
+Duration (mS): 98.293
+
+New pstate =3D old pstate + (scaled_busy-setpoint) * p_gain
+           =3D 25 + (143 - 97) * 0.2
+           =3D 34 (as above)
+
+Ave pstate =3D max_pstate * aperf / mperf
+           =3D 34 * 55097 / 52039
+           =3D 36
+
+Steph average pstate method added to the above:
+New pstate =3D ave pstate + (scaled_busy-setpoint) * p_gain
+           =3D 36 + (143 - 97) * 0.2
+           =3D 45 (before clamping)
+
+Now, just for completeness show the no Mel patch math:
+Scaled busy =3D Core busy * max_pstate / old pstate * sample time / dur=
+ation
+            =3D 105 * 34 / 25 * 10 / 98.293
+            =3D 14.53
+New pstate =3D old pstate + (scaled_busy-setpoint) * p_gain
+            =3D 25 + (14.53 - 97) * .2
+            =3D 8.5
+            =3D 16 clamped minimum
+
+Regardless, I coded the average pstate method and observe little
+difference between it and the Mel V2 patch with limited testing.
+
+=2E.. Doug
+
+
