@@ -1,122 +1,50 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 3/3] arm64: dts: register Hi6220's thermal zone for power
- allocator
-Date: Thu, 25 Feb 2016 10:41:52 +0800
-Message-ID: <20160225024152.GA20591@leoy-linaro>
-References: <1455983529-9559-1-git-send-email-leo.yan@linaro.org>
- <1455983529-9559-4-git-send-email-leo.yan@linaro.org>
- <20160224182856.GD3006@e104805>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Thu, 25 Feb 2016 08:57:00 +0530
+Message-ID: <20160225032700.GA2822@vireshk-i7>
+References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20151007172343.GE4557@linux>
+ <4807388.hTIoZIhGRk@vostro.rjw.lan>
+ <20151016054226.GQ19018@linux>
+ <1456344052.8680.208.camel@linux.intel.com>
+ <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+ <1456357073.3860.21.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35888 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757458AbcBYCmN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 21:42:13 -0500
-Received: by mail-pa0-f47.google.com with SMTP id yy13so23426218pab.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Feb 2016 18:42:13 -0800 (PST)
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36091 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932274AbcBYD1Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 22:27:25 -0500
+Received: by mail-pf0-f174.google.com with SMTP id e127so24613265pfe.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Feb 2016 19:27:24 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160224182856.GD3006@e104805>
+In-Reply-To: <1456357073.3860.21.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Javi,
+On 24-02-16, 15:37, Srinivas Pandruvada wrote:
+> Good I tested again.
+>=20
+> Hi Viresh,
+>=20
+> Are we no longer allowed to call
+> 	sysfs_create_file in cpufreq_driver.init() callback?
+>=20
+> The following call crashes because of BUG_ON for !kobj->sd:
+> 	sysfs_create_file(&policy->kobj,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &=
+(cpufreq_attr_base_frequency.attr));
+>=20
+> Before I debug further, I want to check with you.
+> This used to work before.
 
-Thanks for review.
+Haven't checked that yet, but you should be using cpufreq_driver.attr f=
+or this
+kind of stuff, isn't it ?
 
-On Wed, Feb 24, 2016 at 06:28:57PM +0000, Javi Merino wrote:
-> On Sat, Feb 20, 2016 at 11:52:09PM +0800, Leo Yan wrote:
-> > With profiling Hi6220's power modeling so get dynamic coefficient and
-> > sustainable power. So pass these parameters from DT.
-> > 
-> > Now enable power allocator wit only one actor for CPU part, so directly
-> > use cluster0's thermal sensor for monitoring temperature.
-> > 
-> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> > ---
-> >  arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 36 +++++++++++++++++++++++++++++++
-> >  1 file changed, 36 insertions(+)
-> > 
-> > diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-> > index 50ba1b0..3608a3e 100644
-> > --- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-> > +++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-> > @@ -6,6 +6,7 @@
-> >  
-> >  #include <dt-bindings/interrupt-controller/arm-gic.h>
-> >  #include <dt-bindings/clock/hi6220-clock.h>
-> > +#include <dt-bindings/thermal/thermal.h>
-> >  
-> >  / {
-> >  	compatible = "hisilicon,hi6220";
-> > @@ -87,6 +88,7 @@
-> >  			cooling-max-level = <0>;
-> >  			#cooling-cells = <2>; /* min followed by max */
-> >  			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-> > +			dynamic-power-coefficient = <311>;
-> >  		};
-> >  
-> >  		cpu1: cpu@1 {
-> > @@ -322,5 +324,39 @@
-> >  			clock-names = "thermal_clk";
-> >  			#thermal-sensor-cells = <1>;
-> >  		};
-> > +
-> > +		thermal-zones {
-> > +
-> > +			cls0: cls0 {
-> > +				polling-delay = <1000>;
-> > +				polling-delay-passive = <100>;
-> > +				sustainable-power = <3326>;
-> > +
-> > +				/* sensor ID */
-> > +				thermal-sensors = <&tsensor 2>;
-> > +
-> > +				trips {
-> > +					threshold: trip-point@0 {
-> > +						temperature = <65000>;
-> > +						hysteresis = <1000>;
-> 
-> As far as I know, hysteresis is ignored in the thermal subsystem right
-> now, so you could remove it from both trip points.
-
-Will remove it.
-
-> > +						type = "passive";
-> > +					};
-> > +
-> > +					target: trip-point@1 {
-> > +						temperature = <75000>;
-> > +						hysteresis = <1000>;
-> > +						type = "passive";
-> > +					};
-> > +				};
-> > +
-> > +				cooling-maps {
-> > +					map0 {
-> > +						trip = <&target>;
-> > +						contribution = <1024>;
-> 
-> As Hikey has only one voltage domain, you only have one cpu cooling
-> device.  "contribution" is only useful when you have more than one
-> cooling device, as it's relative to the other cooling device's
-> contribution.  You can remove contribution from here.
-> 
-> Other than this minor stuff, it looks good to me. FWIW,
-> 
-> Reviewed-by: Javi Merino <javi.merino@arm.com>
-
-Thanks for review. Will sent out new version.
-
-Thanks,
-Leo Yan
-
-> > +						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> > +					};
-> > +				};
-> > +			};
-> > +		};
-> >  	};
-> >  };
+--=20
+viresh
