@@ -1,79 +1,122 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power supply changes for 4.5-rc
-Date: Thu, 25 Feb 2016 01:31:12 +0100
-Message-ID: <20160225003112.GA10250@earth>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 3/3] arm64: dts: register Hi6220's thermal zone for power
+ allocator
+Date: Thu, 25 Feb 2016 10:41:52 +0800
+Message-ID: <20160225024152.GA20591@leoy-linaro>
+References: <1455983529-9559-1-git-send-email-leo.yan@linaro.org>
+ <1455983529-9559-4-git-send-email-leo.yan@linaro.org>
+ <20160224182856.GD3006@e104805>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34831 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbcBYAbQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Feb 2016 19:31:16 -0500
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35888 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757458AbcBYCmN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 21:42:13 -0500
+Received: by mail-pa0-f47.google.com with SMTP id yy13so23426218pab.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Feb 2016 18:42:13 -0800 (PST)
 Content-Disposition: inline
+In-Reply-To: <20160224182856.GD3006@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+Hi Javi,
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks for review.
 
-Hi Linus,
+On Wed, Feb 24, 2016 at 06:28:57PM +0000, Javi Merino wrote:
+> On Sat, Feb 20, 2016 at 11:52:09PM +0800, Leo Yan wrote:
+> > With profiling Hi6220's power modeling so get dynamic coefficient and
+> > sustainable power. So pass these parameters from DT.
+> > 
+> > Now enable power allocator wit only one actor for CPU part, so directly
+> > use cluster0's thermal sensor for monitoring temperature.
+> > 
+> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> > ---
+> >  arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 36 +++++++++++++++++++++++++++++++
+> >  1 file changed, 36 insertions(+)
+> > 
+> > diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> > index 50ba1b0..3608a3e 100644
+> > --- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> > +++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+> > @@ -6,6 +6,7 @@
+> >  
+> >  #include <dt-bindings/interrupt-controller/arm-gic.h>
+> >  #include <dt-bindings/clock/hi6220-clock.h>
+> > +#include <dt-bindings/thermal/thermal.h>
+> >  
+> >  / {
+> >  	compatible = "hisilicon,hi6220";
+> > @@ -87,6 +88,7 @@
+> >  			cooling-max-level = <0>;
+> >  			#cooling-cells = <2>; /* min followed by max */
+> >  			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
+> > +			dynamic-power-coefficient = <311>;
+> >  		};
+> >  
+> >  		cpu1: cpu@1 {
+> > @@ -322,5 +324,39 @@
+> >  			clock-names = "thermal_clk";
+> >  			#thermal-sensor-cells = <1>;
+> >  		};
+> > +
+> > +		thermal-zones {
+> > +
+> > +			cls0: cls0 {
+> > +				polling-delay = <1000>;
+> > +				polling-delay-passive = <100>;
+> > +				sustainable-power = <3326>;
+> > +
+> > +				/* sensor ID */
+> > +				thermal-sensors = <&tsensor 2>;
+> > +
+> > +				trips {
+> > +					threshold: trip-point@0 {
+> > +						temperature = <65000>;
+> > +						hysteresis = <1000>;
+> 
+> As far as I know, hysteresis is ignored in the thermal subsystem right
+> now, so you could remove it from both trip points.
 
-The following changes since commit 81f70ba233d5f660e1ea5fe23260ee323af5d53a:
+Will remove it.
 
-  Linux 4.5-rc5 (2016-02-20 13:39:35 -0800)
+> > +						type = "passive";
+> > +					};
+> > +
+> > +					target: trip-point@1 {
+> > +						temperature = <75000>;
+> > +						hysteresis = <1000>;
+> > +						type = "passive";
+> > +					};
+> > +				};
+> > +
+> > +				cooling-maps {
+> > +					map0 {
+> > +						trip = <&target>;
+> > +						contribution = <1024>;
+> 
+> As Hikey has only one voltage domain, you only have one cpu cooling
+> device.  "contribution" is only useful when you have more than one
+> cooling device, as it's relative to the other cooling device's
+> contribution.  You can remove contribution from here.
+> 
+> Other than this minor stuff, it looks good to me. FWIW,
+> 
+> Reviewed-by: Javi Merino <javi.merino@arm.com>
 
-are available in the git repository at:
+Thanks for review. Will sent out new version.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.5-rc
+Thanks,
+Leo Yan
 
-for you to fetch changes up to 9aafabc7fece13c8e2a1f680908c73ee19f0f79b:
-
-  power: bq27xxx_battery: Restore device name (2016-02-21 20:49:34 +0100)
-
-----------------------------------------------------------------
-power supply fixes for the v4.5 series
-
-Add a regression fix for changed sysfs path of
-bq27xxx_battery and update MAINTAINERS file.
-
-----------------------------------------------------------------
-Ivaylo Dimitrov (1):
-      power: bq27xxx_battery: Restore device name
-
-Sebastian Reichel (1):
-      MAINTAINERS: update bq27xxx driver
-
- MAINTAINERS                           | 10 ++++++++--
- drivers/power/bq27xxx_battery_i2c.c   | 37 ++++++++++++++++++++++++++++++++---
- include/linux/power/bq27xxx_battery.h |  1 +
- 3 files changed, 43 insertions(+), 5 deletions(-)
-
--- Sebastian
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWzktFAAoJENju1/PIO/qaTSIP/3ayKFnS/6yUwUvoKOErw2Gt
-GuW3ip2Bo1HMXkQ+IvUxk5IgNfNMd3Hce749c6+UmnDe9vSPR7MUIrY0V5ht6zf/
-tvUWx5murzXBRswXHiztX86u3HEwka/R43kM0SDZmNNh8+pmlzrZu5hbQJy3NA99
-NpnfqO81nVG9Ycfsa1Sk76kQmzSAN4iIt5JRCE4bEKh7l13I6kaNX8i/E2XuTsDj
-zD/mZGEYiWJ/n9MCgXd+VX0vF0TnMiBfi1edQ6jpTqkS3ebIEMYYQ7FBa7ih5wJU
-5Gq/GxUCFwuE/iux5kw7UZi7IwP2ISpIVVHkAgdOGWcXLSyQSdx5KCGGAEzsvGON
-SOd3I63SiSR+47gW8EZT5PX1rbUQna+DFAG5S0Y4TIJ8/8XKeTiMiCbLilHXywJz
-xYbDQVmi9/WHPgHBBdgEf0M4a8shn7fq3KKcdIXUVSQnSKB0WKxB3kBFyKKgOqfT
-6ODWKwlU26WU2UqIXHiO3SKfPHxtux3enpOS0V0R3Ggl5ZnMkz6d8H7nttQHM2hL
-X4mZ2LDjFSu0gAwqr9PjBeNxVm1sFpWfgZRsXvSur7DeByaxVywB+36iZT/o6Gmm
-FuZ7YyuY/wFWJK1ybhxet3RqGw9KFS78iHymJ4ALuwSaMstDOPFsSd28ry3viwsk
-vLtiwHkKsCMgmU70IwKN
-=YlmY
------END PGP SIGNATURE-----
-
---Nq2Wo0NMKNjxTN9z--
+> > +						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> > +					};
+> > +				};
+> > +			};
+> > +		};
+> >  	};
+> >  };
