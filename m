@@ -1,48 +1,77 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Enable HWP by default
-Date: Thu, 25 Feb 2016 15:33:51 -0800
-Message-ID: <1456443231.17628.24.camel@linux.intel.com>
-References: <1456441759-4877-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <7409824.yRBnCff0bU@vostro.rjw.lan>
+Subject: Re: [PATCH 2/2] cpufreq: acpi-cpufreq: Drop pointless label from
+ acpi_cpufreq_target()
+Date: Thu, 25 Feb 2016 15:38:34 -0800
+Message-ID: <1456443514.17628.26.camel@linux.intel.com>
+References: <3419119.Zd6aAZrh1K@vostro.rjw.lan>
+	 <1905248.5bkSJ3vszA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:9858 "EHLO mga09.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:13100 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751904AbcBYXfW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Feb 2016 18:35:22 -0500
-In-Reply-To: <7409824.yRBnCff0bU@vostro.rjw.lan>
+	id S1752447AbcBYXkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Feb 2016 18:40:06 -0500
+In-Reply-To: <1905248.5bkSJ3vszA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, 2016-02-26 at 00:19 +0100, Rafael J. Wysocki wrote:
-> On Thursday, February 25, 2016 03:09:19 PM Srinivas Pandruvada wrote:
-> > If the processor supports HWP, enable it by default without
-> > checking
-> > for the cpu model. This will allow to enable HWP in all supported
-> > processors without driver change.
-> >=20
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > .com>
+On Fri, 2016-02-26 at 00:03 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >=20
-> Isn't that a bit risky in the face of recent experience?
-Good question. The current systems which are commercial, already have
-cpuid added in our list, so HWP will be enabled anyway.
-The one system we know there is an issue, hope we can debug before
-merge window start.
-If I don't do, I have to add few more ids to the list.
-
-Let's wait for few more weeks to review and merge this. I will let
-anybody from the community comment, who are using Skylake.
-
-Thanks,
-Srinivas
-
+> The "out" label at the final return statement in
+> acpi_cpufreq_target()
+> is totally pointless, so drop them and modify the code to return the
+> right values immediately instead of jumping to it.
 >=20
-> Rafael
+> No functional changes.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+> ---
+> =C2=A0drivers/cpufreq/acpi-cpufreq.c |=C2=A0=C2=A0=C2=A0=C2=A06 ++---=
+-
+> =C2=A01 file changed, 2 insertions(+), 4 deletions(-)
+>=20
+> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
+> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+> @@ -434,7 +434,7 @@ static int acpi_cpufreq_target(struct cp
+> =C2=A0		} else {
+> =C2=A0			pr_debug("Already at target state (P%d)\n",
+> =C2=A0				next_perf_state);
+> -			goto out;
+> +			return 0;
+> =C2=A0		}
+> =C2=A0	}
+> =C2=A0
+> @@ -456,8 +456,7 @@ static int acpi_cpufreq_target(struct cp
+> =C2=A0		cmd.val =3D (u32) perf-
+> >states[next_perf_state].control;
+> =C2=A0		break;
+> =C2=A0	default:
+> -		result =3D -ENODEV;
+> -		goto out;
+> +		return -ENODEV;
+> =C2=A0	}
+> =C2=A0
+> =C2=A0	/* cpufreq holds the hotplug lock, so we are safe from here
+> on */
+> @@ -480,7 +479,6 @@ static int acpi_cpufreq_target(struct cp
+> =C2=A0	if (!result)
+> =C2=A0		perf->state =3D next_perf_state;
+> =C2=A0
+> -out:
+> =C2=A0	return result;
+> =C2=A0}
+> =C2=A0
 >=20
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm"
