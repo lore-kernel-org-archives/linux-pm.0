@@ -1,35 +1,66 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH/RFC v2] gpio: rcar: Add Runtime PM handling for interrupts
-Date: Thu, 25 Feb 2016 10:07:36 +0100
-Message-ID: <CACRpkdZw+2s77+5UO6x91FTuTgA86Y-Brxd=ZziTGE8AuUPgLA@mail.gmail.com>
-References: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC/RFT][PATCH v3 2/2] cpufreq: schedutil: Switching
+ frequencies from interrupt context
+Date: Thu, 25 Feb 2016 10:08:40 +0100
+Message-ID: <20160225090840.GB6357@twins.programming.kicks-ass.net>
+References: <5059413.77KZsd2lep@vostro.rjw.lan>
+ <1810564.h98CMnhalE@vostro.rjw.lan>
+ <1597360.X9ARIiUr5r@vostro.rjw.lan>
+ <1522086.TRnWVDkbTk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1522086.TRnWVDkbTk@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 18, 2016 at 5:06 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
+On Thu, Feb 25, 2016 at 12:30:43AM +0100, Rafael J. Wysocki wrote:
+> +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> +				      unsigned int target_freq)
+> +{
+> +	struct acpi_cpufreq_data *data = policy->driver_data;
+> +	struct cpufreq_frequency_table *entry;
+> +	struct acpi_processor_performance *perf;
+> +	unsigned int uninitialized_var(next_perf_state);
+> +	unsigned int uninitialized_var(next_freq);
+> +	unsigned int best_diff;
+> +
+> +	for (entry = data->freq_table, best_diff = UINT_MAX;
+> +	     entry->frequency != CPUFREQ_TABLE_END; entry++) {
+> +		unsigned int diff, freq = entry->frequency;
+> +
+> +		if (freq == CPUFREQ_ENTRY_INVALID)
+> +			continue;
+> +
+> +		diff = abs(freq - target_freq);
 
-> The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
->
-> When using a GPIO purely as an interrupt source, no Runtime PM handling
-> is done, and the GPIO module's clock may not be enabled.
->
-> To fix this:
->   - Add .irq_request_resources() and .irq_release_resources() callbacks
->     to handle Runtime PM when an interrupt is requested,
->   - Add irq_bus_lock() and sync_unlock() callbacks to handle Runtime PM
->     when e.g. disabling/enabling an interrupt, or configuring the
->     interrupt type.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Why would you consider frequencies that are below where you want to be?
 
-Patch applied with Marc's ACK.
-
-Yours,
-Linus Walleij
+> +		if (diff >= best_diff)
+> +			continue;
+> +
+> +		best_diff = diff;
+> +		next_perf_state = entry->driver_data;
+> +		next_freq = freq;
+> +		if (best_diff == 0)
+> +			goto found;
+> +	}
+> +	if (best_diff == UINT_MAX)
+> +		return CPUFREQ_ENTRY_INVALID;
+> +
+> + found:
+> +	perf = to_perf_data(data);
+> +	if (perf->state == next_perf_state) {
+> +		if (unlikely(data->resume))
+> +			data->resume = 0;
+> +		else
+> +			return next_freq;
+> +	}
+> +
+> +	data->cpu_freq_fast_write(perf->states[next_perf_state].control);
+> +	perf->state = next_perf_state;
+> +	return next_freq;
+> +}
