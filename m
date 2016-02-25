@@ -1,18 +1,24 @@
 From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v1 1/3] PM / sleep: Check legacy pm callbacks for direct complete
-Date: Wed, 24 Feb 2016 16:11:27 -0800
-Message-ID: <1456359089-19807-1-git-send-email-dbasehore@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, "James E . J . Bottomley" <JBottomley@odin.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>
+Subject: [PATCH v2 1/3] PM / sleep: Check legacy pm callbacks for direct complete
+Date: Wed, 24 Feb 2016 16:22:26 -0800
+Message-ID: <1456359748-22838-1-git-send-email-dbasehore@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34524 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757530AbcBYAWc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Feb 2016 19:22:32 -0500
+Received: by mail-pa0-f44.google.com with SMTP id fy10so21525134pac.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Feb 2016 16:22:31 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>
 
 This adds checks for legacy pm callbacks when setting no_pm_callbacks.
 This fixes an issue where these suspend/resume callbacks were
 incorrectly ignored during suspend/resume with direct complete.
 
-Fixes: 4534d9d881f9 "PM / sleep: Go direct_complete if driver has..."
+Fixes: aa8e54b55947 "PM / sleep: Go direct_complete if driver has..."
 Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
  drivers/base/power/main.c | 6 ++++--
@@ -37,3 +43,4 @@ index 6e7c3cc..e0017d9 100644
  		(!dev->driver || pm_ops_is_empty(dev->driver->pm));
 -- 
 2.7.0.rc3.207.g0ac5344
+
