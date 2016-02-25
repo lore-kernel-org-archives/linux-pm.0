@@ -1,64 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC v2] gpio: rcar: Add Runtime PM handling for interrupts
-Date: Thu, 25 Feb 2016 15:26:15 +0100
-Message-ID: <CAMuHMdXSHPbdPXRQFwV=4yHwrd858Sk8HU15px4a9GVSmgPs4w@mail.gmail.com>
-References: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
-	<CACRpkdZw+2s77+5UO6x91FTuTgA86Y-Brxd=ZziTGE8AuUPgLA@mail.gmail.com>
-	<CAMuHMdV=6G-7Y3kFOaeffCgFzStmFQfDO6othA3up6G7ahqPzQ@mail.gmail.com>
-	<CACRpkdafH1mU7Z3P=w9bJUqijEFQFmkVvR4p-OTy4XiOqL3Rrw@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Thu, 25 Feb 2016 10:07:52 -0800
+Message-ID: <1456423672.17628.9.camel@linux.intel.com>
+References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20151007172343.GE4557@linux> <4807388.hTIoZIhGRk@vostro.rjw.lan>
+	 <20151016054226.GQ19018@linux> <1456344052.8680.208.camel@linux.intel.com>
+	 <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+	 <1456357073.3860.21.camel@linux.intel.com>
+	 <20160225032700.GA2822@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdafH1mU7Z3P=w9bJUqijEFQFmkVvR4p-OTy4XiOqL3Rrw@mail.gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:44765 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933140AbcBYSJX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Feb 2016 13:09:23 -0500
+In-Reply-To: <20160225032700.GA2822@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Linus,
+On Thu, 2016-02-25 at 08:57 +0530, Viresh Kumar wrote:
+> On 24-02-16, 15:37, Srinivas Pandruvada wrote:
+> > Good I tested again.
+> >=20
+> > Hi Viresh,
+> >=20
+> > Are we no longer allowed to call
+> > 	sysfs_create_file in cpufreq_driver.init() callback?
+> >=20
+> > The following call crashes because of BUG_ON for !kobj->sd:
+> > 	sysfs_create_file(&policy->kobj,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0
+> > &(cpufreq_attr_base_frequency.attr));
+> >=20
+> > Before I debug further, I want to check with you.
+> > This used to work before.
+>=20
+> Haven't checked that yet, but you should be using cpufreq_driver.attr
+> for this
+> kind of stuff, isn't it ?
+If I use=C2=A0cpufreq_driver.attr, then it will create sysfs attribute =
+for
+every system using acpi-cpufreq, whether they can support it or not.
+This change is only needed for the later generation of Intel CPUs
+(IvyBridge and later).=C2=A0
+There is no standard ACPI way to know the base frequency if we add
+attribute for all systems using acpi-cpufreq.
 
-On Thu, Feb 25, 2016 at 3:19 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Thu, Feb 25, 2016 at 10:37 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Thu, Feb 25, 2016 at 10:07 AM, Linus Walleij
->> <linus.walleij@linaro.org> wrote:
->>> On Thu, Feb 18, 2016 at 5:06 PM, Geert Uytterhoeven
->>> <geert+renesas@glider.be> wrote:
->>>
->>>> The R-Car GPIO driver handles Runtime PM for requested GPIOs only.
->>>>
->>>> When using a GPIO purely as an interrupt source, no Runtime PM handling
->>>> is done, and the GPIO module's clock may not be enabled.
->>>>
->>>> To fix this:
->>>>   - Add .irq_request_resources() and .irq_release_resources() callbacks
->>>>     to handle Runtime PM when an interrupt is requested,
->>>>   - Add irq_bus_lock() and sync_unlock() callbacks to handle Runtime PM
->>>>     when e.g. disabling/enabling an interrupt, or configuring the
->>>>     interrupt type.
->>>>
->>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>>
->>> Patch applied with Marc's ACK.
->>
->> Thanks!
->>
->> Can we have it in v4.5? Else Ethernet won't work on r8a7795/salvator-x.
->
-> Argh that is late. But I'll move it over to the fixes branch...
+Thanks,
+Srinivas
 
-Thanks!
-
-The issue was exposed by commit d5c3d84657db57bd ("net: phy: Avoid polling
-PHY with PHY_IGNORE_INTERRUPTS"), which went upstream only in v4.5-rc3.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>=20
