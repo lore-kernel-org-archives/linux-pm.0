@@ -1,30 +1,66 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Enable HWP by default
-Date: Fri, 26 Feb 2016 00:19:41 +0100
-Message-ID: <7409824.yRBnCff0bU@vostro.rjw.lan>
-References: <1456441759-4877-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: Simplify the cpufreq_for_each_valid_entry()
+Date: Fri, 26 Feb 2016 00:22:57 +0100
+Message-ID: <1966438.kvLUD13Eaz@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65199 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:53760 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752242AbcBYXSG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 18:18:06 -0500
-In-Reply-To: <1456441759-4877-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	with SMTP id S1752248AbcBYXVX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 18:21:23 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, February 25, 2016 03:09:19 PM Srinivas Pandruvada wrote:
-> If the processor supports HWP, enable it by default without checking
-> for the cpu model. This will allow to enable HWP in all supported
-> processors without driver change.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Isn't that a bit risky in the face of recent experience?
+That macro uses an internal static inline function that is first
+totally unnecessary and second hard to read, so simplify it and
+get rid of that monster.
 
-Rafael
+No functional changes.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/cpufreq.h |   17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
+
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -534,16 +534,6 @@ static inline void dev_pm_opp_free_cpufr
+ }
+ #endif
+ 
+-static inline bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
+-{
+-	while ((*pos)->frequency != CPUFREQ_TABLE_END)
+-		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
+-			return true;
+-		else
+-			(*pos)++;
+-	return false;
+-}
+-
+ /*
+  * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
+  * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
+@@ -560,8 +550,11 @@ static inline bool cpufreq_next_valid(st
+  * @table:      the cpufreq_frequency_table * to iterate over.
+  */
+ 
+-#define cpufreq_for_each_valid_entry(pos, table)	\
+-	for (pos = table; cpufreq_next_valid(&pos); pos++)
++#define cpufreq_for_each_valid_entry(pos, table)			\
++	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)	\
++		if (pos->frequency == CPUFREQ_ENTRY_INVALID)		\
++			continue;					\
++		else
+ 
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table);
 
