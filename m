@@ -1,78 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH/RFC v2 04/11] soc: renesas: rcar: Add DT support for SYSC PM domains
-Date: Fri, 26 Feb 2016 18:28:55 +0200
-Message-ID: <5625748.8DscGPjtYP@avalon>
-References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be> <3535519.g4KL1PCIZy@avalon> <CAMuHMdVo2V7Ez5g8ZW74w-QWiwS8i2mbYeCjOU9brxRzNjMAdg@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Fri, 26 Feb 2016 17:38 +0100
+Message-ID: <4687430.mfM0GbdeDL@skinner>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVo2V7Ez5g8ZW74w-QWiwS8i2mbYeCjOU9brxRzNjMAdg@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net, Thomas Renninger <trenn@suse.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
+The assumption that BIOSes never want to have this register being set to
+full performance (zero) is wrong.
 
-On Friday 26 February 2016 16:41:27 Geert Uytterhoeven wrote:
-> On Mon, Feb 15, 2016 at 11:51 PM, Laurent Pinchart wrote:
-> >>  drivers/soc/renesas/pm-rcar.c | 327 ++++++++++++++++++++++++++++++++++++
-> >>  1 file changed, 327 insertions(+)
-> >> 
-> >> diff --git a/drivers/soc/renesas/pm-rcar.c
-> >> b/drivers/soc/renesas/pm-rcar.c
-> >> index cc684e9cc8db5d1c..c0540934126e58eb 100644
-> >> --- a/drivers/soc/renesas/pm-rcar.c
-> >> +++ b/drivers/soc/renesas/pm-rcar.c
-> >> 
-> >> +static int __init rcar_init_pm_domains(void)
-> >> +{
-> >> +     const struct of_device_id *match;
-> >> +     struct device_node *np, *pmd;
-> >> +     bool scanned = false;
-> >> +     void __iomem *base;
-> >> +     int ret = 0;
-> >> +
-> >> +     for_each_matching_node_and_match(np, rcar_sysc_matches, &match) {
-> >> +             u32 syscier = 0;
-> >> +
-> >> +             rcar_gen = (uintptr_t)match->data;
-> >> +
-> >> +             base = of_iomap(np, 0);
-> >> +             if (!base) {
-> >> +                     pr_warn("%s cannot map reg 0\n", np->full_name);
-> >> +                     continue;
-> >> +             }
-> >> +
-> >> +             rcar_sysc_base = base;  // FIXME conflicts with
-> >> rcar_sysc_init() +
-> >> +             pmd = of_get_child_by_name(np, "pm-domains");
-> >> +             if (!pmd) {
-> >> +                     pr_warn("%s lacks pm-domains node\n",
-> >> np->full_name);
-> > 
-> > Shouldn't you call iounmap() here ?
-> 
-> Yes. Will fix.
-> 
-> >> +             /*
-> >> +              * Enable all interrupt sources, but do not use interrupt
-> >> +              * handler
-> >> +              */
-> >> +             pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
-> >> +             iowrite32(syscier, rcar_sysc_base + SYSCIER);
-> >> +             iowrite32(0, rcar_sysc_base + SYSCIMR);
-> > 
-> > Shouldn't the SYSCIMR bits be set to 1 to mask interrupts ?
-> 
-> That would work, too. It doesn't matter much, as the driver doesn't use
-> interrupts, so they stay disabled at the GIC level.
+While wrongly overruling this BIOS setting and set it from performance
+to normal did not hurt that much, because nobody really knew the effects inside
+Intel processors.
 
-You're right, but as you write to the SYSCIMR register anyway, I'd feel safer 
-if interrupts were masked in it too.
+But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo modes
+if this value is not set to performance.
 
--- 
-Regards,
+So switch logic to tell the user in a friendly way (info) that the CPU is in
+performance mode and how to switch via userspace if this is not intended.
 
-Laurent Pinchart
+But otherwise trust that the BIOS has set the correct value here and do not
+blindly overrule.
+
+How this has been found: SLE11 had this patch, SLE12 it slipped through.
+It took quite some time to nail down that this patch missing is the reason
+for not entering turbo modes with this specific processor.
+
+Signed-off-by: Thomas Renninger <trenn@suse.com>
+
+--- a/arch/x86/kernel/cpu/intel.c	2016-02-26 17:19:55.731042972 +0100
++++ b/arch/x86/kernel/cpu/intel.c	2016-02-26 17:20:48.598020581 +0100
+@@ -377,8 +377,12 @@ static void init_intel_energy_perf(struc
+ 	u64 epb;
+ 
+ 	/*
+-	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+-	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
++	 * On server platforms energy bias typically is set to
++	 * performance on purpose.
++	 * On other platforms it may happen that MSR_IA32_ENERGY_PERF_BIAS
++	 * did not get initialized properly by BIOS.
++	 * Best is to to keep BIOS settings and give the user a hint whether
++	 * to change it via cpupower-set(8) userspace tool at runtime.
+ 	 */
+ 	if (!cpu_has(c, X86_FEATURE_EPB))
+ 		return;
+@@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
+ 	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+ 		return;
+ 
+-	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+-	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
+-	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+-	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
++	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
++	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-set(8)\n");
+ }
+ 
+ static void intel_bsp_resume(struct cpuinfo_x86 *c)
