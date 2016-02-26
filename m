@@ -1,39 +1,68 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V6 09/10] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Fri, 26 Feb 2016 15:48:43 +0000
-Message-ID: <1456501724-28477-10-git-send-email-jonathanh@nvidia.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH V6 10/10] ARM64: tegra: Add audio PM domain device node for Tegra210
+Date: Fri, 26 Feb 2016 15:48:44 +0000
+Message-ID: <1456501724-28477-11-git-send-email-jonathanh@nvidia.com>
 References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1456501724-28477-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:1505 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933449AbcBZPt3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 10:49:29 -0500
+In-Reply-To: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
-dependent upon a particular power-domain are only probed when that power
-domain has been powered up, requires that PM is made mandatory for tegra
-64-bit devices and so select this option for tegra as well.
+Add the audio power-domain for tegra210. Note that this also removes the
+existing "#power-domain-cells" which was incorrectly included by
+commit e53095857166 ("arm64: tegra: Add Tegra210 support").
 
-Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+
 ---
- arch/arm64/Kconfig.platforms | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
-index 1c3a137e216b..bd52c3e80ac5 100644
---- a/arch/arm64/Kconfig.platforms
-+++ b/arch/arm64/Kconfig.platforms
-@@ -113,6 +113,8 @@ config ARCH_TEGRA
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_CLK
- 	select PINCTRL
-+	select PM
-+	select PM_GENERIC_DOMAINS
- 	select RESET_CONTROLLER
- 	help
- 	  This enables support for the NVIDIA Tegra SoC family.
+So far I have only added the audio power-domain for tegra210 as this is
+what I have been testing with to date. However, once this series is
+accepted then we can begin to add more.
+
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+index cd4f45ccd6a7..d2b6bb4eb202 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -2,6 +2,7 @@
+ #include <dt-bindings/gpio/tegra-gpio.h>
+ #include <dt-bindings/memory/tegra210-mc.h>
+ #include <dt-bindings/pinctrl/pinctrl-tegra.h>
++#include <dt-bindings/power/tegra-powergate.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ 
+ / {
+@@ -581,7 +582,18 @@
+ 		clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
+ 		clock-names = "pclk", "clk32k_in";
+ 
+-		#power-domain-cells = <1>;
++		powergates {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			pd_audio: aud {
++				reg = <TEGRA_POWERGATE_AUD>;
++				clocks = <&tegra_car TEGRA210_CLK_APE>,
++					 <&tegra_car TEGRA210_CLK_APB2APE>;
++				resets = <&tegra_car 198>;
++				#power-domain-cells = <0>;
++			};
++		};
+ 	};
+ 
+ 	fuse@0,7000f800 {
 -- 
 2.1.4
+
