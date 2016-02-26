@@ -1,46 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: race condition on min/max update?
-Date: Fri, 26 Feb 2016 08:23:15 +0530
-Message-ID: <20160226025315.GA9159@vireshk-i7>
-References: <56CE1432.2020409@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:36532 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbcBZCxR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 21:53:17 -0500
-Received: by mail-pf0-f181.google.com with SMTP id e127so43709446pfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 18:53:16 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <56CE1432.2020409@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2 0/5] thermal: hisilicon: enable power allocator for Hi6220
+Date: Fri, 26 Feb 2016 11:43:42 +0800
+Message-ID: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>, Punit Agrawal <Punit.Agrawal-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Juri Lelli <Juri.Lelli@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-+Rafael and linux-pm list
+Hi6220 has octa-core so it has quite high power consumption when run
+benchmark and introduces high temperature for SoC. So need enable
+thermal governor to control temperature and also cannot hurt much for
+performance after impose cooling operations on CPU.
 
-On 24-02-16, 12:36, Steve Muckle wrote:
-> Hi Viresh,
-> 
-> A while back you mentioned that it is not required to hold policy->rwsem
-> when calling __cpufreq_driver_target. This simplified things for us a
-> bit in schedfreq.
-> 
-> But if policy->rwsem is not held, how does the frequency transition
-> process protect itself against policy->min or policy->max changing?
-> Don't you have a race there where it'd be possible to end up with the
-> frequency being set to a rate lower than min or higher than max?
-> 
-> I've taken a cursory look through the code and don't see what would
-> prevent this from happening.
+This patch series is to enable power allocator for Hi6220. Patch 1 is to
+change "hysteresis" as optional property for trip points, so when enable
+power allocator governor we can ignore this property.
 
-It seems that we were not being consistent with this stuff and might have
-ignored this race altogether. On some cases we do update the frequency with
-policy->rwsem and in others we don't.
+During profiling also found two issues for thermal sensor's driver. The
+power allocator just uses only one sensor, so patch 2 is to fix sensor
+driver to let it can initialize driver successfully with only enabling
+one sensor; patch 3 is to dismiss warning of IRQ imbalance enabling.
 
-It requires a closer look and cleanup I believe.
+After profiling on Hikey, the power model has been simplized with only
+dynamic coefficient, and now it's convienence to pass it from CPU node.
+So patch 4 and 5 bind sensor and pass power model parameters.
+
+This patch series have been tested on 96boards Hikey.
+
+Changes from v1:
+* According to Javi's review, removed unecessary properties for DT
+* Add patch 1 for change "hysteresis" as optional property
+* Add patch 3 to fix IRQ imbalance enabling issue
+
+
+Leo Yan (5):
+  thermal: change "hysteresis" as optional property
+  thermal: hisilicon: support to use any sensor
+  thermal: hisilicon: fix IRQ imbalance enabling
+  arm64: dts: register Hi6220's thermal sensor
+  arm64: dts: register Hi6220's thermal zone for power allocator
+
+ .../devicetree/bindings/thermal/thermal.txt        |  9 ++---
+ arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 42 ++++++++++++++++++++++
+ drivers/thermal/hisi_thermal.c                     | 40 ++++++++++++---------
+ drivers/thermal/of-thermal.c                       |  9 +++--
+ 4 files changed, 75 insertions(+), 25 deletions(-)
 
 -- 
-viresh
+1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
