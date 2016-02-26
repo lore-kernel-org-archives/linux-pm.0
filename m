@@ -1,33 +1,61 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: race condition on min/max update?
-Date: Fri, 26 Feb 2016 20:07:49 +0530
-Message-ID: <20160226143749.GA20706@vireshk-i7>
-References: <56CE1432.2020409@linaro.org>
- <20160226025315.GA9159@vireshk-i7>
- <5917491.2o5563OMLE@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: qoriq depends on thermal
+Date: Fri, 26 Feb 2016 20:50:15 +0530
+Message-ID: <20160226152015.GA21797@vireshk-i7>
+References: <1456489361-469413-1-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:34755 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754474AbcBZOhu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 09:37:50 -0500
-Received: by mail-pf0-f172.google.com with SMTP id x65so53132687pfb.1
-        for <linux-pm@vger.kernel.org>; Fri, 26 Feb 2016 06:37:50 -0800 (PST)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:35696 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752174AbcBZPUR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 10:20:17 -0500
+Received: by mail-pa0-f50.google.com with SMTP id ho8so54020713pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 26 Feb 2016 07:20:17 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <5917491.2o5563OMLE@vostro.rjw.lan>
+In-Reply-To: <1456489361-469413-1-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Jia Hongtao <hongtao.jia@freescale.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 26-02-16, 15:11, Rafael J. Wysocki wrote:
-> A min/max update should trigger ->governor(limits) and then the governor
-> is responsible for taking care of the race (if it needs to).
+On 26-02-16, 13:22, Arnd Bergmann wrote:
+> The thermal subsystem can be a loadable module, so the qoriq driver has to be
+> a module in that case as well in order to call of_cpufreq_cooling_register:
 > 
-> At least that's how it should work IMO.
+> drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> text+0x1f4548): undefined reference to `of_cpufreq_cooling_register'
+> 
+> This adds a dependency that clarifies how we can either build the driver
+> when the cpu_thermal support is completely disabled, or how it depends
+> on the thermal support to enforce the qoriq driver to be a module.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 8ae1702a0df5 ("cpufreq: qoriq: Register cooling device based on device tree")
+> ---
+>  drivers/cpufreq/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> My patch is from Dec 22, and I had marked it as submitted, but can't
+> find the email now, so maybe I forgot to send it out back then.
+> 
+> The problem still exists in linux-next, please apply the patch
+> for 4.6.
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index dcb972a38fbc..ca05037dd565 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -297,6 +297,7 @@ endif
+>  config QORIQ_CPUFREQ
+>  	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+>  	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> +	depends on !CPU_THERMAL || THERMAL=y
+>  	select CLK_QORIQ
+>  	help
+>  	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
 
-Urg, simple thing.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
