@@ -1,70 +1,54 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [RFCv7 PATCH 02/10] cpufreq: introduce cpufreq_driver_is_slow
-Date: Thu, 25 Feb 2016 16:50:29 -0800
-Message-ID: <20160226005029.2278.38972@quark.deferred.io>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <1456190570-4475-3-git-send-email-smuckle@linaro.org>
- <CAJZ5v0gM56y0+_SCV5RDQzWWJxS_aNWWpi8ZrcGtjZo+fH2uUA@mail.gmail.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Fri, 26 Feb 2016 01:10:04 +0000
+Message-ID: <1456448914.17628.31.camel@intel.com>
+References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20151007172343.GE4557@linux> <4807388.hTIoZIhGRk@vostro.rjw.lan>
+	 <20151016054226.GQ19018@linux> <1456344052.8680.208.camel@linux.intel.com>
+	 <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+	 <1456357073.3860.21.camel@linux.intel.com>
+	 <20160225032700.GA2822@vireshk-i7>
+	 <1456423672.17628.9.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34874 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbcBZBAU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 20:00:20 -0500
-Received: by mail-pa0-f46.google.com with SMTP id ho8so42410557pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 17:00:20 -0800 (PST)
-In-Reply-To: <CAJZ5v0gM56y0+_SCV5RDQzWWJxS_aNWWpi8ZrcGtjZo+fH2uUA@mail.gmail.com>
+Received: from mga14.intel.com ([192.55.52.115]:47132 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753225AbcBZBKI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Feb 2016 20:10:08 -0500
+In-Reply-To: <1456423672.17628.9.camel@linux.intel.com>
+Content-Language: en-US
+Content-ID: <66CE81D42D0BD544AADE040BA84640A3@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael@kernel.org" <rafael@kernel.org>
 
-Quoting Rafael J. Wysocki (2016-02-22 17:31:09)
-> On Tue, Feb 23, 2016 at 2:22 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> > From: Michael Turquette <mturquette@baylibre.com>
-> >
-> > Some architectures and platforms perform CPU frequency transitions
-> > through a non-blocking method, while some might block or sleep. Even
-> > when frequency transitions do not block or sleep they may be very slow.
-> > This distinction is important when trying to change frequency from
-> > a non-interruptible context in a scheduler hot path.
-> >
-> > Describe this distinction with a cpufreq driver flag,
-> > CPUFREQ_DRIVER_FAST. The default is to not have this flag set,
-> > thus erring on the side of caution.
-> >
-> > cpufreq_driver_is_slow() is also introduced in this patch. Setting
-> > the above flag will allow this function to return false.
-> >
-> > [smuckle@linaro.org: change flag/API to include drivers that are too
-> >  slow for scheduler hot paths, in addition to those that block/sleep]
-> >
-> > Cc: Rafael J. Wysocki <rafael@kernel.org>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Michael Turquette <mturquette@baylibre.com>
-> > Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> 
-> Something more sophisticated than this is needed, because one driver
-> may actually be able to do "fast" switching in some cases and may not
-> be able to do that in other cases.
-
-Those drivers can set the flag dynamically when they probe based on
-their ACPI tables.
-
-> 
-> For example, in the acpi-cpufreq case all depends on what's there in
-> the ACPI tables.
-
-It's all a moot point until the locking in cpufreq is changed. Until
-those changes are made it is a bad idea to call cpufreq_driver_target()
-from schedule() context, regardless of the underlying hardware, and all
-platforms should kick that work out to the kthread.
-
-Regards,
-Mike
-
-> 
-> Thanks,
-> Rafael
+T24gVGh1LCAyMDE2LTAyLTI1IGF0IDEwOjA3IC0wODAwLCBTcmluaXZhcyBQYW5kcnV2YWRhIHdy
+b3RlOg0KPiBPbiBUaHUsIDIwMTYtMDItMjUgYXQgMDg6NTcgKzA1MzAsIFZpcmVzaCBLdW1hciB3
+cm90ZToNCj4gPiBPbiAyNC0wMi0xNiwgMTU6MzcsIFNyaW5pdmFzIFBhbmRydXZhZGEgd3JvdGU6
+DQo+ID4gPiBHb29kIEkgdGVzdGVkIGFnYWluLg0KPiA+ID4gDQo+ID4gPiBIaSBWaXJlc2gsDQo+
+ID4gPiANCj4gPiA+IEFyZSB3ZSBubyBsb25nZXIgYWxsb3dlZCB0byBjYWxsDQo+ID4gPiAJc3lz
+ZnNfY3JlYXRlX2ZpbGUgaW4gY3B1ZnJlcV9kcml2ZXIuaW5pdCgpIGNhbGxiYWNrPw0KPiA+ID4g
+DQo+ID4gPiBUaGUgZm9sbG93aW5nIGNhbGwgY3Jhc2hlcyBiZWNhdXNlIG9mIEJVR19PTiBmb3Ig
+IWtvYmotPnNkOg0KPiA+ID4gCXN5c2ZzX2NyZWF0ZV9maWxlKCZwb2xpY3ktPmtvYmosDQo+ID4g
+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoA0KPiA+
+ID4gJihjcHVmcmVxX2F0dHJfYmFzZV9mcmVxdWVuY3kuYXR0cikpOw0KPiA+ID4gDQo+ID4gPiBC
+ZWZvcmUgSSBkZWJ1ZyBmdXJ0aGVyLCBJIHdhbnQgdG8gY2hlY2sgd2l0aCB5b3UuDQo+ID4gPiBU
+aGlzIHVzZWQgdG8gd29yayBiZWZvcmUuDQo+ID4gDQo+ID4gSGF2ZW4ndCBjaGVja2VkIHRoYXQg
+eWV0LCBidXQgeW91IHNob3VsZCBiZSB1c2luZw0KPiA+IGNwdWZyZXFfZHJpdmVyLmF0dHINCj4g
+PiBmb3IgdGhpcw0KPiA+IGtpbmQgb2Ygc3R1ZmYsIGlzbid0IGl0ID8NCj4gSWYgSSB1c2XCoGNw
+dWZyZXFfZHJpdmVyLmF0dHIsIHRoZW4gaXQgd2lsbCBjcmVhdGUgc3lzZnMgYXR0cmlidXRlIGZv
+cg0KPiBldmVyeSBzeXN0ZW0gdXNpbmcgYWNwaS1jcHVmcmVxLCB3aGV0aGVyIHRoZXkgY2FuIHN1
+cHBvcnQgaXQgb3Igbm90Lg0KPiBUaGlzIGNoYW5nZSBpcyBvbmx5IG5lZWRlZCBmb3IgdGhlIGxh
+dGVyIGdlbmVyYXRpb24gb2YgSW50ZWwgQ1BVcw0KPiAoSXZ5QnJpZGdlIGFuZCBsYXRlcikuwqAN
+Cj4gVGhlcmUgaXMgbm8gc3RhbmRhcmQgQUNQSSB3YXkgdG8ga25vdyB0aGUgYmFzZSBmcmVxdWVu
+Y3kgaWYgd2UgYWRkDQo+IGF0dHJpYnV0ZSBmb3IgYWxsIHN5c3RlbXMgdXNpbmcgYWNwaS1jcHVm
+cmVxLg0KPiANClRoZXJlIGlzIHVzZWQgdG8gYmUNCg0KY3B1ZnJlcV9wb2xpY3lfYWxsb2MoKSB7
+DQouLg0KwqAgwqAgcmV0ID0ga29iamVjdF9pbml0X2FuZF9hZGQoJnBvbGljeS0+a29iaiwgJmt0
+eXBlX2NwdWZyZXEsDQomZGV2PmtvYmosICJjcHVmcmVxIik7DQp9DQoNCk5vdyBpdCBpcyByZW1v
+dmVkLCBzbyB3ZSBkb24ndCBoYXZlIGRpcmVjdG9yeSBlbnRyeSBmb3IgcG9saWN5LT5rb2JqIHRv
+DQphZGQgZHVyaW5nIGluaXQoKSBjYWxsYmFjay4gTm93IHdlIGhhdmUga29iamVjdF9hZGQgYWZ0
+ZXIgaW5pdCgpDQpjYWxsYmFjayByZXR1cm5zIGZvciBwb2xpY3kldS4NCg0KVGhhbmtzLA0KU3Jp
+bml2YXMNCg==
