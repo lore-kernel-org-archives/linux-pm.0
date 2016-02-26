@@ -1,36 +1,54 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Fri, 26 Feb 2016 17:42:29 +0100
-Message-ID: <2368347.dTYjf0g22d@skinner>
-References: <4687430.mfM0GbdeDL@skinner>
+From: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Fri, 26 Feb 2016 12:04:59 -0600
+Message-ID: <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+	<1697588.dLcbZBRWO4@vostro.rjw.lan>
+	<3550740.QzZi28fbXg@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:49169 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932737AbcBZQmb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Feb 2016 11:42:31 -0500
-In-Reply-To: <4687430.mfM0GbdeDL@skinner>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:35040 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754760AbcBZSFB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 13:05:01 -0500
+In-Reply-To: <3550740.QzZi28fbXg@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: lenb@kernel.org, x86@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com, viresh.kumar@linaro.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, devicetree@vger.kernel.org, Scott Wood <scottwood@freescale.com>
 
-This in fact is a re-send, including x86 maintainers.
-Even this is a PM (Power Management) issue, the code is in the
-x86 architecture paths.
+On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+>> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+>> > Register the qoriq cpufreq driver as a cooling device, based on the
+>> > thermal device tree framework. When temperature crosses the passive trip
+>> > point cpufreq is used to throttle CPUs.
+>> >
+>> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+>> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>> Applied, thanks!
+>>
+>
+> I got a randconfig build error today:
+>
+> drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
+>
+> CONFIG_OF=y
+> CONFIG_QORIQ_CPUFREQ=y
+> CONFIG_THERMAL=m
+> CONFIG_THERMAL_OF=y
+>
+> I think you need a 'depends on THERMAL' to prevent the driver from
+> being built-in when THERMAL=m.
 
->From last submit:
-> > Patch is against latest linux-pm kernel.
-> > Rafael: Can you queue this one up, please.
+Maybe this is not the best approach.  The cpufreq feature itself
+should be working independently without thermal framework.  I think we
+should make the qoriq_cpufreq_ready() defined as null function if
+THERMAL is not defined.
 
-> Well, I'm not an x86 arch maintainer.
-> Can you at least CC them, please?
-
-Can someone, best would be a x86 maintainer?, take the patch please if
-it is considered ok.
-
-Thanks,
-
-       Thomas
+Regards,
+Leo
