@@ -1,49 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
-Date: Fri, 26 Feb 2016 07:27:18 +0530
-Message-ID: <20160226015718.GA2639@vireshk-i7>
-References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20151007172343.GE4557@linux>
- <4807388.hTIoZIhGRk@vostro.rjw.lan>
- <20151016054226.GQ19018@linux>
- <1456344052.8680.208.camel@linux.intel.com>
- <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
- <1456357073.3860.21.camel@linux.intel.com>
- <20160225032700.GA2822@vireshk-i7>
- <1456423672.17628.9.camel@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: Simplify the cpufreq_for_each_valid_entry()
+Date: Fri, 26 Feb 2016 08:02:24 +0530
+Message-ID: <20160226023224.GD2639@vireshk-i7>
+References: <1966438.kvLUD13Eaz@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:36642 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbcBZB5U (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 20:57:20 -0500
-Received: by mail-pf0-f176.google.com with SMTP id e127so42919405pfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 17:57:20 -0800 (PST)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:35981 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbcBZCcZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 21:32:25 -0500
+Received: by mail-pa0-f50.google.com with SMTP id yy13so42476675pab.3
+        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 18:32:25 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1456423672.17628.9.camel@linux.intel.com>
+In-Reply-To: <1966438.kvLUD13Eaz@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 25-02-16, 10:07, Srinivas Pandruvada wrote:
-> If I use=A0cpufreq_driver.attr, then it will create sysfs attribute f=
-or
-> every system using acpi-cpufreq, whether they can support it or not.
-> This change is only needed for the later generation of Intel CPUs
-> (IvyBridge and later).=A0
-> There is no standard ACPI way to know the base frequency if we add
-> attribute for all systems using acpi-cpufreq.
+On 26-02-16, 00:22, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> That macro uses an internal static inline function that is first
+> totally unnecessary and second hard to read, so simplify it and
+> get rid of that monster.
+> 
+> No functional changes.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  include/linux/cpufreq.h |   17 +++++------------
+>  1 file changed, 5 insertions(+), 12 deletions(-)
+> 
+> Index: linux-pm/include/linux/cpufreq.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/cpufreq.h
+> +++ linux-pm/include/linux/cpufreq.h
+> @@ -534,16 +534,6 @@ static inline void dev_pm_opp_free_cpufr
+>  }
+>  #endif
+>  
+> -static inline bool cpufreq_next_valid(struct cpufreq_frequency_table **pos)
+> -{
+> -	while ((*pos)->frequency != CPUFREQ_TABLE_END)
+> -		if ((*pos)->frequency != CPUFREQ_ENTRY_INVALID)
+> -			return true;
+> -		else
+> -			(*pos)++;
+> -	return false;
+> -}
+> -
+>  /*
+>   * cpufreq_for_each_entry -	iterate over a cpufreq_frequency_table
+>   * @pos:	the cpufreq_frequency_table * to use as a loop cursor.
+> @@ -560,8 +550,11 @@ static inline bool cpufreq_next_valid(st
+>   * @table:      the cpufreq_frequency_table * to iterate over.
+>   */
+>  
+> -#define cpufreq_for_each_valid_entry(pos, table)	\
+> -	for (pos = table; cpufreq_next_valid(&pos); pos++)
+> +#define cpufreq_for_each_valid_entry(pos, table)			\
+> +	for (pos = table; pos->frequency != CPUFREQ_TABLE_END; pos++)	\
+> +		if (pos->frequency == CPUFREQ_ENTRY_INVALID)		\
+> +			continue;					\
+> +		else
+>  
+>  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+>  				    struct cpufreq_frequency_table *table);
 
-Why can't you set cpufreq_driver.attr selectively from probe()?
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-See below for reference.
-
-commit 21c36d35711d ("cpufreq-dt: make scaling_boost_freqs sysfs attr a=
-vailable
-when boost is enabled")
-
---=20
+-- 
 viresh
