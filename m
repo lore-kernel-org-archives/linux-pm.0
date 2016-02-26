@@ -1,75 +1,70 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [RFC v2 01/12] PM / Domains: Abstract genpd locking
-Date: Fri, 26 Feb 2016 10:08:44 -0800
-Message-ID: <20160226180844.GT28849@codeaurora.org>
-References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
- <1455310238-8963-2-git-send-email-lina.iyer@linaro.org>
+From: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
+Date: Fri, 26 Feb 2016 12:14:20 -0600
+Message-ID: <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
+References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+	<3374654.Hks5DeSGVV@vostro.rjw.lan>
+	<1443215827.32298.130.camel@freescale.com>
+	<2148611.GEpYdTfpoR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1455310238-8963-2-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kevin Hilman <khilman@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35754 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbcBZSOW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 13:14:22 -0500
+In-Reply-To: <2148611.GEpYdTfpoR@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Scott Wood <scottwood@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On 02/12, Lina Iyer wrote:
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 3ddd05d..8204615 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -40,6 +40,46 @@
->  static LIST_HEAD(gpd_list);
->  static DEFINE_MUTEX(gpd_list_lock);
->  
-> +struct genpd_lock_fns {
-> +	void (*lock)(struct generic_pm_domain *genpd);
-> +	void (*lock_nested)(struct generic_pm_domain *genpd, int depth);
-> +	int (*lock_interruptible)(struct generic_pm_domain *genpd);
-> +	void (*unlock)(struct generic_pm_domain *genpd);
-> +};
-> +
-> +static void genpd_lock_irq(struct generic_pm_domain *genpd)
-> +{
-> +	mutex_lock(&genpd->mlock);
-> +}
-> +
-> +static void genpd_lock_irq_nested(struct generic_pm_domain *genpd,
-> +					int depth)
-> +{
-> +	mutex_lock_nested(&genpd->mlock, depth);
-> +}
-> +
-> +static int genpd_lock_interruptible_irq(struct generic_pm_domain *genpd)
-> +{
-> +	return mutex_lock_interruptible(&genpd->mlock);
-> +}
-> +
-> +static void genpd_unlock_irq(struct generic_pm_domain *genpd)
-> +{
-> +	return mutex_unlock(&genpd->mlock);
-> +}
-> +
-> +static struct genpd_lock_fns irq_lock = {
+On Fri, Sep 25, 2015 at 4:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, September 25, 2015 04:17:07 PM Scott Wood wrote:
+>> On Fri, 2015-09-25 at 23:42 +0200, Rafael J. Wysocki wrote:
+>> > On Tuesday, September 22, 2015 12:46:54 PM Viresh Kumar wrote:
+>> > > On 19-09-15, 23:29, Scott Wood wrote:
+>> > > > Get the CPU clock's potential parent clocks from the clock interface
+>> > > > itself, rather than manually parsing the clocks property to find a
+>> > > > phandle, looking at the clock-names property of that, and assuming that
+>> > > > those are valid parent clocks for the cpu clock.
+>> > > >
+>> > > > This is necessary now that the clocks are generated based on the clock
+>> > > > driver's knowledge of the chip rather than a fragile device-tree
+>> > > > description of the mux options.
+>> > > >
+>> > > > We can now rely on the clock driver to ensure that the mux only exposes
+>> > > > options that are valid.  The cpufreq driver was currently being overly
+>> > > > conservative in some cases -- for example, the "min_cpufreq =
+>> > > > get_bus_freq()" restriction only applies to chips with erratum
+>> > > > A-004510, and whether the freq_mask used on p5020 is needed depends on
+>> > > > the actual frequencies of the PLLs (FWIW, p5040 has a similar
+>> > > > limitation but its .freq_mask was zero) -- and the frequency mask
+>> > > > mechanism made assumptions about particular parent clock indices that
+>> > > > are no longer valid.
+>> > > >
+>> > > > Signed-off-by: Scott Wood <scottwood@freescale.com>
+>> > > > ---
+>> > > > v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
+>> > > > to clk api usage
+>> > > >
+>> > > >  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++---------------------
+>> > > > -------
+>> > > >  1 file changed, 40 insertions(+), 97 deletions(-)
+>> > >
+>> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >
+>> > I'm wondering who's supposed to be merging this set?
+>>
+>> As I noted in the cover letter, I'm looking for acks so that I can apply
+>> these to a topic branch which can be pulled through the PPC and ARM trees,
+>> each of which will have patches that depend on it.
+>
+> OK, so no objections from the cpufreq side and you have the ACK from Viresh.
 
-Can this be const? Also, why is this called irq_lock when the
-lock functions are mutex based?
+Hi Scott,
 
-> +	.lock = genpd_lock_irq,
-> +	.lock_nested = genpd_lock_irq_nested,
-> +	.lock_interruptible = genpd_lock_interruptible_irq,
-> +	.unlock = genpd_unlock_irq,
-> +};
-> +
-> @@ -74,6 +75,8 @@ struct generic_pm_domain {
->  	struct genpd_power_state *states;
->  	unsigned int state_count; /* number of states */
->  	unsigned int state_idx; /* state that genpd will go to when off */
-> +	struct genpd_lock_fns *lock_fns;
+Did you drop this patch later?  I can not find it in 4.5-rc still.
 
-const?
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Regards,
+Leo
