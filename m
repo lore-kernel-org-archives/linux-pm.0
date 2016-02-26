@@ -1,183 +1,101 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [RFC v2 02/12] PM / Domains: Support IRQ safe PM domains
-Date: Fri, 26 Feb 2016 10:17:53 -0800
-Message-ID: <20160226181753.GU28849@codeaurora.org>
+Subject: Re: [RFC v2 04/12] ARM: cpuidle: Add runtime PM support for CPUs
+Date: Fri, 26 Feb 2016 10:24:19 -0800
+Message-ID: <20160226182419.GV28849@codeaurora.org>
 References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
- <1455310238-8963-3-git-send-email-lina.iyer@linaro.org>
+ <1455310238-8963-5-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1455310238-8963-3-git-send-email-lina.iyer@linaro.org>
+In-Reply-To: <1455310238-8963-5-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kevin Hilman <khilman@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 02/12, Lina Iyer wrote:
-> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-> index 8ba6625..c06f0b6 100644
-> --- a/Documentation/power/devices.txt
-> +++ b/Documentation/power/devices.txt
-> @@ -607,7 +607,16 @@ individually.  Instead, a set of devices sharing a power resource can be put
->  into a low-power state together at the same time by turning off the shared
->  power resource.  Of course, they also need to be put into the full-power state
->  together, by turning the shared power resource on.  A set of devices with this
-> -property is often referred to as a power domain.
-> +property is often referred to as a power domain. A power domain may also be
-> +nested inside another power domain.
-> +
-> +Devices, by default, operate in process context and if a device can operate in
-> +IRQ safe context, has to be explicitly set as IRQ safe. Power domains by
-
-Devices, by default, operate in process context. If a device can
-operate in IRQ safe context that has to be explicitly indicated
-by setting the irq_safe boolean inside struct generic_pm_domain
-to true. Power domains typically operate in process context...
-
-> +default, operate in process context but could have devices that are IRQ safe.
-> +Such power domains cannot be powered on/off during runtime PM. On the other
-> +hand, an IRQ safe PM domains that have IRQ safe devices may be powered off
-
-On the other hand, IRQ safe PM domains that have ..
-
-> +when all the devices are in idle. An IRQ safe domain may only be attached as a
-
-all the devices in the domain?
-
-> +subdomain to another IRQ safe domain.
+> @@ -45,6 +48,8 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
 >  
->  Support for power domains is provided through the pm_domain field of struct
->  device.  This field is a pointer to an object of type struct dev_pm_domain,
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 8204615..3c4f675 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -75,11 +75,59 @@ static struct genpd_lock_fns irq_lock = {
->  	.unlock = genpd_unlock_irq,
+>  	ret = cpu_pm_enter();
+>  	if (!ret) {
+> +		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
+
+Can you add a comment on why we need to use RCU_NONIDLE here?
+It's not super obvious.
+
+> +
+>  		/*
+>  		 * Pass idle state index to cpu_suspend which in turn will
+>  		 * call the CPU ops suspend protocol with idle index as a
+> @@ -52,6 +57,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>  		 */
+>  		arm_cpuidle_suspend(idx);
+>  
+> +		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+>  		cpu_pm_exit();
+>  	}
+>  
+> @@ -84,6 +90,30 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+>  	{ },
 >  };
 >  
-> +static void genpd_lock_nosleep(struct generic_pm_domain *genpd)
-> +	__acquires(&genpd->slock)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&genpd->slock, flags);
-> +	genpd->lock_flags = flags;
-> +}
-> +
-> +static void genpd_lock_nosleep_nested(struct generic_pm_domain *genpd,
-> +					int depth)
-> +	__acquires(&genpd->slock)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave_nested(&genpd->slock, flags, depth);
-> +	genpd->lock_flags = flags;
-> +}
-> +
-> +static int genpd_lock_nosleep_interruptible(struct generic_pm_domain *genpd)
-> +	__acquires(&genpd->slock)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&genpd->slock, flags);
-> +	genpd->lock_flags = flags;
-> +	return 0;
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +static int cpu_hotplug(struct notifier_block *nb,
 
-	genpd_lock_nosleep(genpd);
-	return 0;
+This function is pretty generically named. Maybe something more
+runtime PM specific or cpu idle specific?
 
-> +}
-> +
-> +static void genpd_unlock_nosleep(struct generic_pm_domain *genpd)
-> +	__releases(&genpd->slock)
+> +			unsigned long action, void *data)
 > +{
-> +	spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
-> +}
+> +	struct device *cpu_dev = get_cpu_device(smp_processor_id());
 > +
-> +static struct genpd_lock_fns no_sleep_lock = {
+> +	/* Execute CPU runtime PM on that CPU */
+> +	switch (action) {
 
-const?
+We could do the & ~CPU_TASKS_FROZEN trick here to save a few cases.
 
-> +	.lock = genpd_lock_nosleep,
-> +	.lock_nested = genpd_lock_nosleep_nested,
-> +	.lock_interruptible = genpd_lock_nosleep_interruptible,
-> +	.unlock = genpd_unlock_nosleep,
-> +};
+> +	case CPU_DYING:
+> +	case CPU_DYING_FROZEN:
+> +		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
+
+And do we actually need to use it for hotplug path? These
+notifiers don't run from idle context do they?
+
+> +		break;
+> +	case CPU_STARTING:
+> +	case CPU_STARTING_FROZEN:
+> +		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+> +		break;
+> +	default:
+> +		break;
+> +	}
 > +
->  #define genpd_lock(p)			p->lock_fns->lock(p)
->  #define genpd_lock_nested(p, d)		p->lock_fns->lock_nested(p, d)
->  #define genpd_lock_interruptible(p)	p->lock_fns->lock_interruptible(p)
->  #define genpd_unlock(p)			p->lock_fns->unlock(p)
->  
-> +static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
-> +		struct generic_pm_domain *genpd)
-> +{
-> +	return dev->power.irq_safe && !genpd->irq_safe;
+> +	return NOTIFY_OK;
 > +}
+> +#endif
 > +
 >  /*
->   * Get the generic PM domain for a particular struct device.
->   * This validates the struct device pointer, the PM domain pointer,
-> @@ -510,8 +570,11 @@ static int pm_genpd_runtime_resume(struct device *dev)
->  	if (IS_ERR(genpd))
->  		return -EINVAL;
+>   * arm_idle_init
+>   *
+> @@ -96,6 +126,7 @@ static int __init arm_idle_init(void)
+>  	int cpu, ret;
+>  	struct cpuidle_driver *drv = &arm_idle_driver;
+>  	struct cpuidle_device *dev;
+> +	struct device *cpu_dev;
 >  
-> -	/* If power.irq_safe, the PM domain is never powered off. */
-> -	if (dev->power.irq_safe) {
-> +	/*
-> +	 * As we dont power off a non IRQ safe domain, which holds
-
-s/dont/don't/
-
-> +	 * an IRQ safe device, we dont need to restore power to it.
-
-s/dont/don't/
-
-> +	 */
-> +	if (dev->power.irq_safe && !genpd->irq_safe) {
->  		timed = false;
->  		goto out;
+>  	/*
+>  	 * Initialize idle states data, starting at index 1.
+> @@ -148,10 +189,17 @@ static int __init arm_idle_init(void)
+>  		}
 >  	}
-> @@ -1296,6 +1359,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
->  		return -EINVAL;
 >  
-> +	if (genpd->irq_safe && !dev->power.irq_safe) {
-> +		dev_err(dev,
-> +			"PM Domain %s is IRQ safe; device has to IRQ safe.\n",
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +	/* Register for hotplug notifications for runtime PM */
+> +	hotcpu_notifier(cpu_hotplug, 0);
 
-has to be?
-
-> +			genpd->name);
-> +		return -EINVAL;
-> +	}
-> +
->  	gpd_data = genpd_alloc_dev_data(dev, genpd, td);
->  	if (IS_ERR(gpd_data))
->  		return PTR_ERR(gpd_data);
-> @@ -1394,6 +1464,17 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
->  	    || genpd == subdomain)
->  		return -EINVAL;
->  
-> +	/*
-> +	 * If the domain can be powered on/off in an IRQ safe
-> +	 * context, ensure that the subdomain can also be
-> +	 * powered on/off in that context.
-> +	 */
-> +	if (!genpd->irq_safe && subdomain->irq_safe) {
-> +		WARN("Parent %s of subdomain %s must be IRQ-safe\n",
-
-Nitpick! IRQ-safe or IRQ safe? Use one consistently please.
-
-> +				genpd->name, subdomain->name);
-> +		return -EINVAL;
-> +	}
-> +
->  	link = kzalloc(sizeof(*link), GFP_KERNEL);
->  	if (!link)
->  		return -ENOMEM;
+Define an empty cpu_hotplug() function for !CONFIG_HOTPLUG_CPU
+and then always call this without the ifdef?
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
