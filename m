@@ -1,68 +1,78 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V6 10/10] ARM64: tegra: Add audio PM domain device node for Tegra210
-Date: Fri, 26 Feb 2016 15:48:44 +0000
-Message-ID: <1456501724-28477-11-git-send-email-jonathanh@nvidia.com>
-References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH/RFC v2 04/11] soc: renesas: rcar: Add DT support for SYSC PM domains
+Date: Fri, 26 Feb 2016 18:28:55 +0200
+Message-ID: <5625748.8DscGPjtYP@avalon>
+References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be> <3535519.g4KL1PCIZy@avalon> <CAMuHMdVo2V7Ez5g8ZW74w-QWiwS8i2mbYeCjOU9brxRzNjMAdg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:1505 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933449AbcBZPt3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 10:49:29 -0500
-In-Reply-To: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVo2V7Ez5g8ZW74w-QWiwS8i2mbYeCjOU9brxRzNjMAdg@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Add the audio power-domain for tegra210. Note that this also removes the
-existing "#power-domain-cells" which was incorrectly included by
-commit e53095857166 ("arm64: tegra: Add Tegra210 support").
+Hi Geert,
 
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+On Friday 26 February 2016 16:41:27 Geert Uytterhoeven wrote:
+> On Mon, Feb 15, 2016 at 11:51 PM, Laurent Pinchart wrote:
+> >>  drivers/soc/renesas/pm-rcar.c | 327 ++++++++++++++++++++++++++++++++++++
+> >>  1 file changed, 327 insertions(+)
+> >> 
+> >> diff --git a/drivers/soc/renesas/pm-rcar.c
+> >> b/drivers/soc/renesas/pm-rcar.c
+> >> index cc684e9cc8db5d1c..c0540934126e58eb 100644
+> >> --- a/drivers/soc/renesas/pm-rcar.c
+> >> +++ b/drivers/soc/renesas/pm-rcar.c
+> >> 
+> >> +static int __init rcar_init_pm_domains(void)
+> >> +{
+> >> +     const struct of_device_id *match;
+> >> +     struct device_node *np, *pmd;
+> >> +     bool scanned = false;
+> >> +     void __iomem *base;
+> >> +     int ret = 0;
+> >> +
+> >> +     for_each_matching_node_and_match(np, rcar_sysc_matches, &match) {
+> >> +             u32 syscier = 0;
+> >> +
+> >> +             rcar_gen = (uintptr_t)match->data;
+> >> +
+> >> +             base = of_iomap(np, 0);
+> >> +             if (!base) {
+> >> +                     pr_warn("%s cannot map reg 0\n", np->full_name);
+> >> +                     continue;
+> >> +             }
+> >> +
+> >> +             rcar_sysc_base = base;  // FIXME conflicts with
+> >> rcar_sysc_init() +
+> >> +             pmd = of_get_child_by_name(np, "pm-domains");
+> >> +             if (!pmd) {
+> >> +                     pr_warn("%s lacks pm-domains node\n",
+> >> np->full_name);
+> > 
+> > Shouldn't you call iounmap() here ?
+> 
+> Yes. Will fix.
+> 
+> >> +             /*
+> >> +              * Enable all interrupt sources, but do not use interrupt
+> >> +              * handler
+> >> +              */
+> >> +             pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
+> >> +             iowrite32(syscier, rcar_sysc_base + SYSCIER);
+> >> +             iowrite32(0, rcar_sysc_base + SYSCIMR);
+> > 
+> > Shouldn't the SYSCIMR bits be set to 1 to mask interrupts ?
+> 
+> That would work, too. It doesn't matter much, as the driver doesn't use
+> interrupts, so they stay disabled at the GIC level.
 
----
+You're right, but as you write to the SYSCIMR register anyway, I'd feel safer 
+if interrupts were masked in it too.
 
-So far I have only added the audio power-domain for tegra210 as this is
-what I have been testing with to date. However, once this series is
-accepted then we can begin to add more.
-
- arch/arm64/boot/dts/nvidia/tegra210.dtsi | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-index cd4f45ccd6a7..d2b6bb4eb202 100644
---- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-@@ -2,6 +2,7 @@
- #include <dt-bindings/gpio/tegra-gpio.h>
- #include <dt-bindings/memory/tegra210-mc.h>
- #include <dt-bindings/pinctrl/pinctrl-tegra.h>
-+#include <dt-bindings/power/tegra-powergate.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- 
- / {
-@@ -581,7 +582,18 @@
- 		clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
- 		clock-names = "pclk", "clk32k_in";
- 
--		#power-domain-cells = <1>;
-+		powergates {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			pd_audio: aud {
-+				reg = <TEGRA_POWERGATE_AUD>;
-+				clocks = <&tegra_car TEGRA210_CLK_APE>,
-+					 <&tegra_car TEGRA210_CLK_APB2APE>;
-+				resets = <&tegra_car 198>;
-+				#power-domain-cells = <0>;
-+			};
-+		};
- 	};
- 
- 	fuse@0,7000f800 {
 -- 
-2.1.4
+Regards,
 
+Laurent Pinchart
