@@ -1,62 +1,33 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for v4.5-rc6
-Date: Fri, 26 Feb 2016 15:22:55 +0100
-Message-ID: <CAJZ5v0jN_7Y09NMrhhJmyKGqmtyHvnaDB+xb_ddtPLaVOQBXfg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: race condition on min/max update?
+Date: Fri, 26 Feb 2016 20:07:49 +0530
+Message-ID: <20160226143749.GA20706@vireshk-i7>
+References: <56CE1432.2020409@linaro.org>
+ <20160226025315.GA9159@vireshk-i7>
+ <5917491.2o5563OMLE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:34755 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754474AbcBZOhu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 09:37:50 -0500
+Received: by mail-pf0-f172.google.com with SMTP id x65so53132687pfb.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Feb 2016 06:37:50 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <5917491.2o5563OMLE@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Linus,
+On 26-02-16, 15:11, Rafael J. Wysocki wrote:
+> A min/max update should trigger ->governor(limits) and then the governor
+> is responsible for taking care of the race (if it needs to).
+> 
+> At least that's how it should work IMO.
 
-Please pull from
+Urg, simple thing.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.5-rc6
-
-to receive power management and ACPI fixes for v4.5-rc6 with top-most
-commit 1711fd9cf92f366d42da29b108746accd807789a
-
- Merge branches 'pm-devfreq' and 'acpi-pci'
-
-on top of commit 81f70ba233d5f660e1ea5fe23260ee323af5d53a
-
- Linux 4.5-rc5
-
-These are two reverts of recent PCI-related ACPI core changes (one
-of which caused some systems to crash on boot and the other was
-a cleanup on top of it) and a devfreq fix for Tegra.
-
-Specifics:
-
- - Revert an ACPI core change related to IRQ management in PCI
-   that introduced code relying on the use of kmalloc() which
-   turned out to also run during early init when that's not
-   available yet and caused some systems to crash on boot for
-   this reason along with a cleanup on top of it (Rafael Wysocki).
-
- - Prevent devfreq from flooding the kernel log with useless
-   messages on Tegra (which started to happen after some recent
-   changes in the devfreq core) by fixing the driver to follow
-   the documentation and the core's expectations in its ->target
-   callback (Tomeu Vizoso).
-
-Thanks!
-
----------------
-
-Rafael J. Wysocki (2):
-      Revert "ACPI / PCI: Simplify acpi_penalize_isa_irq()"
-      Revert "ACPI, PCI, irq: remove interrupt count restriction"
-
-Tomeu Vizoso (1):
-      PM / devfreq: tegra: Set freq in rate callback
-
----------------
-
- drivers/acpi/pci_link.c         | 128 +++++++++++-----------------------------
- drivers/devfreq/tegra-devfreq.c |   2 +
- 2 files changed, 36 insertions(+), 94 deletions(-)
+-- 
+viresh
