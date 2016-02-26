@@ -1,80 +1,55 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on device tree
-Date: Fri, 26 Feb 2016 21:20:04 +0100
-Message-ID: <2396230.MApG9VTrxr@wuerfel>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com> <3550740.QzZi28fbXg@wuerfel> <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Fri, 26 Feb 2016 12:21:38 -0800
+Message-ID: <1456518098.17628.92.camel@linux.intel.com>
+References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20151007172343.GE4557@linux> <4807388.hTIoZIhGRk@vostro.rjw.lan>
+	 <20151016054226.GQ19018@linux> <1456344052.8680.208.camel@linux.intel.com>
+	 <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+	 <1456357073.3860.21.camel@linux.intel.com>
+	 <20160225032700.GA2822@vireshk-i7>
+	 <1456423672.17628.9.camel@linux.intel.com>
+	 <20160226015718.GA2639@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.75]:58942 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755152AbcBZUUO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 15:20:14 -0500
-In-Reply-To: <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:3471 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbcBZUX7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Feb 2016 15:23:59 -0500
+In-Reply-To: <20160226015718.GA2639@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Li Yang <leoli@freescale.com>, devicetree@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com, viresh.kumar@linaro.org, Scott Wood <scottwood@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday 26 February 2016 12:04:59 Li Yang wrote:
-> On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
-> >> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
-> >> > Register the qoriq cpufreq driver as a cooling device, based on the
-> >> > thermal device tree framework. When temperature crosses the passive trip
-> >> > point cpufreq is used to throttle CPUs.
-> >> >
-> >> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> >> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>
-> >> Applied, thanks!
-> >>
-> >
-> > I got a randconfig build error today:
-> >
-> > drivers/built-in.o: In function `qoriq_cpufreq_ready':
-> > debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
-> >
-> > CONFIG_OF=y
-> > CONFIG_QORIQ_CPUFREQ=y
-> > CONFIG_THERMAL=m
-> > CONFIG_THERMAL_OF=y
-> >
-> > I think you need a 'depends on THERMAL' to prevent the driver from
-> > being built-in when THERMAL=m.
-> 
-> Maybe this is not the best approach.  The cpufreq feature itself
-> should be working independently without thermal framework.  I think we
-> should make the qoriq_cpufreq_ready() defined as null function if
-> THERMAL is not defined.
+On Fri, 2016-02-26 at 07:27 +0530, Viresh Kumar wrote:
+> On 25-02-16, 10:07, Srinivas Pandruvada wrote:
+> > If I use=C2=A0cpufreq_driver.attr, then it will create sysfs attrib=
+ute
+> > for
+> > every system using acpi-cpufreq, whether they can support it or
+> > not.
+> > This change is only needed for the later generation of Intel CPUs
+> > (IvyBridge and later).=C2=A0
+> > There is no standard ACPI way to know the base frequency if we add
+> > attribute for all systems using acpi-cpufreq.
+>=20
+> Why can't you set cpufreq_driver.attr selectively from probe()?
+>=20
+We are setting a cpufreq global variable in cpufreq_driver->attr with
+this for each cpu. This feature can be absent in certain cpus. So
+unlike boost it is not system wide, so I have to reset the attr to NULL
+for some cpus.
+Can we assume that cpufreq_driver->init(policy) calls are always
+serialized from cpu online/offline and subsys_interface callback path?
 
-It already does this when CONFIG_THERMAL is not defined, and my
-patch doesn't change that. I'm not sure what you are asking for now.
-
-Do you want to allow using the cpufreq driver as a built-in driver
-even when the thermal code is in a module, and then silently skip
-all thermal management as if it was turned off?
-
-That would be this patch:
-
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index c156f5082758..a8d9241fc1bb 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -48,7 +48,7 @@ cpufreq_power_cooling_register(const struct cpumask *clip_cpus,
-  * @np: a valid struct device_node to the cooling device device tree node.
-  * @clip_cpus: cpumask of cpus where the frequency constraints will happen
-  */
--#ifdef CONFIG_THERMAL_OF
-+#if IS_REACHABLE(CONFIG_THERMAL_OF)
- struct thermal_cooling_device *
- of_cpufreq_cooling_register(struct device_node *np,
- 			    const struct cpumask *clip_cpus);
-
-
-but my feeling is that this would cause more surprises when users
-find their thermal management is not active even though it was
-enabled in Kconfig and the thermal module gets loaded.
-
-	Arnd
+Thanks,
+Srinivas
+> See below for reference.
+>=20
+> commit 21c36d35711d ("cpufreq-dt: make scaling_boost_freqs sysfs attr
+> available
+> when boost is enabled")
+>=20
