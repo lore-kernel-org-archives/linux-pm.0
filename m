@@ -1,90 +1,41 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v2 5/5] arm64: dts: register Hi6220's thermal zone for power allocator
-Date: Fri, 26 Feb 2016 11:43:47 +0800
-Message-ID: <1456458227-12950-6-git-send-email-leo.yan@linaro.org>
-References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv7 PATCH 01/10] sched: Compute cpu capacity available at
+ current frequency
+Date: Fri, 26 Feb 2016 10:14:46 +0100
+Message-ID: <20160226091446.GW6356@twins.programming.kicks-ass.net>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+ <CAJZ5v0hB7KeUPiwie10TeB3cMSPDLVHB5PMgjFn91SCjjC_KjQ@mail.gmail.com>
+ <20160223091916.GF6356@twins.programming.kicks-ass.net>
+ <1913831.CWh4G0m0Lj@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36772 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932288AbcBZDqU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 22:46:20 -0500
-Received: by mail-pa0-f47.google.com with SMTP id yy13so43478928pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 19:46:20 -0800 (PST)
-In-Reply-To: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:52400 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbcBZJO5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 04:14:57 -0500
+Content-Disposition: inline
+In-Reply-To: <1913831.CWh4G0m0Lj@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Leo Yan <leo.yan@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-With profiling Hi6220's power modeling so get dynamic coefficient and
-sustainable power. So pass these parameters from DT.
+On Fri, Feb 26, 2016 at 02:37:19AM +0100, Rafael J. Wysocki wrote:
 
-Now enable power allocator with only one actor for CPU part, so directly
-use cluster0's thermal sensor for monitoring temperature.
+> That's all correct, but my question should rather be: is arch the right
+> granularity?
+> 
+> In theory, there may be ARM64-based platforms using ACPI and behaving
+> like x86 in that respect in the future.
 
-Reviewed-by: Javi Merino <javi.merino@arm.com>
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 33 +++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+Ah, so I started these hooks way before the cpufreq/cpuidle etc.
+integration push.
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index 50ba1b0..d8b963c 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -6,6 +6,7 @@
- 
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/clock/hi6220-clock.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "hisilicon,hi6220";
-@@ -87,6 +88,7 @@
- 			cooling-max-level = <0>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+			dynamic-power-coefficient = <311>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -322,5 +324,36 @@
- 			clock-names = "thermal_clk";
- 			#thermal-sensor-cells = <1>;
- 		};
-+
-+		thermal-zones {
-+
-+			cls0: cls0 {
-+				polling-delay = <1000>;
-+				polling-delay-passive = <100>;
-+				sustainable-power = <3326>;
-+
-+				/* sensor ID */
-+				thermal-sensors = <&tsensor 2>;
-+
-+				trips {
-+					threshold: trip-point@0 {
-+						temperature = <65000>;
-+						type = "passive";
-+					};
-+
-+					target: trip-point@1 {
-+						temperature = <75000>;
-+						type = "passive";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&target>;
-+						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
- 	};
- };
--- 
-1.9.1
+Maybe we should look at something like that, but performance is really
+critical, you most definitely do not want 3 indirections just because
+abstract framework crap, that's measurable overhead on these callsites.
 
+Hence the current inline with constant value or single function call.
+And if archs would want a selector, I would recommend boot time call
+instruction rewrites a-la alternatives/paravirt.
