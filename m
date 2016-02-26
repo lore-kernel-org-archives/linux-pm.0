@@ -1,41 +1,42 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv7 PATCH 01/10] sched: Compute cpu capacity available at
- current frequency
-Date: Fri, 26 Feb 2016 10:14:46 +0100
-Message-ID: <20160226091446.GW6356@twins.programming.kicks-ass.net>
+Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Fri, 26 Feb 2016 10:18:43 +0100
+Message-ID: <20160226091843.GX6356@twins.programming.kicks-ass.net>
 References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <CAJZ5v0hB7KeUPiwie10TeB3cMSPDLVHB5PMgjFn91SCjjC_KjQ@mail.gmail.com>
- <20160223091916.GF6356@twins.programming.kicks-ass.net>
- <1913831.CWh4G0m0Lj@vostro.rjw.lan>
+ <8427745.Y8N2bqC3SO@vostro.rjw.lan>
+ <20160225092837.GD6357@twins.programming.kicks-ass.net>
+ <1792311.cuUNhUde5n@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:52400 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbcBZJO5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 04:14:57 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57175 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbcBZJSt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 04:18:49 -0500
 Content-Disposition: inline
-In-Reply-To: <1913831.CWh4G0m0Lj@vostro.rjw.lan>
+In-Reply-To: <1792311.cuUNhUde5n@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 
-On Fri, Feb 26, 2016 at 02:37:19AM +0100, Rafael J. Wysocki wrote:
-
-> That's all correct, but my question should rather be: is arch the right
-> granularity?
+On Thu, Feb 25, 2016 at 10:08:48PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, February 25, 2016 10:28:37 AM Peter Zijlstra wrote:
+> > Its vile though; one should not spray IPIs if one can avoid it. Such
+> > things are much better done with RCU. Sure sync_sched() takes a little
+> > longer, but this isn't a fast path by any measure.
 > 
-> In theory, there may be ARM64-based platforms using ACPI and behaving
-> like x86 in that respect in the future.
+> I see, thanks!
+> 
+> BTW, when cpufreq_update_util() callbacks are removed, I use synchronize_rcu()
+> to wait for the running ones, but would it be better to use synchronize_sched()
+> in there instead?
 
-Ah, so I started these hooks way before the cpufreq/cpuidle etc.
-integration push.
+So I think we only call the callback with rq->lock held, in which case
+sync_sched() is good enough.
 
-Maybe we should look at something like that, but performance is really
-critical, you most definitely do not want 3 indirections just because
-abstract framework crap, that's measurable overhead on these callsites.
+It would allow you to get rid of the rcu_read_{,un}lock() calls as well.
 
-Hence the current inline with constant value or single function call.
-And if archs would want a selector, I would recommend boot time call
-instruction rewrites a-la alternatives/paravirt.
+The down-side is that it all makes the code a little harder to get,
+because you're relying on caller context to DTRT.
