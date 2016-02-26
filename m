@@ -1,61 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: qoriq depends on thermal
-Date: Fri, 26 Feb 2016 20:50:15 +0530
-Message-ID: <20160226152015.GA21797@vireshk-i7>
-References: <1456489361-469413-1-git-send-email-arnd@arndb.de>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH/RFC v2 04/11] soc: renesas: rcar: Add DT support for SYSC
+ PM domains
+Date: Fri, 26 Feb 2016 16:41:27 +0100
+Message-ID: <CAMuHMdVo2V7Ez5g8ZW74w-QWiwS8i2mbYeCjOU9brxRzNjMAdg@mail.gmail.com>
+References: <1455571020-18968-1-git-send-email-geert+renesas@glider.be>
+	<1455571020-18968-5-git-send-email-geert+renesas@glider.be>
+	<3535519.g4KL1PCIZy@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:35696 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbcBZPUR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 10:20:17 -0500
-Received: by mail-pa0-f50.google.com with SMTP id ho8so54020713pac.2
-        for <linux-pm@vger.kernel.org>; Fri, 26 Feb 2016 07:20:17 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1456489361-469413-1-git-send-email-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <3535519.g4KL1PCIZy@avalon>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Jia Hongtao <hongtao.jia@freescale.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 26-02-16, 13:22, Arnd Bergmann wrote:
-> The thermal subsystem can be a loadable module, so the qoriq driver has to be
-> a module in that case as well in order to call of_cpufreq_cooling_register:
-> 
-> drivers/built-in.o: In function `qoriq_cpufreq_ready':
-> text+0x1f4548): undefined reference to `of_cpufreq_cooling_register'
-> 
-> This adds a dependency that clarifies how we can either build the driver
-> when the cpu_thermal support is completely disabled, or how it depends
-> on the thermal support to enforce the qoriq driver to be a module.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 8ae1702a0df5 ("cpufreq: qoriq: Register cooling device based on device tree")
-> ---
->  drivers/cpufreq/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> My patch is from Dec 22, and I had marked it as submitted, but can't
-> find the email now, so maybe I forgot to send it out back then.
-> 
-> The problem still exists in linux-next, please apply the patch
-> for 4.6.
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index dcb972a38fbc..ca05037dd565 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -297,6 +297,7 @@ endif
->  config QORIQ_CPUFREQ
->  	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
->  	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-> +	depends on !CPU_THERMAL || THERMAL=y
->  	select CLK_QORIQ
->  	help
->  	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
+Hi Laurent,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Mon, Feb 15, 2016 at 11:51 PM, Laurent Pinchart
+<laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org> wrote:
+>>  drivers/soc/renesas/pm-rcar.c | 327 +++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 327 insertions(+)
+>>
+>> diff --git a/drivers/soc/renesas/pm-rcar.c b/drivers/soc/renesas/pm-rcar.c
+>> index cc684e9cc8db5d1c..c0540934126e58eb 100644
+>> --- a/drivers/soc/renesas/pm-rcar.c
+>> +++ b/drivers/soc/renesas/pm-rcar.c
 
--- 
-viresh
+>> +static int __init rcar_init_pm_domains(void)
+>> +{
+>> +     const struct of_device_id *match;
+>> +     struct device_node *np, *pmd;
+>> +     bool scanned = false;
+>> +     void __iomem *base;
+>> +     int ret = 0;
+>> +
+>> +     for_each_matching_node_and_match(np, rcar_sysc_matches, &match) {
+>> +             u32 syscier = 0;
+>> +
+>> +             rcar_gen = (uintptr_t)match->data;
+>> +
+>> +             base = of_iomap(np, 0);
+>> +             if (!base) {
+>> +                     pr_warn("%s cannot map reg 0\n", np->full_name);
+>> +                     continue;
+>> +             }
+>> +
+>> +             rcar_sysc_base = base;  // FIXME conflicts with rcar_sysc_init()
+>> +
+>> +             pmd = of_get_child_by_name(np, "pm-domains");
+>> +             if (!pmd) {
+>> +                     pr_warn("%s lacks pm-domains node\n", np->full_name);
+>
+> Shouldn't you call iounmap() here ?
+
+Yes. Will fix.
+
+>> +             /*
+>> +              * Enable all interrupt sources, but do not use interrupt
+>> +              * handler
+>> +              */
+>> +             pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
+>> +             iowrite32(syscier, rcar_sysc_base + SYSCIER);
+>> +             iowrite32(0, rcar_sysc_base + SYSCIMR);
+>
+> Shouldn't the SYSCIMR bits be set to 1 to mask interrupts ?
+
+That would work, too. It doesn't matter much, as the driver doesn't use
+interrupts, so they stay disabled at the GIC level.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
