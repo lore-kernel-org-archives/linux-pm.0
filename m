@@ -1,65 +1,36 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Fri, 26 Feb 2016 17:38 +0100
-Message-ID: <4687430.mfM0GbdeDL@skinner>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Fri, 26 Feb 2016 17:42:29 +0100
+Message-ID: <2368347.dTYjf0g22d@skinner>
+References: <4687430.mfM0GbdeDL@skinner>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net, Thomas Renninger <trenn@suse.com>, x86@kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:49169 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932737AbcBZQmb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Feb 2016 11:42:31 -0500
+In-Reply-To: <4687430.mfM0GbdeDL@skinner>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: lenb@kernel.org, x86@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-The assumption that BIOSes never want to have this register being set to
-full performance (zero) is wrong.
+This in fact is a re-send, including x86 maintainers.
+Even this is a PM (Power Management) issue, the code is in the
+x86 architecture paths.
 
-While wrongly overruling this BIOS setting and set it from performance
-to normal did not hurt that much, because nobody really knew the effects inside
-Intel processors.
+>From last submit:
+> > Patch is against latest linux-pm kernel.
+> > Rafael: Can you queue this one up, please.
 
-But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo modes
-if this value is not set to performance.
+> Well, I'm not an x86 arch maintainer.
+> Can you at least CC them, please?
 
-So switch logic to tell the user in a friendly way (info) that the CPU is in
-performance mode and how to switch via userspace if this is not intended.
+Can someone, best would be a x86 maintainer?, take the patch please if
+it is considered ok.
 
-But otherwise trust that the BIOS has set the correct value here and do not
-blindly overrule.
+Thanks,
 
-How this has been found: SLE11 had this patch, SLE12 it slipped through.
-It took quite some time to nail down that this patch missing is the reason
-for not entering turbo modes with this specific processor.
-
-Signed-off-by: Thomas Renninger <trenn@suse.com>
-
---- a/arch/x86/kernel/cpu/intel.c	2016-02-26 17:19:55.731042972 +0100
-+++ b/arch/x86/kernel/cpu/intel.c	2016-02-26 17:20:48.598020581 +0100
-@@ -377,8 +377,12 @@ static void init_intel_energy_perf(struc
- 	u64 epb;
- 
- 	/*
--	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
--	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
-+	 * On server platforms energy bias typically is set to
-+	 * performance on purpose.
-+	 * On other platforms it may happen that MSR_IA32_ENERGY_PERF_BIAS
-+	 * did not get initialized properly by BIOS.
-+	 * Best is to to keep BIOS settings and give the user a hint whether
-+	 * to change it via cpupower-set(8) userspace tool at runtime.
- 	 */
- 	if (!cpu_has(c, X86_FEATURE_EPB))
- 		return;
-@@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
- 	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
- 		return;
- 
--	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
--	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
--	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
--	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
-+	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-set(8)\n");
- }
- 
- static void intel_bsp_resume(struct cpuinfo_x86 *c)
+       Thomas
