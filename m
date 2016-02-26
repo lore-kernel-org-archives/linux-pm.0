@@ -1,51 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: race condition on min/max update?
-Date: Fri, 26 Feb 2016 15:11:29 +0100
-Message-ID: <5917491.2o5563OMLE@vostro.rjw.lan>
-References: <56CE1432.2020409@linaro.org> <20160226025315.GA9159@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management and ACPI fixes for v4.5-rc6
+Date: Fri, 26 Feb 2016 15:22:55 +0100
+Message-ID: <CAJZ5v0jN_7Y09NMrhhJmyKGqmtyHvnaDB+xb_ddtPLaVOQBXfg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46174 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751678AbcBZOJy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 09:09:54 -0500
-In-Reply-To: <20160226025315.GA9159@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, February 26, 2016 08:23:15 AM Viresh Kumar wrote:
-> +Rafael and linux-pm list
-> 
-> On 24-02-16, 12:36, Steve Muckle wrote:
-> > Hi Viresh,
-> > 
-> > A while back you mentioned that it is not required to hold policy->rwsem
-> > when calling __cpufreq_driver_target. This simplified things for us a
-> > bit in schedfreq.
-> > 
-> > But if policy->rwsem is not held, how does the frequency transition
-> > process protect itself against policy->min or policy->max changing?
-> > Don't you have a race there where it'd be possible to end up with the
-> > frequency being set to a rate lower than min or higher than max?
-> > 
-> > I've taken a cursory look through the code and don't see what would
-> > prevent this from happening.
-> 
-> It seems that we were not being consistent with this stuff and might have
-> ignored this race altogether. On some cases we do update the frequency with
-> policy->rwsem and in others we don't.
-> 
-> It requires a closer look and cleanup I believe.
+Hi Linus,
 
-A min/max update should trigger ->governor(limits) and then the governor
-is responsible for taking care of the race (if it needs to).
+Please pull from
 
-At least that's how it should work IMO.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.5-rc6
 
-Thanks,
-Rafael
+to receive power management and ACPI fixes for v4.5-rc6 with top-most
+commit 1711fd9cf92f366d42da29b108746accd807789a
 
+ Merge branches 'pm-devfreq' and 'acpi-pci'
+
+on top of commit 81f70ba233d5f660e1ea5fe23260ee323af5d53a
+
+ Linux 4.5-rc5
+
+These are two reverts of recent PCI-related ACPI core changes (one
+of which caused some systems to crash on boot and the other was
+a cleanup on top of it) and a devfreq fix for Tegra.
+
+Specifics:
+
+ - Revert an ACPI core change related to IRQ management in PCI
+   that introduced code relying on the use of kmalloc() which
+   turned out to also run during early init when that's not
+   available yet and caused some systems to crash on boot for
+   this reason along with a cleanup on top of it (Rafael Wysocki).
+
+ - Prevent devfreq from flooding the kernel log with useless
+   messages on Tegra (which started to happen after some recent
+   changes in the devfreq core) by fixing the driver to follow
+   the documentation and the core's expectations in its ->target
+   callback (Tomeu Vizoso).
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (2):
+      Revert "ACPI / PCI: Simplify acpi_penalize_isa_irq()"
+      Revert "ACPI, PCI, irq: remove interrupt count restriction"
+
+Tomeu Vizoso (1):
+      PM / devfreq: tegra: Set freq in rate callback
+
+---------------
+
+ drivers/acpi/pci_link.c         | 128 +++++++++++-----------------------------
+ drivers/devfreq/tegra-devfreq.c |   2 +
+ 2 files changed, 36 insertions(+), 94 deletions(-)
