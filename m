@@ -1,112 +1,200 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V6 05/10] Documentation: DT: bindings: Add power domain info for NVIDIA PMC
-Date: Fri, 26 Feb 2016 15:48:39 +0000
-Message-ID: <1456501724-28477-6-git-send-email-jonathanh@nvidia.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V6 08/10] soc: tegra: pmc: Move powergate definitions to dt-bindings
+Date: Fri, 26 Feb 2016 15:48:42 +0000
+Message-ID: <1456501724-28477-9-git-send-email-jonathanh@nvidia.com>
 References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:15624 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbcBZPtP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 10:49:15 -0500
-In-Reply-To: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1456501724-28477-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Add power-domain binding documentation for the NVIDIA PMC driver in
-order to support generic power-domains.
+Move the Tegra Powergate definitions into include/dt-bindings so that
+these can be used by the powergate bindings in device-tree source files.
 
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Remove the TEGRA_POWERGATE_3D0 definition as this is an alias and is
+not used anywhere.
+
+Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 61 ++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+ drivers/soc/tegra/pmc.c                     |  2 +
+ include/dt-bindings/power/tegra-powergate.h | 88 +++++++++++++++++++++++++++++
+ include/soc/tegra/pmc.h                     | 39 +------------
+ 3 files changed, 93 insertions(+), 36 deletions(-)
+ create mode 100644 include/dt-bindings/power/tegra-powergate.h
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-index 53aa5496c5cf..0c383a9e720e 100644
---- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-+++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-@@ -1,5 +1,7 @@
- NVIDIA Tegra Power Management Controller (PMC)
+diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+index 9d2d204342c5..6c5833bc3fab 100644
+--- a/drivers/soc/tegra/pmc.c
++++ b/drivers/soc/tegra/pmc.c
+@@ -19,6 +19,8 @@
  
-+== Power Management Controller Node ==
-+
- The PMC block interacts with an external Power Management Unit. The PMC
- mostly controls the entry and exit of the system from different sleep
- modes. It provides power-gating controllers for SoC and CPU power-islands.
-@@ -70,6 +72,11 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
-                      Defaults to 0. Valid values are described in section 12.5.2
-                      "Pinmux Support" of the Tegra4 Technical Reference Manual.
+ #define pr_fmt(fmt) "tegra-pmc: " fmt
  
-+Optional nodes:
-+- powergates : This node contains a hierarchy of power domain nodes, which
-+	       should match the powergates on the Tegra SoC. See "Powergate
-+	       Nodes" below.
++#include <dt-bindings/power/tegra-powergate.h>
 +
- Example:
+ #include <linux/kernel.h>
+ #include <linux/clk.h>
+ #include <linux/clk/tegra.h>
+diff --git a/include/dt-bindings/power/tegra-powergate.h b/include/dt-bindings/power/tegra-powergate.h
+new file mode 100644
+index 000000000000..f45d64207bc0
+--- /dev/null
++++ b/include/dt-bindings/power/tegra-powergate.h
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (c) 2016 NVIDIA Corporation
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _DT_BINDINGS_POWER_TEGRA_POWERGATE_H
++#define _DT_BINDINGS_POWER_TEGRA_POWERGATE_H
++
++/*
++ * The below definitions define the bit that is used to control the
++ * various powergates on the Tegra SoC devices. Note that not every
++ * powergate is available on a particular device. The following
++ * table provides a description of the powergates and shows which
++ * powergates are applicable to which devices.
++ *
++ * Name                   Description               Devices Applicable
++ * TEGRA_POWERGATE_CPU    CPU Cluster 0             All
++ * TEGRA_POWERGATE_3D     3D                        All
++ * TEGRA_POWERGATE_VENC   Video Encode              All
++ * TEGRA_POWERGATE_PCIE   PCIE                      Tegra20/30/124/210
++ * TEGRA_POWERGATE_VDEC   Video Decode              Tegra20/30/114/124
++ * TEGRA_POWERGATE_L2     L2 Cache                  Tegra20/30/114/210
++ * TEGRA_POWERGATE_MPE    MPEG Encode               All
++ * TEGRA_POWERGATE_HEG    2D                        Tegra30/114/124/210
++ * TEGRA_POWERGATE_SATA   SATA                      Tegra30/124/210
++ * TEGRA_POWERGATE_CPU1   CPU1                      Tegra30/114/124/210
++ * TEGRA_POWERGATE_CPU2   CPU2                      Tegra30/114/124/210
++ * TEGRA_POWERGATE_CPU3   CPU3                      Tegra30/114/124/210
++ * TEGRA_POWERGATE_CELP   Low-power CPU (cluster 1) Tegra30/114/124
++ * TEGRA_POWERGATE_3D1    3D1                       Tegra30
++ * TEGRA_POWERGATE_CPU0   CPU0                      Tegra114/124/210
++ * TEGRA_POWERGATE_C0NC   Cluster 0 non-CPU         Tegra114/124/210
++ * TEGRA_POWERGATE_C1NC   Cluster 1 non-CPU         Tegra114/124
++ * TEGRA_POWERGATE_SOR    Display interfaces        Tegra124/210
++ * TEGRA_POWERGATE_DIS    Display A                 Tegra114/124/210
++ * TEGRA_POWERGATE_DISB   Display B                 Tegra114/124/210
++ * TEGRA_POWERGATE_XUSBA  XUSB A                    Tegra114/124/210
++ * TEGRA_POWERGATE_XUSBB  XUSB B                    Tegra114/124/210
++ * TEGRA_POWERGATE_XUSBC  XUSB C                    Tegra114/124/210
++ * TEGRA_POWERGATE_VIC    Video Imaging Compositor  Tegra124/210
++ * TEGRA_POWERGATE_IRAM   Internal RAM              Tegra124/210
++ * TEGRA_POWERGATE_NVDEC  NV Video Decode           Tegra210
++ * TEGRA_POWERGATE_NVJPG  NV JPEG                   Tegra210
++ * TEGRA_POWERGATE_AUD    Audio                     Tegra210
++ * TEGRA_POWERGATE_DFD    Debug                     Tegra210
++ * TEGRA_POWERGATE_VE2    Video Encode 2            Tegra210
++ */
++#define TEGRA_POWERGATE_CPU	0
++#define TEGRA_POWERGATE_3D	1
++#define TEGRA_POWERGATE_VENC	2
++#define TEGRA_POWERGATE_PCIE	3
++#define TEGRA_POWERGATE_VDEC	4
++#define TEGRA_POWERGATE_L2	5
++#define TEGRA_POWERGATE_MPE	6
++#define TEGRA_POWERGATE_HEG	7
++#define TEGRA_POWERGATE_SATA	8
++#define TEGRA_POWERGATE_CPU1	9
++#define TEGRA_POWERGATE_CPU2	10
++#define TEGRA_POWERGATE_CPU3	11
++#define TEGRA_POWERGATE_CELP	12
++#define TEGRA_POWERGATE_3D1	13
++#define TEGRA_POWERGATE_CPU0	14
++#define TEGRA_POWERGATE_C0NC	15
++#define TEGRA_POWERGATE_C1NC	16
++#define TEGRA_POWERGATE_SOR	17
++#define TEGRA_POWERGATE_DIS	18
++#define TEGRA_POWERGATE_DISB	19
++#define TEGRA_POWERGATE_XUSBA	20
++#define TEGRA_POWERGATE_XUSBB	21
++#define TEGRA_POWERGATE_XUSBC	22
++#define TEGRA_POWERGATE_VIC	23
++#define TEGRA_POWERGATE_IRAM	24
++#define TEGRA_POWERGATE_NVDEC	25
++#define TEGRA_POWERGATE_NVJPG	26
++#define TEGRA_POWERGATE_AUD	27
++#define TEGRA_POWERGATE_DFD	28
++#define TEGRA_POWERGATE_VE2	29
++#define TEGRA_POWERGATE_MAX	TEGRA_POWERGATE_VE2
++
++#endif
+diff --git a/include/soc/tegra/pmc.h b/include/soc/tegra/pmc.h
+index e9e53473a63e..c028557365ad 100644
+--- a/include/soc/tegra/pmc.h
++++ b/include/soc/tegra/pmc.h
+@@ -19,6 +19,8 @@
+ #ifndef __SOC_TEGRA_PMC_H__
+ #define __SOC_TEGRA_PMC_H__
  
- / SoC dts including file
-@@ -115,3 +122,57 @@ pmc@7000f400 {
- 	};
- 	...
- };
++#include <dt-bindings/power/tegra-powergate.h>
 +
-+
-+== Powergate Nodes ==
-+
-+Each of the powergate nodes represents a power-domain on the Tegra SoC
-+that can be power-gated by the PMC and should be named appropriately.
-+
-+Required properties:
-+  - reg: Contains an integer value that identifies the PMC power-gate.
-+    Please refer to the Tegra TRM for more details. The parent node
-+    must contain the following two properties:
-+    - #address-cells: Must be 1,
-+    - #size-cells: Must be 0.
-+  - clocks: Must contain an entry for each clock required by the PMC for
-+    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
-+  - resets: Must contain an entry for each reset required by the PMC for
-+    controlling a power-gate. See ../reset/reset.txt for details.
-+  - #power-domain-cells: Must be 0.
-+
-+Example:
-+
-+	pmc: pmc@0,7000e400 {
-+		compatible = "nvidia,tegra210-pmc";
-+		reg = <0x0 0x7000e400 0x0 0x400>;
-+		clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
-+		clock-names = "pclk", "clk32k_in";
-+
-+		powergates {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			pd_audio: aud {
-+				reg = <TEGRA_POWERGATE_AUD>;
-+				clocks = <&tegra_car TEGRA210_CLK_APE>,
-+					 <&tegra_car TEGRA210_CLK_APB2APE>;
-+				resets = <&tegra_car 198>;
-+				#power-domain-cells = <0>;
-+			};
-+		};
-+	};
-+
-+
-+== Powergate Clients ==
-+
-+Hardware blocks belonging to a power domain should contain a "power-domains"
-+property that is a phandle pointing to the corresponding powergate node.
-+
-+Example:
-+
-+	adma: adma@702e2000 {
-+		...
-+		power-domains = <&pd_audio>;
-+		...
-+	};
+ #include <linux/reboot.h>
+ 
+ #include <soc/tegra/pm.h>
+@@ -39,43 +41,8 @@ int tegra_pmc_cpu_remove_clamping(unsigned int cpuid);
+ #endif /* CONFIG_SMP */
+ 
+ /*
+- * powergate and I/O rail APIs
++ * I/O rail APIs
+  */
+-
+-#define TEGRA_POWERGATE_CPU	0
+-#define TEGRA_POWERGATE_3D	1
+-#define TEGRA_POWERGATE_VENC	2
+-#define TEGRA_POWERGATE_PCIE	3
+-#define TEGRA_POWERGATE_VDEC	4
+-#define TEGRA_POWERGATE_L2	5
+-#define TEGRA_POWERGATE_MPE	6
+-#define TEGRA_POWERGATE_HEG	7
+-#define TEGRA_POWERGATE_SATA	8
+-#define TEGRA_POWERGATE_CPU1	9
+-#define TEGRA_POWERGATE_CPU2	10
+-#define TEGRA_POWERGATE_CPU3	11
+-#define TEGRA_POWERGATE_CELP	12
+-#define TEGRA_POWERGATE_3D1	13
+-#define TEGRA_POWERGATE_CPU0	14
+-#define TEGRA_POWERGATE_C0NC	15
+-#define TEGRA_POWERGATE_C1NC	16
+-#define TEGRA_POWERGATE_SOR	17
+-#define TEGRA_POWERGATE_DIS	18
+-#define TEGRA_POWERGATE_DISB	19
+-#define TEGRA_POWERGATE_XUSBA	20
+-#define TEGRA_POWERGATE_XUSBB	21
+-#define TEGRA_POWERGATE_XUSBC	22
+-#define TEGRA_POWERGATE_VIC	23
+-#define TEGRA_POWERGATE_IRAM	24
+-#define TEGRA_POWERGATE_NVDEC	25
+-#define TEGRA_POWERGATE_NVJPG	26
+-#define TEGRA_POWERGATE_AUD	27
+-#define TEGRA_POWERGATE_DFD	28
+-#define TEGRA_POWERGATE_VE2	29
+-#define TEGRA_POWERGATE_MAX	TEGRA_POWERGATE_VE2
+-
+-#define TEGRA_POWERGATE_3D0	TEGRA_POWERGATE_3D
+-
+ #define TEGRA_IO_RAIL_CSIA	0
+ #define TEGRA_IO_RAIL_CSIB	1
+ #define TEGRA_IO_RAIL_DSI	2
 -- 
 2.1.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
