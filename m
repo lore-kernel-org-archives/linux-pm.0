@@ -1,52 +1,60 @@
-From: Li Yang <leoli-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
- device tree
-Date: Fri, 26 Feb 2016 17:31:22 -0600
-Message-ID: <CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw@mail.gmail.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
-	<2396230.MApG9VTrxr@wuerfel>
-	<CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
-	<3593471.QAyZdAuTcW@wuerfel>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: qoriq depends on thermal
+Date: Sat, 27 Feb 2016 00:57:40 +0100
+Message-ID: <2754986.CN3tVUPQd5@vostro.rjw.lan>
+References: <1456489361-469413-1-git-send-email-arnd@arndb.de> <20160226152015.GA21797@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3593471.QAyZdAuTcW@wuerfel>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:44142 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755249AbcBZX4F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 18:56:05 -0500
+In-Reply-To: <20160226152015.GA21797@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Jia Hongtao <hongtao.jia@freescale.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Feb 26, 2016 at 5:16 PM, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org> wrote:
-> On Friday 26 February 2016 17:07:09 Li Yang wrote:
->>
->> I don't have a perfect solution either.  But I think this is still
->> better than making cpufreq not usable.  The cpufreq driver will print
->> out an error message if thermal is not reachable.  Maybe this can
->> relief the confusion a little bit?
->
-> With my patch, the configuration will just force the cpufreq
-> driver to be a loadable module as well if thermal is a module,
-> so the dependency can be resolved by loading the thermal module first.
+On Friday, February 26, 2016 08:50:15 PM Viresh Kumar wrote:
+> On 26-02-16, 13:22, Arnd Bergmann wrote:
+> > The thermal subsystem can be a loadable module, so the qoriq driver has to be
+> > a module in that case as well in order to call of_cpufreq_cooling_register:
+> > 
+> > drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> > text+0x1f4548): undefined reference to `of_cpufreq_cooling_register'
+> > 
+> > This adds a dependency that clarifies how we can either build the driver
+> > when the cpu_thermal support is completely disabled, or how it depends
+> > on the thermal support to enforce the qoriq driver to be a module.
+> > 
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > Fixes: 8ae1702a0df5 ("cpufreq: qoriq: Register cooling device based on device tree")
+> > ---
+> >  drivers/cpufreq/Kconfig | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > My patch is from Dec 22, and I had marked it as submitted, but can't
+> > find the email now, so maybe I forgot to send it out back then.
+> > 
+> > The problem still exists in linux-next, please apply the patch
+> > for 4.6.
+> > 
+> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> > index dcb972a38fbc..ca05037dd565 100644
+> > --- a/drivers/cpufreq/Kconfig
+> > +++ b/drivers/cpufreq/Kconfig
+> > @@ -297,6 +297,7 @@ endif
+> >  config QORIQ_CPUFREQ
+> >  	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> >  	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> > +	depends on !CPU_THERMAL || THERMAL=y
+> >  	select CLK_QORIQ
+> >  	help
+> >  	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-It would be perfect if this it true.  But I tried with the following
-change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
+Applied, thanks!
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index dcb972a38fbc..ca05037dd565 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -297,6 +297,7 @@ endif
- config QORIQ_CPUFREQ
-        tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-        depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-+       depends on !CPU_THERMAL || THERMAL=y
-        select CLK_QORIQ
-        help
-          This adds the CPUFreq driver support for Freescale QorIQ SoCs
-
-Regards,
-Leo
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
