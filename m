@@ -1,57 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFCv7 PATCH 01/10] sched: Compute cpu capacity available at current frequency
-Date: Fri, 26 Feb 2016 02:37:19 +0100
-Message-ID: <1913831.CWh4G0m0Lj@vostro.rjw.lan>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org> <CAJZ5v0hB7KeUPiwie10TeB3cMSPDLVHB5PMgjFn91SCjjC_KjQ@mail.gmail.com> <20160223091916.GF6356@twins.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Fri, 26 Feb 2016 07:27:18 +0530
+Message-ID: <20160226015718.GA2639@vireshk-i7>
+References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20151007172343.GE4557@linux>
+ <4807388.hTIoZIhGRk@vostro.rjw.lan>
+ <20151016054226.GQ19018@linux>
+ <1456344052.8680.208.camel@linux.intel.com>
+ <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+ <1456357073.3860.21.camel@linux.intel.com>
+ <20160225032700.GA2822@vireshk-i7>
+ <1456423672.17628.9.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65467 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752550AbcBZBfo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 20:35:44 -0500
-In-Reply-To: <20160223091916.GF6356@twins.programming.kicks-ass.net>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:36642 "EHLO
+	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbcBZB5U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Feb 2016 20:57:20 -0500
+Received: by mail-pf0-f176.google.com with SMTP id e127so42919405pfe.3
+        for <linux-pm@vger.kernel.org>; Thu, 25 Feb 2016 17:57:20 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1456423672.17628.9.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, February 23, 2016 10:19:16 AM Peter Zijlstra wrote:
-> On Tue, Feb 23, 2016 at 02:41:20AM +0100, Rafael J. Wysocki wrote:
-> > >  /*
-> > > + * Returns the current capacity of cpu after applying both
-> > > + * cpu and freq scaling.
-> > > + */
-> > > +static unsigned long capacity_curr_of(int cpu)
-> > > +{
-> > > +       return cpu_rq(cpu)->cpu_capacity_orig *
-> > > +              arch_scale_freq_capacity(NULL, cpu)
-> > 
-> > What about architectures that don't have this?
-> 
-> They get the 'default' which is a constant SCHED_CAPACITY_SCALE unit.
-> 
-> > Why is that an architecture feature?
-> 
-> Because not all archs can tell the frequency the same way. Some you
-> program the DVFS state and they really run at this speed, for those you
-> can simply report back.
-> 
-> For others, x86 for example, you program a DVFS 'hint' and the hardware
-> does whatever, we'd have to do APERF/MPERF samples to get an idea of the
-> actual frequency we ran at.
-> 
-> Also, the having of this makes the load tracking slightly more
-> expensive, instead of compile time constants we get function calls and
-> actual multiplications. Its not _too_ bad, but still.
+On 25-02-16, 10:07, Srinivas Pandruvada wrote:
+> If I use=A0cpufreq_driver.attr, then it will create sysfs attribute f=
+or
+> every system using acpi-cpufreq, whether they can support it or not.
+> This change is only needed for the later generation of Intel CPUs
+> (IvyBridge and later).=A0
+> There is no standard ACPI way to know the base frequency if we add
+> attribute for all systems using acpi-cpufreq.
 
-That's all correct, but my question should rather be: is arch the right
-granularity?
+Why can't you set cpufreq_driver.attr selectively from probe()?
 
-In theory, there may be ARM64-based platforms using ACPI and behaving
-like x86 in that respect in the future.
+See below for reference.
 
-Thanks,
-Rafael
+commit 21c36d35711d ("cpufreq-dt: make scaling_boost_freqs sysfs attr a=
+vailable
+when boost is enabled")
 
+--=20
+viresh
