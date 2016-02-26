@@ -1,51 +1,51 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] cpufreq: qoriq depends on thermal
-Date: Fri, 26 Feb 2016 13:22:35 +0100
-Message-ID: <1456489361-469413-1-git-send-email-arnd@arndb.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: race condition on min/max update?
+Date: Fri, 26 Feb 2016 15:11:29 +0100
+Message-ID: <5917491.2o5563OMLE@vostro.rjw.lan>
+References: <56CE1432.2020409@linaro.org> <20160226025315.GA9159@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.130]:57386 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbcBZMXT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 07:23:19 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:46174 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751678AbcBZOJy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 09:09:54 -0500
+In-Reply-To: <20160226025315.GA9159@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-arm-kernel@lists.infradead.org, Jia Hongtao <hongtao.jia@freescale.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-The thermal subsystem can be a loadable module, so the qoriq driver has to be
-a module in that case as well in order to call of_cpufreq_cooling_register:
+On Friday, February 26, 2016 08:23:15 AM Viresh Kumar wrote:
+> +Rafael and linux-pm list
+> 
+> On 24-02-16, 12:36, Steve Muckle wrote:
+> > Hi Viresh,
+> > 
+> > A while back you mentioned that it is not required to hold policy->rwsem
+> > when calling __cpufreq_driver_target. This simplified things for us a
+> > bit in schedfreq.
+> > 
+> > But if policy->rwsem is not held, how does the frequency transition
+> > process protect itself against policy->min or policy->max changing?
+> > Don't you have a race there where it'd be possible to end up with the
+> > frequency being set to a rate lower than min or higher than max?
+> > 
+> > I've taken a cursory look through the code and don't see what would
+> > prevent this from happening.
+> 
+> It seems that we were not being consistent with this stuff and might have
+> ignored this race altogether. On some cases we do update the frequency with
+> policy->rwsem and in others we don't.
+> 
+> It requires a closer look and cleanup I believe.
 
-drivers/built-in.o: In function `qoriq_cpufreq_ready':
-text+0x1f4548): undefined reference to `of_cpufreq_cooling_register'
+A min/max update should trigger ->governor(limits) and then the governor
+is responsible for taking care of the race (if it needs to).
 
-This adds a dependency that clarifies how we can either build the driver
-when the cpu_thermal support is completely disabled, or how it depends
-on the thermal support to enforce the qoriq driver to be a module.
+At least that's how it should work IMO.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 8ae1702a0df5 ("cpufreq: qoriq: Register cooling device based on device tree")
----
- drivers/cpufreq/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-My patch is from Dec 22, and I had marked it as submitted, but can't
-find the email now, so maybe I forgot to send it out back then.
-
-The problem still exists in linux-next, please apply the patch
-for 4.6.
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index dcb972a38fbc..ca05037dd565 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -297,6 +297,7 @@ endif
- config QORIQ_CPUFREQ
- 	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
- 	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-+	depends on !CPU_THERMAL || THERMAL=y
- 	select CLK_QORIQ
- 	help
- 	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
--- 
-2.7.0
+Thanks,
+Rafael
 
