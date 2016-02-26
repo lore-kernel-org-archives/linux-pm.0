@@ -1,65 +1,80 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/2] goldfish: Enable ACPI-based enumeration for goldfish
- battery
-Date: Fri, 26 Feb 2016 21:03:26 +0100
-Message-ID: <20160226200326.GA19840@earth>
-References: <20160226184455.2962.92705.stgit@localhost.localdomain>
- <20160226184541.2962.40016.stgit@localhost.localdomain>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on device tree
+Date: Fri, 26 Feb 2016 21:20:04 +0100
+Message-ID: <2396230.MApG9VTrxr@wuerfel>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com> <3550740.QzZi28fbXg@wuerfel> <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43411 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbcBZUDc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Feb 2016 15:03:32 -0500
-Content-Disposition: inline
-In-Reply-To: <20160226184541.2962.40016.stgit@localhost.localdomain>
+Received: from mout.kundenserver.de ([217.72.192.75]:58942 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755152AbcBZUUO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 15:20:14 -0500
+In-Reply-To: <CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan <alan@linux.intel.com>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Li Yang <leoli@freescale.com>, devicetree@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia Hongtao <hongtao.jia@freescale.com>, edubezval@gmail.com, viresh.kumar@linaro.org, Scott Wood <scottwood@freescale.com>
+
+On Friday 26 February 2016 12:04:59 Li Yang wrote:
+> On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+> >> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+> >> > Register the qoriq cpufreq driver as a cooling device, based on the
+> >> > thermal device tree framework. When temperature crosses the passive trip
+> >> > point cpufreq is used to throttle CPUs.
+> >> >
+> >> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> >> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >>
+> >> Applied, thanks!
+> >>
+> >
+> > I got a randconfig build error today:
+> >
+> > drivers/built-in.o: In function `qoriq_cpufreq_ready':
+> > debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
+> >
+> > CONFIG_OF=y
+> > CONFIG_QORIQ_CPUFREQ=y
+> > CONFIG_THERMAL=m
+> > CONFIG_THERMAL_OF=y
+> >
+> > I think you need a 'depends on THERMAL' to prevent the driver from
+> > being built-in when THERMAL=m.
+> 
+> Maybe this is not the best approach.  The cpufreq feature itself
+> should be working independently without thermal framework.  I think we
+> should make the qoriq_cpufreq_ready() defined as null function if
+> THERMAL is not defined.
+
+It already does this when CONFIG_THERMAL is not defined, and my
+patch doesn't change that. I'm not sure what you are asking for now.
+
+Do you want to allow using the cpufreq driver as a built-in driver
+even when the thermal code is in a module, and then silently skip
+all thermal management as if it was turned off?
+
+That would be this patch:
+
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index c156f5082758..a8d9241fc1bb 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -48,7 +48,7 @@ cpufreq_power_cooling_register(const struct cpumask *clip_cpus,
+  * @np: a valid struct device_node to the cooling device device tree node.
+  * @clip_cpus: cpumask of cpus where the frequency constraints will happen
+  */
+-#ifdef CONFIG_THERMAL_OF
++#if IS_REACHABLE(CONFIG_THERMAL_OF)
+ struct thermal_cooling_device *
+ of_cpufreq_cooling_register(struct device_node *np,
+ 			    const struct cpumask *clip_cpus);
 
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+but my feeling is that this would cause more surprises when users
+find their thermal management is not active even though it was
+enabled in Kconfig and the thermal module gets loaded.
 
-Hi Alan,
-
-On Fri, Feb 26, 2016 at 06:45:50PM +0000, Alan wrote:
-> From: Yu Ning <yu.ning@intel.com>
->=20
-> Besides adding ACPI bindings to the goldfish battery driver, modify the
-> ACPI driver to inform it that goldfish battery is a platform device.
-> The latter step is necessary with kernel 3.16 or newer.
-
-I don't understand the second part of the commit message. The patch
-only seems to add ACPI bindings to the goldfish battery driver. Did
-you forget to add something?
-
--- Sebastian
-
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJW0K+KAAoJENju1/PIO/qaMI4P/2WiPRqiAbrXMc1KHi5cQvHm
-CtokjuGk2qQ7UX/+IUeWmCRMGJ/HfdzLT9sXZu7UNlyqdkKzzRN3uN0GFoIg7SXi
-PGzjPRiuq/Yy1bVrvl3oX1eSVR1mdZ7FylA1EnwHX6DRiJzHVbIzSmarHW5Jb7RT
-0Tnm06WKxvhwyzDUTjGav9ZnXYcwiZta8uRrUkZTUMNHYRtKgd4qlyUMvAe5cBIO
-hzTGHfUZou+0HQyNQEgGEXM/xwvvnTnDFyWgnAUzxCNjnrSulg4jIsqHfj1eK5QI
-J1pjtnwKt4a8gLy6yjdjTFBGKD87tqND9402Sl485BGf0ivB7LnJuB0bwqtvZe56
-3Afqt6yieNFcbfXklyB8MKevToIbHLyr42Hrx8cezTCJWX3m2/n1Pk8CybwWMxNN
-jtTwOzyO9NZPaKZMDU8/4J6a0xtqY/01DS7xKinGFAZHVnGw3vLpInu/VyEp/goK
-n7FYlpnG6e8Ig6fUgtm632mjIWku/W92/5jQUZG9FeHb2237cDEupBeoQvOxWBvb
-Jigudtk+Ix65fwLqaY7G35XXweXKFsJ3TTBIApLrhhTGaqJaNsgAW6WVdverQpHe
-ysa3csQqbkdIj8WdcaTGl5gBYUJFtnlPyGIkk1D1dHJTXpD9+C/pGv1l6VsGM73O
-7sVOry1DMKBnrLnrLGR/
-=XzE8
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
+	Arnd
