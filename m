@@ -1,70 +1,81 @@
-From: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
-Date: Fri, 26 Feb 2016 12:14:20 -0600
-Message-ID: <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
+From: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock
+ implementation details
+Date: Fri, 26 Feb 2016 12:16:14 -0600
+Message-ID: <1456510574.5360.48.camel@buserror.net>
 References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-	<3374654.Hks5DeSGVV@vostro.rjw.lan>
-	<1443215827.32298.130.camel@freescale.com>
-	<2148611.GEpYdTfpoR@vostro.rjw.lan>
+ <3374654.Hks5DeSGVV@vostro.rjw.lan>
+ <1443215827.32298.130.camel@freescale.com>
+ <2148611.GEpYdTfpoR@vostro.rjw.lan>
+ <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:35754 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbcBZSOW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 13:14:22 -0500
-In-Reply-To: <2148611.GEpYdTfpoR@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <CADRPPNRiU-9b5J_9+0ofk6huLCn4LPm1s_2yd=Py0eBBi9GGXg@mail.gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Li Yang <leoli@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-clk@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Scott Wood <scottwood@freescale.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On Fri, Sep 25, 2015 at 4:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, September 25, 2015 04:17:07 PM Scott Wood wrote:
->> On Fri, 2015-09-25 at 23:42 +0200, Rafael J. Wysocki wrote:
->> > On Tuesday, September 22, 2015 12:46:54 PM Viresh Kumar wrote:
->> > > On 19-09-15, 23:29, Scott Wood wrote:
->> > > > Get the CPU clock's potential parent clocks from the clock interface
->> > > > itself, rather than manually parsing the clocks property to find a
->> > > > phandle, looking at the clock-names property of that, and assuming that
->> > > > those are valid parent clocks for the cpu clock.
->> > > >
->> > > > This is necessary now that the clocks are generated based on the clock
->> > > > driver's knowledge of the chip rather than a fragile device-tree
->> > > > description of the mux options.
->> > > >
->> > > > We can now rely on the clock driver to ensure that the mux only exposes
->> > > > options that are valid.  The cpufreq driver was currently being overly
->> > > > conservative in some cases -- for example, the "min_cpufreq =
->> > > > get_bus_freq()" restriction only applies to chips with erratum
->> > > > A-004510, and whether the freq_mask used on p5020 is needed depends on
->> > > > the actual frequencies of the PLLs (FWIW, p5040 has a similar
->> > > > limitation but its .freq_mask was zero) -- and the frequency mask
->> > > > mechanism made assumptions about particular parent clock indices that
->> > > > are no longer valid.
->> > > >
->> > > > Signed-off-by: Scott Wood <scottwood@freescale.com>
->> > > > ---
->> > > > v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
->> > > > to clk api usage
->> > > >
->> > > >  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++---------------------
->> > > > -------
->> > > >  1 file changed, 40 insertions(+), 97 deletions(-)
->> > >
->> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> >
->> > I'm wondering who's supposed to be merging this set?
->>
->> As I noted in the cover letter, I'm looking for acks so that I can apply
->> these to a topic branch which can be pulled through the PPC and ARM trees,
->> each of which will have patches that depend on it.
->
-> OK, so no objections from the cpufreq side and you have the ACK from Viresh.
-
-Hi Scott,
-
-Did you drop this patch later?  I can not find it in 4.5-rc still.
-
-Regards,
-Leo
+T24gRnJpLCAyMDE2LTAyLTI2IGF0IDEyOjE0IC0wNjAwLCBMaSBZYW5nIHdyb3RlOgo+IE9uIEZy
+aSwgU2VwIDI1LCAyMDE1IGF0IDQ6NTAgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNv
+Y2tpLm5ldD4KPiB3cm90ZToKPiA+IE9uIEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDA0OjE3
+OjA3IFBNIFNjb3R0IFdvb2Qgd3JvdGU6Cj4gPiA+IE9uIEZyaSwgMjAxNS0wOS0yNSBhdCAyMzo0
+MiArMDIwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gPiA+ID4gT24gVHVlc2RheSwgU2Vw
+dGVtYmVyIDIyLCAyMDE1IDEyOjQ2OjU0IFBNIFZpcmVzaCBLdW1hciB3cm90ZToKPiA+ID4gPiA+
+IE9uIDE5LTA5LTE1LCAyMzoyOSwgU2NvdHQgV29vZCB3cm90ZToKPiA+ID4gPiA+ID4gR2V0IHRo
+ZSBDUFUgY2xvY2sncyBwb3RlbnRpYWwgcGFyZW50IGNsb2NrcyBmcm9tIHRoZSBjbG9jawo+ID4g
+PiA+ID4gPiBpbnRlcmZhY2UKPiA+ID4gPiA+ID4gaXRzZWxmLCByYXRoZXIgdGhhbiBtYW51YWxs
+eSBwYXJzaW5nIHRoZSBjbG9ja3MgcHJvcGVydHkgdG8gZmluZCBhCj4gPiA+ID4gPiA+IHBoYW5k
+bGUsIGxvb2tpbmcgYXQgdGhlIGNsb2NrLW5hbWVzIHByb3BlcnR5IG9mIHRoYXQsIGFuZCBhc3N1
+bWluZwo+ID4gPiA+ID4gPiB0aGF0Cj4gPiA+ID4gPiA+IHRob3NlIGFyZSB2YWxpZCBwYXJlbnQg
+Y2xvY2tzIGZvciB0aGUgY3B1IGNsb2NrLgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gVGhpcyBp
+cyBuZWNlc3Nhcnkgbm93IHRoYXQgdGhlIGNsb2NrcyBhcmUgZ2VuZXJhdGVkIGJhc2VkIG9uIHRo
+ZQo+ID4gPiA+ID4gPiBjbG9jawo+ID4gPiA+ID4gPiBkcml2ZXIncyBrbm93bGVkZ2Ugb2YgdGhl
+IGNoaXAgcmF0aGVyIHRoYW4gYSBmcmFnaWxlIGRldmljZS10cmVlCj4gPiA+ID4gPiA+IGRlc2Ny
+aXB0aW9uIG9mIHRoZSBtdXggb3B0aW9ucy4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IFdlIGNh
+biBub3cgcmVseSBvbiB0aGUgY2xvY2sgZHJpdmVyIHRvIGVuc3VyZSB0aGF0IHRoZSBtdXggb25s
+eQo+ID4gPiA+ID4gPiBleHBvc2VzCj4gPiA+ID4gPiA+IG9wdGlvbnMgdGhhdCBhcmUgdmFsaWQu
+ICBUaGUgY3B1ZnJlcSBkcml2ZXIgd2FzIGN1cnJlbnRseSBiZWluZwo+ID4gPiA+ID4gPiBvdmVy
+bHkKPiA+ID4gPiA+ID4gY29uc2VydmF0aXZlIGluIHNvbWUgY2FzZXMgLS0gZm9yIGV4YW1wbGUs
+IHRoZSAibWluX2NwdWZyZXEgPQo+ID4gPiA+ID4gPiBnZXRfYnVzX2ZyZXEoKSIgcmVzdHJpY3Rp
+b24gb25seSBhcHBsaWVzIHRvIGNoaXBzIHdpdGggZXJyYXR1bQo+ID4gPiA+ID4gPiBBLTAwNDUx
+MCwgYW5kIHdoZXRoZXIgdGhlIGZyZXFfbWFzayB1c2VkIG9uIHA1MDIwIGlzIG5lZWRlZAo+ID4g
+PiA+ID4gPiBkZXBlbmRzIG9uCj4gPiA+ID4gPiA+IHRoZSBhY3R1YWwgZnJlcXVlbmNpZXMgb2Yg
+dGhlIFBMTHMgKEZXSVcsIHA1MDQwIGhhcyBhIHNpbWlsYXIKPiA+ID4gPiA+ID4gbGltaXRhdGlv
+biBidXQgaXRzIC5mcmVxX21hc2sgd2FzIHplcm8pIC0tIGFuZCB0aGUgZnJlcXVlbmN5IG1hc2sK
+PiA+ID4gPiA+ID4gbWVjaGFuaXNtIG1hZGUgYXNzdW1wdGlvbnMgYWJvdXQgcGFydGljdWxhciBw
+YXJlbnQgY2xvY2sgaW5kaWNlcwo+ID4gPiA+ID4gPiB0aGF0Cj4gPiA+ID4gPiA+IGFyZSBubyBs
+b25nZXIgdmFsaWQuCj4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBTY290
+dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4KPiA+ID4gPiA+ID4gLS0tCj4gPiA+ID4g
+PiA+IHYzOiB3YXMgcGF0Y2ggMS81IGFuZCBwYXRjaCA0LzUsIHBsdXMgYmxhY2tsaXN0IGU2NTAw
+IGFuZCBjaGFuZ2VzCj4gPiA+ID4gPiA+IHRvIGNsayBhcGkgdXNhZ2UKPiA+ID4gPiA+ID4gCj4g
+PiA+ID4gPiA+ICBkcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIHwgMTM3ICsrKysrKysr
+KysrKy0tLS0tLS0tLS0tLS0tLQo+ID4gPiA+ID4gPiAtLS0tLS0KPiA+ID4gPiA+ID4gLS0tLS0t
+LQo+ID4gPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDQwIGluc2VydGlvbnMoKyksIDk3IGRlbGV0
+aW9ucygtKQo+ID4gPiA+ID4gCj4gPiA+ID4gPiBBY2tlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJl
+c2gua3VtYXJAbGluYXJvLm9yZz4KPiA+ID4gPiAKPiA+ID4gPiBJJ20gd29uZGVyaW5nIHdobydz
+IHN1cHBvc2VkIHRvIGJlIG1lcmdpbmcgdGhpcyBzZXQ/Cj4gPiA+IAo+ID4gPiBBcyBJIG5vdGVk
+IGluIHRoZSBjb3ZlciBsZXR0ZXIsIEknbSBsb29raW5nIGZvciBhY2tzIHNvIHRoYXQgSSBjYW4g
+YXBwbHkKPiA+ID4gdGhlc2UgdG8gYSB0b3BpYyBicmFuY2ggd2hpY2ggY2FuIGJlIHB1bGxlZCB0
+aHJvdWdoIHRoZSBQUEMgYW5kIEFSTQo+ID4gPiB0cmVlcywKPiA+ID4gZWFjaCBvZiB3aGljaCB3
+aWxsIGhhdmUgcGF0Y2hlcyB0aGF0IGRlcGVuZCBvbiBpdC4KPiA+IAo+ID4gT0ssIHNvIG5vIG9i
+amVjdGlvbnMgZnJvbSB0aGUgY3B1ZnJlcSBzaWRlIGFuZCB5b3UgaGF2ZSB0aGUgQUNLIGZyb20K
+PiA+IFZpcmVzaC4KPiAKPiBIaSBTY290dCwKPiAKPiBEaWQgeW91IGRyb3AgdGhpcyBwYXRjaCBs
+YXRlcj8gIEkgY2FuIG5vdCBmaW5kIGl0IGluIDQuNS1yYyBzdGlsbC4KCkkgd2FzIGFza2VkIHRv
+IGdldCBhbiBhY2sgZnJvbSBSdXNzZWxsIEtpbmcgcGF0Y2ggNC81LCB3aGljaCB0aGlzIHBhdGNo
+CnJlcXVpcmVzLiAgRGVzcGl0ZSByZXBlYXRlZCBwaW5ncywgSSBjb3VsZCBub3QgZ2V0IGEgcmVw
+bHkgZnJvbSBSdXNzZWxsIEtpbmcuCgotU2NvdHQKCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xp
+bnV4cHBjLWRldg==
