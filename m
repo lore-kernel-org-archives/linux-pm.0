@@ -1,42 +1,39 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Fri, 26 Feb 2016 10:18:43 +0100
-Message-ID: <20160226091843.GX6356@twins.programming.kicks-ass.net>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <8427745.Y8N2bqC3SO@vostro.rjw.lan>
- <20160225092837.GD6357@twins.programming.kicks-ass.net>
- <1792311.cuUNhUde5n@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v10 0/2] cpufreq: powernv: Export throttle stat attributes and a bug fix
+Date: Fri, 26 Feb 2016 16:06:50 +0530
+Message-ID: <1456483012-29466-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:57175 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbcBZJSt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 04:18:49 -0500
-Content-Disposition: inline
-In-Reply-To: <1792311.cuUNhUde5n@vostro.rjw.lan>
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51404 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752855AbcBZKiF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 05:38:05 -0500
+Received: from localhost
+	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Fri, 26 Feb 2016 20:38:02 +1000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-On Thu, Feb 25, 2016 at 10:08:48PM +0100, Rafael J. Wysocki wrote:
-> On Thursday, February 25, 2016 10:28:37 AM Peter Zijlstra wrote:
-> > Its vile though; one should not spray IPIs if one can avoid it. Such
-> > things are much better done with RCU. Sure sync_sched() takes a little
-> > longer, but this isn't a fast path by any measure.
-> 
-> I see, thanks!
-> 
-> BTW, when cpufreq_update_util() callbacks are removed, I use synchronize_rcu()
-> to wait for the running ones, but would it be better to use synchronize_sched()
-> in there instead?
+Patch[1] solves a bug in the module{init/exit} path and Patch[2]
+exports the throttle stats for the chip. This patchset is on top of
+linux-pm/linux-next.
 
-So I think we only call the callback with rq->lock held, in which case
-sync_sched() is good enough.
+Changes from v9:
+- Patch[1/2] is newly added to correctly handle error path in
+  powernv_cpufreq_init() and unregistration path in
+  powernv_cpufreq_exit() as suggested by Viresh.
+- Patch[2/2] is rebased on top of Patch[1/2].
 
-It would allow you to get rid of the rcu_read_{,un}lock() calls as well.
+Shilpasri G Bhat (2):
+  cpufreq: powernv: Fix bugs in powernv_cpufreq_{init/exit}
+  cpufreq: powernv: Add sysfs attributes to show throttle stats
 
-The down-side is that it all makes the code a little harder to get,
-because you're relying on caller context to DTRT.
+ Documentation/ABI/testing/sysfs-devices-system-cpu |  69 +++++++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 162 ++++++++++++++++++---
+ 2 files changed, 212 insertions(+), 19 deletions(-)
+
+-- 
+1.9.3
+
