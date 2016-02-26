@@ -1,101 +1,75 @@
-From: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
- device tree
-Date: Fri, 26 Feb 2016 17:07:09 -0600
-Message-ID: <CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
-	<3550740.QzZi28fbXg@wuerfel>
-	<CADRPPNSqXBqD0of0ZorXFOKQc1OQaaJCPFUTMUezJexkegHY9A@mail.gmail.com>
-	<2396230.MApG9VTrxr@wuerfel>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Sat, 27 Feb 2016 00:15:47 +0100
+Message-ID: <4735967.8N5ugyHAG2@vostro.rjw.lan>
+References: <4687430.mfM0GbdeDL@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:36395 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755128AbcBZXHL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 18:07:11 -0500
-In-Reply-To: <2396230.MApG9VTrxr@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4687430.mfM0GbdeDL@skinner>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org, Thomas Renninger <trenn@suse.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, devicetree@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia Hongtao <hongtao.jia@freescale.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Scott Wood <scottwood@freescale.com>
 
-On Fri, Feb 26, 2016 at 2:20 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Friday 26 February 2016 12:04:59 Li Yang wrote:
->> On Fri, Dec 18, 2015 at 4:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->> > On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
->> >> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
->> >> > Register the qoriq cpufreq driver as a cooling device, based on the
->> >> > thermal device tree framework. When temperature crosses the passive trip
->> >> > point cpufreq is used to throttle CPUs.
->> >> >
->> >> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
->> >> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
->> >>
->> >> Applied, thanks!
->> >>
->> >
->> > I got a randconfig build error today:
->> >
->> > drivers/built-in.o: In function `qoriq_cpufreq_ready':
->> > debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
->> >
->> > CONFIG_OF=y
->> > CONFIG_QORIQ_CPUFREQ=y
->> > CONFIG_THERMAL=m
->> > CONFIG_THERMAL_OF=y
->> >
->> > I think you need a 'depends on THERMAL' to prevent the driver from
->> > being built-in when THERMAL=m.
->>
->> Maybe this is not the best approach.  The cpufreq feature itself
->> should be working independently without thermal framework.  I think we
->> should make the qoriq_cpufreq_ready() defined as null function if
->> THERMAL is not defined.
->
-> It already does this when CONFIG_THERMAL is not defined, and my
-> patch doesn't change that. I'm not sure what you are asking for now.
+On Friday, February 26, 2016 05:38:00 PM Thomas Renninger wrote:
+> The assumption that BIOSes never want to have this register being set to
+> full performance (zero) is wrong.
+> 
+> While wrongly overruling this BIOS setting and set it from performance
+> to normal did not hurt that much, because nobody really knew the effects inside
+> Intel processors.
+> 
+> But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo modes
+> if this value is not set to performance.
+> 
+> So switch logic to tell the user in a friendly way (info) that the CPU is in
+> performance mode and how to switch via userspace if this is not intended.
+> 
+> But otherwise trust that the BIOS has set the correct value here and do not
+> blindly overrule.
+> 
+> How this has been found: SLE11 had this patch, SLE12 it slipped through.
+> It took quite some time to nail down that this patch missing is the reason
+> for not entering turbo modes with this specific processor.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.com>
+> 
+> --- a/arch/x86/kernel/cpu/intel.c	2016-02-26 17:19:55.731042972 +0100
+> +++ b/arch/x86/kernel/cpu/intel.c	2016-02-26 17:20:48.598020581 +0100
+> @@ -377,8 +377,12 @@ static void init_intel_energy_perf(struc
+>  	u64 epb;
+>  
+>  	/*
+> -	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+> -	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
+> +	 * On server platforms energy bias typically is set to
+> +	 * performance on purpose.
+> +	 * On other platforms it may happen that MSR_IA32_ENERGY_PERF_BIAS
+> +	 * did not get initialized properly by BIOS.
+> +	 * Best is to to keep BIOS settings and give the user a hint whether
+> +	 * to change it via cpupower-set(8) userspace tool at runtime.
+>  	 */
+>  	if (!cpu_has(c, X86_FEATURE_EPB))
+>  		return;
+> @@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
+>  	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+>  		return;
+>  
+> -	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+> -	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
+> -	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+> -	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> +	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
+> +	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-set(8)\n");
 
-Oh.  Actually I didn't see you just sent a patch for this.  I
-accidentally get into this topic when I tried to find out why cpufreq
-is not working on ARMv8 platforms.  I didn't notice that
-of_cpufreq_cooling_register() is already ifdef-ed.
+This doesn't need to be cpupower-set IMO.
 
->
-> Do you want to allow using the cpufreq driver as a built-in driver
-> even when the thermal code is in a module, and then silently skip
-> all thermal management as if it was turned off?
+>  }
+>  
+>  static void intel_bsp_resume(struct cpuinfo_x86 *c)
+> 
 
-Having thermal code to be built as module and qoriq_cpufreq to be
-built-in is a valid situation.  Making cpufreq not possible to be used
-when thermal is a module doesn't seem to be right.
-
->
-> That would be this patch:
->
-> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-> index c156f5082758..a8d9241fc1bb 100644
-> --- a/include/linux/cpu_cooling.h
-> +++ b/include/linux/cpu_cooling.h
-> @@ -48,7 +48,7 @@ cpufreq_power_cooling_register(const struct cpumask *clip_cpus,
->   * @np: a valid struct device_node to the cooling device device tree node.
->   * @clip_cpus: cpumask of cpus where the frequency constraints will happen
->   */
-> -#ifdef CONFIG_THERMAL_OF
-> +#if IS_REACHABLE(CONFIG_THERMAL_OF)
->  struct thermal_cooling_device *
->  of_cpufreq_cooling_register(struct device_node *np,
->                             const struct cpumask *clip_cpus);
->
->
-> but my feeling is that this would cause more surprises when users
-> find their thermal management is not active even though it was
-> enabled in Kconfig and the thermal module gets loaded.
-
-I don't have a perfect solution either.  But I think this is still
-better than making cpufreq not usable.  The cpufreq driver will print
-out an error message if thermal is not reachable.  Maybe this can
-relief the confusion a little bit?
-
-Regards,
-Leo
+Thanks,
+Rafael
