@@ -1,99 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v4 1/2] cpufreq: New governor using utilization data from the scheduler
-Date: Sat, 27 Feb 2016 01:21:36 +0100
-Message-ID: <3409567.SO0ZcZmU7l@vostro.rjw.lan>
-References: <5059413.77KZsd2lep@vostro.rjw.lan> <1506549.vT7qrjXTKz@vostro.rjw.lan> <1825489.pc33SqXSIB@vostro.rjw.lan>
+From: Li Yang <leoli-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Fri, 26 Feb 2016 18:41:06 -0600
+Message-ID: <CADRPPNQhmb3bET9fV072ad5FEHAPrjuXSze1HwnRnKMRmFi8cg@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+	<2396230.MApG9VTrxr@wuerfel>
+	<CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
+	<3593471.QAyZdAuTcW@wuerfel>
+	<CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw@mail.gmail.com>
+	<CADRPPNQPOUE-2_UnHbfMvGXCuuKYkX4a2Pp3Sb9Uc3vgMr-HuQ@mail.gmail.com>
+	<1456531704.5360.53.camel@buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1825489.pc33SqXSIB@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1456531704.5360.53.camel-fOR+EgIDQEHk1uMJSBkQmQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Scott Wood <oss-fOR+EgIDQEHk1uMJSBkQmQ@public.gmane.org>
+Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, February 25, 2016 10:14:35 PM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Add a new cpufreq scaling governor, called "schedutil", that uses
-> scheduler-provided CPU utilization information as input for making
-> its decisions.
-> 
-> Doing that is possible after commit fe7034338ba0 (cpufreq: Add
-> mechanism for registering utilization update callbacks) that
-> introduced cpufreq_update_util() called by the scheduler on
-> utilization changes (from CFS) and RT/DL task status updates.
-> In particular, CPU frequency scaling decisions may be based on
-> the the utilization data passed to cpufreq_update_util() by CFS.
-> 
-> The new governor is very simple.  It is almost as simple as it
-> can be and remain reasonably functional.
-> 
-> The frequency selection formula used by it is essentially the same
-> as the one used by the "ondemand" governor, although it doesn't use
-> the additional up_threshold parameter, but instead of computing the
-> load as the "non-idle CPU time" to "total CPU time" ratio, it takes
-> the utilization data provided by CFS as input.  More specifically,
-> it represents "load" as the util/max ratio, where util and max
-> are the utilization and CPU capacity coming from CFS.
-> 
-> All of the computations are carried out in the utilization update
-> handlers provided by the new governor.  One of those handlers is
-> used for cpufreq policies shared between multiple CPUs and the other
-> one is for policies with one CPU only (and therefore it doesn't need
-> to use any extra synchronization means).  The only operation carried
-> out by the new governor's ->gov_dbs_timer callback, sugov_set_freq(),
-> is a __cpufreq_driver_target() call to trigger a frequency update (to
-> a value already computed beforehand in one of the utilization update
-> handlers).  This means that, at least for some cpufreq drivers that
-> can update CPU frequency by doing simple register writes, it should
-> be possible to set the frequency in the utilization update handlers
-> too in which case all of the governor's activity would take place in
-> the scheduler paths invoking cpufreq_update_util() without the need
-> to run anything in process context.
-> 
-> Currently, the governor treats all of the RT and DL tasks as
-> "unknown utilization" and sets the frequency to the allowed
-> maximum when updated from the RT or DL sched classes.  That
-> heavy-handed approach should be replaced with something more
-> specifically targeted at RT and DL tasks.
-> 
-> To some extent it relies on the common governor code in
-> cpufreq_governor.c and it uses that code in a somewhat unusual
-> way (different from what the "ondemand" and "conservative"
-> governors do), so some small and rather unintrusive changes
-> have to be made in that code and the other governors to support it.
-> 
-> However, after making it possible to set the CPU frequency from
-> the utilization update handlers, that new governor's interactions
-> with the common code might be limited to the initialization, cleanup
-> and handling of sysfs attributes (currently only one attribute,
-> sampling_rate, is supported in addition to the standard policy
-> attributes handled by the cpufreq core).
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> There was no v3 of this patch, but patch [2/2] had a v3 in the meantime.
-> 
-> Changes from v2:
-> - Avoid requesting the same frequency that was requested last time for
->   the given policy.
-> 
-> Changes from v1:
-> - Use policy->min and policy->max as min/max frequency in computations.
-> 
+On Fri, Feb 26, 2016 at 6:08 PM, Scott Wood <oss-fOR+EgIDQEHk1uMJSBkQmQ@public.gmane.org> wrote:
+> On Fri, 2016-02-26 at 18:04 -0600, Li Yang wrote:
+>> On Fri, Feb 26, 2016 at 5:31 PM, Li Yang <leoli-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
+>> > On Fri, Feb 26, 2016 at 5:16 PM, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org> wrote:
+>> > > On Friday 26 February 2016 17:07:09 Li Yang wrote:
+>> > > >
+>> > > > I don't have a perfect solution either.  But I think this is still
+>> > > > better than making cpufreq not usable.  The cpufreq driver will print
+>> > > > out an error message if thermal is not reachable.  Maybe this can
+>> > > > relief the confusion a little bit?
+>> > >
+>> > > With my patch, the configuration will just force the cpufreq
+>> > > driver to be a loadable module as well if thermal is a module,
+>> > > so the dependency can be resolved by loading the thermal module first.
+>> >
+>> > It would be perfect if this it true.  But I tried with the following
+>> > change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
+>> >
+>> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+>> > index dcb972a38fbc..ca05037dd565 100644
+>> > --- a/drivers/cpufreq/Kconfig
+>> > +++ b/drivers/cpufreq/Kconfig
+>> > @@ -297,6 +297,7 @@ endif
+>> >  config QORIQ_CPUFREQ
+>> >         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+>> >         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+>> > +       depends on !CPU_THERMAL || THERMAL=y
+>> >         select CLK_QORIQ
+>> >         help
+>> >           This adds the CPUFreq driver support for Freescale QorIQ SoCs
+>>
+>>
+>> I find we can achieve your desired result with the following change instead:
+>>
+>> +       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
+>
+> "depends on THERMAL || !THERMAL" should also work.
 
-Well, this is getting interesting. :-)
+Right.  And this is more simpler.
 
-Some preliminary results from SpecPower indicate that this governor (with
-patch [2/2] on top), as simple as it is, beats "ondemand" in performance/power
-and generally allows the system to achieve better performance.  The difference
-is not significant, but measurable.
-
-If that is confirmed in further testing, I will be inclined to drop this thing
-in in the next cycle.
-
-Thanks,
-Rafael
+Regards,
+Leo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
