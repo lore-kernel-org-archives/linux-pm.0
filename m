@@ -1,47 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Enable HWP by default
-Date: Sat, 27 Feb 2016 01:02:55 +0100
-Message-ID: <4148434.QIxDcbDEAv@vostro.rjw.lan>
-References: <1456441759-4877-1-git-send-email-srinivas.pandruvada@linux.intel.com> <7409824.yRBnCff0bU@vostro.rjw.lan> <1456443231.17628.24.camel@linux.intel.com>
+From: Li Yang <leoli-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on
+ device tree
+Date: Fri, 26 Feb 2016 18:04:17 -0600
+Message-ID: <CADRPPNQPOUE-2_UnHbfMvGXCuuKYkX4a2Pp3Sb9Uc3vgMr-HuQ@mail.gmail.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+	<2396230.MApG9VTrxr@wuerfel>
+	<CADRPPNTeBXJBybGwm4jkS64nSyWg+oaod3KJbE_SqfdSuUCA_Q@mail.gmail.com>
+	<3593471.QAyZdAuTcW@wuerfel>
+	<CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54956 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755517AbcB0ABU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Feb 2016 19:01:20 -0500
-In-Reply-To: <1456443231.17628.24.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CADRPPNSASmfxS=BWKvOxGKyCiqno9YvOuAfBaHwKL-Y=jQ2Dzw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org
 
-On Thursday, February 25, 2016 03:33:51 PM Srinivas Pandruvada wrote:
-> On Fri, 2016-02-26 at 00:19 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, February 25, 2016 03:09:19 PM Srinivas Pandruvada wrote:
-> > > If the processor supports HWP, enable it by default without
-> > > checking
-> > > for the cpu model. This will allow to enable HWP in all supported
-> > > processors without driver change.
-> > > 
-> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > > .com>
-> > 
-> > Isn't that a bit risky in the face of recent experience?
-> Good question. The current systems which are commercial, already have
-> cpuid added in our list, so HWP will be enabled anyway.
-> The one system we know there is an issue, hope we can debug before
-> merge window start.
-> If I don't do, I have to add few more ids to the list.
-> 
-> Let's wait for few more weeks to review and merge this. I will let
-> anybody from the community comment, who are using Skylake.
+On Fri, Feb 26, 2016 at 5:31 PM, Li Yang <leoli-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
+> On Fri, Feb 26, 2016 at 5:16 PM, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org> wrote:
+>> On Friday 26 February 2016 17:07:09 Li Yang wrote:
+>>>
+>>> I don't have a perfect solution either.  But I think this is still
+>>> better than making cpufreq not usable.  The cpufreq driver will print
+>>> out an error message if thermal is not reachable.  Maybe this can
+>>> relief the confusion a little bit?
+>>
+>> With my patch, the configuration will just force the cpufreq
+>> driver to be a loadable module as well if thermal is a module,
+>> so the dependency can be resolved by loading the thermal module first.
+>
+> It would be perfect if this it true.  But I tried with the following
+> change, it just makes QORIQ_CPUFREQ non-selectable if THERMAL=m.
+>
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index dcb972a38fbc..ca05037dd565 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -297,6 +297,7 @@ endif
+>  config QORIQ_CPUFREQ
+>         tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+>         depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> +       depends on !CPU_THERMAL || THERMAL=y
+>         select CLK_QORIQ
+>         help
+>           This adds the CPUFreq driver support for Freescale QorIQ SoCs
 
-I've queued up the patch for 4.6 to expose it a bit more.
 
-It may stay in linux-next for now and I can always drop it if need be.
+I find we can achieve your desired result with the following change instead:
 
-Thanks,
-Rafael
++       depends on (THERMAL=m && m) || THERMAL=y || THERMAL=n
 
+Regards,
+Leo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
