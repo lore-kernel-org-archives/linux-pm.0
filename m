@@ -1,134 +1,49 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 16/16] tools/power turbostat: detect and work around syscall jitter
-Date: Sat, 27 Feb 2016 04:01:10 -0500
-Message-ID: <f899e44ea4b92e2bc24b6bf9f9c8458e6477400c.1456563103.git.len.brown@intel.com>
-References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v2 3/3] scsi: allow scsi devices to use direct complete
+Date: Sat, 27 Feb 2016 01:07:06 -0800
+Message-ID: <CAGAzgsrzwO_uCLeJWnqfZXGbv8Ex=i_jfQ=W9AhqEdv0-uuN-w@mail.gmail.com>
+References: <1456359748-22838-1-git-send-email-dbasehore@chromium.org>
+	<1456359748-22838-3-git-send-email-dbasehore@chromium.org>
+	<20160227072641.GX1770@lahna.fi.intel.com>
+	<CAGAzgsoAiL0Xmqi3gzNyuQ6kf47UiEsO3V6-WMgkd5-Wu2y42Q@mail.gmail.com>
+	<20160227083857.GY1770@lahna.fi.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:35538 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756243AbcB0JCL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:02:11 -0500
-Received: by mail-yw0-f194.google.com with SMTP id u200so5302638ywf.2
-        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:02:11 -0800 (PST)
-In-Reply-To: <1456563670-23282-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
-References: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
+Received: from mail-vk0-f50.google.com ([209.85.213.50]:33789 "EHLO
+	mail-vk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753521AbcB0JHI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:07:08 -0500
+Received: by mail-vk0-f50.google.com with SMTP id k196so97734950vka.0
+        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:07:07 -0800 (PST)
+In-Reply-To: <20160227083857.GY1770@lahna.fi.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Martin K . Petersen" <martin.petersen@oracle.com>, linux-scsi <linux-scsi@vger.kernel.org>
 
-From: Len Brown <len.brown@intel.com>
+On Sat, Feb 27, 2016 at 12:38 AM, Mika Westerberg
+<mika.westerberg@linux.intel.com> wrote:
+> On Sat, Feb 27, 2016 at 12:10:03AM -0800, dbasehore . wrote:
+>> A device is not able to use direct complete if its children do not
+>> also use direct complete. Even though the SCSI layer leaves devices
+>> runtime suspended, the way it does it still prevents its parent from
+>> using direct complete.
+>
+> Okay.
+>
+> Do you need to provide ->complete() hook that then resumes the device
+> when system is resumed (since the device resume hook is never called
+> when direct_complete is set)? Along the lines of
+> pm_complete_with_resume_check().
 
-The accuracy of Bzy_Mhz and Busy% depend on reading
-the TSC, APERF, and MPERF close together in time.
+That's an interesting question. Part of direct complete is to leave
+the device runtime suspended even after the system resumes if
+possible. The comments in pm_complete_with_resume_check indicate that
+the firmware may resume a device. I could see this happening with some
+kind of SCSI device.
 
-When there is a very short measurement interval,
-or a large system is profoundly idle, the changes
-in APERF and MPERF may be very small.
-They can be small enough that an expensive interrupt
-between reading APERF and MPERF can cause the APERF/MPERF
-ratio to become inaccurate, resulting in invalid
-calculation and display of Bzy_MHz.
-
-A dummy APERF read of APERF makes this problem
-much more rare.  Apparently this 1st systemn call
-after exiting a long stretch of idle is when we
-typically see expensive timer interrupts that cause
-large jitter.
-
-For the cases that dummy APERF read fails to prevent,
-we compare the latency of the APERF and MPERF reads.
-If they differ by more than 2x, we re-issue them.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 51 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 50 insertions(+), 1 deletion(-)
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 9896619..2c43527 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1059,19 +1059,68 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- {
- 	int cpu = t->cpu_id;
- 	unsigned long long msr;
-+	int aperf_mperf_retry_count = 0;
- 
- 	if (cpu_migrate(cpu)) {
- 		fprintf(outf, "Could not migrate to CPU %d\n", cpu);
- 		return -1;
- 	}
- 
-+retry:
- 	t->tsc = rdtsc();	/* we are running on local CPU of interest */
- 
- 	if (has_aperf) {
-+		unsigned long long tsc_before, tsc_between, tsc_after, aperf_time, mperf_time;
-+
-+		/*
-+		 * The TSC, APERF and MPERF must be read together for
-+		 * APERF/MPERF and MPERF/TSC to give accurate results.
-+		 *
-+		 * Unfortunately, APERF and MPERF are read by
-+		 * individual system call, so delays may occur
-+		 * between them.  If the time to read them
-+		 * varies by a large amount, we re-read them.
-+		 */
-+
-+		/*
-+		 * This initial dummy APERF read has been seen to
-+		 * reduce jitter in the subsequent reads.
-+		 */
-+
-+		if (get_msr(cpu, MSR_IA32_APERF, &t->aperf))
-+			return -3;
-+
-+		t->tsc = rdtsc();	/* re-read close to APERF */
-+
-+		tsc_before = t->tsc;
-+
- 		if (get_msr(cpu, MSR_IA32_APERF, &t->aperf))
- 			return -3;
-+
-+		tsc_between = rdtsc();
-+
- 		if (get_msr(cpu, MSR_IA32_MPERF, &t->mperf))
- 			return -4;
-+
-+		tsc_after = rdtsc();
-+
-+		aperf_time = tsc_between - tsc_before;
-+		mperf_time = tsc_after - tsc_between;
-+
-+		/*
-+		 * If the system call latency to read APERF and MPERF
-+		 * differ by more than 2x, then try again.
-+		 */
-+		if ((aperf_time > (2 * mperf_time)) || (mperf_time > (2 * aperf_time))) {
-+			aperf_mperf_retry_count++;
-+			if (aperf_mperf_retry_count < 5)
-+				goto retry;
-+			else
-+				warnx("cpu%d jitter %lld %lld\n",
-+					cpu, aperf_time, mperf_time);
-+		}
-+		aperf_mperf_retry_count = 0;
-+
- 		t->aperf = t->aperf * aperf_mperf_multiplier;
- 		t->mperf = t->mperf * aperf_mperf_multiplier;
- 	}
-@@ -3554,7 +3603,7 @@ int get_and_dump_counters(void)
- }
- 
- void print_version() {
--	fprintf(outf, "turbostat version 4.10 10 Dec, 2015"
-+	fprintf(outf, "turbostat version 4.11 27 Feb 2016"
- 		" - Len Brown <lenb@kernel.org>\n");
- }
- 
--- 
-2.7.1.339.g0233b80
-
+If this is possible, are we able to put the device back into a
+consistent state (runtime suspended) by calling suspend for the scsi
+device? If not, we might need to use pm_complete_with_resume_check for
+the complete callback.
