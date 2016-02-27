@@ -1,16 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 15/16] tools/power turbostat: show GFX%rc6
-Date: Sat, 27 Feb 2016 04:01:09 -0500
-Message-ID: <003dd75ba9d41ee953cfc8031be1c337a2b2b3cf.1456563103.git.len.brown@intel.com>
+Subject: [PATCH 16/16] tools/power turbostat: detect and work around syscall jitter
+Date: Sat, 27 Feb 2016 04:01:10 -0500
+Message-ID: <f899e44ea4b92e2bc24b6bf9f9c8458e6477400c.1456563103.git.len.brown@intel.com>
 References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:36004 "EHLO
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:35538 "EHLO
 	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbcB0JCK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:02:10 -0500
-Received: by mail-yw0-f194.google.com with SMTP id h80so5308545ywc.3
-        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:02:09 -0800 (PST)
+	with ESMTP id S1756243AbcB0JCL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:02:11 -0500
+Received: by mail-yw0-f194.google.com with SMTP id u200so5302638ywf.2
+        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:02:11 -0800 (PST)
 In-Reply-To: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 References: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
@@ -21,145 +21,114 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-The column "GFX%c6" show the percentage of time the GPU
-is in the "render C6" state, rc6.  Deep package C-states on several
-systems depend on the GPU being in RC6.
+The accuracy of Bzy_Mhz and Busy% depend on reading
+the TSC, APERF, and MPERF close together in time.
 
-This information comes from the counter
-/sys/class/drm/card0/power/rc6_residency_ms,
-as read before and after the measurement interval.
+When there is a very short measurement interval,
+or a large system is profoundly idle, the changes
+in APERF and MPERF may be very small.
+They can be small enough that an expensive interrupt
+between reading APERF and MPERF can cause the APERF/MPERF
+ratio to become inaccurate, resulting in invalid
+calculation and display of Bzy_MHz.
+
+A dummy APERF read of APERF makes this problem
+much more rare.  Apparently this 1st systemn call
+after exiting a long stretch of idle is when we
+typically see expensive timer interrupts that cause
+large jitter.
+
+For the cases that dummy APERF read fails to prevent,
+we compare the latency of the APERF and MPERF reads.
+If they differ by more than 2x, we re-issue them.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 45 +++++++++++++++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 51 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 50 insertions(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index d599f91..9896619 100644
+index 9896619..2c43527 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -90,6 +90,8 @@ char *output_buffer, *outp;
- unsigned int do_rapl;
- unsigned int do_dts;
- unsigned int do_ptm;
-+unsigned int do_gfx_rc6_ms;
-+unsigned long long  gfx_cur_rc6_ms;
- unsigned int do_gfx_mhz;
- unsigned int gfx_cur_mhz;
- unsigned int tcc_activation_temp;
-@@ -185,6 +187,7 @@ struct pkg_data {
- 	unsigned long long pkg_any_core_c0;
- 	unsigned long long pkg_any_gfxe_c0;
- 	unsigned long long pkg_both_core_gfxe_c0;
-+	unsigned long long gfx_rc6_ms;
- 	unsigned int gfx_mhz;
- 	unsigned int package_id;
- 	unsigned int energy_pkg;	/* MSR_PKG_ENERGY_STATUS */
-@@ -365,6 +368,9 @@ void print_header(void)
- 	if (do_ptm)
- 		outp += sprintf(outp, "  PkgTmp");
+@@ -1059,19 +1059,68 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+ {
+ 	int cpu = t->cpu_id;
+ 	unsigned long long msr;
++	int aperf_mperf_retry_count = 0;
  
-+	if (do_gfx_rc6_ms)
-+		outp += sprintf(outp, " GFX%%rc6");
-+
- 	if (do_gfx_mhz)
- 		outp += sprintf(outp, "  GFXMHz");
- 
-@@ -614,6 +620,10 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 	if (do_ptm)
- 		outp += sprintf(outp, "%8d", p->pkg_temp_c);
- 
-+	/* GFXrc6 */
-+	if (do_gfx_rc6_ms)
-+		outp += sprintf(outp, "%8.2f", 100.0 * p->gfx_rc6_ms / 1000.0 / interval_float);
-+
- 	/* GFXMHz */
- 	if (do_gfx_mhz)
- 		outp += sprintf(outp, "%8d", p->gfx_mhz);
-@@ -756,6 +766,7 @@ delta_package(struct pkg_data *new, struct pkg_data *old)
- 	old->pc10 = new->pc10 - old->pc10;
- 	old->pkg_temp_c = new->pkg_temp_c;
- 
-+	old->gfx_rc6_ms = new->gfx_rc6_ms - old->gfx_rc6_ms;
- 	old->gfx_mhz = new->gfx_mhz;
- 
- 	DELTA_WRAP32(new->energy_pkg, old->energy_pkg);
-@@ -922,6 +933,7 @@ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data
- 	p->rapl_dram_perf_status = 0;
- 	p->pkg_temp_c = 0;
- 
-+	p->gfx_rc6_ms = 0;
- 	p->gfx_mhz = 0;
- }
- int sum_counters(struct thread_data *t, struct core_data *c,
-@@ -975,6 +987,7 @@ int sum_counters(struct thread_data *t, struct core_data *c,
- 	average.packages.energy_cores += p->energy_cores;
- 	average.packages.energy_gfx += p->energy_gfx;
- 
-+	average.packages.gfx_rc6_ms = p->gfx_rc6_ms;
- 	average.packages.gfx_mhz = p->gfx_mhz;
- 
- 	average.packages.pkg_temp_c = MAX(average.packages.pkg_temp_c, p->pkg_temp_c);
-@@ -1192,6 +1205,10 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 			return -17;
- 		p->pkg_temp_c = tcc_activation_temp - ((msr >> 16) & 0x7F);
+ 	if (cpu_migrate(cpu)) {
+ 		fprintf(outf, "Could not migrate to CPU %d\n", cpu);
+ 		return -1;
  	}
-+
-+	if (do_gfx_rc6_ms)
-+		p->gfx_rc6_ms = gfx_cur_rc6_ms;
-+
- 	if (do_gfx_mhz)
- 		p->gfx_mhz = gfx_cur_mhz;
  
-@@ -1845,6 +1862,29 @@ int snapshot_proc_interrupts(void)
- 	return 0;
++retry:
+ 	t->tsc = rdtsc();	/* we are running on local CPU of interest */
+ 
+ 	if (has_aperf) {
++		unsigned long long tsc_before, tsc_between, tsc_after, aperf_time, mperf_time;
++
++		/*
++		 * The TSC, APERF and MPERF must be read together for
++		 * APERF/MPERF and MPERF/TSC to give accurate results.
++		 *
++		 * Unfortunately, APERF and MPERF are read by
++		 * individual system call, so delays may occur
++		 * between them.  If the time to read them
++		 * varies by a large amount, we re-read them.
++		 */
++
++		/*
++		 * This initial dummy APERF read has been seen to
++		 * reduce jitter in the subsequent reads.
++		 */
++
++		if (get_msr(cpu, MSR_IA32_APERF, &t->aperf))
++			return -3;
++
++		t->tsc = rdtsc();	/* re-read close to APERF */
++
++		tsc_before = t->tsc;
++
+ 		if (get_msr(cpu, MSR_IA32_APERF, &t->aperf))
+ 			return -3;
++
++		tsc_between = rdtsc();
++
+ 		if (get_msr(cpu, MSR_IA32_MPERF, &t->mperf))
+ 			return -4;
++
++		tsc_after = rdtsc();
++
++		aperf_time = tsc_between - tsc_before;
++		mperf_time = tsc_after - tsc_between;
++
++		/*
++		 * If the system call latency to read APERF and MPERF
++		 * differ by more than 2x, then try again.
++		 */
++		if ((aperf_time > (2 * mperf_time)) || (mperf_time > (2 * aperf_time))) {
++			aperf_mperf_retry_count++;
++			if (aperf_mperf_retry_count < 5)
++				goto retry;
++			else
++				warnx("cpu%d jitter %lld %lld\n",
++					cpu, aperf_time, mperf_time);
++		}
++		aperf_mperf_retry_count = 0;
++
+ 		t->aperf = t->aperf * aperf_mperf_multiplier;
+ 		t->mperf = t->mperf * aperf_mperf_multiplier;
+ 	}
+@@ -3554,7 +3603,7 @@ int get_and_dump_counters(void)
  }
- /*
-+ * snapshot_gfx_rc6_ms()
-+ *
-+ * record snapshot of
-+ * /sys/class/drm/card0/power/rc6_residency_ms
-+ *
-+ * return 1 if config change requires a restart, else return 0
-+ */
-+int snapshot_gfx_rc6_ms(void)
-+{
-+	FILE *fp;
-+	int retval;
-+
-+	fp = fopen_or_die("/sys/class/drm/card0/power/rc6_residency_ms", "r");
-+
-+	retval = fscanf(fp, "%lld", &gfx_cur_rc6_ms);
-+	if (retval != 1)
-+		err(1, "GFX rc6");
-+
-+	fclose(fp);
-+
-+	return 0;
-+}
-+/*
-  * snapshot_gfx_mhz()
-  *
-  * record snapshot of
-@@ -1879,6 +1919,9 @@ int snapshot_proc_sysfs_files(void)
- 	if (snapshot_proc_interrupts())
- 		return 1;
  
-+	if (do_gfx_rc6_ms)
-+		snapshot_gfx_rc6_ms();
-+
- 	if (do_gfx_mhz)
- 		snapshot_gfx_mhz();
+ void print_version() {
+-	fprintf(outf, "turbostat version 4.10 10 Dec, 2015"
++	fprintf(outf, "turbostat version 4.11 27 Feb 2016"
+ 		" - Len Brown <lenb@kernel.org>\n");
+ }
  
-@@ -3157,6 +3200,8 @@ void process_cpuid()
- 	if (has_skl_msrs(family, model))
- 		calculate_tsc_tweak();
- 
-+	do_gfx_rc6_ms = !access("/sys/class/drm/card0/power/rc6_residency_ms", R_OK);
-+
- 	do_gfx_mhz = !access("/sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz", R_OK);
- 
- 	return;
 -- 
 2.7.1.339.g0233b80
 
