@@ -1,132 +1,134 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 09/16] tools/power turbostat: re-name "%Busy" field to "Busy%"
-Date: Sat, 27 Feb 2016 04:01:03 -0500
-Message-ID: <fbe87b8d29a4536dcd378f2747127270ee74aa6f.1456563103.git.len.brown@intel.com>
+Subject: [PATCH 08/16] tools/power turbostat: Intel Xeon x200: fix turbo-ratio decoding
+Date: Sat, 27 Feb 2016 04:01:02 -0500
+Message-ID: <5a6de6ec9c492d52fd261e2c584361108e951b0d.1456563103.git.len.brown@intel.com>
 References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f193.google.com ([209.85.160.193]:35870 "EHLO
-	mail-yk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756219AbcB0JB7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:59 -0500
-Received: by mail-yk0-f193.google.com with SMTP id z13so2787013ykd.3
-        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:59 -0800 (PST)
+Received: from mail-yk0-f194.google.com ([209.85.160.194]:34219 "EHLO
+	mail-yk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756219AbcB0JB6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:58 -0500
+Received: by mail-yk0-f194.google.com with SMTP id z7so2782451yka.1
+        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:57 -0800 (PST)
 In-Reply-To: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 References: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+Cc: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+From: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
 
-some tools processing turbostat output
-have difficulty with items that begin with %...
+Following changes have been made:
+- changed MSR_NHM_TURBO_RATIO_LIMIT to MSR_TURBO_RATIO_LIMIT in debug print
+  for consistency with Developer Manual
+- updated definition of bitfields in MSR_TURBO_RATIO_LIMIT and appropriate
+  parsing code
+- added x200 to list of architectures that do not support Nahlem compatible
+  definition of MSR_TURBO_RATIO_LIMIT register (x200 has the register but
+  bits definition is custom)
+- fixed typo in code that parses MSR_TURBO_RATIO_LIMIT
+  (logical instead of bitwise operator)
+- changed MSR_TURBO_RATIO_LIMIT parsing algorithm so the print out had the
+  same order as implementations for other platforms
 
-Reported-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.8 | 16 ++++++++--------
- tools/power/x86/turbostat/turbostat.c |  6 +++---
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 53 +++++++++++++++++------------------
+ 1 file changed, 26 insertions(+), 27 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 8a9727b..1104373 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -61,7 +61,7 @@ displays the statistics gathered since it was forked.
- .nf
- \fBCPU\fP Linux CPU (logical processor) number.  Yes, it is okay that on many systems the CPUs are not listed in numerical order -- for efficiency reasons, turbostat runs in topology order, so HT siblings appear together.
- \fBAVG_MHz\fP number of cycles executed divided by time elapsed.
--\fB%Busy\fP percent of the interval that the CPU retired instructions, aka. % of time in "C0" state.
-+\fBBusy%\fP percent of the interval that the CPU retired instructions, aka. % of time in "C0" state.
- \fBBzy_MHz\fP average clock rate while the CPU was busy (in "c0" state).
- \fBTSC_MHz\fP average MHz that the TSC ran during the entire interval.
- .fi
-@@ -89,7 +89,7 @@ Without any parameters, turbostat displays statistics ever 5 seconds.
- for turbostat to fork).
- .nf
- [root@hsw]# ./turbostat
--     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz
-+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
-        -     488   12.51    3898    3498
-        0       0    0.01    3885    3498
-        4    3897   99.99    3898    3498
-@@ -145,7 +145,7 @@ cpu0: MSR_IA32_THERM_STATUS: 0x88340000 (48 C +/- 1)
- cpu1: MSR_IA32_THERM_STATUS: 0x88440000 (32 C +/- 1)
- cpu2: MSR_IA32_THERM_STATUS: 0x88450000 (31 C +/- 1)
- cpu3: MSR_IA32_THERM_STATUS: 0x88490000 (27 C +/- 1)
--    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp PkgWatt CorWatt GFXWatt
-+    Core     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp PkgWatt CorWatt GFXWatt
-        -       -     493   12.64    3898    3498       0   12.64    0.00    0.00   74.72      47      47   21.62   13.74    0.00
-        0       0       4    0.11    3894    3498       0   99.89    0.00    0.00    0.00      47      47   21.62   13.74    0.00
-        0       4    3897   99.98    3898    3498       0    0.02
-@@ -178,7 +178,7 @@ until ^C while the other CPUs are mostly idle:
- .nf
- root@hsw: turbostat cat /dev/zero > /dev/null
- ^C
--     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz
-+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
-        -     482   12.51    3854    3498
-        0       0    0.01    1960    3498
-        4       0    0.00    2128    3498
-@@ -192,12 +192,12 @@ root@hsw: turbostat cat /dev/zero > /dev/null
- 
- .fi
- Above the cycle soaker drives cpu5 up its 3.9 GHz turbo limit.
--The first row shows the average MHz and %Busy across all the processors in the system.
-+The first row shows the average MHz and Busy% across all the processors in the system.
- 
- Note that the Avg_MHz column reflects the total number of cycles executed
--divided by the measurement interval.  If the %Busy column is 100%,
-+divided by the measurement interval.  If the Busy% column is 100%,
- then the processor was running at that speed the entire interval.
--The Avg_MHz multiplied by the %Busy results in the Bzy_MHz --
-+The Avg_MHz multiplied by the Busy% results in the Bzy_MHz --
- which is the average frequency while the processor was executing --
- not including any non-busy idle time.
- 
-@@ -233,7 +233,7 @@ in the brand string in /proc/cpuinfo.  On a system where
- the TSC stops in idle, TSC_MHz will drop
- below the processor's base frequency.
- 
--%Busy = MPERF_delta/TSC_delta
-+Busy% = MPERF_delta/TSC_delta
- 
- Bzy_MHz = TSC_delta/APERF_delta/MPERF_delta/measurement_interval
- 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 4e5386d..947239b 100644
+index 652d08d..4e5386d 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -293,7 +293,7 @@ int get_msr(int cpu, off_t offset, unsigned long long *msr)
- /*
-  * Example Format w/ field column widths:
-  *
-- *  Package    Core     CPU Avg_MHz Bzy_MHz TSC_MHz     SMI   %Busy CPU_%c1 CPU_%c3 CPU_%c6 CPU_%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt
-+ *  Package    Core     CPU Avg_MHz Bzy_MHz TSC_MHz     SMI   Busy% CPU_%c1 CPU_%c3 CPU_%c6 CPU_%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt
-  * 123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678
-  */
+@@ -1328,21 +1328,23 @@ dump_nhm_turbo_ratio_limits(void)
+ static void
+ dump_knl_turbo_ratio_limits(void)
+ {
+-	int cores;
+-	unsigned int ratio;
++	const unsigned int buckets_no = 7;
++
+ 	unsigned long long msr;
+-	int delta_cores;
+-	int delta_ratio;
+-	int i;
++	int delta_cores, delta_ratio;
++	int i, b_nr;
++	unsigned int cores[buckets_no];
++	unsigned int ratio[buckets_no];
  
-@@ -308,7 +308,7 @@ void print_header(void)
- 	if (has_aperf)
- 		outp += sprintf(outp, " Avg_MHz");
- 	if (has_aperf)
--		outp += sprintf(outp, "   %%Busy");
-+		outp += sprintf(outp, "   Busy%%");
- 	if (has_aperf)
- 		outp += sprintf(outp, " Bzy_MHz");
- 	outp += sprintf(outp, " TSC_MHz");
-@@ -511,7 +511,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 		outp += sprintf(outp, "%8.0f",
- 			1.0 / units * t->aperf / interval_float);
+ 	get_msr(base_cpu, MSR_NHM_TURBO_RATIO_LIMIT, &msr);
  
--	/* %Busy */
-+	/* Busy% */
- 	if (has_aperf) {
- 		if (!skip_c0)
- 			outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
+-	fprintf(stderr, "cpu%d: MSR_NHM_TURBO_RATIO_LIMIT: 0x%08llx\n",
++	fprintf(stderr, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n",
+ 		base_cpu, msr);
+ 
+ 	/**
+ 	 * Turbo encoding in KNL is as follows:
+-	 * [7:0] -- Base value of number of active cores of bucket 1.
++	 * [0] -- Reserved
++	 * [7:1] -- Base value of number of active cores of bucket 1.
+ 	 * [15:8] -- Base value of freq ratio of bucket 1.
+ 	 * [20:16] -- +ve delta of number of active cores of bucket 2.
+ 	 * i.e. active cores of bucket 2 =
+@@ -1361,29 +1363,25 @@ dump_knl_turbo_ratio_limits(void)
+ 	 * [60:56]-- +ve delta of number of active cores of bucket 7.
+ 	 * [63:61]-- -ve delta of freq ratio of bucket 7.
+ 	 */
+-	cores = msr & 0xFF;
+-	ratio = (msr >> 8) && 0xFF;
+-	if (ratio > 0)
+-		fprintf(stderr,
+-			"%d * %.0f = %.0f MHz max turbo %d active cores\n",
+-			ratio, bclk, ratio * bclk, cores);
+-
+-	for (i = 16; i < 64; i = i + 8) {
++
++	b_nr = 0;
++	cores[b_nr] = (msr & 0xFF) >> 1;
++	ratio[b_nr] = (msr >> 8) & 0xFF;
++
++	for (i = 16; i < 64; i += 8) {
+ 		delta_cores = (msr >> i) & 0x1F;
+-		delta_ratio = (msr >> (i + 5)) && 0x7;
+-		if (!delta_cores || !delta_ratio)
+-			return;
+-		cores = cores + delta_cores;
+-		ratio = ratio - delta_ratio;
+-
+-		/** -ve ratios will make successive ratio calculations
+-		 * negative. Hence return instead of carrying on.
+-		 */
+-		if (ratio > 0)
++		delta_ratio = (msr >> (i + 5)) & 0x7;
++
++		cores[b_nr + 1] = cores[b_nr] + delta_cores;
++		ratio[b_nr + 1] = ratio[b_nr] - delta_ratio;
++		b_nr++;
++	}
++
++	for (i = buckets_no - 1; i >= 0; i--)
++		if (i > 0 ? ratio[i] != ratio[i - 1] : 1)
+ 			fprintf(stderr,
+ 				"%d * %.0f = %.0f MHz max turbo %d active cores\n",
+-				ratio, bclk, ratio * bclk, cores);
+-	}
++				ratio[i], bclk, ratio[i] * bclk, cores[i]);
+ }
+ 
+ static void
+@@ -1896,6 +1894,7 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 	/* Nehalem compatible, but do not include turbo-ratio limit support */
+ 	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
+ 	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
++	case 0x57:	/* PHI - Knights Landing (different MSR definition) */
+ 		return 0;
+ 	default:
+ 		return 1;
 -- 
 2.7.1.339.g0233b80
 
