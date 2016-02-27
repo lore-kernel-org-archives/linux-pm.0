@@ -1,134 +1,108 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 08/16] tools/power turbostat: Intel Xeon x200: fix turbo-ratio decoding
-Date: Sat, 27 Feb 2016 04:01:02 -0500
-Message-ID: <5a6de6ec9c492d52fd261e2c584361108e951b0d.1456563103.git.len.brown@intel.com>
+Subject: [PATCH 06/16] tools/power turbostat: allow sub-sec intervals
+Date: Sat, 27 Feb 2016 04:01:00 -0500
+Message-ID: <24781860a144a6792cb7697307f36b4486b611da.1456563103.git.len.brown@intel.com>
 References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f194.google.com ([209.85.160.194]:34219 "EHLO
-	mail-yk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756219AbcB0JB6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:58 -0500
-Received: by mail-yk0-f194.google.com with SMTP id z7so2782451yka.1
-        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:57 -0800 (PST)
+Received: from mail-yk0-f193.google.com ([209.85.160.193]:34216 "EHLO
+	mail-yk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756219AbcB0JBz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:55 -0500
+Received: by mail-yk0-f193.google.com with SMTP id z7so2782438yka.1
+        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:54 -0800 (PST)
 In-Reply-To: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 References: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>
 
-From: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+From: Len Brown <len.brown@intel.com>
 
-Following changes have been made:
-- changed MSR_NHM_TURBO_RATIO_LIMIT to MSR_TURBO_RATIO_LIMIT in debug print
-  for consistency with Developer Manual
-- updated definition of bitfields in MSR_TURBO_RATIO_LIMIT and appropriate
-  parsing code
-- added x200 to list of architectures that do not support Nahlem compatible
-  definition of MSR_TURBO_RATIO_LIMIT register (x200 has the register but
-  bits definition is custom)
-- fixed typo in code that parses MSR_TURBO_RATIO_LIMIT
-  (logical instead of bitwise operator)
-- changed MSR_TURBO_RATIO_LIMIT parsing algorithm so the print out had the
-  same order as implementations for other platforms
+turbostat -i interval_sec
 
-Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+will sample and display statistics every interval_sec.
+interval_sec used to be a whole number of seconds,
+but now we accept a decimal, as small as 0.001 sec (1 ms).
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 53 +++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 27 deletions(-)
+ tools/power/x86/turbostat/turbostat.8 |  2 +-
+ tools/power/x86/turbostat/turbostat.c | 20 ++++++++++++++++----
+ 2 files changed, 17 insertions(+), 5 deletions(-)
 
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index 622db68..8a9727b 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -34,7 +34,7 @@ name as necessary to disambiguate it from others is necessary.  Note that option
+ \fB--debug\fP displays additional system configuration information.  Invoking this parameter
+ more than once may also enable internal turbostat debug information.
+ .PP
+-\fB--interval seconds\fP overrides the default 5-second measurement interval.
++\fB--interval decimal_seconds\fP overrides the default 5.0 second measurement interval.
+ .PP
+ \fB--help\fP displays usage for the most common parameters.
+ .PP
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 652d08d..4e5386d 100644
+index c600340..e411cc4 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1328,21 +1328,23 @@ dump_nhm_turbo_ratio_limits(void)
- static void
- dump_knl_turbo_ratio_limits(void)
- {
--	int cores;
--	unsigned int ratio;
-+	const unsigned int buckets_no = 7;
-+
- 	unsigned long long msr;
--	int delta_cores;
--	int delta_ratio;
--	int i;
-+	int delta_cores, delta_ratio;
-+	int i, b_nr;
-+	unsigned int cores[buckets_no];
-+	unsigned int ratio[buckets_no];
+@@ -38,12 +38,13 @@
+ #include <string.h>
+ #include <ctype.h>
+ #include <sched.h>
++#include <time.h>
+ #include <cpuid.h>
+ #include <linux/capability.h>
+ #include <errno.h>
  
- 	get_msr(base_cpu, MSR_NHM_TURBO_RATIO_LIMIT, &msr);
- 
--	fprintf(stderr, "cpu%d: MSR_NHM_TURBO_RATIO_LIMIT: 0x%08llx\n",
-+	fprintf(stderr, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n",
- 		base_cpu, msr);
- 
- 	/**
- 	 * Turbo encoding in KNL is as follows:
--	 * [7:0] -- Base value of number of active cores of bucket 1.
-+	 * [0] -- Reserved
-+	 * [7:1] -- Base value of number of active cores of bucket 1.
- 	 * [15:8] -- Base value of freq ratio of bucket 1.
- 	 * [20:16] -- +ve delta of number of active cores of bucket 2.
- 	 * i.e. active cores of bucket 2 =
-@@ -1361,29 +1363,25 @@ dump_knl_turbo_ratio_limits(void)
- 	 * [60:56]-- +ve delta of number of active cores of bucket 7.
- 	 * [63:61]-- -ve delta of freq ratio of bucket 7.
- 	 */
--	cores = msr & 0xFF;
--	ratio = (msr >> 8) && 0xFF;
--	if (ratio > 0)
--		fprintf(stderr,
--			"%d * %.0f = %.0f MHz max turbo %d active cores\n",
--			ratio, bclk, ratio * bclk, cores);
--
--	for (i = 16; i < 64; i = i + 8) {
+ char *proc_stat = "/proc/stat";
+-unsigned int interval_sec = 5;
++struct timespec interval_ts = {5, 0};
+ unsigned int debug;
+ unsigned int rapl_joules;
+ unsigned int summary_only;
+@@ -1728,7 +1729,7 @@ restart:
+ 			re_initialize();
+ 			goto restart;
+ 		}
+-		sleep(interval_sec);
++		nanosleep(&interval_ts, NULL);
+ 		retval = for_all_cpus(get_counters, ODD_COUNTERS);
+ 		if (retval < -1) {
+ 			exit(retval);
+@@ -1742,7 +1743,7 @@ restart:
+ 		compute_average(EVEN_COUNTERS);
+ 		format_all_counters(EVEN_COUNTERS);
+ 		flush_stdout();
+-		sleep(interval_sec);
++		nanosleep(&interval_ts, NULL);
+ 		retval = for_all_cpus(get_counters, EVEN_COUNTERS);
+ 		if (retval < -1) {
+ 			exit(retval);
+@@ -3347,7 +3348,18 @@ void cmdline(int argc, char **argv)
+ 			help();
+ 			exit(1);
+ 		case 'i':
+-			interval_sec = atoi(optarg);
++			{
++				double interval = strtod(optarg, NULL);
 +
-+	b_nr = 0;
-+	cores[b_nr] = (msr & 0xFF) >> 1;
-+	ratio[b_nr] = (msr >> 8) & 0xFF;
++				if (interval < 0.001) {
++					fprintf(stderr, "interval %f seconds is too small\n",
++						interval);
++					exit(2);
++				}
 +
-+	for (i = 16; i < 64; i += 8) {
- 		delta_cores = (msr >> i) & 0x1F;
--		delta_ratio = (msr >> (i + 5)) && 0x7;
--		if (!delta_cores || !delta_ratio)
--			return;
--		cores = cores + delta_cores;
--		ratio = ratio - delta_ratio;
--
--		/** -ve ratios will make successive ratio calculations
--		 * negative. Hence return instead of carrying on.
--		 */
--		if (ratio > 0)
-+		delta_ratio = (msr >> (i + 5)) & 0x7;
-+
-+		cores[b_nr + 1] = cores[b_nr] + delta_cores;
-+		ratio[b_nr + 1] = ratio[b_nr] - delta_ratio;
-+		b_nr++;
-+	}
-+
-+	for (i = buckets_no - 1; i >= 0; i--)
-+		if (i > 0 ? ratio[i] != ratio[i - 1] : 1)
- 			fprintf(stderr,
- 				"%d * %.0f = %.0f MHz max turbo %d active cores\n",
--				ratio, bclk, ratio * bclk, cores);
--	}
-+				ratio[i], bclk, ratio[i] * bclk, cores[i]);
- }
- 
- static void
-@@ -1896,6 +1894,7 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
- 	/* Nehalem compatible, but do not include turbo-ratio limit support */
- 	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
- 	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
-+	case 0x57:	/* PHI - Knights Landing (different MSR definition) */
- 		return 0;
- 	default:
- 		return 1;
++				interval_ts.tv_sec = interval;
++				interval_ts.tv_nsec = (interval - interval_ts.tv_sec) * 1000000000;
++			}
+ 			break;
+ 		case 'J':
+ 			rapl_joules++;
 -- 
 2.7.1.339.g0233b80
 
