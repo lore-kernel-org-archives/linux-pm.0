@@ -1,17 +1,19 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 01/16] tools/power turbostat: decode more CPUID fields
-Date: Sat, 27 Feb 2016 04:00:55 -0500
-Message-ID: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
+Subject: [PATCH 03/16] x86 msr-index: Simplify syntax for HWP fields
+Date: Sat, 27 Feb 2016 04:00:57 -0500
+Message-ID: <670e27d809a9a29943e1d2e45823fa4fc16c29f0.1456563103.git.len.brown@intel.com>
 References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:35484 "EHLO
-	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753521AbcB0JBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:47 -0500
-Received: by mail-yw0-f196.google.com with SMTP id u200so5302257ywf.2
-        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:46 -0800 (PST)
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:35962 "EHLO
+	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753521AbcB0JBu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 04:01:50 -0500
+Received: by mail-yw0-f194.google.com with SMTP id h80so5308272ywc.3
+        for <linux-pm@vger.kernel.org>; Sat, 27 Feb 2016 01:01:49 -0800 (PST)
 In-Reply-To: <1456563670-23282-1-git-send-email-lenb@kernel.org>
+In-Reply-To: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
+References: <69807a638f91524ed75027f808cd277417ecee7a.1456563103.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
@@ -19,72 +21,32 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-for debugging, dump a few more fields:
-
-CPUID(1): SSE3 MONITOR EIST TM2 TSC MSR ACPI-TM TM
-
-cpu0: MSR_IA32_MISC_ENABLE: 0x00850089 (TCC EIST MONITOR)
+syntax only, no functional change
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/msr-index.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 0dac7e0..7ef8b9f 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2673,6 +2673,19 @@ guess:
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 690b402..5c5e7e5 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -230,10 +230,10 @@
+ #define HWP_PACKAGE_LEVEL_REQUEST_BIT	(1<<11)
  
- 	return 0;
- }
-+
-+void decode_misc_enable_msr(void)
-+{
-+	unsigned long long msr;
-+
-+	if (!get_msr(base_cpu, MSR_IA32_MISC_ENABLE, &msr))
-+		fprintf(stderr, "cpu%d: MSR_IA32_MISC_ENABLE: 0x%08llx (%s %s %s)\n",
-+			base_cpu, msr,
-+			msr & (1 << 3) ? "TCC" : "",
-+			msr & (1 << 16) ? "EIST" : "",
-+			msr & (1 << 18) ? "MONITOR" : "");
-+}
-+
- void process_cpuid()
- {
- 	unsigned int eax, ebx, ecx, edx, max_level;
-@@ -2696,9 +2709,19 @@ void process_cpuid()
- 	if (family == 6 || family == 0xf)
- 		model += ((fms >> 16) & 0xf) << 4;
+ /* IA32_HWP_CAPABILITIES */
+-#define HWP_HIGHEST_PERF(x)		(x & 0xff)
+-#define HWP_GUARANTEED_PERF(x)		((x & (0xff << 8)) >>8)
+-#define HWP_MOSTEFFICIENT_PERF(x)	((x & (0xff << 16)) >>16)
+-#define HWP_LOWEST_PERF(x)		((x & (0xff << 24)) >>24)
++#define HWP_HIGHEST_PERF(x)		(((x) >> 0) & 0xff)
++#define HWP_GUARANTEED_PERF(x)		(((x) >> 8) & 0xff)
++#define HWP_MOSTEFFICIENT_PERF(x)	(((x) >> 16) & 0xff)
++#define HWP_LOWEST_PERF(x)		(((x) >> 24) & 0xff)
  
--	if (debug)
-+	if (debug) {
- 		fprintf(stderr, "%d CPUID levels; family:model:stepping 0x%x:%x:%x (%d:%d:%d)\n",
- 			max_level, family, model, stepping, family, model, stepping);
-+		fprintf(stderr, "CPUID(1): %s %s %s %s %s %s %s %s\n",
-+			ecx & (1 << 0) ? "SSE3" : "-",
-+			ecx & (1 << 3) ? "MONITOR" : "-",
-+			ecx & (1 << 7) ? "EIST" : "-",
-+			ecx & (1 << 8) ? "TM2" : "-",
-+			edx & (1 << 4) ? "TSC" : "-",
-+			edx & (1 << 5) ? "MSR" : "-",
-+			edx & (1 << 22) ? "ACPI-TM" : "-",
-+			edx & (1 << 29) ? "TM" : "-");
-+	}
- 
- 	if (!(edx & (1 << 5)))
- 		errx(1, "CPUID: no MSR");
-@@ -2739,6 +2762,9 @@ void process_cpuid()
- 			do_ptm ? "" : "No ",
- 			has_epb ? "" : "No ");
- 
-+	if (debug)
-+		decode_misc_enable_msr();
-+
- 	if (max_level > 0x15) {
- 		unsigned int eax_crystal;
- 		unsigned int ebx_tsc;
+ /* IA32_HWP_REQUEST */
+ #define HWP_MIN_PERF(x) 		(x & 0xff)
 -- 
 2.7.1.339.g0233b80
 
