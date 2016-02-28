@@ -1,41 +1,33 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on device tree
-Date: Mon, 29 Feb 2016 15:39:37 +0100
-Message-ID: <2383054.EjbA6kk0Xz@wuerfel>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com> <8056913.EWiGLtcdOV@wuerfel> <CAJZ5v0joCpaPNxPzW2xpJ5Vt4MYgWdCvXE0PZb90S46pFhJH8w@mail.gmail.com>
+From: "Alecssandro" <contactalecssandrokonart65@live.com>
+Subject: =?utf-8?q?INFORMA=C3=87=C3=83O_IMPORTANTE__RE=3A_Consultoria_de_Investime?=
+ =?utf-8?q?nto_em_sua_Localidade=2E?=
+Date: Sun, 28 Feb 2016 04:41:58 -0800
+Message-ID: <20160228134055.E75DD8FD735@webmail.cefet-rj.br>
+Reply-To: contactalecssandrokonart@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:57909 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbcB2OkB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 09:40:01 -0500
-In-Reply-To: <CAJZ5v0joCpaPNxPzW2xpJ5Vt4MYgWdCvXE0PZb90S46pFhJH8w@mail.gmail.com>
+Received: from webmail.cefet-rj.br ([200.9.149.52]:56729 "EHLO
+	webmail.cefet-rj.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbcB2O6X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 09:58:23 -0500
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Li Yang <leoli@freescale.com>, Scott Wood <oss@buserror.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jia Hongtao <hongtao.jia@freescale.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Recipients <contactalecssandrokonart65@live.com>
 
-On Monday 29 February 2016 15:33:37 Rafael J. Wysocki wrote:
-> >
-> > Note the check on !CPU_THERMAL rather than !THERMAL in my patch, that
-> > part was correct. I think the line should be
-> >
-> >         depends on !CPU_THERMAL || THERMAL
-> >
-> > as some other drivers do. I must have copied the line
-> > from ARM_MT8173_CPUFREQ, which is a 'bool' symbol, when
-> > it should have been the same as ARM_BIG_LITTLE_CPUFREQ and
-> > CPUFREQ_DT.
-> 
-> OK, so any chance to update the patch?
-> 
 
-I've committed the update locally now, and will follow up tomorrow
-with a new patch, unless it causes another build-time regression.
+Oi Amigo,
 
-I'll also send the respective update for the mediatek driver, making
-that a tristate option.
+INFORMA=C7=C3O IMPORTANTE
 
-	Arnd
+Nossa fam=EDlia est=E1 interessada em investir fundos em sua localidade=
+=2E
+
+Mais informa=E7=F5es para voc=EA se interessou.
+
+Sauda=E7=F5es,
+Sir Henry Neville Lindley Keswick
+Presidente da Jardine Matheson Holdings Ltd
+https://en.wikipedia.org/wiki/Keswick_family
