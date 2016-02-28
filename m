@@ -1,338 +1,228 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: acpi-cpufreq: Make read and write operations more efficient
-Date: Sun, 28 Feb 2016 02:41:58 +0100
-Message-ID: <2364904.yP81ceHOdQ@vostro.rjw.lan>
+Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency selection
+Date: Sun, 28 Feb 2016 03:26:21 +0100
+Message-ID: <14036594.SVLbCmZIEY@vostro.rjw.lan>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org> <2385082.eyZDGGeAFk@vostro.rjw.lan> <56D1236A.3030301@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55013 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S2992732AbcB1CYo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Feb 2016 21:24:44 -0500
+In-Reply-To: <56D1236A.3030301@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, February 26, 2016 08:17:46 PM Steve Muckle wrote:
+> On 02/26/2016 06:39 PM, Rafael J. Wysocki wrote:
+> >>> One thing I personally like in the RCU-based approach is its universality.  The
+> >>> callbacks may be installed by different entities in a uniform way: intel_pstate
+> >>> can do that, the old governors can do that, my experimental schedutil code can
+> >>> do that and your code could have done that too in principle.  And this is very
+> >>> nice, because it is a common underlying mechanism that can be used by everybody
+> >>> regardless of their particular implementations on the other side.
+> >>>
+> >>> Why would I want to use something different, then?
+> >>
+> >> I've got nothing against a callback registration mechanism. As you
+> >> mentioned in another mail it could itself use static keys, enabling the
+> >> static key when a callback is registered and disabling it otherwise to
+> >> avoid calling into cpufreq_update_util().
+> > 
+> > But then it would only make a difference if cpufreq_update_util() was not
+> > used at all (ie. no callbacks installed for any policies by anyone).  The
+> > only reason why it may matter is that the total number of systems using
+> > the performance governor is quite large AFAICS and they would benefit from
+> > that.
+> 
+> I'd think that's a benefit worth preserving, but I guess that's Peter
+> and Ingo's call.
 
-Setting a new CPU frequency and reading the current request value
-in the ACPI cpufreq driver involves each at least two switch
-instructions (there's more if the policy is shared).  One of
-them is present in drv_read/write() that prepares a command
-structure and the other happens in subsequent do_drv_read/write()
-when that structure is interpreted.  However, all of those switches
-may be avoided by using function pointers.
+That's exactly what I said to Peter. :-)
 
-To that end, add two function pointers to struct acpi_cpufreq_data
-to represent read and write operations on the frequency register
-and set them up during policy intitialization to point to the pair
-of routines suitable for the given processor (Intel/AMD MSR access
-or I/O port access).  Then, use those pointers in do_drv_read/write()
-and modify drv_read/write() to prepare the command structure for
-them without any checks.
+[cut]
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+> > 
+> > That said I'm unconvinced about the approach still.
+> > 
+> > Having more RT threads in a system that already is under RT pressure seems like
+> > a recipe for trouble.  Moreover, it's likely that those new RT threads will
+> > disturb the system's normal operation somehow even without the RT pressure and
+> > have you investigated that?
+> 
+> Sorry I'm not sure what you mean by disturb normal operation.
 
-On top of the linux-next branch of linux-pm.git.
+That would introduce a number of extra RT threads that would be woken up quite
+often and on a regular basis, so there would be some extra RT noise in the
+system, especially on systems with one CPU per cpufreq policy and many CPUs.
+
+That's not present ATM and surely need not be completely transparent.
+
+> Generally speaking, increasing the capacity of a heavily loaded system
+> seems to me to be something that should run urgently, so that the system
+> can potentially get itself out of trouble and meet the workload's needs.
+> 
+> > Also having them per policy may be overkill and
+> > binding them to policy CPUs only is not necessary.
+> > 
+> > Overall, it looks like a dynamic pool of threads that may run on every CPU
+> > might be a better approach, but that would almost duplicate the workqueues
+> > subsystem, so is it really worth it?
+> > 
+> > And is the problem actually visible in practice?  I have no record of any reports
+> > mentioning it, although theoretically it's been there forever, so had it been
+> > real, someone would have noticed it and complained about it IMO.
+> 
+> While I don't have a test case drawn up to provide it seems like it'd be
+> easy to create one. More importantly the interactive governor in Android
+> uses this same kind of model, starting a frequency change thread and
+> making it RT. Android is particularly sensitive to latency in frequency
+> response. So that's likely one big reason why you're not hearing about
+> this issue - some folks have already worked around it.
+
+OK, so Android is the reason. :-)
+
+Fair enough.  I still think that care is needed here, though.
+
+[cut]
+
+> >>
+> >> I've nothing against a new fast switch driver interface. It may be nice
+> >> to support unmodified drivers in the fast path as well, if it can be
+> >> made to work, even though it may not be optimal.
+> > 
+> > My bet is that you'd need to modify drivers for that anyway, because none of
+> > them meet the fast path requirements for the very simple reason that they
+> > weren't designed with that in mind.
+> > 
+> > So if you need to modify them anyway, why not to add a new callback to them
+> > in the process?
+> 
+> This implies to me that there are drivers which can be made to work in
+> the fast path (i.e. do not sleep and are reasonably quick) but currently
+> do not. Are there really such drivers? Why would they have unnecessary
+> blocking or work in them?
+
+The ACPI driver is an example here.  It uses smp_call_function_many() to
+run stuff on policy CPUs and that cannot be called from the fast path,
+so the driver has to be modified.
+
+> I would have thought that if a driver sleeps or is slow, it is because
+> of platform limitations (like a blocking call to adjust a regulator)
+> which are unavoidable.
+
+Well, if you don't need to worry about sleeping, it's common to use
+things like mutexes for synchronization etc.  Quite simply, if you don't
+expect that the given piece of code will ever be run from interrupt
+context, you'll not code for that and the scheduler paths have even more
+restrictions than typical interrupt handlers.
+
+> >>>
+> >>>> +		mutex_unlock(&gd->slowpath_lock);
+> >>>> +	}
+> >>>> +
+> >>>> +out:
+> >>>> +	raw_spin_unlock(&gd->fastpath_lock);
+> >>>> +}
+> >>>> +
+> >>>> +void update_cpu_capacity_request(int cpu, bool request)
+> >>>> +{
+> >>>> +	unsigned long new_capacity;
+> >>>> +	struct sched_capacity_reqs *scr;
+> >>>> +
+> >>>> +	/* The rq lock serializes access to the CPU's sched_capacity_reqs. */
+> >>>> +	lockdep_assert_held(&cpu_rq(cpu)->lock);
+> >>>> +
+> >>>> +	scr = &per_cpu(cpu_sched_capacity_reqs, cpu);
+> >>>> +
+> >>>> +	new_capacity = scr->cfs + scr->rt;
+> >>>> +	new_capacity = new_capacity * capacity_margin
+> >>>> +		/ SCHED_CAPACITY_SCALE;
+> >>>> +	new_capacity += scr->dl;
+> >>>
+> >>> Can you please explain the formula here?
+> >>
+> >> The deadline class is expected to provide precise enough capacity
+> >> requirements (since tasks admitted to it have CPU bandwidth parameters)
+> >> such that it does not require additional CPU headroom.
+> >>
+> >> So we're applying the CPU headroom to the CFS and RT capacity requests
+> >> only, then adding the DL request.
+> >>
+> >> I'll add a comment here.
+> > 
+> > One thing that has escaped me: How do you take policy->min into account?
+> > In particular, what if you end up with a frequency below policy->min?
+> 
+> __cpufreq_driver_target will floor the request with policy->min.
+
+I see.
+
+> > 
+> > [cut]
+> > 
+> >>>> +	/*
+> >>>> +	 * Ensure that all CPUs currently part of this policy are out
+> >>>> +	 * of the hot path so that if this policy exits we can free gd.
+> >>>> +	 */
+> >>>> +	preempt_disable();
+> >>>> +	smp_call_function_many(policy->cpus, dummy, NULL, true);
+> >>>> +	preempt_enable();
+> >>>
+> >>> I'm not sure how this works, can you please tell me?
+> >>
+> >> Peter correctly interpreted my intentions.
+> >>
+> >> The RCU possibility also crossed my mind. They both seemed like a bit of
+> >> a hack to me - this wouldn't really be doing any RCU per se, rather
+> >> relying on its implementation. I'll switch to RCU since that seems to be
+> >> preferred though. It's certainly cleaner to write.
+> > 
+> > Well, in that case you simply can switch over to using cpufreq_update_util()
+> > callbacks and then you'll get that part for free.
+> 
+> I'm not sure. Removing the callbacks by itself doesn't guarantee all the
+> CPUs are out of them - don't you still need something to synchronize
+> with that?
+
+The update_util pointers are dereferenced and checked against NULL and the
+callbacks are run (if present) in the same RCU read-side critical section.
+synchronize_rcu() ensures that (a) all of the previously running read-side
+critical sections complete before it returns and (b) all of the read-side
+critical sections that begin after it has returned will see the new value
+of the pointer.  This guarantees that the callbacks will not be running
+after clearing the update_util pointers and executing synchronize_rcu().
+
+> > Overall, sorry to say that, I don't quite see much to salvage in this patch.
+> > 
+> > The throttling implementation is a disaster.  The idea of having RT worker
+> > threads per policy is questionable for a few reasons.  The idea of invoking
+> > the existing driver callbacks from the fast path is not a good one and
+> > trying to use __cpufreq_driver_target() for that only makes it worse.
+> > The mutex manipulations under a raw spinlock are firmly in the "don't do
+> > that" category and the static keys won't be useful any more or need to be
+> > used elsewhere.
+> > 
+> > The way that you compute the frequency to ask for kind of might be defended,
+> > but it has problems too, like arbitrary factors coming out of thin air.
+> > 
+> > So what's left then, realistically?
+> 
+> Aside from the throttling, which I agree was a last minute and
+> not-well-thought-out addition and needs to be fixed, I'd still challenge
+> the statements above. But I don't think there's much point. I'm happy to
+> work towards enabling ARM in schedutil.
+
+Cool! :-)
+
+> I have some review comments which I am just finishing up and will send shortly.
+
+I've responded to those already I think.
 
 Thanks,
 Rafael
-
----
- drivers/cpufreq/acpi-cpufreq.c |  208 ++++++++++++++++++-----------------------
- 1 file changed, 95 insertions(+), 113 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-+++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-@@ -70,6 +70,8 @@ struct acpi_cpufreq_data {
- 	unsigned int cpu_feature;
- 	unsigned int acpi_perf_cpu;
- 	cpumask_var_t freqdomain_cpus;
-+	void (*cpu_freq_write)(struct acpi_pct_register *reg, u32 val);
-+	u32 (*cpu_freq_read)(struct acpi_pct_register *reg);
- };
- 
- /* acpi_perf_data is a pointer to percpu data. */
-@@ -243,125 +245,119 @@ static unsigned extract_freq(u32 val, st
- 	}
- }
- 
--struct msr_addr {
--	u32 reg;
--};
-+u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
-+{
-+	u32 val, dummy;
- 
--struct io_addr {
--	u16 port;
--	u8 bit_width;
--};
-+	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
-+	return val;
-+}
-+
-+void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
-+{
-+	u32 lo, hi;
-+
-+	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
-+	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
-+	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
-+}
-+
-+u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
-+{
-+	u32 val, dummy;
-+
-+	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
-+	return val;
-+}
-+
-+void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
-+{
-+	wrmsr(MSR_AMD_PERF_CTL, val, 0);
-+}
-+
-+u32 cpu_freq_read_io(struct acpi_pct_register *reg)
-+{
-+	u32 val;
-+
-+	acpi_os_read_port(reg->address, &val, reg->bit_width);
-+	return val;
-+}
-+
-+void cpu_freq_write_io(struct acpi_pct_register *reg, u32 val)
-+{
-+	acpi_os_write_port(reg->address, val, reg->bit_width);
-+}
- 
- struct drv_cmd {
--	unsigned int type;
--	const struct cpumask *mask;
--	union {
--		struct msr_addr msr;
--		struct io_addr io;
--	} addr;
-+	struct acpi_pct_register *reg;
- 	u32 val;
-+	union {
-+		void (*write)(struct acpi_pct_register *reg, u32 val);
-+		u32 (*read)(struct acpi_pct_register *reg);
-+	} func;
- };
- 
- /* Called via smp_call_function_single(), on the target CPU */
- static void do_drv_read(void *_cmd)
- {
- 	struct drv_cmd *cmd = _cmd;
--	u32 h;
- 
--	switch (cmd->type) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--	case SYSTEM_AMD_MSR_CAPABLE:
--		rdmsr(cmd->addr.msr.reg, cmd->val, h);
--		break;
--	case SYSTEM_IO_CAPABLE:
--		acpi_os_read_port((acpi_io_address)cmd->addr.io.port,
--				&cmd->val,
--				(u32)cmd->addr.io.bit_width);
--		break;
--	default:
--		break;
--	}
-+	cmd->val = cmd->func.read(cmd->reg);
- }
- 
--/* Called via smp_call_function_many(), on the target CPUs */
--static void do_drv_write(void *_cmd)
-+static u32 drv_read(struct acpi_cpufreq_data *data, const struct cpumask *mask)
- {
--	struct drv_cmd *cmd = _cmd;
--	u32 lo, hi;
-+	struct acpi_processor_performance *perf = to_perf_data(data);
-+	struct drv_cmd cmd = {
-+		.reg = &perf->control_register,
-+		.func.read = data->cpu_freq_read,
-+	};
-+	int err;
- 
--	switch (cmd->type) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		rdmsr(cmd->addr.msr.reg, lo, hi);
--		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
--		wrmsr(cmd->addr.msr.reg, lo, hi);
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
--		break;
--	case SYSTEM_IO_CAPABLE:
--		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
--				cmd->val,
--				(u32)cmd->addr.io.bit_width);
--		break;
--	default:
--		break;
--	}
-+	err = smp_call_function_any(mask, do_drv_read, &cmd, 1);
-+	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
-+	return cmd.val;
- }
- 
--static void drv_read(struct drv_cmd *cmd)
-+/* Called via smp_call_function_many(), on the target CPUs */
-+static void do_drv_write(void *_cmd)
- {
--	int err;
--	cmd->val = 0;
-+	struct drv_cmd *cmd = _cmd;
- 
--	err = smp_call_function_any(cmd->mask, do_drv_read, cmd, 1);
--	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
-+	cmd->func.write(cmd->reg, cmd->val);
- }
- 
--static void drv_write(struct drv_cmd *cmd)
-+static void drv_write(struct acpi_cpufreq_data *data,
-+		      const struct cpumask *mask, u32 val)
- {
-+	struct acpi_processor_performance *perf = to_perf_data(data);
-+	struct drv_cmd cmd = {
-+		.reg = &perf->control_register,
-+		.val = val,
-+		.func.write = data->cpu_freq_write,
-+	};
- 	int this_cpu;
- 
- 	this_cpu = get_cpu();
--	if (cpumask_test_cpu(this_cpu, cmd->mask))
--		do_drv_write(cmd);
--	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
-+	if (cpumask_test_cpu(this_cpu, mask))
-+		do_drv_write(&cmd);
-+
-+	smp_call_function_many(mask, do_drv_write, &cmd, 1);
- 	put_cpu();
- }
- 
--static u32
--get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
-+static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
- {
--	struct acpi_processor_performance *perf;
--	struct drv_cmd cmd;
-+	u32 val;
- 
- 	if (unlikely(cpumask_empty(mask)))
- 		return 0;
- 
--	switch (data->cpu_feature) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
--		break;
--	case SYSTEM_IO_CAPABLE:
--		cmd.type = SYSTEM_IO_CAPABLE;
--		perf = to_perf_data(data);
--		cmd.addr.io.port = perf->control_register.address;
--		cmd.addr.io.bit_width = perf->control_register.bit_width;
--		break;
--	default:
--		return 0;
--	}
--
--	cmd.mask = mask;
--	drv_read(&cmd);
-+	val = drv_read(data, mask);
- 
--	pr_debug("get_cur_val = %u\n", cmd.val);
-+	pr_debug("get_cur_val = %u\n", val);
- 
--	return cmd.val;
-+	return val;
- }
- 
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
-@@ -416,7 +412,7 @@ static int acpi_cpufreq_target(struct cp
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
--	struct drv_cmd cmd;
-+	const struct cpumask *mask;
- 	unsigned int next_perf_state = 0; /* Index into perf table */
- 	int result = 0;
- 
-@@ -438,37 +434,17 @@ static int acpi_cpufreq_target(struct cp
- 		}
- 	}
- 
--	switch (data->cpu_feature) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	case SYSTEM_IO_CAPABLE:
--		cmd.type = SYSTEM_IO_CAPABLE;
--		cmd.addr.io.port = perf->control_register.address;
--		cmd.addr.io.bit_width = perf->control_register.bit_width;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	default:
--		return -ENODEV;
--	}
--
--	/* cpufreq holds the hotplug lock, so we are safe from here on */
--	if (policy->shared_type != CPUFREQ_SHARED_TYPE_ANY)
--		cmd.mask = policy->cpus;
--	else
--		cmd.mask = cpumask_of(policy->cpu);
-+	/*
-+	 * The core won't allow CPUs to go away until the governor has been
-+	 * stopped.
-+	 */
-+	mask = policy->shared_type == CPUFREQ_SHARED_TYPE_ANY ?
-+		cpumask_of(policy->cpu) : policy->cpus;
- 
--	drv_write(&cmd);
-+	drv_write(data, mask, perf->states[next_perf_state].control);
- 
- 	if (acpi_pstate_strict) {
--		if (!check_freqs(cmd.mask, data->freq_table[index].frequency,
-+		if (!check_freqs(mask, data->freq_table[index].frequency,
- 					data)) {
- 			pr_debug("acpi_cpufreq_target failed (%d)\n",
- 				policy->cpu);
-@@ -738,15 +714,21 @@ static int acpi_cpufreq_cpu_init(struct
- 		}
- 		pr_debug("SYSTEM IO addr space\n");
- 		data->cpu_feature = SYSTEM_IO_CAPABLE;
-+		data->cpu_freq_read = cpu_freq_read_io;
-+		data->cpu_freq_write = cpu_freq_write_io;
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		pr_debug("HARDWARE addr space\n");
- 		if (check_est_cpu(cpu)) {
- 			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
-+			data->cpu_freq_read = cpu_freq_read_intel;
-+			data->cpu_freq_write = cpu_freq_write_intel;
- 			break;
- 		}
- 		if (check_amd_hwpstate_cpu(cpu)) {
- 			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
-+			data->cpu_freq_read = cpu_freq_read_amd;
-+			data->cpu_freq_write = cpu_freq_write_amd;
- 			break;
- 		}
- 		result = -ENODEV;
 
