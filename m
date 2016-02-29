@@ -1,134 +1,137 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V6 02/10] PM / Domains: Add function to get the last
- domain added
-Date: Mon, 29 Feb 2016 14:32:23 +0100
-Message-ID: <CAPDyKFqi0o7sROm2sEgL7Gcf6F6yi4REWKHP7RVRrNBDRGTPjw@mail.gmail.com>
+Subject: Re: [PATCH V6 03/10] PM / Domains: Add function to remove a pm-domain
+Date: Mon, 29 Feb 2016 14:45:17 +0100
+Message-ID: <CAPDyKFrn9=0Uxzrg0FOGm5Vntyd+m_9YoiNPcupEiMwP+BNxwQ@mail.gmail.com>
 References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
-	<1456501724-28477-3-git-send-email-jonathanh@nvidia.com>
+	<1456501724-28477-4-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:35010 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755754AbcB2NcZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 08:32:25 -0500
-Received: by mail-wm0-f52.google.com with SMTP id l68so62577250wml.0
-        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 05:32:24 -0800 (PST)
-In-Reply-To: <1456501724-28477-3-git-send-email-jonathanh@nvidia.com>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:33327 "EHLO
+	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbcB2NpU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 08:45:20 -0500
+Received: by mail-wm0-f47.google.com with SMTP id l68so37424703wml.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 05:45:19 -0800 (PST)
+In-Reply-To: <1456501724-28477-4-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jon Hunter <jonathanh@nvidia.com>
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
 On 26 February 2016 at 16:48, Jon Hunter <jonathanh@nvidia.com> wrote:
-> To remove generic PM domains in a sane way, we need to remove them by
-> starting from the last PM domain added. The reason for this is that a PM
-> domain may be a subdomain of another and so we need to remove the child
-> PM domains for a given domain first. By removing PM domains in reverse
-> order we can ensure that the children are removed first.
->
-> Add a new function to get the last PM domain that was added. In case PM
-> domains are added by more than one device in the system (for example,
-> on-chip domains and off-chip domains) add a 'owner' device structure
-> to the generic PM domain structure so that the ownership of a PM domain
-> can be identified by the device structure of the device that added it
-> Use this 'owner' device structure to return the last PM domain added by
-> this device.
->
-> Note that because pm_genpd_init() simply adds each PM domain to the
-> head of the gpd_list object, list_for_each_entry() will start from the
-> last PM domain added.
+> The genpd framework allows users to add power-domains via the
+> pm_genpd_init() function, however, there is no corresponding function
+> to remove a power-domain. For most devices this may be fine as the power
+> domains are never removed, however, for devices that wish to populate
+> the power-domains from within a driver, having the ability to remove a
+> power domain if the probing of the device fails or the driver is unloaded
+> is necessary. Therefore, add a function to remove a power-domain. Please
+> note that the power domain can only be removed if there are no devices
+> using the power-domain and it is not linked to another domain.
+
+In general I think you can work a bit on the changelog, for example
+split it into a few sections to make it more readable.
+
+I would like it to state clearly what constraint we have to be able to
+remove a PM domain. More precisely, the device structure is needed, no
+of genpd provider etc. Maybe also "linked to another domain" can be
+rephrased to tell about both masters and subdomains.
+
+Finally, perhaps change terminology for the "power-domain" to "PM
+domain" as I think that's more widely used.
+
 >
 > Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-
-I don't have a strong opinion about what to call the device structure.
-Both "owner" or "dev" is okay by me.
-
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
 > ---
-> This is the outcome from a discussion I had with Ulf on how best to
-> handle the removal of power-domains [0]. I opted to call the device
-> structure 'owner' because 'parent' could be misleading if a power
-> domain is a child of another power domain. However, open to suggestions!
->
-> [0] http://marc.info/?l=linux-pm&m=145460070816340&w=2
->
->  drivers/base/power/domain.c | 25 +++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  7 +++++++
->  2 files changed, 32 insertions(+)
+>  drivers/base/power/domain.c | 31 +++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  5 +++++
+>  2 files changed, 36 insertions(+)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index ea9f2aa3fc33..608bc00655ee 100644
+> index 608bc00655ee..22f6e9d738bf 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -65,6 +65,31 @@ struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+> @@ -1557,6 +1557,37 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
 >  }
+>  EXPORT_SYMBOL_GPL(pm_genpd_init);
 >
->  /*
-> + * Get the last generic PM domain added whose 'owner' device structure
-> + * matches the device structure provided. The 'owner' device structure
-> + * for a given PM domain should be initialised by the device that is
-> + * creating the PM domains and hence, calling pm_genpd_init().
+> +/**
+> + * pm_genpd_remove - Remove a generic I/O PM domain object.
+> + * @genpd: PM domain object to remove.
 > + */
-> +struct generic_pm_domain *pm_genpd_list_get_tail(struct device *dev)
+> +int pm_genpd_remove(struct generic_pm_domain *genpd)
 > +{
-> +       struct generic_pm_domain *genpd = NULL, *gpd;
+> +       int ret = 0;
 > +
-> +       if (IS_ERR_OR_NULL(dev))
-> +               return NULL;
+> +       if (IS_ERR_OR_NULL(genpd))
+> +               return -EINVAL;
 > +
 > +       mutex_lock(&gpd_list_lock);
-> +       list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> +               if (gpd->owner == dev) {
-> +                       genpd = gpd;
-> +                       break;
-> +               }
+> +       mutex_lock(&genpd->lock);
+> +
+> +       if (!list_empty(&genpd->master_links)
+> +           || !list_empty(&genpd->slave_links) || genpd->device_count) {
+> +               ret = -EBUSY;
+> +               goto out;
 > +       }
+> +
+> +       cancel_work_sync(&genpd->power_off_work);
+
+This can deadlock as the work function tries to lock the genpd mutex.
+
+I suggest to move this outside of the locking section just before
+returning, but of course still only in case of a non-error.
+
+> +       list_del(&genpd->gpd_list_node);
+> +
+> +out:
+> +       mutex_unlock(&genpd->lock);
 > +       mutex_unlock(&gpd_list_lock);
 > +
-> +       return genpd;
+
+Besides the minor comment above.
+
+1) Have you considered how to protects against a registered
+of_genpd_provider for the genpd?
+
+2) Theoretically some could call pm_genpd_add_subdomain() after this
+point. I guess we can consider that as an abuse of the API, although
+do you think we need to protect that from really happening?
+
+> +       return ret;
 > +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_remove);
 > +
-> +/*
->   * This should only be used where we are certain that the pm_domain
->   * attached to the device is a genpd domain.
->   */
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>  /*
+>   * Device Tree based PM domain providers.
 > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 49cd8890b873..b38dd74dea9b 100644
+> index b38dd74dea9b..9ae9c42f807f 100644
 > --- a/include/linux/pm_domain.h
 > +++ b/include/linux/pm_domain.h
-> @@ -46,6 +46,7 @@ struct genpd_power_state {
+> @@ -134,6 +134,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+>                                      struct generic_pm_domain *target);
+>  extern void pm_genpd_init(struct generic_pm_domain *genpd,
+>                           struct dev_power_governor *gov, bool is_off);
+> +extern int pm_genpd_remove(struct generic_pm_domain *genpd);
 >
->  struct generic_pm_domain {
->         struct dev_pm_domain domain;    /* PM domain operations */
-> +       struct device *owner;           /* Identity of the domain owner */
->         struct list_head gpd_list_node; /* Node in the global PM domains list */
->         struct list_head master_links;  /* Links with PM domain as a master */
->         struct list_head slave_links;   /* Links with PM domain as a slave */
-> @@ -120,6 +121,7 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
->  }
->
->  extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
-> +extern struct generic_pm_domain *pm_genpd_list_get_tail(struct device *dev);
->  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                  struct device *dev,
->                                  struct gpd_timing_data *td);
-> @@ -145,6 +147,11 @@ static inline struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+>  extern struct dev_power_governor simple_qos_governor;
+>  extern struct dev_power_governor pm_domain_always_on_gov;
+> @@ -177,6 +178,10 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+>                                  struct dev_power_governor *gov, bool is_off)
 >  {
->         return NULL;
 >  }
-> +static inline
-> +struct generic_pm_domain *pm_genpd_list_get_tail(struct device *dev)
+> +static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
 > +{
-> +       return NULL;
+> +       return -ENOTSUPP;
 > +}
->  static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                         struct device *dev,
->                                         struct gpd_timing_data *td)
+>  #endif
+>
+>  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
 > --
 > 2.1.4
 >
+
+Kind regards
+Uffe
