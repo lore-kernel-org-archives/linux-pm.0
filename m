@@ -1,47 +1,49 @@
-From: "Kim, Milo" <milo.kim@ti.com>
-Subject: Re: [PATCH] power_supply: lp8788-charger: initialize boolean 'found'
-Date: Mon, 29 Feb 2016 08:22:28 +0900
-Message-ID: <56D38134.7030101@ti.com>
-References: <1456577651-5644-1-git-send-email-colin.king@canonical.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Mon, 29 Feb 2016 08:46:01 +0530
+Message-ID: <20160229031601.GI5823@vireshk-i7>
+References: <20151007172343.GE4557@linux>
+ <4807388.hTIoZIhGRk@vostro.rjw.lan>
+ <20151016054226.GQ19018@linux>
+ <1456344052.8680.208.camel@linux.intel.com>
+ <CAJZ5v0hh20C3vgWfBpRmR+oOjOf7kqP6HMLKjqzYx8h0ka_dVQ@mail.gmail.com>
+ <1456357073.3860.21.camel@linux.intel.com>
+ <20160225032700.GA2822@vireshk-i7>
+ <1456423672.17628.9.camel@linux.intel.com>
+ <20160226015718.GA2639@vireshk-i7>
+ <1456518098.17628.92.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1456577651-5644-1-git-send-email-colin.king@canonical.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Colin King <colin.king@canonical.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35010 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753610AbcB2DQI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Feb 2016 22:16:08 -0500
+Received: by mail-pa0-f47.google.com with SMTP id bj10so14393795pad.2
+        for <linux-pm@vger.kernel.org>; Sun, 28 Feb 2016 19:16:07 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1456518098.17628.92.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 2/27/2016 9:54 PM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
->
-> The boolean 'found' is not initialized and hence garbage. It should
-> be initialized as false.
->
-> Found with static analysis using CoverityScan
->
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+On 26-02-16, 12:21, Srinivas Pandruvada wrote:
+> We are setting a cpufreq global variable in cpufreq_driver->attr with
+> this for each cpu. This feature can be absent in certain cpus. So
+> unlike boost it is not system wide, so I have to reset the attr to NULL
+> for some cpus.
 
-Acked-by: Milo Kim <milo.kim@ti.com>
+Ahh, I see..
 
-Thanks for catching this.
+What about always creating this file in sysfs, but allowing read/write only if
+it is applicable to a CPU.
 
-> ---
->   drivers/power/lp8788-charger.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/power/lp8788-charger.c b/drivers/power/lp8788-charger.c
-> index f5a48fd..7321b72 100644
-> --- a/drivers/power/lp8788-charger.c
-> +++ b/drivers/power/lp8788-charger.c
-> @@ -455,7 +455,7 @@ static void lp8788_charger_event(struct work_struct *work)
->
->   static bool lp8788_find_irq_id(struct lp8788_charger *pchg, int virq, int *id)
->   {
-> -	bool found;
-> +	bool found = false;
->   	int i;
->
->   	for (i = 0; i < pchg->num_irqs; i++) {
->
+> Can we assume that cpufreq_driver->init(policy) calls are always
+> serialized from cpu online/offline and subsys_interface callback path?
+
+It is called from these paths but only on poilcy creation. So, if you are going
+to have a single CPU for each policy, then yes.
+
+-- 
+viresh
