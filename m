@@ -1,58 +1,148 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: qoriq: allow building as module with
- THERMAL=m
-Date: Mon, 29 Feb 2016 21:56:11 +0530
-Message-ID: <20160229162611.GU2791@vireshk-i7>
-References: <1456761867-1742824-1-git-send-email-arnd@arndb.de>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on
+ 4.5-rc4
+Date: Mon, 29 Feb 2016 08:49:45 -0800
+Message-ID: <1456764585.21069.6.camel@linux.intel.com>
+References: <87egc7ahqn.fsf@iki.fi> <000401d16bfc$21338450$639a8cf0$@net>
+	 <87a8mv9ujm.fsf@iki.fi>
+	 <36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
+	 <87egc6zc2q.fsf@iki.fi>
+	 <36DF59CE26D8EE47B0655C516E9CE640286C6319@shsmsx102.ccr.corp.intel.com>
+	 <56CA17D4.8080802@linux.intel.com> <87lh6du7lu.fsf@iki.fi>
+	 <20160222061637.GF28226@vireshk-i7> <871t84vgvq.fsf@iki.fi>
+	 <20160222164114.GU28226@vireshk-i7> <87egbwn8lp.fsf@iki.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:35151 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754926AbcB2Q0Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 11:26:16 -0500
-Received: by mail-pa0-f41.google.com with SMTP id bj10so25177577pad.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 08:26:15 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1456761867-1742824-1-git-send-email-arnd@arndb.de>
+Received: from mga04.intel.com ([192.55.52.120]:20958 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbcB2QvW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Feb 2016 11:51:22 -0500
+In-Reply-To: <87egbwn8lp.fsf@iki.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Arto Jantunen <viiru@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>, "Brown, Len" <len.brown@intel.com>, len.brown@kernel.org
+Cc: "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rik van Riel <riel@redhat.com>
 
-On 29-02-16, 17:04, Arnd Bergmann wrote:
-> My previous patch to avoid link errors with the qoriq cpufreq
-> driver disallowed all of the broken cases, but also prevented
-> the driver from being built when CONFIG_THERMAL is a module.
-> 
-> This changes the dependency to allow the cpufreq driver to
-> also be a module in this case, just not built-in.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: cpufreq: qoriq depends on thermal
-> ---
-> 
-> If possible, please fold this change directly into the previous
-> commit
-> 
->  drivers/cpufreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index ca05037dd565..d5e11d24f72b 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -297,7 +297,7 @@ endif
->  config QORIQ_CPUFREQ
->  	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
->  	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-> -	depends on !CPU_THERMAL || THERMAL=y
-> +	depends on !CPU_THERMAL || THERMAL
->  	select CLK_QORIQ
->  	help
->  	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
++Len
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Sun, 2016-02-28 at 17:43 +0200, Arto Jantunen wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>=20
+> > On 22-02-16, 18:39, Arto Jantunen wrote:
+> > > Viresh Kumar <viresh.kumar@linaro.org> writes:
+> > >=20
+> > > > On 21-02-16, 22:33, Arto Jantunen wrote:
+> > > > > I have tested both available governors, and see the same
+> > > > > behavior either
+> > > > > way. The kernel I have defaults to performance, I think I'll
+> > > > > try
+> > > > > building another one which defaults to powersave to see if
+> > > > > that changes
+> > > > > anything (perhaps both governors actually work but it isn't
+> > > > > possible to
+> > > > > switch between them at runtime?). The Debian userspace
+> > > > > defaults to
+> > > > > ondemand, which doesn't exist for intel_pstate.
+> > > >=20
+> > > > I took a close look at git log between 4.4 and 4.5-rc1 for
+> > > > intel-pstate and it
+> > > > had only three patches:
+> > > >=20
+> > > > 157386b6fc14 cpufreq: intel_pstate: Configurable algorithm to
+> > > > get target pstate
+> > > > e70eed2b6454 cpufreq: intel_pstate: Account for non C0 time
+> > > > 63d1d656a523 cpufreq: intel_pstate: Account for IO wait time
+> > > >=20
+> > > > The first one creates special routines based on the CPU model
+> > > > you have, yours is
+> > > > 94, i.e. 5e, which means we are going to use: core_params in
+> > > > your case. And so
+> > > > you will be using get_target_pstate_use_performance() for
+> > > > .get_target_pstate().
+> > > >=20
+> > > > The two later patches doesn't make any changes to the working
+> > > > of core_params()
+> > > > and so shouldn't have changed anything for skylake.
+> > > >=20
+> > > > Anyway, Please trying reverting the above three patches to see
+> > > > if there is a bug
+> > > > somewhere there. So you need to do:
+> > > >=20
+> > > > git revert 63d1d656a523
+> > > > git revert e70eed2b6454
+> > > > git revert 157386b6fc14
+> > >=20
+> > > Thanks. I tried this, and somewhat surprisingly it doesn't change
+> > > the
+> > > result. I guess we are back to doing a full bisect?
+> >=20
+> > Good. That was kind of what I expected, so no surprise :)
+> >=20
+> > I think bisect wouldn't be that difficult, please try :)
+>=20
+> Bisect comes up with this commit:
+>=20
+> commit a9ceb78bc75ca47972096372ff3d48648b16317a
+> Author: Rik van Riel <riel@redhat.com>
+> Date:=C2=A0=C2=A0=C2=A0Tue Nov 3 17:34:18 2015 -0500
+>=20
+> =C2=A0=C2=A0=C2=A0=C2=A0cpuidle,menu: use interactivity_req to disabl=
+e polling
+> =C2=A0=C2=A0=C2=A0=C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0The menu governor carefully figures out how m=
+uch time we
+> typically
+> =C2=A0=C2=A0=C2=A0=C2=A0sleep for an estimated sleep interval, or whe=
+ther there is a
+> repeating
+> =C2=A0=C2=A0=C2=A0=C2=A0pattern going on, and corrects that estimate =
+for the CPU load.
+> =C2=A0=C2=A0=C2=A0=C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0Then it proceeds to ignore that information w=
+hen determining
+> whether
+> =C2=A0=C2=A0=C2=A0=C2=A0or not to consider polling. This is not a big=
+ deal on most x86
+> CPUs,
+> =C2=A0=C2=A0=C2=A0=C2=A0which have very low C1 latencies, and the pat=
+ch should not have
+> any
+> =C2=A0=C2=A0=C2=A0=C2=A0effect on those CPUs.
+> =C2=A0=C2=A0=C2=A0=C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0However, certain CPUs (eg. Atom) have much hi=
+gher C1 latencies,
+> and
+> =C2=A0=C2=A0=C2=A0=C2=A0it would be good to not waste performance and=
+ power on those CPUs
+> if
+> =C2=A0=C2=A0=C2=A0=C2=A0we are expecting a very low wakeup latency.
+> =C2=A0=C2=A0=C2=A0=C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0Disable polling based on the estimated intera=
+ctivity requirement,
+> not
+> =C2=A0=C2=A0=C2=A0=C2=A0on the time to the next timer interrupt.
+> =C2=A0=C2=A0=C2=A0=C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Rik van Riel <riel@redhat.com>
+> =C2=A0=C2=A0=C2=A0=C2=A0Acked-by: Arjan van de Ven <arjan@linux.intel=
+=2Ecom>
+> =C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Rafael J. Wysocki <rafael.j.wy=
+socki@intel.com>
+>=20
+> I verified the result by reverting
+> 9c4b2867ed7c8c8784dd417ffd16e705e81eb145 and
+> a9ceb78bc75ca47972096372ff3d48648b16317a from 4.5-rc5, the resulting
+> kernel does not have the bug.
+>=20
+> Since this is about cpuidle, I'll also mention that this hardware
+> requires idle=3Dnomwait on the command line, otherwise the kernel wil=
+l
+> not
+> boot.
+This is a problem.
 
--- 
-viresh
+Thanks,
+Srinivas
+
+>=20
