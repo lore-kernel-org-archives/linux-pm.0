@@ -1,84 +1,152 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [RFC v3 05/12] timer: Export next wake up of a CPU
-Date: Tue,  1 Mar 2016 14:15:24 -0700
-Message-ID: <1456866931-37851-7-git-send-email-lina.iyer@linaro.org>
+Subject: [RFC v3 04/12] ARM: cpuidle: Add runtime PM support for CPUs
+Date: Tue,  1 Mar 2016 14:15:23 -0700
+Message-ID: <1456866931-37851-6-git-send-email-lina.iyer@linaro.org>
 References: <1456866931-37851-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1456866931-37851-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Knowing the sleep length of the CPU is useful for the power state
-determination on idle. However, when the common sleep time between
-multiple CPUs is needed, the sleep length of a CPU is not useful.
+Notify runtime PM when the CPU is going to be powered off in the idle
+state. This allows for runtime PM suspend/resume of the CPU as well as
+its PM domain.
 
-By reading the next wake up event of a CPU, governors can determine the
-first CPU to wake up (due to timer) amongst a cluster of CPUs and the
-sleep time available between the last CPU to idle and the first CPU to
-resume. This information is useful to determine if the caches and other
-common hardware blocks can also be put in idle during this common period
-of inactivity.
+We do not call into runtime PM for ARM WFI to keep the default state
+simple and faster.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- include/linux/tick.h     | 10 ++++++++++
- kernel/time/tick-sched.c | 13 +++++++++++++
- 2 files changed, 23 insertions(+)
+ drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 97fd4e5..b8a2e06 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -104,6 +104,7 @@ extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
-+extern ktime_t tick_nohz_get_next_wakeup(int cpu);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
- extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
- #else /* !CONFIG_NO_HZ_COMMON */
-@@ -118,6 +119,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index 545069d..4d6f197 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -11,12 +11,14 @@
  
- 	return len;
- }
-+
-+static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
-+
-+	/* Next wake up is the tick period, assume it starts now */
-+	return ktime_add(len, ktime_get());
-+}
-+
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
- static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
- #endif /* !CONFIG_NO_HZ_COMMON */
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 0b17424..f0ddaec 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -888,6 +888,19 @@ ktime_t tick_nohz_get_sleep_length(void)
- 	return ts->sleep_length;
- }
+ #define pr_fmt(fmt) "CPUidle arm: " fmt
  
-+/**
-+ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-+ *
-+ * Called with interrupts disabled on the cpu
-+ */
-+ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	struct clock_event_device *dev =
-+			per_cpu(tick_cpu_device.evtdev, cpu);
-+
-+	return dev->next_event;
-+}
-+
- static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ 
+ #include <asm/cpuidle.h>
+@@ -37,6 +39,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
  {
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	int ret;
++	struct device *cpu_dev = get_cpu_device(dev->cpu);
+ 
+ 	if (!idx) {
+ 		cpu_do_idle();
+@@ -46,12 +49,20 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 	ret = cpu_pm_enter();
+ 	if (!ret) {
+ 		/*
++		 * Call runtime PM suspend on our device
++		 * Notify RCU to pay attention to critical sections
++		 * called from within runtime PM.
++		 */
++		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
++
++		/*
+ 		 * Pass idle state index to cpu_suspend which in turn will
+ 		 * call the CPU ops suspend protocol with idle index as a
+ 		 * parameter.
+ 		 */
+ 		arm_cpuidle_suspend(idx);
+ 
++		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+ 		cpu_pm_exit();
+ 	}
+ 
+@@ -84,6 +95,34 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+ 	{ },
+ };
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	struct device *cpu_dev = get_cpu_device(smp_processor_id());
++
++	/* Execute CPU runtime PM on that CPU */
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_DYING:
++		pm_runtime_put_sync_suspend(cpu_dev);
++		break;
++	case CPU_STARTING:
++		pm_runtime_get_sync(cpu_dev);
++		break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++#else
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	return NOTIFY_OK;
++}
++#endif
++
+ /*
+  * arm_idle_init
+  *
+@@ -96,6 +135,7 @@ static int __init arm_idle_init(void)
+ 	int cpu, ret;
+ 	struct cpuidle_driver *drv = &arm_idle_driver;
+ 	struct cpuidle_device *dev;
++	struct device *cpu_dev;
+ 
+ 	/*
+ 	 * Initialize idle states data, starting at index 1.
+@@ -118,6 +158,16 @@ static int __init arm_idle_init(void)
+ 	 * idle states suspend back-end specific data
+ 	 */
+ 	for_each_possible_cpu(cpu) {
++
++		/* Initialize Runtime PM for the CPU */
++		cpu_dev = get_cpu_device(cpu);
++		pm_runtime_irq_safe(cpu_dev);
++		pm_runtime_enable(cpu_dev);
++		if (cpu_online(cpu)) {
++			pm_runtime_get_noresume(cpu_dev);
++			pm_runtime_set_active(cpu_dev);
++		}
++
+ 		ret = arm_cpuidle_init(cpu);
+ 
+ 		/*
+@@ -148,10 +198,15 @@ static int __init arm_idle_init(void)
+ 		}
+ 	}
+ 
++	/* Register for hotplug notifications for runtime PM */
++	hotcpu_notifier(arm_idle_cpu_hotplug, 0);
++
+ 	return 0;
+ out_fail:
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
++		cpu_dev = get_cpu_device(cpu);
++		__pm_runtime_disable(cpu_dev, false);
+ 		cpuidle_unregister_device(dev);
+ 		kfree(dev);
+ 	}
 -- 
 2.1.4
