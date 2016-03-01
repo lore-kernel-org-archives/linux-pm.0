@@ -1,157 +1,81 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [RFC] Temperature sensor driver (tango)
-Date: Tue, 1 Mar 2016 17:49:02 +0100
-Message-ID: <56D5C7FE.7010807@free.fr>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 01/12] PM / Domains: Abstract genpd locking
+Date: Tue, 1 Mar 2016 09:55:12 -0700
+Message-ID: <20160301165512.GI1440@linaro.org>
+References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
+ <1455310238-8963-2-git-send-email-lina.iyer@linaro.org>
+ <20160226180844.GT28849@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:16608 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbcCAQtN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Mar 2016 11:49:13 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160226180844.GT28849@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>
 
-Hello,
+On Fri, Feb 26 2016 at 11:08 -0700, Stephen Boyd wrote:
+>On 02/12, Lina Iyer wrote:
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 3ddd05d..8204615 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -40,6 +40,46 @@
+>>  static LIST_HEAD(gpd_list);
+>>  static DEFINE_MUTEX(gpd_list_lock);
+>>
+>> +struct genpd_lock_fns {
+>> +	void (*lock)(struct generic_pm_domain *genpd);
+>> +	void (*lock_nested)(struct generic_pm_domain *genpd, int depth);
+>> +	int (*lock_interruptible)(struct generic_pm_domain *genpd);
+>> +	void (*unlock)(struct generic_pm_domain *genpd);
+>> +};
+>> +
+>> +static void genpd_lock_irq(struct generic_pm_domain *genpd)
+>> +{
+>> +	mutex_lock(&genpd->mlock);
+>> +}
+>> +
+>> +static void genpd_lock_irq_nested(struct generic_pm_domain *genpd,
+>> +					int depth)
+>> +{
+>> +	mutex_lock_nested(&genpd->mlock, depth);
+>> +}
+>> +
+>> +static int genpd_lock_interruptible_irq(struct generic_pm_domain *genpd)
+>> +{
+>> +	return mutex_lock_interruptible(&genpd->mlock);
+>> +}
+>> +
+>> +static void genpd_unlock_irq(struct generic_pm_domain *genpd)
+>> +{
+>> +	return mutex_unlock(&genpd->mlock);
+>> +}
+>> +
+>> +static struct genpd_lock_fns irq_lock = {
+>
+>Can this be const? Also, why is this called irq_lock when the
+>lock functions are mutex based?
+>
+hmm.. well IRQs are allowed, but I guess, I should come up with a better
+name.
 
-I've written a temperature sensor driver for my SoC, with the
-intent of using it for CPU throttling, using cpufreq levels.
-(I think that's called passive cooling.)
+>> +	.lock = genpd_lock_irq,
+>> +	.lock_nested = genpd_lock_irq_nested,
+>> +	.lock_interruptible = genpd_lock_interruptible_irq,
+>> +	.unlock = genpd_unlock_irq,
+>> +};
+>> +
+>> @@ -74,6 +75,8 @@ struct generic_pm_domain {
+>>  	struct genpd_power_state *states;
+>>  	unsigned int state_count; /* number of states */
+>>  	unsigned int state_idx; /* state that genpd will go to when off */
+>> +	struct genpd_lock_fns *lock_fns;
+>
+>const?
+>
+Sure will fix both.
 
-For testing purposes, I've added two nodes to my DT:
-
-	soc {
-		cpu_temp: sensor@920100 {
-			compatible = "sigma,smp8758-sensor";
-			#thermal-sensor-cells = <0>;
-			reg = <0x920100 12>;
-		};
-	};
-
-	thermal-zones {
-		cpu_thermal: cpu-thermal {
-			thermal-sensors = <&cpu_temp>;
-		};
-	};
-
-I'd like to submit the driver for inclusion upstream, so I'm
-making this request for comments on the driver. (I suppose I
-would also need to change Makefile/Kconfig?)
-
-
-#include <linux/io.h>
-#include <linux/module.h>
-#include <linux/thermal.h>
-#include <linux/platform_device.h>
-
-#define TEMPSI_CMD	0
-#define TEMPSI_RES	4
-#define TEMPSI_CFG	8
-
-#define CMD_OFF		0
-#define CMD_ON		1
-#define CMD_READ	2
-
-#define sensor_idle(base)	(readl_relaxed(base + TEMPSI_CMD) & BIT(7))
-#define TEMP_LESS_THAN_THRESH	0
-#define INDEX_OFFSET		18
-
-static const u8 temperature[] = {
-	 37,  41,  46,  51,  55,  60,  64,  69,
-	 74,  79,  83,  88,  93,  97, 101, 106,
-	110, 115, 120, 124, 129, 133, 137, 142,
-};
-
-static int tango_get_temp(void *arg, int *res)
-{
-	int i;
-	void __iomem *base = arg;
-
-	for (i = 0; i < 24; ++i)
-	{
-		int thresh_idx = INDEX_OFFSET + i;
-		writel_relaxed(thresh_idx << 8 | CMD_READ, base + TEMPSI_CMD);
-
-		while (!sensor_idle(base))
-			cpu_relax();
-
-		if (readl_relaxed(base + TEMPSI_RES) == TEMP_LESS_THAN_THRESH)
-			break;
-	}
-
-	writel_relaxed(INDEX_OFFSET << 8 | CMD_READ, base + TEMPSI_CMD);
-	*res = temperature[i] * 1000;
-	return 0;
-}
-
-static const struct thermal_zone_of_device_ops ops = {
-	.get_temp	= tango_get_temp,
-};
-
-struct tango_thermal_priv {
-	struct thermal_zone_device *zone;
-	void __iomem *base;
-};
-
-static int tango_thermal_probe(struct platform_device *pdev)
-{
-	struct resource *res;
-	struct tango_thermal_priv *priv;
-	struct device *dev = &pdev->dev;
-
-	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	priv->base = devm_ioremap_resource(dev, res);
-	if (IS_ERR(priv->base))
-		return PTR_ERR(priv->base);
-
-	writel_relaxed(CMD_ON, priv->base + TEMPSI_CMD);
-	writel_relaxed(    50, priv->base + TEMPSI_CFG);
-
-	priv->zone = thermal_zone_of_sensor_register(dev, 0, priv->base, &ops);
-	if (IS_ERR(priv->zone))
-		return PTR_ERR(priv->zone);
-
-	platform_set_drvdata(pdev, priv);
-	return 0;
-}
-
-static int tango_thermal_remove(struct platform_device *pdev)
-{
-	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
-
-	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
-
-	writel_relaxed(      0, priv->base + TEMPSI_CFG);
-	writel_relaxed(CMD_OFF, priv->base + TEMPSI_CMD);
-
-	return 0;
-}
-
-static const struct of_device_id tango_sensor_ids[] = {
-	{
-		.compatible = "sigma,smp8758-sensor",
-	},
-	{ /* sentinel */ }
-};
-
-static struct platform_driver tango_thermal_driver = {
-	.probe	= tango_thermal_probe,
-	.remove	= tango_thermal_remove,
-	.driver	= {
-		.name		= "tango-thermal",
-		.of_match_table	= tango_sensor_ids,
-	},
-};
-
-module_platform_driver(tango_thermal_driver);
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Sigma Designs");
-MODULE_DESCRIPTION("Tango temperature sensor");
+Thanks,
+Lina
