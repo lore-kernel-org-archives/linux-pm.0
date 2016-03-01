@@ -1,116 +1,45 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
-Date: Tue, 1 Mar 2016 09:09:02 -0600
-Message-ID: <56D5B08E.1080201@ti.com>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
- <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
- <55F72C97.2030306@kernel.org>
- <CAKohpo=fcab=eisbwMw=wvbmuXVY5iw_CSe3QK1Ax_i-56JAzA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: [PATCH] thermal: rcar_thermal: don't open code of_device_get_match_data()
+Date: Tue,  1 Mar 2016 17:38:31 +0100
+Message-ID: <1456850319-8386-1-git-send-email-wsa@the-dreams.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:60594 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753964AbcCAPJN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 10:09:13 -0500
-In-Reply-To: <CAKohpo=fcab=eisbwMw=wvbmuXVY5iw_CSe3QK1Ax_i-56JAzA@mail.gmail.com>
+Received: from sauhun.de ([89.238.76.85]:60016 "EHLO pokefinder.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbcCAQio (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Mar 2016 11:38:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Dave Gerlach <d-gerlach@ti.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <rob.herring@linaro.org>, Mark Brown <broonie@kernel.org>
+To: linux-renesas-soc@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 
-On 03/01/2016 12:45 AM, Viresh Kumar wrote:
-> [Removed few people and LKML from CC as its not really about DT
-> change anymore but OPP]
-> 
-> Hi Guys,
-> 
-> On 15 September 2015 at 01:52, Rob Herring <robh@kernel.org> wrote:
-> 
->> Remind me of when do we have multiple regulators for a cpu? The number
->> of supplies should be defined by the cpu binding as function of how many
->> supply rails a cpu has.
-> 
-> This thread died long back and we never worked out support for multiple
-> regulators into the OPP core.
-> 
-> But, Dave and Nishanth (from TI) pinged me last week about it. According
-> to them, their platform has got two regulators for the CPU device and they
-> want OPP layer to have this support.
-> 
-> I was expecting them to reignite this thread, but don't know what happened.
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-Thanks a ton viresh bringing this back up again.
+This change will also make Coverity happy by avoiding a theoretical NULL
+pointer dereference; yet another reason is to use the above helper function
+to tighten the code and make it more readable.
 
-> 
-> And so, I am starting it here.
-> 
-> @Dave/Nishanth: Can you please explain the use-case here please? So
-> that we can get convinced that you really need OPP-core to support multiple
-> regulators..
-> 
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
 
-For controlling leakage and switching frequency of the transistors,
-traditional controls are usually around the voltage rail alone. This is
-not entirely accurate. many SoC vendors including TI [1] and others[2]
-use Body Biasing to control leakage. in fact this is already modeled as
-a regulator for controlling the SoC internal LDO for TI devices in Linux
-kernel (drivers/regulator/ti-abb-regulator.c).
+Tested on a Lager board.
 
+ drivers/thermal/rcar_thermal.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-What this means is something as simple as follows:
-
-Typical usage:
-    VDD
-    ---
-     |
-     |
-     /
-   |/
- --|
-   |\
-     V
-     |
-     |
-    GND
-
-
-Here we provide voltage optimized for the switching frequency required
-for operation.
-
-With Body Biasing: (simplified diagram)
-    VDD   VBB (Body Bias)
-    ---   ---
-     |     |
-     |     |
-     /     |
-   |/      |
- --|   ----/
-   |\
-     V
-     |
-     |
-    GND
-
-
-This implies that for an OPP, we have the triplet {frequency, VDD(SMPS
-voltage), VBB(Bias voltage) } - Multi regulator is key for all OMAP
-generation SoCs since OMAP3 to function for frequencies -> DRA7 for
-example mandates ABB for all OPPs.
-
-For some reason, this entire thread slipped out attention :( - Thanks
-viresh for bringing it back to focus.
-
-
-[1] http://www.ti.com/product/DM3730/technicaldocuments including
-http://www.ti.com/product/am5728?keyMatch=am5728  (TI) OMAP3, OMAP4,
-OMAP5, DRA7, AM57xx SoCs all have this
-
-[2] http://www.techdesignforums.com/practice/guides/dvfs-body-back-bias/
-(ST Micro for example)
-
-
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 0e735acea33afc..82daba09e1503a 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -430,8 +430,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	struct rcar_thermal_priv *priv;
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res, *irq;
+-	const struct of_device_id *of_id = of_match_device(rcar_thermal_dt_ids, dev);
+-	unsigned long of_data = (unsigned long)of_id->data;
++	unsigned long of_data = (unsigned long)of_device_get_match_data(dev);
+ 	int mres = 0;
+ 	int i;
+ 	int ret = -ENODEV;
 -- 
-Regards,
-Nishanth Menon
+2.7.0
+
