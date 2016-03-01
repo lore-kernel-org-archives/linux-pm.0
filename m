@@ -1,82 +1,117 @@
-From: Michele Di Giorgio <michele.digiorgio@arm.com>
-Subject: [PATCH] thermal: trace: migrating thermal traces to use TRACE_DEFINE_ENUM() macros
-Date: Tue,  1 Mar 2016 17:38:54 +0000
-Message-ID: <1456853934-24715-1-git-send-email-michele.digiorgio@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55439 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750996AbcCARjo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 12:39:44 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 02/12] PM / Domains: Support IRQ safe PM domains
+Date: Tue, 1 Mar 2016 10:44:22 -0700
+Message-ID: <20160301174422.GJ1440@linaro.org>
+References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
+ <1455310238-8963-3-git-send-email-lina.iyer@linaro.org>
+ <20160226181753.GU28849@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160226181753.GU28849@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Javi Merino <javi.merino@arm.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Michele Di Giorgio <michele.digiorgio@arm.com>, Steven Rostedt <rostedt@goodmis.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Userspace tools are not aware of how to convert the enums provided by
-the tracepoints to their corresponding strings.
+On Fri, Feb 26 2016 at 11:17 -0700, Stephen Boyd wrote:
+>On 02/12, Lina Iyer wrote:
+>> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+>> index 8ba6625..c06f0b6 100644
+>> --- a/Documentation/power/devices.txt
+>> +++ b/Documentation/power/devices.txt
+>> @@ -607,7 +607,16 @@ individually.  Instead, a set of devices sharing a power resource can be put
+>>  into a low-power state together at the same time by turning off the shared
+>>  power resource.  Of course, they also need to be put into the full-power state
+>>  together, by turning the shared power resource on.  A set of devices with this
+>> -property is often referred to as a power domain.
+>> +property is often referred to as a power domain. A power domain may also be
+>> +nested inside another power domain.
+>> +
+>> +Devices, by default, operate in process context and if a device can operate in
+>> +IRQ safe context, has to be explicitly set as IRQ safe. Power domains by
+>
+>Devices, by default, operate in process context. If a device can
+>operate in IRQ safe context that has to be explicitly indicated
+>by setting the irq_safe boolean inside struct generic_pm_domain
+>to true. Power domains typically operate in process context...
+>
+Done.
 
-Adding TRACE_DEFINE_ENUM() macros allows to make the enums available
-to userspace to let the tools know what those enum values represent.
+>> +default, operate in process context but could have devices that are IRQ safe.
+>> +Such power domains cannot be powered on/off during runtime PM. On the other
+>> +hand, an IRQ safe PM domains that have IRQ safe devices may be powered off
+>
+>On the other hand, IRQ safe PM domains that have ..
+>
+Done.
 
-In particular, for thermal zone trip types what we obtained before was
-something like:
+>> +when all the devices are in idle. An IRQ safe domain may only be attached as a
+>
+>all the devices in the domain?
+>
+Devices need not be IRQ safe.
 
-kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
-				id=0 trip=1 trip_type=1
+<...>
 
-Unfortunately, userspace tools do not know how to convert enum values to
-strings and as a consequence they can only forward the enum value to the
-output. By using TRACE_DEFINE_ENUM() macros for thermal traces we get the
-following trace line:
+>> +static struct genpd_lock_fns no_sleep_lock = {
+>
+>const?
+>
+OK
 
-kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
-				id=0 trip=1 trip_type=PASSIVE
+...
 
-Userspace tools are now able to better understand the meaning of the trip_type
-and provide the user with more readable information.
+>> +	/*
+>> +	 * As we dont power off a non IRQ safe domain, which holds
+>
+>s/dont/don't/
+>
+>> +	 * an IRQ safe device, we dont need to restore power to it.
+>
+>s/dont/don't/
+>
+Done to both.
+>> +	 */
+>> +	if (dev->power.irq_safe && !genpd->irq_safe) {
+>>  		timed = false;
+>>  		goto out;
+>>  	}
+>> @@ -1296,6 +1359,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>>  	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
+>>  		return -EINVAL;
+>>
+>> +	if (genpd->irq_safe && !dev->power.irq_safe) {
+>> +		dev_err(dev,
+>> +			"PM Domain %s is IRQ safe; device has to IRQ safe.\n",
+>
+>has to be?
+>
+This is a remenant. This limitation need not exist. Removed.
 
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
----
- include/trace/events/thermal.h | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+>> +			genpd->name);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>>  	gpd_data = genpd_alloc_dev_data(dev, genpd, td);
+>>  	if (IS_ERR(gpd_data))
+>>  		return PTR_ERR(gpd_data);
+>> @@ -1394,6 +1464,17 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>>  	    || genpd == subdomain)
+>>  		return -EINVAL;
+>>
+>> +	/*
+>> +	 * If the domain can be powered on/off in an IRQ safe
+>> +	 * context, ensure that the subdomain can also be
+>> +	 * powered on/off in that context.
+>> +	 */
+>> +	if (!genpd->irq_safe && subdomain->irq_safe) {
+>> +		WARN("Parent %s of subdomain %s must be IRQ-safe\n",
+>
+>Nitpick! IRQ-safe or IRQ safe? Use one consistently please.
+>
+Sorry. It will be IRQ safe.
 
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 5738bb3..2b4a8ff 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -8,6 +8,18 @@
- #include <linux/thermal.h>
- #include <linux/tracepoint.h>
- 
-+TRACE_DEFINE_ENUM(THERMAL_TRIP_CRITICAL);
-+TRACE_DEFINE_ENUM(THERMAL_TRIP_HOT);
-+TRACE_DEFINE_ENUM(THERMAL_TRIP_PASSIVE);
-+TRACE_DEFINE_ENUM(THERMAL_TRIP_ACTIVE);
-+
-+#define show_tzt_type(type)					\
-+	__print_symbolic(type,					\
-+			 { THERMAL_TRIP_CRITICAL, "CRITICAL"},	\
-+			 { THERMAL_TRIP_HOT,      "HOT"},	\
-+			 { THERMAL_TRIP_PASSIVE,  "PASSIVE"},	\
-+			 { THERMAL_TRIP_ACTIVE,   "ACTIVE"})
-+
- TRACE_EVENT(thermal_temperature,
- 
- 	TP_PROTO(struct thermal_zone_device *tz),
-@@ -73,9 +85,9 @@ TRACE_EVENT(thermal_zone_trip,
- 		__entry->trip_type = trip_type;
- 	),
- 
--	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%d",
-+	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%s",
- 		__get_str(thermal_zone), __entry->id, __entry->trip,
--		__entry->trip_type)
-+		show_tzt_type(__entry->trip_type))
- );
- 
- TRACE_EVENT(thermal_power_cpu_get_power,
--- 
-1.9.1
-
+Thank,
+Lina
