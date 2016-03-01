@@ -1,76 +1,127 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4
-Date: Tue, 1 Mar 2016 11:28:39 -0800
-Message-ID: <001601d173f0$8ff83a10$afe8ae30$@net>
-References: <87egc7ahqn.fsf@iki.fi> <000401d16bfc$21338450$639a8cf0$@net>	<87a8mv9ujm.fsf@iki.fi>	<36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>	<87egc6zc2q.fsf@iki.fi>	<36DF59CE26D8EE47B0655C516E9CE640286C6319@shsmsx102.ccr.corp.intel.com>	<56CA17D4.8080802@linux.intel.com> <87lh6du7lu.fsf@iki.fi>	<20160222061637.GF28226@vireshk-i7> <871t84vgvq.fsf@iki.fi>	<20160222164114.GU28226@vireshk-i7> <87egbwn8lp.fsf@iki.fi> <002801d172b9$845cde50$8d169af0$@net>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 07/12] PM / cpu_domains: Add PM Domain governor for CPUs
+Date: Tue, 1 Mar 2016 12:32:20 -0700
+Message-ID: <20160301193220.GN1440@linaro.org>
+References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
+ <1455310238-8963-8-git-send-email-lina.iyer@linaro.org>
+ <20160226193338.GY28849@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta10.telus.net ([209.171.16.83]:58519 "EHLO cmta10.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbcCAT2o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Mar 2016 14:28:44 -0500
-In-Reply-To: <002801d172b9$845cde50$8d169af0$@net>
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160226193338.GY28849@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 List-Id: linux-pm@vger.kernel.org
-To: 'Arto Jantunen' <viiru@iki.fi>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Rik van Riel' <riel@redhat.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Doug Smythies' <dsmythies@telus.net>
 
-Note: Just following up with some energy numbers, that perhaps
-should have been included to begin with.
-
-> On 2016.02.28 22:22 Doug Smythies wrote:
->> On 2016.02.28 07:44 Arto Jantunen wrote:
-
->> Bisect comes up with this commit:
+On Fri, Feb 26 2016 at 12:33 -0700, Stephen Boyd wrote:
+>On 02/12, Lina Iyer wrote:
+>> @@ -52,6 +55,76 @@ struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
+>>  	return res;
+>>  }
 >>
->> commit a9ceb78bc75ca47972096372ff3d48648b16317a
->>
->> I verified the result by reverting
->> 9c4b2867ed7c8c8784dd417ffd16e705e81eb145 and
->> a9ceb78bc75ca47972096372ff3d48648b16317a from 4.5-rc5, the resulting
->> kernel does not have the bug.
-
-...[cut]...
-
-> So what does this have to do with these commits?
+>> +static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
+>> +{
+>> +	struct generic_pm_domain *genpd = pd_to_genpd(pd);
+>> +	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
+>> +	int qos = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>> +	u64 sleep_ns;
+>> +	ktime_t earliest, next_wakeup;
+>> +	int cpu;
+>> +	int i;
+>> +
+>> +	/* Reset the last set genpd state, default to index 0 */
+>> +	genpd->state_idx = 0;
+>> +
+>> +	/* We dont want to power down, if QoS is 0 */
+>> +	if (!qos)
+>> +		return false;
+>> +
+>> +	/*
+>> +	 * Find the sleep time for the cluster.
+>> +	 * The time between now and the first wake up of any CPU that
+>> +	 * are in this domain hierarchy is the time available for the
+>> +	 * domain to be idle.
+>> +	 */
+>> +	earliest = ktime_set(KTIME_SEC_MAX, 0);
+>> +	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
 >
-> Reverting the commits dramatically reduces, but does not eliminate,
-> the frequency of the high CPU load long durations situation.
+>We're not worried about hotplug happening in parallel because
+>preemption is disabled here?
 >
-> Test results: Each test was 33 minutes, involving 9 incremental
-> kernel compiles.
+Nope. Hotplug on the same domain or in its hierarchy will be waiting on
+the domain lock to released before becoming online. Any other domain is
+not of concern for this domain governor.
+
+If a core was hotplugged out while this is happening, then we may risk
+making an premature wake up decision, which would happen either way if
+we lock hotplug here.
+
+>> +		next_wakeup = tick_nohz_get_next_wakeup(cpu);
+>> +		if (earliest.tv64 > next_wakeup.tv64)
 >
-> Why an incremental kernel compile? Because it just so happens
-> to demonstrate the issue well.
-
-Why 9? Just to have a longer test time for better averaging.
-
+>	if (ktime_before(next_wakeup, earliest))
 >
-> Kernel 1 = 4.5-rc5 + rjw v10 3 patch set. Called "rjwv10".
-> Kernel 2 = kernel 1 + above 2 commits reverted. Called "reverted".
+>> +			earliest = next_wakeup;
+>> +	}
+>> +
+>> +	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
+>> +	if (sleep_ns <= 0)
+>> +		return false;
+>> +
+>> +	/*
+>> +	 * Find the deepest sleep state that satisfies the residency
+>> +	 * requirement and the QoS constraint
+>> +	 */
+>> +	for (i = genpd->state_count - 1; i >= 0; i--) {
+>> +		u64 state_sleep_ns;
+>> +
+>> +		state_sleep_ns = genpd->states[i].power_off_latency_ns +
+>> +			genpd->states[i].power_on_latency_ns +
+>> +			genpd->states[i].residency_ns;
+>> +
+>> +		/*
+>> +		 * If we cant sleep to save power in the state, move on
 >
-> Test 1: rjwv10 4056 occurrences
-> Test 2: reverted 293 occurrences
-> Test 3: rjwv10 7878 occurrences
-> Test 4: reverted 259 occurrences
-> Test 5: rjwv10 3708 occurrences
-> Test 6: reverted 54 occurrences
+>s/cant/can't/
 >
-> Average issue reduction ratio: 26 times better.
+argh. Fixed.
+>> +		 * to the next lower idle state.
+>> +		 */
+>> +		if (state_sleep_ns > sleep_ns)
+>> +			continue;
+>> +
+>> +		/*
+>> +		 * We also dont want to sleep more than we should to
+>
+>s/dont/don't/
+>
+Done
+>> +		 * gaurantee QoS.
+>> +		 */
+>> +		if (state_sleep_ns < (qos * NSEC_PER_USEC))
+>
+>Maybe we should make qos into qos_ns? Presumably the compiler
+>would hoist out the multiplication here, but it doesn't hurt to
+>do it explicitly.
+>
+Okay
 
-Turbostat was used for the following:
+>> +			break;
+>> +	}
+>> +
+>> +	if (i >= 0)
+>> +		genpd->state_idx = i;
+>> +
+>> +	return  (i >= 0) ? true : false;
+>
+>Just return i >= 0?
+>
+Ok
 
-Test 7: reverted: Package Joules: 47830
-Test 8: rjwv10: Package Joules: 54419 (revert saves 12.1% energy)
-Test 9: reverted: Package Joules: 49326
-Test 10: rjwv10: Package Joules: 55442 (revert saves 11% energy)
-Test 11: reverted: acpi-cpufreq ondemand: Package Joules: 49146
-Test 12: rjwv10: acpi-cpufreq ondemand: Package Joules: 56302 (revert saves 12.7% energy)
-
-... Doug
-
-
+Thanks,
+Lina
+>-- 
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+>a Linux Foundation Collaborative Project
