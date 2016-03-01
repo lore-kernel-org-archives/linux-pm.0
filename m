@@ -1,81 +1,77 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC v2 01/12] PM / Domains: Abstract genpd locking
-Date: Tue, 1 Mar 2016 09:55:12 -0700
-Message-ID: <20160301165512.GI1440@linaro.org>
-References: <1455310238-8963-1-git-send-email-lina.iyer@linaro.org>
- <1455310238-8963-2-git-send-email-lina.iyer@linaro.org>
- <20160226180844.GT28849@codeaurora.org>
+From: Arto Jantunen <viiru@iki.fi>
+Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4
+Date: Tue, 01 Mar 2016 18:59:41 +0200
+Message-ID: <87fuwarv5u.fsf@iki.fi>
+References: <87egc7ahqn.fsf@iki.fi> <000401d16bfc$21338450$639a8cf0$@net>
+	<87a8mv9ujm.fsf@iki.fi>
+	<36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
+	<87egc6zc2q.fsf@iki.fi>
+	<36DF59CE26D8EE47B0655C516E9CE640286C6319@shsmsx102.ccr.corp.intel.com>
+	<56CA17D4.8080802@linux.intel.com> <87lh6du7lu.fsf@iki.fi>
+	<20160222061637.GF28226@vireshk-i7> <871t84vgvq.fsf@iki.fi>
+	<20160222164114.GU28226@vireshk-i7> <87egbwn8lp.fsf@iki.fi>
+	<20160229201946.0bdcc48e@annuminas.surriel.com>
+	<87twkqllst.fsf@kirika.int.wmdata.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160226180844.GT28849@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kevin Hilman <khilman@linaro.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from viiru.iki.fi ([185.19.28.114]:34471 "EHLO viiru.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751891AbcCAQ7z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Mar 2016 11:59:55 -0500
+In-Reply-To: <87twkqllst.fsf@kirika.int.wmdata.fi> (Arto Jantunen's message of
+	"Tue, 01 Mar 2016 09:06:10 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, Feb 26 2016 at 11:08 -0700, Stephen Boyd wrote:
->On 02/12, Lina Iyer wrote:
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 3ddd05d..8204615 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -40,6 +40,46 @@
->>  static LIST_HEAD(gpd_list);
->>  static DEFINE_MUTEX(gpd_list_lock);
+Arto Jantunen <viiru@iki.fi> writes:
+
+> Rik van Riel <riel@redhat.com> writes:
+>>> commit a9ceb78bc75ca47972096372ff3d48648b16317a
+>>> Author: Rik van Riel <riel@redhat.com>
+>>> Date:   Tue Nov 3 17:34:18 2015 -0500
+>>> 
+>>>     cpuidle,menu: use interactivity_req to disable polling
 >>
->> +struct genpd_lock_fns {
->> +	void (*lock)(struct generic_pm_domain *genpd);
->> +	void (*lock_nested)(struct generic_pm_domain *genpd, int depth);
->> +	int (*lock_interruptible)(struct generic_pm_domain *genpd);
->> +	void (*unlock)(struct generic_pm_domain *genpd);
->> +};
->> +
->> +static void genpd_lock_irq(struct generic_pm_domain *genpd)
->> +{
->> +	mutex_lock(&genpd->mlock);
->> +}
->> +
->> +static void genpd_lock_irq_nested(struct generic_pm_domain *genpd,
->> +					int depth)
->> +{
->> +	mutex_lock_nested(&genpd->mlock, depth);
->> +}
->> +
->> +static int genpd_lock_interruptible_irq(struct generic_pm_domain *genpd)
->> +{
->> +	return mutex_lock_interruptible(&genpd->mlock);
->> +}
->> +
->> +static void genpd_unlock_irq(struct generic_pm_domain *genpd)
->> +{
->> +	return mutex_unlock(&genpd->mlock);
->> +}
->> +
->> +static struct genpd_lock_fns irq_lock = {
+>> I could see that patch being a little aggressive on some CPUs,
+>> due to interactivity_req being corrected by the load on the
+>> CPU.  Does using data->predicted_us help?
 >
->Can this be const? Also, why is this called irq_lock when the
->lock functions are mutex based?
+> I'll test this tonight and get back to you.
 >
-hmm.. well IRQs are allowed, but I guess, I should come up with a better
-name.
+>> ---8<---
+>>
+>> Subject: cpuidle: use predicted_us not interactivity_req to consider polling
+>>
+>> The interactivity_req variable is the expected sleep time, divided
+>> by the CPU load. This can be too aggressive a factor in deciding
+>> whether or not to consider polling in the cpuidle state selection.
+>>
+>> Use the (not corrected for load) predicted_us instead.
+>>
+>> Signed-off-by: Rik van Riel <riel@redhat.com>
+>> ---
+>>  drivers/cpuidle/governors/menu.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+>> index 0742b3296673..97022ae01d2e 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>>  		 * We want to default to C1 (hlt), not to busy polling
+>>  		 * unless the timer is happening really really soon.
+>>  		 */
+>> -		if (interactivity_req > 20 &&
+>> +		if (data->predicted_us > 20 &&
+>>  		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+>>  			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+>>  			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+>>
 
->> +	.lock = genpd_lock_irq,
->> +	.lock_nested = genpd_lock_irq_nested,
->> +	.lock_interruptible = genpd_lock_interruptible_irq,
->> +	.unlock = genpd_unlock_irq,
->> +};
->> +
->> @@ -74,6 +75,8 @@ struct generic_pm_domain {
->>  	struct genpd_power_state *states;
->>  	unsigned int state_count; /* number of states */
->>  	unsigned int state_idx; /* state that genpd will go to when off */
->> +	struct genpd_lock_fns *lock_fns;
->
->const?
->
-Sure will fix both.
+This patch has no effect on the symptoms I'm seeing.
 
-Thanks,
-Lina
+-- 
+Arto Jantunen
