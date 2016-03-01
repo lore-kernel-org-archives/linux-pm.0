@@ -1,104 +1,145 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] Documentation: cpufreq: Additional interface for
- acpi-cpufreq
-Date: Tue, 1 Mar 2016 08:09:42 +0530
-Message-ID: <20160301023942.GC16437@vireshk-i7>
-References: <1456791009-950-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1456791009-950-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC/RFT][PATCH v4 1/2] cpufreq: New governor using utilization
+ data from the scheduler
+Date: Mon, 29 Feb 2016 20:10:07 -0800
+Message-ID: <56D5161F.1030701@linaro.org>
+References: <5059413.77KZsd2lep@vostro.rjw.lan>
+ <1825489.pc33SqXSIB@vostro.rjw.lan> <56D1270F.4010106@linaro.org>
+ <2754630.1sRldKdOu8@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35700 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbcCACjp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 21:39:45 -0500
-Received: by mail-pf0-f181.google.com with SMTP id w128so58456166pfb.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 18:39:45 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1456791009-950-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:36827 "EHLO
+	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbcCAEKK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 23:10:10 -0500
+Received: by mail-pf0-f169.google.com with SMTP id l6so7247517pfl.3
+        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 20:10:10 -0800 (PST)
+In-Reply-To: <2754630.1sRldKdOu8@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 
-On 29-02-16, 16:10, Srinivas Pandruvada wrote:
-> Added new file for acpi-cpufreq driver, with explanation for
-> base_frequency.
+On 02/27/2016 07:24 AM, Rafael J. Wysocki wrote:
+>>> +static unsigned int sugov_next_freq(struct policy_dbs_info *policy_dbs,
+>>> +				    unsigned long util, unsigned long max,
+>>> +				    u64 last_sample_time)
+>>> +{
+>>> +	struct cpufreq_policy *policy = policy_dbs->policy;
+>>> +	unsigned int min_f = policy->min;
+>>> +	unsigned int max_f = policy->max;
+>>> +	unsigned int j;
+>>> +
+>>> +	if (util > max || min_f >= max_f)
+>>> +		return max_f;
+>>> +
+>>> +	for_each_cpu(j, policy->cpus) {
+>>> +		struct sugov_cpu *j_sg_cpu;
+>>> +		unsigned long j_util, j_max;
+>>> +
+>>> +		if (j == smp_processor_id())
+>>> +			continue;
+>>> +
+>>> +		j_sg_cpu = &per_cpu(sugov_cpu, j);
+>>> +		/*
+>>> +		 * If the CPU was last updated before the previous sampling
+>>> +		 * time, we don't take it into account as it probably is idle
+>>> +		 * now.
+>>> +		 */
+>>
+>> If the sampling rate is less than the tick, it seems possible a busy CPU
+>> may not manage to get an update in within the current sampling period.
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  Documentation/cpu-freq/acpi-cpufreq-addition.txt | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->  create mode 100644 Documentation/cpu-freq/acpi-cpufreq-addition.txt
+> Right.
 > 
-> diff --git a/Documentation/cpu-freq/acpi-cpufreq-addition.txt b/Documentation/cpu-freq/acpi-cpufreq-addition.txt
+> sampling_rate is more of a rate limit here, though, because the governor doesn't
+> really do any sampling (I was talking about that in the intro message at
+> http://marc.info/?l=linux-pm&m=145609673008122&w=2).
+> 
+> It was easy to re-use the existing show/store for that, so I took the shortcut,
+> but I'm considering to introduce a new attribute with a more suitable name for
+> that.  That would help to avoid a couple of unclean things in patch [2/2] as
+> well if I'm not mistaken.
+> 
+>> What about checking to see if there was an update within the last tick
+>> period, rather than sample period?
+> 
+> If your rate limit is set below the rate of the updates (scheduling rate more
+> or less), it simply has no effect.  To me, that case doesn't require any
+> special care.
 
-s/-addition//
+I'm specifically worried about the check below where we omit a CPU's
+capacity request if its last update came before the last sample time.
 
-> new file mode 100644
-> index 0000000..40efb22
-> --- /dev/null
-> +++ b/Documentation/cpu-freq/acpi-cpufreq-addition.txt
-> @@ -0,0 +1,20 @@
-> +Additional sysfs attribute for acpi-cpufreq
+Say there are 2 CPUs in a frequency domain, HZ is 100 and the sample
+delay here is 4ms. At t=0ms CPU0 starts running a CPU hog and reports
+being fully busy. At t=5ms CPU1 starts running a task - CPU0's vote is
+kept and factored in and last_sample_time is updated to t=5ms. At t=9ms
+CPU1 stops running the task and updates again, but this time CPU0's vote
+is discarded because its last update is t=0ms, and last_sample_time is
+5ms. But CPU0 is fully busy and the freq is erroneously dropped.
 
-You should be adding a description of freqdomain_cpus in this file, which was
-never documented (yes, in a separate patch).
+> 
+>>> +		if (j_sg_cpu->last_update < last_sample_time)
+>>> +			continue;
+>>> +
+>>> +		j_util = j_sg_cpu->util;
+>>> +		j_max = j_sg_cpu->max;
+>>> +		if (j_util > j_max)
+>>> +			return max_f;
+>>> +
+>>> +		if (j_util * max > j_max * util) {
+>>> +			util = j_util;
+>>> +			max = j_max;
+>>> +		}
+>>> +	}
+>>> +
+>>> +	return min_f + util * (max_f - min_f) / max;
+>>> +}
+...
+>>> +static unsigned int sugov_set_freq(struct cpufreq_policy *policy)
+>>> +{
+>>> +	struct policy_dbs_info *policy_dbs = policy->governor_data;
+>>> +	struct sugov_policy *sg_policy = to_sg_policy(policy_dbs);
+>>> +
+>>> +	__cpufreq_driver_target(policy, sg_policy->next_freq, CPUFREQ_RELATION_C);
+>>
+>> Similar to the concern raised in the acpi changes I think this should be
+>> CPUFREQ_RELATION_L, otherwise you may not run fast enough to meet demand.
+> 
+> "ondemand" uses CPUFREQ_RELATION_C when powersave_bias is unset and that's why
+> I used it here.
+> 
+> Like I said in my reply to Peter in that thread, using RELATION_L here is likely
+> to make us avoid the min frequency almost entirely even if the system is almost
+> completely idle.  I don't think that would be OK really.
+> 
+> That said my opinion about this particular item isn't really strong.
 
-> +In addition to the standard sysfs interface as defined in the
-> +user-guide.txt under section "Preferred Interface: sysfs",
-> +acpi-cpufreq can have following additional sysfs attribute:
+I think the calculation for required CPU bandwidth needs tweaking.
 
-Maybe rewrite as:
+Aside from always wanting something past fmin, currently the amount of
+extra CPU capacity given for a particular % utilization depends on how
+high the platform's fmin happens to be, even if the fmax speeds are the
+same. For example given two platforms with the following available
+frequencies (MHz):
 
-acpi-cpufreq have following sysfs attributes in addition to standard cpufreq
-attributes:
+platform A: 100, 300, 500, 700, 900, 1100
+platform B: 500, 700, 900, 1100
 
-> +
-> +base_frequency: 	Max non-turbo frequency
-> +For example:
+A 50% utilization load on platform A will want 600 MHz (rounding up to
+700 MHz perhaps) whereas platform B will want 800 MHz (again likely
+rounding up to 900 MHz), even though the load consumes 550 MHz on both
+platforms.
 
-Please keep the formatting similar to user-guide.txt
+One possibility would be something like we had in schedfreq, getting the
+absolute CPU bw requirement (util/max) * fmax and then adding some %
+margin, which I think is more consistent. It is true that it means
+figuring out what the right margin is and now there's a magic number
+(and potentially a tunable), but it would be more consistent.
 
-> +scaling_available_frequencies displays list of available frequencies 
+thanks,
+Steve
 
-> which can be used to set max/min or current scaling frequency.
-
-Just drop above line.
-
-> +>cat scaling_available_frequencies
-> +2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-> +1300000 1100000 1000000 900000 800000 600000 500000
-
-A blank line here.. This is documentation and should be really readable.
-
-> +If the base_frequency attribute is present,
-
-*is present* isn't sufficient, right? It should be readable as well?
-
-> then any frequency above is
-
-s/above/above base_frequency/
-
-> +purely opportunistic or turbo frequency. For example
-
-s/purely opportunistic or / a/
-
-> +>cat base_frequency
-> +2200000
-
-Blank line here as well:
-
-> +Then in the above displayed list of scaling_available_frequencies, any
-> +frequency 2300000 or 2301000 is opportunistic or turbo frequency.
-
-Maybe just:
-
-i.e. 2300000 and 2301000 are turbo frequencies now..
-
-> +
-> -- 
-> 2.5.0
-
--- 
-viresh
