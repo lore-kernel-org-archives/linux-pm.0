@@ -1,41 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: qoriq: allow building as module with THERMAL=m
-Date: Tue, 01 Mar 2016 03:00:22 +0100
-Message-ID: <4312477.lDX3yCWWFs@vostro.rjw.lan>
-References: <1456761867-1742824-1-git-send-email-arnd@arndb.de>
+From: "Brown, Len" <len.brown@intel.com>
+Subject: RE: [PATCH 06/16] tools/power turbostat: allow sub-sec intervals
+Date: Tue, 1 Mar 2016 02:07:57 +0000
+Message-ID: <1A7043D5F58CCB44A599DFD55ED4C948469DFD5D@fmsmsx115.amr.corp.intel.com>
+References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
+ <24781860a144a6792cb7697307f36b4486b611da.1456563103.git.len.brown@intel.com>
+ <001201d171da$22f11850$68d348f0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52644 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751117AbcCAB6m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 20:58:42 -0500
-In-Reply-To: <1456761867-1742824-1-git-send-email-arnd@arndb.de>
+Received: from mga04.intel.com ([192.55.52.120]:25530 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbcCACIA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 21:08:00 -0500
+In-Reply-To: <001201d171da$22f11850$68d348f0$@net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>, 'Len Brown' <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, February 29, 2016 05:04:20 PM Arnd Bergmann wrote:
-> My previous patch to avoid link errors with the qoriq cpufreq
-> driver disallowed all of the broken cases, but also prevented
-> the driver from being built when CONFIG_THERMAL is a module.
+> > From: Len Brown <len.brown@intel.com>
+> >
+> > turbostat -i interval_sec
+> >
+> > will sample and display statistics every interval_sec.
+> > interval_sec used to be a whole number of seconds,
+> > but now we accept a decimal, as small as 0.001 sec (1 ms).
 > 
-> This changes the dependency to allow the cpufreq driver to
-> also be a module in this case, just not built-in.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: cpufreq: qoriq depends on thermal
-> ---
-> 
-> If possible, please fold this change directly into the previous
-> commit
+> Shouldn't you be cautious allowing this?
+> At such a high sampling rate, the user can significantly
+> effect the system being measured with turbostat's own overhead.
+>
+> I tried down to 1 millisecond, and noted greatly
+> reduced C6 time (my processor only goes to C6), greatly increased
+> busy% for all CPU's, over 4 watts extra package power, ...
 
-Done.
+turbostat provides a 5.000 second default sampling interval.
+If a user chooses to explicitly change that default,
+I have to trust that they are doing it for a good reason.
 
-I've applied the [2/2] too.
+I agree, measuring deep idle state residency would not be a good reason.
 
-Thanks,
-Rafael
+cheers,
+-Len
 
