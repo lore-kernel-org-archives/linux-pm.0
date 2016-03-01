@@ -1,77 +1,82 @@
-From: Arto Jantunen <viiru@iki.fi>
-Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4
-Date: Tue, 01 Mar 2016 18:59:41 +0200
-Message-ID: <87fuwarv5u.fsf@iki.fi>
-References: <87egc7ahqn.fsf@iki.fi> <000401d16bfc$21338450$639a8cf0$@net>
-	<87a8mv9ujm.fsf@iki.fi>
-	<36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
-	<87egc6zc2q.fsf@iki.fi>
-	<36DF59CE26D8EE47B0655C516E9CE640286C6319@shsmsx102.ccr.corp.intel.com>
-	<56CA17D4.8080802@linux.intel.com> <87lh6du7lu.fsf@iki.fi>
-	<20160222061637.GF28226@vireshk-i7> <871t84vgvq.fsf@iki.fi>
-	<20160222164114.GU28226@vireshk-i7> <87egbwn8lp.fsf@iki.fi>
-	<20160229201946.0bdcc48e@annuminas.surriel.com>
-	<87twkqllst.fsf@kirika.int.wmdata.fi>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Michele Di Giorgio <michele.digiorgio@arm.com>
+Subject: [PATCH] thermal: trace: migrating thermal traces to use TRACE_DEFINE_ENUM() macros
+Date: Tue,  1 Mar 2016 17:38:54 +0000
+Message-ID: <1456853934-24715-1-git-send-email-michele.digiorgio@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from viiru.iki.fi ([185.19.28.114]:34471 "EHLO viiru.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbcCAQ7z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Mar 2016 11:59:55 -0500
-In-Reply-To: <87twkqllst.fsf@kirika.int.wmdata.fi> (Arto Jantunen's message of
-	"Tue, 01 Mar 2016 09:06:10 +0200")
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55439 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750996AbcCARjo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 12:39:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Javi Merino <javi.merino@arm.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Michele Di Giorgio <michele.digiorgio@arm.com>, Steven Rostedt <rostedt@goodmis.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Arto Jantunen <viiru@iki.fi> writes:
+Userspace tools are not aware of how to convert the enums provided by
+the tracepoints to their corresponding strings.
 
-> Rik van Riel <riel@redhat.com> writes:
->>> commit a9ceb78bc75ca47972096372ff3d48648b16317a
->>> Author: Rik van Riel <riel@redhat.com>
->>> Date:   Tue Nov 3 17:34:18 2015 -0500
->>> 
->>>     cpuidle,menu: use interactivity_req to disable polling
->>
->> I could see that patch being a little aggressive on some CPUs,
->> due to interactivity_req being corrected by the load on the
->> CPU.  Does using data->predicted_us help?
->
-> I'll test this tonight and get back to you.
->
->> ---8<---
->>
->> Subject: cpuidle: use predicted_us not interactivity_req to consider polling
->>
->> The interactivity_req variable is the expected sleep time, divided
->> by the CPU load. This can be too aggressive a factor in deciding
->> whether or not to consider polling in the cpuidle state selection.
->>
->> Use the (not corrected for load) predicted_us instead.
->>
->> Signed-off-by: Rik van Riel <riel@redhat.com>
->> ---
->>  drivers/cpuidle/governors/menu.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
->> index 0742b3296673..97022ae01d2e 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->>  		 * We want to default to C1 (hlt), not to busy polling
->>  		 * unless the timer is happening really really soon.
->>  		 */
->> -		if (interactivity_req > 20 &&
->> +		if (data->predicted_us > 20 &&
->>  		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
->>  			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
->>  			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
->>
+Adding TRACE_DEFINE_ENUM() macros allows to make the enums available
+to userspace to let the tools know what those enum values represent.
 
-This patch has no effect on the symptoms I'm seeing.
+In particular, for thermal zone trip types what we obtained before was
+something like:
 
+kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
+				id=0 trip=1 trip_type=1
+
+Unfortunately, userspace tools do not know how to convert enum values to
+strings and as a consequence they can only forward the enum value to the
+output. By using TRACE_DEFINE_ENUM() macros for thermal traces we get the
+following trace line:
+
+kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
+				id=0 trip=1 trip_type=PASSIVE
+
+Userspace tools are now able to better understand the meaning of the trip_type
+and provide the user with more readable information.
+
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
+---
+ include/trace/events/thermal.h | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
+index 5738bb3..2b4a8ff 100644
+--- a/include/trace/events/thermal.h
++++ b/include/trace/events/thermal.h
+@@ -8,6 +8,18 @@
+ #include <linux/thermal.h>
+ #include <linux/tracepoint.h>
+ 
++TRACE_DEFINE_ENUM(THERMAL_TRIP_CRITICAL);
++TRACE_DEFINE_ENUM(THERMAL_TRIP_HOT);
++TRACE_DEFINE_ENUM(THERMAL_TRIP_PASSIVE);
++TRACE_DEFINE_ENUM(THERMAL_TRIP_ACTIVE);
++
++#define show_tzt_type(type)					\
++	__print_symbolic(type,					\
++			 { THERMAL_TRIP_CRITICAL, "CRITICAL"},	\
++			 { THERMAL_TRIP_HOT,      "HOT"},	\
++			 { THERMAL_TRIP_PASSIVE,  "PASSIVE"},	\
++			 { THERMAL_TRIP_ACTIVE,   "ACTIVE"})
++
+ TRACE_EVENT(thermal_temperature,
+ 
+ 	TP_PROTO(struct thermal_zone_device *tz),
+@@ -73,9 +85,9 @@ TRACE_EVENT(thermal_zone_trip,
+ 		__entry->trip_type = trip_type;
+ 	),
+ 
+-	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%d",
++	TP_printk("thermal_zone=%s id=%d trip=%d trip_type=%s",
+ 		__get_str(thermal_zone), __entry->id, __entry->trip,
+-		__entry->trip_type)
++		show_tzt_type(__entry->trip_type))
+ );
+ 
+ TRACE_EVENT(thermal_power_cpu_get_power,
 -- 
-Arto Jantunen
+1.9.1
+
