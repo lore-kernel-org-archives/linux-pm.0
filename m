@@ -1,105 +1,143 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/2] cpufreq: acpi_cpufreq: base frequency attribute support
-Date: Mon, 29 Feb 2016 16:10:08 -0800
-Message-ID: <1456791009-950-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1456791009-950-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4
+Date: Tue, 1 Mar 2016 01:37:25 +0100
+Message-ID: <CAJZ5v0iEupVAPL6HHb_y7cy-MJePEerRzitku9y8ZavBOGm+pA@mail.gmail.com>
+References: <87egc7ahqn.fsf@iki.fi>
+	<000401d16bfc$21338450$639a8cf0$@net>
+	<87a8mv9ujm.fsf@iki.fi>
+	<36DF59CE26D8EE47B0655C516E9CE640286C6253@shsmsx102.ccr.corp.intel.com>
+	<87egc6zc2q.fsf@iki.fi>
+	<36DF59CE26D8EE47B0655C516E9CE640286C6319@shsmsx102.ccr.corp.intel.com>
+	<56CA17D4.8080802@linux.intel.com>
+	<87lh6du7lu.fsf@iki.fi>
+	<20160222061637.GF28226@vireshk-i7>
+	<871t84vgvq.fsf@iki.fi>
+	<20160222164114.GU28226@vireshk-i7>
+	<87egbwn8lp.fsf@iki.fi>
+	<1456764585.21069.6.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:40981 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665AbcCAALp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Feb 2016 19:11:45 -0500
-In-Reply-To: <1456791009-950-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-lf0-f54.google.com ([209.85.215.54]:35832 "EHLO
+	mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbcCAAh2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Feb 2016 19:37:28 -0500
+Received: by mail-lf0-f54.google.com with SMTP id j186so28639847lfg.2
+        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 16:37:27 -0800 (PST)
+In-Reply-To: <1456764585.21069.6.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Arto Jantunen <viiru@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>, "Brown, Len" <len.brown@intel.com>, len.brown@kernel.org, "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rik van Riel <riel@redhat.com>
 
-Currently scaling_available_frequencies displays list of available
-frequencies which can be used to set max/min or current scaling frequency.
+On Mon, Feb 29, 2016 at 5:49 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> +Len
+>
+> On Sun, 2016-02-28 at 17:43 +0200, Arto Jantunen wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>
+>> > On 22-02-16, 18:39, Arto Jantunen wrote:
+>> > > Viresh Kumar <viresh.kumar@linaro.org> writes:
+>> > >
+>> > > > On 21-02-16, 22:33, Arto Jantunen wrote:
+>> > > > > I have tested both available governors, and see the same
+>> > > > > behavior either
+>> > > > > way. The kernel I have defaults to performance, I think I'll
+>> > > > > try
+>> > > > > building another one which defaults to powersave to see if
+>> > > > > that changes
+>> > > > > anything (perhaps both governors actually work but it isn't
+>> > > > > possible to
+>> > > > > switch between them at runtime?). The Debian userspace
+>> > > > > defaults to
+>> > > > > ondemand, which doesn't exist for intel_pstate.
+>> > > >
+>> > > > I took a close look at git log between 4.4 and 4.5-rc1 for
+>> > > > intel-pstate and it
+>> > > > had only three patches:
+>> > > >
+>> > > > 157386b6fc14 cpufreq: intel_pstate: Configurable algorithm to
+>> > > > get target pstate
+>> > > > e70eed2b6454 cpufreq: intel_pstate: Account for non C0 time
+>> > > > 63d1d656a523 cpufreq: intel_pstate: Account for IO wait time
+>> > > >
+>> > > > The first one creates special routines based on the CPU model
+>> > > > you have, yours is
+>> > > > 94, i.e. 5e, which means we are going to use: core_params in
+>> > > > your case. And so
+>> > > > you will be using get_target_pstate_use_performance() for
+>> > > > .get_target_pstate().
+>> > > >
+>> > > > The two later patches doesn't make any changes to the working
+>> > > > of core_params()
+>> > > > and so shouldn't have changed anything for skylake.
+>> > > >
+>> > > > Anyway, Please trying reverting the above three patches to see
+>> > > > if there is a bug
+>> > > > somewhere there. So you need to do:
+>> > > >
+>> > > > git revert 63d1d656a523
+>> > > > git revert e70eed2b6454
+>> > > > git revert 157386b6fc14
+>> > >
+>> > > Thanks. I tried this, and somewhat surprisingly it doesn't change
+>> > > the
+>> > > result. I guess we are back to doing a full bisect?
+>> >
+>> > Good. That was kind of what I expected, so no surprise :)
+>> >
+>> > I think bisect wouldn't be that difficult, please try :)
+>>
+>> Bisect comes up with this commit:
+>>
+>> commit a9ceb78bc75ca47972096372ff3d48648b16317a
+>> Author: Rik van Riel <riel@redhat.com>
+>> Date:   Tue Nov 3 17:34:18 2015 -0500
+>>
+>>     cpuidle,menu: use interactivity_req to disable polling
+>>
+>>     The menu governor carefully figures out how much time we
+>> typically
+>>     sleep for an estimated sleep interval, or whether there is a
+>> repeating
+>>     pattern going on, and corrects that estimate for the CPU load.
+>>
+>>     Then it proceeds to ignore that information when determining
+>> whether
+>>     or not to consider polling. This is not a big deal on most x86
+>> CPUs,
+>>     which have very low C1 latencies, and the patch should not have
+>> any
+>>     effect on those CPUs.
+>>
+>>     However, certain CPUs (eg. Atom) have much higher C1 latencies,
+>> and
+>>     it would be good to not waste performance and power on those CPUs
+>> if
+>>     we are expecting a very low wakeup latency.
+>>
+>>     Disable polling based on the estimated interactivity requirement,
+>> not
+>>     on the time to the next timer interrupt.
+>>
+>>     Signed-off-by: Rik van Riel <riel@redhat.com>
+>>     Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+>>     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> I verified the result by reverting
+>> 9c4b2867ed7c8c8784dd417ffd16e705e81eb145 and
+>> a9ceb78bc75ca47972096372ff3d48648b16317a from 4.5-rc5, the resulting
+>> kernel does not have the bug.
+>>
+>> Since this is about cpuidle, I'll also mention that this hardware
+>> requires idle=nomwait on the command line, otherwise the kernel will
+>> not
+>> boot.
+> This is a problem.
 
->cat scaling_available_frequencies
-2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-1300000 1100000 1000000 900000 800000 600000 500000
+I'll give Rik a couple of days to respond to this and if he doesn't,
+I'll queue up the reverts for 4.5.
 
-Here traditionally it is assumed that only 2301000 is a turbo frequency,
-which is purely opportunistic, anything else user can request and may
-get it.
-But because of configurable thermal design power implementation in several
-Intel CPUs, the opportunistic frequency start can be any frequency in this
-range. For example it can be 2300000 or any lower value.
-This change adds an optional new attribute called "base_frequency",
-which displays the max non-turbo frequency (base frequency). For example:
->cat base_frequency
-2200000
-This will allow user to choose a certain frequency which is not
-opportunistic.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 51eef87..76edd28 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -646,6 +646,21 @@ static int acpi_cpufreq_blacklist(struct cpuinfo_x86 *c)
- }
- #endif
- 
-+static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
-+{
-+	u64 tar;
-+	int err;
-+
-+	err = rdmsrl_safe_on_cpu(policy->cpu, MSR_TURBO_ACTIVATION_RATIO, &tar);
-+	if (!err)
-+		/* Refer to IA64, IA32 SDM table 35-20, unit = 100 MHz */
-+		return sprintf(buf, "%llu\n", tar * 100000);
-+
-+	return err;
-+}
-+
-+cpufreq_freq_attr_ro(base_frequency);
-+
- static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int i;
-@@ -889,6 +904,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
- 	&cpb,
- #endif
- 	NULL,
-+	NULL,
- };
- 
- static struct cpufreq_driver acpi_cpufreq_driver = {
-@@ -971,6 +987,26 @@ static int __init acpi_cpufreq_init(void)
- 			}
- 	}
- #endif
-+
-+	if (boot_cpu_has(X86_FEATURE_IDA)) {
-+		u64 plat_info, tar;
-+		int err;
-+
-+		err = rdmsrl_safe_on_cpu(0, MSR_PLATFORM_INFO, &plat_info);
-+		/* Check number of config TDP levels > 0 */
-+		if (!err && ((plat_info >> 33) & 0x03) > 0) {
-+			err = rdmsrl_safe_on_cpu(0, MSR_TURBO_ACTIVATION_RATIO,
-+						 &tar);
-+			if (!err) {
-+				struct freq_attr **attr;
-+
-+				for (attr = acpi_cpufreq_attr; *attr; attr++)
-+				;
-+				*attr = &base_frequency;
-+			}
-+		}
-+	}
-+
- 	acpi_cpufreq_boost_init();
- 
- 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
--- 
-2.5.0
-
+Thanks,
+Rafael
