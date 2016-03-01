@@ -1,35 +1,35 @@
-From: Dan Jacobson <jidanni@jidanni.org>
-Subject: pause to allow user to read final screen before poweroff
-Date: Tue, 01 Mar 2016 13:42:37 +0800
-Message-ID: <878u224uuq.fsf_-_@jidanni.org>
+From: yu chen <yu.chen.surf@gmail.com>
+Subject: Re: pause to allow user to read final screen before poweroff
+Date: Tue, 1 Mar 2016 13:53:39 +0800
+Message-ID: <CADjb_WScj4Hpd6Ej+hxHGKiAiFkWfvMS2zGmquBDsQn54AC_JA@mail.gmail.com>
 References: <bug-112111-12294@https.bugzilla.kernel.org/>
-Reply-To: linux-pm@vger.kernel.org, jidanni@jidanni.org
+	<878u224uuq.fsf_-_@jidanni.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hapkido.dreamhost.com ([66.33.216.122]:42410 "EHLO
-	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbcCAFmm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 00:42:42 -0500
-Received: from homiemail-a60.g.dreamhost.com (homie.mail.dreamhost.com [208.97.132.208])
-	by hapkido.dreamhost.com (Postfix) with ESMTP id 34975923BF
-	for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 21:42:42 -0800 (PST)
-Received: from homiemail-a60.g.dreamhost.com (localhost [127.0.0.1])
-	by homiemail-a60.g.dreamhost.com (Postfix) with ESMTP id 2F2F73BC06A
-	for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 21:42:41 -0800 (PST)
-Received: from jidanni.org (122-118-149-44.dynamic.hinet.net [122.118.149.44])
-	(using TLSv1 with cipher AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	(Authenticated sender: jidanni@jidanni.org)
-	by homiemail-a60.g.dreamhost.com (Postfix) with ESMTPSA id E99F73BC063
-	for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 21:42:40 -0800 (PST)
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:35342 "EHLO
+	mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbcCAFxk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 00:53:40 -0500
+Received: by mail-wm0-f53.google.com with SMTP id l68so19847201wml.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Feb 2016 21:53:40 -0800 (PST)
+In-Reply-To: <878u224uuq.fsf_-_@jidanni.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, jidanni@jidanni.org
 
-How can the user read the final screen before powerdown? I have a proposal:
-https://bugzilla.kernel.org/show_bug.cgi?id=112111
+On Tue, Mar 1, 2016 at 1:42 PM, Dan Jacobson <jidanni@jidanni.org> wrote:
+> How can the user read the final screen before powerdown? I have a proposal:
+> https://bugzilla.kernel.org/show_bug.cgi?id=112111
+>
+> b> --- Comment #1 from Aaron Lu <aaron.lu@intel.com> ---
+> b> bugzilla is not the right place for such discussion, please send your proposal
+> b> to linux-pm@vger.kernel.org mailing list.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-b> --- Comment #1 from Aaron Lu <aaron.lu@intel.com> ---
-b> bugzilla is not the right place for such discussion, please send your proposal
-b> to linux-pm@vger.kernel.org mailing list.
+Sometimes people use serialport,etc, why do you want
+to record the last message for poweroff? I know there
+is similar scenario for panic of panic_timeout.
