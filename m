@@ -1,104 +1,71 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 00/14] drivers: use __maybe_unused to hide pm functions
-Date: Wed,  2 Mar 2016 16:58:52 +0100
-Message-ID: <1456934350-1389172-1-git-send-email-arnd@arndb.de>
-Return-path: <linux-media-owner@vger.kernel.org>
-Sender: linux-media-owner@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, herbert@gondor.apana.org.au, k.kozlowski@samsung.com, dan.j.williams@intel.com, vinod.koul@intel.com, baohua@kernel.org, dmitry.torokhov@gmail.com, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, laurent.pinchart@ideasonboard.com, mchehab@osg.samsung.com, lee.jones@linaro.org, kvalo@codeaurora.org, ludovic.desroches@atmel.com, linus.walleij@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, JBottomley@odin.com, martin.petersen@oracle.com, broonie@kernel.org, linux-crypto@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] cpupower: bench: parse.c: fix several resource leaks
+Date: Wed,  2 Mar 2016 16:31:25 +0000
+Message-ID: <1456936285-22915-1-git-send-email-colin.king@canonical.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from youngberry.canonical.com ([91.189.89.112]:56568 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbcCBQb1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 11:31:27 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-I found many variations of the bug in these device drivers (and some
-USB drivers I already send patches for in a separate series).
+From: Colin Ian King <colin.king@canonical.com>
 
-In each case, the power management operations structure conditionally
-references suspend/resume functions, but the functions are hidden
-in an incorrect #ifdef or not hidden at all.
+The error handling in prepare_output has several issues with
+resource leaks.  Ensure that filename is free'd and the directory
+stream DIR is closed before returning.
 
-We could try to correct the #ifdefs, but it seems easier to just
-mark those functions as __maybe_unused, which has the same effect
-but provides better compile-time test coverage and (subjectively)
-looks a bit nicer.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ tools/power/cpupower/bench/parse.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-I have a patch series that avoids all warnings in ARM randconfig
-builds, and I have verified that all these patches fix a warning that
-is still present in today's linux-next, and that they do not
-introduce new warnings in any configuration I found.
-
-Note that all these drivers are ARM specific, so I assume that
-all portable drivers got fixed already when someone rand into
-the problem on x86.
-
-There are no dependencies between the patches, so I'd appreciate
-subsystem maintainers to put them directly into their git trees.
-
-	Arnd
-
-Arnd Bergmann (14):
-  pinctrl: at91: use __maybe_unused to hide pm functions
-  irqchip: st: use __maybe_unused to hide st_irq_syscfg_resume
-  power: ipaq-micro-battery: use __maybe_unused to hide pm functions
-  power: pm2301-charger: use __maybe_unused to hide pm functions
-  mfd: ipaq-micro: use __maybe_unused to hide pm functions
-  dma: sirf: use __maybe_unused to hide pm functions
-  hw_random: exynos: use __maybe_unused to hide pm functions
-  scsi: mvumi: use __maybe_unused to hide pm functions
-  amd-xgbe: use __maybe_unused to hide pm functions
-  wireless: cw1200: use __maybe_unused to hide pm functions_
-  input: spear-keyboard: use __maybe_unused to hide pm functions
-  keyboard: snvs-pwrkey: use __maybe_unused to hide pm functions
-  [media] omap3isp: use IS_ENABLED() to hide pm functions
-  ASoC: rockchip: use __maybe_unused to hide st_irq_syscfg_resume
-
- drivers/char/hw_random/exynos-rng.c         | 10 ++++------
- drivers/dma/sirf-dma.c                      | 10 ++++------
- drivers/input/keyboard/snvs_pwrkey.c        |  4 ++--
- drivers/input/keyboard/spear-keyboard.c     |  6 ++----
- drivers/irqchip/irq-st.c                    |  2 +-
- drivers/media/platform/omap3isp/isp.c       | 13 +------------
- drivers/mfd/ipaq-micro.c                    |  2 +-
- drivers/net/ethernet/amd/xgbe/xgbe-main.c   |  6 ++----
- drivers/net/wireless/st/cw1200/cw1200_spi.c |  9 ++-------
- drivers/net/wireless/st/cw1200/pm.h         |  9 +++++++--
- drivers/pinctrl/pinctrl-at91-pio4.c         |  4 ++--
- drivers/power/ipaq_micro_battery.c          |  4 ++--
- drivers/power/pm2301_charger.c              | 22 ++++++----------------
- drivers/scsi/mvumi.c                        |  4 ++--
- sound/soc/rockchip/rockchip_spdif.c         |  4 ++--
- 15 files changed, 40 insertions(+), 69 deletions(-)
-
+diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
+index f503fb5..2d09c92 100644
+--- a/tools/power/cpupower/bench/parse.c
++++ b/tools/power/cpupower/bench/parse.c
+@@ -81,14 +81,18 @@ FILE *prepare_output(const char *dirname)
+ 
+ 	len = strlen(dirname) + 30;
+ 	filename = malloc(sizeof(char) * len);
++	if (!filename) {
++		perror("malloc");
++		goto out_dir;
++	}
+ 
+ 	if (uname(&sysdata) == 0) {
+ 		len += strlen(sysdata.nodename) + strlen(sysdata.release);
+ 		filename = realloc(filename, sizeof(char) * len);
+ 
+-		if (filename == NULL) {
++		if (!filename) {
+ 			perror("realloc");
+-			return NULL;
++			goto out_dir;
+ 		}
+ 
+ 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
+@@ -104,12 +108,16 @@ FILE *prepare_output(const char *dirname)
+ 	if (output == NULL) {
+ 		perror("fopen");
+ 		fprintf(stderr, "error: unable to open logfile\n");
++		goto out;
+ 	}
+ 
+ 	fprintf(stdout, "Logfile: %s\n", filename);
+ 
+-	free(filename);
+ 	fprintf(output, "#round load sleep performance powersave percentage\n");
++out:
++	free(filename);
++out_dir:
++	closedir(dir);
+ 	return output;
+ }
+ 
 -- 
 2.7.0
-Cc: herbert@gondor.apana.org.au
-Cc: k.kozlowski@samsung.com
-Cc: dan.j.williams@intel.com
-Cc: vinod.koul@intel.com
-Cc: baohua@kernel.org
-Cc: dmitry.torokhov@gmail.com
-Cc: tglx@linutronix.de
-Cc: jason@lakedaemon.net
-Cc: marc.zyngier@arm.com
-Cc: laurent.pinchart@ideasonboard.com
-Cc: mchehab@osg.samsung.com
-Cc: lee.jones@linaro.org
-Cc: kvalo@codeaurora.org
-Cc: ludovic.desroches@atmel.com
-Cc: linus.walleij@linaro.org
-Cc: sre@kernel.org
-Cc: dbaryshkov@gmail.com
-Cc: JBottomley@odin.com
-Cc: martin.petersen@oracle.com
-Cc: broonie@kernel.org
-Cc: linux-crypto@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: dmaengine@vger.kernel.org
-Cc: linux-input@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org
-Cc: linux-gpio@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: alsa-devel@alsa-project.org
-Cc: linux-rockchip@lists.infradead.org
+
