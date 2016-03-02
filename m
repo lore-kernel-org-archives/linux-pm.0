@@ -1,43 +1,81 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v5 1/2] cpumask: export cpumask_any_but
-Date: Wed, 02 Mar 2016 14:11:53 +1030
-Message-ID: <878u21mtq6.fsf@rustcorp.com.au>
-References: <1456261152-21907-1-git-send-email-jacob.jun.pan@linux.intel.com> <1456261152-21907-2-git-send-email-jacob.jun.pan@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1456261152-21907-2-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [RESEND PATCH v3 0/6] EC-based USB Power Delivery support for Chrome machines
+Date: Wed,  2 Mar 2016 09:23:26 +0100
+Message-ID: <1456907012-19268-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36704 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbcCBIYY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 03:24:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
 
-Jacob Pan <jacob.jun.pan@linux.intel.com> writes:
-> Export cpumask_any_but() for module use. This will be used by drivers
-> such as intel_rapl to locate an active cpu on a socket.
->
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Hi,
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+this series contains a driver that exposes a power_supply to userspace
+representing a port that support USB PD charging.
 
-Thanks!
-Rusty.
+Allows userspace to display to the user if the machine is charging and
+on which port, and if another device is being charged by a port.
 
-> ---
->  lib/cpumask.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/lib/cpumask.c b/lib/cpumask.c
-> index 5a70f61..81dedaa 100644
-> --- a/lib/cpumask.c
-> +++ b/lib/cpumask.c
-> @@ -41,6 +41,7 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
->  			break;
->  	return i;
->  }
-> +EXPORT_SYMBOL(cpumask_any_but);
->  
->  /* These are not inline because of header tangles. */
->  #ifdef CONFIG_CPUMASK_OFFSTACK
-> -- 
-> 1.9.1
+Thanks,
+
+Tomeu
+
+Changes in v3:
+- Remove duplicated prototype of cros_ec_get_host_event.
+- Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
+- Remove sysfs attributes ext_current_lim and ext_voltage_lim because
+  I don't know yet where they should be placed (and don't have HW to
+  test them).
+- Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
+- Lots of misc comments from Stephen Boyd were addressed.
+- Unregister notification listener in .remove callback.
+- Only register the PD charger device if there are any PD ports in this
+  EC.
+- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
+  charger device because we are now only creating one if a EC has any PD
+  ports.
+- Dropped patch adding power_supply types because it has been merged
+  already.
+
+Changes in v2:
+- Allocate enough for the structs in cros_ec_get_host_command_version_mask,
+  not their pointers.
+- Allocate msg in the stack in get_next_event and
+  get_keyboard_state_event, as suggested by Gwendal.
+- Split out changes to cros_ec_commands.h and the helpers added to
+  mfd/cros_ec.h from the patch that adds the charger driver, as
+  suggested by Lee.
+- Actually call get_ec_num_ports.
+- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
+
+Sameer Nanda (1):
+  power: cros_usbpd-charger: Add EC-based USB PD charger driver
+
+Tomeu Vizoso (4):
+  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
+  mfd: cros_ec: Add cros_ec_get_host_event
+  mfd: cros_ec: Add more definitions for PD commands
+  platform/chrome: Register USB PD charger device
+
+Vic Yang (1):
+  mfd: cros_ec: Add MKBP event support
+
+ drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
+ drivers/mfd/cros_ec.c                   |  57 ++-
+ drivers/platform/chrome/cros_ec_dev.c   |  44 ++
+ drivers/platform/chrome/cros_ec_proto.c | 129 ++++++
+ drivers/power/Kconfig                   |  10 +
+ drivers/power/Makefile                  |   1 +
+ drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/cros_ec.h             |  62 +++
+ include/linux/mfd/cros_ec_commands.h    | 358 ++++++++++++++-
+ 9 files changed, 1464 insertions(+), 112 deletions(-)
+ create mode 100644 drivers/power/cros_usbpd-charger.c
+
+-- 
+2.5.0
+
