@@ -1,71 +1,64 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] cpupower: bench: parse.c: fix several resource leaks
-Date: Wed,  2 Mar 2016 16:31:25 +0000
-Message-ID: <1456936285-22915-1-git-send-email-colin.king@canonical.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH V6 04/10] Documentation: DT: bindings: Update NVIDIA PMC
+ for Tegra
+Date: Wed, 2 Mar 2016 18:02:50 +0100
+Message-ID: <20160302170250.GA319@ulmo.nvidia.com>
+References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
+ <1456501724-28477-5-git-send-email-jonathanh@nvidia.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:56568 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbcCBQb1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 11:31:27 -0500
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34484 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbcCBRCz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 12:02:55 -0500
+Content-Disposition: inline
+In-Reply-To: <1456501724-28477-5-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
 
-The error handling in prepare_output has several issues with
-resource leaks.  Ensure that filename is free'd and the directory
-stream DIR is closed before returning.
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- tools/power/cpupower/bench/parse.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+On Fri, Feb 26, 2016 at 03:48:38PM +0000, Jon Hunter wrote:
+> Add the PMC driver compatible strings for Tegra132 and Tegra210.
+>=20
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> Acked-by: Rob Herring <robh@kernel.org>
+> ---
+>  .../devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt     | 12 ++++++=
++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
-index f503fb5..2d09c92 100644
---- a/tools/power/cpupower/bench/parse.c
-+++ b/tools/power/cpupower/bench/parse.c
-@@ -81,14 +81,18 @@ FILE *prepare_output(const char *dirname)
- 
- 	len = strlen(dirname) + 30;
- 	filename = malloc(sizeof(char) * len);
-+	if (!filename) {
-+		perror("malloc");
-+		goto out_dir;
-+	}
- 
- 	if (uname(&sysdata) == 0) {
- 		len += strlen(sysdata.nodename) + strlen(sysdata.release);
- 		filename = realloc(filename, sizeof(char) * len);
- 
--		if (filename == NULL) {
-+		if (!filename) {
- 			perror("realloc");
--			return NULL;
-+			goto out_dir;
- 		}
- 
- 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
-@@ -104,12 +108,16 @@ FILE *prepare_output(const char *dirname)
- 	if (output == NULL) {
- 		perror("fopen");
- 		fprintf(stderr, "error: unable to open logfile\n");
-+		goto out;
- 	}
- 
- 	fprintf(stdout, "Logfile: %s\n", filename);
- 
--	free(filename);
- 	fprintf(output, "#round load sleep performance powersave percentage\n");
-+out:
-+	free(filename);
-+out_dir:
-+	closedir(dir);
- 	return output;
- }
- 
--- 
-2.7.0
+Applied, thanks.
 
+Thierry
+
+--3V7upXqbjpZ4EhLz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJW1xy4AAoJEN0jrNd/PrOh3+sP/RdtbN6c2Nx54jAjTPiOhtn0
+uHdyUZEdqoWMed48LDkcjISzucBcUilm8C9OIZ4FxteeHCur2LOjUwwGc33O9OmQ
+JW9RZLeVqHjyAqxAY9JWoaxTAswJKHNXPIG2Lu7ebJGLa6twoAKWfDHNvlEFEFeV
+pqR+pxIRXnHvDLJYcHztw2H4REd35ru8x9byIgmBhVmr222/TyqFAI2lPaWbPKFf
+xP19YrVJvgZTCYotf4QX6bQT1AJtCwkP90a/lH7vA8AB1vDeZtpqKCTbRS+vy+H4
+EaH3hVdlIAN+6lJK6JNuwxz0FG2bDd0TGb6gOHOdYZuVzYSvr5jTN7yZNznLcZFn
+Qs1uQyfJsf6ov/CQai91xtVIAhVZHz68ir8/cY1eJYZO01o8ljdJB+YTrsFeIASf
+mDD2D483CtkUkxH7bJlyii+aNhbnM21uf2nu9OVJpuiw47KoNvuz+TLvTJJfQyPM
+HsjvjnBH0YrpAxguk0pGRc58QdtQXsTE/oOR1oeTaywbMW2PXGTk8ijgDnxg5a+C
+Mh+eSJyw8Z8Tb6/VtPOfHiumTPzWrhtoU8WvfrsXLaMrWLqSixWWvyTh7Pa0TBzp
+xtQKJDOvsaNnqS4MhpJbNr+eku6z+SNu4pcLzsZ83sQQujQ2UcrZx4eT1cRR7iFQ
++YnMRGfYKS7a1DVVCoHa
+=8sWt
+-----END PGP SIGNATURE-----
+
+--3V7upXqbjpZ4EhLz--
