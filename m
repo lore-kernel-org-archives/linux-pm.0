@@ -1,136 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/6] cpufreq: Reduce cpufreq_update_util() overhead a bit
-Date: Wed, 02 Mar 2016 03:04:25 +0100
-Message-ID: <3575770.L1lplNLqVv@vostro.rjw.lan>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+Subject: [PATCH 0/6] cpufreq: schedutil governor
+Date: Wed, 02 Mar 2016 02:56:28 +0100
+Message-ID: <2495375.dFbdlAZmA6@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2495375.dFbdlAZmA6@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Use the observation that cpufreq_update_util() is only called
-by the scheduler with rq->lock held, so the callers of
-cpufreq_set_update_util_data() can use synchronize_sched()
-instead of synchronize_rcu() to wait for cpufreq_update_util()
-to complete.  Moreover, if they are updated to do that,
-rcu_read_(un)lock() calls in cpufreq_update_util() might be
-replaced with rcu_read_(un)lock_sched(), respectively, but
-those aren't really necessary, because the scheduler calls
-that function from RCU-sched read-side critical sections
-already.
+My previous intro message still applies somewhat, so here's a link:
 
-In addition to that, if cpufreq_set_update_util_data() checks
-the func field in the struct update_util_data before setting
-the per-CPU pointer to it, the data->func check may be dropped
-from cpufreq_update_util() as well.
+http://marc.info/?l=linux-pm&m=145609673008122&w=2
 
-Make the above changes to reduce the overhead from
-cpufreq_update_util() in the scheduler paths invoking it
-and to make the cleanup after removing its callbacks less
-heavy-weight somewhat.
+The executive summary of the motivation is that I wanted to do two things:
+use the utilization data from the scheduler (it's passed to the governor
+as aguments of update callbacks anyway) and make it possible to set
+CPU frequency without involving process context (fast frequency switching).
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Both have been prototyped in the previous RFCs:
 
-Supersedes https://patchwork.kernel.org/patch/8443191/
+https://patchwork.kernel.org/patch/8426691/
+https://patchwork.kernel.org/patch/8426741/
 
----
- drivers/cpufreq/cpufreq.c          |   23 ++++++++++++++++-------
- drivers/cpufreq/cpufreq_governor.c |    2 +-
- drivers/cpufreq/intel_pstate.c     |    4 ++--
- 3 files changed, 19 insertions(+), 10 deletions(-)
+but in the meantime I found a couple of issues in there.
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -77,12 +77,15 @@ static DEFINE_PER_CPU(struct update_util
-  * to call from cpufreq_update_util().  That function will be called from an RCU
-  * read-side critical section, so it must not sleep.
-  *
-- * Callers must use RCU callbacks to free any memory that might be accessed
-- * via the old update_util_data pointer or invoke synchronize_rcu() right after
-- * this function to avoid use-after-free.
-+ * Callers must use RCU-sched callbacks to free any memory that might be
-+ * accessed via the old update_util_data pointer or invoke synchronize_sched()
-+ * right after this function to avoid use-after-free.
-  */
- void cpufreq_set_update_util_data(int cpu, struct update_util_data *data)
- {
-+	if (WARN_ON(data && !data->func))
-+		return;
-+
- 	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
- }
- EXPORT_SYMBOL_GPL(cpufreq_set_update_util_data);
-@@ -95,18 +98,24 @@ EXPORT_SYMBOL_GPL(cpufreq_set_update_uti
-  *
-  * This function is called by the scheduler on every invocation of
-  * update_load_avg() on the CPU whose utilization is being updated.
-+ *
-+ * It can only be called from RCU-sched read-side critical sections.
-  */
- void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
- {
- 	struct update_util_data *data;
- 
--	rcu_read_lock();
-+#ifdef CONFIG_LOCKDEP
-+	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
-+#endif
- 
- 	data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
--	if (data && data->func)
-+	/*
-+	 * If this isn't inside of an RCU-sched read-side critical section, data
-+	 * may become NULL after the check below.
-+	 */
-+	if (data)
- 		data->func(data, time, util, max);
--
--	rcu_read_unlock();
- }
- 
- /* Flag to suspend/resume CPUFreq governors */
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -280,7 +280,7 @@ static inline void gov_clear_update_util
- 	for_each_cpu(i, policy->cpus)
- 		cpufreq_set_update_util_data(i, NULL);
- 
--	synchronize_rcu();
-+	synchronize_sched();
- }
- 
- static void gov_cancel_work(struct cpufreq_policy *policy)
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1174,7 +1174,7 @@ static void intel_pstate_stop_cpu(struct
- 	pr_debug("intel_pstate: CPU %d exiting\n", cpu_num);
- 
- 	cpufreq_set_update_util_data(cpu_num, NULL);
--	synchronize_rcu();
-+	synchronize_sched();
- 
- 	if (hwp_active)
- 		return;
-@@ -1442,7 +1442,7 @@ out:
- 	for_each_online_cpu(cpu) {
- 		if (all_cpu_data[cpu]) {
- 			cpufreq_set_update_util_data(cpu, NULL);
--			synchronize_rcu();
-+			synchronize_sched();
- 			kfree(all_cpu_data[cpu]);
- 		}
- 	}
+First off, the common governor code relied on by the previous version reset
+the sample delay to 0 in order to force an immediate frequency update.  That
+doesn't work with the new governor, though, because it computes the frequency
+to set in a cpufreq_update_util() callback and (when fast switching is not
+used) passes that to a work item which sets the frequency and then restores
+the sample delay.  Thus if sysfs changes the sample delay to 0 when work_in_progress
+is in effect, it will be overwritten by the work item and so discarded.
+
+When using fast switching, the previous version would update the sample delay
+from a scheduler path, but that (on a 32-bit system) might clash with an
+update from sysfs leading to a result that's completely off.  That value would
+be less than the correct sample delay (I think), so in practice that shouldn't
+matter that much, but still it's not nice.
+
+The above means that schedutil cannot really share as much code as I thought it
+could with "ondemand" and "conservative".
+
+Moreover, I wanted to have a "rate_limit" tunable (instead of the sampling rate
+which doesn't mean what the name suggests in schedutil), but that would be the
+only one used by schedutil, so I ended up having to define a new struct to point
+to from struct dbs_data just to hold that single value and I would need to
+define ->init() and ->exit() callbacks for the governor for that reason (and
+the common tunables in struct dbs_data wouldn't be used).
+
+Not to mention the fact that the majority of the common governor code is not
+really used by schedutil anyway.
+
+Taking the above into account, I decided to decouple schedutil from the other
+governors, but I wanted to avoid duplicating some of the tunables manipulation
+code.  Hence patches [3-4/6] taking that code into a separate file so schedutil
+can use it too without pulling the rest of the common "ondemand" and
+"conservative" code along with it.
+
+Patch [5/6] adds support for fast switching to the core and the ACPI driver,
+but doesn't hook it up to anything useful.  That is done in the last patch
+that actually adds the new governor.
+
+That depends on two patches I sent previously, [1/6] that makes
+cpufreq_update_util() use RCU-sched (one change from the previous version
+as requested by Peter) and [2/6] that reworks acpi-cpufreq so the fast
+switching (added later in patch [5/6]) can work with all of the frequency
+setting methods the driver may use.
+
+Comments welcome.
+
+Thanks,
+Rafael
