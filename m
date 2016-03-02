@@ -1,151 +1,173 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Wed, 2 Mar 2016 18:58:25 +0100
-Message-ID: <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	<1842158.0Xhak3Uaac@vostro.rjw.lan>
-	<CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Wed,  2 Mar 2016 11:13:14 -0800
+Message-ID: <1456945994-5616-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:33200 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbcCBR63 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 12:58:29 -0500
-In-Reply-To: <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+Received: from mga01.intel.com ([192.55.52.88]:12235 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752594AbcCBTPw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Mar 2016 14:15:52 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wed, Mar 2, 2016 at 6:10 PM, Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
-> Hi Rafael,
->
->
-> On 2 March 2016 at 03:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Add a new cpufreq scaling governor, called "schedutil", that uses
->> scheduler-provided CPU utilization information as input for making
->> its decisions.
->>
->> Doing that is possible after commit fe7034338ba0 (cpufreq: Add
->> mechanism for registering utilization update callbacks) that
->> introduced cpufreq_update_util() called by the scheduler on
->> utilization changes (from CFS) and RT/DL task status updates.
->> In particular, CPU frequency scaling decisions may be based on
->> the the utilization data passed to cpufreq_update_util() by CFS.
->>
->> The new governor is relatively simple.
->>
->> The frequency selection formula used by it is essentially the same
->> as the one used by the "ondemand" governor, although it doesn't use
->> the additional up_threshold parameter, but instead of computing the
->> load as the "non-idle CPU time" to "total CPU time" ratio, it takes
->> the utilization data provided by CFS as input.  More specifically,
->> it represents "load" as the util/max ratio, where util and max
->> are the utilization and CPU capacity coming from CFS.
->>
->
-> [snip]
->
->> +
->> +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->> +                               unsigned long util, unsigned long max,
->> +                               unsigned int next_freq)
->> +{
->> +       struct cpufreq_policy *policy = sg_policy->policy;
->> +       unsigned int rel;
->> +
->> +       if (next_freq > policy->max)
->> +               next_freq = policy->max;
->> +       else if (next_freq < policy->min)
->> +               next_freq = policy->min;
->> +
->> +       sg_policy->last_freq_update_time = time;
->> +       if (sg_policy->next_freq == next_freq)
->> +               return;
->> +
->> +       sg_policy->next_freq = next_freq;
->> +       /*
->> +        * If utilization is less than max / 4, use RELATION_C to allow the
->> +        * minimum frequency to be selected more often in case the distance from
->> +        * it to the next available frequency in the table is significant.
->> +        */
->> +       rel = util < (max >> 2) ? CPUFREQ_RELATION_C : CPUFREQ_RELATION_L;
->> +       if (policy->fast_switch_possible) {
->> +               cpufreq_driver_fast_switch(policy, next_freq, rel);
->> +       } else {
->> +               sg_policy->relation = rel;
->> +               sg_policy->work_in_progress = true;
->> +               irq_work_queue(&sg_policy->irq_work);
->> +       }
->> +}
->> +
->> +static void sugov_update_single(struct update_util_data *data, u64 time,
->> +                               unsigned long util, unsigned long max)
->> +{
->> +       struct sugov_cpu *sg_cpu = container_of(data, struct sugov_cpu, update_util);
->> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
->> +       unsigned int min_f, max_f, next_f;
->> +
->> +       if (!sugov_should_update_freq(sg_policy, time))
->> +               return;
->> +
->> +       min_f = sg_policy->policy->cpuinfo.min_freq;
->> +       max_f = sg_policy->policy->cpuinfo.max_freq;
->> +       next_f = util > max ? max_f : min_f + util * (max_f - min_f) / max;
->
-> I think it has been pointed out in another email's thread but you
-> should change the way the next_f is computed. util reflects the
-> utilization of a CPU from 0 to its max compute capacity whereas
-> ondemand was using the load at the current frequency during the last
-> time window. I have understood that you want to keep same formula than
-> ondemand as a starting point but you use a different input to
-> calculate the next frequency so i don't see the rational of keeping
-> this formula.
+Currently scaling_available_frequencies displays list of available
+frequencies which can be used to set max/min or current scaling frequency.
 
-It is a formula that causes the entire available frequency range to be
-utilized proportionally to the utilization as reported by the
-scheduler (modulo the policy->min/max limits).  Its (significant IMO)
-advantage is that it doesn't require any additional factors that would
-need to be determined somehow.
+$ cat scaling_available_frequencies
+2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
+1300000 1100000 1000000 900000 800000 600000 500000
 
-> Saying that, even the simple formula next_f = util > max
-> ? max_f : util * (max_f) / max will not work properly if the frequency
-> invariance is enable because the utilization becomes capped by the
-> current compute capacity so next_f will never be higher than current
-> freq (unless a task move on the rq).  That was one reason of using a
-> threshold in sched-freq proposal (and there are on going dev to try to
-> solve this limitation).
+Here traditionally it is assumed that only 2301000 is a turbo frequency,
+which is purely opportunistic, anything else user can request and may
+get it.
 
-Well, a different formula will have to be used along with frequency
-invariance, then.
+But because of configurable thermal design power implementation in several
+Intel CPUs, the opportunistic frequency start can be any frequency in this
+range. For example it can be 2300000 or any lower value.
+This change adds an optional new attribute called "base_frequency",
+which displays the max non-turbo frequency (base frequency). For example:
 
-> IIIUC, frequency invariance is not enable on your platform so you have
-> not seen the problem but you have probably see that selection of your
-> next_f was not really stable. Without frequency invariance, the
-> utilization will be overestimated when running at lower frequency so
-> the governor will probably select a frequency that is higher than
-> necessary but then the utilization will decrease at this higher
-> frequency so the governor will probably decrease the frequency and so
-> on until you found the right frequency that will generate the right
-> utilisation value
+$ cat base_frequency
+2200000
 
-I don't have any problems with that to be honest and if you aim at
-selecting the perfect frequency at the first attempt, then good luck
-with that anyway.
+This will allow user to choose a certain frequency which is not
+opportunistic.
 
-Now, I'm not saying that the formula used in this patch cannot be
-improved or similar.  It very well may be possible to improve it.  I'm
-only saying that it is good enough to start with, because of the
-reasons mentioned above.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+v4
+- Changes for s/>/$ /
+- new lines commmit description after paragraph
+- coding style for for "if (ret)" in show_base_frequency
 
-Still, if you can suggest to me what other formula specifically should
-be used here, I'll consider using it.  Which will probably mean
-comparing the two and seeing which one leads to better results.
+v3
+-Merged Documentation and code patch to one patch.
+-Created a common function to read tar which is used init and during read
+-Documentation and code changed suggested by Viresh
+-On unsupported CPUs, user when tries to read base_frequency
+"Operation not supported" error will be returned.
 
-Thanks,
-Rafael
+v2
+sysfs_create_file on policy->kobj is no longer possible on recent kernel
+versions. So we can't create selectively create base_frequency attribute
+on supported policies.
+This version creates a base_frequency attribute, if the boot cpu supports
+as part of cpufreq_driver->attributes. If for some CPUs the TAR can't be
+read, return error.
+
+v1:
+Base version
+
+
+ Documentation/cpu-freq/acpi-cpufreq.txt | 27 ++++++++++++++++++++
+ drivers/cpufreq/acpi-cpufreq.c          | 45 +++++++++++++++++++++++++++++++++
+ 2 files changed, 72 insertions(+)
+ create mode 100644 Documentation/cpu-freq/acpi-cpufreq.txt
+
+diff --git a/Documentation/cpu-freq/acpi-cpufreq.txt b/Documentation/cpu-freq/acpi-cpufreq.txt
+new file mode 100644
+index 0000000..8f719cf
+--- /dev/null
++++ b/Documentation/cpu-freq/acpi-cpufreq.txt
+@@ -0,0 +1,26 @@
++Additional sysfs attributes for acpi-cpufreq
++
++acpi-cpufreq sysfs has following sysfs attributes in addition to standard
++cpufreq attributes:
++
++base_frequency :		Max non-turbo frequency
++				For example:
++				scaling_available_frequencies displays list
++				of available frequencies.
++
++				$ cat scaling_available_frequencies
++				2301000 2300000 2200000 2000000 1900000
++				1800000 1700000 1500000 1400000 1300000
++				1100000 1000000 900000 800000 600000
++				500000
++
++				If the base_frequency attribute is present
++				and readable, then any frequency above
++				base_frequency is turbo frequency. For example
++
++				$ cat base_frequency
++				2200000
++
++				Then in the above displayed list of
++				scaling_available_frequencies, 2300000 and
++				2301000 are turbo frequencies.
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 51eef87..2706bb5 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -646,6 +646,37 @@ static int acpi_cpufreq_blacklist(struct cpuinfo_x86 *c)
+ }
+ #endif
+ 
++static int x86_get_turbo_activation_ratio(int cpu, u64 *tar)
++{
++	u64 plat_info;
++	int err;
++
++	err = rdmsrl_safe_on_cpu(cpu, MSR_PLATFORM_INFO, &plat_info);
++	/* Check number of config TDP levels > 0 */
++	if (!err && ((plat_info >> 33) & 0x03) > 0)
++		err = rdmsrl_safe_on_cpu(cpu, MSR_TURBO_ACTIVATION_RATIO,
++					 tar);
++	else
++		err = -EOPNOTSUPP;
++
++	return err;
++}
++
++static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
++{
++	u64 tar;
++	int err;
++
++	err = x86_get_turbo_activation_ratio(policy->cpu, &tar);
++	if (err)
++		return err;
++
++	/* Refer to IA64, IA32 SDM table 35-20, unit = 100 MHz */
++	return sprintf(buf, "%llu\n", tar * 100000);
++}
++
++cpufreq_freq_attr_ro(base_frequency);
++
+ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int i;
+@@ -888,6 +919,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
+ #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+ 	&cpb,
+ #endif
++	NULL, /* Extra space for base_frequency attr, if required */
+ 	NULL,
+ };
+ 
+@@ -971,6 +1003,19 @@ static int __init acpi_cpufreq_init(void)
+ 			}
+ 	}
+ #endif
++
++	if (boot_cpu_has(X86_FEATURE_IDA)) {
++		u64 tar;
++
++		if (!x86_get_turbo_activation_ratio(0, &tar)) {
++			struct freq_attr **attr;
++
++			for (attr = acpi_cpufreq_attr; *attr; attr++)
++			;
++			*attr = &base_frequency;
++		}
++	}
++
+ 	acpi_cpufreq_boost_init();
+ 
+ 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
+-- 
+2.5.0
+
