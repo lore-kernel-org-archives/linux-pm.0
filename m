@@ -1,181 +1,171 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Wed, 02 Mar 2016 12:10:54 -0500
-Message-ID: <1456938654.17839.9.camel@redhat.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	 <87si087tsr.fsf@iki.fi>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Wed, 2 Mar 2016 18:10:36 +0100
+Message-ID: <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <1842158.0Xhak3Uaac@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
-	boundary="=-x7uYuVH1XGo5BclAENQ3"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:52236 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752802AbcCBRK5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 2 Mar 2016 12:10:57 -0500
-In-Reply-To: <87si087tsr.fsf@iki.fi>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1842158.0Xhak3Uaac@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+
+Hi Rafael,
 
 
---=-x7uYuVH1XGo5BclAENQ3
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On 2 March 2016 at 03:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Add a new cpufreq scaling governor, called "schedutil", that uses
+> scheduler-provided CPU utilization information as input for making
+> its decisions.
+>
+> Doing that is possible after commit fe7034338ba0 (cpufreq: Add
+> mechanism for registering utilization update callbacks) that
+> introduced cpufreq_update_util() called by the scheduler on
+> utilization changes (from CFS) and RT/DL task status updates.
+> In particular, CPU frequency scaling decisions may be based on
+> the the utilization data passed to cpufreq_update_util() by CFS.
+>
+> The new governor is relatively simple.
+>
+> The frequency selection formula used by it is essentially the same
+> as the one used by the "ondemand" governor, although it doesn't use
+> the additional up_threshold parameter, but instead of computing the
+> load as the "non-idle CPU time" to "total CPU time" ratio, it takes
+> the utilization data provided by CFS as input.  More specifically,
+> it represents "load" as the util/max ratio, where util and max
+> are the utilization and CPU capacity coming from CFS.
+>
 
-On Wed, 2016-03-02 at 18:01 +0200, Arto Jantunen wrote:
-> Len Brown <lenb@kernel.org> writes:
->=20
-> > > Since this is about cpuidle, I'll also mention that this hardware
-> > > requires idle=3Dnomwait on the command line, otherwise the kernel
-> > > will not
-> > > boot.
-> >=20
-> > Arto,
-> >=20
-> > A boot failure is even more disruptive than bad P-state and C-state=20
-> > choices!
-> > Please tell us more about it.
-> >=20
-> > What c-states are used when you use "idle=3Dnomwait"?
-> > you can see them this way:
-> >=20
-> > grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
->=20
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL
-> IDLE
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:1405175
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:135
+[snip]
 
-It looks like the system spent some time in idle
-poll, but not that much.
+> +
+> +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> +                               unsigned long util, unsigned long max,
+> +                               unsigned int next_freq)
+> +{
+> +       struct cpufreq_policy *policy = sg_policy->policy;
+> +       unsigned int rel;
+> +
+> +       if (next_freq > policy->max)
+> +               next_freq = policy->max;
+> +       else if (next_freq < policy->min)
+> +               next_freq = policy->min;
+> +
+> +       sg_policy->last_freq_update_time = time;
+> +       if (sg_policy->next_freq == next_freq)
+> +               return;
+> +
+> +       sg_policy->next_freq = next_freq;
+> +       /*
+> +        * If utilization is less than max / 4, use RELATION_C to allow the
+> +        * minimum frequency to be selected more often in case the distance from
+> +        * it to the next available frequency in the table is significant.
+> +        */
+> +       rel = util < (max >> 2) ? CPUFREQ_RELATION_C : CPUFREQ_RELATION_L;
+> +       if (policy->fast_switch_possible) {
+> +               cpufreq_driver_fast_switch(policy, next_freq, rel);
+> +       } else {
+> +               sg_policy->relation = rel;
+> +               sg_policy->work_in_progress = true;
+> +               irq_work_queue(&sg_policy->irq_work);
+> +       }
+> +}
+> +
+> +static void sugov_update_single(struct update_util_data *data, u64 time,
+> +                               unsigned long util, unsigned long max)
+> +{
+> +       struct sugov_cpu *sg_cpu = container_of(data, struct sugov_cpu, update_util);
+> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+> +       unsigned int min_f, max_f, next_f;
+> +
+> +       if (!sugov_should_update_freq(sg_policy, time))
+> +               return;
+> +
+> +       min_f = sg_policy->policy->cpuinfo.min_freq;
+> +       max_f = sg_policy->policy->cpuinfo.max_freq;
+> +       next_f = util > max ? max_f : min_f + util * (max_f - min_f) / max;
 
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI HLT
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:69898878
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:25539
+I think it has been pointed out in another email's thread but you
+should change the way the next_f is computed. util reflects the
+utilization of a CPU from 0 to its max compute capacity whereas
+ondemand was using the load at the current frequency during the last
+time window. I have understood that you want to keep same formula than
+ondemand as a starting point but you use a different input to
+calculate the next frequency so i don't see the rational of keeping
+this formula. Saying that, even the simple formula next_f = util > max
+? max_f : util * (max_f) / max will not work properly if the frequency
+invariance is enable because the utilization becomes capped by the
+current compute capacity so next_f will never be higher than current
+freq (unless a task move on the rq).  That was one reason of using a
+threshold in sched-freq proposal (and there are on going dev to try to
+solve this limitation).
+IIIUC, frequency invariance is not enable on your platform so you have
+not seen the problem but you have probably see that selection of your
+next_f was not really stable. Without frequency invariance, the
+utilization will be overestimated when running at lower frequency so
+the governor will probably select a frequency that is higher than
+necessary but then the utilization will decrease at this higher
+frequency so the governor will probably decrease the frequency and so
+on until you found the right frequency that will generate the right
+utilisation value
 
-This looks reasonable, with an exit latency of 1 us,
-and a lot of idle time spent here.
+Regards,
+Vincent
 
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI IOPORT 0x1816
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:151
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:302
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:28132
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:10724
+> +
+> +       sugov_update_commit(sg_policy, time, util, max, next_f);
+> +}
+> +
+> +static unsigned int sugov_next_freq(struct sugov_policy *sg_policy,
+> +                                   unsigned long util, unsigned long max)
+> +{
+> +       struct cpufreq_policy *policy = sg_policy->policy;
+> +       unsigned int min_f = policy->cpuinfo.min_freq;
+> +       unsigned int max_f = policy->cpuinfo.max_freq;
+> +       u64 last_freq_update_time = sg_policy->last_freq_update_time;
+> +       unsigned int j;
+> +
+> +       if (util > max)
+> +               return max_f;
+> +
+> +       for_each_cpu(j, policy->cpus) {
+> +               struct sugov_cpu *j_sg_cpu;
+> +               unsigned long j_util, j_max;
+> +               u64 delta_ns;
+> +
+> +               if (j == smp_processor_id())
+> +                       continue;
+> +
+> +               j_sg_cpu = &per_cpu(sugov_cpu, j);
+> +               /*
+> +                * If the CPU utilization was last updated before the previous
+> +                * frequency update and the time elapsed between the last update
+> +                * of the CPU utilization and the last frequency update is long
+> +                * enough, don't take the CPU into account as it probably is
+> +                * idle now.
+> +                */
+> +               delta_ns = last_freq_update_time - j_sg_cpu->last_update;
+> +               if ((s64)delta_ns > NSEC_PER_SEC / HZ)
+> +                       continue;
+> +
+> +               j_util = j_sg_cpu->util;
+> +               j_max = j_sg_cpu->max;
+> +               if (j_util > j_max)
+> +                       return max_f;
+> +
+> +               if (j_util * max > j_max * util) {
+> +                       util = j_util;
+> +                       max = j_max;
+> +               }
+> +       }
+> +
+> +       return min_f + util * (max_f - min_f) / max;
+> +}
+> +
 
-The exit latency for your C2 and C3 states look excessive,
-with 151 and 1034 microseconds, respectively.
-
-I believe there are supposed to be some lower latency
-idle states in there. The skl_cstates table in
-drivers/idle/intel_idle.c suggests you should be seeing
-states with exit latencies of 2, 10, 70, 85, and 124
-us before getting to that C2 state you see above.
-
-As you can see from the "time" stats, your CPU spends
-most of its time in HLT or polling, and very little time
-in these deeper, much much slower idle states.
-
-Having the mwait based idle states working would probably
-get the CPU to spend a lot less time in HLT, and more time
-in "proper" idle states.
-
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI IOPORT 0x1819
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:1034
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:2068
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:14169
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:3375
-
-
-
-> > Please boot with intel_idle.max_cstate=3D0
-> >=20
-> > If that also boots, please again show the available c-states via
-> > the grep above.
->=20
-> It does, here:
->=20
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL
-> IDLE
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:30951
-> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:132
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT
-> 0x0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:4231850
-> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:14709
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT
-> 0x33
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:151
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:302
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:6524492
-> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:4621
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT
-> 0x60
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:1034
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:2068
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:52217106
-> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:3364
->=20
-> > Does it happen if you use default cmdline,
-> > but edit intel_idle.c to comment out c8 and c9 support?
->=20
-> That also boots, ts.out attached (as is the patch to do this, to make
-> sure there is no miscommunication). With this change the original bug
-> disappears as well.
->=20
---=20
---=C2=A0
-All rights reversed
-
---=-x7uYuVH1XGo5BclAENQ3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAABAgAGBQJW1x6eAAoJEM553pKExN6Dwr8H/R1THlC26QNXQSzq4vTLub0/
-Tj2oSmjN6iqNxz6jZ2s3xR7HhwJXxMLZooSdgeIwKat6rEe7KHl+S81m6jFhDMSh
-zefU45HYmfk2NSWH7bS4Su4iJX459YnY2fSFvSh9TO+v2scjBNfX2ccphKkvLDHm
-VlAp+w/Vu0Y8SFCi8QpuC3dpZkt1o1mJFTsRvD7EiGyQJS9iZ83bHcsPn5N4L2V9
-gm7vXJuB+hQnnyOUPjnefvjLUo2JSBNxcjqXggpwoZACWa8+ZXTtJaKXiL/GfGpu
-uQbPSeqWpDKLlpVMBLsBRlh9JuqSHV5wVLvnyvUF+QNFmk11BMXeAjp7o2p1ufw=
-=fsQY
------END PGP SIGNATURE-----
-
---=-x7uYuVH1XGo5BclAENQ3--
-
+[snip]
