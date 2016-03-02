@@ -1,44 +1,105 @@
-From: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH V6 07/10] soc: tegra: pmc: Add generic PM domain support
-Date: Tue, 01 Mar 2016 16:18:20 -0800
-Message-ID: <7hfuw968c3.fsf@baylibre.com>
-References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
-	<1456501724-28477-8-git-send-email-jonathanh@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Wed, 02 Mar 2016 01:26:18 +0100
+Message-ID: <11753995.6ynq8tUiQx@vostro.rjw.lan>
+References: <4687430.mfM0GbdeDL@skinner> <4735967.8N5ugyHAG2@vostro.rjw.lan> <16028318.H9OZ9hFYY1@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1456501724-28477-8-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> (Jon
-	Hunter's message of "Fri, 26 Feb 2016 15:48:41 +0000")
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <16028318.H9OZ9hFYY1@skinner>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org, Thomas Renninger <trenn@suse.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> writes:
+On Tuesday, March 01, 2016 01:17:37 PM Thomas Renninger wrote:
+> On Saturday, February 27, 2016 12:15:47 AM Rafael J. Wysocki wrote:
+> > On Friday, February 26, 2016 05:38:00 PM Thomas Renninger wrote:
+> > > The assumption that BIOSes never want to have this register being set to
+> > > full performance (zero) is wrong.
+> > > 
+> > > While wrongly overruling this BIOS setting and set it from performance
+> > > to normal did not hurt that much, because nobody really knew the effects
+> > > inside Intel processors.
+> > > 
+> > > But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo
+> > > modes if this value is not set to performance.
+> > > 
+> > > So switch logic to tell the user in a friendly way (info) that the CPU is
+> > > in performance mode and how to switch via userspace if this is not
+> > > intended.
+> > > 
+> > > But otherwise trust that the BIOS has set the correct value here and do
+> > > not
+> > > blindly overrule.
+> > > 
+> > > How this has been found: SLE11 had this patch, SLE12 it slipped through.
+> > > It took quite some time to nail down that this patch missing is the reason
+> > > for not entering turbo modes with this specific processor.
+> > > 
+> > > Signed-off-by: Thomas Renninger <trenn@suse.com>
+> > > 
+> > > --- a/arch/x86/kernel/cpu/intel.c	2016-02-26 17:19:55.731042972 +0100
+> > > +++ b/arch/x86/kernel/cpu/intel.c	2016-02-26 17:20:48.598020581 +0100
+> > > @@ -377,8 +377,12 @@ static void init_intel_energy_perf(struc
+> > > 
+> > >  	u64 epb;
+> > >  	
+> > >  	/*
+> > > 
+> > > -	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+> > > -	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
+> > > +	 * On server platforms energy bias typically is set to
+> > > +	 * performance on purpose.
+> > > +	 * On other platforms it may happen that MSR_IA32_ENERGY_PERF_BIAS
+> > > +	 * did not get initialized properly by BIOS.
+> > > +	 * Best is to to keep BIOS settings and give the user a hint whether
+> > > +	 * to change it via cpupower-set(8) userspace tool at runtime.
+> > > 
+> > >  	 */
+> > >  	
+> > >  	if (!cpu_has(c, X86_FEATURE_EPB))
+> > >  	
+> > >  		return;
+> > > 
+> > > @@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
+> > > 
+> > >  	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+> > >  	
+> > >  		return;
+> > > 
+> > > -	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 
+> 'performance'\n");
+> > > -	pr_warn_once("ENERGY_PERF_BIAS: View and update with
+> > > x86_energy_perf_policy(8)\n"); -	epb = (epb & ~0xF) |
+> > > ENERGY_PERF_BIAS_NORMAL;
+> > > -	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> > > +	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
+> > > +	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-set(8)\n");
+> > 
+> > This doesn't need to be cpupower-set IMO.
+> 
+> You mean why switch the message from:
+> x86_energy_perf_policy to cpupower-set
+> ?
+> 
+> IMO x86_energy_perf_policy should not exist. It has been introduce before
+> cpupower set -b.
+> Having an extra tool/binary for this functionality is an unneeded packaging 
+> overhead for distros.
+> Also having more and more of such CPU specific tools is not userfriendly.
+> cpupower supports all power relevant features of your CPU and on all 
+> architectures (or at least it should). People should know this one better
+> than "x86_energy_perf_policy" and theoretically intuitively find it, even 
+> without a message.
+> 
+> So it would be nice to get the message fixed as well.
 
-> Adds generic PM support to the PMC driver where the PM domains are
-> populated from device-tree and the PM domain consumer devices are
-> bound to their relevant PM domains via device-tree as well.
->
-> Update the tegra_powergate_sequence_power_up() API so that internally
-> it calls the same tegra_powergate_xxx functions that are used by the
-> tegra generic power domain code for consistency.
->
-> To ensure that the Tegra power domains (a.k.a powergates) cannot be
-> controlled via both the legacy tegra_powergate_xxx functions as well
-> as the generic PM domain framework, add a bit map for available
-> powergates that can be controlled via the legacy powergate functions.
->
-> Move the majority of the tegra_powergate_remove_clamping() function
-> to a sub-function, so that this can be used by both the legacy and
-> generic power domain code.
->
-> This is based upon work by Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> and Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
->
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+My point is that since "cpupower set -b" is not the only way to set this,
+it doesn't seem appropriate to refer to it explicitly from a kernel message.
 
-I didn't look in great detail at the SoC specifics, but for the for the
-general genpd approach:
+I actually don't think the second message is necessary at all.
 
-Acked-by: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Thanks,
+Rafael
