@@ -1,105 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Wed, 02 Mar 2016 01:26:18 +0100
-Message-ID: <11753995.6ynq8tUiQx@vostro.rjw.lan>
-References: <4687430.mfM0GbdeDL@skinner> <4735967.8N5ugyHAG2@vostro.rjw.lan> <16028318.H9OZ9hFYY1@skinner>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <16028318.H9OZ9hFYY1@skinner>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org, Thomas Renninger <trenn@suse.com>, x86@kernel.org
+From: Simon Horman <horms+renesas@verge.net.au>
+Subject: [PATCH] thermal: rcar: Use ARCH_RENESAS
+Date: Wed,  2 Mar 2016 11:04:26 +0900
+Message-ID: <1456884266-25522-1-git-send-email-horms+renesas@verge.net.au>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:54045 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbcCBCEe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 21:04:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Simon Horman <horms+renesas@verge.net.au>
 
-On Tuesday, March 01, 2016 01:17:37 PM Thomas Renninger wrote:
-> On Saturday, February 27, 2016 12:15:47 AM Rafael J. Wysocki wrote:
-> > On Friday, February 26, 2016 05:38:00 PM Thomas Renninger wrote:
-> > > The assumption that BIOSes never want to have this register being set to
-> > > full performance (zero) is wrong.
-> > > 
-> > > While wrongly overruling this BIOS setting and set it from performance
-> > > to normal did not hurt that much, because nobody really knew the effects
-> > > inside Intel processors.
-> > > 
-> > > But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo
-> > > modes if this value is not set to performance.
-> > > 
-> > > So switch logic to tell the user in a friendly way (info) that the CPU is
-> > > in performance mode and how to switch via userspace if this is not
-> > > intended.
-> > > 
-> > > But otherwise trust that the BIOS has set the correct value here and do
-> > > not
-> > > blindly overrule.
-> > > 
-> > > How this has been found: SLE11 had this patch, SLE12 it slipped through.
-> > > It took quite some time to nail down that this patch missing is the reason
-> > > for not entering turbo modes with this specific processor.
-> > > 
-> > > Signed-off-by: Thomas Renninger <trenn@suse.com>
-> > > 
-> > > --- a/arch/x86/kernel/cpu/intel.c	2016-02-26 17:19:55.731042972 +0100
-> > > +++ b/arch/x86/kernel/cpu/intel.c	2016-02-26 17:20:48.598020581 +0100
-> > > @@ -377,8 +377,12 @@ static void init_intel_energy_perf(struc
-> > > 
-> > >  	u64 epb;
-> > >  	
-> > >  	/*
-> > > 
-> > > -	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
-> > > -	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
-> > > +	 * On server platforms energy bias typically is set to
-> > > +	 * performance on purpose.
-> > > +	 * On other platforms it may happen that MSR_IA32_ENERGY_PERF_BIAS
-> > > +	 * did not get initialized properly by BIOS.
-> > > +	 * Best is to to keep BIOS settings and give the user a hint whether
-> > > +	 * to change it via cpupower-set(8) userspace tool at runtime.
-> > > 
-> > >  	 */
-> > >  	
-> > >  	if (!cpu_has(c, X86_FEATURE_EPB))
-> > >  	
-> > >  		return;
-> > > 
-> > > @@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
-> > > 
-> > >  	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
-> > >  	
-> > >  		return;
-> > > 
-> > > -	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 
-> 'performance'\n");
-> > > -	pr_warn_once("ENERGY_PERF_BIAS: View and update with
-> > > x86_energy_perf_policy(8)\n"); -	epb = (epb & ~0xF) |
-> > > ENERGY_PERF_BIAS_NORMAL;
-> > > -	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> > > +	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
-> > > +	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-set(8)\n");
-> > 
-> > This doesn't need to be cpupower-set IMO.
-> 
-> You mean why switch the message from:
-> x86_energy_perf_policy to cpupower-set
-> ?
-> 
-> IMO x86_energy_perf_policy should not exist. It has been introduce before
-> cpupower set -b.
-> Having an extra tool/binary for this functionality is an unneeded packaging 
-> overhead for distros.
-> Also having more and more of such CPU specific tools is not userfriendly.
-> cpupower supports all power relevant features of your CPU and on all 
-> architectures (or at least it should). People should know this one better
-> than "x86_energy_perf_policy" and theoretically intuitively find it, even 
-> without a message.
-> 
-> So it would be nice to get the message fixed as well.
+Make use of ARCH_RENESAS in place of ARCH_SHMOBILE.
 
-My point is that since "cpupower set -b" is not the only way to set this,
-it doesn't seem appropriate to refer to it explicitly from a kernel message.
+This is part of an ongoing process to migrate from ARCH_SHMOBILE to
+ARCH_RENESAS the motivation for which being that RENESAS seems to be a more
+appropriate name than SHMOBILE for the majority of Renesas ARM based SoCs.
 
-I actually don't think the second message is necessary at all.
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+---
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Rafael
+ Based on linux-soc-thermal/next
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5e7c97a3f1d8..9fc1afaa6879 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -214,7 +214,7 @@ config ROCKCHIP_THERMAL
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+-	depends on ARCH_SHMOBILE || COMPILE_TEST
++	depends on ARCH_RENESAS || COMPILE_TEST
+ 	depends on HAS_IOMEM
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+-- 
+2.1.4
+
