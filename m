@@ -1,34 +1,41 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [RESEND PATCH v3 5/6] power: cros_usbpd-charger: Add EC-based
- USB PD charger driver
-Date: Wed, 2 Mar 2016 12:31:54 +0000
-Message-ID: <20160302123154.5a488f66@lxorguk.ukuu.org.uk>
-References: <1456907012-19268-1-git-send-email-tomeu.vizoso@collabora.com>
-	<1456907012-19268-6-git-send-email-tomeu.vizoso@collabora.com>
+From: yu chen <yu.chen.surf@gmail.com>
+Subject: Re: STI problem and workaround for Dell XPS 13 (Skylake, 2016) /
+ Broadcom BCM4350
+Date: Wed, 2 Mar 2016 21:08:18 +0800
+Message-ID: <CADjb_WQwwGD4wQugeLf=2k7XjtPGt9o6vgqhMdLR+ALDhK7J+Q@mail.gmail.com>
+References: <87h9gpp5rt.fsf@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:37914 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752873AbcCBMcl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 07:32:41 -0500
-In-Reply-To: <1456907012-19268-6-git-send-email-tomeu.vizoso@collabora.com>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:37162 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbcCBNIT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 08:08:19 -0500
+Received: by mail-wm0-f54.google.com with SMTP id p65so77028712wmp.0
+        for <linux-pm@vger.kernel.org>; Wed, 02 Mar 2016 05:08:18 -0800 (PST)
+In-Reply-To: <87h9gpp5rt.fsf@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Enric =?UTF-8?B?QmFsbGV0YsOy?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Shawn Nematbakhsh <shawnn@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+To: Tamas Papp <tkpapp@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-
-> +static int ec_command(struct cros_ec_dev *ec_dev, int version, int command,
-> +		      uint8_t *outdata, int outsize, uint8_t *indata,
-> +		      int insize)
-> +{
-
-int is a very odd type to use for sizes that cannot be negative,
-especially given all your callers use sizeof() which is a size_t and is
-not necessarily an int type and you then pass it to memcpy which expects
-a size_t anyway
-
-
-Alan
+On Wed, Mar 2, 2016 at 5:51 PM, Tamas Papp <tkpapp@gmail.com> wrote:
+> Hi,
+>
+> I have a Dell XPS 13 (Skylake, 2016) and wanted to get STI working, so I
+> followed the instructions at [1]. I found that the Broadcom wireless
+> chip is waking the machine up from STI / freeze.
+>
+> A workaround is
+>
+> INTERFACE=wlp58s0
+> ifconfig $INTERFACE down
+> modprobe -r brcmfmac && echo freeze > /sys/power/state && modprobe brcmfmac
+> ifconfig $INTERFACE up
+>
+> I thought I would ask whether I should report this as a bug, and if yes,
+> where.
+>
+Some device drivers such as brcmac has the ability to wake the system
+up,  you can
+disable it by echo to /proc/acpi/wakeup IMO.
