@@ -1,60 +1,44 @@
-From: Alan <alan@linux.intel.com>
-Subject: [PATCH v2] goldfish: Enable ACPI-based enumeration for goldfish
- battery
-Date: Tue, 01 Mar 2016 23:46:10 +0000
-Message-ID: <20160301234601.31458.15634.stgit@localhost.localdomain>
+From: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH V6 07/10] soc: tegra: pmc: Add generic PM domain support
+Date: Tue, 01 Mar 2016 16:18:20 -0800
+Message-ID: <7hfuw968c3.fsf@baylibre.com>
+References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
+	<1456501724-28477-8-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:59796 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbcCAXqu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 18:46:50 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1456501724-28477-8-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> (Jon
+	Hunter's message of "Fri, 26 Feb 2016 15:48:41 +0000")
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: dbaryshkov@gmail.com, dwmw2@infradead.org, sre@kernel.org, linux-pm@vger.kernel.org
 
-From: Yu Ning <yu.ning@intel.com>
+Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> writes:
 
-Add the ACPI bindings to the goldfish battery driver.
+> Adds generic PM support to the PMC driver where the PM domains are
+> populated from device-tree and the PM domain consumer devices are
+> bound to their relevant PM domains via device-tree as well.
+>
+> Update the tegra_powergate_sequence_power_up() API so that internally
+> it calls the same tegra_powergate_xxx functions that are used by the
+> tegra generic power domain code for consistency.
+>
+> To ensure that the Tegra power domains (a.k.a powergates) cannot be
+> controlled via both the legacy tegra_powergate_xxx functions as well
+> as the generic PM domain framework, add a bit map for available
+> powergates that can be controlled via the legacy powergate functions.
+>
+> Move the majority of the tegra_powergate_remove_clamping() function
+> to a sub-function, so that this can be used by both the legacy and
+> generic power domain code.
+>
+> This is based upon work by Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> and Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
+>
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Signed-off-by: Yu Ning <yu.ning@intel.com>
-Signed-off-by: Jin Qian <jinqian@android.com>
-Signed-off-by: Alan <alan@linux.intel.com>
----
- 0 files changed
+I didn't look in great detail at the SoC specifics, but for the for the
+general genpd approach:
 
-diff --git a/drivers/power/goldfish_battery.c b/drivers/power/goldfish_battery.c
-index 7510796..f5c525e 100644
---- a/drivers/power/goldfish_battery.c
-+++ b/drivers/power/goldfish_battery.c
-@@ -24,6 +24,7 @@
- #include <linux/pci.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <linux/acpi.h>
- 
- struct goldfish_battery_data {
- 	void __iomem *reg_base;
-@@ -233,12 +234,19 @@ static const struct of_device_id goldfish_battery_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, goldfish_battery_of_match);
- 
-+static const struct acpi_device_id goldfish_battery_acpi_match[] = {
-+	{ "GFSH0001", 0 },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(acpi, goldfish_battery_acpi_match);
-+
- static struct platform_driver goldfish_battery_device = {
- 	.probe		= goldfish_battery_probe,
- 	.remove		= goldfish_battery_remove,
- 	.driver = {
- 		.name = "goldfish-battery",
- 		.of_match_table = goldfish_battery_of_match,
-+		.acpi_match_table = ACPI_PTR(goldfish_battery_acpi_match),
- 	}
- };
- module_platform_driver(goldfish_battery_device);
-
+Acked-by: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
