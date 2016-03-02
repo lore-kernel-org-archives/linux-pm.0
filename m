@@ -1,64 +1,181 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V6 04/10] Documentation: DT: bindings: Update NVIDIA PMC
- for Tegra
-Date: Wed, 2 Mar 2016 18:02:50 +0100
-Message-ID: <20160302170250.GA319@ulmo.nvidia.com>
-References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
- <1456501724-28477-5-git-send-email-jonathanh@nvidia.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Wed, 02 Mar 2016 12:10:54 -0500
+Message-ID: <1456938654.17839.9.camel@redhat.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	 <87si087tsr.fsf@iki.fi>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
+	boundary="=-x7uYuVH1XGo5BclAENQ3"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:34484 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbcCBRCz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 12:02:55 -0500
-Content-Disposition: inline
-In-Reply-To: <1456501724-28477-5-git-send-email-jonathanh@nvidia.com>
+Received: from mx1.redhat.com ([209.132.183.28]:52236 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752802AbcCBRK5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Mar 2016 12:10:57 -0500
+In-Reply-To: <87si087tsr.fsf@iki.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-x7uYuVH1XGo5BclAENQ3
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 26, 2016 at 03:48:38PM +0000, Jon Hunter wrote:
-> Add the PMC driver compatible strings for Tegra132 and Tegra210.
+On Wed, 2016-03-02 at 18:01 +0200, Arto Jantunen wrote:
+> Len Brown <lenb@kernel.org> writes:
 >=20
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> Acked-by: Rob Herring <robh@kernel.org>
-> ---
->  .../devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt     | 12 ++++++=
-+-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
+> > > Since this is about cpuidle, I'll also mention that this hardware
+> > > requires idle=3Dnomwait on the command line, otherwise the kernel
+> > > will not
+> > > boot.
+> >=20
+> > Arto,
+> >=20
+> > A boot failure is even more disruptive than bad P-state and C-state=20
+> > choices!
+> > Please tell us more about it.
+> >=20
+> > What c-states are used when you use "idle=3Dnomwait"?
+> > you can see them this way:
+> >=20
+> > grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
+>=20
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL
+> IDLE
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:1405175
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:135
 
-Applied, thanks.
+It looks like the system spent some time in idle
+poll, but not that much.
 
-Thierry
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI HLT
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:69898878
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:25539
 
---3V7upXqbjpZ4EhLz
+This looks reasonable, with an exit latency of 1 us,
+and a lot of idle time spent here.
+
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI IOPORT 0x1816
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:151
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:302
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:28132
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:10724
+
+The exit latency for your C2 and C3 states look excessive,
+with 151 and 1034 microseconds, respectively.
+
+I believe there are supposed to be some lower latency
+idle states in there. The skl_cstates table in
+drivers/idle/intel_idle.c suggests you should be seeing
+states with exit latencies of 2, 10, 70, 85, and 124
+us before getting to that C2 state you see above.
+
+As you can see from the "time" stats, your CPU spends
+most of its time in HLT or polling, and very little time
+in these deeper, much much slower idle states.
+
+Having the mwait based idle states working would probably
+get the CPU to spend a lot less time in HLT, and more time
+in "proper" idle states.
+
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI IOPORT 0x1819
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:1034
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:2068
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:14169
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:3375
+
+
+
+> > Please boot with intel_idle.max_cstate=3D0
+> >=20
+> > If that also boots, please again show the available c-states via
+> > the grep above.
+>=20
+> It does, here:
+>=20
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/desc:CPUIDLE CORE POLL
+> IDLE
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/latency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/name:POLL
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/power:4294967295
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/residency:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/time:30951
+> /sys/devices/system/cpu/cpu0/cpuidle/state0/usage:132
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/desc:ACPI FFH INTEL MWAIT
+> 0x0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/latency:1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/name:C1
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/residency:2
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/time:4231850
+> /sys/devices/system/cpu/cpu0/cpuidle/state1/usage:14709
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/desc:ACPI FFH INTEL MWAIT
+> 0x33
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/latency:151
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/name:C2
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/residency:302
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/time:6524492
+> /sys/devices/system/cpu/cpu0/cpuidle/state2/usage:4621
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI FFH INTEL MWAIT
+> 0x60
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:1034
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:2068
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:52217106
+> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:3364
+>=20
+> > Does it happen if you use default cmdline,
+> > but edit intel_idle.c to comment out c8 and c9 support?
+>=20
+> That also boots, ts.out attached (as is the patch to do this, to make
+> sure there is no miscommunication). With this change the original bug
+> disappears as well.
+>=20
+--=20
+--=C2=A0
+All rights reversed
+
+--=-x7uYuVH1XGo5BclAENQ3
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAABCAAGBQJW1xy4AAoJEN0jrNd/PrOh3+sP/RdtbN6c2Nx54jAjTPiOhtn0
-uHdyUZEdqoWMed48LDkcjISzucBcUilm8C9OIZ4FxteeHCur2LOjUwwGc33O9OmQ
-JW9RZLeVqHjyAqxAY9JWoaxTAswJKHNXPIG2Lu7ebJGLa6twoAKWfDHNvlEFEFeV
-pqR+pxIRXnHvDLJYcHztw2H4REd35ru8x9byIgmBhVmr222/TyqFAI2lPaWbPKFf
-xP19YrVJvgZTCYotf4QX6bQT1AJtCwkP90a/lH7vA8AB1vDeZtpqKCTbRS+vy+H4
-EaH3hVdlIAN+6lJK6JNuwxz0FG2bDd0TGb6gOHOdYZuVzYSvr5jTN7yZNznLcZFn
-Qs1uQyfJsf6ov/CQai91xtVIAhVZHz68ir8/cY1eJYZO01o8ljdJB+YTrsFeIASf
-mDD2D483CtkUkxH7bJlyii+aNhbnM21uf2nu9OVJpuiw47KoNvuz+TLvTJJfQyPM
-HsjvjnBH0YrpAxguk0pGRc58QdtQXsTE/oOR1oeTaywbMW2PXGTk8ijgDnxg5a+C
-Mh+eSJyw8Z8Tb6/VtPOfHiumTPzWrhtoU8WvfrsXLaMrWLqSixWWvyTh7Pa0TBzp
-xtQKJDOvsaNnqS4MhpJbNr+eku6z+SNu4pcLzsZ83sQQujQ2UcrZx4eT1cRR7iFQ
-+YnMRGfYKS7a1DVVCoHa
-=8sWt
+iQEcBAABAgAGBQJW1x6eAAoJEM553pKExN6Dwr8H/R1THlC26QNXQSzq4vTLub0/
+Tj2oSmjN6iqNxz6jZ2s3xR7HhwJXxMLZooSdgeIwKat6rEe7KHl+S81m6jFhDMSh
+zefU45HYmfk2NSWH7bS4Su4iJX459YnY2fSFvSh9TO+v2scjBNfX2ccphKkvLDHm
+VlAp+w/Vu0Y8SFCi8QpuC3dpZkt1o1mJFTsRvD7EiGyQJS9iZ83bHcsPn5N4L2V9
+gm7vXJuB+hQnnyOUPjnefvjLUo2JSBNxcjqXggpwoZACWa8+ZXTtJaKXiL/GfGpu
+uQbPSeqWpDKLlpVMBLsBRlh9JuqSHV5wVLvnyvUF+QNFmk11BMXeAjp7o2p1ufw=
+=fsQY
 -----END PGP SIGNATURE-----
 
---3V7upXqbjpZ4EhLz--
+--=-x7uYuVH1XGo5BclAENQ3--
+
