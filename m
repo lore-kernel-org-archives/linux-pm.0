@@ -1,78 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/6] cpufreq: schedutil governor
-Date: Wed, 02 Mar 2016 02:56:28 +0100
-Message-ID: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Wed, 2 Mar 2016 08:08:22 +0530
+Message-ID: <20160302023822.GM16437@vireshk-i7>
+References: <1456778205-19197-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20160301022830.GX2791@vireshk-i7>
+ <1456855841.21069.59.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34598 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752873AbcCBCif (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 21:38:35 -0500
+Received: by mail-pa0-f53.google.com with SMTP id fy10so123180113pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 01 Mar 2016 18:38:35 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1456855841.21069.59.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-Hi,
+On 01-03-16, 10:10, Srinivas Pandruvada wrote:
+> > What about:
+> >=20
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0acpi_cpufreq_attr[ARRAY_SIZE(acpi_cpu
+> > freq_attr) - 2] =3D &base_frequency;
+> >=20
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0and a comment to describe that ?
+> >=20
+> Will it work in this case?
+> "
+> Even if CONFIG_X86_ACPI_CPUFREQ_CPB is defined,=A0
+> acpi_cpufreq_attr[2] will be set to NULL in the init callback when
+> some condition fails. So we will have a NULL in the acpi_cpufreq_attr=
+[]
+> before &base_frequency if we add at fixed place.=A0
+> "
 
-My previous intro message still applies somewhat, so here's a link:
+Oh dude, you already have this hack in place in a different way. Though=
+ its
+doable this way:
 
-http://marc.info/?l=linux-pm&m=145609673008122&w=2
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpuf=
+req.c
+index 51eef87bbc37..26c026a34e1e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -937,7 +937,7 @@ static void acpi_cpufreq_boost_exit(void)
+=20
+ static int __init acpi_cpufreq_init(void)
+ {
+-       int ret;
++       int ret, cpb_removed =3D 0;
+=20
+        if (acpi_disabled)
+                return -ENODEV;
+@@ -967,6 +967,7 @@ static int __init acpi_cpufreq_init(void)
+                for (attr =3D acpi_cpufreq_attr; *attr; attr++)
+                        if (*attr =3D=3D &cpb) {
+                                *attr =3D NULL;
++                               cpb_removed =3D 1;
+                                break;
+                        }
+        }
 
-The executive summary of the motivation is that I wanted to do two things:
-use the utilization data from the scheduler (it's passed to the governor
-as aguments of update callbacks anyway) and make it possible to set
-CPU frequency without involving process context (fast frequency switching).
+And then the above statement:
 
-Both have been prototyped in the previous RFCs:
+acpi_cpufreq_attr[ARRAY_SIZE(acpi_cpufreq_attr) - 2 - cpb_removed] =3D =
+&base_frequency;
 
-https://patchwork.kernel.org/patch/8426691/
-https://patchwork.kernel.org/patch/8426741/
+But I would rather add another patch first to set the CPB thing in the =
+array to
+NULL and remove the ifdef from within the array. And then set it to a v=
+alid
+attribute only if we are making an addition. And then you can easily ke=
+ep a
+count of the next NULL entry you can update.
 
-but in the meantime I found a couple of issues in there.
-
-First off, the common governor code relied on by the previous version reset
-the sample delay to 0 in order to force an immediate frequency update.  That
-doesn't work with the new governor, though, because it computes the frequency
-to set in a cpufreq_update_util() callback and (when fast switching is not
-used) passes that to a work item which sets the frequency and then restores
-the sample delay.  Thus if sysfs changes the sample delay to 0 when work_in_progress
-is in effect, it will be overwritten by the work item and so discarded.
-
-When using fast switching, the previous version would update the sample delay
-from a scheduler path, but that (on a 32-bit system) might clash with an
-update from sysfs leading to a result that's completely off.  That value would
-be less than the correct sample delay (I think), so in practice that shouldn't
-matter that much, but still it's not nice.
-
-The above means that schedutil cannot really share as much code as I thought it
-could with "ondemand" and "conservative".
-
-Moreover, I wanted to have a "rate_limit" tunable (instead of the sampling rate
-which doesn't mean what the name suggests in schedutil), but that would be the
-only one used by schedutil, so I ended up having to define a new struct to point
-to from struct dbs_data just to hold that single value and I would need to
-define ->init() and ->exit() callbacks for the governor for that reason (and
-the common tunables in struct dbs_data wouldn't be used).
-
-Not to mention the fact that the majority of the common governor code is not
-really used by schedutil anyway.
-
-Taking the above into account, I decided to decouple schedutil from the other
-governors, but I wanted to avoid duplicating some of the tunables manipulation
-code.  Hence patches [3-4/6] taking that code into a separate file so schedutil
-can use it too without pulling the rest of the common "ondemand" and
-"conservative" code along with it.
-
-Patch [5/6] adds support for fast switching to the core and the ACPI driver,
-but doesn't hook it up to anything useful.  That is done in the last patch
-that actually adds the new governor.
-
-That depends on two patches I sent previously, [1/6] that makes
-cpufreq_update_util() use RCU-sched (one change from the previous version
-as requested by Peter) and [2/6] that reworks acpi-cpufreq so the fast
-switching (added later in patch [5/6]) can work with all of the frequency
-setting methods the driver may use.
-
-Comments welcome.
-
-Thanks,
-Rafael
+--=20
+viresh
