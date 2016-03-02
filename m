@@ -1,202 +1,333 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/6] cpufreq: Support for fast frequency switching
-Date: Wed, 02 Mar 2016 03:12:33 +0100
-Message-ID: <26020775.9hJG2SHiH2@vostro.rjw.lan>
+Subject: [PATCH 2/6][Resend] cpufreq: acpi-cpufreq: Make read and write operations more efficient
+Date: Wed, 02 Mar 2016 03:05:22 +0100
+Message-ID: <4120468.r1MzG4y28k@vostro.rjw.lan>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41277 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753082AbcCBC0X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Mar 2016 21:26:23 -0500
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify the ACPI cpufreq driver to provide a method for switching
-CPU frequencies from interrupt context and update the cpufreq core
-to support that method if available.
+Setting a new CPU frequency and reading the current request value
+in the ACPI cpufreq driver involves each at least two switch
+instructions (there's more if the policy is shared).  One of
+them is present in drv_read/write() that prepares a command
+structure and the other happens in subsequent do_drv_read/write()
+when that structure is interpreted.  However, all of those switches
+may be avoided by using function pointers.
 
-Introduce a new cpufreq driver callback, ->fast_switch, to be
-invoked for frequency switching from interrupt context via a
-new helper function, cpufreq_driver_fast_switch().  Add a new
-policy flag, fast_switch_possible, to be set if fast frequency
-switching can be used for the given policy.
-
-Implement the ->fast_switch callback in the ACPI cpufreq driver
-and make it set fast_switch_possible during policy initialization
-as appropriate.
+To that end, add two function pointers to struct acpi_cpufreq_data
+to represent read and write operations on the frequency register
+and set them up during policy intitialization to point to the pair
+of routines suitable for the given processor (Intel/AMD MSR access
+or I/O port access).  Then, use those pointers in do_drv_read/write()
+and modify drv_read/write() to prepare the command structure for
+them without any checks.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-
-The most important change from the previous version is that the
-->fast_switch() callback takes an additional "relation" argument
-and now the governor can use it to choose a selection method.
-
----
- drivers/cpufreq/acpi-cpufreq.c |   53 +++++++++++++++++++++++++++++++++++++++++
- drivers/cpufreq/cpufreq.c      |   33 +++++++++++++++++++++++++
- include/linux/cpufreq.h        |    6 ++++
- 3 files changed, 92 insertions(+)
+ drivers/cpufreq/acpi-cpufreq.c |  208 ++++++++++++++++++-----------------------
+ 1 file changed, 95 insertions(+), 113 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
 +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-@@ -458,6 +458,55 @@ static int acpi_cpufreq_target(struct cp
- 	return result;
- }
- 
-+unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-+				      unsigned int target_freq,
-+				      unsigned int relation)
-+{
-+	struct acpi_cpufreq_data *data = policy->driver_data;
-+	struct acpi_processor_performance *perf;
-+	struct cpufreq_frequency_table *entry, *found;
-+	unsigned int next_perf_state, next_freq, freq;
-+
-+	/*
-+	 * Find the closest frequency above target_freq or equal to it.
-+	 *
-+	 * The table is sorted in the reverse order with respect to the
-+	 * frequency and all of the entries are valid (see the initialization).
-+	 */
-+	entry = data->freq_table;
-+	do {
-+		entry++;
-+		freq = entry->frequency;
-+	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-+	found = entry - 1;
-+	/*
-+	 * Use the one found or the previous one, depending on the relation.
-+	 * CPUFREQ_RELATION_H is not taken into account here, but it is not
-+	 * expected to be passed to this function anyway.
-+	 */
-+	next_freq = found->frequency;
-+	if (freq == CPUFREQ_TABLE_END || relation != CPUFREQ_RELATION_C ||
-+	    target_freq - freq >= next_freq - target_freq) {
-+		next_perf_state = found->driver_data;
-+	} else {
-+		next_freq = freq;
-+		next_perf_state = entry->driver_data;
-+	}
-+
-+	perf = to_perf_data(data);
-+	if (perf->state == next_perf_state) {
-+		if (unlikely(data->resume))
-+			data->resume = 0;
-+		else
-+			return next_freq;
-+	}
-+
-+	data->cpu_freq_write(&perf->control_register,
-+			     perf->states[next_perf_state].control);
-+	perf->state = next_perf_state;
-+	return next_freq;
-+}
-+
- static unsigned long
- acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
- {
-@@ -740,6 +789,9 @@ static int acpi_cpufreq_cpu_init(struct
- 		goto err_unreg;
- 	}
- 
-+	policy->fast_switch_possible = !acpi_pstate_strict &&
-+		!(policy_is_shared(policy) && policy->shared_type != CPUFREQ_SHARED_TYPE_ANY);
-+
- 	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 		    (perf->state_count+1), GFP_KERNEL);
- 	if (!data->freq_table) {
-@@ -874,6 +926,7 @@ static struct freq_attr *acpi_cpufreq_at
- static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= acpi_cpufreq_target,
-+	.fast_switch	= acpi_cpufreq_fast_switch,
- 	.bios_limit	= acpi_processor_get_bios_limit,
- 	.init		= acpi_cpufreq_cpu_init,
- 	.exit		= acpi_cpufreq_cpu_exit,
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1772,6 +1772,39 @@ EXPORT_SYMBOL(cpufreq_unregister_notifie
-  *                              GOVERNORS                            *
-  *********************************************************************/
- 
-+/**
-+ * cpufreq_driver_fast_switch - Carry out a fast CPU frequency switch.
-+ * @policy: cpufreq policy to switch the frequency for.
-+ * @target_freq: New frequency to set (may be approximate).
-+ * @relation: Relation to use for frequency selection.
-+ *
-+ * Carry out a fast frequency switch from interrupt context.
-+ *
-+ * This function must not be called if policy->fast_switch_possible is unset.
-+ *
-+ * Governors calling this function must guarantee that it will never be invoked
-+ * twice in parallel for the same policy and that it will never be called in
-+ * parallel with either ->target() or ->target_index() for the same policy.
-+ *
-+ * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
-+ * callback, the hardware configuration must be preserved.
-+ */
-+void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
-+				unsigned int target_freq, unsigned int relation)
-+{
-+	unsigned int freq;
-+
-+	if (target_freq == policy->cur)
-+		return;
-+
-+	freq = cpufreq_driver->fast_switch(policy, target_freq, relation);
-+	if (freq != CPUFREQ_ENTRY_INVALID) {
-+		policy->cur = freq;
-+		trace_cpu_frequency(freq, smp_processor_id());
-+	}
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
-+
- /* Must set freqs->new to intermediate frequency */
- static int __target_intermediate(struct cpufreq_policy *policy,
- 				 struct cpufreq_freqs *freqs, int index)
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -81,6 +81,7 @@ struct cpufreq_policy {
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
- 	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
-+	bool			fast_switch_possible;
- 
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
-@@ -270,6 +271,9 @@ struct cpufreq_driver {
- 				  unsigned int relation);	/* Deprecated */
- 	int		(*target_index)(struct cpufreq_policy *policy,
- 					unsigned int index);
-+	unsigned int	(*fast_switch)(struct cpufreq_policy *policy,
-+				       unsigned int target_freq,
-+				       unsigned int relation);
- 	/*
- 	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
- 	 * unset.
-@@ -484,6 +488,8 @@ struct cpufreq_governor {
+@@ -70,6 +70,8 @@ struct acpi_cpufreq_data {
+ 	unsigned int cpu_feature;
+ 	unsigned int acpi_perf_cpu;
+ 	cpumask_var_t freqdomain_cpus;
++	void (*cpu_freq_write)(struct acpi_pct_register *reg, u32 val);
++	u32 (*cpu_freq_read)(struct acpi_pct_register *reg);
  };
  
- /* Pass a target to the cpufreq driver */
-+void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
-+				unsigned int target_freq, unsigned int relation);
- int cpufreq_driver_target(struct cpufreq_policy *policy,
- 				 unsigned int target_freq,
- 				 unsigned int relation);
+ /* acpi_perf_data is a pointer to percpu data. */
+@@ -243,125 +245,119 @@ static unsigned extract_freq(u32 val, st
+ 	}
+ }
+ 
+-struct msr_addr {
+-	u32 reg;
+-};
++u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
++{
++	u32 val, dummy;
+ 
+-struct io_addr {
+-	u16 port;
+-	u8 bit_width;
+-};
++	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
++	return val;
++}
++
++void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
++{
++	u32 lo, hi;
++
++	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
++	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
++	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
++}
++
++u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
++{
++	u32 val, dummy;
++
++	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
++	return val;
++}
++
++void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
++{
++	wrmsr(MSR_AMD_PERF_CTL, val, 0);
++}
++
++u32 cpu_freq_read_io(struct acpi_pct_register *reg)
++{
++	u32 val;
++
++	acpi_os_read_port(reg->address, &val, reg->bit_width);
++	return val;
++}
++
++void cpu_freq_write_io(struct acpi_pct_register *reg, u32 val)
++{
++	acpi_os_write_port(reg->address, val, reg->bit_width);
++}
+ 
+ struct drv_cmd {
+-	unsigned int type;
+-	const struct cpumask *mask;
+-	union {
+-		struct msr_addr msr;
+-		struct io_addr io;
+-	} addr;
++	struct acpi_pct_register *reg;
+ 	u32 val;
++	union {
++		void (*write)(struct acpi_pct_register *reg, u32 val);
++		u32 (*read)(struct acpi_pct_register *reg);
++	} func;
+ };
+ 
+ /* Called via smp_call_function_single(), on the target CPU */
+ static void do_drv_read(void *_cmd)
+ {
+ 	struct drv_cmd *cmd = _cmd;
+-	u32 h;
+ 
+-	switch (cmd->type) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		rdmsr(cmd->addr.msr.reg, cmd->val, h);
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		acpi_os_read_port((acpi_io_address)cmd->addr.io.port,
+-				&cmd->val,
+-				(u32)cmd->addr.io.bit_width);
+-		break;
+-	default:
+-		break;
+-	}
++	cmd->val = cmd->func.read(cmd->reg);
+ }
+ 
+-/* Called via smp_call_function_many(), on the target CPUs */
+-static void do_drv_write(void *_cmd)
++static u32 drv_read(struct acpi_cpufreq_data *data, const struct cpumask *mask)
+ {
+-	struct drv_cmd *cmd = _cmd;
+-	u32 lo, hi;
++	struct acpi_processor_performance *perf = to_perf_data(data);
++	struct drv_cmd cmd = {
++		.reg = &perf->control_register,
++		.func.read = data->cpu_freq_read,
++	};
++	int err;
+ 
+-	switch (cmd->type) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		rdmsr(cmd->addr.msr.reg, lo, hi);
+-		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
+-		wrmsr(cmd->addr.msr.reg, lo, hi);
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
+-				cmd->val,
+-				(u32)cmd->addr.io.bit_width);
+-		break;
+-	default:
+-		break;
+-	}
++	err = smp_call_function_any(mask, do_drv_read, &cmd, 1);
++	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
++	return cmd.val;
+ }
+ 
+-static void drv_read(struct drv_cmd *cmd)
++/* Called via smp_call_function_many(), on the target CPUs */
++static void do_drv_write(void *_cmd)
+ {
+-	int err;
+-	cmd->val = 0;
++	struct drv_cmd *cmd = _cmd;
+ 
+-	err = smp_call_function_any(cmd->mask, do_drv_read, cmd, 1);
+-	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
++	cmd->func.write(cmd->reg, cmd->val);
+ }
+ 
+-static void drv_write(struct drv_cmd *cmd)
++static void drv_write(struct acpi_cpufreq_data *data,
++		      const struct cpumask *mask, u32 val)
+ {
++	struct acpi_processor_performance *perf = to_perf_data(data);
++	struct drv_cmd cmd = {
++		.reg = &perf->control_register,
++		.val = val,
++		.func.write = data->cpu_freq_write,
++	};
+ 	int this_cpu;
+ 
+ 	this_cpu = get_cpu();
+-	if (cpumask_test_cpu(this_cpu, cmd->mask))
+-		do_drv_write(cmd);
+-	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
++	if (cpumask_test_cpu(this_cpu, mask))
++		do_drv_write(&cmd);
++
++	smp_call_function_many(mask, do_drv_write, &cmd, 1);
+ 	put_cpu();
+ }
+ 
+-static u32
+-get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
++static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
+ {
+-	struct acpi_processor_performance *perf;
+-	struct drv_cmd cmd;
++	u32 val;
+ 
+ 	if (unlikely(cpumask_empty(mask)))
+ 		return 0;
+ 
+-	switch (data->cpu_feature) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		cmd.type = SYSTEM_IO_CAPABLE;
+-		perf = to_perf_data(data);
+-		cmd.addr.io.port = perf->control_register.address;
+-		cmd.addr.io.bit_width = perf->control_register.bit_width;
+-		break;
+-	default:
+-		return 0;
+-	}
+-
+-	cmd.mask = mask;
+-	drv_read(&cmd);
++	val = drv_read(data, mask);
+ 
+-	pr_debug("get_cur_val = %u\n", cmd.val);
++	pr_debug("get_cur_val = %u\n", val);
+ 
+-	return cmd.val;
++	return val;
+ }
+ 
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+@@ -416,7 +412,7 @@ static int acpi_cpufreq_target(struct cp
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 	struct acpi_processor_performance *perf;
+-	struct drv_cmd cmd;
++	const struct cpumask *mask;
+ 	unsigned int next_perf_state = 0; /* Index into perf table */
+ 	int result = 0;
+ 
+@@ -438,37 +434,17 @@ static int acpi_cpufreq_target(struct cp
+ 		}
+ 	}
+ 
+-	switch (data->cpu_feature) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		cmd.type = SYSTEM_IO_CAPABLE;
+-		cmd.addr.io.port = perf->control_register.address;
+-		cmd.addr.io.bit_width = perf->control_register.bit_width;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	default:
+-		return -ENODEV;
+-	}
+-
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	if (policy->shared_type != CPUFREQ_SHARED_TYPE_ANY)
+-		cmd.mask = policy->cpus;
+-	else
+-		cmd.mask = cpumask_of(policy->cpu);
++	/*
++	 * The core won't allow CPUs to go away until the governor has been
++	 * stopped, so we can rely on the stability of policy->cpus.
++	 */
++	mask = policy->shared_type == CPUFREQ_SHARED_TYPE_ANY ?
++		cpumask_of(policy->cpu) : policy->cpus;
+ 
+-	drv_write(&cmd);
++	drv_write(data, mask, perf->states[next_perf_state].control);
+ 
+ 	if (acpi_pstate_strict) {
+-		if (!check_freqs(cmd.mask, data->freq_table[index].frequency,
++		if (!check_freqs(mask, data->freq_table[index].frequency,
+ 					data)) {
+ 			pr_debug("acpi_cpufreq_target failed (%d)\n",
+ 				policy->cpu);
+@@ -738,15 +714,21 @@ static int acpi_cpufreq_cpu_init(struct
+ 		}
+ 		pr_debug("SYSTEM IO addr space\n");
+ 		data->cpu_feature = SYSTEM_IO_CAPABLE;
++		data->cpu_freq_read = cpu_freq_read_io;
++		data->cpu_freq_write = cpu_freq_write_io;
+ 		break;
+ 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ 		pr_debug("HARDWARE addr space\n");
+ 		if (check_est_cpu(cpu)) {
+ 			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
++			data->cpu_freq_read = cpu_freq_read_intel;
++			data->cpu_freq_write = cpu_freq_write_intel;
+ 			break;
+ 		}
+ 		if (check_amd_hwpstate_cpu(cpu)) {
+ 			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
++			data->cpu_freq_read = cpu_freq_read_amd;
++			data->cpu_freq_write = cpu_freq_write_amd;
+ 			break;
+ 		}
+ 		result = -ENODEV;
 
