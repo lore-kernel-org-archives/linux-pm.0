@@ -1,43 +1,34 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC 14/15] usb: xhci: mtk: Add missing MFD_SYSCON dependency on
- HAS_IOMEM
-Date: Thu, 03 Mar 2016 12:01:21 +0100
-Message-ID: <2531852.vizHtxotvy@wuerfel>
-References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
- <1456992221-26712-15-git-send-email-k.kozlowski@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/6] cpufreq: Support for fast frequency switching
+Date: Thu, 3 Mar 2016 12:16:55 +0100
+Message-ID: <20160303111655.GL6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <26020775.9hJG2SHiH2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1456992221-26712-15-git-send-email-k.kozlowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, David Brown <david.brown@linaro.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Andy Gross <andy.gross@linaro.org>, linux-media@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Marc Zyngier <marc.zyngier@arm.com>, linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <26020775.9hJG2SHiH2@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 March 2016 17:03:40 Krzysztof Kozlowski wrote:
-> index 8c20ebbc049c..f759a778d606 100644
-> --- a/drivers/usb/host/Kconfig
-> +++ b/drivers/usb/host/Kconfig
-> @@ -45,6 +45,7 @@ config USB_XHCI_PLATFORM
->  
->  config USB_XHCI_MTK
->         tristate "xHCI support for Mediatek MT65xx"
-> +       depends on HAS_IOMEM    # For MFD_SYSCON
->         select MFD_SYSCON
->         depends on ARCH_MEDIATEK || COMPILE_TEST
->         ---help---
-> 
+On Wed, Mar 02, 2016 at 03:12:33AM +0100, Rafael J. Wysocki wrote:
+> The most important change from the previous version is that the
+> ->fast_switch() callback takes an additional "relation" argument
+> and now the governor can use it to choose a selection method.
 
-This already has the dependency, as it depends on XHCD_PLATFORM
-which depends on HAS_IOMEM.
+> +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> +				      unsigned int target_freq,
+> +				      unsigned int relation)
 
-	Arnd
+Would it make sense to replace the {target_freq, relation} pair with
+something like the CPPC {min_freq, max_freq} pair?
+
+Then you could use the closest frequency to max provided it is larger
+than min.
+
+This communicates more actual information in the same number of
+parameters and would thereby allow for a more flexible (better)
+frequency selection.
