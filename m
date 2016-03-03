@@ -1,133 +1,44 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v2] thermal: Fix build error of missing devm_ioremap_resource
- on UM
-Date: Thu, 03 Mar 2016 17:44:37 +0900
-Message-ID: <1456994677-3024-1-git-send-email-k.kozlowski@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2] thermal: Fix build error of missing
+ devm_ioremap_resource on UM
+Date: Thu, 3 Mar 2016 10:01:11 +0100
+Message-ID: <CAMuHMdUW00DRhFFU9y9Di_jkh+wF=d+Rm3rwC9-guw5eS-+iXw@mail.gmail.com>
+References: <1456994677-3024-1-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1456994677-3024-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
-allyesconfig (COMPILE_TEST) failed on many files with:
+Hi Krzysztof,
 
-drivers/built-in.o: In function `kirkwood_thermal_probe':
-kirkwood_thermal.c:(.text+0x390a25): undefined reference to `devm_ioremap_resource'
-drivers/built-in.o: In function `exynos_tmu_probe':
-exynos_tmu.c:(.text+0x39246b): undefined reference to `devm_ioremap'
+On Thu, Mar 3, 2016 at 9:44 AM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -177,7 +177,7 @@ config THERMAL_EMULATION
+>
+>  config HISI_THERMAL
+>         tristate "Hisilicon thermal driver"
+> -       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
+> +       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST && HAS_IOMEM
 
-The users of devm_ioremap_resource() which are compile-testable should
-depend on HAS_IOMEM.
+I think these are easier to read and maintain if you split hard and soft
+dependencies, e.g.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+        depends on HAS_IOMEM
+        depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
 
----
+Gr{oetje,eeting}s,
 
-Changes since v1:
-1. Fix linking error also on TI.
-2. Use different approach for HAS_IOMEM dependency. IT is needed only
-   for COMPILE_TEST so use && to show that.
----
- drivers/thermal/Kconfig         | 19 +++++++++----------
- drivers/thermal/samsung/Kconfig |  1 +
- 2 files changed, 10 insertions(+), 10 deletions(-)
+                        Geert
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5e7c97a3f1d8..bf0247869add 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -177,7 +177,7 @@ config THERMAL_EMULATION
- 
- config HISI_THERMAL
- 	tristate "Hisilicon thermal driver"
--	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
-+	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST && HAS_IOMEM
- 	help
- 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
- 	  thermal framework. cpufreq is used as the cooling device to throttle
-@@ -196,7 +196,7 @@ config IMX_THERMAL
- 
- config SPEAR_THERMAL
- 	tristate "SPEAr thermal sensor driver"
--	depends on PLAT_SPEAR || COMPILE_TEST
-+	depends on PLAT_SPEAR || COMPILE_TEST && HAS_IOMEM
- 	depends on OF
- 	help
- 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
-@@ -204,7 +204,7 @@ config SPEAR_THERMAL
- 
- config ROCKCHIP_THERMAL
- 	tristate "Rockchip thermal driver"
--	depends on ARCH_ROCKCHIP || COMPILE_TEST
-+	depends on ARCH_ROCKCHIP || COMPILE_TEST && HAS_IOMEM
- 	depends on RESET_CONTROLLER
- 	help
- 	  Rockchip thermal driver provides support for Temperature sensor
-@@ -214,15 +214,14 @@ config ROCKCHIP_THERMAL
- 
- config RCAR_THERMAL
- 	tristate "Renesas R-Car thermal driver"
--	depends on ARCH_SHMOBILE || COMPILE_TEST
--	depends on HAS_IOMEM
-+	depends on ARCH_SHMOBILE || COMPILE_TEST && HAS_IOMEM
- 	help
- 	  Enable this to plug the R-Car thermal sensor driver into the Linux
- 	  thermal framework.
- 
- config KIRKWOOD_THERMAL
- 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
--	depends on MACH_KIRKWOOD || COMPILE_TEST
-+	depends on MACH_KIRKWOOD || COMPILE_TEST && HAS_IOMEM
- 	depends on OF
- 	help
- 	  Support for the Kirkwood thermal sensor driver into the Linux thermal
-@@ -230,7 +229,7 @@ config KIRKWOOD_THERMAL
- 
- config DOVE_THERMAL
- 	tristate "Temperature sensor on Marvell Dove SoCs"
--	depends on ARCH_DOVE || MACH_DOVE || COMPILE_TEST
-+	depends on ARCH_DOVE || MACH_DOVE || COMPILE_TEST && HAS_IOMEM
- 	depends on OF
- 	help
- 	  Support for the Dove thermal sensor driver in the Linux thermal
-@@ -248,7 +247,7 @@ config DB8500_THERMAL
- 
- config ARMADA_THERMAL
- 	tristate "Armada 370/XP thermal management"
--	depends on ARCH_MVEBU || COMPILE_TEST
-+	depends on ARCH_MVEBU || COMPILE_TEST && HAS_IOMEM
- 	depends on OF
- 	help
- 	  Enable this option if you want to have support for thermal management
-@@ -367,14 +366,14 @@ config INTEL_PCH_THERMAL
- 
- config MTK_THERMAL
- 	tristate "Temperature sensor driver for mediatek SoCs"
--	depends on ARCH_MEDIATEK || COMPILE_TEST
-+	depends on ARCH_MEDIATEK || COMPILE_TEST && HAS_IOMEM
- 	default y
- 	help
- 	  Enable this option if you want to have support for thermal management
- 	  controller present in Mediatek SoCs
- 
- menu "Texas Instruments thermal drivers"
--depends on ARCH_HAS_BANDGAP || COMPILE_TEST
-+depends on ARCH_HAS_BANDGAP || COMPILE_TEST && HAS_IOMEM
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
- 
-diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-index e0da3865e060..222e644169f0 100644
---- a/drivers/thermal/samsung/Kconfig
-+++ b/drivers/thermal/samsung/Kconfig
-@@ -1,6 +1,7 @@
- config EXYNOS_THERMAL
- 	tristate "Exynos thermal management unit driver"
- 	depends on THERMAL_OF
-+	depends on HAS_IOMEM
- 	help
- 	  If you say yes here you get support for the TMU (Thermal Management
- 	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
--- 
-2.5.0
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
