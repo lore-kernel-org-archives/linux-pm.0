@@ -1,14 +1,13 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 06/15] pinctrl: rockchip: Add missing MFD_SYSCON dependency on
- HAS_IOMEM
-Date: Thu, 03 Mar 2016 17:03:32 +0900
-Message-ID: <1456992221-26712-7-git-send-email-k.kozlowski__15240.3581575074$1456992783$gmane$org@samsung.com>
+Subject: [RFC 04/15] irqchip: st: Add missing MFD_SYSCON dependency on HAS_IOMEM
+Date: Thu, 03 Mar 2016 17:03:30 +0900
+Message-ID: <1456992221-26712-5-git-send-email-k.kozlowski__25376.5855137774$1456992905$gmane$org@samsung.com>
 References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:58116 "EHLO
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:58085 "EHLO
 	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932338AbcCCIE7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:59 -0500
+	with ESMTP id S932241AbcCCIEm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:42 -0500
 In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,21 +19,21 @@ direct dependencies.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/pinctrl/Kconfig | 1 +
+ drivers/irqchip/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/pinctrl/Kconfig b/drivers/pinctrl/Kconfig
-index fb8200b8e8ec..dc7ab58d4d74 100644
---- a/drivers/pinctrl/Kconfig
-+++ b/drivers/pinctrl/Kconfig
-@@ -131,6 +131,7 @@ config PINCTRL_MESON
- 
- config PINCTRL_ROCKCHIP
+diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
+index 00bbec6eca0b..10775b099daa 100644
+--- a/drivers/irqchip/Kconfig
++++ b/drivers/irqchip/Kconfig
+@@ -157,6 +157,7 @@ config RENESAS_IRQC
+ config ST_IRQCHIP
  	bool
+ 	select REGMAP
 +	depends on HAS_IOMEM	# For MFD_SYSCON
- 	select PINMUX
- 	select GENERIC_PINCONF
- 	select GENERIC_IRQ_CHIP
+ 	select MFD_SYSCON
+ 	help
+ 	  Enables SysCfg Controlled IRQs on STi based platforms.
 -- 
 2.5.0
 
