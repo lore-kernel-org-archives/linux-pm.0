@@ -1,91 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: acpi: Allow new dynamics attributes to be added to acpi_cpufreq_attr
-Date: Thu,  3 Mar 2016 11:10:05 +0530
-Message-ID: <f73d4b3690f7166730bafa2e0d7b5b9dcf29f2de.1456983554.git.viresh.kumar@linaro.org>
-References: <1456945994-5616-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35523 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbcCCFkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 00:40:18 -0500
-Received: by mail-pa0-f42.google.com with SMTP id bj10so8274009pad.2
-        for <linux-pm@vger.kernel.org>; Wed, 02 Mar 2016 21:40:18 -0800 (PST)
-In-Reply-To: <1456945994-5616-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH 1/6] cpufreq: Reduce cpufreq_update_util() overhead a bit
+Date: Thu, 3 Mar 2016 11:18:38 +0530
+Message-ID: <20160303054838.GH2891@vireshk-i7>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <3575770.L1lplNLqVv@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3575770.L1lplNLqVv@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, srinivas.pandruvada@linux.intel.com, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-acpi_cpufreq_attr contains at least one dynamically populated (removed)
-attribute today, cpb. But the code isn't friendly enough for new
-attributes to be populated in a similar way.
+On 02-03-16, 03:04, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Use the observation that cpufreq_update_util() is only called
+> by the scheduler with rq->lock held, so the callers of
+> cpufreq_set_update_util_data() can use synchronize_sched()
+> instead of synchronize_rcu() to wait for cpufreq_update_util()
+> to complete.  Moreover, if they are updated to do that,
+> rcu_read_(un)lock() calls in cpufreq_update_util() might be
+> replaced with rcu_read_(un)lock_sched(), respectively, but
+> those aren't really necessary, because the scheduler calls
+> that function from RCU-sched read-side critical sections
+> already.
+> 
+> In addition to that, if cpufreq_set_update_util_data() checks
+> the func field in the struct update_util_data before setting
+> the per-CPU pointer to it, the data->func check may be dropped
+> from cpufreq_update_util() as well.
+> 
+> Make the above changes to reduce the overhead from
+> cpufreq_update_util() in the scheduler paths invoking it
+> and to make the cleanup after removing its callbacks less
+> heavy-weight somewhat.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Supersedes https://patchwork.kernel.org/patch/8443191/
 
-Make some changes to allow new attributes to be easily added to the
-struct.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Srinivas,
-
-This should make it easy for you to add another dynamic entry into the
-acpi_cpufreq_attr structure.
-
- drivers/cpufreq/acpi-cpufreq.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 59a7b380fbe2..c37617ddcc9e 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -866,7 +866,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
- 	&freqdomain_cpus,
- #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
--	&cpb,
-+	NULL,	/* Extra space for cpb if required */
- #endif
- 	NULL,
- };
-@@ -917,6 +917,7 @@ static void acpi_cpufreq_boost_exit(void)
- 
- static int __init acpi_cpufreq_init(void)
- {
-+	struct freq_attr **attr;
- 	int ret;
- 
- 	if (acpi_disabled)
-@@ -932,6 +933,10 @@ static int __init acpi_cpufreq_init(void)
- 	if (ret)
- 		return ret;
- 
-+	/* Find first empty entry */
-+	for (attr = acpi_cpufreq_attr; *attr; attr++)
-+		;
-+
- #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
- 	/* this is a sysfs file with a strange name and an even stranger
- 	 * semantic - per CPU instantiation, but system global effect.
-@@ -939,17 +944,11 @@ static int __init acpi_cpufreq_init(void)
- 	 * only if configured. This is considered legacy code, which
- 	 * will probably be removed at some point in the future.
- 	 */
--	if (!check_amd_hwpstate_cpu(0)) {
--		struct freq_attr **attr;
--
-+	if (check_amd_hwpstate_cpu(0))
-+		*attr++ = &cpb;
-+	else
- 		pr_debug("CPB unsupported, do not expose it\n");
- 
--		for (attr = acpi_cpufreq_attr; *attr; attr++)
--			if (*attr == &cpb) {
--				*attr = NULL;
--				break;
--			}
--	}
- #endif
- 	acpi_cpufreq_boost_init();
- 
 -- 
-2.7.1.410.g6faf27b
-
+viresh
