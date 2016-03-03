@@ -1,41 +1,40 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC/RFT][PATCH 0/1] cpufreq: New governor based on
- scheduler-provided utilization data
-Date: Thu, 3 Mar 2016 15:27:10 +0100
-Message-ID: <20160303142709.GB10948@gmail.com>
-References: <5059413.77KZsd2lep@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 3 Mar 2016 16:38:17 +0100
+Message-ID: <20160303153817.GO6344@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <1842158.0Xhak3Uaac@vostro.rjw.lan>
+ <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+ <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+ <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
+ <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:36366 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756770AbcCCPi0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 10:38:26 -0500
 Content-Disposition: inline
-In-Reply-To: <5059413.77KZsd2lep@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>
+In-Reply-To: <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 
+On Thu, Mar 03, 2016 at 03:01:15PM +0100, Vincent Guittot wrote:
+> > In case a more formal derivation of this formula is needed, it is
+> > based on the following 3 assumptions:
+> >
+> > (1) Performance is a linear function of frequency.
+> > (2) Required performance is a linear function of the utilization ratio
+> > x = util/max as provided by the scheduler (0 <= x <= 1).
+> 
+> Just to mention that the utilization that you are using, varies with
+> the frequency which add another variable in your equation
 
-So I wanted to give you some feedback for this, from the scheduler maintainer's 
-POV.
+Right, x86 hasn't implemented arch_scale_freq_capacity(), so the
+utilization values we use are all over the map. If we lower freq, the
+util will go up, which would result in us bumping the freq again, etc..
 
-Looks like there are two cpufreq modernization efforts, one is this series, the 
-other is Steve Muckle's:
-
-  [RFCv7 PATCH 00/10] sched: scheduler-driven CPU frequency selection
-
-What I'd like to see from a scheduler metrics usage POV is a single central place, 
-kernel/sched/cpufreq.c, where all the high level ('governor') decisions are made.  
-This is the approach Steve's series takes.
-
-That is a central point that has ready access to the scheduler internal 
-utilization metrics.
-
-drivers/cpufreq/ would contain legacy governors plus low level drivers that do 
-frequency switching with a well-defined interface.
-
-Could you guys work out a single series that implements the sum of the two series? 
-Looks like we are 90% 'there' already.
-
-Thanks,
-
-	Ingo
