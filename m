@@ -1,74 +1,99 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Thu, 3 Mar 2016 17:28:55 +0000
-Message-ID: <56D87457.1050600@arm.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <1842158.0Xhak3Uaac@vostro.rjw.lan>
- <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
- <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
- <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
- <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
- <20160303153817.GO6344@twins.programming.kicks-ass.net>
- <20160303162829.GB6375@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: acpi: Allow new dynamics attributes to be added
+ to acpi_cpufreq_attr
+Date: Thu, 3 Mar 2016 18:29:23 +0100
+Message-ID: <CAJZ5v0i1HxQha52+G+G_1RC2Gv7Fr7Wifohhx8pqkh-MXbo6Zg@mail.gmail.com>
+References: <1456945994-5616-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	<f73d4b3690f7166730bafa2e0d7b5b9dcf29f2de.1456983554.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38796 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbcCCR3A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Mar 2016 12:29:00 -0500
-In-Reply-To: <20160303162829.GB6375@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <f73d4b3690f7166730bafa2e0d7b5b9dcf29f2de.1456983554.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 03/03/16 16:28, Peter Zijlstra wrote:
-> On Thu, Mar 03, 2016 at 04:38:17PM +0100, Peter Zijlstra wrote:
->> On Thu, Mar 03, 2016 at 03:01:15PM +0100, Vincent Guittot wrote:
->>>> In case a more formal derivation of this formula is needed, it is
->>>> based on the following 3 assumptions:
->>>>
->>>> (1) Performance is a linear function of frequency.
->>>> (2) Required performance is a linear function of the utilization ratio
->>>> x = util/max as provided by the scheduler (0 <= x <= 1).
->>>
->>> Just to mention that the utilization that you are using, varies with
->>> the frequency which add another variable in your equation
->>
->> Right, x86 hasn't implemented arch_scale_freq_capacity(), so the
->> utilization values we use are all over the map. If we lower freq, the
->> util will go up, which would result in us bumping the freq again, etc..
-> 
-> Something like the completely untested below should maybe work.
-> 
-> Rafael?
-> 
+On Thu, Mar 3, 2016 at 6:40 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> acpi_cpufreq_attr contains at least one dynamically populated (removed)
+> attribute today, cpb. But the code isn't friendly enough for new
+> attributes to be populated in a similar way.
+>
+> Make some changes to allow new attributes to be easily added to the
+> struct.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Srinivas,
+>
+> This should make it easy for you to add another dynamic entry into the
+> acpi_cpufreq_attr structure.
+>
+>  drivers/cpufreq/acpi-cpufreq.c | 19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 59a7b380fbe2..c37617ddcc9e 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -866,7 +866,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
+>         &cpufreq_freq_attr_scaling_available_freqs,
+>         &freqdomain_cpus,
+>  #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+> -       &cpb,
+> +       NULL,   /* Extra space for cpb if required */
+>  #endif
+>         NULL,
+>  };
+>
+> @@ -917,6 +917,7 @@ static void acpi_cpufreq_boost_exit(void)
+>
+>  static int __init acpi_cpufreq_init(void)
+>  {
+> +       struct freq_attr **attr;
+>         int ret;
+>
+>         if (acpi_disabled)
+> @@ -932,6 +933,10 @@ static int __init acpi_cpufreq_init(void)
+>         if (ret)
+>                 return ret;
+>
+> +       /* Find first empty entry */
+> +       for (attr = acpi_cpufreq_attr; *attr; attr++)
+> +               ;
+> +
+>  #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+>         /* this is a sysfs file with a strange name and an even stranger
+>          * semantic - per CPU instantiation, but system global effect.
+> @@ -939,17 +944,11 @@ static int __init acpi_cpufreq_init(void)
+>          * only if configured. This is considered legacy code, which
+>          * will probably be removed at some point in the future.
+>          */
+> -       if (!check_amd_hwpstate_cpu(0)) {
+> -               struct freq_attr **attr;
+> -
+> +       if (check_amd_hwpstate_cpu(0))
+> +               *attr++ = &cpb;
+> +       else
+>                 pr_debug("CPB unsupported, do not expose it\n");
+>
+> -               for (attr = acpi_cpufreq_attr; *attr; attr++)
+> -                       if (*attr == &cpb) {
+> -                               *attr = NULL;
+> -                               break;
+> -                       }
+> -       }
+>  #endif
+>         acpi_cpufreq_boost_init();
 
-[...]
+OK, this makes sense.
 
-> +void arch_scale_freq_tick(void)
-> +{
-> +	u64 aperf, mperf;
-> +	u64 acnt, mcnt;
-> +
-> +	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-> +		return;
-> +
-> +	aperf = rdmsrl(MSR_IA32_APERF);
-> +	mperf = rdmsrl(MSR_IA32_APERF);
-> +
-> +	acnt = aperf - this_cpu_read(arch_prev_aperf);
-> +	mcnt = mperf - this_cpu_read(arch_prev_mperf);
-> +
-> +	this_cpu_write(arch_prev_aperf, aperf);
-> +	this_cpu_write(arch_prev_mperf, mperf);
-> +
-> +	this_cpu_write(arch_cpu_freq, div64_u64(acnt * SCHED_CAPACITY_SCALE, mcnt));
+The table definition starts to look somewhat ugly with all of those
+NULLs at the end, but then adding the base_frequency thing to it would
+be easy.
 
-Wasn't there the problem that this ratio goes to zero if the cpu is idle
-in the old power estimation approach on x86?
+Srinivas, can you please take this and rebase your patch on top of it?
+ Or if you prefer, I can take it into my linux-next branch.
 
-[...]
+Thanks,
+Rafael
