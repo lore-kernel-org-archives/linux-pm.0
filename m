@@ -1,66 +1,44 @@
-From: Michele DiGiorgio <michele.digiorgio@arm.com>
-Subject: Re: [PATCH] thermal: trace: migrating thermal traces to use
- TRACE_DEFINE_ENUM() macros
-Date: Thu, 3 Mar 2016 17:10:46 +0000
-Message-ID: <56D87016.5030903@arm.com>
-References: <1456853934-24715-1-git-send-email-michele.digiorgio@arm.com>
- <20160301132006.1cda539c@gandalf.local.home>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 3 Mar 2016 17:14:43 +0000
+Message-ID: <20160303171443.GZ18792@e106622-lin>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <1842158.0Xhak3Uaac@vostro.rjw.lan>
+ <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+ <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+ <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
+ <20160303122030.GN6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0ifY7V48Vh8PdErobxiB0_NAweQ3XiSaMgby54varMLkQ@mail.gmail.com>
+ <20160303163735.GS6356@twins.programming.kicks-ass.net>
+ <20160303165544.GY18792@e106622-lin>
+ <20160303165640.GT6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:60804 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754148AbcCCRK7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Mar 2016 12:10:59 -0500
-In-Reply-To: <20160301132006.1cda539c@gandalf.local.home>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160303165640.GT6356@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Javi Merino <javi.merino@arm.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hello Steven,
+On 03/03/16 17:56, Peter Zijlstra wrote:
+> On Thu, Mar 03, 2016 at 04:55:44PM +0000, Juri Lelli wrote:
+> > On 03/03/16 17:37, Peter Zijlstra wrote:
+> > > But given the platform's cpuidle information, maybe coupled with an avg
+> > > idle est, we can compute the benefit of race-to-idle and over provision
+> > > based on that, right?
+> > > 
+> > 
+> > Shouldn't this kind of considerations be a scheduler thing? I'm not
+> > really getting why we want to put more "intelligence" in a new governor.
+> > Also, if I understand Ingo's point correctly, I think we want to make
+> > this kind of policy decisions inside the scheduler.
+> 
+> Well sure, put it in kernel/sched/cpufreq.c or wherever. My point was
+> more that we don't have to guess/hardcode race-to-idle assumptions but
+> can actually calculate some of that.
+> 
 
-Thanks for acknowledging the patch.
-
-Will you be merging it or should I refer to somebody else?
-
-Kind regards,
-Michele
-
-On 01/03/16 18:20, Steven Rostedt wrote:
-> On Tue,  1 Mar 2016 17:38:54 +0000
-> Michele Di Giorgio <michele.digiorgio@arm.com> wrote:
->
-> > Userspace tools are not aware of how to convert the enums provided by
-> > the tracepoints to their corresponding strings.
-> >
-> > Adding TRACE_DEFINE_ENUM() macros allows to make the enums available
-> > to userspace to let the tools know what those enum values represent.
-> >
-> > In particular, for thermal zone trip types what we obtained before was
-> > something like:
-> >
-> > kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
-> >                 id=0 trip=1 trip_type=1
-> >
-> > Unfortunately, userspace tools do not know how to convert enum values to
-> > strings and as a consequence they can only forward the enum value to the
-> > output. By using TRACE_DEFINE_ENUM() macros for thermal traces we get the
-> > following trace line:
-> >
-> > kworker/1:1-460   [001]   320.372732: thermal_zone_trip:    thermal_zone=soc
-> >                 id=0 trip=1 trip_type=PASSIVE
-> >
-> > Userspace tools are now able to better understand the meaning of the trip_type
-> > and provide the user with more readable information.
-> >
->
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
->
-> -- Steve
->
-
-IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium. Thank you.
-
+Right, thanks for clarifying!
