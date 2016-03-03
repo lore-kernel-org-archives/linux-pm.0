@@ -1,63 +1,40 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 15/15] mfd: syscon: Fix build of missing ioremap on UM
-Date: Thu, 03 Mar 2016 17:03:41 +0900
-Message-ID: <1456992221-26712-16-git-send-email-k.kozlowski__28178.8031025373$1456992425$gmane$org@samsung.com>
+Subject: [RFC 14/15] usb: xhci: mtk: Add missing MFD_SYSCON dependency on
+ HAS_IOMEM
+Date: Thu, 03 Mar 2016 17:03:40 +0900
+Message-ID: <1456992221-26712-15-git-send-email-k.kozlowski__44508.6726373576$1456992432$gmane$org@samsung.com>
 References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:55598 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932538AbcCCIGT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:06:19 -0500
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:58066 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757074AbcCCIGK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:06:10 -0500
 In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Kishon Vijay Abraham I <kishon@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dmaen
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Since commit c89c0114955a ("mfd: syscon: Set regmap max_register in
-of_syscon_register") the syscon uses ioremap so it fails on COMPILE_TES=
-T
-without HAS_IOMEM:
+The MFD_SYSCON depends on HAS_IOMEM so when selecting it avoid unmet
+direct dependencies.
 
-drivers/mfd/syscon.c: In function =E2=80=98of_syscon_register=E2=80=99:
-drivers/mfd/syscon.c:67:9: error: implicit declaration of function =E2=80=
-=98ioremap=E2=80=99 [-Werror=3Dimplicit-function-declaration]
-  base =3D ioremap(res.start, resource_size(&res));
-         ^
-drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from integ=
-er without a cast [-Wint-conversion]
-  base =3D ioremap(res.start, resource_size(&res));
-       ^
-drivers/mfd/syscon.c:109:2: error: implicit declaration of function =E2=
-=80=98iounmap=E2=80=99 [-Werror=3Dimplicit-function-declaration]
-  iounmap(base);
-
-When selecting MFD_SYSCON, depend on HAS_IOMEM to avoid unmet direct
-dependencies.
-
-Reported-by: kbuild test robot <lkp@intel.com>
-=46ixes: c89c0114955a ("mfd: syscon: Set regmap max_register in of_sysc=
-on_register")
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/mfd/Kconfig | 1 +
+ drivers/usb/host/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index aa21dc55eb15..2e5b1e525a1d 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -1034,6 +1034,7 @@ config MFD_SUN6I_PRCM
-=20
- config MFD_SYSCON
- 	bool "System Controller Register R/W Based on Regmap"
-+	depends on HAS_IOMEM
- 	select REGMAP_MMIO
- 	help
- 	  Select this option to enable accessing system control registers
---=20
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 8c20ebbc049c..f759a778d606 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -45,6 +45,7 @@ config USB_XHCI_PLATFORM
+ 
+ config USB_XHCI_MTK
+ 	tristate "xHCI support for Mediatek MT65xx"
++	depends on HAS_IOMEM	# For MFD_SYSCON
+ 	select MFD_SYSCON
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
+ 	---help---
+-- 
 2.5.0
 
