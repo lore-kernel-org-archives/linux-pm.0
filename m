@@ -1,44 +1,81 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Thu, 3 Mar 2016 17:14:43 +0000
-Message-ID: <20160303171443.GZ18792@e106622-lin>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <1842158.0Xhak3Uaac@vostro.rjw.lan>
- <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
- <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
- <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
- <20160303122030.GN6356@twins.programming.kicks-ass.net>
- <CAJZ5v0ifY7V48Vh8PdErobxiB0_NAweQ3XiSaMgby54varMLkQ@mail.gmail.com>
- <20160303163735.GS6356@twins.programming.kicks-ass.net>
- <20160303165544.GY18792@e106622-lin>
- <20160303165640.GT6356@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC/RFT][PATCH 0/1] cpufreq: New governor based on
+ scheduler-provided utilization data
+Date: Thu, 3 Mar 2016 18:15:34 +0100
+Message-ID: <CAJZ5v0gcNGYAqCrLofMOUzYbgfNZVmPELspt-bLoa-RoTbzDHA@mail.gmail.com>
+References: <5059413.77KZsd2lep@vostro.rjw.lan>
+	<20160303142709.GB10948@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160303165640.GT6356@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:35772 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbcCCRPg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 12:15:36 -0500
+In-Reply-To: <20160303142709.GB10948@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 03/03/16 17:56, Peter Zijlstra wrote:
-> On Thu, Mar 03, 2016 at 04:55:44PM +0000, Juri Lelli wrote:
-> > On 03/03/16 17:37, Peter Zijlstra wrote:
-> > > But given the platform's cpuidle information, maybe coupled with an avg
-> > > idle est, we can compute the benefit of race-to-idle and over provision
-> > > based on that, right?
-> > > 
-> > 
-> > Shouldn't this kind of considerations be a scheduler thing? I'm not
-> > really getting why we want to put more "intelligence" in a new governor.
-> > Also, if I understand Ingo's point correctly, I think we want to make
-> > this kind of policy decisions inside the scheduler.
-> 
-> Well sure, put it in kernel/sched/cpufreq.c or wherever. My point was
-> more that we don't have to guess/hardcode race-to-idle assumptions but
-> can actually calculate some of that.
-> 
+On Thu, Mar 3, 2016 at 3:27 PM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> So I wanted to give you some feedback for this, from the scheduler maintainer's
+> POV.
+>
+> Looks like there are two cpufreq modernization efforts, one is this series, the
+> other is Steve Muckle's:
+>
+>   [RFCv7 PATCH 00/10] sched: scheduler-driven CPU frequency selection
+>
+> What I'd like to see from a scheduler metrics usage POV is a single central place,
+> kernel/sched/cpufreq.c, where all the high level ('governor') decisions are made.
+> This is the approach Steve's series takes.
 
-Right, thanks for clarifying!
+The difference between this series and the Steve's one in that respect
+is only the place where the new governor goes.  I can put it into
+kernel/sched/ if you want me to, but it still will depend on some
+things under drivers/cpufreq/.
+
+> That is a central point that has ready access to the scheduler internal
+> utilization metrics.
+>
+> drivers/cpufreq/ would contain legacy governors plus low level drivers that do
+> frequency switching with a well-defined interface.
+>
+> Could you guys work out a single series that implements the sum of the two series?
+> Looks like we are 90% 'there' already.
+
+I'd like to have a clear picture of what you want here, so let me use
+the opportunity to ask you about things.
+
+I've CCed you on many occasions during this discussion and you have
+been silent till now, so I have assumed that you have no objections.
+>From what you're saying now, it looks like that may not be the case,
+though.
+
+I have a bunch of changes queued up for the next cycle that depend on
+things in cpufreq in general to be called from the scheduler on a
+regular basis instead of using timers.  There are two reasons for
+that: first, having to set up a timer for every CPU every 10 ms or so
+is quite a bit of overhead and Thomas doesn't like that from the timer
+wheel management perspective and, second, getting rid of those timers
+allows quite some irritating bugs in cpufreq to be fixed.  That's why
+there is a metric ton of cpufreq cleanups and fixes on top of that in
+my tree.
+
+However, that requires an interface for cpufreq governors to provide
+callbacks to be invoked from the scheduler.  Peter suggested to me how
+that could be done and those callbacks get the scheduler utilization
+numbers as arguments.  From what you're saying now it seems to me that
+you may not agree with that approach.  It looks like you would prefer
+it if the utilization numbers were not passed to those callbacks
+unless they have been provided by the new "scheduler" governor which
+then would reside under kernel/sched/, so there's a clear interface
+separation between the "old style" cpufreq governors and the
+scheduler.
+
+Am I reading this correctly?
+
+Thanks,
+Rafael
