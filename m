@@ -1,113 +1,103 @@
-From: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-Subject: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
-Date: Thu,  3 Mar 2016 22:16:54 +0200
-Message-ID: <1457036214-26136-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:47438 "EHLO
-	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbcCCUQ7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 15:16:59 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 3 Mar 2016 21:20:13 +0100
+Message-ID: <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+	<1842158.0Xhak3Uaac@vostro.rjw.lan>
+	<CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+	<CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+	<CAKfTPtAtF4Yax9RrwjqfPqpfhtUxYRb-PDj+B_sZehEfQgsSsQ@mail.gmail.com>
+	<56D89952.1010606@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <56D89952.1010606@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 
-The pm_runtime_force_suspend() and pm_runtime_force_resume() helpers are
-designed to help driver being RPM-centric by offering an easy way to
-manager runtime PM state during system suspend and resume. The first
-function will force the device into runtime suspend at system suspend
-time, while the second one will perform the reverse operation at system
-resume time.
+On Thu, Mar 3, 2016 at 9:06 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> On 03/03/2016 05:07 AM, Vincent Guittot wrote:
+>> I mainly want to prevent any useless and periodic frequency switch
+>> because of an utilization that changes with the current frequency (if
+>> frequency invariance is not used) and that can make the formula
+>> selects another frequency than the current one. That what i can see
+>> when testing it .
+>>
+>> Sorry for the late reply, i was trying to do some test on my board but
+>> was facing some crash issue (not link with your patchset). So i have
+>> done some tests and i can see such instable behavior. I have generated
+>> a load of 33% at max frequency (3ms runs every 9ms) and i can see the
+>> frequency that toggles without any good reason. Saying that, i can see
+>> similar thing with ondemand.
+>
+> FWIW I ran some performance numbers on my chromebook 2. Initially I
+> forgot to bring in the frequency invariance support but that yielded an
+> opportunity to see the impact of it.
+>
+> The tests below consist of a periodic workload. The OH (overhead)
+> numbers show how close the workload got to running as slow as fmin (100%
+> = as slow as powersave gov, 0% = as fast as perf gov). The OR (overrun)
+> number is the count of instances where the busy work exceeded the period.
+>
+> First a comparison of schedutil with and without frequency invariance.
+> Run and period are in milliseconds.
+>
+>                         scu (no inv)    scu (w/inv)
+> run     period  busy %  OR      OH      OR      OH
+> 1       100     1.00%   0       79.72%  0       95.86%
+> 10      1000    1.00%   0       24.52%  0       71.61%
+> 1       10      10.00%  0       21.25%  0       41.78%
+> 10      100     10.00%  0       26.06%  0       47.96%
+> 100     1000    10.00%  0       6.36%   0       26.03%
+> 6       33      18.18%  0       15.67%  0       31.61%
+> 66      333     19.82%  0       8.94%   0       29.46%
+> 4       10      40.00%  0       6.26%   0       12.93%
+> 40      100     40.00%  0       6.93%   2       14.08%
+> 400     1000    40.00%  0       1.65%   0       11.58%
+> 5       9       55.56%  0       3.70%   0       7.70%
+> 50      90      55.56%  1       4.19%   6       8.06%
+> 500     900     55.56%  0       1.35%   5       6.94%
+> 9       12      75.00%  0       1.60%   56      3.59%
+> 90      120     75.00%  0       1.88%   21      3.94%
+> 900     1200    75.00%  0       0.73%   4       4.41%
+>
+> Frequency invariance causes schedutil overhead to increase noticeably. I
+> haven't dug into traces or anything. Perhaps this is due to the
+> algorithm overshooting then overcorrecting etc., I do not yet know.
 
-However, the pm_runtime_force_resume() really forces resume, regarding
-of whether the device was running or already suspended before the call
-to pm_runtime_force_suspend(). This results in devices being runtime
-resumed at system resume time when they shouldn't.
+So as I said, the formula I used didn't take invariance into account,
+so that's quite as expected.
 
-Fix this by recording whether the device has been forcefully suspended
-in pm_runtime_force_suspend() and condition resume in
-pm_runtime_force_resume() to that state.
+> Here is a comparison, with frequency invariance, of ondemand and
+> interactive with schedfreq and schedutil. The first two columns (run and
+> period) are omitted so the table will fit.
+>
+>         ondemand        interactive     schedfreq       schedutil
+> busy %  OR      OH      OR      OH      OR      OH      OR      OH
+> 1.00%   0       68.96%  0       100.04% 0       78.49%  0       95.86%
+> 1.00%   0       25.04%  0       22.59%  0       72.56%  0       71.61%
+> 10.00%  0       21.75%  0       63.08%  0       52.40%  0       41.78%
+> 10.00%  0       12.17%  0       14.41%  0       17.33%  0       47.96%
+> 10.00%  0       2.57%   0       2.17%   0       0.29%   0       26.03%
+> 18.18%  0       12.39%  0       9.39%   0       17.34%  0       31.61%
+> 19.82%  0       3.74%   0       3.42%   0       12.26%  0       29.46%
+> 40.00%  2       6.26%   1       12.23%  0       6.15%   0       12.93%
+> 40.00%  0       0.47%   0       0.05%   0       2.68%   2       14.08%
+> 40.00%  0       0.60%   0       0.50%   0       1.22%   0       11.58%
+> 55.56%  2       4.25%   5       5.97%   0       2.51%   0       7.70%
+> 55.56%  0       1.89%   0       0.04%   0       1.71%   6       8.06%
+> 55.56%  0       0.50%   0       0.47%   0       1.82%   5       6.94%
+> 75.00%  2       1.65%   1       0.46%   0       0.26%   56      3.59%
+> 75.00%  0       1.68%   0       0.05%   0       0.49%   21      3.94%
+> 75.00%  0       0.28%   0       0.23%   0       0.62%   4       4.41%
+>
+> Aside from the 2nd and 3rd tests schedutil is showing decreased
+> performance across the board. The fifth test is particularly bad.
 
-All current users of pm_runtime_force_resume() call the function
-uncontionally in their system resume handler (some actually set it as
-the resume handler), all after calling pm_runtime_force_suspend() at
-system suspend time. The change in behaviour should thus be safe.
+I guess you mean performance in terms of the overhead?
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
----
- drivers/base/power/runtime.c | 12 +++++++++---
- include/linux/pm.h           |  1 +
- 2 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 4c7055009bd6..ad2189294c9b 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1400,6 +1400,7 @@ void pm_runtime_init(struct device *dev)
- 	pm_suspend_ignore_children(dev, false);
- 	dev->power.runtime_auto = true;
- 
-+	dev->power.is_force_suspended = false;
- 	dev->power.request_pending = false;
- 	dev->power.request = RPM_REQ_NONE;
- 	dev->power.deferred_resume = false;
-@@ -1475,6 +1476,7 @@ int pm_runtime_force_suspend(struct device *dev)
- 		goto err;
- 
- 	pm_runtime_set_suspended(dev);
-+	dev->power.is_force_suspended = true;
- 	return 0;
- err:
- 	pm_runtime_enable(dev);
-@@ -1483,13 +1485,13 @@ err:
- EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
- 
- /**
-- * pm_runtime_force_resume - Force a device into resume state.
-+ * pm_runtime_force_resume - Force a device into resume state if needed.
-  * @dev: Device to resume.
-  *
-  * Prior invoking this function we expect the user to have brought the device
-  * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-- * those actions and brings the device into full power. We update the runtime PM
-- * status and re-enables runtime PM.
-+ * those actions and bring the device back to its runtime PM state before forced
-+ * suspension. We update the runtime PM status and re-enables runtime PM.
-  *
-  * Typically this function may be invoked from a system resume callback to make
-  * sure the device is put into full power state.
-@@ -1499,6 +1501,9 @@ int pm_runtime_force_resume(struct device *dev)
- 	int (*callback)(struct device *);
- 	int ret = 0;
- 
-+	if (!dev->power.is_force_suspended)
-+		goto out;
-+
- 	callback = RPM_GET_CALLBACK(dev, runtime_resume);
- 
- 	if (!callback) {
-@@ -1510,6 +1515,7 @@ int pm_runtime_force_resume(struct device *dev)
- 	if (ret)
- 		goto out;
- 
-+	dev->power.is_force_suspended = false;
- 	pm_runtime_set_active(dev);
- 	pm_runtime_mark_last_busy(dev);
- out:
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6a5d654f4447..bec15e0f244e 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -596,6 +596,7 @@ struct dev_pm_info {
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-+	unsigned int		is_force_suspended:1;
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
--- 
-Regards,
-
-Laurent Pinchart
-
+Thanks,
+Rafael
