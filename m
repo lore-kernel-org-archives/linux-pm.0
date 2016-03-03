@@ -1,313 +1,226 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 4/4] thermal: show the sub thermal zones in sysfs
-Date: Wed, 2 Mar 2016 19:17:02 -0800
-Message-ID: <20160303031700.GB3379@localhost.localdomain>
+Subject: Re: [PATCH v3 2/4] devicetree: bindings: let thermal-sensor point to
+ other thermal zones
+Date: Wed, 2 Mar 2016 19:19:51 -0800
+Message-ID: <20160303031951.GC3379@localhost.localdomain>
 References: <1448464186-26289-1-git-send-email-javi.merino@arm.com>
- <1448464186-26289-5-git-send-email-javi.merino@arm.com>
+ <1448464186-26289-3-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:34558 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754085AbcCCDRG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 22:17:06 -0500
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34945 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbcCCDT4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Mar 2016 22:19:56 -0500
 Content-Disposition: inline
-In-Reply-To: <1448464186-26289-5-git-send-email-javi.merino@arm.com>
+In-Reply-To: <1448464186-26289-3-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 
-On Wed, Nov 25, 2015 at 03:09:46PM +0000, Javi Merino wrote:
-> When a thermal zone is created that has sub thermal zones via
-> devicetree or via thermal_zone_add_subtz() expose that relationship in
-> sysfs.
+On Wed, Nov 25, 2015 at 03:09:44PM +0000, Javi Merino wrote:
+> The thermal-sensor property of the thermal zone node accepts phandles to
+> thermal sensors.  However, thermal zones can be created as an
+> aggregation of other thermal zones.  Extend the thermal-sensors property
+> to allow phandles to other thermal zones.  This patch also adds an
+> example that showcases how a board thermal zone can be created from the
+> aggregation of the cpu, gpu and lcd thermal zones.
 > 
 > Cc: Zhang Rui <rui.zhang@intel.com>
 > Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> Cc: Kumar Gala <galak@codeaurora.org>
+> Cc: devicetree@vger.kernel.org
 > Signed-off-by: Javi Merino <javi.merino@arm.com>
 > ---
->  Documentation/thermal/sysfs-api.txt |  33 ++++++++++
->  drivers/thermal/thermal_core.c      | 125 ++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h             |   3 +
->  3 files changed, 161 insertions(+)
 > 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index dda24a0bdeec..5636a531f0b1 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -219,11 +219,16 @@ Thermal zone device sys I/F, created once it's registered:
->      |---temp:			Current temperature
->      |---mode:			Working mode of the thermal zone
->      |---policy:			Thermal governor used for this zone
-> +    |---aggregation_function:	Function to use when aggregating the
-> +				temperature of this zone's slave thermal zones
->      |---available_policies:	Available thermal governors for this zone
->      |---trip_point_[0-*]_temp:	Trip point temperature
->      |---trip_point_[0-*]_type:	Trip point type
->      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
->      |---emul_temp:		Emulated temperature set node
-> +    |---subtz[0-*]:		Slave thermal zones of this thermal zone
-> +    |---subtz[0-*]_weight:	Weight of the slave thermal zone on
-> +				this thermal zone
->      |---sustainable_power:      Sustainable dissipatable power
->      |---k_po:                   Proportional term during temperature overshoot
->      |---k_pu:                   Proportional term during temperature undershoot
-> @@ -296,6 +301,19 @@ policy
->  	One of the various thermal governors used for a particular zone.
->  	RW, Required
+> Notes:
+>     Hi devicetree,
+>     
+>     Is it ok to extend the definition of the thermal-sensors property like
+>     this?  IOW are phandles strongly typed?
+> 
+>  .../devicetree/bindings/thermal/thermal.txt        | 154 ++++++++++++++++++++-
+>  1 file changed, 151 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> index 41b817f7b670..52b7e9ae3b4d 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> @@ -145,9 +145,12 @@ Required properties:
+>    Size: one cell
 >  
-> +aggregation_function
-> +	The aggregation function used to calculate the temperature of
-> +	this thermal zone when it has sub thermal zones.  It can
-> +	either be "max" or "weighted_average".  If it's "max", the
-> +	temperature of this thermal zone is the maximum of the
-> +	temperatures of the sub thermal zones.  If
-> +	aggregation_function is "weighted_average", the temperature of
-> +	this thermal zone is the weighted average of the temperatures
-> +	of the sub thermal zones.  The weights are specified in
-> +	subtz[0-*]_weights.  The aggregation_function sysfs entry
-> +	doesn't exist for thermal zones without sub thermal zones.
-> +	RW, Optional
-> +
->  available_policies
->  	Available thermal governors which can be used for a particular zone.
->  	RO, Required
-> @@ -359,6 +377,21 @@ emul_temp
->  	  because userland can easily disable the thermal policy by simply
->  	  flooding this sysfs node with low temperature values.
+>  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
+> -  Type: list of 	used while monitoring the thermal zone.
+> -  phandles + sensor
+> -  specifier
+> +  Type: list of 	used while monitoring the thermal zone. The phandles
+> +  phandles + sensor	can point to thermal sensors or other thermal zone
+> +  specifier		nodes. If it points to other thermal zone
+> +			nodes you should omit the sensor specifier
+> +			and set #thermal-sensor-cells to 0 for the
+> +			thermal zone.
 >  
-> +subtz[0-*]
-> +	sysfs link to the slave thermal zone device.
-> +	RO, Optional
+>  - trips:		A sub-node which is a container of only trip point nodes
+>    Type: sub-node	required to describe the thermal zone.
+> @@ -603,3 +606,148 @@ thermal-zones {
+>  The above example is a mix of previous examples, a sensor IP with several internal
+>  sensors used to monitor different zones, one of them is composed by several sensors and
+>  with different cooling devices.
 > +
-> +subtz[0-*]_weight
-> +	The influence of subtz[0-*] in this thermal zone.  This
-> +	parameter is only used when using "weighted_average" as the
-> +	aggregation_function.  When calculating the temperature of
-> +	this thermal zone, the temperature of each of the thermal
-> +	zone's slaves is multiplied by its weight.  The result is
-> +	divided by the sum of all weights.  If all weights are 0,
-> +	the temperature of this thermal zone is the average of the
-> +	temperatures of the sub thermal zones.
-> +	RW, Optional
+> +(e) Board thermal with stacked thermal zones
 > +
->  sustainable_power
->  	An estimate of the sustained power that can be dissipated by
->  	the thermal zone. Used by the power allocator governor. For
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 98bdb63b3b95..2bb1af0a9349 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -63,14 +63,23 @@ static struct thermal_governor *def_governor;
->  
->  /**
->   * struct thermal_zone_link - a link between "master" and "slave" thermal zones
-> + * @id:		link number in the master thermal zone
-> + * @name:	filename in the master thermal zone's sysfs directory
->   * @weight:	weight of the @slave thermal zone in the master
->   *		calculation.  Used when the master thermal zone's
->   *		aggregation function is THERMAL_AGG_WEIGHTED_AVG
-> + * @weight_attr_name:	filename of the weight attribute in the master's thermal
-> + *			zone sysfs directory
-> + * @weight_attr:	device attribute for the weight entry in sysfs
->   * @slave:	pointer to the slave thermal zone
->   * @node:	list node in the master thermal zone's slave_tzs list.
->   */
->  struct thermal_zone_link {
-> +	int id;
-> +	char name[THERMAL_NAME_LENGTH];
->  	int weight;
-> +	char weight_attr_name[THERMAL_NAME_LENGTH];
+> +Instead of setting up one thermal zone combining multiple thermal
+> +zones and multiple trip points for each cooling device, we can create
+> +a hierarchy of thermal zones.
+> +
+> +#include <dt-bindings/thermal/thermal.h>
+> +
+> +&i2c1 {
+> +	...
+> +	/*
+> +	 * An IC with several temperature sensor.
+> +	 */
+> +	adc_dummy: sensor@0x50 {
+> +		...
+> +		#thermal-sensor-cells = <1>; /* sensor internal ID */
+> +	};
+> +};
+> +
+> +thermal-zones {
+> +
+> +        cpu_thermal: cpu_thermal {
+> +		polling-delay-passive = <1000>; /* milliseconds */
+> +		polling-delay = <2500>; /* milliseconds */
+> +
+> +		sustainable-power = <2500>;
+> +
+> +		thermal-sensors = <&adc_dummy 0>
+> +
+> +		trips {
+> +			cpu_trip: cpu-trip {
+> +				temperature = <60000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "passive";
+> +			};
+> +                };
+> +
+> +		cooling-maps {
+> +			map0 {
+> +				trip = <&cpu_trip>;
+> +				cooling-device = <&cpu0 0 2>;
+> +			};
+> +                };
+> +        };
+> +
+> +        gpu_thermal: gpu_thermal {
+> +		polling-delay-passive = <1000>; /* milliseconds */
+> +		polling-delay = <2500>; /* milliseconds */
+> +
+> +		sustainable-power = <2500>;
+> +
+> +		thermal-sensors = <&adc_dummy 2>
+> +
+> +		trips {
+> +			gpu_trip: gpu-trip {
+> +				temperature = <55000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "passive";
+> +			}
+> +                };
+> +
+> +		cooling-maps {
+> +			map0 {
+> +				trip = <&gpu_trip>;
+> +				cooling-device = <&gpu0 0 2>;
+> +			};
+> +                };
+> +        };
+> +
+> +        lcd_thermal: lcd_thermal {
+> +		polling-delay-passive = <1000>; /* milliseconds */
+> +		polling-delay = <2500>; /* milliseconds */
+> +
+> +		sustainable-power = <2500>;
+> +
+> +		thermal-sensors = <&adc_dummy 1>
+> +
+> +		trips {
+> +			lcd_trip: lcp-trip {
+> +				temperature = <53000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "passive";
+> +			};
+> +                };
+> +
+> +		cooling-maps {
+> +			map0 {
+> +				trip = <&lcd_trip>;
+> +				cooling-device = <&lcd0 5 10>;
+> +			};
+> +                };
+> +        };
+> +
+> +	board_thermal: board-thermal {
+> +		polling-delay-passive = <1000>; /* milliseconds */
+> +		polling-delay = <2500>; /* milliseconds */
+> +
+> +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
 
-Are you sure you need this?
+All the participating thermal zones need to have a #thermal-sensor-cells
+entry (missing above).
 
-> +	struct device_attribute weight_attr;
->  	struct thermal_zone_device *slave;
->  	struct list_head node;
->  };
-> @@ -990,6 +999,45 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
->  static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
->  
->  static ssize_t
-> +agg_func_show(struct device *dev, struct device_attribute *devattr, char *buf)
-> +{
-> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
 > +
-> +	if (tz->slave_agg_function == THERMAL_AGG_MAX)
-> +		return sprintf(buf, "max\n");
-> +	else if (tz->slave_agg_function == THERMAL_AGG_WEIGHTED_AVG)
-> +		return sprintf(buf, "weighted_average\n");
-> +	else
-> +		return sprintf(buf, "(invalid)\n");
-> +}
+> +		sustainable-power = <2500>;
 > +
-> +static ssize_t
-> +agg_func_store(struct device *dev, struct device_attribute *attr,
-> +	       const char *buf, size_t count)
-> +{
-> +	int ret = 0;
-> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> +	char func_name[THERMAL_NAME_LENGTH];
+> +		trips {
+> +			warm_trip: warm-trip {
+> +				temperature = <62000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "passive";
+> +			};
+> +			crit_trip: crit-trip {
+> +				temperature = <68000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "critical";
+> +			};
+> +		};
 > +
-> +	snprintf(func_name, sizeof(func_name), "%s", buf);
+> +		cooling-maps {
+> +			map0 {
+> +				trip = <&warm_trip>;
+> +				cooling-device = <&cpu0 2 2>;
+> +				contribution = <55>;
+> +			};
+> +			map1 {
+> +				trip = <&warm_trip>;
+> +				cooling-device = <&gpu0 2 2>;
+> +				contribution = <20>;
+> +			};
+> +			map2 {
+> +				trip = <&lcd_trip>;
+> +				cooling-device = <&lcd0 7 10>;
+> +				contribution = <15>;
+> +			};
+> +		};
+> +	};
+> +};
 > +
-> +	mutex_lock(&tz->lock);
+> +The above example is a different take at example (d).  We create one
+> +thermal zone per sensor: cpu_thermal, gpu_thermal and lcd_thermal.
+> +Each of which has its own trip point for each own cooling device.  We
+> +then define a board_thermal thermal zone that is a combination of all
+> +the other thermal zones.  If the board hits its warm_trip, then all
+> +cooling devices are throttled.
 > +
-> +	if (sysfs_streq(func_name, "max"))
-> +		tz->slave_agg_function = THERMAL_AGG_MAX;
-> +	else if (sysfs_streq(func_name, "weighted_average"))
-> +		tz->slave_agg_function = THERMAL_AGG_WEIGHTED_AVG;
-> +	else
-> +		ret = -EINVAL;
-> +
-> +	mutex_unlock(&tz->lock);
-> +
-> +	return ret ? ret : count;
-> +}
-> +static DEVICE_ATTR(aggregation_function, S_IRUGO | S_IWUSR, agg_func_show,
-> +		   agg_func_store);
-> +
-> +static ssize_t
->  sustainable_power_show(struct device *dev, struct device_attribute *devattr,
->  		       char *buf)
->  {
-> @@ -1305,6 +1353,35 @@ thermal_cooling_device_weight_store(struct device *dev,
->  
->  	return count;
->  }
-> +
-> +static ssize_t
-> +thermal_subtz_weight_show(struct device *dev, struct device_attribute *attr,
-> +			  char *buf)
-> +{
-> +	struct thermal_zone_link *link;
-> +
-> +	link = container_of(attr, struct thermal_zone_link, weight_attr);
-> +
-> +	return sprintf(buf, "%d\n", link->weight);
-> +}
-> +
-> +static ssize_t
-> +thermal_subtz_weight_store(struct device *dev, struct device_attribute *attr,
-> +			   const char *buf, size_t count)
-> +{
-> +	struct thermal_zone_link *link;
-> +	int ret, weight;
-> +
-> +	ret = kstrtoint(buf, 0, &weight);
-> +	if (ret)
-> +		return ret;
-> +
-> +	link = container_of(attr, struct thermal_zone_link, weight_attr);
-> +	link->weight = weight;
-> +
-> +	return count;
-> +}
-> +
-
-Now thinking of this, I see how you could input:
-
-(0.25 * T0 - 2C) + (0.75 * T1 + 1C) //where T0 is sensor of subtz0 and
-T1 is sensor of subtz1
-
-for example. Which is a typical case, from what I have been seeing. 
-
-How about if we change weight to: (ak/bk)*Tk + ck ?
-
->  /* Device management */
->  
->  /**
-> @@ -2135,6 +2212,47 @@ int thermal_zone_add_subtz(struct thermal_zone_device *tz,
->  	link->weight = weight;
->  	list_add_tail(&link->node, &tz->slave_tzs);
->  
-> +	if (list_is_singular(&tz->slave_tzs)) {
-> +		ret = device_create_file(&tz->device,
-> +					 &dev_attr_aggregation_function);
-> +		if (ret)
-> +			pr_warn("Failed to create aggregation_function sysfs file: %d\n",
-> +				ret);
-> +			/*
-> +			 * Fall through: we failed to create the sysfs file, but
-> +			 * it's not fatal
-> +			 */
-> +	}
-> +
-> +	ret = get_idr(&tz->link_idr, NULL, &link->id);
-> +	if (ret) {
-> +		/*
-> +		 * Even if we can't create the symlink in sysfs,
-> +		 * we've linked the thermal zones, so return success
-> +		 */
-> +		ret = 0;
-> +		goto unlock;
-> +	}
-> +
-> +	snprintf(link->name, ARRAY_SIZE(link->name), "subtz%d", link->id);
-> +	ret = sysfs_create_link(&tz->device.kobj, &subtz->device.kobj,
-> +				link->name);
-> +	if (ret)
-> +		pr_warn("Failed to create symlink to sub thermal zone: %d\n",
-> +			ret);
-> +
-> +	snprintf(link->weight_attr_name, THERMAL_NAME_LENGTH, "subtz%d_weight",
-> +		 link->id);
-> +	sysfs_attr_init(&link->weight_attr.attr);
-> +	link->weight_attr.attr.name = link->weight_attr_name;
-> +	link->weight_attr.attr.mode = S_IWUSR | S_IRUGO;
-> +	link->weight_attr.show = thermal_subtz_weight_show;
-> +	link->weight_attr.store = thermal_subtz_weight_store;
-> +	ret = device_create_file(&tz->device, &link->weight_attr);
-> +	if (ret)
-> +		pr_warn("Failed to create sub thermal zone weight: %d\n",
-> +			ret);
-> +
->  	ret = 0;
->  
->  unlock:
-> @@ -2166,6 +2284,10 @@ int thermal_zone_del_subtz(struct thermal_zone_device *tz,
->  
->  	list_for_each_entry(link, &tz->slave_tzs, node) {
->  		if (link->slave == subtz) {
-> +			device_remove_file(&tz->device, &link->weight_attr);
-> +			sysfs_remove_link(&tz->device.kobj, link->name);
-> +			release_idr(&tz->link_idr, NULL, link->id);
-> +
->  			list_del(&link->node);
->  			kfree(link);
->  
-> @@ -2174,6 +2296,9 @@ int thermal_zone_del_subtz(struct thermal_zone_device *tz,
->  		}
->  	}
->  
-> +	if (list_empty(&tz->slave_tzs))
-> +		device_remove_file(&tz->device, &dev_attr_aggregation_function);
-> +
->  	mutex_unlock(&tz->lock);
->  
->  	return ret;
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index dc3d2ab77ab6..f14884353230 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -192,6 +192,8 @@ struct thermal_attr {
->   * @thermal_instances:	list of &struct thermal_instance of this thermal zone
->   * @idr:	&struct idr to generate unique id for this zone's cooling
->   *		devices
-> + * @link_idr:	&struct idr to generate unique ids for this zone's links to
-> + *		other thermal zones
->   * @lock:	lock to protect thermal_instances list
->   * @node:	node in thermal_tz_list (in thermal_core.c)
->   * @poll_queue:	delayed work for polling
-> @@ -221,6 +223,7 @@ struct thermal_zone_device {
->  	void *governor_data;
->  	struct list_head thermal_instances;
->  	struct idr idr;
-> +	struct idr link_idr;
->  	struct mutex lock;
->  	struct list_head node;
->  	struct delayed_work poll_queue;
+> +This example illustrates how we can throttle each device individually
+> +if its too hot and at the same time have some control over the whole
+> +system.
 > -- 
 > 1.9.1
 > 
