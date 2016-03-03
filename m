@@ -1,48 +1,33 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Thu, 3 Mar 2016 14:03:09 +0100
-Message-ID: <20160303130309.GO6356@twins.programming.kicks-ass.net>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <1456190570-4475-4-git-send-email-smuckle@linaro.org>
- <8427745.Y8N2bqC3SO@vostro.rjw.lan>
- <56CF9D8F.7010607@linaro.org>
- <20160302074910.10178.35029@quark.deferred.io>
+Subject: Re: [PATCH 1/6] cpufreq: Reduce cpufreq_update_util() overhead a bit
+Date: Thu, 3 Mar 2016 14:04:24 +0100
+Message-ID: <20160303130424.GP6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <3575770.L1lplNLqVv@vostro.rjw.lan>
+ <20160303114701.GT18792@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:37887 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbcCCNE2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 08:04:28 -0500
 Content-Disposition: inline
-In-Reply-To: <20160302074910.10178.35029@quark.deferred.io>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ricky Liang <jcliang@chromium.org>
+In-Reply-To: <20160303114701.GT18792@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Tue, Mar 01, 2016 at 11:49:10PM -0800, Michael Turquette wrote:
+On Thu, Mar 03, 2016 at 11:47:01AM +0000, Juri Lelli wrote:
+
+> > +#ifdef CONFIG_LOCKDEP
+> > +	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
+> > +#endif
+> >  
+> >  	data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
 > 
-> In my over-simplified view of the scheduler, it would be great if we
-> could have a backdoor mechanism to place the frequency transition
-> kthread onto a runqueue from within the schedule() context and dispense
-> with the irq_work stuff in Steve's series altogether.
+> I think you need to s/rcu_dereference/rcu_dereference_sched/ here or
+> RCU will complain:
 
-This is actually very very hard :/
-
-So while there is something similar for workqueues,
-try_to_wake_up_local(), that will not work for the cpufreq stuff.
-
-The main problem is that schedule() is done with rq->lock held, but
-wakeups need p->pi_lock, but it so happens that rq->lock nests inside of
-p->pi_lock.
-
-Now, the workqueue stuff with try_to_wake_up_local() can get away with
-dropping rq->lock, because of where it is called, way early in
-schedule() before we really muck things up.
-
-The cpufreq hook otoh is called all over the place.
-
-The second problem is that doing a wakeup will in fact also end up
-calling the cpufreq hook, so you're back in recursion hell.
-
-The third problem is that cpufreq is called from wakeups, which would
-want to do another wakeup (see point 2), but this also means we have to
-nest p->pi_lock, and we can't really do that either.
+Ah, indeed ;-)
