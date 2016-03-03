@@ -1,61 +1,56 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] jz4740-battery: Correct voltage change check
-Date: Thu, 3 Mar 2016 15:21:09 +0100
-Message-ID: <20160303142109.GC29689@earth>
-References: <1456675548-16692-1-git-send-email-maarten@treewalker.org>
+Subject: Re: [PATCH] power_supply: 88pm860x_charger: do not pass NULL to
+ power_supply_put
+Date: Thu, 3 Mar 2016 15:21:30 +0100
+Message-ID: <20160303142129.GD29689@earth>
+References: <1456689478-7318-1-git-send-email-colin.king@canonical.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="xesSdrSSBC0PokLI"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34976 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754693AbcCCOVO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Mar 2016 09:21:14 -0500
+	protocol="application/pgp-signature"; boundary="RhUH2Ysw6aD5utA4"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1456675548-16692-1-git-send-email-maarten@treewalker.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1456689478-7318-1-git-send-email-colin.king@canonical.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maarten ter Huurne <maarten@treewalker.org>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---xesSdrSSBC0PokLI
+--RhUH2Ysw6aD5utA4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sun, Feb 28, 2016 at 05:05:48PM +0100, Maarten ter Huurne wrote:
-> The check is supposed to avoid redundant update notifications, so it
-> should check for the difference between old and new voltage exceeding
-> a threshold.
->=20
-> Also make sure the result of a failed read is never stored.
+On Sun, Feb 28, 2016 at 07:57:58PM +0000, Colin King wrote:
+> In the case where power_supply_get_by_name returns NULL the current
+> error return path calls power_supply_put with a NULL psy which will
+> cause a null pointer dereference.  Avoid this with an immediate
+> return.
 
 Thanks, queued.
 
 -- Sebastian
 
---xesSdrSSBC0PokLI
+--RhUH2Ysw6aD5utA4
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJW2EhVAAoJENju1/PIO/qagXEP/RhkwVSP/+OhbtjsL4C3LtxT
-64fDRTRsi94jIVUUWMCR5g4Fuh8UNo9iOmzhfV0pZQNf/EaTb+iojChqOM6do4Q2
-9AeooP4aKEfFO5gmXNCEQECdVL6XROte0kofwFaX04KATLdIacu5m+A/joBunQ+r
-nJWjhDSCIfEtsI8M46WTnmJrSvJh98NS0c2rjJ4hCswZCEytRzylvGRA+vHTLpqj
-oEDiJkJPzdtyyBgqeftT4ZPKbxD1YBp/0h9JbuMirOjCPQMWuZRY8yFZAcVaVyoF
-oOpJ8SZU98Qkvh+T9l+WBW38DkcgUZwDTjL6bPpmP7TMWR/WNxfg7/ATCaxZ7ZBY
-q7678PTm/VX6qvSV4UfKx7TEE0KhweCG9SRK2KoUmiuGs5PjsCNru4deAg4ApPQd
-uP/GkGXtjNcQ82dabmnWBAX/2em2P2hilFANJcmMeEjkog68olHB34zdaJoC/pnh
-GwKzyy21RWK/WieBGVlBfGIDbRayk90JRHSrklyRG9TGbs+MIrk2lNppXD16qRct
-743uo2XN5GzNRhqNfaG45sSr7OA8MaXfRHoT5EB6otNeeUTWBwsbOrTjEPq1ld3d
-eRGqkoM5MwdK16KmhT3cgDKwvM90zML+Zyxw9AfOlUgUcHBRAxVcFCB2AQ7OzVbW
-evsew5iedvYCEoUVmw4s
-=Aqs6
+iQIcBAEBCgAGBQJW2EhpAAoJENju1/PIO/qadcIQAKOwD6YX/+Ll8wHidQkBUfp6
+OyfkhEyILzUK8b/vYCjdhd3vkRc4qFzmih68AAunSOvrtL9B61Gnkn9ZxVdmU/zF
+EeFbuI6B+cgBixigYJ0T+CXTyjYiKFwvPzB9detvtlK+EpuJGr26ubn4moJurKqv
+GIjh61wQ7JQJovUHy5alP17tVQ2O1U5hb+jXa04hlvlKJQqp3Q5EhssNz0yxGDjl
+9TzM7MUOrutt1nF7C2WpPd869ZDZs66vzqAv+V8sJ37G/Uu5gIH3jJxYSCYGpAAP
+soeOXsMY6BaK+oVJ4ZyIKGnDkh3FQp/OiZ8e+Lj3qmkQxsTNQvqxWQcN29Jb4fSN
+A0tftT0NZsumL7+cHIk/MNfj8/BVQsD8xtTs6FsPLWJKt1nbenazAQgoGwUpMyqG
+sqPzOhfPET1/PCTrhvq+xOtsVqMeja/3DMpwnyhZXIX7efsLXw3ZxrT0M68xLMMX
+Z1p0xeSfIh0qtl8l4ha0asFahmg5+EAminiJ/j6x7NaV+4BCIpnIKrgM9HZL62S6
+wIlXAlJATOu11eOOyRNruBsjgpSiVtW1sgE4D/0bHc6PCnMLNyoAEvX2YMMd4Dj1
+aA2sIlxClCaKh587bUXVJSeGUC1Pd84cKMtdh/H/27mRCIIb3YfPzxOzv7yLhuPP
+l4tsvLzShiW445XZikcx
+=HFbD
 -----END PGP SIGNATURE-----
 
---xesSdrSSBC0PokLI--
+--RhUH2Ysw6aD5utA4--
