@@ -1,62 +1,67 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/6] cpufreq: governor: New data type for management part
- of dbs_data
-Date: Thu, 3 Mar 2016 11:23:59 +0530
-Message-ID: <20160303055359.GI2891@vireshk-i7>
+Subject: Re: [PATCH 5/6] cpufreq: Support for fast frequency switching
+Date: Thu, 3 Mar 2016 11:30:03 +0530
+Message-ID: <20160303060003.GJ2891@vireshk-i7>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <3567040.O8oI5B24Ng@vostro.rjw.lan>
+ <26020775.9hJG2SHiH2@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:34164 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbcCCFyR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 00:54:17 -0500
-Received: by mail-pf0-f182.google.com with SMTP id 4so8542678pfd.1
-        for <linux-pm@vger.kernel.org>; Wed, 02 Mar 2016 21:54:17 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3567040.O8oI5B24Ng@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <26020775.9hJG2SHiH2@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 02-03-16, 03:08, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> In addition to fields representing governor tunables, struct dbs_data
-> contains some fields needed for the management of objects of that
-> type.  As it turns out, that part of struct dbs_data may be shared
-> with (future) governors that won't use the common code used by
-> "ondemand" and "conservative", so move it to a separate struct type
-> and modify the code using struct dbs_data to follow.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |   15 +++--
->  drivers/cpufreq/cpufreq_governor.c     |   90 ++++++++++++++++++++-------------
->  drivers/cpufreq/cpufreq_governor.h     |   36 +++++++------
->  drivers/cpufreq/cpufreq_ondemand.c     |   19 ++++--
->  4 files changed, 97 insertions(+), 63 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+On 02-03-16, 03:12, Rafael J. Wysocki wrote:
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-> @@ -41,6 +41,13 @@
->  /* Ondemand Sampling types */
->  enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -1772,6 +1772,39 @@ EXPORT_SYMBOL(cpufreq_unregister_notifie
+>   *                              GOVERNORS                            *
+>   *********************************************************************/
 >  
-> +struct gov_tunables {
-> +	struct kobject kobj;
-> +	struct list_head policy_list;
-> +	struct mutex update_lock;
-> +	int usage_count;
-> +};
+> +/**
+> + * cpufreq_driver_fast_switch - Carry out a fast CPU frequency switch.
+> + * @policy: cpufreq policy to switch the frequency for.
+> + * @target_freq: New frequency to set (may be approximate).
+> + * @relation: Relation to use for frequency selection.
+> + *
+> + * Carry out a fast frequency switch from interrupt context.
+> + *
+> + * This function must not be called if policy->fast_switch_possible is unset.
+> + *
+> + * Governors calling this function must guarantee that it will never be invoked
+> + * twice in parallel for the same policy and that it will never be called in
+> + * parallel with either ->target() or ->target_index() for the same policy.
+> + *
+> + * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
+> + * callback, the hardware configuration must be preserved.
+> + */
+> +void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+> +				unsigned int target_freq, unsigned int relation)
+> +{
+> +	unsigned int freq;
+> +
+> +	if (target_freq == policy->cur)
 
-Everything else looks fine, but I don't think that you have named it
-properly. Every thing else present in struct dbs_data are tunables,
-but not this. And so gov_tunables doesn't suit at all here..
+Maybe an unlikely() here ?
+
+> +		return;
+> +
+> +	freq = cpufreq_driver->fast_switch(policy, target_freq, relation);
+> +	if (freq != CPUFREQ_ENTRY_INVALID) {
+> +		policy->cur = freq;
+
+Hmm.. What will happen to the code relying on the cpufreq-notifiers
+now ?
+
+> +		trace_cpu_frequency(freq, smp_processor_id());
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
 
 -- 
 viresh
