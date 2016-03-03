@@ -1,75 +1,41 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 04/14] power: pm2301-charger: use __maybe_unused to hide
- pm functions
-Date: Thu, 3 Mar 2016 15:23:42 +0100
-Message-ID: <20160303142342.GG29689@earth>
-References: <1456934350-1389172-1-git-send-email-arnd@arndb.de>
- <1456934350-1389172-5-git-send-email-arnd@arndb.de>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC/RFT][PATCH 0/1] cpufreq: New governor based on
+ scheduler-provided utilization data
+Date: Thu, 3 Mar 2016 15:27:10 +0100
+Message-ID: <20160303142709.GB10948@gmail.com>
+References: <5059413.77KZsd2lep@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="DNUSDXU7R7AVVM8C"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35413 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbcCCOXq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Mar 2016 09:23:46 -0500
-Content-Disposition: inline
-In-Reply-To: <1456934350-1389172-5-git-send-email-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-
-
---DNUSDXU7R7AVVM8C
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <5059413.77KZsd2lep@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On Wed, Mar 02, 2016 at 04:58:56PM +0100, Arnd Bergmann wrote:
-> The pm2301 charger driver uses nested #ifdefs to check for both
-> CONFIG_PM and CONFIG_PM_SLEEP in an attempt to hide its
-> suspend and runtime-pm operations when they are unused, but
-> it does not hide the clear_lpn_pin() function in the same
-> way, so we get a build warning when everything is
-> disabled:
->=20
-> drivers/power/pm2301_charger.c:123:13: error: 'clear_lpn_pin' defined but=
- not used [-Werror=3Dunused-function]
->=20
-> This removes all the #ifdef and instead uses __maybe_unused
-> annotations to let the compiler know it can silently drop
-> the function definition.
->=20
-> For the PM2XXX_PM_OPS, we can use an IS_ENABLED() check
-> to avoid defining the structure when CONFIG_PM is not set without
-> the #ifdef.
+So I wanted to give you some feedback for this, from the scheduler maintainer's 
+POV.
 
-Thanks, queued.
+Looks like there are two cpufreq modernization efforts, one is this series, the 
+other is Steve Muckle's:
 
--- Sebastian
+  [RFCv7 PATCH 00/10] sched: scheduler-driven CPU frequency selection
 
---DNUSDXU7R7AVVM8C
-Content-Type: application/pgp-signature; name="signature.asc"
+What I'd like to see from a scheduler metrics usage POV is a single central place, 
+kernel/sched/cpufreq.c, where all the high level ('governor') decisions are made.  
+This is the approach Steve's series takes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+That is a central point that has ready access to the scheduler internal 
+utilization metrics.
 
-iQIcBAEBCgAGBQJW2EjuAAoJENju1/PIO/qaAyUP/02c9XWhvC9CfhRD+Zvzt5CA
-U1aixemVD/0c+2Sg7corQ7XaXFVaHB5sBCDPAo3dK248J7ITJYyOC/GpfELeoOkf
-ey8QsPo4rICp8VjRQEkFKFaEgoPyCLEUBEd9JmLKloy2Jipz1ufqMAQhUuI6U9yF
-sW7DalV01LdZEnC0lD8nRFUExZ7HKdUCyGBqOh6mAwilA+cjMZ9Wp1/4bQ3gAcz+
-od2Gu5ZKHAtiQDL/w7qNJ2oSaVCk1ekrH+IrvQUSMQZNdORV6zu0fd735ZEAH+kF
-fwZfUv0wkdIngcpf6s/u5KCvCbb/LjmMNKqLdus3DlwyqCATMLx5FwT1GfKctYSe
-U4kvmzOE28Sd8VUV+/g7sOgwhLD6toeIqLpoAjDDj7ChGbVmk1l2D8IUcTN12SJF
-VDM5ywDg664hfDgna7Y2mpSGT8AHiBm3l2gDSlCgkCRlhPuN2JNrxjJipNejZYfu
-t7e4vTFY2yUc+yzfzBh9KlxgGLHBr8byvTs2cKFpO1Mx1aZZIWlOrBIaJAJERp25
-JID8HcrrKIKPSBFzBnJBgQBpGRT/8JhN2tBZbov/JbWZ/OAR5WBSLKOs2cjbI5G2
-muAAUBhW8VB0q9KXPc/wijxmzW2dD4JTC3+u5hcM72p7yB92DQFj235n1Y35Cpo3
-3xM05rBMpk+LuFUiy+f/
-=bemN
------END PGP SIGNATURE-----
+drivers/cpufreq/ would contain legacy governors plus low level drivers that do 
+frequency switching with a well-defined interface.
 
---DNUSDXU7R7AVVM8C--
+Could you guys work out a single series that implements the sum of the two series? 
+Looks like we are 90% 'there' already.
+
+Thanks,
+
+	Ingo
