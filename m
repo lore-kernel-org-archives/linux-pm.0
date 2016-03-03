@@ -1,52 +1,63 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [rtc-linux] Re: [RFC 04/15] irqchip: st: Add missing MFD_SYSCON
- dependency on HAS_IOMEM
-Date: Thu, 03 Mar 2016 13:28:29 +0100
-Message-ID: <2188157.YL7RR6FeEK@wuerfel>
-References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
- <2506651.J2Z42d81nD@wuerfel>
- <CAJKOXPcZuyicNAaH6CpOe+bTrLtM1k0tVisS_xJXGDrxyZ_i5A@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 3 Mar 2016 12:32:54 +0000
+Message-ID: <20160303123254.GU18792@e106622-lin>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <1842158.0Xhak3Uaac@vostro.rjw.lan>
+ <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+ <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+ <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
+ <20160303122030.GN6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJKOXPcZuyicNAaH6CpOe+bTrLtM1k0tVisS_xJXGDrxyZ_i5A@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, David Brown <david.brown@linaro.org>, netdev@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Andy Gross <andy.gross@linaro.org>, linux-media@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Marc Zyngier <marc.zyngier@arm.com>, linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>Dan Williams <da>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160303122030.GN6356@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 March 2016 21:00:57 Krzysztof Kozlowski wrote:
-> >
-> > Not user visible.
+On 03/03/16 13:20, Peter Zijlstra wrote:
+> On Wed, Mar 02, 2016 at 11:49:48PM +0100, Rafael J. Wysocki wrote:
+> > >>> +       min_f = sg_policy->policy->cpuinfo.min_freq;
+> > >>> +       max_f = sg_policy->policy->cpuinfo.max_freq;
+> > >>> +       next_f = util > max ? max_f : min_f + util * (max_f - min_f) / max;
 > 
-> Hmmm... you are right (here and in other patches) but why am I getting
-> all these errors:
-> warning: (ST_IRQCHIP && HIP04_ETH && STMMAC_PLATFORM && DWMAC_IPQ806X
-> && DWMAC_LPC18XX && DWMAC_ROCKCHIP && DWMAC_SOCFPGA && DWMAC_STI &&
-> TI_CPSW && PINCTRL_ROCKCHIP && PINCTRL_DOVE && POWER_RESET_KEYSTONE &&
-> S3C2410_WATCHDOG && VIDEO_OMAP3 && VIDEO_S5P_FIMC && USB_XHCI_MTK &&
-> RTC_DRV_AT91SAM9 && LPC18XX_DMAMUX && VIDEO_OMAP4 && HWSPINLOCK_QCOM
-> && ATMEL_ST && QCOM_GSBI && PHY_HI6220_USB) selects MFD_SYSCON which
-> has unmet direct dependencies (HAS_IOMEM)
-> ?
-> (ARCH=um, allyesconfig)
+> > In case a more formal derivation of this formula is needed, it is
+> > based on the following 3 assumptions:
+> > 
+> > (1) Performance is a linear function of frequency.
+> > (2) Required performance is a linear function of the utilization ratio
+> > x = util/max as provided by the scheduler (0 <= x <= 1).
+> 
+> > (3) The minimum possible frequency (min_freq) corresponds to x = 0 and
+> > the maximum possible frequency (max_freq) corresponds to x = 1.
+> > 
+> > (1) and (2) combined imply that
+> > 
+> > f = a * x + b
+> > 
+> > (f - frequency, a, b - constants to be determined) and then (3) quite
+> > trivially leads to b = min_freq and a = max_freq - min_freq.
+> 
+> 3 is the problem, that just doesn't make sense and is probably the
+> reason why you see very little selection of the min freq.
+> 
+> Suppose a machine with the following frequencies:
+> 
+> 	500, 750, 1000
+> 
+> And a utilization of 0.4, how does asking for 500 + 0.4 * (1000-500) =
+> 700 make any sense? Per your point 1, it should should be asking for
+> 0.4 * 1000 = 400.
+> 
+> Because, per 1, at 500 it runs exactly half as fast as at 1000, and we
+> only need 0.4 times as much. Therefore 500 is more than sufficient.
+> 
 
-The problem is that Kconfig will just print any option that
-selects the one that has a missing dependency, but doesn't
-show which of those are actually enabled.
-
-> Adding depends here (and in other places) really helps... but it
-> should not have any impact...
-
-I think patch 5 by itself would have been sufficient.
-
-	Arnd
+Oh, and that is probably also why the governor can reach max OPP with
+freq invariance enabled (the point Vincent was making). When we run at
+500 the util signal is capped at that capacity, but the formula makes us
+requesting more, so we can jump to the next step and so on.
