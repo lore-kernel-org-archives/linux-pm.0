@@ -1,147 +1,185 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Thu, 3 Mar 2016 19:58:23 +0100
-Message-ID: <CAJZ5v0hZs-SqoL0h-PZ6L9EULMFH7SB=uaiSjfd-X0Umd7Yu6A@mail.gmail.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	<1842158.0Xhak3Uaac@vostro.rjw.lan>
-	<CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
-	<CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
-	<CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
-	<CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
-	<20160303153817.GO6344@twins.programming.kicks-ass.net>
-	<20160303162829.GB6375@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160303162829.GB6375@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v5] cpufreq: acpi_cpufreq: base frequency attribute support
+Date: Thu,  3 Mar 2016 11:09:17 -0800
+Message-ID: <1457032157-11490-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:61461 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272AbcCCTMN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Mar 2016 14:12:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Thu, Mar 3, 2016 at 5:28 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, Mar 03, 2016 at 04:38:17PM +0100, Peter Zijlstra wrote:
->> On Thu, Mar 03, 2016 at 03:01:15PM +0100, Vincent Guittot wrote:
->> > > In case a more formal derivation of this formula is needed, it is
->> > > based on the following 3 assumptions:
->> > >
->> > > (1) Performance is a linear function of frequency.
->> > > (2) Required performance is a linear function of the utilization ratio
->> > > x = util/max as provided by the scheduler (0 <= x <= 1).
->> >
->> > Just to mention that the utilization that you are using, varies with
->> > the frequency which add another variable in your equation
->>
->> Right, x86 hasn't implemented arch_scale_freq_capacity(), so the
->> utilization values we use are all over the map. If we lower freq, the
->> util will go up, which would result in us bumping the freq again, etc..
->
-> Something like the completely untested below should maybe work.
->
-> Rafael?
+Currently scaling_available_frequencies displays list of available
+frequencies which can be used to set max/min or current scaling frequency.
 
-It looks reasonable (modulo the MPERF reading typo you've noticed),
-but can we get back to that later?
+$ cat scaling_available_frequencies
+2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
+1300000 1100000 1000000 900000 800000 600000 500000
 
-I'll first try to address the Ingo's feedback (which I hope I
-understood correctly) and some other comments people had and resend
-the series.
+Here traditionally it is assumed that only 2301000 is a turbo frequency,
+which is purely opportunistic, anything else user can request and may
+get it.
 
-> ---
->  arch/x86/include/asm/topology.h | 19 +++++++++++++++++++
->  arch/x86/kernel/smpboot.c       | 24 ++++++++++++++++++++++++
->  kernel/sched/core.c             |  1 +
->  kernel/sched/sched.h            |  7 +++++++
->  4 files changed, 51 insertions(+)
->
-> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-> index 7f991bd5031b..af7b7259db94 100644
-> --- a/arch/x86/include/asm/topology.h
-> +++ b/arch/x86/include/asm/topology.h
-> @@ -146,4 +146,23 @@ struct pci_bus;
->  int x86_pci_root_bus_node(int bus);
->  void x86_pci_root_bus_resources(int bus, struct list_head *resources);
->
-> +#ifdef CONFIG_SMP
-> +
-> +#define arch_scale_freq_tick arch_scale_freq_tick
-> +#define arch_scale_freq_capacity arch_scale_freq_capacity
-> +
-> +DECLARE_PER_CPU(unsigned long, arch_cpu_freq);
-> +
-> +static inline arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
-> +{
-> +       if (static_cpu_has(X86_FEATURE_APERFMPERF))
-> +               return per_cpu(arch_cpu_freq, cpu);
-> +       else
-> +               return SCHED_CAPACITY_SCALE;
-> +}
-> +
-> +extern void arch_scale_freq_tick(void);
-> +
-> +#endif
-> +
->  #endif /* _ASM_X86_TOPOLOGY_H */
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 3bf1e0b5f827..7d459577ee44 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -1647,3 +1647,27 @@ void native_play_dead(void)
->  }
->
->  #endif
-> +
-> +static DEFINE_PER_CPU(u64, arch_prev_aperf);
-> +static DEFINE_PER_CPU(u64, arch_prev_mperf);
-> +DEFINE_PER_CPU(unsigned long, arch_cpu_freq);
-> +
-> +void arch_scale_freq_tick(void)
-> +{
-> +       u64 aperf, mperf;
-> +       u64 acnt, mcnt;
-> +
-> +       if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-> +               return;
-> +
-> +       aperf = rdmsrl(MSR_IA32_APERF);
-> +       mperf = rdmsrl(MSR_IA32_APERF);
-> +
-> +       acnt = aperf - this_cpu_read(arch_prev_aperf);
-> +       mcnt = mperf - this_cpu_read(arch_prev_mperf);
-> +
-> +       this_cpu_write(arch_prev_aperf, aperf);
-> +       this_cpu_write(arch_prev_mperf, mperf);
-> +
-> +       this_cpu_write(arch_cpu_freq, div64_u64(acnt * SCHED_CAPACITY_SCALE, mcnt));
-> +}
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 96e323b26ea9..35dbf909afb2 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -2901,6 +2901,7 @@ void scheduler_tick(void)
->         struct rq *rq = cpu_rq(cpu);
->         struct task_struct *curr = rq->curr;
->
-> +       arch_scale_freq_tick();
->         sched_clock_tick();
->
->         raw_spin_lock(&rq->lock);
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index baa32075f98e..c3825c920e3f 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -1408,6 +1408,13 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
->  }
->  #endif
->
-> +#ifndef arch_scale_freq_tick
-> +static __always_inline
-> +void arch_scale_freq_tick(void)
-> +{
-> +}
-> +#endif
-> +
->  #ifndef arch_scale_cpu_capacity
->  static __always_inline
->  unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+But because of configurable thermal design power implementation in several
+Intel CPUs, the opportunistic frequency start can be any frequency in this
+range. For example it can be 2300000 or any lower value.
+This change adds an optional new attribute called "base_frequency",
+which displays the max non-turbo frequency (base frequency). For example:
+
+$ cat base_frequency
+2200000
+
+This will allow user to choose a certain frequency which is not
+opportunistic.
+
+To be fair, other than the concept, the code is essentially copied
+from responses from Rafael in mailing list.
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+
+v5
+- Rebased on the top of
+"cpufreq: acpi: Allow new dynamics attributes to be added to acpi_cpufreq_attr"
+- Remove loop for finding next empty slot in acpi_cpufreq_attr
+- Code change suggested by Rafael
+
+v4
+- Changes for s/>/$ /
+- new lines commmit description after paragraph
+- coding style for for "if (ret)" in show_base_frequency
+
+v3
+-Merged Documentation and code patch to one patch.
+-Created a common function to read tar which is used init and during read
+-Documentation and code changed suggested by Viresh
+-On unsupported CPUs, user when tries to read base_frequency
+"Operation not supported" error will be returned.
+
+v2
+sysfs_create_file on policy->kobj is no longer possible on recent kernel
+versions. So we can't create selectively create base_frequency attribute
+on supported policies.
+This version creates a base_frequency attribute, if the boot cpu supports
+as part of cpufreq_driver->attributes. If for some CPUs the TAR can't be
+read, return error.
+
+v1:
+Base version
+
+ Documentation/cpu-freq/acpi-cpufreq.txt | 31 ++++++++++++++++++++++++
+ drivers/cpufreq/acpi-cpufreq.c          | 43 +++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
+ create mode 100644 Documentation/cpu-freq/acpi-cpufreq.txt
+
+diff --git a/Documentation/cpu-freq/acpi-cpufreq.txt b/Documentation/cpu-freq/acpi-cpufreq.txt
+new file mode 100644
+index 0000000..6b3be2c
+--- /dev/null
++++ b/Documentation/cpu-freq/acpi-cpufreq.txt
+@@ -0,0 +1,31 @@
++Additional sysfs attributes for acpi-cpufreq
++
++acpi-cpufreq sysfs has following sysfs attributes in addition to standard
++cpufreq attributes:
++
++base_frequency :		Max non-turbo frequency
++				For example:
++				scaling_available_frequencies displays list
++				of available frequencies.
++
++				$ cat scaling_available_frequencies
++				2301000 2300000 2200000 2000000 1900000
++				1800000 1700000 1500000 1400000 1300000
++				1100000 1000000 900000 800000 600000
++				500000
++
++				If the base_frequency attribute is present
++				and readable, then any frequency above
++				base_frequency is turbo frequency. For example
++
++				$ cat base_frequency
++				2200000
++
++				Then in the above displayed list of
++				scaling_available_frequencies, 2300000 and
++				2301000 are turbo frequencies. That is, if any
++				of these frequencies is requested, the
++				processor will be allowed to run at a frequency
++				of its choice above the base_frequency that
++				need not be equal to any of them and may be
++				above the maximum listed one.
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 7da172f..801884f 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -646,6 +646,43 @@ static int acpi_cpufreq_blacklist(struct cpuinfo_x86 *c)
+ }
+ #endif
+ 
++static int x86_get_turbo_activation_ratio(int cpu, u64 *tar)
++{
++	u64 plat_info;
++	int err;
++
++	err = rdmsrl_safe_on_cpu(cpu, MSR_PLATFORM_INFO, &plat_info);
++	if (err)
++		return err;
++
++	if (((plat_info >> 33) & 0x03) > 0)
++		return rdmsrl_safe_on_cpu(cpu, MSR_TURBO_ACTIVATION_RATIO, tar);
++
++	return -ENXIO;
++}
++
++static inline bool boot_cpu_has_turbo_activation_ratio(void)
++{
++	u64 tar;
++
++	return !x86_get_turbo_activation_ratio(0, &tar);
++}
++
++static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
++{
++	u64 tar;
++	int err;
++
++	err = x86_get_turbo_activation_ratio(policy->cpu, &tar);
++	if (err)
++		return err;
++
++	/* Refer to IA64, IA32 SDM table 35-20, unit = 100 MHz */
++	return sprintf(buf, "%llu\n", tar * 100000);
++}
++
++cpufreq_freq_attr_ro(base_frequency);
++
+ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	unsigned int i;
+@@ -888,6 +925,7 @@ static struct freq_attr *acpi_cpufreq_attr[] = {
+ #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+ 	NULL,	/* Extra space for cpb if required */
+ #endif
++	NULL, /* Extra space for base_frequency attr, if required */
+ 	NULL,
+ };
+ 
+@@ -970,6 +1008,11 @@ static int __init acpi_cpufreq_init(void)
+ 		pr_debug("CPB unsupported, do not expose it\n");
+ 
+ #endif
++
++	if (boot_cpu_has(X86_FEATURE_IDA) &&
++	    boot_cpu_has_turbo_activation_ratio())
++		*attr++ = &base_frequency;
++
+ 	acpi_cpufreq_boost_init();
+ 
+ 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
+-- 
+2.5.0
+
