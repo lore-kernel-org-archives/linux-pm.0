@@ -1,50 +1,48 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFC 08/15] rtc: at91sam9: Add missing MFD_SYSCON dependency on HAS_IOMEM
-Date: Thu, 03 Mar 2016 13:58:33 +0100
-Message-ID: <4070388.ZbRf8kMntA@wuerfel>
-References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com> <2233190.1BxevBAvDE@wuerfel> <CAMuHMdXUdz0=n2+Aa74f1LtwiwfV9=gkPBiJKC_DMyr1_jBe7Q@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Thu, 3 Mar 2016 14:03:09 +0100
+Message-ID: <20160303130309.GO6356@twins.programming.kicks-ass.net>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+ <1456190570-4475-4-git-send-email-smuckle@linaro.org>
+ <8427745.Y8N2bqC3SO@vostro.rjw.lan>
+ <56CF9D8F.7010607@linaro.org>
+ <20160302074910.10178.35029@quark.deferred.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdXUdz0=n2+Aa74f1LtwiwfV9=gkPBiJKC_DMyr1_jBe7Q@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, David Brown <david.brown@linaro.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Dan Williams <dan.j.williams@intel.com>, driverdevel <devel@driverdev.osuosl.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Vinod Koul <vinod.koul@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Andy Gross <andy.gross@linaro.org>, Linux Media Mailing List <linux-media@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, RTCLINUX <rtc-linux@googlegroups.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Marc Zyngier <marc.zyngier@arm.>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160302074910.10178.35029@quark.deferred.io>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ricky Liang <jcliang@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 March 2016 13:27:59 Geert Uytterhoeven wrote:
-> On Thu, Mar 3, 2016 at 11:55 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Thursday 03 March 2016 17:03:34 Krzysztof Kozlowski wrote:
-> >> index 0da40e2e4280..5c530b6b125d 100644
-> >> --- a/drivers/rtc/Kconfig
-> >> +++ b/drivers/rtc/Kconfig
-> >> @@ -1302,6 +1302,7 @@ config RTC_DRV_AT91RM9200
-> >>  config RTC_DRV_AT91SAM9
-> >>         tristate "AT91SAM9 RTT as RTC"
-> >>         depends on ARCH_AT91 || COMPILE_TEST
-> >> +       depends on HAS_IOMEM    # For MFD_SYSCON
-> >>         select MFD_SYSCON
-> >>         help
-> >>           Some AT91SAM9 SoCs provide an RTT (Real Time Timer) block which
-> >>
-> >
-> > This is technically correct, but the entire RTC menu is hidden
-> > inside of 'depends on !UML && !S390', so we won't ever get there
-> > on any configuration that does not use HAS_IOMEM.
-> >
-> > If we did, all other RTC drivers would also fail.
+On Tue, Mar 01, 2016 at 11:49:10PM -0800, Michael Turquette wrote:
 > 
-> So UML has no RTC. Should/can it use RTC_DRV_GENERIC?
+> In my over-simplified view of the scheduler, it would be great if we
+> could have a backdoor mechanism to place the frequency transition
+> kthread onto a runqueue from within the schedule() context and dispense
+> with the irq_work stuff in Steve's series altogether.
 
-I think nothing should use that, even if it could ;-)
+This is actually very very hard :/
 
-Funny enough, RTC_DRV_GENERIC would probably actually work if you
-run UML as root and set iopl() to allow port access, but we don't
-really want it to mess with the host RTC.
+So while there is something similar for workqueues,
+try_to_wake_up_local(), that will not work for the cpufreq stuff.
 
-I don't know where UML gets it real time, but it doesn't actually
-need much other than calling clock_gettime(CLOCK_REALTIME, ...)
-to get the host time. Presumably it uses some variation of that.
+The main problem is that schedule() is done with rq->lock held, but
+wakeups need p->pi_lock, but it so happens that rq->lock nests inside of
+p->pi_lock.
 
-	Arnd
+Now, the workqueue stuff with try_to_wake_up_local() can get away with
+dropping rq->lock, because of where it is called, way early in
+schedule() before we really muck things up.
+
+The cpufreq hook otoh is called all over the place.
+
+The second problem is that doing a wakeup will in fact also end up
+calling the cpufreq hook, so you're back in recursion hell.
+
+The third problem is that cpufreq is called from wakeups, which would
+want to do another wakeup (see point 2), but this also means we have to
+nest p->pi_lock, and we can't really do that either.
