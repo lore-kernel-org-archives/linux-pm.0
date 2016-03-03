@@ -1,41 +1,39 @@
-From: Tamas Papp <tkpapp@gmail.com>
-Subject: Re: STI problem and workaround for Dell XPS 13 (Skylake, 2016) / Broadcom BCM4350
-Date: Thu, 03 Mar 2016 08:16:06 +0100
-Message-ID: <8737s8uj49.fsf@gmail.com>
-References: <87h9gpp5rt.fsf@gmail.com> <CADjb_WQwwGD4wQugeLf=2k7XjtPGt9o6vgqhMdLR+ALDhK7J+Q@mail.gmail.com> <87a8mhotmk.fsf@gmail.com> <CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [RFC 05/15] phy: hi6220: Add missing MFD_SYSCON dependency on HAS_IOMEM
+Date: Thu, 03 Mar 2016 17:03:31 +0900
+Message-ID: <1456992221-26712-6-git-send-email-k.kozlowski@samsung.com>
+References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:34121 "EHLO
-	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754786AbcCCHQK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 02:16:10 -0500
-Received: by mail-wm0-f51.google.com with SMTP id p65so21025379wmp.1
-        for <linux-pm@vger.kernel.org>; Wed, 02 Mar 2016 23:16:09 -0800 (PST)
-In-reply-to: <CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:35989 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932296AbcCCIEw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:52 -0500
+In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: yu chen <yu.chen.surf@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Kishon Vijay Abraham I <kishon@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dmaen
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On Wed, Mar 02 2016, yu chen wrote:
+The MFD_SYSCON depends on HAS_IOMEM so when selecting it avoid unmet
+direct dependencies.
 
-> Currently the  0000:3c and 0000:3a might have the same pnp object name PXSX,
-> unfortunately  the 'echo' will find the first math device in the
-> wakable list, and maybe
->  0000:3c was probed before 0000:3a, so... maybe this is a weakness.
->
-> Maybe you can disabled the wakable feature directly in device sysfs,
-> for example,
-> echo 0 > /sys/devices/pci0000:00/0000:3a:00.0/power/wakeup,
-> you might need to find out where 0000:3a:00.0 is.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/phy/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-I tried that, but the module has problems after wakeup. I have to remove
-and insert it again with modprobe.
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index 0124d17bd9fe..cfdb3551a675 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -225,6 +225,7 @@ config PHY_MT65XX_USB3
+ config PHY_HI6220_USB
+ 	tristate "hi6220 USB PHY support"
+ 	depends on (ARCH_HISI && ARM64) || COMPILE_TEST
++	depends on HAS_IOMEM	# For MFD_SYSCON
+ 	select GENERIC_PHY
+ 	select MFD_SYSCON
+ 	help
+-- 
+2.5.0
 
-Still, this is an OK workaround, thanks for the help. I still don't know
-if I should file this as a bug, and if yes, where.
-
-Best,
-
-Tamas
