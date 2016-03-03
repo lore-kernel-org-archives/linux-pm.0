@@ -1,97 +1,101 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 00/15] tree-wide: mfd: syscon: Fix unmet ioremap dependency
-Date: Thu, 03 Mar 2016 17:03:26 +0900
-Message-ID: <1456992221-26712-1-git-send-email-k.kozlowski__5957.17138280651$1456993017$gmane$org@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:55416 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbcCCIEI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:08 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Kishon Vijay Abraham I <kishon@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dmaen
+Subject: [PATCH] thermal: Fix build error of missing devm_ioremap_resource on UM
+Date: Thu, 03 Mar 2016 17:27:37 +0900
+Message-ID: <1456993657-17794-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
+allyesconfig (COMPILE_TEST) failed on many files with:
 
-Building allyesconfig on ARCH=3Dum fails with:
-   drivers/mfd/syscon.c: In function =E2=80=98of_syscon_register=E2=80=99=
-:
-   drivers/mfd/syscon.c:67:9: error: implicit declaration of function =E2=
-=80=98ioremap=E2=80=99 [-Werror=3Dimplicit-function-declaration]
-      base =3D ioremap(res.start, resource_size(&res));
+drivers/built-in.o: In function `kirkwood_thermal_probe':
+kirkwood_thermal.c:(.text+0x390a25): undefined reference to `devm_ioremap_resource'
+drivers/built-in.o: In function `exynos_tmu_probe':
+exynos_tmu.c:(.text+0x39246b): undefined reference to `devm_ioremap'
 
-Since commit c89c0114955a ("mfd: syscon: Set regmap max_register in
-of_syscon_register") the syscon depends on HAS_IOMEM because
-it uses the ioremap().
+The users of devm_ioremap_resource() which are compile-testable should
+depend on HAS_IOMEM.
 
-However syscon is often directly selected... so first the dependency on
-HAS_IOMEM has to be added to all selecting symbols.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/thermal/Kconfig         | 7 +++++++
+ drivers/thermal/samsung/Kconfig | 1 +
+ 2 files changed, 8 insertions(+)
 
-Comments are welcomed whether this is appropriate approach.
-
-
-The last patch "mfd: syscon: Fix build of missing ioremap on UM" should
-enter all other to avoid kbuild complains like:
-
-warning: (ST_IRQCHIP && HIP04_ETH && STMMAC_PLATFORM && DWMAC_IPQ806X &=
-&
-DWMAC_LPC18XX && DWMAC_ROCKCHIP && DWMAC_SOCFPGA && DWMAC_STI && TI_CPS=
-W
-&& PINCTRL_ROCKCHIP && PINCTRL_DOVE && POWER_RESET_KEYSTONE &&
-S3C2410_WATCHDOG && VIDEO_OMAP3 && VIDEO_S5P_FIMC && USB_XHCI_MTK &&
-RTC_DRV_AT91SAM9 && LPC18XX_DMAMUX && VIDEO_OMAP4 && HWSPINLOCK_QCOM &&=
- ATMEL_ST
-&& QCOM_GSBI && PHY_HI6220_USB)
-selects MFD_SYSCON which has unmet direct dependencies (HAS_IOMEM)
-
-
-Best regards,
-Krzysztof
-
-
-Krzysztof Kozlowski (15):
-  clocksource: atmel: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  dmaengine: nxp: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  hwspinlock: qcom: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  irqchip: st: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  phy: hi6220: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  pinctrl: rockchip: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  pinctrl: mvebu: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  rtc: at91sam9: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  media: platform: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  net: ethernet: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  power: reset: keystone: Add missing MFD_SYSCON dependency on HAS_IOME=
-M
-  soc: qcom: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  staging: media: omap4iss: Add missing MFD_SYSCON dependency on
-    HAS_IOMEM
-  usb: xhci: mtk: Add missing MFD_SYSCON dependency on HAS_IOMEM
-  mfd: syscon: Fix build of missing ioremap on UM
-
- drivers/clocksource/Kconfig                 | 1 +
- drivers/dma/Kconfig                         | 1 +
- drivers/hwspinlock/Kconfig                  | 1 +
- drivers/irqchip/Kconfig                     | 1 +
- drivers/media/platform/Kconfig              | 1 +
- drivers/media/platform/exynos4-is/Kconfig   | 1 +
- drivers/mfd/Kconfig                         | 1 +
- drivers/net/ethernet/hisilicon/Kconfig      | 1 +
- drivers/net/ethernet/stmicro/stmmac/Kconfig | 6 ++++++
- drivers/net/ethernet/ti/Kconfig             | 1 +
- drivers/phy/Kconfig                         | 1 +
- drivers/pinctrl/Kconfig                     | 1 +
- drivers/pinctrl/mvebu/Kconfig               | 1 +
- drivers/power/reset/Kconfig                 | 1 +
- drivers/rtc/Kconfig                         | 1 +
- drivers/soc/qcom/Kconfig                    | 1 +
- drivers/staging/media/omap4iss/Kconfig      | 1 +
- drivers/usb/host/Kconfig                    | 1 +
- 18 files changed, 23 insertions(+)
-
---=20
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5e7c97a3f1d8..91eafadbf844 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -178,6 +178,7 @@ config THERMAL_EMULATION
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	help
+ 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
+ 	  thermal framework. cpufreq is used as the cooling device to throttle
+@@ -197,6 +198,7 @@ config IMX_THERMAL
+ config SPEAR_THERMAL
+ 	tristate "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
+@@ -206,6 +208,7 @@ config ROCKCHIP_THERMAL
+ 	tristate "Rockchip thermal driver"
+ 	depends on ARCH_ROCKCHIP || COMPILE_TEST
+ 	depends on RESET_CONTROLLER
++	depends on HAS_IOMEM
+ 	help
+ 	  Rockchip thermal driver provides support for Temperature sensor
+ 	  ADC (TS-ADC) found on Rockchip SoCs. It supports one critical
+@@ -223,6 +226,7 @@ config RCAR_THERMAL
+ config KIRKWOOD_THERMAL
+ 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+ 	depends on MACH_KIRKWOOD || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+@@ -231,6 +235,7 @@ config KIRKWOOD_THERMAL
+ config DOVE_THERMAL
+ 	tristate "Temperature sensor on Marvell Dove SoCs"
+ 	depends on ARCH_DOVE || MACH_DOVE || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Support for the Dove thermal sensor driver in the Linux thermal
+@@ -249,6 +254,7 @@ config DB8500_THERMAL
+ config ARMADA_THERMAL
+ 	tristate "Armada 370/XP thermal management"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Enable this option if you want to have support for thermal management
+@@ -368,6 +374,7 @@ config INTEL_PCH_THERMAL
+ config MTK_THERMAL
+ 	tristate "Temperature sensor driver for mediatek SoCs"
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	default y
+ 	help
+ 	  Enable this option if you want to have support for thermal management
+diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+index e0da3865e060..222e644169f0 100644
+--- a/drivers/thermal/samsung/Kconfig
++++ b/drivers/thermal/samsung/Kconfig
+@@ -1,6 +1,7 @@
+ config EXYNOS_THERMAL
+ 	tristate "Exynos thermal management unit driver"
+ 	depends on THERMAL_OF
++	depends on HAS_IOMEM
+ 	help
+ 	  If you say yes here you get support for the TMU (Thermal Management
+ 	  Unit) driver for SAMSUNG EXYNOS series of SoCs. This driver initialises
+-- 
 2.5.0
-
