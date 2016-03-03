@@ -1,58 +1,163 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [rtc-linux] Re: [RFC 09/15] media: platform: Add missing
- MFD_SYSCON dependency on HAS_IOMEM
-Date: Thu, 03 Mar 2016 14:05:33 +0100
-Message-ID: <13054519.5feSCc5dgv@wuerfel>
-References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
- <2181866.k24LVvUjTs@wuerfel>
- <CAJKOXPe50ira_Qqy7qJ5H_PHa8B_xOinCK6JkncXFYn_eaQFfg@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 3 Mar 2016 14:07:43 +0100
+Message-ID: <CAKfTPtAtF4Yax9RrwjqfPqpfhtUxYRb-PDj+B_sZehEfQgsSsQ@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <1842158.0Xhak3Uaac@vostro.rjw.lan>
+ <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com> <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJKOXPe50ira_Qqy7qJ5H_PHa8B_xOinCK6JkncXFYn_eaQFfg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, David Brown <david.brown@linaro.org>, netdev@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Andy Gross <andy.gross@linaro.org>, linux-media@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Marc Zyngier <marc.zyngier@arm.com>, linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>Dan Williams <da>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 March 2016 21:40:23 Krzysztof Kozlowski wrote:
-> >>         select MFD_SYSCON
-> >> diff --git a/drivers/media/platform/exynos4-is/Kconfig b/drivers/media/platform/exynos4-is/Kconfig
-> >> index 57d42c6172c5..c4317b99d257 100644
-> >> --- a/drivers/media/platform/exynos4-is/Kconfig
-> >> +++ b/drivers/media/platform/exynos4-is/Kconfig
-> >> @@ -17,6 +17,7 @@ config VIDEO_S5P_FIMC
-> >>         tristate "S5P/EXYNOS4 FIMC/CAMIF camera interface driver"
-> >>         depends on I2C
-> >>         depends on HAS_DMA
-> >> +       depends on HAS_IOMEM    # For MFD_SYSCON
-> >>         select VIDEOBUF2_DMA_CONTIG
-> >>         select V4L2_MEM2MEM_DEV
-> >
-> > This  is guarded by HAS_DMA, which implies HAS_IOMEM afaik.
-> 
-> Looking at Kconfigs - no, it is not implied (or am I missing
-> something)... and sometimes dependency on HAS_IOMEM is next to
-> HAS_DMA.
-> 
-> 
+On 2 March 2016 at 18:58, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Mar 2, 2016 at 6:10 PM, Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
+>> Hi Rafael,
+>>
+>>
+>> On 2 March 2016 at 03:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> Add a new cpufreq scaling governor, called "schedutil", that uses
+>>> scheduler-provided CPU utilization information as input for making
+>>> its decisions.
+>>>
+>>> Doing that is possible after commit fe7034338ba0 (cpufreq: Add
+>>> mechanism for registering utilization update callbacks) that
+>>> introduced cpufreq_update_util() called by the scheduler on
+>>> utilization changes (from CFS) and RT/DL task status updates.
+>>> In particular, CPU frequency scaling decisions may be based on
+>>> the the utilization data passed to cpufreq_update_util() by CFS.
+>>>
+>>> The new governor is relatively simple.
+>>>
+>>> The frequency selection formula used by it is essentially the same
+>>> as the one used by the "ondemand" governor, although it doesn't use
+>>> the additional up_threshold parameter, but instead of computing the
+>>> load as the "non-idle CPU time" to "total CPU time" ratio, it takes
+>>> the utilization data provided by CFS as input.  More specifically,
+>>> it represents "load" as the util/max ratio, where util and max
+>>> are the utilization and CPU capacity coming from CFS.
+>>>
+>>
+>> [snip]
+>>
+>>> +
+>>> +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>>> +                               unsigned long util, unsigned long max,
+>>> +                               unsigned int next_freq)
+>>> +{
+>>> +       struct cpufreq_policy *policy = sg_policy->policy;
+>>> +       unsigned int rel;
+>>> +
+>>> +       if (next_freq > policy->max)
+>>> +               next_freq = policy->max;
+>>> +       else if (next_freq < policy->min)
+>>> +               next_freq = policy->min;
+>>> +
+>>> +       sg_policy->last_freq_update_time = time;
+>>> +       if (sg_policy->next_freq == next_freq)
+>>> +               return;
+>>> +
+>>> +       sg_policy->next_freq = next_freq;
+>>> +       /*
+>>> +        * If utilization is less than max / 4, use RELATION_C to allow the
+>>> +        * minimum frequency to be selected more often in case the distance from
+>>> +        * it to the next available frequency in the table is significant.
+>>> +        */
+>>> +       rel = util < (max >> 2) ? CPUFREQ_RELATION_C : CPUFREQ_RELATION_L;
+>>> +       if (policy->fast_switch_possible) {
+>>> +               cpufreq_driver_fast_switch(policy, next_freq, rel);
+>>> +       } else {
+>>> +               sg_policy->relation = rel;
+>>> +               sg_policy->work_in_progress = true;
+>>> +               irq_work_queue(&sg_policy->irq_work);
+>>> +       }
+>>> +}
+>>> +
+>>> +static void sugov_update_single(struct update_util_data *data, u64 time,
+>>> +                               unsigned long util, unsigned long max)
+>>> +{
+>>> +       struct sugov_cpu *sg_cpu = container_of(data, struct sugov_cpu, update_util);
+>>> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+>>> +       unsigned int min_f, max_f, next_f;
+>>> +
+>>> +       if (!sugov_should_update_freq(sg_policy, time))
+>>> +               return;
+>>> +
+>>> +       min_f = sg_policy->policy->cpuinfo.min_freq;
+>>> +       max_f = sg_policy->policy->cpuinfo.max_freq;
+>>> +       next_f = util > max ? max_f : min_f + util * (max_f - min_f) / max;
+>>
+>> I think it has been pointed out in another email's thread but you
+>> should change the way the next_f is computed. util reflects the
+>> utilization of a CPU from 0 to its max compute capacity whereas
+>> ondemand was using the load at the current frequency during the last
+>> time window. I have understood that you want to keep same formula than
+>> ondemand as a starting point but you use a different input to
+>> calculate the next frequency so i don't see the rational of keeping
+>> this formula.
+>
+> It is a formula that causes the entire available frequency range to be
+> utilized proportionally to the utilization as reported by the
+> scheduler (modulo the policy->min/max limits).  Its (significant IMO)
+> advantage is that it doesn't require any additional factors that would
+> need to be determined somehow.
+>
+>> Saying that, even the simple formula next_f = util > max
+>> ? max_f : util * (max_f) / max will not work properly if the frequency
+>> invariance is enable because the utilization becomes capped by the
+>> current compute capacity so next_f will never be higher than current
+>> freq (unless a task move on the rq).  That was one reason of using a
+>> threshold in sched-freq proposal (and there are on going dev to try to
+>> solve this limitation).
+>
+> Well, a different formula will have to be used along with frequency
+> invariance, then.
+>
+>> IIIUC, frequency invariance is not enable on your platform so you have
+>> not seen the problem but you have probably see that selection of your
+>> next_f was not really stable. Without frequency invariance, the
+>> utilization will be overestimated when running at lower frequency so
+>> the governor will probably select a frequency that is higher than
+>> necessary but then the utilization will decrease at this higher
+>> frequency so the governor will probably decrease the frequency and so
+>> on until you found the right frequency that will generate the right
+>> utilisation value
+>
+> I don't have any problems with that to be honest and if you aim at
+> selecting the perfect frequency at the first attempt, then good luck
+> with that anyway.
 
-Ah, you are right: UML has no DMA and no IOMEM, but s390 can
-have IOMEM (if PCI is enabled) and always sets HAS_DMA.
+I mainly want to prevent any useless and periodic frequency switch
+because of an utilization that changes with the current frequency (if
+frequency invariance is not used) and that can make the formula
+selects another frequency than the current one. That what i can see
+when testing it .
 
-In practice, I think the HAS_DMA symbol is not as well-defined
-as it should be, it basically refers to the presence of the dma-mapping.h
-API, and that only really makes sense when you also have IOMEM,
-so there might be an implied dependency between the two, but it's
-not enforced or actually true.
+Sorry for the late reply, i was trying to do some test on my board but
+was facing some crash issue (not link with your patchset). So i have
+done some tests and i can see such instable behavior. I have generated
+a load of 33% at max frequency (3ms runs every 9ms) and i can see the
+frequency that toggles without any good reason. Saying that, i can see
+similar thing with ondemand.
 
-	Arnd
+Vincent
+
+>
+> Now, I'm not saying that the formula used in this patch cannot be
+> improved or similar.  It very well may be possible to improve it.  I'm
+> only saying that it is good enough to start with, because of the
+> reasons mentioned above.
+>
+> Still, if you can suggest to me what other formula specifically should
+> be used here, I'll consider using it.  Which will probably mean
+> comparing the two and seeing which one leads to better results.
+>
+> Thanks,
+> Rafael
