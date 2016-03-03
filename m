@@ -1,93 +1,58 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH][RFC] ACPI / PM: Fix poweroff issue on HW-full platforms
- without _S5
-Date: Thu, 3 Mar 2016 00:45:08 +0100
-Message-ID: <CAJZ5v0h75Ly4-R7jOCt=o+QtcLOZycC7kzKxkdP6Xy-teCiJ7w@mail.gmail.com>
-References: <1456925357-2899-1-git-send-email-yu.c.chen@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1456925357-2899-1-git-send-email-yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Lv <lv.zheng-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: [PATCH] PM: Fix crash on graph trace through x86 suspend
+Date: Wed,  2 Mar 2016 16:05:29 -0800
+Message-ID: <1456963529-4962-1-git-send-email-todd.e.brandt@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:59251 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755149AbcCCAFi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Mar 2016 19:05:38 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
+Cc: rjw@rjwysocki.net, todd.e.brandt@intel.com, todd.e.brandt@linux.intel.com
 
-On Wed, Mar 2, 2016 at 2:29 PM, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
-> The problem is Linux registers pm_power_off = efi_power_off
-> only if we are in hardware reduced mode. Actually, what we also
-> want is to do this when ACPI S5 is simply not supported.
-> That should handle both the HW reduced mode, and the HW-full
-> mode where the DSDT fails to supply an _S5 object.
->
-> This patch fixes this issue by introducing a new flag acpi_no_s5 which
-> indicates the non-existence of _S5. The initial state of acpi_no_s5 is
-> false and probed in acpi_sleep_init, then we'll later see the updated
-> value in efi_poweroff_required, according to which we can set pm_power_off
-> to efi_power_off in efi_shutdown_init.
->
-> Suggested-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ---
->  arch/x86/platform/efi/quirks.c | 3 ++-
->  drivers/acpi/sleep.c           | 2 ++
->  include/acpi/acpixf.h          | 6 ++++++
->  3 files changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
-> index 2d66db8..8ec43bc 100644
-> --- a/arch/x86/platform/efi/quirks.c
-> +++ b/arch/x86/platform/efi/quirks.c
-> @@ -295,5 +295,6 @@ bool efi_reboot_required(void)
->
->  bool efi_poweroff_required(void)
->  {
-> -       return !!acpi_gbl_reduced_hardware;
-> +       return (!!acpi_gbl_reduced_hardware)
-> +               || (!!acpi_no_s5);
+Pause/unpause graph tracing around do_suspend_lowlevel as it has
+inconsistent call/return info after it jumps to the wakeup vector.
+The graph trace buffer will otherwise become misaligned and
+may eventually crash and hang on suspend.
 
-This can be written as:
+To reproduce the issue and test the fix:
+Run a function_graph trace over suspend/resume and set the graph 
+function to suspend_devices_and_enter. This consistently hangs the
+system without this fix.
 
-    return acpi_gbl_reduced_hardware || acpi_no_s5;
+Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+---
+ arch/x86/kernel/acpi/sleep.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
->  }
-> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> index 9cb9752..6f75e54 100644
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -846,6 +846,8 @@ int __init acpi_sleep_init(void)
->                 sleep_states[ACPI_STATE_S5] = 1;
->                 pm_power_off_prepare = acpi_power_off_prepare;
->                 pm_power_off = acpi_power_off;
-> +       } else {
-> +               acpi_no_s5 = TRUE;
->         }
->
->         supported[0] = 0;
-> diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-> index c96621e..2b4d7f7 100644
-> --- a/include/acpi/acpixf.h
-> +++ b/include/acpi/acpixf.h
-> @@ -252,6 +252,12 @@ ACPI_INIT_GLOBAL(u8, acpi_gbl_osi_data, 0);
->  ACPI_INIT_GLOBAL(u8, acpi_gbl_reduced_hardware, FALSE);
->
->  /*
-> + * Some HW-full platforms do not have S5, so they may need
-> + * to leverage efi power off for a shutdown.
-> + */
-> +ACPI_INIT_GLOBAL(u8, acpi_no_s5, FALSE);
+diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+index d1daead..311360e 100644
+--- a/arch/x86/kernel/acpi/sleep.c
++++ b/arch/x86/kernel/acpi/sleep.c
+@@ -16,6 +16,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/realmode.h>
+ 
++#include <linux/ftrace.h>
+ #include "../../realmode/rm/wakeup.h"
+ #include "sleep.h"
+ 
+@@ -107,7 +108,13 @@ int x86_acpi_suspend_lowlevel(void)
+        saved_magic = 0x123456789abcdef0L;
+ #endif /* CONFIG_64BIT */
+ 
++	/*
++	 * Pause/unpause graph tracing around do_suspend_lowlevel as it has
++	 * inconsistent call/return info after it jumps to the wakeup vector
++	 */
++	pause_graph_tracing();
+ 	do_suspend_lowlevel();
++	unpause_graph_tracing();
+ 	return 0;
+ }
+ 
+-- 
+2.1.4
 
-Do you have to add it here?
-
-Can't you simply define it as a global bool variable in sleep.c and
-add a declaration to include/linux/acpi.h?
-
-> +
-> +/*
->   * This mechanism is used to trace a specified AML method. The method is
->   * traced each time it is executed.
->   */
-> --
-
-Thanks,
-Rafael
