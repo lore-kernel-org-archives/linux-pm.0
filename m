@@ -1,14 +1,14 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 03/15] hwspinlock: qcom: Add missing MFD_SYSCON dependency on
+Subject: [RFC 02/15] dmaengine: nxp: Add missing MFD_SYSCON dependency on
  HAS_IOMEM
-Date: Thu, 03 Mar 2016 17:03:29 +0900
-Message-ID: <1456992221-26712-4-git-send-email-k.kozlowski__33736.9487774142$1456992915$gmane$org@samsung.com>
+Date: Thu, 03 Mar 2016 17:03:28 +0900
+Message-ID: <1456992221-26712-3-git-send-email-k.kozlowski__2689.15462443164$1456992935$gmane$org@samsung.com>
 References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:58052 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932195AbcCCIEd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:33 -0500
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:57876 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932104AbcCCIEZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:25 -0500
 In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,21 +20,21 @@ direct dependencies.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/hwspinlock/Kconfig | 1 +
+ drivers/dma/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/hwspinlock/Kconfig b/drivers/hwspinlock/Kconfig
-index 73a401662853..5ab2d51dc147 100644
---- a/drivers/hwspinlock/Kconfig
-+++ b/drivers/hwspinlock/Kconfig
-@@ -21,6 +21,7 @@ config HWSPINLOCK_OMAP
- config HWSPINLOCK_QCOM
- 	tristate "Qualcomm Hardware Spinlock device"
- 	depends on ARCH_QCOM
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index c77f214c9466..7fbf96bff280 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -290,6 +290,7 @@ config LPC18XX_DMAMUX
+ 	bool "NXP LPC18xx/43xx DMA MUX for PL080"
+ 	depends on ARCH_LPC18XX || COMPILE_TEST
+ 	depends on OF && AMBA_PL08X
 +	depends on HAS_IOMEM	# For MFD_SYSCON
- 	select HWSPINLOCK
  	select MFD_SYSCON
  	help
+ 	  Enable support for DMA on NXP LPC18xx/43xx platforms
 -- 
 2.5.0
 
