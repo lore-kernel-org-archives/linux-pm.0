@@ -1,39 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/6] cpufreq: governor: Move abstract gov_tunables code
- to a seperate file
-Date: Thu, 3 Mar 2016 11:33:21 +0530
-Message-ID: <20160303060321.GK2891@vireshk-i7>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <5134851.EfvU9zA4LR@vostro.rjw.lan>
+From: Tamas Papp <tkpapp@gmail.com>
+Subject: Re: STI problem and workaround for Dell XPS 13 (Skylake, 2016) / Broadcom BCM4350
+Date: Thu, 03 Mar 2016 08:16:06 +0100
+Message-ID: <8737s8uj49.fsf@gmail.com>
+References: <87h9gpp5rt.fsf@gmail.com> <CADjb_WQwwGD4wQugeLf=2k7XjtPGt9o6vgqhMdLR+ALDhK7J+Q@mail.gmail.com> <87a8mhotmk.fsf@gmail.com> <CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5134851.EfvU9zA4LR@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:34121 "EHLO
+	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754786AbcCCHQK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 02:16:10 -0500
+Received: by mail-wm0-f51.google.com with SMTP id p65so21025379wmp.1
+        for <linux-pm@vger.kernel.org>; Wed, 02 Mar 2016 23:16:09 -0800 (PST)
+In-reply-to: <CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: yu chen <yu.chen.surf@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On 02-03-16, 03:10, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Move abstract code related to struct gov_tunables to a separate (new)
-> file so it can be shared with (future) goverernors that won't share
-> more code with "ondemand" and "conservative".
-> 
-> No intentional functional changes.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/Kconfig                     |    4 +
->  drivers/cpufreq/Makefile                    |    1 
->  drivers/cpufreq/cpufreq_governor.c          |   82 ---------------------------
->  drivers/cpufreq/cpufreq_governor.h          |    6 ++
->  drivers/cpufreq/cpufreq_governor_tunables.c |   84 ++++++++++++++++++++++++++++
+On Wed, Mar 02 2016, yu chen wrote:
 
-These aren't governor tunables, isn't it? Tunables were the fields
-that could be tuned, but this is something else.
+> Currently the  0000:3c and 0000:3a might have the same pnp object name PXSX,
+> unfortunately  the 'echo' will find the first math device in the
+> wakable list, and maybe
+>  0000:3c was probed before 0000:3a, so... maybe this is a weakness.
+>
+> Maybe you can disabled the wakable feature directly in device sysfs,
+> for example,
+> echo 0 > /sys/devices/pci0000:00/0000:3a:00.0/power/wakeup,
+> you might need to find out where 0000:3a:00.0 is.
 
--- 
-viresh
+I tried that, but the module has problems after wakeup. I have to remove
+and insert it again with modprobe.
+
+Still, this is an OK workaround, thanks for the help. I still don't know
+if I should file this as a bug, and if yes, where.
+
+Best,
+
+Tamas
