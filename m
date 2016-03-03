@@ -1,52 +1,147 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
  utilization data
-Date: Thu, 3 Mar 2016 19:26:24 +0100
-Message-ID: <20160303182624.GU6356@twins.programming.kicks-ass.net>
+Date: Thu, 3 Mar 2016 19:58:23 +0100
+Message-ID: <CAJZ5v0hZs-SqoL0h-PZ6L9EULMFH7SB=uaiSjfd-X0Umd7Yu6A@mail.gmail.com>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <1842158.0Xhak3Uaac@vostro.rjw.lan>
- <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
- <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
- <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
- <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
- <20160303153817.GO6344@twins.programming.kicks-ass.net>
- <20160303162829.GB6375@twins.programming.kicks-ass.net>
- <56D87457.1050600@arm.com>
+	<1842158.0Xhak3Uaac@vostro.rjw.lan>
+	<CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+	<CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+	<CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
+	<CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
+	<20160303153817.GO6344@twins.programming.kicks-ass.net>
+	<20160303162829.GB6375@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <56D87457.1050600@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160303162829.GB6375@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 03, 2016 at 05:28:55PM +0000, Dietmar Eggemann wrote:
-> > +void arch_scale_freq_tick(void)
-> > +{
-> > +	u64 aperf, mperf;
-> > +	u64 acnt, mcnt;
-> > +
-> > +	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-> > +		return;
-> > +
-> > +	aperf = rdmsrl(MSR_IA32_APERF);
-> > +	mperf = rdmsrl(MSR_IA32_APERF);
-> > +
-> > +	acnt = aperf - this_cpu_read(arch_prev_aperf);
-> > +	mcnt = mperf - this_cpu_read(arch_prev_mperf);
-> > +
-> > +	this_cpu_write(arch_prev_aperf, aperf);
-> > +	this_cpu_write(arch_prev_mperf, mperf);
-> > +
-> > +	this_cpu_write(arch_cpu_freq, div64_u64(acnt * SCHED_CAPACITY_SCALE, mcnt));
-> 
-> Wasn't there the problem that this ratio goes to zero if the cpu is idle
-> in the old power estimation approach on x86?
+On Thu, Mar 3, 2016 at 5:28 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Mar 03, 2016 at 04:38:17PM +0100, Peter Zijlstra wrote:
+>> On Thu, Mar 03, 2016 at 03:01:15PM +0100, Vincent Guittot wrote:
+>> > > In case a more formal derivation of this formula is needed, it is
+>> > > based on the following 3 assumptions:
+>> > >
+>> > > (1) Performance is a linear function of frequency.
+>> > > (2) Required performance is a linear function of the utilization ratio
+>> > > x = util/max as provided by the scheduler (0 <= x <= 1).
+>> >
+>> > Just to mention that the utilization that you are using, varies with
+>> > the frequency which add another variable in your equation
+>>
+>> Right, x86 hasn't implemented arch_scale_freq_capacity(), so the
+>> utilization values we use are all over the map. If we lower freq, the
+>> util will go up, which would result in us bumping the freq again, etc..
+>
+> Something like the completely untested below should maybe work.
+>
+> Rafael?
 
-Yeah, there was something funky.
+It looks reasonable (modulo the MPERF reading typo you've noticed),
+but can we get back to that later?
 
-SDM says they only count in C0 (ie. !idle), so it _should_ work.
+I'll first try to address the Ingo's feedback (which I hope I
+understood correctly) and some other comments people had and resend
+the series.
 
-
+> ---
+>  arch/x86/include/asm/topology.h | 19 +++++++++++++++++++
+>  arch/x86/kernel/smpboot.c       | 24 ++++++++++++++++++++++++
+>  kernel/sched/core.c             |  1 +
+>  kernel/sched/sched.h            |  7 +++++++
+>  4 files changed, 51 insertions(+)
+>
+> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+> index 7f991bd5031b..af7b7259db94 100644
+> --- a/arch/x86/include/asm/topology.h
+> +++ b/arch/x86/include/asm/topology.h
+> @@ -146,4 +146,23 @@ struct pci_bus;
+>  int x86_pci_root_bus_node(int bus);
+>  void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+>
+> +#ifdef CONFIG_SMP
+> +
+> +#define arch_scale_freq_tick arch_scale_freq_tick
+> +#define arch_scale_freq_capacity arch_scale_freq_capacity
+> +
+> +DECLARE_PER_CPU(unsigned long, arch_cpu_freq);
+> +
+> +static inline arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+> +{
+> +       if (static_cpu_has(X86_FEATURE_APERFMPERF))
+> +               return per_cpu(arch_cpu_freq, cpu);
+> +       else
+> +               return SCHED_CAPACITY_SCALE;
+> +}
+> +
+> +extern void arch_scale_freq_tick(void);
+> +
+> +#endif
+> +
+>  #endif /* _ASM_X86_TOPOLOGY_H */
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index 3bf1e0b5f827..7d459577ee44 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -1647,3 +1647,27 @@ void native_play_dead(void)
+>  }
+>
+>  #endif
+> +
+> +static DEFINE_PER_CPU(u64, arch_prev_aperf);
+> +static DEFINE_PER_CPU(u64, arch_prev_mperf);
+> +DEFINE_PER_CPU(unsigned long, arch_cpu_freq);
+> +
+> +void arch_scale_freq_tick(void)
+> +{
+> +       u64 aperf, mperf;
+> +       u64 acnt, mcnt;
+> +
+> +       if (!static_cpu_has(X86_FEATURE_APERFMPERF))
+> +               return;
+> +
+> +       aperf = rdmsrl(MSR_IA32_APERF);
+> +       mperf = rdmsrl(MSR_IA32_APERF);
+> +
+> +       acnt = aperf - this_cpu_read(arch_prev_aperf);
+> +       mcnt = mperf - this_cpu_read(arch_prev_mperf);
+> +
+> +       this_cpu_write(arch_prev_aperf, aperf);
+> +       this_cpu_write(arch_prev_mperf, mperf);
+> +
+> +       this_cpu_write(arch_cpu_freq, div64_u64(acnt * SCHED_CAPACITY_SCALE, mcnt));
+> +}
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 96e323b26ea9..35dbf909afb2 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -2901,6 +2901,7 @@ void scheduler_tick(void)
+>         struct rq *rq = cpu_rq(cpu);
+>         struct task_struct *curr = rq->curr;
+>
+> +       arch_scale_freq_tick();
+>         sched_clock_tick();
+>
+>         raw_spin_lock(&rq->lock);
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index baa32075f98e..c3825c920e3f 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -1408,6 +1408,13 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+>  }
+>  #endif
+>
+> +#ifndef arch_scale_freq_tick
+> +static __always_inline
+> +void arch_scale_freq_tick(void)
+> +{
+> +}
+> +#endif
+> +
+>  #ifndef arch_scale_cpu_capacity
+>  static __always_inline
+>  unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
