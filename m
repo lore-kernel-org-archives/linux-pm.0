@@ -1,87 +1,61 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFCv7 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Thu, 3 Mar 2016 15:21:07 +0100
-Message-ID: <20160303142107.GA10948@gmail.com>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <1456190570-4475-4-git-send-email-smuckle@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] jz4740-battery: Correct voltage change check
+Date: Thu, 3 Mar 2016 15:21:09 +0100
+Message-ID: <20160303142109.GC29689@earth>
+References: <1456675548-16692-1-git-send-email-maarten@treewalker.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="xesSdrSSBC0PokLI"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:36232 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754169AbcCCOVM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 09:21:12 -0500
+Received: from mail.kernel.org ([198.145.29.136]:34976 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754693AbcCCOVO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Mar 2016 09:21:14 -0500
 Content-Disposition: inline
-In-Reply-To: <1456190570-4475-4-git-send-email-smuckle@linaro.org>
+In-Reply-To: <1456675548-16692-1-git-send-email-maarten@treewalker.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
+To: Maarten ter Huurne <maarten@treewalker.org>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
-* Steve Muckle <steve.muckle@linaro.org> wrote:
+--xesSdrSSBC0PokLI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> From: Michael Turquette <mturquette@baylibre.com>
-> 
-> Scheduler-driven CPU frequency selection hopes to exploit both
-> per-task and global information in the scheduler to improve frequency
-> selection policy, achieving lower power consumption, improved
-> responsiveness/performance, and less reliance on heuristics and
-> tunables. For further discussion on the motivation of this integration
-> see [0].
-> 
-> This patch implements a shim layer between the Linux scheduler and the
-> cpufreq subsystem. The interface accepts capacity requests from the
-> CFS, RT and deadline sched classes. The requests from each sched class
-> are summed on each CPU with a margin applied to the CFS and RT
-> capacity requests to provide some headroom. Deadline requests are
-> expected to be precise enough given their nature to not require
-> headroom. The maximum total capacity request for a CPU in a frequency
-> domain drives the requested frequency for that domain.
-> 
-> Policy is determined by both the sched classes and this shim layer.
-> 
-> Note that this algorithm is event-driven. There is no polling loop to
-> check cpu idle time nor any other method which is unsynchronized with
-> the scheduler, aside from an optional throttling mechanism.
-> 
-> Thanks to Juri Lelli <juri.lelli@arm.com> for contributing design ideas,
-> code and test results, and to Ricky Liang <jcliang@chromium.org>
-> for initialization and static key inc/dec fixes.
-> 
-> [0] http://article.gmane.org/gmane.linux.kernel/1499836
-> 
-> [smuckle@linaro.org: various additions and fixes, revised commit text]
-> 
-> CC: Ricky Liang <jcliang@chromium.org>
-> Signed-off-by: Michael Turquette <mturquette@baylibre.com>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig      |  21 ++
->  include/linux/cpufreq.h      |   3 +
->  include/linux/sched.h        |   8 +
->  kernel/sched/Makefile        |   1 +
->  kernel/sched/cpufreq_sched.c | 459 +++++++++++++++++++++++++++++++++++++++++++
+Hi,
 
-Please rename this to kernel/sched/cpufreq.c - no need to say 'sched' twice! :-)
+On Sun, Feb 28, 2016 at 05:05:48PM +0100, Maarten ter Huurne wrote:
+> The check is supposed to avoid redundant update notifications, so it
+> should check for the difference between old and new voltage exceeding
+> a threshold.
+>=20
+> Also make sure the result of a failed read is never stored.
 
->  kernel/sched/sched.h         |  51 +++++
->  6 files changed, 543 insertions(+)
->  create mode 100644 kernel/sched/cpufreq_sched.c
+Thanks, queued.
 
-So I really like how you push all high level code into kernel/sched/cpufreq.c and 
-use the cpufreq drivers only for actual low level frequency switching.
+-- Sebastian
 
-It would be nice to converge this code with the code from Rafael:
+--xesSdrSSBC0PokLI
+Content-Type: application/pgp-signature; name="signature.asc"
 
-   [PATCH 0/6] cpufreq: schedutil governor
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-i.e. use scheduler internal metrics within the scheduler, and create a clear 
-interface between low level cpufreq drivers and the cpufreq code living in the 
-scheduler.
+iQIcBAEBCgAGBQJW2EhVAAoJENju1/PIO/qagXEP/RhkwVSP/+OhbtjsL4C3LtxT
+64fDRTRsi94jIVUUWMCR5g4Fuh8UNo9iOmzhfV0pZQNf/EaTb+iojChqOM6do4Q2
+9AeooP4aKEfFO5gmXNCEQECdVL6XROte0kofwFaX04KATLdIacu5m+A/joBunQ+r
+nJWjhDSCIfEtsI8M46WTnmJrSvJh98NS0c2rjJ4hCswZCEytRzylvGRA+vHTLpqj
+oEDiJkJPzdtyyBgqeftT4ZPKbxD1YBp/0h9JbuMirOjCPQMWuZRY8yFZAcVaVyoF
+oOpJ8SZU98Qkvh+T9l+WBW38DkcgUZwDTjL6bPpmP7TMWR/WNxfg7/ATCaxZ7ZBY
+q7678PTm/VX6qvSV4UfKx7TEE0KhweCG9SRK2KoUmiuGs5PjsCNru4deAg4ApPQd
+uP/GkGXtjNcQ82dabmnWBAX/2em2P2hilFANJcmMeEjkog68olHB34zdaJoC/pnh
+GwKzyy21RWK/WieBGVlBfGIDbRayk90JRHSrklyRG9TGbs+MIrk2lNppXD16qRct
+743uo2XN5GzNRhqNfaG45sSr7OA8MaXfRHoT5EB6otNeeUTWBwsbOrTjEPq1ld3d
+eRGqkoM5MwdK16KmhT3cgDKwvM90zML+Zyxw9AfOlUgUcHBRAxVcFCB2AQ7OzVbW
+evsew5iedvYCEoUVmw4s
+=Aqs6
+-----END PGP SIGNATURE-----
 
-Thanks,
-
-	Ingo
+--xesSdrSSBC0PokLI--
