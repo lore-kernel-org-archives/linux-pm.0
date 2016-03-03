@@ -1,83 +1,41 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been
- force-suspended
-Date: Thu, 3 Mar 2016 23:54:05 +0300
-Message-ID: <56D8A46D.3030906@cogentembedded.com>
-References: <1457036214-26136-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 5/6] cpufreq: Support for fast frequency switching
+Date: Thu, 3 Mar 2016 21:56:40 +0100
+Message-ID: <CAJZ5v0gftV8fR9XQuFKPf-v6FzyFV5onRvyE64mc5kPXUVQqmA@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+	<26020775.9hJG2SHiH2@vostro.rjw.lan>
+	<20160303111655.GL6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1457036214-26136-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160303111655.GL6356@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello.
-
-On 03/03/2016 11:16 PM, Laurent Pinchart wrote:
-
-    Noticed a few typos as well, some alreayd reported...
-
-> The pm_runtime_force_suspend() and pm_runtime_force_resume() helpers are
-> designed to help driver being RPM-centric by offering an easy way to
-> manager runtime PM state during system suspend and resume. The first
-
-    Manage.
-
-> function will force the device into runtime suspend at system suspend
-> time, while the second one will perform the reverse operation at system
-> resume time.
+On Thu, Mar 3, 2016 at 12:16 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, Mar 02, 2016 at 03:12:33AM +0100, Rafael J. Wysocki wrote:
+>> The most important change from the previous version is that the
+>> ->fast_switch() callback takes an additional "relation" argument
+>> and now the governor can use it to choose a selection method.
 >
-> However, the pm_runtime_force_resume() really forces resume, regarding
-
-    Regardless.
-
-> of whether the device was running or already suspended before the call
-> to pm_runtime_force_suspend(). This results in devices being runtime
-> resumed at system resume time when they shouldn't.
+>> +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+>> +                                   unsigned int target_freq,
+>> +                                   unsigned int relation)
 >
-> Fix this by recording whether the device has been forcefully suspended
-> in pm_runtime_force_suspend() and condition resume in
-> pm_runtime_force_resume() to that state.
+> Would it make sense to replace the {target_freq, relation} pair with
+> something like the CPPC {min_freq, max_freq} pair?
+
+Yes, it would in general, but since I use __cpufreq_driver_target() in
+the "slow driver" case, that would need to be reworked too for
+consistency.  So I'd prefer to do that later.
+
+> Then you could use the closest frequency to max provided it is larger
+> than min.
 >
-> All current users of pm_runtime_force_resume() call the function
-> uncontionally in their system resume handler (some actually set it as
+> This communicates more actual information in the same number of
+> parameters and would thereby allow for a more flexible (better)
+> frequency selection.
 
-    Unconditionally.
-
-> the resume handler), all after calling pm_runtime_force_suspend() at
-> system suspend time. The change in behaviour should thus be safe.
->
-> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> ---
->   drivers/base/power/runtime.c | 12 +++++++++---
->   include/linux/pm.h           |  1 +
->   2 files changed, 10 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 4c7055009bd6..ad2189294c9b 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-[...]
-> @@ -1483,13 +1485,13 @@ err:
->   EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
->
->   /**
-> - * pm_runtime_force_resume - Force a device into resume state.
-> + * pm_runtime_force_resume - Force a device into resume state if needed.
->    * @dev: Device to resume.
->    *
->    * Prior invoking this function we expect the user to have brought the device
->    * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-> - * those actions and brings the device into full power. We update the runtime PM
-> - * status and re-enables runtime PM.
-> + * those actions and bring the device back to its runtime PM state before forced
-> + * suspension. We update the runtime PM status and re-enables runtime PM.
-
-    Re-enable.
-
-[...]
-
-MBR, Sergei
+Agreed.
