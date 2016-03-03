@@ -1,56 +1,46 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2] thermal: Fix build error of missing
- devm_ioremap_resource on UM
-Date: Thu, 3 Mar 2016 12:58:27 +0100
-Message-ID: <CAMuHMdV8SUdQTiyegHaF6riYHQx7XKiUaQaVZ8n+SfMk+fAO=g@mail.gmail.com>
-References: <1456994677-3024-1-git-send-email-k.kozlowski@samsung.com>
-	<CAMuHMdUW00DRhFFU9y9Di_jkh+wF=d+Rm3rwC9-guw5eS-+iXw@mail.gmail.com>
-	<CAJKOXPcHmP6imMMUK8KjxAj=PNLGJSQeuhLA8RBwMUkpzP6qTw@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [rtc-linux] Re: [RFC 04/15] irqchip: st: Add missing MFD_SYSCON
+ dependency on HAS_IOMEM
+Date: Thu, 3 Mar 2016 21:00:57 +0900
+Message-ID: <CAJKOXPcZuyicNAaH6CpOe+bTrLtM1k0tVisS_xJXGDrxyZ_i5A@mail.gmail.com>
+References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
+	<1456992221-26712-5-git-send-email-k.kozlowski@samsung.com>
+	<2506651.J2Z42d81nD@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPcHmP6imMMUK8KjxAj=PNLGJSQeuhLA8RBwMUkpzP6qTw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <2506651.J2Z42d81nD@wuerfel>
+Sender: netdev-owner@vger.kernel.org
+To: rtc-linux@googlegroups.com
+Cc: linux-arm-kernel@lists.infradead.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Kishon Vijay Abraham I <kishon@ti.com>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
-
-On Thu, Mar 3, 2016 at 12:49 PM, Krzysztof Kozlowski
-<k.kozlowski@samsung.com> wrote:
-> 2016-03-03 18:01 GMT+09:00 Geert Uytterhoeven <geert@linux-m68k.org>:
->> On Thu, Mar 3, 2016 at 9:44 AM, Krzysztof Kozlowski
->> <k.kozlowski@samsung.com> wrote:
->> > --- a/drivers/thermal/Kconfig
->> > +++ b/drivers/thermal/Kconfig
->> > @@ -177,7 +177,7 @@ config THERMAL_EMULATION
->> >
->> >  config HISI_THERMAL
->> >         tristate "Hisilicon thermal driver"
->> > -       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
->> > +       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST && HAS_IOMEM
+2016-03-03 19:53 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+> On Thursday 03 March 2016 17:03:30 Krzysztof Kozlowski wrote:
+>>  config ST_IRQCHIP
+>>         bool
+>>         select REGMAP
+>> +       depends on HAS_IOMEM    # For MFD_SYSCON
+>>         select MFD_SYSCON
+>>         help
+>>           Enables SysCfg Controlled IRQs on STi based platforms.
 >>
->> I think these are easier to read and maintain if you split hard and soft
->> dependencies, e.g.
->>
->>         depends on HAS_IOMEM
->>         depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
 >
-> Indeed this looks more readable but the HAS_IOMEM becomes a missing
-> dependency only for COMPILE_TEST. Usually it is included in the
-> architecture.
+> Not user visible.
 
-HAS_IOMEM is still a dependency, but it's implied by ARCH_HISI.
-COMPILE_TEST allows to discover more dependencies, and document them.
+Hmmm... you are right (here and in other patches) but why am I getting
+all these errors:
+warning: (ST_IRQCHIP && HIP04_ETH && STMMAC_PLATFORM && DWMAC_IPQ806X
+&& DWMAC_LPC18XX && DWMAC_ROCKCHIP && DWMAC_SOCFPGA && DWMAC_STI &&
+TI_CPSW && PINCTRL_ROCKCHIP && PINCTRL_DOVE && POWER_RESET_KEYSTONE &&
+S3C2410_WATCHDOG && VIDEO_OMAP3 && VIDEO_S5P_FIMC && USB_XHCI_MTK &&
+RTC_DRV_AT91SAM9 && LPC18XX_DMAMUX && VIDEO_OMAP4 && HWSPINLOCK_QCOM
+&& ATMEL_ST && QCOM_GSBI && PHY_HI6220_USB) selects MFD_SYSCON which
+has unmet direct dependencies (HAS_IOMEM)
+?
+(ARCH=um, allyesconfig)
+Adding depends here (and in other places) really helps... but it
+should not have any impact...
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks for comments,
+Krzysztof
