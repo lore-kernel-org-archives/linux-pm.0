@@ -1,13 +1,13 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 05/15] phy: hi6220: Add missing MFD_SYSCON dependency on HAS_IOMEM
-Date: Thu, 03 Mar 2016 17:03:31 +0900
-Message-ID: <1456992221-26712-6-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC 12/15] soc: qcom: Add missing MFD_SYSCON dependency on HAS_IOMEM
+Date: Thu, 03 Mar 2016 17:03:38 +0900
+Message-ID: <1456992221-26712-13-git-send-email-k.kozlowski__49022.17354761$1456992399$gmane$org@samsung.com>
 References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:35989 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932296AbcCCIEw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:52 -0500
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:58200 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932288AbcCCIFw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:05:52 -0500
 In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,21 +19,21 @@ direct dependencies.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/phy/Kconfig | 1 +
+ drivers/soc/qcom/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-index 0124d17bd9fe..cfdb3551a675 100644
---- a/drivers/phy/Kconfig
-+++ b/drivers/phy/Kconfig
-@@ -225,6 +225,7 @@ config PHY_MT65XX_USB3
- config PHY_HI6220_USB
- 	tristate "hi6220 USB PHY support"
- 	depends on (ARCH_HISI && ARM64) || COMPILE_TEST
-+	depends on HAS_IOMEM	# For MFD_SYSCON
- 	select GENERIC_PHY
- 	select MFD_SYSCON
- 	help
+diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+index 461b387d03cc..24de48134c15 100644
+--- a/drivers/soc/qcom/Kconfig
++++ b/drivers/soc/qcom/Kconfig
+@@ -4,6 +4,7 @@
+ config QCOM_GSBI
+         tristate "QCOM General Serial Bus Interface"
+         depends on ARCH_QCOM
++        depends on HAS_IOMEM	# For MFD_SYSCON
+         select MFD_SYSCON
+         help
+           Say y here to enable GSBI support.  The GSBI provides control
 -- 
 2.5.0
 
