@@ -1,13 +1,14 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC 04/15] irqchip: st: Add missing MFD_SYSCON dependency on HAS_IOMEM
-Date: Thu, 03 Mar 2016 17:03:30 +0900
-Message-ID: <1456992221-26712-5-git-send-email-k.kozlowski__25376.5855137774$1456992905$gmane$org@samsung.com>
+Subject: [RFC 03/15] hwspinlock: qcom: Add missing MFD_SYSCON dependency on
+ HAS_IOMEM
+Date: Thu, 03 Mar 2016 17:03:29 +0900
+Message-ID: <1456992221-26712-4-git-send-email-k.kozlowski__33736.9487774142$1456992915$gmane$org@samsung.com>
 References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:58085 "EHLO
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:58052 "EHLO
 	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932241AbcCCIEm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:42 -0500
+	with ESMTP id S932195AbcCCIEd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 03:04:33 -0500
 In-reply-to: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,21 +20,21 @@ direct dependencies.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/irqchip/Kconfig | 1 +
+ drivers/hwspinlock/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-index 00bbec6eca0b..10775b099daa 100644
---- a/drivers/irqchip/Kconfig
-+++ b/drivers/irqchip/Kconfig
-@@ -157,6 +157,7 @@ config RENESAS_IRQC
- config ST_IRQCHIP
- 	bool
- 	select REGMAP
+diff --git a/drivers/hwspinlock/Kconfig b/drivers/hwspinlock/Kconfig
+index 73a401662853..5ab2d51dc147 100644
+--- a/drivers/hwspinlock/Kconfig
++++ b/drivers/hwspinlock/Kconfig
+@@ -21,6 +21,7 @@ config HWSPINLOCK_OMAP
+ config HWSPINLOCK_QCOM
+ 	tristate "Qualcomm Hardware Spinlock device"
+ 	depends on ARCH_QCOM
 +	depends on HAS_IOMEM	# For MFD_SYSCON
+ 	select HWSPINLOCK
  	select MFD_SYSCON
  	help
- 	  Enables SysCfg Controlled IRQs on STi based platforms.
 -- 
 2.5.0
 
