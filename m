@@ -1,33 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/6] cpufreq: Reduce cpufreq_update_util() overhead a bit
-Date: Thu, 3 Mar 2016 14:04:24 +0100
-Message-ID: <20160303130424.GP6356@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <3575770.L1lplNLqVv@vostro.rjw.lan>
- <20160303114701.GT18792@e106622-lin>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [rtc-linux] Re: [RFC 09/15] media: platform: Add missing
+ MFD_SYSCON dependency on HAS_IOMEM
+Date: Thu, 03 Mar 2016 14:05:33 +0100
+Message-ID: <13054519.5feSCc5dgv@wuerfel>
+References: <1456992221-26712-1-git-send-email-k.kozlowski@samsung.com>
+ <2181866.k24LVvUjTs@wuerfel>
+ <CAJKOXPe50ira_Qqy7qJ5H_PHa8B_xOinCK6JkncXFYn_eaQFfg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:37887 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbcCCNE2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 08:04:28 -0500
-Content-Disposition: inline
-In-Reply-To: <20160303114701.GT18792@e106622-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAJKOXPe50ira_Qqy7qJ5H_PHa8B_xOinCK6JkncXFYn_eaQFfg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, David Brown <david.brown@linaro.org>, netdev@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, devel@driverdev.osuosl.org, linux-samsung-soc@vger.kernel.org, Vinod Koul <vinod.koul@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Andy Gross <andy.gross@linaro.org>, linux-media@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, rtc-linux@googlegroups.com, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Marc Zyngier <marc.zyngier@arm.com>, linux-arm-msm@vger.kernel.org, linux-gpio@vger.kernel.org, Giuseppe Cavallaro <peppe.cavallaro@st.com>Dan Williams <da>
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Thu, Mar 03, 2016 at 11:47:01AM +0000, Juri Lelli wrote:
-
-> > +#ifdef CONFIG_LOCKDEP
-> > +	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
-> > +#endif
-> >  
-> >  	data = rcu_dereference(*this_cpu_ptr(&cpufreq_update_util_data));
+On Thursday 03 March 2016 21:40:23 Krzysztof Kozlowski wrote:
+> >>         select MFD_SYSCON
+> >> diff --git a/drivers/media/platform/exynos4-is/Kconfig b/drivers/media/platform/exynos4-is/Kconfig
+> >> index 57d42c6172c5..c4317b99d257 100644
+> >> --- a/drivers/media/platform/exynos4-is/Kconfig
+> >> +++ b/drivers/media/platform/exynos4-is/Kconfig
+> >> @@ -17,6 +17,7 @@ config VIDEO_S5P_FIMC
+> >>         tristate "S5P/EXYNOS4 FIMC/CAMIF camera interface driver"
+> >>         depends on I2C
+> >>         depends on HAS_DMA
+> >> +       depends on HAS_IOMEM    # For MFD_SYSCON
+> >>         select VIDEOBUF2_DMA_CONTIG
+> >>         select V4L2_MEM2MEM_DEV
+> >
+> > This  is guarded by HAS_DMA, which implies HAS_IOMEM afaik.
 > 
-> I think you need to s/rcu_dereference/rcu_dereference_sched/ here or
-> RCU will complain:
+> Looking at Kconfigs - no, it is not implied (or am I missing
+> something)... and sometimes dependency on HAS_IOMEM is next to
+> HAS_DMA.
+> 
+> 
 
-Ah, indeed ;-)
+Ah, you are right: UML has no DMA and no IOMEM, but s390 can
+have IOMEM (if PCI is enabled) and always sets HAS_DMA.
+
+In practice, I think the HAS_DMA symbol is not as well-defined
+as it should be, it basically refers to the presence of the dma-mapping.h
+API, and that only really makes sense when you also have IOMEM,
+so there might be an implied dependency between the two, but it's
+not enforced or actually true.
+
+	Arnd
