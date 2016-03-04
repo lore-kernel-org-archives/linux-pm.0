@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Fri, 4 Mar 2016 23:40:34 +0100
-Message-ID: <CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
+Date: Fri, 4 Mar 2016 23:58:33 +0100
+Message-ID: <CAJZ5v0hnnANO6-CCgaika+FZtoXGf5V1Z8Wmmv+niZx=h7obWQ@mail.gmail.com>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
 	<2409306.qzzMXcm4dm@vostro.rjw.lan>
 	<15684081.T4iOMUSHCY@vostro.rjw.lan>
@@ -58,18 +58,9 @@ On Fri, Mar 4, 2016 at 11:32 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >> transition notifier is made?
 >
 > That sounds like a good idea.
->
-> There also is the CPUFREQ_ASYNC_NOTIFICATION driver flag that in
-> principle might be used as a workaround, but I'm not sure how much
-> work that would require ATM.
 
-What I mean is that drivers using it are supposed to handle the
-notifications by calling cpufreq_freq_transition_begin(/end() by
-themselves, so theoretically there is a mechanism already in place for
-that.
-
-I guess what might be done would be to spawn a work item to carry out
-a notify when the frequency changes.
+Transition notifiers may be registered before the driver is
+registered, so that won't help in all cases.
 
 Thanks,
 Rafael
