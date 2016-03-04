@@ -1,44 +1,88 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V7 1/4] ARM64: tegra: Remove unused #power-domain-cells
- property
-Date: Fri, 4 Mar 2016 14:19:50 +0000
-Message-ID: <56D99986.8040808@nvidia.com>
-References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
- <1457094186-15786-2-git-send-email-jonathanh@nvidia.com>
- <20160304141346.GA28635@ulmo.nvidia.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been
+ force-suspended
+Date: Fri, 4 Mar 2016 10:24:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org>
+References: <CAPDyKFoGPcmYkt537FoQ+4zzFGfjeSK8aNSMfjL4dnoAS0J_rQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:16953 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbcCDOT5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2016 09:19:57 -0500
-In-Reply-To: <20160304141346.GA28635@ulmo.nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoGPcmYkt537FoQ+4zzFGfjeSK8aNSMfjL4dnoAS0J_rQ@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
+On Fri, 4 Mar 2016, Ulf Hansson wrote:
 
-On 04/03/16 14:13, Thierry Reding wrote:
-> * PGP Signed by an unknown key
+> + Alan
 > 
-> On Fri, Mar 04, 2016 at 12:23:03PM +0000, Jon Hunter wrote:
->> Remove the "#power-domain-cells" property which was incorrectly
->> included by commit e53095857166 ("arm64: tegra: Add Tegra210
->> support").
->>
->> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->> ---
->>  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 2 --
->>  1 file changed, 2 deletions(-)
-> 
-> Jon, can you resend this to arm@kernel.org to get this applied before
-> the final v4.5? Feel free to add:
-> 
-> Acked-by: Thierry Reding <treding@nvidia.com>
+> On 3 March 2016 at 21:16, Laurent Pinchart
+> <laurent.pinchart+renesas@ideasonboard.com> wrote:
+> > The pm_runtime_force_suspend() and pm_runtime_force_resume() helpers are
+> > designed to help driver being RPM-centric by offering an easy way to
+> > manager runtime PM state during system suspend and resume. The first
+> > function will force the device into runtime suspend at system suspend
+> > time, while the second one will perform the reverse operation at system
+> > resume time.
+> >
+> > However, the pm_runtime_force_resume() really forces resume, regarding
+> > of whether the device was running or already suspended before the call
+> > to pm_runtime_force_suspend(). This results in devices being runtime
+> > resumed at system resume time when they shouldn't.
+> >
+> > Fix this by recording whether the device has been forcefully suspended
+> > in pm_runtime_force_suspend() and condition resume in
+> > pm_runtime_force_resume() to that state.
+> >
+> > All current users of pm_runtime_force_resume() call the function
+> > uncontionally in their system resume handler (some actually set it as
+> > the resume handler), all after calling pm_runtime_force_suspend() at
+> > system suspend time. The change in behaviour should thus be safe.
+> >
+> > Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
 
-Yes, no problem.
 
-Jon
+> > @@ -1475,6 +1476,7 @@ int pm_runtime_force_suspend(struct device *dev)
+> >                 goto err;
+> >
+> >         pm_runtime_set_suspended(dev);
+> > +       dev->power.is_force_suspended = true;
+> >         return 0;
+> >  err:
+> >         pm_runtime_enable(dev);
+
+> > @@ -1510,6 +1515,7 @@ int pm_runtime_force_resume(struct device *dev)
+> >         if (ret)
+> >                 goto out;
+> >
+> > +       dev->power.is_force_suspended = false;
+> >         pm_runtime_set_active(dev);
+> >         pm_runtime_mark_last_busy(dev);
+> >  out:
+
+Setting a bitflag is not SMP-safe.  When you write to one of the
+runtime-PM bits under dev->power, it is necessary to hold 
+dev->power.lock.
+
+> Overall I have no objections to this change, as I think it's improving
+> the behaviour!
+> 
+> What I was thinking though, but it might be a bit controversial. :-)...
+> Instead of relying on whether we actually forced runtime suspend
+> earlier, why couldn't we instead check the runtime PM usage count of
+> the device?
+> 
+> Only when it's greater than zero, we shall do the forced resume of the
+> device, otherwise just re-enable runtime PM.
+> 
+> This would have the affect of leaving devices in runtime suspend,
+> until they really needs to be used again. It would thus decrease the
+> total system PM resume time.
+> 
+> Do you think this could work?
+
+If you do this then there would be no need for is_force_suspended.  It 
+seems like a good idea to me.
+
+Alan Stern
