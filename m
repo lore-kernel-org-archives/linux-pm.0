@@ -1,50 +1,72 @@
-From: yu chen <yu.chen.surf@gmail.com>
-Subject: Re: STI problem and workaround for Dell XPS 13 (Skylake, 2016) /
- Broadcom BCM4350
-Date: Fri, 4 Mar 2016 09:41:06 +0800
-Message-ID: <CADjb_WQcXK5kc4d9isPGcw6=oVUbnZ9P77owOcmq=KSh7wEYbw@mail.gmail.com>
-References: <87h9gpp5rt.fsf@gmail.com>
-	<CADjb_WQwwGD4wQugeLf=2k7XjtPGt9o6vgqhMdLR+ALDhK7J+Q@mail.gmail.com>
-	<87a8mhotmk.fsf@gmail.com>
-	<CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
-	<8737s8uj49.fsf@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 5/6] cpufreq: Support for fast frequency switching
+Date: Fri, 4 Mar 2016 03:15:59 +0100
+Message-ID: <CAJZ5v0inN24WujzEps+oe0gDcdAP8RjyB1Y2+DbBP044RKpOhA@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+	<26020775.9hJG2SHiH2@vostro.rjw.lan>
+	<20160303060003.GJ2891@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:33765 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbcCDBlI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 20:41:08 -0500
-Received: by mail-wm0-f47.google.com with SMTP id l68so1400385wml.0
-        for <linux-pm@vger.kernel.org>; Thu, 03 Mar 2016 17:41:07 -0800 (PST)
-In-Reply-To: <8737s8uj49.fsf@gmail.com>
+Received: from mail-lb0-f196.google.com ([209.85.217.196]:33259 "EHLO
+	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbcCDCQC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 21:16:02 -0500
+In-Reply-To: <20160303060003.GJ2891@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tamas Papp <tkpapp@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Thu, Mar 3, 2016 at 3:16 PM, Tamas Papp <tkpapp@gmail.com> wrote:
-> On Wed, Mar 02 2016, yu chen wrote:
->
->> Currently the  0000:3c and 0000:3a might have the same pnp object name PXSX,
->> unfortunately  the 'echo' will find the first math device in the
->> wakable list, and maybe
->>  0000:3c was probed before 0000:3a, so... maybe this is a weakness.
+On Thu, Mar 3, 2016 at 7:00 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 02-03-16, 03:12, Rafael J. Wysocki wrote:
+>> Index: linux-pm/drivers/cpufreq/cpufreq.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+>> +++ linux-pm/drivers/cpufreq/cpufreq.c
+>> @@ -1772,6 +1772,39 @@ EXPORT_SYMBOL(cpufreq_unregister_notifie
+>>   *                              GOVERNORS                            *
+>>   *********************************************************************/
 >>
->> Maybe you can disabled the wakable feature directly in device sysfs,
->> for example,
->> echo 0 > /sys/devices/pci0000:00/0000:3a:00.0/power/wakeup,
->> you might need to find out where 0000:3a:00.0 is.
+>> +/**
+>> + * cpufreq_driver_fast_switch - Carry out a fast CPU frequency switch.
+>> + * @policy: cpufreq policy to switch the frequency for.
+>> + * @target_freq: New frequency to set (may be approximate).
+>> + * @relation: Relation to use for frequency selection.
+>> + *
+>> + * Carry out a fast frequency switch from interrupt context.
+>> + *
+>> + * This function must not be called if policy->fast_switch_possible is unset.
+>> + *
+>> + * Governors calling this function must guarantee that it will never be invoked
+>> + * twice in parallel for the same policy and that it will never be called in
+>> + * parallel with either ->target() or ->target_index() for the same policy.
+>> + *
+>> + * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
+>> + * callback, the hardware configuration must be preserved.
+>> + */
+>> +void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>> +                             unsigned int target_freq, unsigned int relation)
+>> +{
+>> +     unsigned int freq;
+>> +
+>> +     if (target_freq == policy->cur)
 >
-> I tried that, but the module has problems after wakeup. I have to remove
-> and insert it again with modprobe.
+> Maybe an unlikely() here ?
 >
-> Still, this is an OK workaround, thanks for the help. I still don't know
-> if I should file this as a bug, and if yes, where.
+>> +             return;
+>> +
+>> +     freq = cpufreq_driver->fast_switch(policy, target_freq, relation);
+>> +     if (freq != CPUFREQ_ENTRY_INVALID) {
+>> +             policy->cur = freq;
 >
-Does the following fix make sense for you:
+> Hmm.. What will happen to the code relying on the cpufreq-notifiers
+> now ?
 
-cat /proc/acpi/wakeup
-PXSX:0      S4    *enabled   pci:0000:3a:00.0
-then you need to echo PXSX:0 to disable it,
-and for 3c, it would be PXSX:1
+It will have a problem.
+
+For that code it's like the CPU changing the frequency and not telling
+it (which is not unusual for that matter).
+
+Thanks,
+Rafael
