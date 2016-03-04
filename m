@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 3/10] cpufreq: governor: New data type for management part of dbs_data
-Date: Fri, 04 Mar 2016 04:01:19 +0100
-Message-ID: <1575114.qm03ypD4vK@vostro.rjw.lan>
+Subject: [PATCH v2 2/10][Resend] cpufreq: acpi-cpufreq: Make read and write operations more efficient
+Date: Fri, 04 Mar 2016 03:59:19 +0100
+Message-ID: <8390671.DmEMiPVeOm@vostro.rjw.lan>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,458 +15,322 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In addition to fields representing governor tunables, struct dbs_data
-contains some fields needed for the management of objects of that
-type.  As it turns out, that part of struct dbs_data may be shared
-with (future) governors that won't use the common code used by
-"ondemand" and "conservative", so move it to a separate struct type
-and modify the code using struct dbs_data to follow.
+Setting a new CPU frequency and reading the current request value
+in the ACPI cpufreq driver involves each at least two switch
+instructions (there's more if the policy is shared).  One of
+them is present in drv_read/write() that prepares a command
+structure and the other happens in subsequent do_drv_read/write()
+when that structure is interpreted.  However, all of those switches
+may be avoided by using function pointers.
+
+To that end, add two function pointers to struct acpi_cpufreq_data
+to represent read and write operations on the frequency register
+and set them up during policy intitialization to point to the pair
+of routines suitable for the given processor (Intel/AMD MSR access
+or I/O port access).  Then, use those pointers in do_drv_read/write()
+and modify drv_read/write() to prepare the command structure for
+them without any checks.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-Changes from the previous version:
-- The new data type is called gov_attr_set now (instead of gov_tunables)
-  and some variable names etc have been changed to follow.
+No changes.
 
 ---
- drivers/cpufreq/cpufreq_conservative.c |   25 +++++----
- drivers/cpufreq/cpufreq_governor.c     |   90 ++++++++++++++++++++-------------
- drivers/cpufreq/cpufreq_governor.h     |   35 +++++++-----
- drivers/cpufreq/cpufreq_ondemand.c     |   29 ++++++----
- 4 files changed, 107 insertions(+), 72 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c |  208 ++++++++++++++++++-----------------------
+ 1 file changed, 95 insertions(+), 113 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -41,6 +41,13 @@
- /* Ondemand Sampling types */
- enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
-+struct gov_attr_set {
-+	struct kobject kobj;
-+	struct list_head policy_list;
-+	struct mutex update_lock;
-+	int usage_count;
-+};
-+
- /*
-  * Abbreviations:
-  * dbs: used as a shortform for demand based switching It helps to keep variable
-@@ -52,7 +59,7 @@ enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
- /* Governor demand based switching data (per-policy or global). */
- struct dbs_data {
--	int usage_count;
-+	struct gov_attr_set attr_set;
- 	void *tuners;
- 	unsigned int min_sampling_rate;
- 	unsigned int ignore_nice_load;
-@@ -60,37 +67,35 @@ struct dbs_data {
- 	unsigned int sampling_down_factor;
- 	unsigned int up_threshold;
- 	unsigned int io_is_busy;
--
--	struct kobject kobj;
--	struct list_head policy_dbs_list;
--	/*
--	 * Protect concurrent updates to governor tunables from sysfs,
--	 * policy_dbs_list and usage_count.
--	 */
--	struct mutex mutex;
+--- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
++++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+@@ -70,6 +70,8 @@ struct acpi_cpufreq_data {
+ 	unsigned int cpu_feature;
+ 	unsigned int acpi_perf_cpu;
+ 	cpumask_var_t freqdomain_cpus;
++	void (*cpu_freq_write)(struct acpi_pct_register *reg, u32 val);
++	u32 (*cpu_freq_read)(struct acpi_pct_register *reg);
  };
  
-+static inline struct dbs_data *to_dbs_data(struct gov_attr_set *attr_set)
+ /* acpi_perf_data is a pointer to percpu data. */
+@@ -243,125 +245,119 @@ static unsigned extract_freq(u32 val, st
+ 	}
+ }
+ 
+-struct msr_addr {
+-	u32 reg;
+-};
++u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
 +{
-+	return container_of(attr_set, struct dbs_data, attr_set);
++	u32 val, dummy;
+ 
+-struct io_addr {
+-	u16 port;
+-	u8 bit_width;
+-};
++	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
++	return val;
 +}
 +
- /* Governor's specific attributes */
--struct dbs_data;
- struct governor_attr {
- 	struct attribute attr;
--	ssize_t (*show)(struct dbs_data *dbs_data, char *buf);
--	ssize_t (*store)(struct dbs_data *dbs_data, const char *buf,
-+	ssize_t (*show)(struct gov_attr_set *attr_set, char *buf);
-+	ssize_t (*store)(struct gov_attr_set *attr_set, const char *buf,
- 			 size_t count);
++void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
++{
++	u32 lo, hi;
++
++	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
++	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
++	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
++}
++
++u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
++{
++	u32 val, dummy;
++
++	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
++	return val;
++}
++
++void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
++{
++	wrmsr(MSR_AMD_PERF_CTL, val, 0);
++}
++
++u32 cpu_freq_read_io(struct acpi_pct_register *reg)
++{
++	u32 val;
++
++	acpi_os_read_port(reg->address, &val, reg->bit_width);
++	return val;
++}
++
++void cpu_freq_write_io(struct acpi_pct_register *reg, u32 val)
++{
++	acpi_os_write_port(reg->address, val, reg->bit_width);
++}
+ 
+ struct drv_cmd {
+-	unsigned int type;
+-	const struct cpumask *mask;
+-	union {
+-		struct msr_addr msr;
+-		struct io_addr io;
+-	} addr;
++	struct acpi_pct_register *reg;
+ 	u32 val;
++	union {
++		void (*write)(struct acpi_pct_register *reg, u32 val);
++		u32 (*read)(struct acpi_pct_register *reg);
++	} func;
  };
  
- #define gov_show_one(_gov, file_name)					\
- static ssize_t show_##file_name						\
--(struct dbs_data *dbs_data, char *buf)					\
-+(struct gov_attr_set *attr_set, char *buf)				\
- {									\
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);		\
- 	struct _gov##_dbs_tuners *tuners = dbs_data->tuners;		\
- 	return sprintf(buf, "%u\n", tuners->file_name);			\
- }
- 
- #define gov_show_one_common(file_name)					\
- static ssize_t show_##file_name						\
--(struct dbs_data *dbs_data, char *buf)					\
-+(struct gov_attr_set *attr_set, char *buf)				\
- {									\
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);		\
- 	return sprintf(buf, "%u\n", dbs_data->file_name);		\
- }
- 
-@@ -184,7 +189,7 @@ void od_register_powersave_bias_handler(
- 		(struct cpufreq_policy *, unsigned int, unsigned int),
- 		unsigned int powersave_bias);
- void od_unregister_powersave_bias_handler(void);
--ssize_t store_sampling_rate(struct dbs_data *dbs_data, const char *buf,
-+ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
- 			    size_t count);
- void gov_update_cpu_data(struct dbs_data *dbs_data);
- #endif /* _CPUFREQ_GOVERNOR_H */
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -43,9 +43,10 @@ static DEFINE_MUTEX(gov_dbs_data_mutex);
-  * This must be called with dbs_data->mutex held, otherwise traversing
-  * policy_dbs_list isn't safe.
-  */
--ssize_t store_sampling_rate(struct dbs_data *dbs_data, const char *buf,
-+ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
- 			    size_t count)
+ /* Called via smp_call_function_single(), on the target CPU */
+ static void do_drv_read(void *_cmd)
  {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct policy_dbs_info *policy_dbs;
- 	unsigned int rate;
- 	int ret;
-@@ -59,7 +60,7 @@ ssize_t store_sampling_rate(struct dbs_d
- 	 * We are operating under dbs_data->mutex and so the list and its
- 	 * entries can't be freed concurrently.
- 	 */
--	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list) {
-+	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
- 		mutex_lock(&policy_dbs->timer_mutex);
- 		/*
- 		 * On 32-bit architectures this may race with the
-@@ -96,7 +97,7 @@ void gov_update_cpu_data(struct dbs_data
+ 	struct drv_cmd *cmd = _cmd;
+-	u32 h;
+ 
+-	switch (cmd->type) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		rdmsr(cmd->addr.msr.reg, cmd->val, h);
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		acpi_os_read_port((acpi_io_address)cmd->addr.io.port,
+-				&cmd->val,
+-				(u32)cmd->addr.io.bit_width);
+-		break;
+-	default:
+-		break;
+-	}
++	cmd->val = cmd->func.read(cmd->reg);
+ }
+ 
+-/* Called via smp_call_function_many(), on the target CPUs */
+-static void do_drv_write(void *_cmd)
++static u32 drv_read(struct acpi_cpufreq_data *data, const struct cpumask *mask)
  {
- 	struct policy_dbs_info *policy_dbs;
+-	struct drv_cmd *cmd = _cmd;
+-	u32 lo, hi;
++	struct acpi_processor_performance *perf = to_perf_data(data);
++	struct drv_cmd cmd = {
++		.reg = &perf->control_register,
++		.func.read = data->cpu_freq_read,
++	};
++	int err;
  
--	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list) {
-+	list_for_each_entry(policy_dbs, &dbs_data->attr_set.policy_list, list) {
- 		unsigned int j;
- 
- 		for_each_cpu(j, policy_dbs->policy->cpus) {
-@@ -111,9 +112,9 @@ void gov_update_cpu_data(struct dbs_data
+-	switch (cmd->type) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		rdmsr(cmd->addr.msr.reg, lo, hi);
+-		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
+-		wrmsr(cmd->addr.msr.reg, lo, hi);
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
+-				cmd->val,
+-				(u32)cmd->addr.io.bit_width);
+-		break;
+-	default:
+-		break;
+-	}
++	err = smp_call_function_any(mask, do_drv_read, &cmd, 1);
++	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
++	return cmd.val;
  }
- EXPORT_SYMBOL_GPL(gov_update_cpu_data);
  
--static inline struct dbs_data *to_dbs_data(struct kobject *kobj)
-+static inline struct gov_attr_set *to_gov_attr_set(struct kobject *kobj)
+-static void drv_read(struct drv_cmd *cmd)
++/* Called via smp_call_function_many(), on the target CPUs */
++static void do_drv_write(void *_cmd)
  {
--	return container_of(kobj, struct dbs_data, kobj);
-+	return container_of(kobj, struct gov_attr_set, kobj);
+-	int err;
+-	cmd->val = 0;
++	struct drv_cmd *cmd = _cmd;
+ 
+-	err = smp_call_function_any(cmd->mask, do_drv_read, cmd, 1);
+-	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
++	cmd->func.write(cmd->reg, cmd->val);
  }
  
- static inline struct governor_attr *to_gov_attr(struct attribute *attr)
-@@ -124,25 +125,24 @@ static inline struct governor_attr *to_g
- static ssize_t governor_show(struct kobject *kobj, struct attribute *attr,
- 			     char *buf)
+-static void drv_write(struct drv_cmd *cmd)
++static void drv_write(struct acpi_cpufreq_data *data,
++		      const struct cpumask *mask, u32 val)
  {
--	struct dbs_data *dbs_data = to_dbs_data(kobj);
- 	struct governor_attr *gattr = to_gov_attr(attr);
++	struct acpi_processor_performance *perf = to_perf_data(data);
++	struct drv_cmd cmd = {
++		.reg = &perf->control_register,
++		.val = val,
++		.func.write = data->cpu_freq_write,
++	};
+ 	int this_cpu;
  
--	return gattr->show(dbs_data, buf);
-+	return gattr->show(to_gov_attr_set(kobj), buf);
- }
- 
- static ssize_t governor_store(struct kobject *kobj, struct attribute *attr,
- 			      const char *buf, size_t count)
- {
--	struct dbs_data *dbs_data = to_dbs_data(kobj);
-+	struct gov_attr_set *attr_set = to_gov_attr_set(kobj);
- 	struct governor_attr *gattr = to_gov_attr(attr);
- 	int ret = -EBUSY;
- 
--	mutex_lock(&dbs_data->mutex);
-+	mutex_lock(&attr_set->update_lock);
- 
--	if (dbs_data->usage_count)
--		ret = gattr->store(dbs_data, buf, count);
-+	if (attr_set->usage_count)
-+		ret = gattr->store(attr_set, buf, count);
- 
--	mutex_unlock(&dbs_data->mutex);
-+	mutex_unlock(&attr_set->update_lock);
- 
- 	return ret;
- }
-@@ -424,6 +424,41 @@ static void free_policy_dbs_info(struct
- 	gov->free(policy_dbs);
- }
- 
-+static void gov_attr_set_init(struct gov_attr_set *attr_set,
-+			      struct list_head *list_node)
-+{
-+	INIT_LIST_HEAD(&attr_set->policy_list);
-+	mutex_init(&attr_set->update_lock);
-+	attr_set->usage_count = 1;
-+	list_add(list_node, &attr_set->policy_list);
-+}
+ 	this_cpu = get_cpu();
+-	if (cpumask_test_cpu(this_cpu, cmd->mask))
+-		do_drv_write(cmd);
+-	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
++	if (cpumask_test_cpu(this_cpu, mask))
++		do_drv_write(&cmd);
 +
-+static void gov_attr_set_get(struct gov_attr_set *attr_set,
-+			     struct list_head *list_node)
-+{
-+	mutex_lock(&attr_set->update_lock);
-+	attr_set->usage_count++;
-+	list_add(list_node, &attr_set->policy_list);
-+	mutex_unlock(&attr_set->update_lock);
-+}
-+
-+static unsigned int gov_attr_set_put(struct gov_attr_set *attr_set,
-+				     struct list_head *list_node)
-+{
-+	unsigned int count;
-+
-+	mutex_lock(&attr_set->update_lock);
-+	list_del(list_node);
-+	count = --attr_set->usage_count;
-+	mutex_unlock(&attr_set->update_lock);
-+	if (count)
-+		return count;
-+
-+	kobject_put(&attr_set->kobj);
-+	mutex_destroy(&attr_set->update_lock);
-+	return 0;
-+}
-+
- static int cpufreq_governor_init(struct cpufreq_policy *policy)
++	smp_call_function_many(mask, do_drv_write, &cmd, 1);
+ 	put_cpu();
+ }
+ 
+-static u32
+-get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
++static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
  {
- 	struct dbs_governor *gov = dbs_governor_of(policy);
-@@ -452,10 +487,7 @@ static int cpufreq_governor_init(struct
- 		policy_dbs->dbs_data = dbs_data;
- 		policy->governor_data = policy_dbs;
+-	struct acpi_processor_performance *perf;
+-	struct drv_cmd cmd;
++	u32 val;
  
--		mutex_lock(&dbs_data->mutex);
--		dbs_data->usage_count++;
--		list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
--		mutex_unlock(&dbs_data->mutex);
-+		gov_attr_set_get(&dbs_data->attr_set, &policy_dbs->list);
- 		goto out;
- 	}
+ 	if (unlikely(cpumask_empty(mask)))
+ 		return 0;
  
-@@ -465,8 +497,7 @@ static int cpufreq_governor_init(struct
- 		goto free_policy_dbs_info;
- 	}
- 
--	INIT_LIST_HEAD(&dbs_data->policy_dbs_list);
--	mutex_init(&dbs_data->mutex);
-+	gov_attr_set_init(&dbs_data->attr_set, &policy_dbs->list);
- 
- 	ret = gov->init(dbs_data, !policy->governor->initialized);
- 	if (ret)
-@@ -486,14 +517,11 @@ static int cpufreq_governor_init(struct
- 	if (!have_governor_per_policy())
- 		gov->gdbs_data = dbs_data;
- 
--	policy->governor_data = policy_dbs;
+-	switch (data->cpu_feature) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		cmd.type = SYSTEM_IO_CAPABLE;
+-		perf = to_perf_data(data);
+-		cmd.addr.io.port = perf->control_register.address;
+-		cmd.addr.io.bit_width = perf->control_register.bit_width;
+-		break;
+-	default:
+-		return 0;
+-	}
 -
- 	policy_dbs->dbs_data = dbs_data;
--	dbs_data->usage_count = 1;
--	list_add(&policy_dbs->list, &dbs_data->policy_dbs_list);
-+	policy->governor_data = policy_dbs;
+-	cmd.mask = mask;
+-	drv_read(&cmd);
++	val = drv_read(data, mask);
  
- 	gov->kobj_type.sysfs_ops = &governor_sysfs_ops;
--	ret = kobject_init_and_add(&dbs_data->kobj, &gov->kobj_type,
-+	ret = kobject_init_and_add(&dbs_data->attr_set.kobj, &gov->kobj_type,
- 				   get_governor_parent_kobj(policy),
- 				   "%s", gov->gov.name);
- 	if (!ret)
-@@ -522,29 +550,21 @@ static int cpufreq_governor_exit(struct
- 	struct dbs_governor *gov = dbs_governor_of(policy);
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
--	int count;
-+	unsigned int count;
+-	pr_debug("get_cur_val = %u\n", cmd.val);
++	pr_debug("get_cur_val = %u\n", val);
  
- 	/* Protect gov->gdbs_data against concurrent updates. */
- 	mutex_lock(&gov_dbs_data_mutex);
+-	return cmd.val;
++	return val;
+ }
  
--	mutex_lock(&dbs_data->mutex);
--	list_del(&policy_dbs->list);
--	count = --dbs_data->usage_count;
--	mutex_unlock(&dbs_data->mutex);
-+	count = gov_attr_set_put(&dbs_data->attr_set, &policy_dbs->list);
+ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+@@ -416,7 +412,7 @@ static int acpi_cpufreq_target(struct cp
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 	struct acpi_processor_performance *perf;
+-	struct drv_cmd cmd;
++	const struct cpumask *mask;
+ 	unsigned int next_perf_state = 0; /* Index into perf table */
+ 	int result = 0;
  
--	if (!count) {
--		kobject_put(&dbs_data->kobj);
--
--		policy->governor_data = NULL;
-+	policy->governor_data = NULL;
- 
-+	if (!count) {
- 		if (!have_governor_per_policy())
- 			gov->gdbs_data = NULL;
- 
- 		gov->exit(dbs_data, policy->governor->initialized == 1);
--		mutex_destroy(&dbs_data->mutex);
- 		kfree(dbs_data);
--	} else {
--		policy->governor_data = NULL;
+@@ -438,37 +434,17 @@ static int acpi_cpufreq_target(struct cp
+ 		}
  	}
  
- 	free_policy_dbs_info(policy_dbs, gov);
-Index: linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ linux-pm/drivers/cpufreq/cpufreq_ondemand.c
-@@ -207,9 +207,10 @@ static unsigned int od_dbs_timer(struct
- /************************** sysfs interface ************************/
- static struct dbs_governor od_dbs_gov;
+-	switch (data->cpu_feature) {
+-	case SYSTEM_INTEL_MSR_CAPABLE:
+-		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	case SYSTEM_AMD_MSR_CAPABLE:
+-		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
+-		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	case SYSTEM_IO_CAPABLE:
+-		cmd.type = SYSTEM_IO_CAPABLE;
+-		cmd.addr.io.port = perf->control_register.address;
+-		cmd.addr.io.bit_width = perf->control_register.bit_width;
+-		cmd.val = (u32) perf->states[next_perf_state].control;
+-		break;
+-	default:
+-		return -ENODEV;
+-	}
+-
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	if (policy->shared_type != CPUFREQ_SHARED_TYPE_ANY)
+-		cmd.mask = policy->cpus;
+-	else
+-		cmd.mask = cpumask_of(policy->cpu);
++	/*
++	 * The core won't allow CPUs to go away until the governor has been
++	 * stopped, so we can rely on the stability of policy->cpus.
++	 */
++	mask = policy->shared_type == CPUFREQ_SHARED_TYPE_ANY ?
++		cpumask_of(policy->cpu) : policy->cpus;
  
--static ssize_t store_io_is_busy(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_io_is_busy(struct gov_attr_set *attr_set, const char *buf,
-+				size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	unsigned int input;
- 	int ret;
+-	drv_write(&cmd);
++	drv_write(data, mask, perf->states[next_perf_state].control);
  
-@@ -224,9 +225,10 @@ static ssize_t store_io_is_busy(struct d
- 	return count;
- }
- 
--static ssize_t store_up_threshold(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
-+				  const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	unsigned int input;
- 	int ret;
- 	ret = sscanf(buf, "%u", &input);
-@@ -240,9 +242,10 @@ static ssize_t store_up_threshold(struct
- 	return count;
- }
- 
--static ssize_t store_sampling_down_factor(struct dbs_data *dbs_data,
--		const char *buf, size_t count)
-+static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-+					  const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct policy_dbs_info *policy_dbs;
- 	unsigned int input;
- 	int ret;
-@@ -254,7 +257,7 @@ static ssize_t store_sampling_down_facto
- 	dbs_data->sampling_down_factor = input;
- 
- 	/* Reset down sampling multiplier in case it was active */
--	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list) {
-+	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
- 		/*
- 		 * Doing this without locking might lead to using different
- 		 * rate_mult values in od_update() and od_dbs_timer().
-@@ -267,9 +270,10 @@ static ssize_t store_sampling_down_facto
- 	return count;
- }
- 
--static ssize_t store_ignore_nice_load(struct dbs_data *dbs_data,
--		const char *buf, size_t count)
-+static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
-+				      const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	unsigned int input;
- 	int ret;
- 
-@@ -291,9 +295,10 @@ static ssize_t store_ignore_nice_load(st
- 	return count;
- }
- 
--static ssize_t store_powersave_bias(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_powersave_bias(struct gov_attr_set *attr_set,
-+				    const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	struct policy_dbs_info *policy_dbs;
- 	unsigned int input;
-@@ -308,7 +313,7 @@ static ssize_t store_powersave_bias(stru
- 
- 	od_tuners->powersave_bias = input;
- 
--	list_for_each_entry(policy_dbs, &dbs_data->policy_dbs_list, list)
-+	list_for_each_entry(policy_dbs, &attr_set->policy_list, list)
- 		ondemand_powersave_bias_init(policy_dbs->policy);
- 
- 	return count;
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -129,9 +129,10 @@ static struct notifier_block cs_cpufreq_
- /************************** sysfs interface ************************/
- static struct dbs_governor cs_dbs_gov;
- 
--static ssize_t store_sampling_down_factor(struct dbs_data *dbs_data,
--		const char *buf, size_t count)
-+static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-+					  const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	unsigned int input;
- 	int ret;
- 	ret = sscanf(buf, "%u", &input);
-@@ -143,9 +144,10 @@ static ssize_t store_sampling_down_facto
- 	return count;
- }
- 
--static ssize_t store_up_threshold(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_up_threshold(struct gov_attr_set *attr_set,
-+				  const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	unsigned int input;
- 	int ret;
-@@ -158,9 +160,10 @@ static ssize_t store_up_threshold(struct
- 	return count;
- }
- 
--static ssize_t store_down_threshold(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
-+				    const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	unsigned int input;
- 	int ret;
-@@ -175,9 +178,10 @@ static ssize_t store_down_threshold(stru
- 	return count;
- }
- 
--static ssize_t store_ignore_nice_load(struct dbs_data *dbs_data,
--		const char *buf, size_t count)
-+static ssize_t store_ignore_nice_load(struct gov_attr_set *attr_set,
-+				      const char *buf, size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	unsigned int input;
- 	int ret;
- 
-@@ -199,9 +203,10 @@ static ssize_t store_ignore_nice_load(st
- 	return count;
- }
- 
--static ssize_t store_freq_step(struct dbs_data *dbs_data, const char *buf,
--		size_t count)
-+static ssize_t store_freq_step(struct gov_attr_set *attr_set, const char *buf,
-+			       size_t count)
- {
-+	struct dbs_data *dbs_data = to_dbs_data(attr_set);
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	unsigned int input;
- 	int ret;
+ 	if (acpi_pstate_strict) {
+-		if (!check_freqs(cmd.mask, data->freq_table[index].frequency,
++		if (!check_freqs(mask, data->freq_table[index].frequency,
+ 					data)) {
+ 			pr_debug("acpi_cpufreq_target failed (%d)\n",
+ 				policy->cpu);
+@@ -738,15 +714,21 @@ static int acpi_cpufreq_cpu_init(struct
+ 		}
+ 		pr_debug("SYSTEM IO addr space\n");
+ 		data->cpu_feature = SYSTEM_IO_CAPABLE;
++		data->cpu_freq_read = cpu_freq_read_io;
++		data->cpu_freq_write = cpu_freq_write_io;
+ 		break;
+ 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
+ 		pr_debug("HARDWARE addr space\n");
+ 		if (check_est_cpu(cpu)) {
+ 			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
++			data->cpu_freq_read = cpu_freq_read_intel;
++			data->cpu_freq_write = cpu_freq_write_intel;
+ 			break;
+ 		}
+ 		if (check_amd_hwpstate_cpu(cpu)) {
+ 			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
++			data->cpu_freq_read = cpu_freq_read_amd;
++			data->cpu_freq_write = cpu_freq_write_amd;
+ 			break;
+ 		}
+ 		result = -ENODEV;
