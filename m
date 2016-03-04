@@ -1,82 +1,70 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 10/10] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Fri, 04 Mar 2016 07:56:13 -0800
-Message-ID: <1457106973.4356.13.camel@linux.intel.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	 <2409306.qzzMXcm4dm@vostro.rjw.lan> <4627718.FT18d2LR5p@vostro.rjw.lan>
-	 <20160304112639.GD4061@e106622-lin>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC] ACPI / PM: Fix poweroff issue on HW-full platforms
+ without _S5
+Date: Fri, 4 Mar 2016 17:02:30 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D2880@shsmsx102.ccr.corp.intel.com>
+References: <1456925357-2899-1-git-send-email-yu.c.chen@intel.com>
+ <20160304133306.GB2715@codeblueprint.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160304112639.GD4061@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160304133306.GB2715@codeblueprint.co.uk>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Matt Fleming <matt@codeblueprint.co.uk>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2016-03-04 at 11:26 +0000, Juri Lelli wrote:
-> Hi Rafael,
->=20
-> On 04/03/16 04:35, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >=20
-> > Add a new cpufreq scaling governor, called "schedutil", that uses
-> > scheduler-provided CPU utilization information as input for making
-> > its decisions.
-> >=20
-> > Doing that is possible after commit fe7034338ba0 (cpufreq: Add
-> > mechanism for registering utilization update callbacks) that
-> > introduced cpufreq_update_util() called by the scheduler on
-> > utilization changes (from CFS) and RT/DL task status updates.
-> > In particular, CPU frequency scaling decisions may be based on
-> > the the utilization data passed to cpufreq_update_util() by CFS.
-> >=20
-> > The new governor is relatively simple.
-> >=20
-> > The frequency selection formula used by it is
-> >=20
-> > 	next_freq =3D util * max_freq / max
-> >=20
-> > where util and max are the utilization and CPU capacity coming from
-> > CFS.
-> >=20
->=20
-> The formula looks better to me now. However, problem is that, if you
-> have freq. invariance, util will slowly saturate to the current
-> capacity. So, we won't trigger OPP changes for a task that for
-> example
-> starts light and then becomes big.
->=20
-> This is the same problem we faced with schedfreq. The current
-> solution
-> there is to use a margin for calculating a threshold (80% of current
-> capacity ATM). Once util goes above that threshold we trigger an OPP
-> change.=C2=A0=C2=A0Current policy is pretty aggressive, we go to max_=
-f and then
-> adapt to the "real" util during successive enqueues. This was also
-> tought to cope with the fact that PELT seems slow to react to abrupt
-> changes in tasks behaviour.
->=20
-I also tried something like this in intel_pstate with scheduler util,
-where you ramp up to turbo when a threshold percent exceeded then ramp
-down slowly in steps. This helped some workloads like tbench to perform
-better, but it resulted in lower performance/watt on specpower server
-workload. The problem is finding what is the right threshold value.
+Hi  Matt,
 
-Thanks,
-Srinivas
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Matt Fleming
+> Sent: Friday, March 04, 2016 9:33 PM
+> To: Chen, Yu C
+> Cc: linux-acpi@vger.kernel.org; linux-efi@vger.kernel.org; linux-
+> pm@vger.kernel.org; rjw@sisk.pl; lenb@kernel.org; tglx@linutronix.de;
+> x86@kernel.org; Zhang, Rui; Zheng, Lv
+> Subject: Re: [PATCH][RFC] ACPI / PM: Fix poweroff issue on HW-full
+> platforms without _S5
+> 
+> On Wed, 02 Mar, at 09:29:17PM, Chen Yu wrote:
+> > The problem is Linux registers pm_power_off = efi_power_off only if we
+> > are in hardware reduced mode. Actually, what we also want is to do
+> > this when ACPI S5 is simply not supported.
+> > That should handle both the HW reduced mode, and the HW-full mode
+> > where the DSDT fails to supply an _S5 object.
+> >
+> > This patch fixes this issue by introducing a new flag acpi_no_s5 which
+> > indicates the non-existence of _S5. The initial state of acpi_no_s5 is
+> > false and probed in acpi_sleep_init, then we'll later see the updated
+> > value in efi_poweroff_required, according to which we can set
+> > pm_power_off to efi_power_off in efi_shutdown_init.
+> >
+> > Suggested-by: Len Brown <len.brown@intel.com>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  arch/x86/platform/efi/quirks.c | 3 ++-
+> >  drivers/acpi/sleep.c           | 2 ++
+> >  include/acpi/acpixf.h          | 6 ++++++
+> >  3 files changed, 10 insertions(+), 1 deletion(-)
+> 
+> Are there legacy platforms without _S5 where we currently handle reboot
+> via some other means that are going to break if we attempt an EFI reboot?
+> 
+> I ask because historically performing an EFI reboot has been all kinds of buggy
+> on x86.
+I made a double check and  yes there are other components would like to
+register their customized pm_power_off if _S5 is not available.
+So if EFI reboot is not stable, current code may  not be robust enough .
+Hum, how about this one?
+(assigned to efi reboot only when there is no other components registered pm_power_off)
+ return  acpi_gbl_reduced_hardware ||
+	(acpi_no_s5 && ! pm_power_off);
+> 
+> Also, is this what Windows does if _S5 is absent?
+I'm not sure, Windows might also leverage other drivers to achieve a poweroff. 
 
-> I'm not saying this is the definitive solution, but I fear something
-> along this line is needed when you add freq invariance in the mix.
->=20
-> Best,
->=20
-> - Juri
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+yu
+
