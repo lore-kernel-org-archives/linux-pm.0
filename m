@@ -1,76 +1,93 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v3 01/12] PM / Domains: Abstract genpd locking
-Date: Fri, 4 Mar 2016 11:09:22 +0100
-Message-ID: <CAPDyKFp4y_QSNPesVq6TJ_jPmmJiFJ_dqza6gzAdHypE+0j+3g@mail.gmail.com>
-References: <1456866931-37851-1-git-send-email-lina.iyer@linaro.org>
-	<1456866931-37851-3-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Propagate start and restore errors during
+ runtime resume
+Date: Fri, 4 Mar 2016 11:22:49 +0100
+Message-ID: <CAPDyKFp08Qy4Ui05f4gUhRPmEHZppfO1R=yPr0bq2FC=LCGcbQ@mail.gmail.com>
+References: <1456874438-26330-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1456866931-37851-3-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, Kevin Hilman <khilman@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:34196 "EHLO
+	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758227AbcCDKWv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2016 05:22:51 -0500
+Received: by mail-wm0-f51.google.com with SMTP id p65so13932742wmp.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Mar 2016 02:22:50 -0800 (PST)
+In-Reply-To: <1456874438-26330-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
 
-On 1 March 2016 at 22:15, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Abstract genpd lock/unlock calls, in preparation for domain specific
-> locks added in the following patches.
+On 2 March 2016 at 00:20, Laurent Pinchart
+<laurent.pinchart+renesas@ideasonboard.com> wrote:
+> During runtime resume the return values of the start and restore steps
+> are ignored. As a result drivers are not notified of runtime resume
+> failures and can't propagate them up. Fix it by returning an error if
+> either the start or restore step fails, and clean up properly in the
+> error path.
 >
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Krzysztof Koz=C5=82owski <k.kozlowski@samsung.com>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-
-[...]
-
-> +struct genpd_lock_fns;
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> ---
+>  drivers/base/power/domain.c | 20 ++++++++++++++++++--
+>  1 file changed, 18 insertions(+), 2 deletions(-)
+>
+> This fixes an issue I've noticed with my driver's .runtime_resume() handler
+> returning an error that was never propagated out of pm_runtime_get_sync().
+>
+> A second issue then appeared. The device .runtime_error field is set to the
+> error code returned by my .runtime_resume() handler, but it never reset. Any
+> subsequent try to resume the device fails with -EINVAL. I'm not sure what the
+> right way to solve that is, advices are welcome.
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 301b785f9f56..8cfcb8d6179b 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -485,8 +485,13 @@ static int pm_genpd_runtime_resume(struct device *dev)
+>         if (timed && runtime_pm)
+>                 time_start = ktime_get();
+>
+> -       genpd_start_dev(genpd, dev);
+> -       genpd_restore_dev(genpd, dev);
+> +       ret = genpd_start_dev(genpd, dev);
+> +       if (ret)
+> +               goto err_poweroff;
 > +
->  struct generic_pm_domain {
->         struct dev_pm_domain domain;    /* PM domain operations */
->         struct list_head gpd_list_node; /* Node in the global PM doma=
-ins list */
->         struct list_head master_links;  /* Links with PM domain as a =
-master */
->         struct list_head slave_links;   /* Links with PM domain as a =
-slave */
->         struct list_head dev_list;      /* List of devices */
-> -       struct mutex lock;
->         struct dev_power_governor *gov;
->         struct work_struct power_off_work;
->         const char *name;
-> @@ -74,6 +75,8 @@ struct generic_pm_domain {
->         struct genpd_power_state *states;
->         unsigned int state_count; /* number of states */
->         unsigned int state_idx; /* state that genpd will go to when o=
-ff */
-> +       const struct genpd_lock_fns *lock_fns;
-> +       struct mutex mlock;
-
-Nitpick: I wouldn't mind if you name this mtx_lock, as it would be a
-bit more consistent with the corresponding helper functions.
-
+> +       ret = genpd_restore_dev(genpd, dev);
+> +       if (ret)
+> +               goto err_stop;
 >
->  };
+>         /* Update resume latency value if the measured time exceeds it. */
+>         if (timed && runtime_pm) {
+> @@ -501,6 +506,17 @@ static int pm_genpd_runtime_resume(struct device *dev)
+>         }
 >
-> --
-> 2.1.4
->
+>         return 0;
+> +
+> +err_stop:
+> +       genpd_stop_dev(genpd, dev);
+> +err_poweroff:
+> +       if (!dev->power.irq_safe) {
 
-Otherwise this looks good to me!
+There's a helper function for this:
+pm_runtime_is_irq_safe()
+
+Perhaps, we can leave this as is here and then make a separate patch
+converting all occurrences of the above into using the helper function
+instead.
+
+> +               mutex_lock(&genpd->lock);
+> +               genpd_poweroff(genpd, 0);
+> +               mutex_unlock(&genpd->lock);
+> +       }
+> +
+> +       return ret;
+>  }
+>
+>  static bool pd_ignore_unused;
 
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-One issue I noticed though, this patch isn't based upon Rafael's
-latest tree, thus it can't be applied as is. Could you perhaps
-re-base?
-
-I suppose that's needed for some of the other patches as well. I think
-we should split up the dependency a bit better so we can move forward
-with standalone patches.
 
 Kind regards
 Uffe
