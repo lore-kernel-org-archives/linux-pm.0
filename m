@@ -1,107 +1,74 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / Domains: Propagate start and restore errors during
- runtime resume
-Date: Fri, 4 Mar 2016 22:22:37 +0100
-Message-ID: <CAJZ5v0iL1UNH868G_vDV2WqcP-o0M6q1YiyKF9ZQycZGYJB=zw@mail.gmail.com>
-References: <1456874438-26330-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-	<CAPDyKFp08Qy4Ui05f4gUhRPmEHZppfO1R=yPr0bq2FC=LCGcbQ@mail.gmail.com>
-	<1809964.9XIZqQIE9j@avalon>
+Subject: Re: [PATCH] kernel/...: Convert pr_warning to pr_warn
+Date: Fri, 4 Mar 2016 22:23:50 +0100
+Message-ID: <CAJZ5v0jWDLrFT2eLaY2hAi79wAkNyN8bEGigHbNaSR8NnieHJw@mail.gmail.com>
+References: <1c47e70d5aa4ac129621e4c49a8b896b5cab4b64.1457092467.git.joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1809964.9XIZqQIE9j@avalon>
+In-Reply-To: <1c47e70d5aa4ac129621e4c49a8b896b5cab4b64.1457092467.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jens Axboe <axboe@kernel.dk>, Steven Rostedt <rostedt@goodmis.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-block@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 4, 2016 at 9:38 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> Hi Ulf,
+On Fri, Mar 4, 2016 at 7:15 PM, Joe Perches <joe@perches.com> wrote:
+> Use the more common logging method with the eventual goal
+> of removing pr_warning altogether.
 >
-> Thank you for the review.
+> Miscellanea:
 >
-> On Friday 04 March 2016 11:22:49 Ulf Hansson wrote:
->> On 2 March 2016 at 00:20, Laurent Pinchart wrote:
->> > During runtime resume the return values of the start and restore steps
->> > are ignored. As a result drivers are not notified of runtime resume
->> > failures and can't propagate them up. Fix it by returning an error if
->> > either the start or restore step fails, and clean up properly in the
->> > error path.
->> >
->> > Signed-off-by: Laurent Pinchart
->> > <laurent.pinchart+renesas@ideasonboard.com>
->> > ---
->> >
->> >  drivers/base/power/domain.c | 20 ++++++++++++++++++--
->> >  1 file changed, 18 insertions(+), 2 deletions(-)
->> >
->> > This fixes an issue I've noticed with my driver's .runtime_resume()
->> > handler returning an error that was never propagated out of
->> > pm_runtime_get_sync().
->> >
->> > A second issue then appeared. The device .runtime_error field is set to
->> > the error code returned by my .runtime_resume() handler, but it never
->> > reset. Any subsequent try to resume the device fails with -EINVAL. I'm not
->> > sure what the right way to solve that is, advices are welcome.
->> >
->> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> > index 301b785f9f56..8cfcb8d6179b 100644
->> > --- a/drivers/base/power/domain.c
->> > +++ b/drivers/base/power/domain.c
->> > @@ -485,8 +485,13 @@ static int pm_genpd_runtime_resume(struct device
->> > *dev)
->> >         if (timed && runtime_pm)
->> >                 time_start = ktime_get();
->> >
->> > -       genpd_start_dev(genpd, dev);
->> > -       genpd_restore_dev(genpd, dev);
->> > +       ret = genpd_start_dev(genpd, dev);
->> > +       if (ret)
->> > +               goto err_poweroff;
->> > +
->> > +       ret = genpd_restore_dev(genpd, dev);
->> > +       if (ret)
->> > +               goto err_stop;
->> >
->> >         /* Update resume latency value if the measured time exceeds it. */
->> >         if (timed && runtime_pm) {
->> > @@ -501,6 +506,17 @@ static int pm_genpd_runtime_resume(struct device
->> > *dev)
->> >         }
->> >
->> >         return 0;
->> > +
->> > +err_stop:
->> > +       genpd_stop_dev(genpd, dev);
->> > +err_poweroff:
->> > +       if (!dev->power.irq_safe) {
->>
->> There's a helper function for this:
->> pm_runtime_is_irq_safe()
->>
->> Perhaps, we can leave this as is here and then make a separate patch
->> converting all occurrences of the above into using the helper function
->> instead.
+> o Realign arguments
+> o Coalesce formats
+> o Add missing space between a few coalesced formats
 >
-> If there are other occurrences a separate patch would make sense, I agree.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  kernel/irq/manage.c                  |  4 ++--
+>  kernel/power/suspend.c               |  3 +--
+>  kernel/time/tick-sched.c             |  8 ++++----
+>  kernel/trace/blktrace.c              |  4 ++--
+>  kernel/trace/ftrace.c                |  7 +++----
+>  kernel/trace/trace.c                 | 40 ++++++++++++++++++------------------
+>  kernel/trace/trace_functions_graph.c |  6 +++---
+>  kernel/trace/trace_kprobe.c          | 27 ++++++++++--------------
+>  kernel/trace/trace_mmiotrace.c       |  2 +-
+>  kernel/trace/trace_probe.c           |  4 ++--
+>  kernel/trace/trace_stat.c            |  3 +--
+>  kernel/trace/trace_uprobe.c          |  2 +-
+>  kernel/tracepoint.c                  |  2 +-
+>  13 files changed, 52 insertions(+), 60 deletions(-)
 >
->> > +               mutex_lock(&genpd->lock);
->> > +               genpd_poweroff(genpd, 0);
->> > +               mutex_unlock(&genpd->lock);
->> > +       }
->> > +
->> > +       return ret;
->> >
->> >  }
->> >
->> >  static bool pd_ignore_unused;
->>
->> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 3ddd229..083ddd5 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -1322,8 +1322,8 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 >
-> Thank you. Do you plan to take the patch in your tree for v4.6 ?
+>                 if (nmsk != omsk)
+>                         /* hope the handler works with current  trigger mode */
+> -                       pr_warning("irq %d uses trigger mode %u; requested %u\n",
+> -                                  irq, nmsk, omsk);
+> +                       pr_warn("irq %d uses trigger mode %u; requested %u\n",
+> +                               irq, nmsk, omsk);
+>         }
+>
+>         *old_ptr = new;
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 230a772..5b70d64 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -473,8 +473,7 @@ static int enter_state(suspend_state_t state)
+>         if (state == PM_SUSPEND_FREEZE) {
+>  #ifdef CONFIG_PM_DEBUG
+>                 if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
+> -                       pr_warning("PM: Unsupported test mode for suspend to idle,"
+> -                                  "please choose none/freezer/devices/platform.\n");
+> +                       pr_warn("PM: Unsupported test mode for suspend to idle, please choose none/freezer/devices/platform.\n");
+>                         return -EAGAIN;
+>                 }
+>  #endif
 
-I'll do that.
+For the above:
 
-Thanks,
-Rafael
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
