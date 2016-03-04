@@ -1,51 +1,58 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v2 9/10] cpufreq: sched: Re-introduce
- cpufreq_update_util()
-Date: Fri, 4 Mar 2016 10:50:07 +0000
-Message-ID: <20160304105007.GB4061@e106622-lin>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <2409306.qzzMXcm4dm@vostro.rjw.lan>
- <3276406.TfbasUEj6b@vostro.rjw.lan>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH 1/2] PM / Domains: Fix removal of a subdomain
+Date: Fri, 4 Mar 2016 10:55:14 +0000
+Message-ID: <1457088915-17284-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3276406.TfbasUEj6b@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:19231 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbcCDKzW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2016 05:55:22 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Hi Rafael,
+Commit 30e7a65b3fdb ("PM / Domains: Ensure subdomain is not in use
+before removing") added a test to ensure that a subdomain is not a
+master to another subdomain or if any devices are using the subdomain
+before removing. This change incorrectly used the "slave_links" list to
+determine if the subdomain is a master to another subdomain, where it
+should have been using the "master_links" list instead. The
+"slave_links" list will never be empty for a subdomain and so a
+subdomain can never be removed. Fix this by testing if the
+"master_links" list is empty instead.
 
-On 04/03/16 04:18, Rafael J. Wysocki wrote:
+Fixes: 30e7a65b3fdb ("PM / Domains: Ensure subdomain is not in use before removing")
 
-[...]
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+Reviewed-by: Thierry Reding <treding@nvidia.com>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Kevin Hilman <khilman@baylibre.com>
+---
 
-> +/**
-> + * cpufreq_update_util - Take a note about CPU utilization changes.
-> + * @time: Current time.
-> + * @util: CPU utilization.
-> + * @max: CPU capacity.
-> + *
-> + * This function is called on every invocation of update_load_avg() on the CPU
-> + * whose utilization is being updated.
-> + *
-> + * It can only be called from RCU-sched read-side critical sections.
-> + */
-> +void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
-> +{
-> +	struct freq_update_hook *hook;
-> +
-> +#ifdef CONFIG_LOCKDEP
-> +	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
-> +#endif
-> +
-> +	hook = rcu_dereference(*this_cpu_ptr(&cpufreq_freq_update_hook));
+This first was originally included in the series to add PM domain support [0].
+I am separating this for now, as it can be merged independently.
 
-Small fix. You forgot to change this to rcu_dereference_sched() (you
-only fixed that in 01/10).
+[0] http://marc.info/?l=linux-pm&m=145650174525180&w=2
 
-Best,
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Juri
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index e8ca290dbf9d..ea9f2aa3fc33 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1382,7 +1382,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+ 	mutex_lock(&subdomain->lock);
+ 	mutex_lock_nested(&genpd->lock, SINGLE_DEPTH_NESTING);
+ 
+-	if (!list_empty(&subdomain->slave_links) || subdomain->device_count) {
++	if (!list_empty(&subdomain->master_links) || subdomain->device_count) {
+ 		pr_warn("%s: unable to remove subdomain %s\n", genpd->name,
+ 			subdomain->name);
+ 		ret = -EBUSY;
+-- 
+2.1.4
+
