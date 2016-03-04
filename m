@@ -1,39 +1,157 @@
 From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: [PATCH 2/3] thermal: Add devm_thermal_zone_of_sensor_register() in managed devices list
-Date: Fri, 4 Mar 2016 19:10:09 +0530
-Message-ID: <1457098810-11964-3-git-send-email-ldewangan@nvidia.com>
+Subject: [PATCH 1/3] thermal: of-thermal: Add devm version of thermal_zone_of_sensor_register
+Date: Fri, 4 Mar 2016 19:10:08 +0530
+Message-ID: <1457098810-11964-2-git-send-email-ldewangan@nvidia.com>
 References: <1457098810-11964-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
 In-Reply-To: <1457098810-11964-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-doc-owner@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com, corbet@lwn.net
 Cc: rklein@nvidia.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-thermal_zone_of_sensor_register() and thermal_zone_of_sensor_unregister()
-gained their devm_ wrappers. Add these APIs in the list of managed devices.
+Add resource managed version of thermal_zone_of_sensor_register() and
+thermal_zone_of_sensor_unregister().
+
+This helps in reducing the code size in error path, remove of
+driver remove callbacks and making proper sequence for deallocations.
 
 Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
 ---
- Documentation/driver-model/devres.txt | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/of-thermal.c | 81 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h      | 18 ++++++++++
+ 2 files changed, 99 insertions(+)
 
-diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
-index 5930d9a..dd7ce58 100644
---- a/Documentation/driver-model/devres.txt
-+++ b/Documentation/driver-model/devres.txt
-@@ -342,6 +342,10 @@ SLAVE DMA ENGINE
- SPI
-   devm_spi_register_master()
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 9043f8f..1d9f8dc 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -555,6 +555,87 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_of_sensor_unregister);
  
-+THERMAL
-+ devm_thermal_zone_of_sensor_register()
-+ devm_thermal_zone_of_sensor_unregister()
++static void devm_thermal_zone_of_sensor_release(struct device *dev, void *res)
++{
++	thermal_zone_of_sensor_unregister(dev,
++					  *(struct thermal_zone_device **)res);
++}
 +
- WATCHDOG
-   devm_watchdog_register_device()
-   devm_watchdog_unregister_device()
++static int devm_thermal_zone_of_sensor_match(struct device *dev, void *res,
++					     void *data)
++{
++	struct thermal_zone_device **r = res;
++
++	if (WARN_ON(!r || !*r))
++		return 0;
++
++	return *r == data;
++}
++
++/**
++ * devm_thermal_zone_of_sensor_register - Resource managed version of
++ *				thermal_zone_of_sensor_register()
++ * @dev: a valid struct device pointer of a sensor device. Must contain
++ *       a valid .of_node, for the sensor node.
++ * @sensor_id: a sensor identifier, in case the sensor IP has more
++ *	       than one sensors
++ * @data: a private pointer (owned by the caller) that will be passed
++ *	  back, when a temperature reading is needed.
++ * @ops: struct thermal_zone_of_device_ops *. Must contain at least .get_temp.
++ *
++ * Refer thermal_zone_of_sensor_register() for more details.
++ *
++ * Return: On success returns a valid struct thermal_zone_device,
++ * otherwise, it returns a corresponding ERR_PTR(). Caller must
++ * check the return value with help of IS_ERR() helper.
++ * Registered hermal_zone_device device will automatically be
++ * released when device is unbounded.
++ */
++struct thermal_zone_device *
++devm_thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
++		void *data, const struct thermal_zone_of_device_ops *ops)
++{
++	struct thermal_zone_device **ptr, *tzd;
++
++	ptr = devres_alloc(devm_thermal_zone_of_sensor_release, sizeof(*ptr),
++			   GFP_KERNEL);
++	if (!ptr)
++		return ERR_PTR(-ENOMEM);
++
++	tzd = thermal_zone_of_sensor_register(dev, sensor_id, data, ops);
++	if (IS_ERR(tzd)) {
++		devres_free(ptr);
++		return tzd;
++	}
++
++	*ptr = tzd;
++	devres_add(dev, ptr);
++
++	return tzd;
++}
++EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_register);
++
++/**
++ * devm_thermal_zone_of_sensor_unregister - Resource managed version of
++ *				thermal_zone_of_sensor_unregister().
++ * @dev: Device for which which resource was allocated.
++ * @tzd: a pointer to struct thermal_zone_device where the sensor is registered.
++ *
++ * This function removes the sensor callbacks and private data from the
++ * thermal zone device registered with devm_thermal_zone_of_sensor_register()
++ * API. It will also silent the zone by remove the .get_temp() and .get_trend()
++ * thermal zone device callbacks.
++ * Normally this function will not need to be called and the resource
++ * management code will ensure that the resource is freed.
++ */
++void devm_thermal_zone_of_sensor_unregister(struct device *dev,
++				       struct thermal_zone_device *tzd)
++{
++	WARN_ON(devres_release(dev, devm_thermal_zone_of_sensor_release,
++			       devm_thermal_zone_of_sensor_match, tzd));
++}
++EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_unregister);
++
+ /***   functions parsing device tree nodes   ***/
+ 
+ /**
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e13a1ac..4c43b21 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -362,6 +362,11 @@ thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
+ 				const struct thermal_zone_of_device_ops *ops);
+ void thermal_zone_of_sensor_unregister(struct device *dev,
+ 				       struct thermal_zone_device *tz);
++struct thermal_zone_device *
++devm_thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
++				const struct thermal_zone_of_device_ops *ops);
++void devm_thermal_zone_of_sensor_unregister(struct device *dev,
++				       struct thermal_zone_device *tz);
+ #else
+ static inline struct thermal_zone_device *
+ thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
+@@ -376,6 +381,19 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
+ {
+ }
+ 
++static inline struct thermal_zone_device *
++devm_thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
++				const struct thermal_zone_of_device_ops *ops)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline
++void devm_thermal_zone_of_sensor_unregister(struct device *dev,
++				       struct thermal_zone_device *tz)
++{
++}
++
+ #endif
+ 
+ #if IS_ENABLED(CONFIG_THERMAL)
 -- 
 2.1.4
+
