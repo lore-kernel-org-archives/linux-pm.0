@@ -1,63 +1,78 @@
-From: yu chen <yu.chen.surf@gmail.com>
-Subject: Re: STI problem and workaround for Dell XPS 13 (Skylake, 2016) /
- Broadcom BCM4350
-Date: Fri, 4 Mar 2016 15:49:56 +0800
-Message-ID: <CADjb_WQMOWznyYH+8MN-Lx1r0JpccYS62HWO29hsOpG4kQUj0g@mail.gmail.com>
-References: <87h9gpp5rt.fsf@gmail.com>
-	<CADjb_WQwwGD4wQugeLf=2k7XjtPGt9o6vgqhMdLR+ALDhK7J+Q@mail.gmail.com>
-	<87a8mhotmk.fsf@gmail.com>
-	<CADjb_WQQdrFFpyRghk=nvZKeXA_ZY_dCYbEDtVGrEEk0LhVN=w@mail.gmail.com>
-	<8737s8uj49.fsf@gmail.com>
-	<CADjb_WQcXK5kc4d9isPGcw6=oVUbnZ9P77owOcmq=KSh7wEYbw@mail.gmail.com>
-	<87bn6ubspe.fsf@gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Fri, 04 Mar 2016 09:37:15 +0100
+Message-ID: <1770444.1VxdmEr8lv@skinner>
+References: <4687430.mfM0GbdeDL@skinner> <16028318.H9OZ9hFYY1@skinner> <11753995.6ynq8tUiQx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:38263 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752401AbcCDHt6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Mar 2016 02:49:58 -0500
-Received: by mail-wm0-f52.google.com with SMTP id l68so18917734wml.1
-        for <linux-pm@vger.kernel.org>; Thu, 03 Mar 2016 23:49:57 -0800 (PST)
-In-Reply-To: <87bn6ubspe.fsf@gmail.com>
+Received: from mx2.suse.de ([195.135.220.15]:57577 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751489AbcCDIhR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Mar 2016 03:37:17 -0500
+In-Reply-To: <11753995.6ynq8tUiQx@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tamas Papp <tkpapp@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: lenb@kernel.org, Ingo Molnar <mingo@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Mar 4, 2016 at 3:36 PM, Tamas Papp <tkpapp@gmail.com> wrote:
-> On Fri, Mar 04 2016, yu chen wrote:
->
->> On Thu, Mar 3, 2016 at 3:16 PM, Tamas Papp <tkpapp@gmail.com> wrote:
->>> On Wed, Mar 02 2016, yu chen wrote:
->>>
->>>> Currently the  0000:3c and 0000:3a might have the same pnp object name PXSX,
->>>> unfortunately  the 'echo' will find the first math device in the
->>>> wakable list, and maybe
->>>>  0000:3c was probed before 0000:3a, so... maybe this is a weakness.
->>>>
->>>> Maybe you can disabled the wakable feature directly in device sysfs,
->>>> for example,
->>>> echo 0 > /sys/devices/pci0000:00/0000:3a:00.0/power/wakeup,
->>>> you might need to find out where 0000:3a:00.0 is.
->>>
->>> I tried that, but the module has problems after wakeup. I have to remove
->>> and insert it again with modprobe.
->>>
->>> Still, this is an OK workaround, thanks for the help. I still don't know
->>> if I should file this as a bug, and if yes, where.
->>>
->> Does the following fix make sense for you:
->>
->> cat /proc/acpi/wakeup
->> PXSX:0      S4    *enabled   pci:0000:3a:00.0
->> then you need to echo PXSX:0 to disable it,
->> and for 3c, it would be PXSX:1
->
-> Sorry, I am confused --- is this a proposed new syntax for
-> /proc/acpi/wakeup? I guess this could work. BTW, for kernel 4.4.3, I
-> don't need any fix (that's what I am using now), it works out of the
-> box, I just need to fiddle with the broadcom module in 4.5.0-rc6.
-It appends index suffix to their orinal name if there's a  conflict.
- Maybe in 4.4.3 broadcom is not a wakable by default, although the duplicate
-naming problem should always be there.
+On Wednesday, March 02, 2016 01:26:18 AM Rafael J. Wysocki wrote:
+> On Tuesday, March 01, 2016 01:17:37 PM Thomas Renninger wrote:
+> > > >  	if (!cpu_has(c, X86_FEATURE_EPB))z
+> > > >  	
+> > > >  		return;
+> > > > 
+> > > > @@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
+> > > > 
+> > > >  	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+> > > >  	
+> > > >  		return;
+> > > > 
+> > > > -	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was
+> > 
+> > 'performance'\n");
+> > 
+> > > > -	pr_warn_once("ENERGY_PERF_BIAS: View and update with
+> > > > x86_energy_perf_policy(8)\n"); -	epb = (epb & ~0xF) |
+> > > > ENERGY_PERF_BIAS_NORMAL;
+> > > > -	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> > > > +	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
+> > > > +	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-
+set(8)\n");
+> > > 
+> > > This doesn't need to be cpupower-set IMO.
+> > 
+> > You mean why switch the message from:
+> > x86_energy_perf_policy to cpupower-set
+> > ?
+> > 
+> > IMO x86_energy_perf_policy should not exist. It has been introduce before
+> > cpupower set -b.
+> > Having an extra tool/binary for this functionality is an unneeded
+> > packaging
+> > overhead for distros.
+> > Also having more and more of such CPU specific tools is not userfriendly.
+> > cpupower supports all power relevant features of your CPU and on all
+> > architectures (or at least it should). People should know this one better
+> > than "x86_energy_perf_policy" and theoretically intuitively find it, even
+> > without a message.
+> > 
+> > So it would be nice to get the message fixed as well.
+> 
+> My point is that since "cpupower set -b" is not the only way to set this,
+> it doesn't seem appropriate to refer to it explicitly from a kernel message.
+> 
+> I actually don't think the second message is necessary at all.
+
+Hmm, thinking a bit more about this, I think the whole 
+init_intel_energy_perf() function check should vanish.
+
+The check should get moved into the powertop userspace tool.
+This one is used to optimize platform for power saving features.
+
+This would also keep the kernel core code clean...
+
+If you agree I will send the patch.
+
+      Thomas
