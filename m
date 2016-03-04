@@ -1,78 +1,76 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Fri, 04 Mar 2016 09:37:15 +0100
-Message-ID: <1770444.1VxdmEr8lv@skinner>
-References: <4687430.mfM0GbdeDL@skinner> <16028318.H9OZ9hFYY1@skinner> <11753995.6ynq8tUiQx@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC v3 01/12] PM / Domains: Abstract genpd locking
+Date: Fri, 4 Mar 2016 11:09:22 +0100
+Message-ID: <CAPDyKFp4y_QSNPesVq6TJ_jPmmJiFJ_dqza6gzAdHypE+0j+3g@mail.gmail.com>
+References: <1456866931-37851-1-git-send-email-lina.iyer@linaro.org>
+	<1456866931-37851-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:57577 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbcCDIhR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Mar 2016 03:37:17 -0500
-In-Reply-To: <11753995.6ynq8tUiQx@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1456866931-37851-3-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: lenb@kernel.org, Ingo Molnar <mingo@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, March 02, 2016 01:26:18 AM Rafael J. Wysocki wrote:
-> On Tuesday, March 01, 2016 01:17:37 PM Thomas Renninger wrote:
-> > > >  	if (!cpu_has(c, X86_FEATURE_EPB))z
-> > > >  	
-> > > >  		return;
-> > > > 
-> > > > @@ -387,10 +391,8 @@ static void init_intel_energy_perf(struc
-> > > > 
-> > > >  	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
-> > > >  	
-> > > >  		return;
-> > > > 
-> > > > -	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was
-> > 
-> > 'performance'\n");
-> > 
-> > > > -	pr_warn_once("ENERGY_PERF_BIAS: View and update with
-> > > > x86_energy_perf_policy(8)\n"); -	epb = (epb & ~0xF) |
-> > > > ENERGY_PERF_BIAS_NORMAL;
-> > > > -	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> > > > +	pr_info_once("ENERGY_PERF_BIAS is set to 'performance'\n");
-> > > > +	pr_info_once("ENERGY_PERF_BIAS: Update with cpupower-
-set(8)\n");
-> > > 
-> > > This doesn't need to be cpupower-set IMO.
-> > 
-> > You mean why switch the message from:
-> > x86_energy_perf_policy to cpupower-set
-> > ?
-> > 
-> > IMO x86_energy_perf_policy should not exist. It has been introduce before
-> > cpupower set -b.
-> > Having an extra tool/binary for this functionality is an unneeded
-> > packaging
-> > overhead for distros.
-> > Also having more and more of such CPU specific tools is not userfriendly.
-> > cpupower supports all power relevant features of your CPU and on all
-> > architectures (or at least it should). People should know this one better
-> > than "x86_energy_perf_policy" and theoretically intuitively find it, even
-> > without a message.
-> > 
-> > So it would be nice to get the message fixed as well.
-> 
-> My point is that since "cpupower set -b" is not the only way to set this,
-> it doesn't seem appropriate to refer to it explicitly from a kernel message.
-> 
-> I actually don't think the second message is necessary at all.
+On 1 March 2016 at 22:15, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Abstract genpd lock/unlock calls, in preparation for domain specific
+> locks added in the following patches.
+>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Krzysztof Koz=C5=82owski <k.kozlowski@samsung.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
-Hmm, thinking a bit more about this, I think the whole 
-init_intel_energy_perf() function check should vanish.
+[...]
 
-The check should get moved into the powertop userspace tool.
-This one is used to optimize platform for power saving features.
+> +struct genpd_lock_fns;
+> +
+>  struct generic_pm_domain {
+>         struct dev_pm_domain domain;    /* PM domain operations */
+>         struct list_head gpd_list_node; /* Node in the global PM doma=
+ins list */
+>         struct list_head master_links;  /* Links with PM domain as a =
+master */
+>         struct list_head slave_links;   /* Links with PM domain as a =
+slave */
+>         struct list_head dev_list;      /* List of devices */
+> -       struct mutex lock;
+>         struct dev_power_governor *gov;
+>         struct work_struct power_off_work;
+>         const char *name;
+> @@ -74,6 +75,8 @@ struct generic_pm_domain {
+>         struct genpd_power_state *states;
+>         unsigned int state_count; /* number of states */
+>         unsigned int state_idx; /* state that genpd will go to when o=
+ff */
+> +       const struct genpd_lock_fns *lock_fns;
+> +       struct mutex mlock;
 
-This would also keep the kernel core code clean...
+Nitpick: I wouldn't mind if you name this mtx_lock, as it would be a
+bit more consistent with the corresponding helper functions.
 
-If you agree I will send the patch.
+>
+>  };
+>
+> --
+> 2.1.4
+>
 
-      Thomas
+Otherwise this looks good to me!
+
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+One issue I noticed though, this patch isn't based upon Rafael's
+latest tree, thus it can't be applied as is. Could you perhaps
+re-base?
+
+I suppose that's needed for some of the other patches as well. I think
+we should split up the dependency a bit better so we can move forward
+with standalone patches.
+
+Kind regards
+Uffe
