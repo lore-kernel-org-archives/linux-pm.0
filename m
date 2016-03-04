@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Fri, 04 Mar 2016 04:07:04 +0100
-Message-ID: <15684081.T4iOMUSHCY@vostro.rjw.lan>
+Subject: [PATCH v2 5/10] cpufreq: Move governor attribute set headers to cpufreq.h
+Date: Fri, 04 Mar 2016 04:05:03 +0100
+Message-ID: <5093627.PgPWOgVgsM@vostro.rjw.lan>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,179 +15,92 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify the ACPI cpufreq driver to provide a method for switching
-CPU frequencies from interrupt context and update the cpufreq core
-to support that method if available.
+Move definitions and function headers related to struct gov_attr_set
+to include/linux/cpufreq.h so they can be used by (future) goverernors
+located outside of drivers/cpufreq/.
 
-Introduce a new cpufreq driver callback, ->fast_switch, to be
-invoked for frequency switching from interrupt context via a
-new helper function, cpufreq_driver_fast_switch().  Add a new
-policy flag, fast_switch_possible, to be set if fast frequency
-switching can be used for the given policy.
-
-Implement the ->fast_switch callback in the ACPI cpufreq driver
-and make it set fast_switch_possible during policy initialization
-as appropriate.
+No functional changes.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-Changes from the previous version:
-- Drop a bogus check from cpufreq_driver_fast_switch().
+New patch.  Needed to move cpufreq_schedutil.c to kernel/sched/.
 
 ---
- drivers/cpufreq/acpi-cpufreq.c |   53 +++++++++++++++++++++++++++++++++++++++++
- drivers/cpufreq/cpufreq.c      |   30 +++++++++++++++++++++++
- include/linux/cpufreq.h        |    6 ++++
- 3 files changed, 89 insertions(+)
+ drivers/cpufreq/cpufreq_governor.h |   21 ---------------------
+ include/linux/cpufreq.h            |   23 +++++++++++++++++++++++
+ 2 files changed, 23 insertions(+), 21 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-+++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-@@ -458,6 +458,55 @@ static int acpi_cpufreq_target(struct cp
- 	return result;
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -41,19 +41,6 @@
+ /* Ondemand Sampling types */
+ enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
+ 
+-struct gov_attr_set {
+-	struct kobject kobj;
+-	struct list_head policy_list;
+-	struct mutex update_lock;
+-	int usage_count;
+-};
+-
+-extern const struct sysfs_ops governor_sysfs_ops;
+-
+-void gov_attr_set_init(struct gov_attr_set *attr_set, struct list_head *list_node);
+-void gov_attr_set_get(struct gov_attr_set *attr_set, struct list_head *list_node);
+-unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *list_node);
+-
+ /*
+  * Abbreviations:
+  * dbs: used as a shortform for demand based switching It helps to keep variable
+@@ -80,14 +67,6 @@ static inline struct dbs_data *to_dbs_da
+ 	return container_of(attr_set, struct dbs_data, attr_set);
  }
  
-+unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-+				      unsigned int target_freq,
-+				      unsigned int relation)
-+{
-+	struct acpi_cpufreq_data *data = policy->driver_data;
-+	struct acpi_processor_performance *perf;
-+	struct cpufreq_frequency_table *entry, *found;
-+	unsigned int next_perf_state, next_freq, freq;
-+
-+	/*
-+	 * Find the closest frequency above target_freq or equal to it.
-+	 *
-+	 * The table is sorted in the reverse order with respect to the
-+	 * frequency and all of the entries are valid (see the initialization).
-+	 */
-+	entry = data->freq_table;
-+	do {
-+		entry++;
-+		freq = entry->frequency;
-+	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-+	found = entry - 1;
-+	/*
-+	 * Use the one found or the previous one, depending on the relation.
-+	 * CPUFREQ_RELATION_H is not taken into account here, but it is not
-+	 * expected to be passed to this function anyway.
-+	 */
-+	next_freq = found->frequency;
-+	if (freq == CPUFREQ_TABLE_END || relation != CPUFREQ_RELATION_C ||
-+	    target_freq - freq >= next_freq - target_freq) {
-+		next_perf_state = found->driver_data;
-+	} else {
-+		next_freq = freq;
-+		next_perf_state = entry->driver_data;
-+	}
-+
-+	perf = to_perf_data(data);
-+	if (perf->state == next_perf_state) {
-+		if (unlikely(data->resume))
-+			data->resume = 0;
-+		else
-+			return next_freq;
-+	}
-+
-+	data->cpu_freq_write(&perf->control_register,
-+			     perf->states[next_perf_state].control);
-+	perf->state = next_perf_state;
-+	return next_freq;
-+}
-+
- static unsigned long
- acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
- {
-@@ -740,6 +789,9 @@ static int acpi_cpufreq_cpu_init(struct
- 		goto err_unreg;
- 	}
- 
-+	policy->fast_switch_possible = !acpi_pstate_strict &&
-+		!(policy_is_shared(policy) && policy->shared_type != CPUFREQ_SHARED_TYPE_ANY);
-+
- 	data->freq_table = kzalloc(sizeof(*data->freq_table) *
- 		    (perf->state_count+1), GFP_KERNEL);
- 	if (!data->freq_table) {
-@@ -874,6 +926,7 @@ static struct freq_attr *acpi_cpufreq_at
- static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= acpi_cpufreq_target,
-+	.fast_switch	= acpi_cpufreq_fast_switch,
- 	.bios_limit	= acpi_processor_get_bios_limit,
- 	.init		= acpi_cpufreq_cpu_init,
- 	.exit		= acpi_cpufreq_cpu_exit,
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1719,6 +1719,36 @@ EXPORT_SYMBOL(cpufreq_unregister_notifie
-  *                              GOVERNORS                            *
-  *********************************************************************/
- 
-+/**
-+ * cpufreq_driver_fast_switch - Carry out a fast CPU frequency switch.
-+ * @policy: cpufreq policy to switch the frequency for.
-+ * @target_freq: New frequency to set (may be approximate).
-+ * @relation: Relation to use for frequency selection.
-+ *
-+ * Carry out a fast frequency switch from interrupt context.
-+ *
-+ * This function must not be called if policy->fast_switch_possible is unset.
-+ *
-+ * Governors calling this function must guarantee that it will never be invoked
-+ * twice in parallel for the same policy and that it will never be called in
-+ * parallel with either ->target() or ->target_index() for the same policy.
-+ *
-+ * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
-+ * callback, the hardware configuration must be preserved.
-+ */
-+void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
-+				unsigned int target_freq, unsigned int relation)
-+{
-+	unsigned int freq;
-+
-+	freq = cpufreq_driver->fast_switch(policy, target_freq, relation);
-+	if (freq != CPUFREQ_ENTRY_INVALID) {
-+		policy->cur = freq;
-+		trace_cpu_frequency(freq, smp_processor_id());
-+	}
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
-+
- /* Must set freqs->new to intermediate frequency */
- static int __target_intermediate(struct cpufreq_policy *policy,
- 				 struct cpufreq_freqs *freqs, int index)
+-/* Governor's specific attributes */
+-struct governor_attr {
+-	struct attribute attr;
+-	ssize_t (*show)(struct gov_attr_set *attr_set, char *buf);
+-	ssize_t (*store)(struct gov_attr_set *attr_set, const char *buf,
+-			 size_t count);
+-};
+-
+ #define gov_show_one(_gov, file_name)					\
+ static ssize_t show_##file_name						\
+ (struct gov_attr_set *attr_set, char *buf)				\
 Index: linux-pm/include/linux/cpufreq.h
 ===================================================================
 --- linux-pm.orig/include/linux/cpufreq.h
 +++ linux-pm/include/linux/cpufreq.h
-@@ -81,6 +81,7 @@ struct cpufreq_policy {
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
- 	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
-+	bool			fast_switch_possible;
+@@ -462,6 +462,29 @@ void cpufreq_unregister_governor(struct
+ struct cpufreq_governor *cpufreq_default_governor(void);
+ struct cpufreq_governor *cpufreq_fallback_governor(void);
  
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
-@@ -236,6 +237,9 @@ struct cpufreq_driver {
- 				  unsigned int relation);	/* Deprecated */
- 	int		(*target_index)(struct cpufreq_policy *policy,
- 					unsigned int index);
-+	unsigned int	(*fast_switch)(struct cpufreq_policy *policy,
-+				       unsigned int target_freq,
-+				       unsigned int relation);
- 	/*
- 	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
- 	 * unset.
-@@ -450,6 +454,8 @@ struct cpufreq_governor {
- };
- 
- /* Pass a target to the cpufreq driver */
-+void cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
-+				unsigned int target_freq, unsigned int relation);
- int cpufreq_driver_target(struct cpufreq_policy *policy,
- 				 unsigned int target_freq,
- 				 unsigned int relation);
++/* Governor attribute set */
++struct gov_attr_set {
++	struct kobject kobj;
++	struct list_head policy_list;
++	struct mutex update_lock;
++	int usage_count;
++};
++
++/* sysfs ops for cpufreq governors */
++extern const struct sysfs_ops governor_sysfs_ops;
++
++void gov_attr_set_init(struct gov_attr_set *attr_set, struct list_head *list_node);
++void gov_attr_set_get(struct gov_attr_set *attr_set, struct list_head *list_node);
++unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *list_node);
++
++/* Governor sysfs attribute */
++struct governor_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct gov_attr_set *attr_set, char *buf);
++	ssize_t (*store)(struct gov_attr_set *attr_set, const char *buf,
++			 size_t count);
++};
++
+ /*********************************************************************
+  *                     FREQUENCY TABLE HELPERS                       *
+  *********************************************************************/
