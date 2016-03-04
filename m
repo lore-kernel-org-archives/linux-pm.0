@@ -1,336 +1,277 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 2/10][Resend] cpufreq: acpi-cpufreq: Make read and write operations more efficient
-Date: Fri, 04 Mar 2016 03:59:19 +0100
-Message-ID: <8390671.DmEMiPVeOm@vostro.rjw.lan>
+Subject: [PATCH v2 4/10] cpufreq: governor: Move abstract gov_attr_set code to seperate file
+Date: Fri, 04 Mar 2016 04:03:12 +0100
+Message-ID: <8439076.su0yJP41kh@vostro.rjw.lan>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:48656 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755484AbcCDDfC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Mar 2016 22:35:02 -0500
 In-Reply-To: <2409306.qzzMXcm4dm@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Setting a new CPU frequency and reading the current request value
-in the ACPI cpufreq driver involves each at least two switch
-instructions (there's more if the policy is shared).  One of
-them is present in drv_read/write() that prepares a command
-structure and the other happens in subsequent do_drv_read/write()
-when that structure is interpreted.  However, all of those switches
-may be avoided by using function pointers.
+Move abstract code related to struct gov_attr_set to a separate (new)
+file so it can be shared with (future) goverernors that won't share
+more code with "ondemand" and "conservative".
 
-To that end, add two function pointers to struct acpi_cpufreq_data
-to represent read and write operations on the frequency register
-and set them up during policy intitialization to point to the pair
-of routines suitable for the given processor (Intel/AMD MSR access
-or I/O port access).  Then, use those pointers in do_drv_read/write()
-and modify drv_read/write() to prepare the command structure for
-them without any checks.
+No intentional functional changes.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-No changes.
+Changes from the previous version:
+- Different name of the new file.
+- Different name of the new Kconfig symbol.
 
 ---
- drivers/cpufreq/acpi-cpufreq.c |  208 ++++++++++++++++++-----------------------
- 1 file changed, 95 insertions(+), 113 deletions(-)
+ drivers/cpufreq/Kconfig                     |    4 +
+ drivers/cpufreq/Makefile                    |    1 
+ drivers/cpufreq/cpufreq_governor.c          |   82 ---------------------------
+ drivers/cpufreq/cpufreq_governor.h          |    6 ++
+ drivers/cpufreq/cpufreq_governor_attr_set.c |   84 ++++++++++++++++++++++++++++
+ 5 files changed, 95 insertions(+), 82 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+Index: linux-pm/drivers/cpufreq/Kconfig
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-+++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-@@ -70,6 +70,8 @@ struct acpi_cpufreq_data {
- 	unsigned int cpu_feature;
- 	unsigned int acpi_perf_cpu;
- 	cpumask_var_t freqdomain_cpus;
-+	void (*cpu_freq_write)(struct acpi_pct_register *reg, u32 val);
-+	u32 (*cpu_freq_read)(struct acpi_pct_register *reg);
+--- linux-pm.orig/drivers/cpufreq/Kconfig
++++ linux-pm/drivers/cpufreq/Kconfig
+@@ -18,7 +18,11 @@ config CPU_FREQ
+ 
+ if CPU_FREQ
+ 
++config CPU_FREQ_GOV_ATTR_SET
++	bool
++
+ config CPU_FREQ_GOV_COMMON
++	select CPU_FREQ_GOV_ATTR_SET
+ 	select IRQ_WORK
+ 	bool
+ 
+Index: linux-pm/drivers/cpufreq/Makefile
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/Makefile
++++ linux-pm/drivers/cpufreq/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+=
+ obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o
+ obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+= cpufreq_conservative.o
+ obj-$(CONFIG_CPU_FREQ_GOV_COMMON)		+= cpufreq_governor.o
++obj-$(CONFIG_CPU_FREQ_GOV_ATTR_SET)	+= cpufreq_governor_attr_set.o
+ 
+ obj-$(CONFIG_CPUFREQ_DT)		+= cpufreq-dt.o
+ 
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -112,53 +112,6 @@ void gov_update_cpu_data(struct dbs_data
+ }
+ EXPORT_SYMBOL_GPL(gov_update_cpu_data);
+ 
+-static inline struct gov_attr_set *to_gov_attr_set(struct kobject *kobj)
+-{
+-	return container_of(kobj, struct gov_attr_set, kobj);
+-}
+-
+-static inline struct governor_attr *to_gov_attr(struct attribute *attr)
+-{
+-	return container_of(attr, struct governor_attr, attr);
+-}
+-
+-static ssize_t governor_show(struct kobject *kobj, struct attribute *attr,
+-			     char *buf)
+-{
+-	struct governor_attr *gattr = to_gov_attr(attr);
+-
+-	return gattr->show(to_gov_attr_set(kobj), buf);
+-}
+-
+-static ssize_t governor_store(struct kobject *kobj, struct attribute *attr,
+-			      const char *buf, size_t count)
+-{
+-	struct gov_attr_set *attr_set = to_gov_attr_set(kobj);
+-	struct governor_attr *gattr = to_gov_attr(attr);
+-	int ret = -EBUSY;
+-
+-	mutex_lock(&attr_set->update_lock);
+-
+-	if (attr_set->usage_count)
+-		ret = gattr->store(attr_set, buf, count);
+-
+-	mutex_unlock(&attr_set->update_lock);
+-
+-	return ret;
+-}
+-
+-/*
+- * Sysfs Ops for accessing governor attributes.
+- *
+- * All show/store invocations for governor specific sysfs attributes, will first
+- * call the below show/store callbacks and the attribute specific callback will
+- * be called from within it.
+- */
+-static const struct sysfs_ops governor_sysfs_ops = {
+-	.show	= governor_show,
+-	.store	= governor_store,
+-};
+-
+ unsigned int dbs_update(struct cpufreq_policy *policy)
+ {
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+@@ -424,41 +377,6 @@ static void free_policy_dbs_info(struct
+ 	gov->free(policy_dbs);
+ }
+ 
+-static void gov_attr_set_init(struct gov_attr_set *attr_set,
+-			      struct list_head *list_node)
+-{
+-	INIT_LIST_HEAD(&attr_set->policy_list);
+-	mutex_init(&attr_set->update_lock);
+-	attr_set->usage_count = 1;
+-	list_add(list_node, &attr_set->policy_list);
+-}
+-
+-static void gov_attr_set_get(struct gov_attr_set *attr_set,
+-			     struct list_head *list_node)
+-{
+-	mutex_lock(&attr_set->update_lock);
+-	attr_set->usage_count++;
+-	list_add(list_node, &attr_set->policy_list);
+-	mutex_unlock(&attr_set->update_lock);
+-}
+-
+-static unsigned int gov_attr_set_put(struct gov_attr_set *attr_set,
+-				     struct list_head *list_node)
+-{
+-	unsigned int count;
+-
+-	mutex_lock(&attr_set->update_lock);
+-	list_del(list_node);
+-	count = --attr_set->usage_count;
+-	mutex_unlock(&attr_set->update_lock);
+-	if (count)
+-		return count;
+-
+-	kobject_put(&attr_set->kobj);
+-	mutex_destroy(&attr_set->update_lock);
+-	return 0;
+-}
+-
+ static int cpufreq_governor_init(struct cpufreq_policy *policy)
+ {
+ 	struct dbs_governor *gov = dbs_governor_of(policy);
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -48,6 +48,12 @@ struct gov_attr_set {
+ 	int usage_count;
  };
  
- /* acpi_perf_data is a pointer to percpu data. */
-@@ -243,125 +245,119 @@ static unsigned extract_freq(u32 val, st
- 	}
- }
- 
--struct msr_addr {
--	u32 reg;
--};
-+u32 cpu_freq_read_intel(struct acpi_pct_register *not_used)
++extern const struct sysfs_ops governor_sysfs_ops;
++
++void gov_attr_set_init(struct gov_attr_set *attr_set, struct list_head *list_node);
++void gov_attr_set_get(struct gov_attr_set *attr_set, struct list_head *list_node);
++unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *list_node);
++
+ /*
+  * Abbreviations:
+  * dbs: used as a shortform for demand based switching It helps to keep variable
+Index: linux-pm/drivers/cpufreq/cpufreq_governor_attr_set.c
+===================================================================
+--- /dev/null
++++ linux-pm/drivers/cpufreq/cpufreq_governor_attr_set.c
+@@ -0,0 +1,84 @@
++/*
++ * Abstract code for CPUFreq governor tunable sysfs attributes.
++ *
++ * Copyright (C) 2016, Intel Corporation
++ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include "cpufreq_governor.h"
++
++static inline struct gov_attr_set *to_gov_attr_set(struct kobject *kobj)
 +{
-+	u32 val, dummy;
- 
--struct io_addr {
--	u16 port;
--	u8 bit_width;
--};
-+	rdmsr(MSR_IA32_PERF_CTL, val, dummy);
-+	return val;
++	return container_of(kobj, struct gov_attr_set, kobj);
 +}
 +
-+void cpu_freq_write_intel(struct acpi_pct_register *not_used, u32 val)
++static inline struct governor_attr *to_gov_attr(struct attribute *attr)
 +{
-+	u32 lo, hi;
-+
-+	rdmsr(MSR_IA32_PERF_CTL, lo, hi);
-+	lo = (lo & ~INTEL_MSR_RANGE) | (val & INTEL_MSR_RANGE);
-+	wrmsr(MSR_IA32_PERF_CTL, lo, hi);
++	return container_of(attr, struct governor_attr, attr);
 +}
 +
-+u32 cpu_freq_read_amd(struct acpi_pct_register *not_used)
++static ssize_t governor_show(struct kobject *kobj, struct attribute *attr,
++			     char *buf)
 +{
-+	u32 val, dummy;
++	struct governor_attr *gattr = to_gov_attr(attr);
 +
-+	rdmsr(MSR_AMD_PERF_CTL, val, dummy);
-+	return val;
++	return gattr->show(to_gov_attr_set(kobj), buf);
 +}
 +
-+void cpu_freq_write_amd(struct acpi_pct_register *not_used, u32 val)
++static ssize_t governor_store(struct kobject *kobj, struct attribute *attr,
++			      const char *buf, size_t count)
 +{
-+	wrmsr(MSR_AMD_PERF_CTL, val, 0);
++	struct gov_attr_set *attr_set = to_gov_attr_set(kobj);
++	struct governor_attr *gattr = to_gov_attr(attr);
++	int ret;
++
++	mutex_lock(&attr_set->update_lock);
++	ret = attr_set->usage_count ? gattr->store(attr_set, buf, count) : -EBUSY;
++	mutex_unlock(&attr_set->update_lock);
++	return ret;
 +}
 +
-+u32 cpu_freq_read_io(struct acpi_pct_register *reg)
++const struct sysfs_ops governor_sysfs_ops = {
++	.show	= governor_show,
++	.store	= governor_store,
++};
++EXPORT_SYMBOL_GPL(governor_sysfs_ops);
++
++void gov_attr_set_init(struct gov_attr_set *attr_set, struct list_head *list_node)
 +{
-+	u32 val;
-+
-+	acpi_os_read_port(reg->address, &val, reg->bit_width);
-+	return val;
++	INIT_LIST_HEAD(&attr_set->policy_list);
++	mutex_init(&attr_set->update_lock);
++	attr_set->usage_count = 1;
++	list_add(list_node, &attr_set->policy_list);
 +}
++EXPORT_SYMBOL_GPL(gov_attr_set_init);
 +
-+void cpu_freq_write_io(struct acpi_pct_register *reg, u32 val)
++void gov_attr_set_get(struct gov_attr_set *attr_set, struct list_head *list_node)
 +{
-+	acpi_os_write_port(reg->address, val, reg->bit_width);
++	mutex_lock(&attr_set->update_lock);
++	attr_set->usage_count++;
++	list_add(list_node, &attr_set->policy_list);
++	mutex_unlock(&attr_set->update_lock);
 +}
- 
- struct drv_cmd {
--	unsigned int type;
--	const struct cpumask *mask;
--	union {
--		struct msr_addr msr;
--		struct io_addr io;
--	} addr;
-+	struct acpi_pct_register *reg;
- 	u32 val;
-+	union {
-+		void (*write)(struct acpi_pct_register *reg, u32 val);
-+		u32 (*read)(struct acpi_pct_register *reg);
-+	} func;
- };
- 
- /* Called via smp_call_function_single(), on the target CPU */
- static void do_drv_read(void *_cmd)
- {
- 	struct drv_cmd *cmd = _cmd;
--	u32 h;
- 
--	switch (cmd->type) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--	case SYSTEM_AMD_MSR_CAPABLE:
--		rdmsr(cmd->addr.msr.reg, cmd->val, h);
--		break;
--	case SYSTEM_IO_CAPABLE:
--		acpi_os_read_port((acpi_io_address)cmd->addr.io.port,
--				&cmd->val,
--				(u32)cmd->addr.io.bit_width);
--		break;
--	default:
--		break;
--	}
-+	cmd->val = cmd->func.read(cmd->reg);
- }
- 
--/* Called via smp_call_function_many(), on the target CPUs */
--static void do_drv_write(void *_cmd)
-+static u32 drv_read(struct acpi_cpufreq_data *data, const struct cpumask *mask)
- {
--	struct drv_cmd *cmd = _cmd;
--	u32 lo, hi;
-+	struct acpi_processor_performance *perf = to_perf_data(data);
-+	struct drv_cmd cmd = {
-+		.reg = &perf->control_register,
-+		.func.read = data->cpu_freq_read,
-+	};
-+	int err;
- 
--	switch (cmd->type) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		rdmsr(cmd->addr.msr.reg, lo, hi);
--		lo = (lo & ~INTEL_MSR_RANGE) | (cmd->val & INTEL_MSR_RANGE);
--		wrmsr(cmd->addr.msr.reg, lo, hi);
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		wrmsr(cmd->addr.msr.reg, cmd->val, 0);
--		break;
--	case SYSTEM_IO_CAPABLE:
--		acpi_os_write_port((acpi_io_address)cmd->addr.io.port,
--				cmd->val,
--				(u32)cmd->addr.io.bit_width);
--		break;
--	default:
--		break;
--	}
-+	err = smp_call_function_any(mask, do_drv_read, &cmd, 1);
-+	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
-+	return cmd.val;
- }
- 
--static void drv_read(struct drv_cmd *cmd)
-+/* Called via smp_call_function_many(), on the target CPUs */
-+static void do_drv_write(void *_cmd)
- {
--	int err;
--	cmd->val = 0;
-+	struct drv_cmd *cmd = _cmd;
- 
--	err = smp_call_function_any(cmd->mask, do_drv_read, cmd, 1);
--	WARN_ON_ONCE(err);	/* smp_call_function_any() was buggy? */
-+	cmd->func.write(cmd->reg, cmd->val);
- }
- 
--static void drv_write(struct drv_cmd *cmd)
-+static void drv_write(struct acpi_cpufreq_data *data,
-+		      const struct cpumask *mask, u32 val)
- {
-+	struct acpi_processor_performance *perf = to_perf_data(data);
-+	struct drv_cmd cmd = {
-+		.reg = &perf->control_register,
-+		.val = val,
-+		.func.write = data->cpu_freq_write,
-+	};
- 	int this_cpu;
- 
- 	this_cpu = get_cpu();
--	if (cpumask_test_cpu(this_cpu, cmd->mask))
--		do_drv_write(cmd);
--	smp_call_function_many(cmd->mask, do_drv_write, cmd, 1);
-+	if (cpumask_test_cpu(this_cpu, mask))
-+		do_drv_write(&cmd);
++EXPORT_SYMBOL_GPL(gov_attr_set_get);
 +
-+	smp_call_function_many(mask, do_drv_write, &cmd, 1);
- 	put_cpu();
- }
- 
--static u32
--get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
-+static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *data)
- {
--	struct acpi_processor_performance *perf;
--	struct drv_cmd cmd;
-+	u32 val;
- 
- 	if (unlikely(cpumask_empty(mask)))
- 		return 0;
- 
--	switch (data->cpu_feature) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
--		break;
--	case SYSTEM_IO_CAPABLE:
--		cmd.type = SYSTEM_IO_CAPABLE;
--		perf = to_perf_data(data);
--		cmd.addr.io.port = perf->control_register.address;
--		cmd.addr.io.bit_width = perf->control_register.bit_width;
--		break;
--	default:
--		return 0;
--	}
--
--	cmd.mask = mask;
--	drv_read(&cmd);
-+	val = drv_read(data, mask);
- 
--	pr_debug("get_cur_val = %u\n", cmd.val);
-+	pr_debug("get_cur_val = %u\n", val);
- 
--	return cmd.val;
-+	return val;
- }
- 
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
-@@ -416,7 +412,7 @@ static int acpi_cpufreq_target(struct cp
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
--	struct drv_cmd cmd;
-+	const struct cpumask *mask;
- 	unsigned int next_perf_state = 0; /* Index into perf table */
- 	int result = 0;
- 
-@@ -438,37 +434,17 @@ static int acpi_cpufreq_target(struct cp
- 		}
- 	}
- 
--	switch (data->cpu_feature) {
--	case SYSTEM_INTEL_MSR_CAPABLE:
--		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	case SYSTEM_AMD_MSR_CAPABLE:
--		cmd.type = SYSTEM_AMD_MSR_CAPABLE;
--		cmd.addr.msr.reg = MSR_AMD_PERF_CTL;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	case SYSTEM_IO_CAPABLE:
--		cmd.type = SYSTEM_IO_CAPABLE;
--		cmd.addr.io.port = perf->control_register.address;
--		cmd.addr.io.bit_width = perf->control_register.bit_width;
--		cmd.val = (u32) perf->states[next_perf_state].control;
--		break;
--	default:
--		return -ENODEV;
--	}
--
--	/* cpufreq holds the hotplug lock, so we are safe from here on */
--	if (policy->shared_type != CPUFREQ_SHARED_TYPE_ANY)
--		cmd.mask = policy->cpus;
--	else
--		cmd.mask = cpumask_of(policy->cpu);
-+	/*
-+	 * The core won't allow CPUs to go away until the governor has been
-+	 * stopped, so we can rely on the stability of policy->cpus.
-+	 */
-+	mask = policy->shared_type == CPUFREQ_SHARED_TYPE_ANY ?
-+		cpumask_of(policy->cpu) : policy->cpus;
- 
--	drv_write(&cmd);
-+	drv_write(data, mask, perf->states[next_perf_state].control);
- 
- 	if (acpi_pstate_strict) {
--		if (!check_freqs(cmd.mask, data->freq_table[index].frequency,
-+		if (!check_freqs(mask, data->freq_table[index].frequency,
- 					data)) {
- 			pr_debug("acpi_cpufreq_target failed (%d)\n",
- 				policy->cpu);
-@@ -738,15 +714,21 @@ static int acpi_cpufreq_cpu_init(struct
- 		}
- 		pr_debug("SYSTEM IO addr space\n");
- 		data->cpu_feature = SYSTEM_IO_CAPABLE;
-+		data->cpu_freq_read = cpu_freq_read_io;
-+		data->cpu_freq_write = cpu_freq_write_io;
- 		break;
- 	case ACPI_ADR_SPACE_FIXED_HARDWARE:
- 		pr_debug("HARDWARE addr space\n");
- 		if (check_est_cpu(cpu)) {
- 			data->cpu_feature = SYSTEM_INTEL_MSR_CAPABLE;
-+			data->cpu_freq_read = cpu_freq_read_intel;
-+			data->cpu_freq_write = cpu_freq_write_intel;
- 			break;
- 		}
- 		if (check_amd_hwpstate_cpu(cpu)) {
- 			data->cpu_feature = SYSTEM_AMD_MSR_CAPABLE;
-+			data->cpu_freq_read = cpu_freq_read_amd;
-+			data->cpu_freq_write = cpu_freq_write_amd;
- 			break;
- 		}
- 		result = -ENODEV;
++unsigned int gov_attr_set_put(struct gov_attr_set *attr_set, struct list_head *list_node)
++{
++	unsigned int count;
++
++	mutex_lock(&attr_set->update_lock);
++	list_del(list_node);
++	count = --attr_set->usage_count;
++	mutex_unlock(&attr_set->update_lock);
++	if (count)
++		return count;
++
++	kobject_put(&attr_set->kobj);
++	mutex_destroy(&attr_set->update_lock);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(gov_attr_set_put);
+
