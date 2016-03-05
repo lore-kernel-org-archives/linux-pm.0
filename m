@@ -1,78 +1,111 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Sat, 5 Mar 2016 01:18:41 +0100
-Message-ID: <CAJZ5v0gqnDR8BJ6JUKBB7-T8MAhNge9TPngZ9Crc45TRzm04vQ@mail.gmail.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	<2409306.qzzMXcm4dm@vostro.rjw.lan>
-	<15684081.T4iOMUSHCY@vostro.rjw.lan>
-	<56DA09B1.4010005@linaro.org>
-	<CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
-	<CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
-	<CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
-	<56DA20C0.1070803@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V7 2/4] Documentation: DT: bindings: Add power domain
+ info for NVIDIA PMC
+Date: Fri, 4 Mar 2016 22:31:04 -0600
+Message-ID: <20160305043104.GG13525@rob-hp-laptop>
+References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
+ <1457094186-15786-3-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <56DA20C0.1070803@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:49097 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760681AbcCEEba (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Mar 2016 23:31:30 -0500
+Content-Disposition: inline
+In-Reply-To: <1457094186-15786-3-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, Mar 5, 2016 at 12:56 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> On 03/04/2016 03:18 PM, Rafael J. Wysocki wrote:
->> In fact, the mechanism may be relatively simple if I'm not mistaken.
->>
->> In the "fast switch" case, the governor may spawn a work item that
->> will just execute cpufreq_get() on policy->cpu.  That will notice that
->> policy->cur is different from the real current frequency and will
->> re-adjust.
->>
->> Of course, cpufreq_driver_fast_switch() will need to be modified so it
->> doesn't update policy->cur then perhaps with a comment that the
->> governor using it will be responsible for that.
->>
->> And the governor will need to avoid spawning that work item too often
->> (basically, if one has been spawned already and hasn't completed, no
->> need to spawn a new one, and maybe rate-limit it?), but all that looks
->> reasonably straightforward.
->
-> It is another option though definitely a compromise. The semantics seem
-> different since you'd potentially have multiple freq changes before a
-> single notifier went through, so stuff might still break.
+On Fri, Mar 04, 2016 at 12:23:04PM +0000, Jon Hunter wrote:
+> Add power-domain binding documentation for the NVIDIA PMC driver in
+> order to support generic power-domains.
+> 
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> ---
+>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 80 ++++++++++++++++++++++
+>  1 file changed, 80 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+> index 53aa5496c5cf..7d52bbe99709 100644
+> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+> @@ -1,5 +1,7 @@
+>  NVIDIA Tegra Power Management Controller (PMC)
+>  
+> +== Power Management Controller Node ==
+> +
+>  The PMC block interacts with an external Power Management Unit. The PMC
+>  mostly controls the entry and exit of the system from different sleep
+>  modes. It provides power-gating controllers for SoC and CPU power-islands.
+> @@ -70,6 +72,11 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+>                       Defaults to 0. Valid values are described in section 12.5.2
+>                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
+>  
+> +Optional nodes:
+> +- powergates : This node contains a hierarchy of power domain nodes, which
+> +	       should match the powergates on the Tegra SoC. See "Powergate
+> +	       Nodes" below.
+> +
+>  Example:
+>  
+>  / SoC dts including file
+> @@ -115,3 +122,76 @@ pmc@7000f400 {
+>  	};
+>  	...
+>  };
+> +
+> +
+> +== Powergate Nodes ==
+> +
+> +Each of the powergate nodes represent a power-domain on the Tegra SoC
+> +that can be power-gated by the Tegra PMC. The name of the powergate node
+> +should be one of the below. Note that not every powergate is applicable
+> +to all Tegra devices and the following list shows which powergates are
+> +applicable to which devices. Please refer to the Tegra TRM for more
+> +details on the various powergates.
+> +
+> + Name		Description			Devices Applicable
+> + 3d		3D Graphics			Tegra20/114/124/210
+> + 3d0		3D Graphics 0			Tegra30
+> + 3d1		3D Graphics 1			Tegra30
+> + aud		Audio				Tegra210
+> + dfd		Debug				Tegra210
+> + dis		Display A			Tegra114/124/210
+> + disb		Display B			Tegra114/124/210
+> + heg		2D Graphics			Tegra30/114/124/210
+> + iram		Internal RAM			Tegra124/210
+> + mpe		MPEG Encode			All
+> + nvdec		NVIDIA Video Decode Engine	Tegra210
+> + nvjpg		NVIDIA JPEG Engine		Tegra210
+> + pcie		PCIE				Tegra20/30/124/210
+> + sata		SATA				Tegra30/124/210
+> + sor		Display interfaces		Tegra124/210
+> + ve2		Video Encode Engine 2		Tegra210
+> + venc		Video Encode Engine		All
+> + vdec		Video Decode Engine		Tegra20/30/114/124
+> + vic		Video Imaging Compositor	Tegra124/210
+> + xusba		USB Partition A			Tegra114/124/210
+> + xusbb		USB Partition B 		Tegra114/124/210
+> + xusbc		USB Partition C			Tegra114/124/210
+> +
+> +Required properties:
+> +  - clocks: Must contain an entry for each clock required by the PMC for
+> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
+> +  - resets: Must contain an entry for each reset required by the PMC for
+> +    controlling a power-gate. See ../reset/reset.txt for details.
+> +  - #power-domain-cells: Must be 0.
+> +
+> +Example:
+> +
+> +	pmc: pmc@0,7000e400 {
 
-Here I'm not worried.  That's basically equivalent to someone doing a
-"get" and seeing an unexpected frequency in the driver output which is
-covered already and things need to cope with it or they are just
-really broken.
+Just pmc@7000e400. We were erronously using commas for 64-bit addresses 
+briefly, but the correct usage is when there are distinct fields in reg 
+like PCI bus,dev,func.
 
-> The fast path would also be more expensive given the workqueue activity that could
-> translate into additional task wakeups.
+Otherwise:
 
-That's a valid concern, so maybe there can be a driver flag to
-indicate that this has to be done if ->fast_switch is in use?  Or
-something like fast_switch_notify_rate that will tell the governor how
-often to notify things about transitions if ->fast_switch is in use
-with either 0 or all ones meaning "never"?  That might be a policy
-property even, so the driver may set this depending on what platform
-it is used on.
-
-> Honestly I wonder if it's better to just try the "no notifiers with fast
-> drivers" approach to start. The notifiers could always be added if
-> platform owners complain that they absolutely require them.
-
-Well, I'm not sure what happens if we start to fail notifier
-registrations.  It may not be a well tested error code path. :-)
-
-Besides, there is the problem with registering notifiers before the
-driver and I don't think we can fail driver registration if notifiers
-have already been registered.  We may not be able to register a "fast"
-driver at all in that case.
-
-But that whole thing is your worry, not mine. :-)
-
-Had I been worrying about that, I would have added some bandaid for
-that to the patches.
-
-Thanks,
-Rafael
+Acked-by: Rob Herring <robh@kernel.org>
