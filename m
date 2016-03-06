@@ -1,58 +1,75 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V5 3/4] Move the intel_pstate_calc_busy into get_target_pstate_use_performance
-Date: Sun,  6 Mar 2016 08:34:05 +0100
-Message-ID: <1457249646-23072-4-git-send-email-philippe.longepe@linux.intel.com>
+Subject: [PATCH V5 4/4] intel_pstate: Remove the freq calculation from the intel_pstate_calc_busy function
+Date: Sun,  6 Mar 2016 08:34:06 +0100
+Message-ID: <1457249646-23072-5-git-send-email-philippe.longepe@linux.intel.com>
 References: <1457249646-23072-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20429 "EHLO mga09.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:57305 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbcCFHdC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 6 Mar 2016 02:33:02 -0500
+	id S1751255AbcCFHdF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 6 Mar 2016 02:33:05 -0500
 In-Reply-To: <1457249646-23072-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: srinivas.pandruvada@linux.intel.com, rafael@kernel.org
 
-The cpu_load algorithm doesn't need to invoke intel_pstate_calc_busy(),
-so move that call from intel_pstate_sample() to
-get_target_pstate_use_performance().
+Use a helper function to compute the average pstate and call it only
+where it is needed (only when tracing or in intel_pstate_get).
 
 Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index c46d23a..903341f 100644
+index 903341f..6e07366 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -912,8 +912,6 @@ static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
- 	cpu->sample.mperf -= cpu->prev_mperf;
- 	cpu->sample.tsc -= cpu->prev_tsc;
+@@ -878,12 +878,6 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+ 	core_pct = int_tofp(sample->aperf) * int_tofp(100);
+ 	core_pct = div64_u64(core_pct, int_tofp(sample->mperf));
  
--	intel_pstate_calc_busy(cpu);
+-	sample->freq = fp_toint(
+-		mul_fp(int_tofp(
+-			cpu->pstate.max_pstate_physical *
+-			cpu->pstate.scaling / 100),
+-			core_pct));
 -
- 	cpu->prev_aperf = aperf;
- 	cpu->prev_mperf = mperf;
+ 	sample->core_pct_busy = (int32_t)core_pct;
+ }
+ 
+@@ -917,6 +911,12 @@ static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
  	cpu->prev_tsc = tsc;
-@@ -942,7 +940,6 @@ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
- 	mperf = cpu->sample.mperf + delta_iowait_mperf;
- 	cpu->prev_cummulative_iowait = cummulative_iowait;
+ }
  
--
- 	/*
- 	 * The load can be estimated as the ratio of the mperf counter
- 	 * running at a constant frequency during active periods
-@@ -960,6 +957,8 @@ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
- 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
- 	u64 duration_ns;
- 
-+	intel_pstate_calc_busy(cpu);
++static inline int32_t get_avg_frequency(struct cpudata *cpu)
++{
++	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aperf *
++		cpu->pstate.scaling, cpu->sample.mperf);
++}
 +
- 	/*
- 	 * core_busy is the ratio of actual performance to max
- 	 * max_pstate is the max non turbo pstate available
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+@@ -1012,7 +1012,7 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 		sample->mperf,
+ 		sample->aperf,
+ 		sample->tsc,
+-		sample->freq);
++		get_avg_frequency(cpu));
+ }
+ 
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+@@ -1101,7 +1101,7 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
+ 	if (!cpu)
+ 		return 0;
+ 	sample = &cpu->sample;
+-	return sample->freq;
++	return get_avg_frequency(cpu);
+ }
+ 
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
 -- 
 1.9.1
 
