@@ -1,94 +1,96 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Mon, 7 Mar 2016 14:32:03 +0100
-Message-ID: <20160307133203.GD6356@twins.programming.kicks-ass.net>
-References: <2409306.qzzMXcm4dm@vostro.rjw.lan>
- <15684081.T4iOMUSHCY@vostro.rjw.lan>
- <56DA09B1.4010005@linaro.org>
- <CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
- <CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
- <CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
- <20160305164900.GX6356@twins.programming.kicks-ass.net>
- <CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
- <20160307080059.GZ6356@twins.programming.kicks-ass.net>
- <CAJZ5v0jKXQrrpVmEd=CCek4KVWknJaoYSAmwc8rosKK=oDzkFw@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH V6 00/10] Add generic PM domain support for Tegra
+Date: Mon, 7 Mar 2016 13:32:32 +0000
+Message-ID: <56DD82F0.2070504@nvidia.com>
+References: <1456501724-28477-1-git-send-email-jonathanh@nvidia.com>
+ <20160302153556.GB21035@ulmo.nvidia.com> <7h7fhk3c4o.fsf@baylibre.com>
+ <CAJZ5v0juBvU9f61RQRDaHg9B2H=rccNOfT1fXGDRkbpxh-sx=g@mail.gmail.com>
+ <7h7fhkxn1r.fsf@baylibre.com> <56D8246E.5090909@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:59237 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752243AbcCGNcI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 08:32:08 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jKXQrrpVmEd=CCek4KVWknJaoYSAmwc8rosKK=oDzkFw@mail.gmail.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:5852 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbcCGNci (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 08:32:38 -0500
+In-Reply-To: <56D8246E.5090909@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-tegra@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Mon, Mar 07, 2016 at 02:15:47PM +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 7, 2016 at 9:00 AM, Peter Zijlstra <peterz@infradead.org> wrote:
 
-> > Sure I know all that. But that, to me, seems like an argument for why
-> > you should have done this a long time ago.
+On 03/03/16 11:47, Jon Hunter wrote:
 > 
-> While I generally agree with this, I don't quite see why cleaning that
-> up necessarily has to be connected to the current patch series which
-> is my point.
-
-Ah OK, fair enough I suppose. But someone should stick this on their
-TODO list, we should not 'forget' about this (again).
-
-> > But I do think something wants to be done here.
+> On 03/03/16 03:22, Kevin Hilman wrote:
+>> "Rafael J. Wysocki" <rafael@kernel.org> writes:
+>>
+>>> On Wed, Mar 2, 2016 at 8:36 PM, Kevin Hilman <khilman@baylibre.com> wrote:
+>>>> Thierry Reding <thierry.reding@gmail.com> writes:
+>>>>
+>>>>> On Fri, Feb 26, 2016 at 03:48:34PM +0000, Jon Hunter wrote:
+>>>>>> Adds generic PM domain support for Tegra SoCs but this series only
+>>>>>> enables support for it on Tegra 64-bit devices. There is no reason why
+>>>>>> this cannot be enable for Tegra 32-bit devices, but to keep the patch
+>>>>>> series to a minimum only 64-bit devices are enabled so far.
+>>>>>>
+>>>>>> This series has been boot tested on Tegra210 as well as various 32-bit
+>>>>>> Tegra platforms.
+>>>>
+>>>> [...]
+>>>>
+>>>>>> Jon Hunter (10):
+>>>>>>   PM / Domains: Fix removal of a subdomain
+>>>>>>   PM / Domains: Add function to get the last domain added
+>>>>>>   PM / Domains: Add function to remove a pm-domain
+>>>>>
+>>>>> Ulf, Kevin, Rafael,
+>>>>>
+>>>>> It's too late to take these patches through the Tegra tree for v4.6, but
+>>>>> if Jon can get the above three patches ready before the merge window,
+>>>>> would you be willing to pick them up into your trees for v4.6?
+>>>>
+>>>> It's a bit late in the cycle, but since one is a fix and the other two
+>>>> add functions that aren't (yet) used, I think it would be fine to get
+>>>> them in for v4.6.  But, the final decision is with Rafael.
+>>>>
+>>>>> Doing so
+>>>>> might make it easier to deal with the dependencies. The prerequisites
+>>>>> would already be in Linus' tree when I apply the Tegra bits for v4.7.
+>>>>
+>>>> Yeah, makes sense.
+>>>>
+>>>>> I don't mind taking all of it through the Tegra tree for v4.7, though. I
+>>>>> can provide a stable branch with the PM / Domains patches for you to
+>>>>> pull in, in case there are any conflicts.
+>>>>
+>>>> I think it makes the most sense for these prereqs to merge through
+>>>> linux-pm.  Let's see what Rafael thinks about the timing.
+>>>
+>>> The timing is fine by me.
+>>>
+>>> Do you want me to apply [1-3/10] from this series, then?
+>>
+>> Jon has some minor tweaks to do, so he'll respin and then you can take
+>> them.
+>>
+>> Jon, feel free to add:
+>>
+>> Acked-by: Kevin Hilman <khilman@baylibre.com>
+>>
+>> For those as well.  I thought I responded, but looks like I didn't.
 > 
-> So here's what I can do for the "fast switch" thing.
-> 
-> There is the fast_switch_possible policy flag that's necessary anyway.
-> I can make notifier registration fail when that is set for at least
-> one policy and I can make the setting of it fail if at least one
-> notifier has already been registered.
-> 
-> However, without spending too much time on chasing code dependencies i
-> sort of suspect that it will uncover things that register cpufreq
-> notifiers early and it won't be possible to use fast switch without
-> sorting that out. 
+> I am preparing a V7 that I will send out today/tomorrow (latest). I am
+> going to drop the removal parts for now and send that out separately as
+> an RFC because it is bigger than I have expected.
 
-The two x86 users don't register notifiers when CONSTANT_TSC, which
-seems to be the right thing.
+Rafael,
 
-Much of the other users seem unlikely to be used on x86, so I suspect
-the initial fallout will be very limited.
+By the way, I posted the genpd fixes separately here [0][1].
 
-*groan* modules, cpufreq allows drivers to be modules, so init sequences
-are poorly defined at best :/ Yes that blows.
+Cheers
+Jon
 
-> And that won't even change anything apart from
-> removing some code that has not worked for quite a while already and
-> nobody noticed.
-
-Which is always a good thing, but yes, we can do this later.
-
-> It is doable for the "fast switch" thing, but it won't help in all of
-> the other cases when notifications are not reliable.
-
-Right, you can maybe add a 'NOTIFIERS_BROKEN' flag to the intel_p_state
-and HWP drivers or so, and trigger off of that.
-
-> If it changes frequently enough, it's not practical and not even
-> necessary to cause things like thermal to react on every change, but I
-> think there needs to be a way to make them reevaluate things
-> regularly.  Arguably, they might set a timer for that, but why would
-> they need a timer if they could get triggered by the code that
-> actually makes changes?
-
-So that very much depends on what thermal actually needs; but I suspect
-that using a timer is cheaper than using irq_work to kick off something
-else.
-
-The irq_work is a LAPIC write (self IPI), just as the timer. However
-timers can be coalesced, resulting in, on average, less timer
-reprogramming than there are handlers ran.
-
-Now, if thermal can do without work and can run in-line just like the
-fast freq switch, then yes, that might make sense.
-
+[0] http://marc.info/?l=linux-pm&m=145708892606515&w=2
+[1] http://marc.info/?l=linux-pm&m=145708892606516&w=2
