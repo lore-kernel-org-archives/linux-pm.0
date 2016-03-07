@@ -1,152 +1,88 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: omap-thermal: Add notify function to
- thermal_zone_device_ops
-Date: Mon, 7 Mar 2016 13:03:39 +0530
-Message-ID: <56DD2ED3.10609@ti.com>
-References: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
+Date: Mon, 7 Mar 2016 09:00:59 +0100
+Message-ID: <20160307080059.GZ6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <2409306.qzzMXcm4dm@vostro.rjw.lan>
+ <15684081.T4iOMUSHCY@vostro.rjw.lan>
+ <56DA09B1.4010005@linaro.org>
+ <CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
+ <CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
+ <CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
+ <20160305164900.GX6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:54555 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752025AbcCGHdo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Mar 2016 02:33:44 -0500
-In-Reply-To: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+Received: from casper.infradead.org ([85.118.1.10]:52593 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbcCGIBO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 03:01:14 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com
-Cc: nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-Eduardo,
+On Sun, Mar 06, 2016 at 03:17:09AM +0100, Rafael J. Wysocki wrote:
+> > Agreed, fail the stuff hard.
+> >
+> > Simply make cpufreq_register_notifier a __must_check function and add
+> > error handling to all call sites.
+> 
+> Quite frankly, I don't see a compelling reason to do anything about
+> the notifications at this point.
+> 
+> The ACPI driver is the only one that will support fast switching for
+> the time being and on practically all platforms that can use the ACPI
+> driver the transition notifications cannot be relied on anyway for a
+> few reasons.  First, if intel_pstate or HWP is in use, they won't be
+> coming at all.  Second, anything turbo will just change frequency at
+> will without notifying (like HWP).  Finally, if they are coming,
+> whoever receives them is notified about the frequency that is
+> requested and not the real one, which is misleading, because (a) the
+> request may just make the CPU go into the turbo range and then see
+> above or (b) if the CPU is in a platform-coordinated package, its
+> request will only be granted if it's the winning one.
 
-On Tuesday 16 February 2016 10:35 AM, Keerthy wrote:
-> notify function is used to notify when some temperature thresholds
-> are crossed. In case we get notified for a critical trip point then
-> schedule an emergency shutdown function to backup orderly_poweroff
-> failures.
->
-> orderly_poweroff is triggered when a graceful shutdown
-> of system is desired. This may be used in many critical states of the
-> kernel such as when subsystems detects conditions such as critical
-> temperature conditions. However, in certain conditions in system
-> boot up sequences like those in the middle of driver probes being
-> initiated, userspace will be unable to power off the system in a clean
-> manner and leaves the system in a critical state. In cases like these,
-> the /sbin/poweroff will return success (having forked off to attempt
-> powering off the system. However, the system overall will fail to
-> completely poweroff (since other modules will be probed) and the system
-> is still functional with no userspace (since that would have shut itself
-> off).
->
-> However, there is no clean way of detecting such failure of userspace
-> powering off the system. In such scenarios, it is necessary for a backup
-> workqueue to be able to force a shutdown of the system when orderly
-> shutdown is not successful after a configurable time period.
->
+Sure I know all that. But that, to me, seems like an argument for why
+you should have done this a long time ago.
 
-A gentle ping on this.
+Someone registering a notifier you _know_ won't be called reliably is a
+sure sign of borkage. And you want to be notified (pun intended) of
+borkage.
 
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->
-> The previous discussion:
->
-> https://lkml.org/lkml/2016/1/28/989
->
-> Making use of the notify ops to schedule a backup thermal shutdown.
->
->   drivers/thermal/ti-soc-thermal/Kconfig             | 13 +++++++
->   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 43 ++++++++++++++++++++++
->   2 files changed, 56 insertions(+)
->
-> diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
-> index ea8283f..b4b9668 100644
-> --- a/drivers/thermal/ti-soc-thermal/Kconfig
-> +++ b/drivers/thermal/ti-soc-thermal/Kconfig
-> @@ -71,3 +71,16 @@ config DRA752_THERMAL
->
->   	  This includes alert interrupts generation and also the TSHUT
->   	  support.
-> +
-> +config TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-> +	int "Emergency poweroff delay in milli-seconds"
-> +	depends on TI_SOC_THERMAL
-> +	default 0
-> +	help
-> +	  The number of milliseconds to delay before emergency
-> +	  poweroff kicks in. The delay should be carefully profiled
-> +	  so as to give adequate time for orderly_poweroff. In case
-> +	  of failure of an orderly_poweroff the emergency poweroff
-> +	  kicks in after the delay has elapsed and shuts down the system.
-> +
-> +	  If set to 0 poweroff will happen immediately.
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index b213a12..d48eb5b1 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -31,6 +31,7 @@
->   #include <linux/cpumask.h>
->   #include <linux/cpu_cooling.h>
->   #include <linux/of.h>
-> +#include <linux/reboot.h>
->
->   #include "ti-thermal.h"
->   #include "ti-bandgap.h"
-> @@ -286,6 +287,47 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
->   	return ti_thermal_get_trip_temp(thermal, OMAP_TRIP_NUMBER - 1, temp);
->   }
->
-> +/**
-> + * emergency_poweroff_func - emergency poweroff work after a known delay
-> + * @work: work_struct associated with the emergency poweroff function
-> + *
-> + * This function is called in very critical situations to force
-> + * a kernel poweroff after a configurable timeout value.
-> + */
-> +static void emergency_poweroff_func(struct work_struct *work)
-> +{
-> +	pr_warn("Attempting kernel_power_off\n");
-> +	kernel_power_off();
-> +
-> +	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-> +	emergency_restart();
-> +}
-> +
-> +static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
-> +
-> +/**
-> + * emergency_poweroff - Trigger an emergency system poweroff
-> + *
-> + * This may be called from any critical situation to trigger a system shutdown
-> + * after a known period of time. By default the delay is 0 millisecond
-> + */
-> +void ti_thermal_emergency_poweroff(void)
-> +{
-> +	schedule_delayed_work(&emergency_poweroff_work,
-> +	msecs_to_jiffies(CONFIG_TI_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-> +}
-> +
-> +static int ti_thermal_notify(struct thermal_zone_device *thermal, int temp,
-> +			     enum thermal_trip_type type)
-> +{
-> +	if (type == THERMAL_TRIP_CRITICAL) {
-> +		pr_warn("critical temperature %d reached", temp);
-> +		ti_thermal_emergency_poweroff();
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->   static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
->   	.get_temp = __ti_thermal_get_temp,
->   	.get_trend = __ti_thermal_get_trend,
-> @@ -301,6 +343,7 @@ static struct thermal_zone_device_ops ti_thermal_ops = {
->   	.get_trip_type = ti_thermal_get_trip_type,
->   	.get_trip_temp = ti_thermal_get_trip_temp,
->   	.get_crit_temp = ti_thermal_get_crit_temp,
-> +	.notify = ti_thermal_notify,
->   };
->
->   static struct ti_thermal_data
->
+So the alternative option to making the registration fail, is making the
+registration WARN (and possibly disable fast support in the driver).
+
+But I do think something wants to be done here.
+
+> > No no no, that's just horrible. Why would you want to keep this
+> > notification stuff alive? If your platform can change frequency 'fast'
+> > you don't want notifiers.
+> 
+> I'm not totally sure about that.
+
+I am, per definition, if you need to call notifiers, you're not fast.
+
+I would really suggest making that a hard rule and enforcing it.
+
+> > What's the point of a notification that says: "At some point in the
+> > random past my frequency has changed, and it likely has changed again
+> > since then, do 'something'."
+> >
+> > That's pointless. If you have dependent clock domains or whatever, you
+> > simply _cannot_ be fast.
+> >
+> 
+> What about thermal?  They don't need to get very accurate information,
+> but they need to be updated on a regular basis.  It would do if they
+> get averages instead of momentary values (and may be better even).
+
+Thermal, should be an integral part of cpufreq, but if they need a
+callback from the switching hook (and here I would like to remind
+everyone that this is inside scheduler hot paths and the more code you
+stuff in the harder the performance regressions will hit you in the
+face) it can get a direct function call. No need for no stinking
+notifiers.
