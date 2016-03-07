@@ -1,96 +1,123 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Do not modify perf bias performance setting by default at boot
-Date: Mon, 07 Mar 2016 17:17:10 +0100
-Message-ID: <5136165.3o99Coufiu@skinner>
-References: <4687430.mfM0GbdeDL@skinner> <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com> <5246881.PY2xISUnh1@skinner>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH V7 2/4] Documentation: DT: bindings: Add power domain info
+ for NVIDIA PMC
+Date: Mon, 7 Mar 2016 10:47:50 -0700
+Message-ID: <56DDBEC6.7080102@wwwdotorg.org>
+References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
+ <1457094186-15786-3-git-send-email-jonathanh@nvidia.com>
+ <20160305043104.GG13525@rob-hp-laptop> <56DD515A.4020207@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:52316 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360AbcCGQRM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Mar 2016 11:17:12 -0500
-In-Reply-To: <5246881.PY2xISUnh1@skinner>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:35000 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752855AbcCGRrz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 12:47:55 -0500
+In-Reply-To: <56DD515A.4020207@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@kernel.org>, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laura Abbott <labbott@fedoraproject.org>
+To: Jon Hunter <jonathanh@nvidia.com>, Rob Herring <robh@kernel.org>, Thierry Reding <thierry.reding@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, March 07, 2016 02:24:54 PM Thomas Renninger wrote:
-> It came out that on certain CPUs perf bias MSR has to be set to performance,
-> so that the CPU enters turbo states at all.
-> 
-> Better do not try to wrongly adjust perf bias value,
-> its value probably is intended by BIOS.
+On 03/07/2016 03:00 AM, Jon Hunter wrote:
+>
+> On 05/03/16 04:31, Rob Herring wrote:
+>> On Fri, Mar 04, 2016 at 12:23:04PM +0000, Jon Hunter wrote:
+>>> Add power-domain binding documentation for the NVIDIA PMC driver in
+>>> order to support generic power-domains.
+>>>
+>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>> ---
+>>>   .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 80 ++++++++++++++++++++++
+>>>   1 file changed, 80 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>> index 53aa5496c5cf..7d52bbe99709 100644
+>>> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+>>> @@ -1,5 +1,7 @@
+>>>   NVIDIA Tegra Power Management Controller (PMC)
+>>>
+>>> +== Power Management Controller Node ==
+>>> +
+>>>   The PMC block interacts with an external Power Management Unit. The PMC
+>>>   mostly controls the entry and exit of the system from different sleep
+>>>   modes. It provides power-gating controllers for SoC and CPU power-islands.
+>>> @@ -70,6 +72,11 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+>>>                        Defaults to 0. Valid values are described in section 12.5.2
+>>>                        "Pinmux Support" of the Tegra4 Technical Reference Manual.
+>>>
+>>> +Optional nodes:
+>>> +- powergates : This node contains a hierarchy of power domain nodes, which
+>>> +	       should match the powergates on the Tegra SoC. See "Powergate
+>>> +	       Nodes" below.
+>>> +
+>>>   Example:
+>>>
+>>>   / SoC dts including file
+>>> @@ -115,3 +122,76 @@ pmc@7000f400 {
+>>>   	};
+>>>   	...
+>>>   };
+>>> +
+>>> +
+>>> +== Powergate Nodes ==
+>>> +
+>>> +Each of the powergate nodes represent a power-domain on the Tegra SoC
+>>> +that can be power-gated by the Tegra PMC. The name of the powergate node
+>>> +should be one of the below. Note that not every powergate is applicable
+>>> +to all Tegra devices and the following list shows which powergates are
+>>> +applicable to which devices. Please refer to the Tegra TRM for more
+>>> +details on the various powergates.
+>>> +
+>>> + Name		Description			Devices Applicable
+>>> + 3d		3D Graphics			Tegra20/114/124/210
+>>> + 3d0		3D Graphics 0			Tegra30
+>>> + 3d1		3D Graphics 1			Tegra30
+>>> + aud		Audio				Tegra210
+>>> + dfd		Debug				Tegra210
+>>> + dis		Display A			Tegra114/124/210
+>>> + disb		Display B			Tegra114/124/210
+>>> + heg		2D Graphics			Tegra30/114/124/210
+>>> + iram		Internal RAM			Tegra124/210
+>>> + mpe		MPEG Encode			All
+>>> + nvdec		NVIDIA Video Decode Engine	Tegra210
+>>> + nvjpg		NVIDIA JPEG Engine		Tegra210
+>>> + pcie		PCIE				Tegra20/30/124/210
+>>> + sata		SATA				Tegra30/124/210
+>>> + sor		Display interfaces		Tegra124/210
+>>> + ve2		Video Encode Engine 2		Tegra210
+>>> + venc		Video Encode Engine		All
+>>> + vdec		Video Decode Engine		Tegra20/30/114/124
+>>> + vic		Video Imaging Compositor	Tegra124/210
+>>> + xusba		USB Partition A			Tegra114/124/210
+>>> + xusbb		USB Partition B 		Tegra114/124/210
+>>> + xusbc		USB Partition C			Tegra114/124/210
+>>> +
+>>> +Required properties:
+>>> +  - clocks: Must contain an entry for each clock required by the PMC for
+>>> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
+>>> +  - resets: Must contain an entry for each reset required by the PMC for
+>>> +    controlling a power-gate. See ../reset/reset.txt for details.
+>>> +  - #power-domain-cells: Must be 0.
+>>> +
+>>> +Example:
+>>> +
+>>> +	pmc: pmc@0,7000e400 {
+>>
+>> Just pmc@7000e400. We were erronously using commas for 64-bit addresses
+>> briefly, but the correct usage is when there are distinct fields in reg
+>> like PCI bus,dev,func.
+>
+> Ok. Looks like we use this style quite widely across all Tegra 32-bit
+> and 64-bit devices for all peripheral devices.
+>
+> Thierry, Stephen,
+>
+> Do we need to correct this for existing devices?
 
-This whole perf bias CPU feature and trying to adjust the value
-at boot time gets more and more a mess.
-
-I try to sum this up, try to collect some missing bits and get them
-published through mailing lists. Hopefully some root causes of what
-went wrong are identified and passed on to the right people to get
-things fixed.
-
-1. It started with:
-commit abe48b108247e9b90b4c6739662a2e5c765ed114
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Jul 14 00:53:24 2011 -0400
-
-    x86, intel, power: Initialize MSR_IA32_ENERGY_PERF_BIAS
-
-...
-    However, the typical BIOS fails to initialize the MSR, presumably
-    because this is handled by high-volume shrink-wrap operating systems...
-    
-    Linux distros, on the other hand, do not yet invoke x86_energy_perf_policy(8).
-    As a result, WSM-EP, SNB, and later hardware from Intel will run in its
-    default hardware power-on state (performance), which assumes that users
-    care for performance at all costs and not for energy efficiency.
-    While that is fine for performance benchmarks, the hardware's intended default
-    operating point is "normal" mode...
-    
-    Initialize the MSR to the "normal" by default during kernel boot.
-...
-
-
-2. Four years later it has been identified that the boot processor's perf bias
-switches back to 0 on suspend.
-
-I wonder whether this happens generally. Or do BIOS hooks also reset the BIAS
-value on suspend?
-
-3. It has now be identified that specific CPUs can only enter Turbo modes, if
-the perf BIAS value is set to 0 (performance). But the performance value cannot
-be set anymore by BIOS because of above patches.
-
-
-My questions:
-
-1. If this is true:
-"While that is fine for performance benchmarks, the hardware's intended default
-operating point is "normal" mode..."
-Then the HW (CPU) must initialize to 5 (normal).
-It's not the BIOS' fault which forgets to set something,
-this may always be intended.
-commit b51ef52df71cb28e9d90cd1d48b79bf19f0bab06
-commit 17edf2d79f1ea6dfdb4c444801d928953b9f98d6
-commit abe48b108247e9b90b4c6739662a2e5c765ed114
-
-Intel must tell their microcode writers to initialize perf BIAS with 5, if this
-is what Intel wants.
-
-2. Why is the value for the boot processor reset to 0 on suspend?
-Is this a platform/BIOS issue only?
-Or could this be another major misdesign in perf BIAS CPU implementation.
-
-3. What exactly was the problem?
-The argumentation that the perf BIAS "should" be 5 was rather vague.
-What exactly are the concequences? Getting a dirty workaround into the x86 core
-code only by this information without any values or references is bad.
-
-          Thomas
-
-PS: I will submit the patch (revert of commit b51ef52df71cb2, 17edf2d79f1ea6d and
-abe48b108247e9) now to our SLE code base.
+I don't think so; my understanding is that where reg has multiple 
+address cells, they all get represented in the unit address. Otherwise, 
+the node names couldn't be guaranteed unique.
 
