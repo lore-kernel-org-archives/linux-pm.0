@@ -1,180 +1,144 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V7 2/4] Documentation: DT: bindings: Add power domain
- info for NVIDIA PMC
-Date: Mon, 7 Mar 2016 11:28:17 +0100
-Message-ID: <20160307102817.GJ31189@ulmo.nvidia.com>
-References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
- <1457094186-15786-3-git-send-email-jonathanh@nvidia.com>
- <20160305043104.GG13525@rob-hp-laptop>
- <56DD515A.4020207@nvidia.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 2/2] PM / clk: Add support for obtaining clocks from
+ device-tree
+Date: Mon, 7 Mar 2016 10:45:58 +0000
+Message-ID: <56DD5BE6.1070905@nvidia.com>
+References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com>
+ <1457105585-25157-2-git-send-email-jonathanh@nvidia.com>
+ <CAMuHMdWU2-yaoaxPCQKqyLknFQH5f=dPXPr+y96N1ZPMib8kuA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="W13SgbpmD6bhZUTM"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <56DD515A.4020207-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14284 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbcCGKqG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 05:46:06 -0500
+In-Reply-To: <CAMuHMdWU2-yaoaxPCQKqyLknFQH5f=dPXPr+y96N1ZPMib8kuA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org
 
 
---W13SgbpmD6bhZUTM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 07/03/16 08:48, Geert Uytterhoeven wrote:
+> Hi Jon,
+> 
+> On Fri, Mar 4, 2016 at 4:33 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> The PM clocks framework requires clients to pass either a con-id or a
+>> valid clk pointer in order to add a clock to a device. Add a new
+>> function pm_clk_add_clks_of() to allows device clocks to be retrieved
+>> from device-tree and populated for a given device. Note that there
+>> should be no need to add a stub function for this new function when
+>> CONFIG_OF is not selected because the OF functions used already have
+>> stubs functions.
+>>
+>> In order to handle errors encountered when adding clocks from
+>> device-tree, add a function pm_clk_remove_clk() to remove any clocks
+>> (using a pointer to the clk structure) that have been added
+>> successfully before the error occurred.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>> ---
+>>  drivers/base/power/clock_ops.c | 85 ++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_clock.h       |  9 +++++
+>>  2 files changed, 94 insertions(+)
+>>
+>> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+>> index 272a52ebafc0..5aa7365699c1 100644
+>> --- a/drivers/base/power/clock_ops.c
+>> +++ b/drivers/base/power/clock_ops.c
+>> @@ -138,6 +138,58 @@ int pm_clk_add_clk(struct device *dev, struct clk *clk)
+>>  }
+>>
+>>  /**
+>> + * pm_clk_add_clks_of - Start using device clock(s) for power management.
+>> + * @dev: Device whose clock(s) is going to be used for power management.
+>> + *
+>> + * Add a series of clocks described in the 'clocks' device-tree node for
+>> + * a device to the list of clocks used for the power management of @dev.
+> 
+> This adds all clocks referenced by the device node, while not all clocks may
+> be suitable for power management, and some of them may be under explicit
+> driver control.
+> Cfr. drivers/clk/shmobile/renesas-cpg-mssr.c:cpg_mssr_attach_dev(), which
+> looks for module clocks, or core clocks explicitly listed in core_pm_clks[].
+> 
+> What about adding an optional filter function to filter for suitable clocks?
 
-On Mon, Mar 07, 2016 at 10:00:58AM +0000, Jon Hunter wrote:
->=20
-> On 05/03/16 04:31, Rob Herring wrote:
-> > On Fri, Mar 04, 2016 at 12:23:04PM +0000, Jon Hunter wrote:
-> >> Add power-domain binding documentation for the NVIDIA PMC driver in
-> >> order to support generic power-domains.
-> >>
-> >> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >> ---
-> >>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 80 +++++++++++++=
-+++++++++
-> >>  1 file changed, 80 insertions(+)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra2=
-0-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.=
-txt
-> >> index 53aa5496c5cf..7d52bbe99709 100644
-> >> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.t=
-xt
-> >> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.t=
-xt
-> >> @@ -1,5 +1,7 @@
-> >>  NVIDIA Tegra Power Management Controller (PMC)
-> >> =20
-> >> +=3D=3D Power Management Controller Node =3D=3D
-> >> +
-> >>  The PMC block interacts with an external Power Management Unit. The P=
-MC
-> >>  mostly controls the entry and exit of the system from different sleep
-> >>  modes. It provides power-gating controllers for SoC and CPU power-isl=
-ands.
-> >> @@ -70,6 +72,11 @@ Optional properties for hardware-triggered thermal =
-reset (inside 'i2c-thermtrip'
-> >>                       Defaults to 0. Valid values are described in sec=
-tion 12.5.2
-> >>                       "Pinmux Support" of the Tegra4 Technical Referen=
-ce Manual.
-> >> =20
-> >> +Optional nodes:
-> >> +- powergates : This node contains a hierarchy of power domain nodes, =
-which
-> >> +	       should match the powergates on the Tegra SoC. See "Powergate
-> >> +	       Nodes" below.
-> >> +
-> >>  Example:
-> >> =20
-> >>  / SoC dts including file
-> >> @@ -115,3 +122,76 @@ pmc@7000f400 {
-> >>  	};
-> >>  	...
-> >>  };
-> >> +
-> >> +
-> >> +=3D=3D Powergate Nodes =3D=3D
-> >> +
-> >> +Each of the powergate nodes represent a power-domain on the Tegra SoC
-> >> +that can be power-gated by the Tegra PMC. The name of the powergate n=
-ode
-> >> +should be one of the below. Note that not every powergate is applicab=
-le
-> >> +to all Tegra devices and the following list shows which powergates are
-> >> +applicable to which devices. Please refer to the Tegra TRM for more
-> >> +details on the various powergates.
-> >> +
-> >> + Name		Description			Devices Applicable
-> >> + 3d		3D Graphics			Tegra20/114/124/210
-> >> + 3d0		3D Graphics 0			Tegra30
-> >> + 3d1		3D Graphics 1			Tegra30
-> >> + aud		Audio				Tegra210
-> >> + dfd		Debug				Tegra210
-> >> + dis		Display A			Tegra114/124/210
-> >> + disb		Display B			Tegra114/124/210
-> >> + heg		2D Graphics			Tegra30/114/124/210
-> >> + iram		Internal RAM			Tegra124/210
-> >> + mpe		MPEG Encode			All
-> >> + nvdec		NVIDIA Video Decode Engine	Tegra210
-> >> + nvjpg		NVIDIA JPEG Engine		Tegra210
-> >> + pcie		PCIE				Tegra20/30/124/210
-> >> + sata		SATA				Tegra30/124/210
-> >> + sor		Display interfaces		Tegra124/210
-> >> + ve2		Video Encode Engine 2		Tegra210
-> >> + venc		Video Encode Engine		All
-> >> + vdec		Video Decode Engine		Tegra20/30/114/124
-> >> + vic		Video Imaging Compositor	Tegra124/210
-> >> + xusba		USB Partition A			Tegra114/124/210
-> >> + xusbb		USB Partition B 		Tegra114/124/210
-> >> + xusbc		USB Partition C			Tegra114/124/210
-> >> +
-> >> +Required properties:
-> >> +  - clocks: Must contain an entry for each clock required by the PMC =
-for
-> >> +    controlling a power-gate. See ../clocks/clock-bindings.txt for de=
-tails.
-> >> +  - resets: Must contain an entry for each reset required by the PMC =
-for
-> >> +    controlling a power-gate. See ../reset/reset.txt for details.
-> >> +  - #power-domain-cells: Must be 0.
-> >> +
-> >> +Example:
-> >> +
-> >> +	pmc: pmc@0,7000e400 {
-> >=20
-> > Just pmc@7000e400. We were erronously using commas for 64-bit addresses=
-=20
-> > briefly, but the correct usage is when there are distinct fields in reg=
-=20
-> > like PCI bus,dev,func.
->=20
-> Ok. Looks like we use this style quite widely across all Tegra 32-bit
-> and 64-bit devices for all peripheral devices.
->=20
-> Thierry, Stephen,
->=20
-> Do we need to correct this for existing devices?
+Yes that sounds reasonable. Are you filtering on clock ID? Would it work
+to allow the caller to pass a filter function which takes a struct *clk
+as it's only argument?  Or do you prefer we call
+of_parse_phandle_with_args(np, "clocks", "#clock-cells", i, &clkspec)
+and return the clkspec info?
 
-"Need" is perhaps a little strong. It's unfortunate that back at the
-time the existing format was deemed best practice, and now we're told
-to have been doing it wrong all along. There's also the issue that in
-practice somebody might use the node name for some sort of lookup in
-userspace or whatever, and they'd have every right to do so, because
-the DT is an ABI after all.
+>> + */
+>> +int pm_clk_add_clks_of(struct device *dev)
+>> +{
+>> +       struct clk **clks;
+>> +       unsigned int i, count;
+>> +       int ret;
+>> +
+>> +       if (!dev || !dev->of_node)
+>> +               return -EINVAL;
+>> +
+>> +       count = of_count_phandle_with_args(dev->of_node, "clocks",
+>> +                                          "#clock-cells");
+>> +       if (count == 0)
+>> +               return -ENODEV;
+>> +
+>> +       clks = kcalloc(count, sizeof(*clks), GFP_KERNEL);
+>> +       if (!clks)
+>> +               return -ENOMEM;
+>> +
+> 
+> Don't you have to call pm_clk_create() here, to allocate a pm_subsys_data
+> structure that pm_clk_add_clk() can populate?
 
-Technically removing the 0, from the unit address would be breaking
-that ABI, but in practice I'd hope that we wouldn't really break the
-world for any users. If this gets us on the same page as everyone
-else, I'm fine with taking this risk. I've already begun to convert
-existing device trees.
+This function will return an error when pm_clk_add_clk() is called if
+the user has not called pm_clk_create() first. It seems more natural to
+me that the user should call pm_clk_create() before calling
+pm_clk_add_clks_of() which is the same convention used for adding clocks
+by the other APIs to add clocks.
 
-Fingers crossed that best practices won't change again...
+>> +       for (i = 0; i < count; i++) {
+>> +               clks[i] = of_clk_get(dev->of_node, i);
+>> +               if (IS_ERR(clks[i])) {
+>> +                       ret = PTR_ERR(clks[i]);
+>> +                       goto error;
+>> +               }
+>> +
+>> +               ret = pm_clk_add_clk(dev, clks[i]);
+>> +               if (ret) {
+>> +                       clk_put(clks[i]);
+>> +                       goto error;
+>> +               }
+>> +       }
+>> +
+>> +       kfree(clks);
+>> +
+>> +       return 0;
+>> +
+>> +error:
+>> +       while (i--)
+>> +               pm_clk_remove_clk(dev, clks[i]);
+> 
+> Just pm_clk_destroy(dev) to destroy all at once?
 
-Thierry
+Right, however, this will remove all clocks associated with the device
+and not just those we have added. It is probably very unlikely that
+someone would call pm_clk_add_clks_of() and had previously called
+pm_clk_add(), but it seems best to not make any assumptions and only
+remove the clocks that were actually added. I guess that it would be
+possible to check to see if there were any clocks already added when
+this function is called and return an error in that case.
 
---W13SgbpmD6bhZUTM
-Content-Type: application/pgp-signature; name="signature.asc"
+All of that said, I do agree that it may be simpler, if we do call
+pm_clk_create() from within pm_clk_add_clks_of() and this would allow us
+to pmc_clk_destroy() in the error path. So if this is preferred I could
+do that, but I think that I would not allow clocks to be added if
+clock_list is not empty when this function is called.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Cheers
+Jon
 
-iQIcBAABCAAGBQJW3VfBAAoJEN0jrNd/PrOhD3MQAKgvDJpmPbeFqKUMavu4Buyf
-CPz8YA2a22kBa0FkmLPuRXYhkoV1ymMB+YSy+Fl8RVXWc45srCpdLbY7N5OoEzV4
-sX+EjIgQD/QwR9oLIPvNeYSi3iXogO/FdEZstXZsop9IGIFBZ4e5PLPgp2Oz1Tgs
-iv0Apmszfdmlx7GCHkBCqagIfiLHM6q4d39/AWCEP7OhK76/laxqLimN0ecI3H6o
-CiTf1YLALXzowbDk5KbmfgIg0Iq7Pzn+Zj6gYeQGVVY8GFSim2m4zS1j+2DKThf2
-SurTRWm3VV6//FP/hMPnfaX2BKGDXK6CqUj6cGXk8oDGZau9jkBIWGriYJe/hB/c
-P99+ZzRwyj/tS4M3+3tIOS4SdMWGEJdKSNBBxlIOZdkGduyJHmLOpP8wfNHqkLtK
-ZxEdKtqei2llaqZ0Bg0RKl74jILJNQmN/Q8SDjXIu8pF6n7/9VICz1PZzSeMp3sY
-+e1Q2Ys/r6i0w75X/K3YpRUL2OHBrdyafPsTFmrh8oQjPww7lt/yRnlrQl6sXiRy
-N8RVFyb90zyuR5rBQBuxYc7NUsMR6Y4Sgz5CiFyZgqQkP1eJmlGFDkPtMwn4EJSg
-spplfZuwwwxW/iIrBI45D3Z1iBtRepA2AGUeewN5kUM4KwBMsFdtGYneFRTSISVo
-5wGU8YcCT/wxdiTqW5rI
-=Z43a
------END PGP SIGNATURE-----
-
---W13SgbpmD6bhZUTM--
