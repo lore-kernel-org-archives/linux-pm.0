@@ -1,123 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Mon, 7 Mar 2016 14:15:47 +0100
-Message-ID: <CAJZ5v0jKXQrrpVmEd=CCek4KVWknJaoYSAmwc8rosKK=oDzkFw@mail.gmail.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	<2409306.qzzMXcm4dm@vostro.rjw.lan>
-	<15684081.T4iOMUSHCY@vostro.rjw.lan>
-	<56DA09B1.4010005@linaro.org>
-	<CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
-	<CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
-	<CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
-	<20160305164900.GX6356@twins.programming.kicks-ass.net>
-	<CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
-	<20160307080059.GZ6356@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Mon, 7 Mar 2016 14:19:13 +0100
+Message-ID: <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160307080059.GZ6356@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1457319045-25434-1-git-send-email-yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 7, 2016 at 9:00 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Sun, Mar 06, 2016 at 03:17:09AM +0100, Rafael J. Wysocki wrote:
->> > Agreed, fail the stuff hard.
->> >
->> > Simply make cpufreq_register_notifier a __must_check function and add
->> > error handling to all call sites.
->>
->> Quite frankly, I don't see a compelling reason to do anything about
->> the notifications at this point.
->>
->> The ACPI driver is the only one that will support fast switching for
->> the time being and on practically all platforms that can use the ACPI
->> driver the transition notifications cannot be relied on anyway for a
->> few reasons.  First, if intel_pstate or HWP is in use, they won't be
->> coming at all.  Second, anything turbo will just change frequency at
->> will without notifying (like HWP).  Finally, if they are coming,
->> whoever receives them is notified about the frequency that is
->> requested and not the real one, which is misleading, because (a) the
->> request may just make the CPU go into the turbo range and then see
->> above or (b) if the CPU is in a platform-coordinated package, its
->> request will only be granted if it's the winning one.
+On Mon, Mar 7, 2016 at 3:50 AM, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
+> The problem is Linux registers pm_power_off = efi_power_off
+> only if we are in hardware reduced mode. Actually, what we also
+> want is to do this when ACPI S5 is simply not supported on
+> non-legacy platforms. That should handle both the HW reduced mode,
+> and the HW-full mode where the DSDT fails to supply an _S5 object.
 >
-> Sure I know all that. But that, to me, seems like an argument for why
-> you should have done this a long time ago.
-
-While I generally agree with this, I don't quite see why cleaning that
-up necessarily has to be connected to the current patch series which
-is my point.
-
-> Someone registering a notifier you _know_ won't be called reliably is a
-> sure sign of borkage. And you want to be notified (pun intended) of
-> borkage.
+> This patch fixes this issue by introducing a new flag acpi_no_s5 which
+> indicates the non-existence of _S5. The initial state of acpi_no_s5 is
+> false and probed in acpi_sleep_init, then we'll later see the updated
+> value in efi_poweroff_required, according to which we can set pm_power_off
+> to efi_power_off in efi_shutdown_init, if no other pm_power_off available.
 >
-> So the alternative option to making the registration fail, is making the
-> registration WARN (and possibly disable fast support in the driver).
+> Suggested-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ---
+> v3:
+>  - Only assign pm_power_off to efi_power_off when there are no
+>    other pm_power_off registered at that time, in case other
+>    commponents would like to customize their own implementation.
+> ---
+> v2:
+>  - Convert the acpi_no_s5 to a global bool variable in sleep.c and
+>    add a declaration to include/linux/acpi.h.
+> ---
+>  arch/x86/platform/efi/quirks.c | 2 +-
+>  drivers/acpi/sleep.c           | 8 ++++++++
+>  include/linux/acpi.h           | 1 +
+>  3 files changed, 10 insertions(+), 1 deletion(-)
 >
-> But I do think something wants to be done here.
-
-So here's what I can do for the "fast switch" thing.
-
-There is the fast_switch_possible policy flag that's necessary anyway.
-I can make notifier registration fail when that is set for at least
-one policy and I can make the setting of it fail if at least one
-notifier has already been registered.
-
-However, without spending too much time on chasing code dependencies i
-sort of suspect that it will uncover things that register cpufreq
-notifiers early and it won't be possible to use fast switch without
-sorting that out.  And that won't even change anything apart from
-removing some code that has not worked for quite a while already and
-nobody noticed.
-
->> > No no no, that's just horrible. Why would you want to keep this
->> > notification stuff alive? If your platform can change frequency 'fast'
->> > you don't want notifiers.
->>
->> I'm not totally sure about that.
+> diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
+> index 2d66db8..0d4186b 100644
+> --- a/arch/x86/platform/efi/quirks.c
+> +++ b/arch/x86/platform/efi/quirks.c
+> @@ -295,5 +295,5 @@ bool efi_reboot_required(void)
 >
-> I am, per definition, if you need to call notifiers, you're not fast.
->
-> I would really suggest making that a hard rule and enforcing it.
+>  bool efi_poweroff_required(void)
+>  {
+> -       return !!acpi_gbl_reduced_hardware;
+> +       return acpi_gbl_reduced_hardware || (acpi_no_s5 && !pm_power_off);
 
-OK, but see above.
+What if CONFIG_ACPI is not set here?
 
-It is doable for the "fast switch" thing, but it won't help in all of
-the other cases when notifications are not reliable.
+>  }
 
->> > What's the point of a notification that says: "At some point in the
->> > random past my frequency has changed, and it likely has changed again
->> > since then, do 'something'."
->> >
->> > That's pointless. If you have dependent clock domains or whatever, you
->> > simply _cannot_ be fast.
->> >
->>
->> What about thermal?  They don't need to get very accurate information,
->> but they need to be updated on a regular basis.  It would do if they
->> get averages instead of momentary values (and may be better even).
->
-> Thermal, should be an integral part of cpufreq, but if they need a
-> callback from the switching hook (and here I would like to remind
-> everyone that this is inside scheduler hot paths and the more code you
-> stuff in the harder the performance regressions will hit you in the
-> face)
-
-Calling notifiers (or any kind of callbacks that anyone can register)
-from there is out of the question.
-
-> it can get a direct function call. No need for no stinking
-> notifiers.
-
-I'm not talking about hooks in the switching code but *some* way to
-let stuff know about frequency changes.
-
-If it changes frequently enough, it's not practical and not even
-necessary to cause things like thermal to react on every change, but I
-think there needs to be a way to make them reevaluate things
-regularly.  Arguably, they might set a timer for that, but why would
-they need a timer if they could get triggered by the code that
-actually makes changes?
+Thanks,
+Rafael
