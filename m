@@ -1,62 +1,135 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
- platforms without _S5
-Date: Mon, 7 Mar 2016 14:19:13 +0100
-Message-ID: <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
-References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] Do not modify perf bias performance setting by default at boot
+Date: Mon, 07 Mar 2016 14:24:54 +0100
+Message-ID: <5246881.PY2xISUnh1@skinner>
+References: <4687430.mfM0GbdeDL@skinner> <1770444.1VxdmEr8lv@skinner> <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457319045-25434-1-git-send-email-yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:43416 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146AbcCGNY5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Mar 2016 08:24:57 -0500
+In-Reply-To: <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@kernel.org>, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laura Abbott <labbott@fedoraproject.org>
 
-On Mon, Mar 7, 2016 at 3:50 AM, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
-> The problem is Linux registers pm_power_off = efi_power_off
-> only if we are in hardware reduced mode. Actually, what we also
-> want is to do this when ACPI S5 is simply not supported on
-> non-legacy platforms. That should handle both the HW reduced mode,
-> and the HW-full mode where the DSDT fails to supply an _S5 object.
->
-> This patch fixes this issue by introducing a new flag acpi_no_s5 which
-> indicates the non-existence of _S5. The initial state of acpi_no_s5 is
-> false and probed in acpi_sleep_init, then we'll later see the updated
-> value in efi_poweroff_required, according to which we can set pm_power_off
-> to efi_power_off in efi_shutdown_init, if no other pm_power_off available.
->
-> Suggested-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ---
-> v3:
->  - Only assign pm_power_off to efi_power_off when there are no
->    other pm_power_off registered at that time, in case other
->    commponents would like to customize their own implementation.
-> ---
-> v2:
->  - Convert the acpi_no_s5 to a global bool variable in sleep.c and
->    add a declaration to include/linux/acpi.h.
-> ---
->  arch/x86/platform/efi/quirks.c | 2 +-
->  drivers/acpi/sleep.c           | 8 ++++++++
->  include/linux/acpi.h           | 1 +
->  3 files changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
-> index 2d66db8..0d4186b 100644
-> --- a/arch/x86/platform/efi/quirks.c
-> +++ b/arch/x86/platform/efi/quirks.c
-> @@ -295,5 +295,5 @@ bool efi_reboot_required(void)
->
->  bool efi_poweroff_required(void)
->  {
-> -       return !!acpi_gbl_reduced_hardware;
-> +       return acpi_gbl_reduced_hardware || (acpi_no_s5 && !pm_power_off);
+It came out that on certain CPUs perf bias MSR has to be set to performance,
+so that the CPU enters turbo states at all.
 
-What if CONFIG_ACPI is not set here?
+Better do not try to wrongly adjust perf bias value,
+its value probably is intended by BIOS.
 
->  }
+This is a revert of mainline git commits:
+commit b51ef52df71cb28e9d90cd1d48b79bf19f0bab06
+commit 17edf2d79f1ea6dfdb4c444801d928953b9f98d6
+commit abe48b108247e9b90b4c6739662a2e5c765ed114
 
-Thanks,
-Rafael
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+---
+ arch/x86/kernel/cpu/common.c |   18 ------------------
+ arch/x86/kernel/cpu/cpu.h    |    1 -
+ arch/x86/kernel/cpu/intel.c  |   32 --------------------------------
+ 3 files changed, 51 deletions(-)
+
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -13,7 +13,6 @@
+ #include <linux/kgdb.h>
+ #include <linux/smp.h>
+ #include <linux/io.h>
+-#include <linux/syscore_ops.h>
+ 
+ #include <asm/stackprotector.h>
+ #include <asm/perf_event.h>
+@@ -1489,20 +1488,3 @@ inline bool __static_cpu_has_safe(u16 bi
+ 	return boot_cpu_has(bit);
+ }
+ EXPORT_SYMBOL_GPL(__static_cpu_has_safe);
+-
+-static void bsp_resume(void)
+-{
+-	if (this_cpu->c_bsp_resume)
+-		this_cpu->c_bsp_resume(&boot_cpu_data);
+-}
+-
+-static struct syscore_ops cpu_syscore_ops = {
+-	.resume		= bsp_resume,
+-};
+-
+-static int __init init_cpu_syscore(void)
+-{
+-	register_syscore_ops(&cpu_syscore_ops);
+-	return 0;
+-}
+-core_initcall(init_cpu_syscore);
+--- a/arch/x86/kernel/cpu/cpu.h
++++ b/arch/x86/kernel/cpu/cpu.h
+@@ -13,7 +13,6 @@ struct cpu_dev {
+ 	void		(*c_init)(struct cpuinfo_x86 *);
+ 	void		(*c_identify)(struct cpuinfo_x86 *);
+ 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
+-	void		(*c_bsp_resume)(struct cpuinfo_x86 *);
+ 	int		c_x86_vendor;
+ #ifdef CONFIG_X86_32
+ 	/* Optional vendor specific routine to obtain the cache size. */
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -372,36 +372,6 @@ static void detect_vmx_virtcap(struct cp
+ 	}
+ }
+ 
+-static void init_intel_energy_perf(struct cpuinfo_x86 *c)
+-{
+-	u64 epb;
+-
+-	/*
+-	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+-	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
+-	 */
+-	if (!cpu_has(c, X86_FEATURE_EPB))
+-		return;
+-
+-	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+-		return;
+-
+-	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+-	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
+-	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+-	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-}
+-
+-static void intel_bsp_resume(struct cpuinfo_x86 *c)
+-{
+-	/*
+-	 * MSR_IA32_ENERGY_PERF_BIAS is lost across suspend/resume,
+-	 * so reinitialize it properly like during bootup:
+-	 */
+-	init_intel_energy_perf(c);
+-}
+-
+ static void init_intel(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int l2 = 0;
+@@ -509,7 +479,6 @@ static void init_intel(struct cpuinfo_x8
+ 	if (cpu_has(c, X86_FEATURE_VMX))
+ 		detect_vmx_virtcap(c);
+ 
+-	init_intel_energy_perf(c);
+ }
+ 
+ #ifdef CONFIG_X86_32
+@@ -764,7 +733,6 @@ static const struct cpu_dev intel_cpu_de
+ 	.c_detect_tlb	= intel_detect_tlb,
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
+-	.c_bsp_resume	= intel_bsp_resume,
+ 	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+ 
+
