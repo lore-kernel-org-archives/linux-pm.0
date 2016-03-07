@@ -1,88 +1,126 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Mon, 7 Mar 2016 09:00:59 +0100
-Message-ID: <20160307080059.GZ6356@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <2409306.qzzMXcm4dm@vostro.rjw.lan>
- <15684081.T4iOMUSHCY@vostro.rjw.lan>
- <56DA09B1.4010005@linaro.org>
- <CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
- <CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
- <CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
- <20160305164900.GX6356@twins.programming.kicks-ass.net>
- <CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] PM / clk: Add support for obtaining clocks from device-tree
+Date: Mon, 7 Mar 2016 09:48:25 +0100
+Message-ID: <CAMuHMdWU2-yaoaxPCQKqyLknFQH5f=dPXPr+y96N1ZPMib8kuA@mail.gmail.com>
+References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com>
+	<1457105585-25157-2-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:52593 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbcCGIBO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 03:01:14 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:34997 "EHLO
+	mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbcCGIs1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 03:48:27 -0500
+In-Reply-To: <1457105585-25157-2-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org
 
-On Sun, Mar 06, 2016 at 03:17:09AM +0100, Rafael J. Wysocki wrote:
-> > Agreed, fail the stuff hard.
-> >
-> > Simply make cpufreq_register_notifier a __must_check function and add
-> > error handling to all call sites.
-> 
-> Quite frankly, I don't see a compelling reason to do anything about
-> the notifications at this point.
-> 
-> The ACPI driver is the only one that will support fast switching for
-> the time being and on practically all platforms that can use the ACPI
-> driver the transition notifications cannot be relied on anyway for a
-> few reasons.  First, if intel_pstate or HWP is in use, they won't be
-> coming at all.  Second, anything turbo will just change frequency at
-> will without notifying (like HWP).  Finally, if they are coming,
-> whoever receives them is notified about the frequency that is
-> requested and not the real one, which is misleading, because (a) the
-> request may just make the CPU go into the turbo range and then see
-> above or (b) if the CPU is in a platform-coordinated package, its
-> request will only be granted if it's the winning one.
+Hi Jon,
 
-Sure I know all that. But that, to me, seems like an argument for why
-you should have done this a long time ago.
+On Fri, Mar 4, 2016 at 4:33 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+> The PM clocks framework requires clients to pass either a con-id or a
+> valid clk pointer in order to add a clock to a device. Add a new
+> function pm_clk_add_clks_of() to allows device clocks to be retrieved
+> from device-tree and populated for a given device. Note that there
+> should be no need to add a stub function for this new function when
+> CONFIG_OF is not selected because the OF functions used already have
+> stubs functions.
+>
+> In order to handle errors encountered when adding clocks from
+> device-tree, add a function pm_clk_remove_clk() to remove any clocks
+> (using a pointer to the clk structure) that have been added
+> successfully before the error occurred.
+>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> ---
+>  drivers/base/power/clock_ops.c | 85 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_clock.h       |  9 +++++
+>  2 files changed, 94 insertions(+)
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index 272a52ebafc0..5aa7365699c1 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -138,6 +138,58 @@ int pm_clk_add_clk(struct device *dev, struct clk *clk)
+>  }
+>
+>  /**
+> + * pm_clk_add_clks_of - Start using device clock(s) for power management.
+> + * @dev: Device whose clock(s) is going to be used for power management.
+> + *
+> + * Add a series of clocks described in the 'clocks' device-tree node for
+> + * a device to the list of clocks used for the power management of @dev.
 
-Someone registering a notifier you _know_ won't be called reliably is a
-sure sign of borkage. And you want to be notified (pun intended) of
-borkage.
+This adds all clocks referenced by the device node, while not all clocks may
+be suitable for power management, and some of them may be under explicit
+driver control.
+Cfr. drivers/clk/shmobile/renesas-cpg-mssr.c:cpg_mssr_attach_dev(), which
+looks for module clocks, or core clocks explicitly listed in core_pm_clks[].
 
-So the alternative option to making the registration fail, is making the
-registration WARN (and possibly disable fast support in the driver).
+What about adding an optional filter function to filter for suitable clocks?
 
-But I do think something wants to be done here.
+> + */
+> +int pm_clk_add_clks_of(struct device *dev)
+> +{
+> +       struct clk **clks;
+> +       unsigned int i, count;
+> +       int ret;
+> +
+> +       if (!dev || !dev->of_node)
+> +               return -EINVAL;
+> +
+> +       count = of_count_phandle_with_args(dev->of_node, "clocks",
+> +                                          "#clock-cells");
+> +       if (count == 0)
+> +               return -ENODEV;
+> +
+> +       clks = kcalloc(count, sizeof(*clks), GFP_KERNEL);
+> +       if (!clks)
+> +               return -ENOMEM;
+> +
 
-> > No no no, that's just horrible. Why would you want to keep this
-> > notification stuff alive? If your platform can change frequency 'fast'
-> > you don't want notifiers.
-> 
-> I'm not totally sure about that.
+Don't you have to call pm_clk_create() here, to allocate a pm_subsys_data
+structure that pm_clk_add_clk() can populate?
 
-I am, per definition, if you need to call notifiers, you're not fast.
+> +       for (i = 0; i < count; i++) {
+> +               clks[i] = of_clk_get(dev->of_node, i);
+> +               if (IS_ERR(clks[i])) {
+> +                       ret = PTR_ERR(clks[i]);
+> +                       goto error;
+> +               }
+> +
+> +               ret = pm_clk_add_clk(dev, clks[i]);
+> +               if (ret) {
+> +                       clk_put(clks[i]);
+> +                       goto error;
+> +               }
+> +       }
+> +
+> +       kfree(clks);
+> +
+> +       return 0;
+> +
+> +error:
+> +       while (i--)
+> +               pm_clk_remove_clk(dev, clks[i]);
 
-I would really suggest making that a hard rule and enforcing it.
+Just pm_clk_destroy(dev) to destroy all at once?
 
-> > What's the point of a notification that says: "At some point in the
-> > random past my frequency has changed, and it likely has changed again
-> > since then, do 'something'."
-> >
-> > That's pointless. If you have dependent clock domains or whatever, you
-> > simply _cannot_ be fast.
-> >
-> 
-> What about thermal?  They don't need to get very accurate information,
-> but they need to be updated on a regular basis.  It would do if they
-> get averages instead of momentary values (and may be better even).
+> +
+> +       kfree(clks);
+> +
+> +       return ret;
+> +}
 
-Thermal, should be an integral part of cpufreq, but if they need a
-callback from the switching hook (and here I would like to remind
-everyone that this is inside scheduler hot paths and the more code you
-stuff in the harder the performance regressions will hit you in the
-face) it can get a direct function call. No need for no stinking
-notifiers.
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
