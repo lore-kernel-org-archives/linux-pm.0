@@ -1,84 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 6/10] cpufreq: Support for fast frequency switching
-Date: Mon, 7 Mar 2016 14:42:10 +0100
-Message-ID: <CAJZ5v0hjvQzy-LvnRf2ca6--ZyrKoxZy1Zp08iTx=D0iFHEW9A@mail.gmail.com>
-References: <2409306.qzzMXcm4dm@vostro.rjw.lan>
-	<15684081.T4iOMUSHCY@vostro.rjw.lan>
-	<56DA09B1.4010005@linaro.org>
-	<CAJZ5v0jENyu8j0fq1-BhU64QwRHAjvcjQktYc2sa9QmhktoEnQ@mail.gmail.com>
-	<CAJZ5v0jd6sXQnvZ87=_L1MQgu2QsBJtYb8jwn=0=m7eRdKVvhA@mail.gmail.com>
-	<CAJZ5v0jh7qcmYjDXCdO3Pid4XyuuxQfsKAmWDLXYcrkx0t-phw@mail.gmail.com>
-	<20160305164900.GX6356@twins.programming.kicks-ass.net>
-	<CAJZ5v0je8158B9jjbMU1MMPyduZXaao7sKhAniq4TPVfTb3JQA@mail.gmail.com>
-	<20160307080059.GZ6356@twins.programming.kicks-ass.net>
-	<CAJZ5v0jKXQrrpVmEd=CCek4KVWknJaoYSAmwc8rosKK=oDzkFw@mail.gmail.com>
-	<20160307133203.GD6356@twins.programming.kicks-ass.net>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Mon, 7 Mar 2016 15:49:13 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D328A@shsmsx102.ccr.corp.intel.com>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f196.google.com ([209.85.217.196]:35978 "EHLO
-	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbcCGNmN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 08:42:13 -0500
-In-Reply-To: <20160307133203.GD6356@twins.programming.kicks-ass.net>
+Received: from mga14.intel.com ([192.55.52.115]:38515 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752803AbcCGPti (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Mar 2016 10:49:38 -0500
+In-Reply-To: <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Mon, Mar 7, 2016 at 2:32 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, Mar 07, 2016 at 02:15:47PM +0100, Rafael J. Wysocki wrote:
->> On Mon, Mar 7, 2016 at 9:00 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->
->> > Sure I know all that. But that, to me, seems like an argument for why
->> > you should have done this a long time ago.
->>
->> While I generally agree with this, I don't quite see why cleaning that
->> up necessarily has to be connected to the current patch series which
->> is my point.
->
-> Ah OK, fair enough I suppose. But someone should stick this on their
-> TODO list, we should not 'forget' about this (again).
-
-Sure.
-
->> > But I do think something wants to be done here.
->>
->> So here's what I can do for the "fast switch" thing.
->>
->> There is the fast_switch_possible policy flag that's necessary anyway.
->> I can make notifier registration fail when that is set for at least
->> one policy and I can make the setting of it fail if at least one
->> notifier has already been registered.
->>
->> However, without spending too much time on chasing code dependencies i
->> sort of suspect that it will uncover things that register cpufreq
->> notifiers early and it won't be possible to use fast switch without
->> sorting that out.
->
-> The two x86 users don't register notifiers when CONSTANT_TSC, which
-> seems to be the right thing.
->
-> Much of the other users seem unlikely to be used on x86, so I suspect
-> the initial fallout will be very limited.
-
-OK, let me try this then.
-
-> *groan* modules, cpufreq allows drivers to be modules, so init sequences
-> are poorly defined at best :/ Yes that blows.
-
-Yup.
-
->> And that won't even change anything apart from
->> removing some code that has not worked for quite a while already and
->> nobody noticed.
->
-> Which is always a good thing, but yes, we can do this later.
->
->> It is doable for the "fast switch" thing, but it won't help in all of
->> the other cases when notifications are not reliable.
->
-> Right, you can maybe add a 'NOTIFIERS_BROKEN' flag to the intel_p_state
-> and HWP drivers or so, and trigger off of that.
-
-Something like that, yes.
+SGkgUmFmYWVsLA0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3
+eXNvY2tpQGdtYWlsLmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBP
+Zg0KPiBSYWZhZWwgSi4gV3lzb2NraQ0KPiBTZW50OiBNb25kYXksIE1hcmNoIDA3LCAyMDE2IDk6
+MTkgUE0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IEFDUEkgRGV2ZWwgTWFsaW5nIExpc3Q7IHg4
+NkBrZXJuZWwub3JnOyBsaW51eC1lZmlAdmdlci5rZXJuZWwub3JnOyBMaW51eA0KPiBLZXJuZWwg
+TWFpbGluZyBMaXN0OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IFJhZmFlbCBKLiBXeXNvY2tp
+OyBMZW4gQnJvd247DQo+IE1hdHQgRmxlbWluZzsgVGhvbWFzIEdsZWl4bmVyOyBJbmdvIE1vbG5h
+cjsgSC4gUGV0ZXIgQW52aW47IFpoYW5nLCBSdWkNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZD
+IHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBpc3N1ZSBvbiBIVy1mdWxsDQo+IHBsYXRmb3Jt
+cyB3aXRob3V0IF9TNQ0KPiANCj4gT24gTW9uLCBNYXIgNywgMjAxNiBhdCAzOjUwIEFNLCBDaGVu
+IFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPiB3cm90ZToNCj4gPiBUaGUgcHJvYmxlbSBpcyBMaW51
+eCByZWdpc3RlcnMgcG1fcG93ZXJfb2ZmID0gZWZpX3Bvd2VyX29mZiBvbmx5IGlmIHdlDQo+ID4g
+YXJlIGluIGhhcmR3YXJlIHJlZHVjZWQgbW9kZS4gQWN0dWFsbHksIHdoYXQgd2UgYWxzbyB3YW50
+IGlzIHRvIGRvDQo+ID4gdGhpcyB3aGVuIEFDUEkgUzUgaXMgc2ltcGx5IG5vdCBzdXBwb3J0ZWQg
+b24gbm9uLWxlZ2FjeSBwbGF0Zm9ybXMuDQo+ID4gVGhhdCBzaG91bGQgaGFuZGxlIGJvdGggdGhl
+IEhXIHJlZHVjZWQgbW9kZSwgYW5kIHRoZSBIVy1mdWxsIG1vZGUNCj4gPiB3aGVyZSB0aGUgRFNE
+VCBmYWlscyB0byBzdXBwbHkgYW4gX1M1IG9iamVjdC4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggZml4
+ZXMgdGhpcyBpc3N1ZSBieSBpbnRyb2R1Y2luZyBhIG5ldyBmbGFnIGFjcGlfbm9fczUgd2hpY2gN
+Cj4gPiBpbmRpY2F0ZXMgdGhlIG5vbi1leGlzdGVuY2Ugb2YgX1M1LiBUaGUgaW5pdGlhbCBzdGF0
+ZSBvZiBhY3BpX25vX3M1IGlzDQo+ID4gZmFsc2UgYW5kIHByb2JlZCBpbiBhY3BpX3NsZWVwX2lu
+aXQsIHRoZW4gd2UnbGwgbGF0ZXIgc2VlIHRoZSB1cGRhdGVkDQo+ID4gdmFsdWUgaW4gZWZpX3Bv
+d2Vyb2ZmX3JlcXVpcmVkLCBhY2NvcmRpbmcgdG8gd2hpY2ggd2UgY2FuIHNldA0KPiA+IHBtX3Bv
+d2VyX29mZiB0byBlZmlfcG93ZXJfb2ZmIGluIGVmaV9zaHV0ZG93bl9pbml0LCBpZiBubyBvdGhl
+cg0KPiBwbV9wb3dlcl9vZmYgYXZhaWxhYmxlLg0KPiA+DQo+ID4gU3VnZ2VzdGVkLWJ5OiBMZW4g
+QnJvd24gPGxlbi5icm93bkBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2hlbiBZdSA8
+eXUuYy5jaGVuQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiB2MzoNCj4gPiAgLSBPbmx5IGFzc2ln
+biBwbV9wb3dlcl9vZmYgdG8gZWZpX3Bvd2VyX29mZiB3aGVuIHRoZXJlIGFyZSBubw0KPiA+ICAg
+IG90aGVyIHBtX3Bvd2VyX29mZiByZWdpc3RlcmVkIGF0IHRoYXQgdGltZSwgaW4gY2FzZSBvdGhl
+cg0KPiA+ICAgIGNvbW1wb25lbnRzIHdvdWxkIGxpa2UgdG8gY3VzdG9taXplIHRoZWlyIG93biBp
+bXBsZW1lbnRhdGlvbi4NCj4gPiAtLS0NCj4gPiB2MjoNCj4gPiAgLSBDb252ZXJ0IHRoZSBhY3Bp
+X25vX3M1IHRvIGEgZ2xvYmFsIGJvb2wgdmFyaWFibGUgaW4gc2xlZXAuYyBhbmQNCj4gPiAgICBh
+ZGQgYSBkZWNsYXJhdGlvbiB0byBpbmNsdWRlL2xpbnV4L2FjcGkuaC4NCj4gPiAtLS0NCj4gPiAg
+YXJjaC94ODYvcGxhdGZvcm0vZWZpL3F1aXJrcy5jIHwgMiArLQ0KPiA+ICBkcml2ZXJzL2FjcGkv
+c2xlZXAuYyAgICAgICAgICAgfCA4ICsrKysrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvYWNwaS5o
+ICAgICAgICAgICB8IDEgKw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKyks
+IDEgZGVsZXRpb24oLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3g4Ni9wbGF0Zm9ybS9l
+ZmkvcXVpcmtzLmMNCj4gPiBiL2FyY2gveDg2L3BsYXRmb3JtL2VmaS9xdWlya3MuYyBpbmRleCAy
+ZDY2ZGI4Li4wZDQxODZiIDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gveDg2L3BsYXRmb3JtL2VmaS9x
+dWlya3MuYw0KPiA+ICsrKyBiL2FyY2gveDg2L3BsYXRmb3JtL2VmaS9xdWlya3MuYw0KPiA+IEBA
+IC0yOTUsNSArMjk1LDUgQEAgYm9vbCBlZmlfcmVib290X3JlcXVpcmVkKHZvaWQpDQo+ID4NCj4g
+PiAgYm9vbCBlZmlfcG93ZXJvZmZfcmVxdWlyZWQodm9pZCkNCj4gPiAgew0KPiA+IC0gICAgICAg
+cmV0dXJuICEhYWNwaV9nYmxfcmVkdWNlZF9oYXJkd2FyZTsNCj4gPiArICAgICAgIHJldHVybiBh
+Y3BpX2dibF9yZWR1Y2VkX2hhcmR3YXJlIHx8IChhY3BpX25vX3M1ICYmDQo+ID4gKyAhcG1fcG93
+ZXJfb2ZmKTsNCj4gDQo+IFdoYXQgaWYgQ09ORklHX0FDUEkgaXMgbm90IHNldCBoZXJlPw0KPiAN
+CklmIENPTkZJR19BQ1BJIGlzIG5vdCBzZXQsIHRoaXMgZmlsZSB3b3VsZCBub3QgYmUgY29tcGls
+ZWQsDQpiZWNhdXNlIENPTkZJR19FRkkgZGVwZW5kcyBvbiBDT05GSUdfQUNQSS4NCg0K
