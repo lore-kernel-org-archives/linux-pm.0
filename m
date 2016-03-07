@@ -1,43 +1,45 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
-Date: Mon, 7 Mar 2016 11:10:08 +0100
-Message-ID: <CAPDyKFqtrdw+MHh6tAz658=PQi+REGAEiNzNs_4aRzTTpOwP9Q@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org>
-	<1481433.r0tFS4sTcH@avalon>
-	<2096023.P4Pq9IvUAO@avalon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <2096023.P4Pq9IvUAO@avalon>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
+From: Philippe Loctaux <phil@philippeloctaux.com>
+Subject: [PATCH] Kernel: Power: main.c: Cleaned up a comment block
+Date: Mon,  7 Mar 2016 11:09:15 +0100
+Message-ID: <1457345355-20102-1-git-send-email-phil@philippeloctaux.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 7.mo2.mail-out.ovh.net ([188.165.48.182]:55989 "EHLO
+	7.mo2.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752273AbcCGK0K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 05:26:10 -0500
+Received: from mail605.ha.ovh.net (gw6.ovh.net [213.251.189.206])
+	by mo2.mail-out.ovh.net (Postfix) with SMTP id 5FE15100097E
+	for <linux-pm@vger.kernel.org>; Mon,  7 Mar 2016 11:09:55 +0100 (CET)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philippe Loctaux <phil@philippeloctaux.com>
 
-[...]
+Removed a * in the beginning of the block, and removed an unnecessary space.
 
->> I agree, that's a better idea. Drivers shouldn't call
->> pm_runtime_force_resume() if they haven't called pm_runtime_force_suspend(),
->> so checking the PM use count should be fine. I'll modify the patch, test it
->> and resubmit.
->
-> I gave it an unfortunately unsuccessful try. The problem I ran into is that
-> device_prepare() calls pm_runtime_get_noresume() calls
-> pm_runtime_get_noresume(), with the corresponding pm_runtime_put() call being
-> performed in device_complete(). The device power usage_count is thus always
-> non-zero in the system resume handler, so I can't base the decision on that.
+Signed-off-by: Philippe Loctaux <phil@philippeloctaux.com>
+---
+ kernel/power/main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-As Alan said, let's just check against 1 instead.
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 2794697..d7386cb 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -288,11 +288,11 @@ static inline void pm_print_times_init(void) {}
+ 
+ struct kobject *power_kobj;
+ 
+-/**
++/*
+  * state - control system sleep states.
+  *
+  * show() returns available sleep state labels, which may be "mem", "standby",
+- * "freeze" and "disk" (hibernation).  See Documentation/power/states.txt for a
++ * "freeze" and "disk" (hibernation). See Documentation/power/states.txt for a
+  * description of what they mean.
+  *
+  * store() accepts one of those strings, translates it into the proper
+-- 
+2.7.2
 
->
-> I also noticed that pm_genpd_prepare() runtime-resumes the device (when the
-> power domain is in the GPD_STATE_ACTIVE state). I don't know why that is, but
-> it means that in practice my device gets runtime-resumed when suspending the
-> system while it could stay runtime-suspended in practice.
-
-I am aware of this and it's on my TODO list of improvements of genpd,
-The issue is related to an unoptimized behaviour for how genpd deal
-with wakeups during system PM.
-
-Kind regards
-Uffe
