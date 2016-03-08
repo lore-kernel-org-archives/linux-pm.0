@@ -1,61 +1,61 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: omap-thermal: Add notify function to
- thermal_zone_device_ops
-Date: Tue, 8 Mar 2016 12:48:14 -0800
-Message-ID: <20160308204812.GA6800@localhost.localdomain>
-References: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+Subject: Re: [PATCH v2 1/5] thermal: change "hysteresis" as optional property
+Date: Tue, 8 Mar 2016 12:55:59 -0800
+Message-ID: <20160308205558.GA7010@localhost.localdomain>
+References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
+ <1456458227-12950-2-git-send-email-leo.yan@linaro.org>
+ <20160303162942.GA2445@localhost.localdomain>
+ <20160304030349.GA11012@leoy-linaro>
+ <20160304115752.GA13894@e104805>
+ <20160308135743.GC4921@leoy-linaro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:35737 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbcCHUsR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 15:48:17 -0500
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:36137 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbcCHU4E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 15:56:04 -0500
 Content-Disposition: inline
-In-Reply-To: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+In-Reply-To: <20160308135743.GC4921@leoy-linaro>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Javi Merino <javi.merino@arm.com>, Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Feb 16, 2016 at 10:35:45AM +0530, Keerthy wrote:
-> notify function is used to notify when some temperature thresholds
-> are crossed. In case we get notified for a critical trip point then
-> schedule an emergency shutdown function to backup orderly_poweroff
-> failures.
+On Tue, Mar 08, 2016 at 09:57:43PM +0800, Leo Yan wrote:
+> Hi Eduardo,
 > 
-> orderly_poweroff is triggered when a graceful shutdown
-> of system is desired. This may be used in many critical states of the
-> kernel such as when subsystems detects conditions such as critical
-> temperature conditions. However, in certain conditions in system
-> boot up sequences like those in the middle of driver probes being
-> initiated, userspace will be unable to power off the system in a clean
-> manner and leaves the system in a critical state. In cases like these,
-> the /sbin/poweroff will return success (having forked off to attempt
-> powering off the system. However, the system overall will fail to
-> completely poweroff (since other modules will be probed) and the system
-> is still functional with no userspace (since that would have shut itself
-> off).
+> On Fri, Mar 04, 2016 at 11:57:53AM +0000, Javi Merino wrote:
+> > On Fri, Mar 04, 2016 at 11:03:49AM +0800, Leo Yan wrote:
+> > > On Thu, Mar 03, 2016 at 08:29:44AM -0800, Eduardo Valentin wrote:
+> > > > On Fri, Feb 26, 2016 at 11:43:43AM +0800, Leo Yan wrote:
 > 
-> However, there is no clean way of detecting such failure of userspace
-> powering off the system. In such scenarios, it is necessary for a backup
-> workqueue to be able to force a shutdown of the system when orderly
-> shutdown is not successful after a configurable time period.
+> [...]
 > 
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
+> > > > > The property "hysteresis" is mandatory for trip points, so if without
+> > > > > it the thermal zone cannot register successfully. But "hysteresis" is
+> > > > > ignored in the thermal subsystem and only inquired by several thermal
+> > > > > sensor drivers.
+> > > > 
+> > > > If the Linux thermal subsystem has a problem with handling hysteresis, I
+> > > > would rather fix Linux code than relaxing the DT binding. Or if you
+> > > > still believe hysteresis is really optional, I would prefer to see a
+> > > > better justification than "Linux ignores it".
+> > 
+> > I see it the other way round, Is hysteresis a property that, without
+> > it, the thermal code can't configure itself so it fails to create the
+> > trip point?  The current code goes "There is no hysteresis for this
+> > property, I don't know how to set up this trip point!".  I think we
+> > can do better than this.
 > 
-> The previous discussion:
-> 
-> https://lkml.org/lkml/2016/1/28/989
-> 
-> Making use of the notify ops to schedule a backup thermal shutdown.
+> Do you agree with Javi's suggestion? If you think it's okay, I will
+> move on to send out a new version patch based on Javi's comments.
 
-Yeah, this was a bit of a stretching. If we cannot fix orderly power
-off, I would say, better fixing it for all thermal drivers (previous
-version of this). This patch:
-1. Abuse a notify function to be used as a power off functions
-2. Fix an issue only for a single driver.
+No I don't. This discussion so far has been about Linux code. I still
+havent seen an argument explaining why hysteresis has to be optional.
 
-I will check your initial version.
+BR,
 
+> 
+> Thanks,
+> Leo Yan
