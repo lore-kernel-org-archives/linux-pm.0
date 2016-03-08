@@ -1,59 +1,38 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Tue, 08 Mar 2016 13:14:16 +0100
-Message-ID: <1500934.JjcSpplzao@skinner>
-References: <4687430.mfM0GbdeDL@skinner> <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com> <CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Tue, 8 Mar 2016 14:09:56 +0100
+Message-ID: <20160308130956.GI6375@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <1842158.0Xhak3Uaac@vostro.rjw.lan>
+ <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
+ <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
+ <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
+ <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
+ <20160303153817.GO6344@twins.programming.kicks-ass.net>
+ <20160303162829.GB6375@twins.programming.kicks-ass.net>
+ <56D87457.1050600@arm.com>
+ <20160303182624.GU6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:34577 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932068AbcCHMOY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Mar 2016 07:14:24 -0500
-In-Reply-To: <CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160303182624.GU6356@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, X86 ML <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, March 07, 2016 07:50:57 PM Len Brown wrote:
-> > But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo
-> > modes if this value is not set to performance
+On Thu, Mar 03, 2016 at 07:26:24PM +0100, Peter Zijlstra wrote:
+> On Thu, Mar 03, 2016 at 05:28:55PM +0000, Dietmar Eggemann wrote:
+
+> > Wasn't there the problem that this ratio goes to zero if the cpu is idle
+> > in the old power estimation approach on x86?
 > 
-> BDX-EP supports HWP.
-> Are these failing machines running in HWP mode?
-> 
-> (On BDX-EP, and only on BDX-EP, EPB acts to set the BIAS for HWP,
->  because that processor doesn't yet have EPP.)
+> Yeah, there was something funky.
 
-I am not sure whether I can publish platform info. I asked for and added you
-to CC of the private bug a while ago.
-
-This kernel is run: SLES12 SP1, 3.12.49-4-default
-I grepped the whole supportconfig for -i hwp and couldn't find anything, so I 
-very much expect this machine is/was not run in HWP mode, right?
-
-I still question the usefulness of the "initialize perf bias to normal" hack.
-For our distro I am pretty sure, we do not want to have this one and
-we prefer the CPU or BIOS initialized value, even (or especially) if it is
-set to performance.
-
-Are there any known platforms where this would really be an issue
-and how sever would it be?
-
-I already removed the "set perf bias to normal" years ago for SLE11 without
-getting any regression or negative reports.
-
-Now finding the workaround on the hack to run a suspend hook to
-adjust perf bias value on each suspend cycle... This is going into
-a wrong direction.
-
-I agree that if this needs resetting after each suspend cycle, userspace 
-should not need to care about it. I could imagine a sysfs variable here:
-/sys/devices/system/cpu/intel_pstate/perf_bias
-
-but the static setting from 0 to 6 in the x86 core code and
-the suspend callback should get reverted, right?
-
-    Thomas
+So it might have been that when we're nearly idle the hardware runs at
+low frequency, which under that old code would have resulted in lowering
+the capacity of that cpu. Which in turn would have resulted in the
+scheduler moving the little work it had away and it being even more
+idle.
