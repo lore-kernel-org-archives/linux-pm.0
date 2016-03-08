@@ -1,33 +1,53 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
-Date: Mon, 7 Mar 2016 19:50:57 -0500
-Message-ID: <CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
-References: <4687430.mfM0GbdeDL@skinner>
-	<16028318.H9OZ9hFYY1@skinner>
-	<11753995.6ynq8tUiQx@vostro.rjw.lan>
-	<1770444.1VxdmEr8lv@skinner>
-	<CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v6 0/4] powercap/rapl: reduce ipi calls and misc clean
+ up
+Date: Mon, 7 Mar 2016 17:06:42 -0800
+Message-ID: <20160307170642.31af8b7e@icelake>
+References: <1456349498-1527-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f176.google.com ([209.85.217.176]:35717 "EHLO
-	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbcCHAu7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 19:50:59 -0500
-In-Reply-To: <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com>
+Received: from mga04.intel.com ([192.55.52.120]:63892 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436AbcCHBH5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Mar 2016 20:07:57 -0500
+In-Reply-To: <1456349498-1527-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Rusty Russell <rusty@rustcorp.com.au>
 
-> But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo modes
-> if this value is not set to performance
+On Wed, 24 Feb 2016 13:31:34 -0800
+Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
 
-BDX-EP supports HWP.
-Are these failing machines running in HWP mode?
+> Changes since v5:
+> 	- Split changes into seprate patches. No code change.
+> Changes since V4:
+> 	- Deleted unnecessary cpumask_any_and() call, assign first
+> cpu as lead Changes since V3:
+> 	- Avoid for_each_online_cpu() search for per package MSR
+> access. This is achieved by tracking a per package lead cpu via
+> cpumask_xx() calls. (suggested by Thomas Gleixner
+> <tglx@linutronix.de>)
+> 	    - Add direct reference of RAPL package for each RAPL
+> domain.
+> 
+> Jacob Pan (4):
+>   cpumask: export cpumask_any_but
+>   powercap/rapl: reduce ipi calls
+>   powercap/rapl: add package reference per domain
+>   powercap/rapl: track lead cpu per package
+> 
+>  drivers/powercap/intel_rapl.c | 220
+> ++++++++++++++++++++++--------------------
+> lib/cpumask.c                 |   1 + 2 files changed, 115
+> insertions(+), 106 deletions(-)
+> 
+Hi Thomas,
 
-(On BDX-EP, and only on BDX-EP, EPB acts to set the BIAS for HWP,
- because that processor doesn't yet have EPP.)
+Do you have more comments?
 
--- 
-Len Brown, Intel Open Source Technology Center
+Thanks,
+
+Jacob
