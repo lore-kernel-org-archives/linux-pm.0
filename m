@@ -1,55 +1,77 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH v2 1/5] thermal: change "hysteresis" as optional property
-Date: Tue, 8 Mar 2016 21:57:43 +0800
-Message-ID: <20160308135743.GC4921@leoy-linaro>
-References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
- <1456458227-12950-2-git-send-email-leo.yan@linaro.org>
- <20160303162942.GA2445@localhost.localdomain>
- <20160304030349.GA11012@leoy-linaro>
- <20160304115752.GA13894@e104805>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Tue, 8 Mar 2016 16:25:30 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
+ <36DF59CE26D8EE47B0655C516E9CE640286D329F@shsmsx102.ccr.corp.intel.com>
+ <2414254.VhAiD01BTS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:35254 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbcCHN5x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 08:57:53 -0500
-Received: by mail-pa0-f46.google.com with SMTP id bj10so13235005pad.2
-        for <linux-pm@vger.kernel.org>; Tue, 08 Mar 2016 05:57:52 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20160304115752.GA13894@e104805>
+Received: from mga03.intel.com ([134.134.136.65]:63418 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752435AbcCHQ02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 11:26:28 -0500
+In-Reply-To: <2414254.VhAiD01BTS@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-Hi Eduardo,
-
-On Fri, Mar 04, 2016 at 11:57:53AM +0000, Javi Merino wrote:
-> On Fri, Mar 04, 2016 at 11:03:49AM +0800, Leo Yan wrote:
-> > On Thu, Mar 03, 2016 at 08:29:44AM -0800, Eduardo Valentin wrote:
-> > > On Fri, Feb 26, 2016 at 11:43:43AM +0800, Leo Yan wrote:
-
-[...]
-
-> > > > The property "hysteresis" is mandatory for trip points, so if without
-> > > > it the thermal zone cannot register successfully. But "hysteresis" is
-> > > > ignored in the thermal subsystem and only inquired by several thermal
-> > > > sensor drivers.
-> > > 
-> > > If the Linux thermal subsystem has a problem with handling hysteresis, I
-> > > would rather fix Linux code than relaxing the DT binding. Or if you
-> > > still believe hysteresis is really optional, I would prefer to see a
-> > > better justification than "Linux ignores it".
-> 
-> I see it the other way round, Is hysteresis a property that, without
-> it, the thermal code can't configure itself so it fails to create the
-> trip point?  The current code goes "There is no hysteresis for this
-> property, I don't know how to set up this trip point!".  I think we
-> can do better than this.
-
-Do you agree with Javi's suggestion? If you think it's okay, I will
-move on to send out a new version patch based on Javi's comments.
-
-Thanks,
-Leo Yan
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
+Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
+biBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogVHVlc2RheSwgTWFyY2ggMDgs
+IDIwMTYgOTo1NCBBTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogUmFmYWVsIEouIFd5c29ja2k7
+IEFDUEkgRGV2ZWwgTWFsaW5nIExpc3Q7IHg4NkBrZXJuZWwub3JnOyBsaW51eC0NCj4gZWZpQHZn
+ZXIua2VybmVsLm9yZzsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdDsgbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnOw0KPiBMZW4gQnJvd247IE1hdHQgRmxlbWluZzsgVGhvbWFzIEdsZWl4bmVyOyBJ
+bmdvIE1vbG5hcjsgSC4gUGV0ZXIgQW52aW47DQo+IFpoYW5nLCBSdWkNCj4gU3ViamVjdDogUmU6
+IFtQQVRDSF1bUkZDIHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBpc3N1ZSBvbiBIVy1mdWxs
+DQo+IHBsYXRmb3JtcyB3aXRob3V0IF9TNQ0KPiANCj4gT24gTW9uZGF5LCBNYXJjaCAwNywgMjAx
+NiAwMzo1MzoxMyBQTSBDaGVuLCBZdSBDIHdyb3RlOg0KPiA+IEhpIFJhZmFlbCwNCj4gPiAocmVz
+ZW5kIGZvciBicm9rZW4gY29udGVudCkNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCj4gPiA+IEZyb206IHJqd3lzb2NraUBnbWFpbC5jb20gW21haWx0bzpyand5c29ja2lA
+Z21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gPiA+IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiBT
+ZW50OiBNb25kYXksIE1hcmNoIDA3LCAyMDE2IDk6MTkgUE0NCj4gPiA+IFRvOiBDaGVuLCBZdSBD
+DQo+ID4gPiBDYzogQUNQSSBEZXZlbCBNYWxpbmcgTGlzdDsgeDg2QGtlcm5lbC5vcmc7DQo+ID4g
+PiBsaW51eC1lZmlAdmdlci5rZXJuZWwub3JnOyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0Ow0K
+PiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBSYWZhZWwgSi4gV3lzb2NraTsgTGVuIEJy
+b3duOyBNYXR0DQo+ID4gPiBGbGVtaW5nOyBUaG9tYXMgR2xlaXhuZXI7IEluZ28gTW9sbmFyOyBI
+LiBQZXRlciBBbnZpbjsgWmhhbmcsIFJ1aQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZD
+IHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBpc3N1ZSBvbg0KPiA+ID4gSFctZnVsbCBwbGF0
+Zm9ybXMgd2l0aG91dCBfUzUNCj4gPiA+DQo+ID4gW2N1dF0NCj4gPiA+ID4gIGJvb2wgZWZpX3Bv
+d2Vyb2ZmX3JlcXVpcmVkKHZvaWQpDQo+ID4gPiA+ICB7DQo+ID4gPiA+IC0gICAgICAgcmV0dXJu
+ICEhYWNwaV9nYmxfcmVkdWNlZF9oYXJkd2FyZTsNCj4gPiA+ID4gKyAgICAgICByZXR1cm4gYWNw
+aV9nYmxfcmVkdWNlZF9oYXJkd2FyZSB8fCAoYWNwaV9ub19zNSAmJg0KPiA+ID4gPiArICFwbV9w
+b3dlcl9vZmYpOw0KPiA+ID4NCj4gPiA+IFdoYXQgaWYgQ09ORklHX0FDUEkgaXMgbm90IHNldCBo
+ZXJlPw0KPiA+IElmIENPTkZJR19BQ1BJIGlzIG5vdCBzZXQsIHRoaXMgZmlsZSB3b3VsZCBub3Qg
+YmUgY29tcGlsZWQsIGJlY2F1c2UNCj4gPiBDT05GSUdfRUZJIGRlcGVuZHMgb24gQ09ORklHX0FD
+UEkuDQo+IA0KPiBPSw0KPiANCj4gU28gdGhlIG5leHQgcXVlc3Rpb24gd2lsbCBiZSBpZiBlZmlf
+cG93ZXJvZmZfcmVxdWlyZWQoKSBpcyBndWFyYW50ZWVkIHRvIHJ1bg0KPiBhZnRlciBhbGwgb2Yg
+dGhlIG90aGVyIGNvZGUgdGhhdCBtYXkgcmVnaXN0ZXIgYWx0ZXJuYXRpdmUgcG93ZXIgb2ZmIGhh
+bmRsaW5nLg0KSHVtLiB1bmZvcnR1bmF0ZWx5IGl0IGlzIG5vdCBndWFyYW50ZWVkIHRvIHJ1biBh
+ZnRlciBhbGwgb2YgdGhlIG90aGVyIGNvZGUsDQpiZWNhdXNlIG90aGVyIGNvbXBvbmVudHMgd2hv
+IHJlZ2lzdGVyIHBtX3Bvd2VyX29mZiBtYXkgYmUgYnVpbHQgYXMgbW9kdWxlcywgYW5kDQp3ZSBj
+YW4gbm90IHByZWRpY3QvY29udHJvbCB0aGUgc2VxdWVuY2UgcmVnaXN0cmF0aW9uLiAgIFNvIHRo
+aXMgcGF0Y2ggbWF5DQpicmVhayB0aGUgRUZJIHBsYXRmb3JtcyB3aG8gdXNlIG5vbi1lZmkgcG93
+ZXJvZmYgZHVlIHRvIHVuc3RhYmxlIEVGSSBzZXJ2aWNlDQosICBub3Qgc3VyZSBpZiB0aGVyZSBh
+cmUgYW55IHJlbGVhc2VkLXByb2R1Y3RzIG9mIHRoaXMga2luZC4NCg0KQ3VycmVudGx5IEknbSB0
+aGlua2luZyBvZiAzIHBvc3NpYmxlIHNvbHV0aW9ucywgIGNvdWxkIHlvdSBwbGVhc2UgZ2l2ZSBz
+b21lIGFkdmljZXMgb24gdGhlbToNCg0KMS4gSW50cm9kdWNlIGJvb3RvcHQgb2YgJ3Bvd2Vyb2Zm
+PWVmaScNCiAgICAgU2V0IHRoZSBwbV9wb3dlcl9vZmYgdG8gZWZpX3Bvd2VyX29mZiBubyBtYXR0
+ZXIgd2hldGhlciB0aGVyZSBpcyBfUzUgb3Igbm90DQoNCjIuIEludHJvZHVjZSAvc3lzL3Bvd2Vy
+L3Bvd2Vyb2ZmDQogICAgQWxsb3cgdGhlIHVzZXIgdG8gY2hvb3NlIHdoaWNoICBwbV9wb3dlcl9v
+ZmYsIGZvciBleGFtcGxlOg0KIA0KIyBjYXQgL3N5cy9wb3dlci9wb3dlcm9mZg0KKmFjcGkJCWFj
+cGlfcG93ZXJfb2ZmDQplZmkJCWVmaV9wb3dlcl9vZmYJDQpncGlvCQlncGlvX3Bvd2Vyb2ZmX2Rv
+X3Bvd2Vyb2ZmDQp1c2VyIGNhbiBlY2hvIHN0cmluZyB0byBlbmFibGUgd2hpY2ggb25lLg0KDQpB
+bmQgdHdvIEFQSXM6DQpyZWdpc3Rlcl9wb3dlcl9vZmYoY2hhciAqbmFtZSwgcG93ZXJfb2ZmIGZ1
+bmMpDQp1bnJlZ2lzdGVyX3Bvd2VyX29mZihjaGFyICpuYW1lKSAgDQoNCg0KMy4gcmVwbGFjZSBh
+bGwgdGhlIGNvZGVzIG9mICBwbV9wb3dlcl9vZmYoKSB3aXRoIHJlbGlhYmxlX3BtX3Bvd2VyX29m
+ZigpDQoNCnZvaWQgcmVsaWFibGVfcG1fcG93ZXJfb2ZmKHZvaWQpDQp7DQoJaWYgKCFwbV9wb3dl
+cl9vZmYpIHsNCgkJaWYgKGFjcGlfbm9fczUpDQoJCQlwbV9wb3dlcl9vZmYgPSBlZmlfcG93ZXJf
+b2ZmOw0KCS8qIE90aGVyIGNvbmRpdGlvbnMgYWRkZWQgaW4gdGhlIGZ1dHVyZS4gKi8NCgl9DQoJ
+cG1fcG93ZXJfb2ZmKCk7DQp9DQoNCg0KdGhhbmtzLA0KeXUNCg==
