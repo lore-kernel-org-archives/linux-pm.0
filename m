@@ -1,38 +1,53 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Tue, 8 Mar 2016 14:09:56 +0100
-Message-ID: <20160308130956.GI6375@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <1842158.0Xhak3Uaac@vostro.rjw.lan>
- <CAKfTPtANvYp5ar8UkKyN9R25Ntrfp+bEEFw5M0=MA8q7zscSMw@mail.gmail.com>
- <CAJZ5v0jvStPbhKSJUHTwySkEXa0rKp3zE7YLWeCmGHeQt8xcrw@mail.gmail.com>
- <CAJZ5v0gC_S+a43FvgpB25WnpAANkDQk7agwSx4gRJvdmnPFkeQ@mail.gmail.com>
- <CAKfTPtDRvM9PAwQQ2KjUjPjnMmKkdi6sCoX4YisKaunDBqLf-A@mail.gmail.com>
- <20160303153817.GO6344@twins.programming.kicks-ass.net>
- <20160303162829.GB6375@twins.programming.kicks-ass.net>
- <56D87457.1050600@arm.com>
- <20160303182624.GU6356@twins.programming.kicks-ass.net>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH 0/3] thermal: exynos: Fixes for vtmu-supply regulator
+ handling
+Date: Tue, 8 Mar 2016 10:30:33 -0300
+Message-ID: <56DED3F9.8050505@osg.samsung.com>
+References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160303182624.GU6356@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lists.s-osg.org ([54.187.51.154]:37013 "EHLO lists.s-osg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751817AbcCHNao (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 08:30:44 -0500
+In-Reply-To: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-On Thu, Mar 03, 2016 at 07:26:24PM +0100, Peter Zijlstra wrote:
-> On Thu, Mar 03, 2016 at 05:28:55PM +0000, Dietmar Eggemann wrote:
+Hello Lukasz, Eduardo,
 
-> > Wasn't there the problem that this ratio goes to zero if the cpu is idle
-> > in the old power estimation approach on x86?
+On 02/18/2016 03:19 PM, Javier Martinez Canillas wrote:
+> Hello,
 > 
-> Yeah, there was something funky.
+> On a recent patch series to build a PMIC chip as a module [0], Krzysztof
+> asked me to check if all the consumer drivers, using the resources that
+> this PMIC provides, already support probe deferral.
+> 
+> While investigating that, I noticed that the Exynos TMU didn't do it so
+> this series fix that bug and other two minor issues that I noticed while
+> reviewing the driver and its DT binding.
+> 
+> The series are on top of Krzysztof's patches [1,2,3] not because there's
+> a dependency but to avoid merge conflicts with in-flight patches. Please
+> let me know if you prefer to use a different base instead.
+> 
+> [0]: https://lkml.org/lkml/2016/2/11/857
+> [1]: https://patchwork.kernel.org/patch/8345791/
+> [2]: https://patchwork.kernel.org/patch/8345741/
+> [3]: https://patchwork.kernel.org/patch/8345701/
+> 
+> Best regards,
+> Javier
+> 
 
-So it might have been that when we're nearly idle the hardware runs at
-low frequency, which under that old code would have resulted in lowering
-the capacity of that cpu. Which in turn would have resulted in the
-scheduler moving the little work it had away and it being even more
-idle.
+Any comments about this series?
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
