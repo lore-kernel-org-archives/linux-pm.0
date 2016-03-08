@@ -1,61 +1,92 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 1/5] thermal: change "hysteresis" as optional property
-Date: Tue, 8 Mar 2016 12:55:59 -0800
-Message-ID: <20160308205558.GA7010@localhost.localdomain>
-References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
- <1456458227-12950-2-git-send-email-leo.yan@linaro.org>
- <20160303162942.GA2445@localhost.localdomain>
- <20160304030349.GA11012@leoy-linaro>
- <20160304115752.GA13894@e104805>
- <20160308135743.GC4921@leoy-linaro>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Tue, 8 Mar 2016 16:07:43 -0500
+Message-ID: <CAJvTdKnO9DLVSwJMYq+zEvYyP5RgiqudCg+0W9cNeb9ZAWZYng@mail.gmail.com>
+References: <4687430.mfM0GbdeDL@skinner>
+	<CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com>
+	<CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
+	<1500934.JjcSpplzao@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:36137 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbcCHU4E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 15:56:04 -0500
-Content-Disposition: inline
-In-Reply-To: <20160308135743.GC4921@leoy-linaro>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:35818 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbcCHVHp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 16:07:45 -0500
+In-Reply-To: <1500934.JjcSpplzao@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Javi Merino <javi.merino@arm.com>, Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, X86 ML <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Mar 08, 2016 at 09:57:43PM +0800, Leo Yan wrote:
-> Hi Eduardo,
-> 
-> On Fri, Mar 04, 2016 at 11:57:53AM +0000, Javi Merino wrote:
-> > On Fri, Mar 04, 2016 at 11:03:49AM +0800, Leo Yan wrote:
-> > > On Thu, Mar 03, 2016 at 08:29:44AM -0800, Eduardo Valentin wrote:
-> > > > On Fri, Feb 26, 2016 at 11:43:43AM +0800, Leo Yan wrote:
-> 
-> [...]
-> 
-> > > > > The property "hysteresis" is mandatory for trip points, so if without
-> > > > > it the thermal zone cannot register successfully. But "hysteresis" is
-> > > > > ignored in the thermal subsystem and only inquired by several thermal
-> > > > > sensor drivers.
-> > > > 
-> > > > If the Linux thermal subsystem has a problem with handling hysteresis, I
-> > > > would rather fix Linux code than relaxing the DT binding. Or if you
-> > > > still believe hysteresis is really optional, I would prefer to see a
-> > > > better justification than "Linux ignores it".
-> > 
-> > I see it the other way round, Is hysteresis a property that, without
-> > it, the thermal code can't configure itself so it fails to create the
-> > trip point?  The current code goes "There is no hysteresis for this
-> > property, I don't know how to set up this trip point!".  I think we
-> > can do better than this.
-> 
-> Do you agree with Javi's suggestion? If you think it's okay, I will
-> move on to send out a new version patch based on Javi's comments.
+On Tue, Mar 8, 2016 at 7:14 AM, Thomas Renninger <trenn@suse.de> wrote:
+> On Monday, March 07, 2016 07:50:57 PM Len Brown wrote:
+>> > But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo
+>> > modes if this value is not set to performance
+>>
+>> BDX-EP supports HWP.
+>> Are these failing machines running in HWP mode?
+>>
+>> (On BDX-EP, and only on BDX-EP, EPB acts to set the BIAS for HWP,
+>>  because that processor doesn't yet have EPP.)
+>
+> I am not sure whether I can publish platform info. I asked for and added you
+> to CC of the private bug a while ago.
+>
+> This kernel is run: SLES12 SP1, 3.12.49-4-default
+> I grepped the whole supportconfig for -i hwp and couldn't find anything, so I
+> very much expect this machine is/was not run in HWP mode, right?
 
-No I don't. This discussion so far has been about Linux code. I still
-havent seen an argument explaining why hysteresis has to be optional.
+/proc/cpuinfo will have a bunch of hwp stuff if CPUID is advertising
+the feature.
 
-BR,
+The BIOS could put it in HWP mode by default,
+or the intel_pstate driver could enable HWP.
 
-> 
-> Thanks,
-> Leo Yan
+If intel_pstate did that, it would print it in dmesg.
+
+pr_info("intel_pstate: HWP enabled\n");
+
+> I still question the usefulness of the "initialize perf bias to normal" hack.
+> For our distro I am pretty sure, we do not want to have this one and
+> we prefer the CPU or BIOS initialized value, even (or especially) if it is
+> set to performance.
+>
+> Are there any known platforms where this would really be an issue
+> and how sever would it be?
+>
+> I already removed the "set perf bias to normal" years ago for SLE11 without
+> getting any regression or negative reports.
+>
+> Now finding the workaround on the hack to run a suspend hook to
+> adjust perf bias value on each suspend cycle... This is going into
+> a wrong direction.
+>
+> I agree that if this needs resetting after each suspend cycle, userspace
+> should not need to care about it. I could imagine a sysfs variable here:
+> /sys/devices/system/cpu/intel_pstate/perf_bias
+
+As EPB it is unrelated to intel_pstate, this would be a bad place to
+put such state.
+
+> but the static setting from 0 to 6 in the x86 core code and
+> the suspend callback should get reverted, right?
+
+The kernel is supplying a reasonable default.
+It is up to the operating system to apply -- from user space --
+a value that is consistent with the performance profile
+for how the machine is being used.
+
+I proposed doing such policy in the kernel a number of years ago,
+and a number of non-kernel people insisted strenuously that the
+kernel should not know or care, and that user-space should manage this.
+Perhaps we need to examine how well abdicating responsibility
+to the upper OS has been going...
+
+I'm not going to tell you that you can't make policy choices in distro-specific
+kernel patches.  Maybe it is difficult for some distros to modify user-space.
+But I am not going to recommend such changes go in the upstream kernel,
+since it would impact other users.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
