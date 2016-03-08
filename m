@@ -1,101 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full platforms without _S5
-Date: Tue, 08 Mar 2016 23:56:50 +0100
-Message-ID: <1867318.3ivAYsjD7D@vostro.rjw.lan>
-References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com> <2414254.VhAiD01BTS@vostro.rjw.lan> <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+Subject: Re: [PATCH 1/2] PM / clk: Add stubs for pm_clk_suspend/resume
+Date: Tue, 08 Mar 2016 23:58:23 +0100
+Message-ID: <4293335.ArkqpzdFRe@vostro.rjw.lan>
+References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com> <56DF094E.4030809@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50453 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750970AbcCHW4c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 17:56:32 -0500
+In-Reply-To: <56DF094E.4030809@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-On Tuesday, March 08, 2016 04:25:30 PM Chen, Yu C wrote:
-> > -----Original Message-----
-> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-> > Sent: Tuesday, March 08, 2016 9:54 AM
-> > To: Chen, Yu C
-> > Cc: Rafael J. Wysocki; ACPI Devel Maling List; x86@kernel.org; linux-
-> > efi@vger.kernel.org; Linux Kernel Mailing List; linux-pm@vger.kernel.org;
-> > Len Brown; Matt Fleming; Thomas Gleixner; Ingo Molnar; H. Peter Anvin;
-> > Zhang, Rui
-> > Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
-> > platforms without _S5
+On Tuesday, March 08, 2016 05:18:06 PM Jon Hunter wrote:
+> 
+> On 04/03/16 15:33, Jon Hunter wrote:
+> > The functions pm_clk_suspend() and pm_clk_resume() cannot be used
+> > directly within the main body of a function, because when CONFIG_PM_CLK
+> > is not defined the functions are defined as NULL and this will lead to
+> > a compilation error.
 > > 
-> > On Monday, March 07, 2016 03:53:13 PM Chen, Yu C wrote:
-> > > Hi Rafael,
-> > > (resend for broken content)
-> > >
-> > > > -----Original Message-----
-> > > > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of
-> > > > Rafael J. Wysocki
-> > > > Sent: Monday, March 07, 2016 9:19 PM
-> > > > To: Chen, Yu C
-> > > > Cc: ACPI Devel Maling List; x86@kernel.org;
-> > > > linux-efi@vger.kernel.org; Linux Kernel Mailing List;
-> > > > linux-pm@vger.kernel.org; Rafael J. Wysocki; Len Brown; Matt
-> > > > Fleming; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui
-> > > > Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on
-> > > > HW-full platforms without _S5
-> > > >
-> > > [cut]
-> > > > >  bool efi_poweroff_required(void)
-> > > > >  {
-> > > > > -       return !!acpi_gbl_reduced_hardware;
-> > > > > +       return acpi_gbl_reduced_hardware || (acpi_no_s5 &&
-> > > > > + !pm_power_off);
-> > > >
-> > > > What if CONFIG_ACPI is not set here?
-> > > If CONFIG_ACPI is not set, this file would not be compiled, because
-> > > CONFIG_EFI depends on CONFIG_ACPI.
+> > Add stubs functions for pm_clk_suspend() and pm_clk_resume() so that
+> > these functions may be called directly.
 > > 
-> > OK
+> > Please note that these functions are currently assigned to function
+> > pointers in the PM domain core and so to avoid have a valid function
+> > pointer defined when CONFIG_PM_CLK is not defined, define
+> > GENPD_FLAG_PM_CLK as 0 when CONFIG_PM_CLK is not defined to ensure
+> > the stubs are not populated as valid function pointers.
 > > 
-> > So the next question will be if efi_poweroff_required() is guaranteed to run
-> > after all of the other code that may register alternative power off handling.
-> Hum. unfortunately it is not guaranteed to run after all of the other code,
-> because other components who register pm_power_off may be built as modules, and
-> we can not predict/control the sequence registration.   So this patch may
-> break the EFI platforms who use non-efi poweroff due to unstable EFI service
-> ,  not sure if there are any released-products of this kind.
+> > Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> > ---
+> >  include/linux/pm_clock.h  | 10 ++++++++--
+> >  include/linux/pm_domain.h |  4 ++++
+> >  2 files changed, 12 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
+> > index 25266c600021..ffefbf2df1aa 100644
+> > --- a/include/linux/pm_clock.h
+> > +++ b/include/linux/pm_clock.h
+> > @@ -72,8 +72,14 @@ static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
+> >  static inline void pm_clk_remove(struct device *dev, const char *con_id)
+> >  {
+> >  }
+> > -#define pm_clk_suspend	NULL
+> > -#define pm_clk_resume	NULL
+> > +static inline int pm_clk_suspend(struct device *dev)
+> > +{
+> > +	return -EINVAL;
+> > +}
+> > +static inline int pm_clk_resume(struct device *dev)
+> > +{
+> > +	return -EINVAL;
+> > +}
+> >  #endif
+> >  
+> >  #ifdef CONFIG_HAVE_CLK
+> > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> > index 49cd8890b873..1074c2073df8 100644
+> > --- a/include/linux/pm_domain.h
+> > +++ b/include/linux/pm_domain.h
+> > @@ -17,7 +17,11 @@
+> >  #include <linux/notifier.h>
+> >  
+> >  /* Defines used for the flags field in the struct generic_pm_domain */
+> > +#ifdef CONFIG_PM_CLK
+> >  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+> > +#else
+> > +#define GENPD_FLAG_PM_CLK	0
+> > +#endif
+> >  
+> >  #define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
 > 
-> Currently I'm thinking of 3 possible solutions,  could you please give some advices on them:
-> 
-> 1. Introduce bootopt of 'poweroff=efi'
->      Set the pm_power_off to efi_power_off no matter whether there is _S5 or not
-> 
-> 2. Introduce /sys/power/poweroff
->     Allow the user to choose which  pm_power_off, for example:
->  
-> # cat /sys/power/poweroff
-> *acpi		acpi_power_off
-> efi		efi_power_off	
-> gpio		gpio_poweroff_do_poweroff
-> user can echo string to enable which one.
-> 
-> And two APIs:
-> register_power_off(char *name, power_off func)
-> unregister_power_off(char *name)  
-> 
-> 
-> 3. replace all the codes of  pm_power_off() with reliable_pm_power_off()
-> 
-> void reliable_pm_power_off(void)
-> {
-> 	if (!pm_power_off) {
-> 		if (acpi_no_s5)
-> 			pm_power_off = efi_power_off;
-> 	/* Other conditions added in the future. */
-> 	}
-> 	pm_power_off();
-> }
+> Thinking about this some more, the alternative is for drivers using
+> PM_CLK to select it. Would that be appropriate? If so, we would not need
+> these stubs.
 
-What about something like adding something like default_power_off that would
-be used by pm_power_off if nothing else is available?
+Well, I don't see why it might not be appropriate.
 
 Thanks,
 Rafael
