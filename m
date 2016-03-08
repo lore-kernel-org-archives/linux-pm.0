@@ -1,70 +1,98 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH] thermal: trace: migrating thermal traces to use
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: trace: migrating thermal traces to use
  TRACE_DEFINE_ENUM() macros
-Date: Tue, 8 Mar 2016 09:48:42 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092633A972721@SHSMSX101.ccr.corp.intel.com>
+Date: Tue, 8 Mar 2016 09:58:52 +0000
+Message-ID: <20160308095851.GA3037@e104805>
 References: <1456853934-24715-1-git-send-email-michele.digiorgio@arm.com>
- <20160301132006.1cda539c@gandalf.local.home> <56D87016.5030903@arm.com>
+ <20160301132006.1cda539c@gandalf.local.home>
+ <56D87016.5030903@arm.com>
+ <744357E9AAD1214791ACBA4B0B9092633A972721@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:57677 "EHLO mga01.intel.com"
+Received: from foss.arm.com ([217.140.101.70]:60682 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbcCHJsr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Mar 2016 04:48:47 -0500
-In-Reply-To: <56D87016.5030903@arm.com>
-Content-Language: en-US
+	id S932107AbcCHJ64 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 04:58:56 -0500
+Content-Disposition: inline
+In-Reply-To: <744357E9AAD1214791ACBA4B0B9092633A972721@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michele DiGiorgio <michele.digiorgio@arm.com>, Steven Rostedt <rostedt@goodmis.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Javi Merino <javi.merino@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Eduardo Valentin <edubezval@gmail.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Michele DiGiorgio <michele.digiorgio@arm.com>, Steven Rostedt <rostedt@goodmis.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Eduardo Valentin <edubezval@gmail.com>
 
-UHVuaXQgYW5kIEphdmksDQoNCldoYXQgZG8geW91IHRoaW5rIG9mIHRoaXM/IEknZCBsaWtlIHRv
-IGdldCB5b3VyIEFDSyBiZWZvcmUgdGFraW5nIGl0Lg0KDQpUaGFua3MsDQpydWkNCg0KPiAgLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcG0tb3duZXJAdmdlci5rZXJu
-ZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVo
-YWxmIE9mIE1pY2hlbGUgRGlHaW9yZ2lvDQo+IFNlbnQ6IEZyaWRheSwgTWFyY2ggMDQsIDIwMTYg
-MToxMSBBTQ0KPiBUbzogU3RldmVuIFJvc3RlZHQgPHJvc3RlZHRAZ29vZG1pcy5vcmc+DQo+IENj
-OiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IEluZ28gTW9sbmFyIDxtaW5nb0ByZWRoYXQuY29t
-PjsgSmF2aQ0KPiBNZXJpbm8gPGphdmkubWVyaW5vQGFybS5jb20+OyBsaW51eC1rZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOyBQdW5pdA0KPiBBZ3Jhd2FsIDxwdW5pdC5hZ3Jhd2FsQGFybS5jb20+OyBF
-ZHVhcmRvIFZhbGVudGluIDxlZHViZXp2YWxAZ21haWwuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BB
-VENIXSB0aGVybWFsOiB0cmFjZTogbWlncmF0aW5nIHRoZXJtYWwgdHJhY2VzIHRvIHVzZQ0KPiBU
-UkFDRV9ERUZJTkVfRU5VTSgpIG1hY3Jvcw0KPiANCj4gSGVsbG8gU3RldmVuLA0KPiANCj4gVGhh
-bmtzIGZvciBhY2tub3dsZWRnaW5nIHRoZSBwYXRjaC4NCj4gDQo+IFdpbGwgeW91IGJlIG1lcmdp
-bmcgaXQgb3Igc2hvdWxkIEkgcmVmZXIgdG8gc29tZWJvZHkgZWxzZT8NCj4gDQo+IEtpbmQgcmVn
-YXJkcywNCj4gTWljaGVsZQ0KPiANCj4gT24gMDEvMDMvMTYgMTg6MjAsIFN0ZXZlbiBSb3N0ZWR0
-IHdyb3RlOg0KPiA+IE9uIFR1ZSwgIDEgTWFyIDIwMTYgMTc6Mzg6NTQgKzAwMDANCj4gPiBNaWNo
-ZWxlIERpIEdpb3JnaW8gPG1pY2hlbGUuZGlnaW9yZ2lvQGFybS5jb20+IHdyb3RlOg0KPiA+DQo+
-ID4gPiBVc2Vyc3BhY2UgdG9vbHMgYXJlIG5vdCBhd2FyZSBvZiBob3cgdG8gY29udmVydCB0aGUg
-ZW51bXMgcHJvdmlkZWQNCj4gPiA+IGJ5IHRoZSB0cmFjZXBvaW50cyB0byB0aGVpciBjb3JyZXNw
-b25kaW5nIHN0cmluZ3MuDQo+ID4gPg0KPiA+ID4gQWRkaW5nIFRSQUNFX0RFRklORV9FTlVNKCkg
-bWFjcm9zIGFsbG93cyB0byBtYWtlIHRoZSBlbnVtcyBhdmFpbGFibGUNCj4gPiA+IHRvIHVzZXJz
-cGFjZSB0byBsZXQgdGhlIHRvb2xzIGtub3cgd2hhdCB0aG9zZSBlbnVtIHZhbHVlcyByZXByZXNl
-bnQuDQo+ID4gPg0KPiA+ID4gSW4gcGFydGljdWxhciwgZm9yIHRoZXJtYWwgem9uZSB0cmlwIHR5
-cGVzIHdoYXQgd2Ugb2J0YWluZWQgYmVmb3JlDQo+ID4gPiB3YXMgc29tZXRoaW5nIGxpa2U6DQo+
-ID4gPg0KPiA+ID4ga3dvcmtlci8xOjEtNDYwICAgWzAwMV0gICAzMjAuMzcyNzMyOiB0aGVybWFs
-X3pvbmVfdHJpcDoNCj4gdGhlcm1hbF96b25lPXNvYw0KPiA+ID4gICAgICAgICAgICAgICAgIGlk
-PTAgdHJpcD0xIHRyaXBfdHlwZT0xDQo+ID4gPg0KPiA+ID4gVW5mb3J0dW5hdGVseSwgdXNlcnNw
-YWNlIHRvb2xzIGRvIG5vdCBrbm93IGhvdyB0byBjb252ZXJ0IGVudW0NCj4gPiA+IHZhbHVlcyB0
-byBzdHJpbmdzIGFuZCBhcyBhIGNvbnNlcXVlbmNlIHRoZXkgY2FuIG9ubHkgZm9yd2FyZCB0aGUN
-Cj4gPiA+IGVudW0gdmFsdWUgdG8gdGhlIG91dHB1dC4gQnkgdXNpbmcgVFJBQ0VfREVGSU5FX0VO
-VU0oKSBtYWNyb3MgZm9yDQo+ID4gPiB0aGVybWFsIHRyYWNlcyB3ZSBnZXQgdGhlIGZvbGxvd2lu
-ZyB0cmFjZSBsaW5lOg0KPiA+ID4NCj4gPiA+IGt3b3JrZXIvMToxLTQ2MCAgIFswMDFdICAgMzIw
-LjM3MjczMjogdGhlcm1hbF96b25lX3RyaXA6DQo+IHRoZXJtYWxfem9uZT1zb2MNCj4gPiA+ICAg
-ICAgICAgICAgICAgICBpZD0wIHRyaXA9MSB0cmlwX3R5cGU9UEFTU0lWRQ0KPiA+ID4NCj4gPiA+
-IFVzZXJzcGFjZSB0b29scyBhcmUgbm93IGFibGUgdG8gYmV0dGVyIHVuZGVyc3RhbmQgdGhlIG1l
-YW5pbmcgb2YgdGhlDQo+ID4gPiB0cmlwX3R5cGUgYW5kIHByb3ZpZGUgdGhlIHVzZXIgd2l0aCBt
-b3JlIHJlYWRhYmxlIGluZm9ybWF0aW9uLg0KPiA+ID4NCj4gPg0KPiA+IEFja2VkLWJ5OiBTdGV2
-ZW4gUm9zdGVkdCA8cm9zdGVkdEBnb29kbWlzLm9yZz4NCj4gPg0KPiA+IC0tIFN0ZXZlDQo+ID4N
-Cj4gDQo+IElNUE9SVEFOVCBOT1RJQ0U6IFRoZSBjb250ZW50cyBvZiB0aGlzIGVtYWlsIGFuZCBh
-bnkgYXR0YWNobWVudHMgYXJlDQo+IGNvbmZpZGVudGlhbCBhbmQgbWF5IGFsc28gYmUgcHJpdmls
-ZWdlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwNCj4gcGxlYXNlIG5v
-dGlmeSB0aGUgc2VuZGVyIGltbWVkaWF0ZWx5IGFuZCBkbyBub3QgZGlzY2xvc2UgdGhlIGNvbnRl
-bnRzIHRvIGFueQ0KPiBvdGhlciBwZXJzb24sIHVzZSBpdCBmb3IgYW55IHB1cnBvc2UsIG9yIHN0
-b3JlIG9yIGNvcHkgdGhlIGluZm9ybWF0aW9uIGluIGFueQ0KPiBtZWRpdW0uIFRoYW5rIHlvdS4N
-Cj4gDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5l
-ICJ1bnN1YnNjcmliZSBsaW51eC1wbSIgaW4gdGhlIGJvZHkNCj4gb2YgYSBtZXNzYWdlIHRvIG1h
-am9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5mbyBhdA0KPiBodHRwOi8v
-dmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
+On Tue, Mar 08, 2016 at 09:48:42AM +0000, Zhang, Rui wrote:
+> Punit and Javi,
+> 
+> What do you think of this? I'd like to get your ACK before taking it.
+
+Sorry, I didn't realize you were waiting for us.  I'm quite happy for
+this to go in:
+
+Acked-by: Javi Merino <javi.merino@arm.com>
+
+> >  -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Michele DiGiorgio
+> > Sent: Friday, March 04, 2016 1:11 AM
+> > To: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: linux-pm@vger.kernel.org; Ingo Molnar <mingo@redhat.com>; Javi
+> > Merino <javi.merino@arm.com>; linux-kernel@vger.kernel.org; Punit
+> > Agrawal <punit.agrawal@arm.com>; Eduardo Valentin <edubezval@gmail.com>
+> > Subject: Re: [PATCH] thermal: trace: migrating thermal traces to use
+> > TRACE_DEFINE_ENUM() macros
+> > 
+> > Hello Steven,
+> > 
+> > Thanks for acknowledging the patch.
+> > 
+> > Will you be merging it or should I refer to somebody else?
+> > 
+> > Kind regards,
+> > Michele
+> > 
+> > On 01/03/16 18:20, Steven Rostedt wrote:
+> > > On Tue,  1 Mar 2016 17:38:54 +0000
+> > > Michele Di Giorgio <michele.digiorgio@arm.com> wrote:
+> > >
+> > > > Userspace tools are not aware of how to convert the enums provided
+> > > > by the tracepoints to their corresponding strings.
+> > > >
+> > > > Adding TRACE_DEFINE_ENUM() macros allows to make the enums available
+> > > > to userspace to let the tools know what those enum values represent.
+> > > >
+> > > > In particular, for thermal zone trip types what we obtained before
+> > > > was something like:
+> > > >
+> > > > kworker/1:1-460   [001]   320.372732: thermal_zone_trip:
+> > thermal_zone=soc
+> > > >                 id=0 trip=1 trip_type=1
+> > > >
+> > > > Unfortunately, userspace tools do not know how to convert enum
+> > > > values to strings and as a consequence they can only forward the
+> > > > enum value to the output. By using TRACE_DEFINE_ENUM() macros for
+> > > > thermal traces we get the following trace line:
+> > > >
+> > > > kworker/1:1-460   [001]   320.372732: thermal_zone_trip:
+> > thermal_zone=soc
+> > > >                 id=0 trip=1 trip_type=PASSIVE
+> > > >
+> > > > Userspace tools are now able to better understand the meaning of the
+> > > > trip_type and provide the user with more readable information.
+> > > >
+> > >
+> > > Acked-by: Steven Rostedt <rostedt@goodmis.org>
+> > >
+> > > -- Steve
+> > >
+> > 
+> > IMPORTANT NOTICE: The contents of this email and any attachments are
+> > confidential and may also be privileged. If you are not the intended recipient,
+> > please notify the sender immediately and do not disclose the contents to any
+> > other person, use it for any purpose, or store or copy the information in any
+> > medium. Thank you.
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in the body
+> > of a message to majordomo@vger.kernel.org More majordomo info at
+> > http://vger.kernel.org/majordomo-info.html
