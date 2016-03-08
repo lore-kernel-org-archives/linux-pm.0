@@ -1,102 +1,277 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 0/7] cpufreq: schedutil governor
-Date: Tue, 08 Mar 2016 03:23:06 +0100
-Message-ID: <4088601.C2vItRYpQn@vostro.rjw.lan>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan>
+Subject: [PATCH v3 2/7][Resend] cpufreq: Move scheduler-related code to the sched directory
+Date: Tue, 08 Mar 2016 03:26:16 +0100
+Message-ID: <1558261.iWFRT0Bv7l@vostro.rjw.lan>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan> <4088601.C2vItRYpQn@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2409306.qzzMXcm4dm@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:48857 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753715AbcCHCxA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Mar 2016 21:53:00 -0500
+In-Reply-To: <4088601.C2vItRYpQn@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2016 03:56:09 AM Rafael J. Wysocki wrote:
-> On Wednesday, March 02, 2016 02:56:28 AM Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > My previous intro message still applies somewhat, so here's a link:
-> > 
-> > http://marc.info/?l=linux-pm&m=145609673008122&w=2
-> > 
-> > The executive summary of the motivation is that I wanted to do two things:
-> > use the utilization data from the scheduler (it's passed to the governor
-> > as aguments of update callbacks anyway) and make it possible to set
-> > CPU frequency without involving process context (fast frequency switching).
-> > 
-> > Both have been prototyped in the previous RFCs:
-> > 
-> > https://patchwork.kernel.org/patch/8426691/
-> > https://patchwork.kernel.org/patch/8426741/
-> > 
-> 
-> [cut]
-> 
-> > 
-> > Comments welcome.
-> 
-> There were quite a few comments to address, so here's a new version.
-> 
-> First off, my interpretation of what Ingo said earlier today (or yesterday
-> depending on your time zone) is that he wants all of the code dealing with
-> the util and max values to be located in kernel/sched/.  I can understand
-> the motivation here, although schedutil shares some amount of code with
-> the other governors, so the dependency on cpufreq will still be there, even
-> if the code goes to kernel/sched/.  Nevertheless, I decided to make that
-> change just to see how it would look like if not for anything else.
-> 
-> To that end, I revived a patch I had before the first schedutil one to
-> remove util/max from the cpufreq hooks [7/10], moved the scheduler-related
-> code from drivers/cpufreq/cpufreq.c to kernel/sched/cpufreq.c (new file)
-> on top of that [8/10] and reintroduced cpufreq_update_util() in a slightly
-> different form [9/10].  I did it this way in case it turns out to be
-> necessary to apply [7/10] and [8/10] for the time being and defer the rest
-> to the next cycle.
-> 
-> Apart from that, I changed the frequency selection formula in the new
-> governor to next_freq = util * max_freq / max and it seems to work.  That
-> allowed the code to be simplified somewhat as I don't need the extra
-> relation field in struct sugov_policy now (RELATION_L is used everywhere).
-> 
-> Finally, I tried to address the bikeshed comment from Viresh about the
-> "wrong" names of data types etc related to governor sysfs attributes
-> handling.  Hopefully, the new ones are better.
-> 
-> There are small tweaks all over on top of that.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I've taken patches [1-2/10] from the previous iteration into linux-next
-as they were not controversial and improved things anyway.
+Create cpufreq.c under kernel/sched/ and move the cpufreq code
+related to the scheduler to that file.  Also move the headers
+related to that code from cpufreq.h to sched.h.
 
-What follows is reordered a bit and reworked with respect to the v2.
+No functional changes.
 
-Patches [1-4/7] have not been modified (ie. resends).
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Patch [5/7] (fast switch support) has a mechanism to deal with notifiers
-included (works for me with the ACPI driver) and cpufreq_driver_fast_switch()
-is just a wrapper around the driver callback now (because the givernor needs
-to do frequency tracing by itself as it turns out).
+No changes from v2.
 
-Patch [6/7] makes the hooks use util and max arguments again, but this time
-the callback function format is the same for everyone (ie. 4 arguments) and
-the new governor added by patch [7/7] goes into drivers/cpufreq/ as that
-is *much* cleaner IMO.
+---
+ drivers/cpufreq/cpufreq.c          |   61 ------------------------------
+ drivers/cpufreq/cpufreq_governor.c |    1 
+ drivers/cpufreq/intel_pstate.c     |    1 
+ include/linux/cpufreq.h            |   10 -----
+ include/linux/sched.h              |   12 ++++++
+ kernel/sched/Makefile              |    1 
+ kernel/sched/cpufreq.c             |   73 +++++++++++++++++++++++++++++++++++++
+ 7 files changed, 88 insertions(+), 71 deletions(-)
 
-The new frequency formula has been tweaked a bit once more to make more
-util/max values map to the top-most frequency (that matters for systems
-where turbo is "encoded" by an extra frequency level where the frequency
-is greater by 1 MHz from the previous one, for example).
-
-At this point I'm inclined to take patches [1-2/7] into linux-next for 4.6,
-because they set a clear boundary between the current linux-next code which
-doesn't really use the utilization data and schedutil, and defer the rest
-till after the 4.6 merge window.  That will allow the new next frequency
-formula to be tested and maybe we can do something about passing util data
-from DL to cpufreq_update_util() in the meantime.
-
-If anyone has any issues with that plan, please let me know.
-
-Thanks,
-Rafael
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -65,67 +65,6 @@ static struct cpufreq_driver *cpufreq_dr
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+ 
+-static DEFINE_PER_CPU(struct freq_update_hook *, cpufreq_freq_update_hook);
+-
+-/**
+- * cpufreq_set_freq_update_hook - Populate the CPU's freq_update_hook pointer.
+- * @cpu: The CPU to set the pointer for.
+- * @hook: New pointer value.
+- *
+- * Set and publish the freq_update_hook pointer for the given CPU.  That pointer
+- * points to a struct freq_update_hook object containing a callback function
+- * to call from cpufreq_trigger_update().  That function will be called from
+- * an RCU read-side critical section, so it must not sleep.
+- *
+- * Callers must use RCU-sched callbacks to free any memory that might be
+- * accessed via the old update_util_data pointer or invoke synchronize_sched()
+- * right after this function to avoid use-after-free.
+- */
+-void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook)
+-{
+-	if (WARN_ON(hook && !hook->func))
+-		return;
+-
+-	rcu_assign_pointer(per_cpu(cpufreq_freq_update_hook, cpu), hook);
+-}
+-EXPORT_SYMBOL_GPL(cpufreq_set_freq_update_hook);
+-
+-/**
+- * cpufreq_trigger_update - Trigger CPU performance state evaluation if needed.
+- * @time: Current time.
+- *
+- * The way cpufreq is currently arranged requires it to evaluate the CPU
+- * performance state (frequency/voltage) on a regular basis.  To facilitate
+- * that, this function is called by update_load_avg() in CFS when executed for
+- * the current CPU's runqueue.
+- *
+- * However, this isn't sufficient to prevent the CPU from being stuck in a
+- * completely inadequate performance level for too long, because the calls
+- * from CFS will not be made if RT or deadline tasks are active all the time
+- * (or there are RT and DL tasks only).
+- *
+- * As a workaround for that issue, this function is called by the RT and DL
+- * sched classes to trigger extra cpufreq updates to prevent it from stalling,
+- * but that really is a band-aid.  Going forward it should be replaced with
+- * solutions targeted more specifically at RT and DL tasks.
+- */
+-void cpufreq_trigger_update(u64 time)
+-{
+-	struct freq_update_hook *hook;
+-
+-#ifdef CONFIG_LOCKDEP
+-	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
+-#endif
+-
+-	hook = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_freq_update_hook));
+-	/*
+-	 * If this isn't inside of an RCU-sched read-side critical section, data
+-	 * may become NULL after the check below.
+-	 */
+-	if (hook)
+-		hook->func(hook, time);
+-}
+-
+ /* Flag to suspend/resume CPUFreq governors */
+ static bool cpufreq_suspended;
+ 
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/export.h>
+ #include <linux/kernel_stat.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ 
+ #include "cpufreq_governor.h"
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -21,6 +21,7 @@
+ #include <linux/list.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
++#include <linux/sched.h>
+ #include <linux/sysfs.h>
+ #include <linux/types.h>
+ #include <linux/fs.h>
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -146,14 +146,6 @@ static inline bool policy_is_shared(stru
+ extern struct kobject *cpufreq_global_kobject;
+ 
+ #ifdef CONFIG_CPU_FREQ
+-void cpufreq_trigger_update(u64 time);
+-
+-struct freq_update_hook {
+-	void (*func)(struct freq_update_hook *hook, u64 time);
+-};
+-
+-void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook);
+-
+ unsigned int cpufreq_get(unsigned int cpu);
+ unsigned int cpufreq_quick_get(unsigned int cpu);
+ unsigned int cpufreq_quick_get_max(unsigned int cpu);
+@@ -165,8 +157,6 @@ int cpufreq_update_policy(unsigned int c
+ bool have_governor_per_policy(void);
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+ #else
+-static inline void cpufreq_trigger_update(u64 time) {}
+-
+ static inline unsigned int cpufreq_get(unsigned int cpu)
+ {
+ 	return 0;
+Index: linux-pm/include/linux/sched.h
+===================================================================
+--- linux-pm.orig/include/linux/sched.h
++++ linux-pm/include/linux/sched.h
+@@ -2362,6 +2362,18 @@ extern u64 scheduler_tick_max_deferment(
+ static inline bool sched_can_stop_tick(void) { return false; }
+ #endif
+ 
++#ifdef CONFIG_CPU_FREQ
++void cpufreq_trigger_update(u64 time);
++
++struct freq_update_hook {
++	void (*func)(struct freq_update_hook *hook, u64 time);
++};
++
++void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook);
++#else
++static inline void cpufreq_trigger_update(u64 time) {}
++#endif
++
+ #ifdef CONFIG_SCHED_AUTOGROUP
+ extern void sched_autogroup_create_attach(struct task_struct *p);
+ extern void sched_autogroup_detach(struct task_struct *p);
+Index: linux-pm/kernel/sched/Makefile
+===================================================================
+--- linux-pm.orig/kernel/sched/Makefile
++++ linux-pm/kernel/sched/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_gr
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
++obj-$(CONFIG_CPU_FREQ) += cpufreq.o
+Index: linux-pm/kernel/sched/cpufreq.c
+===================================================================
+--- /dev/null
++++ linux-pm/kernel/sched/cpufreq.c
+@@ -0,0 +1,73 @@
++/*
++ * Scheduler code and data structures related to cpufreq.
++ *
++ * Copyright (C) 2016, Intel Corporation
++ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/sched.h>
++
++static DEFINE_PER_CPU(struct freq_update_hook *, cpufreq_freq_update_hook);
++
++/**
++ * cpufreq_set_freq_update_hook - Populate the CPU's freq_update_hook pointer.
++ * @cpu: The CPU to set the pointer for.
++ * @hook: New pointer value.
++ *
++ * Set and publish the freq_update_hook pointer for the given CPU.  That pointer
++ * points to a struct freq_update_hook object containing a callback function
++ * to call from cpufreq_trigger_update().  That function will be called from
++ * an RCU read-side critical section, so it must not sleep.
++ *
++ * Callers must use RCU-sched callbacks to free any memory that might be
++ * accessed via the old update_util_data pointer or invoke synchronize_sched()
++ * right after this function to avoid use-after-free.
++ */
++void cpufreq_set_freq_update_hook(int cpu, struct freq_update_hook *hook)
++{
++	if (WARN_ON(hook && !hook->func))
++		return;
++
++	rcu_assign_pointer(per_cpu(cpufreq_freq_update_hook, cpu), hook);
++}
++EXPORT_SYMBOL_GPL(cpufreq_set_freq_update_hook);
++
++/**
++ * cpufreq_trigger_update - Trigger CPU performance state evaluation if needed.
++ * @time: Current time.
++ *
++ * The way cpufreq is currently arranged requires it to evaluate the CPU
++ * performance state (frequency/voltage) on a regular basis.  To facilitate
++ * that, this function is called by update_load_avg() in CFS when executed for
++ * the current CPU's runqueue.
++ *
++ * However, this isn't sufficient to prevent the CPU from being stuck in a
++ * completely inadequate performance level for too long, because the calls
++ * from CFS will not be made if RT or deadline tasks are active all the time
++ * (or there are RT and DL tasks only).
++ *
++ * As a workaround for that issue, this function is called by the RT and DL
++ * sched classes to trigger extra cpufreq updates to prevent it from stalling,
++ * but that really is a band-aid.  Going forward it should be replaced with
++ * solutions targeted more specifically at RT and DL tasks.
++ */
++void cpufreq_trigger_update(u64 time)
++{
++	struct freq_update_hook *hook;
++
++#ifdef CONFIG_LOCKDEP
++	WARN_ON(debug_locks && !rcu_read_lock_sched_held());
++#endif
++
++	hook = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_freq_update_hook));
++	/*
++	 * If this isn't inside of an RCU-sched read-side critical section, hook
++	 * may become NULL after the check below.
++	 */
++	if (hook)
++		hook->func(hook, time);
++}
 
