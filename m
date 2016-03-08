@@ -1,86 +1,76 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v4 0/6] EC-based USB Power Delivery support for Chrome machines
-Date: Tue,  8 Mar 2016 11:35:52 +0100
-Message-ID: <1457433358-28151-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Tue, 8 Mar 2016 12:27:59 +0100
+Message-ID: <20160308112759.GF6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+ <56D8AEB7.2050100@linaro.org>
+ <36459679.vzZnOsAVeg@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33828 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932247AbcCHKge (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 05:36:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58010 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932164AbcCHL2G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 06:28:06 -0500
+Content-Disposition: inline
+In-Reply-To: <36459679.vzZnOsAVeg@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 
-Hi,
+On Mon, Mar 07, 2016 at 03:41:15AM +0100, Rafael J. Wysocki wrote:
 
-this series contains a driver that exposes a power_supply to userspace
-representing a port that support USB PD charging.
+> If my understanding of the requency invariant utilization idea is correct,
+> it is about re-scaling utilization so it is always relative to the capacity
+> at the max frequency.
 
-Allows userspace to display to the user if the machine is charging and
-on which port, and if another device is being charged by a port.
+Right. So if a workload runs for 5ms at @1GHz and 10ms @500MHz, it would
+still result in the exact same utilization.
 
-Thanks,
+> If that's the case, then instead of using
+>   x = util_raw / max
+> we will use something like
+>   y = (util_raw / max) * (f / max_freq) (f - current frequency).
 
-Tomeu
+I don't get the last term. Assuming fixed frequency hardware (we can't
+really assume anything else) I get to:
 
-Changes in v4:
-- Calculate correctly the size of the payloads in
-  cros_ec_get_host_command_version_mask.
-- Declare size parameters in ec_command as size_t
+  util = util_raw * (current_freq / max_freq)		(1)
+  x = util / max					(2)
 
-Changes in v3:
-- Remove duplicated prototype of cros_ec_get_host_event.
-- Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
-- Remove sysfs attributes ext_current_lim and ext_voltage_lim because
-  I don't know yet where they should be placed (and don't have HW to
-  test them).
-- Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
-- Lots of misc comments from Stephen Boyd were addressed.
-- Unregister notification listener in .remove callback.
-- Only register the PD charger device if there are any PD ports in this
-  EC.
-- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
-  charger device because we are now only creating one if a EC has any PD
-  ports.
-- Dropped patch adding power_supply types because it has been merged
-  already.
+> so there's no hope that the same formula will ever work for both "raw"
+> and "frequency invariant" utilization.
 
-Changes in v2:
-- Allocate enough for the structs in cros_ec_get_host_command_version_mask,
-  not their pointers.
-- Allocate msg in the stack in get_next_event and
-  get_keyboard_state_event, as suggested by Gwendal.
-- Split out changes to cros_ec_commands.h and the helpers added to
-  mfd/cros_ec.h from the patch that adds the charger driver, as
-  suggested by Lee.
-- Actually call get_ec_num_ports.
-- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
+Here I agree, however the above (current_freq / max_freq) term is easily
+computable, and really the only thing we can assume if the arch doesn't
+implement freq invariant accounting.
 
-Sameer Nanda (1):
-  power: cros_usbpd-charger: Add EC-based USB PD charger driver
+> (c) Code for using either "raw" or "frequency invariant" depending on
+>     a callback flag or something like that.
 
-Tomeu Vizoso (4):
-  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
-  mfd: cros_ec: Add cros_ec_get_host_event
-  mfd: cros_ec: Add more definitions for PD commands
-  platform/chrome: Register USB PD charger device
+Seeing how frequency invariance is an arch feature, and cpufreq drivers
+are also typically arch specific, do we really need a flag at this
+level?
 
-Vic Yang (1):
-  mfd: cros_ec: Add MKBP event support
+In any case, I think the only difference between the two formula should
+be the addition of (1) for the platforms that do not already implement
+frequency invariance.
 
- drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
- drivers/mfd/cros_ec.c                   |  57 ++-
- drivers/platform/chrome/cros_ec_dev.c   |  44 ++
- drivers/platform/chrome/cros_ec_proto.c | 129 ++++++
- drivers/power/Kconfig                   |  10 +
- drivers/power/Makefile                  |   1 +
- drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
- include/linux/mfd/cros_ec.h             |  62 +++
- include/linux/mfd/cros_ec_commands.h    | 358 ++++++++++++++-
- 9 files changed, 1464 insertions(+), 112 deletions(-)
- create mode 100644 drivers/power/cros_usbpd-charger.c
+That is actually correct for platforms which do as told with their DVFS
+bits. And there's really not much else we can do short of implementing
+the scheduler arch hook to do better.
 
--- 
-2.5.0
+> (b) Make all architecuters use "frequency invariant" and then look for a
+>     working formula (seems rather less than realistic to me to be honest).
 
+There was a proposal to implement arch_scale_freq_capacity() as a weak
+function and have it serve the cpufreq selected frequency for (1) so
+that everything would default to that.
+
+We didn't do that because that makes the function call and
+multiplications unconditional. It's cheaper to add (1) to the cpufreq
+side when selecting a freq rather than at every single time we update
+the util statistics.
