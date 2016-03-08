@@ -1,76 +1,59 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Tue, 8 Mar 2016 12:27:59 +0100
-Message-ID: <20160308112759.GF6356@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
- <56D8AEB7.2050100@linaro.org>
- <36459679.vzZnOsAVeg@vostro.rjw.lan>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] Do not modify MSR_IA32_ENERGY_PERF_BIAS in kernel
+Date: Tue, 08 Mar 2016 13:14:16 +0100
+Message-ID: <1500934.JjcSpplzao@skinner>
+References: <4687430.mfM0GbdeDL@skinner> <CAJZ5v0ie-itnxERzA3nhd0VnQUo07MsoyS3+WL+3sm5V+sMTJg@mail.gmail.com> <CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:58010 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932164AbcCHL2G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 06:28:06 -0500
-Content-Disposition: inline
-In-Reply-To: <36459679.vzZnOsAVeg@vostro.rjw.lan>
+Received: from mx2.suse.de ([195.135.220.15]:34577 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932068AbcCHMOY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 07:14:24 -0500
+In-Reply-To: <CAJvTdKnJSqCxVhriMUJfeRL=ogpG2GYgSJ5anvbjrbm_rNyKcQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
+To: Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, X86 ML <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Mar 07, 2016 at 03:41:15AM +0100, Rafael J. Wysocki wrote:
+On Monday, March 07, 2016 07:50:57 PM Len Brown wrote:
+> > But with Broadwell-EP processor (E5-2687W v4) the CPU will not enter turbo
+> > modes if this value is not set to performance
+> 
+> BDX-EP supports HWP.
+> Are these failing machines running in HWP mode?
+> 
+> (On BDX-EP, and only on BDX-EP, EPB acts to set the BIAS for HWP,
+>  because that processor doesn't yet have EPP.)
 
-> If my understanding of the requency invariant utilization idea is correct,
-> it is about re-scaling utilization so it is always relative to the capacity
-> at the max frequency.
+I am not sure whether I can publish platform info. I asked for and added you
+to CC of the private bug a while ago.
 
-Right. So if a workload runs for 5ms at @1GHz and 10ms @500MHz, it would
-still result in the exact same utilization.
+This kernel is run: SLES12 SP1, 3.12.49-4-default
+I grepped the whole supportconfig for -i hwp and couldn't find anything, so I 
+very much expect this machine is/was not run in HWP mode, right?
 
-> If that's the case, then instead of using
->   x = util_raw / max
-> we will use something like
->   y = (util_raw / max) * (f / max_freq) (f - current frequency).
+I still question the usefulness of the "initialize perf bias to normal" hack.
+For our distro I am pretty sure, we do not want to have this one and
+we prefer the CPU or BIOS initialized value, even (or especially) if it is
+set to performance.
 
-I don't get the last term. Assuming fixed frequency hardware (we can't
-really assume anything else) I get to:
+Are there any known platforms where this would really be an issue
+and how sever would it be?
 
-  util = util_raw * (current_freq / max_freq)		(1)
-  x = util / max					(2)
+I already removed the "set perf bias to normal" years ago for SLE11 without
+getting any regression or negative reports.
 
-> so there's no hope that the same formula will ever work for both "raw"
-> and "frequency invariant" utilization.
+Now finding the workaround on the hack to run a suspend hook to
+adjust perf bias value on each suspend cycle... This is going into
+a wrong direction.
 
-Here I agree, however the above (current_freq / max_freq) term is easily
-computable, and really the only thing we can assume if the arch doesn't
-implement freq invariant accounting.
+I agree that if this needs resetting after each suspend cycle, userspace 
+should not need to care about it. I could imagine a sysfs variable here:
+/sys/devices/system/cpu/intel_pstate/perf_bias
 
-> (c) Code for using either "raw" or "frequency invariant" depending on
->     a callback flag or something like that.
+but the static setting from 0 to 6 in the x86 core code and
+the suspend callback should get reverted, right?
 
-Seeing how frequency invariance is an arch feature, and cpufreq drivers
-are also typically arch specific, do we really need a flag at this
-level?
-
-In any case, I think the only difference between the two formula should
-be the addition of (1) for the platforms that do not already implement
-frequency invariance.
-
-That is actually correct for platforms which do as told with their DVFS
-bits. And there's really not much else we can do short of implementing
-the scheduler arch hook to do better.
-
-> (b) Make all architecuters use "frequency invariant" and then look for a
->     working formula (seems rather less than realistic to me to be honest).
-
-There was a proposal to implement arch_scale_freq_capacity() as a weak
-function and have it serve the cpufreq selected frequency for (1) so
-that everything would default to that.
-
-We didn't do that because that makes the function call and
-multiplications unconditional. It's cheaper to add (1) to the cpufreq
-side when selecting a freq rather than at every single time we update
-the util statistics.
+    Thomas
