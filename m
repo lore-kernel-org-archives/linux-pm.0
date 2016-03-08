@@ -1,53 +1,43 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2] thermal: consistently use int for trip temp
-Date: Tue, 8 Mar 2016 13:09:02 -0800
-Message-ID: <20160308210900.GB8145@localhost.localdomain>
-References: <1456997626-28298-1-git-send-email-wni@nvidia.com>
- <56DD3A84.4080304@nvidia.com>
- <56DE45F7.6060307@nvidia.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Tue, 8 Mar 2016 16:13:34 -0500
+Message-ID: <CAJvTdKkXzyRUAbNH6hGRZPGSm6C0myuOoc-ekVqZZmP_hw0muQ@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<87si087tsr.fsf@iki.fi>
+	<1456938654.17839.9.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35151 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751664AbcCHVJH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 16:09:07 -0500
-Content-Disposition: inline
-In-Reply-To: <56DE45F7.6060307@nvidia.com>
+Received: from mail-lb0-f179.google.com ([209.85.217.179]:34869 "EHLO
+	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbcCHVNg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 16:13:36 -0500
+Received: by mail-lb0-f179.google.com with SMTP id bc4so36818382lbc.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Mar 2016 13:13:35 -0800 (PST)
+In-Reply-To: <1456938654.17839.9.camel@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: Arto Jantunen <viiru@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Mar 08, 2016 at 11:24:39AM +0800, Wei Ni wrote:
->=20
->=20
-> On 2016=E5=B9=B403=E6=9C=8807=E6=97=A5 16:23, Wei Ni wrote:
-> > There had a build error in previous patch.
-> > Fixed it in this version.
-> > Please review it.
->=20
-> Add CC: linux-pm@vger.kernel.org
->=20
-> >=20
-> > Thanks.
-> > Wei.
-> >=20
-> > On 2016=E5=B9=B403=E6=9C=8803=E6=97=A5 17:33, Wei Ni wrote:
-> >> The commit 17e8351a7739 consistently use int for temperature,
-> >> however it missed a few in trip temperature and thermal_core.
-> >>
-> >> In current codes, the trip->temperature used "unsigned long"
-> >> and zone->temperature used"int", if the temperature is negative
-> >> value, it will get wrong result when compare temperature with
-> >> trip temperature.
-> >>
-> >> This patch can fix it.
-> >>
-> >> Signed-off-by: Wei Ni <wni@nvidia.com>
+> Having the mwait based idle states working would probably
+> get the CPU to spend a lot less time in HLT, and more time
+> in "proper" idle states.
 
-Rui are you collecting this one?
+Agreed, the ACPI IOPORT latencies are sort of nonsense on this box,
+and the workaround for "intel_idle.max_cstate" is a better workaround than
+"idle=nomwait", because it at least allows ACPI to use mwait.
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+But the difference is sort of minor compared to the other issues a play.
 
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/desc:ACPI IOPORT 0x1819
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:0
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/latency:1034
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/name:C3
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/power:0
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/residency:2068
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/time:14169
+>> /sys/devices/system/cpu/cpu0/cpuidle/state3/usage:3375
+
+Len Brown, Intel Open Source Technology Center
