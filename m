@@ -1,48 +1,58 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V6 2/4] intel_pstate: Optimize calculation for max/min_perf_adj
-Date: Tue,  8 Mar 2016 10:31:17 +0100
-Message-ID: <1457429481-13283-6-git-send-email-philippe.longepe@linux.intel.com>
+Subject: [PATCH V6 3/4] intel_pstate: Move the intel_pstate_calc_busy into get_target_pstate_use_performance
+Date: Tue,  8 Mar 2016 10:31:19 +0100
+Message-ID: <1457429481-13283-8-git-send-email-philippe.longepe@linux.intel.com>
 References: <1457429481-13283-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga01.intel.com ([192.55.52.88]:43546 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932227AbcCHJaS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Mar 2016 04:30:18 -0500
+	id S932291AbcCHJaV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 04:30:21 -0500
 In-Reply-To: <1457429481-13283-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: srinivas.pandruvada@linux.intel.com, rafael@kernel.org
 
-mul_fp(int_tofp(A), B) expands to:
-((A << FRAC_BITS) * B) >> FRAC_BITS, so the same result can be obtained
-via simple multiplication A * B.  Apply this observation to
-max_perf * limits->max_perf and max_perf * limits->min_perf in
-intel_pstate_get_min_max()."
+The cpu_load algorithm doesn't need to invoke intel_pstate_calc_busy(),
+so move that call from intel_pstate_sample() to
+get_target_pstate_use_performance().
 
 Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 114e4e0..c46d23a 100644
+index c46d23a..903341f 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -828,11 +828,11 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 	 * policy, or by cpu specific default values determined through
- 	 * experimentation.
- 	 */
--	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits->max_perf));
-+	max_perf_adj = fp_toint(max_perf * limits->max_perf);
- 	*max = clamp_t(int, max_perf_adj,
- 			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
+@@ -912,8 +912,6 @@ static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
+ 	cpu->sample.mperf -= cpu->prev_mperf;
+ 	cpu->sample.tsc -= cpu->prev_tsc;
  
--	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits->min_perf));
-+	min_perf = fp_toint(max_perf * limits->min_perf);
- 	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
- }
+-	intel_pstate_calc_busy(cpu);
+-
+ 	cpu->prev_aperf = aperf;
+ 	cpu->prev_mperf = mperf;
+ 	cpu->prev_tsc = tsc;
+@@ -942,7 +940,6 @@ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+ 	mperf = cpu->sample.mperf + delta_iowait_mperf;
+ 	cpu->prev_cummulative_iowait = cummulative_iowait;
  
+-
+ 	/*
+ 	 * The load can be estimated as the ratio of the mperf counter
+ 	 * running at a constant frequency during active periods
+@@ -960,6 +957,8 @@ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+ 	u64 duration_ns;
+ 
++	intel_pstate_calc_busy(cpu);
++
+ 	/*
+ 	 * core_busy is the ratio of actual performance to max
+ 	 * max_pstate is the max non turbo pstate available
 -- 
 1.9.1
 
