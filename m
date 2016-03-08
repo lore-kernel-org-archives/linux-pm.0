@@ -1,115 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Tue, 8 Mar 2016 21:40:18 +0100
-Message-ID: <CAJZ5v0io2D6CBCfmnaBq5rPRpJWPQbkszs_y30NAXnX0c0hZQg@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<CAJZ5v0gs3bddvskseh58q+0d+KqXYt=4SYGuiR3vdhdOyhoKmA@mail.gmail.com>
-	<20160223110118.GJ27380@e106622-lin>
-	<5947930.P2W8Baqyau@vostro.rjw.lan>
-	<20160308192400.4103.71868@quark.deferred.io>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: omap-thermal: Add notify function to
+ thermal_zone_device_ops
+Date: Tue, 8 Mar 2016 12:48:14 -0800
+Message-ID: <20160308204812.GA6800@localhost.localdomain>
+References: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f193.google.com ([209.85.217.193]:36769 "EHLO
-	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbcCHUkU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 15:40:20 -0500
-In-Reply-To: <20160308192400.4103.71868@quark.deferred.io>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35737 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbcCHUsR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 15:48:17 -0500
+Content-Disposition: inline
+In-Reply-To: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Keerthy <j-keerthy@ti.com>
+Cc: nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tue, Mar 8, 2016 at 8:24 PM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> Quoting Rafael J. Wysocki (2016-02-23 18:01:06)
->> On Tuesday, February 23, 2016 11:01:18 AM Juri Lelli wrote:
->> > On 22/02/16 22:26, Rafael J. Wysocki wrote:
->> > > On Mon, Feb 22, 2016 at 10:32 AM, Juri Lelli <juri.lelli@arm.com> wrote:
->> > > > On 19/02/16 23:14, Rafael J. Wysocki wrote:
->> > > >> On Friday, February 19, 2016 08:09:17 AM Juri Lelli wrote:
->> > > >> > Hi Rafael,
->> > > >> >
->> > > >> > On 18/02/16 21:22, Rafael J. Wysocki wrote:
->> > > >> > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > > >> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> > > >> > > >
->> > >
->> > > [cut]
->> > >
->> > > >> That said, if the concern is that there are plans to change the way the
->> > > >> scheduler computes the utilization numbers and that may become difficult to
->> > > >> carry out if cpufreq starts to depend on them in their current form, then I
->> > > >> may agree that it is valid, but I'm not aware of those plans ATM.
->> > > >>
->> > > >
->> > > > No, I don't think there's any substantial discussion going on about the
->> > > > utilization numbers.
->> > >
->> > > OK, so the statement below applies.
->> > >
->> > > >> However, if the numbers are going to stay what they are, I don't see why
->> > > >> passing them to cpufreq may possibly become problematic at any point.
->> > > >
->> > > > My concern was mostly on the fact that there is already another RFC
->> > > > under discussion that uses the same numbers and has different hooks
->> > > > placed in scheduler code (Steve's sched-freq); so, additional hooks
->> > > > might generate confusion, IMHO.
->> > >
->> > > So this is about the hooks rather than about their arguments after
->> > > all, isn't it?
->> > >
->> > > I fail to see why it is better to drop the arguments and leave the hooks, then.
->> > >
->> >
->> > It's about where we place such hooks and what arguments they have.
->> > Without the schedutil governor as a consumer the current position makes
->> > sense, but some of the arguments are not used. With schedutil both
->> > position and arguments make sense, but a different implementation
->> > (sched-freq) might have different needs w.r.t. position and arguments.
->>
->> And that's fine.  If the current position and/or arguments are not suitable,
->> they'll need to be changed.  It's not like things introduced today are set
->> in stone forever.
->>
->> Peter has already shown how they may be changed to make everyone happy,
->> so I don't really see what the fuss is about.
->
-> I see this patch in linux-next now. Did it ever get Peter's or Ingo's
-> Ack?
+On Tue, Feb 16, 2016 at 10:35:45AM +0530, Keerthy wrote:
+> notify function is used to notify when some temperature thresholds
+> are crossed. In case we get notified for a critical trip point then
+> schedule an emergency shutdown function to backup orderly_poweroff
+> failures.
+> 
+> orderly_poweroff is triggered when a graceful shutdown
+> of system is desired. This may be used in many critical states of the
+> kernel such as when subsystems detects conditions such as critical
+> temperature conditions. However, in certain conditions in system
+> boot up sequences like those in the middle of driver probes being
+> initiated, userspace will be unable to power off the system in a clean
+> manner and leaves the system in a critical state. In cases like these,
+> the /sbin/poweroff will return success (having forked off to attempt
+> powering off the system. However, the system overall will fail to
+> completely poweroff (since other modules will be probed) and the system
+> is still functional with no userspace (since that would have shut itself
+> off).
+> 
+> However, there is no clean way of detecting such failure of userspace
+> powering off the system. In such scenarios, it is necessary for a backup
+> workqueue to be able to force a shutdown of the system when orderly
+> shutdown is not successful after a configurable time period.
+> 
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
+> 
+> The previous discussion:
+> 
+> https://lkml.org/lkml/2016/1/28/989
+> 
+> Making use of the notify ops to schedule a backup thermal shutdown.
 
-No, but none of them said "no" either.
+Yeah, this was a bit of a stretching. If we cannot fix orderly power
+off, I would say, better fixing it for all thermal drivers (previous
+version of this). This patch:
+1. Abuse a notify function to be used as a power off functions
+2. Fix an issue only for a single driver.
 
-And the interface was suggested by Peter in the first place.
+I will check your initial version.
 
-> Also it seems weird to me that this patch touching sched code is going
-> through the pm tree.
-
-That's for purely practical reasons.  There are lots of PM changes
-depending on it that have nothing to do with the scheduler.  I've been
-talking about that for several times now, last time in my yesterday
-post (http://marc.info/?l=linux-pm&m=145740561402948&w=2).  I've been
-talking openly about what I'm going to do with this all the time.
-
-No one is hiding things from anyone or trying to slip them through
-past somebody here if that's what you're worried about.
-
-> When it comes times to experiment more with the interfaces and make the
-> "future changes" that everyone keeps talking about, who is the
-> maintainer? Who has the last word?
-
-As usual, it is about consensus.
-
-This is on a boundary of two subsystems and I have good reasons to do
-it.  One of the maintainers of the other subsystem involved is working
-with me all the time and I'm following his suggestions.  Isn't that
-really sufficient?
-
-But really please see
-http://marc.info/?l=linux-pm&m=145740561402948&w=2 as it means I'm
-actually going to do what Juri and Steve asked for unless I'm told
-that this is a bad idea.
-
-Thanks,
-Rafael
