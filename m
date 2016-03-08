@@ -1,75 +1,56 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V6 4/4] intel_pstate: Remove the freq calculation from the intel_pstate_calc_busy function
-Date: Tue,  8 Mar 2016 10:31:21 +0100
-Message-ID: <1457429481-13283-10-git-send-email-philippe.longepe@linux.intel.com>
-References: <1457429481-13283-1-git-send-email-philippe.longepe@linux.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Kernel: Power: main.c: Cleaned up a comment block
+Date: Tue, 8 Mar 2016 10:44:53 +0100
+Message-ID: <20160308094452.GA14693@amd>
+References: <1457345355-20102-1-git-send-email-phil@philippeloctaux.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:32312 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932399AbcCHJa2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Mar 2016 04:30:28 -0500
-In-Reply-To: <1457429481-13283-1-git-send-email-philippe.longepe@linux.intel.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33147 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497AbcCHJo4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 04:44:56 -0500
+Content-Disposition: inline
+In-Reply-To: <1457345355-20102-1-git-send-email-phil@philippeloctaux.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, rafael@kernel.org
+To: Philippe Loctaux <phil@philippeloctaux.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Use a helper function to compute the average pstate and call it only
-where it is needed (only when tracing or in intel_pstate_get).
+On Mon 2016-03-07 11:09:15, Philippe Loctaux wrote:
+> Removed a * in the beginning of the block, and removed an unnecessary space.
+> 
+> Signed-off-by: Philippe Loctaux <phil@philippeloctaux.com>
 
-Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+NAK.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 903341f..6e07366 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -878,12 +878,6 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
- 	core_pct = int_tofp(sample->aperf) * int_tofp(100);
- 	core_pct = div64_u64(core_pct, int_tofp(sample->mperf));
- 
--	sample->freq = fp_toint(
--		mul_fp(int_tofp(
--			cpu->pstate.max_pstate_physical *
--			cpu->pstate.scaling / 100),
--			core_pct));
--
- 	sample->core_pct_busy = (int32_t)core_pct;
- }
- 
-@@ -917,6 +911,12 @@ static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
- 	cpu->prev_tsc = tsc;
- }
- 
-+static inline int32_t get_avg_frequency(struct cpudata *cpu)
-+{
-+	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aperf *
-+		cpu->pstate.scaling, cpu->sample.mperf);
-+}
-+
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
- {
- 	struct sample *sample = &cpu->sample;
-@@ -1012,7 +1012,7 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- 		sample->mperf,
- 		sample->aperf,
- 		sample->tsc,
--		sample->freq);
-+		get_avg_frequency(cpu));
- }
- 
- static void intel_pstate_update_util(struct update_util_data *data, u64 time,
-@@ -1101,7 +1101,7 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
- 	if (!cpu)
- 		return 0;
- 	sample = &cpu->sample;
--	return sample->freq;
-+	return get_avg_frequency(cpu);
- }
- 
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+Google kerneldoc, people actually like two spaces after ., and you
+should not be changing whitespace unless you update code, anyway.
+								Pavel
+
+> ---
+>  kernel/power/main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 2794697..d7386cb 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -288,11 +288,11 @@ static inline void pm_print_times_init(void) {}
+>  
+>  struct kobject *power_kobj;
+>  
+> -/**
+> +/*
+>   * state - control system sleep states.
+>   *
+>   * show() returns available sleep state labels, which may be "mem", "standby",
+> - * "freeze" and "disk" (hibernation).  See Documentation/power/states.txt for a
+> + * "freeze" and "disk" (hibernation). See Documentation/power/states.txt for a
+>   * description of what they mean.
+>   *
+>   * store() accepts one of those strings, translates it into the proper
+
 -- 
-1.9.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
