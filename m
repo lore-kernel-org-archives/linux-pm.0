@@ -1,77 +1,58 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
- platforms without _S5
-Date: Tue, 8 Mar 2016 16:25:30 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
-References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
- <36DF59CE26D8EE47B0655C516E9CE640286D329F@shsmsx102.ccr.corp.intel.com>
- <2414254.VhAiD01BTS@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 0/4] powercap/rapl: reduce ipi calls and misc clean up
+Date: Tue, 8 Mar 2016 18:14:41 +0100
+Message-ID: <CAJZ5v0iODV3wzERdcpFUK5Ydph_HGm43qnBxbf56zOsF4wh2cw@mail.gmail.com>
+References: <1456349498-1527-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<20160307170642.31af8b7e@icelake>
+	<alpine.DEB.2.11.1603080857310.3859@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:63418 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbcCHQ02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Mar 2016 11:26:28 -0500
-In-Reply-To: <2414254.VhAiD01BTS@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:36073 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932684AbcCHROn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 12:14:43 -0500
+In-Reply-To: <alpine.DEB.2.11.1603080857310.3859@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Rusty Russell <rusty@rustcorp.com.au>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
-biBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogVHVlc2RheSwgTWFyY2ggMDgs
-IDIwMTYgOTo1NCBBTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogUmFmYWVsIEouIFd5c29ja2k7
-IEFDUEkgRGV2ZWwgTWFsaW5nIExpc3Q7IHg4NkBrZXJuZWwub3JnOyBsaW51eC0NCj4gZWZpQHZn
-ZXIua2VybmVsLm9yZzsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdDsgbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnOw0KPiBMZW4gQnJvd247IE1hdHQgRmxlbWluZzsgVGhvbWFzIEdsZWl4bmVyOyBJ
-bmdvIE1vbG5hcjsgSC4gUGV0ZXIgQW52aW47DQo+IFpoYW5nLCBSdWkNCj4gU3ViamVjdDogUmU6
-IFtQQVRDSF1bUkZDIHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBpc3N1ZSBvbiBIVy1mdWxs
-DQo+IHBsYXRmb3JtcyB3aXRob3V0IF9TNQ0KPiANCj4gT24gTW9uZGF5LCBNYXJjaCAwNywgMjAx
-NiAwMzo1MzoxMyBQTSBDaGVuLCBZdSBDIHdyb3RlOg0KPiA+IEhpIFJhZmFlbCwNCj4gPiAocmVz
-ZW5kIGZvciBicm9rZW4gY29udGVudCkNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gPiA+IEZyb206IHJqd3lzb2NraUBnbWFpbC5jb20gW21haWx0bzpyand5c29ja2lA
-Z21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gPiA+IFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gPiBT
-ZW50OiBNb25kYXksIE1hcmNoIDA3LCAyMDE2IDk6MTkgUE0NCj4gPiA+IFRvOiBDaGVuLCBZdSBD
-DQo+ID4gPiBDYzogQUNQSSBEZXZlbCBNYWxpbmcgTGlzdDsgeDg2QGtlcm5lbC5vcmc7DQo+ID4g
-PiBsaW51eC1lZmlAdmdlci5rZXJuZWwub3JnOyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0Ow0K
-PiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBSYWZhZWwgSi4gV3lzb2NraTsgTGVuIEJy
-b3duOyBNYXR0DQo+ID4gPiBGbGVtaW5nOyBUaG9tYXMgR2xlaXhuZXI7IEluZ28gTW9sbmFyOyBI
-LiBQZXRlciBBbnZpbjsgWmhhbmcsIFJ1aQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZD
-IHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBpc3N1ZSBvbg0KPiA+ID4gSFctZnVsbCBwbGF0
-Zm9ybXMgd2l0aG91dCBfUzUNCj4gPiA+DQo+ID4gW2N1dF0NCj4gPiA+ID4gIGJvb2wgZWZpX3Bv
-d2Vyb2ZmX3JlcXVpcmVkKHZvaWQpDQo+ID4gPiA+ICB7DQo+ID4gPiA+IC0gICAgICAgcmV0dXJu
-ICEhYWNwaV9nYmxfcmVkdWNlZF9oYXJkd2FyZTsNCj4gPiA+ID4gKyAgICAgICByZXR1cm4gYWNw
-aV9nYmxfcmVkdWNlZF9oYXJkd2FyZSB8fCAoYWNwaV9ub19zNSAmJg0KPiA+ID4gPiArICFwbV9w
-b3dlcl9vZmYpOw0KPiA+ID4NCj4gPiA+IFdoYXQgaWYgQ09ORklHX0FDUEkgaXMgbm90IHNldCBo
-ZXJlPw0KPiA+IElmIENPTkZJR19BQ1BJIGlzIG5vdCBzZXQsIHRoaXMgZmlsZSB3b3VsZCBub3Qg
-YmUgY29tcGlsZWQsIGJlY2F1c2UNCj4gPiBDT05GSUdfRUZJIGRlcGVuZHMgb24gQ09ORklHX0FD
-UEkuDQo+IA0KPiBPSw0KPiANCj4gU28gdGhlIG5leHQgcXVlc3Rpb24gd2lsbCBiZSBpZiBlZmlf
-cG93ZXJvZmZfcmVxdWlyZWQoKSBpcyBndWFyYW50ZWVkIHRvIHJ1bg0KPiBhZnRlciBhbGwgb2Yg
-dGhlIG90aGVyIGNvZGUgdGhhdCBtYXkgcmVnaXN0ZXIgYWx0ZXJuYXRpdmUgcG93ZXIgb2ZmIGhh
-bmRsaW5nLg0KSHVtLiB1bmZvcnR1bmF0ZWx5IGl0IGlzIG5vdCBndWFyYW50ZWVkIHRvIHJ1biBh
-ZnRlciBhbGwgb2YgdGhlIG90aGVyIGNvZGUsDQpiZWNhdXNlIG90aGVyIGNvbXBvbmVudHMgd2hv
-IHJlZ2lzdGVyIHBtX3Bvd2VyX29mZiBtYXkgYmUgYnVpbHQgYXMgbW9kdWxlcywgYW5kDQp3ZSBj
-YW4gbm90IHByZWRpY3QvY29udHJvbCB0aGUgc2VxdWVuY2UgcmVnaXN0cmF0aW9uLiAgIFNvIHRo
-aXMgcGF0Y2ggbWF5DQpicmVhayB0aGUgRUZJIHBsYXRmb3JtcyB3aG8gdXNlIG5vbi1lZmkgcG93
-ZXJvZmYgZHVlIHRvIHVuc3RhYmxlIEVGSSBzZXJ2aWNlDQosICBub3Qgc3VyZSBpZiB0aGVyZSBh
-cmUgYW55IHJlbGVhc2VkLXByb2R1Y3RzIG9mIHRoaXMga2luZC4NCg0KQ3VycmVudGx5IEknbSB0
-aGlua2luZyBvZiAzIHBvc3NpYmxlIHNvbHV0aW9ucywgIGNvdWxkIHlvdSBwbGVhc2UgZ2l2ZSBz
-b21lIGFkdmljZXMgb24gdGhlbToNCg0KMS4gSW50cm9kdWNlIGJvb3RvcHQgb2YgJ3Bvd2Vyb2Zm
-PWVmaScNCiAgICAgU2V0IHRoZSBwbV9wb3dlcl9vZmYgdG8gZWZpX3Bvd2VyX29mZiBubyBtYXR0
-ZXIgd2hldGhlciB0aGVyZSBpcyBfUzUgb3Igbm90DQoNCjIuIEludHJvZHVjZSAvc3lzL3Bvd2Vy
-L3Bvd2Vyb2ZmDQogICAgQWxsb3cgdGhlIHVzZXIgdG8gY2hvb3NlIHdoaWNoICBwbV9wb3dlcl9v
-ZmYsIGZvciBleGFtcGxlOg0KIA0KIyBjYXQgL3N5cy9wb3dlci9wb3dlcm9mZg0KKmFjcGkJCWFj
-cGlfcG93ZXJfb2ZmDQplZmkJCWVmaV9wb3dlcl9vZmYJDQpncGlvCQlncGlvX3Bvd2Vyb2ZmX2Rv
-X3Bvd2Vyb2ZmDQp1c2VyIGNhbiBlY2hvIHN0cmluZyB0byBlbmFibGUgd2hpY2ggb25lLg0KDQpB
-bmQgdHdvIEFQSXM6DQpyZWdpc3Rlcl9wb3dlcl9vZmYoY2hhciAqbmFtZSwgcG93ZXJfb2ZmIGZ1
-bmMpDQp1bnJlZ2lzdGVyX3Bvd2VyX29mZihjaGFyICpuYW1lKSAgDQoNCg0KMy4gcmVwbGFjZSBh
-bGwgdGhlIGNvZGVzIG9mICBwbV9wb3dlcl9vZmYoKSB3aXRoIHJlbGlhYmxlX3BtX3Bvd2VyX29m
-ZigpDQoNCnZvaWQgcmVsaWFibGVfcG1fcG93ZXJfb2ZmKHZvaWQpDQp7DQoJaWYgKCFwbV9wb3dl
-cl9vZmYpIHsNCgkJaWYgKGFjcGlfbm9fczUpDQoJCQlwbV9wb3dlcl9vZmYgPSBlZmlfcG93ZXJf
-b2ZmOw0KCS8qIE90aGVyIGNvbmRpdGlvbnMgYWRkZWQgaW4gdGhlIGZ1dHVyZS4gKi8NCgl9DQoJ
-cG1fcG93ZXJfb2ZmKCk7DQp9DQoNCg0KdGhhbmtzLA0KeXUNCg==
+On Tue, Mar 8, 2016 at 8:57 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Mon, 7 Mar 2016, Jacob Pan wrote:
+>
+>> On Wed, 24 Feb 2016 13:31:34 -0800
+>> Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
+>>
+>> > Changes since v5:
+>> >     - Split changes into seprate patches. No code change.
+>> > Changes since V4:
+>> >     - Deleted unnecessary cpumask_any_and() call, assign first
+>> > cpu as lead Changes since V3:
+>> >     - Avoid for_each_online_cpu() search for per package MSR
+>> > access. This is achieved by tracking a per package lead cpu via
+>> > cpumask_xx() calls. (suggested by Thomas Gleixner
+>> > <tglx@linutronix.de>)
+>> >         - Add direct reference of RAPL package for each RAPL
+>> > domain.
+>> >
+>> > Jacob Pan (4):
+>> >   cpumask: export cpumask_any_but
+>> >   powercap/rapl: reduce ipi calls
+>> >   powercap/rapl: add package reference per domain
+>> >   powercap/rapl: track lead cpu per package
+>> >
+>> >  drivers/powercap/intel_rapl.c | 220
+>> > ++++++++++++++++++++++--------------------
+>> > lib/cpumask.c                 |   1 + 2 files changed, 115
+>> > insertions(+), 106 deletions(-)
+>> >
+>> Hi Thomas,
+>>
+>> Do you have more comments?
+>
+> No. Looks reasonable now.
+
+OK, thanks!
+
+I'll apply the patches then.
