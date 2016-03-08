@@ -1,177 +1,75 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/3] thermal: of-thermal: Add devm version of
- thermal_zone_of_sensor_register
-Date: Tue, 8 Mar 2016 13:29:55 -0800
-Message-ID: <20160308212954.GB8820@localhost.localdomain>
-References: <1457098810-11964-1-git-send-email-ldewangan@nvidia.com>
- <1457098810-11964-2-git-send-email-ldewangan@nvidia.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH 1/3] thermal: exynos: List vtmu-supply as optional
+ property in DT binding
+Date: Tue, 8 Mar 2016 18:30:17 -0300
+Message-ID: <56DF4469.7090603@osg.samsung.com>
+References: <1455819551-4666-1-git-send-email-javier@osg.samsung.com>
+ <1455819551-4666-2-git-send-email-javier@osg.samsung.com>
+ <20160308210744.GA8145@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:33367 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbcCHV37 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 16:29:59 -0500
-Content-Disposition: inline
-In-Reply-To: <1457098810-11964-2-git-send-email-ldewangan@nvidia.com>
+Received: from lists.s-osg.org ([54.187.51.154]:37615 "EHLO lists.s-osg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbcCHVaf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Mar 2016 16:30:35 -0500
+In-Reply-To: <20160308210744.GA8145@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: rui.zhang@intel.com, corbet@lwn.net, rklein@nvidia.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-samsung-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
 
-Hello Laxman,
+Hello Eduardo,
 
-
-Minor as follows.
-
-Can you please run ./scripts/checkpatch.pl --strict on this and remove
-the warnings, errors, checks?
-
-On Fri, Mar 04, 2016 at 07:10:08PM +0530, Laxman Dewangan wrote:
-> Add resource managed version of thermal_zone_of_sensor_register() and
-> thermal_zone_of_sensor_unregister().
+On 03/08/2016 06:07 PM, Eduardo Valentin wrote:
+> On Thu, Feb 18, 2016 at 03:19:09PM -0300, Javier Martinez Canillas wrote:
+>> The Exynos Thermal Management Unit binding says that the vtmu-supply
+>> is optional but is listed in the required properties section. Add an
+>> optional properties section and move the regulator property there.
+>>
+>> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+>> ---
+>>
+>>  Documentation/devicetree/bindings/thermal/exynos-thermal.txt | 9 ++++++---
+>>  1 file changed, 6 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> index faa62059b5c5..70b4c16c7ed8 100644
+>> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> @@ -41,9 +41,6 @@
+>>  		for current TMU channel
+>>  	-- "tmu_sclk" clock for functional operation of the current TMU
+>>  		channel
+>> -- vtmu-supply: This entry is optional and provides the regulator node supplying
+>> -		voltage to TMU. If needed this entry can be placed inside
+>> -		board/platform specific dts file.
+>>  
+>>  The Exynos TMU supports generating interrupts when reaching given
+>>  temperature thresholds. Number of supported thermal trip points depends
 > 
-> This helps in reducing the code size in error path, remove of
-> driver remove callbacks and making proper sequence for deallocations.
-> 
-> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> ---
->  drivers/thermal/of-thermal.c | 81 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h      | 18 ++++++++++
+> Where is this patch based on? I checked it on my fixes and linus
+> branches, also on linux-next 0308 branch, and none of those apply clean.
+>
 
-Could you also please document these under
-Documentation/thermal/sysfs-api.txt?
+I mentioned in the cover letter [0] that this series were based on top
+of in-flight patches from Krzysztof Kozlowski to avoid merge conflicts.
 
->  2 files changed, 99 insertions(+)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 9043f8f..1d9f8dc 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -555,6 +555,87 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_of_sensor_unregister);
->  
-> +static void devm_thermal_zone_of_sensor_release(struct device *dev, void *res)
-> +{
-> +	thermal_zone_of_sensor_unregister(dev,
-> +					  *(struct thermal_zone_device **)res);
-> +}
-> +
-> +static int devm_thermal_zone_of_sensor_match(struct device *dev, void *res,
-> +					     void *data)
-> +{
-> +	struct thermal_zone_device **r = res;
-> +
-> +	if (WARN_ON(!r || !*r))
-> +		return 0;
-> +
-> +	return *r == data;
-> +}
-> +
-> +/**
-> + * devm_thermal_zone_of_sensor_register - Resource managed version of
-> + *				thermal_zone_of_sensor_register()
-> + * @dev: a valid struct device pointer of a sensor device. Must contain
-> + *       a valid .of_node, for the sensor node.
-> + * @sensor_id: a sensor identifier, in case the sensor IP has more
-> + *	       than one sensors
-> + * @data: a private pointer (owned by the caller) that will be passed
-> + *	  back, when a temperature reading is needed.
-> + * @ops: struct thermal_zone_of_device_ops *. Must contain at least .get_temp.
-> + *
-> + * Refer thermal_zone_of_sensor_register() for more details.
-> + *
-> + * Return: On success returns a valid struct thermal_zone_device,
-> + * otherwise, it returns a corresponding ERR_PTR(). Caller must
-> + * check the return value with help of IS_ERR() helper.
-> + * Registered hermal_zone_device device will automatically be
-> + * released when device is unbounded.
-> + */
-> +struct thermal_zone_device *
-> +devm_thermal_zone_of_sensor_register(struct device *dev, int sensor_id,
-> +		void *data, const struct thermal_zone_of_device_ops *ops)
-> +{
-> +	struct thermal_zone_device **ptr, *tzd;
-> +
-> +	ptr = devres_alloc(devm_thermal_zone_of_sensor_release, sizeof(*ptr),
-> +			   GFP_KERNEL);
-> +	if (!ptr)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	tzd = thermal_zone_of_sensor_register(dev, sensor_id, data, ops);
-> +	if (IS_ERR(tzd)) {
-> +		devres_free(ptr);
-> +		return tzd;
-> +	}
-> +
-> +	*ptr = tzd;
-> +	devres_add(dev, ptr);
-> +
-> +	return tzd;
-> +}
-> +EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_register);
-> +
-> +/**
-> + * devm_thermal_zone_of_sensor_unregister - Resource managed version of
-> + *				thermal_zone_of_sensor_unregister().
-> + * @dev: Device for which which resource was allocated.
-> + * @tzd: a pointer to struct thermal_zone_device where the sensor is registered.
-> + *
-> + * This function removes the sensor callbacks and private data from the
-> + * thermal zone device registered with devm_thermal_zone_of_sensor_register()
-> + * API. It will also silent the zone by remove the .get_temp() and .get_trend()
-> + * thermal zone device callbacks.
-> + * Normally this function will not need to be called and the resource
-> + * management code will ensure that the resource is freed.
-> + */
-> +void devm_thermal_zone_of_sensor_unregister(struct device *dev,
-> +				       struct thermal_zone_device *tzd)
-> +{
-> +	WARN_ON(devres_release(dev, devm_thermal_zone_of_sensor_release,
-> +			       devm_thermal_zone_of_sensor_match, tzd));
-> +}
-> +EXPORT_SYMBOL_GPL(devm_thermal_zone_of_sensor_unregister);
-> +
->  /***   functions parsing device tree nodes   ***/
->  
->  /**
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index e13a1ac..4c43b21 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -362,6 +362,11 @@ thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
->  				const struct thermal_zone_of_device_ops *ops);
->  void thermal_zone_of_sensor_unregister(struct device *dev,
->  				       struct thermal_zone_device *tz);
-> +struct thermal_zone_device *
-> +devm_thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
-> +				const struct thermal_zone_of_device_ops *ops);
-> +void devm_thermal_zone_of_sensor_unregister(struct device *dev,
-> +				       struct thermal_zone_device *tz);
->  #else
->  static inline struct thermal_zone_device *
->  thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
-> @@ -376,6 +381,19 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
->  {
->  }
->  
-> +static inline struct thermal_zone_device *
-> +devm_thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
-> +				const struct thermal_zone_of_device_ops *ops)
-> +{
-> +	return ERR_PTR(-ENODEV);
-> +}
-> +
-> +static inline
-> +void devm_thermal_zone_of_sensor_unregister(struct device *dev,
-> +				       struct thermal_zone_device *tz)
-> +{
-> +}
-> +
->  #endif
->  
->  #if IS_ENABLED(CONFIG_THERMAL)
-> -- 
-> 2.1.4
-> 
+Those have not landed yet either so maybe you could look at those first?
+ 
+> Can you please send this based on upstream kernel?
+>
+
+Ok, my intention was to make picking both patch series easier but if
+this is inconvenient to you, I can base on top of current mainline
+and let you handle the merge conflicts (or ask Krzysztof to resend
+on top of my patches).
+
+[0]: https://lkml.org/lkml/2016/2/18/591
+ 
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
