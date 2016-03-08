@@ -1,141 +1,102 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Tue, 8 Mar 2016 23:43:26 +0100
-Message-ID: <CAJZ5v0hkrDq4Fy-zqy3u4EbC1SeCZ4c6aymXYwqvcRgXHuGTYA@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<CAJZ5v0gs3bddvskseh58q+0d+KqXYt=4SYGuiR3vdhdOyhoKmA@mail.gmail.com>
-	<20160223110118.GJ27380@e106622-lin>
-	<5947930.P2W8Baqyau@vostro.rjw.lan>
-	<20160308192400.4103.71868@quark.deferred.io>
-	<CAJZ5v0io2D6CBCfmnaBq5rPRpJWPQbkszs_y30NAXnX0c0hZQg@mail.gmail.com>
-	<20160308220632.4103.13377@quark.deferred.io>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full platforms without _S5
+Date: Tue, 08 Mar 2016 23:56:50 +0100
+Message-ID: <1867318.3ivAYsjD7D@vostro.rjw.lan>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com> <2414254.VhAiD01BTS@vostro.rjw.lan> <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f194.google.com ([209.85.217.194]:36697 "EHLO
-	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbcCHWn2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 17:43:28 -0500
-In-Reply-To: <20160308220632.4103.13377@quark.deferred.io>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Tue, Mar 8, 2016 at 11:06 PM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> Quoting Rafael J. Wysocki (2016-03-08 12:40:18)
->> On Tue, Mar 8, 2016 at 8:24 PM, Michael Turquette
->> <mturquette@baylibre.com> wrote:
->> > Quoting Rafael J. Wysocki (2016-02-23 18:01:06)
->> >> On Tuesday, February 23, 2016 11:01:18 AM Juri Lelli wrote:
->> >> > On 22/02/16 22:26, Rafael J. Wysocki wrote:
->> >> > > On Mon, Feb 22, 2016 at 10:32 AM, Juri Lelli <juri.lelli@arm.com> wrote:
->> >> > > > On 19/02/16 23:14, Rafael J. Wysocki wrote:
->> >> > > >> On Friday, February 19, 2016 08:09:17 AM Juri Lelli wrote:
->> >> > > >> > Hi Rafael,
->> >> > > >> >
->> >> > > >> > On 18/02/16 21:22, Rafael J. Wysocki wrote:
->> >> > > >> > > On Mon, Feb 15, 2016 at 10:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> > > >> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> > > >> > > >
->> >> > >
->> >> > > [cut]
->> >> > >
->> >> > > >> That said, if the concern is that there are plans to change the way the
->> >> > > >> scheduler computes the utilization numbers and that may become difficult to
->> >> > > >> carry out if cpufreq starts to depend on them in their current form, then I
->> >> > > >> may agree that it is valid, but I'm not aware of those plans ATM.
->> >> > > >>
->> >> > > >
->> >> > > > No, I don't think there's any substantial discussion going on about the
->> >> > > > utilization numbers.
->> >> > >
->> >> > > OK, so the statement below applies.
->> >> > >
->> >> > > >> However, if the numbers are going to stay what they are, I don't see why
->> >> > > >> passing them to cpufreq may possibly become problematic at any point.
->> >> > > >
->> >> > > > My concern was mostly on the fact that there is already another RFC
->> >> > > > under discussion that uses the same numbers and has different hooks
->> >> > > > placed in scheduler code (Steve's sched-freq); so, additional hooks
->> >> > > > might generate confusion, IMHO.
->> >> > >
->> >> > > So this is about the hooks rather than about their arguments after
->> >> > > all, isn't it?
->> >> > >
->> >> > > I fail to see why it is better to drop the arguments and leave the hooks, then.
->> >> > >
->> >> >
->> >> > It's about where we place such hooks and what arguments they have.
->> >> > Without the schedutil governor as a consumer the current position makes
->> >> > sense, but some of the arguments are not used. With schedutil both
->> >> > position and arguments make sense, but a different implementation
->> >> > (sched-freq) might have different needs w.r.t. position and arguments.
->> >>
->> >> And that's fine.  If the current position and/or arguments are not suitable,
->> >> they'll need to be changed.  It's not like things introduced today are set
->> >> in stone forever.
->> >>
->> >> Peter has already shown how they may be changed to make everyone happy,
->> >> so I don't really see what the fuss is about.
->> >
->> > I see this patch in linux-next now. Did it ever get Peter's or Ingo's
->> > Ack?
->>
->> No, but none of them said "no" either.
->>
->> And the interface was suggested by Peter in the first place.
->>
->> > Also it seems weird to me that this patch touching sched code is going
->> > through the pm tree.
->>
->> That's for purely practical reasons.  There are lots of PM changes
->> depending on it that have nothing to do with the scheduler.  I've been
->> talking about that for several times now, last time in my yesterday
->> post (http://marc.info/?l=linux-pm&m=145740561402948&w=2).  I've been
->> talking openly about what I'm going to do with this all the time.
->>
->> No one is hiding things from anyone or trying to slip them through
->> past somebody here if that's what you're worried about.
->>
->> > When it comes times to experiment more with the interfaces and make the
->> > "future changes" that everyone keeps talking about, who is the
->> > maintainer? Who has the last word?
->>
->> As usual, it is about consensus.
->
-> To be fair, that consensus should be recorded formally by Reviewed-by
-> and Acked-by tags.
+On Tuesday, March 08, 2016 04:25:30 PM Chen, Yu C wrote:
+> > -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > Sent: Tuesday, March 08, 2016 9:54 AM
+> > To: Chen, Yu C
+> > Cc: Rafael J. Wysocki; ACPI Devel Maling List; x86@kernel.org; linux-
+> > efi@vger.kernel.org; Linux Kernel Mailing List; linux-pm@vger.kernel.org;
+> > Len Brown; Matt Fleming; Thomas Gleixner; Ingo Molnar; H. Peter Anvin;
+> > Zhang, Rui
+> > Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+> > platforms without _S5
+> > 
+> > On Monday, March 07, 2016 03:53:13 PM Chen, Yu C wrote:
+> > > Hi Rafael,
+> > > (resend for broken content)
+> > >
+> > > > -----Original Message-----
+> > > > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of
+> > > > Rafael J. Wysocki
+> > > > Sent: Monday, March 07, 2016 9:19 PM
+> > > > To: Chen, Yu C
+> > > > Cc: ACPI Devel Maling List; x86@kernel.org;
+> > > > linux-efi@vger.kernel.org; Linux Kernel Mailing List;
+> > > > linux-pm@vger.kernel.org; Rafael J. Wysocki; Len Brown; Matt
+> > > > Fleming; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui
+> > > > Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on
+> > > > HW-full platforms without _S5
+> > > >
+> > > [cut]
+> > > > >  bool efi_poweroff_required(void)
+> > > > >  {
+> > > > > -       return !!acpi_gbl_reduced_hardware;
+> > > > > +       return acpi_gbl_reduced_hardware || (acpi_no_s5 &&
+> > > > > + !pm_power_off);
+> > > >
+> > > > What if CONFIG_ACPI is not set here?
+> > > If CONFIG_ACPI is not set, this file would not be compiled, because
+> > > CONFIG_EFI depends on CONFIG_ACPI.
+> > 
+> > OK
+> > 
+> > So the next question will be if efi_poweroff_required() is guaranteed to run
+> > after all of the other code that may register alternative power off handling.
+> Hum. unfortunately it is not guaranteed to run after all of the other code,
+> because other components who register pm_power_off may be built as modules, and
+> we can not predict/control the sequence registration.   So this patch may
+> break the EFI platforms who use non-efi poweroff due to unstable EFI service
+> ,  not sure if there are any released-products of this kind.
+> 
+> Currently I'm thinking of 3 possible solutions,  could you please give some advices on them:
+> 
+> 1. Introduce bootopt of 'poweroff=efi'
+>      Set the pm_power_off to efi_power_off no matter whether there is _S5 or not
+> 
+> 2. Introduce /sys/power/poweroff
+>     Allow the user to choose which  pm_power_off, for example:
+>  
+> # cat /sys/power/poweroff
+> *acpi		acpi_power_off
+> efi		efi_power_off	
+> gpio		gpio_poweroff_do_poweroff
+> user can echo string to enable which one.
+> 
+> And two APIs:
+> register_power_off(char *name, power_off func)
+> unregister_power_off(char *name)  
+> 
+> 
+> 3. replace all the codes of  pm_power_off() with reliable_pm_power_off()
+> 
+> void reliable_pm_power_off(void)
+> {
+> 	if (!pm_power_off) {
+> 		if (acpi_no_s5)
+> 			pm_power_off = efi_power_off;
+> 	/* Other conditions added in the future. */
+> 	}
+> 	pm_power_off();
+> }
 
-I would feel much more comfortable with ACKs on the commits touching
-the scheduler code, no question about that. :-)
-
-That said, if another maintainer makes PM-related or ACPI-related
-changes and follows my suggestions all the way through, I may not feel
-like I have to ACK all of that every time.  After all, it all boils
-down to what happens to the pull request eventually and Acked-by tags
-may or may not help there.
-
->>
->> This is on a boundary of two subsystems and I have good reasons to do
->> it.  One of the maintainers of the other subsystem involved is working
->> with me all the time and I'm following his suggestions.  Isn't that
->> really sufficient?
->>
->> But really please see
->> http://marc.info/?l=linux-pm&m=145740561402948&w=2 as it means I'm
->> actually going to do what Juri and Steve asked for unless I'm told
->> that this is a bad idea.
->
-> I'll take a look. Note that Steve, Juri and Vincent are all at a
-> conference this week so their responses may be slow.
-
-That's fine.
-
-I'm not going to send new versions of the patches any time soon
-(unless somebody points out a problem to fix in them to me).
+What about something like adding something like default_power_off that would
+be used by pm_power_off if nothing else is available?
 
 Thanks,
 Rafael
+
