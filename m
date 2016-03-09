@@ -1,73 +1,119 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Subject: [PATCH 3/4] acpi,pci,irq: remove SCI penalize function
-Date: Tue,  8 Mar 2016 19:41:18 -0500
-Message-ID: <1457484079-18202-3-git-send-email-okaya@codeaurora.org>
-References: <1457484079-18202-1-git-send-email-okaya@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56754 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbcCIAlc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 19:41:32 -0500
-In-Reply-To: <1457484079-18202-1-git-send-email-okaya@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Dave Airlie <airlied@gmail.com>
+Subject: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
+Date: Wed,  9 Mar 2016 16:14:04 +1000
+Message-ID: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-acpi@vger.kernel.org, timur@codeaurora.org, cov@codeaurora.org
-Cc: linux-pci@vger.kernel.org, ravikanth.nalla@hpe.com, lenb@kernel.org, harish.k@hpe.com, ashwin.reghunandanan@hpe.com, bhelgaas@google.com, rjw@rjwysocki.net, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Removing the SCI penalize function as the penalty is now calculated on the
-fly.
+From: Dave Airlie <airlied@redhat.com>
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Windows 10 seems to have standardised power control for the
+optimus/powerxpress laptops using PR3 power resource hooks.
+
+I'm not sure this is definitely the correct place to be
+doing this, but it works for me here.
+
+The ACPI device for the GPU I have is \_SB_.PCI0.PEG_.VID_
+but the power resource hooks are on \_SB_.PCI0.PEG_, so
+this patch creates a new power domain to turn the GPU
+device parent off using standard ACPI calls.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 ---
- arch/x86/kernel/acpi/boot.c | 1 -
- drivers/acpi/pci_link.c     | 9 ---------
- include/linux/acpi.h        | 1 -
- 3 files changed, 11 deletions(-)
+ drivers/gpu/vga/vga_switcheroo.c | 54 +++++++++++++++++++++++++++++++++++++++-
+ include/linux/vga_switcheroo.h   |  3 ++-
+ 2 files changed, 55 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index e759076..5e99f22 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -445,7 +445,6 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
- 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
- 
- 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
--	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
- 
- 	/*
- 	 * stash over-ride to indicate we've been here
-diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-index eb8e770..6bd77f1 100644
---- a/drivers/acpi/pci_link.c
-+++ b/drivers/acpi/pci_link.c
-@@ -840,15 +840,6 @@ bool acpi_isa_irq_available(int irq)
- }
- 
- /*
-- * Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict with
-- * PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be use for
-- * PCI IRQs.
-- */
--void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
--{
--}
+diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
+index 665ab9f..be32cb2 100644
+--- a/drivers/gpu/vga/vga_switcheroo.c
++++ b/drivers/gpu/vga/vga_switcheroo.c
+@@ -42,7 +42,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/vgaarb.h>
+ #include <linux/vga_switcheroo.h>
 -
--/*
-  * Over-ride default table to reserve additional IRQs for use by ISA
-  * e.g. acpi_irq_isa=5
-  * Useful for telling ACPI how not to interfere with your ISA sound card.
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 06ed7e5..0f41317 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -311,7 +311,6 @@ struct pci_dev;
- int acpi_pci_irq_enable (struct pci_dev *dev);
- void acpi_penalize_isa_irq(int irq, int active);
- bool acpi_isa_irq_available(int irq);
--void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
- void acpi_pci_irq_disable (struct pci_dev *dev);
++#include <linux/acpi.h>
+ /**
+  * DOC: Overview
+  *
+@@ -997,3 +997,55 @@ vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev,
+ 	return -EINVAL;
+ }
+ EXPORT_SYMBOL(vga_switcheroo_init_domain_pm_optimus_hdmi_audio);
++
++/* With Windows 10 the runtime suspend/resume can use power
++   resources on the parent device */
++static int vga_acpi_switcheroo_runtime_suspend(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	int ret;
++	struct acpi_device *adev;
++
++	ret = dev->bus->pm->runtime_suspend(dev);
++	if (ret)
++		return ret;
++
++	ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
++	if (!ret)
++		acpi_device_set_power(adev->parent, ACPI_STATE_D3_COLD);
++	return 0;
++}
++
++static int vga_acpi_switcheroo_runtime_resume(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct acpi_device *adev;
++	int ret;
++
++	ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
++	if (!ret)
++		acpi_device_set_power(adev->parent, ACPI_STATE_D0);
++	ret = dev->bus->pm->runtime_resume(dev);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++int vga_switcheroo_init_parent_pr3_ops(struct device *dev,
++				       struct dev_pm_domain *domain)
++
++{
++	/* copy over all the bus versions */
++	if (dev->bus && dev->bus->pm) {
++		domain->ops = *dev->bus->pm;
++		domain->ops.runtime_suspend = vga_acpi_switcheroo_runtime_suspend;
++		domain->ops.runtime_resume = vga_acpi_switcheroo_runtime_resume;
++
++		dev_pm_domain_set(dev, domain);
++		return 0;
++	}
++	dev_pm_domain_set(dev, NULL);
++	return -EINVAL;
++}
++EXPORT_SYMBOL(vga_switcheroo_init_parent_pr3_ops);
+diff --git a/include/linux/vga_switcheroo.h b/include/linux/vga_switcheroo.h
+index 69e1d4a1..5ce0cbe 100644
+--- a/include/linux/vga_switcheroo.h
++++ b/include/linux/vga_switcheroo.h
+@@ -144,6 +144,7 @@ void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum vga_switcheroo
+ int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain);
+ void vga_switcheroo_fini_domain_pm_ops(struct device *dev);
+ int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain);
++int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain);
+ #else
  
- extern int ec_read(u8 addr, u8 *val);
+ static inline void vga_switcheroo_unregister_client(struct pci_dev *dev) {}
+@@ -163,6 +164,6 @@ static inline void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum
+ static inline int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+ static inline void vga_switcheroo_fini_domain_pm_ops(struct device *dev) {}
+ static inline int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+-
++static inline int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+ #endif
+ #endif /* _LINUX_VGA_SWITCHEROO_H_ */
 -- 
-1.8.2.1
-
+2.5.0
