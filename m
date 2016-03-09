@@ -1,63 +1,50 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Wed, 9 Mar 2016 14:22:58 +0100
-Message-ID: <CAJZ5v0jirE0uq_=OidG9RzjPdHqffeXL-=45WOD8jej=_ZhHgQ@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
-	<2044559.7ypXocW9OZ@vostro.rjw.lan>
-	<3499355.2JlaSruvOa@vostro.rjw.lan>
-	<16016177.YFqb4gVNBo@vostro.rjw.lan>
-	<20160309123539.GL6356@twins.programming.kicks-ass.net>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: [PATCH V2 0/6]  thermal: add devm_ version of thermal_zone register and driver for max77620
+Date: Wed, 9 Mar 2016 18:40:04 +0530
+Message-ID: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:34005 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbcCINW7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 08:22:59 -0500
-In-Reply-To: <20160309123539.GL6356@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, rklein@nvidia.com, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Wed, Mar 9, 2016 at 1:35 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, Feb 15, 2016 at 10:47:22PM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Introduce a mechanism by which parts of the cpufreq subsystem
->> ("setpolicy" drivers or the core) can register callbacks to be
->> executed from cpufreq_update_util() which is invoked by the
->> scheduler's update_load_avg() on CPU utilization changes.
->>
->> This allows the "setpolicy" drivers to dispense with their timers
->> and do all of the computations they need and frequency/voltage
->> adjustments in the update_load_avg() code path, among other things.
->>
->> The update_load_avg() changes were suggested by Peter Zijlstra.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->>  include/linux/cpufreq.h   |   34 ++++++++++++++++++++++++++++++++++
->>  kernel/sched/deadline.c   |    4 ++++
->>  kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
->>  kernel/sched/rt.c         |    4 ++++
->>  kernel/sched/sched.h      |    1 +
->>  6 files changed, 113 insertions(+), 1 deletion(-)
->>
->
-> So with the understanding that we'll work on getting rid of
-> cpufreq_trigger_update().
+The series add the devm_ version of thermal_zone_of_sensor_register/
+unregister, interface details, and use this in new thermal driver
+for max77620.
 
-That definitely is the plan.
+The header file for max77620 is part of MFD patch
+	https://lkml.org/lkml/2016/2/11/186
 
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Changes from V1:
+- Run checkpatch with --strict and fix all warnings.
+- Added details of interfaces in spifs-api.txt
+- Added DT binding doc.
 
-Thanks! :-)
+Laxman Dewangan (6):
+  thermal: doc: Add details of
+    thermal_zone_of_sensor_{register,unregister}
+  thermal: of-thermal: Add devm version of
+    thermal_zone_of_sensor_register
+  thermal: Add devm_thermal_zone_of_sensor_register() in managed devices
+    list
+  thermal: doc: Add details of
+    devm_thermal_zone_of_sensor_{register,unregister}
+  thermal: max77620: Add thermal driver for reporting junction temp
+  thermal: Add DT binding doc for thermal of PMIC max77620
 
-> Also, Vincent had some concerns about the exact placement of the
-> callback, and I see no problem in moving it if there's need.
+ .../bindings/thermal/thermal-max77620.txt          |  43 ++++++
+ Documentation/driver-model/devres.txt              |   4 +
+ Documentation/thermal/sysfs-api.txt                |  68 ++++++++++
+ drivers/thermal/Kconfig                            |  10 ++
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/of-thermal.c                       |  81 +++++++++++
+ drivers/thermal/thermal-max77620.c                 | 151 +++++++++++++++++++++
+ include/linux/thermal.h                            |  18 +++
+ 8 files changed, 376 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+ create mode 100644 drivers/thermal/thermal-max77620.c
 
-Yup, same here.
+-- 
+2.1.4
