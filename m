@@ -1,67 +1,81 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 01/13] hwmon: convert lm75 to use devm_thermal_zone_of_sensor_register
-Date: Wed,  9 Mar 2016 13:35:23 -0800
-Message-ID: <1457559336-17652-2-git-send-email-edubezval@gmail.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH 07/13] thermal: convert mtk_thermal to use
+ devm_thermal_zone_of_sensor_register
+Date: Wed,  9 Mar 2016 13:35:29 -0800
+Message-ID: <1457559336-17652-8-git-send-email-edubezval@gmail.com>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:35127 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbcCIVfm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:35:42 -0500
-In-Reply-To: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1457559336-17652-1-git-send-email-edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Rui Zhang <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>
 
 This changes the driver to use the devm_ version
 of thermal_zone_of_sensor_register and cleans
 up the  local points and unregister calls.
 
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: lm-sensors@lm-sensors.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- drivers/hwmon/lm75.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ drivers/thermal/mtk_thermal.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
-index 0addc84..69166ab 100644
---- a/drivers/hwmon/lm75.c
-+++ b/drivers/hwmon/lm75.c
-@@ -77,7 +77,6 @@ static const u8 LM75_REG_TEMP[3] = {
- struct lm75_data {
- 	struct i2c_client	*client;
- 	struct device		*hwmon_dev;
--	struct thermal_zone_device	*tz;
- 	struct mutex		update_lock;
- 	u8			orig_conf;
- 	u8			resolution;	/* In bits, between 9 and 12 */
-@@ -306,11 +305,9 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	if (IS_ERR(data->hwmon_dev))
- 		return PTR_ERR(data->hwmon_dev);
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 3d93b1c..2c40b0f 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -145,7 +145,6 @@ struct mtk_thermal {
+ 	s32 o_slope;
+ 	s32 vts[MT8173_NUM_SENSORS];
  
--	data->tz = thermal_zone_of_sensor_register(data->hwmon_dev, 0,
--						   data->hwmon_dev,
--						   &lm75_of_thermal_ops);
--	if (IS_ERR(data->tz))
--		data->tz = NULL;
-+	devm_thermal_zone_of_sensor_register(data->hwmon_dev, 0,
-+					     data->hwmon_dev,
-+					     &lm75_of_thermal_ops);
+-	struct thermal_zone_device *tzd;
+ };
  
- 	dev_info(dev, "%s: sensor '%s'\n",
- 		 dev_name(data->hwmon_dev), client->name);
-@@ -322,7 +319,6 @@ static int lm75_remove(struct i2c_client *client)
- {
- 	struct lm75_data *data = i2c_get_clientdata(client);
+ struct mtk_thermal_bank_cfg {
+@@ -573,16 +572,11 @@ static int mtk_thermal_probe(struct platform_device *pdev)
  
--	thermal_zone_of_sensor_unregister(data->hwmon_dev, data->tz);
- 	hwmon_device_unregister(data->hwmon_dev);
- 	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
+ 	platform_set_drvdata(pdev, mt);
+ 
+-	mt->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, mt,
+-				&mtk_thermal_ops);
+-	if (IS_ERR(mt->tzd))
+-		goto err_register;
++	devm_thermal_zone_of_sensor_register(&pdev->dev, 0, mt,
++					     &mtk_thermal_ops);
+ 
  	return 0;
+ 
+-err_register:
+-	clk_disable_unprepare(mt->clk_peri_therm);
+-
+ err_disable_clk_auxadc:
+ 	clk_disable_unprepare(mt->clk_auxadc);
+ 
+@@ -593,8 +587,6 @@ static int mtk_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct mtk_thermal *mt = platform_get_drvdata(pdev);
+ 
+-	thermal_zone_of_sensor_unregister(&pdev->dev, mt->tzd);
+-
+ 	clk_disable_unprepare(mt->clk_peri_therm);
+ 	clk_disable_unprepare(mt->clk_auxadc);
+ 
 -- 
 2.1.4
-
