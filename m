@@ -1,96 +1,135 @@
-From: Ludovic Desroches <ludovic.desroches@atmel.com>
-Subject: Re: [PATCH] mmc: sdhci-of-at91: fix wakeup issue when using runtime
- pm
-Date: Wed, 9 Mar 2016 17:38:09 +0100
-Message-ID: <20160309163809.GM2690@odux.rfo.atmel.com>
-References: <20160212120415.GJ14937@odux.rfo.atmel.com>
- <1455357400-32145-1-git-send-email-ludovic.desroches@atmel.com>
- <CAPDyKFroVY0ZdqPScpGiJ8Y_QhhZ7asf0R0MzSx0WzVi5c2neg@mail.gmail.com>
- <20160216152204.GE2607@odux.rfo.atmel.com>
- <20160217103515.GM2607@odux.rfo.atmel.com>
- <CAPDyKFpovsOMVSxifefFcvHFoNL-AaBH_tbWbN7QRQqv2hrSnw@mail.gmail.com>
- <20160304134830.GG2690@odux.rfo.atmel.com>
- <CAPDyKFrDmWGiMF2fOt1kGyp03mRiTV2ug-i3mg=yYr5UF=WLeQ@mail.gmail.com>
- <CAPDyKFpDHooacBrTXQzinO4U10SeoedybN5HZ5y1bwbO-F04ug@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Wed, 9 Mar 2016 17:39:30 +0100
+Message-ID: <20160309163930.GP6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+ <56D8AEB7.2050100@linaro.org>
+ <36459679.vzZnOsAVeg@vostro.rjw.lan>
+ <20160308112759.GF6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
+ <20160308192640.GD6344@twins.programming.kicks-ass.net>
+ <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-mmc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:39385 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753726AbcCIQji (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 11:39:38 -0500
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFpDHooacBrTXQzinO4U10SeoedybN5HZ5y1bwbO-F04ug@mail.gmail.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Ludovic Desroches <ludovic.desroches@atmel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org
+In-Reply-To: <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 
-+ PM mailing list since the discussion is mixing PM and sdhci
-
-On Tue, Mar 08, 2016 at 10:56:31PM +0100, Ulf Hansson wrote:
-> +Ludovic
+On Tue, Mar 08, 2016 at 09:05:50PM +0100, Rafael J. Wysocki wrote:
+> >> This means that on platforms where the utilization is frequency
+> >> invariant we should use
+> >>
+> >>   next_freq = a * x
+> >>
+> >> (where x is given by (2) above) and for platforms where the
+> >> utilization is not frequency invariant
+> >>
+> >>   next_freq = a * x * current_freq / max_freq
+> >>
+> >> and all boils down to finding a.
+> >
+> > Right.
 > 
-> On 8 March 2016 at 22:54, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > On 4 March 2016 at 14:48, Ludovic Desroches <ludovic.desroches@atmel.com> wrote:
+> However, that doesn't seem to be in agreement with the Steve's results
+> posted earlier in this thread.
 
-[snip]
+I could not make anything of those numbers.
 
+> Also theoretically, with frequency invariant, the only way you can get
+> to 100% utilization is by running at the max frequency, so the closer
+> to 100% you get, the faster you need to run to get any further.  That
+> indicates nonlinear to me.
+
+I'm not seeing that, you get that by using a > 1. No need for
+non-linear.
+
+> >> Now, it seems reasonable for a to be something like (1 + 1/n) *
+> >> max_freq, so for non-frequency invariant we get
 > >>
-> >> Coming back to the initial discussion and patch which were motivated by
-> >> the fact that after runtime suspend I can't wake-up on card detect event,
-> >> I have the feeling we don't have the same assumption about runtime PM.
-> >>
-> >> From what you and Adrian told me, I should not use runtime PM if I have
-> >> no way to wake-up. In your minds, the way to wake-up is to use an
-> >> externel GPIO because the controller will be 'totally' disabled, isn't it?
+> >>   nex_freq = (1 + 1/n) * current_freq * x
 > >
-> > I agree to the first part here.
+> > This seems like a big leap; where does:
 > >
-> > Although, as you also have the option to use polling for card detect,
-> > this actually means you don't really *need* to have a wakeup
-> > configured. Especially in the case where you don't have GPIO card
-> > detect.
+> >   (1 + 1/n) * max_freq
 > >
-> > In that way, *all* the clocks can gated in between the polling
-> > attempts, thus you will save power even in the polling mode
-> > configuration and when runtime PM is enabled.
-> >
+> > come from? And what is 'n'?
 
-As you said, I can gate all the clocks but only between attempts.
-Regularly, I will resume and suspend my controller to perform the card
-detection. I don't know if it is a better solution than keeping one
-clock enabled and waiting for an interrupt to enable the other ones.
+> a = max_freq gives next_freq = max_freq for x = 1,
 
-> >>
-> >> On my side, runtime PM allows me to save power when the sdhci controller
-> >> is not used. If I can disable two clocks out of three, I should use
-> >> runtime PM. Do you agree?
-> >>
-> >> If not, tell me how I can convince you :) Otherwise, next step is to rework
-> >> my patch but I think I have no other solution that not calling
-> >> sdhci_runtime_suspend_host if I expect to use the card detect irq of the
-> >> controller.
-> >
-> > So, to summarize.
-> >
-> > I think the best fix is to add a clever check in ->probe() and then
-> > enable polling when you can't rely on GPIO card detect IRQ.
-> >
-> > Moreover, to have a robust solution, you also need to clear
-> > SDHCI_QUIRK_BROKEN_CARD_DETECTION for your sdhci variant, as otherwise
-> > the "broken-cd" DT binding could wrongly be used for this variant.
-> >
-> > Does that make sense?
+next_freq = a        * x * current_freq / max_freq
+
+  [ a := max_freq, x := 1 ] ->
+
+          = max_freq * 1 * current_freq / max_freq
+	  = current_freq
+
+	  != max_freq
+
+But I think I see what you're saying; because at x = 1,
+current_frequency must be max_frequency. Per your earlier point.
+
+> but with that choice of a you may never get to x = 1 with frequency
+> invariant because of the feedback effect mentioned above, so the 1/n
+> produces the extra boost needed for that (n is a positive integer).
+
+OK, so that gets us:
+
+	a = (1 + 1/n) ; n > 0
+
+[ I would not have chosen (1 + 1/n), but lets stick to that ]
+
+So for n = 4 that gets you: a = 1.25, which effectively gets you an 80%
+utilization tipping point. That is, 1.25 * .8 = 1, iow. you'll pick the
+next frequency (assuming RELATION_L like selection).
+
+Together this gets you:
+
+	next_freq = (1 + 1/n) * max_freq * x * current_freq / max_freq
+	          = (1 + 1/n) * x * current_freq
+
+Again, with n = 4, x > .8 will result in a next_freq > current_freq, and
+hence (RELATION_L) pick a higher one.
+
+> Quite frankly, to me it looks like linear really is a better
+> approximation for "raw" utilization.  That is, for frequency invariant
+> x we should take:
+> 
+>   next_freq = a * x * max_freq / current_freq
+
+(its very confusing how you use 'x' for both invariant and
+non-invariant).
+
+That doesn't make sense, remember:
+
+	util = \Sum_i u_i * freq_i / max_freq		(1)
+
+Which for systems where freq_i is constant reduces to:
+
+	util = util_raw * current_freq / max_freq	(2)
+
+But you cannot reverse this. IOW you cannot try and divide out
+current_freq on a frequency invariant metric.
+
+So going by:
+
+	next_freq = (1 + 1/n) * max_freq * util		(3)
+
+if we substitute (2) into (3) we get:
+
+	          = (1 + 1/n) * max_freq * util_raw * current_freq / max_freq
+		  = (1 + 1/n) * current_freq * util_raw	(4)
+
+Which gets you two formula with the same general behaviour. As (2) is
+the only approximation of (1) we can make.
 
 
-Well I don't agree totally because I have the feeling to use a
-workaround because if sdhci_runtime_suspend_host has been called the
-controlled is considered as 'disabled' then we won't deal with its IRQs.
-
-I would like to move forward on this issue so it could be a trade-off.
-
-Since the sdhci layer is going to be reworked, maybe it could be
-interesting to have another approach of runtime PM to get more
-flexibility.
-
-
-Regards
-
-Ludovic
