@@ -1,73 +1,120 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a bit
-Date: Wed, 9 Mar 2016 15:17:48 +0100
-Message-ID: <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
-	<2409306.qzzMXcm4dm@vostro.rjw.lan>
-	<1988425.XTpZIAJINa@vostro.rjw.lan>
-	<20160309123956.GM6356@twins.programming.kicks-ass.net>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
+ machines.
+Date: Wed, 9 Mar 2016 15:33:36 +0100
+Message-ID: <20160309143336.GA26158@wunner.de>
+References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160309123956.GM6356@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Disposition: inline
+In-Reply-To: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 9, 2016 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, Mar 04, 2016 at 03:58:22AM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Use the observation that cpufreq_update_util() is only called
->> by the scheduler with rq->lock held, so the callers of
->> cpufreq_set_update_util_data() can use synchronize_sched()
->> instead of synchronize_rcu() to wait for cpufreq_update_util()
->> to complete.  Moreover, if they are updated to do that,
->> rcu_read_(un)lock() calls in cpufreq_update_util() might be
->> replaced with rcu_read_(un)lock_sched(), respectively, but
->> those aren't really necessary, because the scheduler calls
->> that function from RCU-sched read-side critical sections
->> already.
->>
->> In addition to that, if cpufreq_set_update_util_data() checks
->> the func field in the struct update_util_data before setting
->> the per-CPU pointer to it, the data->func check may be dropped
->> from cpufreq_update_util() as well.
->>
->> Make the above changes to reduce the overhead from
->> cpufreq_update_util() in the scheduler paths invoking it
->> and to make the cleanup after removing its callbacks less
->> heavy-weight somewhat.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>
->> Changes from the previous version:
->> - Use rcu_dereference_sched() in cpufreq_update_util().
->
-> Which I think also shows the WARN_ON I insisted upon is redundant.
->
-> In any case, I cannot object to reducing overhead, esp. as this whole
-> patch was suggested by me in the first place, so:
->
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-
-Thanks!
-
-> That said, how about the below? It avoids a function call.
-
-That is fine by me.
-
-What about taking it a bit further, though, and moving the definition
-of cpufreq_update_util_data to somewhere under kernel/sched/ (like
-kernel/sched/cpufreq.c maybe)?
-
-Then, the whole static inline void cpufreq_update_util() definition
-can go into kernel/sched/sched.h (it doesn't have to be visible
-anywhere beyond kernel/sched/) and the only thing that needs to be
-exported to cpufreq will be a helper (or two), to set/clear the
-cpufreq_update_util_data pointers.
-
-I'll try to cut a patch doing that later today for illustration.
+SGkgRGF2ZSwKCk9uIFdlZCwgTWFyIDA5LCAyMDE2IGF0IDA0OjE0OjA0UE0gKzEwMDAsIERhdmUg
+QWlybGllIHdyb3RlOgo+IEZyb206IERhdmUgQWlybGllIDxhaXJsaWVkQHJlZGhhdC5jb20+Cj4g
+Cj4gV2luZG93cyAxMCBzZWVtcyB0byBoYXZlIHN0YW5kYXJkaXNlZCBwb3dlciBjb250cm9sIGZv
+ciB0aGUKPiBvcHRpbXVzL3Bvd2VyeHByZXNzIGxhcHRvcHMgdXNpbmcgUFIzIHBvd2VyIHJlc291
+cmNlIGhvb2tzLgoKV2hhdCBoYXBwZW5lZCB0byB0aGUgT3B0aW11cyBEU00sIGRvZXMgdGhpcyBz
+dGlsbCB3b3JrPyBJZiBub3QsCmVjaG9pbmcgT0ZGIHRvIHRoZSB2Z2Fzd2l0Y2hlcm9vIHN5c2Zz
+IGZpbGUgd29uJ3QgcG93ZXIgZG93biB0aGUKR1BVIG5vdywgcmlnaHQ/IChJZiBydW50aW1lIHBt
+IGlzIGRpc2FibGVkIGluIG5vdXZlYXUuKQoKPiBJJ20gbm90IHN1cmUgdGhpcyBpcyBkZWZpbml0
+ZWx5IHRoZSBjb3JyZWN0IHBsYWNlIHRvIGJlCj4gZG9pbmcgdGhpcywgYnV0IGl0IHdvcmtzIGZv
+ciBtZSBoZXJlLgoKSG93IGFib3V0IGltcGxlbWVudGluZyBhbiBhZGRpdGlvbmFsIHZnYV9zd2l0
+Y2hlcm9vIGhhbmRsZXIgc29tZXdoZXJlCmluIGRyaXZlcnMvYWNwaS8sIHdoaWNoIGxvb2tzIGZv
+ciB0aGUgUFIzIGhvb2tzIGFuZCByZWdpc3RlcnMgd2l0aAp2Z2Ffc3dpdGNoZXJvbyBpZiBmb3Vu
+ZC4gVGhlIC0+cG93ZXJfc3RhdGUgY2FsbGJhY2sgb2YgdGhhdCBoYW5kbGVyCndvdWxkIHRoZW4g
+aW52b2tlIGFjcGlfZGV2aWNlX3NldF9wb3dlcigpLgoKVGhlIEFDUEkgYnVzIGlzIHNjYW5uZWQg
+aW4gdGhlIHN1YnN5c19pbml0Y2FsbCBzZWN0aW9uLCBtdWNoIGVhcmxpZXIKdGhhbiBub3V2ZWF1
+IGlzIGxvYWRlZCAoaW4gdGhlIGRldmljZV9pbml0Y2FsbCBzZWN0aW9uKS4gU28gdGhlIEFDUEkK
+dmdhX3N3aXRjaGVyb28gaGFuZGxlciBjb3VsZCByZWdpc3RlciBiZWZvcmUgdGhlIG5vdXZlYXUg
+RFNNIGhhbmRsZXIKYW5kIHRoZXJlZm9yZSB3b3VsZCBhbHdheXMgaGF2ZSBhIGhpZ2hlciBwcmVj
+ZWRlbmNlLgoKSW4gYW55IGNhc2UgdGhpcyBwYXRjaCBzaG91bGQgYmUgYW1lbmRlZCB3aXRoIGtl
+cm5lbGRvYyBmb3IKdmdhX3N3aXRjaGVyb29faW5pdF9wYXJlbnRfcHIzX29wcygpLCBJJ3ZlIHNw
+ZW50IGNvbnNpZGVyYWJsZSB0aW1lCmxhc3QgeWVhciB0byBkb2N1bWVudCBldmVyeXRoaW5nIGFu
+ZCBraW5kbHkgYXNrIHRoYXQgdGhpcyB3YXRlciBub3QKYmUgbXVkZGllZCBhZ2Fpbi4gOy0pCgpP
+bmUgc21hbGwgbml0LCB0aGUgaGVhZGVycyBhcmUgc29ydGVkIGFscGhhYmV0aWNhbGx5IHlldCBh
+Y3BpLmggaXMKYWRkZWQgYXQgdGhlIGVuZC4KClRoYW5rcywKCkx1a2FzCgo+IAo+IFRoZSBBQ1BJ
+IGRldmljZSBmb3IgdGhlIEdQVSBJIGhhdmUgaXMgXF9TQl8uUENJMC5QRUdfLlZJRF8KPiBidXQg
+dGhlIHBvd2VyIHJlc291cmNlIGhvb2tzIGFyZSBvbiBcX1NCXy5QQ0kwLlBFR18sIHNvCj4gdGhp
+cyBwYXRjaCBjcmVhdGVzIGEgbmV3IHBvd2VyIGRvbWFpbiB0byB0dXJuIHRoZSBHUFUKPiBkZXZp
+Y2UgcGFyZW50IG9mZiB1c2luZyBzdGFuZGFyZCBBQ1BJIGNhbGxzLgo+IAo+IFNpZ25lZC1vZmYt
+Ynk6IERhdmUgQWlybGllIDxhaXJsaWVkQHJlZGhhdC5jb20+Cj4gLS0tCj4gIGRyaXZlcnMvZ3B1
+L3ZnYS92Z2Ffc3dpdGNoZXJvby5jIHwgNTQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrLQo+ICBpbmNsdWRlL2xpbnV4L3ZnYV9zd2l0Y2hlcm9vLmggICB8ICAzICsrLQo+
+ICAyIGZpbGVzIGNoYW5nZWQsIDU1IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4gCj4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L3ZnYS92Z2Ffc3dpdGNoZXJvby5jIGIvZHJpdmVycy9n
+cHUvdmdhL3ZnYV9zd2l0Y2hlcm9vLmMKPiBpbmRleCA2NjVhYjlmLi5iZTMyY2IyIDEwMDY0NAo+
+IC0tLSBhL2RyaXZlcnMvZ3B1L3ZnYS92Z2Ffc3dpdGNoZXJvby5jCj4gKysrIGIvZHJpdmVycy9n
+cHUvdmdhL3ZnYV9zd2l0Y2hlcm9vLmMKPiBAQCAtNDIsNyArNDIsNyBAQAo+ICAjaW5jbHVkZSA8
+bGludXgvdWFjY2Vzcy5oPgo+ICAjaW5jbHVkZSA8bGludXgvdmdhYXJiLmg+Cj4gICNpbmNsdWRl
+IDxsaW51eC92Z2Ffc3dpdGNoZXJvby5oPgo+IC0KPiArI2luY2x1ZGUgPGxpbnV4L2FjcGkuaD4K
+PiAgLyoqCj4gICAqIERPQzogT3ZlcnZpZXcKPiAgICoKPiBAQCAtOTk3LDMgKzk5Nyw1NSBAQCB2
+Z2Ffc3dpdGNoZXJvb19pbml0X2RvbWFpbl9wbV9vcHRpbXVzX2hkbWlfYXVkaW8oc3RydWN0IGRl
+dmljZSAqZGV2LAo+ICAJcmV0dXJuIC1FSU5WQUw7Cj4gIH0KPiAgRVhQT1JUX1NZTUJPTCh2Z2Ff
+c3dpdGNoZXJvb19pbml0X2RvbWFpbl9wbV9vcHRpbXVzX2hkbWlfYXVkaW8pOwo+ICsKPiArLyog
+V2l0aCBXaW5kb3dzIDEwIHRoZSBydW50aW1lIHN1c3BlbmQvcmVzdW1lIGNhbiB1c2UgcG93ZXIK
+PiArICAgcmVzb3VyY2VzIG9uIHRoZSBwYXJlbnQgZGV2aWNlICovCj4gK3N0YXRpYyBpbnQgdmdh
+X2FjcGlfc3dpdGNoZXJvb19ydW50aW1lX3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQo+ICt7
+Cj4gKwlzdHJ1Y3QgcGNpX2RldiAqcGRldiA9IHRvX3BjaV9kZXYoZGV2KTsKPiArCWludCByZXQ7
+Cj4gKwlzdHJ1Y3QgYWNwaV9kZXZpY2UgKmFkZXY7Cj4gKwo+ICsJcmV0ID0gZGV2LT5idXMtPnBt
+LT5ydW50aW1lX3N1c3BlbmQoZGV2KTsKPiArCWlmIChyZXQpCj4gKwkJcmV0dXJuIHJldDsKPiAr
+Cj4gKwlyZXQgPSBhY3BpX2J1c19nZXRfZGV2aWNlKEFDUElfSEFORExFKCZwZGV2LT5kZXYpLCAm
+YWRldik7Cj4gKwlpZiAoIXJldCkKPiArCQlhY3BpX2RldmljZV9zZXRfcG93ZXIoYWRldi0+cGFy
+ZW50LCBBQ1BJX1NUQVRFX0QzX0NPTEQpOwo+ICsJcmV0dXJuIDA7Cj4gK30KPiArCj4gK3N0YXRp
+YyBpbnQgdmdhX2FjcGlfc3dpdGNoZXJvb19ydW50aW1lX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpk
+ZXYpCj4gK3sKPiArCXN0cnVjdCBwY2lfZGV2ICpwZGV2ID0gdG9fcGNpX2RldihkZXYpOwo+ICsJ
+c3RydWN0IGFjcGlfZGV2aWNlICphZGV2Owo+ICsJaW50IHJldDsKPiArCj4gKwlyZXQgPSBhY3Bp
+X2J1c19nZXRfZGV2aWNlKEFDUElfSEFORExFKCZwZGV2LT5kZXYpLCAmYWRldik7Cj4gKwlpZiAo
+IXJldCkKPiArCQlhY3BpX2RldmljZV9zZXRfcG93ZXIoYWRldi0+cGFyZW50LCBBQ1BJX1NUQVRF
+X0QwKTsKPiArCXJldCA9IGRldi0+YnVzLT5wbS0+cnVudGltZV9yZXN1bWUoZGV2KTsKPiArCWlm
+IChyZXQpCj4gKwkJcmV0dXJuIHJldDsKPiArCj4gKwlyZXR1cm4gMDsKPiArfQo+ICsKPiAraW50
+IHZnYV9zd2l0Y2hlcm9vX2luaXRfcGFyZW50X3ByM19vcHMoc3RydWN0IGRldmljZSAqZGV2LAo+
+ICsJCQkJICAgICAgIHN0cnVjdCBkZXZfcG1fZG9tYWluICpkb21haW4pCj4gKwo+ICt7Cj4gKwkv
+KiBjb3B5IG92ZXIgYWxsIHRoZSBidXMgdmVyc2lvbnMgKi8KPiArCWlmIChkZXYtPmJ1cyAmJiBk
+ZXYtPmJ1cy0+cG0pIHsKPiArCQlkb21haW4tPm9wcyA9ICpkZXYtPmJ1cy0+cG07Cj4gKwkJZG9t
+YWluLT5vcHMucnVudGltZV9zdXNwZW5kID0gdmdhX2FjcGlfc3dpdGNoZXJvb19ydW50aW1lX3N1
+c3BlbmQ7Cj4gKwkJZG9tYWluLT5vcHMucnVudGltZV9yZXN1bWUgPSB2Z2FfYWNwaV9zd2l0Y2hl
+cm9vX3J1bnRpbWVfcmVzdW1lOwo+ICsKPiArCQlkZXZfcG1fZG9tYWluX3NldChkZXYsIGRvbWFp
+bik7Cj4gKwkJcmV0dXJuIDA7Cj4gKwl9Cj4gKwlkZXZfcG1fZG9tYWluX3NldChkZXYsIE5VTEwp
+Owo+ICsJcmV0dXJuIC1FSU5WQUw7Cj4gK30KPiArRVhQT1JUX1NZTUJPTCh2Z2Ffc3dpdGNoZXJv
+b19pbml0X3BhcmVudF9wcjNfb3BzKTsKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC92Z2Ff
+c3dpdGNoZXJvby5oIGIvaW5jbHVkZS9saW51eC92Z2Ffc3dpdGNoZXJvby5oCj4gaW5kZXggNjll
+MWQ0YTEuLjVjZTBjYmUgMTAwNjQ0Cj4gLS0tIGEvaW5jbHVkZS9saW51eC92Z2Ffc3dpdGNoZXJv
+by5oCj4gKysrIGIvaW5jbHVkZS9saW51eC92Z2Ffc3dpdGNoZXJvby5oCj4gQEAgLTE0NCw2ICsx
+NDQsNyBAQCB2b2lkIHZnYV9zd2l0Y2hlcm9vX3NldF9keW5hbWljX3N3aXRjaChzdHJ1Y3QgcGNp
+X2RldiAqcGRldiwgZW51bSB2Z2Ffc3dpdGNoZXJvbwo+ICBpbnQgdmdhX3N3aXRjaGVyb29faW5p
+dF9kb21haW5fcG1fb3BzKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldl9wbV9kb21haW4g
+KmRvbWFpbik7Cj4gIHZvaWQgdmdhX3N3aXRjaGVyb29fZmluaV9kb21haW5fcG1fb3BzKHN0cnVj
+dCBkZXZpY2UgKmRldik7Cj4gIGludCB2Z2Ffc3dpdGNoZXJvb19pbml0X2RvbWFpbl9wbV9vcHRp
+bXVzX2hkbWlfYXVkaW8oc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2X3BtX2RvbWFpbiAq
+ZG9tYWluKTsKPiAraW50IHZnYV9zd2l0Y2hlcm9vX2luaXRfcGFyZW50X3ByM19vcHMoc3RydWN0
+IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2X3BtX2RvbWFpbiAqZG9tYWluKTsKPiAgI2Vsc2UKPiAg
+Cj4gIHN0YXRpYyBpbmxpbmUgdm9pZCB2Z2Ffc3dpdGNoZXJvb191bnJlZ2lzdGVyX2NsaWVudChz
+dHJ1Y3QgcGNpX2RldiAqZGV2KSB7fQo+IEBAIC0xNjMsNiArMTY0LDYgQEAgc3RhdGljIGlubGlu
+ZSB2b2lkIHZnYV9zd2l0Y2hlcm9vX3NldF9keW5hbWljX3N3aXRjaChzdHJ1Y3QgcGNpX2RldiAq
+cGRldiwgZW51bQo+ICBzdGF0aWMgaW5saW5lIGludCB2Z2Ffc3dpdGNoZXJvb19pbml0X2RvbWFp
+bl9wbV9vcHMoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2X3BtX2RvbWFpbiAqZG9tYWlu
+KSB7IHJldHVybiAtRUlOVkFMOyB9Cj4gIHN0YXRpYyBpbmxpbmUgdm9pZCB2Z2Ffc3dpdGNoZXJv
+b19maW5pX2RvbWFpbl9wbV9vcHMoc3RydWN0IGRldmljZSAqZGV2KSB7fQo+ICBzdGF0aWMgaW5s
+aW5lIGludCB2Z2Ffc3dpdGNoZXJvb19pbml0X2RvbWFpbl9wbV9vcHRpbXVzX2hkbWlfYXVkaW8o
+c3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2X3BtX2RvbWFpbiAqZG9tYWluKSB7IHJldHVy
+biAtRUlOVkFMOyB9Cj4gLQo+ICtzdGF0aWMgaW5saW5lIGludCB2Z2Ffc3dpdGNoZXJvb19pbml0
+X3BhcmVudF9wcjNfb3BzKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldl9wbV9kb21haW4g
+KmRvbWFpbikgeyByZXR1cm4gLUVJTlZBTDsgfQo+ICAjZW5kaWYKPiAgI2VuZGlmIC8qIF9MSU5V
+WF9WR0FfU1dJVENIRVJPT19IXyAqLwo+IC0tIAo+IDIuNS4wCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRl
+dmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
