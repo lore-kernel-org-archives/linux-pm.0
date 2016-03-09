@@ -1,79 +1,96 @@
-From: Matt Fleming <matt@codeblueprint.co.uk>
-Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
- platforms without _S5
-Date: Wed, 9 Mar 2016 15:34:36 +0000
-Message-ID: <20160309153436.GB15775@codeblueprint.co.uk>
-References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
- <36DF59CE26D8EE47B0655C516E9CE640286D329F@shsmsx102.ccr.corp.intel.com>
- <2414254.VhAiD01BTS@vostro.rjw.lan>
- <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+From: Ludovic Desroches <ludovic.desroches@atmel.com>
+Subject: Re: [PATCH] mmc: sdhci-of-at91: fix wakeup issue when using runtime
+ pm
+Date: Wed, 9 Mar 2016 17:38:09 +0100
+Message-ID: <20160309163809.GM2690@odux.rfo.atmel.com>
+References: <20160212120415.GJ14937@odux.rfo.atmel.com>
+ <1455357400-32145-1-git-send-email-ludovic.desroches@atmel.com>
+ <CAPDyKFroVY0ZdqPScpGiJ8Y_QhhZ7asf0R0MzSx0WzVi5c2neg@mail.gmail.com>
+ <20160216152204.GE2607@odux.rfo.atmel.com>
+ <20160217103515.GM2607@odux.rfo.atmel.com>
+ <CAPDyKFpovsOMVSxifefFcvHFoNL-AaBH_tbWbN7QRQqv2hrSnw@mail.gmail.com>
+ <20160304134830.GG2690@odux.rfo.atmel.com>
+ <CAPDyKFrDmWGiMF2fOt1kGyp03mRiTV2ug-i3mg=yYr5UF=WLeQ@mail.gmail.com>
+ <CAPDyKFpDHooacBrTXQzinO4U10SeoedybN5HZ5y1bwbO-F04ug@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:34557 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753708AbcCIPej (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 10:34:39 -0500
-Received: by mail-wm0-f48.google.com with SMTP id p65so197654709wmp.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2016 07:34:39 -0800 (PST)
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-mmc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAPDyKFpDHooacBrTXQzinO4U10SeoedybN5HZ5y1bwbO-F04ug@mail.gmail.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Ludovic Desroches <ludovic.desroches@atmel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, khilman@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Tue, 08 Mar, at 04:25:30PM, Chen, Yu C wrote:
-> Hum. unfortunately it is not guaranteed to run after all of the other code,
-> because other components who register pm_power_off may be built as modules, and
-> we can not predict/control the sequence registration.   So this patch may
-> break the EFI platforms who use non-efi poweroff due to unstable EFI service
-> ,  not sure if there are any released-products of this kind.
- 
-Certainly the majority of x86 client machines do not use EFI power
-off, because it hardly ever functions correctly.
++ PM mailing list since the discussion is mixing PM and sdhci
 
-> Currently I'm thinking of 3 possible solutions,  could you please give some advices on them:
+On Tue, Mar 08, 2016 at 10:56:31PM +0100, Ulf Hansson wrote:
+> +Ludovic
 > 
-> 1. Introduce bootopt of 'poweroff=efi'
->      Set the pm_power_off to efi_power_off no matter whether there is _S5 or not
-> 
-> 2. Introduce /sys/power/poweroff
->     Allow the user to choose which  pm_power_off, for example:
->  
-> # cat /sys/power/poweroff
-> *acpi		acpi_power_off
-> efi		efi_power_off	
-> gpio		gpio_poweroff_do_poweroff
-> user can echo string to enable which one.
-> 
-> And two APIs:
-> register_power_off(char *name, power_off func)
-> unregister_power_off(char *name)  
-> 
-> 
-> 3. replace all the codes of  pm_power_off() with reliable_pm_power_off()
-> 
-> void reliable_pm_power_off(void)
-> {
-> 	if (!pm_power_off) {
-> 		if (acpi_no_s5)
-> 			pm_power_off = efi_power_off;
-> 	/* Other conditions added in the future. */
-> 	}
-> 	pm_power_off();
-> }
+> On 8 March 2016 at 22:54, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > On 4 March 2016 at 14:48, Ludovic Desroches <ludovic.desroches@atmel.com> wrote:
 
-Be wary of adding all these control knobs. People just want their
-machines to reboot properly without having to mess with boot
-parameters.
+[snip]
 
-Let's go back to the start. What prompted this patch? Do Intel have
-(or are planning) machines that do not have _S5 and are expected to
-use EFI to reset the system? Or is this some new configuration
-discussed in the ACPI spec that Linux needs to be support? 
+> >>
+> >> Coming back to the initial discussion and patch which were motivated by
+> >> the fact that after runtime suspend I can't wake-up on card detect event,
+> >> I have the feeling we don't have the same assumption about runtime PM.
+> >>
+> >> From what you and Adrian told me, I should not use runtime PM if I have
+> >> no way to wake-up. In your minds, the way to wake-up is to use an
+> >> externel GPIO because the controller will be 'totally' disabled, isn't it?
+> >
+> > I agree to the first part here.
+> >
+> > Although, as you also have the option to use polling for card detect,
+> > this actually means you don't really *need* to have a wakeup
+> > configured. Especially in the case where you don't have GPIO card
+> > detect.
+> >
+> > In that way, *all* the clocks can gated in between the polling
+> > attempts, thus you will save power even in the polling mode
+> > configuration and when runtime PM is enabled.
+> >
 
-Can we remove the ambiguity and options to force EFI reset if _S5 is
-missing? Afterall, that's why the function is called
-efi_poweroff_*required*.
+As you said, I can gate all the clocks but only between attempts.
+Regularly, I will resume and suspend my controller to perform the card
+detection. I don't know if it is a better solution than keeping one
+clock enabled and waiting for an interrupt to enable the other ones.
+
+> >>
+> >> On my side, runtime PM allows me to save power when the sdhci controller
+> >> is not used. If I can disable two clocks out of three, I should use
+> >> runtime PM. Do you agree?
+> >>
+> >> If not, tell me how I can convince you :) Otherwise, next step is to rework
+> >> my patch but I think I have no other solution that not calling
+> >> sdhci_runtime_suspend_host if I expect to use the card detect irq of the
+> >> controller.
+> >
+> > So, to summarize.
+> >
+> > I think the best fix is to add a clever check in ->probe() and then
+> > enable polling when you can't rely on GPIO card detect IRQ.
+> >
+> > Moreover, to have a robust solution, you also need to clear
+> > SDHCI_QUIRK_BROKEN_CARD_DETECTION for your sdhci variant, as otherwise
+> > the "broken-cd" DT binding could wrongly be used for this variant.
+> >
+> > Does that make sense?
+
+
+Well I don't agree totally because I have the feeling to use a
+workaround because if sdhci_runtime_suspend_host has been called the
+controlled is considered as 'disabled' then we won't deal with its IRQs.
+
+I would like to move forward on this issue so it could be a trade-off.
+
+Since the sdhci layer is going to be reworked, maybe it could be
+interesting to have another approach of runtime PM to get more
+flexibility.
+
+
+Regards
+
+Ludovic
