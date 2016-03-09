@@ -1,180 +1,93 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V7 3/4] soc: tegra: pmc: Add generic PM domain support
-Date: Wed, 9 Mar 2016 10:22:31 +0000
-Message-ID: <56DFF967.7030505@nvidia.com>
-References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
- <1457094186-15786-4-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFooBRk4Od=pgEnK8Uvq6Y+5O9uK5Ej9Z4gJn1W=imPvdw@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 1/2] PM / clk: Add stubs for pm_clk_suspend/resume
+Date: Wed, 9 Mar 2016 10:58:09 +0000
+Message-ID: <56E001C1.2050905@nvidia.com>
+References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com>
+ <56DF094E.4030809@nvidia.com> <4293335.ArkqpzdFRe@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFooBRk4Od=pgEnK8Uvq6Y+5O9uK5Ej9Z4gJn1W=imPvdw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:17451 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753052AbcCIK6Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 05:58:16 -0500
+In-Reply-To: <4293335.ArkqpzdFRe@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-Hi Uffe,
 
-On 08/03/16 21:28, Ulf Hansson wrote:
-> On 4 March 2016 at 13:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->> Adds generic PM support to the PMC driver where the PM domains are
->> populated from device-tree and the PM domain consumer devices are
->> bound to their relevant PM domains via device-tree as well.
+On 08/03/16 22:58, Rafael J. Wysocki wrote:
+> On Tuesday, March 08, 2016 05:18:06 PM Jon Hunter wrote:
 >>
->> Update the tegra_powergate_sequence_power_up() API so that internally
->> it calls the same tegra_powergate_xxx functions that are used by the
->> tegra generic power domain code for consistency.
+>> On 04/03/16 15:33, Jon Hunter wrote:
+>>> The functions pm_clk_suspend() and pm_clk_resume() cannot be used
+>>> directly within the main body of a function, because when CONFIG_PM_CLK
+>>> is not defined the functions are defined as NULL and this will lead to
+>>> a compilation error.
+>>>
+>>> Add stubs functions for pm_clk_suspend() and pm_clk_resume() so that
+>>> these functions may be called directly.
+>>>
+>>> Please note that these functions are currently assigned to function
+>>> pointers in the PM domain core and so to avoid have a valid function
+>>> pointer defined when CONFIG_PM_CLK is not defined, define
+>>> GENPD_FLAG_PM_CLK as 0 when CONFIG_PM_CLK is not defined to ensure
+>>> the stubs are not populated as valid function pointers.
+>>>
+>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>> ---
+>>>  include/linux/pm_clock.h  | 10 ++++++++--
+>>>  include/linux/pm_domain.h |  4 ++++
+>>>  2 files changed, 12 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
+>>> index 25266c600021..ffefbf2df1aa 100644
+>>> --- a/include/linux/pm_clock.h
+>>> +++ b/include/linux/pm_clock.h
+>>> @@ -72,8 +72,14 @@ static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
+>>>  static inline void pm_clk_remove(struct device *dev, const char *con_id)
+>>>  {
+>>>  }
+>>> -#define pm_clk_suspend	NULL
+>>> -#define pm_clk_resume	NULL
+>>> +static inline int pm_clk_suspend(struct device *dev)
+>>> +{
+>>> +	return -EINVAL;
+>>> +}
+>>> +static inline int pm_clk_resume(struct device *dev)
+>>> +{
+>>> +	return -EINVAL;
+>>> +}
+>>>  #endif
+>>>  
+>>>  #ifdef CONFIG_HAVE_CLK
+>>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>>> index 49cd8890b873..1074c2073df8 100644
+>>> --- a/include/linux/pm_domain.h
+>>> +++ b/include/linux/pm_domain.h
+>>> @@ -17,7 +17,11 @@
+>>>  #include <linux/notifier.h>
+>>>  
+>>>  /* Defines used for the flags field in the struct generic_pm_domain */
+>>> +#ifdef CONFIG_PM_CLK
+>>>  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+>>> +#else
+>>> +#define GENPD_FLAG_PM_CLK	0
+>>> +#endif
+>>>  
+>>>  #define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
 >>
->> To ensure that the Tegra power domains (a.k.a powergates) cannot be
->> controlled via both the legacy tegra_powergate_xxx functions as well
->> as the generic PM domain framework, add a bit map for available
->> powergates that can be controlled via the legacy powergate functions.
->>
->> Move the majority of the tegra_powergate_remove_clamping() function
->> to a sub-function, so that this can be used by both the legacy and
->> generic power domain code.
->>
->> Currently, the power domains are not removed once added because this
->> is not yet supported by the PM domains framework. An error message
->> will be displayed if we are unable to instantiate a power domain.
->>
->> This is based upon work by Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->> and Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
->>
->> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->> ---
->>  drivers/soc/tegra/pmc.c | 485 ++++++++++++++++++++++++++++++++++++++++++------
->>  include/soc/tegra/pmc.h |   1 +
->>  2 files changed, 425 insertions(+), 61 deletions(-)
->>
->> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
->> index 08966c26d65c..bb173456bbff 100644
->> --- a/drivers/soc/tegra/pmc.c
->> +++ b/drivers/soc/tegra/pmc.c
->> @@ -31,10 +31,13 @@
->>  #include <linux/iopoll.h>
->>  #include <linux/of.h>
->>  #include <linux/of_address.h>
->> +#include <linux/of_platform.h>
->>  #include <linux/platform_device.h>
->> +#include <linux/pm_domain.h>
->>  #include <linux/reboot.h>
->>  #include <linux/reset.h>
->>  #include <linux/seq_file.h>
->> +#include <linux/slab.h>
->>  #include <linux/spinlock.h>
->>
->>  #include <soc/tegra/common.h>
->> @@ -102,6 +105,16 @@
->>
->>  #define GPU_RG_CNTRL                   0x2d4
->>
->> +struct tegra_powergate {
->> +       struct generic_pm_domain genpd;
->> +       struct tegra_pmc *pmc;
->> +       unsigned int id;
->> +       struct clk **clks;
->> +       unsigned int num_clks;
->> +       struct reset_control **resets;
->> +       unsigned int num_resets;
->> +};
->> +
->>  struct tegra_pmc_soc {
->>         unsigned int num_powergates;
->>         const char *const *powergates;
->> @@ -132,6 +145,7 @@ struct tegra_pmc_soc {
->>   * @cpu_pwr_good_en: CPU power good signal is enabled
->>   * @lp0_vec_phys: physical base address of the LP0 warm boot code
->>   * @lp0_vec_size: size of the LP0 warm boot code
->> + * @powergates_available: Bitmap of available power gates
->>   * @powergates_lock: mutex for power gate register access
->>   */
->>  struct tegra_pmc {
->> @@ -156,6 +170,7 @@ struct tegra_pmc {
->>         bool cpu_pwr_good_en;
->>         u32 lp0_vec_phys;
->>         u32 lp0_vec_size;
->> +       DECLARE_BITMAP(powergates_available, TEGRA_POWERGATE_MAX);
->>
->>         struct mutex powergates_lock;
->>  };
->> @@ -165,6 +180,12 @@ static struct tegra_pmc *pmc = &(struct tegra_pmc) {
->>         .suspend_mode = TEGRA_SUSPEND_NONE,
->>  };
->>
->> +static inline struct tegra_powergate *
->> +to_powergate(struct generic_pm_domain *domain)
->> +{
->> +       return container_of(domain, struct tegra_powergate, genpd);
->> +}
->> +
->>  static u32 tegra_pmc_readl(unsigned long offset)
->>  {
->>         return readl(pmc->base + offset);
->> @@ -188,6 +209,31 @@ static inline bool tegra_powergate_is_valid(int id)
->>         return (pmc->soc && pmc->soc->powergates[id]);
->>  }
->>
->> +static inline bool tegra_powergate_is_available(int id)
->> +{
->> +       return test_bit(id, pmc->powergates_available);
->> +}
->> +
->> +static int tegra_powergate_lookup(struct tegra_pmc *pmc, const char *name)
->> +{
->> +       unsigned int i;
->> +
->> +       if (!pmc || !pmc->soc || !name)
->> +               return -EINVAL;
->> +
->> +       for (i = 0; i < pmc->soc->num_powergates; i++) {
->> +               if (!tegra_powergate_is_valid(i))
->> +                       continue;
->> +
->> +               if (!strcmp(name, pmc->soc->powergates[i]))
->> +                       return i;
+>> Thinking about this some more, the alternative is for drivers using
+>> PM_CLK to select it. Would that be appropriate? If so, we would not need
+>> these stubs.
 > 
-> Instead of having this name based lookup, why not provide the id using
-> DT instead?
-> 
-> In other words use of_genpd_add_provider_onecell() when adding the OF
-> genpd provider. In that way I think you will get a bit simplier code
-> dealing with the error path when initialzing the genpds, won't you?
+> Well, I don't see why it might not be appropriate.
 
-The above is simply used when creating the PM domains and not when
-calling the xlate to lookup the PM domain (which I believe you are
-referring to).
-
-Originally, the DT node for the PM domain included an ID for the PM
-domain, but when discussing with Thierry we thought there was no need to
-have both a name and ID. So now the DT node for the PM domain look like ...
-
-	powergates {
-		pd_audio: aud {
-			clocks = <&tegra_car TEGRA210_CLK_APE>,
-			         <&tegra_car TEGRA210_CLK_APB2APE>;
-			resets = <&tegra_car 198>;
-			#power-domain-cells = <0>;
-		};
-	};
-
-And the client binding ...
-
-	adma: adma@702e2000 {
-		...
-		power-domains = <&pd_audio>;
-		...
-	};
-
-> Anyway, I guess it's more a matter of taste, so feel free to keep as is.
-
-I prefer not to use of_genpd_add_provider_onecell() for tegra as this
-appears to be used for devices with a static list of PM domains. Yes,
-the Tegra PMC driver does have a static list of PM domain names (per
-pmc->soc->powergates[i]), however, I prefer that all the clock and reset
-information resides in the DT blob.
+Ok, thanks. I will drop this patch for now and update the 2nd patch of
+this series to address the comments from Geert.
 
 Cheers
 Jon
