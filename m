@@ -1,77 +1,38 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 2/2] nouveau: use new vga_switcheroo power domain.
-Date: Wed, 9 Mar 2016 15:40:47 +0100
-Message-ID: <20160309144047.GB26158@wunner.de>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
- <1457504045-12738-2-git-send-email-airlied@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a
+ bit
+Date: Wed, 9 Mar 2016 16:29:34 +0100
+Message-ID: <20160309152934.GO6356@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <2409306.qzzMXcm4dm@vostro.rjw.lan>
+ <1988425.XTpZIAJINa@vostro.rjw.lan>
+ <20160309123956.GM6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1457504045-12738-2-git-send-email-airlied@gmail.com>
+In-Reply-To: <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Dave Airlie <airlied@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dave,
-
-On Wed, Mar 09, 2016 at 04:14:05PM +1000, Dave Airlie wrote:
-> From: Dave Airlie <airlied@redhat.com>
+On Wed, Mar 09, 2016 at 03:17:48PM +0100, Rafael J. Wysocki wrote:
+> > That said, how about the below? It avoids a function call.
 > 
-> This fixes GPU auto powerdown on the Lenovo W541,
-> since we advertise Windows 2013 to the ACPI layer.
+> That is fine by me.
 > 
-> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> ---
->  drivers/gpu/drm/nouveau/nouveau_vga.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+> What about taking it a bit further, though, and moving the definition
+> of cpufreq_update_util_data to somewhere under kernel/sched/ (like
+> kernel/sched/cpufreq.c maybe)?
 > 
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> index af89c36..b987427f 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_vga.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> @@ -101,8 +101,12 @@ nouveau_vga_init(struct nouveau_drm *drm)
->  		runtime = true;
->  	vga_switcheroo_register_client(dev->pdev, &nouveau_switcheroo_ops, runtime);
->  
-> -	if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> -		vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-> +	if (runtime) {
-> +		if (nouveau_is_v1_dsm() && !nouveau_is_optimus())
+> Then, the whole static inline void cpufreq_update_util() definition
+> can go into kernel/sched/sched.h (it doesn't have to be visible
+> anywhere beyond kernel/sched/) and the only thing that needs to be
+> exported to cpufreq will be a helper (or two), to set/clear the
+> cpufreq_update_util_data pointers.
+> 
+> I'll try to cut a patch doing that later today for illustration.
 
-The " && !nouveau_is_optimus()" can be dropped because a machine cannot
-have both. Note the "else" in nouveau_dsm_detect():
-
-        if (has_optimus == 1) { ...
-                nouveau_dsm_priv.optimus_detected = true;
-        } else if (vga_count == 2 && has_dsm && guid_valid) { ...
-                nouveau_dsm_priv.dsm_detected = true;
-        }
-
-> +			vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-> +		else if (nouveau_is_optimus())
-> +			vga_switcheroo_init_parent_pr3_ops(drm->dev->dev, &drm->vga_pm_domain);
-
-You're calling this unconditionally for all Optimus machines yet
-I assume pre Windows 10 machines lack the PR3 hooks.
-
-Best regards,
-
-Lukas
-
-> +	}
->  }
->  
->  void
-> @@ -117,7 +121,7 @@ nouveau_vga_fini(struct nouveau_drm *drm)
->  		runtime = true;
->  
->  	vga_switcheroo_unregister_client(dev->pdev);
-> -	if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> +	if (runtime && (nouveau_is_v1_dsm() || nouveau_is_optimus()))
->  		vga_switcheroo_fini_domain_pm_ops(drm->dev->dev);
->  	vga_client_register(dev->pdev, NULL, NULL, NULL);
->  }
-> -- 
-> 2.5.0
+Right, that's a blend with your second patch. Sure.
