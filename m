@@ -1,60 +1,63 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] nouveau: use new vga_switcheroo power domain.
-Date: Wed, 9 Mar 2016 14:20:36 +0100
-Message-ID: <CAJZ5v0g6J0Lew=JxoTA35-JL4-wexWmNh=d_nTg_Ld=iA+RifA@mail.gmail.com>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
-	<1457504045-12738-2-git-send-email-airlied@gmail.com>
+Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
+ utilization update callbacks
+Date: Wed, 9 Mar 2016 14:22:58 +0100
+Message-ID: <CAJZ5v0jirE0uq_=OidG9RzjPdHqffeXL-=45WOD8jej=_ZhHgQ@mail.gmail.com>
+References: <3071836.JbNxX8hU6x@vostro.rjw.lan>
+	<2044559.7ypXocW9OZ@vostro.rjw.lan>
+	<3499355.2JlaSruvOa@vostro.rjw.lan>
+	<16016177.YFqb4gVNBo@vostro.rjw.lan>
+	<20160309123539.GL6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1457504045-12738-2-git-send-email-airlied@gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dave Airlie <airlied@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:34005 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752525AbcCINW7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 08:22:59 -0500
+In-Reply-To: <20160309123539.GL6356@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Wed, Mar 9, 2016 at 7:14 AM, Dave Airlie <airlied@gmail.com> wrote:
-> From: Dave Airlie <airlied@redhat.com>
+On Wed, Mar 9, 2016 at 1:35 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, Feb 15, 2016 at 10:47:22PM +0100, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Introduce a mechanism by which parts of the cpufreq subsystem
+>> ("setpolicy" drivers or the core) can register callbacks to be
+>> executed from cpufreq_update_util() which is invoked by the
+>> scheduler's update_load_avg() on CPU utilization changes.
+>>
+>> This allows the "setpolicy" drivers to dispense with their timers
+>> and do all of the computations they need and frequency/voltage
+>> adjustments in the update_load_avg() code path, among other things.
+>>
+>> The update_load_avg() changes were suggested by Peter Zijlstra.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/cpufreq.h   |   34 ++++++++++++++++++++++++++++++++++
+>>  kernel/sched/deadline.c   |    4 ++++
+>>  kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
+>>  kernel/sched/rt.c         |    4 ++++
+>>  kernel/sched/sched.h      |    1 +
+>>  6 files changed, 113 insertions(+), 1 deletion(-)
+>>
 >
-> This fixes GPU auto powerdown on the Lenovo W541,
-> since we advertise Windows 2013 to the ACPI layer.
->
-> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> ---
->  drivers/gpu/drm/nouveau/nouveau_vga.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> index af89c36..b987427f 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_vga.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> @@ -101,8 +101,12 @@ nouveau_vga_init(struct nouveau_drm *drm)
->                 runtime = true;
->         vga_switcheroo_register_client(dev->pdev, &nouveau_switcheroo_ops, runtime);
->
-> -       if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> -               vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-> +       if (runtime) {
-> +               if (nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> +                       vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-> +               else if (nouveau_is_optimus())
-> +                       vga_switcheroo_init_parent_pr3_ops(drm->dev->dev, &drm->vga_pm_domain);
-> +       }
->  }
->
->  void
-> @@ -117,7 +121,7 @@ nouveau_vga_fini(struct nouveau_drm *drm)
->                 runtime = true;
->
->         vga_switcheroo_unregister_client(dev->pdev);
-> -       if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> +       if (runtime && (nouveau_is_v1_dsm() || nouveau_is_optimus()))
->                 vga_switcheroo_fini_domain_pm_ops(drm->dev->dev);
->         vga_client_register(dev->pdev, NULL, NULL, NULL);
->  }
-> --
+> So with the understanding that we'll work on getting rid of
+> cpufreq_trigger_update().
 
-Looks reasonable to me.
+That definitely is the plan.
 
-Thanks,
-Rafael
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
+Thanks! :-)
+
+> Also, Vincent had some concerns about the exact placement of the
+> callback, and I see no problem in moving it if there's need.
+
+Yup, same here.
