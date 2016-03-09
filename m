@@ -1,88 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] PM / clk: Add stubs for pm_clk_suspend/resume
-Date: Tue, 08 Mar 2016 23:58:23 +0100
-Message-ID: <4293335.ArkqpzdFRe@vostro.rjw.lan>
-References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com> <56DF094E.4030809@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sinan Kaya <okaya@codeaurora.org>
+Subject: [PATCH 3/4] acpi,pci,irq: remove SCI penalize function
+Date: Tue,  8 Mar 2016 19:41:18 -0500
+Message-ID: <1457484079-18202-3-git-send-email-okaya@codeaurora.org>
+References: <1457484079-18202-1-git-send-email-okaya@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50453 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750970AbcCHW4c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 17:56:32 -0500
-In-Reply-To: <56DF094E.4030809@nvidia.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56754 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbcCIAlc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Mar 2016 19:41:32 -0500
+In-Reply-To: <1457484079-18202-1-git-send-email-okaya@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+To: linux-acpi@vger.kernel.org, timur@codeaurora.org, cov@codeaurora.org
+Cc: linux-pci@vger.kernel.org, ravikanth.nalla@hpe.com, lenb@kernel.org, harish.k@hpe.com, ashwin.reghunandanan@hpe.com, bhelgaas@google.com, rjw@rjwysocki.net, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, March 08, 2016 05:18:06 PM Jon Hunter wrote:
-> 
-> On 04/03/16 15:33, Jon Hunter wrote:
-> > The functions pm_clk_suspend() and pm_clk_resume() cannot be used
-> > directly within the main body of a function, because when CONFIG_PM_CLK
-> > is not defined the functions are defined as NULL and this will lead to
-> > a compilation error.
-> > 
-> > Add stubs functions for pm_clk_suspend() and pm_clk_resume() so that
-> > these functions may be called directly.
-> > 
-> > Please note that these functions are currently assigned to function
-> > pointers in the PM domain core and so to avoid have a valid function
-> > pointer defined when CONFIG_PM_CLK is not defined, define
-> > GENPD_FLAG_PM_CLK as 0 when CONFIG_PM_CLK is not defined to ensure
-> > the stubs are not populated as valid function pointers.
-> > 
-> > Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> > ---
-> >  include/linux/pm_clock.h  | 10 ++++++++--
-> >  include/linux/pm_domain.h |  4 ++++
-> >  2 files changed, 12 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
-> > index 25266c600021..ffefbf2df1aa 100644
-> > --- a/include/linux/pm_clock.h
-> > +++ b/include/linux/pm_clock.h
-> > @@ -72,8 +72,14 @@ static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
-> >  static inline void pm_clk_remove(struct device *dev, const char *con_id)
-> >  {
-> >  }
-> > -#define pm_clk_suspend	NULL
-> > -#define pm_clk_resume	NULL
-> > +static inline int pm_clk_suspend(struct device *dev)
-> > +{
-> > +	return -EINVAL;
-> > +}
-> > +static inline int pm_clk_resume(struct device *dev)
-> > +{
-> > +	return -EINVAL;
-> > +}
-> >  #endif
-> >  
-> >  #ifdef CONFIG_HAVE_CLK
-> > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> > index 49cd8890b873..1074c2073df8 100644
-> > --- a/include/linux/pm_domain.h
-> > +++ b/include/linux/pm_domain.h
-> > @@ -17,7 +17,11 @@
-> >  #include <linux/notifier.h>
-> >  
-> >  /* Defines used for the flags field in the struct generic_pm_domain */
-> > +#ifdef CONFIG_PM_CLK
-> >  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
-> > +#else
-> > +#define GENPD_FLAG_PM_CLK	0
-> > +#endif
-> >  
-> >  #define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
-> 
-> Thinking about this some more, the alternative is for drivers using
-> PM_CLK to select it. Would that be appropriate? If so, we would not need
-> these stubs.
+Removing the SCI penalize function as the penalty is now calculated on the
+fly.
 
-Well, I don't see why it might not be appropriate.
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ arch/x86/kernel/acpi/boot.c | 1 -
+ drivers/acpi/pci_link.c     | 9 ---------
+ include/linux/acpi.h        | 1 -
+ 3 files changed, 11 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e759076..5e99f22 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -445,7 +445,6 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+ 
+ 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
+-	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+ 
+ 	/*
+ 	 * stash over-ride to indicate we've been here
+diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+index eb8e770..6bd77f1 100644
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -840,15 +840,6 @@ bool acpi_isa_irq_available(int irq)
+ }
+ 
+ /*
+- * Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict with
+- * PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be use for
+- * PCI IRQs.
+- */
+-void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
+-{
+-}
+-
+-/*
+  * Over-ride default table to reserve additional IRQs for use by ISA
+  * e.g. acpi_irq_isa=5
+  * Useful for telling ACPI how not to interfere with your ISA sound card.
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 06ed7e5..0f41317 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -311,7 +311,6 @@ struct pci_dev;
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+ bool acpi_isa_irq_available(int irq);
+-void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
+ 
+ extern int ec_read(u8 addr, u8 *val);
+-- 
+1.8.2.1
 
