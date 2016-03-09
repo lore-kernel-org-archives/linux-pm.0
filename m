@@ -1,87 +1,68 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: [PATCH V2 6/6] thermal: Add DT binding doc for thermal of PMIC max77620
-Date: Wed, 9 Mar 2016 18:40:10 +0530
-Message-ID: <1457529010-6538-7-git-send-email-ldewangan@nvidia.com>
+From: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V2 4/6] thermal: doc: Add details of devm_thermal_zone_of_sensor_{register,unregister}
+Date: Wed, 9 Mar 2016 18:40:08 +0530
+Message-ID: <1457529010-6538-5-git-send-email-ldewangan@nvidia.com>
 References: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:11651 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932693AbcCINXq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 08:23:46 -0500
-In-Reply-To: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1457529010-6538-1-git-send-email-ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, corbet-T1hC0tSOHrs@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rklein-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, rklein@nvidia.com, Laxman Dewangan <ldewangan@nvidia.com>
 
-Maxim Semiconductor MAX77620 supports alarm interrupts when
-its die temperature crosses 120C and 140C. These threshold
-temperatures are not configurable.
+Add details of the interface devm_thermal_zone_of_sensor_register()
+and devm_thermal_zone_of_sensor_unregister() in the
+<thermal/sysfs-api.txt>.
 
-Add DT binding document to details out the DT property related
-to MAX77620 thermal functionality.
-
-Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+Signed-off-by: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
 ---
 Changes from V1:
-- New in series to add DT binding doc per V1 review.
+- New in series.
 
- .../bindings/thermal/thermal-max77620.txt          | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+ Documentation/thermal/sysfs-api.txt | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-max77620.txt b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
-new file mode 100644
-index 0000000..d76412f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
-@@ -0,0 +1,43 @@
-+Thermal driver for MAX77620 Power management IC from Maxim Semiconductor.
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 18a3a5e..ed419d6 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -117,6 +117,29 @@ temperature) and throttle appropriate devices.
+ 	interface. It will also silent the zone by remove the .get_temp() and
+ 	get_trend() thermal zone device callbacks.
+ 
++1.1.5 struct thermal_zone_device *devm_thermal_zone_of_sensor_register(
++		struct device *dev, int sensor_id,
++		void *data, const struct thermal_zone_of_device_ops *ops)
 +
-+Maxim Semiconductor MAX77620 supports alarm interrupts when its
-+die temperature crosses 120C and 140C. These threshold temperatures
-+are not configurable. Device does not provide the real temperature
-+of die other than just indicating whether temperature is above or
-+below threshold level.
++	This interface is resource managed version of
++	thermal_zone_of_sensor_register().
++	All details of thermal_zone_of_sensor_register() described in
++	section 1.1.3 is applicable here.
++	The benefit of using this interface to register sensor is that it
++	is not require to explicitly call thermal_zone_of_sensor_unregister()
++	in error path or during driver unbinding as this is done by driver
++	resource manager.
 +
-+Required properties:
-+-------------------
-+#thermal-sensor-cells:	Please refer <devicetree/bindings/thermal/thermal.txt>
-+			for more details.
-+			The value must be 0.
++1.1.6 void devm_thermal_zone_of_sensor_unregister(struct device *dev,
++		struct thermal_zone_device *tzd)
 +
-+For more details, please refer generic thermal DT binding document
-+<devicetree/bindings/thermal/thermal.txt>.
++	This interface is resource managed version of
++	thermal_zone_of_sensor_unregister().
++	All details of thermal_zone_of_sensor_unregister() described in
++	section 1.1.4 is applicable here.
++	Normally this function will not need to be called and the resource
++	management code will ensure that the resource is freed.
 +
-+Please refer <devicetree/bindings/mfd/max77620.txt> for mfd DT binding
-+document for the MAX77620.
-+
-+Example:
-+--------
-+#include <dt-bindings/mfd/max77620.h>
-+...
-+spmic: max77620@3c {
-+	compatible = "maxim,max77620";
-+
-+	#thermal-sensor-cells = <0>;
-+};
-+
-+thermal-zones {
-+	PMIC-Die {
-+		thermal-sensors = <&spmic>;
-+		trips {
-+			die_temp_thresh: hot-die {
-+				temperature = <120000>;
-+				type = "active";
-+				hysteresis = <0>;
-+			};
-+		};
-+	};
-+};
-+
+ 1.2 thermal cooling device interface
+ 1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
+ 		void *devdata, struct thermal_cooling_device_ops *)
 -- 
 2.1.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
