@@ -1,97 +1,119 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Thu, 10 Mar 2016 00:18:21 +0100
-Message-ID: <CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<87si087tsr.fsf@iki.fi>
-	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
-	<87a8m74mcc.fsf@iki.fi>
-	<002d01d17a57$ec417030$c4c45090$@net>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 10 Mar 2016 00:41:34 +0100
+Message-ID: <CAJZ5v0hxq=S+huSy-D7=VGoV+30VQfCyA5C5dTBX-rn0XRUS0g@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+	<CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+	<56D8AEB7.2050100@linaro.org>
+	<36459679.vzZnOsAVeg@vostro.rjw.lan>
+	<20160308112759.GF6356@twins.programming.kicks-ass.net>
+	<CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
+	<20160308192640.GD6344@twins.programming.kicks-ass.net>
+	<CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+	<20160309101519.GA26402@pablo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f181.google.com ([209.85.217.181]:33357 "EHLO
-	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964957AbcCIXSY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 18:18:24 -0500
-Received: by mail-lb0-f181.google.com with SMTP id k15so89025220lbg.0
-        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2016 15:18:23 -0800 (PST)
-In-Reply-To: <002d01d17a57$ec417030$c4c45090$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160309101519.GA26402@pablo>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-On Thu, Mar 10, 2016 at 12:03 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> Does the direction that this thread has taken mean that those two
-> commits that Arto identified might now not be reverted?
+On Wed, Mar 9, 2016 at 11:15 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi,
+>
+> sorry if I didn't reply yet. Trying to cope with jetlag and
+> talks/meetings these days :-). Let me see if I'm getting what you are
+> discussing, though.
+>
+> On 08/03/16 21:05, Rafael J. Wysocki wrote:
+>> On Tue, Mar 8, 2016 at 8:26 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Tue, Mar 08, 2016 at 07:00:57PM +0100, Rafael J. Wysocki wrote:
+>> >> On Tue, Mar 8, 2016 at 12:27 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> [...]
+>
+>> a = max_freq gives next_freq = max_freq for x = 1, but with that
+>> choice of a you may never get to x = 1 with frequency invariant
+>> because of the feedback effect mentioned above, so the 1/n produces
+>> the extra boost needed for that (n is a positive integer).
+>>
+>> Quite frankly, to me it looks like linear really is a better
+>> approximation for "raw" utilization.  That is, for frequency invariant
+>> x we should take:
+>>
+>>   next_freq = a * x * max_freq / current_freq
+>>
+>> (and if x is not frequency invariant, the right-hand side becomes a *
+>> x).  Then, the extra boost needed to get to x = 1 for frequency
+>> invariant is produced by the (max_freq / current_freq) factor that is
+>> greater than 1 as long as we are not running at max_freq and a can be
+>> chosen as max_freq.
+>>
+>
+> Expanding terms again, your original formula (without the 1.1 factor of
+> the last version) was:
+>
+>  next_freq = util / max_cap * max_freq
+>
+> and this doesn't work when we have freq invariance since util won't go
+> over curr_cap.
 
-Yes.
+Can you please remind me what curr_cap is?
 
-> Commits:
-> 9c4b2867ed7c8c8784dd417ffd16e705e81eb145
-> a9ceb78bc75ca47972096372ff3d48648b16317a
+> What you propose above is to add another factor, so that we have:
 >
-> Recall that increased energy consumption was also isolated to those
-> two commits for some types of workflow. The suggestion is that the
-> commits should be reverted anyhow.
+>  next_freq = util / max_cap * max_freq / curr_freq * max_freq
 >
-> What seems to be happening is that CPUs are deciding to stay in idle
-> state 0 a lot more, when they actually could / should be in a deeper
-> idle state.
+> which should give us the opportunity to reach max_freq also with freq
+> invariance.
 >
-> Test time is always: 33 minutes and 20 seconds test (8 CPUs), and there
-> is never any noticeable difference in execution times for the work:
+> This should actually be the same of doing:
 >
-> Example 1: kernel 4.5-rc5 with the rjw 3 patch set version 10
-> "Replace timers with utilization update callbacks":
-> Aggregate times in each idle state:
+>  next_freq = util / max_cap * max_cap / curr_cap * max_freq
+>
+> We are basically scaling how much the cpu is busy at curr_cap back to
+> the 0..1024 scale. And we use this to select next_freq. Also, we can
+> simplify this to:
+>
+>  next_freq = util / curr_cap * max_freq
+>
+> and we save some ops.
+>
+> However, if that is correct, I think we might have a problem, as we are
+> skewing OPP selection towards higher frequencies. Let's suppose we have
+> a platform with 3 OPPs:
+>
+>   freq     cap
+>   1200     1024
+>   900      768
+>   600      512
+>
+> As soon a task reaches an utilization of 257 we will be selecting the
+> second OPP as
+>
+>  next_freq = 257 / 512 * 1200 ~ 602
+>
+> While the cpu is only 50% busy in this case. And we will go at max OPP
+> when reaching ~492 (~64% of 768).
+>
+> That said, I guess this might work as a first solution, but we will
+> probably need something better in the future. I understand Rafael's
+> concerns regardin margins, but it seems to me that some kind of
+> additional parameter will be probably needed anyway to fix this.
+> Just to say again how we handle this in schedfreq, with a -20% margin
+> applied to the lowest OPP we will get to the next one when utilization
+> reaches ~410 (80% busy at curr OPP), and so on for the subsequent ones,
+> which is less aggressive and might be better IMHO.
 
-You need to say what workload that is too.
+Well, Peter says that my idea is incorrect, so I'll go for
 
-> rjwv10 (minutes)        reverted (minutes)      Idle State
-> 27.0654211              2.617325533                     0
-> 12.92451315             24.53266672                     1
-> 3.668558467             3.780482633                     2
-> 1.2727832               1.61352195                      3
-> 130.8342596             141.2234947                     4
->
-> 175.7655355             173.7674915                     total
->
-> Example 2: kernel 4.5-rc7 stock:
-> Aggregate times in each idle state:
->
-> k45rc7 (minutes)        reverted (minutes)      Idle State
-> 20.1771917              2.638311483                     0
-> 13.02770225             21.81474838                     1
-> 3.428136783             3.951405                        2
-> 1.4540243               1.552488167                     3
-> 134.9057413             143.5533                        4
->
-> 172.9927963             173.5102531                     total
->
-> Energy (restated from a previous e-mail):
->
-> Test 7: reverted: Package Joules: 47830
-> Test 8: rjwv10: Package Joules: 54419 (revert saves 12.1% energy)
->
-> Test 9: reverted: Package Joules: 49326
-> Test 10: rjwv10: Package Joules: 55442 (revert saves 11% energy)
->
-> Test 11: reverted: acpi-cpufreq ondemand: Package Joules: 49146
-> Test 12: rjwv10: acpi-cpufreq ondemand: Package Joules: 56302 (revert saves 12.7% energy)
->
-> Energy (not in any previous e-mail):
->
-> Reverted: 56178 Joules
-> Kernel 4.5-rc7: 63269 Joules (revert saves 12.6% energy)
+  next_freq = C * current_freq * util_raw / max
 
-So the claim in commit a9ceb78bc75ca47972096372ff3d48648b16317a is
-that the change should not really affect systems with low C1
-latencies.
+where C > 1 (and likely C < 1.5) instead.
 
-I wonder what's the C1 latency on your test system?
-
-Thanks,
-Rafael
+That means C has to be determined somehow or guessed.  The 80% tipping
+point condition seems reasonable to me, though, which leads to C =
+1.25.
