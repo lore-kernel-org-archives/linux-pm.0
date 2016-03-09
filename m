@@ -1,56 +1,43 @@
-From: Dave Airlie <airlied@gmail.com>
-Subject: [PATCH 2/2] nouveau: use new vga_switcheroo power domain.
-Date: Wed,  9 Mar 2016 16:14:05 +1000
-Message-ID: <1457504045-12738-2-git-send-email-airlied@gmail.com>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] Revert "cpufreq: postfix policy directory with the first
+ CPU in related_cpus"
+Date: Wed, 9 Mar 2016 16:39:27 +0700
+Message-ID: <20160309093927.GI23015@vireshk-mac-ubuntu>
+References: <eb862848df536cb2921945cca690161014c84750.1456996795.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:52652 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496AbcCIGOK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Mar 2016 01:14:10 -0500
-In-Reply-To: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:35100 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbcCIJjr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 04:39:47 -0500
+Received: by mail-pa0-f45.google.com with SMTP id td3so8644418pab.2
+        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2016 01:39:46 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <eb862848df536cb2921945cca690161014c84750.1456996795.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, shilpa.bhat@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
 
-From: Dave Airlie <airlied@redhat.com>
+On 03-03-16, 14:51, Viresh Kumar wrote:
+> This reverts commit 3510fac45492 ("cpufreq: postfix policy directory
+> with the first CPU in related_cpus").
+> 
+> Earlier, the policy->kobj was added to the kobject core, before ->init()
+> callback was called for the cpufreq drivers. Which allowed those drivers
+> to add or remove, driver dependent, sysfs files/directories to the same
+> kobj from their ->init() and ->exit() callbacks.
+> 
+> That isn't possible anymore after commit 3510fac45492 got applied.
+> 
+> Now, there is no other clean alternative that people can adopt.
+> 
+> Its better to revert the earlier commit to allow cpufreq drivers to
+> create/remove sysfs files from ->init() and ->exit() callbacks.
 
-This fixes GPU auto powerdown on the Lenovo W541,
-since we advertise Windows 2013 to the ACPI layer.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/gpu/drm/nouveau/nouveau_vga.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
-index af89c36..b987427f 100644
---- a/drivers/gpu/drm/nouveau/nouveau_vga.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
-@@ -101,8 +101,12 @@ nouveau_vga_init(struct nouveau_drm *drm)
- 		runtime = true;
- 	vga_switcheroo_register_client(dev->pdev, &nouveau_switcheroo_ops, runtime);
- 
--	if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
--		vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-+	if (runtime) {
-+		if (nouveau_is_v1_dsm() && !nouveau_is_optimus())
-+			vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-+		else if (nouveau_is_optimus())
-+			vga_switcheroo_init_parent_pr3_ops(drm->dev->dev, &drm->vga_pm_domain);
-+	}
- }
- 
- void
-@@ -117,7 +121,7 @@ nouveau_vga_fini(struct nouveau_drm *drm)
- 		runtime = true;
- 
- 	vga_switcheroo_unregister_client(dev->pdev);
--	if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-+	if (runtime && (nouveau_is_v1_dsm() || nouveau_is_optimus()))
- 		vga_switcheroo_fini_domain_pm_ops(drm->dev->dev);
- 	vga_client_register(dev->pdev, NULL, NULL, NULL);
- }
+Sorry about missing SoB (Just noticed it in bleeding-edge).
 -- 
-2.5.0
-
+viresh
