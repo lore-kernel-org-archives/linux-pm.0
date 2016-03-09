@@ -1,70 +1,59 @@
 From: Dave Airlie <airlied@gmail.com>
-Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
-Date: Thu, 10 Mar 2016 08:02:13 +1000
-Message-ID: <CAPM=9txqnnL9UtjYD22BG2QTXdBndJBP_VRmC-=bDkWb7ddRoQ@mail.gmail.com>
+Subject: Re: [PATCH 2/2] nouveau: use new vga_switcheroo power domain.
+Date: Thu, 10 Mar 2016 08:04:26 +1000
+Message-ID: <CAPM=9txfEOoXLr35qEMQrpfMdDf_rCyUx0pQoC4HbQ=t0HNKdw@mail.gmail.com>
 References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
-	<20160309143336.GA26158@wunner.de>
-	<CADnq5_MUW00AcYcM4WPREOd8ng9AfggZk6U4YU7j50s6BBeMNQ@mail.gmail.com>
-	<20160309201750.GA26222@wunner.de>
+	<1457504045-12738-2-git-send-email-airlied@gmail.com>
+	<20160309144047.GB26158@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20160309201750.GA26222@wunner.de>
+In-Reply-To: <20160309144047.GB26158@wunner.de>
 Sender: linux-pci-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10 March 2016 at 06:17, Lukas Wunner <lukas@wunner.de> wrote:
-> Hi,
+On 10 March 2016 at 00:40, Lukas Wunner <lukas@wunner.de> wrote:
+> Hi Dave,
 >
-> On Wed, Mar 09, 2016 at 11:52:33AM -0500, Alex Deucher wrote:
->> On Wed, Mar 9, 2016 at 9:33 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> > On Wed, Mar 09, 2016 at 04:14:04PM +1000, Dave Airlie wrote:
->> >> From: Dave Airlie <airlied@redhat.com>
->> >>
->> >> Windows 10 seems to have standardised power control for the
->> >> optimus/powerxpress laptops using PR3 power resource hooks.
->> >
->> > What happened to the Optimus DSM, does this still work? If not,
->> > echoing OFF to the vgaswitcheroo sysfs file won't power down the
->> > GPU now, right? (If runtime pm is disabled in nouveau.)
->> >
->> If the OS identifies itself as windows 10 or newer when initializing
->> ACPI, the standardized interfaces should be used if they exist.  I'm
->> not sure if there is any explicit policy on the vendor specific ones,
->> but I suspect they are probably broken in that case since I doubt the
->> OEM validates them when the standardized interfaces are available.
+> On Wed, Mar 09, 2016 at 04:14:05PM +1000, Dave Airlie wrote:
+>> From: Dave Airlie <airlied@redhat.com>
+>>
+>> This fixes GPU auto powerdown on the Lenovo W541,
+>> since we advertise Windows 2013 to the ACPI layer.
+>>
+>> Signed-off-by: Dave Airlie <airlied@redhat.com>
+>> ---
+>>  drivers/gpu/drm/nouveau/nouveau_vga.c | 10 +++++++---
+>>  1 file changed, 7 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
+>> index af89c36..b987427f 100644
+>> --- a/drivers/gpu/drm/nouveau/nouveau_vga.c
+>> +++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
+>> @@ -101,8 +101,12 @@ nouveau_vga_init(struct nouveau_drm *drm)
+>>               runtime = true;
+>>       vga_switcheroo_register_client(dev->pdev, &nouveau_switcheroo_ops, runtime);
+>>
+>> -     if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
+>> -             vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
+>> +     if (runtime) {
+>> +             if (nouveau_is_v1_dsm() && !nouveau_is_optimus())
 >
-> The vendor interface (Optimus DSM) must be present, otherwise the call
-> to nouveau_is_optimus() in patch [2/2] would return false.
->
-> But indeed it seems to not be working, otherwise why would the patches
-> be necessary?
->
-> My point is that the chosen approach does not square with vga_switcheroo's
-> architecture: Normally it's the handler's job to power the GPU up/down.
-> If runtime pm is enabled then vga_switcheroo_init_domain_pm_ops()
-> activates runtime_suspend/_resume callbacks which ask the handler to
-> flip the power switch.
->
-> However these two patches add *additional* runtime_suspend/_resume
-> callbacks which do not rely on the handler at all. The handler is thus
-> useless. This becomes apparent when loading the nouveau module with
-> runpm=0: Normally the user is then able to manually power the GPU
-> up/down by echoing ON or OFF to the vgaswitcheroo sysfs file. With the
-> chosen approach this will likely not work because the handler only knows
-> how to invoke the DSM, it doesn't know anything about PR3.
->
-> Hence my suggestion to solve this with an additional handler which
-> gets used in lieu of the nouveau DSM handler.
+> The " && !nouveau_is_optimus()" can be dropped because a machine cannot
+> have both. Note the "else" in nouveau_dsm_detect():
 
-I'll think about this a bit more, but really I don't care for vgaswitcheroo
-manual power control anymore. It's in debugfs for a reason, it was a stopgap
-until we got dynamic power control.
+I'm pretty sure I've seen a machine with both in my past, back in the
+Vista/Win7 crossover days.
 
-If dynamic power control isn't working for some people we should fix that,
-but supporting nouveau.runpm=0 and manual power control is so far down
-the list of things I care about.
+> You're calling this unconditionally for all Optimus machines yet
+> I assume pre Windows 10 machines lack the PR3 hooks.
+>
+
+Yes and I've confirmed on my older machine that nothing bad happens
+doing it unconditionally,
+and I couldn't find any bits in the _DSM flags to tell me if I should
+do something different.
 
 Dave.
