@@ -1,122 +1,121 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 00/11] soc: renesas: Add R-Car SYSC PM Domain Support
-Date: Wed,  9 Mar 2016 20:18:36 +0100
-Message-ID: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:60903 "EHLO
-	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933979AbcCITSu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 14:18:50 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v3 11/11] soc: renesas: rcar-sysc: Add support for R-Car H3 power areas
+Date: Wed,  9 Mar 2016 20:18:47 +0100
+Message-ID: <1457551127-21934-12-git-send-email-geert+renesas@glider.be>
+References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-	Hi all,
-
-This patch series introduces a DT-based driver for the R-Car System
-Controller.
-
-This is a dependency for the enablement of DU and VSP on R-Car H3, as
-the VSPs are located in a PM Domain.
-
-Changes compared to v2:
-  - Add Reviewed-by,
-  - Rename driver from pm-rcar to rcar-sysc,
-  - Create PM Domains from hierarchy in C data instead of DT,
-  - Add support for an "always-on" domain, which is currently used on
-    R-Car H3 only (support can be added for other R-Car SoCs, preferably
-    after their migration to CPG/MSSR),
-  - Drop power area A3SH on R-Car H3, as it's no longer
-    documented in the datasheet, and touching it seems to crash SYSC,
-  - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
-    using our own copies,
-  - Initialize SYSCIER early, as SYSC needs the interrupt sources to be
-    enabled to control power,
-  - Mask all SYSC interrupt sources for the CPU,
-  - Drop check for CONFIG_PM_GENERIC_DOMAINS, which is now always
-    enabled on R-Car SoCs,
-  - Use early_initcall() instead of core_initcall(),
-  - Do not power up CPU power areas during initialization, as this is
-    handled later (directly or indirectly) by the SMP code,
-  - Extract bindings into its own series, "[PATCH v3 0/7] PM / Domains:
-    Add DT bindings for the R-Car System Controller".
-
-
-Changes compared to v1 (more details in the individual patches):
-  - Moved pm-rcar from arch/arm/mach-shmobile/ to drivers/soc/renesas/,
-  - Added R-Car H3 (r8a7795) support, incl. support for devices part of
-    a SYSC PM domain and the CPG/MSSR clock domain,
-  - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
-  - Added fallback compatibility strings for R-Car Gen2 and Gen3.
-  - Changed one-line summary prefix to match current arm-soc practices,
-  - The L2 cache-controller patches have been extracted into a separate
-    series ("[PATCH v3 0/7] ARM/arm64: dts: renesas: Add/complete L2
-    cache-controller nodes"),
-  - Minor fixes.
-
-
-Dependencies:
-  - renesas-devel-20160307-v4.5-rc7,
-  - "[PATCH 0/4] clk: renesas: PM Domain Cleanups and Preparation".
-
-This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
-and r8a7795/salvator-x.
-
-Thanks for your comments!
-
-Geert Uytterhoeven (11):
-  soc: renesas: Move pm-rcar to drivers/soc/renesas/rcar-sysc
-  soc: renesas: rcar-sysc: Improve rcar_sysc_power() debug info
-  soc: renesas: rcar-sysc: Add DT support for SYSC PM domains
-  soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
-  soc: renesas: rcar-sysc: Enable Clock Domain for r8a7795 I/O devices
-  soc: renesas: rcar-sysc: Add support for R-Car H1 power areas
-  soc: renesas: rcar-sysc: Add support for R-Car H2 power areas
-  soc: renesas: rcar-sysc: Add support for R-Car M2-W power areas
-  soc: renesas: rcar-sysc: Add support for R-Car M2-N power areas
-  soc: renesas: rcar-sysc: Add support for R-Car E2 power areas
-  soc: renesas: rcar-sysc: Add support for R-Car H3 power areas
-
- arch/arm/mach-shmobile/Kconfig                     |  11 +-
- arch/arm/mach-shmobile/Makefile                    |   1 -
- arch/arm/mach-shmobile/pm-r8a7779.c                |   3 +-
- arch/arm/mach-shmobile/pm-rcar-gen2.c              |   2 +-
- arch/arm/mach-shmobile/pm-rcar.c                   | 164 ---------
- arch/arm/mach-shmobile/smp-r8a7779.c               |   2 +-
- arch/arm/mach-shmobile/smp-r8a7790.c               |   2 +-
- drivers/soc/Makefile                               |   3 +-
- drivers/soc/renesas/Makefile                       |   7 +
- drivers/soc/renesas/r8a7779-sysc.c                 |  31 ++
- drivers/soc/renesas/r8a7790-sysc.c                 |  45 +++
- drivers/soc/renesas/r8a7791-sysc.c                 |  32 ++
- drivers/soc/renesas/r8a7794-sysc.c                 |  32 ++
- drivers/soc/renesas/r8a7795-sysc.c                 |  56 +++
- drivers/soc/renesas/rcar-sysc.c                    | 394 +++++++++++++++++++++
- drivers/soc/renesas/rcar-sysc.h                    |  60 ++++
- .../linux/soc/renesas/rcar-sysc.h                  |   9 +-
- 17 files changed, 673 insertions(+), 181 deletions(-)
- delete mode 100644 arch/arm/mach-shmobile/pm-rcar.c
- create mode 100644 drivers/soc/renesas/Makefile
- create mode 100644 drivers/soc/renesas/r8a7779-sysc.c
- create mode 100644 drivers/soc/renesas/r8a7790-sysc.c
- create mode 100644 drivers/soc/renesas/r8a7791-sysc.c
- create mode 100644 drivers/soc/renesas/r8a7794-sysc.c
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v3:
+  - New (converted from DT to C).
+---
+ drivers/soc/renesas/Makefile       |  1 +
+ drivers/soc/renesas/r8a7795-sysc.c | 56 ++++++++++++++++++++++++++++++++++++++
+ drivers/soc/renesas/rcar-sysc.c    |  3 ++
+ drivers/soc/renesas/rcar-sysc.h    |  1 +
+ 4 files changed, 61 insertions(+)
  create mode 100644 drivers/soc/renesas/r8a7795-sysc.c
- create mode 100644 drivers/soc/renesas/rcar-sysc.c
- create mode 100644 drivers/soc/renesas/rcar-sysc.h
- rename arch/arm/mach-shmobile/pm-rcar.h => include/linux/soc/renesas/rcar-sysc.h (60%)
 
+diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
+index b328205fef36441a..151fcd3f025b01f3 100644
+--- a/drivers/soc/renesas/Makefile
++++ b/drivers/soc/renesas/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o r8a7791-sysc.o
+ # R-Car M2-N is identical to R-Car M2-W w.r.t. power domains.
+ obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o r8a7791-sysc.o
+ obj-$(CONFIG_ARCH_R8A7794)	+= rcar-sysc.o r8a7794-sysc.o
++obj-$(CONFIG_ARCH_R8A7795)	+= rcar-sysc.o r8a7795-sysc.o
+diff --git a/drivers/soc/renesas/r8a7795-sysc.c b/drivers/soc/renesas/r8a7795-sysc.c
+new file mode 100644
+index 0000000000000000..7a01913e6dbbf869
+--- /dev/null
++++ b/drivers/soc/renesas/r8a7795-sysc.c
+@@ -0,0 +1,56 @@
++/*
++ * Renesas R-Car H3 System Controller
++ *
++ * Copyright (C) 2016 Glider bvba
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/bug.h>
++#include <linux/kernel.h>
++
++#include <dt-bindings/power/r8a7795-sysc.h>
++
++#include "rcar-sysc.h"
++
++static const struct rcar_sysc_area r8a7795_areas[] __initconst = {
++	{ "always-on",     0, 0, R8A7795_PD_ALWAYS_ON, -1, PD_ALWAYS_ON },
++	{ "ca57-scu",  0x1c0, 0, R8A7795_PD_CA57_SCU,  R8A7795_PD_ALWAYS_ON,
++	  PD_SCU },
++	{ "ca57-cpu0",  0x80, 0, R8A7795_PD_CA57_CPU0, R8A7795_PD_CA57_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca57-cpu1",  0x80, 1, R8A7795_PD_CA57_CPU1, R8A7795_PD_CA57_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca57-cpu2",  0x80, 2, R8A7795_PD_CA57_CPU2, R8A7795_PD_CA57_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca57-cpu3",  0x80, 3, R8A7795_PD_CA57_CPU3, R8A7795_PD_CA57_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca53-scu",  0x140, 0, R8A7795_PD_CA53_SCU,  R8A7795_PD_ALWAYS_ON,
++	  PD_SCU },
++	{ "ca53-cpu0", 0x200, 0, R8A7795_PD_CA53_CPU0, R8A7795_PD_CA53_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca53-cpu1", 0x200, 1, R8A7795_PD_CA53_CPU1, R8A7795_PD_CA53_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca53-cpu2", 0x200, 2, R8A7795_PD_CA53_CPU2, R8A7795_PD_CA53_SCU,
++	  PD_CPU_NOCR, },
++	{ "ca53-cpu3", 0x200, 3, R8A7795_PD_CA53_CPU3, R8A7795_PD_CA53_SCU,
++	  PD_CPU_NOCR, },
++	{ "a3vp",      0x340, 0, R8A7795_PD_A3VP,      R8A7795_PD_ALWAYS_ON, },
++	{ "cr7",       0x240, 0, R8A7795_PD_CR7,       R8A7795_PD_ALWAYS_ON, },
++	{ "a3vc",      0x380, 0, R8A7795_PD_A3VC,      R8A7795_PD_ALWAYS_ON, },
++	{ "a2vc0",     0x3c0, 0, R8A7795_PD_A2VC0,     R8A7795_PD_A3VC, },
++	{ "a2vc1",     0x3c0, 1, R8A7795_PD_A2VC1,     R8A7795_PD_A3VC, },
++	{ "3dg-a",     0x100, 0, R8A7795_PD_3DG_A,     R8A7795_PD_ALWAYS_ON, },
++	{ "3dg-b",     0x100, 1, R8A7795_PD_3DG_B,     R8A7795_PD_3DG_A, },
++	{ "3dg-c",     0x100, 2, R8A7795_PD_3DG_C,     R8A7795_PD_3DG_B, },
++	{ "3dg-d",     0x100, 3, R8A7795_PD_3DG_D,     R8A7795_PD_3DG_C, },
++	{ "3dg-e",     0x100, 4, R8A7795_PD_3DG_E,     R8A7795_PD_3DG_D, },
++	{ "a3ir",      0x180, 0, R8A7795_PD_A3IR,      R8A7795_PD_ALWAYS_ON, },
++};
++
++const struct rcar_sysc_info r8a7795_sysc_info __initconst = {
++	.areas = r8a7795_areas,
++	.num_areas = ARRAY_SIZE(r8a7795_areas),
++};
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 21fd70aea4a4e7b5..7d2a139d7a660ed3 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -296,6 +296,9 @@ static const struct of_device_id rcar_sysc_matches[] = {
+ #ifdef CONFIG_ARCH_R8A7794
+ 	{ .compatible = "renesas,r8a7794-sysc", .data = &r8a7794_sysc_info },
+ #endif
++#ifdef CONFIG_ARCH_R8A7795
++	{ .compatible = "renesas,r8a7795-sysc", .data = &r8a7795_sysc_info },
++#endif
+ 	{ /* sentinel */ }
+ };
+ 
+diff --git a/drivers/soc/renesas/rcar-sysc.h b/drivers/soc/renesas/rcar-sysc.h
+index 953c85dd04943980..f5aeac18f1c92813 100644
+--- a/drivers/soc/renesas/rcar-sysc.h
++++ b/drivers/soc/renesas/rcar-sysc.h
+@@ -56,4 +56,5 @@ extern const struct rcar_sysc_info r8a7791_sysc_info;
+ /* R-Car M2-N is identical to R-Car M2-W w.r.t. power domains. */
+ #define r8a7793_sysc_info r8a7791_sysc_info
+ extern const struct rcar_sysc_info r8a7794_sysc_info;
++extern const struct rcar_sysc_info r8a7795_sysc_info;
+ #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
