@@ -1,14 +1,18 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 13/13] thermal: convert ti-thermal to use devm_thermal_zone_of_sensor_register
-Date: Wed,  9 Mar 2016 13:35:36 -0800
-Message-ID: <1457559336-17652-15-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 13/13] hwmon: convert ti-thermal to use devm_thermal_zone_of_sensor_register
+Date: Wed,  9 Mar 2016 13:35:35 -0800
+Message-ID: <1457559336-17652-14-git-send-email-edubezval@gmail.com>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:35298 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754063AbcCIVf6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:35:58 -0500
 In-Reply-To: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, linux-omap@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 This changes the driver to use the devm_ version
 of thermal_zone_of_sensor_register and cleans
@@ -48,3 +52,4 @@ index b213a12..15c0a9a 100644
  	return 0;
 -- 
 2.1.4
+
