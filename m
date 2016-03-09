@@ -1,62 +1,61 @@
-From: Arto Jantunen <viiru@iki.fi>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4)
-Date: Wed, 09 Mar 2016 19:01:23 +0200
-Message-ID: <87a8m74mcc.fsf@iki.fi>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<87si087tsr.fsf@iki.fi>
-	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V2 0/6]  thermal: add devm_ version of thermal_zone
+ register and driver for max77620
+Date: Wed, 9 Mar 2016 10:29:43 -0800
+Message-ID: <20160309182941.GA2422@localhost.localdomain>
+References: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from viiru.iki.fi ([185.19.28.114]:51853 "EHLO viiru.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbcCIRB1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Mar 2016 12:01:27 -0500
-In-Reply-To: <CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
-	(Len Brown's message of "Tue, 8 Mar 2016 16:19:13 -0500")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, rklein@nvidia.com
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rik van Riel <riel@redhat.com>
 
-Len Brown <lenb@kernel.org> writes:
 
-> On Wed, Mar 2, 2016 at 11:01 AM, Arto Jantunen <viiru@iki.fi> wrote:
->> Len Brown <lenb@kernel.org> writes:
->>> Does it happen if you use default cmdline,
->>> but edit intel_idle.c to comment out c8 and c9 support?
->>
->> That also boots, ts.out attached (as is the patch to do this, to make
->> sure there is no miscommunication).
->
-> yes, patch looks good, and thanks for running turbostat.
->
-> If your system boots and runs properly with "intel_idle.max_cstate=7",
-> then you are suffering this issue:
->
-> https://bugzilla.kernel.org/show_bug.cgi?id=109081
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's the one, indeed. Based on the report this is actually a microcode
-bug?
+Laxman,
 
-This is the version info that I see at boot:
 
-microcode: CPU0 sig=0x506e3, pf=0x20, revision=0x33
+On Wed, Mar 09, 2016 at 06:40:04PM +0530, Laxman Dewangan wrote:
+> The series add the devm_ version of thermal_zone_of_sensor_register/
+> unregister, interface details, and use this in new thermal driver
+> for max77620.
+>=20
+> The header file for max77620 is part of MFD patch
+> 	https://lkml.org/lkml/2016/2/11/186
+>=20
+> Changes from V1:
+> - Run checkpatch with --strict and fix all warnings.
+> - Added details of interfaces in spifs-api.txt
+> - Added DT binding doc.
 
-The machine is an Asus GL552VW (reported as affected in the bug report),
-with BIOS version 216, which is the latest.
+Thanks a lot for working on the comments. I don't see anything specific
+right now. So, I am starting a couple of automated testing on this
+series. If I find something, I will let you know.
 
->> With this change the original bug disappears as well.
->
-> Hmm, so your problems with frequency staying constant,
-> as well as the boot issue both went away by deleting c8 and c9?
 
-Yes. I assume that removing idle=nomwait is the fix for the frequency
-issue, while removing the deepest idle states fixes the boot issue.
+--AhhlLboLdkugWU4S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> Still works with intel_idle.max_cstate=7 ?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-I'll test this.
+iQEcBAEBAgAGBQJW4GuRAAoJEMLUO4d9pOJWZpgH/0trb9THVANsjjjBDWoSgvyF
+dFkEuCa/I0XUDuAeM7XLeEBFKzKaiDoQXoHYTyXKUiZgNANqjzGbYS79Y7VvmAv9
+tHtZCT94VIjBNfW3bcG6qTMtJERpq6UpiDGI6LSS8EBekQQkVNhtMLxV/xnYTbi9
+pCrRuN6HtbRWhKZc12Zt0e1u3tS8KLPZqdDqG3nDeinN2UTHdNbBmcdOgBlyMAfP
+qbWwpFQ5x+1r3apms3OusnvKA+CM+2bPGeyndyl79NeSLr5DNg7kl58/v5mL1lLV
+Yp6P5qUW1lyImNe3HqCEwuCj1YlycWbJitWu6sxFoGH2QMO8cF2YMDgv7G8yMUA=
+=Jpol
+-----END PGP SIGNATURE-----
 
--- 
-Arto Jantunen
+--AhhlLboLdkugWU4S--
