@@ -1,93 +1,63 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH 1/2] PM / clk: Add stubs for pm_clk_suspend/resume
-Date: Wed, 9 Mar 2016 10:58:09 +0000
-Message-ID: <56E001C1.2050905@nvidia.com>
-References: <1457105585-25157-1-git-send-email-jonathanh@nvidia.com>
- <56DF094E.4030809@nvidia.com> <4293335.ArkqpzdFRe@vostro.rjw.lan>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v2 1/5] thermal: change "hysteresis" as optional property
+Date: Wed, 9 Mar 2016 11:10:52 +0000
+Message-ID: <20160309111051.GA3369@e104805>
+References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
+ <1456458227-12950-2-git-send-email-leo.yan@linaro.org>
+ <20160303162942.GA2445@localhost.localdomain>
+ <20160304030349.GA11012@leoy-linaro>
+ <20160304115752.GA13894@e104805>
+ <20160308135743.GC4921@leoy-linaro>
+ <20160308205558.GA7010@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:17451 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753052AbcCIK6Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 05:58:16 -0500
-In-Reply-To: <4293335.ArkqpzdFRe@vostro.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:39624 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753156AbcCILLE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Mar 2016 06:11:04 -0500
+Content-Disposition: inline
+In-Reply-To: <20160308205558.GA7010@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-
-On 08/03/16 22:58, Rafael J. Wysocki wrote:
-> On Tuesday, March 08, 2016 05:18:06 PM Jon Hunter wrote:
->>
->> On 04/03/16 15:33, Jon Hunter wrote:
->>> The functions pm_clk_suspend() and pm_clk_resume() cannot be used
->>> directly within the main body of a function, because when CONFIG_PM_CLK
->>> is not defined the functions are defined as NULL and this will lead to
->>> a compilation error.
->>>
->>> Add stubs functions for pm_clk_suspend() and pm_clk_resume() so that
->>> these functions may be called directly.
->>>
->>> Please note that these functions are currently assigned to function
->>> pointers in the PM domain core and so to avoid have a valid function
->>> pointer defined when CONFIG_PM_CLK is not defined, define
->>> GENPD_FLAG_PM_CLK as 0 when CONFIG_PM_CLK is not defined to ensure
->>> the stubs are not populated as valid function pointers.
->>>
->>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->>> ---
->>>  include/linux/pm_clock.h  | 10 ++++++++--
->>>  include/linux/pm_domain.h |  4 ++++
->>>  2 files changed, 12 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
->>> index 25266c600021..ffefbf2df1aa 100644
->>> --- a/include/linux/pm_clock.h
->>> +++ b/include/linux/pm_clock.h
->>> @@ -72,8 +72,14 @@ static inline int pm_clk_add_clk(struct device *dev, struct clk *clk)
->>>  static inline void pm_clk_remove(struct device *dev, const char *con_id)
->>>  {
->>>  }
->>> -#define pm_clk_suspend	NULL
->>> -#define pm_clk_resume	NULL
->>> +static inline int pm_clk_suspend(struct device *dev)
->>> +{
->>> +	return -EINVAL;
->>> +}
->>> +static inline int pm_clk_resume(struct device *dev)
->>> +{
->>> +	return -EINVAL;
->>> +}
->>>  #endif
->>>  
->>>  #ifdef CONFIG_HAVE_CLK
->>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->>> index 49cd8890b873..1074c2073df8 100644
->>> --- a/include/linux/pm_domain.h
->>> +++ b/include/linux/pm_domain.h
->>> @@ -17,7 +17,11 @@
->>>  #include <linux/notifier.h>
->>>  
->>>  /* Defines used for the flags field in the struct generic_pm_domain */
->>> +#ifdef CONFIG_PM_CLK
->>>  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
->>> +#else
->>> +#define GENPD_FLAG_PM_CLK	0
->>> +#endif
->>>  
->>>  #define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
->>
->> Thinking about this some more, the alternative is for drivers using
->> PM_CLK to select it. Would that be appropriate? If so, we would not need
->> these stubs.
+On Tue, Mar 08, 2016 at 12:55:59PM -0800, Eduardo Valentin wrote:
+> On Tue, Mar 08, 2016 at 09:57:43PM +0800, Leo Yan wrote:
+> > Hi Eduardo,
+> > 
+> > On Fri, Mar 04, 2016 at 11:57:53AM +0000, Javi Merino wrote:
+> > > On Fri, Mar 04, 2016 at 11:03:49AM +0800, Leo Yan wrote:
+> > > > On Thu, Mar 03, 2016 at 08:29:44AM -0800, Eduardo Valentin wrote:
+> > > > > On Fri, Feb 26, 2016 at 11:43:43AM +0800, Leo Yan wrote:
+> > 
+> > [...]
+> > 
+> > > > > > The property "hysteresis" is mandatory for trip points, so if without
+> > > > > > it the thermal zone cannot register successfully. But "hysteresis" is
+> > > > > > ignored in the thermal subsystem and only inquired by several thermal
+> > > > > > sensor drivers.
+> > > > > 
+> > > > > If the Linux thermal subsystem has a problem with handling hysteresis, I
+> > > > > would rather fix Linux code than relaxing the DT binding. Or if you
+> > > > > still believe hysteresis is really optional, I would prefer to see a
+> > > > > better justification than "Linux ignores it".
+> > > 
+> > > I see it the other way round, Is hysteresis a property that, without
+> > > it, the thermal code can't configure itself so it fails to create the
+> > > trip point?  The current code goes "There is no hysteresis for this
+> > > property, I don't know how to set up this trip point!".  I think we
+> > > can do better than this.
+> > 
+> > Do you agree with Javi's suggestion? If you think it's okay, I will
+> > move on to send out a new version patch based on Javi's comments.
 > 
-> Well, I don't see why it might not be appropriate.
+> No I don't. This discussion so far has been about Linux code. I still
+> havent seen an argument explaining why hysteresis has to be optional.
 
-Ok, thanks. I will drop this patch for now and update the 2nd patch of
-this series to address the comments from Geert.
+Fair enough.  Looks like I'm holding this driver from being
+upstreamed, so I'll back off.
 
-Cheers
-Jon
+Leo, sorry for misguiding you.  Please bring back the hysteresis
+property you had in v1.
