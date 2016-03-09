@@ -1,95 +1,90 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 05/13] input: convert sun4i-ts to use
- devm_thermal_zone_of_sensor_register
-Date: Wed, 9 Mar 2016 13:45:14 -0800
-Message-ID: <20160309214514.GA18066@dtor-ws>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-6-git-send-email-edubezval@gmail.com>
+From: Dave Airlie <airlied@gmail.com>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
+Date: Thu, 10 Mar 2016 07:56:41 +1000
+Message-ID: <CAPM=9tzAf=464v3uSjert7NVh35EXUG8iy_xEuR36NUMhdJSWw@mail.gmail.com>
+References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+	<CAJZ5v0hurNUOVDXpJJEJ5dCwWO_Fo+EdzBhXJA7QWmPeY653fQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1457559336-17652-6-git-send-email-edubezval@gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Sascha Hauer <s.hauer@pengutronix.de>, Jens Thiele <karme@karme.de>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f193.google.com ([209.85.217.193]:33515 "EHLO
+	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754156AbcCIV4n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:56:43 -0500
+In-Reply-To: <CAJZ5v0hurNUOVDXpJJEJ5dCwWO_Fo+EdzBhXJA7QWmPeY653fQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: dri-devel <dri-devel@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Mar 09, 2016 at 01:35:27PM -0800, Eduardo Valentin wrote:
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
-> 
-> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Jens Thiele <karme@karme.de>
-> Cc: linux-input@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+On 9 March 2016 at 23:19, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Mar 9, 2016 at 7:14 AM, Dave Airlie <airlied@gmail.com> wrote:
+>> From: Dave Airlie <airlied@redhat.com>
+>>
+>> Windows 10 seems to have standardised power control for the
+>> optimus/powerxpress laptops using PR3 power resource hooks.
+>>
+>> I'm not sure this is definitely the correct place to be
+>> doing this, but it works for me here.
+>>
+>> The ACPI device for the GPU I have is \_SB_.PCI0.PEG_.VID_
+>> but the power resource hooks are on \_SB_.PCI0.PEG_, so
+>> this patch creates a new power domain to turn the GPU
+>> device parent off using standard ACPI calls.
+>>
+>> Signed-off-by: Dave Airlie <airlied@redhat.com>
+>> ---
+>>  drivers/gpu/vga/vga_switcheroo.c | 54 +++++++++++++++++++++++++++++++++++++++-
+>>  include/linux/vga_switcheroo.h   |  3 ++-
+>>  2 files changed, 55 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
+>> index 665ab9f..be32cb2 100644
+>> --- a/drivers/gpu/vga/vga_switcheroo.c
+>> +++ b/drivers/gpu/vga/vga_switcheroo.c
+>> @@ -42,7 +42,7 @@
+>>  #include <linux/uaccess.h>
+>>  #include <linux/vgaarb.h>
+>>  #include <linux/vga_switcheroo.h>
+>> -
+>> +#include <linux/acpi.h>
+>>  /**
+>>   * DOC: Overview
+>>   *
+>> @@ -997,3 +997,55 @@ vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev,
+>>         return -EINVAL;
+>>  }
+>>  EXPORT_SYMBOL(vga_switcheroo_init_domain_pm_optimus_hdmi_audio);
+>> +
+>> +/* With Windows 10 the runtime suspend/resume can use power
+>> +   resources on the parent device */
+>> +static int vga_acpi_switcheroo_runtime_suspend(struct device *dev)
+>> +{
+>> +       struct pci_dev *pdev = to_pci_dev(dev);
+>> +       int ret;
+>> +       struct acpi_device *adev;
+>> +
+>> +       ret = dev->bus->pm->runtime_suspend(dev);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
+>
+> You can use ACPI_COMPANION(&pdev->dev) for that.
+>
+>> +       if (!ret)
+>> +               acpi_device_set_power(adev->parent, ACPI_STATE_D3_COLD);
+>
+> Won't that mess up with the PM of the parent?  Or do we know that the
+> parent won't do its own PM?
 
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+The parent is always going to be pcieport. It doesn't seem to do any runtime PM,
+I do wonder if pcieport should be doing it's own runtime PM handling,
+but that is a
+larger task than I'm thinking to tackle here. Maybe I should be doing
 
-I guess it will make sense to merge through your tree unless you want to
-hold off until after I merge winth mainline (around -rc3) assuming that
-it even makes into 4.6.
+pci_set_power_state(pdev->bus->self, PCI_D3cold) ? I'm not really sure.
 
-Thanks.
+I'm guessing on Windows this all happens automatically.
 
-> ---
->  drivers/input/touchscreen/sun4i-ts.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
-> 
-> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchscreen/sun4i-ts.c
-> index 4857943..d07dd29 100644
-> --- a/drivers/input/touchscreen/sun4i-ts.c
-> +++ b/drivers/input/touchscreen/sun4i-ts.c
-> @@ -115,7 +115,6 @@
->  struct sun4i_ts_data {
->  	struct device *dev;
->  	struct input_dev *input;
-> -	struct thermal_zone_device *tz;
->  	void __iomem *base;
->  	unsigned int irq;
->  	bool ignore_fifo_data;
-> @@ -366,10 +365,7 @@ static int sun4i_ts_probe(struct platform_device *pdev)
->  	if (IS_ERR(hwmon))
->  		return PTR_ERR(hwmon);
->  
-> -	ts->tz = thermal_zone_of_sensor_register(ts->dev, 0, ts,
-> -						 &sun4i_ts_tz_ops);
-> -	if (IS_ERR(ts->tz))
-> -		ts->tz = NULL;
-> +	devm_thermal_zone_of_sensor_register(ts->dev, 0, ts, &sun4i_ts_tz_ops);
->  
->  	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
->  
-> @@ -377,7 +373,6 @@ static int sun4i_ts_probe(struct platform_device *pdev)
->  		error = input_register_device(ts->input);
->  		if (error) {
->  			writel(0, ts->base + TP_INT_FIFOC);
-> -			thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
->  			return error;
->  		}
->  	}
-> @@ -394,8 +389,6 @@ static int sun4i_ts_remove(struct platform_device *pdev)
->  	if (ts->input)
->  		input_unregister_device(ts->input);
->  
-> -	thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
-> -
->  	/* Deactivate all IRQs */
->  	writel(0, ts->base + TP_INT_FIFOC);
->  
-> -- 
-> 2.1.4
-> 
-
--- 
-Dmitry
+Dave.
