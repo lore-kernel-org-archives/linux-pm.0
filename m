@@ -1,110 +1,180 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Wed, 9 Mar 2016 17:15:19 +0700
-Message-ID: <20160309101519.GA26402@pablo>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
- <56D8AEB7.2050100@linaro.org>
- <36459679.vzZnOsAVeg@vostro.rjw.lan>
- <20160308112759.GF6356@twins.programming.kicks-ass.net>
- <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
- <20160308192640.GD6344@twins.programming.kicks-ass.net>
- <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V7 3/4] soc: tegra: pmc: Add generic PM domain support
+Date: Wed, 9 Mar 2016 10:22:31 +0000
+Message-ID: <56DFF967.7030505@nvidia.com>
+References: <1457094186-15786-1-git-send-email-jonathanh@nvidia.com>
+ <1457094186-15786-4-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFooBRk4Od=pgEnK8Uvq6Y+5O9uK5Ej9Z4gJn1W=imPvdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFooBRk4Od=pgEnK8Uvq6Y+5O9uK5Ej9Z4gJn1W=imPvdw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Uffe,
 
-sorry if I didn't reply yet. Trying to cope with jetlag and
-talks/meetings these days :-). Let me see if I'm getting what you are
-discussing, though.
-
-On 08/03/16 21:05, Rafael J. Wysocki wrote:
-> On Tue, Mar 8, 2016 at 8:26 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, Mar 08, 2016 at 07:00:57PM +0100, Rafael J. Wysocki wrote:
-> >> On Tue, Mar 8, 2016 at 12:27 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-
-[...]
-
-> a = max_freq gives next_freq = max_freq for x = 1, but with that
-> choice of a you may never get to x = 1 with frequency invariant
-> because of the feedback effect mentioned above, so the 1/n produces
-> the extra boost needed for that (n is a positive integer).
+On 08/03/16 21:28, Ulf Hansson wrote:
+> On 4 March 2016 at 13:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> Adds generic PM support to the PMC driver where the PM domains are
+>> populated from device-tree and the PM domain consumer devices are
+>> bound to their relevant PM domains via device-tree as well.
+>>
+>> Update the tegra_powergate_sequence_power_up() API so that internally
+>> it calls the same tegra_powergate_xxx functions that are used by the
+>> tegra generic power domain code for consistency.
+>>
+>> To ensure that the Tegra power domains (a.k.a powergates) cannot be
+>> controlled via both the legacy tegra_powergate_xxx functions as well
+>> as the generic PM domain framework, add a bit map for available
+>> powergates that can be controlled via the legacy powergate functions.
+>>
+>> Move the majority of the tegra_powergate_remove_clamping() function
+>> to a sub-function, so that this can be used by both the legacy and
+>> generic power domain code.
+>>
+>> Currently, the power domains are not removed once added because this
+>> is not yet supported by the PM domains framework. An error message
+>> will be displayed if we are unable to instantiate a power domain.
+>>
+>> This is based upon work by Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> and Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  drivers/soc/tegra/pmc.c | 485 ++++++++++++++++++++++++++++++++++++++++++------
+>>  include/soc/tegra/pmc.h |   1 +
+>>  2 files changed, 425 insertions(+), 61 deletions(-)
+>>
+>> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
+>> index 08966c26d65c..bb173456bbff 100644
+>> --- a/drivers/soc/tegra/pmc.c
+>> +++ b/drivers/soc/tegra/pmc.c
+>> @@ -31,10 +31,13 @@
+>>  #include <linux/iopoll.h>
+>>  #include <linux/of.h>
+>>  #include <linux/of_address.h>
+>> +#include <linux/of_platform.h>
+>>  #include <linux/platform_device.h>
+>> +#include <linux/pm_domain.h>
+>>  #include <linux/reboot.h>
+>>  #include <linux/reset.h>
+>>  #include <linux/seq_file.h>
+>> +#include <linux/slab.h>
+>>  #include <linux/spinlock.h>
+>>
+>>  #include <soc/tegra/common.h>
+>> @@ -102,6 +105,16 @@
+>>
+>>  #define GPU_RG_CNTRL                   0x2d4
+>>
+>> +struct tegra_powergate {
+>> +       struct generic_pm_domain genpd;
+>> +       struct tegra_pmc *pmc;
+>> +       unsigned int id;
+>> +       struct clk **clks;
+>> +       unsigned int num_clks;
+>> +       struct reset_control **resets;
+>> +       unsigned int num_resets;
+>> +};
+>> +
+>>  struct tegra_pmc_soc {
+>>         unsigned int num_powergates;
+>>         const char *const *powergates;
+>> @@ -132,6 +145,7 @@ struct tegra_pmc_soc {
+>>   * @cpu_pwr_good_en: CPU power good signal is enabled
+>>   * @lp0_vec_phys: physical base address of the LP0 warm boot code
+>>   * @lp0_vec_size: size of the LP0 warm boot code
+>> + * @powergates_available: Bitmap of available power gates
+>>   * @powergates_lock: mutex for power gate register access
+>>   */
+>>  struct tegra_pmc {
+>> @@ -156,6 +170,7 @@ struct tegra_pmc {
+>>         bool cpu_pwr_good_en;
+>>         u32 lp0_vec_phys;
+>>         u32 lp0_vec_size;
+>> +       DECLARE_BITMAP(powergates_available, TEGRA_POWERGATE_MAX);
+>>
+>>         struct mutex powergates_lock;
+>>  };
+>> @@ -165,6 +180,12 @@ static struct tegra_pmc *pmc = &(struct tegra_pmc) {
+>>         .suspend_mode = TEGRA_SUSPEND_NONE,
+>>  };
+>>
+>> +static inline struct tegra_powergate *
+>> +to_powergate(struct generic_pm_domain *domain)
+>> +{
+>> +       return container_of(domain, struct tegra_powergate, genpd);
+>> +}
+>> +
+>>  static u32 tegra_pmc_readl(unsigned long offset)
+>>  {
+>>         return readl(pmc->base + offset);
+>> @@ -188,6 +209,31 @@ static inline bool tegra_powergate_is_valid(int id)
+>>         return (pmc->soc && pmc->soc->powergates[id]);
+>>  }
+>>
+>> +static inline bool tegra_powergate_is_available(int id)
+>> +{
+>> +       return test_bit(id, pmc->powergates_available);
+>> +}
+>> +
+>> +static int tegra_powergate_lookup(struct tegra_pmc *pmc, const char *name)
+>> +{
+>> +       unsigned int i;
+>> +
+>> +       if (!pmc || !pmc->soc || !name)
+>> +               return -EINVAL;
+>> +
+>> +       for (i = 0; i < pmc->soc->num_powergates; i++) {
+>> +               if (!tegra_powergate_is_valid(i))
+>> +                       continue;
+>> +
+>> +               if (!strcmp(name, pmc->soc->powergates[i]))
+>> +                       return i;
 > 
-> Quite frankly, to me it looks like linear really is a better
-> approximation for "raw" utilization.  That is, for frequency invariant
-> x we should take:
+> Instead of having this name based lookup, why not provide the id using
+> DT instead?
 > 
->   next_freq = a * x * max_freq / current_freq
-> 
-> (and if x is not frequency invariant, the right-hand side becomes a *
-> x).  Then, the extra boost needed to get to x = 1 for frequency
-> invariant is produced by the (max_freq / current_freq) factor that is
-> greater than 1 as long as we are not running at max_freq and a can be
-> chosen as max_freq.
-> 
+> In other words use of_genpd_add_provider_onecell() when adding the OF
+> genpd provider. In that way I think you will get a bit simplier code
+> dealing with the error path when initialzing the genpds, won't you?
 
-Expanding terms again, your original formula (without the 1.1 factor of
-the last version) was:
+The above is simply used when creating the PM domains and not when
+calling the xlate to lookup the PM domain (which I believe you are
+referring to).
 
- next_freq = util / max_cap * max_freq
+Originally, the DT node for the PM domain included an ID for the PM
+domain, but when discussing with Thierry we thought there was no need to
+have both a name and ID. So now the DT node for the PM domain look like ...
 
-and this doesn't work when we have freq invariance since util won't go
-over curr_cap.
+	powergates {
+		pd_audio: aud {
+			clocks = <&tegra_car TEGRA210_CLK_APE>,
+			         <&tegra_car TEGRA210_CLK_APB2APE>;
+			resets = <&tegra_car 198>;
+			#power-domain-cells = <0>;
+		};
+	};
 
-What you propose above is to add another factor, so that we have:
+And the client binding ...
 
- next_freq = util / max_cap * max_freq / curr_freq * max_freq
+	adma: adma@702e2000 {
+		...
+		power-domains = <&pd_audio>;
+		...
+	};
 
-which should give us the opportunity to reach max_freq also with freq
-invariance.
+> Anyway, I guess it's more a matter of taste, so feel free to keep as is.
 
-This should actually be the same of doing:
+I prefer not to use of_genpd_add_provider_onecell() for tegra as this
+appears to be used for devices with a static list of PM domains. Yes,
+the Tegra PMC driver does have a static list of PM domain names (per
+pmc->soc->powergates[i]), however, I prefer that all the clock and reset
+information resides in the DT blob.
 
- next_freq = util / max_cap * max_cap / curr_cap * max_freq
-
-We are basically scaling how much the cpu is busy at curr_cap back to
-the 0..1024 scale. And we use this to select next_freq. Also, we can
-simplify this to:
-
- next_freq = util / curr_cap * max_freq
-
-and we save some ops.
-
-However, if that is correct, I think we might have a problem, as we are
-skewing OPP selection towards higher frequencies. Let's suppose we have
-a platform with 3 OPPs:
-
-  freq     cap
-  1200     1024
-  900      768
-  600      512
-
-As soon a task reaches an utilization of 257 we will be selecting the
-second OPP as
-
- next_freq = 257 / 512 * 1200 ~ 602
-
-While the cpu is only 50% busy in this case. And we will go at max OPP
-when reaching ~492 (~64% of 768).
-
-That said, I guess this might work as a first solution, but we will
-probably need something better in the future. I understand Rafael's
-concerns regardin margins, but it seems to me that some kind of
-additional parameter will be probably needed anyway to fix this.
-Just to say again how we handle this in schedfreq, with a -20% margin
-applied to the lowest OPP we will get to the next one when utilization
-reaches ~410 (80% busy at curr OPP), and so on for the subsequent ones,
-which is less aggressive and might be better IMHO.
-
-Best,
-
-- Juri
+Cheers
+Jon
