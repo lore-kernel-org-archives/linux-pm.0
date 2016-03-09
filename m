@@ -1,85 +1,73 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH V2] PM / clk: Add support for obtaining clocks from device-tree
-Date: Wed, 9 Mar 2016 15:13:40 +0100
-Message-ID: <CAMuHMdXsP=nqC7fkecnSQQjT4cg=LrY3mWoS4TrJ=GwAkRWASw@mail.gmail.com>
-References: <1457529213-2581-1-git-send-email-jonathanh@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a bit
+Date: Wed, 9 Mar 2016 15:17:48 +0100
+Message-ID: <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+	<2409306.qzzMXcm4dm@vostro.rjw.lan>
+	<1988425.XTpZIAJINa@vostro.rjw.lan>
+	<20160309123956.GM6356@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457529213-2581-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160309123956.GM6356@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jon,
-
-On Wed, Mar 9, 2016 at 2:13 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> The PM clocks framework requires clients to pass either a con-id or a
-> valid clk pointer in order to add a clock to a device. Add a new
-> function of_pm_clk_add_clks() to allows device clocks to be retrieved
-> from device-tree and populated for a given device. Note that
-> of_clk_get_from_provider() is not defined if CONFIG_OF and
-> CONFIG_COMMON_CLK are not selected. Therefore, make of_pm_clk_add_clks()
-> dependent on these options.
+On Wed, Mar 9, 2016 at 1:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, Mar 04, 2016 at 03:58:22AM +0100, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Use the observation that cpufreq_update_util() is only called
+>> by the scheduler with rq->lock held, so the callers of
+>> cpufreq_set_update_util_data() can use synchronize_sched()
+>> instead of synchronize_rcu() to wait for cpufreq_update_util()
+>> to complete.  Moreover, if they are updated to do that,
+>> rcu_read_(un)lock() calls in cpufreq_update_util() might be
+>> replaced with rcu_read_(un)lock_sched(), respectively, but
+>> those aren't really necessary, because the scheduler calls
+>> that function from RCU-sched read-side critical sections
+>> already.
+>>
+>> In addition to that, if cpufreq_set_update_util_data() checks
+>> the func field in the struct update_util_data before setting
+>> the per-CPU pointer to it, the data->func check may be dropped
+>> from cpufreq_update_util() as well.
+>>
+>> Make the above changes to reduce the overhead from
+>> cpufreq_update_util() in the scheduler paths invoking it
+>> and to make the cleanup after removing its callbacks less
+>> heavy-weight somewhat.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>
+>> Changes from the previous version:
+>> - Use rcu_dereference_sched() in cpufreq_update_util().
 >
-> An optional function pointer may be passed to of_pm_clk_add_clks() that
-> can be used to filter the clocks that are added for a device when
-> calling of_pm_clk_add_clks().
+> Which I think also shows the WARN_ON I insisted upon is redundant.
 >
-> In order to handle errors encountered when adding clocks from
-> device-tree, add a function pm_clk_remove_clk() to remove any clocks
-> (using a pointer to the clk structure) that have been added
-> successfully before the error occurred.
+> In any case, I cannot object to reducing overhead, esp. as this whole
+> patch was suggested by me in the first place, so:
 >
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->
-> Changes v1-v2:
-> - Added support for optional filter function as suggested by Geert U.
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-Thanks for the update!
+Thanks!
 
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 272a52ebafc0..0c2213145b4a 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -137,6 +137,82 @@ int pm_clk_add_clk(struct device *dev, struct clk *clk)
->         return __pm_clk_add(dev, NULL, clk);
->  }
->
-> +
-> +#if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
-> +/**
-> + * of_pm_clk_add_clks - Start using device clock(s) for power management.
-> + * @dev: Device whose clock(s) is going to be used for power management.
-> + * @of_pm_clk_filter: Optional function for filtering clocks
-> + *
-> + * Add a series of clocks described in the 'clocks' device-tree node for
-> + * a device to the list of clocks used for the power management of @dev.
-> + * If 'of_pm_clk_filter' is specified, then this filter function will be
-> + * called for each clock found and the clock will be added to the list
-> + * of clocks if this function returns true. Return success if clocks are
-> + * added successfully and return a negative error code if adding a clock
-> + * fails or there are no clocks that match with the filter function.
-> + */
-> +int of_pm_clk_add_clks(struct device *dev,
-> +                      bool (*of_pm_clk_filter)(struct of_phandle_args *args))
+> That said, how about the below? It avoids a function call.
 
-const struct of_phandle_args *args
+That is fine by me.
 
-I'd also like a "void *data" argument, for both of_pm_clk_add_clks and
-of_pm_clk_filter, to be passed to the filter function.
+What about taking it a bit further, though, and moving the definition
+of cpufreq_update_util_data to somewhere under kernel/sched/ (like
+kernel/sched/cpufreq.c maybe)?
 
-The code looks OK to me.
+Then, the whole static inline void cpufreq_update_util() definition
+can go into kernel/sched/sched.h (it doesn't have to be visible
+anywhere beyond kernel/sched/) and the only thing that needs to be
+exported to cpufreq will be a helper (or two), to set/clear the
+cpufreq_update_util_data pointers.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I'll try to cut a patch doing that later today for illustration.
