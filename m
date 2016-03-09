@@ -1,77 +1,60 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 05/13] input: convert sun4i-ts to use devm_thermal_zone_of_sensor_register
-Date: Wed,  9 Mar 2016 13:35:27 -0800
-Message-ID: <1457559336-17652-6-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 03/13] hwmon: convert tmp102 to use devm_thermal_zone_of_sensor_register
+Date: Wed,  9 Mar 2016 13:35:25 -0800
+Message-ID: <1457559336-17652-4-git-send-email-edubezval@gmail.com>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-input-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Sender: linux-input-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Sascha Hauer <s.hauer@pengutronix.de>, Jens Thiele <karme@karme.de>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
 This changes the driver to use the devm_ version
 of thermal_zone_of_sensor_register and cleans
 up the  local points and unregister calls.
 
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Chen-Yu Tsai <wens@csie.org>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Heiko Stuebner <heiko@sntech.de>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Jens Thiele <karme@karme.de>
-Cc: linux-input@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
+Cc: Jean Delvare <jdelvare@suse.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: lm-sensors@lm-sensors.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/input/touchscreen/sun4i-ts.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/hwmon/tmp102.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchscreen/sun4i-ts.c
-index 4857943..d07dd29 100644
---- a/drivers/input/touchscreen/sun4i-ts.c
-+++ b/drivers/input/touchscreen/sun4i-ts.c
-@@ -115,7 +115,6 @@
- struct sun4i_ts_data {
- 	struct device *dev;
- 	struct input_dev *input;
+diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+index 5289aa0..f1e96fd 100644
+--- a/drivers/hwmon/tmp102.c
++++ b/drivers/hwmon/tmp102.c
+@@ -53,7 +53,6 @@
+ struct tmp102 {
+ 	struct i2c_client *client;
+ 	struct device *hwmon_dev;
 -	struct thermal_zone_device *tz;
- 	void __iomem *base;
- 	unsigned int irq;
- 	bool ignore_fifo_data;
-@@ -366,10 +365,7 @@ static int sun4i_ts_probe(struct platform_device *pdev)
- 	if (IS_ERR(hwmon))
- 		return PTR_ERR(hwmon);
- 
--	ts->tz = thermal_zone_of_sensor_register(ts->dev, 0, ts,
--						 &sun4i_ts_tz_ops);
--	if (IS_ERR(ts->tz))
--		ts->tz = NULL;
-+	devm_thermal_zone_of_sensor_register(ts->dev, 0, ts, &sun4i_ts_tz_ops);
- 
- 	writel(TEMP_IRQ_EN(1), ts->base + TP_INT_FIFOC);
- 
-@@ -377,7 +373,6 @@ static int sun4i_ts_probe(struct platform_device *pdev)
- 		error = input_register_device(ts->input);
- 		if (error) {
- 			writel(0, ts->base + TP_INT_FIFOC);
--			thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
- 			return error;
- 		}
+ 	struct mutex lock;
+ 	u16 config_orig;
+ 	unsigned long last_update;
+@@ -232,10 +231,8 @@ static int tmp102_probe(struct i2c_client *client,
+ 		goto fail_restore_config;
  	}
-@@ -394,8 +389,6 @@ static int sun4i_ts_remove(struct platform_device *pdev)
- 	if (ts->input)
- 		input_unregister_device(ts->input);
+ 	tmp102->hwmon_dev = hwmon_dev;
+-	tmp102->tz = thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
+-						     &tmp102_of_thermal_ops);
+-	if (IS_ERR(tmp102->tz))
+-		tmp102->tz = NULL;
++	devm_thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
++					     &tmp102_of_thermal_ops);
  
--	thermal_zone_of_sensor_unregister(ts->dev, ts->tz);
--
- 	/* Deactivate all IRQs */
- 	writel(0, ts->base + TP_INT_FIFOC);
+ 	dev_info(dev, "initialized\n");
  
+@@ -251,7 +248,6 @@ static int tmp102_remove(struct i2c_client *client)
+ {
+ 	struct tmp102 *tmp102 = i2c_get_clientdata(client);
+ 
+-	thermal_zone_of_sensor_unregister(tmp102->hwmon_dev, tmp102->tz);
+ 	hwmon_device_unregister(tmp102->hwmon_dev);
+ 
+ 	/* Stop monitoring if device was stopped originally */
 -- 
 2.1.4
-
