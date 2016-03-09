@@ -1,13 +1,13 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 04/13] hwmon: convert scpi-hwmon to use devm_thermal_zone_of_sensor_register
-Date: Wed,  9 Mar 2016 13:35:26 -0800
-Message-ID: <1457559336-17652-5-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 02/13] hwmon: convert ntc_thermistor to use devm_thermal_zone_of_sensor_register
+Date: Wed,  9 Mar 2016 13:35:24 -0800
+Message-ID: <1457559336-17652-3-git-send-email-edubezval@gmail.com>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:34226 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753964AbcCIVfq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:35:46 -0500
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:33747 "EHLO
+	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbcCIVfn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:35:43 -0500
 In-Reply-To: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -24,110 +24,53 @@ Cc: lm-sensors@lm-sensors.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/hwmon/scpi-hwmon.c | 41 ++++++++---------------------------------
- 1 file changed, 8 insertions(+), 33 deletions(-)
+ drivers/hwmon/ntc_thermistor.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
-index 7e20567..2309e47 100644
---- a/drivers/hwmon/scpi-hwmon.c
-+++ b/drivers/hwmon/scpi-hwmon.c
-@@ -31,10 +31,8 @@ struct sensor_data {
+diff --git a/drivers/hwmon/ntc_thermistor.c b/drivers/hwmon/ntc_thermistor.c
+index feed306..ffc12f1 100644
+--- a/drivers/hwmon/ntc_thermistor.c
++++ b/drivers/hwmon/ntc_thermistor.c
+@@ -221,7 +221,6 @@ struct ntc_data {
+ 	struct device *dev;
+ 	int n_comp;
+ 	char name[PLATFORM_NAME_SIZE];
+-	struct thermal_zone_device *tz;
  };
  
- struct scpi_thermal_zone {
--	struct list_head list;
- 	int sensor_id;
- 	struct scpi_sensors *scpi_sensors;
--	struct thermal_zone_device *tzd;
- };
+ #if defined(CONFIG_OF) && IS_ENABLED(CONFIG_IIO)
+@@ -539,6 +538,7 @@ static const struct thermal_zone_of_device_ops ntc_of_thermal_ops = {
  
- struct scpi_sensors {
-@@ -92,20 +90,6 @@ scpi_show_label(struct device *dev, struct device_attribute *attr, char *buf)
- 	return sprintf(buf, "%s\n", sensor->info.name);
- }
+ static int ntc_thermistor_probe(struct platform_device *pdev)
+ {
++	struct thermal_zone_device *tz;
+ 	const struct of_device_id *of_id =
+ 			of_match_device(of_match_ptr(ntc_match), &pdev->dev);
+ 	const struct platform_device_id *pdev_id;
+@@ -633,12 +633,10 @@ static int ntc_thermistor_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "Thermistor type: %s successfully probed.\n",
+ 								pdev_id->name);
  
--static void
--unregister_thermal_zones(struct platform_device *pdev,
--			 struct scpi_sensors *scpi_sensors)
--{
--	struct list_head *pos;
--
--	list_for_each(pos, &scpi_sensors->thermal_zones) {
--		struct scpi_thermal_zone *zone;
--
--		zone = list_entry(pos, struct scpi_thermal_zone, list);
--		thermal_zone_of_sensor_unregister(&pdev->dev, zone->tzd);
+-	data->tz = thermal_zone_of_sensor_register(data->dev, 0, data->dev,
+-						   &ntc_of_thermal_ops);
+-	if (IS_ERR(data->tz)) {
++	tz = devm_thermal_zone_of_sensor_register(data->dev, 0, data->dev,
++						  &ntc_of_thermal_ops);
++	if (IS_ERR(tz))
+ 		dev_dbg(&pdev->dev, "Failed to register to thermal fw.\n");
+-		data->tz = NULL;
 -	}
--}
--
- static struct thermal_zone_of_device_ops scpi_sensor_ops = {
- 	.get_temp = scpi_read_temp,
- };
-@@ -224,6 +208,7 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&scpi_sensors->thermal_zones);
- 	for (i = 0; i < nr_sensors; i++) {
- 		struct sensor_data *sensor = &scpi_sensors->data[i];
-+		struct thermal_zone_device *z;
- 		struct scpi_thermal_zone *zone;
- 
- 		if (sensor->info.class != TEMPERATURE)
-@@ -232,42 +217,33 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
- 		zone = devm_kzalloc(dev, sizeof(*zone), GFP_KERNEL);
- 		if (!zone) {
- 			ret = -ENOMEM;
--			goto unregister_tzd;
-+			goto mfail;
- 		}
- 
- 		zone->sensor_id = i;
- 		zone->scpi_sensors = scpi_sensors;
--		zone->tzd = thermal_zone_of_sensor_register(dev,
--				sensor->info.sensor_id, zone, &scpi_sensor_ops);
-+		z = devm_thermal_zone_of_sensor_register(dev,
-+							 sensor->info.sensor_id,
-+							 zone,
-+							 &scpi_sensor_ops);
- 		/*
- 		 * The call to thermal_zone_of_sensor_register returns
- 		 * an error for sensors that are not associated with
- 		 * any thermal zones or if the thermal subsystem is
- 		 * not configured.
- 		 */
--		if (IS_ERR(zone->tzd)) {
-+		if (IS_ERR(z)) {
- 			devm_kfree(dev, zone);
- 			continue;
- 		}
--		list_add(&zone->list, &scpi_sensors->thermal_zones);
- 	}
  
  	return 0;
+ err_after_sysfs:
+@@ -656,8 +654,6 @@ static int ntc_thermistor_remove(struct platform_device *pdev)
+ 	sysfs_remove_group(&data->dev->kobj, &ntc_attr_group);
+ 	ntc_iio_channel_release(pdata);
  
--unregister_tzd:
--	unregister_thermal_zones(pdev, scpi_sensors);
-+mfail:
- 	return ret;
+-	thermal_zone_of_sensor_unregister(data->dev, data->tz);
+-
+ 	return 0;
  }
- 
--static int scpi_hwmon_remove(struct platform_device *pdev)
--{
--	struct scpi_sensors *scpi_sensors = platform_get_drvdata(pdev);
--
--	unregister_thermal_zones(pdev, scpi_sensors);
--
--	return 0;
--}
--
- static const struct of_device_id scpi_of_match[] = {
- 	{.compatible = "arm,scpi-sensors"},
- 	{},
-@@ -280,7 +256,6 @@ static struct platform_driver scpi_hwmon_platdrv = {
- 		.of_match_table = scpi_of_match,
- 	},
- 	.probe		= scpi_hwmon_probe,
--	.remove		= scpi_hwmon_remove,
- };
- module_platform_driver(scpi_hwmon_platdrv);
  
 -- 
 2.1.4
