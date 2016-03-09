@@ -1,104 +1,67 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 10/13] thermal: convert rockchip_thermal to use
- devm_thermal_zone_of_sensor_register
-Date: Wed,  9 Mar 2016 13:35:32 -0800
-Message-ID: <1457559336-17652-11-git-send-email-edubezval@gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 01/13] hwmon: convert lm75 to use devm_thermal_zone_of_sensor_register
+Date: Wed,  9 Mar 2016 13:35:23 -0800
+Message-ID: <1457559336-17652-2-git-send-email-edubezval@gmail.com>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1457559336-17652-1-git-send-email-edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Rui Zhang <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35127 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbcCIVfm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 16:35:42 -0500
+In-Reply-To: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>
 
 This changes the driver to use the devm_ version
 of thermal_zone_of_sensor_register and cleans
 up the  local points and unregister calls.
 
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Jean Delvare <jdelvare@suse.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: lm-sensors@lm-sensors.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/rockchip_thermal.c | 17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+ drivers/hwmon/lm75.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index b58e3fb..792c5d0 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -753,8 +753,8 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
+diff --git a/drivers/hwmon/lm75.c b/drivers/hwmon/lm75.c
+index 0addc84..69166ab 100644
+--- a/drivers/hwmon/lm75.c
++++ b/drivers/hwmon/lm75.c
+@@ -77,7 +77,6 @@ static const u8 LM75_REG_TEMP[3] = {
+ struct lm75_data {
+ 	struct i2c_client	*client;
+ 	struct device		*hwmon_dev;
+-	struct thermal_zone_device	*tz;
+ 	struct mutex		update_lock;
+ 	u8			orig_conf;
+ 	u8			resolution;	/* In bits, between 9 and 12 */
+@@ -306,11 +305,9 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	if (IS_ERR(data->hwmon_dev))
+ 		return PTR_ERR(data->hwmon_dev);
  
- 	sensor->thermal = thermal;
- 	sensor->id = id;
--	sensor->tzd = thermal_zone_of_sensor_register(&pdev->dev, id, sensor,
--						      &rockchip_of_thermal_ops);
-+	sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
-+					sensor, &rockchip_of_thermal_ops);
- 	if (IS_ERR(sensor->tzd)) {
- 		error = PTR_ERR(sensor->tzd);
- 		dev_err(&pdev->dev, "failed to register sensor %d: %d\n",
-@@ -782,7 +782,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	const struct of_device_id *match;
- 	struct resource *res;
- 	int irq;
--	int i, j;
-+	int i;
- 	int error;
+-	data->tz = thermal_zone_of_sensor_register(data->hwmon_dev, 0,
+-						   data->hwmon_dev,
+-						   &lm75_of_thermal_ops);
+-	if (IS_ERR(data->tz))
+-		data->tz = NULL;
++	devm_thermal_zone_of_sensor_register(data->hwmon_dev, 0,
++					     data->hwmon_dev,
++					     &lm75_of_thermal_ops);
  
- 	match = of_match_node(of_rockchip_thermal_match, np);
-@@ -865,9 +865,6 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 			dev_err(&pdev->dev,
- 				"failed to register sensor[%d] : error = %d\n",
- 				i, error);
--			for (j = 0; j < i; j++)
--				thermal_zone_of_sensor_unregister(&pdev->dev,
--						thermal->sensors[j].tzd);
- 			goto err_disable_pclk;
- 		}
- 	}
-@@ -879,7 +876,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	if (error) {
- 		dev_err(&pdev->dev,
- 			"failed to request tsadc irq: %d\n", error);
--		goto err_unregister_sensor;
-+		goto err_disable_pclk;
- 	}
+ 	dev_info(dev, "%s: sensor '%s'\n",
+ 		 dev_name(data->hwmon_dev), client->name);
+@@ -322,7 +319,6 @@ static int lm75_remove(struct i2c_client *client)
+ {
+ 	struct lm75_data *data = i2c_get_clientdata(client);
  
- 	thermal->chip->control(thermal->regs, true);
-@@ -891,11 +888,6 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 
+-	thermal_zone_of_sensor_unregister(data->hwmon_dev, data->tz);
+ 	hwmon_device_unregister(data->hwmon_dev);
+ 	lm75_write_value(client, LM75_REG_CONF, data->orig_conf);
  	return 0;
- 
--err_unregister_sensor:
--	while (i--)
--		thermal_zone_of_sensor_unregister(&pdev->dev,
--						  thermal->sensors[i].tzd);
--
- err_disable_pclk:
- 	clk_disable_unprepare(thermal->pclk);
- err_disable_clk:
-@@ -913,7 +905,6 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
- 		struct rockchip_thermal_sensor *sensor = &thermal->sensors[i];
- 
- 		rockchip_thermal_toggle_sensor(sensor, false);
--		thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
- 	}
- 
- 	thermal->chip->control(thermal->regs, false);
 -- 
 2.1.4
+
