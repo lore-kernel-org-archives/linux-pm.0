@@ -1,214 +1,140 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V2] PM / clk: Add support for obtaining clocks from device-tree
-Date: Wed, 9 Mar 2016 13:13:33 +0000
-Message-ID: <1457529213-2581-1-git-send-email-jonathanh@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
+Date: Wed, 9 Mar 2016 14:19:09 +0100
+Message-ID: <CAJZ5v0hurNUOVDXpJJEJ5dCwWO_Fo+EdzBhXJA7QWmPeY653fQ@mail.gmail.com>
+References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The PM clocks framework requires clients to pass either a con-id or a
-valid clk pointer in order to add a clock to a device. Add a new
-function of_pm_clk_add_clks() to allows device clocks to be retrieved
-from device-tree and populated for a given device. Note that
-of_clk_get_from_provider() is not defined if CONFIG_OF and
-CONFIG_COMMON_CLK are not selected. Therefore, make of_pm_clk_add_clks()
-dependent on these options.
+On Wed, Mar 9, 2016 at 7:14 AM, Dave Airlie <airlied@gmail.com> wrote:
+> From: Dave Airlie <airlied@redhat.com>
+>
+> Windows 10 seems to have standardised power control for the
+> optimus/powerxpress laptops using PR3 power resource hooks.
+>
+> I'm not sure this is definitely the correct place to be
+> doing this, but it works for me here.
+>
+> The ACPI device for the GPU I have is \_SB_.PCI0.PEG_.VID_
+> but the power resource hooks are on \_SB_.PCI0.PEG_, so
+> this patch creates a new power domain to turn the GPU
+> device parent off using standard ACPI calls.
+>
+> Signed-off-by: Dave Airlie <airlied@redhat.com>
+> ---
+>  drivers/gpu/vga/vga_switcheroo.c | 54 +++++++++++++++++++++++++++++++++++++++-
+>  include/linux/vga_switcheroo.h   |  3 ++-
+>  2 files changed, 55 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
+> index 665ab9f..be32cb2 100644
+> --- a/drivers/gpu/vga/vga_switcheroo.c
+> +++ b/drivers/gpu/vga/vga_switcheroo.c
+> @@ -42,7 +42,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/vgaarb.h>
+>  #include <linux/vga_switcheroo.h>
+> -
+> +#include <linux/acpi.h>
+>  /**
+>   * DOC: Overview
+>   *
+> @@ -997,3 +997,55 @@ vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev,
+>         return -EINVAL;
+>  }
+>  EXPORT_SYMBOL(vga_switcheroo_init_domain_pm_optimus_hdmi_audio);
+> +
+> +/* With Windows 10 the runtime suspend/resume can use power
+> +   resources on the parent device */
+> +static int vga_acpi_switcheroo_runtime_suspend(struct device *dev)
+> +{
+> +       struct pci_dev *pdev = to_pci_dev(dev);
+> +       int ret;
+> +       struct acpi_device *adev;
+> +
+> +       ret = dev->bus->pm->runtime_suspend(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
 
-An optional function pointer may be passed to of_pm_clk_add_clks() that
-can be used to filter the clocks that are added for a device when
-calling of_pm_clk_add_clks().
+You can use ACPI_COMPANION(&pdev->dev) for that.
 
-In order to handle errors encountered when adding clocks from
-device-tree, add a function pm_clk_remove_clk() to remove any clocks
-(using a pointer to the clk structure) that have been added
-successfully before the error occurred.
+> +       if (!ret)
+> +               acpi_device_set_power(adev->parent, ACPI_STATE_D3_COLD);
 
-Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
----
+Won't that mess up with the PM of the parent?  Or do we know that the
+parent won't do its own PM?
 
-Changes v1-v2:
-- Added support for optional filter function as suggested by Geert U.
+> +       return 0;
+> +}
+> +
+> +static int vga_acpi_switcheroo_runtime_resume(struct device *dev)
+> +{
+> +       struct pci_dev *pdev = to_pci_dev(dev);
+> +       struct acpi_device *adev;
+> +       int ret;
+> +
+> +       ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
 
- drivers/base/power/clock_ops.c | 109 +++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_clock.h       |  16 ++++++
- 2 files changed, 125 insertions(+)
+ACPI_COMPANION(&pdev->dev) here too?
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 272a52ebafc0..0c2213145b4a 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -137,6 +137,82 @@ int pm_clk_add_clk(struct device *dev, struct clk *clk)
- 	return __pm_clk_add(dev, NULL, clk);
- }
- 
-+
-+#if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
-+/**
-+ * of_pm_clk_add_clks - Start using device clock(s) for power management.
-+ * @dev: Device whose clock(s) is going to be used for power management.
-+ * @of_pm_clk_filter: Optional function for filtering clocks
-+ *
-+ * Add a series of clocks described in the 'clocks' device-tree node for
-+ * a device to the list of clocks used for the power management of @dev.
-+ * If 'of_pm_clk_filter' is specified, then this filter function will be
-+ * called for each clock found and the clock will be added to the list
-+ * of clocks if this function returns true. Return success if clocks are
-+ * added successfully and return a negative error code if adding a clock
-+ * fails or there are no clocks that match with the filter function.
-+ */
-+int of_pm_clk_add_clks(struct device *dev,
-+		       bool (*of_pm_clk_filter)(struct of_phandle_args *args))
-+{
-+	struct of_phandle_args clkspec;
-+	struct clk **clks;
-+	unsigned int i, count, added = 0;
-+	int ret;
-+
-+	if (!dev || !dev->of_node)
-+		return -EINVAL;
-+
-+	count = of_count_phandle_with_args(dev->of_node, "clocks",
-+					   "#clock-cells");
-+	if (count == 0)
-+		return -ENODEV;
-+
-+	clks = kcalloc(count, sizeof(*clks), GFP_KERNEL);
-+	if (!clks)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < count; i++) {
-+		if (of_parse_phandle_with_args(dev->of_node, "clocks",
-+					       "#clock-cells", i, &clkspec))
-+			goto error;
-+
-+		if (of_pm_clk_filter && !of_pm_clk_filter(&clkspec)) {
-+			of_node_put(clkspec.np);
-+			continue;
-+		}
-+
-+		clks[added] = of_clk_get_from_provider(&clkspec);
-+		of_node_put(clkspec.np);
-+
-+		if (IS_ERR(clks[added])) {
-+			ret = PTR_ERR(clks[added]);
-+			goto error;
-+		}
-+
-+		ret = pm_clk_add_clk(dev, clks[added]);
-+		if (ret) {
-+			clk_put(clks[added]);
-+			goto error;
-+		}
-+
-+		added++;
-+	}
-+
-+	kfree(clks);
-+
-+	return added ? 0 : -ENODEV;
-+
-+error:
-+	while (added--)
-+		pm_clk_remove_clk(dev, clks[added]);
-+
-+	kfree(clks);
-+
-+	return ret;
-+}
-+#endif /* CONFIG_OF && CONFIG_COMMON_CLK */
-+
- /**
-  * __pm_clk_remove - Destroy PM clock entry.
-  * @ce: PM clock entry to destroy.
-@@ -198,6 +274,39 @@ void pm_clk_remove(struct device *dev, const char *con_id)
- }
- 
- /**
-+ * pm_clk_remove_clk - Stop using a device clock for power management.
-+ * @dev: Device whose clock should not be used for PM any more.
-+ * @clk: Clock pointer
-+ *
-+ * Remove the clock pointed to by @clk from the list of clocks used for
-+ * the power management of @dev.
-+ */
-+void pm_clk_remove_clk(struct device *dev, struct clk *clk)
-+{
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
-+	struct pm_clock_entry *ce;
-+
-+	if (!psd || !clk)
-+		return;
-+
-+	spin_lock_irq(&psd->lock);
-+
-+	list_for_each_entry(ce, &psd->clock_list, node) {
-+		if (clk == ce->clk)
-+			goto remove;
-+	}
-+
-+	spin_unlock_irq(&psd->lock);
-+	return;
-+
-+ remove:
-+	list_del(&ce->node);
-+	spin_unlock_irq(&psd->lock);
-+
-+	__pm_clk_remove(ce);
-+}
-+
-+/**
-  * pm_clk_init - Initialize a device's list of power management clocks.
-  * @dev: Device to initialize the list of PM clocks for.
-  *
-diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
-index 25266c600021..3aa5ad57067a 100644
---- a/include/linux/pm_clock.h
-+++ b/include/linux/pm_clock.h
-@@ -11,6 +11,7 @@
- 
- #include <linux/device.h>
- #include <linux/notifier.h>
-+#include <linux/of.h>
- 
- struct pm_clk_notifier_block {
- 	struct notifier_block nb;
-@@ -43,6 +44,7 @@ extern void pm_clk_destroy(struct device *dev);
- extern int pm_clk_add(struct device *dev, const char *con_id);
- extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
- extern void pm_clk_remove(struct device *dev, const char *con_id);
-+extern void pm_clk_remove_clk(struct device *dev, struct clk *clk);
- extern int pm_clk_suspend(struct device *dev);
- extern int pm_clk_resume(struct device *dev);
- #else
-@@ -74,6 +76,9 @@ static inline void pm_clk_remove(struct device *dev, const char *con_id)
- }
- #define pm_clk_suspend	NULL
- #define pm_clk_resume	NULL
-+static inline void pm_clk_remove_clk(struct device *dev, struct clk *clk)
-+{
-+}
- #endif
- 
- #ifdef CONFIG_HAVE_CLK
-@@ -86,4 +91,15 @@ static inline void pm_clk_add_notifier(struct bus_type *bus,
- }
- #endif
- 
-+#if defined(CONFIG_PM_CLK) && defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
-+extern int of_pm_clk_add_clks(struct device *dev,
-+		bool (*of_pm_clk_filter)(struct of_phandle_args *args));
-+#else
-+static inline int of_pm_clk_add_clks(struct device *dev,
-+		bool (*of_pm_clk_filter)(struct of_phandle_args *args))
-+{
-+	return -EINVAL;
-+}
-+#endif
-+
- #endif
--- 
-2.1.4
+> +       if (!ret)
+> +               acpi_device_set_power(adev->parent, ACPI_STATE_D0);
+> +       ret = dev->bus->pm->runtime_resume(dev);
+> +       if (ret)
+> +               return ret;
+> +
+> +       return 0;
+> +}
+> +
+> +int vga_switcheroo_init_parent_pr3_ops(struct device *dev,
+> +                                      struct dev_pm_domain *domain)
+> +
+> +{
+> +       /* copy over all the bus versions */
+> +       if (dev->bus && dev->bus->pm) {
+> +               domain->ops = *dev->bus->pm;
+> +               domain->ops.runtime_suspend = vga_acpi_switcheroo_runtime_suspend;
+> +               domain->ops.runtime_resume = vga_acpi_switcheroo_runtime_resume;
+> +
+> +               dev_pm_domain_set(dev, domain);
+> +               return 0;
+> +       }
+> +       dev_pm_domain_set(dev, NULL);
+> +       return -EINVAL;
+> +}
+> +EXPORT_SYMBOL(vga_switcheroo_init_parent_pr3_ops);
+> diff --git a/include/linux/vga_switcheroo.h b/include/linux/vga_switcheroo.h
+> index 69e1d4a1..5ce0cbe 100644
+> --- a/include/linux/vga_switcheroo.h
+> +++ b/include/linux/vga_switcheroo.h
+> @@ -144,6 +144,7 @@ void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum vga_switcheroo
+>  int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain);
+>  void vga_switcheroo_fini_domain_pm_ops(struct device *dev);
+>  int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain);
+> +int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain);
+>  #else
+>
+>  static inline void vga_switcheroo_unregister_client(struct pci_dev *dev) {}
+> @@ -163,6 +164,6 @@ static inline void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum
+>  static inline int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+>  static inline void vga_switcheroo_fini_domain_pm_ops(struct device *dev) {}
+>  static inline int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+> -
+> +static inline int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+>  #endif
+>  #endif /* _LINUX_VGA_SWITCHEROO_H_ */
+> --
+> 2.5.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
