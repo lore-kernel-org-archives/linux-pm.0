@@ -1,135 +1,169 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
- utilization data
-Date: Wed, 9 Mar 2016 17:39:30 +0100
-Message-ID: <20160309163930.GP6356@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
- <56D8AEB7.2050100@linaro.org>
- <36459679.vzZnOsAVeg@vostro.rjw.lan>
- <20160308112759.GF6356@twins.programming.kicks-ass.net>
- <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
- <20160308192640.GD6344@twins.programming.kicks-ass.net>
- <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
+Date: Wed, 9 Mar 2016 11:52:33 -0500
+Message-ID: <CADnq5_MUW00AcYcM4WPREOd8ng9AfggZk6U4YU7j50s6BBeMNQ@mail.gmail.com>
+References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+	<20160309143336.GA26158@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:39385 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbcCIQji (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 11:39:38 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160309143336.GA26158@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Dave Airlie <airlied@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 
-On Tue, Mar 08, 2016 at 09:05:50PM +0100, Rafael J. Wysocki wrote:
-> >> This means that on platforms where the utilization is frequency
-> >> invariant we should use
-> >>
-> >>   next_freq = a * x
-> >>
-> >> (where x is given by (2) above) and for platforms where the
-> >> utilization is not frequency invariant
-> >>
-> >>   next_freq = a * x * current_freq / max_freq
-> >>
-> >> and all boils down to finding a.
-> >
-> > Right.
-> 
-> However, that doesn't seem to be in agreement with the Steve's results
-> posted earlier in this thread.
+On Wed, Mar 9, 2016 at 9:33 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> Hi Dave,
+>
+> On Wed, Mar 09, 2016 at 04:14:04PM +1000, Dave Airlie wrote:
+>> From: Dave Airlie <airlied@redhat.com>
+>>
+>> Windows 10 seems to have standardised power control for the
+>> optimus/powerxpress laptops using PR3 power resource hooks.
+>
+> What happened to the Optimus DSM, does this still work? If not,
+> echoing OFF to the vgaswitcheroo sysfs file won't power down the
+> GPU now, right? (If runtime pm is disabled in nouveau.)
+>
 
-I could not make anything of those numbers.
+If the OS identifies itself as windows 10 or newer when initializing
+ACPI, the standardized interfaces should be used if they exist.  I'm
+not sure if there is any explicit policy on the vendor specific ones,
+but I suspect they are probably broken in that case since I doubt the
+OEM validates them when the standardized interfaces are available.
 
-> Also theoretically, with frequency invariant, the only way you can get
-> to 100% utilization is by running at the max frequency, so the closer
-> to 100% you get, the faster you need to run to get any further.  That
-> indicates nonlinear to me.
+Alex
 
-I'm not seeing that, you get that by using a > 1. No need for
-non-linear.
-
-> >> Now, it seems reasonable for a to be something like (1 + 1/n) *
-> >> max_freq, so for non-frequency invariant we get
-> >>
-> >>   nex_freq = (1 + 1/n) * current_freq * x
-> >
-> > This seems like a big leap; where does:
-> >
-> >   (1 + 1/n) * max_freq
-> >
-> > come from? And what is 'n'?
-
-> a = max_freq gives next_freq = max_freq for x = 1,
-
-next_freq = a        * x * current_freq / max_freq
-
-  [ a := max_freq, x := 1 ] ->
-
-          = max_freq * 1 * current_freq / max_freq
-	  = current_freq
-
-	  != max_freq
-
-But I think I see what you're saying; because at x = 1,
-current_frequency must be max_frequency. Per your earlier point.
-
-> but with that choice of a you may never get to x = 1 with frequency
-> invariant because of the feedback effect mentioned above, so the 1/n
-> produces the extra boost needed for that (n is a positive integer).
-
-OK, so that gets us:
-
-	a = (1 + 1/n) ; n > 0
-
-[ I would not have chosen (1 + 1/n), but lets stick to that ]
-
-So for n = 4 that gets you: a = 1.25, which effectively gets you an 80%
-utilization tipping point. That is, 1.25 * .8 = 1, iow. you'll pick the
-next frequency (assuming RELATION_L like selection).
-
-Together this gets you:
-
-	next_freq = (1 + 1/n) * max_freq * x * current_freq / max_freq
-	          = (1 + 1/n) * x * current_freq
-
-Again, with n = 4, x > .8 will result in a next_freq > current_freq, and
-hence (RELATION_L) pick a higher one.
-
-> Quite frankly, to me it looks like linear really is a better
-> approximation for "raw" utilization.  That is, for frequency invariant
-> x we should take:
-> 
->   next_freq = a * x * max_freq / current_freq
-
-(its very confusing how you use 'x' for both invariant and
-non-invariant).
-
-That doesn't make sense, remember:
-
-	util = \Sum_i u_i * freq_i / max_freq		(1)
-
-Which for systems where freq_i is constant reduces to:
-
-	util = util_raw * current_freq / max_freq	(2)
-
-But you cannot reverse this. IOW you cannot try and divide out
-current_freq on a frequency invariant metric.
-
-So going by:
-
-	next_freq = (1 + 1/n) * max_freq * util		(3)
-
-if we substitute (2) into (3) we get:
-
-	          = (1 + 1/n) * max_freq * util_raw * current_freq / max_freq
-		  = (1 + 1/n) * current_freq * util_raw	(4)
-
-Which gets you two formula with the same general behaviour. As (2) is
-the only approximation of (1) we can make.
-
-
+>> I'm not sure this is definitely the correct place to be
+>> doing this, but it works for me here.
+>
+> How about implementing an additional vga_switcheroo handler somewhere
+> in drivers/acpi/, which looks for the PR3 hooks and registers with
+> vga_switcheroo if found. The ->power_state callback of that handler
+> would then invoke acpi_device_set_power().
+>
+> The ACPI bus is scanned in the subsys_initcall section, much earlier
+> than nouveau is loaded (in the device_initcall section). So the ACPI
+> vga_switcheroo handler could register before the nouveau DSM handler
+> and therefore would always have a higher precedence.
+>
+> In any case this patch should be amended with kerneldoc for
+> vga_switcheroo_init_parent_pr3_ops(), I've spent considerable time
+> last year to document everything and kindly ask that this water not
+> be muddied again. ;-)
+>
+> One small nit, the headers are sorted alphabetically yet acpi.h is
+> added at the end.
+>
+> Thanks,
+>
+> Lukas
+>
+>>
+>> The ACPI device for the GPU I have is \_SB_.PCI0.PEG_.VID_
+>> but the power resource hooks are on \_SB_.PCI0.PEG_, so
+>> this patch creates a new power domain to turn the GPU
+>> device parent off using standard ACPI calls.
+>>
+>> Signed-off-by: Dave Airlie <airlied@redhat.com>
+>> ---
+>>  drivers/gpu/vga/vga_switcheroo.c | 54 +++++++++++++++++++++++++++++++++++++++-
+>>  include/linux/vga_switcheroo.h   |  3 ++-
+>>  2 files changed, 55 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
+>> index 665ab9f..be32cb2 100644
+>> --- a/drivers/gpu/vga/vga_switcheroo.c
+>> +++ b/drivers/gpu/vga/vga_switcheroo.c
+>> @@ -42,7 +42,7 @@
+>>  #include <linux/uaccess.h>
+>>  #include <linux/vgaarb.h>
+>>  #include <linux/vga_switcheroo.h>
+>> -
+>> +#include <linux/acpi.h>
+>>  /**
+>>   * DOC: Overview
+>>   *
+>> @@ -997,3 +997,55 @@ vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev,
+>>       return -EINVAL;
+>>  }
+>>  EXPORT_SYMBOL(vga_switcheroo_init_domain_pm_optimus_hdmi_audio);
+>> +
+>> +/* With Windows 10 the runtime suspend/resume can use power
+>> +   resources on the parent device */
+>> +static int vga_acpi_switcheroo_runtime_suspend(struct device *dev)
+>> +{
+>> +     struct pci_dev *pdev = to_pci_dev(dev);
+>> +     int ret;
+>> +     struct acpi_device *adev;
+>> +
+>> +     ret = dev->bus->pm->runtime_suspend(dev);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
+>> +     if (!ret)
+>> +             acpi_device_set_power(adev->parent, ACPI_STATE_D3_COLD);
+>> +     return 0;
+>> +}
+>> +
+>> +static int vga_acpi_switcheroo_runtime_resume(struct device *dev)
+>> +{
+>> +     struct pci_dev *pdev = to_pci_dev(dev);
+>> +     struct acpi_device *adev;
+>> +     int ret;
+>> +
+>> +     ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
+>> +     if (!ret)
+>> +             acpi_device_set_power(adev->parent, ACPI_STATE_D0);
+>> +     ret = dev->bus->pm->runtime_resume(dev);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +int vga_switcheroo_init_parent_pr3_ops(struct device *dev,
+>> +                                    struct dev_pm_domain *domain)
+>> +
+>> +{
+>> +     /* copy over all the bus versions */
+>> +     if (dev->bus && dev->bus->pm) {
+>> +             domain->ops = *dev->bus->pm;
+>> +             domain->ops.runtime_suspend = vga_acpi_switcheroo_runtime_suspend;
+>> +             domain->ops.runtime_resume = vga_acpi_switcheroo_runtime_resume;
+>> +
+>> +             dev_pm_domain_set(dev, domain);
+>> +             return 0;
+>> +     }
+>> +     dev_pm_domain_set(dev, NULL);
+>> +     return -EINVAL;
+>> +}
+>> +EXPORT_SYMBOL(vga_switcheroo_init_parent_pr3_ops);
+>> diff --git a/include/linux/vga_switcheroo.h b/include/linux/vga_switcheroo.h
+>> index 69e1d4a1..5ce0cbe 100644
+>> --- a/include/linux/vga_switcheroo.h
+>> +++ b/include/linux/vga_switcheroo.h
+>> @@ -144,6 +144,7 @@ void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum vga_switcheroo
+>>  int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain);
+>>  void vga_switcheroo_fini_domain_pm_ops(struct device *dev);
+>>  int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain);
+>> +int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain);
+>>  #else
+>>
+>>  static inline void vga_switcheroo_unregister_client(struct pci_dev *dev) {}
+>> @@ -163,6 +164,6 @@ static inline void vga_switcheroo_set_dynamic_switch(struct pci_dev *pdev, enum
+>>  static inline int vga_switcheroo_init_domain_pm_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+>>  static inline void vga_switcheroo_fini_domain_pm_ops(struct device *dev) {}
+>>  static inline int vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+>> -
+>> +static inline int vga_switcheroo_init_parent_pr3_ops(struct device *dev, struct dev_pm_domain *domain) { return -EINVAL; }
+>>  #endif
+>>  #endif /* _LINUX_VGA_SWITCHEROO_H_ */
+>> --
+>> 2.5.0
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
