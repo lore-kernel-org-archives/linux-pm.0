@@ -1,99 +1,73 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 08/11] soc: renesas: rcar-sysc: Add support for R-Car M2-W power areas
-Date: Wed,  9 Mar 2016 20:18:44 +0100
-Message-ID: <1457551127-21934-9-git-send-email-geert+renesas@glider.be>
-References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 4/6] ARM: dts: r8a7793: Add SYSC PM domains
+Date: Wed,  9 Mar 2016 20:18:53 +0100
+Message-ID: <1457551135-22078-5-git-send-email-geert+renesas@glider.be>
+References: <1457551135-22078-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1457551135-22078-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
+
+Add a device node for the System Controller.
+Hook up the first Cortex-A15 CPU core and the Cortex-A15 L2 cache/SCU to
+their respective PM domains.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - New (converted from DT to C).
----
- drivers/soc/renesas/Makefile       |  2 +-
- drivers/soc/renesas/r8a7791-sysc.c | 32 ++++++++++++++++++++++++++++++++
- drivers/soc/renesas/rcar-sysc.c    |  3 +++
- drivers/soc/renesas/rcar-sysc.h    |  1 +
- 4 files changed, 37 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/renesas/r8a7791-sysc.c
+  - Drop power area hiearchy from DT,
+  - Switch to "#power-domain-cells = <1>",
+  - Drop fallback compatibility strings,
 
-diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
-index 6588be3c6776fadf..96463c05ee594335 100644
---- a/drivers/soc/renesas/Makefile
-+++ b/drivers/soc/renesas/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_ARCH_R8A7779)	+= rcar-sysc.o r8a7779-sysc.o
- obj-$(CONFIG_ARCH_R8A7790)	+= rcar-sysc.o r8a7790-sysc.o
--obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o
-+obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o r8a7791-sysc.o
- obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o
- obj-$(CONFIG_ARCH_R8A7794)	+= rcar-sysc.o
-diff --git a/drivers/soc/renesas/r8a7791-sysc.c b/drivers/soc/renesas/r8a7791-sysc.c
-new file mode 100644
-index 0000000000000000..b8db6f345720b6ba
---- /dev/null
-+++ b/drivers/soc/renesas/r8a7791-sysc.c
-@@ -0,0 +1,32 @@
-+/*
-+ * Renesas R-Car M2-W/N System Controller
-+ *
-+ * Copyright (C) 2016 Glider bvba
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ */
-+
-+#include <linux/bug.h>
-+#include <linux/kernel.h>
-+
-+#include <dt-bindings/power/r8a7791-sysc.h>
-+
-+#include "rcar-sysc.h"
-+
-+static const struct rcar_sysc_area r8a7791_areas[] __initconst = {
-+	{ "ca15-scu",	0x180, 0, R8A7791_PD_CA15_SCU,	-1,
-+	  PD_SCU },
-+	{ "ca15-cpu0",	 0x40, 0, R8A7791_PD_CA15_CPU0,	R8A7791_PD_CA15_SCU,
-+	  PD_CPU_NOCR, },
-+	{ "ca15-cpu1",	 0x40, 1, R8A7791_PD_CA15_CPU1,	R8A7791_PD_CA15_SCU,
-+	  PD_CPU_NOCR, },
-+	{ "sh",		 0x80, 0, R8A7791_PD_SH,	-1, },
-+	{ "sgx",	 0xc0, 0, R8A7791_PD_SGX,	-1, },
-+};
-+
-+const struct rcar_sysc_info r8a7791_sysc_info __initconst = {
-+	.areas = r8a7791_areas,
-+	.num_areas = ARRAY_SIZE(r8a7791_areas),
-+};
-diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index 44b8ef764cbc33d1..c7f78ea59be7a9e3 100644
---- a/drivers/soc/renesas/rcar-sysc.c
-+++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -287,6 +287,9 @@ static const struct of_device_id rcar_sysc_matches[] = {
- #ifdef CONFIG_ARCH_R8A7790
- 	{ .compatible = "renesas,r8a7790-sysc", .data = &r8a7790_sysc_info },
- #endif
-+#ifdef CONFIG_ARCH_R8A7791
-+	{ .compatible = "renesas,r8a7791-sysc", .data = &r8a7791_sysc_info },
-+#endif
- 	{ /* sentinel */ }
- };
+v2:
+  - Change one-line summary prefix to match current arm-soc practices,
+  - Update compatible values.
+---
+ arch/arm/boot/dts/r8a7793.dtsi | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/arch/arm/boot/dts/r8a7793.dtsi b/arch/arm/boot/dts/r8a7793.dtsi
+index b482159452412601..0956cd5f2d545ebc 100644
+--- a/arch/arm/boot/dts/r8a7793.dtsi
++++ b/arch/arm/boot/dts/r8a7793.dtsi
+@@ -11,6 +11,7 @@
+ #include <dt-bindings/clock/r8a7793-clock.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/power/r8a7793-sysc.h>
  
-diff --git a/drivers/soc/renesas/rcar-sysc.h b/drivers/soc/renesas/rcar-sysc.h
-index 33c8f2d00a01eac6..d58b39400e790a46 100644
---- a/drivers/soc/renesas/rcar-sysc.h
-+++ b/drivers/soc/renesas/rcar-sysc.h
-@@ -52,4 +52,5 @@ struct rcar_sysc_info {
+ / {
+ 	compatible = "renesas,r8a7793";
+@@ -43,6 +44,7 @@
+ 			voltage-tolerance = <1>; /* 1% */
+ 			clocks = <&cpg_clocks R8A7793_CLK_Z>;
+ 			clock-latency = <300000>; /* 300 us */
++			power-domains = <&sysc R8A7793_PD_CA15_CPU0>;
  
- extern const struct rcar_sysc_info r8a7779_sysc_info;
- extern const struct rcar_sysc_info r8a7790_sysc_info;
-+extern const struct rcar_sysc_info r8a7791_sysc_info;
- #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
+ 			/* kHz - uV - OPPs unknown yet */
+ 			operating-points = <1500000 1000000>,
+@@ -76,6 +78,7 @@
+ 
+ 	L2_CA15: cache-controller@0 {
+ 		compatible = "cache";
++		power-domains = <&sysc R8A7793_PD_CA15_SCU>;
+ 		cache-unified;
+ 		cache-level = <2>;
+ 	};
+@@ -1166,6 +1169,12 @@
+ 		};
+ 	};
+ 
++	sysc: system-controller@e6180000 {
++		compatible = "renesas,r8a7793-sysc";
++		reg = <0 0xe6180000 0 0x0200>;
++		#power-domain-cells = <1>;
++	};
++
+ 	ipmmu_sy0: mmu@e6280000 {
+ 		compatible = "renesas,ipmmu-r8a7793", "renesas,ipmmu-vmsa";
+ 		reg = <0 0xe6280000 0 0x1000>;
 -- 
 1.9.1
