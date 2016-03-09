@@ -1,38 +1,79 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a
- bit
-Date: Wed, 9 Mar 2016 16:29:34 +0100
-Message-ID: <20160309152934.GO6356@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <2409306.qzzMXcm4dm@vostro.rjw.lan>
- <1988425.XTpZIAJINa@vostro.rjw.lan>
- <20160309123956.GM6356@twins.programming.kicks-ass.net>
- <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
+From: Matt Fleming <matt@codeblueprint.co.uk>
+Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Wed, 9 Mar 2016 15:34:36 +0000
+Message-ID: <20160309153436.GB15775@codeblueprint.co.uk>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
+ <36DF59CE26D8EE47B0655C516E9CE640286D329F@shsmsx102.ccr.corp.intel.com>
+ <2414254.VhAiD01BTS@vostro.rjw.lan>
+ <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:34557 "EHLO
+	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753708AbcCIPej (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 10:34:39 -0500
+Received: by mail-wm0-f48.google.com with SMTP id p65so197654709wmp.1
+        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2016 07:34:39 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Wed, Mar 09, 2016 at 03:17:48PM +0100, Rafael J. Wysocki wrote:
-> > That said, how about the below? It avoids a function call.
-> 
-> That is fine by me.
-> 
-> What about taking it a bit further, though, and moving the definition
-> of cpufreq_update_util_data to somewhere under kernel/sched/ (like
-> kernel/sched/cpufreq.c maybe)?
-> 
-> Then, the whole static inline void cpufreq_update_util() definition
-> can go into kernel/sched/sched.h (it doesn't have to be visible
-> anywhere beyond kernel/sched/) and the only thing that needs to be
-> exported to cpufreq will be a helper (or two), to set/clear the
-> cpufreq_update_util_data pointers.
-> 
-> I'll try to cut a patch doing that later today for illustration.
+On Tue, 08 Mar, at 04:25:30PM, Chen, Yu C wrote:
+> Hum. unfortunately it is not guaranteed to run after all of the other code,
+> because other components who register pm_power_off may be built as modules, and
+> we can not predict/control the sequence registration.   So this patch may
+> break the EFI platforms who use non-efi poweroff due to unstable EFI service
+> ,  not sure if there are any released-products of this kind.
+ 
+Certainly the majority of x86 client machines do not use EFI power
+off, because it hardly ever functions correctly.
 
-Right, that's a blend with your second patch. Sure.
+> Currently I'm thinking of 3 possible solutions,  could you please give some advices on them:
+> 
+> 1. Introduce bootopt of 'poweroff=efi'
+>      Set the pm_power_off to efi_power_off no matter whether there is _S5 or not
+> 
+> 2. Introduce /sys/power/poweroff
+>     Allow the user to choose which  pm_power_off, for example:
+>  
+> # cat /sys/power/poweroff
+> *acpi		acpi_power_off
+> efi		efi_power_off	
+> gpio		gpio_poweroff_do_poweroff
+> user can echo string to enable which one.
+> 
+> And two APIs:
+> register_power_off(char *name, power_off func)
+> unregister_power_off(char *name)  
+> 
+> 
+> 3. replace all the codes of  pm_power_off() with reliable_pm_power_off()
+> 
+> void reliable_pm_power_off(void)
+> {
+> 	if (!pm_power_off) {
+> 		if (acpi_no_s5)
+> 			pm_power_off = efi_power_off;
+> 	/* Other conditions added in the future. */
+> 	}
+> 	pm_power_off();
+> }
+
+Be wary of adding all these control knobs. People just want their
+machines to reboot properly without having to mess with boot
+parameters.
+
+Let's go back to the start. What prompted this patch? Do Intel have
+(or are planning) machines that do not have _S5 and are expected to
+use EFI to reset the system? Or is this some new configuration
+discussed in the ACPI spec that Linux needs to be support? 
+
+Can we remove the ambiguity and options to force EFI reset if _S5 is
+missing? Afterall, that's why the function is called
+efi_poweroff_*required*.
