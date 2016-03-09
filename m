@@ -1,119 +1,88 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH 10/13] thermal: convert rockchip_thermal to use devm_thermal_zone_of_sensor_register
-Date: Wed, 09 Mar 2016 23:23:14 +0100
-Message-ID: <8638741.XZr7Brn4dS@diego>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com> <1457559336-17652-11-git-send-email-edubezval@gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4)
+Date: Wed, 9 Mar 2016 15:03:37 -0800
+Message-ID: <002d01d17a57$ec417030$c4c45090$@net>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>	<87si087tsr.fsf@iki.fi>	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com> <87a8m74mcc.fsf@iki.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:44401 "EHLO gloria.sntech.de"
+Received: from cmta13.telus.net ([209.171.16.86]:55968 "EHLO cmta13.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189AbcCIWX2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 17:23:28 -0500
-In-Reply-To: <1457559336-17652-11-git-send-email-edubezval@gmail.com>
+	id S1752167AbcCIXDn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Mar 2016 18:03:43 -0500
+In-Reply-To: <87a8m74mcc.fsf@iki.fi>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Shawn Lin <shawn.lin@rock-chips.com>, Caesar Wang <caesar.upstream@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
+To: 'Rik van Riel' <riel@redhat.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
 
-Am Mittwoch, 9. M=E4rz 2016, 13:35:32 schrieb Eduardo Valentin:
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
->=20
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-rockchip@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+Does the direction that this thread has taken mean that those two
+commits that Arto identified might now not be reverted?
 
-to me this looks ok
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Commits:
+9c4b2867ed7c8c8784dd417ffd16e705e81eb145
+a9ceb78bc75ca47972096372ff3d48648b16317a
 
-I've also added in some Rockchip people that were working on the driver=
- in the=20
-past.
+Recall that increased energy consumption was also isolated to those
+two commits for some types of workflow. The suggestion is that the
+commits should be reverted anyhow.
 
+What seems to be happening is that CPUs are deciding to stay in idle
+state 0 a lot more, when they actually could / should be in a deeper
+idle state.
 
-Heiko
+Test time is always: 33 minutes and 20 seconds test (8 CPUs), and there
+is never any noticeable difference in execution times for the work:
 
-> ---
->  drivers/thermal/rockchip_thermal.c | 17 ++++-------------
->  1 file changed, 4 insertions(+), 13 deletions(-)
->=20
-> diff --git a/drivers/thermal/rockchip_thermal.c
-> b/drivers/thermal/rockchip_thermal.c index b58e3fb..792c5d0 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -753,8 +753,8 @@ rockchip_thermal_register_sensor(struct platform_=
-device
-> *pdev,
->=20
->  	sensor->thermal =3D thermal;
->  	sensor->id =3D id;
-> -	sensor->tzd =3D thermal_zone_of_sensor_register(&pdev->dev, id, sen=
-sor,
-> -						      &rockchip_of_thermal_ops);
-> +	sensor->tzd =3D devm_thermal_zone_of_sensor_register(&pdev->dev, id=
-,
-> +					sensor, &rockchip_of_thermal_ops);
->  	if (IS_ERR(sensor->tzd)) {
->  		error =3D PTR_ERR(sensor->tzd);
->  		dev_err(&pdev->dev, "failed to register sensor %d: %d\n",
-> @@ -782,7 +782,7 @@ static int rockchip_thermal_probe(struct platform=
-_device
-> *pdev) const struct of_device_id *match;
->  	struct resource *res;
->  	int irq;
-> -	int i, j;
-> +	int i;
->  	int error;
->=20
->  	match =3D of_match_node(of_rockchip_thermal_match, np);
-> @@ -865,9 +865,6 @@ static int rockchip_thermal_probe(struct platform=
-_device
-> *pdev) dev_err(&pdev->dev,
->  				"failed to register sensor[%d] : error =3D %d\n",
->  				i, error);
-> -			for (j =3D 0; j < i; j++)
-> -				thermal_zone_of_sensor_unregister(&pdev->dev,
-> -						thermal->sensors[j].tzd);
->  			goto err_disable_pclk;
->  		}
->  	}
-> @@ -879,7 +876,7 @@ static int rockchip_thermal_probe(struct platform=
-_device
-> *pdev) if (error) {
->  		dev_err(&pdev->dev,
->  			"failed to request tsadc irq: %d\n", error);
-> -		goto err_unregister_sensor;
-> +		goto err_disable_pclk;
->  	}
->=20
->  	thermal->chip->control(thermal->regs, true);
-> @@ -891,11 +888,6 @@ static int rockchip_thermal_probe(struct
-> platform_device *pdev)
->=20
->  	return 0;
->=20
-> -err_unregister_sensor:
-> -	while (i--)
-> -		thermal_zone_of_sensor_unregister(&pdev->dev,
-> -						  thermal->sensors[i].tzd);
-> -
->  err_disable_pclk:
->  	clk_disable_unprepare(thermal->pclk);
->  err_disable_clk:
-> @@ -913,7 +905,6 @@ static int rockchip_thermal_remove(struct
-> platform_device *pdev) struct rockchip_thermal_sensor *sensor =3D
-> &thermal->sensors[i];
->=20
->  		rockchip_thermal_toggle_sensor(sensor, false);
-> -		thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
->  	}
->=20
->  	thermal->chip->control(thermal->regs, false);
+Example 1: kernel 4.5-rc5 with the rjw 3 patch set version 10
+"Replace timers with utilization update callbacks":
+Aggregate times in each idle state:
+
+rjwv10 (minutes)	reverted (minutes)	Idle State
+27.0654211		2.617325533			0
+12.92451315		24.53266672			1
+3.668558467		3.780482633			2
+1.2727832		1.61352195			3
+130.8342596		141.2234947			4
+		
+175.7655355		173.7674915			total
+
+Example 2: kernel 4.5-rc7 stock:
+Aggregate times in each idle state:
+
+k45rc7 (minutes)	reverted (minutes)	Idle State
+20.1771917		2.638311483			0
+13.02770225		21.81474838			1
+3.428136783		3.951405			2
+1.4540243		1.552488167			3
+134.9057413		143.5533			4
+		
+172.9927963		173.5102531			total
+
+Energy (restated from a previous e-mail):
+
+Test 7: reverted: Package Joules: 47830
+Test 8: rjwv10: Package Joules: 54419 (revert saves 12.1% energy)
+
+Test 9: reverted: Package Joules: 49326
+Test 10: rjwv10: Package Joules: 55442 (revert saves 11% energy)
+
+Test 11: reverted: acpi-cpufreq ondemand: Package Joules: 49146
+Test 12: rjwv10: acpi-cpufreq ondemand: Package Joules: 56302 (revert saves 12.7% energy)
+
+Energy (not in any previous e-mail):
+
+Reverted: 56178 Joules
+Kernel 4.5-rc7: 63269 Joules (revert saves 12.6% energy)
+
+Note 1: The test computer was rebuilt in between old and new tests,
+so the baseline energy may have changed.
+
+Note 2: Unless otherwise stated, intel_pstate driver, powersave governor.
+
+... Doug
+
 
