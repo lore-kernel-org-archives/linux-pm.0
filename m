@@ -1,104 +1,50 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 11/13] thermal: convert exynos to use
- devm_thermal_zone_of_sensor_register
-Date: Thu, 10 Mar 2016 10:16:13 +0100
-Message-ID: <20160310101613.2d00b5e2@amdc2363>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-12-git-send-email-edubezval@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a
+ bit
+Date: Thu, 10 Mar 2016 10:19:01 +0100
+Message-ID: <20160310091901.GS6344@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
+ <20160309152934.GO6356@twins.programming.kicks-ass.net>
+ <5173878.LnSyxxsz2i@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:51939 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934335AbcCJJQ2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 04:16:28 -0500
-In-reply-to: <1457559336-17652-12-git-send-email-edubezval@gmail.com>
+Received: from casper.infradead.org ([85.118.1.10]:57013 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965556AbcCJJTF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 04:19:05 -0500
+Content-Disposition: inline
+In-Reply-To: <5173878.LnSyxxsz2i@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-Hi Eduardo,
-
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
+On Wed, Mar 09, 2016 at 10:35:02PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] cpufreq: Move scheduler-related code to the sched directory
 > 
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> Create cpufreq.c under kernel/sched/ and move the cpufreq code
+> related to the scheduler to that file and to sched.h.
+> 
+> Redefine cpufreq_update_util() as a static inline function to avoid
+> function calls at its call sites in the scheduler code (as suggested
+> by Peter Zijlstra).
+> 
+> Also move the definition of struct update_util_data and declaration
+> of cpufreq_set_update_util_data() from include/linux/cpufreq.h to
+> include/linux/sched.h.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/thermal/samsung/exynos_tmu.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> b/drivers/thermal/samsung/exynos_tmu.c index fa61eff..256039e 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -1363,8 +1363,8 @@ static int exynos_tmu_probe(struct
-> platform_device *pdev)
->  	 * data->tzd must be registered before calling
-> exynos_tmu_initialize(),
->  	 * requesting irq and calling exynos_tmu_control().
->  	 */
-> -	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0,
-> data,
-> -
-> &exynos_sensor_ops);
-> +	data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
-> 0, data,
-> +
-> &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
->  		ret = PTR_ERR(data->tzd);
->  		dev_err(&pdev->dev, "Failed to register sensor:
-> %d\n", ret); @@ -1374,21 +1374,19 @@ static int
-> exynos_tmu_probe(struct platform_device *pdev) ret =
-> exynos_tmu_initialize(pdev); if (ret) {
->  		dev_err(&pdev->dev, "Failed to initialize TMU\n");
-> -		goto err_thermal;
-> +		goto err_sclk;
->  	}
->  
->  	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
->  		IRQF_TRIGGER_RISING | IRQF_SHARED,
-> dev_name(&pdev->dev), data); if (ret) {
->  		dev_err(&pdev->dev, "Failed to request irq: %d\n",
-> data->irq);
-> -		goto err_thermal;
-> +		goto err_sclk;
->  	}
->  
->  	exynos_tmu_control(pdev, true);
->  	return 0;
->  
-> -err_thermal:
-> -	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
->  err_sclk:
->  	clk_disable_unprepare(data->sclk);
->  err_clk:
-> @@ -1406,9 +1404,7 @@ err_sensor:
->  static int exynos_tmu_remove(struct platform_device *pdev)
->  {
->  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> -	struct thermal_zone_device *tzd = data->tzd;
->  
-> -	thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
->  	exynos_tmu_control(pdev, false);
->  
->  	clk_disable_unprepare(data->sclk);
+>  drivers/cpufreq/cpufreq.c          |   53 -------------------------------------
+>  drivers/cpufreq/cpufreq_governor.c |    1 
+>  include/linux/cpufreq.h            |   34 -----------------------
+>  include/linux/sched.h              |    9 ++++++
+>  kernel/sched/Makefile              |    1 
+>  kernel/sched/cpufreq.c             |   37 +++++++++++++++++++++++++
+>  kernel/sched/sched.h               |   49 +++++++++++++++++++++++++++++++++-
+>  7 files changed, 96 insertions(+), 88 deletions(-)
 
-Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
