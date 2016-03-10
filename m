@@ -1,73 +1,195 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 03/13] hwmon: convert tmp102 to use
- devm_thermal_zone_of_sensor_register
-Date: Wed, 9 Mar 2016 19:20:26 -0800
-Message-ID: <56E0E7FA.4030400@roeck-us.net>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-4-git-send-email-edubezval@gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 10 Mar 2016 10:44:21 +0700
+Message-ID: <CAKfTPtB1g6VgA8NBep553C4MZ19B-rD4Xdp6EpZNAu+mYmx+2w@mail.gmail.com>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+ <56D8AEB7.2050100@linaro.org> <36459679.vzZnOsAVeg@vostro.rjw.lan>
+ <20160308112759.GF6356@twins.programming.kicks-ass.net> <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
+ <20160308192640.GD6344@twins.programming.kicks-ass.net> <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+ <20160309163930.GP6356@twins.programming.kicks-ass.net> <CAJZ5v0iKn4dT4ta6WaEcPbdYmA7P08=bmKU+dwcMx+Msk7WRFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from forward.webhostbox.net ([5.100.155.124]:41737 "EHLO
-	forward.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934596AbcCJDUc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 22:20:32 -0500
-In-Reply-To: <1457559336-17652-4-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iKn4dT4ta6WaEcPbdYmA7P08=bmKU+dwcMx+Msk7WRFg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>
 
-On 03/09/2016 01:35 PM, Eduardo Valentin wrote:
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
+On 10 March 2016 at 06:28, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Mar 9, 2016 at 5:39 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Tue, Mar 08, 2016 at 09:05:50PM +0100, Rafael J. Wysocki wrote:
+>>> >> This means that on platforms where the utilization is frequency
+>>> >> invariant we should use
+>>> >>
+>>> >>   next_freq = a * x
+>>> >>
+>>> >> (where x is given by (2) above) and for platforms where the
+>>> >> utilization is not frequency invariant
+>>> >>
+>>> >>   next_freq = a * x * current_freq / max_freq
+>>> >>
+>>> >> and all boils down to finding a.
+>>> >
+>>> > Right.
+>>>
+>>> However, that doesn't seem to be in agreement with the Steve's results
+>>> posted earlier in this thread.
+>>
+>> I could not make anything of those numbers.
+>>
+>>> Also theoretically, with frequency invariant, the only way you can get
+>>> to 100% utilization is by running at the max frequency, so the closer
+>>> to 100% you get, the faster you need to run to get any further.  That
+>>> indicates nonlinear to me.
+>>
+>> I'm not seeing that, you get that by using a > 1. No need for
+>> non-linear.
 >
-> Cc: Jean Delvare <jdelvare@suse.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: lm-sensors@lm-sensors.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> OK
+>
+>>> >> Now, it seems reasonable for a to be something like (1 + 1/n) *
+>>> >> max_freq, so for non-frequency invariant we get
+>>> >>
+>>> >>   nex_freq = (1 + 1/n) * current_freq * x
+>
+> (*) (see below)
+>
+>>> > This seems like a big leap; where does:
+>>> >
+>>> >   (1 + 1/n) * max_freq
+>>> >
+>>> > come from? And what is 'n'?
+>>
+>>> a = max_freq gives next_freq = max_freq for x = 1,
+>>
+>> next_freq = a        * x * current_freq / max_freq
+>>
+>>   [ a := max_freq, x := 1 ] ->
+>>
+>>           = max_freq * 1 * current_freq / max_freq
+>>           = current_freq
+>>
+>>           != max_freq
+>>
+>> But I think I see what you're saying; because at x = 1,
+>> current_frequency must be max_frequency. Per your earlier point.
+>
+> Correct.
+>
+>>> but with that choice of a you may never get to x = 1 with frequency
+>>> invariant because of the feedback effect mentioned above, so the 1/n
+>>> produces the extra boost needed for that (n is a positive integer).
+>>
+>> OK, so that gets us:
+>>
+>>         a = (1 + 1/n) ; n > 0
+>>
+>> [ I would not have chosen (1 + 1/n), but lets stick to that ]
+>
+> Well, what would you choose then? :-)
+>
+>> So for n = 4 that gets you: a = 1.25, which effectively gets you an 80%
+>> utilization tipping point. That is, 1.25 * .8 = 1, iow. you'll pick the
+>> next frequency (assuming RELATION_L like selection).
+>>
+>> Together this gets you:
+>>
+>>         next_freq = (1 + 1/n) * max_freq * x * current_freq / max_freq
+>>                   = (1 + 1/n) * x * current_freq
+>
+> That seems to be what I said above (*), isn't it?
+>
+>> Again, with n = 4, x > .8 will result in a next_freq > current_freq, and
+>> hence (RELATION_L) pick a higher one.
+>
+> OK
+>
+>>> Quite frankly, to me it looks like linear really is a better
+>>> approximation for "raw" utilization.  That is, for frequency invariant
+>>> x we should take:
+>>>
+>>>   next_freq = a * x * max_freq / current_freq
+>>
+>> (its very confusing how you use 'x' for both invariant and
+>> non-invariant).
+>>
+>> That doesn't make sense, remember:
+>>
+>>         util = \Sum_i u_i * freq_i / max_freq           (1)
+>>
+>> Which for systems where freq_i is constant reduces to:
+>>
+>>         util = util_raw * current_freq / max_freq       (2)
+>>
+>> But you cannot reverse this. IOW you cannot try and divide out
+>> current_freq on a frequency invariant metric.
+>
+> I see.
+>
+>> So going by:
+>>
+>>         next_freq = (1 + 1/n) * max_freq * util         (3)
+>
+> I think that should be
+>
+>   next_freq = (1 + 1/n) * max_freq * util / max
+>
+> (where max is the second argument of cpufreq_update_util) or the
+> dimensions on both sides don't match.
+>
+>> if we substitute (2) into (3) we get:
+>>
+>>                   = (1 + 1/n) * max_freq * util_raw * current_freq / max_freq
+>>                   = (1 + 1/n) * current_freq * util_raw (4)
+>>
+>> Which gets you two formula with the same general behaviour. As (2) is
+>> the only approximation of (1) we can make.
+>
+> OK
+>
+> So since utilization is not frequency invariant in the current
+> mainline (or linux-next for that matter) AFAIC, I'm going to use the
+> following in the next version of the schedutil patch series:
+>
+>   next_freq = 1.25 * current_freq * util_raw / max
+>
+> where util_raw and max are what I get from cpufreq_update_util().
+>
+> 1.25 is for the 80% tipping point which I think is reasonable.
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
 
-> ---
->   drivers/hwmon/tmp102.c | 8 ++------
->   1 file changed, 2 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
-> index 5289aa0..f1e96fd 100644
-> --- a/drivers/hwmon/tmp102.c
-> +++ b/drivers/hwmon/tmp102.c
-> @@ -53,7 +53,6 @@
->   struct tmp102 {
->   	struct i2c_client *client;
->   	struct device *hwmon_dev;
-> -	struct thermal_zone_device *tz;
->   	struct mutex lock;
->   	u16 config_orig;
->   	unsigned long last_update;
-> @@ -232,10 +231,8 @@ static int tmp102_probe(struct i2c_client *client,
->   		goto fail_restore_config;
->   	}
->   	tmp102->hwmon_dev = hwmon_dev;
-> -	tmp102->tz = thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
-> -						     &tmp102_of_thermal_ops);
-> -	if (IS_ERR(tmp102->tz))
-> -		tmp102->tz = NULL;
-> +	devm_thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
-> +					     &tmp102_of_thermal_ops);
->
->   	dev_info(dev, "initialized\n");
->
-> @@ -251,7 +248,6 @@ static int tmp102_remove(struct i2c_client *client)
->   {
->   	struct tmp102 *tmp102 = i2c_get_clientdata(client);
->
-> -	thermal_zone_of_sensor_unregister(tmp102->hwmon_dev, tmp102->tz);
->   	hwmon_device_unregister(tmp102->hwmon_dev);
->
->   	/* Stop monitoring if device was stopped originally */
->
+We have the arch_scale_freq_capacity function that is arch dependent
+and can be used to merge the 2 formula that were described by peter
+above.
+By default, arch_scale_freq_capacity return SCHED_CAPACITY_SCALE which
+is max capacity
+but when arch_scale_freq_capacity is defined by an architecture,
+arch_scale_freq_capacity returns current_freq * max_capacity/max_freq
 
+so can't we use arch_scale_freq in your formula ? Taking your formula
+above it becomes:
+next_freq = 1.25 * current_freq * util / arch_scale_freq_capacity()
+
+Without invariance feature, we have the same formula than above :
+next_freq = 1.25 * current_freq * util_raw / max because
+SCHED_CAPACITY_SCALE is max capacity
+
+With invariance feature, we have next_freq = 1.25 * current_freq *
+util / (current_freq*max_capacity/max_freq) = 1.25 * util * max_freq /
+max which is the formula that has to be used with frequency invariant
+utilization.
+
+so we have one formula that works for both configuration (this is not
+really optimized for invariant system because we multiply then divide
+by current_freq in 2 different places but it's better than a wrong
+formula)
+
+Now, arch_scale_freq_capacity is available in kernel/sched/sched.h
+header file which can only be accessed by scheduler code...
+
+May be we can pass arch_scale_freq_capacity value instead of max one
+as a parameter of update_util function prototype
+
+Vincent
