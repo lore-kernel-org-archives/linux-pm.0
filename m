@@ -1,84 +1,45 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: Re: [PATCH V2 5/6] thermal: max77620: Add thermal driver for reporting
- junction temp
-Date: Thu, 10 Mar 2016 12:26:24 +0530
-Message-ID: <56E11A98.4000000@nvidia.com>
-References: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com> <1457529010-6538-6-git-send-email-ldewangan@nvidia.com> <20160309192751.GB2422@localhost.localdomain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 2/7] soc: renesas: Add r8a7779 SYSC PM Domain Binding Definitions
+Date: Thu, 10 Mar 2016 09:02:57 +0100
+Message-ID: <CAMuHMdXnUxr6kCtonKFoRRASy1t1Zzyk+SHkz3hzqkSXLcod1Q@mail.gmail.com>
+References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be>
+	<1457551122-21838-3-git-send-email-geert+renesas@glider.be>
+	<3847967.WBShi7eqzc@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20160309192751.GB2422@localhost.localdomain>
-Sender: linux-doc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, rklein@nvidia.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <3847967.WBShi7eqzc@avalon>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Laurent,
 
-On Thursday 10 March 2016 12:57 AM, Eduardo Valentin wrote:
-> * PGP Signed by an unknown key
->
-> On Wed, Mar 09, 2016 at 06:40:09PM +0530, Laxman Dewangan wrote:
->> Maxim Semiconductor Max77620 supports alarm interrupts when
->> its die temperature crosses 120C and 140C. These threshold
->> temperatures are not configurable.
->>
->> Add thermal driver to register PMIC die temperature as thermal
->> zone sensor and capture the die temperature warning interrupts
->> to notifying the client.
->>
->> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
->>
->> ---
->> Changes from V1:
->> - checkpatch warning fix and simplifying the dev.of_node
->>    initialisation.
->>
->>   drivers/thermal/Kconfig            |  10 +++
->>   drivers/thermal/Makefile           |   1 +
->>   drivers/thermal/thermal-max77620.c | 151 +++++++++++++++++++++++++++++++++++++
->>   3 files changed, 162 insertions(+)
->>   create mode 100644 drivers/thermal/thermal-max77620.c
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 5e7c97a..fc856eb 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -194,6 +194,16 @@ config IMX_THERMAL
->>   	  cpufreq is used as the cooling device to throttle CPUs when the
->>   	  passive trip is crossed.
->>   
->> +config MAX77620_THERMAL
->> +	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
->> +	depends on MFD_MAX77620
->> +	depends on OF
-> The previous question on compile test was more if we could add depends
-> on COMPILE_TEST flag. Sorry if I was not clear enough.
->
->
-> I am adding the flag here:
->
->   
->    config MAX77620_THERMAL
->            tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
-> 	  -       depends on MFD_MAX77620
-> 	  +       depends on MFD_MAX77620 || COMPILE_TEST
-> 	  +       depends on HAS_IOMEM
-> 	          depends on OF
-> 		          help
-> 			            Support for die junction temperature
-> 				    warning alarm for Maxim
->
->
-> but I still cannot compile test the file because of the missing header.
-> drivers/thermal/thermal-max77620.c:16:32: fatal error:
-> linux/mfd/max77620.h: No such file or directory
->   #include <linux/mfd/max77620.h>
->
->
-> I wont be able to merge this as it is. We need to sort out the
-> dependency first.
->
-I will update you once the mfd patches will merge as this header is on 
-that patch.
+On Thu, Mar 10, 2016 at 3:40 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Wednesday 09 March 2016 20:18:37 Geert Uytterhoeven wrote:
+>> --- /dev/null
+>> +++ b/include/dt-bindings/power/r8a7779-sysc.h
 
+>> +#define R8A7779_PD_SH                        16
+>
+> I don't see this power domain in version 0.6 of the datasheet, you might have
+> a more recent version than I do.
+
+It's indeed not in the datasheet.
+I based it's presence on the value written to SYSCIER, which has bit 16 set,
+both in upstream and in the BSP.
+
+Perhaps Magnus knows, as he's the author of that code?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
