@@ -1,123 +1,61 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 12/13] thermal: convert tegra_thermal to use devm_thermal_zone_of_sensor_register
-Date: Thu, 10 Mar 2016 16:46:55 +0800
-Message-ID: <56E1347F.8040406@nvidia.com>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com> <1457559336-17652-13-git-send-email-edubezval@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH v3 7/7] soc: renesas: Add r8a7795 SYSC PM Domain Binding Definitions
+Date: Thu, 10 Mar 2016 10:54:21 +0200
+Message-ID: <1579605.LMd6ZIAa80@avalon>
+References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be> <1636171.nVxheqdHqq@avalon> <CAMuHMdUyFy427ydtojd_4uDUuxUs0Erf-KDJR1y-dMzy3o_vgA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457559336-17652-13-git-send-email-edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rui Zhang <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:54888 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbcCJIyV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 03:54:21 -0500
+In-Reply-To: <CAMuHMdUyFy427ydtojd_4uDUuxUs0Erf-KDJR1y-dMzy3o_vgA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 
+Hi Geert,
 
+On Thursday 10 March 2016 09:17:40 Geert Uytterhoeven wrote:
+> On Thu, Mar 10, 2016 at 3:32 AM, Laurent Pinchart wrote:
+> > On Wednesday 09 March 2016 20:18:42 Geert Uytterhoeven wrote:
+> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >> 
+> >> --- /dev/null
+> >> +++ b/include/dt-bindings/power/r8a7795-sysc.h
+> >> @@ -0,0 +1,42 @@
+> >> 
+> >> +/* Always-on power area */
+> >> +#define R8A7795_PD_ALWAYS_ON         32
+> > 
+> > Shouldn't we also define the always-on power domain for the other SoCs
+> > (patches 2/7 to 6/7 in this series) ? I know they're already covered by
+> > the cpg power domain, but going forward I believe that standardizing on
+> > the SYSC power domains would be beneficial. We of course have to keep
+> > backward compatibility in the implementation.
+> 
+> Yes, that's the plan. I didn't want to make that change now, as someone
+> may object against the always-on power domain. On r8a7795 it feels more
+> natural, as it also has I/O devices in SYSC power areas, unlike R-Car Gen2
+> and H1.
 
-On 2016=E5=B9=B403=E6=9C=8810=E6=97=A5 05:35, Eduardo Valentin wrote:
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
->=20
-> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-> Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> ---
->  drivers/thermal/tegra_soctherm.c | 31 +++++++++---------------------=
--
->  1 file changed, 9 insertions(+), 22 deletions(-)
->=20
-> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra=
-_soctherm.c
-> index 74ea576..0018ccd 100644
-> --- a/drivers/thermal/tegra_soctherm.c
-> +++ b/drivers/thermal/tegra_soctherm.c
-> @@ -168,7 +168,7 @@ struct tegra_soctherm {
->  	struct clk *clock_soctherm;
->  	void __iomem *regs;
-> =20
-> -	struct thermal_zone_device *thermctl_tzs[4];
-> +#define ZONE_NUMBER		4
->  };
-> =20
->  struct tsensor_shared_calibration {
-> @@ -342,7 +342,7 @@ static const struct thermctl_zone_desc t124_therm=
-ctl_temp_zones[] =3D {
->  static int tegra_soctherm_probe(struct platform_device *pdev)
->  {
->  	struct tegra_soctherm *tegra;
-> -	struct thermal_zone_device *tz;
-> +	struct thermal_zone_device *z;
->  	struct tsensor_shared_calibration shared_calib;
->  	struct resource *res;
->  	unsigned int i;
-> @@ -408,36 +408,29 @@ static int tegra_soctherm_probe(struct platform=
-_device *pdev)
-> =20
->  	/* Initialize thermctl sensors */
-> =20
-> -	for (i =3D 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
-> +	for (i =3D 0; i < ZONE_NUMBER; ++i) {
->  		struct tegra_thermctl_zone *zone =3D
->  			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
->  		if (!zone) {
->  			err =3D -ENOMEM;
-> -			goto unregister_tzs;
-> +			goto disable_clocks;
->  		}
-> =20
->  		zone->reg =3D tegra->regs + t124_thermctl_temp_zones[i].offset;
->  		zone->shift =3D t124_thermctl_temp_zones[i].shift;
-> =20
-> -		tz =3D thermal_zone_of_sensor_register(&pdev->dev, i, zone,
-> -						     &tegra_of_thermal_ops);
-> -		if (IS_ERR(tz)) {
-> -			err =3D PTR_ERR(tz);
-> +		z =3D devm_thermal_zone_of_sensor_register(&pdev->dev, i, zone,
+That's fine with me.
 
-I prefer to still use "tz", it seems this line isn't over 80 characters=
-, or we
-can add newline.
+> Note that it also complicates the rcar-sysc core driver: it has to choose
+> between the cpg_mssr_*() or cpg_mstp_*() callbacks, depending on SoC, and
+> also depending on DTS if we migrate the older SoCs to CPG/MSSR and want to
+> maintain backwards-compatibility.
+> 
+> Time to finish the "renesas,apmu" enable-method work, and celebrate one big
+> flag day for all the new DT evolutions?
 
-> +							 &tegra_of_thermal_ops);
-> +		if (IS_ERR(z)) {
-> +			err =3D PTR_ERR(z);
->  			dev_err(&pdev->dev, "failed to register sensor: %d\n",
->  				err);
-> -			goto unregister_tzs;
-> +			goto disable_clocks;
->  		}
-> -
-> -		tegra->thermctl_tzs[i] =3D tz;
->  	}
-> =20
->  	return 0;
-> =20
-> -unregister_tzs:
-> -	while (i--)
-> -		thermal_zone_of_sensor_unregister(&pdev->dev,
-> -						  tegra->thermctl_tzs[i]);
-> -
->  disable_clocks:
->  	clk_disable_unprepare(tegra->clock_tsensor);
->  	clk_disable_unprepare(tegra->clock_soctherm);
-> @@ -448,12 +441,6 @@ disable_clocks:
->  static int tegra_soctherm_remove(struct platform_device *pdev)
->  {
->  	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
-> -	unsigned int i;
-> -
-> -	for (i =3D 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
-> -		thermal_zone_of_sensor_unregister(&pdev->dev,
-> -						  tegra->thermctl_tzs[i]);
-> -	}
-> =20
->  	clk_disable_unprepare(tegra->clock_tsensor);
->  	clk_disable_unprepare(tegra->clock_soctherm);
->=20
+I'll bring champagne ;-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+
