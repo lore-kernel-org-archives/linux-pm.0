@@ -1,19 +1,23 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 02/13] hwmon: convert ntc_thermistor to use
+Subject: Re: [PATCH 03/13] hwmon: convert tmp102 to use
  devm_thermal_zone_of_sensor_register
-Date: Wed, 9 Mar 2016 19:19:39 -0800
-Message-ID: <56E0E7CB.7040607@roeck-us.net>
+Date: Wed, 9 Mar 2016 19:20:26 -0800
+Message-ID: <56E0E7FA.4030400@roeck-us.net>
 References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-3-git-send-email-edubezval@gmail.com>
+ <1457559336-17652-4-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1457559336-17652-3-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from forward.webhostbox.net ([5.100.155.124]:41737 "EHLO
+	forward.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934596AbcCJDUc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 22:20:32 -0500
+In-Reply-To: <1457559336-17652-4-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>
-List-Id: linux-pm@vger.kernel.org
 
 On 03/09/2016 01:35 PM, Eduardo Valentin wrote:
 > This changes the driver to use the devm_ version
@@ -29,52 +33,41 @@ On 03/09/2016 01:35 PM, Eduardo Valentin wrote:
 Acked-by: Guenter Roeck <linux@roeck-us.net>
 
 > ---
->   drivers/hwmon/ntc_thermistor.c | 12 ++++--------
->   1 file changed, 4 insertions(+), 8 deletions(-)
+>   drivers/hwmon/tmp102.c | 8 ++------
+>   1 file changed, 2 insertions(+), 6 deletions(-)
 >
-> diff --git a/drivers/hwmon/ntc_thermistor.c b/drivers/hwmon/ntc_thermistor.c
-> index feed306..ffc12f1 100644
-> --- a/drivers/hwmon/ntc_thermistor.c
-> +++ b/drivers/hwmon/ntc_thermistor.c
-> @@ -221,7 +221,6 @@ struct ntc_data {
->   	struct device *dev;
->   	int n_comp;
->   	char name[PLATFORM_NAME_SIZE];
+> diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+> index 5289aa0..f1e96fd 100644
+> --- a/drivers/hwmon/tmp102.c
+> +++ b/drivers/hwmon/tmp102.c
+> @@ -53,7 +53,6 @@
+>   struct tmp102 {
+>   	struct i2c_client *client;
+>   	struct device *hwmon_dev;
 > -	struct thermal_zone_device *tz;
->   };
+>   	struct mutex lock;
+>   	u16 config_orig;
+>   	unsigned long last_update;
+> @@ -232,10 +231,8 @@ static int tmp102_probe(struct i2c_client *client,
+>   		goto fail_restore_config;
+>   	}
+>   	tmp102->hwmon_dev = hwmon_dev;
+> -	tmp102->tz = thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
+> -						     &tmp102_of_thermal_ops);
+> -	if (IS_ERR(tmp102->tz))
+> -		tmp102->tz = NULL;
+> +	devm_thermal_zone_of_sensor_register(hwmon_dev, 0, hwmon_dev,
+> +					     &tmp102_of_thermal_ops);
 >
->   #if defined(CONFIG_OF) && IS_ENABLED(CONFIG_IIO)
-> @@ -539,6 +538,7 @@ static const struct thermal_zone_of_device_ops ntc_of_thermal_ops = {
+>   	dev_info(dev, "initialized\n");
 >
->   static int ntc_thermistor_probe(struct platform_device *pdev)
+> @@ -251,7 +248,6 @@ static int tmp102_remove(struct i2c_client *client)
 >   {
-> +	struct thermal_zone_device *tz;
->   	const struct of_device_id *of_id =
->   			of_match_device(of_match_ptr(ntc_match), &pdev->dev);
->   	const struct platform_device_id *pdev_id;
-> @@ -633,12 +633,10 @@ static int ntc_thermistor_probe(struct platform_device *pdev)
->   	dev_info(&pdev->dev, "Thermistor type: %s successfully probed.\n",
->   								pdev_id->name);
+>   	struct tmp102 *tmp102 = i2c_get_clientdata(client);
 >
-> -	data->tz = thermal_zone_of_sensor_register(data->dev, 0, data->dev,
-> -						   &ntc_of_thermal_ops);
-> -	if (IS_ERR(data->tz)) {
-> +	tz = devm_thermal_zone_of_sensor_register(data->dev, 0, data->dev,
-> +						  &ntc_of_thermal_ops);
-> +	if (IS_ERR(tz))
->   		dev_dbg(&pdev->dev, "Failed to register to thermal fw.\n");
-> -		data->tz = NULL;
-> -	}
+> -	thermal_zone_of_sensor_unregister(tmp102->hwmon_dev, tmp102->tz);
+>   	hwmon_device_unregister(tmp102->hwmon_dev);
 >
->   	return 0;
->   err_after_sysfs:
-> @@ -656,8 +654,6 @@ static int ntc_thermistor_remove(struct platform_device *pdev)
->   	sysfs_remove_group(&data->dev->kobj, &ntc_attr_group);
->   	ntc_iio_channel_release(pdata);
+>   	/* Stop monitoring if device was stopped originally */
 >
-> -	thermal_zone_of_sensor_unregister(data->dev, data->tz);
-> -
->   	return 0;
->   }
->
->
+
