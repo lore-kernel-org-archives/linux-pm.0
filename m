@@ -1,84 +1,71 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for
- r8a7795 I/O devices
-Date: Thu, 10 Mar 2016 10:51:22 +0100
-Message-ID: <CAMuHMdUBVBRHrWT9hLH1V23LbBGrM=a5hGGVrv_F5cjPT4+TVw@mail.gmail.com>
-References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
-	<1457551127-21934-6-git-send-email-geert+renesas@glider.be>
-	<2523920.fzA0Elmkzz@avalon>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 10 Mar 2016 11:07:28 +0100
+Message-ID: <20160310100728.GT6344@twins.programming.kicks-ass.net>
+References: <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+ <56D8AEB7.2050100@linaro.org>
+ <36459679.vzZnOsAVeg@vostro.rjw.lan>
+ <20160308112759.GF6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
+ <20160308192640.GD6344@twins.programming.kicks-ass.net>
+ <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+ <20160309163930.GP6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0iKn4dT4ta6WaEcPbdYmA7P08=bmKU+dwcMx+Msk7WRFg@mail.gmail.com>
+ <CAKfTPtB1g6VgA8NBep553C4MZ19B-rD4Xdp6EpZNAu+mYmx+2w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <2523920.fzA0Elmkzz@avalon>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:58110 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934071AbcCJKHd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 05:07:33 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtB1g6VgA8NBep553C4MZ19B-rD4Xdp6EpZNAu+mYmx+2w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 
-Hi Laurent,
+On Thu, Mar 10, 2016 at 10:44:21AM +0700, Vincent Guittot wrote:
+> We have the arch_scale_freq_capacity function that is arch dependent
+> and can be used to merge the 2 formula that were described by peter
+> above.
+> By default, arch_scale_freq_capacity return SCHED_CAPACITY_SCALE which
+> is max capacity
+> but when arch_scale_freq_capacity is defined by an architecture,
 
-On Thu, Mar 10, 2016 at 10:40 AM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Wednesday 09 March 2016 20:18:41 Geert Uytterhoeven wrote:
->> On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
->> also part of the CPG/MSSR Clock Domain.  Hook up the CPG/MSSR Clock
->> Domain attach/detach callbacks to enable power management using module
->> clocks.
->>
->> This also allows to support the Clock Domain for devices in the
->> "always-on" power area.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> arch_scale_freq_capacity returns current_freq * max_capacity/max_freq
 
->> --- a/drivers/soc/renesas/rcar-sysc.c
->> +++ b/drivers/soc/renesas/rcar-sysc.c
+However, current_freq is a very fluid thing, it might (and will) change
+very rapidly on some platforms.
 
->> @@ -251,6 +252,15 @@ static void __init rcar_sysc_pd_setup(struct
->> device_node *np, gov = &pm_domain_always_on_gov;
->>       }
->>
->> +#ifdef CONFIG_ARCH_R8A7795
+This is the same point I made earlier, you cannot try and divide out
+current_freq from the invariant measure.
+
+> so can't we use arch_scale_freq in your formula ? Taking your formula
+> above it becomes:
+> next_freq = 1.25 * current_freq * util / arch_scale_freq_capacity()
+
+No, that cannot work, nor makes any sense, per the above.
+
+> With invariance feature, we have:
 >
-> This is fine for now as the R8A7795 is the only ARM64 model in the R-Car
-> family, but how do you plan to move forward on this ? Will it be enabled for
-> ARM64 SoCs straight away, and for ARM32 SoCs when switching from the cpg to
-> the always-on power domain ?
+>   next_freq = 1.25 * current_freq * util / (current_freq*max_capacity/max_freq)
+>             = 1.25 * util * max_freq / max
 >
->> +     if (!(pd->flags & (PD_CPU | PD_SCU))) {
->> +             /* Enable Clock Domain for I/O devices */
->> +             genpd->flags = GENPD_FLAG_PM_CLK;
->> +             genpd->attach_dev = cpg_mssr_attach_dev;
->> +             genpd->detach_dev = cpg_mssr_detach_dev;
->> +     }
->> +#endif
+> which is the formula that has to be used with frequency invariant
+> utilization.
 
-When enabling the always-on power domain for R-Car H1 and Gen2, this
-should become:
+Wrong, you cannot talk about current_freq in the invariant case.
 
-        if (!(pd->flags & (PD_CPU | PD_SCU))) {
-                /* Enable Clock Domain for I/O devices */
-                genpd->flags = GENPD_FLAG_PM_CLK;
-#ifdef CONFIG_ARCH_R8A7795 /* or CONFIG_ARM64 */
-                genpd->attach_dev = cpg_mssr_attach_dev;
-                genpd->detach_dev = cpg_mssr_detach_dev;
+> May be we can pass arch_scale_freq_capacity value instead of max one
+> as a parameter of update_util function prototype
+
+No, since its a compile time thing, we can simply do:
+
+#ifdef arch_scale_freq_capacity
+	next_freq = (1 + 1/n) * max_freq * (util / max)
 #else
-                genpd->attach_dev = cpg_mstp_attach_dev;
-                genpd->detach_dev = cpg_mstp_detach_dev;
+	next_freq = (1 + 1/n) * current_freq * (util_raw / max)
 #endif
-
-It becomes more gory when migrating R-Car H1 and Gen2 to CPG/MSSR, and
-maintaining backwards compatibility, as which callbacks to choose will depend
-on the presence of "renesas,cpg-mstp-clocks" device nodes in DT, and a new
-CONFIG_CLK_RENESAS_LEGACY option.
-Needless to say, it'll be more complex if not all SoCs migrate at once...
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
