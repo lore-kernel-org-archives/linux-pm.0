@@ -1,55 +1,68 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v3 3/7] soc: renesas: Add r8a7790 SYSC PM Domain Binding Definitions
-Date: Thu, 10 Mar 2016 09:26:34 +0100
-Message-ID: <CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew@mail.gmail.com>
-References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be>
-	<1457551122-21838-4-git-send-email-geert+renesas@glider.be>
-	<9850717.l0t66FzFha@avalon>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler
+ utilization data
+Date: Thu, 10 Mar 2016 09:43:31 +0100
+Message-ID: <20160310084331.GO6344@twins.programming.kicks-ass.net>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
+ <CAJZ5v0h47h-xW6a4jzwRuOOOSG+qsD9hegM7QCzbD8Wb-yPVKQ@mail.gmail.com>
+ <56D8AEB7.2050100@linaro.org>
+ <36459679.vzZnOsAVeg@vostro.rjw.lan>
+ <20160308112759.GF6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0i+KFmpggrGKqtL_SB1=Fv=b_AbVeL-9jPfo4rYt6-q5A@mail.gmail.com>
+ <20160308192640.GD6344@twins.programming.kicks-ass.net>
+ <CAJZ5v0g=dXmoPr0jR6AVuynVYbSwJvnS2dFhb7QnUKq9LRRnrQ@mail.gmail.com>
+ <20160309163930.GP6356@twins.programming.kicks-ass.net>
+ <CAJZ5v0iKn4dT4ta6WaEcPbdYmA7P08=bmKU+dwcMx+Msk7WRFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <9850717.l0t66FzFha@avalon>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iKn4dT4ta6WaEcPbdYmA7P08=bmKU+dwcMx+Msk7WRFg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Laurent,
+On Thu, Mar 10, 2016 at 12:28:52AM +0100, Rafael J. Wysocki wrote:
+> > [ I would not have chosen (1 + 1/n), but lets stick to that ]
+> 
+> Well, what would you choose then? :-)
 
-On Thu, Mar 10, 2016 at 7:57 AM, Laurent Pinchart
-<laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org> wrote:
->> --- /dev/null
->> +++ b/include/dt-bindings/power/r8a7790-sysc.h
->> @@ -0,0 +1,31 @@
+1/p ; 0 < p < 1
 
->> +#define R8A7790_PD_SH                        16
->
-> The power domain is called SH-4A in the datasheet, how about naming it
-> R8A7790_PD_SH_4A ?
+or so. Where p then represents the percentile threshold where you want
+to bump to the next freq.
 
-Thanks, wlll update (for all SoCs).
+> I think that should be
+> 
+>   next_freq = (1 + 1/n) * max_freq * util / max
+> 
+> (where max is the second argument of cpufreq_update_util) or the
+> dimensions on both sides don't match.
 
-> Apart from that,
->
-> Reviewed-by: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
->
->> +#define R8A7790_PD_RGX                       20
->> +#define R8A7790_PD_CA7_SCU           21
->> +#define R8A7790_PD_IMP                       24
+Well yes, but so far we were treating util (and util_raw) as 0 < u < 1,
+values, so already normalized against max.
 
-Then this has to become R8A7790_PD_IMP_X4.
+But yes..
 
-Gr{oetje,eeting}s,
+> > if we substitute (2) into (3) we get:
+> >
+> >                   = (1 + 1/n) * max_freq * util_raw * current_freq / max_freq
+> >                   = (1 + 1/n) * current_freq * util_raw (4)
+> >
+> > Which gets you two formula with the same general behaviour. As (2) is
+> > the only approximation of (1) we can make.
+> 
+> OK
+> 
+> So since utilization is not frequency invariant in the current
+> mainline (or linux-next for that matter) AFAIC, I'm going to use the
+> following in the next version of the schedutil patch series:
+> 
+>   next_freq = 1.25 * current_freq * util_raw / max
+> 
+> where util_raw and max are what I get from cpufreq_update_util().
+> 
+> 1.25 is for the 80% tipping point which I think is reasonable.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+OK.
