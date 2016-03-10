@@ -1,50 +1,68 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 1/10] cpufreq: Reduce cpufreq_update_util() overhead a
- bit
-Date: Thu, 10 Mar 2016 10:19:01 +0100
-Message-ID: <20160310091901.GS6344@twins.programming.kicks-ass.net>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <CAJZ5v0gt3tmJ1ZunvkLKfeUSgZv7yiO9vBDtDmXSuC=tUUpPLg@mail.gmail.com>
- <20160309152934.GO6356@twins.programming.kicks-ass.net>
- <5173878.LnSyxxsz2i@vostro.rjw.lan>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH v3 04/11] soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
+Date: Thu, 10 Mar 2016 11:19:56 +0200
+Message-ID: <2190706.M4LvRWA5A8@avalon>
+References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be> <1457551127-21934-5-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:57013 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965556AbcCJJTF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 04:19:05 -0500
-Content-Disposition: inline
-In-Reply-To: <5173878.LnSyxxsz2i@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1457551127-21934-5-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On Wed, Mar 09, 2016 at 10:35:02PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] cpufreq: Move scheduler-related code to the sched directory
+Hi Geert,
+
+Thank you for the patch.
+
+On Wednesday 09 March 2016 20:18:40 Geert Uytterhoeven wrote:
+> As of commit b12ff41658171f53 ("ARM: shmobile: r8a7779: Remove legacy PM
+> Domain remainings"), rcar_sysc_power_is_off() is no longer used from
+> SoC-specific code.
 > 
-> Create cpufreq.c under kernel/sched/ and move the cpufreq code
-> related to the scheduler to that file and to sched.h.
-> 
-> Redefine cpufreq_update_util() as a static inline function to avoid
-> function calls at its call sites in the scheduler code (as suggested
-> by Peter Zijlstra).
-> 
-> Also move the definition of struct update_util_data and declaration
-> of cpufreq_set_update_util_data() from include/linux/cpufreq.h to
-> include/linux/sched.h.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+
 > ---
->  drivers/cpufreq/cpufreq.c          |   53 -------------------------------------
->  drivers/cpufreq/cpufreq_governor.c |    1 
->  include/linux/cpufreq.h            |   34 -----------------------
->  include/linux/sched.h              |    9 ++++++
->  kernel/sched/Makefile              |    1 
->  kernel/sched/cpufreq.c             |   37 +++++++++++++++++++++++++
->  kernel/sched/sched.h               |   49 +++++++++++++++++++++++++++++++++-
->  7 files changed, 96 insertions(+), 88 deletions(-)
+> v3:
+>   - New.
+> ---
+>  drivers/soc/renesas/rcar-sysc.c       | 2 +-
+>  include/linux/soc/renesas/rcar-sysc.h | 1 -
+>  2 files changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/soc/renesas/rcar-sysc.c
+> b/drivers/soc/renesas/rcar-sysc.c index 6b21ea2a65bf59b9..28af0b704fc008d2
+> 100644
+> --- a/drivers/soc/renesas/rcar-sysc.c
+> +++ b/drivers/soc/renesas/rcar-sysc.c
+> @@ -149,7 +149,7 @@ int rcar_sysc_power_up(const struct rcar_sysc_ch
+> *sysc_ch) return rcar_sysc_power(sysc_ch, true);
+>  }
+> 
+> -bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+> +static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+>  {
+>  	unsigned int st;
+> 
+> diff --git a/include/linux/soc/renesas/rcar-sysc.h
+> b/include/linux/soc/renesas/rcar-sysc.h index
+> 96f30c2883881d97..92fc613ab23db091 100644
+> --- a/include/linux/soc/renesas/rcar-sysc.h
+> +++ b/include/linux/soc/renesas/rcar-sysc.h
+> @@ -11,7 +11,6 @@ struct rcar_sysc_ch {
+> 
+>  int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
+>  int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
+> -bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch);
+>  void __iomem *rcar_sysc_init(phys_addr_t base);
+> 
+>  #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+-- 
+Regards,
+
+Laurent Pinchart
