@@ -1,76 +1,82 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 05/13] input: convert sun4i-ts to use
- devm_thermal_zone_of_sensor_register
-Date: Thu, 10 Mar 2016 10:34:38 +0100
-Message-ID: <20160310093438.GL30994@pengutronix.de>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-6-git-send-email-edubezval@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH v3 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for r8a7795 I/O devices
+Date: Thu, 10 Mar 2016 11:40:58 +0200
+Message-ID: <2523920.fzA0Elmkzz@avalon>
+References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be> <1457551127-21934-6-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:36970 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752894AbcCJJfC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 04:35:02 -0500
-Content-Disposition: inline
-In-Reply-To: <1457559336-17652-6-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1457551127-21934-6-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Jens Thiele <karme@karme.de>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Mar 09, 2016 at 01:35:27PM -0800, Eduardo Valentin wrote:
-> This changes the driver to use the devm_ version
-> of thermal_zone_of_sensor_register and cleans
-> up the  local points and unregister calls.
+Hi Geert,
+
+Thank you for the patch.
+
+On Wednesday 09 March 2016 20:18:41 Geert Uytterhoeven wrote:
+> On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
+> also part of the CPG/MSSR Clock Domain.  Hook up the CPG/MSSR Clock
+> Domain attach/detach callbacks to enable power management using module
+> clocks.
 > 
-> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Jens Thiele <karme@karme.de>
-> Cc: linux-input@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> This also allows to support the Clock Domain for devices in the
+> "always-on" power area.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
 > ---
->  drivers/input/touchscreen/sun4i-ts.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+> v3:
+>   - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
+>     using our own copies,
 > 
-> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchscreen/sun4i-ts.c
-> index 4857943..d07dd29 100644
-> --- a/drivers/input/touchscreen/sun4i-ts.c
-> +++ b/drivers/input/touchscreen/sun4i-ts.c
-> @@ -115,7 +115,6 @@
->  struct sun4i_ts_data {
->  	struct device *dev;
->  	struct input_dev *input;
-> -	struct thermal_zone_device *tz;
->  	void __iomem *base;
->  	unsigned int irq;
->  	bool ignore_fifo_data;
-> @@ -366,10 +365,7 @@ static int sun4i_ts_probe(struct platform_device *pdev)
->  	if (IS_ERR(hwmon))
->  		return PTR_ERR(hwmon);
->  
-> -	ts->tz = thermal_zone_of_sensor_register(ts->dev, 0, ts,
-> -						 &sun4i_ts_tz_ops);
-> -	if (IS_ERR(ts->tz))
-> -		ts->tz = NULL;
-> +	devm_thermal_zone_of_sensor_register(ts->dev, 0, ts, &sun4i_ts_tz_ops);
+> v2:
+>   - New.
+> ---
+>  drivers/soc/renesas/rcar-sysc.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/drivers/soc/renesas/rcar-sysc.c
+> b/drivers/soc/renesas/rcar-sysc.c index 28af0b704fc008d2..2d6fbeb481883be7
+> 100644
+> --- a/drivers/soc/renesas/rcar-sysc.c
+> +++ b/drivers/soc/renesas/rcar-sysc.c
+> @@ -9,6 +9,7 @@
+>   * for more details.
+>   */
+> 
+> +#include <linux/clk/renesas.h>
+>  #include <linux/delay.h>
+>  #include <linux/err.h>
+>  #include <linux/mm.h>
+> @@ -251,6 +252,15 @@ static void __init rcar_sysc_pd_setup(struct
+> device_node *np, gov = &pm_domain_always_on_gov;
+>  	}
+> 
+> +#ifdef CONFIG_ARCH_R8A7795
 
-Shouldn't we check the return value? There are a few possibilities for
-thermal_zone_of_sensor_register to fail.
+This is fine for now as the R8A7795 is the only ARM64 model in the R-Car 
+family, but how do you plan to move forward on this ? Will it be enabled for 
+ARM64 SoCs straight away, and for ARM32 SoCs when switching from the cpg to 
+the always-on power domain ?
 
-Sascha
-
+> +	if (!(pd->flags & (PD_CPU | PD_SCU))) {
+> +		/* Enable Clock Domain for I/O devices */
+> +		genpd->flags = GENPD_FLAG_PM_CLK;
+> +		genpd->attach_dev = cpg_mssr_attach_dev;
+> +		genpd->detach_dev = cpg_mssr_detach_dev;
+> +	}
+> +#endif
+> +
+>  	pm_genpd_init(genpd, gov, false);
+>  	genpd->dev_ops.active_wakeup = rcar_sysc_active_wakeup;
+>  	genpd->power_off = rcar_sysc_pd_power_off;
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Regards,
+
+Laurent Pinchart
