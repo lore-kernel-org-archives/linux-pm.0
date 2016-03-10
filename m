@@ -1,54 +1,55 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 1/7] PM / Domains: Add DT bindings for the R-Car System Controller
-Date: Thu, 10 Mar 2016 09:21:19 +0100
-Message-ID: <CAMuHMdWYPYHwn3GgPvqqXkJg0+8wGOxkcbEhMyx5thGsnU3D6A@mail.gmail.com>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH v3 3/7] soc: renesas: Add r8a7790 SYSC PM Domain Binding Definitions
+Date: Thu, 10 Mar 2016 09:26:34 +0100
+Message-ID: <CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew@mail.gmail.com>
 References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be>
-	<1457551122-21838-2-git-send-email-geert+renesas@glider.be>
-	<5264125.Rrtl9KtOQy@avalon>
+	<1457551122-21838-4-git-send-email-geert+renesas@glider.be>
+	<9850717.l0t66FzFha@avalon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <5264125.Rrtl9KtOQy@avalon>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <9850717.l0t66FzFha@avalon>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 10, 2016 at 3:24 AM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Wednesday 09 March 2016 20:18:36 Geert Uytterhoeven wrote:
->> The Renesas R-Car System Controller provides power management for the
->> CPU cores and various coprocessors, following the generic PM domain
->> bindings in Documentation/devicetree/bindings/power/power_domain.txt.
->>
->> This supports R-Car Gen1 (H1), Gen2, and Gen3.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Hi Laurent,
 
->> +++ b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
->> @@ -0,0 +1,48 @@
->> +DT bindings for the Renesas R-Car System Controller
->> +
->> +== System Controller Node ==
->> +
->> +The R-Car System Controller provides power management for the CPU cores and
->> +various coprocessors.
->> +
->> +Required properties:
->> +  - compatible: Must contain one or more of the following:
+On Thu, Mar 10, 2016 at 7:57 AM, Laurent Pinchart
+<laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org> wrote:
+>> --- /dev/null
+>> +++ b/include/dt-bindings/power/r8a7790-sysc.h
+>> @@ -0,0 +1,31 @@
+
+>> +#define R8A7790_PD_SH                        16
 >
-> I'd be curious to see a use case for specifying more than one ;-) I think you
-> can phrase it as "Must contain exactly one of the following".
+> The power domain is called SH-4A in the datasheet, how about naming it
+> R8A7790_PD_SH_4A ?
 
-Thanks, that was a leftover of the previous version. Will fix.
+Thanks, wlll update (for all SoCs).
+
+> Apart from that,
+>
+> Reviewed-by: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+>
+>> +#define R8A7790_PD_RGX                       20
+>> +#define R8A7790_PD_CA7_SCU           21
+>> +#define R8A7790_PD_IMP                       24
+
+Then this has to become R8A7790_PD_IMP_X4.
 
 Gr{oetje,eeting}s,
 
                         Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
                                 -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
