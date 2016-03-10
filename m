@@ -1,114 +1,136 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
-Date: Thu, 10 Mar 2016 21:57:09 +0100
-Message-ID: <2736217.utxPzJExd5@vostro.rjw.lan>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com> <CAJZ5v0hurNUOVDXpJJEJ5dCwWO_Fo+EdzBhXJA7QWmPeY653fQ@mail.gmail.com> <CAPM=9tzAf=464v3uSjert7NVh35EXUG8iy_xEuR36NUMhdJSWw@mail.gmail.com>
+Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler utilization data
+Date: Thu, 10 Mar 2016 22:01:53 +0100
+Message-ID: <7014450.lrfeLQYxYB@vostro.rjw.lan>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <CAJZ5v0hxq=S+huSy-D7=VGoV+30VQfCyA5C5dTBX-rn0XRUS0g@mail.gmail.com> <20160310043034.GB26402@pablo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPM=9tzAf=464v3uSjert7NVh35EXUG8iy_xEuR36NUMhdJSWw@mail.gmail.com>
+In-Reply-To: <20160310043034.GB26402@pablo>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Dave Airlie <airlied@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 10, 2016 07:56:41 AM Dave Airlie wrote:
-> On 9 March 2016 at 23:19, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Wed, Mar 9, 2016 at 7:14 AM, Dave Airlie <airlied@gmail.com> wrote:
-> >> From: Dave Airlie <airlied@redhat.com>
-> >>
-> >> Windows 10 seems to have standardised power control for the
-> >> optimus/powerxpress laptops using PR3 power resource hooks.
-> >>
-> >> I'm not sure this is definitely the correct place to be
-> >> doing this, but it works for me here.
-> >>
-> >> The ACPI device for the GPU I have is \_SB_.PCI0.PEG_.VID_
-> >> but the power resource hooks are on \_SB_.PCI0.PEG_, so
-> >> this patch creates a new power domain to turn the GPU
-> >> device parent off using standard ACPI calls.
-> >>
-> >> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> >> ---
-> >>  drivers/gpu/vga/vga_switcheroo.c | 54 +++++++++++++++++++++++++++++++++++++++-
-> >>  include/linux/vga_switcheroo.h   |  3 ++-
-> >>  2 files changed, 55 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/gpu/vga/vga_switcheroo.c b/drivers/gpu/vga/vga_switcheroo.c
-> >> index 665ab9f..be32cb2 100644
-> >> --- a/drivers/gpu/vga/vga_switcheroo.c
-> >> +++ b/drivers/gpu/vga/vga_switcheroo.c
-> >> @@ -42,7 +42,7 @@
-> >>  #include <linux/uaccess.h>
-> >>  #include <linux/vgaarb.h>
-> >>  #include <linux/vga_switcheroo.h>
-> >> -
-> >> +#include <linux/acpi.h>
-> >>  /**
-> >>   * DOC: Overview
-> >>   *
-> >> @@ -997,3 +997,55 @@ vga_switcheroo_init_domain_pm_optimus_hdmi_audio(struct device *dev,
-> >>         return -EINVAL;
-> >>  }
-> >>  EXPORT_SYMBOL(vga_switcheroo_init_domain_pm_optimus_hdmi_audio);
-> >> +
-> >> +/* With Windows 10 the runtime suspend/resume can use power
-> >> +   resources on the parent device */
-> >> +static int vga_acpi_switcheroo_runtime_suspend(struct device *dev)
-> >> +{
-> >> +       struct pci_dev *pdev = to_pci_dev(dev);
-> >> +       int ret;
-> >> +       struct acpi_device *adev;
-> >> +
-> >> +       ret = dev->bus->pm->runtime_suspend(dev);
-> >> +       if (ret)
-> >> +               return ret;
-> >> +
-> >> +       ret = acpi_bus_get_device(ACPI_HANDLE(&pdev->dev), &adev);
-> >
-> > You can use ACPI_COMPANION(&pdev->dev) for that.
-> >
-> >> +       if (!ret)
-> >> +               acpi_device_set_power(adev->parent, ACPI_STATE_D3_COLD);
-> >
-> > Won't that mess up with the PM of the parent?  Or do we know that the
-> > parent won't do its own PM?
+On Thursday, March 10, 2016 11:30:34 AM Juri Lelli wrote:
+> On 10/03/16 00:41, Rafael J. Wysocki wrote:
+> > On Wed, Mar 9, 2016 at 11:15 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> > > Hi,
+> > >
+> > > sorry if I didn't reply yet. Trying to cope with jetlag and
+> > > talks/meetings these days :-). Let me see if I'm getting what you are
+> > > discussing, though.
+> > >
+> > > On 08/03/16 21:05, Rafael J. Wysocki wrote:
+> > >> On Tue, Mar 8, 2016 at 8:26 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > >> > On Tue, Mar 08, 2016 at 07:00:57PM +0100, Rafael J. Wysocki wrote:
+> > >> >> On Tue, Mar 8, 2016 at 12:27 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > >
+> > > [...]
+> > >
+> > >> a = max_freq gives next_freq = max_freq for x = 1, but with that
+> > >> choice of a you may never get to x = 1 with frequency invariant
+> > >> because of the feedback effect mentioned above, so the 1/n produces
+> > >> the extra boost needed for that (n is a positive integer).
+> > >>
+> > >> Quite frankly, to me it looks like linear really is a better
+> > >> approximation for "raw" utilization.  That is, for frequency invariant
+> > >> x we should take:
+> > >>
+> > >>   next_freq = a * x * max_freq / current_freq
+> > >>
+> > >> (and if x is not frequency invariant, the right-hand side becomes a *
+> > >> x).  Then, the extra boost needed to get to x = 1 for frequency
+> > >> invariant is produced by the (max_freq / current_freq) factor that is
+> > >> greater than 1 as long as we are not running at max_freq and a can be
+> > >> chosen as max_freq.
+> > >>
+> > >
+> > > Expanding terms again, your original formula (without the 1.1 factor of
+> > > the last version) was:
+> > >
+> > >  next_freq = util / max_cap * max_freq
+> > >
+> > > and this doesn't work when we have freq invariance since util won't go
+> > > over curr_cap.
+> > 
+> > Can you please remind me what curr_cap is?
+> > 
 > 
-> The parent is always going to be pcieport.
+> The capacity at current frequency.
 
-I see.
+I see, thanks!
 
-> It doesn't seem to do any runtime PM,
-> I do wonder if pcieport should be doing it's own runtime PM handling,
-> but that is a
-> larger task than I'm thinking to tackle here.
-
-PCIe ports don't do PM - yet.  Mika has posted a series of patches to implement
-that, however, that are waiting for comments now:
-
-https://patchwork.kernel.org/patch/8453311/
-https://patchwork.kernel.org/patch/8453381/
-https://patchwork.kernel.org/patch/8453391/
-https://patchwork.kernel.org/patch/8453411/
-https://patchwork.kernel.org/patch/8453371/
-https://patchwork.kernel.org/patch/8453351/
-
-> Maybe I should be doing
+> > > What you propose above is to add another factor, so that we have:
+> > >
+> > >  next_freq = util / max_cap * max_freq / curr_freq * max_freq
+> > >
+> > > which should give us the opportunity to reach max_freq also with freq
+> > > invariance.
+> > >
+> > > This should actually be the same of doing:
+> > >
+> > >  next_freq = util / max_cap * max_cap / curr_cap * max_freq
+> > >
+> > > We are basically scaling how much the cpu is busy at curr_cap back to
+> > > the 0..1024 scale. And we use this to select next_freq. Also, we can
+> > > simplify this to:
+> > >
+> > >  next_freq = util / curr_cap * max_freq
+> > >
+> > > and we save some ops.
+> > >
+> > > However, if that is correct, I think we might have a problem, as we are
+> > > skewing OPP selection towards higher frequencies. Let's suppose we have
+> > > a platform with 3 OPPs:
+> > >
+> > >   freq     cap
+> > >   1200     1024
+> > >   900      768
+> > >   600      512
+> > >
+> > > As soon a task reaches an utilization of 257 we will be selecting the
+> > > second OPP as
+> > >
+> > >  next_freq = 257 / 512 * 1200 ~ 602
+> > >
+> > > While the cpu is only 50% busy in this case. And we will go at max OPP
+> > > when reaching ~492 (~64% of 768).
+> > >
+> > > That said, I guess this might work as a first solution, but we will
+> > > probably need something better in the future. I understand Rafael's
+> > > concerns regardin margins, but it seems to me that some kind of
+> > > additional parameter will be probably needed anyway to fix this.
+> > > Just to say again how we handle this in schedfreq, with a -20% margin
+> > > applied to the lowest OPP we will get to the next one when utilization
+> > > reaches ~410 (80% busy at curr OPP), and so on for the subsequent ones,
+> > > which is less aggressive and might be better IMHO.
+> > 
+> > Well, Peter says that my idea is incorrect, so I'll go for
+> > 
+> >   next_freq = C * current_freq * util_raw / max
+> > 
+> > where C > 1 (and likely C < 1.5) instead.
+> > 
+> > That means C has to be determined somehow or guessed.  The 80% tipping
+> > point condition seems reasonable to me, though, which leads to C =
+> > 1.25.
+> > 
 > 
-> pci_set_power_state(pdev->bus->self, PCI_D3cold) ? I'm not really sure.
+> Right. So, when using freq. invariant util we have:
+> 
+>  next_freq = C * curr_freq * util / curr_cap
+> 
+> as
+> 
+>  util_raw = util * max / curr_cap
+> 
+> What Vincent is saying makes sense, though. If we use
+> arch_scale_freq_capacity() as denominator instead of max, we can use a
+> single formula for both cases.
 
-Using pci_set_power_state() would be more appropriate IMO, but you can get
-to the bridge via dev->parent too, can't you?
-
-In any case, it looks like you and Mika need to talk. :-)
-
-> I'm guessing on Windows this all happens automatically.
-
-PCIe ports are power-managend by (newer) Windows AFAICS, but we know for a fact
-that this simply doesn't work reliably on some older hardware which is why
-we don't do that.  I suppose that the Windows in question uses a cut-off date
-or similar to decide what do do with PCIe ports PM.
+I'm not convinced about that yet, but let me think about it some more. :-)
 
 Thanks,
 Rafael
