@@ -1,28 +1,36 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH 2/2] PM / Domains: Fix potential NULL pointer dereference
-Date: Fri, 11 Mar 2016 00:24:37 +0100
-Message-ID: <2444093.rvCdthdsgI@vostro.rjw.lan>
-References: <1457088915-17284-1-git-send-email-jonathanh@nvidia.com> <1457088915-17284-2-git-send-email-jonathanh@nvidia.com> <CAPDyKFpha7TQbvZ2B9aDuoRuOFEHzD5ZwOCADvs6=0pwCNSgQg@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v3 6/6] arm64: dts: r8a7795: Add SYSC PM domains
+Date: Fri, 11 Mar 2016 08:34:11 +0900
+Message-ID: <20160310233411.GC7423@verge.net.au>
+References: <1457551135-22078-1-git-send-email-geert+renesas@glider.be>
+ <1457551135-22078-7-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFpha7TQbvZ2B9aDuoRuOFEHzD5ZwOCADvs6=0pwCNSgQg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1457551135-22078-7-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2016 12:07:23 PM Ulf Hansson wrote:
-> On 4 March 2016 at 11:55, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> > In the function of_genpd_get_from_provider(), we never check to see if
-> > the argument 'genpdspec' is NULL before dereferencing it. Add error
-> > checking to handle any NULL pointers.
-> >
-> > Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> 
-> Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+On Wed, Mar 09, 2016 at 08:18:55PM +0100, Geert Uytterhoeven wrote:
+> Add a device node for the System Controller.
+> Hook up the Cortex-A57 CPU cores and the Cortex-A57 and Cortex A53 L2
+> caches/SCUs to their respective PM domains.
+> Hook up all devices that are part of the CPG/MSSR Clock Domain to the
+> SYSC "always-on" PM Domain.
 
-Both this one and the [1/2] applied, thanks!
+[snip]
 
-Rafael
+> +		sysc: system-controller@e6180000 {
+> +			compatible = "renesas,r8a7795-sysc";
+> +			reg = <0 0xe6180000 0 0x0400>;
+
+In table 9.2 of v0.51e of the documentation I see some registers
+beyond the 0x400 range above. Perhaps it could be enlarged accordingly?
+
+> +			#power-domain-cells = <1>;
+> +		};
+
+[snip]
