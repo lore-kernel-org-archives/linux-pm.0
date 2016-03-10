@@ -1,68 +1,76 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v3 04/11] soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
-Date: Thu, 10 Mar 2016 11:19:56 +0200
-Message-ID: <2190706.M4LvRWA5A8@avalon>
-References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be> <1457551127-21934-5-git-send-email-geert+renesas@glider.be>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 05/13] input: convert sun4i-ts to use
+ devm_thermal_zone_of_sensor_register
+Date: Thu, 10 Mar 2016 10:34:38 +0100
+Message-ID: <20160310093438.GL30994@pengutronix.de>
+References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
+ <1457559336-17652-6-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1457551127-21934-5-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:36970 "EHLO
+	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752894AbcCJJfC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 04:35:02 -0500
+Content-Disposition: inline
+In-Reply-To: <1457559336-17652-6-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Jens Thiele <karme@karme.de>, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Geert,
-
-Thank you for the patch.
-
-On Wednesday 09 March 2016 20:18:40 Geert Uytterhoeven wrote:
-> As of commit b12ff41658171f53 ("ARM: shmobile: r8a7779: Remove legacy PM
-> Domain remainings"), rcar_sysc_power_is_off() is no longer used from
-> SoC-specific code.
+On Wed, Mar 09, 2016 at 01:35:27PM -0800, Eduardo Valentin wrote:
+> This changes the driver to use the devm_ version
+> of thermal_zone_of_sensor_register and cleans
+> up the  local points and unregister calls.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Chen-Yu Tsai <wens@csie.org>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Jens Thiele <karme@karme.de>
+> Cc: linux-input@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 > ---
-> v3:
->   - New.
-> ---
->  drivers/soc/renesas/rcar-sysc.c       | 2 +-
->  include/linux/soc/renesas/rcar-sysc.h | 1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
+>  drivers/input/touchscreen/sun4i-ts.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
 > 
-> diff --git a/drivers/soc/renesas/rcar-sysc.c
-> b/drivers/soc/renesas/rcar-sysc.c index 6b21ea2a65bf59b9..28af0b704fc008d2
-> 100644
-> --- a/drivers/soc/renesas/rcar-sysc.c
-> +++ b/drivers/soc/renesas/rcar-sysc.c
-> @@ -149,7 +149,7 @@ int rcar_sysc_power_up(const struct rcar_sysc_ch
-> *sysc_ch) return rcar_sysc_power(sysc_ch, true);
->  }
-> 
-> -bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
-> +static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
->  {
->  	unsigned int st;
-> 
-> diff --git a/include/linux/soc/renesas/rcar-sysc.h
-> b/include/linux/soc/renesas/rcar-sysc.h index
-> 96f30c2883881d97..92fc613ab23db091 100644
-> --- a/include/linux/soc/renesas/rcar-sysc.h
-> +++ b/include/linux/soc/renesas/rcar-sysc.h
-> @@ -11,7 +11,6 @@ struct rcar_sysc_ch {
-> 
->  int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
->  int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
-> -bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch);
->  void __iomem *rcar_sysc_init(phys_addr_t base);
-> 
->  #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
+> diff --git a/drivers/input/touchscreen/sun4i-ts.c b/drivers/input/touchscreen/sun4i-ts.c
+> index 4857943..d07dd29 100644
+> --- a/drivers/input/touchscreen/sun4i-ts.c
+> +++ b/drivers/input/touchscreen/sun4i-ts.c
+> @@ -115,7 +115,6 @@
+>  struct sun4i_ts_data {
+>  	struct device *dev;
+>  	struct input_dev *input;
+> -	struct thermal_zone_device *tz;
+>  	void __iomem *base;
+>  	unsigned int irq;
+>  	bool ignore_fifo_data;
+> @@ -366,10 +365,7 @@ static int sun4i_ts_probe(struct platform_device *pdev)
+>  	if (IS_ERR(hwmon))
+>  		return PTR_ERR(hwmon);
+>  
+> -	ts->tz = thermal_zone_of_sensor_register(ts->dev, 0, ts,
+> -						 &sun4i_ts_tz_ops);
+> -	if (IS_ERR(ts->tz))
+> -		ts->tz = NULL;
+> +	devm_thermal_zone_of_sensor_register(ts->dev, 0, ts, &sun4i_ts_tz_ops);
+
+Shouldn't we check the return value? There are a few possibilities for
+thermal_zone_of_sensor_register to fail.
+
+Sascha
+
 
 -- 
-Regards,
-
-Laurent Pinchart
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
