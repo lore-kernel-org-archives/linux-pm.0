@@ -1,59 +1,84 @@
-From: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V2 0/6]  thermal: add devm_ version of thermal_zone register
- and driver for max77620
-Date: Thu, 10 Mar 2016 12:25:03 +0530
-Message-ID: <56E11A47.60601@nvidia.com>
-References: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com> <20160309193249.GE2422@localhost.localdomain>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: Re: [PATCH V2 5/6] thermal: max77620: Add thermal driver for reporting
+ junction temp
+Date: Thu, 10 Mar 2016 12:26:24 +0530
+Message-ID: <56E11A98.4000000@nvidia.com>
+References: <1457529010-6538-1-git-send-email-ldewangan@nvidia.com> <1457529010-6538-6-git-send-email-ldewangan@nvidia.com> <20160309192751.GB2422@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160309193249.GE2422-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, corbet-T1hC0tSOHrs@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rklein-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20160309192751.GB2422@localhost.localdomain>
+Sender: linux-doc-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, rklein@nvidia.com
 List-Id: linux-pm@vger.kernel.org
 
 
-On Thursday 10 March 2016 01:02 AM, Eduardo Valentin wrote:
+On Thursday 10 March 2016 12:57 AM, Eduardo Valentin wrote:
 > * PGP Signed by an unknown key
 >
-> On Wed, Mar 09, 2016 at 06:40:04PM +0530, Laxman Dewangan wrote:
->> The series add the devm_ version of thermal_zone_of_sensor_register/
->> unregister, interface details, and use this in new thermal driver
->> for max77620.
+> On Wed, Mar 09, 2016 at 06:40:09PM +0530, Laxman Dewangan wrote:
+>> Maxim Semiconductor Max77620 supports alarm interrupts when
+>> its die temperature crosses 120C and 140C. These threshold
+>> temperatures are not configurable.
 >>
->> The header file for max77620 is part of MFD patch
->> 	https://lkml.org/lkml/2016/2/11/186
+>> Add thermal driver to register PMIC die temperature as thermal
+>> zone sensor and capture the die temperature warning interrupts
+>> to notifying the client.
 >>
+>> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+>>
+>> ---
 >> Changes from V1:
->> - Run checkpatch with --strict and fix all warnings.
->> - Added details of interfaces in spifs-api.txt
->> - Added DT binding doc.
+>> - checkpatch warning fix and simplifying the dev.of_node
+>>    initialisation.
 >>
->> Laxman Dewangan (6):
->>    thermal: doc: Add details of
->>      thermal_zone_of_sensor_{register,unregister}
->>    thermal: of-thermal: Add devm version of
->>      thermal_zone_of_sensor_register
->>    thermal: Add devm_thermal_zone_of_sensor_register() in managed devices
->>      list
->>    thermal: doc: Add details of
->>      devm_thermal_zone_of_sensor_{register,unregister}
->>    thermal: max77620: Add thermal driver for reporting junction temp
->>    thermal: Add DT binding doc for thermal of PMIC max77620
+>>   drivers/thermal/Kconfig            |  10 +++
+>>   drivers/thermal/Makefile           |   1 +
+>>   drivers/thermal/thermal-max77620.c | 151 +++++++++++++++++++++++++++++++++++++
+>>   3 files changed, 162 insertions(+)
+>>   create mode 100644 drivers/thermal/thermal-max77620.c
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 5e7c97a..fc856eb 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -194,6 +194,16 @@ config IMX_THERMAL
+>>   	  cpufreq is used as the cooling device to throttle CPUs when the
+>>   	  passive trip is crossed.
+>>   
+>> +config MAX77620_THERMAL
+>> +	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
+>> +	depends on MFD_MAX77620
+>> +	depends on OF
+> The previous question on compile test was more if we could add depends
+> on COMPILE_TEST flag. Sorry if I was not clear enough.
 >
-> Add patches 1-3 in my tree. Patch 4 should probably go via documentation
-> tree. And patch 5 needs dependency to be sorted, and 6 need minor changes.
 >
-Thanks for accepting patches.
+> I am adding the flag here:
+>
+>   
+>    config MAX77620_THERMAL
+>            tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
+> 	  -       depends on MFD_MAX77620
+> 	  +       depends on MFD_MAX77620 || COMPILE_TEST
+> 	  +       depends on HAS_IOMEM
+> 	          depends on OF
+> 		          help
+> 			            Support for die junction temperature
+> 				    warning alarm for Maxim
+>
+>
+> but I still cannot compile test the file because of the missing header.
+> drivers/thermal/thermal-max77620.c:16:32: fatal error:
+> linux/mfd/max77620.h: No such file or directory
+>   #include <linux/mfd/max77620.h>
+>
+>
+> I wont be able to merge this as it is. We need to sort out the
+> dependency first.
+>
+I will update you once the mfd patches will merge as this header is on 
+that patch.
 
-patch 5 needs mfd patches which is under review. So until that is 
-merged, compilation will fail due to header dependency.
-
-Will add complete information on example of patch 6.
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
