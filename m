@@ -1,59 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 6/6] cpufreq: schedutil: New governor based on scheduler utilization data
-Date: Thu, 10 Mar 2016 23:28:29 +0100
-Message-ID: <3632540.gmDun1cqEL@vostro.rjw.lan>
-References: <20160308112759.GF6356@twins.programming.kicks-ass.net> <20160310103008.GU6344@twins.programming.kicks-ass.net> <20160310105614.GK6375@twins.programming.kicks-ass.net>
+Subject: [PATCH] intel_pstate: Do not skip samples partially
+Date: Thu, 10 Mar 2016 23:45:19 +0100
+Message-ID: <1608361.vYXCevKAEf@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160310105614.GK6375@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, mturquette <mturquette@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:51072 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932431AbcCJWnZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 17:43:25 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>
 
-On Thursday, March 10, 2016 11:56:14 AM Peter Zijlstra wrote:
-> On Thu, Mar 10, 2016 at 11:30:08AM +0100, Peter Zijlstra wrote:
-> > On Thu, Mar 10, 2016 at 05:23:54PM +0700, Vincent Guittot wrote:
-> > 
-> > > > No, since its a compile time thing, we can simply do:
-> > > >
-> > > > #ifdef arch_scale_freq_capacity
-> > > >         next_freq = (1 + 1/n) * max_freq * (util / max)
-> > > > #else
-> > > >         next_freq = (1 + 1/n) * current_freq * (util_raw / max)
-> > > > #endif
-> > > 
-> > > selecting formula at compilation is clearly better. I wrongly thought that
-> > > it can't be accepted as a solution.
-> > 
-> > Well, its bound to get more 'interesting' since I forse implementations
-> > not always actually doing the invariant thing.
-> > 
-> > Take for example the thing I send:
-> > 
-> >   lkml.kernel.org/r/20160303162829.GB6375@twins.programming.kicks-ass.net
-> > 
-> > it both shows why you cannot talk about current_freq but also that the
-> > above needs a little more help (for the !X86_FEATURE_APERFMPERF case).
-> > 
-> > But the !arch_scale_freq_capacity case should indeed be that simple.
-> 
-> Maybe something like:
-> 
-> #ifdef arch_scale_freq_capacity
-> #ifndef arch_scale_freq_invariant
-> #define arch_scale_freq_invariant()	(true)
-> #endif
-> #else /* arch_scale_freq_capacity */
-> #define arch_scale_freq_invariant()	(false)
-> #endif
-> 
-> 	if (arch_scale_freq_invariant())
-> 
-> And have archs that have conditional arch_scale_freq_capacity()
-> implementation provide a arch_scale_freq_invariant implementation.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yeah, looks workable to me.
+If the current value of MPERF or the current value of TSC is the
+same as the previous one, respectively, intel_pstate_sample() bails
+out early and skips the sample.
+
+However, intel_pstate_adjust_busy_pstate() is still called in that
+case which is not correct, so modify intel_pstate_sample() to
+return a bool value indicating whether or not the sample has been
+taken and use it to decide whether or not to call
+intel_pstate_adjust_busy_pstate().
+
+While at it, remove redundant parentheses from the MPERF/TSC
+check in intel_pstate_sample().
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+On top of my linux-next branch.
+
+---
+ drivers/cpufreq/intel_pstate.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -890,7 +890,7 @@ static inline void intel_pstate_calc_bus
+ 	sample->core_pct_busy = (int32_t)core_pct;
+ }
+ 
+-static inline void intel_pstate_sample(struct cpudata *cpu, u64 time)
++static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
+ {
+ 	u64 aperf, mperf;
+ 	unsigned long flags;
+@@ -900,9 +900,9 @@ static inline void intel_pstate_sample(s
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
+ 	tsc = rdtsc();
+-	if ((cpu->prev_mperf == mperf) || (cpu->prev_tsc == tsc)) {
++	if (cpu->prev_mperf == mperf || cpu->prev_tsc == tsc) {
+ 		local_irq_restore(flags);
+-		return;
++		return false;
+ 	}
+ 	local_irq_restore(flags);
+ 
+@@ -920,6 +920,7 @@ static inline void intel_pstate_sample(s
+ 	cpu->prev_aperf = aperf;
+ 	cpu->prev_mperf = mperf;
+ 	cpu->prev_tsc = tsc;
++	return true;
+ }
+ 
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+@@ -1026,8 +1027,9 @@ static void intel_pstate_update_util(str
+ 	u64 delta_ns = time - cpu->sample.time;
+ 
+ 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
+-		intel_pstate_sample(cpu, time);
+-		if (!hwp_active)
++		bool sample_taken = intel_pstate_sample(cpu, time);
++
++		if (sample_taken && !hwp_active)
+ 			intel_pstate_adjust_busy_pstate(cpu);
+ 	}
+ }
 
