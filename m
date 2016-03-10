@@ -1,114 +1,97 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v3 1/7] PM / Domains: Add DT bindings for the R-Car System Controller
-Date: Thu, 10 Mar 2016 04:24:02 +0200
-Message-ID: <5264125.Rrtl9KtOQy@avalon>
-References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be> <1457551122-21838-2-git-send-email-geert+renesas@glider.be>
+From: "Chen, Yu C" <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: RE: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Thu, 10 Mar 2016 02:25:36 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D3EA6@shsmsx102.ccr.corp.intel.com>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0iWjW_XJEsVBM1yyimxUQMDaWapQ_OrN45TeFXFySd0rw@mail.gmail.com>
+ <36DF59CE26D8EE47B0655C516E9CE640286D329F@shsmsx102.ccr.corp.intel.com>
+ <2414254.VhAiD01BTS@vostro.rjw.lan>
+ <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+ <20160309153436.GB15775@codeblueprint.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1457551122-21838-2-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160309153436.GB15775-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
+Content-Language: en-US
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
+Hi Matt,
 
-Thank you for the patch.
-
-On Wednesday 09 March 2016 20:18:36 Geert Uytterhoeven wrote:
-> The Renesas R-Car System Controller provides power management for the
-> CPU cores and various coprocessors, following the generic PM domain
-> bindings in Documentation/devicetree/bindings/power/power_domain.txt.
+> -----Original Message-----
+> From: Matt Fleming [mailto:matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org]
+> Sent: Wednesday, March 09, 2016 11:35 PM
+> To: Chen, Yu C
+> Cc: Rafael J. Wysocki; Rafael J. Wysocki; ACPI Devel Maling List;
+> x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org; linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; Linux Kernel Mailing List; linux-
+> pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; Len Brown; Thomas Gleixner; Ingo Molnar; H. Peter
+> Anvin; Zhang, Rui
+> Subject: Re: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+> platforms without _S5
 > 
-> This supports R-Car Gen1 (H1), Gen2, and Gen3.
+> On Tue, 08 Mar, at 04:25:30PM, Chen, Yu C wrote:
+> > Hum. unfortunately it is not guaranteed to run after all of the other
+> > code, because other components who register pm_power_off may be
+> built as modules, and
+> > we can not predict/control the sequence registration.   So this patch may
+> > break the EFI platforms who use non-efi poweroff due to unstable EFI
+> > service ,  not sure if there are any released-products of this kind.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> v3:
->   - Move power area hierarchy from DT to C (cfr. DT bindings for Renesas
->     CPG/MSSR), and switch to "#power-domain-cells = <1>",
->   - Drop fallback compatibility strings, as the bindings are
->     SoC-specific,
->   - Rename from renesas,sysc-rcar.txt to renesas,rcar-sysc.txt,
+> Certainly the majority of x86 client machines do not use EFI power off,
+> because it hardly ever functions correctly.
 > 
-> v2:
->   - Add R-Car H3 (r8a7795) support,
->   - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
->   - Add fallback compatibility strings for R-Car Gen2 and Gen3.
-> ---
->  .../bindings/power/renesas,rcar-sysc.txt           | 48 +++++++++++++++++++
->  1 file changed, 48 insertions(+)
->  create mode 100644
-> Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
+> > Currently I'm thinking of 3 possible solutions,  could you please give some
+> advices on them:
+> >
+> > 1. Introduce bootopt of 'poweroff=efi'
+> >      Set the pm_power_off to efi_power_off no matter whether there is
+> > _S5 or not
+> >
+> > 2. Introduce /sys/power/poweroff
+> >     Allow the user to choose which  pm_power_off, for example:
+> >
+> > # cat /sys/power/poweroff
+> > *acpi		acpi_power_off
+> > efi		efi_power_off
+> > gpio		gpio_poweroff_do_poweroff
+> > user can echo string to enable which one.
+> >
+> > And two APIs:
+> > register_power_off(char *name, power_off func)
+> > unregister_power_off(char *name)
+> >
+> >
+> > 3. replace all the codes of  pm_power_off() with
+> > reliable_pm_power_off()
+> >
+> > void reliable_pm_power_off(void)
+> > {
+> > 	if (!pm_power_off) {
+> > 		if (acpi_no_s5)
+> > 			pm_power_off = efi_power_off;
+> > 	/* Other conditions added in the future. */
+> > 	}
+> > 	pm_power_off();
+> > }
 > 
-> diff --git a/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
-> b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt new file
-> mode 100644
-> index 0000000000000000..1765fd37c3658b60
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
-> @@ -0,0 +1,48 @@
-> +DT bindings for the Renesas R-Car System Controller
-> +
-> +== System Controller Node ==
-> +
-> +The R-Car System Controller provides power management for the CPU cores and
-> +various coprocessors.
-> +
-> +Required properties:
-> +  - compatible: Must contain one or more of the following:
+> Be wary of adding all these control knobs. People just want their machines to
+> reboot properly without having to mess with boot parameters.
+> 
+> Let's go back to the start. What prompted this patch? Do Intel have (or are
+> planning) machines that do not have _S5 and are expected to use EFI to reset
+> the system? 
+Yes, there might be a new platform without _S5, and might need EFI poweroff
+for a backup.
+> Or is this some new configuration discussed in the ACPI spec
+> that Linux needs to be support?
+> 
+> Can we remove the ambiguity and options to force EFI reset if _S5 is missing?
+> Afterall, that's why the function is called efi_poweroff_*required*.
+OK, the boot option is obsoleted, I'll try another version of default_power_off per
+Rafael's suggestion, thanks.
 
-I'd be curious to see a use case for specifying more than one ;-) I think you 
-can phrase it as "Must contain exactly one of the following".
-
-Apart from that,
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-> +      - "renesas,r8a7779-sysc" (R-Car H1)
-> +      - "renesas,r8a7790-sysc" (R-Car H2)
-> +      - "renesas,r8a7791-sysc" (R-Car M2-W)
-> +      - "renesas,r8a7792-sysc" (R-Car V2H)
-> +      - "renesas,r8a7793-sysc" (R-Car M2-N)
-> +      - "renesas,r8a7794-sysc" (R-Car E2)
-> +      - "renesas,r8a7795-sysc" (R-Car H3)
-> +  - reg: Address start and address range for the device.
-> +  - #power-domain-cells: Must be 1.
-> +
-> +
-> +Example:
-> +
-> +	sysc: system-controller@e6180000 {
-> +		compatible = "renesas,r8a7791-sysc";
-> +		reg = <0 0xe6180000 0 0x0200>;
-> +		#power-domain-cells = <1>;
-> +	};
-> +
-> +
-> +== PM Domain Consumers ==
-> +
-> +Devices residing in a power area must refer to that power area, as
-> documented +by the generic PM domain bindings in
-> +Documentation/devicetree/bindings/power/power_domain.txt.
-> +
-> +Required properties:
-> +  - power-domains: A phandle and symbolic PM domain specifier, as defined
-> in
-> +		   <dt-bindings/power/r8a77*-sysc.h>.
-> +
-> +
-> +Example:
-> +
-> +	L2_CA15: cache-controller@0 {
-> +		compatible = "cache";
-> +		power-domains = <&sysc R8A7791_PD_CA15_SCU>;
-> +		cache-unified;
-> +		cache-level = <2>;
-> +	};
-
--- 
-Regards,
-
-Laurent Pinchart
+yu
