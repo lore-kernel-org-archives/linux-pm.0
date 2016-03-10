@@ -1,65 +1,94 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v10 1/3] cpufreq: Add mechanism for registering
- utilization update callbacks
-Date: Thu, 10 Mar 2016 09:12:12 +0700
-Message-ID: <CAKfTPtC0x+ZOUZxEYahXwXGXSd5eATUhTDtRc=9sko8V896YQw@mail.gmail.com>
-References: <3071836.JbNxX8hU6x@vostro.rjw.lan> <2044559.7ypXocW9OZ@vostro.rjw.lan>
- <3499355.2JlaSruvOa@vostro.rjw.lan> <16016177.YFqb4gVNBo@vostro.rjw.lan> <20160309123539.GL6356@twins.programming.kicks-ass.net>
+From: "Chen, Yu C" <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: RE: [PATCH][RFC v3] ACPI / PM: Fix poweroff issue on HW-full
+ platforms without _S5
+Date: Thu, 10 Mar 2016 02:16:44 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D3E69@shsmsx102.ccr.corp.intel.com>
+References: <1457319045-25434-1-git-send-email-yu.c.chen@intel.com>
+ <2414254.VhAiD01BTS@vostro.rjw.lan>
+ <36DF59CE26D8EE47B0655C516E9CE640286D370A@shsmsx102.ccr.corp.intel.com>
+ <1867318.3ivAYsjD7D@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:35355 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752486AbcCJCMd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Mar 2016 21:12:33 -0500
-Received: by mail-lb0-f173.google.com with SMTP id bc4so91953737lbc.2
-        for <linux-pm@vger.kernel.org>; Wed, 09 Mar 2016 18:12:32 -0800 (PST)
-In-Reply-To: <20160309123539.GL6356@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1867318.3ivAYsjD7D-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Content-Language: en-US
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 9 March 2016 at 19:35, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, Feb 15, 2016 at 10:47:22PM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Introduce a mechanism by which parts of the cpufreq subsystem
->> ("setpolicy" drivers or the core) can register callbacks to be
->> executed from cpufreq_update_util() which is invoked by the
->> scheduler's update_load_avg() on CPU utilization changes.
->>
->> This allows the "setpolicy" drivers to dispense with their timers
->> and do all of the computations they need and frequency/voltage
->> adjustments in the update_load_avg() code path, among other things.
->>
->> The update_load_avg() changes were suggested by Peter Zijlstra.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/cpufreq/cpufreq.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->>  include/linux/cpufreq.h   |   34 ++++++++++++++++++++++++++++++++++
->>  kernel/sched/deadline.c   |    4 ++++
->>  kernel/sched/fair.c       |   26 +++++++++++++++++++++++++-
->>  kernel/sched/rt.c         |    4 ++++
->>  kernel/sched/sched.h      |    1 +
->>  6 files changed, 113 insertions(+), 1 deletion(-)
->>
->
-> So with the understanding that we'll work on getting rid of
-> cpufreq_trigger_update().
->
-> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->
-> Also, Vincent had some concerns about the exact placement of the
-> callback, and I see no problem in moving it if there's need.
-
-Yes, as explained previously we can probably  use other placement to
-not miss any immediate change of rq's utilization because of task
-migration but this optimization can probably be done in a next step
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBb
+bWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDA5LCAy
+MDE2IDY6NTcgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBB
+Q1BJIERldmVsIE1hbGluZyBMaXN0OyB4ODZAa2VybmVsLm9yZzsgbGludXgtDQo+IGVmaUB2Z2Vy
+Lmtlcm5lbC5vcmc7IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3Q7IGxpbnV4LXBtQHZnZXIua2Vy
+bmVsLm9yZzsNCj4gTGVuIEJyb3duOyBNYXR0IEZsZW1pbmc7IFRob21hcyBHbGVpeG5lcjsgSW5n
+byBNb2xuYXI7IEguIFBldGVyIEFudmluOw0KPiBaaGFuZywgUnVpDQo+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0hdW1JGQyB2M10gQUNQSSAvIFBNOiBGaXggcG93ZXJvZmYgaXNzdWUgb24gSFctZnVsbA0K
+PiBwbGF0Zm9ybXMgd2l0aG91dCBfUzUNCj4gDQo+IE9uIFR1ZXNkYXksIE1hcmNoIDA4LCAyMDE2
+IDA0OjI1OjMwIFBNIENoZW4sIFl1IEMgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPiA+ID4gRnJvbTogbGludXgtcG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWls
+dG86bGludXgtcG0tDQo+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBS
+YWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gU2VudDogVHVlc2RheSwgTWFyY2ggMDgsIDIwMTYgOTo1
+NCBBTQ0KPiA+ID4gVG86IENoZW4sIFl1IEMNCj4gPiA+IENjOiBSYWZhZWwgSi4gV3lzb2NraTsg
+QUNQSSBEZXZlbCBNYWxpbmcgTGlzdDsgeDg2QGtlcm5lbC5vcmc7DQo+ID4gPiBsaW51eC0gZWZp
+QHZnZXIua2VybmVsLm9yZzsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdDsNCj4gPiA+IGxpbnV4
+LXBtQHZnZXIua2VybmVsLm9yZzsgTGVuIEJyb3duOyBNYXR0IEZsZW1pbmc7IFRob21hcyBHbGVp
+eG5lcjsNCj4gPiA+IEluZ28gTW9sbmFyOyBILiBQZXRlciBBbnZpbjsgWmhhbmcsIFJ1aQ0KPiA+
+ID4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDIHYzXSBBQ1BJIC8gUE06IEZpeCBwb3dlcm9mZiBp
+c3N1ZSBvbg0KPiA+ID4gSFctZnVsbCBwbGF0Zm9ybXMgd2l0aG91dCBfUzUNCj4gPiA+DQo+ID4g
+PiBPbiBNb25kYXksIE1hcmNoIDA3LCAyMDE2IDAzOjUzOjEzIFBNIENoZW4sIFl1IEMgd3JvdGU6
+DQo+ID4gPiA+IEhpIFJhZmFlbCwNCj4gPiA+ID4gKHJlc2VuZCBmb3IgYnJva2VuIGNvbnRlbnQp
+DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4g
+PiBGcm9tOiByand5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0g
+T24gQmVoYWxmDQo+ID4gPiA+ID4gT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gPiA+ID4gPiBTZW50
+OiBNb25kYXksIE1hcmNoIDA3LCAyMDE2IDk6MTkgUE0NCj4gPiA+ID4gPiBUbzogQ2hlbiwgWXUg
+Qw0KPiA+ID4gPiA+IENjOiBBQ1BJIERldmVsIE1hbGluZyBMaXN0OyB4ODZAa2VybmVsLm9yZzsN
+Cj4gPiA+ID4gPiBsaW51eC1lZmlAdmdlci5rZXJuZWwub3JnOyBMaW51eCBLZXJuZWwgTWFpbGlu
+ZyBMaXN0Ow0KPiA+ID4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgUmFmYWVsIEouIFd5
+c29ja2k7IExlbiBCcm93bjsgTWF0dA0KPiA+ID4gPiA+IEZsZW1pbmc7IFRob21hcyBHbGVpeG5l
+cjsgSW5nbyBNb2xuYXI7IEguIFBldGVyIEFudmluOyBaaGFuZywNCj4gPiA+ID4gPiBSdWkNCj4g
+PiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXVtSRkMgdjNdIEFDUEkgLyBQTTogRml4IHBvd2Vy
+b2ZmIGlzc3VlIG9uDQo+ID4gPiA+ID4gSFctZnVsbCBwbGF0Zm9ybXMgd2l0aG91dCBfUzUNCj4g
+PiA+ID4gPg0KPiA+ID4gPiBbY3V0XQ0KPiA+ID4gPiA+ID4gIGJvb2wgZWZpX3Bvd2Vyb2ZmX3Jl
+cXVpcmVkKHZvaWQpICB7DQo+ID4gPiA+ID4gPiAtICAgICAgIHJldHVybiAhIWFjcGlfZ2JsX3Jl
+ZHVjZWRfaGFyZHdhcmU7DQo+ID4gPiA+ID4gPiArICAgICAgIHJldHVybiBhY3BpX2dibF9yZWR1
+Y2VkX2hhcmR3YXJlIHx8IChhY3BpX25vX3M1ICYmDQo+ID4gPiA+ID4gPiArICFwbV9wb3dlcl9v
+ZmYpOw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gV2hhdCBpZiBDT05GSUdfQUNQSSBpcyBub3Qgc2V0
+IGhlcmU/DQo+ID4gPiA+IElmIENPTkZJR19BQ1BJIGlzIG5vdCBzZXQsIHRoaXMgZmlsZSB3b3Vs
+ZCBub3QgYmUgY29tcGlsZWQsDQo+ID4gPiA+IGJlY2F1c2UgQ09ORklHX0VGSSBkZXBlbmRzIG9u
+IENPTkZJR19BQ1BJLg0KPiA+ID4NCj4gPiA+IE9LDQo+ID4gPg0KPiA+ID4gU28gdGhlIG5leHQg
+cXVlc3Rpb24gd2lsbCBiZSBpZiBlZmlfcG93ZXJvZmZfcmVxdWlyZWQoKSBpcw0KPiA+ID4gZ3Vh
+cmFudGVlZCB0byBydW4gYWZ0ZXIgYWxsIG9mIHRoZSBvdGhlciBjb2RlIHRoYXQgbWF5IHJlZ2lz
+dGVyIGFsdGVybmF0aXZlDQo+IHBvd2VyIG9mZiBoYW5kbGluZy4NCj4gPiBIdW0uIHVuZm9ydHVu
+YXRlbHkgaXQgaXMgbm90IGd1YXJhbnRlZWQgdG8gcnVuIGFmdGVyIGFsbCBvZiB0aGUgb3RoZXIN
+Cj4gPiBjb2RlLCBiZWNhdXNlIG90aGVyIGNvbXBvbmVudHMgd2hvIHJlZ2lzdGVyIHBtX3Bvd2Vy
+X29mZiBtYXkgYmUNCj4gYnVpbHQgYXMgbW9kdWxlcywgYW5kDQo+ID4gd2UgY2FuIG5vdCBwcmVk
+aWN0L2NvbnRyb2wgdGhlIHNlcXVlbmNlIHJlZ2lzdHJhdGlvbi4gICBTbyB0aGlzIHBhdGNoIG1h
+eQ0KPiA+IGJyZWFrIHRoZSBFRkkgcGxhdGZvcm1zIHdobyB1c2Ugbm9uLWVmaSBwb3dlcm9mZiBk
+dWUgdG8gdW5zdGFibGUgRUZJDQo+ID4gc2VydmljZSAsICBub3Qgc3VyZSBpZiB0aGVyZSBhcmUg
+YW55IHJlbGVhc2VkLXByb2R1Y3RzIG9mIHRoaXMga2luZC4NCj4gPg0KPiA+IEN1cnJlbnRseSBJ
+J20gdGhpbmtpbmcgb2YgMyBwb3NzaWJsZSBzb2x1dGlvbnMsICBjb3VsZCB5b3UgcGxlYXNlIGdp
+dmUgc29tZQ0KPiBhZHZpY2VzIG9uIHRoZW06DQo+ID4NCj4gPiAxLiBJbnRyb2R1Y2UgYm9vdG9w
+dCBvZiAncG93ZXJvZmY9ZWZpJw0KPiA+ICAgICAgU2V0IHRoZSBwbV9wb3dlcl9vZmYgdG8gZWZp
+X3Bvd2VyX29mZiBubyBtYXR0ZXIgd2hldGhlciB0aGVyZSBpcw0KPiA+IF9TNSBvciBub3QNCj4g
+Pg0KPiA+IDIuIEludHJvZHVjZSAvc3lzL3Bvd2VyL3Bvd2Vyb2ZmDQo+ID4gICAgIEFsbG93IHRo
+ZSB1c2VyIHRvIGNob29zZSB3aGljaCAgcG1fcG93ZXJfb2ZmLCBmb3IgZXhhbXBsZToNCj4gPg0K
+PiA+ICMgY2F0IC9zeXMvcG93ZXIvcG93ZXJvZmYNCj4gPiAqYWNwaQkJYWNwaV9wb3dlcl9vZmYN
+Cj4gPiBlZmkJCWVmaV9wb3dlcl9vZmYNCj4gPiBncGlvCQlncGlvX3Bvd2Vyb2ZmX2RvX3Bvd2Vy
+b2ZmDQo+ID4gdXNlciBjYW4gZWNobyBzdHJpbmcgdG8gZW5hYmxlIHdoaWNoIG9uZS4NCj4gPg0K
+PiA+IEFuZCB0d28gQVBJczoNCj4gPiByZWdpc3Rlcl9wb3dlcl9vZmYoY2hhciAqbmFtZSwgcG93
+ZXJfb2ZmIGZ1bmMpDQo+ID4gdW5yZWdpc3Rlcl9wb3dlcl9vZmYoY2hhciAqbmFtZSkNCj4gPg0K
+PiA+DQo+ID4gMy4gcmVwbGFjZSBhbGwgdGhlIGNvZGVzIG9mICBwbV9wb3dlcl9vZmYoKSB3aXRo
+DQo+ID4gcmVsaWFibGVfcG1fcG93ZXJfb2ZmKCkNCj4gPg0KPiA+IHZvaWQgcmVsaWFibGVfcG1f
+cG93ZXJfb2ZmKHZvaWQpDQo+ID4gew0KPiA+IAlpZiAoIXBtX3Bvd2VyX29mZikgew0KPiA+IAkJ
+aWYgKGFjcGlfbm9fczUpDQo+ID4gCQkJcG1fcG93ZXJfb2ZmID0gZWZpX3Bvd2VyX29mZjsNCj4g
+PiAJLyogT3RoZXIgY29uZGl0aW9ucyBhZGRlZCBpbiB0aGUgZnV0dXJlLiAqLw0KPiA+IAl9DQo+
+ID4gCXBtX3Bvd2VyX29mZigpOw0KPiA+IH0NCj4gDQo+IFdoYXQgYWJvdXQgc29tZXRoaW5nIGxp
+a2UgYWRkaW5nIHNvbWV0aGluZyBsaWtlIGRlZmF1bHRfcG93ZXJfb2ZmIHRoYXQNCj4gd291bGQg
+YmUgdXNlZCBieSBwbV9wb3dlcl9vZmYgaWYgbm90aGluZyBlbHNlIGlzIGF2YWlsYWJsZT8NCk9L
+LCAgSSdsbCB0cnkgYW5vdGhlciB2ZXJzaW9uLCBpbiB3aGljaCBvdGhlciBjb21wb25lbnRzIGNh
+biBzZXQgIGl0cyBkZWZhdWx0X3Bvd2VyX29mZiwNCnRoZW4gcG1fcG93ZXJfb2ZmIGhhcyBhIGNo
+YW5jZSB0byBiZSBzZXQgdG8gZGVmYXVsdF9wb3dlcl9vZmYgaWYgcG1fcG93ZXJfb2ZmIGlzIE5V
+TEwuDQoNCg0K
