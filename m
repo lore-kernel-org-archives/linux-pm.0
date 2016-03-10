@@ -1,38 +1,42 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v3 2/7] soc: renesas: Add r8a7779 SYSC PM Domain Binding Definitions
-Date: Thu, 10 Mar 2016 04:40:59 +0200
-Message-ID: <3847967.WBShi7eqzc@avalon>
-References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be> <1457551122-21838-3-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH v3 3/7] soc: renesas: Add r8a7790 SYSC PM Domain Binding Definitions
+Date: Thu, 10 Mar 2016 08:57:54 +0200
+Message-ID: <9850717.l0t66FzFha@avalon>
+References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be> <1457551122-21838-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1457551122-21838-3-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:54740 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbcCJG5y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 01:57:54 -0500
+In-Reply-To: <1457551122-21838-4-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 Hi Geert,
 
 Thank you for the patch.
 
-On Wednesday 09 March 2016 20:18:37 Geert Uytterhoeven wrote:
+On Wednesday 09 March 2016 20:18:38 Geert Uytterhoeven wrote:
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
 > v3:
 >   - New.
 > ---
->  include/dt-bindings/power/r8a7779-sysc.h | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->  create mode 100644 include/dt-bindings/power/r8a7779-sysc.h
+>  include/dt-bindings/power/r8a7790-sysc.h | 31 +++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 include/dt-bindings/power/r8a7790-sysc.h
 > 
-> diff --git a/include/dt-bindings/power/r8a7779-sysc.h
-> b/include/dt-bindings/power/r8a7779-sysc.h new file mode 100644
-> index 0000000000000000..6b66612d1260d396
+> diff --git a/include/dt-bindings/power/r8a7790-sysc.h
+> b/include/dt-bindings/power/r8a7790-sysc.h new file mode 100644
+> index 0000000000000000..8ff5b86c12a46e85
 > --- /dev/null
-> +++ b/include/dt-bindings/power/r8a7779-sysc.h
-> @@ -0,0 +1,25 @@
+> +++ b/include/dt-bindings/power/r8a7790-sysc.h
+> @@ -0,0 +1,31 @@
 > +/*
 > + * Copyright (C) 2016 Glider bvba
 > + *
@@ -40,8 +44,8 @@ On Wednesday 09 March 2016 20:18:37 Geert Uytterhoeven wrote:
 > + * it under the terms of the GNU General Public License as published by
 > + * the Free Software Foundation; version 2 of the License.
 > + */
-> +#ifndef __DT_BINDINGS_POWER_R8A7779_SYSC_H__
-> +#define __DT_BINDINGS_POWER_R8A7779_SYSC_H__
+> +#ifndef __DT_BINDINGS_POWER_R8A7790_SYSC_H__
+> +#define __DT_BINDINGS_POWER_R8A7790_SYSC_H__
 > +
 > +/*
 > + * These power domain indices match the numbers of the interrupt bits
@@ -49,25 +53,32 @@ On Wednesday 09 March 2016 20:18:37 Geert Uytterhoeven wrote:
 > + * (e.g. SYSCISR, Interrupt Status Register)
 > + */
 > +
-> +#define R8A7779_PD_ARM1			 1
-> +#define R8A7779_PD_ARM2			 2
-> +#define R8A7779_PD_ARM3			 3
-> +#define R8A7779_PD_SH			16
+> +#define R8A7790_PD_CA15_CPU0		 0
+> +#define R8A7790_PD_CA15_CPU1		 1
+> +#define R8A7790_PD_CA15_CPU2		 2
+> +#define R8A7790_PD_CA15_CPU3		 3
+> +#define R8A7790_PD_CA7_CPU0		 5
+> +#define R8A7790_PD_CA7_CPU1		 6
+> +#define R8A7790_PD_CA7_CPU2		 7
+> +#define R8A7790_PD_CA7_CPU3		 8
+> +#define R8A7790_PD_CA15_SCU		12
+> +#define R8A7790_PD_SH			16
 
-I don't see this power domain in version 0.6 of the datasheet, you might have 
-a more recent version than I do.
+The power domain is called SH-4A in the datasheet, how about naming it 
+R8A7790_PD_SH_4A ?
 
 Apart from that,
 
-Reveiwed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-> +#define R8A7779_PD_SGX			20
-> +#define R8A7779_PD_VDP			21
-> +#define R8A7779_PD_IMP			24
+> +#define R8A7790_PD_RGX			20
+> +#define R8A7790_PD_CA7_SCU		21
+> +#define R8A7790_PD_IMP			24
 > +
-> +#endif /* __DT_BINDINGS_POWER_R8A7779_SYSC_H__ */
+> +#endif /* __DT_BINDINGS_POWER_R8A7790_SYSC_H__ */
 
 -- 
 Regards,
 
 Laurent Pinchart
+
