@@ -1,99 +1,83 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH V3] PM / clk: Add support for obtaining clocks from device-tree
-Date: Thu, 10 Mar 2016 10:41:15 +0100
-Message-ID: <CAMuHMdUToumZwuisg7HeOVuB7Amke7W=qpZ5f0dzavSqnjXygg@mail.gmail.com>
-References: <1457600456-4283-1-git-send-email-jonathanh@nvidia.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for
+ r8a7795 I/O devices
+Date: Thu, 10 Mar 2016 10:51:22 +0100
+Message-ID: <CAMuHMdUBVBRHrWT9hLH1V23LbBGrM=a5hGGVrv_F5cjPT4+TVw@mail.gmail.com>
+References: <1457551127-21934-1-git-send-email-geert+renesas@glider.be>
+	<1457551127-21934-6-git-send-email-geert+renesas@glider.be>
+	<2523920.fzA0Elmkzz@avalon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457600456-4283-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <2523920.fzA0Elmkzz@avalon>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jon,
+Hi Laurent,
 
-On Thu, Mar 10, 2016 at 10:00 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> The PM clocks framework requires clients to pass either a con-id or a
-> valid clk pointer in order to add a clock to a device. Add a new
-> function of_pm_clk_add_clks() to allows device clocks to be retrieved
-> from device-tree and populated for a given device. Note that
-> of_clk_get_from_provider() is not defined if CONFIG_OF and
-> CONFIG_COMMON_CLK are not selected. Therefore, make of_pm_clk_add_clks()
-> dependent on these options.
+On Thu, Mar 10, 2016 at 10:40 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Wednesday 09 March 2016 20:18:41 Geert Uytterhoeven wrote:
+>> On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
+>> also part of the CPG/MSSR Clock Domain.  Hook up the CPG/MSSR Clock
+>> Domain attach/detach callbacks to enable power management using module
+>> clocks.
+>>
+>> This also allows to support the Clock Domain for devices in the
+>> "always-on" power area.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+>> --- a/drivers/soc/renesas/rcar-sysc.c
+>> +++ b/drivers/soc/renesas/rcar-sysc.c
+
+>> @@ -251,6 +252,15 @@ static void __init rcar_sysc_pd_setup(struct
+>> device_node *np, gov = &pm_domain_always_on_gov;
+>>       }
+>>
+>> +#ifdef CONFIG_ARCH_R8A7795
 >
-> An optional function pointer may be passed to of_pm_clk_add_clks() that
-> can be used to filter the clocks that are added for a device when
-> calling of_pm_clk_add_clks().
+> This is fine for now as the R8A7795 is the only ARM64 model in the R-Car
+> family, but how do you plan to move forward on this ? Will it be enabled for
+> ARM64 SoCs straight away, and for ARM32 SoCs when switching from the cpg to
+> the always-on power domain ?
 >
-> In order to handle errors encountered when adding clocks from
-> device-tree, add a function pm_clk_remove_clk() to remove any clocks
-> (using a pointer to the clk structure) that have been added
-> successfully before the error occurred.
->
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> +     if (!(pd->flags & (PD_CPU | PD_SCU))) {
+>> +             /* Enable Clock Domain for I/O devices */
+>> +             genpd->flags = GENPD_FLAG_PM_CLK;
+>> +             genpd->attach_dev = cpg_mssr_attach_dev;
+>> +             genpd->detach_dev = cpg_mssr_detach_dev;
+>> +     }
+>> +#endif
 
-Tested-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+When enabling the always-on power domain for R-Car H1 and Gen2, this
+should become:
 
-But more comments below...
+        if (!(pd->flags & (PD_CPU | PD_SCU))) {
+                /* Enable Clock Domain for I/O devices */
+                genpd->flags = GENPD_FLAG_PM_CLK;
+#ifdef CONFIG_ARCH_R8A7795 /* or CONFIG_ARM64 */
+                genpd->attach_dev = cpg_mssr_attach_dev;
+                genpd->detach_dev = cpg_mssr_detach_dev;
+#else
+                genpd->attach_dev = cpg_mstp_attach_dev;
+                genpd->detach_dev = cpg_mstp_detach_dev;
+#endif
 
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -137,6 +137,81 @@ int pm_clk_add_clk(struct device *dev, struct clk *clk)
->         return __pm_clk_add(dev, NULL, clk);
->  }
->
-> +
-> +#if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
-> +/**
-> + * of_pm_clk_add_clks - Start using device clock(s) for power management.
-> + * @dev: Device whose clock(s) is going to be used for power management.
-> + * @of_pm_clk_filter: Optional function for filtering clocks
-> + *
-> + * Add a series of clocks described in the 'clocks' device-tree node for
-> + * a device to the list of clocks used for the power management of @dev.
-> + * If 'of_pm_clk_filter' is specified, then this filter function will be
-> + * called for each clock found and the clock will be added to the list
-> + * of clocks if this function returns true. Return success if clocks are
-> + * added successfully and return a negative error code if adding a clock
-> + * fails or there are no clocks that match with the filter function.
-> + */
-> +int of_pm_clk_add_clks(struct device *dev, of_pm_clk_filter fn, void *data)
-> +{
-
-[...]
-
-> +       count = of_count_phandle_with_args(dev->of_node, "clocks",
-> +                                          "#clock-cells");
-> +       if (count == 0)
-> +               return -ENODEV;
-
-[...]
-
-+       return added ? 0 : -ENODEV;
-
-Is it an error condition if no clocks were present in DT, or if no clocks have
-been accepted by the filter function? If not, the caller has to check for
--ENODEV. Now the caller has to call pm_clk_create() first, before it knows if
-any clocks will be added, it may want to call pm_clk_destroy() later if no
-clocks have been added.
-
-Alternatively, you could return 0 vs. the actual number of clocks added.
-
-I hooked up your code in renesas-cpg-mssr.c, and it worked.
-However, I noticed it added 27 clocks for one device node (rcar_sound), and
-only then I realized that I only want to add the first clock accepted by the
-filter, not all of them, as the others are under driver control.
-I'm not sure this can be handled in the filter function.
-So I can't use your code (for now)...
+It becomes more gory when migrating R-Car H1 and Gen2 to CPG/MSSR, and
+maintaining backwards compatibility, as which callbacks to choose will depend
+on the presence of "renesas,cpg-mstp-clocks" device nodes in DT, and a new
+CONFIG_CLK_RENESAS_LEGACY option.
+Needless to say, it'll be more complex if not all SoCs migrate at once...
 
 Gr{oetje,eeting}s,
 
                         Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
