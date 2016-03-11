@@ -1,43 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Make cpufreq_quick_get() safe to call.
-Date: Sat, 12 Mar 2016 06:52:37 +0700
-Message-ID: <20160311235237.GA27500@vireshk-mac-ubuntu>
-References: <CAJZ5v0gDkVyHyQ-4YPV5SYz5ppbc+OT6xm-zaAVfMdponS4L8A@mail.gmail.com>
- <1457685787-6046-1-git-send-email-rcochran@linutronix.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Sat, 12 Mar 2016 00:54:46 +0100
+Message-ID: <CAJZ5v0jkH0qQOsGDQTY7RQ_ftFiMMNSw2P8rrE99UB2YrDx4MA@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<87si087tsr.fsf@iki.fi>
+	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
+	<87a8m74mcc.fsf@iki.fi>
+	<002d01d17a57$ec417030$c4c45090$@net>
+	<CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>
+	<003701d17a5d$cab287a0$601796e0$@net>
+	<CAJZ5v0gaO3vB7Bz+URiwdXx2jypqPSJ3Pc_aJ5VGgh4wJyB9Kg@mail.gmail.com>
+	<20160311090306.1bfe380b@annuminas.surriel.com>
+	<002401d17bc2$fad32af0$f07980d0$@net>
+	<20160311153044.1a3be1c6@annuminas.surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:35920 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbcCKXwk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 18:52:40 -0500
-Received: by mail-pf0-f175.google.com with SMTP id u190so64496973pfb.3
-        for <linux-pm@vger.kernel.org>; Fri, 11 Mar 2016 15:52:40 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1457685787-6046-1-git-send-email-rcochran@linutronix.de>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:33474 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbcCKXys (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 18:54:48 -0500
+Received: by mail-lb0-f169.google.com with SMTP id k15so177145786lbg.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Mar 2016 15:54:47 -0800 (PST)
+In-Reply-To: <20160311153044.1a3be1c6@annuminas.surriel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Richard Cochran <rcochran@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, rt@linutronix.de, Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-On 11-03-16, 09:43, Richard Cochran wrote:
-> The function, cpufreq_quick_get, accesses the global 'cpufreq_driver' and
-> its fields without taking the associated lock, cpufreq_driver_lock.
-> 
-> Without the locking, nothing guarantees that 'cpufreq_driver' remains
-> consistent during the call.  This patch fixes the issue by taking the lock
-> before accessing the data structure.
-> 
-> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Richard Cochran <rcochran@linutronix.de>
+On Fri, Mar 11, 2016 at 9:30 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Fri, 11 Mar 2016 10:22:30 -0800
+> "Doug Smythies" <dsmythies@telus.net> wrote:
+>
+>> On 2016.03.11 06:03 Rik van Riel wrote:
+>> > On Thu, 10 Mar 2016 00:59:01 +0100 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+>
+>> > The patch below should fix that.
+>> >
+>> > It didn't for Arto, due to the other issues on his system, but
+>> > it might resolve the issue for Doug, where cstate/pstate is
+>> > otherwise working fine.
+>> >
+>> > Doug, does the patch below solve your issue?
+>>
+>> No.
+>
+> OK, lets try doing this check a little more aggressively, since there
+> almost certainly are good reasons why the main selection loop in
+> menu_select() so aggressively tries to stay with shallower C states.
+>
+> With the patch below, we compare the (not corrected for load) expected
+> sleep time against the target residency of the C1 (hlt) state on the CPU.
+>
+> This might resolve the issue, while still doing the right thing on CPUs
+> that have really high C1 latencies (eg. Atom).
+>
+> Does this resolve the issue for you?
+>
+> ---8<---
+>
+> Subject: cpuidle: use predicted_us not interactivity_req to consider polling
+>
+> The interactivity_req variable is the expected sleep time, divided
+> by the CPU load. This can be too aggressive a factor in deciding
+> whether or not to consider polling in the cpuidle state selection.
+>
+> Use the (not corrected for load) predicted_us instead, and compare
+> it against the target residency of C1 (hlt).
+>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 > ---
->  drivers/cpufreq/cpufreq.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+>  drivers/cpuidle/governors/menu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 0742b3296673..7dda15cfe547 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>                  * We want to default to C1 (hlt), not to busy polling
+>                  * unless the timer is happening really really soon.
+>                  */
+> -               if (interactivity_req > 20 &&
+> +               if (data->predicted_us > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+If we do this, we probably should check the exit latency (against
+latency_req) too.
 
--- 
-viresh
+>                     !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+>                         dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+>                         data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+>
