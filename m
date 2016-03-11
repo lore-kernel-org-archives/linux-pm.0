@@ -1,56 +1,45 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH V7 12/12] arm: tegra: set critical trips for Tegra124
-Date: Fri, 11 Mar 2016 11:11:44 +0800
-Message-ID: <1457665904-30184-1-git-send-email-wni@nvidia.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [BUG] Device unbound in a resumed state
+Date: Fri, 11 Mar 2016 16:08:25 +0900
+Message-ID: <56E26EE9.8040400@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:63969 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932075AbcCKHIc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 02:08:32 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-Set "critical" trips for cpu and gpu thermal zones,
-which can trigger shut down or reset.
+Hi,
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
- arch/arm/boot/dts/tegra124.dtsi | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
 
-diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
-index e4eac1f01e64..442fcf0cb394 100644
---- a/arch/arm/boot/dts/tegra124.dtsi
-+++ b/arch/arm/boot/dts/tegra124.dtsi
-@@ -996,6 +996,14 @@
- 
- 			thermal-sensors =
- 				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
-+
-+			trips {
-+				cpu_shutdown_trip: shutdown-trip {
-+					temperature = <103000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 
- 		mem {
-@@ -1012,6 +1020,14 @@
- 
- 			thermal-sensors =
- 				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
-+
-+			trips {
-+				gpu_shutdown_trip: shutdown-trip {
-+					temperature = <101000>;
-+					hysteresis = <1000>;
-+					type = "critical";
-+				};
-+			};
- 		};
- 
- 		pllx {
--- 
-1.9.1
+Could be related (the same?) with [0].
+
+I have a driver (hwrng/exynos-rng) which in probe does:
+pm_runtime_set_autosuspend_delay(&pdev->dev, EXYNOS_AUTOSUSPEND_DELAY);
+pm_runtime_use_autosuspend(&pdev->dev);
+pm_runtime_enable(&pdev->dev);
+
+and in remove:
+pm_runtime_disable(&pdev->dev)
+
+Just before unbinding in __device_release_driver() the device is resumed
+but unfortunately not suspended later. I mean the
+__device_release_driver()->pm_runtime_put_sync() does not trigger
+runtime suspend.
+
+This leads to leaving the device in active state (e.g. clocks enabled).
+
+It does not happen after removal of autosuspend. Also runtime suspend
+happens after very fast unbind-bind.
+
+
+Best regards,
+Krzysztof
+
+[0] PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
+http://comments.gmane.org/gmane.linux.power-management.general/70690
