@@ -1,46 +1,91 @@
-From: Justin Waters <justin.waters@timesys.com>
-Subject: Baytrail C6 auto-demotion disable causing UART issues
-Date: Fri, 11 Mar 2016 11:28:38 -0500
-Message-ID: <CAENNV6+1H+F38Le4MPxZdNmRNb2cpR7X3ZiN18FLGg_zdvbugg@mail.gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
+ platforms without _S5
+Date: Fri, 11 Mar 2016 16:33:46 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
+References: <1457687133-3730-1-git-send-email-yu.c.chen@intel.com>
+ <20160311155546.GJ15775@codeblueprint.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f53.google.com ([209.85.213.53]:36587 "EHLO
-	mail-vk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932264AbcCKQ26 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 11:28:58 -0500
-Received: by mail-vk0-f53.google.com with SMTP id c3so140078130vkb.3
-        for <linux-pm@vger.kernel.org>; Fri, 11 Mar 2016 08:28:58 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160311155546.GJ15775@codeblueprint.co.uk>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Matt Fleming <matt@codeblueprint.co.uk>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, "Bhuyan, Jyotideep (GE Healthcare)" <JyotideepBhuyan@ge.com>
 
-Hello Len,
 
-We recently upgraded to a 4.x kernel on a Baytrail platform, and began
-to notice odd behavior on the UART ports. We use these ports to load
-firmware to an FPGA, and while it worked fine on the older kernel, our
-data was being corrupted on newer kernels. I also noticed subtle
-issues on the serial console, especially when using applications like
-vi. Interestingly enough, we were unable to reproduce the issue using
-a USB to Serial dongle.
+Hi Matt,
 
-While we initially suspected a regression in the UART driver, using
-bisection, we narrowed the cause down to the following commit:
-8c058d53f6f2eb0b9cd3bc4ce5c053a64dded671
+> -----Original Message-----
+> From: Matt Fleming [mailto:matt@codeblueprint.co.uk]
+> Sent: Friday, March 11, 2016 11:56 PM
+> To: Chen, Yu C
+> Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J. Wysocki;
+> Len Brown; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui; linux-
+> efi@vger.kernel.org; x86@kernel.org; linux-kernel@vger.kernel.org; Ard
+> Biesheuvel; Mark Salter
+> Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
+> platforms without _S5
+> 
+> On Fri, 11 Mar, at 05:05:33PM, Chen Yu wrote:
+> > The problem is Linux registers pm_power_off = efi_power_off only if we
+> > are in hardware reduced mode. Actually, what we also want is to do
+> > this when ACPI S5 is simply not supported on non-legacy platforms.
+> > That should handle both the HW reduced mode, and the HW-full mode
+> > where the DSDT fails to supply an _S5 object.
+> >
+> > This patch introduces pm_power_off_default which would be used by
+> > pm_power_off if nothing else is available. And in this case we
+> > leverage efi power off to be this role. However since efi power off
+> > may not be stable enough thus in order not to interfere with other
+> > poweroff path, we only make a minimum enhancement for x86 in
+> > native_machine_power_off.
+> >
+> > Suggested-by: Len Brown <len.brown@intel.com>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> > v4:
+> >  - Since in v3 efi_poweroff_required() is not guaranteed to run
+> >    after all of the other code that may register alternative
+> >    power off handling, add the pm_power_off_default that would
+> >    be used by pm_power_off if nothing else is available.
+> > v3:
+> >  - Only assign pm_power_off to efi_power_off when there are no
+> >    other pm_power_off registered at that time, in case other
+> >    commponents would like to customize their own implementation.
+> > ---
+> > v2:
+> >  - Convert the acpi_no_s5 to a global bool variable in sleep.c and
+> >    add a declaration to include/linux/acpi.h.
+> > ---
+> >  arch/x86/kernel/reboot.c       | 3 +++
+> >  arch/x86/platform/efi/quirks.c | 5 +++++
+> >  drivers/acpi/sleep.c           | 7 +++++++
+> >  drivers/firmware/efi/reboot.c  | 8 ++++++++
+> >  include/linux/acpi.h           | 1 +
+> >  include/linux/efi.h            | 1 +
+> >  include/linux/pm.h             | 1 +
+> >  kernel/reboot.c                | 1 +
+> >  8 files changed, 27 insertions(+)
+> 
+> Couple of things,
+> 
+>   1) I'm still waiting for an answer to my question on whether
+>      platforms without _S5 that need EFI reset actually exist. You
+>      said they "might" exist, which makes this all sound very
+>      speculative. It is not obvious to me that this approach makes
+>      sense.
+There is  a future Base-IA platform, we are planning to skip
+implementing the SLP_TYP register and the S5 object.  (already there
+will be no S3 and no S4)
 
-By reverting this commit (thereby re-enabling the C6 auto-demotion on
-the Baytrail platform), our corruption issue disappeared.
+> 
+>   2) In v4 you're modifying the generic EFI reboot code and should Cc
+>      other developers who might care, e.g. the arm64 folks. I've Cc'd
+>      them now.
+OK, thanks.
 
-Is there any reason that I should be seeing this behavior? Will
-reverting this commit on my side have any adverse side effects on my
-system (beyond a decrease in power efficiency, as described by the
-commit message)?
-
-Thank you,
-
--- 
-Justin Waters
-Director of Engineering
-Timesys Corporation
+yu
