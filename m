@@ -1,45 +1,51 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [BUG] Device unbound in a resumed state
-Date: Fri, 11 Mar 2016 16:08:25 +0900
-Message-ID: <56E26EE9.8040400@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 6/6] arm64: dts: r8a7795: Add SYSC PM domains
+Date: Fri, 11 Mar 2016 09:01:09 +0100
+Message-ID: <CAMuHMdWH96S6W_h+zYqos6r2-kr6qf_3yo_PvDUc1zfJTzwfdw@mail.gmail.com>
+References: <1457551135-22078-1-git-send-email-geert+renesas@glider.be>
+	<1457551135-22078-7-git-send-email-geert+renesas@glider.be>
+	<20160310233411.GC7423@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:63969 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932075AbcCKHIc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 02:08:32 -0500
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33648 "EHLO
+	mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934358AbcCKIBK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 03:01:10 -0500
+In-Reply-To: <20160310233411.GC7423@verge.net.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi,
+Hi Simon,
 
+On Fri, Mar 11, 2016 at 12:34 AM, Simon Horman <horms@verge.net.au> wrote:
+> On Wed, Mar 09, 2016 at 08:18:55PM +0100, Geert Uytterhoeven wrote:
+>> Add a device node for the System Controller.
+>> Hook up the Cortex-A57 CPU cores and the Cortex-A57 and Cortex A53 L2
+>> caches/SCUs to their respective PM domains.
+>> Hook up all devices that are part of the CPG/MSSR Clock Domain to the
+>> SYSC "always-on" PM Domain.
+>
+> [snip]
+>
+>> +             sysc: system-controller@e6180000 {
+>> +                     compatible = "renesas,r8a7795-sysc";
+>> +                     reg = <0 0xe6180000 0 0x0400>;
+>
+> In table 9.2 of v0.51e of the documentation I see some registers
+> beyond the 0x400 range above. Perhaps it could be enlarged accordingly?
 
-Could be related (the same?) with [0].
+No, these registers do not apply to R-Car H3.
 
-I have a driver (hwrng/exynos-rng) which in probe does:
-pm_runtime_set_autosuspend_delay(&pdev->dev, EXYNOS_AUTOSUSPEND_DELAY);
-pm_runtime_use_autosuspend(&pdev->dev);
-pm_runtime_enable(&pdev->dev);
+Gr{oetje,eeting}s,
 
-and in remove:
-pm_runtime_disable(&pdev->dev)
+                        Geert
 
-Just before unbinding in __device_release_driver() the device is resumed
-but unfortunately not suspended later. I mean the
-__device_release_driver()->pm_runtime_put_sync() does not trigger
-runtime suspend.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-This leads to leaving the device in active state (e.g. clocks enabled).
-
-It does not happen after removal of autosuspend. Also runtime suspend
-happens after very fast unbind-bind.
-
-
-Best regards,
-Krzysztof
-
-[0] PM regression with commit 5de85b9d57ab PM runtime re-init in v4.5-rc1
-http://comments.gmane.org/gmane.linux.power-management.general/70690
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
