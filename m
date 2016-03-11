@@ -1,91 +1,74 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
- platforms without _S5
-Date: Fri, 11 Mar 2016 16:33:46 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
-References: <1457687133-3730-1-git-send-email-yu.c.chen@intel.com>
- <20160311155546.GJ15775@codeblueprint.co.uk>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4)
+Date: Fri, 11 Mar 2016 10:22:30 -0800
+Message-ID: <002401d17bc2$fad32af0$f07980d0$@net>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>	<87si087tsr.fsf@iki.fi>	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>	<87a8m74mcc.fsf@iki.fi>	<002d01d17a57$ec417030$c4c45090$@net>	<CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>	<003701d17a5d$cab287a0$601796e0$@net>	<CAJZ5v0gaO3vB7Bz+URiwdXx2jypqPSJ3Pc_aJ5VGgh4wJyB9Kg@mail.gmail.com> <20160311090306.1bfe380b@annuminas.surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160311155546.GJ15775@codeblueprint.co.uk>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matt Fleming <matt@codeblueprint.co.uk>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta3.telus.net ([209.171.16.76]:55808 "EHLO cmta3.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750733AbcCKSWf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Mar 2016 13:22:35 -0500
+In-Reply-To: <20160311090306.1bfe380b@annuminas.surriel.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Rik van Riel' <riel@redhat.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
+
+On 2016.03.11 06:03 Rik van Riel wrote:
+> On Thu, 10 Mar 2016 00:59:01 +0100 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+>
+>> Rik, that seems to go against the changelog of
+>> a9ceb78bc75ca47972096372ff3d48648b16317a:
+>> 
+>> "This is not a big deal on most x86 CPUs, which have very low C1
+>> latencies, and the patch should not have any effect on those CPUs."
+>> 
+>> The effect is actually measurable and quite substantial to my eyes.
+>
+> Indeed, my mistake was testing not just against the predicted
+> latency, but against the predicted latency multiplied by the
+> load correction factor, which can be as much as 10x the load...
+>
+> The patch below should fix that.
+>
+> It didn't for Arto, due to the other issues on his system, but
+> it might resolve the issue for Doug, where cstate/pstate is
+> otherwise working fine.
+>
+> Doug, does the patch below solve your issue?
+
+No.
+
+Old data restated with new data added below:
+Aggregate times in each idle state for the 2000 second test:
+
+k45rc7 (minutes)	reverted (mins)	rvr patch(mins)	State
+20.1771917		2.638311483		19.11342298		0
+13.02770225		21.81474838		13.55643397		1
+3.428136783		3.951405		3.698494867		2
+1.4540243		1.552488167		1.528558717		3
+134.9057413		143.5533		138.5279812		4
+			
+172.9927963		173.5102531		176.4248918		total
+
+>> Energy:
+>>
+>> Reverted: 56178 Joules
+>> Kernel 4.5-rc7: 63269 Joules (revert saves 12.6% energy)
+Kernel 4.5-rc7 + rvr patch: 62914 Joules
+
+> If it does not, we should figure out why the idle state selection
+> loop is not selecting the right mode.
+
+For my part of it, I am struggling to understand this area of the code.
+It would take me awhile, quite awhile, to be able to provide useful
+input.
+
+... Doug
 
 
-Hi Matt,
-
-> -----Original Message-----
-> From: Matt Fleming [mailto:matt@codeblueprint.co.uk]
-> Sent: Friday, March 11, 2016 11:56 PM
-> To: Chen, Yu C
-> Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J. Wysocki;
-> Len Brown; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui; linux-
-> efi@vger.kernel.org; x86@kernel.org; linux-kernel@vger.kernel.org; Ard
-> Biesheuvel; Mark Salter
-> Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
-> platforms without _S5
-> 
-> On Fri, 11 Mar, at 05:05:33PM, Chen Yu wrote:
-> > The problem is Linux registers pm_power_off = efi_power_off only if we
-> > are in hardware reduced mode. Actually, what we also want is to do
-> > this when ACPI S5 is simply not supported on non-legacy platforms.
-> > That should handle both the HW reduced mode, and the HW-full mode
-> > where the DSDT fails to supply an _S5 object.
-> >
-> > This patch introduces pm_power_off_default which would be used by
-> > pm_power_off if nothing else is available. And in this case we
-> > leverage efi power off to be this role. However since efi power off
-> > may not be stable enough thus in order not to interfere with other
-> > poweroff path, we only make a minimum enhancement for x86 in
-> > native_machine_power_off.
-> >
-> > Suggested-by: Len Brown <len.brown@intel.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > ---
-> > v4:
-> >  - Since in v3 efi_poweroff_required() is not guaranteed to run
-> >    after all of the other code that may register alternative
-> >    power off handling, add the pm_power_off_default that would
-> >    be used by pm_power_off if nothing else is available.
-> > v3:
-> >  - Only assign pm_power_off to efi_power_off when there are no
-> >    other pm_power_off registered at that time, in case other
-> >    commponents would like to customize their own implementation.
-> > ---
-> > v2:
-> >  - Convert the acpi_no_s5 to a global bool variable in sleep.c and
-> >    add a declaration to include/linux/acpi.h.
-> > ---
-> >  arch/x86/kernel/reboot.c       | 3 +++
-> >  arch/x86/platform/efi/quirks.c | 5 +++++
-> >  drivers/acpi/sleep.c           | 7 +++++++
-> >  drivers/firmware/efi/reboot.c  | 8 ++++++++
-> >  include/linux/acpi.h           | 1 +
-> >  include/linux/efi.h            | 1 +
-> >  include/linux/pm.h             | 1 +
-> >  kernel/reboot.c                | 1 +
-> >  8 files changed, 27 insertions(+)
-> 
-> Couple of things,
-> 
->   1) I'm still waiting for an answer to my question on whether
->      platforms without _S5 that need EFI reset actually exist. You
->      said they "might" exist, which makes this all sound very
->      speculative. It is not obvious to me that this approach makes
->      sense.
-There is  a future Base-IA platform, we are planning to skip
-implementing the SLP_TYP register and the S5 object.  (already there
-will be no S3 and no S4)
-
-> 
->   2) In v4 you're modifying the generic EFI reboot code and should Cc
->      other developers who might care, e.g. the arm64 folks. I've Cc'd
->      them now.
-OK, thanks.
-
-yu
