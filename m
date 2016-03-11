@@ -1,54 +1,87 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUG] Device unbound in a resumed state
-Date: Fri, 11 Mar 2016 13:46:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1603111336100.1840-100000@iolanthe.rowland.org>
-References: <56E26EE9.8040400@samsung.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Fri, 11 Mar 2016 15:30:44 -0500
+Message-ID: <20160311153044.1a3be1c6@annuminas.surriel.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<87si087tsr.fsf@iki.fi>
+	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
+	<87a8m74mcc.fsf@iki.fi>
+	<002d01d17a57$ec417030$c4c45090$@net>
+	<CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>
+	<003701d17a5d$cab287a0$601796e0$@net>
+	<CAJZ5v0gaO3vB7Bz+URiwdXx2jypqPSJ3Pc_aJ5VGgh4wJyB9Kg@mail.gmail.com>
+	<20160311090306.1bfe380b@annuminas.surriel.com>
+	<002401d17bc2$fad32af0$f07980d0$@net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56E26EE9.8040400@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:42071 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbcCKUat (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Mar 2016 15:30:49 -0500
+In-Reply-To: <002401d17bc2$fad32af0$f07980d0$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
 
-On Fri, 11 Mar 2016, Krzysztof Kozlowski wrote:
+On Fri, 11 Mar 2016 10:22:30 -0800
+"Doug Smythies" <dsmythies@telus.net> wrote:
 
-> Hi,
+> On 2016.03.11 06:03 Rik van Riel wrote:
+> > On Thu, 10 Mar 2016 00:59:01 +0100 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+
+> > The patch below should fix that.
+> >
+> > It didn't for Arto, due to the other issues on his system, but
+> > it might resolve the issue for Doug, where cstate/pstate is
+> > otherwise working fine.
+> >
+> > Doug, does the patch below solve your issue?
 > 
-> 
-> Could be related (the same?) with [0].
-> 
-> I have a driver (hwrng/exynos-rng) which in probe does:
-> pm_runtime_set_autosuspend_delay(&pdev->dev, EXYNOS_AUTOSUSPEND_DELAY);
-> pm_runtime_use_autosuspend(&pdev->dev);
-> pm_runtime_enable(&pdev->dev);
-> 
-> and in remove:
-> pm_runtime_disable(&pdev->dev)
+> No.
 
-But not pm_runtime_dont_use_autosuspend()?
+OK, lets try doing this check a little more aggressively, since there
+almost certainly are good reasons why the main selection loop in
+menu_select() so aggressively tries to stay with shallower C states.
 
-Why disable runtime PM if you want the runtime-PM methods to put the 
-device into a low-power state?
+With the patch below, we compare the (not corrected for load) expected
+sleep time against the target residency of the C1 (hlt) state on the CPU.
 
-> Just before unbinding in __device_release_driver() the device is resumed
-> but unfortunately not suspended later. I mean the
-> __device_release_driver()->pm_runtime_put_sync() does not trigger
-> runtime suspend.
+This might resolve the issue, while still doing the right thing on CPUs
+that have really high C1 latencies (eg. Atom).
 
-Because autosuspend is still in use at this point.
+Does this resolve the issue for you?
 
-> This leads to leaving the device in active state (e.g. clocks enabled).
-> 
-> It does not happen after removal of autosuspend. Also runtime suspend
-> happens after very fast unbind-bind.
+---8<---
 
-Overall it sounds like the system is behaving the way it is supposed 
-to.
+Subject: cpuidle: use predicted_us not interactivity_req to consider polling
 
-But maybe we should make pm_runtime_use_autosuspend() call
-pm_runtime_mark_last_busy(), to avoid the unbind - bind - immediate
-autosuspend behavior.
+The interactivity_req variable is the expected sleep time, divided
+by the CPU load. This can be too aggressive a factor in deciding
+whether or not to consider polling in the cpuidle state selection.
 
-Alan Stern
+Use the (not corrected for load) predicted_us instead, and compare
+it against the target residency of C1 (hlt).
+
+Signed-off-by: Rik van Riel <riel@redhat.com>
+---
+ drivers/cpuidle/governors/menu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 0742b3296673..7dda15cfe547 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		 * We want to default to C1 (hlt), not to busy polling
+ 		 * unless the timer is happening really really soon.
+ 		 */
+-		if (interactivity_req > 20 &&
++		if (data->predicted_us > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
+ 		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+ 			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+ 			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+
