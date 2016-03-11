@@ -1,81 +1,104 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: Make cpufreq_quick_get() safe to call.
-Date: Fri, 11 Mar 2016 03:23:22 +0100
-Message-ID: <CAJZ5v0gDkVyHyQ-4YPV5SYz5ppbc+OT6xm-zaAVfMdponS4L8A@mail.gmail.com>
-References: <1457622636-10028-1-git-send-email-rcochran@linutronix.de>
-	<3267506.5YnhcYthBi@vostro.rjw.lan>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH V7 01/12] thermal: tegra: move tegra thermal files into tegra directory
+Date: Fri, 11 Mar 2016 11:09:12 +0800
+Message-ID: <1457665763-29781-2-git-send-email-wni@nvidia.com>
+References: <1457665763-29781-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:32841 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933259AbcCKCXY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Mar 2016 21:23:24 -0500
-In-Reply-To: <3267506.5YnhcYthBi@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1457665763-29781-1-git-send-email-wni@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Richard Cochran <rcochran@linutronix.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rt@linutronix.de, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Mar 10, 2016 at 11:20 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, March 10, 2016 04:10:36 PM Richard Cochran wrote:
->> The function, cpufreq_quick_get, accesses the global 'cpufreq_driver' and
->> its fields without taking the associated lock, cpufreq_driver_lock.
->>
->> Without the locking, nothing guarantees that 'cpufreq_driver' remains
->> consistent during the call.  This patch fixes the issue by taking the lock
->> before accessing the data structure.
->>
->> Cc: Dirk Brandewie <dirk.brandewie@gmail.com>
->> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Signed-off-by: Richard Cochran <rcochran@linutronix.de>
->
-> Can you please CC PM-related patches to linux-pm@vger.kernel.org?  They
-> are much easier to handle for me then.
->
->> ---
->>  drivers/cpufreq/cpufreq.c | 10 +++++++++-
->>  1 file changed, 9 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index e979ec7..ce02b2b 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -1457,9 +1457,17 @@ unsigned int cpufreq_quick_get(unsigned int cpu)
->>  {
->>       struct cpufreq_policy *policy;
->>       unsigned int ret_freq = 0;
->> +     unsigned long flags;
->> +
->> +     read_lock_irqsave(&cpufreq_driver_lock, flags);
->>
->>       if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
->> -             return cpufreq_driver->get(cpu);
->> +             ret_freq = cpufreq_driver->get(cpu);
->> +
->> +     read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->> +
->> +     if (ret_freq)
->> +             return ret_freq;
->>
->>       policy = cpufreq_cpu_get(cpu);
->>       if (policy) {
->>
->
-> I would prefer something like this:
->
->         read_lock_irqsave(&cpufreq_driver_lock, flags);
->
->         if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get) {
->                 unsigned int ret_freq = cpufreq_driver->get(cpu);
+Move Tegra soctherm driver to tegra directory, it's easy to maintain
+and add more new function support for Tegra platforms.
+This will also help to split soctherm driver into common parts and
+chip specific data related parts.
 
-Sorry, ret_freq is needed outside of this block anyway, so that would be
+Signed-off-by: Wei Ni <wni@nvidia.com>
+---
+ drivers/thermal/Kconfig                                     | 12 ++----------
+ drivers/thermal/Makefile                                    |  2 +-
+ drivers/thermal/tegra/Kconfig                               | 13 +++++++++++++
+ drivers/thermal/tegra/Makefile                              |  1 +
+ .../thermal/{tegra_soctherm.c => tegra/tegra-soctherm.c}    |  0
+ 5 files changed, 17 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/thermal/tegra/Kconfig
+ create mode 100644 drivers/thermal/tegra/Makefile
+ rename drivers/thermal/{tegra_soctherm.c => tegra/tegra-soctherm.c} (100%)
 
-                   ret_freq = cpufreq_driver->get(cpu);
->
->                 read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->                 return ret_freq;
->         }
->
->         read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 8cc4ac64a91c..1802629f5051 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -254,16 +254,6 @@ config ARMADA_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
+ 
+-config TEGRA_SOCTHERM
+-	tristate "Tegra SOCTHERM thermal management"
+-	depends on ARCH_TEGRA
+-	help
+-	  Enable this option for integrated thermal management support on NVIDIA
+-	  Tegra124 systems-on-chip. The driver supports four thermal zones
+-	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
+-	  zones to manage temperatures. This option is also required for the
+-	  emergency thermal reset (thermtrip) feature to function.
+-
+ config DB8500_CPUFREQ_COOLING
+ 	tristate "DB8500 cpufreq cooling"
+ 	depends on ARCH_U8500
+@@ -380,6 +370,8 @@ depends on ARCH_STI && OF
+ source "drivers/thermal/st/Kconfig"
+ endmenu
+ 
++source "drivers/thermal/tegra/Kconfig"
++
+ config QCOM_SPMI_TEMP_ALARM
+ 	tristate "Qualcomm SPMI PMIC Temperature Alarm"
+ 	depends on OF && SPMI && IIO
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index cfae6a654793..119e25cdcc66 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -46,5 +46,5 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+-obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
++obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+new file mode 100644
+index 000000000000..0b719d8b629b
+--- /dev/null
++++ b/drivers/thermal/tegra/Kconfig
+@@ -0,0 +1,13 @@
++menu "NVIDIA Tegra thermal drivers"
++
++config TEGRA_SOCTHERM
++	tristate "Tegra SOCTHERM thermal management"
++	depends on ARCH_TEGRA
++	help
++	  Enable this option for integrated thermal management support on NVIDIA
++	  Tegra124 systems-on-chip. The driver supports four thermal zones
++	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
++	  zones to manage temperatures. This option is also required for the
++	  emergency thermal reset (thermtrip) feature to function.
++
++endmenu
+diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/Makefile
+new file mode 100644
+index 000000000000..d4dc4e7f279e
+--- /dev/null
++++ b/drivers/thermal/tegra/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra-soctherm.o
+diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra/tegra-soctherm.c
+similarity index 100%
+rename from drivers/thermal/tegra_soctherm.c
+rename to drivers/thermal/tegra/tegra-soctherm.c
+-- 
+1.9.1
