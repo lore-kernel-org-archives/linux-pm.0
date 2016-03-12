@@ -1,94 +1,56 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Sat, 12 Mar 2016 00:54:46 +0100
-Message-ID: <CAJZ5v0jkH0qQOsGDQTY7RQ_ftFiMMNSw2P8rrE99UB2YrDx4MA@mail.gmail.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<87si087tsr.fsf@iki.fi>
-	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>
-	<87a8m74mcc.fsf@iki.fi>
-	<002d01d17a57$ec417030$c4c45090$@net>
-	<CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>
-	<003701d17a5d$cab287a0$601796e0$@net>
-	<CAJZ5v0gaO3vB7Bz+URiwdXx2jypqPSJ3Pc_aJ5VGgh4wJyB9Kg@mail.gmail.com>
-	<20160311090306.1bfe380b@annuminas.surriel.com>
-	<002401d17bc2$fad32af0$f07980d0$@net>
-	<20160311153044.1a3be1c6@annuminas.surriel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH 1/6] PCI: No need to set d3cold_allowed to PCIe ports
+Date: Fri, 11 Mar 2016 18:01:11 -0600
+Message-ID: <20160312000111.GJ4725@localhost>
+References: <1456750566-116248-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1456750566-116248-2-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f169.google.com ([209.85.217.169]:33474 "EHLO
-	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbcCKXys (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Mar 2016 18:54:48 -0500
-Received: by mail-lb0-f169.google.com with SMTP id k15so177145786lbg.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Mar 2016 15:54:47 -0800 (PST)
-In-Reply-To: <20160311153044.1a3be1c6@annuminas.surriel.com>
+Received: from mail.kernel.org ([198.145.29.136]:44110 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751720AbcCLABO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Mar 2016 19:01:14 -0500
+Content-Disposition: inline
+In-Reply-To: <1456750566-116248-2-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Mar 11, 2016 at 9:30 PM, Rik van Riel <riel@redhat.com> wrote:
-> On Fri, 11 Mar 2016 10:22:30 -0800
-> "Doug Smythies" <dsmythies@telus.net> wrote:
->
->> On 2016.03.11 06:03 Rik van Riel wrote:
->> > On Thu, 10 Mar 2016 00:59:01 +0100 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
->
->> > The patch below should fix that.
->> >
->> > It didn't for Arto, due to the other issues on his system, but
->> > it might resolve the issue for Doug, where cstate/pstate is
->> > otherwise working fine.
->> >
->> > Doug, does the patch below solve your issue?
->>
->> No.
->
-> OK, lets try doing this check a little more aggressively, since there
-> almost certainly are good reasons why the main selection loop in
-> menu_select() so aggressively tries to stay with shallower C states.
->
-> With the patch below, we compare the (not corrected for load) expected
-> sleep time against the target residency of the C1 (hlt) state on the CPU.
->
-> This might resolve the issue, while still doing the right thing on CPUs
-> that have really high C1 latencies (eg. Atom).
->
-> Does this resolve the issue for you?
->
-> ---8<---
->
-> Subject: cpuidle: use predicted_us not interactivity_req to consider polling
->
-> The interactivity_req variable is the expected sleep time, divided
-> by the CPU load. This can be too aggressive a factor in deciding
-> whether or not to consider polling in the cpuidle state selection.
->
-> Use the (not corrected for load) predicted_us instead, and compare
-> it against the target residency of C1 (hlt).
->
-> Signed-off-by: Rik van Riel <riel@redhat.com>
+On Mon, Feb 29, 2016 at 02:56:01PM +0200, Mika Westerberg wrote:
+> PCIe ports are already skipped by the PCI core so they are never moved to
+> D3 (or D3cold) anyway. No need to set the field.
+
+A pointer to where the PCI core skips these ports would be helpful.
+pci_pm_runtime_suspend() is the only place I see that tests d3cold_allowed,
+and I don't see that it checks anything about PCIe ports.
+
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 > ---
->  drivers/cpuidle/governors/menu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 0742b3296673..7dda15cfe547 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -330,7 +330,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->                  * We want to default to C1 (hlt), not to busy polling
->                  * unless the timer is happening really really soon.
->                  */
-> -               if (interactivity_req > 20 &&
-> +               if (data->predicted_us > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
-
-If we do this, we probably should check the exit latency (against
-latency_req) too.
-
->                     !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
->                         dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
->                         data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
->
+>  drivers/pci/pcie/portdrv_pci.c | 5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+> index be35da2e105e..6c6bb03392ea 100644
+> --- a/drivers/pci/pcie/portdrv_pci.c
+> +++ b/drivers/pci/pcie/portdrv_pci.c
+> @@ -134,11 +134,6 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+>  		return status;
+>  
+>  	pci_save_state(dev);
+> -	/*
+> -	 * D3cold may not work properly on some PCIe port, so disable
+> -	 * it by default.
+> -	 */
+> -	dev->d3cold_allowed = false;
+>  	return 0;
+>  }
+>  
+> -- 
+> 2.7.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
