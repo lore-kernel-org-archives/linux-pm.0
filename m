@@ -1,163 +1,77 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH 4/6] PCI: Add runtime PM support for PCIe ports
-Date: Fri, 11 Mar 2016 18:30:29 -0600
-Message-ID: <20160312003029.GL4725@localhost>
-References: <1456750566-116248-1-git-send-email-mika.westerberg@linux.intel.com>
- <1456750566-116248-5-git-send-email-mika.westerberg@linux.intel.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4)
+Date: Fri, 11 Mar 2016 16:46:53 -0800
+Message-ID: <003b01d17bf8$ad214680$0763d380$@net>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>	<87si087tsr.fsf@iki.fi>	<CAJvTdKmg=H2hqFd+fwu0t8Rx4PV8E3vNGc-j8zzVKLFX4nprYg@mail.gmail.com>	<87a8m74mcc.fsf@iki.fi>	<002d01d17a57$ec417030$c4c45090$@net>	<CAJZ5v0i0cx_xYUwFWDX5nE+rNgbX4TY0ATYuD3rEi86Ky5cA5A@mail.gmail.com>	<003701d17a5d$cab287a0$601796e0$@net>	<CAJZ5v0gaO3vB7Bz+URiwdXx2jypqPSJ3Pc_aJ5VGgh4wJyB9Kg@mail.gmail.com>	<20160311090306.1bfe380b@annuminas.surriel.com>	<002401d17bc2$fad32af0$f07980d0$@net>	<20160311153044.1a3be1c6@annuminas.surriel.com> <CAJZ5v0jkH0qQOsGDQTY7RQ_ftFiMMNSw2P8rrE99UB2YrDx4MA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1456750566-116248-5-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta12.telus.net ([209.171.16.85]:43711 "EHLO cmta12.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750993AbcCLAq6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Mar 2016 19:46:58 -0500
+In-Reply-To: <CAJZ5v0jkH0qQOsGDQTY7RQ_ftFiMMNSw2P8rrE99UB2YrDx4MA@mail.gmail.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Rik van Riel' <riel@redhat.com>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
 
-On Mon, Feb 29, 2016 at 02:56:04PM +0200, Mika Westerberg wrote:
-> Add back runtime PM support for PCIe ports that was removed in
-> commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
-> ports").
-> 
-> First of all we cannot enable it automatically for all root ports since
-> there have been problems previously, 
+On 2106.03.11 15:55 Rafael J. Wysocki wrote:
+> On Fri, Mar 11, 2016 at 9:30 PM, Rik van Riel <riel@redhat.com> wrote:
+>> On Fri, 11 Mar 2016 10:22:30 -0800 Doug Smythies wrote:
+>>> On 2016.03.11 06:03 Rik van Riel wrote:
+>>
+>>>> The patch below should fix that.
+>>>>
+>>>> It didn't for Arto, due to the other issues on his system, but
+>>>> it might resolve the issue for Doug, where cstate/pstate is
+>>>> otherwise working fine.
+>>>>
+>>>> Doug, does the patch below solve your issue?
+>>>
+>>> No.
+>>
+>> OK, lets try doing this check a little more aggressively, since there
+>> almost certainly are good reasons why the main selection loop in
+>> menu_select() so aggressively tries to stay with shallower C states.
+>>
+>> With the patch below, we compare the (not corrected for load) expected
+>> sleep time against the target residency of the C1 (hlt) state on the CPU.
+>>
+>> This might resolve the issue, while still doing the right thing on CPUs
+>> that have really high C1 latencies (eg. Atom).
+>>
+>> Does this resolve the issue for you?
 
-Pointers to these problems would be useful.
+No, but it seems better.
 
-> so we enable it only based on per port
-> configuration (runtime_suspend_allowed).
+Old data restated with new data added below:
+Aggregate times in each idle state for the 2000 second test:
 
-I see that the next patch basically adds a quirk to set
-runtime_suspend_allowed for Sunrisepoint.  How do we prevent this
-from being a maintenance nightmare?  I don't want to have to add
-a quirk for every new device that supports runtime PM.
+State	k45rc7 (mins)	reverted (mins)	rvr(mins)	rvr2(mins)
+0.00	20.18			2.64			19.11		14.09
+1.00	13.03			21.81			13.56		12.05
+2.00	3.43			3.95			3.70		3.93
+3.00	1.45			1.55			1.53		1.52
+4.00	134.91		143.55		138.53	142.80
+				
+total	172.99		173.51		176.42	174.37 
 
-> Furthermore we need to check that
-> the device, if wake capable, can do so from D3cold (which is the state it
-> goes after the root port is powered down).
+Energy (old restated, plus new added):
 
-I don't see this check.  I was expecting something like
-device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold)
-like you did in the "Move PCIe ports to D3hot during suspend" patch.
+Kernel 4.5-rc7 Reverted: 56178 Joules
+Kernel 4.5-rc7: 63269 Joules (revert saves 12.6% energy)
+Kernel 4.5-rc7 + rvr patch: 62914 Joules
+Kernel 4.5-rc7 + rvr patch version 2: 60416 Joules
 
-> This follows what we did for
-> PCIe port system suspend already.
-> 
-> Runtime PM is still blocked and needs to be unblocked from userspace like
-> with other PCI devices.
+> If we do this, we probably should check the exit latency
+> (against latency_req) too.
 
-Can you expand on this a bit?  I assume you mean that runtime PM is
-disabled by default, and userspace has to enable it with a sysfs switch or
-something?  Can you include information about how to do that?
+I already had the above data before I noticed Rafael's e-mail.
 
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> ---
->  drivers/pci/pcie/portdrv_pci.c | 49 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 49 insertions(+)
-> 
-> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index fe3349685141..eb0f425f51cc 100644
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -85,6 +85,7 @@ enum pcie_port_type {
->  
->  struct pcie_port_config {
->  	bool suspend_allowed;
-> +	bool runtime_suspend_allowed;
->  };
->  
->  static const struct pcie_port_config pcie_port_configs[] = {
-> @@ -154,6 +155,11 @@ static bool pcie_port_suspend_allowed(struct pci_dev *pdev)
->  	return pcie_port_can_suspend(pdev);
->  }
->  
-> +static bool pcie_port_runtime_suspend_allowed(struct pci_dev *pdev)
-> +{
-> +	return pcie_port_get_config(pdev)->runtime_suspend_allowed;
-> +}
-> +
->  static int pcie_port_suspend_noirq(struct device *dev)
->  {
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> @@ -188,6 +194,34 @@ static int pcie_port_resume_noirq(struct device *dev)
->  	return 0;
->  }
->  
-> +static int pcie_port_runtime_suspend(struct device *dev)
-> +{
-> +	struct pci_dev *pdev = to_pci_dev(dev);
-> +
-> +	/*
-> +	 * All devices behind the port are assumed to be in D3cold so
-> +	 * update their state now.
-> +	 */
-> +	__pci_bus_set_current_state(pdev->subordinate, PCI_D3cold);
-> +	return 0;
-> +}
-> +
-> +static int pcie_port_runtime_resume(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +
-> +static int pcie_port_runtime_idle(struct device *dev)
-> +{
-> +	struct pci_dev *pdev = to_pci_dev(dev);
-> +
-> +	if (pcie_port_can_suspend(pdev)) {
-> +		pm_schedule_suspend(dev, 10);
-> +		return 0;
-> +	}
-> +	return -EBUSY;
-> +}
-> +
->  static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->  	.suspend	= pcie_port_device_suspend,
->  	.resume		= pcie_port_device_resume,
-> @@ -197,12 +231,20 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->  	.restore	= pcie_port_device_resume,
->  	.suspend_noirq	= pcie_port_suspend_noirq,
->  	.resume_noirq	= pcie_port_resume_noirq,
-> +	.runtime_suspend = pcie_port_runtime_suspend,
-> +	.runtime_resume	= pcie_port_runtime_resume,
-> +	.runtime_idle	= pcie_port_runtime_idle,
->  };
->  
->  #define PCIE_PORTDRV_PM_OPS	(&pcie_portdrv_pm_ops)
->  
->  #else /* !PM */
->  
-> +static inline bool pcie_port_runtime_suspend_allowed(struct pci_dev *pdev)
-> +{
-> +	return false;
-> +}
-> +
->  #define PCIE_PORTDRV_PM_OPS	NULL
->  #endif /* !PM */
->  
-> @@ -230,11 +272,18 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
->  		return status;
->  
->  	pci_save_state(dev);
-> +
-> +	if (pcie_port_runtime_suspend_allowed(dev))
-> +		pm_runtime_put_noidle(&dev->dev);
-> +
->  	return 0;
->  }
->  
->  static void pcie_portdrv_remove(struct pci_dev *dev)
->  {
-> +	if (pcie_port_runtime_suspend_allowed(dev))
-> +		pm_runtime_get_noresume(&dev->dev);
-> +
->  	pcie_port_device_remove(dev);
->  }
->  
-> -- 
-> 2.7.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+... Doug
+
+
