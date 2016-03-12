@@ -1,221 +1,158 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH 3/6] PCI: Move PCIe ports to D3hot during suspend
-Date: Fri, 11 Mar 2016 18:20:39 -0600
-Message-ID: <20160312002039.GK4725@localhost>
+Subject: Re: [PATCH 4/6] PCI: Add runtime PM support for PCIe ports
+Date: Fri, 11 Mar 2016 18:30:29 -0600
+Message-ID: <20160312003029.GL4725@localhost>
 References: <1456750566-116248-1-git-send-email-mika.westerberg@linux.intel.com>
- <1456750566-116248-4-git-send-email-mika.westerberg@linux.intel.com>
+ <1456750566-116248-5-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1456750566-116248-4-git-send-email-mika.westerberg@linux.intel.com>
+In-Reply-To: <1456750566-116248-5-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pci-owner@vger.kernel.org
 To: Mika Westerberg <mika.westerberg@linux.intel.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 29, 2016 at 02:56:03PM +0200, Mika Westerberg wrote:
-> Currently the PCI core does not do this automatically as it avoids changing
-> power state for bridges and PCIe ports. With recent hardware PCIe ports can
-> be moved to D3hot given that we take into account few restrictions:
+On Mon, Feb 29, 2016 at 02:56:04PM +0200, Mika Westerberg wrote:
+> Add back runtime PM support for PCIe ports that was removed in
+> commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
+> ports").
 > 
->   - Devices connected to the ports are effectively in D3cold once the root
->     port is moved to D3hot (the config space is not accessible anymore and
->     the link may be powered down).
+> First of all we cannot enable it automatically for all root ports since
+> there have been problems previously, 
+
+Pointers to these problems would be useful.
+
+> so we enable it only based on per port
+> configuration (runtime_suspend_allowed).
+
+I see that the next patch basically adds a quirk to set
+runtime_suspend_allowed for Sunrisepoint.  How do we prevent this
+from being a maintenance nightmare?  I don't want to have to add
+a quirk for every new device that supports runtime PM.
+
+> Furthermore we need to check that
+> the device, if wake capable, can do so from D3cold (which is the state it
+> goes after the root port is powered down).
+
+I don't see this check.  I was expecting something like
+device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold)
+like you did in the "Move PCIe ports to D3hot during suspend" patch.
+
+> This follows what we did for
+> PCIe port system suspend already.
 > 
->   - The device needs to be able to transition to D3cold.
+> Runtime PM is still blocked and needs to be unblocked from userspace like
+> with other PCI devices.
 
-I think this is talking about "devices below the PCIe port", right?
-
->   - If the device is capable of waking the system it needs to be able to
->     do so from D3cold (PME from D3cold).
-
-Again, "a device below the PCIe port"?
-
-> We assume all recent hardware (starting from 2015) is capable of doing this
-> but make it possible to add exceptions via entries in pcie_port_configs[].
-
-Since you have no exceptions yet, I'm not sure it's worth having the
-exception infrastructure.  That infrastructure kind of obscures the
-meat of the patch, so if we really do need it right away, maybe it
-could be added in a new separate patch.
+Can you expand on this a bit?  I assume you mean that runtime PM is
+disabled by default, and userspace has to enable it with a sysfs switch or
+something?  Can you include information about how to do that?
 
 > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 > ---
->  drivers/pci/pcie/portdrv_pci.c | 103 +++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 100 insertions(+), 3 deletions(-)
+>  drivers/pci/pcie/portdrv_pci.c | 49 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 49 insertions(+)
 > 
 > diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index 6c6bb03392ea..fe3349685141 100644
+> index fe3349685141..eb0f425f51cc 100644
 > --- a/drivers/pci/pcie/portdrv_pci.c
 > +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -20,6 +20,7 @@
+> @@ -85,6 +85,7 @@ enum pcie_port_type {
 >  
->  #include "portdrv.h"
->  #include "aer/aerdrv.h"
-> +#include "../pci.h"
+>  struct pcie_port_config {
+>  	bool suspend_allowed;
+> +	bool runtime_suspend_allowed;
+>  };
 >  
->  /*
->   * Version Information
-> @@ -78,11 +79,105 @@ static int pcie_portdrv_restore_config(struct pci_dev *dev)
+>  static const struct pcie_port_config pcie_port_configs[] = {
+> @@ -154,6 +155,11 @@ static bool pcie_port_suspend_allowed(struct pci_dev *pdev)
+>  	return pcie_port_can_suspend(pdev);
+>  }
+>  
+> +static bool pcie_port_runtime_suspend_allowed(struct pci_dev *pdev)
+> +{
+> +	return pcie_port_get_config(pdev)->runtime_suspend_allowed;
+> +}
+> +
+>  static int pcie_port_suspend_noirq(struct device *dev)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+> @@ -188,6 +194,34 @@ static int pcie_port_resume_noirq(struct device *dev)
 >  	return 0;
 >  }
 >  
-> +enum pcie_port_type {
-> +	PCIE_PORT_DEFAULT,
-> +};
-> +
-> +struct pcie_port_config {
-> +	bool suspend_allowed;
-> +};
-> +
-> +static const struct pcie_port_config pcie_port_configs[] = {
-> +	[PCIE_PORT_DEFAULT] = {
-> +		.suspend_allowed = true,
-> +	},
-> +};
-> +
->  #ifdef CONFIG_PM
-> +static const struct pcie_port_config *pcie_port_get_config(struct pci_dev *pdev)
-> +{
-> +	const struct pci_device_id *id = pci_match_id(pdev->driver->id_table,
-> +						      pdev);
-> +	return &pcie_port_configs[id->driver_data];
-> +}
-> +
-> +static int pcie_port_check_d3cold(struct pci_dev *pdev, void *data)
-> +{
-> +	bool *d3cold_ok = data;
-> +
-> +	if (pdev->no_d3cold || !pdev->d3cold_allowed)
-> +		*d3cold_ok = false;
-> +	if (device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold))
-> +		*d3cold_ok = false;
-> +
-> +	return !*d3cold_ok;
-> +}
-> +
-> +static bool pcie_port_can_suspend(struct pci_dev *pdev)
-> +{
-> +	bool d3cold_ok = true;
-> +
-> +	/*
-> +	 * When the port is put to D3hot the devices behind the port are
-> +	 * effectively in D3cold as their config space cannot be accessed
-> +	 * anymore and the link may be powered down.
-> +	 *
-> +	 * We only allow the port to go to D3hot the devices:
-
-s/the devices/if the subordinate devices/
-
-> +	 *  - Are allowed to go to D3cold
-> +	 *  - Can wake up from D3cold if they are wake capable
-> +	 */
-> +	pci_walk_bus(pdev->subordinate, pcie_port_check_d3cold, &d3cold_ok);
-> +	return d3cold_ok;
-
-What happens if the PCIe port initially can be put in D3hot, but we we
-later hot-add a device that would disqualify it?
-
-Oh, I think I see -- we walk the subordinate devices every time we
-would like to put the port in D3hot:
-
-  pcie_port_suspend_noirq
-    pcie_port_suspend_allowed
-      dmi_get_date
-      pcie_port_can_suspend
-        pci_walk_bus
-
-I guess that should work, but it seems clunky to do all that work,
-even though it's not really a performance path.  What if we did this:
-
-  - add a d3hot_allowed bit in struct pci_dev
-
-  - when enumerating a port, set d3hot_allowed if BIOS is new enough
-    (it makes me a bit nervous that we apparently default to enabling
-    D3hot on arches without DMI)
-
-  - when enumerating devices, clear d3hot_allowed in upstream bridge
-    if necessary
-
-  - when removing last device on a bus, re-do port config (set
-    d3hot_allowed if appropriate)
-
-> +}
-> +
-> +static bool pcie_port_suspend_allowed(struct pci_dev *pdev)
-> +{
-> +	const struct pcie_port_config *config = pcie_port_get_config(pdev);
-> +
-> +	/*
-> +	 * Older hardware is not capable of moving PCIe ports to D3 so
-> +	 * anything earlier than 2015 is assumed not to support this.
-> +	 */
-> +	if (dmi_available) {
-> +		unsigned year;
-> +
-> +		if (!dmi_get_date(DMI_BIOS_DATE, &year, NULL, NULL) ||
-> +		    year < 2015) {
-> +			return false;
-> +		}
-> +	}
-> +
-> +	/* Per port configuration can forbid it as well */
-> +	if (!config->suspend_allowed)
-> +		return false;
-> +
-> +	return pcie_port_can_suspend(pdev);
-> +}
-> +
-> +static int pcie_port_suspend_noirq(struct device *dev)
+> +static int pcie_port_runtime_suspend(struct device *dev)
 > +{
 > +	struct pci_dev *pdev = to_pci_dev(dev);
 > +
-> +	if (pcie_port_suspend_allowed(pdev)) {
-> +		pci_save_state(pdev);
-> +		pci_set_power_state(pdev, PCI_D3hot);
-> +		/*
-> +		 * All devices behind the port are assumed to be in D3cold
-> +		 * so update their state now.
-> +		 */
-> +		__pci_bus_set_current_state(pdev->subordinate, PCI_D3cold);
-> +	}
-> +
+> +	/*
+> +	 * All devices behind the port are assumed to be in D3cold so
+> +	 * update their state now.
+> +	 */
+> +	__pci_bus_set_current_state(pdev->subordinate, PCI_D3cold);
 > +	return 0;
 > +}
 > +
->  static int pcie_port_resume_noirq(struct device *dev)
->  {
->  	struct pci_dev *pdev = to_pci_dev(dev);
->  
-> +	pci_set_power_state(pdev, PCI_D0);
-> +	pci_restore_state(pdev);
+> +static int pcie_port_runtime_resume(struct device *dev)
+> +{
+> +	return 0;
+> +}
 > +
->  	/*
->  	 * Some BIOSes forget to clear Root PME Status bits after system wakeup
->  	 * which breaks ACPI-based runtime wakeup on PCI Express, so clear those
-> @@ -100,6 +195,7 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->  	.thaw		= pcie_port_device_resume,
->  	.poweroff	= pcie_port_device_suspend,
+> +static int pcie_port_runtime_idle(struct device *dev)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(dev);
+> +
+> +	if (pcie_port_can_suspend(pdev)) {
+> +		pm_schedule_suspend(dev, 10);
+> +		return 0;
+> +	}
+> +	return -EBUSY;
+> +}
+> +
+>  static const struct dev_pm_ops pcie_portdrv_pm_ops = {
+>  	.suspend	= pcie_port_device_suspend,
+>  	.resume		= pcie_port_device_resume,
+> @@ -197,12 +231,20 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
 >  	.restore	= pcie_port_device_resume,
-> +	.suspend_noirq	= pcie_port_suspend_noirq,
+>  	.suspend_noirq	= pcie_port_suspend_noirq,
 >  	.resume_noirq	= pcie_port_resume_noirq,
+> +	.runtime_suspend = pcie_port_runtime_suspend,
+> +	.runtime_resume	= pcie_port_runtime_resume,
+> +	.runtime_idle	= pcie_port_runtime_idle,
 >  };
 >  
-> @@ -285,10 +381,11 @@ static void pcie_portdrv_err_resume(struct pci_dev *dev)
->  /*
->   * LINUX Device Driver Model
->   */
-> -static const struct pci_device_id port_pci_ids[] = { {
-> +static const struct pci_device_id port_pci_ids[] = {
->  	/* handle any PCI-Express port */
-> -	PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_PCI << 8) | 0x00), ~0),
-> -	}, { /* end: all zeroes */ }
-> +	{ PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_PCI << 8) | 0x00), ~0),
-> +	  .driver_data = PCIE_PORT_DEFAULT },
-> +	{ /* end: all zeroes */ }
->  };
->  MODULE_DEVICE_TABLE(pci, port_pci_ids);
+>  #define PCIE_PORTDRV_PM_OPS	(&pcie_portdrv_pm_ops)
+>  
+>  #else /* !PM */
+>  
+> +static inline bool pcie_port_runtime_suspend_allowed(struct pci_dev *pdev)
+> +{
+> +	return false;
+> +}
+> +
+>  #define PCIE_PORTDRV_PM_OPS	NULL
+>  #endif /* !PM */
+>  
+> @@ -230,11 +272,18 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+>  		return status;
+>  
+>  	pci_save_state(dev);
+> +
+> +	if (pcie_port_runtime_suspend_allowed(dev))
+> +		pm_runtime_put_noidle(&dev->dev);
+> +
+>  	return 0;
+>  }
+>  
+>  static void pcie_portdrv_remove(struct pci_dev *dev)
+>  {
+> +	if (pcie_port_runtime_suspend_allowed(dev))
+> +		pm_runtime_get_noresume(&dev->dev);
+> +
+>  	pcie_port_device_remove(dev);
+>  }
 >  
 > -- 
 > 2.7.0
