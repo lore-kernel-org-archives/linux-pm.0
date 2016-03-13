@@ -1,78 +1,70 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 06/16] tools/power turbostat: allow sub-sec intervals
-Date: Sun, 13 Mar 2016 03:57:56 -0400
-Message-ID: <CAJvTdK=HFNHEVW6j-fDYCC1S_TkJKGqCCTd7v-3KL0aL3XWByQ@mail.gmail.com>
-References: <1456563670-23282-1-git-send-email-lenb@kernel.org>
-	<24781860a144a6792cb7697307f36b4486b611da.1456563103.git.len.brown@intel.com>
-	<001201d171da$22f11850$68d348f0$@net>
+Subject: [GIT PULL] turbostat updates for Linux-4.6 merge
+Date: Sun, 13 Mar 2016 04:27:43 -0400
+Message-ID: <CAJvTdKnf096DSbn6w+kiFqrvfYnH16WNLP83W679DvB9vORGCA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:32860 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbcCMH56 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Mar 2016 03:57:58 -0400
-Received: by mail-lb0-f195.google.com with SMTP id bc4so15647391lbc.0
-        for <linux-pm@vger.kernel.org>; Sat, 12 Mar 2016 23:57:57 -0800 (PST)
-In-Reply-To: <001201d171da$22f11850$68d348f0$@net>
+Received: from mail-lb0-f176.google.com ([209.85.217.176]:35770 "EHLO
+	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbcCMI1p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Mar 2016 04:27:45 -0400
+Received: by mail-lb0-f176.google.com with SMTP id bc4so203687812lbc.2
+        for <linux-pm@vger.kernel.org>; Sun, 13 Mar 2016 00:27:45 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael@kernel.org>
 
-Doug,
+Hi Rafael,
 
-Thank you for closely reviewing these changes.
+Please pull these turbostat patches.
 
-> Don't you also need to update these lines?:
->
-> - .RB [ "\--interval seconds" ]
-> + .RB [ "\--interval decimal_seconds" ]
->
-> - The 5-second interval can be changed with th "-i sec" option.
-> + The 5-second interval can be changed with the "--interval decimal_seconds" option.
-
-You are right, this language became inconsistent.
-Now that you've pointed it out, I think I like it the old way better
--- I've made them all
-simply "seconds" (and the default is indicated as the decimal value 5.0)
-
->> +             nanosleep(&interval_ts, NULL);
->
-> In the limit of a very high sampling rate, doesn't the assumption
-> that the time spent in turbostat itself is negligible become
-> invalid?
-> And shouldn't the sleep time be compensated accordingly?
-
-> Where total is the sample interval, in uSec, and begin was initialized
-> somewhere outside this loop.
->
-> Even if the time spent in turbostat is still almost negligible,
-> this will prevent sampling time error accumulation, by sleeping just
-> a little less every so often. However, there is also some extra
-> overhead, which is also undesirable.
-
-Turbostat isn't used to measure time, it just reports time.
-So I think it is okay if the intervals drift.
-There could be a lot of things that delay turbostat from running
-exactly when its timeouts requested.
-
-The important thing is that it accurately report for whatever
-interval it does wake up on.
-
-That said, you are right, for a very fast interval, the overhead
-of turbostat itself becomes measurable.
-
-The problem that I've observed is that on a very large
-systems (eg. well over 100 processors), the timestamp taken
-on the 1st processor is getting somewhat stale by the time
-we get to the last processor.  For this reason it is on my list
-to do per-cpu timetamps, which are taken when aperf/mperf
-are taken.
-
-When we get a vectored msr read inside the kernel, we can
-shrink that overhead to mitigate its effect, however, I'll still
-want to take a timestamp on each cpu.
-
-thanks,
+thanks!
 Len Brown, Intel Open Source Technology Center
+
+The following changes since commit afd2ff9b7e1b367172f18ba7f693dfb62bdcb2dc:
+
+  Linux 4.4 (2016-01-10 15:01:32 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+for you to fetch changes up to 685b535b2cdb9cdf354321f8af9ed17dcf19d19f:
+
+  tools/power turbostat: bugfix: TDP MSRs print bits fixing
+(2016-03-13 04:22:57 -0400)
+
+----------------------------------------------------------------
+Chen Yu (1):
+      tools/power turbostat: bugfix: TDP MSRs print bits fixing
+
+Chrzaniuk, Hubert (1):
+      tools/power turbostat: Intel Xeon x200: fix erroneous bclk value
+
+Hubert Chrzaniuk (1):
+      tools/power turbostat: Intel Xeon x200: fix turbo-ratio decoding
+
+Len Brown (17):
+      tools/power turbostat: decode more CPUID fields
+      tools/power turbostat: CPUID(0x16) leaf shows base, max, and bus frequency
+      x86 msr-index: Simplify syntax for HWP fields
+      tools/power turbostat: decode HWP registers
+      tools/power turbostat: Decode MSR_MISC_PWR_MGMT
+      tools/power turbostat: allow sub-sec intervals
+      tools/power turbostat: re-name "%Busy" field to "Busy%"
+      tools/power turbostat: add --out option for saving output in a file
+      tools/power turbostat: fix compiler warnings
+      tools/power turbostat: make fewer systems calls
+      tools/power turbostat: show IRQs per CPU
+      tools/power turbostat: show GFXMHz
+      tools/power turbostat: show GFX%rc6
+      tools/power turbostat: detect and work around syscall jitter
+      tools/power turbostat: indicate SMX and SGX support
+      tools/power turbostat: call __cpuid() instead of __get_cpuid()
+      tools/power turbostat: correct output for MSR_NHM_SNB_PKG_CST_CFG_CTL dump
+
+ arch/x86/include/asm/msr-index.h      |   8 +-
+ tools/power/x86/turbostat/turbostat.8 |  32 +-
+ tools/power/x86/turbostat/turbostat.c | 889 +++++++++++++++++++++++++++-------
+ 3 files changed, 728 insertions(+), 201 deletions(-)
