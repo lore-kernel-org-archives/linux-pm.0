@@ -1,94 +1,139 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Mon, 14 Mar 2016 13:45:12 -0400
-Message-ID: <1457977512.8898.13.camel@redhat.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	 <97183685.ubU62sp0PR@vostro.rjw.lan> <001001d17cfc$67721e70$36565b50$@net>
-	 <3851575.bLxYIFy0zG@vostro.rjw.lan> <001901d17dbc$3788f060$a69ad120$@net>
-	 <CAJZ5v0g68mq0bKy5UTzh8qM7fFC0a0SY9+EA2GsDhCVUcSLD1g@mail.gmail.com>
-	 <1457965862.8898.4.camel@redhat.com>
-	 <CAJZ5v0iuLP6b3LHY_BVmAQ12qeeVWhVUPnBh=F4-nFuFr_73DQ@mail.gmail.com>
+From: Srikar Srimath Tirumala <srikars@nvidia.com>
+Subject: [PATCH v2] thermal: add sysfs_notify on some attributes
+Date: Mon, 14 Mar 2016 11:12:36 -0700
+Message-ID: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
-	boundary="=-R3FOy547eWlXY2MKdXtD"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:53268 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbcCNRpq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Mar 2016 13:45:46 -0400
-In-Reply-To: <CAJZ5v0iuLP6b3LHY_BVmAQ12qeeVWhVUPnBh=F4-nFuFr_73DQ@mail.gmail.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:5136 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932203AbcCNSMo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 14:12:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, mlongnecker@nvidia.com
+Cc: Srikar Srimath Tirumala <srikars@nvidia.com>
 
+Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
+cur_state whenever any trip is triggered or cur state is changed.
 
---=-R3FOy547eWlXY2MKdXtD
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This change allows usermode apps to register themselves to get
+notified, when certain thermal conditions occur and reduce their
+workload. This workload throttling allows usermode to react before
+hardware clocks are throttled and keep some critical apps running
+reliably longer.
 
-On Mon, 2016-03-14 at 16:21 +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 14, 2016 at 3:31 PM, Rik van Riel <riel@redhat.com>
-> wrote:
-> >=C2=A0
-> > Maybe something like 2x the exit latency (or target
-> > residency?) of C1?
->=20
-> If the goal is to avoid entering C1 if the exit latency is too high,
-> we should be checking the exit latency IMO.
+Signed-off-by: Srikar Srimath Tirumala <srikars@nvidia.com>
+---
 
-I agree with that, but doesn't the current code already
-do that?
+Changes from v1:
+ - Calling sysfs_notify for thermal_zone*/temp only when there is a
+   trip violated on the thermal zone.
+ - Modified commit message.
 
-The code currently checks against both the latency_req
-and the expected sleep time. What is the rationale for
-adding another latency to check against?
+ drivers/thermal/thermal_core.c | 34 ++++++++++++++++++++++++++--------
+ 1 file changed, 26 insertions(+), 8 deletions(-)
 
-I am trying to understand what the goal is here, and
-under what circumstances the logic in the main selection
-loop needs to be overridden.
-
-What is the main selection loop doing wrong?
-
-When is it causing bad outcomes?
-
-Is it causing other bad outcomes beyond C0/C1 selection?
-
-Can we just ignore polling and always go to HLT, leaving
-out this (somewhat kludgy feeling) part of the code?
-
-If HLT is sometimes too slow on Atom, is it also too slow
-for certain workloads on faster CPUs? (say 10Gbps ethernet?)
-
-A lot of the logic (especially the load correction) in
-menu.c was last fine tuned before several bugs in the
-corresponding measuring code were fixed.
-
-I don't understand your patch well enough to object to
-it, but the "start the loop at poll instead of HLT"
-logic is becoming rather convoluted...
-
---=20
-All Rights Reversed.
-
-
---=-R3FOy547eWlXY2MKdXtD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAABAgAGBQJW5vioAAoJEM553pKExN6DsTwH/0sqGEx+7H1M8UuOLuqa0u0Q
-wH/SpIJakjTOTEX2BB1yXMgb2CUTYwEFC4Se2XFuJ0vU8fL4ebL52AzEnToXPJW9
-O343mhsx4bO7DEvjKF2hh8JZDGN8W+c6HTnd5NLgWbXUHQoc+7k+kC3CCKfscc0M
-JRGT/yVSxZDDtUCOomERCCvIMUTenffdB0HB8OGmW0aF9vVv+TUoqRi8X92F14ei
-XFZB+lpcvXNlC+8OagqgGXCoe4uwNxiDr3achUajuyyM+/nrAMrCCadsHLeFg08/
-1/CnNV6/BHM19HjpfLUcO84f+aKr+kld5Jl0yXuvIaH7sCs16O/ftl/UKgwKyS8=
-=oTSg
------END PGP SIGNATURE-----
-
---=-R3FOy547eWlXY2MKdXtD--
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index a0a8fd1..f54519e 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -419,14 +419,23 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
+ 	mutex_unlock(&tz->lock);
+ }
+ 
+-static void handle_non_critical_trips(struct thermal_zone_device *tz,
++static int handle_non_critical_trips(struct thermal_zone_device *tz,
+ 			int trip, enum thermal_trip_type trip_type)
+ {
++	int trip_temp;
++	int ret = 0;
++
+ 	tz->governor ? tz->governor->throttle(tz, trip) :
+ 		       def_governor->throttle(tz, trip);
++
++	tz->ops->get_trip_temp(tz, trip, &trip_temp);
++	if (tz->temperature >= trip_temp)
++		ret = 1;
++
++	return ret;
+ }
+ 
+-static void handle_critical_trips(struct thermal_zone_device *tz,
++static int handle_critical_trips(struct thermal_zone_device *tz,
+ 				int trip, enum thermal_trip_type trip_type)
+ {
+ 	int trip_temp;
+@@ -435,7 +444,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 
+ 	/* If we have not crossed the trip_temp, we do not care. */
+ 	if (trip_temp <= 0 || tz->temperature < trip_temp)
+-		return;
++		return 0;
+ 
+ 	trace_thermal_zone_trip(tz, trip, trip_type);
+ 
+@@ -448,23 +457,28 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 			  tz->temperature / 1000);
+ 		orderly_poweroff(true);
+ 	}
++
++	return 1;
+ }
+ 
+-static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
++static int handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ {
++	int ret = 0;
+ 	enum thermal_trip_type type;
+ 
+ 	tz->ops->get_trip_type(tz, trip, &type);
+ 
+ 	if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
+-		handle_critical_trips(tz, trip, type);
++		ret = handle_critical_trips(tz, trip, type);
+ 	else
+-		handle_non_critical_trips(tz, trip, type);
++		ret = handle_non_critical_trips(tz, trip, type);
+ 	/*
+ 	 * Alright, we handled this trip successfully.
+ 	 * So, start monitoring again.
+ 	 */
+ 	monitor_thermal_zone(tz);
++
++	return ret;
+ }
+ 
+ /**
+@@ -556,7 +570,7 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ {
+ 	int count;
+-
++	int trips = 0;
+ 	if (atomic_read(&in_suspend))
+ 		return;
+ 
+@@ -566,7 +580,10 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 	update_temperature(tz);
+ 
+ 	for (count = 0; count < tz->trips; count++)
+-		handle_thermal_trip(tz, count);
++		trips += handle_thermal_trip(tz, count);
++
++	if (trips)
++		sysfs_notify(&tz->device.kobj, NULL, "temp");
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
+@@ -1638,6 +1655,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ 	cdev->updated = true;
+ 	trace_cdev_update(cdev, target);
+ 	dev_dbg(&cdev->device, "set to state %lu\n", target);
++	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
+ }
+ EXPORT_SYMBOL(thermal_cdev_update);
+ 
+-- 
+2.1.4
 
