@@ -1,8 +1,8 @@
-From: Daniel Vetter <daniel@ffwll.ch>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
  machines.
-Date: Mon, 14 Mar 2016 11:02:59 +0100
-Message-ID: <20160314100259.GP14170@phenom.ffwll.local>
+Date: Mon, 14 Mar 2016 12:23:57 +0200
+Message-ID: <20160314102357.GA1793@lahna.fi.intel.com>
 References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
  <2736217.utxPzJExd5@vostro.rjw.lan>
  <20160311105815.GS1796@lahna.fi.intel.com>
@@ -11,57 +11,60 @@ References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
  <20160314094335.GE1796@lahna.fi.intel.com>
  <CAPM=9txx1s3ZZSaTAGDFh=hKk-Ek2Y=Wyw74CpTWu-cTDAnJ7A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:34514 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750932AbcCNKYD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Mar 2016 06:24:03 -0400
 Content-Disposition: inline
 In-Reply-To: <CAPM=9txx1s3ZZSaTAGDFh=hKk-Ek2Y=Wyw74CpTWu-cTDAnJ7A@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-T24gTW9uLCBNYXIgMTQsIDIwMTYgYXQgMDc6NDc6MzlQTSArMTAwMCwgRGF2ZSBBaXJsaWUgd3Jv
-dGU6Cj4gPgo+ID4+IC0gICAgIGlmIChwY2llX3BvcnRfcnVudGltZV9zdXNwZW5kX2FsbG93ZWQo
-ZGV2KSkKPiA+PiArICAgICBpZiAocGNpZV9wb3J0X3J1bnRpbWVfc3VzcGVuZF9hbGxvd2VkKGRl
-dikpIHsKPiA+PiArICAgICAgICAgICAgIHBtX3J1bnRpbWVfYWxsb3coJmRldi0+ZGV2KTsKPiA+
-Cj4gPiBQQ0kgZHJpdmVycyB0eXBpY2FsbHkgaGF2ZSBsZWZ0IHRoaXMgZGVjaXNpb24gdXAgdG8g
-dGhlIHVzZXJzcGFjZS4gSSdtCj4gPiB3b25kZXJpbmcgd2hldGhlciBpdCBpcyBnb29kIGlkZWEg
-dG8gZGV2aWF0ZSBmcm9tIHRoYXQgaGVyZT8gT2YgY291cnNlCj4gPiB0aGlzIGFsbG93cyBpbW1l
-ZGlhdGUgcG93ZXIgc2F2aW5ncyBidXQgY291bGQgcG90ZW50aWFsbHkgY2F1c2UgcHJvYmxlbXMK
-PiA+IGFzIHdlbGwuCj4gPgo+IAo+IE5vIGRpc3RybyBoYXMgZXZlciBzaGlwcGVkIHVzZXJzcGFj
-ZSB0byBkbyB0aGlzLCBJIHJlYWxseSB0aGluayB0aGlzCj4gaXMgYSBiYWQgZGVzaWduLgo+IFdl
-IGhhdmUgd2FzdGVkIGNvdW50bGVzcyB3YXR0cyBvZiBwb3dlciBvbiB0aGlzIHN0dXBpZCBpZGVh
-IHRoYXQgcGVvcGxlIHdpbGwKPiBydW4gcG93ZXJ0b3AsIG9ubHkgYSBmZXcgcGVvcGxlIGluIHRo
-ZSB3b3JsZCBydW4gcG93ZXJ0b3AsIGxvdHMgb2YKPiBwZW9wbGUgdXNlIExpbnV4Lgo+IAo+IFRo
-ZSBrZXJuZWwgc2hvdWxkIHBvd2VyIHN0dWZmIGRvd24gbm90IHdhaXQgZm9yIHRoZSB1c2VyIHRv
-IHJ1biBwb3dlcnRvcCwKPiBBdCBsZWFzdCBmb3IgdGhlIEdQVSBpdCdzIGluIHRoZSBhcmVhIG9m
-IDhXIG9mIHBvd2VyLCBhbmQgSSd2ZSBnb3QgdGhlCj4gR1BVIGRyaXZlcnMgZG9pbmcgdGhpcyB0
-aGVtc2VsdmVzLAo+IAo+IEkgY291bGQgaGF2ZSB0aGUgR1BVIGRyaXZlciBjYWxsIHJ1bnRpbWUg
-YWxsb3cgZm9yIGl0J3MgaG9zdCBicmlkZ2UgSSBzdXBwb3NlLAo+IGlmIHdlIGluc2lzdCBvbiB0
-aGUgdXNlcnNwYWNlIGNhcmVzLCBidXQgSSdkIHByZWZlciBub3QgZG9pbmcgc28uCgpZZXMsIGZ1
-bGx5IGFncmVlZC4gUnVudGltZSBQTSB0aGF0J3Mgbm90IGVuYWJsZWQgYnkgZGVmYXVsdCBpcyB1
-c2VsZXNzLApzaW5jZSBubyBvbmUgcnVucyBwb3dlcnRvcCwgd2hpY2ggYWxzbyBtZWFucyBpdCdz
-IGJ1Z2d5IGJlY2F1c2Ugbm8gb25lCnRlc3RzIGl0LiBOb3QgZW5hYmxpbmcgcG93ZXIgc2F2aW5n
-IGZlYXR1cmVzIGJ5IGRlZmF1bHQgaXMgaW1vIGp1c3QgYSBsYW1lCmV4Y3VzZS4gU2hpdCBiZXR0
-ZXIganVzdCB3b3JrLCBhbmQgdHVuZWFibGVzIHNob3VsZCBvbmx5IGV4cG9zZWQgaWYKdGhlcmUn
-cyBhIHJlYWwgcmVhc29uIHdoeSBhdXRvdHVuaW5nIGlzIGluZmVhc2libGUuIEUuZy4gd2UgYXV0
-by1yYW1wIHRoZQpncHUgY2xvY2sgZG93bi91cCBpbiBpOTE1IGluIHNvZnR3YXJlIHRvIGNvbXBl
-bnNhdGUgZm9yIHNvbWUgb2YgdGhlCnNpbGxpbmVzcyBpbiBob3cgdGhlIGh3IGRvZXMgaXQgYWxv
-bmUuIEFuZCB0aGUgc3lzZnMgdHVuYWJsZXMgYXJlIG1vc3RseQpqdXN0IHRvIG1ha2UgYmVuY2ht
-YXJraW5nICh3aGVyZSBzbG93ZXIsIGJ1dCB3aXRob3V0IGFueSB0aGVybWFsCnRocm90dGxpbmcp
-IGlzIHNvbWV0aW1lcyBwcmVmZXJyZWQuCgpBbmQgeWVzIGk5MTUgaGFzbid0IGVuYWJsZWQgcnBt
-IHlldCBieSBkZWZhdWx0IGJlY2F1c2UgdGhlcmUncyBidWdzIGxlZnQKOigKLURhbmllbAotLSAK
-RGFuaWVsIFZldHRlcgpTb2Z0d2FyZSBFbmdpbmVlciwgSW50ZWwgQ29ycG9yYXRpb24KaHR0cDov
-L2Jsb2cuZmZ3bGwuY2gKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRl
-dmVsCg==
+On Mon, Mar 14, 2016 at 07:47:39PM +1000, Dave Airlie wrote:
+> >
+> >> -     if (pcie_port_runtime_suspend_allowed(dev))
+> >> +     if (pcie_port_runtime_suspend_allowed(dev)) {
+> >> +             pm_runtime_allow(&dev->dev);
+> >
+> > PCI drivers typically have left this decision up to the userspace. I'm
+> > wondering whether it is good idea to deviate from that here? Of course
+> > this allows immediate power savings but could potentially cause problems
+> > as well.
+> >
+> 
+> No distro has ever shipped userspace to do this, I really think this
+> is a bad design.
+> We have wasted countless watts of power on this stupid idea that people will
+> run powertop, only a few people in the world run powertop, lots of
+> people use Linux.
+
+That is a fair point.
+
+I do not have anything against calling pm_runtime_allow() here. In fact
+we already do the same in Intel LPSS drivers. I just wanted to bring
+that up.
+
+Rafael, what do you think?
+
+If we anyway are going to add cut-off date to enable runtime PM we
+should expect that the hardware is also capable of doing so (and if not
+we can always blacklist the exceptions).
+
+> The kernel should power stuff down not wait for the user to run powertop,
+> At least for the GPU it's in the area of 8W of power, and I've got the
+> GPU drivers doing this themselves,
+> 
+> I could have the GPU driver call runtime allow for it's host bridge I suppose,
+> if we insist on the userspace cares, but I'd prefer not doing so.
+> 
+> > I think we need to add corresponding call to pm_runtime_forbid() in
+> > pcie_portdrv_remove().
+> 
+> Yes most likely.
+
+BTW, I can add both calls to the next version of PCIe runtime PM patches
+if you are OK with that, and all agree this is a good idea.
