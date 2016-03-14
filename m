@@ -1,112 +1,132 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq constantly keeps frequency at maximum on 4.5-rc4)
-Date: Mon, 14 Mar 2016 02:32:04 +0100
-Message-ID: <3851575.bLxYIFy0zG@vostro.rjw.lan>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com> <97183685.ubU62sp0PR@vostro.rjw.lan> <001001d17cfc$67721e70$36565b50$@net>
+From: Dave Airlie <airlied@gmail.com>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
+ machines.
+Date: Mon, 14 Mar 2016 12:19:14 +1000
+Message-ID: <CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
+References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
+ <2736217.utxPzJExd5@vostro.rjw.lan>
+ <20160311105815.GS1796@lahna.fi.intel.com>
+ <2759763.dR5D0KopkA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:44352 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751706AbcCNBaG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Mar 2016 21:30:06 -0400
-In-Reply-To: <001001d17cfc$67721e70$36565b50$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary=001a11c3b9de3bc0b0052df8e815
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <2759763.dR5D0KopkA@vostro.rjw.lan>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Rik van Riel' <riel@redhat.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
 
-On Saturday, March 12, 2016 11:46:03 PM Doug Smythies wrote:
-> On 2016.03.11 18:02 Rafael J. Wysocki wrote:
-> > On Saturday, March 12, 2016 02:45:42 AM Rafael J. Wysocki wrote:
-> >
-> > Gosh, I'm too tired.  Parens missing and it can be written simpler using <=.
-> >
-> > Tentatively-signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > drivers/cpuidle/governors/menu.c |    8 +++++---
-> > 1 file changed, 5 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-pm/drivers/cpuidle/governors/menu.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> > +++ linux-pm/drivers/cpuidle/governors/menu.c
-> > @@ -327,11 +327,13 @@ static int menu_select(struct cpuidle_dr
-> > 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-> > 		/*
-> > 		 * We want to default to C1 (hlt), not to busy polling
-> > -		 * unless the timer is happening really really soon.
-> > +		 * unless the timer is happening really really soon.  Still, if
-> > +		 * the exit latency of C1 is too high, we need to poll anyway.
-> > 		 */
-> > -		if (interactivity_req > 20 &&
-> > +		if (data->next_timer_us > 20 &&
-> > +		    drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency <= latency_req &&
-> > 		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
-> > -			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
-> > +		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
-> > 			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-> > 	} else {
-> > 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-> 
-> Note 1: Above = rvr3 (because I already have a bunch of rjw kernels for other stuff).
-> Note 2: reference tests re-done, using Rafael's 3 patch set version 10
-> "cpufreq: Replace timers with utilization update callbacks".
-> Why? Because it was desirable to eliminate intel_pstate long durations
-> between calls that were due to the CPU being idle on jiffy boundaries,
-> but otherwise busy.
-> Well why was that desirable? So that trace could be acquired where
-> we could be reasonably confident that most very high CPU loads combined
-> with very long durations were due to long periods in idle state 0.
-> 
-> Aggregate times in each idle state for the 2000 second test:
-> State	k45rc7-rjw10 (mins)	k45rc7-rjw10-reverted (mins)	k45rc7-rjw10-rcr3 (mins)
-> 0.00	18.07				0.92					18.38
-> 1.00	12.35				19.51					13.16
-> 2.00	3.96				4.28					2.91
-> 3.00	1.55				1.53					1.00
-> 4.00	138.96			141.99				115.41
-> 			
-> total	174.90			168.24				150.87
-> 
-> Energy:
-> Kernel 4.5-rc7-rjw10: 61983 Joules
-> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules
-> Kernel 4.5-rc7-rjw10-rvr3: 62938 Joules 
+--001a11c3b9de3bc0b0052df8e815
+Content-Type: text/plain; charset=UTF-8
 
-OK, thanks for the report.
+On 11 March 2016 at 23:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, March 11, 2016 12:58:15 PM Mika Westerberg wrote:
+>> On Thu, Mar 10, 2016 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
+>> > > It doesn't seem to do any runtime PM,
+>> > > I do wonder if pcieport should be doing it's own runtime PM handling,
+>> > > but that is a
+>> > > larger task than I'm thinking to tackle here.
+>> >
+>> > PCIe ports don't do PM - yet.  Mika has posted a series of patches to implement
+>> > that, however, that are waiting for comments now:
+>> >
+>> > https://patchwork.kernel.org/patch/8453311/
+>> > https://patchwork.kernel.org/patch/8453381/
+>> > https://patchwork.kernel.org/patch/8453391/
+>> > https://patchwork.kernel.org/patch/8453411/
+>> > https://patchwork.kernel.org/patch/8453371/
+>> > https://patchwork.kernel.org/patch/8453351/
+>> >
+>> > > Maybe I should be doing
+>> > >
+>> > > pci_set_power_state(pdev->bus->self, PCI_D3cold) ? I'm not really sure.
+>> >
+>> > Using pci_set_power_state() would be more appropriate IMO, but you can get
+>> > to the bridge via dev->parent too, can't you?
+>> >
+>> > In any case, it looks like you and Mika need to talk. :-)
+>>
+>> When the vga_switcheroo device gets runtime suspended (with the above
+>> runtime PM patchs for PCIe root ports) the root port should also be
+>> runtime suspended by the PM core.
+>
+> Right, after your patches have been applied, the additional handling
+> won't be needed.
+>
+> So Dave, maybe you can check if the Mika's patches help?
 
-This seems to mean that our latency_req is just off for short latencies (I guess
-it simply is 0, because the performance multiplier is likely to be greater than
-predicted_us for small values of that).
+Hi Mika,
 
-The patch below should restore the original behavior for you.  Can you please
-test it?
+I tested your patches with a couple of changes on the Lenovo W541.
 
----
- drivers/cpuidle/governors/menu.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+The attached patch contains the two things I needed to get the same
+functionality
+as my patches.
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -327,11 +327,13 @@ static int menu_select(struct cpuidle_dr
- 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 		/*
- 		 * We want to default to C1 (hlt), not to busy polling
--		 * unless the timer is happening really really soon.
-+		 * unless the timer is happening really really soon.  Still, if
-+		 * the exit latency of C1 is too high, we need to poll anyway.
- 		 */
--		if (interactivity_req > 20 &&
-+		if (data->next_timer_us > 20 &&
-+		    drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency <= 2 &&
- 		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
--			dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
-+		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
- 			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
- 	} else {
- 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+I'm really not in love with the per-chipset enablement for this,
+really any chipsets
+after a certain year should probably be better, as we'll constantly be
+adding PCI Ids
+for every chipset ever made, and I expect we'll forget some.
 
+Dave.
+
+--001a11c3b9de3bc0b0052df8e815
+Content-Type: text/x-patch; charset=US-ASCII;
+	name="0001-RFC-PCI-enable-runtime-PM-on-pcieports-to-let-second.patch"
+Content-Disposition: attachment;
+	filename="0001-RFC-PCI-enable-runtime-PM-on-pcieports-to-let-second.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ilrd1mjn0
+
+RnJvbSBlZWE0MTIwNzZjOWQyNDI2MmViZDQ4MTFmNzY2ZDUzNzliNzI4MDQ1IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBEYXZlIEFpcmxpZSA8YWlybGllZEByZWRoYXQuY29tPgpEYXRl
+OiBNb24sIDE0IE1hciAyMDE2IDIzOjM3OjQzICsxMDAwClN1YmplY3Q6IFtQQVRDSF0gW1JGQ10g
+UENJOiBlbmFibGUgcnVudGltZSBQTSBvbiBwY2llcG9ydHMgdG8gbGV0IHNlY29uZGFyeQogR1BV
+cyBwb3dlcmRvd24uCgpXaXRoIHNlY29uZGFyeSBHUFVzIGluIFdpbmRvd3MgMTAgbGFwdG9wcyB3
+ZSBuZWVkIHRvIHVzZSBydW50aW1lIFBNCnRvIHBvd2VyIGRvd24gdGhlIFBDSWUgcG9ydHMgYWZ0
+ZXIgdGhlIGRldmljZXMgZ29lcyB0byBEM0NvbGQuCgpUaGlzIHBhdGNoIGFkZHMgdGhlIFBDSSBJ
+RCBmb3IgdGhlIEhhc3dlbGwgMTZ4IFBDSUUgc2xvdCBmb3VuZAppbiB0aGUgVzU0MSBsYXB0b3Bz
+LiBJIHNob3VsZCBwcm9iYWJseSB0cnkgYW5kIGdhdGhlciB0aGUgUENJIElEcywKZm9yIGJyb2Fk
+d2VsbC9za3lsYWtlIHZhcmlhbnRzIGFzIHdlbGwgaWYgd2UgY2FuJ3QgZmluZCB0aGVtLgoKVGhp
+cyBmaXhlcyBhIHJlZ3Jlc3Npb24gb24gVzU0MSBsYXB0b3BzIG9uIHRvcCBvZiBNaWthJ3MgUENJ
+RSBwYXRjaGVzCnNpbmNlIHdlIHN0YXJ0ZWQgYWR2ZXJ0aXNpbmcgV2luZG93cyAyMDEzIEFDUEku
+CgpbcHJvYmFibHkgc2hvdWxkIGJlIHR3byBwYXRjaGVzIC0gaGVuY2UgUkZDXQoKU2lnbmVkLW9m
+Zi1ieTogRGF2ZSBBaXJsaWUgPGFpcmxpZWRAcmVkaGF0LmNvbT4KLS0tCiBkcml2ZXJzL3BjaS9w
+Y2llL3BvcnRkcnZfcGNpLmMgfCA2ICsrKysrLQogMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL3BjaWUvcG9ydGRy
+dl9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaWUvcG9ydGRydl9wY2kuYwppbmRleCA0M2RkMjNlLi4x
+NDA1ZGU4IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2llL3BvcnRkcnZfcGNpLmMKKysrIGIv
+ZHJpdmVycy9wY2kvcGNpZS9wb3J0ZHJ2X3BjaS5jCkBAIC0yNzgsOCArMjc4LDEwIEBAIHN0YXRp
+YyBpbnQgcGNpZV9wb3J0ZHJ2X3Byb2JlKHN0cnVjdCBwY2lfZGV2ICpkZXYsCiAKIAlwY2lfc2F2
+ZV9zdGF0ZShkZXYpOwogCi0JaWYgKHBjaWVfcG9ydF9ydW50aW1lX3N1c3BlbmRfYWxsb3dlZChk
+ZXYpKQorCWlmIChwY2llX3BvcnRfcnVudGltZV9zdXNwZW5kX2FsbG93ZWQoZGV2KSkgeworCQlw
+bV9ydW50aW1lX2FsbG93KCZkZXYtPmRldik7CiAJCXBtX3J1bnRpbWVfcHV0X25vaWRsZSgmZGV2
+LT5kZXYpOworCX0KIAogCXJldHVybiAwOwogfQpAQCAtNDM2LDYgKzQzOCw4IEBAIHN0YXRpYyB2
+b2lkIHBjaWVfcG9ydGRydl9lcnJfcmVzdW1lKHN0cnVjdCBwY2lfZGV2ICpkZXYpCiAgKiBMSU5V
+WCBEZXZpY2UgRHJpdmVyIE1vZGVsCiAgKi8KIHN0YXRpYyBjb25zdCBzdHJ1Y3QgcGNpX2Rldmlj
+ZV9pZCBwb3J0X3BjaV9pZHNbXSA9IHsKKwkvKiBJbnRlbCBTa3lsYWtlIFBDSUUgZ3JhcGhpY3Mg
+cG9ydCAqLworCXsgUENJX1ZERVZJQ0UoSU5URUwsIDB4MGMwMSksIC5kcml2ZXJfZGF0YSA9IFBD
+SUVfUE9SVF9TUFQgfSwKIAkvKiBJbnRlbCBCcm94dG9uICovCiAJeyBQQ0lfVkRFVklDRShJTlRF
+TCwgMHgxYWQ2KSwgLmRyaXZlcl9kYXRhID0gUENJRV9QT1JUX1NQVCB9LAogCXsgUENJX1ZERVZJ
+Q0UoSU5URUwsIDB4MWFkNyksIC5kcml2ZXJfZGF0YSA9IFBDSUVfUE9SVF9TUFQgfSwKLS0gCjIu
+NS4wCgo=
+--001a11c3b9de3bc0b0052df8e815
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVs
+IG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+
+--001a11c3b9de3bc0b0052df8e815--
