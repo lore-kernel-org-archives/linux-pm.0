@@ -1,77 +1,72 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10 machines.
-Date: Mon, 14 Mar 2016 13:50:41 +0100
-Message-ID: <CAJZ5v0igUCP8-uH+VUb5KmUeZv5khtMJRjUh-z=orHOgRrcmiw@mail.gmail.com>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
+ machines.
+Date: Mon, 14 Mar 2016 10:30:50 -0400
+Message-ID: <CADnq5_PMS+TV_csWMXGNN=aQ=GE6ATXij2beNZb-dFisBUsfUw@mail.gmail.com>
 References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
-	<2736217.utxPzJExd5@vostro.rjw.lan>
-	<20160311105815.GS1796@lahna.fi.intel.com>
-	<2759763.dR5D0KopkA@vostro.rjw.lan>
-	<CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
-	<20160314094335.GE1796@lahna.fi.intel.com>
-	<CAPM=9txx1s3ZZSaTAGDFh=hKk-Ek2Y=Wyw74CpTWu-cTDAnJ7A@mail.gmail.com>
-	<20160314102357.GA1793@lahna.fi.intel.com>
+ <2736217.utxPzJExd5@vostro.rjw.lan>
+ <20160311105815.GS1796@lahna.fi.intel.com>
+ <2759763.dR5D0KopkA@vostro.rjw.lan>
+ <CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160314102357.GA1793@lahna.fi.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Dave Airlie <airlied@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 14, 2016 at 11:23 AM, Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
-> On Mon, Mar 14, 2016 at 07:47:39PM +1000, Dave Airlie wrote:
->> >
->> >> -     if (pcie_port_runtime_suspend_allowed(dev))
->> >> +     if (pcie_port_runtime_suspend_allowed(dev)) {
->> >> +             pm_runtime_allow(&dev->dev);
->> >
->> > PCI drivers typically have left this decision up to the userspace. I'm
->> > wondering whether it is good idea to deviate from that here? Of course
->> > this allows immediate power savings but could potentially cause problems
->> > as well.
->> >
->>
->> No distro has ever shipped userspace to do this, I really think this
->> is a bad design.
->> We have wasted countless watts of power on this stupid idea that people will
->> run powertop, only a few people in the world run powertop, lots of
->> people use Linux.
->
-> That is a fair point.
->
-> I do not have anything against calling pm_runtime_allow() here. In fact
-> we already do the same in Intel LPSS drivers. I just wanted to bring
-> that up.
->
-> Rafael, what do you think?
-
-We can do that to start with.  If there are no problems in the field
-with it, I don't see any problems in principle.
-
-> If we anyway are going to add cut-off date to enable runtime PM we
-> should expect that the hardware is also capable of doing so (and if not
-> we can always blacklist the exceptions).
-
-Sounds reasonable.
-
->> The kernel should power stuff down not wait for the user to run powertop,
->> At least for the GPU it's in the area of 8W of power, and I've got the
->> GPU drivers doing this themselves,
->>
->> I could have the GPU driver call runtime allow for it's host bridge I suppose,
->> if we insist on the userspace cares, but I'd prefer not doing so.
->>
->> > I think we need to add corresponding call to pm_runtime_forbid() in
->> > pcie_portdrv_remove().
->>
->> Yes most likely.
->
-> BTW, I can add both calls to the next version of PCIe runtime PM patches
-> if you are OK with that, and all agree this is a good idea.
-
-That would be fine by me.
-
-Thanks,
-Rafael
+T24gU3VuLCBNYXIgMTMsIDIwMTYgYXQgMTA6MTkgUE0sIERhdmUgQWlybGllIDxhaXJsaWVkQGdt
+YWlsLmNvbT4gd3JvdGU6Cj4gT24gMTEgTWFyY2ggMjAxNiBhdCAyMzo0NSwgUmFmYWVsIEouIFd5
+c29ja2kgPHJqd0Byand5c29ja2kubmV0PiB3cm90ZToKPj4gT24gRnJpZGF5LCBNYXJjaCAxMSwg
+MjAxNiAxMjo1ODoxNSBQTSBNaWthIFdlc3RlcmJlcmcgd3JvdGU6Cj4+PiBPbiBUaHUsIE1hciAx
+MCwgMjAxNiBhdCAwOTo1NzowOVBNICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPj4+
+ID4gPiBJdCBkb2Vzbid0IHNlZW0gdG8gZG8gYW55IHJ1bnRpbWUgUE0sCj4+PiA+ID4gSSBkbyB3
+b25kZXIgaWYgcGNpZXBvcnQgc2hvdWxkIGJlIGRvaW5nIGl0J3Mgb3duIHJ1bnRpbWUgUE0gaGFu
+ZGxpbmcsCj4+PiA+ID4gYnV0IHRoYXQgaXMgYQo+Pj4gPiA+IGxhcmdlciB0YXNrIHRoYW4gSSdt
+IHRoaW5raW5nIHRvIHRhY2tsZSBoZXJlLgo+Pj4gPgo+Pj4gPiBQQ0llIHBvcnRzIGRvbid0IGRv
+IFBNIC0geWV0LiAgTWlrYSBoYXMgcG9zdGVkIGEgc2VyaWVzIG9mIHBhdGNoZXMgdG8gaW1wbGVt
+ZW50Cj4+PiA+IHRoYXQsIGhvd2V2ZXIsIHRoYXQgYXJlIHdhaXRpbmcgZm9yIGNvbW1lbnRzIG5v
+dzoKPj4+ID4KPj4+ID4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC84NDUzMzEx
+Lwo+Pj4gPiBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzg0NTMzODEvCj4+PiA+
+IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvODQ1MzM5MS8KPj4+ID4gaHR0cHM6
+Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC84NDUzNDExLwo+Pj4gPiBodHRwczovL3BhdGNo
+d29yay5rZXJuZWwub3JnL3BhdGNoLzg0NTMzNzEvCj4+PiA+IGh0dHBzOi8vcGF0Y2h3b3JrLmtl
+cm5lbC5vcmcvcGF0Y2gvODQ1MzM1MS8KPj4+ID4KPj4+ID4gPiBNYXliZSBJIHNob3VsZCBiZSBk
+b2luZwo+Pj4gPiA+Cj4+PiA+ID4gcGNpX3NldF9wb3dlcl9zdGF0ZShwZGV2LT5idXMtPnNlbGYs
+IFBDSV9EM2NvbGQpID8gSSdtIG5vdCByZWFsbHkgc3VyZS4KPj4+ID4KPj4+ID4gVXNpbmcgcGNp
+X3NldF9wb3dlcl9zdGF0ZSgpIHdvdWxkIGJlIG1vcmUgYXBwcm9wcmlhdGUgSU1PLCBidXQgeW91
+IGNhbiBnZXQKPj4+ID4gdG8gdGhlIGJyaWRnZSB2aWEgZGV2LT5wYXJlbnQgdG9vLCBjYW4ndCB5
+b3U/Cj4+PiA+Cj4+PiA+IEluIGFueSBjYXNlLCBpdCBsb29rcyBsaWtlIHlvdSBhbmQgTWlrYSBu
+ZWVkIHRvIHRhbGsuIDotKQo+Pj4KPj4+IFdoZW4gdGhlIHZnYV9zd2l0Y2hlcm9vIGRldmljZSBn
+ZXRzIHJ1bnRpbWUgc3VzcGVuZGVkICh3aXRoIHRoZSBhYm92ZQo+Pj4gcnVudGltZSBQTSBwYXRj
+aHMgZm9yIFBDSWUgcm9vdCBwb3J0cykgdGhlIHJvb3QgcG9ydCBzaG91bGQgYWxzbyBiZQo+Pj4g
+cnVudGltZSBzdXNwZW5kZWQgYnkgdGhlIFBNIGNvcmUuCj4+Cj4+IFJpZ2h0LCBhZnRlciB5b3Vy
+IHBhdGNoZXMgaGF2ZSBiZWVuIGFwcGxpZWQsIHRoZSBhZGRpdGlvbmFsIGhhbmRsaW5nCj4+IHdv
+bid0IGJlIG5lZWRlZC4KPj4KPj4gU28gRGF2ZSwgbWF5YmUgeW91IGNhbiBjaGVjayBpZiB0aGUg
+TWlrYSdzIHBhdGNoZXMgaGVscD8KPgo+IEhpIE1pa2EsCj4KPiBJIHRlc3RlZCB5b3VyIHBhdGNo
+ZXMgd2l0aCBhIGNvdXBsZSBvZiBjaGFuZ2VzIG9uIHRoZSBMZW5vdm8gVzU0MS4KPgo+IFRoZSBh
+dHRhY2hlZCBwYXRjaCBjb250YWlucyB0aGUgdHdvIHRoaW5ncyBJIG5lZWRlZCB0byBnZXQgdGhl
+IHNhbWUKPiBmdW5jdGlvbmFsaXR5Cj4gYXMgbXkgcGF0Y2hlcy4KPgo+IEknbSByZWFsbHkgbm90
+IGluIGxvdmUgd2l0aCB0aGUgcGVyLWNoaXBzZXQgZW5hYmxlbWVudCBmb3IgdGhpcywKPiByZWFs
+bHkgYW55IGNoaXBzZXRzCj4gYWZ0ZXIgYSBjZXJ0YWluIHllYXIgc2hvdWxkIHByb2JhYmx5IGJl
+IGJldHRlciwgYXMgd2UnbGwgY29uc3RhbnRseSBiZQo+IGFkZGluZyBQQ0kgSWRzCj4gZm9yIGV2
+ZXJ5IGNoaXBzZXQgZXZlciBtYWRlLCBhbmQgSSBleHBlY3Qgd2UnbGwgZm9yZ2V0IHNvbWUuCgoK
+WWVhaCwgSSBkb24ndCBjYXJlIG9mIHRoYXQgZWl0aGVyLiAgVGhlcmUgYXJlIGFsd2F5cyBnb2lu
+ZyB0byBiZQpjaGlwc2V0cyBmYWxsaW5nIHRocm91Z2ggdGhlIGNyYWNrcy4KCkFsZXgKCj4KPiBE
+YXZlLgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+PiBkcmktZGV2ZWwgbWFpbGluZyBsaXN0Cj4gZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9y
+Zwo+IGh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRl
+dmVsCj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJp
+LWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBz
+Oi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
