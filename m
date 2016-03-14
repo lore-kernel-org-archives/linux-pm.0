@@ -1,121 +1,37 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 04/13] hwmon: convert scpi-hwmon to use
- devm_thermal_zone_of_sensor_register
-Date: Mon, 14 Mar 2016 12:49:46 -0700
-Message-ID: <20160314194945.GG1872@localhost.localdomain>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-5-git-send-email-edubezval@gmail.com>
- <56E0DBFD.7060903@roeck-us.net>
+From: Matt Fleming <matt@codeblueprint.co.uk>
+Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
+ platforms without _S5
+Date: Mon, 14 Mar 2016 20:00:33 +0000
+Message-ID: <20160314200033.GG2619@codeblueprint.co.uk>
+References: <1457687133-3730-1-git-send-email-yu.c.chen@intel.com>
+ <20160311155546.GJ15775@codeblueprint.co.uk>
+ <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="RE3pQJLXZi4fr8Xo"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <56E0DBFD.7060903@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>
-List-Id: linux-pm@vger.kernel.org
-
-
---RE3pQJLXZi4fr8Xo
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:38749 "EHLO
+	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932814AbcCNUAh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 16:00:37 -0400
+Received: by mail-wm0-f48.google.com with SMTP id l68so117708145wml.1
+        for <linux-pm@vger.kernel.org>; Mon, 14 Mar 2016 13:00:37 -0700 (PDT)
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>
 
-On Wed, Mar 09, 2016 at 06:29:17PM -0800, Guenter Roeck wrote:
-> On 03/09/2016 01:35 PM, Eduardo Valentin wrote:
-> >This changes the driver to use the devm_ version
-> >of thermal_zone_of_sensor_register and cleans
-> >up the  local points and unregister calls.
-> >
-> >Cc: Jean Delvare <jdelvare@suse.com>
-> >Cc: Guenter Roeck <linux@roeck-us.net>
-> >Cc: lm-sensors@lm-sensors.org
-> >Cc: linux-kernel@vger.kernel.org
-> >Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> >---
-> >  drivers/hwmon/scpi-hwmon.c | 41 ++++++++------------------------------=
----
-> >  1 file changed, 8 insertions(+), 33 deletions(-)
-> >
-> >diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
-> >index 7e20567..2309e47 100644
-> >--- a/drivers/hwmon/scpi-hwmon.c
-> >+++ b/drivers/hwmon/scpi-hwmon.c
-> >@@ -31,10 +31,8 @@ struct sensor_data {
-> >  };
-> >
-> >  struct scpi_thermal_zone {
-> >-	struct list_head list;
-> >  	int sensor_id;
-> >  	struct scpi_sensors *scpi_sensors;
-> >-	struct thermal_zone_device *tzd;
-> >  };
-> >
-> >  struct scpi_sensors {
-> >@@ -92,20 +90,6 @@ scpi_show_label(struct device *dev, struct device_att=
-ribute *attr, char *buf)
-> >  	return sprintf(buf, "%s\n", sensor->info.name);
-> >  }
-> >
-> >-static void
-> >-unregister_thermal_zones(struct platform_device *pdev,
-> >-			 struct scpi_sensors *scpi_sensors)
-> >-{
-> >-	struct list_head *pos;
-> >-
-> >-	list_for_each(pos, &scpi_sensors->thermal_zones) {
-> >-		struct scpi_thermal_zone *zone;
-> >-
-> >-		zone =3D list_entry(pos, struct scpi_thermal_zone, list);
-> >-		thermal_zone_of_sensor_unregister(&pdev->dev, zone->tzd);
-> >-	}
-> >-}
-> >-
-> >  static struct thermal_zone_of_device_ops scpi_sensor_ops =3D {
-> >  	.get_temp =3D scpi_read_temp,
-> >  };
-> >@@ -224,6 +208,7 @@ static int scpi_hwmon_probe(struct platform_device *=
-pdev)
-> >  	INIT_LIST_HEAD(&scpi_sensors->thermal_zones);
-> >  	for (i =3D 0; i < nr_sensors; i++) {
-> >  		struct sensor_data *sensor =3D &scpi_sensors->data[i];
-> >+		struct thermal_zone_device *z;
-> >  		struct scpi_thermal_zone *zone;
-> >
-> >  		if (sensor->info.class !=3D TEMPERATURE)
-> >@@ -232,42 +217,33 @@ static int scpi_hwmon_probe(struct platform_device=
- *pdev)
-> >  		zone =3D devm_kzalloc(dev, sizeof(*zone), GFP_KERNEL);
-> >  		if (!zone) {
-> >  			ret =3D -ENOMEM;
-> >-			goto unregister_tzd;
-> >+			goto mfail;
->=20
-> 			return -ENOMEM;
->=20
-> ... and drop the unnecessary label.
+On Fri, 11 Mar, at 04:33:46PM, Chen, Yu C wrote:
+>
+> There is  a future Base-IA platform, we are planning to skip
+> implementing the SLP_TYP register and the S5 object.  (already there
+> will be no S3 and no S4)
+ 
+Cool. This is really valuable information that should go into the
+commit message.
 
-True. I will change as requested.
-
-Thanks
-
-
---RE3pQJLXZi4fr8Xo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAEBAgAGBQJW5xXVAAoJEMLUO4d9pOJW6poH/1ffws8u4lxp7CLo0q/7A+/Y
-vhfwm78PDxNzimEh8owH1F8eIdgi30+9s2h0AThsU2qwzzgsvw3z2LID3Z5YyCQk
-atQKjj0ykH/FrzR3cpc7aGsb8s+r9xcdS0R/tzEfywxG5wDKlMLsP+zAxJHHIM2L
-M2C+H+0BQxz/yrhzK9eSMQwwXqKEb0MdsaXDqxMaeJzSgpl38HOwS76NwnZPkdmI
-72ymPBQ5Q4PvjWt5sMP8//VolHjpbY3ZqOBdFolV/bN5GsLNyj/tHlhnOm5B/pWT
-5dhpRo6DWH9CeJNRGNXBOb7oHVNjgN9rz9FiKrHnqXH4cqS1JZK1vHOkzJwNhHg=
-=1nTO
------END PGP SIGNATURE-----
-
---RE3pQJLXZi4fr8Xo--
+Because if this is the rationale for the change, I don't see why we'd
+need to provide the default stuff. Instead we should just enforce EFI
+reboot, and only add the pm_poweroff_default hook if there is an
+explicit user in the future, IMO.
