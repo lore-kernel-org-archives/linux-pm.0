@@ -1,298 +1,311 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V7 06/12] thermal: tegra: add a debugfs to show registers
-Date: Mon, 14 Mar 2016 12:08:40 -0700
-Message-ID: <20160314190839.GB1872@localhost.localdomain>
-References: <1457665835-29880-1-git-send-email-wni@nvidia.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V7 09/12] thermal: tegra: add thermtrip function
+Date: Mon, 14 Mar 2016 12:16:39 -0700
+Message-ID: <20160314191637.GC1872@localhost.localdomain>
+References: <1457665872-30046-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="H+4ONPRPur6+Ovig"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="f+W+jCU1fRNres8c"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36107 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755670AbcCNTQm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 15:16:42 -0400
 Content-Disposition: inline
-In-Reply-To: <1457665835-29880-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1457665872-30046-1-git-send-email-wni@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>
+Cc: rui.zhang@intel.com, thierry.reding@gmail.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---H+4ONPRPur6+Ovig
+--f+W+jCU1fRNres8c
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 11, 2016 at 11:10:35AM +0800, Wei Ni wrote:
-> Add a debugfs interface to show register contents for debug.
+On Fri, Mar 11, 2016 at 11:11:12AM +0800, Wei Ni wrote:
+> Add support for hardware critical thermal limits to the
+> SOC_THERM driver. It use the Linux thermal framework to
+> create critical trip temp, and set it to SOC_THERM hardware.
+> If these limits are breached, the chip will reset, and if
+> appropriately configured, will turn off the PMIC.
 >=20
-> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> This support is critical for safe usage of the chip.
+>=20
+> Signed-off-by: Wei Ni <wni@nvidia.com>
 > ---
->  drivers/thermal/tegra/soctherm.c | 143 +++++++++++++++++++++++++++++++++=
+>  drivers/thermal/tegra/soctherm.c          | 166 ++++++++++++++++++++++++=
 +++++-
->  drivers/thermal/tegra/soctherm.h |   2 +
->  2 files changed, 142 insertions(+), 3 deletions(-)
+>  drivers/thermal/tegra/soctherm.h          |   7 ++
+>  drivers/thermal/tegra/tegra124-soctherm.c |  24 +++++
+>  drivers/thermal/tegra/tegra210-soctherm.c |  24 +++++
+>  4 files changed, 216 insertions(+), 5 deletions(-)
 >=20
 > diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soc=
 therm.c
-> index 52a33760e8e8..02ac6d2e5a20 100644
+> index 02ac6d2e5a20..dbaab160baba 100644
 > --- a/drivers/thermal/tegra/soctherm.c
 > +++ b/drivers/thermal/tegra/soctherm.c
-> @@ -15,6 +15,7 @@
->   *
->   */
+> @@ -73,9 +73,14 @@
+>  #define REG_SET_MASK(r, m, v)	(((r) & ~(m)) | \
+>  				 (((v) & (m >> (ffs(m) - 1))) << (ffs(m) - 1)))
 > =20
-> +#include <linux/debugfs.h>
->  #include <linux/bitops.h>
->  #include <linux/clk.h>
->  #include <linux/delay.h>
-> @@ -33,14 +34,18 @@
-> =20
->  #define SENSOR_CONFIG0				0
->  #define SENSOR_CONFIG0_STOP			BIT(0)
-> -#define SENSOR_CONFIG0_TALL_SHIFT		8
-> -#define SENSOR_CONFIG0_TCALC_OVER		BIT(4)
-> -#define SENSOR_CONFIG0_OVER			BIT(3)
->  #define SENSOR_CONFIG0_CPTR_OVER		BIT(2)
-> +#define SENSOR_CONFIG0_OVER			BIT(3)
-> +#define SENSOR_CONFIG0_TCALC_OVER		BIT(4)
-> +#define SENSOR_CONFIG0_TALL_MASK		(0xfffff << 8)
-> +#define SENSOR_CONFIG0_TALL_SHIFT		8
-> =20
->  #define SENSOR_CONFIG1				4
-> +#define SENSOR_CONFIG1_TSAMPLE_MASK		0x3ff
->  #define SENSOR_CONFIG1_TSAMPLE_SHIFT		0
-> +#define SENSOR_CONFIG1_TIDDQ_EN_MASK		(0x3f << 15)
->  #define SENSOR_CONFIG1_TIDDQ_EN_SHIFT		15
-> +#define SENSOR_CONFIG1_TEN_COUNT_MASK		(0x3f << 24)
->  #define SENSOR_CONFIG1_TEN_COUNT_SHIFT		24
->  #define SENSOR_CONFIG1_TEMP_ENABLE		BIT(31)
-> =20
-> @@ -49,6 +54,14 @@
->   * because, it will be used by tegra_soctherm_fuse.c
->   */
-> =20
-> +#define SENSOR_STATUS0				0xc
-> +#define SENSOR_STATUS0_VALID_MASK		BIT(31)
-> +#define SENSOR_STATUS0_CAPTURE_MASK		0xffff
+> +static const int min_low_temp =3D -127000;
+> +static const int max_high_temp =3D 127000;
 > +
-> +#define SENSOR_STATUS1				0x10
-> +#define SENSOR_STATUS1_TEMP_VALID_MASK		BIT(31)
-> +#define SENSOR_STATUS1_TEMP_MASK		0xffff
-> +
->  #define READBACK_VALUE_MASK			0xff00
->  #define READBACK_VALUE_SHIFT			8
->  #define READBACK_ADD_HALF			BIT(7)
-> @@ -73,6 +86,8 @@ struct tegra_soctherm {
-> =20
->  	u32 *calib;
->  	struct tegra_soctherm_soc *soc;
-> +
-> +	struct dentry *debugfs_dir;
+>  struct tegra_thermctl_zone {
+>  	void __iomem *reg;
+> -	u32 mask;
+> +	struct device *dev;
+> +	struct thermal_zone_device *tz;
+
+
+Why not using tz->dev for the *dev above?
+
+> +	const struct tegra_tsensor_group *sg;
 >  };
 > =20
->  static int enable_tsensor(struct tegra_soctherm *tegra,
-> @@ -140,6 +155,124 @@ static const struct thermal_zone_of_device_ops tegr=
-a_of_thermal_ops =3D {
+>  struct tegra_soctherm {
+> @@ -145,22 +150,158 @@ static int tegra_thermctl_get_temp(void *data, int=
+ *out_temp)
+>  	u32 val;
+> =20
+>  	val =3D readl(zone->reg);
+> -	val =3D REG_GET_MASK(val, zone->mask);
+> +	val =3D REG_GET_MASK(val, zone->sg->sensor_temp_mask);
+>  	*out_temp =3D translate_temp(val);
+> =20
+>  	return 0;
+>  }
+> =20
+> +static int
+> +thermtrip_program(struct device *dev, const struct tegra_tsensor_group *=
+sg,
+> +		  int trip_temp);
+> +
+> +static int tegra_thermctl_set_trip_temp(void *data, int trip, int temp)
+> +{
+> +	struct tegra_thermctl_zone *zone =3D data;
+> +	struct thermal_zone_device *tz =3D zone->tz;
+> +	const struct tegra_tsensor_group *sg =3D zone->sg;
+> +	struct device *dev =3D zone->dev;
+> +	enum thermal_trip_type type;
+> +	int ret;
+> +
+> +	if (!tz)
+> +		return -EINVAL;
+
+
+Is the above check needed? If you saw a case in which your function is
+called without tz, would it be the case we have a but in the probe (or
+even worse, in thermal-core)?
+
+> +
+> +	ret =3D tz->ops->get_trip_type(tz, trip, &type);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (type !=3D THERMAL_TRIP_CRITICAL)
+> +		return 0;
+> +
+> +	return thermtrip_program(dev, sg, temp);
+> +}
+> +
+>  static const struct thermal_zone_of_device_ops tegra_of_thermal_ops =3D {
 >  	.get_temp =3D tegra_thermctl_get_temp,
+> +	.set_trip_temp =3D tegra_thermctl_set_trip_temp,
 >  };
 > =20
-> +#ifdef CONFIG_DEBUG_FS
-> +static int regs_show(struct seq_file *s, void *data)
+> +/**
+> + * enforce_temp_range() - check and enforce temperature range [min, max]
+> + * @trip_temp: the trip temperature to check
+> + *
+> + * Checks and enforces the permitted temperature range that SOC_THERM
+> + * HW can support This is
+> + * done while taking care of precision.
+> + *
+> + * Return: The precision adjusted capped temperature in millicelsius.
+> + */
+> +static int enforce_temp_range(struct device *dev, int trip_temp)
 > +{
-> +	struct platform_device *pdev =3D s->private;
-> +	struct tegra_soctherm *ts =3D platform_get_drvdata(pdev);
-> +	const struct tegra_tsensor *tsensors =3D ts->soc->tsensors;
-> +	u32 r, state;
-> +	int i;
+> +	int temp;
 > +
-> +	seq_puts(s, "-----TSENSE (convert HW)-----\n");
+> +	temp =3D clamp_val(trip_temp, min_low_temp, max_high_temp);
+> +	if (temp !=3D trip_temp)
+> +		dev_info(dev, "soctherm: trip temperature %d forced to %d\n",
+> +			 trip_temp, temp);
+> +	return temp;
+> +}
 > +
-> +	for (i =3D 0; i < ts->soc->num_tsensors; i++) {
-> +		r =3D readl(ts->regs + tsensors[i].base + SENSOR_CONFIG1);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG1_TEMP_ENABLE);
-> +		if (!state)
-> +			continue;
+> +/**
+> + * thermtrip_program() - Configures the hardware to shut down the
+> + * system if a given sensor group reaches a given temperature
+> + * @dev: ptr to the struct device for the SOC_THERM IP block
+> + * @sg: pointer to the sensor group to set the thermtrip temperature for
+> + * @trip_temp: the temperature in millicelsius to trigger the thermal tr=
+ip at
+> + *
+> + * Sets the thermal trip threshold of the given sensor group to be the
+> + * @trip_temp.  If this threshold is crossed, the hardware will shut
+> + * down.
+> + *
+> + * Note that, although @trip_temp is specified in millicelsius, the
+> + * hardware is programmed in degrees Celsius.
+> + *
+> + * Return: 0 upon success, or %-EINVAL upon failure.
+> + */
+> +static int thermtrip_program(struct device *dev,
+> +			     const struct tegra_tsensor_group *sg,
+> +			     int trip_temp)
+> +{
+> +	struct tegra_soctherm *ts =3D dev_get_drvdata(dev);
+> +	int temp;
+> +	u32 r;
 > +
-> +		seq_printf(s, "%s: ", tsensors[i].name);
+> +	if (!dev || !sg)
+> +		return -EINVAL;
 > +
-> +		seq_printf(s, "En(%d) ", state);
-
-
-Shouldnt the above if (!state) be place right here?
-
-
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG1_TIDDQ_EN_MASK);
-> +		seq_printf(s, "tiddq(%d) ", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG1_TEN_COUNT_MASK);
-> +		seq_printf(s, "ten_count(%d) ", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG1_TSAMPLE_MASK);
-> +		seq_printf(s, "tsample(%d) ", state + 1);
+> +	if (!sg->thermtrip_threshold_mask)
+> +		return -EINVAL;
 > +
-> +		r =3D readl(ts->regs + tsensors[i].base + SENSOR_STATUS1);
-> +		state =3D REG_GET_MASK(r, SENSOR_STATUS1_TEMP_VALID_MASK);
-> +		seq_printf(s, "Temp(%d/", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_STATUS1_TEMP_MASK);
-> +		seq_printf(s, "%d) ", translate_temp(state));
+> +	temp =3D enforce_temp_range(dev, trip_temp) / ts->soc->thresh_grain;
 > +
-> +		r =3D readl(ts->regs + tsensors[i].base + SENSOR_STATUS0);
-> +		state =3D REG_GET_MASK(r, SENSOR_STATUS0_VALID_MASK);
-> +		seq_printf(s, "Capture(%d/", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_STATUS0_CAPTURE_MASK);
-> +		seq_printf(s, "%d) ", state);
+> +	r =3D readl(ts->regs + THERMCTL_THERMTRIP_CTL);
+> +	r =3D REG_SET_MASK(r, sg->thermtrip_threshold_mask, temp);
+> +	r =3D REG_SET_MASK(r, sg->thermtrip_enable_mask, 1);
+> +	r =3D REG_SET_MASK(r, sg->thermtrip_any_en_mask, 0);
+> +	writel(r, ts->regs + THERMCTL_THERMTRIP_CTL);
 > +
-> +		r =3D readl(ts->regs + tsensors[i].base + SENSOR_CONFIG0);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG0_STOP);
-> +		seq_printf(s, "Stop(%d) ", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG0_TALL_MASK);
-> +		seq_printf(s, "Tall(%d) ", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG0_TCALC_OVER);
-> +		seq_printf(s, "Over(%d/", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG0_OVER);
-> +		seq_printf(s, "%d/", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG0_CPTR_OVER);
-> +		seq_printf(s, "%d) ", state);
-> +
-> +		r =3D readl(ts->regs + tsensors[i].base + SENSOR_CONFIG2);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG2_THERMA_MASK);
-> +		seq_printf(s, "Therm_A/B(%d/", state);
-> +		state =3D REG_GET_MASK(r, SENSOR_CONFIG2_THERMB_MASK);
-> +		seq_printf(s, "%d)\n", (s16)state);
-> +	}
-> +
-> +	r =3D readl(ts->regs + SENSOR_PDIV);
-> +	seq_printf(s, "PDIV: 0x%x\n", r);
-
-This is a matter of taste, but:
-
-Why here %x but all the above %d?
-
-Reg dumps are typically %x.
-> +
-> +	r =3D readl(ts->regs + SENSOR_HOTSPOT_OFF);
-> +	seq_printf(s, "HOTSPOT: 0x%x\n", r);
-> +
-> +	seq_puts(s, "\n");
-> +	seq_puts(s, "-----SOC_THERM-----\n");
-> +
-> +	r =3D readl(ts->regs + SENSOR_TEMP1);
-> +	state =3D REG_GET_MASK(r, SENSOR_TEMP1_CPU_TEMP_MASK);
-> +	seq_printf(s, "Temperatures: CPU(%d) ", translate_temp(state));
-
-Maybe a line break before CPU, for consistency?
-
-> +	state =3D REG_GET_MASK(r, SENSOR_TEMP1_GPU_TEMP_MASK);
-> +	seq_printf(s, " GPU(%d) ", translate_temp(state));
-> +	r =3D readl(ts->regs + SENSOR_TEMP2);
-> +	state =3D REG_GET_MASK(r, SENSOR_TEMP2_PLLX_TEMP_MASK);
-> +	seq_printf(s, " PLLX(%d) ", translate_temp(state));
-> +	state =3D REG_GET_MASK(r, SENSOR_TEMP2_MEM_TEMP_MASK);
-> +	seq_printf(s, " MEM(%d)\n", translate_temp(state));
-> +
-
-I got confused, I thought you would the above mapped as tsensors[i]. I
-will check the code again.
-
-
 > +	return 0;
 > +}
 > +
-> +static int regs_open(struct inode *inode, struct file *file)
+> +/**
+> + * tegra_soctherm_set_hwtrips() - set HW trip point from DT data
+> + * @dev: struct device * of the SOC_THERM instance
+> + *
+> + * Configure the SOC_THERM HW trip points, setting "THERMTRIP"
+> + * trip points , using "critical" type trip_temp from thermal
+> + * zone.
+> + * After they have been configured, THERMTRIP will take action
+> + * when the configured SoC thermal sensor group reaches a
+> + * certain temperature.
+> + *
+> + * Return: 0 upon success, or a negative error code on failure.
+> + * "Success" does not mean that trips was enabled; it could also
+> + * mean that no node was found in DT.
+> + * THERMTRIP has been enabled successfully when a message similar to
+> + * this one appears on the serial console:
+> + * "thermtrip: will shut down when sensor group XXX reaches YYYYYY mC"
+> + */
+> +static int tegra_soctherm_set_hwtrips(struct device *dev,
+> +				      const struct tegra_tsensor_group *sg,
+> +				      struct thermal_zone_device *tz)
 > +{
-> +	return single_open(file, regs_show, inode->i_private);
-> +}
+> +	int temperature;
+> +	int ret;
 > +
-> +static const struct file_operations regs_fops =3D {
-> +	.open		=3D regs_open,
-> +	.read		=3D seq_read,
-> +	.llseek		=3D seq_lseek,
-> +	.release	=3D single_release,
-> +};
-> +
-> +static void soctherm_debug_init(struct platform_device *pdev)
-> +{
-> +	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
-> +	struct dentry *root, *file;
-> +
-> +	root =3D debugfs_create_dir("soctherm", NULL);
-> +	if (!root) {
-> +		dev_err(&pdev->dev, "failed to create debugfs directory\n");
-> +		return;
+> +	ret =3D tz->ops->get_crit_temp(tz, &temperature);
+> +	if (ret) {
+> +		dev_warn(dev, "thermtrip: %s: missing critical temperature\n",
+> +			sg->name);
+> +		return ret;
 > +	}
 > +
-> +	tegra->debugfs_dir =3D root;
+> +	ret =3D thermtrip_program(dev, sg, temperature);
+> +	if (ret) {
+> +		dev_err(dev, "thermtrip: %s: error during enable\n",
+> +			sg->name);
+> +		return ret;
+> +	}
 > +
-> +	file =3D debugfs_create_file("reg_contents", 0644, root,
-> +				   pdev, &regs_fops);
-> +	if (!file)
-> +		dev_err(&pdev->dev, "failed to create debugfs file\n");
-
-Are we leaving the 'soctherm' dir left uncleaned in fail path here?
-
-> +}
-> +#else
-> +static inline void soctherm_debug_init(struct platform_device *pdev)
-> +{
+> +	dev_info(dev,
+> +		 "thermtrip: will shut down when %s reaches %d mC\n",
+> +		 sg->name, temperature);
+> +
 > +	return 0;
-
-I dont think we need this return for a void function.
-
 > +}
-> +#endif
 > +
->  static const struct of_device_id tegra_soctherm_of_match[] =3D {
->  #ifdef CONFIG_ARCH_TEGRA_124_SOC
->  	{
-> @@ -279,6 +412,8 @@ static int tegra_soctherm_probe(struct platform_devic=
-e *pdev)
->  		}
->  	}
+>  #ifdef CONFIG_DEBUG_FS
+>  static int regs_show(struct seq_file *s, void *data)
+>  {
+>  	struct platform_device *pdev =3D s->private;
+>  	struct tegra_soctherm *ts =3D platform_get_drvdata(pdev);
+>  	const struct tegra_tsensor *tsensors =3D ts->soc->tsensors;
+> +	const struct tegra_tsensor_group **ttgs =3D ts->soc->ttgs;
+>  	u32 r, state;
+>  	int i;
 > =20
-> +	soctherm_debug_init(pdev);
+> @@ -233,6 +374,17 @@ static int regs_show(struct seq_file *s, void *data)
+>  	state =3D REG_GET_MASK(r, SENSOR_TEMP2_MEM_TEMP_MASK);
+>  	seq_printf(s, " MEM(%d)\n", translate_temp(state));
+> =20
+> +	r =3D readl(ts->regs + THERMCTL_THERMTRIP_CTL);
+> +	state =3D REG_GET_MASK(r, ttgs[0]->thermtrip_any_en_mask);
+> +	seq_printf(s, "Thermtrip Any En(%d)\n", state);
+> +	for (i =3D 0; i < ts->soc->num_ttgs; i++) {
+> +		state =3D REG_GET_MASK(r, ttgs[i]->thermtrip_enable_mask);
+> +		seq_printf(s, "     %s En(%d) ", ttgs[i]->name, state);
+> +		state =3D REG_GET_MASK(r, ttgs[i]->thermtrip_threshold_mask);
+> +		state *=3D ts->soc->thresh_grain;
+> +		seq_printf(s, "Thresh(%d)\n", state);
+> +	}
 > +
 >  	return 0;
+>  }
 > =20
->  disable_clocks:
-> @@ -292,6 +427,8 @@ static int tegra_soctherm_remove(struct platform_devi=
+> @@ -388,8 +540,6 @@ static int tegra_soctherm_probe(struct platform_devic=
+e *pdev)
+>  	writel(pdiv, tegra->regs + SENSOR_PDIV);
+>  	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
+> =20
+> -	/* Initialize thermctl sensors */
+> -
+>  	for (i =3D 0; i < soc->num_ttgs; ++i) {
+>  		struct tegra_thermctl_zone *zone =3D
+>  			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
+> @@ -399,7 +549,8 @@ static int tegra_soctherm_probe(struct platform_devic=
+e *pdev)
+>  		}
+> =20
+>  		zone->reg =3D tegra->regs + soc->ttgs[i]->sensor_temp_offset;
+> -		zone->mask =3D soc->ttgs[i]->sensor_temp_mask;
+> +		zone->dev =3D &pdev->dev;
+> +		zone->sg =3D soc->ttgs[i];
+> =20
+>  		z =3D devm_thermal_zone_of_sensor_register(&pdev->dev,
+>  							 soc->ttgs[i]->id, zone,
+> @@ -410,6 +561,11 @@ static int tegra_soctherm_probe(struct platform_devi=
 ce *pdev)
->  {
->  	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
-> =20
-> +	debugfs_remove_recursive(tegra->debugfs_dir);
+>  				err);
+>  			goto disable_clocks;
+>  		}
 > +
->  	clk_disable_unprepare(tegra->clock_tsensor);
->  	clk_disable_unprepare(tegra->clock_soctherm);
+> +		zone->tz =3D z;
+> +
+> +		/* Configure hw trip points */
+> +		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
+>  	}
 > =20
-> diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegra/soc=
-therm.h
-> index 69d317269af1..ec4b87616d01 100644
-> --- a/drivers/thermal/tegra/soctherm.h
-> +++ b/drivers/thermal/tegra/soctherm.h
-> @@ -16,7 +16,9 @@
->  #define __DRIVERS_THERMAL_TEGRA_SOCTHERM_H
-> =20
->  #define SENSOR_CONFIG2                          8
-> +#define SENSOR_CONFIG2_THERMA_MASK		(0xffff << 16)
->  #define SENSOR_CONFIG2_THERMA_SHIFT		16
-> +#define SENSOR_CONFIG2_THERMB_MASK		0xffff
->  #define SENSOR_CONFIG2_THERMB_SHIFT		0
-> =20
->  #define SENSOR_PDIV				0x1c0
-> --=20
+<cut>
+
 > 1.9.1
 >=20
 
---H+4ONPRPur6+Ovig
+--f+W+jCU1fRNres8c
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQEcBAEBAgAGBQJW5ww1AAoJEMLUO4d9pOJWQLQH/21UQecfD1JenRT8NV5bU4Mr
-iQqkbiI+Si+RD4J8SGyHNxekCjkPHloPXZbwFnFRIW8zl8B/T5um37IW3eJAGerM
-zXC8K3aPq0bTHwBr7+l5e+26BSMY2pTuf4XH74E96usnQWvReGCsGEGGCO3yBxx6
-nMfO84VuNy00i5dGJmymGXiWEipYBP4Td4xBukcZMUC9TCOguIVIoUS9CbznBc8c
-6Q/kOiMYgSC2F33xFXhoJGKzV1pWM5l9Lb/gpm/xrcpI0/X7XOUhBPUwFd0zWjVb
-t50Tsizmg+4XG9DP8qBBvdhKYtxuTRGc/ROn5YNSQGJ85MV2sm9hFvMYzIjm5yk=
-=9ptY
+iQEcBAEBAgAGBQJW5w4TAAoJEMLUO4d9pOJWbSsH/R4OkE73UahE6Gmty0wH05Ym
+mhyRN6eJedIiIuqZWfNSffXgJTb5bYlpYyc46kh4PlyBy9Ezkk88am/NEdOymc2A
+Iho8VzJppkXczwlEq2aP+27R5LwsplU7WGvhbcBRNz5L9YvfP6pInMVUt71zFo22
+wL2/yri8ufpwU8OOgEI1E/Vht2TKSHUl8hCStmnvRB+MLCYadgpTQ8L0NuEWwFgq
+69JIZYVgVkhahdjOGn1taa5RTINro8RG0muqiW2zuapyefPpNcEgsTCRlSD2s+ih
+kUnv+NYmV9Tj+BxtOTUSiaRidK+fwM1ueVXdw+de9VSQ8bB+WWJ8H+qBG+siQww=
+=YMA1
 -----END PGP SIGNATURE-----
 
---H+4ONPRPur6+Ovig--
+--f+W+jCU1fRNres8c--
