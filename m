@@ -1,65 +1,75 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal SoC management updates for v4.6-rc1
-Date: Sun, 13 Mar 2016 21:55:29 -0700
-Message-ID: <20160314045521.GA4330@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: [PATCH 0/8] schedutil enhancements
+Date: Sun, 13 Mar 2016 22:22:04 -0700
+Message-ID: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35354 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932908AbcCNF0M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 01:26:12 -0400
+Received: by mail-pa0-f47.google.com with SMTP id td3so121779875pab.2
+        for <linux-pm@vger.kernel.org>; Sun, 13 Mar 2016 22:26:12 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-Hello Rui,
+I'm happy that scheduler-driven cpu frequency selection is getting some
+attention. Rafael's recent schedutil governor is a step in the right direction.
+This series builds on top of Rafael's schedutil governor, bringing it to parity
+with some of the features in the schedfreq series posted by Steve[0], as well
+as adding a couple of new things.
 
-Please pull from
+Patch 1 removes cpufreq_trigger_update()
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+Patches 2-4 move the cfs capacity margin out of the governor and into
+cfs. This value is made tunable by a sysfs control in schedutil.
 
-to receive Thermal-SoC Management updates for v4.6-rc1 with top-most
+Patches 5-6 make cpufreq_update_util() aware of multiple scheduler
+classes (cfs, rt & dl), and add storage & summation of these per-class
+utilization values into schedutil.
 
-61f846f37354fd294f3172845d9fec2c03f60a45:
+Patches 7-8 introduces Dietmar's generic cpufreq implementation[1] of the
+frequency invariance hook and changes the preprocessor magic in sched.h to
+favor the cpufreq implementation over arch- or platform-specific ones.
 
-  thermal: doc: Add details of devm_thermal_zone_of_sensor_{register,unregister} (2016-03-09 10:51:41 -0800)
+If accepted, this series makes it trivial to port Steve and Juri's fine-grained
+frequency selection in cfs and Vincent's rt utilization patch to the schedutil
+governor.[2-6]
 
-on top of commit 2850713576e81e3b887cd92a9965fba0dd1717c0:
+[0] lkml.kernel.org/r/1456190570-4475-1-git-send-email-smuckle@linaro.org
+[1] https://git.linaro.org/people/steve.muckle/kernel.git/commit/1b7e57f89f14f7600e75e6fde42bf22d72927b3d
+[2] lkml.kernel.org/r/1456190570-4475-5-git-send-email-smuckle@linaro.org
+[3] lkml.kernel.org/r/1456190570-4475-6-git-send-email-smuckle@linaro.org
+[4] lkml.kernel.org/r/1456190570-4475-7-git-send-email-smuckle@linaro.org
+[5] lkml.kernel.org/r/1456190570-4475-8-git-send-email-smuckle@linaro.org
+[6] lkml.kernel.org/r/1456190570-4475-11-git-send-email-smuckle@linaro.org
 
-  Merge branch 'for-linus' of git://git.kernel.dk/linux-block (2016-02-17 11:59:23 -0800)
+Dietmar Eggemann (1):
+  cpufreq: Frequency invariant scheduler load-tracking support
 
-Specifics in this pull request:
-- New driver:  Mediatek thermal driver, thanks Sascha
-- New API: devm_ versions for OF thermal sensor register API, thanks Laxman
-- These change have been CI tested using KernelCI bot [1,2]. \o/
+Michael Turquette (7):
+  sched/cpufreq: remove cpufreq_trigger_update()
+  sched/fair: add margin to utilization update
+  sched/cpufreq: new cfs capacity margin helpers
+  cpufreq/schedutil: sysfs capacity margin tunable
+  sched/cpufreq: pass sched class into cpufreq_update_util
+  cpufreq/schedutil: sum per-sched class utilization
+  sched: prefer cpufreq_scale_freq_capacity
 
-[1] - https://kernelci.org/boot/all/job/evalenti/kernel/v4.5-rc6-28-g873b196fb797/
-[2] - https://kernelci.org/build/evalenti/kernel/v4.5-rc6-28-g873b196fb797/
+ drivers/cpufreq/cpufreq.c           | 29 ++++++++++++
+ drivers/cpufreq/cpufreq_governor.c  |  5 +-
+ drivers/cpufreq/cpufreq_schedutil.c | 70 ++++++++++++++++++++++++----
+ drivers/cpufreq/intel_pstate.c      |  5 +-
+ include/linux/cpufreq.h             |  3 ++
+ include/linux/sched.h               | 19 ++++++--
+ kernel/sched/cpufreq.c              | 92 +++++++++++++++++++++++++------------
+ kernel/sched/deadline.c             |  2 +-
+ kernel/sched/fair.c                 | 18 +++++++-
+ kernel/sched/rt.c                   |  2 +-
+ kernel/sched/sched.h                | 29 +++++++++---
+ 11 files changed, 219 insertions(+), 55 deletions(-)
 
-BR,
+-- 
+2.1.4
 
-Eduardo Valentin
-
-----------------------------------------------------------------
-Eduardo Valentin (2):
-      thermal: small style cleanup in mtk_thermal
-      thermal: mtk: allow compile testing on UM
-
-Laxman Dewangan (3):
-      thermal: doc: Add details of thermal_zone_of_sensor_{register,unregister}
-      thermal: of-thermal: Add devm version of thermal_zone_of_sensor_register
-      thermal: doc: Add details of devm_thermal_zone_of_sensor_{register,unregister}
-
-Sascha Hauer (2):
-      dt-bindings: thermal: Add binding document for Mediatek thermal controller
-      thermal: Add Mediatek thermal controller support
-
- .../bindings/thermal/mediatek-thermal.txt          |  43 ++
- Documentation/thermal/sysfs-api.txt                |  68 +++
- drivers/thermal/Kconfig                            |   9 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/mtk_thermal.c                      | 625 +++++++++++++++++++++
- drivers/thermal/of-thermal.c                       |  81 +++
- include/linux/thermal.h                            |  18 +
- 7 files changed, 845 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
- create mode 100644 drivers/thermal/mtk_thermal.c
