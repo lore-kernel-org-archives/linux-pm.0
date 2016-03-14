@@ -1,21 +1,25 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI material for v4.6-rc1, part 1
-Date: Tue, 15 Mar 2016 00:39:12 +0100
-Message-ID: <CAJZ5v0i6nK2FNPiQhSgvF0E-EveE8mtAemST_ijjHt8rfWPZ-A@mail.gmail.com>
+Subject: [GIT PULL][Update] Power management and ACPI material for v4.6-rc1,
+ part 1
+Date: Tue, 15 Mar 2016 00:45:45 +0100
+Message-ID: <CAJZ5v0gaX+SrVkHYMRg-A0xm3eBmzF_Coqtc9HOKEvP4kcsvmA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pci-owner@vger.kernel.org>
 Sender: linux-pci-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
 
+I have messed up the tag name in the original post, so here it goes
+again, sorry about that.
+
 Please pull from
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.5-rc6-1
+ pm+acpi-4.6-rc1-1
 
 to receive the first batch of power management and ACPI updates for
 v4.6-rc1 with top-most commit 0d571b62dd8eb341788599259c3dbc92c0dc8f22
