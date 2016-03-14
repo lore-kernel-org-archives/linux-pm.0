@@ -1,141 +1,110 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 12/13] thermal: convert tegra_thermal to use
- devm_thermal_zone_of_sensor_register
-Date: Mon, 14 Mar 2016 14:16:08 -0700
-Message-ID: <20160314211607.GC4740@localhost.localdomain>
-References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
- <1457559336-17652-13-git-send-email-edubezval@gmail.com>
- <56E1347F.8040406@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Mon, 14 Mar 2016 23:55:51 +0100
+Message-ID: <CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<97183685.ubU62sp0PR@vostro.rjw.lan>
+	<001001d17cfc$67721e70$36565b50$@net>
+	<3851575.bLxYIFy0zG@vostro.rjw.lan>
+	<001901d17dbc$3788f060$a69ad120$@net>
+	<CAJZ5v0g68mq0bKy5UTzh8qM7fFC0a0SY9+EA2GsDhCVUcSLD1g@mail.gmail.com>
+	<1457965862.8898.4.camel@redhat.com>
+	<CAJZ5v0iuLP6b3LHY_BVmAQ12qeeVWhVUPnBh=F4-nFuFr_73DQ@mail.gmail.com>
+	<1457977512.8898.13.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lCAWRPmW1mITcIfM"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <56E1347F.8040406@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:36466 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbcCNWzx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 18:55:53 -0400
+Received: by mail-lb0-f178.google.com with SMTP id x1so259362453lbj.3
+        for <linux-pm@vger.kernel.org>; Mon, 14 Mar 2016 15:55:52 -0700 (PDT)
+In-Reply-To: <1457977512.8898.13.camel@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
+On Mon, Mar 14, 2016 at 6:45 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Mon, 2016-03-14 at 16:21 +0100, Rafael J. Wysocki wrote:
+>> On Mon, Mar 14, 2016 at 3:31 PM, Rik van Riel <riel@redhat.com>
+>> wrote:
+>> >
+>> > Maybe something like 2x the exit latency (or target
+>> > residency?) of C1?
+>>
+>> If the goal is to avoid entering C1 if the exit latency is too high,
+>> we should be checking the exit latency IMO.
+>
+> I agree with that, but doesn't the current code already
+> do that?
 
---lCAWRPmW1mITcIfM
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For reference, here's what the current code does:
 
-On Thu, Mar 10, 2016 at 04:46:55PM +0800, Wei Ni wrote:
->=20
->=20
-> On 2016=E5=B9=B403=E6=9C=8810=E6=97=A5 05:35, Eduardo Valentin wrote:
-> > This changes the driver to use the devm_ version
-> > of thermal_zone_of_sensor_register and cleans
-> > up the  local points and unregister calls.
-> >=20
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Stephen Warren <swarren@wwwdotorg.org>
-> > Cc: Thierry Reding <thierry.reding@gmail.com>
-> > Cc: Alexandre Courbot <gnurou@gmail.com>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-tegra@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> > ---
-> >  drivers/thermal/tegra_soctherm.c | 31 +++++++++----------------------
-> >  1 file changed, 9 insertions(+), 22 deletions(-)
-> >=20
-> > diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra_s=
-octherm.c
-> > index 74ea576..0018ccd 100644
-> > --- a/drivers/thermal/tegra_soctherm.c
-> > +++ b/drivers/thermal/tegra_soctherm.c
-> > @@ -168,7 +168,7 @@ struct tegra_soctherm {
-> >  	struct clk *clock_soctherm;
-> >  	void __iomem *regs;
-> > =20
-> > -	struct thermal_zone_device *thermctl_tzs[4];
-> > +#define ZONE_NUMBER		4
-> >  };
-> > =20
-> >  struct tsensor_shared_calibration {
-> > @@ -342,7 +342,7 @@ static const struct thermctl_zone_desc t124_thermct=
-l_temp_zones[] =3D {
-> >  static int tegra_soctherm_probe(struct platform_device *pdev)
-> >  {
-> >  	struct tegra_soctherm *tegra;
-> > -	struct thermal_zone_device *tz;
-> > +	struct thermal_zone_device *z;
-> >  	struct tsensor_shared_calibration shared_calib;
-> >  	struct resource *res;
-> >  	unsigned int i;
-> > @@ -408,36 +408,29 @@ static int tegra_soctherm_probe(struct platform_d=
-evice *pdev)
-> > =20
-> >  	/* Initialize thermctl sensors */
-> > =20
-> > -	for (i =3D 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
-> > +	for (i =3D 0; i < ZONE_NUMBER; ++i) {
-> >  		struct tegra_thermctl_zone *zone =3D
-> >  			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
-> >  		if (!zone) {
-> >  			err =3D -ENOMEM;
-> > -			goto unregister_tzs;
-> > +			goto disable_clocks;
-> >  		}
-> > =20
-> >  		zone->reg =3D tegra->regs + t124_thermctl_temp_zones[i].offset;
-> >  		zone->shift =3D t124_thermctl_temp_zones[i].shift;
-> > =20
-> > -		tz =3D thermal_zone_of_sensor_register(&pdev->dev, i, zone,
-> > -						     &tegra_of_thermal_ops);
-> > -		if (IS_ERR(tz)) {
-> > -			err =3D PTR_ERR(tz);
-> > +		z =3D devm_thermal_zone_of_sensor_register(&pdev->dev, i, zone,
->=20
-> I prefer to still use "tz", it seems this line isn't over 80 characters, =
-or we
-> can add newline.
+        data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+        /*
+         * We want to default to C1 (hlt), not to busy polling
+         * unless the timer is happening really really soon.
+         */
+        if (interactivity_req > 20 &&
+            !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+            dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+            data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
 
+> The code currently checks against both the latency_req
+> and the expected sleep time. What is the rationale for
+> adding another latency to check against?
 
-Yeah,
+Yes, it does check that in the main selection loop, but the check here
+(and in question) is special.
 
+If we end up using last_state_idx == 0 (polling), C1 will still be
+considered in the main selection loop and it will be selected if it
+satisfies all of the conditions.
 
->=20
-> > +							 &tegra_of_thermal_ops);
+If we use last_state_idx == CPUIDLE_DRIVER_STATE_START here, however,
+C1 won't be looked at again in the main selection loop, so the check
+here is to see whether or not to use C1 even if it *does* *not*
+satisfy all of the normal conditions.
 
-CHECK: Alignment should match open parenthesis
-#423: FILE: drivers/thermal/tegra_soctherm.c:423:
-+		tz =3D devm_thermal_zone_of_sensor_register(&pdev->dev, i, zone,
-+							 &tegra_of_thermal_ops);
+Granted, it generally is beneficial to use C1 rather than polling
+unless C1 is hopelessly slow and that is visible in the Doug's
+results.  Also granted, the way that piece of code worked before was
+too aggressive, because it didn't take the "C1 may be hopelessly slow"
+part into account at all.
 
-and if you align it, then, you get the warning:
-WARNING: line over 80 characters
-#423: FILE: drivers/thermal/tegra_soctherm.c:423:
-+							  &tegra_of_thermal_ops);
+> I am trying to understand what the goal is here, and
+> under what circumstances the logic in the main selection
+> loop needs to be overridden.
+>
+> What is the main selection loop doing wrong?
+>
+> When is it causing bad outcomes?
+>
+> Is it causing other bad outcomes beyond C0/C1 selection?
+>
+> Can we just ignore polling and always go to HLT, leaving
+> out this (somewhat kludgy feeling) part of the code?
 
-And I did not want to add either of the above to the driver.=20
+Len tells me that this would have hurt performance.
 
-But if you prefer tz over z, we can keep the first (check) then.
+> If HLT is sometimes too slow on Atom, is it also too slow
+> for certain workloads on faster CPUs? (say 10Gbps ethernet?)
 
-What do you prefer?
+Right.
 
+> A lot of the logic (especially the load correction) in
+> menu.c was last fine tuned before several bugs in the
+> corresponding measuring code were fixed.
+>
+> I don't understand your patch well enough to object to
+> it, but the "start the loop at poll instead of HLT"
+> logic is becoming rather convoluted...
 
+That logic has been there for quite a while, though.
 
-
-
---lCAWRPmW1mITcIfM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAEBAgAGBQJW5yoUAAoJEMLUO4d9pOJWaHkIAJuNjRDD8szeiQYLKqZint/c
-cxUOhuHdIALaINV0dNPJICwQ3BBwiSne4kOCDV4kRtzkWMfE/kxCVvxpzO3DEa7q
-RfIz78/A4mtE8BuMQ3NRK/NjwQb9co7GcC6ClDUg2mm/O1uADv6F1TAyGOkByFME
-KiOEoatGfKMODBeICVl4sdW1RjA2RE8QZn1jvXLw/yxz2GVbTyLm6JzOwA8Mqbxi
-x/9UiQ45IemEYQ2C7orzdeZE41cGrD1yBkVeQ2b6NkLApUn3/ZEJAT048UihAbto
-2F3w4PUzZ8Hc216ZEOgjj6cQk0nUZrGmlGaP/Is8iqkjzDfKwlhB4sHF0YOjcrM=
-=ZPKv
------END PGP SIGNATURE-----
-
---lCAWRPmW1mITcIfM--
+Really, the choice is between a simple revert of commit
+a9ceb78bc75ca47972096372ff3d48 and doing something in addition to it
+to mitigate the "C1 is hopelessly slow" issue.
