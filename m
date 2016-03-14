@@ -1,82 +1,70 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
- machines.
-Date: Mon, 14 Mar 2016 16:30:53 +0200
-Message-ID: <20160314143053.GJ1793@lahna.fi.intel.com>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
- <2736217.utxPzJExd5@vostro.rjw.lan>
- <20160311105815.GS1796@lahna.fi.intel.com>
- <2759763.dR5D0KopkA@vostro.rjw.lan>
- <CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
- <20160314094335.GE1796@lahna.fi.intel.com>
- <CAPM=9txx1s3ZZSaTAGDFh=hKk-Ek2Y=Wyw74CpTWu-cTDAnJ7A@mail.gmail.com>
- <20160314102357.GA1793@lahna.fi.intel.com>
- <CAJZ5v0igUCP8-uH+VUb5KmUeZv5khtMJRjUh-z=orHOgRrcmiw@mail.gmail.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Mon, 14 Mar 2016 10:31:02 -0400
+Message-ID: <1457965862.8898.4.camel@redhat.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	 <97183685.ubU62sp0PR@vostro.rjw.lan> <001001d17cfc$67721e70$36565b50$@net>
+	 <3851575.bLxYIFy0zG@vostro.rjw.lan> <001901d17dbc$3788f060$a69ad120$@net>
+	 <CAJZ5v0g68mq0bKy5UTzh8qM7fFC0a0SY9+EA2GsDhCVUcSLD1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0igUCP8-uH+VUb5KmUeZv5khtMJRjUh-z=orHOgRrcmiw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dave Airlie <airlied@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
+	boundary="=-Drpuuu/96OTk1FRNTyWV"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:34938 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965276AbcCNObI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Mar 2016 10:31:08 -0400
+In-Reply-To: <CAJZ5v0g68mq0bKy5UTzh8qM7fFC0a0SY9+EA2GsDhCVUcSLD1g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-On Mon, Mar 14, 2016 at 01:50:41PM +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 14, 2016 at 11:23 AM, Mika Westerberg
-> <mika.westerberg@linux.intel.com> wrote:
-> > On Mon, Mar 14, 2016 at 07:47:39PM +1000, Dave Airlie wrote:
-> >> >
-> >> >> -     if (pcie_port_runtime_suspend_allowed(dev))
-> >> >> +     if (pcie_port_runtime_suspend_allowed(dev)) {
-> >> >> +             pm_runtime_allow(&dev->dev);
-> >> >
-> >> > PCI drivers typically have left this decision up to the userspace. I'm
-> >> > wondering whether it is good idea to deviate from that here? Of course
-> >> > this allows immediate power savings but could potentially cause problems
-> >> > as well.
-> >> >
-> >>
-> >> No distro has ever shipped userspace to do this, I really think this
-> >> is a bad design.
-> >> We have wasted countless watts of power on this stupid idea that people will
-> >> run powertop, only a few people in the world run powertop, lots of
-> >> people use Linux.
-> >
-> > That is a fair point.
-> >
-> > I do not have anything against calling pm_runtime_allow() here. In fact
-> > we already do the same in Intel LPSS drivers. I just wanted to bring
-> > that up.
-> >
-> > Rafael, what do you think?
-> 
-> We can do that to start with.  If there are no problems in the field
-> with it, I don't see any problems in principle.
-> 
-> > If we anyway are going to add cut-off date to enable runtime PM we
-> > should expect that the hardware is also capable of doing so (and if not
-> > we can always blacklist the exceptions).
-> 
-> Sounds reasonable.
-> 
-> >> The kernel should power stuff down not wait for the user to run powertop,
-> >> At least for the GPU it's in the area of 8W of power, and I've got the
-> >> GPU drivers doing this themselves,
-> >>
-> >> I could have the GPU driver call runtime allow for it's host bridge I suppose,
-> >> if we insist on the userspace cares, but I'd prefer not doing so.
-> >>
-> >> > I think we need to add corresponding call to pm_runtime_forbid() in
-> >> > pcie_portdrv_remove().
-> >>
-> >> Yes most likely.
-> >
-> > BTW, I can add both calls to the next version of PCIe runtime PM patches
-> > if you are OK with that, and all agree this is a good idea.
-> 
-> That would be fine by me.
 
-OK thanks.
+--=-Drpuuu/96OTk1FRNTyWV
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I'll do these changes to the next version of the patch series then.
+On Mon, 2016-03-14 at 13:47 +0100, Rafael J. Wysocki wrote:
+>=C2=A0
+> Rik, I think what we can do is to put a constant limit on the exit
+> latency of C1 like in this patch.=C2=A0=C2=A0I'm not sure if 2 is good en=
+ough,
+> though.=C2=A0=C2=A0It can't be less than 2, because that's what the major=
+ity of
+> systems have, but maybe it can be greater?=C2=A0=C2=A0Any ideas?
+
+=46rom Doug's description, it sounds like the problem is not
+that we go into idle state 0 too often, but that sometimes
+we stay there too long.
+
+I wonder if it makes sense for idle state 0 to promote
+itself to idle state 1 after some amount of time?
+
+Maybe something like 2x the exit latency (or target
+residency?) of C1?
+
+--=20
+All Rights Reversed.
+
+
+--=-Drpuuu/96OTk1FRNTyWV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAABAgAGBQJW5ssmAAoJEM553pKExN6DIzEIAJaiKzYjxha+s3f8Odfrfire
+kGJaBC+3YrKXmZgvTaoxvZTu3S2fi1fUVt+G/6jq46+afk0Zo9tF7Mb7Zt4leiur
+XX8hU71soCPeL8IJUEmYobAD+BHjWVeqIMq9pSax9KyyRWz/Z6CVqqJqq1B64/zq
+L6Uz3O2BDtwnvnLnAQfW97iMj4X6e3dxyfzLuBp2E44TRaa4JpVbB/lDKw0iKrm/
+kV3V6hq5tC7i41sAMrgJjwuMr7/lmnQuYJFJSL4Tl9FsGSGfdfPEw4jTCzxZsqh2
+Me4zS3AtaZNWksQSDyw4UraZ1RMASb8e/l6BSRXAwYYqP6pZ12vK86I1lCyydF8=
+=0S85
+-----END PGP SIGNATURE-----
+
+--=-Drpuuu/96OTk1FRNTyWV--
+
