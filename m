@@ -1,141 +1,113 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V7 11/12] arm64: tegra: add soctherm node for Tegra210
-Date: Mon, 14 Mar 2016 12:25:01 -0700
-Message-ID: <20160314192500.GE1872@localhost.localdomain>
-References: <1457665894-30141-1-git-send-email-wni@nvidia.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 11/13] thermal: convert exynos to use
+ devm_thermal_zone_of_sensor_register
+Date: Mon, 14 Mar 2016 12:48:12 -0700
+Message-ID: <20160314194810.GF1872@localhost.localdomain>
+References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
+ <1457559336-17652-12-git-send-email-edubezval@gmail.com>
+ <56E0BCE4.6020309@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tMbDGjvJuJijemkf"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1457665894-30141-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-Id: linux-pm@vger.kernel.org
-
-
---tMbDGjvJuJijemkf
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:34118 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755505AbcCNTsQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 15:48:16 -0400
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <56E0BCE4.6020309@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Mar 11, 2016 at 11:11:34AM +0800, Wei Ni wrote:
-> Adds soctherm node for Tegra210, and add cpu,
-> gpu, mem, pllx as thermal-zones. Set critical
-> trip temp for cpu and gpu thermal zone.
->=20
-> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 60 ++++++++++++++++++++++++++=
-++++++
->  1 file changed, 60 insertions(+)
->=20
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/d=
-ts/nvidia/tegra210.dtsi
-> index cd4f45ccd6a7..c7ef500a347e 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> @@ -3,6 +3,7 @@
->  #include <dt-bindings/memory/tegra210-mc.h>
->  #include <dt-bindings/pinctrl/pinctrl-tegra.h>
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +#include <dt-bindings/thermal/tegra124-soctherm.h>
-> =20
->  / {
->  	compatible =3D "nvidia,tegra210";
-> @@ -802,4 +803,63 @@
->  				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
->  		interrupt-parent =3D <&gic>;
->  	};
-> +
-> +	soctherm: thermal-sensor@0,700e2000 {
-> +		compatible =3D "nvidia,tegra210-soctherm";
-> +		reg =3D <0x0 0x700e2000 0x0 0x1000>;
-> +		interrupts =3D <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks =3D <&tegra_car TEGRA210_CLK_TSENSOR>,
-> +			<&tegra_car TEGRA210_CLK_SOC_THERM>;
-> +		clock-names =3D "tsensor", "soctherm";
-> +		resets =3D <&tegra_car 78>;
-> +		reset-names =3D "soctherm";
-> +		#thermal-sensor-cells =3D <1>;
-> +	};
-> +
-> +	thermal-zones {
-> +		cpu {
-> +			polling-delay-passive =3D <1000>;
-> +			polling-delay =3D <0>;
-> +
-> +			thermal-sensors =3D
-> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
-> +
-> +			trips {
-> +				cpu_shutdown_trip: shutdown-trip {
-> +					temperature =3D <102500>;
-> +					hysteresis =3D <1000>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +		};
-> +		mem {
-> +			polling-delay-passive =3D <0>;
-> +			polling-delay =3D <0>;
-> +
-> +			thermal-sensors =3D
-> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
+On Thu, Mar 10, 2016 at 09:16:36AM +0900, Krzysztof Kozlowski wrote:
+> On 10.03.2016 06:35, Eduardo Valentin wrote:
+> > This changes the driver to use the devm_ version
+> > of thermal_zone_of_sensor_register and cleans
+> > up the  local points and unregister calls.
+> > 
+> > Cc: Lukasz Majewski <l.majewski@samsung.com>
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Kukjin Kim <kgene@kernel.org>
+> > Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-samsung-soc@vger.kernel.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > ---
+> >  drivers/thermal/samsung/exynos_tmu.c | 12 ++++--------
+> >  1 file changed, 4 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> > index fa61eff..256039e 100644
+> > --- a/drivers/thermal/samsung/exynos_tmu.c
+> > +++ b/drivers/thermal/samsung/exynos_tmu.c
+> > @@ -1363,8 +1363,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+> >  	 * data->tzd must be registered before calling exynos_tmu_initialize(),
+> >  	 * requesting irq and calling exynos_tmu_control().
+> >  	 */
+> > -	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> > -						    &exynos_sensor_ops);
+> > +	data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> > +							 &exynos_sensor_ops);
+> >  	if (IS_ERR(data->tzd)) {
+> >  		ret = PTR_ERR(data->tzd);
+> >  		dev_err(&pdev->dev, "Failed to register sensor: %d\n", ret);
+> > @@ -1374,21 +1374,19 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+> >  	ret = exynos_tmu_initialize(pdev);
+> >  	if (ret) {
+> >  		dev_err(&pdev->dev, "Failed to initialize TMU\n");
+> > -		goto err_thermal;
+> > +		goto err_sclk;
+> >  	}
+> >  
+> >  	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
+> >  		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+> >  	if (ret) {
+> >  		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+> > -		goto err_thermal;
+> > +		goto err_sclk;
+> >  	}
+> >  
+> >  	exynos_tmu_control(pdev, true);
+> >  	return 0;
+> >  
+> > -err_thermal:
+> > -	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+> >  err_sclk:
+> >  	clk_disable_unprepare(data->sclk);
+> >  err_clk:
+> > @@ -1406,9 +1404,7 @@ err_sensor:
+> >  static int exynos_tmu_remove(struct platform_device *pdev)
+> >  {
+> >  	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> > -	struct thermal_zone_device *tzd = data->tzd;
+> >  
+> > -	thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
+> 
+> Before, the sensor was removed from zone (ops like get_temp NULL-ified
+> etc), then we stopped TMU, disabled clocks, disabled regulator and
+> finally freed IRQ (through devm-like interface).
+> 
+> Now this will be different - first stop of TMU, disable clocks, disable,
+> regulator, remove sensor from zone (through devm) and finally free IRQ.
+> 
+> Are you sure that changing order is okay?
+
+Not really. After checking the driver code and your suggestions, I don't
+think this driver would benefit of this change, not at least the way it
+is currently.
+
+Thanks for pointing out. I am taking this driver out of the series.
 
 
-Why no trips for mem? Why should we  care ?
-
-Please have a look on the binding to check for mandatory properties and
-sub nodes.
-
-> +		};
-> +		gpu {
-> +			polling-delay-passive =3D <1000>;
-> +			polling-delay =3D <0>;
-> +
-> +			thermal-sensors =3D
-> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
-> +
-> +			trips {
-> +				gpu_shutdown_trip: shutdown-trip {
-> +					temperature =3D <103000>;
-> +					hysteresis =3D <1000>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +		};
-> +		pllx {
-> +			polling-delay-passive =3D <0>;
-> +			polling-delay =3D <0>;
-> +
-> +			thermal-sensors =3D
-> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
-
-ditto
-
-> +		};
-> +	};
->  };
-> --=20
-> 1.9.1
->=20
-
---tMbDGjvJuJijemkf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQEcBAEBAgAGBQJW5xALAAoJEMLUO4d9pOJWsEcH/0P3RwxImVvxf/9cX8tY19Vh
-C5D+jZzSBPPbpcp4EF/OOMVKY+8gbTp6qX7KIPz8JGmRJHS7cFQ0POvZfa57XU3H
-JsLG1Xl4/Qi+WVUeR3C5g8OIekMGYKNtUi/ptvwhDdvhpHkbHq26OCR3P6sOwIIC
-cfrzwSAg6vM6cqit8BavHZFeIVMr/gt5FC4mil3yJpEK3xzN0/liCIyVK05hO0lp
-WGJNzBwzaWi1MZ97grkUz7Ql5DDcM9hrYcHMGE1y0T6PundzEpypyqMqYVEzWQph
-lv0BDM8JwC+U+afceBaaaQrrxo9IG8cZpKDsBgga+Bf/hbTd94pcQ+P22zcBc5c=
-=TRKa
------END PGP SIGNATURE-----
-
---tMbDGjvJuJijemkf--
+> 
+> Best regards,
+> Krzysztof
+> 
+> >  	exynos_tmu_control(pdev, false);
+> >  
+> >  	clk_disable_unprepare(data->sclk);
+> > 
+> 
