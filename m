@@ -1,139 +1,96 @@
 From: Michael Turquette <mturquette@baylibre.com>
-Subject: [PATCH 6/8] cpufreq/schedutil: sum per-sched class utilization
-Date: Sun, 13 Mar 2016 22:22:10 -0700
-Message-ID: <1457932932-28444-7-git-send-email-mturquette+renesas@baylibre.com>
+Subject: [PATCH 2/8] sched/fair: add margin to utilization update
+Date: Sun, 13 Mar 2016 22:22:06 -0700
+Message-ID: <1457932932-28444-3-git-send-email-mturquette+renesas@baylibre.com>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:36355 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933463AbcCNF00 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 01:26:26 -0400
-Received: by mail-pa0-f43.google.com with SMTP id tt10so149509370pab.3
-        for <linux-pm@vger.kernel.org>; Sun, 13 Mar 2016 22:26:26 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, rjw@rjwysocki.net
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
+List-Id: linux-pm@vger.kernel.org
 
-Patch, "sched/cpufreq: pass sched class into cpufreq_update_util" made
-it possible for calls of cpufreq_update_util() to specify scheduler
-class, particularly cfs, rt & dl.
+Utilization contributions to cfs_rq->avg.util_avg are scaled for both
+microarchitecture-invariance as well as frequency-invariance. This means
+that any given utilization contribution will be scaled against the
+current cpu capacity (cpu frequency). Contributions from long running
+tasks, whose utilization grows larger over time, will asymptotically
+approach the current capacity.
 
-Update the schedutil governor to store these individual utilizations per
-cpu and sum them to create a total utilization contribution.
+This causes a problem when using this utilization signal to select a
+target cpu capacity (cpu frequency), as our signal will never exceed the
+current capacity, which would otherwise be our signal to increase
+frequency.
+
+Solve this by introducing a default capacity margin that is added to the
+utilization signal when requesting a change to capacity (cpu frequency).
+The margin is 1280, or 1.25 x SCHED_CAPACITY_SCALE (1024). This is
+equivalent to similar margins such as the default 125 value assigned to
+struct sched_domain.imbalance_pct for load balancing, and to the 80%
+up_threshold used by the legacy cpufreq ondemand governor.
 
 Signed-off-by: Michael Turquette <mturquette+renesas@baylibre.com>
 ---
- drivers/cpufreq/cpufreq_schedutil.c | 39 +++++++++++++++++++++++++++++++------
- 1 file changed, 33 insertions(+), 6 deletions(-)
+ kernel/sched/fair.c  | 18 ++++++++++++++++--
+ kernel/sched/sched.h |  3 +++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_schedutil.c b/drivers/cpufreq/cpufreq_schedutil.c
-index 18d9ca3..b9234e1 100644
---- a/drivers/cpufreq/cpufreq_schedutil.c
-+++ b/drivers/cpufreq/cpufreq_schedutil.c
-@@ -46,8 +46,10 @@ struct sugov_cpu {
- 	struct freq_update_hook update_hook;
- 	struct sugov_policy *sg_policy;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index a32f281..29e8bae 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,19 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+  */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
  
-+	unsigned long util[nr_util_types];
-+	unsigned long total_util;
++/*
++ * Add a 25% margin globally to all capacity requests from cfs. This is
++ * equivalent to an 80% up_threshold in legacy governors like ondemand.
++ *
++ * This is required as task utilization increases. The frequency-invariant
++ * utilization will asymptotically approach the current capacity of the cpu and
++ * the additional margin will cross the threshold into the next capacity state.
++ *
++ * XXX someday expand to separate, per-call site margins? e.g. enqueue, fork,
++ * task_tick, load_balance, etc
++ */
++unsigned long cfs_capacity_margin = CAPACITY_MARGIN_DEFAULT;
 +
- 	/* The fields below are only needed when sharing a policy. */
--	unsigned long util;
- 	unsigned long max;
- 	u64 last_update;
- };
-@@ -106,6 +108,18 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
- 	trace_cpu_frequency(freq, smp_processor_id());
- }
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -2840,6 +2853,8 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
  
-+static unsigned long sugov_sum_total_util(struct sugov_cpu *sg_cpu)
-+{
-+	enum sched_class_util sc;
-+
-+	/* sum the utilization of all sched classes */
-+	sg_cpu->total_util = 0;
-+	for (sc = 0; sc < nr_util_types; sc++)
-+		sg_cpu->total_util += sg_cpu->util[sc];
-+
-+	return sg_cpu->total_util;
-+}
-+
- static void sugov_update_single(struct freq_update_hook *hook,
- 				enum sched_class_util sc, u64 time,
- 				unsigned long util, unsigned long max)
-@@ -113,12 +127,17 @@ static void sugov_update_single(struct freq_update_hook *hook,
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_hook);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	unsigned int max_f, next_f;
-+	unsigned long total_util;
+ 	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
+ 		unsigned long max = rq->cpu_capacity_orig;
++		unsigned long cap = cfs_rq->avg.util_avg *
++			cfs_capacity_margin / max;
  
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
-+	/* update per-sched_class utilization for this cpu */
-+	sg_cpu->util[sc] = util;
-+	total_util = sugov_sum_total_util(sg_cpu);
-+
- 	max_f = sg_policy->max_freq;
--	next_f = util > max ? max_f : util * max_f / max;
-+	next_f = total_util > max ? max_f : total_util * max_f / max;
- 	sugov_update_commit(sg_policy, time, next_f);
- }
- 
-@@ -153,7 +172,7 @@ static unsigned int sugov_next_freq(struct sugov_policy *sg_policy,
- 		if ((s64)delta_ns > NSEC_PER_SEC / HZ)
- 			continue;
- 
--		j_util = j_sg_cpu->util;
-+		j_util = j_sg_cpu->total_util;
- 		j_max = j_sg_cpu->max;
- 		if (j_util > j_max)
- 			return max_f;
-@@ -174,15 +193,19 @@ static void sugov_update_shared(struct freq_update_hook *hook,
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_hook);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	unsigned int next_f;
-+	unsigned long total_util;
- 
- 	raw_spin_lock(&sg_policy->update_lock);
- 
--	sg_cpu->util = util;
-+	sg_cpu->util[sc] = util;
- 	sg_cpu->max = max;
- 	sg_cpu->last_update = time;
- 
-+	/* update per-sched_class utilization for this cpu */
-+	total_util = sugov_sum_total_util(sg_cpu);
-+
- 	if (sugov_should_update_freq(sg_policy, time)) {
--		next_f = sugov_next_freq(sg_policy, util, max);
-+		next_f = sugov_next_freq(sg_policy, total_util, max);
- 		sugov_update_commit(sg_policy, time, next_f);
+ 		/*
+ 		 * There are a few boundary cases this might miss but it should
+@@ -2852,8 +2867,7 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
+ 		 * thread is a different class (!fair), nor will the utilization
+ 		 * number include things like RT tasks.
+ 		 */
+-		cpufreq_update_util(rq_clock(rq),
+-				    min(cfs_rq->avg.util_avg, max), max);
++		cpufreq_update_util(rq_clock(rq), min(cap, max), max);
  	}
+ }
  
-@@ -423,6 +446,7 @@ static int sugov_start(struct cpufreq_policy *policy)
- {
- 	struct sugov_policy *sg_policy = policy->governor_data;
- 	unsigned int cpu;
-+	enum sched_class_util sc;
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index f06dfca..8c93ed2 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -27,6 +27,9 @@ extern __read_mostly int scheduler_running;
+ extern unsigned long calc_load_update;
+ extern atomic_long_t calc_load_tasks;
  
- 	sg_policy->freq_update_delay_ns = sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
- 	sg_policy->last_freq_update_time = 0;
-@@ -434,8 +458,11 @@ static int sugov_start(struct cpufreq_policy *policy)
- 		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
++#define CAPACITY_MARGIN_DEFAULT 1280;
++extern unsigned long cfs_capacity_margin;
++
+ extern void calc_global_load_tick(struct rq *this_rq);
+ extern long calc_load_fold_active(struct rq *this_rq);
  
- 		sg_cpu->sg_policy = sg_policy;
-+		for (sc = 0; sc < nr_util_types; sc++) {
-+			sg_cpu->util[sc] = ULONG_MAX;
-+			sg_cpu->total_util = ULONG_MAX;
-+		}
- 		if (policy_is_shared(policy)) {
--			sg_cpu->util = ULONG_MAX;
- 			sg_cpu->max = 0;
- 			sg_cpu->last_update = 0;
- 			cpufreq_set_freq_update_hook(cpu, &sg_cpu->update_hook,
 -- 
 2.1.4
-
