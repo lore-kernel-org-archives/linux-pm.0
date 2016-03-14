@@ -1,123 +1,71 @@
 From: Michael Turquette <mturquette@baylibre.com>
-Subject: [PATCH 7/8] cpufreq: Frequency invariant scheduler load-tracking support
-Date: Sun, 13 Mar 2016 22:22:11 -0700
-Message-ID: <1457932932-28444-8-git-send-email-mturquette+renesas@baylibre.com>
+Subject: [PATCH 8/8] sched: prefer cpufreq_scale_freq_capacity
+Date: Sun, 13 Mar 2016 22:22:12 -0700
+Message-ID: <1457932932-28444-9-git-send-email-mturquette+renesas@baylibre.com>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:35544 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933518AbcCNF0b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 01:26:31 -0400
+Received: by mail-pa0-f51.google.com with SMTP id td3so121785048pab.2
+        for <linux-pm@vger.kernel.org>; Sun, 13 Mar 2016 22:26:31 -0700 (PDT)
 In-Reply-To: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, rjw@rjwysocki.net
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
-List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+arch_scale_freq_capacity is weird. It specifies an arch hook for an
+implementation that could easily vary within an architecture or even a
+chip family.
 
-Implements cpufreq_scale_freq_capacity() to provide the scheduler with a
-frequency scaling correction factor for more accurate load-tracking.
+This patch helps to mitigate this weirdness by defaulting to the
+cpufreq-provided implementation, which should work for all cases where
+CONFIG_CPU_FREQ is set.
 
-The factor is:
+If CONFIG_CPU_FREQ is not set, then try to use an implementation
+provided by the architecture. Failing that, fall back to
+SCHED_CAPACITY_SCALE.
 
-	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
+It may be desirable for cpufreq drivers to specify their own
+implementation of arch_scale_freq_capacity in the future. The same is
+true for platform code within an architecture. In both cases an
+efficient implementation selector will need to be created and this patch
+adds a comment to that effect.
 
-In fact, freq_scale should be a struct cpufreq_policy data member. But
-this would require that the scheduler hot path (__update_load_avg()) would
-have to grab the cpufreq lock. This can be avoided by using per-cpu data
-initialized to SCHED_CAPACITY_SCALE for freq_scale.
-
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Signed-off-by: Michael Turquette <mturquette+renesas@baylibre.com>
 ---
-I'm not as sure about patches 7 & 8, but I included them since I needed
-frequency invariance while testing.
+ kernel/sched/sched.h | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-As mentioned by myself in 2014 and Rafael last month, the
-arch_scale_freq_capacity hook is awkward, because this behavior may vary
-within an architecture.
-
-I re-introduce Dietmar's generic cpufreq implementation of the frequency
-invariance hook in this patch,  and change the preprocessor magic in
-sched.h to favor the cpufreq implementation over arch- or
-platform-specific ones in the next patch.
-
-If run-time selection of ops is needed them someone will need to write
-that code.
-
-I think that this negates the need for the arm arch hooks[0-2], and
-hopefully Morten and Dietmar can weigh in on this.
-
-[0] lkml.kernel.org/r/1436293469-25707-2-git-send-email-morten.rasmussen@arm.com
-[1] lkml.kernel.org/r/1436293469-25707-6-git-send-email-morten.rasmussen@arm.com
-[2] lkml.kernel.org/r/1436293469-25707-8-git-send-email-morten.rasmussen@arm.com
-
- drivers/cpufreq/cpufreq.c | 29 +++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  3 +++
- 2 files changed, 32 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b1ca9c4..e67584f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -306,6 +306,31 @@ static void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
- #endif
- }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 469d11d..37502ea 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1368,7 +1368,21 @@ static inline int hrtick_enabled(struct rq *rq)
+ #ifdef CONFIG_SMP
+ extern void sched_avg_update(struct rq *rq);
  
-+/*********************************************************************
-+ *               FREQUENCY INVARIANT CPU CAPACITY                    *
-+ *********************************************************************/
-+
-+static DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
-+
-+static void
-+scale_freq_capacity(struct cpufreq_policy *policy, struct cpufreq_freqs *freqs)
-+{
-+	unsigned long cur = freqs ? freqs->new : policy->cur;
-+	unsigned long scale = (cur << SCHED_CAPACITY_SHIFT) / policy->max;
-+	int cpu;
-+
-+	pr_debug("cpus %*pbl cur/cur max freq %lu/%u kHz freq scale %lu\n",
-+		 cpumask_pr_args(policy->cpus), cur, policy->max, scale);
-+
-+	for_each_cpu(cpu, policy->cpus)
-+		per_cpu(freq_scale, cpu) = scale;
-+}
-+
-+unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu)
-+{
-+	return per_cpu(freq_scale, cpu);
-+}
-+
- static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
+-#ifndef arch_scale_freq_capacity
++/*
++ * arch_scale_freq_capacity can be implemented by cpufreq, platform code or
++ * arch code. We select the cpufreq-provided implementation first. If it
++ * doesn't exist then we default to any other implementation provided from
++ * platform/arch code. If those do not exist then we use the default
++ * SCHED_CAPACITY_SCALE value below.
++ *
++ * Note that if cpufreq drivers or platform/arch code have competing
++ * implementations it is up to those subsystems to select one at runtime with
++ * an efficient solution, as we cannot tolerate the overhead of indirect
++ * functions (e.g. function pointers) in the scheduler fast path
++ */
++#ifdef CONFIG_CPU_FREQ
++#define arch_scale_freq_capacity cpufreq_scale_freq_capacity
++#elif !defined(arch_scale_freq_capacity)
+ static __always_inline
+ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
  {
-@@ -409,6 +434,8 @@ wait:
- 
- 	spin_unlock(&policy->transition_lock);
- 
-+	scale_freq_capacity(policy, freqs);
-+
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
- }
- EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
-@@ -2125,6 +2152,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 			CPUFREQ_NOTIFY, new_policy);
- 
-+	scale_freq_capacity(new_policy, NULL);
-+
- 	policy->min = new_policy->min;
- 	policy->max = new_policy->max;
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 0e39499..72833be 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -583,4 +583,7 @@ unsigned int cpufreq_generic_get(unsigned int cpu);
- int cpufreq_generic_init(struct cpufreq_policy *policy,
- 		struct cpufreq_frequency_table *table,
- 		unsigned int transition_latency);
-+
-+struct sched_domain;
-+unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu);
- #endif /* _LINUX_CPUFREQ_H */
 -- 
 2.1.4
+
