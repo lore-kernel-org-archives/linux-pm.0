@@ -1,139 +1,143 @@
-From: Srikar Srimath Tirumala <srikars@nvidia.com>
-Subject: [PATCH v2] thermal: add sysfs_notify on some attributes
-Date: Mon, 14 Mar 2016 11:12:36 -0700
-Message-ID: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V7 01/12] thermal: tegra: move tegra thermal files into
+ tegra directory
+Date: Mon, 14 Mar 2016 11:37:37 -0700
+Message-ID: <20160314183736.GA5378@localhost.localdomain>
+References: <1457665763-29781-1-git-send-email-wni@nvidia.com>
+ <1457665763-29781-2-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:5136 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932203AbcCNSMo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 14:12:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1457665763-29781-2-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, mlongnecker@nvidia.com
-Cc: Srikar Srimath Tirumala <srikars@nvidia.com>
 
-Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
-cur_state whenever any trip is triggered or cur state is changed.
 
-This change allows usermode apps to register themselves to get
-notified, when certain thermal conditions occur and reduce their
-workload. This workload throttling allows usermode to react before
-hardware clocks are throttled and keep some critical apps running
-reliably longer.
+--Q68bSM7Ycu6FN28Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Srikar Srimath Tirumala <srikars@nvidia.com>
----
+On Fri, Mar 11, 2016 at 11:09:12AM +0800, Wei Ni wrote:
+> Move Tegra soctherm driver to tegra directory, it's easy to maintain
+> and add more new function support for Tegra platforms.
+> This will also help to split soctherm driver into common parts and
+> chip specific data related parts.
+>=20
+> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/thermal/Kconfig                                     | 12 ++-----=
+-----
+>  drivers/thermal/Makefile                                    |  2 +-
+>  drivers/thermal/tegra/Kconfig                               | 13 +++++++=
+++++++
+>  drivers/thermal/tegra/Makefile                              |  1 +
+>  .../thermal/{tegra_soctherm.c =3D> tegra/tegra-soctherm.c}    |  0
+>  5 files changed, 17 insertions(+), 11 deletions(-)
+>  create mode 100644 drivers/thermal/tegra/Kconfig
+>  create mode 100644 drivers/thermal/tegra/Makefile
+>  rename drivers/thermal/{tegra_soctherm.c =3D> tegra/tegra-soctherm.c} (1=
+00%)
+>=20
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 8cc4ac64a91c..1802629f5051 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -254,16 +254,6 @@ config ARMADA_THERMAL
+>  	  Enable this option if you want to have support for thermal management
+>  	  controller present in Armada 370 and Armada XP SoC.
+> =20
+> -config TEGRA_SOCTHERM
+> -	tristate "Tegra SOCTHERM thermal management"
+> -	depends on ARCH_TEGRA
+> -	help
+> -	  Enable this option for integrated thermal management support on NVIDIA
+> -	  Tegra124 systems-on-chip. The driver supports four thermal zones
+> -	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
+> -	  zones to manage temperatures. This option is also required for the
+> -	  emergency thermal reset (thermtrip) feature to function.
+> -
+>  config DB8500_CPUFREQ_COOLING
+>  	tristate "DB8500 cpufreq cooling"
+>  	depends on ARCH_U8500
+> @@ -380,6 +370,8 @@ depends on ARCH_STI && OF
+>  source "drivers/thermal/st/Kconfig"
+>  endmenu
+> =20
+> +source "drivers/thermal/tegra/Kconfig"
+> +
+>  config QCOM_SPMI_TEMP_ALARM
+>  	tristate "Qualcomm SPMI PMIC Temperature Alarm"
+>  	depends on OF && SPMI && IIO
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index cfae6a654793..119e25cdcc66 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -46,5 +46,5 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+=3D ti-soc-thermal/
+>  obj-$(CONFIG_INT340X_THERMAL)  +=3D int340x_thermal/
+>  obj-$(CONFIG_INTEL_PCH_THERMAL)	+=3D intel_pch_thermal.o
+>  obj-$(CONFIG_ST_THERMAL)	+=3D st/
+> -obj-$(CONFIG_TEGRA_SOCTHERM)	+=3D tegra_soctherm.o
+> +obj-$(CONFIG_TEGRA_SOCTHERM)	+=3D tegra/
+>  obj-$(CONFIG_HISI_THERMAL)     +=3D hisi_thermal.o
+> diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+> new file mode 100644
+> index 000000000000..0b719d8b629b
+> --- /dev/null
+> +++ b/drivers/thermal/tegra/Kconfig
+> @@ -0,0 +1,13 @@
+> +menu "NVIDIA Tegra thermal drivers"
+> +
+> +config TEGRA_SOCTHERM
+> +	tristate "Tegra SOCTHERM thermal management"
+> +	depends on ARCH_TEGRA
 
-Changes from v1:
- - Calling sysfs_notify for thermal_zone*/temp only when there is a
-   trip violated on the thermal zone.
- - Modified commit message.
+You probably want to move the depends part to the menu section, so the
+menu wont appear where it shouldnt.
 
- drivers/thermal/thermal_core.c | 34 ++++++++++++++++++++++++++--------
- 1 file changed, 26 insertions(+), 8 deletions(-)
+> +	help
+> +	  Enable this option for integrated thermal management support on NVIDIA
+> +	  Tegra124 systems-on-chip. The driver supports four thermal zones
+> +	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
+> +	  zones to manage temperatures. This option is also required for the
+> +	  emergency thermal reset (thermtrip) feature to function.
+> +
+> +endmenu
+> diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/Makef=
+ile
+> new file mode 100644
+> index 000000000000..d4dc4e7f279e
+> --- /dev/null
+> +++ b/drivers/thermal/tegra/Makefile
+> @@ -0,0 +1 @@
+> +obj-$(CONFIG_TEGRA_SOCTHERM)	+=3D tegra-soctherm.o
+> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra/teg=
+ra-soctherm.c
+> similarity index 100%
+> rename from drivers/thermal/tegra_soctherm.c
+> rename to drivers/thermal/tegra/tegra-soctherm.c
+> --=20
+> 1.9.1
+>=20
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index a0a8fd1..f54519e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -419,14 +419,23 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- 	mutex_unlock(&tz->lock);
- }
- 
--static void handle_non_critical_trips(struct thermal_zone_device *tz,
-+static int handle_non_critical_trips(struct thermal_zone_device *tz,
- 			int trip, enum thermal_trip_type trip_type)
- {
-+	int trip_temp;
-+	int ret = 0;
-+
- 	tz->governor ? tz->governor->throttle(tz, trip) :
- 		       def_governor->throttle(tz, trip);
-+
-+	tz->ops->get_trip_temp(tz, trip, &trip_temp);
-+	if (tz->temperature >= trip_temp)
-+		ret = 1;
-+
-+	return ret;
- }
- 
--static void handle_critical_trips(struct thermal_zone_device *tz,
-+static int handle_critical_trips(struct thermal_zone_device *tz,
- 				int trip, enum thermal_trip_type trip_type)
- {
- 	int trip_temp;
-@@ -435,7 +444,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 
- 	/* If we have not crossed the trip_temp, we do not care. */
- 	if (trip_temp <= 0 || tz->temperature < trip_temp)
--		return;
-+		return 0;
- 
- 	trace_thermal_zone_trip(tz, trip, trip_type);
- 
-@@ -448,23 +457,28 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 			  tz->temperature / 1000);
- 		orderly_poweroff(true);
- 	}
-+
-+	return 1;
- }
- 
--static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
-+static int handle_thermal_trip(struct thermal_zone_device *tz, int trip)
- {
-+	int ret = 0;
- 	enum thermal_trip_type type;
- 
- 	tz->ops->get_trip_type(tz, trip, &type);
- 
- 	if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
--		handle_critical_trips(tz, trip, type);
-+		ret = handle_critical_trips(tz, trip, type);
- 	else
--		handle_non_critical_trips(tz, trip, type);
-+		ret = handle_non_critical_trips(tz, trip, type);
- 	/*
- 	 * Alright, we handled this trip successfully.
- 	 * So, start monitoring again.
- 	 */
- 	monitor_thermal_zone(tz);
-+
-+	return ret;
- }
- 
- /**
-@@ -556,7 +570,7 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
- void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
- 	int count;
--
-+	int trips = 0;
- 	if (atomic_read(&in_suspend))
- 		return;
- 
-@@ -566,7 +580,10 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- 	update_temperature(tz);
- 
- 	for (count = 0; count < tz->trips; count++)
--		handle_thermal_trip(tz, count);
-+		trips += handle_thermal_trip(tz, count);
-+
-+	if (trips)
-+		sysfs_notify(&tz->device.kobj, NULL, "temp");
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
- 
-@@ -1638,6 +1655,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	cdev->updated = true;
- 	trace_cdev_update(cdev, target);
- 	dev_dbg(&cdev->device, "set to state %lu\n", target);
-+	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
- }
- EXPORT_SYMBOL(thermal_cdev_update);
- 
--- 
-2.1.4
+--Q68bSM7Ycu6FN28Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJW5wTtAAoJEMLUO4d9pOJWC1MH/0JiNN4360xMt8PjANWiQiN0
+PaI2mrq2KZz9iRx+jlQa4WF36xp0sIbT1OUaDfSHQ9MIPDr2BepCfBUqWRJ16alh
+SxQoiSOZMzj0u9uMpYnZg3eM642IB7RfZWUeCnshi9mn6WS7ia1aQCJVZCoMi26H
+8xdD6QQqNCOVO6KBlSHqS6LldgoRb9fG086W7vWJ5nXILDhsZf7TbSXHlH+xZd8m
+Xwps3Q60KHCd3NkKxLLetCVWfl8WOmtBJg1Il+xJ8jULpNZqezvNelXWybGZBk8G
+HDlpdQtYMfdMlf9doCZ5ayzbKVyRicRE8IeGfKk+b+of72G+RxNbZ5OiEptbKQs=
+=WCyj
+-----END PGP SIGNATURE-----
+
+--Q68bSM7Ycu6FN28Q--
