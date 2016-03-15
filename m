@@ -1,80 +1,81 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] PM / runtime: Document steps for device removal
-Date: Tue, 15 Mar 2016 08:54:07 +0900
-Message-ID: <56E74F1F.1090103@samsung.com>
-References: <Pine.LNX.4.44L0.1603121153090.12240-100000@netrider.rowland.org>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Mon, 14 Mar 2016 22:03:15 -0400
+Message-ID: <1458007395.8898.19.camel@redhat.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	 <97183685.ubU62sp0PR@vostro.rjw.lan> <001001d17cfc$67721e70$36565b50$@net>
+	 <3851575.bLxYIFy0zG@vostro.rjw.lan> <001901d17dbc$3788f060$a69ad120$@net>
+	 <CAJZ5v0g68mq0bKy5UTzh8qM7fFC0a0SY9+EA2GsDhCVUcSLD1g@mail.gmail.com>
+	 <1457965862.8898.4.camel@redhat.com>
+	 <CAJZ5v0iuLP6b3LHY_BVmAQ12qeeVWhVUPnBh=F4-nFuFr_73DQ@mail.gmail.com>
+	 <1457977512.8898.13.camel@redhat.com>
+	 <CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
+	boundary="=-2BnX2F4RaWcr6DOI26bX"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:8870 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753781AbcCNXyO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Mar 2016 19:54:14 -0400
-In-reply-to: <Pine.LNX.4.44L0.1603121153090.12240-100000@netrider.rowland.org>
+Received: from mx1.redhat.com ([209.132.183.28]:38725 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934291AbcCOCDU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Mar 2016 22:03:20 -0400
+In-Reply-To: <CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-On 13.03.2016 01:57, Alan Stern wrote:
-> On Sat, 12 Mar 2016, Krzysztof Kozlowski wrote:
-> 
->> Put a reminder that during device removal drivers should revert all PM
->> runtime changes from the probe. Also add a note that
->> pm_runtime_disable() won't wait for pending suspend requests if
->> autosuspend is not disabled before.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
->> ---
->>  Documentation/power/runtime_pm.txt | 7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
->> index 7328cf85236c..c05e5a17a52d 100644
->> --- a/Documentation/power/runtime_pm.txt
->> +++ b/Documentation/power/runtime_pm.txt
->> @@ -410,7 +410,8 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
->>        field was previously zero, this prevents subsystem-level runtime PM
->>        callbacks from being run for the device), make sure that all of the
->>        pending runtime PM operations on the device are either completed or
->> -      canceled; returns 1 if there was a resume request pending and it was
->> +      canceled (although this depends on disabling autosuspend before
->> +      calling this); returns 1 if there was a resume request pending and it was
-> 
-> I don't agree with this change.  All pending operations really are
-> either completed or cancelled, even if autosuspend is enabled.
-> 
-> Any strange behavior you saw after disabling runtime PM and then 
-> enabling it again was caused by new operations being started after you 
-> re-enabled runtime PM.
 
-Hmmm, okay, I'll resend only with second part below.
+--=-2BnX2F4RaWcr6DOI26bX
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
-Krzysztof
+On Mon, 2016-03-14 at 23:55 +0100, Rafael J. Wysocki wrote:
+> On Mon, Mar 14, 2016 at 6:45 PM, Rik van Riel <riel@redhat.com>
+> wrote:
+> >=C2=A0
+> > A lot of the logic (especially the load correction) in
+> > menu.c was last fine tuned before several bugs in the
+> > corresponding measuring code were fixed.
+> >=20
+> > I don't understand your patch well enough to object to
+> > it, but the "start the loop at poll instead of HLT"
+> > logic is becoming rather convoluted...
+>=20
+> That logic has been there for quite a while, though.
+>=20
+> Really, the choice is between a simple revert of commit
+> a9ceb78bc75ca47972096372ff3d48 and doing something in addition to it
+> to mitigate the "C1 is hopelessly slow" issue.
 
-> 
->>        necessary to execute the subsystem-level resume callback for the device
->>        to satisfy that request, otherwise 0 is returned
->>  
->> @@ -586,6 +587,10 @@ drivers to make their ->remove() callbacks avoid races with runtime PM directly,
->>  but also it allows of more flexibility in the handling of devices during the
->>  removal of their drivers.
->>  
->> +Drivers in ->remove() callback should undo the runtime PM changes done
->> +in ->probe(). Usually this means calling pm_runtime_disable(),
->> +pm_runtime_dont_use_autosuspend() etc.
->> +
-> 
-> That's a good addition.
-> 
->>  The user space can effectively disallow the driver of the device to power manage
->>  it at run time by changing the value of its /sys/devices/.../power/control
->>  attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
-> 
-> Alan Stern
-> 
-> 
-> 
+That is fair. =C2=A0I suspect your patch will be better than
+a revert on systems where C1 is really slow, and just as
+good as a revert on systems where C1 is fast.
+
+We can worry about the choices between deeper C states
+in a future version, but for 4.5 your patch would be the
+way to go.
+
+--=20
+All Rights Reversed.
+
+
+--=-2BnX2F4RaWcr6DOI26bX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAABAgAGBQJW521jAAoJEM553pKExN6DBXYH/1egLwtn7OA+9VE1svnTQVPk
+A2QopnmA3JaOY6Ux6ywqqw+UIxoh5DT+fuQfs7g8hd6PiysiixdEWi12jpnGzLVN
+VUDGlSYGLCyA6V/h4svIhEwUcvwE2JtJ0m6AQBf+SNvKqAqHRMF/GzyxcRG9dqMd
+uY7d7IyN3IcraUiR+KAsFKEV7Qwsp2oHgCRt/Zn+wSXSfaGJwcO0jOs2FYM40Zhx
+EQQ0E2cnR7ORu2xECDdEVhWRssnt13MTrBQZuKViJ0CnpOgkXKzj+MewLLuAGieS
+xatTlFkK/+GnQ6xRVhSLgPPGLGRVOOpP+Zr6a0HKbfn2iLVKiVAS4ozUumWybVQ=
+=5XYs
+-----END PGP SIGNATURE-----
+
+--=-2BnX2F4RaWcr6DOI26bX--
 
