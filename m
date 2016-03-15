@@ -1,56 +1,115 @@
-From: Benson Leung <bleung@chromium.org>
-Subject: Re: [PATCH v4 5/6] power: cros_usbpd-charger: Add EC-based USB PD
- charger driver
-Date: Tue, 15 Mar 2016 15:30:06 -0700
-Message-ID: <CANLzEksGnyPEwx17m--T=FXTjFMyk3hU=hP_VfJo=gGYDOHTMg@mail.gmail.com>
-References: <1457433358-28151-6-git-send-email-tomeu.vizoso@collabora.com>
-	<201603090203.NRAyMe5M%fengguang.wu@intel.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
+Date: Tue, 15 Mar 2016 23:08:00 +0000
+Message-ID: <1458079520.4486.39.camel@intel.com>
+References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f45.google.com ([209.85.213.45]:34738 "EHLO
-	mail-vk0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932508AbcCOWaH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 18:30:07 -0400
-Received: by mail-vk0-f45.google.com with SMTP id e185so39967148vkb.1
-        for <linux-pm@vger.kernel.org>; Tue, 15 Mar 2016 15:30:07 -0700 (PDT)
-In-Reply-To: <201603090203.NRAyMe5M%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1457979156-10972-1-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Language: en-US
+Content-ID: <3D6FB98C92254D4489335040A9D2C741-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, kbuild-all@01.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Shawn Nematbakhsh <shawnn@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 
-On Tue, Mar 8, 2016 at 10:09 AM, kbuild test robot <lkp@intel.com> wrote:
-> Hi Sameer,
->
-> [auto build test WARNING on v4.5-rc7]
-> [also build test WARNING on next-20160308]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Tomeu-Vizoso/mfd-cros_ec-Add-MKBP-event-support/20160308-184326
-> config: blackfin-allmodconfig (attached as .config)
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=blackfin
->
-> All warnings (new ones prefixed by >>):
->
->    drivers/power/cros_usbpd-charger.c: In function 'get_ec_usb_pd_power_info':
->    drivers/power/cros_usbpd-charger.c:241:21: error: 'POWER_SUPPLY_TYPE_USB_PD_DRP' undeclared (first use in this function)
->    drivers/power/cros_usbpd-charger.c:241:21: note: each undeclared identifier is reported only once for each function it appears in
->    drivers/power/cros_usbpd-charger.c:249:20: error: 'POWER_SUPPLY_TYPE_USB_TYPE_C' undeclared (first use in this function)
->    drivers/power/cros_usbpd-charger.c:261:21: error: 'POWER_SUPPLY_TYPE_USB_PD' undeclared (first use in this function)
-
-
-I think this patch is being built with the wrong git tree. The new
-types for these three errors landed in sre's linux-power-supply here :
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=next&id=6659b55dae09b2042d8cdd0f4576502c3e81957c
-
-It should be in most recent linux-nexts, but it wouldn't be in v4.5-rc7.
-
--- 
-Benson Leung
-Senior Software Engineer, Chrom* OS
-bleung@chromium.org
+T24gTW9uLCAyMDE2LTAzLTE0IGF0IDExOjEyIC0wNzAwLCBTcmlrYXIgU3JpbWF0aCBUaXJ1bWFs
+YSB3cm90ZToNCj4gQWRkIGEgc3lzZnNfbm90aWZ5IG9uIHRoZXJtYWxfem9uZSovdGVtcCBhbmQg
+Y29vbGluZ19kZXZpY2UqLw0KPiBjdXJfc3RhdGUgd2hlbmV2ZXIgYW55IHRyaXAgaXMgdHJpZ2dl
+cmVkIG9yIGN1ciBzdGF0ZSBpcyBjaGFuZ2VkLg0KPiANCj4gVGhpcyBjaGFuZ2UgYWxsb3dzIHVz
+ZXJtb2RlIGFwcHMgdG8gcmVnaXN0ZXIgdGhlbXNlbHZlcyB0byBnZXQNCj4gbm90aWZpZWQsIHdo
+ZW4gY2VydGFpbiB0aGVybWFsIGNvbmRpdGlvbnMgb2NjdXIgYW5kIHJlZHVjZSB0aGVpcg0KPiB3
+b3JrbG9hZC4gVGhpcyB3b3JrbG9hZCB0aHJvdHRsaW5nIGFsbG93cyB1c2VybW9kZSB0byByZWFj
+dCBiZWZvcmUNCj4gaGFyZHdhcmUgY2xvY2tzIGFyZSB0aHJvdHRsZWQgYW5kIGtlZXAgc29tZSBj
+cml0aWNhbCBhcHBzIHJ1bm5pbmcNCj4gcmVsaWFibHkgbG9uZ2VyLg0KSSB0aGluayB3ZSBuZWVk
+IGEgY29tYmluYXRpb24gb2YgcHJvcG9zYWwgaW7CoA0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
+Lm9yZy9wYXRjaC83ODc2MzUxL8KgYW5kIHRoaXMuDQoNCkZvciBleGFtcGxlIHRoaXMgcGF0Y2gg
+bm90aWZpZXMgdGhhdCBzb21lIHRyaXAgaXMgdmlvbGF0ZWQsIGJ1dCB0aGF0IGlzDQpub3QgZW5v
+dWdoIGZvciB1c2VyIHNwYWNlIGFwcGxpY2F0aW9uIHRvIHRha2UgYW55IGFjdGlvbi4gU29tZSB0
+cmlwcw0KdmlvbGF0aW9ucyB1c2VyIHNwYWNlIG1heSBub3QgY2FyZSBhcyB0aGlzIG1heSBiZSBh
+IHRyYW5zaWVudCBvbmUuIFRoZQ0KcGF0Y2ggZnJvbcKgRWR1YXJkbyBhZGRyZXNzIHRoYXQgYnkg
+cHJvdmlkaW5nIHRyaXAsIHRlbXBlcmF0dXJlIGFuZCBsYXN0DQp0ZW1wZXJhdHVyZSBpbmZvcm1h
+dGlvbi4gQnV0IHRoYXQgcGF0Y2ggb25seSBhZGRyZXNzIGhvdCB0cmlwcy4gSQ0KdW5kZXJzdGFu
+ZCB3aHkgRWR1YXJkbyBkb2Vzbid0IHdhbnQgdG8gYmUgbm90aWZpZWQgZm9yIHBhc3NpdmUgdHJp
+cHMgYXMNCnRoZXJlIHdpbGwgYmUgdG9vIG1hbnkuDQoNClNvIElNTyB3ZSBuZWVkIHNvbWUgbWVj
+aGFuaXNtIHRvIHR1cm4gb2ZmIG5vdGlmaWNhdGlvbiBhbmQgZGVjaWRlIHdoYXQNCm5vdGlmaWNh
+dGlvbiB3aWxsIHJlc3VsdCBpbiB1c2VyIHNwYWNlIG5vdGlmaWNhdGlvbnMuDQpPbiBzb21lIHg4
+NiBzeXN0ZW1zIHdlIGhhdmUgMTArIHBhc3NpdmUvYWN0aXZlIHRyaXBzLCB0aGlzIHdpbGwgcmVz
+dWx0cw0KaW4gdG9vIG1hbnkgbm90aWZpY2F0aW9ucy4gV2UgbWF5IGJlIGluIHRoZXJtYWxseSBz
+ZW5zaXRpdmUgem9uZSwgd2hlcmUNCm1vcmUgY29kZSBleGNlY3V0aW9uIGlzIG1vcmUgaGVhdC4N
+Cg0KV2UgbWF5IGhhdmUgc29tZSBtYXNrIG9mIHRyaXBzIGZvciB3aGljaCB3aWxsIHJlc3VsdCBp
+biBub3RpZmljYXRpb25zLg0KQnkgZGVmYXVsdCBubyBub3RpZmljYXRpb25zLCB1bmxlc3Mgc29t
+ZSB1c2VyIHNwYWNlIHJlcXVlc3RzLg0KDQpEdXJpbmcgbGFzdCBMUEMgd2UgZGlzY3Vzc2VkIGFi
+b3V0IHVzaW5nIElJTyBmb3IgdGVtcGVyYXR1cmUgdGhyZXNob2xkDQpub3RpZmljYXRpb25zIGFu
+ZCBJIHN1Ym1pdHRlZCBtdWx0aXBsZSBjaGFuZ2VzIGZvciB0aGF0LiBMb29rcyBsaWtlIHdlDQph
+bHNvIGNhcmUgb2YgdHJpcCBwb2ludCBjaGFuZ2VzLiBTbyBJIHRoaW5rIHdlIG5lZWQgbW9yZSBj
+b21wcmVoZW5zaXZlDQptZWNoYW5pc20gdG8gYWRkcmVzcyB0aGlzLg0KDQpNYXkgYmUgd2Ugc2hv
+dWxkIGhhdmUgdGhlcm1hbCBtaW5pIHN1bW1pdCBkdXJpbmcgTFBDIGFnYWluIGFuZCBkZWNpZGUg
+YQ0KY29tcHJlaGVuc2l2ZSBwbGFuIHRvIGFkZHJlc3MgYWxsIGFzeW5jaHJvbm91cyB0aGVybWFs
+IG5vdGlmaWNhdGlvbnMuDQoNCg0KVGhhbmtzLA0KU3Jpbml2YXMNCg0KPiANCj4gU2lnbmVkLW9m
+Zi1ieTogU3Jpa2FyIFNyaW1hdGggVGlydW1hbGEgPHNyaWthcnNAbnZpZGlhLmNvbT4NCj4gLS0t
+DQo+IA0KPiBDaGFuZ2VzIGZyb20gdjE6DQo+IMKgLSBDYWxsaW5nIHN5c2ZzX25vdGlmeSBmb3Ig
+dGhlcm1hbF96b25lKi90ZW1wIG9ubHkgd2hlbiB0aGVyZSBpcyBhDQo+IMKgwqDCoHRyaXAgdmlv
+bGF0ZWQgb24gdGhlIHRoZXJtYWwgem9uZS4NCj4gwqAtIE1vZGlmaWVkIGNvbW1pdCBtZXNzYWdl
+Lg0KPiANCj4gwqBkcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMgfCAzNCArKysrKysrKysr
+KysrKysrKysrKysrKysrKy0tLS0NCj4gLS0tLQ0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAyNiBpbnNl
+cnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhl
+cm1hbC90aGVybWFsX2NvcmUuYw0KPiBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0K
+PiBpbmRleCBhMGE4ZmQxLi5mNTQ1MTllIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwv
+dGhlcm1hbF9jb3JlLmMNCj4gKysrIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+
+IEBAIC00MTksMTQgKzQxOSwyMyBAQCBzdGF0aWMgdm9pZCBtb25pdG9yX3RoZXJtYWxfem9uZShz
+dHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHopDQo+IMKgCW11dGV4X3VubG9jaygmdHot
+PmxvY2spOw0KPiDCoH0NCj4gwqANCj4gLXN0YXRpYyB2b2lkIGhhbmRsZV9ub25fY3JpdGljYWxf
+dHJpcHMoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UNCj4gKnR6LA0KPiArc3RhdGljIGludCBo
+YW5kbGVfbm9uX2NyaXRpY2FsX3RyaXBzKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwN
+Cj4gwqAJCQlpbnQgdHJpcCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZSB0cmlwX3R5cGUpDQo+IMKg
+ew0KPiArCWludCB0cmlwX3RlbXA7DQo+ICsJaW50IHJldCA9IDA7DQo+ICsNCj4gwqAJdHotPmdv
+dmVybm9yID8gdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCkgOg0KPiDCoAkJwqDCoMKg
+wqDCoMKgwqBkZWZfZ292ZXJub3ItPnRocm90dGxlKHR6LCB0cmlwKTsNCj4gKw0KPiArCXR6LT5v
+cHMtPmdldF90cmlwX3RlbXAodHosIHRyaXAsICZ0cmlwX3RlbXApOw0KPiArCWlmICh0ei0+dGVt
+cGVyYXR1cmUgPj0gdHJpcF90ZW1wKQ0KPiArCQlyZXQgPSAxOw0KPiArDQo+ICsJcmV0dXJuIHJl
+dDsNCj4gwqB9DQo+IMKgDQo+IC1zdGF0aWMgdm9pZCBoYW5kbGVfY3JpdGljYWxfdHJpcHMoc3Ry
+dWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LA0KPiArc3RhdGljIGludCBoYW5kbGVfY3JpdGlj
+YWxfdHJpcHMoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LA0KPiDCoAkJCQlpbnQgdHJp
+cCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZQ0KPiB0cmlwX3R5cGUpDQo+IMKgew0KPiDCoAlpbnQg
+dHJpcF90ZW1wOw0KPiBAQCAtNDM1LDcgKzQ0NCw3IEBAIHN0YXRpYyB2b2lkIGhhbmRsZV9jcml0
+aWNhbF90cmlwcyhzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHosDQo+IMKgDQo+IMKg
+CS8qIElmIHdlIGhhdmUgbm90IGNyb3NzZWQgdGhlIHRyaXBfdGVtcCwgd2UgZG8gbm90IGNhcmUu
+ICovDQo+IMKgCWlmICh0cmlwX3RlbXAgPD0gMCB8fCB0ei0+dGVtcGVyYXR1cmUgPCB0cmlwX3Rl
+bXApDQo+IC0JCXJldHVybjsNCj4gKwkJcmV0dXJuIDA7DQo+IMKgDQo+IMKgCXRyYWNlX3RoZXJt
+YWxfem9uZV90cmlwKHR6LCB0cmlwLCB0cmlwX3R5cGUpOw0KPiDCoA0KPiBAQCAtNDQ4LDIzICs0
+NTcsMjggQEAgc3RhdGljIHZvaWQgaGFuZGxlX2NyaXRpY2FsX3RyaXBzKHN0cnVjdA0KPiB0aGVy
+bWFsX3pvbmVfZGV2aWNlICp0eiwNCj4gwqAJCQnCoMKgdHotPnRlbXBlcmF0dXJlIC8gMTAwMCk7
+DQo+IMKgCQlvcmRlcmx5X3Bvd2Vyb2ZmKHRydWUpOw0KPiDCoAl9DQo+ICsNCj4gKwlyZXR1cm4g
+MTsNCj4gwqB9DQo+IMKgDQo+IC1zdGF0aWMgdm9pZCBoYW5kbGVfdGhlcm1hbF90cmlwKHN0cnVj
+dCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwgaW50DQo+IHRyaXApDQo+ICtzdGF0aWMgaW50IGhh
+bmRsZV90aGVybWFsX3RyaXAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LCBpbnQNCj4g
+dHJpcCkNCj4gwqB7DQo+ICsJaW50IHJldCA9IDA7DQo+IMKgCWVudW0gdGhlcm1hbF90cmlwX3R5
+cGUgdHlwZTsNCj4gwqANCj4gwqAJdHotPm9wcy0+Z2V0X3RyaXBfdHlwZSh0eiwgdHJpcCwgJnR5
+cGUpOw0KPiDCoA0KPiDCoAlpZiAodHlwZSA9PSBUSEVSTUFMX1RSSVBfQ1JJVElDQUwgfHwgdHlw
+ZSA9PQ0KPiBUSEVSTUFMX1RSSVBfSE9UKQ0KPiAtCQloYW5kbGVfY3JpdGljYWxfdHJpcHModHos
+IHRyaXAsIHR5cGUpOw0KPiArCQlyZXQgPSBoYW5kbGVfY3JpdGljYWxfdHJpcHModHosIHRyaXAs
+IHR5cGUpOw0KPiDCoAllbHNlDQo+IC0JCWhhbmRsZV9ub25fY3JpdGljYWxfdHJpcHModHosIHRy
+aXAsIHR5cGUpOw0KPiArCQlyZXQgPSBoYW5kbGVfbm9uX2NyaXRpY2FsX3RyaXBzKHR6LCB0cmlw
+LCB0eXBlKTsNCj4gwqAJLyoNCj4gwqAJwqAqIEFscmlnaHQsIHdlIGhhbmRsZWQgdGhpcyB0cmlw
+IHN1Y2Nlc3NmdWxseS4NCj4gwqAJwqAqIFNvLCBzdGFydCBtb25pdG9yaW5nIGFnYWluLg0KPiDC
+oAnCoCovDQo+IMKgCW1vbml0b3JfdGhlcm1hbF96b25lKHR6KTsNCj4gKw0KPiArCXJldHVybiBy
+ZXQ7DQo+IMKgfQ0KPiDCoA0KPiDCoC8qKg0KPiBAQCAtNTU2LDcgKzU3MCw3IEBAIHN0YXRpYyB2
+b2lkIHRoZXJtYWxfem9uZV9kZXZpY2VfcmVzZXQoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZp
+Y2UgKnR6KQ0KPiDCoHZvaWQgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoc3RydWN0IHRoZXJt
+YWxfem9uZV9kZXZpY2UgKnR6KQ0KPiDCoHsNCj4gwqAJaW50IGNvdW50Ow0KPiAtDQo+ICsJaW50
+IHRyaXBzID0gMDsNCj4gwqAJaWYgKGF0b21pY19yZWFkKCZpbl9zdXNwZW5kKSkNCj4gwqAJCXJl
+dHVybjsNCj4gwqANCj4gQEAgLTU2Niw3ICs1ODAsMTAgQEAgdm9pZCB0aGVybWFsX3pvbmVfZGV2
+aWNlX3VwZGF0ZShzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHopDQo+IMKgCXVwZGF0
+ZV90ZW1wZXJhdHVyZSh0eik7DQo+IMKgDQo+IMKgCWZvciAoY291bnQgPSAwOyBjb3VudCA8IHR6
+LT50cmlwczsgY291bnQrKykNCj4gLQkJaGFuZGxlX3RoZXJtYWxfdHJpcCh0eiwgY291bnQpOw0K
+PiArCQl0cmlwcyArPSBoYW5kbGVfdGhlcm1hbF90cmlwKHR6LCBjb3VudCk7DQo+ICsNCj4gKwlp
+ZiAodHJpcHMpDQo+ICsJCXN5c2ZzX25vdGlmeSgmdHotPmRldmljZS5rb2JqLCBOVUxMLCAidGVt
+cCIpOw0KPiDCoH0NCj4gwqBFWFBPUlRfU1lNQk9MX0dQTCh0aGVybWFsX3pvbmVfZGV2aWNlX3Vw
+ZGF0ZSk7DQo+IMKgDQo+IEBAIC0xNjM4LDYgKzE2NTUsNyBAQCB2b2lkIHRoZXJtYWxfY2Rldl91
+cGRhdGUoc3RydWN0DQo+IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYpDQo+IMKgCWNkZXYt
+PnVwZGF0ZWQgPSB0cnVlOw0KPiDCoAl0cmFjZV9jZGV2X3VwZGF0ZShjZGV2LCB0YXJnZXQpOw0K
+PiDCoAlkZXZfZGJnKCZjZGV2LT5kZXZpY2UsICJzZXQgdG8gc3RhdGUgJWx1XG4iLCB0YXJnZXQp
+Ow0KPiArCXN5c2ZzX25vdGlmeSgmY2Rldi0+ZGV2aWNlLmtvYmosIE5VTEwsICJjdXJfc3RhdGUi
+KTsNCj4gwqB9DQo+IMKgRVhQT1JUX1NZTUJPTCh0aGVybWFsX2NkZXZfdXBkYXRlKTsNCj4gwqA=
