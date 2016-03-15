@@ -1,51 +1,56 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/8] sched/cpufreq: remove cpufreq_trigger_update()
-Date: Tue, 15 Mar 2016 22:49:41 +0100
-Message-ID: <20160315214941.GN6344@twins.programming.kicks-ass.net>
-References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-2-git-send-email-mturquette+renesas@baylibre.com>
- <20160315211448.GB6344@twins.programming.kicks-ass.net>
- <20160315214545.30639.98727@quark.deferred.io>
+From: Benson Leung <bleung@chromium.org>
+Subject: Re: [PATCH v4 5/6] power: cros_usbpd-charger: Add EC-based USB PD
+ charger driver
+Date: Tue, 15 Mar 2016 15:30:06 -0700
+Message-ID: <CANLzEksGnyPEwx17m--T=FXTjFMyk3hU=hP_VfJo=gGYDOHTMg@mail.gmail.com>
+References: <1457433358-28151-6-git-send-email-tomeu.vizoso@collabora.com>
+	<201603090203.NRAyMe5M%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:39385 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbcCOVuH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 17:50:07 -0400
-Content-Disposition: inline
-In-Reply-To: <20160315214545.30639.98727@quark.deferred.io>
+Received: from mail-vk0-f45.google.com ([209.85.213.45]:34738 "EHLO
+	mail-vk0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932508AbcCOWaH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 18:30:07 -0400
+Received: by mail-vk0-f45.google.com with SMTP id e185so39967148vkb.1
+        for <linux-pm@vger.kernel.org>; Tue, 15 Mar 2016 15:30:07 -0700 (PDT)
+In-Reply-To: <201603090203.NRAyMe5M%fengguang.wu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
+To: kbuild test robot <lkp@intel.com>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, kbuild-all@01.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, =?UTF-8?Q?Enric_Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Shawn Nematbakhsh <shawnn@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 
-On Tue, Mar 15, 2016 at 02:45:45PM -0700, Michael Turquette wrote:
-> Quoting Peter Zijlstra (2016-03-15 14:14:48)
-> > On Sun, Mar 13, 2016 at 10:22:05PM -0700, Michael Turquette wrote:
-> > > cpufreq_trigger_update() was introduced in "cpufreq: Rework the
-> > > scheduler hooks for triggering updates"[0]. Consensus is that this
-> > > helper is not needed and removing it will aid in experimenting with
-> > > deadline and rt capacity requests.
-> > > 
-> > > Instead of reverting the above patch, which includes useful renaming of
-> > > data structures and related functions, simply remove the function,
-> > > update affected kerneldoc and change rt.c and deadline.c to use
-> > > cpufreq_update_util().
-> > 
-> > This fails to explain how the need for these hooks is dealt with.
-> 
-> Sorry, I don't understand your point. The removed hook,
-> "cpufreq_trigger_update()" was only used in deadline.c and rt.c, and
-> this patch effectively reverts Rafael's patch that introduces that
-> function.
-> 
-> It simply does not revert the other changes in Rafael's patch, such as
-> some renaming.
-> 
-> deadline.c and rt.c are made to use cpufreq_update_util() and pass in
-> ULONG_MAX for capacity and 0 for time. This is exactly what they did
-> before patch "cpufreq: Rework the scheduler hooks for triggering
-> updates".
+On Tue, Mar 8, 2016 at 10:09 AM, kbuild test robot <lkp@intel.com> wrote:
+> Hi Sameer,
+>
+> [auto build test WARNING on v4.5-rc7]
+> [also build test WARNING on next-20160308]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Tomeu-Vizoso/mfd-cros_ec-Add-MKBP-event-support/20160308-184326
+> config: blackfin-allmodconfig (attached as .config)
+> reproduce:
+>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=blackfin
+>
+> All warnings (new ones prefixed by >>):
+>
+>    drivers/power/cros_usbpd-charger.c: In function 'get_ec_usb_pd_power_info':
+>    drivers/power/cros_usbpd-charger.c:241:21: error: 'POWER_SUPPLY_TYPE_USB_PD_DRP' undeclared (first use in this function)
+>    drivers/power/cros_usbpd-charger.c:241:21: note: each undeclared identifier is reported only once for each function it appears in
+>    drivers/power/cros_usbpd-charger.c:249:20: error: 'POWER_SUPPLY_TYPE_USB_TYPE_C' undeclared (first use in this function)
+>    drivers/power/cros_usbpd-charger.c:261:21: error: 'POWER_SUPPLY_TYPE_USB_PD' undeclared (first use in this function)
 
-Clearly I need to learn to read again.. You're right.
+
+I think this patch is being built with the wrong git tree. The new
+types for these three errors landed in sre's linux-power-supply here :
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=next&id=6659b55dae09b2042d8cdd0f4576502c3e81957c
+
+It should be in most recent linux-nexts, but it wouldn't be in v4.5-rc7.
+
+-- 
+Benson Leung
+Senior Software Engineer, Chrom* OS
+bleung@chromium.org
