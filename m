@@ -1,35 +1,64 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V4] PM / clk: Add support for obtaining clocks from device-tree
-Date: Tue, 15 Mar 2016 13:15:16 +0100
-Message-ID: <CAMuHMdV_PVnZ11BJ3FHe9Gc5nH-yk1u-NuHntOnRiQ4npVkd8g@mail.gmail.com>
-References: <1458041620-27066-1-git-send-email-jonathanh@nvidia.com>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH 13/13] thermal: convert ti-thermal to use
+ devm_thermal_zone_of_sensor_register
+Date: Tue, 15 Mar 2016 17:56:54 +0530
+Message-ID: <56E7FF8E.8030209@ti.com>
+References: <1457559336-17652-1-git-send-email-edubezval@gmail.com>
+ <1457559336-17652-15-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458041620-27066-1-git-send-email-jonathanh@nvidia.com>
+In-Reply-To: <1457559336-17652-15-git-send-email-edubezval@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 15, 2016 at 12:33 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
-> The PM clocks framework requires clients to pass either a con-id or a
-> valid clk pointer in order to add a clock to a device. Add a new
-> function of_pm_clk_add_clks() to allows device clocks to be retrieved
-> from device-tree and populated for a given device. Note that it is
-> not necessary to make the compilation of this new function dependent
-> upon CONFIG_OF because there are stubs functions for the device-tree
-> APIs used.
+Hi Eduardo,
+
+On Thursday 10 March 2016 03:05 AM, Eduardo Valentin wrote:
+> This changes the driver to use the devm_ version
+> of thermal_zone_of_sensor_register and cleans
+> up the  local points and unregister calls.
 >
-> In order to handle errors encountered when adding clocks from
-> device-tree, add a function pm_clk_remove_clk() to remove any clocks
-> (using a pointer to the clk structure) that have been added
-> successfully before the error occurred.
+
+Boot tested on dra7xx-evm, dra72x-evm, pandaboard-es.
+Also checked the thermal sysfs entries on am57xx-beagle-x15.
+
+Tested-by: Keerthy <j-keerthy@ti.com>
+
+
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
 >
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Gr{oetje,eeting}s,
-
-                        Geert
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index b213a12..15c0a9a 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -337,7 +337,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+>   		return -EINVAL;
+>
+>   	/* in case this is specified by DT */
+> -	data->ti_thermal = thermal_zone_of_sensor_register(bgp->dev, id,
+> +	data->ti_thermal = devm_thermal_zone_of_sensor_register(bgp->dev, id,
+>   					data, &ti_of_thermal_ops);
+>   	if (IS_ERR(data->ti_thermal)) {
+>   		/* Create thermal zone */
+> @@ -368,9 +368,6 @@ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
+>   	if (data && data->ti_thermal) {
+>   		if (data->our_zone)
+>   			thermal_zone_device_unregister(data->ti_thermal);
+> -		else
+> -			thermal_zone_of_sensor_unregister(bgp->dev,
+> -							  data->ti_thermal);
+>   	}
+>
+>   	return 0;
+>
