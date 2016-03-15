@@ -1,45 +1,64 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH trivial] PM / devfreq: Spelling s/frequnecy/frequency/
-Date: Tue, 15 Mar 2016 17:14:22 +0900
-Message-ID: <56E7C45E.8080306@samsung.com>
-References: <1457969342-23672-1-git-send-email-geert+renesas@glider.be>
+From: Dawei Chien <dawei.chien@mediatek.com>
+Subject: [RESEND][PATCH 3/3] arm64: dts: mt8173: Add dynamic power node.
+Date: Tue, 15 Mar 2016 16:10:37 +0800
+Message-ID: <1458029437-12846-4-git-send-email-dawei.chien@mediatek.com>
+References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:41026 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934259AbcCOIOm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 04:14:42 -0400
-In-reply-to: <1457969342-23672-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Jiri Kosina <trivial@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2016=EB=85=84 03=EC=9B=94 15=EC=9D=BC 00:29, Geert Uytterhoeven wrot=
-e:
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/devfreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 64281bb2f6503c5a..4de78c552251a5a5 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -61,7 +61,7 @@ config DEVFREQ_GOV_USERSPACE
->  	  Sets the frequency at the user specified one.
->  	  This governor returns the user configured frequency if there
->  	  has been an input to /sys/devices/.../power/devfreq_set_freq.
-> -	  Otherwise, the governor does not change the frequnecy
-> +	  Otherwise, the governor does not change the frequency
->  	  given at the initialization.
-> =20
->  comment "DEVFREQ Drivers"
->=20
+This device node is for calculating dynamic power in mW.
+Since mt8173 has two clusters, there are two dynamic power
+coefficient as well.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+---
+This patch is base on patchset:
+https://lkml.org/lkml/2015/11/17/251
+---
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Thanks,
-Chanwoo Choi
+diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+index f9c44cc..5cb6b4e 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+@@ -71,6 +71,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <263>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -95,6 +96,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <263>;
+ 		};
+ 
+ 		cpu2: cpu@100 {
+@@ -119,6 +121,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <530>;
+ 		};
+ 
+ 		cpu3: cpu@101 {
+@@ -143,6 +146,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <530>;
+ 		};
+ 
+ 		idle-states {
+-- 
+1.7.9.5
