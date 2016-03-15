@@ -1,13 +1,14 @@
 From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V7 03/12] thermal: tegra: get rid of PDIV/HOTSPOT hack
-Date: Tue, 15 Mar 2016 14:21:53 +0800
-Message-ID: <56E7AA01.4000305@nvidia.com>
-References: <1457665763-29781-1-git-send-email-wni@nvidia.com> <1457665763-29781-4-git-send-email-wni@nvidia.com> <20160314200539.GH1872@localhost.localdomain>
+Subject: Re: [PATCH V7 05/12] thermal: tegra: add Tegra210 specific SOC_THERM
+ driver
+Date: Tue, 15 Mar 2016 14:59:52 +0800
+Message-ID: <56E7B2E8.8070100@nvidia.com>
+References: <1457665825-29837-1-git-send-email-wni@nvidia.com> <20160314185739.GA1872@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160314200539.GH1872-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+In-Reply-To: <20160314185739.GA1872-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
@@ -15,86 +16,125 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 04:05, Eduardo Valentin wrote:
+On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 02:57, Eduardo Valentin wrote:
 > * PGP Signed by an unknown key
 >=20
-> On Fri, Mar 11, 2016 at 11:09:14AM +0800, Wei Ni wrote:
->> Get rid of T124-specific PDIV/HOTSPOT hack.
->> tegra-soctherm.c contained a hack to set the SENSOR_PDIV and
->> SENSOR_HOTSPOT_OFFSET registers - it just did two writes of
->> T124-specific opaque values.  Convert these into a form that can be
->> substituted on a per-chip basis, and into structure fields that have
->> at least some independent meaning.
+> On Fri, Mar 11, 2016 at 11:10:25AM +0800, Wei Ni wrote:
+>> Add Tegra210 specific SOC_THERM driver.
 >>
 >> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 >> ---
->>  drivers/thermal/tegra/tegra-soctherm.c | 18 ++++++++++++++----
->>  1 file changed, 14 insertions(+), 4 deletions(-)
+>>  drivers/thermal/tegra/Makefile            |   1 +
+>>  drivers/thermal/tegra/soctherm-fuse.c     |  11 ++
+>>  drivers/thermal/tegra/soctherm.c          |   6 ++
+>>  drivers/thermal/tegra/soctherm.h          |   4 +
+>>  drivers/thermal/tegra/tegra210-soctherm.c | 173 +++++++++++++++++++=
++++++++++++
+>=20
+> No Kconfig change?
+
+Yes, we doesn't need Kconfig change.
+
+As discussed with Thierry in [V1,03/10] thermal: tegra: split tegra_soc=
+therm
+driver, he said:
+"I'd like to do this differently to reduce the number of Kconfig symbol=
+s.
+The alternate proposal would be for the TEGRA_SOCTHERM symbol to remain
+as it is and then build in driver support depending on the selected
+ARCH_TEGRA_*_SOC options."
+
+So we only have "config TEGRA_SOCTHERM" in the Kconfig, and in Makefile=
+, we add
+tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+=3D tegra124-soctherm.o
+tegra-soctherm-$(CONFIG_ARCH_TEGRA_210_SOC)	+=3D tegra210-soctherm.o
+
+>=20
+>>  5 files changed, 195 insertions(+)
+>>  create mode 100644 drivers/thermal/tegra/tegra210-soctherm.c
 >>
->> diff --git a/drivers/thermal/tegra/tegra-soctherm.c b/drivers/therma=
-l/tegra/tegra-soctherm.c
->> index b3ec0faa2bee..b4b791ebfbb6 100644
->> --- a/drivers/thermal/tegra/tegra-soctherm.c
->> +++ b/drivers/thermal/tegra/tegra-soctherm.c
->> @@ -48,14 +48,12 @@
->>  #define SENSOR_CONFIG2_THERMB_SHIFT		0
+>> diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/=
+Makefile
+>> index d5fb15377b97..bf9e028eba28 100644
+>> --- a/drivers/thermal/tegra/Makefile
+>> +++ b/drivers/thermal/tegra/Makefile
+>> @@ -2,3 +2,4 @@ obj-$(CONFIG_TEGRA_SOCTHERM)	+=3D tegra-soctherm.o
 >> =20
->>  #define SENSOR_PDIV				0x1c0
->> -#define SENSOR_PDIV_T124			0x8888
->>  #define SENSOR_PDIV_CPU_MASK			(0xf << 12)
->>  #define SENSOR_PDIV_GPU_MASK			(0xf << 8)
->>  #define SENSOR_PDIV_MEM_MASK			(0xf << 4)
->>  #define SENSOR_PDIV_PLLX_MASK			(0xf << 0)
+>>  tegra-soctherm-y				:=3D soctherm.o soctherm-fuse.o
+>>  tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+=3D tegra124-soctherm.=
+o
+>> +tegra-soctherm-$(CONFIG_ARCH_TEGRA_210_SOC)	+=3D tegra210-soctherm.=
+o
+>> diff --git a/drivers/thermal/tegra/soctherm-fuse.c b/drivers/thermal=
+/tegra/soctherm-fuse.c
+>> index 931c299ab0e8..29963180c453 100644
+>> --- a/drivers/thermal/tegra/soctherm-fuse.c
+>> +++ b/drivers/thermal/tegra/soctherm-fuse.c
+>> @@ -28,7 +28,18 @@
+>>  #define FUSE_TSENSOR_COMMON			0x180
 >> =20
->>  #define SENSOR_HOTSPOT_OFF			0x1c4
->> -#define SENSOR_HOTSPOT_OFF_T124			0x00060600
->>  #define SENSOR_HOTSPOT_CPU_MASK			(0xff << 16)
->>  #define SENSOR_HOTSPOT_GPU_MASK			(0xff << 8)
->>  #define SENSOR_HOTSPOT_MEM_MASK			(0xff << 0)
->> @@ -436,6 +434,7 @@ static int tegra_soctherm_probe(struct platform_=
-device *pdev)
->>  	struct resource *res;
->>  	unsigned int i;
->>  	int err;
->> +	u32 pdiv, hotspot;
+>>  /*
+>> + * Tegra210: Layout of bits in FUSE_TSENSOR_COMMON:
+>> + *    3                   2                   1                   0
+>> + *  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+>> + * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-=
++
+>> + * |       BASE_FT       |      BASE_CP      | SHFT_FT | SHIFT_CP  =
+|
+>> + * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-=
++
+>> + *
+>>   * Tegra12x, etc:
+>> + * In chips prior to Tegra210, this fuse was incorrectly sized as 2=
+6 bits,
+>> + * and didn't hold SHIFT_CP in [31:26]. Therefore these missing six=
+ bits
+>> + * were obtained via the FUSE_SPARE_REALIGNMENT_REG register [5:0].
+>> + *
+>>   * FUSE_TSENSOR_COMMON:
+>>   *    3                   2                   1                   0
+>>   *  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+>> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegr=
+a/soctherm.c
+>> index f56e5a11384e..52a33760e8e8 100644
+>> --- a/drivers/thermal/tegra/soctherm.c
+>> +++ b/drivers/thermal/tegra/soctherm.c
+>> @@ -147,6 +147,12 @@ static const struct of_device_id tegra_soctherm=
+_of_match[] =3D {
+>>  		.data =3D &tegra124_soctherm,
+>>  	},
+>>  #endif
+>> +#ifdef CONFIG_ARCH_TEGRA_210_SOC
+>> +	{
+>> +		.compatible =3D "nvidia,tegra210-soctherm",
+>> +		.data =3D &tegra210_soctherm,
+>> +	},
+>> +#endif
+>>  	{ },
+>>  };
+>>  MODULE_DEVICE_TABLE(of, tegra_soctherm_of_match);
+>> diff --git a/drivers/thermal/tegra/soctherm.h b/drivers/thermal/tegr=
+a/soctherm.h
+>> index f80ee1492ddb..69d317269af1 100644
+>> --- a/drivers/thermal/tegra/soctherm.h
+>> +++ b/drivers/thermal/tegra/soctherm.h
+>> @@ -106,5 +106,9 @@ int tegra_calc_tsensor_calib(const struct tegra_=
+tsensor *sensor,
+>>  extern const struct tegra_soctherm_soc tegra124_soctherm;
+>>  #endif
 >> =20
->>  	const struct tegra_tsensor *tsensors =3D t124_tsensors;
->>  	const struct tegra_tsensor_group **ttgs =3D tegra124_tsensor_group=
-s;
->> @@ -493,8 +492,19 @@ static int tegra_soctherm_probe(struct platform=
-_device *pdev)
->>  			goto disable_clocks;
->>  	}
->> =20
->> -	writel(SENSOR_PDIV_T124, tegra->regs + SENSOR_PDIV);
->> -	writel(SENSOR_HOTSPOT_OFF_T124, tegra->regs + SENSOR_HOTSPOT_OFF);
->> +	/* Program pdiv and hotspot offsets per THERM */
->> +	pdiv =3D readl(tegra->regs + SENSOR_PDIV);
->> +	hotspot =3D readl(tegra->regs + SENSOR_HOTSPOT_OFF);
->> +	for (i =3D 0; i < TEGRA124_SOCTHERM_SENSOR_NUM; ++i) {
->> +		pdiv =3D REG_SET_MASK(pdiv, ttgs[i]->pdiv_mask,
->> +				    ttgs[i]->pdiv);
->> +		if (ttgs[i]->id !=3D TEGRA124_SOCTHERM_SENSOR_PLLX)
->> +			hotspot =3D  REG_SET_MASK(hotspot,
->> +						ttgs[i]->pllx_hotspot_mask,
->> +						ttgs[i]->pllx_hotspot_diff);
->> +	}
->> +	writel(pdiv, tegra->regs + SENSOR_PDIV);
->> +	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
+>> +#ifdef CONFIG_ARCH_TEGRA_210_SOC
+>> +extern const struct tegra_soctherm_soc tegra210_soctherm;
+>> +#endif
 >=20
-> Is the above logic the same for all supported chips? e.g. do we alway=
-s
-> skip pllx for hotspot configuration?
+> Is CONFIG_ARCH_TEGRA_210_SOC going to be tristate?
+>=20
+> If only bool, do you need to make the symbol extern?
 
-Yes, this logic support Tegra124, Tegra210, and Tegra132 which I will s=
-end out
-in next series.
+This config is the bool, it already defined in:
+drivers/soc/tegra/Kconfig
 
 >=20
->=20
->> =20
->>  	/* Initialize thermctl sensors */
->> =20
 >> --=20
 >> 1.9.1
 >>
