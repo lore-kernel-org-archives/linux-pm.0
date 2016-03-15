@@ -1,17 +1,17 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V7 10/12] thermal: tegra: add PM support
-Date: Tue, 15 Mar 2016 17:25:20 +0800
-Message-ID: <56E7D500.90607@nvidia.com>
-References: <1457665886-30098-1-git-send-email-wni@nvidia.com> <20160314192316.GD1872@localhost.localdomain>
+Subject: Re: [PATCH V7 11/12] arm64: tegra: add soctherm node for Tegra210
+Date: Tue, 15 Mar 2016 18:43:00 +0800
+Message-ID: <56E7E734.5010307@nvidia.com>
+References: <1457665894-30141-1-git-send-email-wni@nvidia.com> <20160314192500.GE1872@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12352 "EHLO
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:4443 "EHLO
 	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934342AbcCOJZP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 05:25:15 -0400
-In-Reply-To: <20160314192316.GD1872@localhost.localdomain>
+	with ESMTP id S933885AbcCOKmw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 06:42:52 -0400
+In-Reply-To: <20160314192500.GE1872@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
@@ -19,330 +19,124 @@ Cc: rui.zhang@intel.com, thierry.reding@gmail.com, MLongnecker@nvidia.com, swarr
 
 
 
-On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 03:23, Eduardo Valentin wrote:
+On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 03:25, Eduardo Valentin wrote:
 > * PGP Signed by an unknown key
 >=20
-> On Fri, Mar 11, 2016 at 11:11:26AM +0800, Wei Ni wrote:
->> Add suspend/resume function in soctherm driver.
->> And enable it for Tegra124 and Tegra210.
->=20
-> I would prefer you either improve the description of changes needed t=
-o
-> get suspend and resume fully working or you split this patch into
-> smaller and properly described patches.
->=20
-> Looks like you need at least to:
-> (1) handle clocks
-> (2) reprogram hw trips,
-
-Yes, I didn't change the logic of these codes, just reprogram following=
- things:
-(1) move clocks code to the soctherm_clk_enable(), so that the suspend/=
-resume
-can call it directly.
-(2) move some HW initialization to the soctherm_init(), so that the
-suspend/resume can call them.
-
-Yes, it's better to split this patch into smaller. Will do it.
-
->=20
-> right?
->=20
->=20
+> On Fri, Mar 11, 2016 at 11:11:34AM +0800, Wei Ni wrote:
+>> Adds soctherm node for Tegra210, and add cpu,
+>> gpu, mem, pllx as thermal-zones. Set critical
+>> trip temp for cpu and gpu thermal zone.
 >>
 >> Signed-off-by: Wei Ni <wni@nvidia.com>
 >> ---
->>  drivers/thermal/tegra/soctherm.c | 175 ++++++++++++++++++++++++++++=
------------
->>  1 file changed, 125 insertions(+), 50 deletions(-)
+>>  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 60 +++++++++++++++++++++=
++++++++++++
+>>  1 file changed, 60 insertions(+)
 >>
->> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegr=
-a/soctherm.c
->> index dbaab160baba..702d9cf3969d 100644
->> --- a/drivers/thermal/tegra/soctherm.c
->> +++ b/drivers/thermal/tegra/soctherm.c
->> @@ -88,6 +88,7 @@ struct tegra_soctherm {
->>  	struct clk *clock_tsensor;
->>  	struct clk *clock_soctherm;
->>  	void __iomem *regs;
->> +	struct thermal_zone_device **thermctl_tzs;
+>> diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/b=
+oot/dts/nvidia/tegra210.dtsi
+>> index cd4f45ccd6a7..c7ef500a347e 100644
+>> --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+>> +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+>> @@ -3,6 +3,7 @@
+>>  #include <dt-bindings/memory/tegra210-mc.h>
+>>  #include <dt-bindings/pinctrl/pinctrl-tegra.h>
+>>  #include <dt-bindings/interrupt-controller/arm-gic.h>
+>> +#include <dt-bindings/thermal/tegra124-soctherm.h>
 >> =20
->>  	u32 *calib;
->>  	struct tegra_soctherm_soc *soc;
->> @@ -95,19 +96,11 @@ struct tegra_soctherm {
->>  	struct dentry *debugfs_dir;
->>  };
->> =20
->> -static int enable_tsensor(struct tegra_soctherm *tegra,
->> -			  unsigned int i,
->> -			  const struct tsensor_shared_calib *shared)
->> +static void enable_tsensor(struct tegra_soctherm *tegra, unsigned i=
-nt i)
->>  {
->>  	const struct tegra_tsensor *sensor =3D &tegra->soc->tsensors[i];
->>  	void __iomem *base =3D tegra->regs + sensor->base;
->> -	u32 *calib =3D &tegra->calib[i];
->>  	unsigned int val;
->> -	int err;
->> -
->> -	err =3D tegra_calc_tsensor_calib(sensor, shared, calib);
->> -	if (err)
->> -		return err;
->> =20
->>  	val =3D sensor->config->tall << SENSOR_CONFIG0_TALL_SHIFT;
->>  	writel(val, base + SENSOR_CONFIG0);
->> @@ -118,9 +111,7 @@ static int enable_tsensor(struct tegra_soctherm =
-*tegra,
->>  	val |=3D SENSOR_CONFIG1_TEMP_ENABLE;
->>  	writel(val, base + SENSOR_CONFIG1);
->> =20
->> -	writel(*calib, base + SENSOR_CONFIG2);
->> -
->> -	return 0;
->> +	writel(tegra->calib[i], base + SENSOR_CONFIG2);
->>  }
->> =20
->>  /*
->> @@ -425,6 +416,69 @@ static inline void soctherm_debug_init(struct p=
-latform_device *pdev)
->>  }
->>  #endif
->> =20
->> +static int soctherm_clk_enable(struct platform_device *pdev, bool e=
-nable)
->> +{
->> +	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
->> +	int err;
+>>  / {
+>>  	compatible =3D "nvidia,tegra210";
+>> @@ -802,4 +803,63 @@
+>>  				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+>>  		interrupt-parent =3D <&gic>;
+>>  	};
 >> +
->> +	if (tegra->clock_soctherm =3D=3D NULL || tegra->clock_tsensor =3D=3D=
- NULL)
->> +		return -EINVAL;
+>> +	soctherm: thermal-sensor@0,700e2000 {
+>> +		compatible =3D "nvidia,tegra210-soctherm";
+>> +		reg =3D <0x0 0x700e2000 0x0 0x1000>;
+>> +		interrupts =3D <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+>> +		clocks =3D <&tegra_car TEGRA210_CLK_TSENSOR>,
+>> +			<&tegra_car TEGRA210_CLK_SOC_THERM>;
+>> +		clock-names =3D "tsensor", "soctherm";
+>> +		resets =3D <&tegra_car 78>;
+>> +		reset-names =3D "soctherm";
+>> +		#thermal-sensor-cells =3D <1>;
+>> +	};
 >> +
->> +	reset_control_assert(tegra->reset);
+>> +	thermal-zones {
+>> +		cpu {
+>> +			polling-delay-passive =3D <1000>;
+>> +			polling-delay =3D <0>;
 >> +
->> +	if (enable) {
->> +		err =3D clk_prepare_enable(tegra->clock_soctherm);
->> +		if (err) {
->> +			reset_control_deassert(tegra->reset);
->> +			return err;
->> +		}
+>> +			thermal-sensors =3D
+>> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
 >> +
->> +		err =3D clk_prepare_enable(tegra->clock_tsensor);
->> +		if (err) {
->> +			clk_disable_unprepare(tegra->clock_soctherm);
->> +			reset_control_deassert(tegra->reset);
->> +			return err;
->> +		}
->> +	} else {
->> +		clk_disable_unprepare(tegra->clock_tsensor);
->> +		clk_disable_unprepare(tegra->clock_soctherm);
->> +	}
+>> +			trips {
+>> +				cpu_shutdown_trip: shutdown-trip {
+>> +					temperature =3D <102500>;
+>> +					hysteresis =3D <1000>;
+>> +					type =3D "critical";
+>> +				};
+>> +			};
+>> +		};
+>> +		mem {
+>> +			polling-delay-passive =3D <0>;
+>> +			polling-delay =3D <0>;
 >> +
->> +	reset_control_deassert(tegra->reset);
->> +
->> +	return 0;
->> +}
->> +
->> +static void soctherm_init(struct platform_device *pdev)
->> +{
->> +	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
->> +	const struct tegra_tsensor_group **ttgs =3D tegra->soc->ttgs;
->> +	int i;
->> +	u32 pdiv, hotspot;
->> +
->> +	/* Initialize raw sensors */
->> +	for (i =3D 0; i < tegra->soc->num_tsensors; ++i)
->> +		enable_tsensor(tegra, i);
->> +
->> +	/* Wait for sensor data to be ready */
->> +	usleep_range(1000, 5000);
+>> +			thermal-sensors =3D
+>> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
 >=20
 >=20
-> Is this range applicable for all supported chip versions?
+> Why no trips for mem? Why should we  care ?
 
-Hmm, I made a mistake, this come from my old driver. I will remove it.
+The critical trip temperature will be set to HW for critical shutdown. =
+Normally,
+we just take care the CPU and GPU temperature. And in HW, the MEM use t=
+he same
+critical trip with GPU. For PLLX, we just keep the default critical tri=
+p in HW.
+So I didn't configure the MEM and PLLX. I can add critical trips for th=
+em.
 
 >=20
+> Please have a look on the binding to check for mandatory properties a=
+nd
+> sub nodes.
+
+Hmm, yes, the trips and cooling-maps are required properties. How about=
+ to add a
+dummy-cool-dev, so that it could be compatible with the binding.
+
+Wei.
+
+>=20
+>> +		};
+>> +		gpu {
+>> +			polling-delay-passive =3D <1000>;
+>> +			polling-delay =3D <0>;
 >> +
->> +	/* program pdiv and hotspot offsets per THERM */
->> +	pdiv =3D readl(tegra->regs + SENSOR_PDIV);
->> +	hotspot =3D readl(tegra->regs + SENSOR_HOTSPOT_OFF);
->> +	for (i =3D 0; i < tegra->soc->num_ttgs; ++i) {
->> +		pdiv =3D REG_SET_MASK(pdiv, ttgs[i]->pdiv_mask,
->> +				    ttgs[i]->pdiv);
->> +		if (ttgs[i]->id =3D=3D TEGRA124_SOCTHERM_SENSOR_PLLX)
->> +			continue;
->> +		hotspot =3D  REG_SET_MASK(hotspot,
->> +					ttgs[i]->pllx_hotspot_mask,
->> +					ttgs[i]->pllx_hotspot_diff);
->> +	}
->> +	writel(pdiv, tegra->regs + SENSOR_PDIV);
->> +	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
->> +}
+>> +			thermal-sensors =3D
+>> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
 >> +
->>  static const struct of_device_id tegra_soctherm_of_match[] =3D {
->>  #ifdef CONFIG_ARCH_TEGRA_124_SOC
->>  	{
->> @@ -452,7 +506,6 @@ static int tegra_soctherm_probe(struct platform_=
-device *pdev)
->>  	struct tegra_soctherm_soc *soc;
->>  	unsigned int i;
->>  	int err;
->> -	u32 pdiv, hotspot;
->> =20
->>  	match =3D of_match_node(tegra_soctherm_of_match, pdev->dev.of_node=
-);
->>  	if (!match)
->> @@ -493,52 +546,37 @@ static int tegra_soctherm_probe(struct platfor=
-m_device *pdev)
->>  		return PTR_ERR(tegra->clock_soctherm);
->>  	}
->> =20
->> -	reset_control_assert(tegra->reset);
->> -
->> -	err =3D clk_prepare_enable(tegra->clock_soctherm);
->> -	if (err)
->> -		return err;
->> -
->> -	err =3D clk_prepare_enable(tegra->clock_tsensor);
->> -	if (err) {
->> -		clk_disable_unprepare(tegra->clock_soctherm);
->> -		return err;
->> -	}
->> -
->> -	reset_control_deassert(tegra->reset);
->> -
->> -	/* Initialize raw sensors */
->> -
->>  	tegra->calib =3D devm_kzalloc(&pdev->dev,
->>  				    sizeof(u32) * soc->num_tsensors,
->>  				    GFP_KERNEL);
->>  	if (!tegra->calib)
->>  		return -ENOMEM;
->> =20
->> +	/* calculate shared calibration data */
->>  	err =3D tegra_calc_shared_calib(soc->tfuse, &shared_calib);
->>  	if (err)
->> -		goto disable_clocks;
->> +		return err;
->> =20
->> +	/* calculate tsensor calibaration data */
->>  	for (i =3D 0; i < soc->num_tsensors; ++i) {
->> -		err =3D enable_tsensor(tegra, i, &shared_calib);
->> +		err =3D tegra_calc_tsensor_calib(&soc->tsensors[i],
->> +					       &shared_calib,
->> +					       &tegra->calib[i]);
->>  		if (err)
->> -			goto disable_clocks;
->> +			return err;
->>  	}
->> =20
->> -	/* Program pdiv and hotspot offsets per THERM */
->> -	pdiv =3D readl(tegra->regs + SENSOR_PDIV);
->> -	hotspot =3D readl(tegra->regs + SENSOR_HOTSPOT_OFF);
->> -	for (i =3D 0; i < soc->num_ttgs; ++i) {
->> -		pdiv =3D REG_SET_MASK(pdiv, soc->ttgs[i]->pdiv_mask,
->> -				    soc->ttgs[i]->pdiv);
->> -		if (soc->ttgs[i]->id =3D=3D TEGRA124_SOCTHERM_SENSOR_PLLX)
->> -			continue;
->> -		hotspot =3D  REG_SET_MASK(hotspot,
->> -					soc->ttgs[i]->pllx_hotspot_mask,
->> -					soc->ttgs[i]->pllx_hotspot_diff);
->> -	}
->> -	writel(pdiv, tegra->regs + SENSOR_PDIV);
->> -	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
->> +	tegra->thermctl_tzs =3D devm_kzalloc(&pdev->dev,
->> +					   sizeof(*z) * soc->num_ttgs,
->> +					   GFP_KERNEL);
->> +	if (!tegra->thermctl_tzs)
->> +		return -ENOMEM;
+>> +			trips {
+>> +				gpu_shutdown_trip: shutdown-trip {
+>> +					temperature =3D <103000>;
+>> +					hysteresis =3D <1000>;
+>> +					type =3D "critical";
+>> +				};
+>> +			};
+>> +		};
+>> +		pllx {
+>> +			polling-delay-passive =3D <0>;
+>> +			polling-delay =3D <0>;
 >> +
->> +	err =3D soctherm_clk_enable(pdev, true);
->> +	if (err)
->> +		return err;
->> +
->> +	soctherm_init(pdev);
->> =20
->>  	for (i =3D 0; i < soc->num_ttgs; ++i) {
->>  		struct tegra_thermctl_zone *zone =3D
->> @@ -563,6 +601,7 @@ static int tegra_soctherm_probe(struct platform_=
-device *pdev)
->>  		}
->> =20
->>  		zone->tz =3D z;
->> +		tegra->thermctl_tzs[soc->ttgs[i]->id] =3D z;
->> =20
->>  		/* Configure hw trip points */
->>  		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
->> @@ -573,8 +612,7 @@ static int tegra_soctherm_probe(struct platform_=
-device *pdev)
->>  	return 0;
->> =20
->>  disable_clocks:
->> -	clk_disable_unprepare(tegra->clock_tsensor);
->> -	clk_disable_unprepare(tegra->clock_soctherm);
->> +	soctherm_clk_enable(pdev, false);
->> =20
->>  	return err;
->>  }
->> @@ -585,17 +623,54 @@ static int tegra_soctherm_remove(struct platfo=
-rm_device *pdev)
->> =20
->>  	debugfs_remove_recursive(tegra->debugfs_dir);
->> =20
->> -	clk_disable_unprepare(tegra->clock_tsensor);
->> -	clk_disable_unprepare(tegra->clock_soctherm);
->> +	soctherm_clk_enable(pdev, false);
->> +
->> +	return 0;
->> +}
->> +
->> +static int soctherm_suspend(struct device *dev)
->> +{
->> +	struct platform_device *pdev =3D to_platform_device(dev);
->> +
->> +	soctherm_clk_enable(pdev, false);
->> =20
->>  	return 0;
->>  }
->> =20
->> +static int soctherm_resume(struct device *dev)
->> +{
->> +	struct platform_device *pdev =3D to_platform_device(dev);
->> +	struct tegra_soctherm *tegra =3D platform_get_drvdata(pdev);
->> +	struct tegra_soctherm_soc *soc =3D tegra->soc;
->> +	int err, i;
->> +
->> +	err =3D soctherm_clk_enable(pdev, true);
->> +	if (err) {
->> +		dev_err(&pdev->dev,
->> +			"Resume failed: enable clocks failed\n");
->> +		return err;
->> +	}
->> +
->> +	soctherm_init(pdev);
->> +
->> +	for (i =3D 0; i < soc->num_ttgs; ++i) {
->> +		struct thermal_zone_device *tz;
->> +
->> +		tz =3D tegra->thermctl_tzs[soc->ttgs[i]->id];
->> +		tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, socth=
-erm_resume);
->> +
->>  static struct platform_driver tegra_soctherm_driver =3D {
->>  	.probe =3D tegra_soctherm_probe,
->>  	.remove =3D tegra_soctherm_remove,
->>  	.driver =3D {
->>  		.name =3D "tegra_soctherm",
->> +		.pm =3D &tegra_soctherm_pm,
->>  		.of_match_table =3D tegra_soctherm_of_match,
->>  	},
+>> +			thermal-sensors =3D
+>> +				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
+>=20
+> ditto
+>=20
+>> +		};
+>> +	};
 >>  };
 >> --=20
 >> 1.9.1
