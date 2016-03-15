@@ -1,61 +1,63 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/8] sched/fair: add margin to utilization update
-Date: Tue, 15 Mar 2016 22:43:54 +0100
-Message-ID: <20160315214354.GL6344@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH 4/8] cpufreq/schedutil: sysfs capacity margin tunable
+Date: Tue, 15 Mar 2016 22:48:21 +0100
+Message-ID: <20160315214821.GM6344@twins.programming.kicks-ass.net>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-3-git-send-email-mturquette+renesas@baylibre.com>
- <20160315211614.GC6344@twins.programming.kicks-ass.net>
- <20160315212848.30639.38747@quark.deferred.io>
+ <1457932932-28444-5-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315212047.GE6344@twins.programming.kicks-ass.net>
+ <20160315214043.30639.75507@quark.deferred.io>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:39205 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753501AbcCOVoV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 17:44:21 -0400
+Received: from [198.137.202.9] ([198.137.202.9]:47114 "EHLO
+	bombadil.infradead.org" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754049AbcCOVtl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 17:49:41 -0400
 Content-Disposition: inline
-In-Reply-To: <20160315212848.30639.38747@quark.deferred.io>
+In-Reply-To: <20160315214043.30639.75507@quark.deferred.io>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Michael Turquette <mturquette@baylibre.com>
 Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Tue, Mar 15, 2016 at 02:28:48PM -0700, Michael Turquette wrote:
-> Quoting Peter Zijlstra (2016-03-15 14:16:14)
-> > On Sun, Mar 13, 2016 at 10:22:06PM -0700, Michael Turquette wrote:
-> > > @@ -2840,6 +2853,8 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
-> > >  
-> > >       if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
-> > >               unsigned long max = rq->cpu_capacity_orig;
-> > > +             unsigned long cap = cfs_rq->avg.util_avg *
-> > > +                     cfs_capacity_margin / max;
-> > >  
-> > >               /*
-> > >                * There are a few boundary cases this might miss but it should
-> > > @@ -2852,8 +2867,7 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
-> > >                * thread is a different class (!fair), nor will the utilization
-> > >                * number include things like RT tasks.
-> > >                */
-> > > -             cpufreq_update_util(rq_clock(rq),
-> > > -                                 min(cfs_rq->avg.util_avg, max), max);
-> > > +             cpufreq_update_util(rq_clock(rq), min(cap, max), max);
-> > >       }
-> > >  }
+On Tue, Mar 15, 2016 at 02:40:43PM -0700, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2016-03-15 14:20:47)
+> > On Sun, Mar 13, 2016 at 10:22:08PM -0700, Michael Turquette wrote:
+> > > With the addition of the global cfs capacity margin helpers in patch,
+> > > "sched/cpufreq: new cfs capacity margin helpers", we can now export
+> > > sysfs tunables from the schedutil governor. This allows privileged users
+> > > to tune the value more easily.
+> > > 
+> > > The margin value is global to cfs, not per-policy. As such schedutil
+> > > does not store any state about the margin. Schedutil restores the margin
+> > > value to its default value when exiting.
 > > 
-> > I really don't see why that is here, and not inside whatever uses
-> > cpufreq_update_util().
+> > Yuck sysfs.. I would really rather we did not expose this per default.
+> > And certainly not in this weird form.
 > 
-> Because I want schedutil to be dumb and not implement any policy of it's
-> own. The idea is for the scheduler to select frequency after all.
+> I'm happy to change capacity_margin to up_threshold and use a
+> percentage.
 > 
-> I want to avoid a weird hybrid solution where we try to be smart about
-> selecting the right capacity/frequency in fair.c (e.g. Steve and Juri's
-> patches to fair.c from the sched-freq-v7 series), but then have an
-> additional layer of "smarts" massaging those values further in the
-> cpufreq governor.
+> The sysfs approach has two benefits. First, it is aligned with cpufreq
+> user expectations. Second, there has been rough consensus that this
+> value should be tunable and sysfs gets us there quickly and painlessly.
+> We're already exporting rate_limit_us for schedutil via sysfs. Is there
+> a better way interface you can recommend?
 
-So the problem here is that you add an unconditional division, even if
-cpufreq_update_util() then decides to not do anything with it.
+It really depends on how tunable you want this to be. Do we always want
+this to be a tunable, or just now while we're playing about with the
+whole thing?
 
-Please, these are scheduler paths, do not add (fancy) instructions if
-you don't absolutely have to.
+The problem with exposing it in sysfs is that you cannot take it out
+again, it becomes ABI.
+
+What we do for all the scheduler tunables (pretty much every time we
+have to take a value out of thin air), is we make them const for
+!SCHED_DEBUG builds, but have them as sysctl for SCHED_DEBUG builds
+(although we should probably move them to /debug/sched/ or somesuch).
+
+That way you get better code generation (compile time constants rule)
+for !debug builds, while having the 'joy' of poking at your number on
+debug builds.
+
+
