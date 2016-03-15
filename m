@@ -1,50 +1,129 @@
-From: dawei chien <dawei.chien@mediatek.com>
-Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
- model.
-Date: Tue, 15 Mar 2016 12:53:40 +0800
-Message-ID: <1458017620.30412.3.camel@mtksdaap41>
-References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
-	 <20151217015231.GC3496@ubuntu>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 12/13] thermal: convert tegra_thermal to use devm_thermal_zone_of_sensor_register
+Date: Tue, 15 Mar 2016 13:42:12 +0800
+Message-ID: <56E7A0B4.2050900@nvidia.com>
+References: <1457559336-17652-1-git-send-email-edubezval@gmail.com> <1457559336-17652-13-git-send-email-edubezval@gmail.com> <56E1347F.8040406@nvidia.com> <20160314211607.GC4740@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151217015231.GC3496@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160314211607.GC4740-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Rui Zhang <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2015-12-17 at 09:52 +0800, Viresh Kumar wrote:
-> On 16-12-15, 21:29, Dawei Chien wrote:
-> > Use Intelligent Power Allocation (IPA) technical to add dynamic power model
-> > for binding CPU thermal zone. The power allocator governor allocates power
-> > budget to control CPU temperature.
-> >
-> > Power Allocator governor is able to keep SOC temperature within a defined
-> > temperature range to avoid SOC overheat and keep it's performance.
-> > mt8173-cpufreq.c need to register its' own power model with power allocator
-> > thermal governor, so that power allocator governor can allocates suitable
-> > power budget to control CPU temperature.
-> >
-> > Binding document is refer to this patchset
-> > https://lkml.org/lkml/2015/11/30/239
-> >
-> > Change since V5:
-> > 1. Remove thermal sensor ID from phandles
-> 
-> Though you should have included this in the new version, but still
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> --
-> viresh
 
-Hi Viresh,
-Would you please pull this patch to your tree since following patch
-already pulled in, thank you.
 
-https://lkml.org/lkml/2015/11/30/239
+On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 05:16, Eduardo Valentin wrote:
+> * PGP Signed by an unknown key
+>=20
+> On Thu, Mar 10, 2016 at 04:46:55PM +0800, Wei Ni wrote:
+>>
+>>
+>> On 2016=E5=B9=B403=E6=9C=8810=E6=97=A5 05:35, Eduardo Valentin wrote=
+:
+>>> This changes the driver to use the devm_ version
+>>> of thermal_zone_of_sensor_register and cleans
+>>> up the  local points and unregister calls.
+>>>
+>>> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>>> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+>>> Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>> Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>> ---
+>>>  drivers/thermal/tegra_soctherm.c | 31 +++++++++-------------------=
+---
+>>>  1 file changed, 9 insertions(+), 22 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/teg=
+ra_soctherm.c
+>>> index 74ea576..0018ccd 100644
+>>> --- a/drivers/thermal/tegra_soctherm.c
+>>> +++ b/drivers/thermal/tegra_soctherm.c
+>>> @@ -168,7 +168,7 @@ struct tegra_soctherm {
+>>>  	struct clk *clock_soctherm;
+>>>  	void __iomem *regs;
+>>> =20
+>>> -	struct thermal_zone_device *thermctl_tzs[4];
+>>> +#define ZONE_NUMBER		4
+>>>  };
+>>> =20
+>>>  struct tsensor_shared_calibration {
+>>> @@ -342,7 +342,7 @@ static const struct thermctl_zone_desc t124_the=
+rmctl_temp_zones[] =3D {
+>>>  static int tegra_soctherm_probe(struct platform_device *pdev)
+>>>  {
+>>>  	struct tegra_soctherm *tegra;
+>>> -	struct thermal_zone_device *tz;
+>>> +	struct thermal_zone_device *z;
+>>>  	struct tsensor_shared_calibration shared_calib;
+>>>  	struct resource *res;
+>>>  	unsigned int i;
+>>> @@ -408,36 +408,29 @@ static int tegra_soctherm_probe(struct platfo=
+rm_device *pdev)
+>>> =20
+>>>  	/* Initialize thermctl sensors */
+>>> =20
+>>> -	for (i =3D 0; i < ARRAY_SIZE(tegra->thermctl_tzs); ++i) {
+>>> +	for (i =3D 0; i < ZONE_NUMBER; ++i) {
+>>>  		struct tegra_thermctl_zone *zone =3D
+>>>  			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
+>>>  		if (!zone) {
+>>>  			err =3D -ENOMEM;
+>>> -			goto unregister_tzs;
+>>> +			goto disable_clocks;
+>>>  		}
+>>> =20
+>>>  		zone->reg =3D tegra->regs + t124_thermctl_temp_zones[i].offset;
+>>>  		zone->shift =3D t124_thermctl_temp_zones[i].shift;
+>>> =20
+>>> -		tz =3D thermal_zone_of_sensor_register(&pdev->dev, i, zone,
+>>> -						     &tegra_of_thermal_ops);
+>>> -		if (IS_ERR(tz)) {
+>>> -			err =3D PTR_ERR(tz);
+>>> +		z =3D devm_thermal_zone_of_sensor_register(&pdev->dev, i, zone,
+>>
+>> I prefer to still use "tz", it seems this line isn't over 80 charact=
+ers, or we
+>> can add newline.
+>=20
+>=20
+> Yeah,
+>=20
+>=20
+>>
+>>> +							 &tegra_of_thermal_ops);
+>=20
+> CHECK: Alignment should match open parenthesis
+> #423: FILE: drivers/thermal/tegra_soctherm.c:423:
+> +		tz =3D devm_thermal_zone_of_sensor_register(&pdev->dev, i, zone,
+> +							 &tegra_of_thermal_ops);
+>=20
+> and if you align it, then, you get the warning:
+> WARNING: line over 80 characters
+> #423: FILE: drivers/thermal/tegra_soctherm.c:423:
+> +							  &tegra_of_thermal_ops);
+>=20
+> And I did not want to add either of the above to the driver.=20
+>=20
+> But if you prefer tz over z, we can keep the first (check) then.
+>=20
+> What do you prefer?
 
-BR,
-Dawei
+Hmm, I see.
+Ok, it's better to use "z" to resolve it.
+
+Wei.
+>=20
+>=20
+>=20
+>=20
+>=20
+> * Unknown Key
+> * 0x7DA4E256
+>=20
