@@ -1,63 +1,51 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 4/8] cpufreq/schedutil: sysfs capacity margin tunable
-Date: Tue, 15 Mar 2016 22:48:21 +0100
-Message-ID: <20160315214821.GM6344@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH 1/8] sched/cpufreq: remove cpufreq_trigger_update()
+Date: Tue, 15 Mar 2016 22:49:41 +0100
+Message-ID: <20160315214941.GN6344@twins.programming.kicks-ass.net>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-5-git-send-email-mturquette+renesas@baylibre.com>
- <20160315212047.GE6344@twins.programming.kicks-ass.net>
- <20160315214043.30639.75507@quark.deferred.io>
+ <1457932932-28444-2-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315211448.GB6344@twins.programming.kicks-ass.net>
+ <20160315214545.30639.98727@quark.deferred.io>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [198.137.202.9] ([198.137.202.9]:47114 "EHLO
-	bombadil.infradead.org" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754049AbcCOVtl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 17:49:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39385 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbcCOVuH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 17:50:07 -0400
 Content-Disposition: inline
-In-Reply-To: <20160315214043.30639.75507@quark.deferred.io>
+In-Reply-To: <20160315214545.30639.98727@quark.deferred.io>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Michael Turquette <mturquette@baylibre.com>
 Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Tue, Mar 15, 2016 at 02:40:43PM -0700, Michael Turquette wrote:
-> Quoting Peter Zijlstra (2016-03-15 14:20:47)
-> > On Sun, Mar 13, 2016 at 10:22:08PM -0700, Michael Turquette wrote:
-> > > With the addition of the global cfs capacity margin helpers in patch,
-> > > "sched/cpufreq: new cfs capacity margin helpers", we can now export
-> > > sysfs tunables from the schedutil governor. This allows privileged users
-> > > to tune the value more easily.
+On Tue, Mar 15, 2016 at 02:45:45PM -0700, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2016-03-15 14:14:48)
+> > On Sun, Mar 13, 2016 at 10:22:05PM -0700, Michael Turquette wrote:
+> > > cpufreq_trigger_update() was introduced in "cpufreq: Rework the
+> > > scheduler hooks for triggering updates"[0]. Consensus is that this
+> > > helper is not needed and removing it will aid in experimenting with
+> > > deadline and rt capacity requests.
 > > > 
-> > > The margin value is global to cfs, not per-policy. As such schedutil
-> > > does not store any state about the margin. Schedutil restores the margin
-> > > value to its default value when exiting.
+> > > Instead of reverting the above patch, which includes useful renaming of
+> > > data structures and related functions, simply remove the function,
+> > > update affected kerneldoc and change rt.c and deadline.c to use
+> > > cpufreq_update_util().
 > > 
-> > Yuck sysfs.. I would really rather we did not expose this per default.
-> > And certainly not in this weird form.
+> > This fails to explain how the need for these hooks is dealt with.
 > 
-> I'm happy to change capacity_margin to up_threshold and use a
-> percentage.
+> Sorry, I don't understand your point. The removed hook,
+> "cpufreq_trigger_update()" was only used in deadline.c and rt.c, and
+> this patch effectively reverts Rafael's patch that introduces that
+> function.
 > 
-> The sysfs approach has two benefits. First, it is aligned with cpufreq
-> user expectations. Second, there has been rough consensus that this
-> value should be tunable and sysfs gets us there quickly and painlessly.
-> We're already exporting rate_limit_us for schedutil via sysfs. Is there
-> a better way interface you can recommend?
+> It simply does not revert the other changes in Rafael's patch, such as
+> some renaming.
+> 
+> deadline.c and rt.c are made to use cpufreq_update_util() and pass in
+> ULONG_MAX for capacity and 0 for time. This is exactly what they did
+> before patch "cpufreq: Rework the scheduler hooks for triggering
+> updates".
 
-It really depends on how tunable you want this to be. Do we always want
-this to be a tunable, or just now while we're playing about with the
-whole thing?
-
-The problem with exposing it in sysfs is that you cannot take it out
-again, it becomes ABI.
-
-What we do for all the scheduler tunables (pretty much every time we
-have to take a value out of thin air), is we make them const for
-!SCHED_DEBUG builds, but have them as sysctl for SCHED_DEBUG builds
-(although we should probably move them to /debug/sched/ or somesuch).
-
-That way you get better code generation (compile time constants rule)
-for !debug builds, while having the 'joy' of poking at your number on
-debug builds.
-
-
+Clearly I need to learn to read again.. You're right.
