@@ -1,76 +1,120 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 2/2] nouveau: use new vga_switcheroo power domain.
-Date: Tue, 15 Mar 2016 21:47:41 +0100
-Message-ID: <20160315204741.GC27934@wunner.de>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
- <1457504045-12738-2-git-send-email-airlied@gmail.com>
- <20160309144047.GB26158@wunner.de>
- <CAPM=9txfEOoXLr35qEMQrpfMdDf_rCyUx0pQoC4HbQ=t0HNKdw@mail.gmail.com>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH 8/8] sched: prefer cpufreq_scale_freq_capacity
+Date: Tue, 15 Mar 2016 13:46:30 -0700
+Message-ID: <20160315204630.30639.60702@quark.deferred.io>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+ <1457932932-28444-9-git-send-email-mturquette+renesas@baylibre.com>
+ <56E85EF6.5040005@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:48589 "EHLO
-	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934917AbcCOUqV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 16:46:21 -0400
-Content-Disposition: inline
-In-Reply-To: <CAPM=9txfEOoXLr35qEMQrpfMdDf_rCyUx0pQoC4HbQ=t0HNKdw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <56E85EF6.5040005@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>, peterz@infradead.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Airlie <airlied@gmail.com>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hi Dave,
-
-On Thu, Mar 10, 2016 at 08:04:26AM +1000, Dave Airlie wrote:
-> On 10 March 2016 at 00:40, Lukas Wunner <lukas@wunner.de> wrote:
-> > On Wed, Mar 09, 2016 at 04:14:05PM +1000, Dave Airlie wrote:
-> >> From: Dave Airlie <airlied@redhat.com>
-> >>
-> >> This fixes GPU auto powerdown on the Lenovo W541,
-> >> since we advertise Windows 2013 to the ACPI layer.
-> >>
-> >> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> >> ---
-> >>  drivers/gpu/drm/nouveau/nouveau_vga.c | 10 +++++++---
-> >>  1 file changed, 7 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/gpu/drm/nouveau/nouveau_vga.c b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> >> index af89c36..b987427f 100644
-> >> --- a/drivers/gpu/drm/nouveau/nouveau_vga.c
-> >> +++ b/drivers/gpu/drm/nouveau/nouveau_vga.c
-> >> @@ -101,8 +101,12 @@ nouveau_vga_init(struct nouveau_drm *drm)
-> >>               runtime = true;
-> >>       vga_switcheroo_register_client(dev->pdev, &nouveau_switcheroo_ops, runtime);
-> >>
-> >> -     if (runtime && nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> >> -             vga_switcheroo_init_domain_pm_ops(drm->dev->dev, &drm->vga_pm_domain);
-> >> +     if (runtime) {
-> >> +             if (nouveau_is_v1_dsm() && !nouveau_is_optimus())
-> >
-> > The " && !nouveau_is_optimus()" can be dropped because a machine cannot
-> > have both. Note the "else" in nouveau_dsm_detect():
+Quoting Dietmar Eggemann (2016-03-15 12:13:58)
+> On 14/03/16 05:22, Michael Turquette wrote:
+> > arch_scale_freq_capacity is weird. It specifies an arch hook for an
+> > implementation that could easily vary within an architecture or even a
+> > chip family.
+> > 
+> > This patch helps to mitigate this weirdness by defaulting to the
+> > cpufreq-provided implementation, which should work for all cases where
+> > CONFIG_CPU_FREQ is set.
+> > 
+> > If CONFIG_CPU_FREQ is not set, then try to use an implementation
+> > provided by the architecture. Failing that, fall back to
+> > SCHED_CAPACITY_SCALE.
+> > 
+> > It may be desirable for cpufreq drivers to specify their own
+> > implementation of arch_scale_freq_capacity in the future. The same is
+> > true for platform code within an architecture. In both cases an
+> > efficient implementation selector will need to be created and this patch
+> > adds a comment to that effect.
 > 
-> I'm pretty sure I've seen a machine with both in my past, back in the
-> Vista/Win7 crossover days.
+> For me this independence of the scheduler code towards the actual
+> implementation of the Frequency Invariant Engine (FEI) was actually a
+> feature.
 
-Yes, but the code in nouveau_dsm_detect() is such that you'll never have
-both nouveau_is_v1_dsm() and nouveau_is_optimus() return true.
+I do not agree that it is a strength; I think it is confusing. My
+opinion is that cpufreq drivers should implement
+arch_scale_freq_capacity. Having a sane fallback
+(cpufreq_scale_freq_capacity) simply means that you can remove the
+boilerplate from the arm32 and arm64 code, which is a win.
 
-So you can drop the " && !nouveau_is_optimus()".
+Furthermore, if we have multiple competing implementations of
+arch_scale_freq_invariance, wouldn't it be better for all of them to
+live in cpufreq drivers? This means we would only need to implement a
+single run-time "selector".
 
-Best regards,
+On the other hand, if the implementation lives in arch code and we have
+various implementations of arch_scale_freq_capacity within an
+architecture, then each arch would need to implement this selector
+function. Even worse then if we have a split where some implementations
+live in drivers/cpufreq (e.g. intel_pstate) and others in arch/arm and
+others in arch/arm64 ... now we have three selectors.
 
-Lukas
+Note that this has nothing to do with cpu microarch invariance. I'm
+happy for that to stay in arch code because we can have heterogeneous
+cpus that do not scale frequency, and thus would not enable cpufreq.
+But if your platform scales cpu frequency, then really cpufreq should be
+in the loop.
 
 > 
-> > You're calling this unconditionally for all Optimus machines yet
-> > I assume pre Windows 10 machines lack the PR3 hooks.
-> >
+> In EAS RFC5.2 (linux-arm.org/linux-power.git energy_model_rfc_v5.2 ,
+> which hasn't been posted to LKML) we establish the link in the ARCH code
+> (arch/arm64/include/asm/topology.h).
+
+Right, sorry again about preemptively posting the patch. Total brainfart
+on my part.
+
 > 
-> Yes and I've confirmed on my older machine that nothing bad happens
-> doing it unconditionally,
-> and I couldn't find any bits in the _DSM flags to tell me if I should
-> do something different.
+> #ifdef CONFIG_CPU_FREQ
+> #define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+> ...
+> +#endif
+
+The above is no longer necessary with this patch. Same question as
+above: why insist on the arch boilerplate?
+
+Regards,
+Mike
+
 > 
-> Dave.
+> > 
+> > Signed-off-by: Michael Turquette <mturquette+renesas@baylibre.com>
+> > ---
+> >  kernel/sched/sched.h | 16 +++++++++++++++-
+> >  1 file changed, 15 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> > index 469d11d..37502ea 100644
+> > --- a/kernel/sched/sched.h
+> > +++ b/kernel/sched/sched.h
+> > @@ -1368,7 +1368,21 @@ static inline int hrtick_enabled(struct rq *rq)
+> >  #ifdef CONFIG_SMP
+> >  extern void sched_avg_update(struct rq *rq);
+> >  
+> > -#ifndef arch_scale_freq_capacity
+> > +/*
+> > + * arch_scale_freq_capacity can be implemented by cpufreq, platform code or
+> > + * arch code. We select the cpufreq-provided implementation first. If it
+> > + * doesn't exist then we default to any other implementation provided from
+> > + * platform/arch code. If those do not exist then we use the default
+> > + * SCHED_CAPACITY_SCALE value below.
+> > + *
+> > + * Note that if cpufreq drivers or platform/arch code have competing
+> > + * implementations it is up to those subsystems to select one at runtime with
+> > + * an efficient solution, as we cannot tolerate the overhead of indirect
+> > + * functions (e.g. function pointers) in the scheduler fast path
+> > + */
+> > +#ifdef CONFIG_CPU_FREQ
+> > +#define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+> > +#elif !defined(arch_scale_freq_capacity)
+> >  static __always_inline
+> >  unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+> >  {
+> > 
