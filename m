@@ -1,60 +1,45 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V7 08/12] of: add notes of critical trips for soctherm
-Date: Tue, 15 Mar 2016 16:14:15 +0800
-Message-ID: <56E7C457.5000301@nvidia.com>
-References: <1457665860-30003-1-git-send-email-wni@nvidia.com> <20160314210027.GA4740@localhost.localdomain> <56E7BE87.405@nvidia.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH trivial] PM / devfreq: Spelling s/frequnecy/frequency/
+Date: Tue, 15 Mar 2016 17:14:22 +0900
+Message-ID: <56E7C45E.8080306@samsung.com>
+References: <1457969342-23672-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:18695 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbcCOIOH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 04:14:07 -0400
-In-Reply-To: <56E7BE87.405@nvidia.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:41026 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934259AbcCOIOm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 04:14:42 -0400
+In-reply-to: <1457969342-23672-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, thierry.reding@gmail.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Jiri Kosina <trivial@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
-
-On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 15:49, Wei Ni wrote:
+On 2016=EB=85=84 03=EC=9B=94 15=EC=9D=BC 00:29, Geert Uytterhoeven wrot=
+e:
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/devfreq/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 64281bb2f6503c5a..4de78c552251a5a5 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -61,7 +61,7 @@ config DEVFREQ_GOV_USERSPACE
+>  	  Sets the frequency at the user specified one.
+>  	  This governor returns the user configured frequency if there
+>  	  has been an input to /sys/devices/.../power/devfreq_set_freq.
+> -	  Otherwise, the governor does not change the frequnecy
+> +	  Otherwise, the governor does not change the frequency
+>  	  given at the initialization.
+> =20
+>  comment "DEVFREQ Drivers"
 >=20
-> On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 05:00, Eduardo Valentin wrote:
->> * PGP Signed by an unknown key
->>
->> On Fri, Mar 11, 2016 at 11:11:00AM +0800, Wei Ni wrote:
->>> The "critical" type trip in thermal zone can be
->>> set to SOC_THERM hardware, it can trigger shut down
->>> or reset event from hardware.
->>>
->>> Signed-off-by: Wei Ni <wni@nvidia.com>
->>> Acked-by: Rob Herring <robh@kernel.org>
->>> ---
->>>  Documentation/devicetree/bindings/thermal/tegra-soctherm.txt | 12 =
-++++++++++++
->>>  1 file changed, 12 insertions(+)
->>
->> I did not see in your patch set an update on the compatible string f=
-or
->> the new chip. Did I miss something?
->=20
-> As I said in the previous [00/12], the "commit 193c9d23a0f0" already =
-added the
-> compatible string. At that time, it just used current tegra_soctherm.=
-c driver to
-> support Tegra210, it can work, but can't show temperatures correctly.
 
-Oh, sorry, I made a mistake, this "commit 193c9d23a0f0" just added the
-compatible string, did not use current tegra_soctherm driver to support=
- Tegra210.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Wei.
-
->=20
->>
->> * Unknown Key
->> * 0x7DA4E256
->>
+Thanks,
+Chanwoo Choi
