@@ -1,88 +1,85 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V7 08/12] of: add notes of critical trips for soctherm
-Date: Tue, 15 Mar 2016 12:52:00 -0700
-Message-ID: <20160315195159.GC26619@localhost.localdomain>
-References: <1457665860-30003-1-git-send-email-wni@nvidia.com>
- <20160314210027.GA4740@localhost.localdomain>
- <56E7BE87.405@nvidia.com>
- <56E7C457.5000301@nvidia.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V7 05/12] thermal: tegra: add Tegra210 specific SOC_THERM
+ driver
+Date: Tue, 15 Mar 2016 12:54:44 -0700
+Message-ID: <20160315195443.GD26619@localhost.localdomain>
+References: <1457665825-29837-1-git-send-email-wni@nvidia.com>
+ <20160314185739.GA1872@localhost.localdomain>
+ <56E7B2E8.8070100@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WfZ7S8PLGjBY9Voh"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="2iBwrppp/7QCDedR"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:35279 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934911AbcCOTys (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 15:54:48 -0400
 Content-Disposition: inline
-In-Reply-To: <56E7C457.5000301-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <56E7B2E8.8070100@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>
+Cc: rui.zhang@intel.com, thierry.reding@gmail.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---WfZ7S8PLGjBY9Voh
+--2iBwrppp/7QCDedR
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 15, 2016 at 04:14:15PM +0800, Wei Ni wrote:
+On Tue, Mar 15, 2016 at 02:59:52PM +0800, Wei Ni wrote:
 >=20
 >=20
-> On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 15:49, Wei Ni wrote:
+> On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 02:57, Eduardo Valentin wrote:
+> > * PGP Signed by an unknown key
 > >=20
-> >=20
-> > On 2016=E5=B9=B403=E6=9C=8815=E6=97=A5 05:00, Eduardo Valentin wrote:
-> >> * PGP Signed by an unknown key
+> > On Fri, Mar 11, 2016 at 11:10:25AM +0800, Wei Ni wrote:
+> >> Add Tegra210 specific SOC_THERM driver.
 > >>
-> >> On Fri, Mar 11, 2016 at 11:11:00AM +0800, Wei Ni wrote:
-> >>> The "critical" type trip in thermal zone can be
-> >>> set to SOC_THERM hardware, it can trigger shut down
-> >>> or reset event from hardware.
-> >>>
-> >>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >>> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> >>> ---
-> >>>  Documentation/devicetree/bindings/thermal/tegra-soctherm.txt | 12 ++=
-++++++++++
-> >>>  1 file changed, 12 insertions(+)
-> >>
-> >> I did not see in your patch set an update on the compatible string for
-> >> the new chip. Did I miss something?
+> >> Signed-off-by: Wei Ni <wni@nvidia.com>
+> >> ---
+> >>  drivers/thermal/tegra/Makefile            |   1 +
+> >>  drivers/thermal/tegra/soctherm-fuse.c     |  11 ++
+> >>  drivers/thermal/tegra/soctherm.c          |   6 ++
+> >>  drivers/thermal/tegra/soctherm.h          |   4 +
+> >>  drivers/thermal/tegra/tegra210-soctherm.c | 173 +++++++++++++++++++++=
++++++++++
 > >=20
-> > As I said in the previous [00/12], the "commit 193c9d23a0f0" already ad=
-ded the
-> > compatible string. At that time, it just used current tegra_soctherm.c =
-driver to
-> > support Tegra210, it can work, but can't show temperatures correctly.
+> > No Kconfig change?
 >=20
-> Oh, sorry, I made a mistake, this "commit 193c9d23a0f0" just added the
-> compatible string, did not use current tegra_soctherm driver to support T=
-egra210.
+> Yes, we doesn't need Kconfig change.
+>=20
+> As discussed with Thierry in [V1,03/10] thermal: tegra: split tegra_socth=
+erm
+> driver, he said:
+> "I'd like to do this differently to reduce the number of Kconfig symbols.
+> The alternate proposal would be for the TEGRA_SOCTHERM symbol to remain
+> as it is and then build in driver support depending on the selected
+> ARCH_TEGRA_*_SOC options."
+>=20
+> So we only have "config TEGRA_SOCTHERM" in the Kconfig, and in Makefile, =
+we add
+> tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+=3D tegra124-soctherm.o
+> tegra-soctherm-$(CONFIG_ARCH_TEGRA_210_SOC)	+=3D tegra210-soctherm.o
 
-Ok. got it. The binding is done, but the driver is being re factored only
-now to add the support for this chip version.
 
->=20
-> Wei.
->=20
-> >=20
-> >>
-> >> * Unknown Key
-> >> * 0x7DA4E256
-> >>
+makes sense to me.
 
---WfZ7S8PLGjBY9Voh
+
+--2iBwrppp/7QCDedR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQEcBAEBAgAGBQJW6GfdAAoJEMLUO4d9pOJW3OQIAJGVACOu7bAGhS+tV8ytGig8
-GxLFYPj5fO2HuEhoQk5UKyFGzg0nV/oDPm8O4Tt6frFilgi9CpKPiZ2yGH/8DDsN
-QhviotF3iSmXoKagm8oSY97W0e+2hSbyx8OyENU+r5CeT+vp7H6xQEJEqIbZgdkN
-x7D+O3t4xDpU5TsBx7aFV7mPFYkKGFbSTOAD+k1kBLbrhv44H0MphS+4AdzMqpds
-s3NI6C/rYXjpkpEhv5iG5jNJBqUVARbz0Kp14kqZT1FLYmqEKwkoVgTqYh8+j36i
-OOoI0/8x5l/yT/EiJxWx2cVjhEWK1HwiXSFAP3i3OWTi9fHkDSESgGl5/w6SSMU=
-=gS21
+iQEcBAEBAgAGBQJW6GiBAAoJEMLUO4d9pOJWsd8H/AvSPyPqKdDWZ5Mvxkg/NLDW
+pVP5iKLW0btUOKBSP31v9T431aGgKXi2EBsHwVakZLTJ0kxmoqAqI4u4pRGtNHNJ
+5VgVe+pgw8IXeMYzGqlcIRoMPdRZjiZ4OBzrkX9t1lgD7nQRQsdG9hCA7ec8g2fT
+2eT1XlYz8UFSFQfilgwt5jKWOnK2DWvNvu4XzXG8CyDQ07S7jPT5dJzkCD0f9Zj8
+MCDQQkTryOBoM5mGD4iVc3jL5XKQTaFGjrzSfAPlWFrcQnKdARtwepndbxwy3FdW
+6LxRfxnG43d/jjGSMfeZr9ejJJJuOElys49IpshGfzFYSENSDJISX27T1TWYGR8=
+=yDIT
 -----END PGP SIGNATURE-----
 
---WfZ7S8PLGjBY9Voh--
+--2iBwrppp/7QCDedR--
