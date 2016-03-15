@@ -1,53 +1,94 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 1/2] vga_switcheroo: add power support for windows 10
- machines.
-Date: Tue, 15 Mar 2016 15:57:43 +0200
-Message-ID: <20160315135743.GT1793@lahna.fi.intel.com>
-References: <1457504045-12738-1-git-send-email-airlied@gmail.com>
- <2736217.utxPzJExd5@vostro.rjw.lan>
- <20160311105815.GS1796@lahna.fi.intel.com>
- <2759763.dR5D0KopkA@vostro.rjw.lan>
- <CAPM=9txo4aOOa-CS-mnyQe+vYDtAOCm1bzAgfMzwJJS8ZuYmwQ@mail.gmail.com>
- <20160314094335.GE1796@lahna.fi.intel.com>
- <20160315133958.GA27793@wunner.de>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: Questions about sleep states on ARM Juno R0
+Date: Tue, 15 Mar 2016 14:14:32 +0000
+Message-ID: <CAPKp9uZ28sYvAsz2H2gid=_DStcFrRnVw70mYDkHUAcXJZy9Bw@mail.gmail.com>
+References: <56E80519.1040400@bsc.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160315133958.GA27793@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Dave Airlie <airlied@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f178.google.com ([209.85.223.178]:32808 "EHLO
+	mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754106AbcCOOOe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 10:14:34 -0400
+Received: by mail-io0-f178.google.com with SMTP id n190so25350770iof.0
+        for <linux-pm@vger.kernel.org>; Tue, 15 Mar 2016 07:14:33 -0700 (PDT)
+In-Reply-To: <56E80519.1040400@bsc.es>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: nishtala <rajiv.nishtala@bsc.es>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Sudeep Holla <sudeep.holla@arm.com>
 
-On Tue, Mar 15, 2016 at 02:39:58PM +0100, Lukas Wunner wrote:
-> Hi Mika,
-> 
-> On Mon, Mar 14, 2016 at 11:43:35AM +0200, Mika Westerberg wrote:
-> > On Mon, Mar 14, 2016 at 12:19:14PM +1000, Dave Airlie wrote:
-> > > On 11 March 2016 at 23:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > > On Friday, March 11, 2016 12:58:15 PM Mika Westerberg wrote:
-> > > >> On Thu, Mar 10, 2016 at 09:57:09PM +0100, Rafael J. Wysocki wrote:
-> > > >> > > It doesn't seem to do any runtime PM,
-> > > >> > > I do wonder if pcieport should be doing it's own runtime PM handling,
-> > > >> > > but that is a
-> > > >> > > larger task than I'm thinking to tackle here.
-> > > >> >
-> > > >> > PCIe ports don't do PM - yet.  Mika has posted a series of patches to implement
-> > > >> > that, however, that are waiting for comments now:
-> > > >> >
-> > > >> > https://patchwork.kernel.org/patch/8453311/
-> > > >> > https://patchwork.kernel.org/patch/8453381/
-> > > >> > https://patchwork.kernel.org/patch/8453391/
-> > > >> > https://patchwork.kernel.org/patch/8453411/
-> > > >> > https://patchwork.kernel.org/patch/8453371/
-> > > >> > https://patchwork.kernel.org/patch/8453351/
-> 
-> If a pciehp port is runtime suspended and pciehp_poll_mode is enabled,
-> the poll timer needs to be disabled and later reenabled on runtime resume.
+Hi Rajiv,
 
-If we disable the timer then we can't detect when a new device is
-connected to the port.
+On Tue, Mar 15, 2016 at 12:50 PM, nishtala <rajiv.nishtala@bsc.es> wrote:
+>
+> In response to the discussion here (https://community.arm.com/thread/9382).
+> I'm continuing my follow-up question.
+>
+> Sudeep here says to read the sysfs files to get usage/time to understand the
+> sleep-state residency of the cores/cluster.
+>
+> To look at the sysfs files, I wrote a version of a watchdog which
+> essentially prints out the difference in "usage", if
+> it changes in the last 0.01s (it is a LARGE interval relative to update
+> period of sysfs files).
+>
+> The questions I have are the following:
+> - When the system is idle, that is, no user initiated tasks are running; I
+> expected the counter for "usage" in CLUSTER_SLEEP_0 to remain constant,
+> because you don't exit
+> until any kernel interrupts occur, and is guaranteed to stay atleast for
+> 3500us while the "time" in the same category to increase.
+>
 
-I think in this case it might be better not to enable runtime PM for the
-port at all.
+Are you not seeing any increase in interrupt count on that cpu where
+CLUSTER_SLEEP_0 usage is increasing. Also there's not guarantee that
+it will stay in  CLUSTER_SLEEP_0 for 3500us, it can be woken up by interrupts.
+
+> However, what I notice is that "usage" ALSO increases, which is something I
+> do not understand.
+>
+
+Check the interrupt count, you must see that also increasing.
+
+> - When I run an application only on small OR big cores, the counter "usage"
+> for CPU_SLEEP_0 on the other type of core (big/small) still isn't updated.
+> Am I missing something here?
+>
+
+Is this a question or your observation ? You are assuming that only your
+applications will be running ? It depends also on several background tasks
+that are running.
+
+> - Similarly, when I have an application that does only computations on both
+> big AND small cores simultaneously, how come the counter, "usage", for
+> CLUSTER_SLEEP_0 increases?
+> Shouldn't it remain constant?
+>
+
+Again, when your application is running doesn't mean it's continuously runs
+from start to end. It will interrupted when it yields the cpu or waits
+on some IO.
+During that short periods the cpus can enter idle states.
+
+> - How come value of "CLUSTER_SLEEP_0" (on a57 cluster) increases when there
+> is actually something running on it. How is it computed?
+>
+
+Ditto as above.
+
+[...]
+
+> WARNING / LEGAL TEXT: This message is intended only for the use of the
+> individual or entity to which it is addressed and may contain
+> information which is privileged, confidential, proprietary, or exempt
+> from disclosure under applicable law. If you are not the intended
+> recipient or the person responsible for delivering the message to the
+> intended recipient, you are strictly prohibited from disclosing,
+> distributing, copying, or in any way using this message. If you have
+> received this communication in error, please notify the sender and
+> destroy and delete any copies you may have received.
+>
+
+You need to fix this, please get rid of this disclaimer if you want people to
+respond to you.
