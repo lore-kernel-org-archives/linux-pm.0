@@ -1,85 +1,48 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH 7/8] cpufreq: Frequency invariant scheduler load-tracking
- support
-Date: Wed, 16 Mar 2016 18:33:55 +0000
-Message-ID: <56E9A713.4030007@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/8] cpufreq/schedutil: sum per-sched class utilization
+Date: Wed, 16 Mar 2016 19:36:07 +0100
+Message-ID: <20160316183607.GI6344@twins.programming.kicks-ass.net>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-8-git-send-email-mturquette+renesas@baylibre.com>
- <56E85EEA.5000604@arm.com> <20160315201917.30639.2415@quark.deferred.io>
+ <1457932932-28444-7-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315212926.GG6344@twins.programming.kicks-ass.net>
+ <20160315220951.30639.12872@quark.deferred.io>
+ <20160316073850.GO6344@twins.programming.kicks-ass.net>
+ <56E9A3FD.9050309@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44243 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934609AbcCPSd7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Mar 2016 14:33:59 -0400
-In-Reply-To: <20160315201917.30639.2415@quark.deferred.io>
+Received: from casper.infradead.org ([85.118.1.10]:38642 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934328AbcCPSgK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 14:36:10 -0400
+Content-Disposition: inline
+In-Reply-To: <56E9A3FD.9050309@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, peterz@infradead.org, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On 15/03/16 20:19, Michael Turquette wrote:
-> Quoting Dietmar Eggemann (2016-03-15 12:13:46)
->> Hi Mike,
->>
->> On 14/03/16 05:22, Michael Turquette wrote:
->>> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
->>>
-
-[...]
-
->> Maybe it is worth mentioning that this patch is from EAS RFC5.2
->> (linux-arm.org/linux-power.git energy_model_rfc_v5.2) which hasn't been
->> posted to LKML. The last EAS RFCv5 has the Frequency Invariant Engine
->> (FEI) based on the cpufreq notifier calls (cpufreq_callback,
->> cpufreq_policy_callback) in the ARM arch code.
+On Wed, Mar 16, 2016 at 11:20:45AM -0700, Steve Muckle wrote:
+> On 03/16/2016 12:38 AM, Peter Zijlstra wrote:
+> > Somewhere in the giant discussions I mentioned that we should be looking
+> > at a CPPC like interface and pass {min,max} tuples to the cpufreq
+> > selection thingy.
+> > 
+> > In that same discussion I also mentioned that we must compute min as the
+> > hard dl reservation, but that for max we can actually use the avg dl +
+> > avg rt + avg cfs.
+> > 
+> > That way there is far more room for selecting a sensible frequency.
 > 
-> Oops, my apologies. I got a little mixed up while developing these
-> patches and I should have at least asked you about this one before
-> posting.
+> Doesn't the above min/max policy mean that the platform will likely
+> underserve the task load? If avg dl+rt+cfs represents our best estimate
+> of the work to be done, I would think that should be the min.
 
-No need to apologize, just wanted to set the context right for people
-following the EAS stuff.
+Can't be the min, avg_dl might (and typically will be) must lower than
+the worst case utilization estimates.
 
-> I'm really quite happy to drop #7 and #8 if they are too contentious or
-> if patch #7 is deemed as not-ready by you.
+However if we use that as our min, peaks in DL utilization will not
+complete, because we run at too low a frequency.
 
-If people think that driving frequency invariance from within cpufreq.c
-is the right thing to so then this patch can stay.
-
-That said, I'm not sure if we can do a better job of integrating
-freq_scale into existing cpufreq data structures.
-
-
->>> If run-time selection of ops is needed them someone will need to write
->>> that code.
->>
->> Right now I see 3 different implementations of the FEI. 1) The X86
->> aperf/mperf based one (https://lkml.org/lkml/2016/3/3/589), 2) This one
->> in cpufreq.c and 3) the one based on cpufreq notifiers in ARCH (ARM,
->> ARM64) code.
-
-I rechecked the functionality of this implementation (2) versus (1) and
-(3) by running them all together on an X86 system w/
-X86_FEATURE_APERFMPERF and acpi-cpufreq (i5 CPU M520) w/o actually doing
-the wiring towards arch_scale_freq_capacity and they all behave similar
-or equal. The update of (1) happens much more often obviously since its
-driven from the scheduler tick.
-
-...
-arch_scale_freq_tick: APERF/MPERF: aperf=5864236223 mperf=6009442434
-acnt=200073 mcnt=362360 arch_cpu_freq=565
-arch_scale_freq_tick: APERF/MPERF: aperf=5864261886 mperf=6009474724
-acnt=25663 mcnt=32290 arch_cpu_freq=813
-scale_freq_capacity: CPUFREQ.C: cpu=1 freq_scale=910
-cpufreq_callback: NOTIFIER: cpu=1 curr_freq=2133000 max_freq=2400000
-freq_scale=910
-arch_scale_freq_tick: APERF/MPERF: aperf=5864524610 mperf=6009802492
-acnt=262724 mcnt=327768 arch_cpu_freq=820
-arch_scale_freq_tick: APERF/MPERF: aperf=5864581063 mperf=6009862268
-acnt=56453 mcnt=59776 arch_cpu_freq=967
-...
-
-[...]
+Therefore, the min must be given by our worst case utilization
+reservation, not by the actual avg consumed.
