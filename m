@@ -1,81 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: Do not schedule policy update work in cpufreq_resume()
-Date: Wed, 16 Mar 2016 01:51:18 +0100
-Message-ID: <CAJZ5v0j3T37SooAmm+3qRb53HXXXomFz-h+BN0pG0zfpENk_cA@mail.gmail.com>
-References: <5379622.iJjZa2C2Nq@vostro.rjw.lan>
-	<20160315061059.GB13831@vireshk-mac-ubuntu>
-	<CAJZ5v0iW7mkKTdgLm953nPAWVu4Cbx_P-E9bDg9WXwQtjDwb5A@mail.gmail.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Tue, 15 Mar 2016 20:55:21 -0400
+Message-ID: <1458089721.8898.25.camel@redhat.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	 <CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
+	 <1458007395.8898.19.camel@redhat.com> <2600831.Qfymhh5Hpv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature";
+	boundary="=-zypiiLBiP7XSvW9Tg81F"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:35557 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbcCPAvU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 20:51:20 -0400
-In-Reply-To: <CAJZ5v0iW7mkKTdgLm953nPAWVu4Cbx_P-E9bDg9WXwQtjDwb5A@mail.gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:40588 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086AbcCPAzY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Mar 2016 20:55:24 -0400
+In-Reply-To: <2600831.Qfymhh5Hpv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-On Tue, Mar 15, 2016 at 1:11 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Mar 15, 2016 at 7:10 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 12-03-16, 03:05, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> cpufreq_resume() attempts to resync the current frequency with
->>> policy->cur for the first online CPU, but first it does that after
->>> restarting governors for all active policies (which means that this
->>> is racy with respect to whatever the governors do) and second it
->>
->> Why? Its doing the update withing policy->rwsem ..
->
-> Which doesn't matter.
->
-> dbs_work_handler() doesn't acquire policy->rwsem and may be executed
-> in parallel with this, for example.
->
->>> already is too late for that when cpufreq_resume() is called (that
->>> happens after invoking ->resume callbacks for all devices in the
->>> system).
->>>
->>> Also it doesn't make sense to do that for one CPU only in any case,
->>> because the other CPUs in the system need not share the policy with
->>> it and their policy->cur may be out of sync as well in principle.
->>
->> Its done just for the boot CPU, because that's the only CPU that goes to
->> suspend. All other CPUs are disabled/enabled and so the policies are
->> reinitialized for policy->cur as well.
->>
->> I think, its still important to get things in sync, as some bootloader may
->> change the frequency to something else during resume.
->>
->> And our code may not be safe for the case, the current frequency of the CPU
->> isn't part of the freq-table of the policy.
->
-> Since we're already started the governor at this point (or called the
-> driver's ->resume), so the CPU is (or shortly will be) running at a
-> frequency that makes sense at this point.
->
-> It might be running at a wrong one before, but not when this code is executed.
->
-> I kind of understand the motivation for this code, but it's too late
-> to fix up the frequency of the boot CPU at this point.  If you are
-> really worried about it, the time to do that is in syscore ops.
 
-OK, so the problem with doing that in syscore ops is that the I2C bus
-needed for it may not be available at that point, which is fair
-enough.
+--=-zypiiLBiP7XSvW9Tg81F
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Still, though, the way it is done now is really awful and has to go.
+On Wed, 2016-03-16 at 01:32 +0100, Rafael J. Wysocki wrote:
+>=C2=A0
+> =C2=A0		=C2=A0* We want to default to C1 (hlt), not to busy
+> polling
+> -		=C2=A0* unless the timer is happening really really soon.
+> +		=C2=A0* unless the timer is happening really really
+> soon.=C2=A0=C2=A0Still, if
+> +		=C2=A0* the exit latency of C1 is too high, we need to
+> poll anyway.
+> =C2=A0		=C2=A0*/
+> -		if (interactivity_req > 20 &&
+> +		if (data->next_timer_us > 20 &&
+> +		=C2=A0=C2=A0=C2=A0=C2=A0drv-
+> >states[CPUIDLE_DRIVER_STATE_START].exit_latency <=3D 2 &&
+> =C2=A0		=C2=A0=C2=A0=C2=A0=C2=A0!drv-
 
-I guess something along the lines of cpufreq_update_policy() might be
-done in cpufreq_resume() before governors are started, but it might
-even be better to set policy->cur from scratch when starting the
-governors.  Just do driver->get() and set policy->cur to what that
-returns (or just use the average of min and max if ->get is not
-available).  And that unconditionally, regardless of the reason why
-the governors are started.
+I wonder if replacing these two tests with
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0data->next_timer_us
+>=C2=A0states[CPUIDLE_DRIVER_STATE_START].exit_latency
+would do the right thing?
 
-Thanks,
-Rafael
+That way any time we do not know for sure we are waking
+up before the HLT exit latency has gone, we will poll.
+
+Any time we suspect we will wake up sooner (data->predicted_us
+is smaller than the HLT exit latency) we will still pick HLT,
+anyway.
+
+This makes the behaviour consistent between CPUs.
+
+> >states[CPUIDLE_DRIVER_STATE_START].disabled &&
+> -			dev-
+> >states_usage[CPUIDLE_DRIVER_STATE_START].disable =3D=3D 0)
+> +		=C2=A0=C2=A0=C2=A0=C2=A0!dev-
+> >states_usage[CPUIDLE_DRIVER_STATE_START].disable)
+> =C2=A0			data->last_state_idx =3D
+> CPUIDLE_DRIVER_STATE_START;
+> =C2=A0	} else {
+> =C2=A0		data->last_state_idx =3D CPUIDLE_DRIVER_STATE_START;
+--=20
+All Rights Reversed.
+
+
+--=-zypiiLBiP7XSvW9Tg81F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAABAgAGBQJW6K75AAoJEM553pKExN6D+kcH/0o4hnbkWsSdR5YvAApANb+L
+CnV1iYQ+2HqrgBIbz47tER4rpsGrUPyF9hwo+2jA8CXTfAzHBm1vFvE8oeJVMsbb
+58buUDs/uHC0AtXikzQwNPU4uUl8LTYRPYu+F0HT8WQOEvJWjmYxfroWPdXpyzfr
+EjMESx2mHjAAVPb5Kkw2XicRixh2S7L//wBRdPq1h0tN5CKDjjAeM6LKOmO6GcyA
+6cO+2hnMsX2THeQ/zvsRhJ8fl58XMRlPkWTjipKix4UXEYX8tFDkPraD/OWXG4l1
+Nkyng6rjteI2yRzdMpSfFLZ+BdHatxtlmwkut/RwL823S/EWKuTXwY0QcaXzGVE=
+=J6vY
+-----END PGP SIGNATURE-----
+
+--=-zypiiLBiP7XSvW9Tg81F--
+
