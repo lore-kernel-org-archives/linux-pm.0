@@ -1,144 +1,169 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [RFC 2/4] thunderbolt: Fix typos and magic number
+Subject: [RFC 3/4] thunderbolt: Move pm code to separate file
 Date: Wed, 16 Mar 2016 15:50:35 +0100
-Message-ID: <385c18397ac1b9a999672e676641cb62f556b5b5.1458126755.git.lukas@wunner.de>
+Message-ID: <d90c3d66a193e4c01b8b74532c2b98c5b5aec89a.1458126755.git.lukas@wunner.de>
 References: <cover.1458126755.git.lukas@wunner.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:50209 "EHLO
-	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935079AbcCPOtf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:49:35 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <cover.1458126755.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+List-Id: linux-pm@vger.kernel.org
 
-Fix typo in tb_cfg_print_error() message.
-Fix bytecount in struct tb_drom_entry_port comment.
-Replace magic number in tb_switch_alloc().
-Rename tb_sw_set_unpplugged() and TB_CAL_IECS.
-                   ^                   ^
+No code changes.
 
 Cc: Andreas Noever <andreas.noever@gmail.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/thunderbolt/ctl.c     |  2 +-
- drivers/thunderbolt/eeprom.c  |  2 +-
- drivers/thunderbolt/switch.c  | 10 +++++-----
- drivers/thunderbolt/tb.c      |  2 +-
- drivers/thunderbolt/tb.h      |  2 +-
- drivers/thunderbolt/tb_regs.h |  2 +-
- 6 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/thunderbolt/Makefile |  3 +--
+ drivers/thunderbolt/nhi.c    | 33 +--------------------------------
+ drivers/thunderbolt/power.c  | 41 +++++++++++++++++++++++++++++++++++++++++
+ drivers/thunderbolt/power.h  | 14 ++++++++++++++
+ 4 files changed, 57 insertions(+), 34 deletions(-)
+ create mode 100644 drivers/thunderbolt/power.c
+ create mode 100644 drivers/thunderbolt/power.h
 
-diff --git a/drivers/thunderbolt/ctl.c b/drivers/thunderbolt/ctl.c
-index 799634b..1146ff4 100644
---- a/drivers/thunderbolt/ctl.c
-+++ b/drivers/thunderbolt/ctl.c
-@@ -249,7 +249,7 @@ static void tb_cfg_print_error(struct tb_ctl *ctl,
- 		 * cfg_read/cfg_write.
- 		 */
- 		tb_ctl_WARN(ctl,
--			"CFG_ERROR(%llx:%x): Invalid config space of offset\n",
-+			"CFG_ERROR(%llx:%x): Invalid config space or offset\n",
- 			res->response_route, res->response_port);
- 		return;
- 	case TB_CFG_ERROR_NO_SUCH_PORT:
-diff --git a/drivers/thunderbolt/eeprom.c b/drivers/thunderbolt/eeprom.c
-index 0dde34e..47e56e8 100644
---- a/drivers/thunderbolt/eeprom.c
-+++ b/drivers/thunderbolt/eeprom.c
-@@ -221,7 +221,7 @@ struct tb_drom_entry_port {
- 	u8 micro1:4;
- 	u8 micro3;
+diff --git a/drivers/thunderbolt/Makefile b/drivers/thunderbolt/Makefile
+index 5d1053c..03c7ba5 100644
+--- a/drivers/thunderbolt/Makefile
++++ b/drivers/thunderbolt/Makefile
+@@ -1,3 +1,2 @@
+ obj-${CONFIG_THUNDERBOLT} := thunderbolt.o
+-thunderbolt-objs := nhi.o ctl.o tb.o switch.o cap.o path.o tunnel_pci.o eeprom.o
+-
++thunderbolt-objs := nhi.o ctl.o tb.o switch.o cap.o path.o tunnel_pci.o eeprom.o power.o
+diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
+index 36be23b..fa89160 100644
+--- a/drivers/thunderbolt/nhi.c
++++ b/drivers/thunderbolt/nhi.c
+@@ -7,7 +7,6 @@
+  * Copyright (c) 2014 Andreas Noever <andreas.noever@gmail.com>
+  */
  
--	/* BYTES 5-6, TODO: verify (find hardware that has these set) */
-+	/* BYTES 6-7, TODO: verify (find hardware that has these set) */
- 	u8 peer_port_rid:4;
- 	u8 unknown3:3;
- 	bool has_peer_port:1;
-diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
-index db73ffe..c6270f0 100644
---- a/drivers/thunderbolt/switch.c
-+++ b/drivers/thunderbolt/switch.c
-@@ -350,7 +350,7 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
- 		return NULL;
+-#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/errno.h>
+ #include <linux/pci.h>
+@@ -17,6 +16,7 @@
  
- 	sw->tb = tb;
--	if (tb_cfg_read(tb->ctl, &sw->config, route, 0, 2, 0, 5))
-+	if (tb_cfg_read(tb->ctl, &sw->config, route, 0, TB_CFG_SWITCH, 0, 5))
- 		goto err;
- 	tb_info(tb,
- 		"initializing Switch at %#llx (depth: %d, up port: %d)\n",
-@@ -426,9 +426,9 @@ err:
+ #include "nhi.h"
+ #include "nhi_regs.h"
++#include "power.h"
+ #include "tb.h"
+ 
+ #define RING_TYPE(ring) ((ring)->is_tx ? "TX ring" : "RX ring")
+@@ -493,22 +493,6 @@ static irqreturn_t nhi_msi(int irq, void *data)
+ 	return IRQ_HANDLED;
  }
  
- /**
-- * tb_sw_set_unpplugged() - set is_unplugged on switch and downstream switches
-+ * tb_sw_set_unplugged() - set is_unplugged on switch and downstream switches
-  */
--void tb_sw_set_unpplugged(struct tb_switch *sw)
-+void tb_sw_set_unplugged(struct tb_switch *sw)
+-static int nhi_suspend_noirq(struct device *dev)
+-{
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct tb *tb = pci_get_drvdata(pdev);
+-	thunderbolt_suspend(tb);
+-	return 0;
+-}
+-
+-static int nhi_resume_noirq(struct device *dev)
+-{
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct tb *tb = pci_get_drvdata(pdev);
+-	thunderbolt_resume(tb);
+-	return 0;
+-}
+-
+ static void nhi_shutdown(struct tb_nhi *nhi)
  {
  	int i;
- 	if (sw == sw->tb->root_switch) {
-@@ -442,7 +442,7 @@ void tb_sw_set_unpplugged(struct tb_switch *sw)
- 	sw->is_unplugged = true;
- 	for (i = 0; i <= sw->config.max_port_number; i++) {
- 		if (!tb_is_upstream_port(&sw->ports[i]) && sw->ports[i].remote)
--			tb_sw_set_unpplugged(sw->ports[i].remote->sw);
-+			tb_sw_set_unplugged(sw->ports[i].remote->sw);
- 	}
+@@ -615,21 +599,6 @@ static void nhi_remove(struct pci_dev *pdev)
+ 	nhi_shutdown(nhi);
  }
  
-@@ -484,7 +484,7 @@ int tb_switch_resume(struct tb_switch *sw)
- 			|| tb_switch_resume(port->remote->sw)) {
- 			tb_port_warn(port,
- 				     "lost during suspend, disconnecting\n");
--			tb_sw_set_unpplugged(port->remote->sw);
-+			tb_sw_set_unplugged(port->remote->sw);
- 		}
- 	}
- 	return 0;
-diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
-index d2c3fe3..24b6d30 100644
---- a/drivers/thunderbolt/tb.c
-+++ b/drivers/thunderbolt/tb.c
-@@ -246,7 +246,7 @@ static void tb_handle_hotplug(struct work_struct *work)
- 	if (ev->unplug) {
- 		if (port->remote) {
- 			tb_port_info(port, "unplugged\n");
--			tb_sw_set_unpplugged(port->remote->sw);
-+			tb_sw_set_unplugged(port->remote->sw);
- 			tb_free_invalid_tunnels(tb);
- 			tb_switch_free(port->remote->sw);
- 			port->remote = NULL;
-diff --git a/drivers/thunderbolt/tb.h b/drivers/thunderbolt/tb.h
-index 8b0d7cf..61d57ba 100644
---- a/drivers/thunderbolt/tb.h
-+++ b/drivers/thunderbolt/tb.h
-@@ -226,7 +226,7 @@ void tb_switch_free(struct tb_switch *sw);
- void tb_switch_suspend(struct tb_switch *sw);
- int tb_switch_resume(struct tb_switch *sw);
- int tb_switch_reset(struct tb *tb, u64 route);
--void tb_sw_set_unpplugged(struct tb_switch *sw);
-+void tb_sw_set_unplugged(struct tb_switch *sw);
- struct tb_switch *get_switch_at_route(struct tb_switch *sw, u64 route);
- 
- int tb_wait_for_port(struct tb_port *port, bool wait_if_unplugged);
-diff --git a/drivers/thunderbolt/tb_regs.h b/drivers/thunderbolt/tb_regs.h
-index 6577af7..1e2a4a8 100644
---- a/drivers/thunderbolt/tb_regs.h
-+++ b/drivers/thunderbolt/tb_regs.h
-@@ -30,7 +30,7 @@ enum tb_cap {
- 	TB_CAP_I2C		= 0x0005,
- 	TB_CAP_PLUG_EVENTS	= 0x0105, /* also EEPROM */
- 	TB_CAP_TIME2		= 0x0305,
--	TB_CAL_IECS		= 0x0405,
-+	TB_CAP_IECS		= 0x0405,
- 	TB_CAP_LINK_CONTROLLER	= 0x0605, /* also IECS */
- };
- 
+-/*
+- * The tunneled pci bridges are siblings of us. Use resume_noirq to reenable
+- * the tunnels asap. A corresponding pci quirk blocks the downstream bridges
+- * resume_noirq until we are done.
+- */
+-static const struct dev_pm_ops nhi_pm_ops = {
+-	.suspend_noirq = nhi_suspend_noirq,
+-	.resume_noirq = nhi_resume_noirq,
+-	.freeze_noirq = nhi_suspend_noirq, /*
+-					    * we just disable hotplug, the
+-					    * pci-tunnels stay alive.
+-					    */
+-	.restore_noirq = nhi_resume_noirq,
+-};
+-
+ static struct pci_device_id nhi_ids[] = {
+ 	/*
+ 	 * We have to specify class, the TB bridges use the same device and
+diff --git a/drivers/thunderbolt/power.c b/drivers/thunderbolt/power.c
+new file mode 100644
+index 0000000..1095ad0
+--- /dev/null
++++ b/drivers/thunderbolt/power.c
+@@ -0,0 +1,41 @@
++/*
++ * Thunderbolt Cactus Ridge driver - power management
++ *
++ * Copyright (c) 2014 Andreas Noever <andreas.noever@gmail.com>
++ */
++
++#include <linux/pci.h>
++#include <linux/pm_runtime.h>
++
++#include "tb.h"
++
++static int nhi_suspend_noirq(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct tb *tb = pci_get_drvdata(pdev);
++	thunderbolt_suspend(tb);
++	return 0;
++}
++
++static int nhi_resume_noirq(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct tb *tb = pci_get_drvdata(pdev);
++	thunderbolt_resume(tb);
++	return 0;
++}
++
++/*
++ * The tunneled pci bridges are siblings of us. Use resume_noirq to reenable
++ * the tunnels asap. A corresponding pci quirk blocks the downstream bridges
++ * resume_noirq until we are done.
++ */
++const struct dev_pm_ops nhi_pm_ops = {
++	.suspend_noirq = nhi_suspend_noirq,
++	.resume_noirq  = nhi_resume_noirq,
++	.freeze_noirq  = nhi_suspend_noirq, /*
++					     * we just disable hotplug, the
++					     * pci-tunnels stay alive.
++					     */
++	.restore_noirq = nhi_resume_noirq,
++};
+diff --git a/drivers/thunderbolt/power.h b/drivers/thunderbolt/power.h
+new file mode 100644
+index 0000000..99cb900
+--- /dev/null
++++ b/drivers/thunderbolt/power.h
+@@ -0,0 +1,14 @@
++/*
++ * Thunderbolt Cactus Ridge driver - power management
++ *
++ * Copyright (c) 2014 Andreas Noever <andreas.noever@gmail.com>
++ */
++
++#ifndef POWER_H
++#define POWER_H
++
++#include <linux/pm_runtime.h>
++
++extern const struct dev_pm_ops nhi_pm_ops;
++
++#endif
 -- 
 2.7.0
 
