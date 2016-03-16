@@ -1,43 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 5/8] sched/cpufreq: pass sched class into cpufreq_update_util
-Date: Wed, 16 Mar 2016 13:39:10 +0100
-Message-ID: <CAJZ5v0jPtobKGR01D9obxhHibz4aPrPFjmuX19zAE5a5Uz8aEQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 8/8] sched: prefer cpufreq_scale_freq_capacity
+Date: Wed, 16 Mar 2016 13:41:34 +0100
+Message-ID: <20160316124134.GR6375@twins.programming.kicks-ass.net>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
-	<1457932932-28444-6-git-send-email-mturquette+renesas@baylibre.com>
-	<20160315212520.GF6344@twins.programming.kicks-ass.net>
-	<20160315220609.30639.67271@quark.deferred.io>
-	<20160316074123.GP6344@twins.programming.kicks-ass.net>
-	<CAKfTPtA8hJUT4HGXjoyX4=qh9iup3_GUMwuJGgbXtBFGgAPFdQ@mail.gmail.com>
-	<20160316085339.GU6344@twins.programming.kicks-ass.net>
+ <1457932932-28444-9-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315213744.GJ6344@twins.programming.kicks-ass.net>
+ <20160315222721.30639.28332@quark.deferred.io>
+ <20160316074752.GQ6344@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:34026 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932460AbcCPMjM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 08:39:12 -0400
-In-Reply-To: <20160316085339.GU6344@twins.programming.kicks-ass.net>
+Received: from casper.infradead.org ([85.118.1.10]:56010 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755048AbcCPMmD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 08:42:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20160316074752.GQ6344@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Juri Lelli <Juri.Lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Michael Turquette <mturquette+renesas@baylibre.com>
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Wed, Mar 16, 2016 at 9:53 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, Mar 16, 2016 at 09:29:59AM +0100, Vincent Guittot wrote:
->> I wonder if it's really worth passing per sched_class request to
->> sched_util ? sched_util is about selecting a frequency based on the
->> utilization of the CPU, it only needs a value that reflect the whole
->> utilization. Can't we sum  (or whatever the formula we want to apply)
->> utilizations before calling cpufreq_update_util
->
-> So I've thought the same; but I'm conflicted, its a shame to compute
-> anything if the call then doesn't do anything with it.
->
-> And keeping a structure of all the various numbers to pass in also has
-> cost of yet another cacheline to touch.
+On Wed, Mar 16, 2016 at 08:47:52AM +0100, Peter Zijlstra wrote:
+> On Tue, Mar 15, 2016 at 03:27:21PM -0700, Michael Turquette wrote:
 
-In principle we can use high-order bits of util and max to encode the
-information on where they come from.
+> > I'm happy with it as a stop-gap, because it will initially work for
+> > arm{64} and x86, but we'll still need run-time selection of
+> > arch_scale_freq_capacity some day. Once we have that, I think that we
+> > should favor a run-time provided implementation over the arch-provided
+> > one.
+> 
+> Also, I'm thinking we don't need any of this. Your
+> cpufreq_scale_freq_capacity() is completely and utterly pointless. 
 
-Of course, that translates to additional ifs in the governor, but I
-guess they are unavoidable anyway.
+Scrap that, while true to instant utilization, this isn't true for our
+case, since our utilization numbers carry history, and any frequency
+change in that window is relevant.
+
+
