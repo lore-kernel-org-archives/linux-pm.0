@@ -1,151 +1,144 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [RFC 1/4] PCI: Add Thunderbolt device IDs
+Subject: [RFC 2/4] thunderbolt: Fix typos and magic number
 Date: Wed, 16 Mar 2016 15:50:35 +0100
-Message-ID: <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
+Message-ID: <385c18397ac1b9a999672e676641cb62f556b5b5.1458126755.git.lukas@wunner.de>
 References: <cover.1458126755.git.lukas@wunner.de>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:50209 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935079AbcCPOtf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:49:35 -0400
 In-Reply-To: <cover.1458126755.git.lukas@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
-List-Id: linux-pm@vger.kernel.org
 
-Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
-Gen 3 chips and onward use a distinct ID for the NHI.
+Fix typo in tb_cfg_print_error() message.
+Fix bytecount in struct tb_drom_entry_port comment.
+Replace magic number in tb_switch_alloc().
+Rename tb_sw_set_unpplugged() and TB_CAL_IECS.
+                   ^                   ^
 
 Cc: Andreas Noever <andreas.noever@gmail.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/quirks.c         | 16 ++++++++++------
- drivers/thunderbolt/nhi.c    |  8 +++++---
- drivers/thunderbolt/switch.c |  9 +++++----
- include/linux/pci_ids.h      | 18 ++++++++++++++++++
- 4 files changed, 38 insertions(+), 13 deletions(-)
+ drivers/thunderbolt/ctl.c     |  2 +-
+ drivers/thunderbolt/eeprom.c  |  2 +-
+ drivers/thunderbolt/switch.c  | 10 +++++-----
+ drivers/thunderbolt/tb.c      |  2 +-
+ drivers/thunderbolt/tb.h      |  2 +-
+ drivers/thunderbolt/tb_regs.h |  2 +-
+ 6 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 0575a1e..d1e3956 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -3203,7 +3203,8 @@ static void quirk_apple_poweroff_thunderbolt(struct pci_dev *dev)
- 	acpi_execute_simple_method(SXIO, NULL, 0);
- 	acpi_execute_simple_method(SXLV, NULL, 0);
- }
--DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL, 0x1547,
-+DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL,
-+			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
- 			       quirk_apple_poweroff_thunderbolt);
+diff --git a/drivers/thunderbolt/ctl.c b/drivers/thunderbolt/ctl.c
+index 799634b..1146ff4 100644
+--- a/drivers/thunderbolt/ctl.c
++++ b/drivers/thunderbolt/ctl.c
+@@ -249,7 +249,7 @@ static void tb_cfg_print_error(struct tb_ctl *ctl,
+ 		 * cfg_read/cfg_write.
+ 		 */
+ 		tb_ctl_WARN(ctl,
+-			"CFG_ERROR(%llx:%x): Invalid config space of offset\n",
++			"CFG_ERROR(%llx:%x): Invalid config space or offset\n",
+ 			res->response_route, res->response_port);
+ 		return;
+ 	case TB_CFG_ERROR_NO_SUCH_PORT:
+diff --git a/drivers/thunderbolt/eeprom.c b/drivers/thunderbolt/eeprom.c
+index 0dde34e..47e56e8 100644
+--- a/drivers/thunderbolt/eeprom.c
++++ b/drivers/thunderbolt/eeprom.c
+@@ -221,7 +221,7 @@ struct tb_drom_entry_port {
+ 	u8 micro1:4;
+ 	u8 micro3;
  
- /*
-@@ -3237,9 +3238,10 @@ static void quirk_apple_wait_for_thunderbolt(struct pci_dev *dev)
- 	if (!nhi)
- 		goto out;
- 	if (nhi->vendor != PCI_VENDOR_ID_INTEL
--			|| (nhi->device != 0x1547 && nhi->device != 0x156c)
--			|| nhi->subsystem_vendor != 0x2222
--			|| nhi->subsystem_device != 0x1111)
-+		    || (nhi->device != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
-+			nhi->device != PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI)
-+		    || nhi->subsystem_vendor != 0x2222
-+		    || nhi->subsystem_device != 0x1111)
- 		goto out;
- 	dev_info(&dev->dev, "quirk: waiting for thunderbolt to reestablish PCI tunnels...\n");
- 	device_pm_wait_for_dev(&dev->dev, &nhi->dev);
-@@ -3247,9 +3249,11 @@ out:
- 	pci_dev_put(nhi);
- 	pci_dev_put(sibling);
- }
--DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x1547,
-+DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
-+			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
- 			       quirk_apple_wait_for_thunderbolt);
--DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x156d,
-+DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
-+			       PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE,
- 			       quirk_apple_wait_for_thunderbolt);
- #endif
- 
-diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
-index 20a41f7..36be23b 100644
---- a/drivers/thunderbolt/nhi.c
-+++ b/drivers/thunderbolt/nhi.c
-@@ -633,16 +633,18 @@ static const struct dev_pm_ops nhi_pm_ops = {
- static struct pci_device_id nhi_ids[] = {
- 	/*
- 	 * We have to specify class, the TB bridges use the same device and
--	 * vendor (sub)id.
-+	 * vendor (sub)id on gen 1 and gen 2 controllers.
- 	 */
- 	{
- 		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
--		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x1547,
-+		.vendor = PCI_VENDOR_ID_INTEL,
-+		.device = PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
- 		.subvendor = 0x2222, .subdevice = 0x1111,
- 	},
- 	{
- 		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
--		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x156c,
-+		.vendor = PCI_VENDOR_ID_INTEL,
-+		.device = PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI,
- 		.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID,
- 	},
- 	{ 0,}
+-	/* BYTES 5-6, TODO: verify (find hardware that has these set) */
++	/* BYTES 6-7, TODO: verify (find hardware that has these set) */
+ 	u8 peer_port_rid:4;
+ 	u8 unknown3:3;
+ 	bool has_peer_port:1;
 diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
-index aeb9829..db73ffe 100644
+index db73ffe..c6270f0 100644
 --- a/drivers/thunderbolt/switch.c
 +++ b/drivers/thunderbolt/switch.c
-@@ -293,9 +293,9 @@ static int tb_plug_events_active(struct tb_switch *sw, bool active)
- 	if (active) {
- 		data = data & 0xFFFFFF83;
- 		switch (sw->config.device_id) {
--		case 0x1513:
--		case 0x151a:
--		case 0x1549:
-+		case PCI_DEVICE_ID_INTEL_LIGHT_RIDGE:
-+		case PCI_DEVICE_ID_INTEL_EAGLE_RIDGE:
-+		case PCI_DEVICE_ID_INTEL_PORT_RIDGE:
- 			break;
- 		default:
- 			data |= 4;
-@@ -370,7 +370,8 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
- 		tb_sw_warn(sw, "unknown switch vendor id %#x\n",
- 			   sw->config.vendor_id);
+@@ -350,7 +350,7 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
+ 		return NULL;
  
--	if (sw->config.device_id != 0x1547 && sw->config.device_id != 0x1549)
-+	if (sw->config.device_id != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
-+	    sw->config.device_id != PCI_DEVICE_ID_INTEL_PORT_RIDGE)
- 		tb_sw_warn(sw, "unsupported switch device id %#x\n",
- 			   sw->config.device_id);
+ 	sw->tb = tb;
+-	if (tb_cfg_read(tb->ctl, &sw->config, route, 0, 2, 0, 5))
++	if (tb_cfg_read(tb->ctl, &sw->config, route, 0, TB_CFG_SWITCH, 0, 5))
+ 		goto err;
+ 	tb_info(tb,
+ 		"initializing Switch at %#llx (depth: %d, up port: %d)\n",
+@@ -426,9 +426,9 @@ err:
+ }
  
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 37f05cb..bec46b7 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2599,6 +2599,24 @@
- #define PCI_DEVICE_ID_INTEL_82441	0x1237
- #define PCI_DEVICE_ID_INTEL_82380FB	0x124b
- #define PCI_DEVICE_ID_INTEL_82439	0x1250
-+#define PCI_DEVICE_ID_INTEL_LIGHT_RIDGE             0x1513 /* Tbt 1 Gen 1 */
-+#define PCI_DEVICE_ID_INTEL_EAGLE_RIDGE             0x151a
-+#define PCI_DEVICE_ID_INTEL_LIGHT_PEAK              0x151b
-+#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C         0x1547 /* Tbt 1 Gen 2 */
-+#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_2C         0x1548
-+#define PCI_DEVICE_ID_INTEL_PORT_RIDGE              0x1549
-+#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_NHI    0x1566 /* Tbt 1 Gen 3 */
-+#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_BRIDGE 0x1567
-+#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_NHI    0x1568
-+#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_BRIDGE 0x1569
-+#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_NHI     0x156a /* Thunderbolt 2 */
-+#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_BRIDGE  0x156b
-+#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI     0x156c
-+#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE  0x156d
-+#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_NHI     0x1575 /* Thunderbolt 3 */
-+#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_BRIDGE  0x1576
-+#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_NHI     0x1577
-+#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_BRIDGE  0x1578
- #define PCI_DEVICE_ID_INTEL_80960_RP	0x1960
- #define PCI_DEVICE_ID_INTEL_82840_HB	0x1a21
- #define PCI_DEVICE_ID_INTEL_82845_HB	0x1a30
+ /**
+- * tb_sw_set_unpplugged() - set is_unplugged on switch and downstream switches
++ * tb_sw_set_unplugged() - set is_unplugged on switch and downstream switches
+  */
+-void tb_sw_set_unpplugged(struct tb_switch *sw)
++void tb_sw_set_unplugged(struct tb_switch *sw)
+ {
+ 	int i;
+ 	if (sw == sw->tb->root_switch) {
+@@ -442,7 +442,7 @@ void tb_sw_set_unpplugged(struct tb_switch *sw)
+ 	sw->is_unplugged = true;
+ 	for (i = 0; i <= sw->config.max_port_number; i++) {
+ 		if (!tb_is_upstream_port(&sw->ports[i]) && sw->ports[i].remote)
+-			tb_sw_set_unpplugged(sw->ports[i].remote->sw);
++			tb_sw_set_unplugged(sw->ports[i].remote->sw);
+ 	}
+ }
+ 
+@@ -484,7 +484,7 @@ int tb_switch_resume(struct tb_switch *sw)
+ 			|| tb_switch_resume(port->remote->sw)) {
+ 			tb_port_warn(port,
+ 				     "lost during suspend, disconnecting\n");
+-			tb_sw_set_unpplugged(port->remote->sw);
++			tb_sw_set_unplugged(port->remote->sw);
+ 		}
+ 	}
+ 	return 0;
+diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
+index d2c3fe3..24b6d30 100644
+--- a/drivers/thunderbolt/tb.c
++++ b/drivers/thunderbolt/tb.c
+@@ -246,7 +246,7 @@ static void tb_handle_hotplug(struct work_struct *work)
+ 	if (ev->unplug) {
+ 		if (port->remote) {
+ 			tb_port_info(port, "unplugged\n");
+-			tb_sw_set_unpplugged(port->remote->sw);
++			tb_sw_set_unplugged(port->remote->sw);
+ 			tb_free_invalid_tunnels(tb);
+ 			tb_switch_free(port->remote->sw);
+ 			port->remote = NULL;
+diff --git a/drivers/thunderbolt/tb.h b/drivers/thunderbolt/tb.h
+index 8b0d7cf..61d57ba 100644
+--- a/drivers/thunderbolt/tb.h
++++ b/drivers/thunderbolt/tb.h
+@@ -226,7 +226,7 @@ void tb_switch_free(struct tb_switch *sw);
+ void tb_switch_suspend(struct tb_switch *sw);
+ int tb_switch_resume(struct tb_switch *sw);
+ int tb_switch_reset(struct tb *tb, u64 route);
+-void tb_sw_set_unpplugged(struct tb_switch *sw);
++void tb_sw_set_unplugged(struct tb_switch *sw);
+ struct tb_switch *get_switch_at_route(struct tb_switch *sw, u64 route);
+ 
+ int tb_wait_for_port(struct tb_port *port, bool wait_if_unplugged);
+diff --git a/drivers/thunderbolt/tb_regs.h b/drivers/thunderbolt/tb_regs.h
+index 6577af7..1e2a4a8 100644
+--- a/drivers/thunderbolt/tb_regs.h
++++ b/drivers/thunderbolt/tb_regs.h
+@@ -30,7 +30,7 @@ enum tb_cap {
+ 	TB_CAP_I2C		= 0x0005,
+ 	TB_CAP_PLUG_EVENTS	= 0x0105, /* also EEPROM */
+ 	TB_CAP_TIME2		= 0x0305,
+-	TB_CAL_IECS		= 0x0405,
++	TB_CAP_IECS		= 0x0405,
+ 	TB_CAP_LINK_CONTROLLER	= 0x0605, /* also IECS */
+ };
+ 
 -- 
 2.7.0
 
