@@ -1,31 +1,54 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 16 Mar 2016 13:09:50 +0100
-Message-ID: <1458130190.6570.6.camel@suse.com>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
-	 <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: Do not schedule policy update work in cpufreq_resume()
+Date: Wed, 16 Mar 2016 13:29:38 +0100
+Message-ID: <CAJZ5v0jYdyDaPQ157iP5P3HRoufD=7TbcpBdEvRkFtA87A9y6w@mail.gmail.com>
+References: <5379622.iJjZa2C2Nq@vostro.rjw.lan>
+	<20160315061059.GB13831@vireshk-mac-ubuntu>
+	<CAJZ5v0iW7mkKTdgLm953nPAWVu4Cbx_P-E9bDg9WXwQtjDwb5A@mail.gmail.com>
+	<CAJZ5v0j3T37SooAmm+3qRb53HXXXomFz-h+BN0pG0zfpENk_cA@mail.gmail.com>
+	<20160316045209.GC16250@vireshk-mac-ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:36301 "EHLO
+	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966175AbcCPM3l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 08:29:41 -0400
+In-Reply-To: <20160316045209.GC16250@vireshk-mac-ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wed, 2016-03-16 at 19:46 +0800, Baolin Wang wrote:
-> This patch introduces the usb charger driver based on usb gadget that
-> makes an enhancement to a power driver. It works well in practice but
-> that requires a system with suitable hardware.
-> 
-> The basic conception of the usb charger is that, when one usb charger
-> is added or removed by reporting from the usb gadget state change or
-> the extcon device state change, the usb charger will report to power
-> user to set the current limitation.
+On Wed, Mar 16, 2016 at 5:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 16-03-16, 01:51, Rafael J. Wysocki wrote:
+>> OK, so the problem with doing that in syscore ops is that the I2C bus
+>> needed for it may not be available at that point, which is fair
+>> enough.
+>
+> Not just that. We wouldn't call syscore-ops for the boot-cpu. It never went
+> away.
 
-This patch adds sysfs attributes without adding Documentation for them.
-That's bad.
+Yes, we would.
 
-	Regards
-		Oliver
+We actually call syscore ops *only* on that CPU.
+
+>> Still, though, the way it is done now is really awful and has to go.
+>>
+>> I guess something along the lines of cpufreq_update_policy() might be
+>> done in cpufreq_resume() before governors are started, but it might
+>> even be better to set policy->cur from scratch when starting the
+>> governors.  Just do driver->get() and set policy->cur to what that
+>> returns (or just use the average of min and max if ->get is not
+>> available).  And that unconditionally, regardless of the reason why
+>> the governors are started.
+>
+> I think doing it from a somewhat centric location would make more sense then
+> pushing this for the governors.
+
+I'm not talking about doing that in governors, but in
+cpufreq_governor() when the event is _START.
+
+> Maybe the beginning of cpufreq_resume() is good enough for that.
+
+Is that really the only case, though?
