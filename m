@@ -1,73 +1,99 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Wed, 16 Mar 2016 14:02:33 +0100
-Message-ID: <CAJZ5v0hDGmReO9KQrofSu3K25xzP08yo+qqgLiEHejKrSXEy4w@mail.gmail.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
-	<1458007395.8898.19.camel@redhat.com>
-	<2600831.Qfymhh5Hpv@vostro.rjw.lan>
-	<1458089721.8898.25.camel@redhat.com>
-	<CAJZ5v0iC2CUKRJokVL5xsbebOPzxNUzXxzo8hxRvm-Y=0v_LQg@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/8] sched/cpufreq: pass sched class into
+ cpufreq_update_util
+Date: Wed, 16 Mar 2016 14:10:08 +0100
+Message-ID: <20160316131008.GW6344@twins.programming.kicks-ass.net>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+ <1457932932-28444-6-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315212520.GF6344@twins.programming.kicks-ass.net>
+ <20160315220609.30639.67271@quark.deferred.io>
+ <20160316074123.GP6344@twins.programming.kicks-ass.net>
+ <CAKfTPtA8hJUT4HGXjoyX4=qh9iup3_GUMwuJGgbXtBFGgAPFdQ@mail.gmail.com>
+ <20160316085339.GU6344@twins.programming.kicks-ass.net>
+ <CAJZ5v0jPtobKGR01D9obxhHibz4aPrPFjmuX19zAE5a5Uz8aEQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f175.google.com ([209.85.217.175]:34439 "EHLO
-	mail-lb0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755288AbcCPNCg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 09:02:36 -0400
-Received: by mail-lb0-f175.google.com with SMTP id k12so47318198lbb.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 06:02:35 -0700 (PDT)
-In-Reply-To: <CAJZ5v0iC2CUKRJokVL5xsbebOPzxNUzXxzo8hxRvm-Y=0v_LQg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jPtobKGR01D9obxhHibz4aPrPFjmuX19zAE5a5Uz8aEQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Juri Lelli <Juri.Lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Michael Turquette <mturquette+renesas@baylibre.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 16, 2016 at 2:53 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Mar 16, 2016 at 1:55 AM, Rik van Riel <riel@redhat.com> wrote:
->> On Wed, 2016-03-16 at 01:32 +0100, Rafael J. Wysocki wrote:
->>>
->>>                * We want to default to C1 (hlt), not to busy
->>> polling
->>> -              * unless the timer is happening really really soon.
->>> +              * unless the timer is happening really really
->>> soon.  Still, if
->>> +              * the exit latency of C1 is too high, we need to
->>> poll anyway.
->>>                */
->>> -             if (interactivity_req > 20 &&
->>> +             if (data->next_timer_us > 20 &&
->>> +                 drv-
->>> >states[CPUIDLE_DRIVER_STATE_START].exit_latency <= 2 &&
->>>                   !drv-
->>
->> I wonder if replacing these two tests with
->>            data->next_timer_us
->>> states[CPUIDLE_DRIVER_STATE_START].exit_latency
->> would do the right thing?
->>
->> That way any time we do not know for sure we are waking
->> up before the HLT exit latency has gone, we will poll.
->>
->> Any time we suspect we will wake up sooner (data->predicted_us
->> is smaller than the HLT exit latency) we will still pick HLT,
->> anyway.
->>
->> This makes the behaviour consistent between CPUs.
->
-> The idea makes sense to me, but I'd test against the sum of C1 exit
-> latency and C1 target residency, ie
->
-> data->next_timer_us > states[CPUIDLE_DRIVER_STATE_START].exit_latency
-> + states[CPUIDLE_DRIVER_STATE_START].target_residency
->
-> because that's the time that has to pass before the next timer event
-> for us to make sense to go to C1 from the energy efficiency
-> perspective (if we are woken up earlier, we'll burn more energy that
-> we would if we didn't enter C1 at all, at least in theory).
+On Wed, Mar 16, 2016 at 01:39:10PM +0100, Rafael J. Wysocki wrote:
+> On Wed, Mar 16, 2016 at 9:53 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Wed, Mar 16, 2016 at 09:29:59AM +0100, Vincent Guittot wrote:
+> >> I wonder if it's really worth passing per sched_class request to
+> >> sched_util ? sched_util is about selecting a frequency based on the
+> >> utilization of the CPU, it only needs a value that reflect the whole
+> >> utilization. Can't we sum  (or whatever the formula we want to apply)
+> >> utilizations before calling cpufreq_update_util
+> >
+> > So I've thought the same; but I'm conflicted, its a shame to compute
+> > anything if the call then doesn't do anything with it.
+> >
+> > And keeping a structure of all the various numbers to pass in also has
+> > cost of yet another cacheline to touch.
+> 
+> In principle we can use high-order bits of util and max to encode the
+> information on where they come from.
+> 
+> Of course, that translates to additional ifs in the governor, but I
+> guess they are unavoidable anyway.
 
-My concern here is that this might defeat the original purpose of
-commit a9ceb78bc75c, though, because it would make us use C1 more
-aggressively in general on everything where the sum of C1 exit latency
-and C1 target residency is less than 20.
+Another thing we can do, for as long as we have the indirect function
+call anyway, is stuff extra pointers in that same cacheline we pull the
+function from.
+
+Something like the below; there's room for 8 pointers (including the
+function pointer) in a cacheline.
+
+That would allow the callback to fetch whatever data it feels is
+required (could be all of it).
+
+We could also put a u64 *now = &rq->clock in, which would leave another
+4 pointers for DL/RT support.
+
+And since we're then back to 1-2 arguments on the function, we can add a
+flags/mask field to indicate what changed (and if the function
+throttles, it can keep a mask of all that changed since last time it
+actually did something, or allow punching through the throttle if our
+minimum guarantee changes or whatnot).
+
+(this would of course require we allocate struct update_util_data with
+the proper alignment thingies etc..)
+
+Then again, maybe this is somewhat overboard :-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ba49c9efd0b2..d34d75c5cc93 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -3236,8 +3236,10 @@ static inline unsigned long rlimit_max(unsigned int limit)
+ 
+ #ifdef CONFIG_CPU_FREQ
+ struct update_util_data {
+-	void (*func)(struct update_util_data *data,
+-		     u64 time, unsigned long util, unsigned long max);
++	unsigned long *cfs_util_avg;
++	unsigned long *cfs_util_max;
++
++	void (*func)(struct update_util_data *data, u64 time);
+ };
+ 
+ void cpufreq_set_update_util_data(int cpu, struct update_util_data *data);
+diff --git a/kernel/sched/cpufreq.c b/kernel/sched/cpufreq.c
+index 928c4ba32f68..de5b20b11de3 100644
+--- a/kernel/sched/cpufreq.c
++++ b/kernel/sched/cpufreq.c
+@@ -32,6 +32,9 @@ void cpufreq_set_update_util_data(int cpu, struct update_util_data *data)
+ 	if (WARN_ON(data && !data->func))
+ 		return;
+ 
++	data->cfs_util_avg = &cpu_rq(cpu)->cfs.avg.util_avg;
++	data->cfs_util_max = &cpu_rq(cpu)->cpu_capacity_orig;
++
+ 	rcu_assign_pointer(per_cpu(cpufreq_update_util_data, cpu), data);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_set_update_util_data);
