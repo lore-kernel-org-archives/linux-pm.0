@@ -1,152 +1,93 @@
-From: David Wu <david.wu@rock-chips.com>
-Subject: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for rk3399
-Date: Wed, 16 Mar 2016 02:45:26 +0800
-Message-ID: <1458067526-11319-1-git-send-email-david.wu@rock-chips.com>
-Content-Type: text/plain; charset="utf-8"
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] mmc: sdhci-of-at91: fix wakeup issue when using runtime pm
+Date: Wed, 16 Mar 2016 12:04:46 +0100
+Message-ID: <CAPDyKFrs9PoqkH1YLYziuzfGPn25PAjs8+ukz-t7LTk7OU6hDA@mail.gmail.com>
+References: <20160309163809.GM2690@odux.rfo.atmel.com>
+	<1457605858-30907-1-git-send-email-ludovic.desroches@atmel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.132]:57014 "EHLO
-	lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966454AbcCPKjU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 06:39:20 -0400
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:38237 "EHLO
+	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966672AbcCPLEs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 07:04:48 -0400
+Received: by mail-wm0-f50.google.com with SMTP id l68so66749854wml.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 04:04:47 -0700 (PDT)
+In-Reply-To: <1457605858-30907-1-git-send-email-ludovic.desroches@atmel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@kernel.org, heiko@sntech.de
-Cc: nm@ti.com, huangtao@rock-chips.com, cf@rock-chips.com, zyw@rock-chips.com, xjq@rock-chips.com, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, David Wu <david.wu@rock-chips.com>
+To: Ludovic Desroches <ludovic.desroches@atmel.com>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>
 
-This adds the necessary data for handling io voltage domains on the rk3399.
-As interesting tidbit, the rk3399 contains two separate iodomain areas.
-One in the regular General Register Files (GRF) and one in PMUGRF in the
-pmu power domain.
+On 10 March 2016 at 11:30, Ludovic Desroches
+<ludovic.desroches@atmel.com> wrote:
+> It was impossible to wake-up on card detect event because when sdhci
+> controller is runtime suspend, it is assumed that all the clocks are
+> disabled so we can't get irqs.
+> If the device is removable and there is no gpio to manage the card
+> detection then card detection polling is used.
+>
+> Signed-off-by: Ludovic Desroches <ludovic.desroches@atmel.com>
+> ---
+>
+> Hi Ulf, Adrian,
+>
+> Following the discussion, I need to fix my issue. I think we could both agree
+> on this patch that I see more as temporary workaround.
+>
+> I will try to change the muxing of the card detect pio in order to no more
+> use the sdhci controller to manage it but a gpio. If it do not work then
+> I may send another patch in the spirit of the previous one (keeping one clock
+> enabled and not calling sdhci_runtime_suspend_host()).
+>
+> Regards
+>
+>  drivers/mmc/host/sdhci-of-at91.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+>
+> diff --git a/drivers/mmc/host/sdhci-of-at91.c b/drivers/mmc/host/sdhci-of-at91.c
+> index 35c02fc..dac8508 100644
+> --- a/drivers/mmc/host/sdhci-of-at91.c
+> +++ b/drivers/mmc/host/sdhci-of-at91.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/err.h>
+>  #include <linux/io.h>
+>  #include <linux/mmc/host.h>
+> +#include <linux/mmc/slot-gpio.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/of_device.h>
+> @@ -204,6 +205,21 @@ static int sdhci_at91_probe(struct platform_device *pdev)
+>         if (ret)
+>                 goto pm_runtime_disable;
+>
+> +       /*
+> +        * When calling sdhci_runtime_suspend_host(), the sdhci layer makes
+> +        * the assumption that all the clocks of the controller are disabled.
+> +        * It means we can't get irq from it when it is runtime suspended.
+> +        * For that reason, it is not planned to wake-up on a card detect irq
+> +        * from the controller.
+> +        * If we want to use runtime PM and to be able to wake-up on card
+> +        * insertion, we have to use a GPIO for the card detection or we can
+> +        * use polling for the card detection. Be aware that using polling
+> +        * will resume/suspend the controller between each attempt.
+> +        */
+> +       if (!(host->mmc->caps & MMC_CAP_NONREMOVABLE) &&
+> +           IS_ERR_VALUE(mmc_gpio_get_cd(host->mmc)))
+> +               host->mmc->caps |= MMC_CAP_NEEDS_POLL;
 
-Signed-off-by: David Wu <david.wu@rock-chips.com>
----
- .../bindings/power/rockchip-io-domain.txt          | 11 ++++
- drivers/power/avs/rockchip-io-domain.c             | 58 ++++++++++++++++++++++
- 2 files changed, 69 insertions(+)
- mode change 100644 => 100755 drivers/power/avs/rockchip-io-domain.c
+Perhaps also clearing SDHCI_QUIRK_BROKEN_CARD_DETECTION, as this
+doesn't play well if this is set via parsing the DTS.
 
-diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-index b8627e7..c84fb47 100644
---- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-+++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
-@@ -35,6 +35,8 @@ Required properties:
-   - "rockchip,rk3288-io-voltage-domain" for rk3288
-   - "rockchip,rk3368-io-voltage-domain" for rk3368
-   - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
-+  - "rockchip,rk3399-io-voltage-domain" for rk3399
-+  - "rockchip,rk3399-pmu-io-voltage-domain" for rk3399 pmu-domains
- - rockchip,grf: phandle to the syscon managing the "general register files"
- 
- 
-@@ -79,6 +81,15 @@ Possible supplies for rk3368 pmu-domains:
- - pmu-supply:    The supply connected to PMUIO_VDD.
- - vop-supply:    The supply connected to LCDC_VDD.
- 
-+Possible supplies for rk3399:
-+- bt656-supply:  The supply connected to APIO2_VDD.
-+- audio-supply:  The supply connected to APIO5_VDD.
-+- sdmmc-supply:  The supply connected to SDMMC0_VDD.
-+- gpio1830       The supply connected to APIO4_VDD.
-+
-+Possible supplies for rk3399 pmu-domains:
-+- pmu1830-supply:The supply connected to PMUIO2_VDD.
-+
- Example:
- 
- 	io-domains {
-diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
-old mode 100644
-new mode 100755
-index 8099456..8986382
---- a/drivers/power/avs/rockchip-io-domain.c
-+++ b/drivers/power/avs/rockchip-io-domain.c
-@@ -47,6 +47,10 @@
- #define RK3368_SOC_CON15_FLASH0		BIT(14)
- #define RK3368_SOC_FLASH_SUPPLY_NUM	2
- 
-+#define RK3399_PMUGRF_CON0		0x180
-+#define RK3399_PMUGRF_CON0_VSEL		BIT(8)
-+#define RK3399_PMUGRF_VSEL_SUPPLY_NUM	9
-+
- struct rockchip_iodomain;
- 
- /**
-@@ -181,6 +185,25 @@ static void rk3368_iodomain_init(struct rockchip_iodomain *iod)
- 		dev_warn(iod->dev, "couldn't update flash0 ctrl\n");
- }
- 
-+static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
-+{
-+	int ret;
-+	u32 val;
-+
-+	/* if no pmu io supply we should leave things alone */
-+	if (!iod->supplies[RK3399_PMUGRF_VSEL_SUPPLY_NUM].reg)
-+		return;
-+
-+	/*
-+	 * set pmu io iodomain to also use this framework
-+	 * instead of a special gpio.
-+	 */
-+	val = RK3399_PMUGRF_CON0_VSEL | (RK3399_PMUGRF_CON0_VSEL << 16);
-+	ret = regmap_write(iod->grf, RK3399_PMUGRF_CON0, val);
-+	if (ret < 0)
-+		dev_warn(iod->dev, "couldn't update pmu io iodomain ctrl\n");
-+}
-+
- /*
-  * On the rk3188 the io-domains are handled by a shared register with the
-  * lower 8 bits being still being continuing drive-strength settings.
-@@ -252,6 +275,33 @@ static const struct rockchip_iodomain_soc_data soc_data_rk3368_pmu = {
- 	},
- };
- 
-+static const struct rockchip_iodomain_soc_data soc_data_rk3399 = {
-+	.grf_offset = 0xe640,
-+	.supply_names = {
-+		"bt656",		/* APIO2_VDD */
-+		"audio",		/* APIO5_VDD */
-+		"sdmmc",		/* SDMMC0_VDD */
-+		"gpio1830",		/* APIO4_VDD */
-+	},
-+};
-+
-+static const struct rockchip_iodomain_soc_data soc_data_rk3399_pmu = {
-+	.grf_offset = 0x180,
-+	.supply_names = {
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		NULL,
-+		"pmu1830",		/* PMUIO2_VDD */
-+	},
-+	.init = rk3399_pmu_iodomain_init,
-+};
-+
- static const struct of_device_id rockchip_iodomain_match[] = {
- 	{
- 		.compatible = "rockchip,rk3188-io-voltage-domain",
-@@ -269,6 +319,14 @@ static const struct of_device_id rockchip_iodomain_match[] = {
- 		.compatible = "rockchip,rk3368-pmu-io-voltage-domain",
- 		.data = (void *)&soc_data_rk3368_pmu
- 	},
-+	{
-+		.compatible = "rockchip,rk3399-io-voltage-domain",
-+		.data = (void *)&soc_data_rk3399
-+	},
-+	{
-+		.compatible = "rockchip,rk3399-pmu-io-voltage-domain",
-+		.data = (void *)&soc_data_rk3399_pmu
-+	},
- 	{ /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(of, rockchip_iodomain_match);
--- 
-1.9.1
+> +
+>         pm_runtime_put_autosuspend(&pdev->dev);
+>
+>         return 0;
+> --
+> 2.5.0
+>
 
+Otherwise this looks okay to me.
 
+Kind regards
+Uffe
