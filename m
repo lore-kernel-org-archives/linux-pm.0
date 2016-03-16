@@ -1,710 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v4 7/7] cpufreq: schedutil: New governor based on scheduler utilization data
-Date: Wed, 16 Mar 2016 15:59:18 +0100
-Message-ID: <11678919.CQLTrQTYxG@vostro.rjw.lan>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <4088601.C2vItRYpQn@vostro.rjw.lan> <1711281.bPmSjlBT7c@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
+ constantly keeps frequency at maximum on 4.5-rc4)
+Date: Wed, 16 Mar 2016 16:05:38 +0100
+Message-ID: <CAJZ5v0h2YDHHt1XL3Y5UiA6dAEDtzNSOGn+Fd-ph70fhvW1AZw@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
+	<1458007395.8898.19.camel@redhat.com>
+	<2600831.Qfymhh5Hpv@vostro.rjw.lan>
+	<1458089721.8898.25.camel@redhat.com>
+	<CAJZ5v0iC2CUKRJokVL5xsbebOPzxNUzXxzo8hxRvm-Y=0v_LQg@mail.gmail.com>
+	<CAJZ5v0hDGmReO9KQrofSu3K25xzP08yo+qqgLiEHejKrSXEy4w@mail.gmail.com>
+	<20160316100144.75bfef53@annuminas.surriel.com>
+	<CAJZ5v0iz87xKYFV_wiJgppfiCWt7uQGXyrQhoxpZ3E7GBhA5_A@mail.gmail.com>
+	<1458139600.14723.29.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1711281.bPmSjlBT7c@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f51.google.com ([209.85.215.51]:34675 "EHLO
+	mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966832AbcCPPFk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 11:05:40 -0400
+Received: by mail-lf0-f51.google.com with SMTP id e138so20648769lfe.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 08:05:39 -0700 (PDT)
+In-Reply-To: <1458139600.14723.29.camel@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rik van Riel <riel@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Mar 16, 2016 at 3:46 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Wed, 2016-03-16 at 15:14 +0100, Rafael J. Wysocki wrote:
+>> On Wed, Mar 16, 2016 at 3:01 PM, Rik van Riel <riel@redhat.com>
+>> wrote:
+>> >
+>> > On the other hand, being more aggressive about C1 allows
+>> > other cores to run at higher frequencies...
+>> Good point.
+>>
+>> We need to decide, though.
+>>
+>> Do we generally want to use more polling or more C1?
+>
+> I can see five distinct data points for decision making:
+>
+> 1) data->next_timer_us where we know for sure the sleep
+>    interval will be less than C1 latency -> poll
 
-Add a new cpufreq scaling governor, called "schedutil", that uses
-scheduler-provided CPU utilization information as input for making
-its decisions.
+Almost right, modulo my previous comment: that should be the sum of C1
+exit latency and C1 target residency.
 
-Doing that is possible after commit 34e2c555f3e1 (cpufreq: Add
-mechanism for registering utilization update callbacks) that
-introduced cpufreq_update_util() called by the scheduler on
-utilization changes (from CFS) and RT/DL task status updates.
-In particular, CPU frequency scaling decisions may be based on
-the the utilization data passed to cpufreq_update_util() by CFS.
+> 2) latency_req as configured by the user, if this is
+>    smaller than C1
+> latency we need poll  (we currently
+>    get this wrong)
 
-The new governor is relatively simple.
+Correct.
 
-The frequency selection formula used by it depends on whether or not
-the utilization is frequency-invariant.  In the frequency-invariant
-case the new CPU frequency is given by
+> 3) interval determined by get_typical_interval, this we
+>    may know with a higher confidence value, and choosing
+>    poll may actually be appropriate
 
-	next_freq = 1.25 * max_freq * util / max
+Right.
 
-where util and max are the last two arguments of cpufreq_update_util().
-In turn, if util is not frequency-invariant, the maximum frequency in
-the above formula is replaced with the current frequency of the CPU:
+> 4) data->predicted_us corrected only by bucket correction
+>    factor - this is a gamble, so we probably want C1,
+>    even if data->predicted_us is low
 
-	next_freq = 1.25 * curr_freq * util / max
+Agreed.
 
-The coefficient 1.25 corresponds to the frequency tipping point at
-(util / max) = 0.8.
+> 5) interactivity_req, which is data->predicted_us
+>    divided by a load factor - we should probably ignore
+>    that for poll since it is way too aggressive, and
+>    stick to C1 and deeper for this factor
 
-All of the computations are carried out in the utilization update
-handlers provided by the new governor.  One of those handlers is
-used for cpufreq policies shared between multiple CPUs and the other
-one is for policies with one CPU only (and therefore it doesn't need
-to use any extra synchronization means).
+Agreed.
 
-The governor supports fast frequency switching if that is supported
-by the cpufreq driver in use and possible for the given policy.
-In the fast switching case, all operations of the governor take
-place in its utilization update handlers.  If fast switching cannot
-be used, the frequency switch operations are carried out with the
-help of a work item which only calls __cpufreq_driver_target()
-(under a mutex) to trigger a frequency update (to a value already
-computed beforehand in one of the utilization update handlers).
+> Does the above make sense?
 
-Currently, the governor treats all of the RT and DL tasks as
-"unknown utilization" and sets the frequency to the allowed
-maximum when updated from the RT or DL sched classes.  That
-heavy-handed approach should be replaced with something more
-subtle and specifically targeted at RT and DL tasks.
+Yes, it does.
 
-The governor shares some tunables management code with the
-"ondemand" and "conservative" governors and uses some common
-definitions from cpufreq_governor.h, but apart from that it
-is stand-alone.
+> Currently the code merges (3) and (4) into the same
+> value before making a comparison, and neglects to take
+> (2) into account at all when deciding whether to poll.
+>
+> Would you like me to write a patch to take the user
+> configured latency_req into account, separate out
+> the predicted_us and typical_interval, and test whether
+> to poll against the smaller of next_timer_us, latency_req,
+> and the typical_interval, while we continue to use the
+> predicted_us as is in the main selection loop?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-The reason I decided to use policy->cur as the current frequency
-representation is that it happens to hold the value in question in
-both the "fast switch" and the "work item" cases quite naturally.
-The (rather theoretical) concern about it is that policy->cur
-may be updated by the core asynchronously if it thinks that it
-got out of sync with the "real" setting (as reported by the
-driver's ->get routine).  I don't think it will turn out to be
-a real problem in practice, though.
-
-Changes from v3:
-- The "next frequency" formula based on
-  http://marc.info/?l=linux-acpi&m=145756618321500&w=4 and
-  http://marc.info/?l=linux-kernel&m=145760739700716&w=4
-- The governor goes into kernel/sched/ (again).
-
-Changes from v2:
-- The governor goes into drivers/cpufreq/.
-- The "next frequency" formula has an additional 1.1 factor to allow
-  more util/max values to map onto the top-most frequency in case the
-  distance between that and the previous one is unproportionally small.
-- sugov_update_commit() traces CPU frequency even if the new one is
-  the same as the previous one (otherwise, if the system is 100% loaded
-  for long enough, powertop starts to report that all CPUs are 100% idle).
-
----
- drivers/cpufreq/Kconfig          |   26 +
- kernel/sched/Makefile            |    1 
- kernel/sched/cpufreq_schedutil.c |  531 +++++++++++++++++++++++++++++++++++++++
- kernel/sched/sched.h             |    8 
- 4 files changed, 566 insertions(+)
-
-Index: linux-pm/drivers/cpufreq/Kconfig
-===================================================================
---- linux-pm.orig/drivers/cpufreq/Kconfig
-+++ linux-pm/drivers/cpufreq/Kconfig
-@@ -107,6 +107,16 @@ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
- 	  Be aware that not all cpufreq drivers support the conservative
- 	  governor. If unsure have a look at the help section of the
- 	  driver. Fallback governor will be the performance governor.
-+
-+config CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
-+	bool "schedutil"
-+	select CPU_FREQ_GOV_SCHEDUTIL
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	help
-+	  Use the 'schedutil' CPUFreq governor by default. If unsure,
-+	  have a look at the help section of that governor. The fallback
-+	  governor will be 'performance'.
-+
- endchoice
- 
- config CPU_FREQ_GOV_PERFORMANCE
-@@ -188,6 +198,22 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 
- 	  If in doubt, say N.
- 
-+config CPU_FREQ_GOV_SCHEDUTIL
-+	tristate "'schedutil' cpufreq policy governor"
-+	depends on CPU_FREQ
-+	select CPU_FREQ_GOV_ATTR_SET
-+	select IRQ_WORK
-+	help
-+	  The frequency selection formula used by this governor is analogous
-+	  to the one used by 'ondemand', but instead of computing CPU load
-+	  as the "non-idle CPU time" to "total CPU time" ratio, it uses CPU
-+	  utilization data provided by the scheduler as input.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_schedutil.
-+
-+	  If in doubt, say N.
-+
- comment "CPU frequency scaling drivers"
- 
- config CPUFREQ_DT
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- /dev/null
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -0,0 +1,531 @@
-+/*
-+ * CPUFreq governor based on scheduler-provided CPU utilization data.
-+ *
-+ * Copyright (C) 2016, Intel Corporation
-+ * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <trace/events/power.h>
-+
-+#include "sched.h"
-+
-+struct sugov_tunables {
-+	struct gov_attr_set attr_set;
-+	unsigned int rate_limit_us;
-+};
-+
-+struct sugov_policy {
-+	struct cpufreq_policy *policy;
-+
-+	struct sugov_tunables *tunables;
-+	struct list_head tunables_hook;
-+
-+	raw_spinlock_t update_lock;  /* For shared policies */
-+	u64 last_freq_update_time;
-+	s64 freq_update_delay_ns;
-+	unsigned int next_freq;
-+
-+	/* The next fields are only needed if fast switch cannot be used. */
-+	struct irq_work irq_work;
-+	struct work_struct work;
-+	struct mutex work_lock;
-+	bool work_in_progress;
-+
-+	bool need_freq_update;
-+};
-+
-+struct sugov_cpu {
-+	struct update_util_data update_util;
-+	struct sugov_policy *sg_policy;
-+
-+	/* The fields below are only needed when sharing a policy. */
-+	unsigned long util;
-+	unsigned long max;
-+	u64 last_update;
-+};
-+
-+static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
-+
-+/************************ Governor internals ***********************/
-+
-+static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-+{
-+	u64 delta_ns;
-+
-+	if (sg_policy->work_in_progress)
-+		return false;
-+
-+	if (unlikely(sg_policy->need_freq_update)) {
-+		sg_policy->need_freq_update = false;
-+		return true;
-+	}
-+
-+	delta_ns = time - sg_policy->last_freq_update_time;
-+	return (s64)delta_ns >= sg_policy->freq_update_delay_ns;
-+}
-+
-+static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-+				unsigned int next_freq)
-+{
-+	struct cpufreq_policy *policy = sg_policy->policy;
-+
-+	if (next_freq > policy->max)
-+		next_freq = policy->max;
-+	else if (next_freq < policy->min)
-+		next_freq = policy->min;
-+
-+	sg_policy->last_freq_update_time = time;
-+	if (sg_policy->next_freq == next_freq) {
-+		if (policy->fast_switch_enabled)
-+			trace_cpu_frequency(policy->cur, smp_processor_id());
-+
-+		return;
-+	}
-+
-+	sg_policy->next_freq = next_freq;
-+	if (policy->fast_switch_enabled) {
-+		unsigned int freq;
-+
-+		freq = cpufreq_driver_fast_switch(policy, next_freq);
-+		if (freq == CPUFREQ_ENTRY_INVALID)
-+			return;
-+
-+		policy->cur = freq;
-+		trace_cpu_frequency(freq, smp_processor_id());
-+	} else {
-+		sg_policy->work_in_progress = true;
-+		irq_work_queue(&sg_policy->irq_work);
-+	}
-+}
-+
-+/**
-+ * get_next_freq - Compute a new frequency for a given cpufreq policy.
-+ * @policy: cpufreq policy object to compute the new frequency for.
-+ * @util: Current CPU utilization.
-+ * @max: CPU capacity.
-+ *
-+ * If the utilization is frequency-invariant, choose the new frequency to be
-+ * proportional to it, that is
-+ *
-+ * next_freq = C * max_freq * util / max
-+ *
-+ * Otherwise, approximate the would-be frequency-invariant utilization by
-+ * util_raw * (curr_freq / max_freq) which leads to
-+ *
-+ * next_freq = C * curr_freq * util_raw / max
-+ *
-+ * Take C = 1.25 for the frequency tipping point at (util / max) = 0.8.
-+ */
-+static unsigned int get_next_freq(struct cpufreq_policy *policy,
-+				  unsigned long util, unsigned long max)
-+{
-+	unsigned int freq = arch_scale_freq_invariant() ?
-+				policy->cpuinfo.max_freq : policy->cur;
-+
-+	return (freq + (freq >> 2)) * util / max;
-+}
-+
-+static void sugov_update_single(struct update_util_data *hook, u64 time,
-+				unsigned long util, unsigned long max)
-+{
-+	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-+	struct cpufreq_policy *policy = sg_policy->policy;
-+	unsigned int next_f;
-+
-+	if (!sugov_should_update_freq(sg_policy, time))
-+		return;
-+
-+	next_f = util <= max ?
-+		get_next_freq(policy, util, max) : policy->cpuinfo.max_freq;
-+	sugov_update_commit(sg_policy, time, next_f);
-+}
-+
-+static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
-+					   unsigned long util, unsigned long max)
-+{
-+	struct cpufreq_policy *policy = sg_policy->policy;
-+	unsigned int max_f = policy->cpuinfo.max_freq;
-+	u64 last_freq_update_time = sg_policy->last_freq_update_time;
-+	unsigned int j;
-+
-+	if (util > max)
-+		return max_f;
-+
-+	for_each_cpu(j, policy->cpus) {
-+		struct sugov_cpu *j_sg_cpu;
-+		unsigned long j_util, j_max;
-+		u64 delta_ns;
-+
-+		if (j == smp_processor_id())
-+			continue;
-+
-+		j_sg_cpu = &per_cpu(sugov_cpu, j);
-+		/*
-+		 * If the CPU utilization was last updated before the previous
-+		 * frequency update and the time elapsed between the last update
-+		 * of the CPU utilization and the last frequency update is long
-+		 * enough, don't take the CPU into account as it probably is
-+		 * idle now.
-+		 */
-+		delta_ns = last_freq_update_time - j_sg_cpu->last_update;
-+		if ((s64)delta_ns > NSEC_PER_SEC / HZ)
-+			continue;
-+
-+		j_util = j_sg_cpu->util;
-+		j_max = j_sg_cpu->max;
-+		if (j_util > j_max)
-+			return max_f;
-+
-+		if (j_util * max > j_max * util) {
-+			util = j_util;
-+			max = j_max;
-+		}
-+	}
-+
-+	return get_next_freq(policy, util, max);
-+}
-+
-+static void sugov_update_shared(struct update_util_data *hook, u64 time,
-+				unsigned long util, unsigned long max)
-+{
-+	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-+	unsigned int next_f;
-+
-+	raw_spin_lock(&sg_policy->update_lock);
-+
-+	sg_cpu->util = util;
-+	sg_cpu->max = max;
-+	sg_cpu->last_update = time;
-+
-+	if (sugov_should_update_freq(sg_policy, time)) {
-+		next_f = sugov_next_freq_shared(sg_policy, util, max);
-+		sugov_update_commit(sg_policy, time, next_f);
-+	}
-+
-+	raw_spin_unlock(&sg_policy->update_lock);
-+}
-+
-+static void sugov_work(struct work_struct *work)
-+{
-+	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-+
-+	mutex_lock(&sg_policy->work_lock);
-+	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-+				CPUFREQ_RELATION_L);
-+	mutex_unlock(&sg_policy->work_lock);
-+
-+	sg_policy->work_in_progress = false;
-+}
-+
-+static void sugov_irq_work(struct irq_work *irq_work)
-+{
-+	struct sugov_policy *sg_policy;
-+
-+	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
-+	schedule_work(&sg_policy->work);
-+}
-+
-+/************************** sysfs interface ************************/
-+
-+static struct sugov_tunables *global_tunables;
-+static DEFINE_MUTEX(global_tunables_lock);
-+
-+static inline struct sugov_tunables *to_sugov_tunables(struct gov_attr_set *attr_set)
-+{
-+	return container_of(attr_set, struct sugov_tunables, attr_set);
-+}
-+
-+static ssize_t rate_limit_us_show(struct gov_attr_set *attr_set, char *buf)
-+{
-+	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-+
-+	return sprintf(buf, "%u\n", tunables->rate_limit_us);
-+}
-+
-+static ssize_t rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf,
-+				   size_t count)
-+{
-+	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-+	struct sugov_policy *sg_policy;
-+	unsigned int rate_limit_us;
-+	int ret;
-+
-+	ret = sscanf(buf, "%u", &rate_limit_us);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	tunables->rate_limit_us = rate_limit_us;
-+
-+	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook)
-+		sg_policy->freq_update_delay_ns = rate_limit_us * NSEC_PER_USEC;
-+
-+	return count;
-+}
-+
-+static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
-+
-+static struct attribute *sugov_attributes[] = {
-+	&rate_limit_us.attr,
-+	NULL
-+};
-+
-+static struct kobj_type sugov_tunables_ktype = {
-+	.default_attrs = sugov_attributes,
-+	.sysfs_ops = &governor_sysfs_ops,
-+};
-+
-+/********************** cpufreq governor interface *********************/
-+
-+static struct cpufreq_governor schedutil_gov;
-+
-+static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy;
-+
-+	sg_policy = kzalloc(sizeof(*sg_policy), GFP_KERNEL);
-+	if (!sg_policy)
-+		return NULL;
-+
-+	sg_policy->policy = policy;
-+	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
-+	INIT_WORK(&sg_policy->work, sugov_work);
-+	mutex_init(&sg_policy->work_lock);
-+	raw_spin_lock_init(&sg_policy->update_lock);
-+	return sg_policy;
-+}
-+
-+static void sugov_policy_free(struct sugov_policy *sg_policy)
-+{
-+	mutex_destroy(&sg_policy->work_lock);
-+	kfree(sg_policy);
-+}
-+
-+static struct sugov_tunables *sugov_tunables_alloc(struct sugov_policy *sg_policy)
-+{
-+	struct sugov_tunables *tunables;
-+
-+	tunables = kzalloc(sizeof(*tunables), GFP_KERNEL);
-+	if (tunables)
-+		gov_attr_set_init(&tunables->attr_set, &sg_policy->tunables_hook);
-+
-+	return tunables;
-+}
-+
-+static void sugov_tunables_free(struct sugov_tunables *tunables)
-+{
-+	if (!have_governor_per_policy())
-+		global_tunables = NULL;
-+
-+	kfree(tunables);
-+}
-+
-+static int sugov_init(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy;
-+	struct sugov_tunables *tunables;
-+	unsigned int lat;
-+	int ret = 0;
-+
-+	/* State should be equivalent to EXIT */
-+	if (policy->governor_data)
-+		return -EBUSY;
-+
-+	sg_policy = sugov_policy_alloc(policy);
-+	if (!sg_policy)
-+		return -ENOMEM;
-+
-+	mutex_lock(&global_tunables_lock);
-+
-+	if (global_tunables) {
-+		if (WARN_ON(have_governor_per_policy())) {
-+			ret = -EINVAL;
-+			goto free_sg_policy;
-+		}
-+		policy->governor_data = sg_policy;
-+		sg_policy->tunables = global_tunables;
-+
-+		gov_attr_set_get(&global_tunables->attr_set, &sg_policy->tunables_hook);
-+		goto out;
-+	}
-+
-+	tunables = sugov_tunables_alloc(sg_policy);
-+	if (!tunables) {
-+		ret = -ENOMEM;
-+		goto free_sg_policy;
-+	}
-+
-+	tunables->rate_limit_us = LATENCY_MULTIPLIER;
-+	lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
-+	if (lat)
-+		tunables->rate_limit_us *= lat;
-+
-+	if (!have_governor_per_policy())
-+		global_tunables = tunables;
-+
-+	policy->governor_data = sg_policy;
-+	sg_policy->tunables = tunables;
-+
-+	ret = kobject_init_and_add(&tunables->attr_set.kobj, &sugov_tunables_ktype,
-+				   get_governor_parent_kobj(policy), "%s",
-+				   schedutil_gov.name);
-+	if (!ret)
-+		goto out;
-+
-+	/* Failure, so roll back. */
-+	policy->governor_data = NULL;
-+	sugov_tunables_free(tunables);
-+
-+ free_sg_policy:
-+	pr_err("cpufreq: schedutil governor initialization failed (error %d)\n", ret);
-+	sugov_policy_free(sg_policy);
-+
-+ out:
-+	mutex_unlock(&global_tunables_lock);
-+	return ret;
-+}
-+
-+static int sugov_exit(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy = policy->governor_data;
-+	struct sugov_tunables *tunables = sg_policy->tunables;
-+	unsigned int count;
-+
-+	mutex_lock(&global_tunables_lock);
-+
-+	count = gov_attr_set_put(&tunables->attr_set, &sg_policy->tunables_hook);
-+	policy->governor_data = NULL;
-+	if (!count)
-+		sugov_tunables_free(tunables);
-+
-+	mutex_unlock(&global_tunables_lock);
-+
-+	sugov_policy_free(sg_policy);
-+	return 0;
-+}
-+
-+static int sugov_start(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy = policy->governor_data;
-+	unsigned int cpu;
-+
-+	cpufreq_enable_fast_switch(policy);
-+
-+	sg_policy->freq_update_delay_ns = sg_policy->tunables->rate_limit_us * NSEC_PER_USEC;
-+	sg_policy->last_freq_update_time = 0;
-+	sg_policy->next_freq = UINT_MAX;
-+	sg_policy->work_in_progress = false;
-+	sg_policy->need_freq_update = false;
-+
-+	for_each_cpu(cpu, policy->cpus) {
-+		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
-+
-+		sg_cpu->sg_policy = sg_policy;
-+		if (policy_is_shared(policy)) {
-+			sg_cpu->util = ULONG_MAX;
-+			sg_cpu->max = 0;
-+			sg_cpu->last_update = 0;
-+			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
-+						     sugov_update_shared);
-+		} else {
-+			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
-+						     sugov_update_single);
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int sugov_stop(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy = policy->governor_data;
-+	unsigned int cpu;
-+
-+	for_each_cpu(cpu, policy->cpus)
-+		cpufreq_remove_update_util_hook(cpu);
-+
-+	synchronize_sched();
-+
-+	irq_work_sync(&sg_policy->irq_work);
-+	cancel_work_sync(&sg_policy->work);
-+	return 0;
-+}
-+
-+static int sugov_limits(struct cpufreq_policy *policy)
-+{
-+	struct sugov_policy *sg_policy = policy->governor_data;
-+
-+	if (!policy->fast_switch_enabled) {
-+		mutex_lock(&sg_policy->work_lock);
-+
-+		if (policy->max < policy->cur)
-+			__cpufreq_driver_target(policy, policy->max,
-+						CPUFREQ_RELATION_H);
-+		else if (policy->min > policy->cur)
-+			__cpufreq_driver_target(policy, policy->min,
-+						CPUFREQ_RELATION_L);
-+
-+		mutex_unlock(&sg_policy->work_lock);
-+	}
-+
-+	sg_policy->need_freq_update = true;
-+	return 0;
-+}
-+
-+int sugov_governor(struct cpufreq_policy *policy, unsigned int event)
-+{
-+	if (event == CPUFREQ_GOV_POLICY_INIT) {
-+		return sugov_init(policy);
-+	} else if (policy->governor_data) {
-+		switch (event) {
-+		case CPUFREQ_GOV_POLICY_EXIT:
-+			return sugov_exit(policy);
-+		case CPUFREQ_GOV_START:
-+			return sugov_start(policy);
-+		case CPUFREQ_GOV_STOP:
-+			return sugov_stop(policy);
-+		case CPUFREQ_GOV_LIMITS:
-+			return sugov_limits(policy);
-+		}
-+	}
-+	return -EINVAL;
-+}
-+
-+static struct cpufreq_governor schedutil_gov = {
-+	.name = "schedutil",
-+	.governor = sugov_governor,
-+	.owner = THIS_MODULE,
-+};
-+
-+static int __init sugov_module_init(void)
-+{
-+	return cpufreq_register_governor(&schedutil_gov);
-+}
-+
-+static void __exit sugov_module_exit(void)
-+{
-+	cpufreq_unregister_governor(&schedutil_gov);
-+}
-+
-+MODULE_AUTHOR("Rafael J. Wysocki <rafael.j.wysocki@intel.com>");
-+MODULE_DESCRIPTION("Utilization-based CPU frequency selection");
-+MODULE_LICENSE("GPL");
-+
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
-+struct cpufreq_governor *cpufreq_default_governor(void)
-+{
-+	return &schedutil_gov;
-+}
-+
-+fs_initcall(sugov_module_init);
-+#else
-+module_init(sugov_module_init);
-+#endif
-+module_exit(sugov_module_exit);
-Index: linux-pm/kernel/sched/Makefile
-===================================================================
---- linux-pm.orig/kernel/sched/Makefile
-+++ linux-pm/kernel/sched/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_SCHEDSTATS) += stats.o
- obj-$(CONFIG_SCHED_DEBUG) += debug.o
- obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
- obj-$(CONFIG_CPU_FREQ) += cpufreq.o
-+obj-$(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) += cpufreq_schedutil.o
-Index: linux-pm/kernel/sched/sched.h
-===================================================================
---- linux-pm.orig/kernel/sched/sched.h
-+++ linux-pm/kernel/sched/sched.h
-@@ -1786,3 +1786,11 @@ static inline void cpufreq_trigger_updat
- static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max) {}
- static inline void cpufreq_trigger_update(u64 time) {}
- #endif /* CONFIG_CPU_FREQ */
-+
-+#ifdef arch_scale_freq_capacity
-+#ifndef arch_scale_freq_invariant
-+#define arch_scale_freq_invariant()	(true)
-+#endif
-+#else /* arch_scale_freq_capacity */
-+#define arch_scale_freq_invariant()	(false)
-+#endif
+Yes, please.
