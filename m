@@ -1,48 +1,75 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH 2/8] sched/fair: add margin to utilization update
-Date: Wed, 16 Mar 2016 15:12:36 -0700
-Message-ID: <20160316221236.11016.51095@quark.deferred.io>
-References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-3-git-send-email-mturquette+renesas@baylibre.com>
- <56E8CA8B.8080506@linaro.org>
+From: Laura Abbott <labbott@redhat.com>
+Subject: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone device
+ correctly") causes performance drop
+Date: Wed, 16 Mar 2016 15:27:57 -0700
+Message-ID: <56E9DDED.7000805@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33747 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934697AbcCPWMm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 18:12:42 -0400
-Received: by mail-pf0-f169.google.com with SMTP id 124so91620463pfg.0
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 15:12:41 -0700 (PDT)
-In-Reply-To: <56E8CA8B.8080506@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Chen Yu <yu.c.chen@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Manuel Krause <manuelkrause@netscape.net>, szegad <szegadlo@poczta.onet.pl>, prash <prash.n.rao@gmail.com>, amish <ammdispose-arch@yahoo.com>, Matthias <morpheusxyz123@yahoo.de>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>, peterz@infradead.org, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-Quoting Steve Muckle (2016-03-15 19:52:59)
-> On 03/13/2016 10:22 PM, Michael Turquette wrote:
-> > +unsigned long cfs_capacity_margin = CAPACITY_MARGIN_DEFAULT;
-> > +
-> >  #ifdef CONFIG_CFS_BANDWIDTH
-> >  /*
-> >   * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-> > @@ -2840,6 +2853,8 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
-> >  
-> >       if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
-> >               unsigned long max = rq->cpu_capacity_orig;
-> > +             unsigned long cap = cfs_rq->avg.util_avg *
-> > +                     cfs_capacity_margin / max;
-> 
-> Doesn't rq->cpu_capacity_orig get scaled per the microarch invariance?
-> This would mean that the margin we're applying here would differ based
-> on that.
-> 
-> I'd expect that the margin would be * (cfs_capacity_margin /
-> SCHED_CAPACITY_SCALE) which would then reduce the division into a shift.
+Hi,
 
-Will fix.
+Fedora received a bug report (https://bugzilla.redhat.com/show_bug.cgi?id=1317190)
+of a major performance drop on various bench marks and general system
+sluggishness with the 4.4.4 kernel update. The benchmarks were showing
+a reduction to about 18% performance (not minor).
+
+Bisection showed the first bad commit was
+
+commit 774ac8b7eff69e0786970157de2157e68b22f456
+Author: Zhang Rui <rui.zhang@intel.com>
+Date:   Fri Oct 30 16:31:47 2015 +0800
+
+     Thermal: initialize thermal zone device correctly
+     
+     commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461 upstream.
+     
+     After thermal zone device registered, as we have not read any
+     temperature before, thus tz->temperature should not be 0,
+     which actually means 0C, and thermal trend is not available.
+     In this case, we need specially handling for the first
+     thermal_zone_device_update().
+     
+     Both thermal core framework and step_wise governor is
+     enhanced to handle this. And since the step_wise governor
+     is the only one that uses trends, so it's the only thermal
+     governor that needs to be updated.
+     
+     Tested-by: Manuel Krause <manuelkrause@netscape.net>
+     Tested-by: szegad <szegadlo@poczta.onet.pl>
+     Tested-by: prash <prash.n.rao@gmail.com>
+     Tested-by: amish <ammdispose-arch@yahoo.com>
+     Tested-by: Matthias <morpheusxyz123@yahoo.de>
+     Reviewed-by: Javi Merino <javi.merino@arm.com>
+     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+     Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+
+
+Reverting this plus to other commits in the series (a67208e94d94
+"Thermal: handle thermal zone device properly during system sleep"
+and 27f356149d59 "Thermal: do thermal zone update after a cooling
+device registered") confirmed the performance was back to normal.
+
+Bugzilla has the full discussion but this comment from one of the
+reporters sums it up:
+
+"In 4.4.3 and prior, my 2.40 MHz processor would fluctuate between
+1000 and 3400 MHz.  In 4.4.4, the processor would fluctuate between
+400 and 700 MHz, according to /proc/cpuinfo.
+
+Setting /sys/devices/system/cpu/cpufreq/policy0/scaling_governor to
+performance, instead of the default "powersave" forces the CPU to
+2400 MHz, and improves performance greatly, but still not to the
+same level as in 4.4.3."
+
+Any ideas?
 
 Thanks,
-Mike
+Laura
