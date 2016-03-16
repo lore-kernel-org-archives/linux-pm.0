@@ -1,59 +1,86 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 6/8] cpufreq/schedutil: sum per-sched class utilization
-Date: Wed, 16 Mar 2016 12:12:22 -0700
-Message-ID: <56E9B016.9080306@linaro.org>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH 8/8] sched: prefer cpufreq_scale_freq_capacity
+Date: Wed, 16 Mar 2016 19:44:33 +0000
+Message-ID: <56E9B7A1.5030806@arm.com>
 References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
- <1457932932-28444-7-git-send-email-mturquette+renesas@baylibre.com>
- <20160315212926.GG6344@twins.programming.kicks-ass.net>
- <20160315220951.30639.12872@quark.deferred.io>
- <20160316073850.GO6344@twins.programming.kicks-ass.net>
- <56E9A3FD.9050309@linaro.org>
- <20160316183607.GI6344@twins.programming.kicks-ass.net>
+ <1457932932-28444-9-git-send-email-mturquette+renesas@baylibre.com>
+ <56E85EF6.5040005@arm.com> <20160315204630.30639.60702@quark.deferred.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:33544 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbcCPTMY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 15:12:24 -0400
-Received: by mail-pf0-f175.google.com with SMTP id 124so86317895pfg.0
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 12:12:24 -0700 (PDT)
-In-Reply-To: <20160316183607.GI6344@twins.programming.kicks-ass.net>
+Received: from foss.arm.com ([217.140.101.70]:44543 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755335AbcCPToh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Mar 2016 15:44:37 -0400
+In-Reply-To: <20160315204630.30639.60702@quark.deferred.io>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
+To: Michael Turquette <mturquette@baylibre.com>, peterz@infradead.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On 03/16/2016 11:36 AM, Peter Zijlstra wrote:
-> On Wed, Mar 16, 2016 at 11:20:45AM -0700, Steve Muckle wrote:
->> On 03/16/2016 12:38 AM, Peter Zijlstra wrote:
->>> Somewhere in the giant discussions I mentioned that we should be looking
->>> at a CPPC like interface and pass {min,max} tuples to the cpufreq
->>> selection thingy.
->>>
->>> In that same discussion I also mentioned that we must compute min as the
->>> hard dl reservation, but that for max we can actually use the avg dl +
->>> avg rt + avg cfs.
->>>
->>> That way there is far more room for selecting a sensible frequency.
+On 15/03/16 20:46, Michael Turquette wrote:
+> Quoting Dietmar Eggemann (2016-03-15 12:13:58)
+>> On 14/03/16 05:22, Michael Turquette wrote:
+
+[...]
+
+>> For me this independence of the scheduler code towards the actual
+>> implementation of the Frequency Invariant Engine (FEI) was actually a
+>> feature.
+> 
+> I do not agree that it is a strength; I think it is confusing. My
+> opinion is that cpufreq drivers should implement
+> arch_scale_freq_capacity. Having a sane fallback
+> (cpufreq_scale_freq_capacity) simply means that you can remove the
+> boilerplate from the arm32 and arm64 code, which is a win.
+> 
+> Furthermore, if we have multiple competing implementations of
+> arch_scale_freq_invariance, wouldn't it be better for all of them to
+> live in cpufreq drivers? This means we would only need to implement a
+> single run-time "selector".
+> 
+> On the other hand, if the implementation lives in arch code and we have
+> various implementations of arch_scale_freq_capacity within an
+> architecture, then each arch would need to implement this selector
+> function. Even worse then if we have a split where some implementations
+> live in drivers/cpufreq (e.g. intel_pstate) and others in arch/arm and
+> others in arch/arm64 ... now we have three selectors.
+
+OK, now I see your point. What I don't understand is the fact why you
+want different foo_scale_freq_capacity() implementations per cpufreq
+drivers. IMHO we want to do the cpufreq.c based implementation to
+abstract from that (at least for target_index() cpufreq drivers).
+
+intel_pstate (setpolicy()) is an exception but my humble guess is that
+systems with intel_pstate driver have X86_FEATURE_APERFMPERF support.
+
+> Note that this has nothing to do with cpu microarch invariance. I'm
+> happy for that to stay in arch code because we can have heterogeneous
+> cpus that do not scale frequency, and thus would not enable cpufreq.
+> But if your platform scales cpu frequency, then really cpufreq should be
+> in the loop.
+
+Agreed.
+
+> 
 >>
->> Doesn't the above min/max policy mean that the platform will likely
->> underserve the task load? If avg dl+rt+cfs represents our best estimate
->> of the work to be done, I would think that should be the min.
+>> In EAS RFC5.2 (linux-arm.org/linux-power.git energy_model_rfc_v5.2 ,
+>> which hasn't been posted to LKML) we establish the link in the ARCH code
+>> (arch/arm64/include/asm/topology.h).
 > 
-> Can't be the min, avg_dl might (and typically will be) must lower than
-> the worst case utilization estimates.
+> Right, sorry again about preemptively posting the patch. Total brainfart
+> on my part.
 > 
-> However if we use that as our min, peaks in DL utilization will not
-> complete, because we run at too low a frequency.
+>>
+>> #ifdef CONFIG_CPU_FREQ
+>> #define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+>> ...
+>> +#endif
+> 
+> The above is no longer necessary with this patch. Same question as
+> above: why insist on the arch boilerplate?
 
-Doesn't that mean the max (if one is specified) should also use hard dl?
-I.e. hard dl + rt + cfs.
+OK.
 
-> Therefore, the min must be given by our worst case utilization
-> reservation, not by the actual avg consumed.
-
-Ok sure. My concern was more about the platform potentially ignoring the
-CFS and RT capacity requests. So given the point about DL bw I'd think
-the min would then be hard dl + rt + cfs.
+[...]
