@@ -1,115 +1,74 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
-Date: Tue, 15 Mar 2016 23:08:00 +0000
-Message-ID: <1458079520.4486.39.camel@intel.com>
-References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/8] schedutil enhancements
+Date: Wed, 16 Mar 2016 01:08:02 +0100
+Message-ID: <2494941.hQv4heU2vL@vostro.rjw.lan>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457979156-10972-1-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Content-Language: en-US
-Content-ID: <3D6FB98C92254D4489335040A9D2C741-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:45191 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751086AbcCPAGB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 20:06:01 -0400
+In-Reply-To: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-T24gTW9uLCAyMDE2LTAzLTE0IGF0IDExOjEyIC0wNzAwLCBTcmlrYXIgU3JpbWF0aCBUaXJ1bWFs
-YSB3cm90ZToNCj4gQWRkIGEgc3lzZnNfbm90aWZ5IG9uIHRoZXJtYWxfem9uZSovdGVtcCBhbmQg
-Y29vbGluZ19kZXZpY2UqLw0KPiBjdXJfc3RhdGUgd2hlbmV2ZXIgYW55IHRyaXAgaXMgdHJpZ2dl
-cmVkIG9yIGN1ciBzdGF0ZSBpcyBjaGFuZ2VkLg0KPiANCj4gVGhpcyBjaGFuZ2UgYWxsb3dzIHVz
-ZXJtb2RlIGFwcHMgdG8gcmVnaXN0ZXIgdGhlbXNlbHZlcyB0byBnZXQNCj4gbm90aWZpZWQsIHdo
-ZW4gY2VydGFpbiB0aGVybWFsIGNvbmRpdGlvbnMgb2NjdXIgYW5kIHJlZHVjZSB0aGVpcg0KPiB3
-b3JrbG9hZC4gVGhpcyB3b3JrbG9hZCB0aHJvdHRsaW5nIGFsbG93cyB1c2VybW9kZSB0byByZWFj
-dCBiZWZvcmUNCj4gaGFyZHdhcmUgY2xvY2tzIGFyZSB0aHJvdHRsZWQgYW5kIGtlZXAgc29tZSBj
-cml0aWNhbCBhcHBzIHJ1bm5pbmcNCj4gcmVsaWFibHkgbG9uZ2VyLg0KSSB0aGluayB3ZSBuZWVk
-IGEgY29tYmluYXRpb24gb2YgcHJvcG9zYWwgaW7CoA0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
-Lm9yZy9wYXRjaC83ODc2MzUxL8KgYW5kIHRoaXMuDQoNCkZvciBleGFtcGxlIHRoaXMgcGF0Y2gg
-bm90aWZpZXMgdGhhdCBzb21lIHRyaXAgaXMgdmlvbGF0ZWQsIGJ1dCB0aGF0IGlzDQpub3QgZW5v
-dWdoIGZvciB1c2VyIHNwYWNlIGFwcGxpY2F0aW9uIHRvIHRha2UgYW55IGFjdGlvbi4gU29tZSB0
-cmlwcw0KdmlvbGF0aW9ucyB1c2VyIHNwYWNlIG1heSBub3QgY2FyZSBhcyB0aGlzIG1heSBiZSBh
-IHRyYW5zaWVudCBvbmUuIFRoZQ0KcGF0Y2ggZnJvbcKgRWR1YXJkbyBhZGRyZXNzIHRoYXQgYnkg
-cHJvdmlkaW5nIHRyaXAsIHRlbXBlcmF0dXJlIGFuZCBsYXN0DQp0ZW1wZXJhdHVyZSBpbmZvcm1h
-dGlvbi4gQnV0IHRoYXQgcGF0Y2ggb25seSBhZGRyZXNzIGhvdCB0cmlwcy4gSQ0KdW5kZXJzdGFu
-ZCB3aHkgRWR1YXJkbyBkb2Vzbid0IHdhbnQgdG8gYmUgbm90aWZpZWQgZm9yIHBhc3NpdmUgdHJp
-cHMgYXMNCnRoZXJlIHdpbGwgYmUgdG9vIG1hbnkuDQoNClNvIElNTyB3ZSBuZWVkIHNvbWUgbWVj
-aGFuaXNtIHRvIHR1cm4gb2ZmIG5vdGlmaWNhdGlvbiBhbmQgZGVjaWRlIHdoYXQNCm5vdGlmaWNh
-dGlvbiB3aWxsIHJlc3VsdCBpbiB1c2VyIHNwYWNlIG5vdGlmaWNhdGlvbnMuDQpPbiBzb21lIHg4
-NiBzeXN0ZW1zIHdlIGhhdmUgMTArIHBhc3NpdmUvYWN0aXZlIHRyaXBzLCB0aGlzIHdpbGwgcmVz
-dWx0cw0KaW4gdG9vIG1hbnkgbm90aWZpY2F0aW9ucy4gV2UgbWF5IGJlIGluIHRoZXJtYWxseSBz
-ZW5zaXRpdmUgem9uZSwgd2hlcmUNCm1vcmUgY29kZSBleGNlY3V0aW9uIGlzIG1vcmUgaGVhdC4N
-Cg0KV2UgbWF5IGhhdmUgc29tZSBtYXNrIG9mIHRyaXBzIGZvciB3aGljaCB3aWxsIHJlc3VsdCBp
-biBub3RpZmljYXRpb25zLg0KQnkgZGVmYXVsdCBubyBub3RpZmljYXRpb25zLCB1bmxlc3Mgc29t
-ZSB1c2VyIHNwYWNlIHJlcXVlc3RzLg0KDQpEdXJpbmcgbGFzdCBMUEMgd2UgZGlzY3Vzc2VkIGFi
-b3V0IHVzaW5nIElJTyBmb3IgdGVtcGVyYXR1cmUgdGhyZXNob2xkDQpub3RpZmljYXRpb25zIGFu
-ZCBJIHN1Ym1pdHRlZCBtdWx0aXBsZSBjaGFuZ2VzIGZvciB0aGF0LiBMb29rcyBsaWtlIHdlDQph
-bHNvIGNhcmUgb2YgdHJpcCBwb2ludCBjaGFuZ2VzLiBTbyBJIHRoaW5rIHdlIG5lZWQgbW9yZSBj
-b21wcmVoZW5zaXZlDQptZWNoYW5pc20gdG8gYWRkcmVzcyB0aGlzLg0KDQpNYXkgYmUgd2Ugc2hv
-dWxkIGhhdmUgdGhlcm1hbCBtaW5pIHN1bW1pdCBkdXJpbmcgTFBDIGFnYWluIGFuZCBkZWNpZGUg
-YQ0KY29tcHJlaGVuc2l2ZSBwbGFuIHRvIGFkZHJlc3MgYWxsIGFzeW5jaHJvbm91cyB0aGVybWFs
-IG5vdGlmaWNhdGlvbnMuDQoNCg0KVGhhbmtzLA0KU3Jpbml2YXMNCg0KPiANCj4gU2lnbmVkLW9m
-Zi1ieTogU3Jpa2FyIFNyaW1hdGggVGlydW1hbGEgPHNyaWthcnNAbnZpZGlhLmNvbT4NCj4gLS0t
-DQo+IA0KPiBDaGFuZ2VzIGZyb20gdjE6DQo+IMKgLSBDYWxsaW5nIHN5c2ZzX25vdGlmeSBmb3Ig
-dGhlcm1hbF96b25lKi90ZW1wIG9ubHkgd2hlbiB0aGVyZSBpcyBhDQo+IMKgwqDCoHRyaXAgdmlv
-bGF0ZWQgb24gdGhlIHRoZXJtYWwgem9uZS4NCj4gwqAtIE1vZGlmaWVkIGNvbW1pdCBtZXNzYWdl
-Lg0KPiANCj4gwqBkcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMgfCAzNCArKysrKysrKysr
-KysrKysrKysrKysrKysrKy0tLS0NCj4gLS0tLQ0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAyNiBpbnNl
-cnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhl
-cm1hbC90aGVybWFsX2NvcmUuYw0KPiBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0K
-PiBpbmRleCBhMGE4ZmQxLi5mNTQ1MTllIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwv
-dGhlcm1hbF9jb3JlLmMNCj4gKysrIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+
-IEBAIC00MTksMTQgKzQxOSwyMyBAQCBzdGF0aWMgdm9pZCBtb25pdG9yX3RoZXJtYWxfem9uZShz
-dHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHopDQo+IMKgCW11dGV4X3VubG9jaygmdHot
-PmxvY2spOw0KPiDCoH0NCj4gwqANCj4gLXN0YXRpYyB2b2lkIGhhbmRsZV9ub25fY3JpdGljYWxf
-dHJpcHMoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UNCj4gKnR6LA0KPiArc3RhdGljIGludCBo
-YW5kbGVfbm9uX2NyaXRpY2FsX3RyaXBzKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwN
-Cj4gwqAJCQlpbnQgdHJpcCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZSB0cmlwX3R5cGUpDQo+IMKg
-ew0KPiArCWludCB0cmlwX3RlbXA7DQo+ICsJaW50IHJldCA9IDA7DQo+ICsNCj4gwqAJdHotPmdv
-dmVybm9yID8gdHotPmdvdmVybm9yLT50aHJvdHRsZSh0eiwgdHJpcCkgOg0KPiDCoAkJwqDCoMKg
-wqDCoMKgwqBkZWZfZ292ZXJub3ItPnRocm90dGxlKHR6LCB0cmlwKTsNCj4gKw0KPiArCXR6LT5v
-cHMtPmdldF90cmlwX3RlbXAodHosIHRyaXAsICZ0cmlwX3RlbXApOw0KPiArCWlmICh0ei0+dGVt
-cGVyYXR1cmUgPj0gdHJpcF90ZW1wKQ0KPiArCQlyZXQgPSAxOw0KPiArDQo+ICsJcmV0dXJuIHJl
-dDsNCj4gwqB9DQo+IMKgDQo+IC1zdGF0aWMgdm9pZCBoYW5kbGVfY3JpdGljYWxfdHJpcHMoc3Ry
-dWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LA0KPiArc3RhdGljIGludCBoYW5kbGVfY3JpdGlj
-YWxfdHJpcHMoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LA0KPiDCoAkJCQlpbnQgdHJp
-cCwgZW51bSB0aGVybWFsX3RyaXBfdHlwZQ0KPiB0cmlwX3R5cGUpDQo+IMKgew0KPiDCoAlpbnQg
-dHJpcF90ZW1wOw0KPiBAQCAtNDM1LDcgKzQ0NCw3IEBAIHN0YXRpYyB2b2lkIGhhbmRsZV9jcml0
-aWNhbF90cmlwcyhzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHosDQo+IMKgDQo+IMKg
-CS8qIElmIHdlIGhhdmUgbm90IGNyb3NzZWQgdGhlIHRyaXBfdGVtcCwgd2UgZG8gbm90IGNhcmUu
-ICovDQo+IMKgCWlmICh0cmlwX3RlbXAgPD0gMCB8fCB0ei0+dGVtcGVyYXR1cmUgPCB0cmlwX3Rl
-bXApDQo+IC0JCXJldHVybjsNCj4gKwkJcmV0dXJuIDA7DQo+IMKgDQo+IMKgCXRyYWNlX3RoZXJt
-YWxfem9uZV90cmlwKHR6LCB0cmlwLCB0cmlwX3R5cGUpOw0KPiDCoA0KPiBAQCAtNDQ4LDIzICs0
-NTcsMjggQEAgc3RhdGljIHZvaWQgaGFuZGxlX2NyaXRpY2FsX3RyaXBzKHN0cnVjdA0KPiB0aGVy
-bWFsX3pvbmVfZGV2aWNlICp0eiwNCj4gwqAJCQnCoMKgdHotPnRlbXBlcmF0dXJlIC8gMTAwMCk7
-DQo+IMKgCQlvcmRlcmx5X3Bvd2Vyb2ZmKHRydWUpOw0KPiDCoAl9DQo+ICsNCj4gKwlyZXR1cm4g
-MTsNCj4gwqB9DQo+IMKgDQo+IC1zdGF0aWMgdm9pZCBoYW5kbGVfdGhlcm1hbF90cmlwKHN0cnVj
-dCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwgaW50DQo+IHRyaXApDQo+ICtzdGF0aWMgaW50IGhh
-bmRsZV90aGVybWFsX3RyaXAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LCBpbnQNCj4g
-dHJpcCkNCj4gwqB7DQo+ICsJaW50IHJldCA9IDA7DQo+IMKgCWVudW0gdGhlcm1hbF90cmlwX3R5
-cGUgdHlwZTsNCj4gwqANCj4gwqAJdHotPm9wcy0+Z2V0X3RyaXBfdHlwZSh0eiwgdHJpcCwgJnR5
-cGUpOw0KPiDCoA0KPiDCoAlpZiAodHlwZSA9PSBUSEVSTUFMX1RSSVBfQ1JJVElDQUwgfHwgdHlw
-ZSA9PQ0KPiBUSEVSTUFMX1RSSVBfSE9UKQ0KPiAtCQloYW5kbGVfY3JpdGljYWxfdHJpcHModHos
-IHRyaXAsIHR5cGUpOw0KPiArCQlyZXQgPSBoYW5kbGVfY3JpdGljYWxfdHJpcHModHosIHRyaXAs
-IHR5cGUpOw0KPiDCoAllbHNlDQo+IC0JCWhhbmRsZV9ub25fY3JpdGljYWxfdHJpcHModHosIHRy
-aXAsIHR5cGUpOw0KPiArCQlyZXQgPSBoYW5kbGVfbm9uX2NyaXRpY2FsX3RyaXBzKHR6LCB0cmlw
-LCB0eXBlKTsNCj4gwqAJLyoNCj4gwqAJwqAqIEFscmlnaHQsIHdlIGhhbmRsZWQgdGhpcyB0cmlw
-IHN1Y2Nlc3NmdWxseS4NCj4gwqAJwqAqIFNvLCBzdGFydCBtb25pdG9yaW5nIGFnYWluLg0KPiDC
-oAnCoCovDQo+IMKgCW1vbml0b3JfdGhlcm1hbF96b25lKHR6KTsNCj4gKw0KPiArCXJldHVybiBy
-ZXQ7DQo+IMKgfQ0KPiDCoA0KPiDCoC8qKg0KPiBAQCAtNTU2LDcgKzU3MCw3IEBAIHN0YXRpYyB2
-b2lkIHRoZXJtYWxfem9uZV9kZXZpY2VfcmVzZXQoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZp
-Y2UgKnR6KQ0KPiDCoHZvaWQgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoc3RydWN0IHRoZXJt
-YWxfem9uZV9kZXZpY2UgKnR6KQ0KPiDCoHsNCj4gwqAJaW50IGNvdW50Ow0KPiAtDQo+ICsJaW50
-IHRyaXBzID0gMDsNCj4gwqAJaWYgKGF0b21pY19yZWFkKCZpbl9zdXNwZW5kKSkNCj4gwqAJCXJl
-dHVybjsNCj4gwqANCj4gQEAgLTU2Niw3ICs1ODAsMTAgQEAgdm9pZCB0aGVybWFsX3pvbmVfZGV2
-aWNlX3VwZGF0ZShzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHopDQo+IMKgCXVwZGF0
-ZV90ZW1wZXJhdHVyZSh0eik7DQo+IMKgDQo+IMKgCWZvciAoY291bnQgPSAwOyBjb3VudCA8IHR6
-LT50cmlwczsgY291bnQrKykNCj4gLQkJaGFuZGxlX3RoZXJtYWxfdHJpcCh0eiwgY291bnQpOw0K
-PiArCQl0cmlwcyArPSBoYW5kbGVfdGhlcm1hbF90cmlwKHR6LCBjb3VudCk7DQo+ICsNCj4gKwlp
-ZiAodHJpcHMpDQo+ICsJCXN5c2ZzX25vdGlmeSgmdHotPmRldmljZS5rb2JqLCBOVUxMLCAidGVt
-cCIpOw0KPiDCoH0NCj4gwqBFWFBPUlRfU1lNQk9MX0dQTCh0aGVybWFsX3pvbmVfZGV2aWNlX3Vw
-ZGF0ZSk7DQo+IMKgDQo+IEBAIC0xNjM4LDYgKzE2NTUsNyBAQCB2b2lkIHRoZXJtYWxfY2Rldl91
-cGRhdGUoc3RydWN0DQo+IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYpDQo+IMKgCWNkZXYt
-PnVwZGF0ZWQgPSB0cnVlOw0KPiDCoAl0cmFjZV9jZGV2X3VwZGF0ZShjZGV2LCB0YXJnZXQpOw0K
-PiDCoAlkZXZfZGJnKCZjZGV2LT5kZXZpY2UsICJzZXQgdG8gc3RhdGUgJWx1XG4iLCB0YXJnZXQp
-Ow0KPiArCXN5c2ZzX25vdGlmeSgmY2Rldi0+ZGV2aWNlLmtvYmosIE5VTEwsICJjdXJfc3RhdGUi
-KTsNCj4gwqB9DQo+IMKgRVhQT1JUX1NZTUJPTCh0aGVybWFsX2NkZXZfdXBkYXRlKTsNCj4gwqA=
+Hi Mike,
+
+On Sunday, March 13, 2016 10:22:04 PM Michael Turquette wrote:
+> I'm happy that scheduler-driven cpu frequency selection is getting some
+> attention. Rafael's recent schedutil governor is a step in the right direction.
+
+Thanks!
+
+> This series builds on top of Rafael's schedutil governor, bringing it to parity
+> with some of the features in the schedfreq series posted by Steve[0], as well
+> as adding a couple of new things.
+> 
+> Patch 1 removes cpufreq_trigger_update()
+> 
+> Patches 2-4 move the cfs capacity margin out of the governor and into
+> cfs. This value is made tunable by a sysfs control in schedutil.
+> 
+> Patches 5-6 make cpufreq_update_util() aware of multiple scheduler
+> classes (cfs, rt & dl), and add storage & summation of these per-class
+> utilization values into schedutil.
+> 
+> Patches 7-8 introduces Dietmar's generic cpufreq implementation[1] of the
+> frequency invariance hook and changes the preprocessor magic in sched.h to
+> favor the cpufreq implementation over arch- or platform-specific ones.
+
+After the discussion mentioned by Peter in one of his responses (the relevant
+e-mail thread is here: http://marc.info/?t=145688568600003&r=1&w=4) I have
+changed the schedutil series to address some points made during it.
+
+In particular, I've modified it to use the formula from 
+http://marc.info/?l=linux-acpi&m=145756618321500&w=4 with the twist that
+if the utilization is frequency-invariant, max_freq will be used instead
+of current_freq.
+
+The way it recognizes whether or not that is the case is based on the
+Peter's suggestion from http://marc.info/?l=linux-kernel&m=145760739700716&w=4.
+
+For this reason, the governor goes into kernel/sched/ as I don't want
+arch_scale_freq_invariant() to be exposed to cpufreq at large, because
+schedutil will be the only governor using it in foreseeable future.
+
+The fast switching support patch is slightly different too, but that's
+not relevant here.
+
+The new series is in the pm-cpufreq-experimental branch of my tree:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+pm-cpufreq-experimental
+
+I haven't had the time to post it over the last few days (sorry about
+that), but I'll do that tomorrow.
+
+Thanks,
+Rafael
+
