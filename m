@@ -1,78 +1,104 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH V8 03/14] thermal: tegra: get rid of PDIV/HOTSPOT hack
-Date: Wed, 16 Mar 2016 16:56:00 +0800
-Message-ID: <1458118571-29717-4-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V8 01/14] thermal: tegra: move tegra thermal files into tegra directory
+Date: Wed, 16 Mar 2016 16:55:58 +0800
+Message-ID: <1458118571-29717-2-git-send-email-wni@nvidia.com>
 References: <1458118571-29717-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458118571-29717-1-git-send-email-wni@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, thierry.reding@gmail.com, rui.zhang@intel.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1458118571-29717-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Get rid of T124-specific PDIV/HOTSPOT hack.
-tegra-soctherm.c contained a hack to set the SENSOR_PDIV and
-SENSOR_HOTSPOT_OFFSET registers - it just did two writes of
-T124-specific opaque values.  Convert these into a form that can be
-substituted on a per-chip basis, and into structure fields that have
-at least some independent meaning.
+Move Tegra soctherm driver to tegra directory, it's easy to maintain
+and add more new function support for Tegra platforms.
+This will also help to split soctherm driver into common parts and
+chip specific data related parts.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
+Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/thermal/tegra/tegra-soctherm.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ drivers/thermal/Kconfig                                     | 12 ++----------
+ drivers/thermal/Makefile                                    |  2 +-
+ drivers/thermal/tegra/Kconfig                               | 13 +++++++++++++
+ drivers/thermal/tegra/Makefile                              |  1 +
+ .../thermal/{tegra_soctherm.c => tegra/tegra-soctherm.c}    |  0
+ 5 files changed, 17 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/thermal/tegra/Kconfig
+ create mode 100644 drivers/thermal/tegra/Makefile
+ rename drivers/thermal/{tegra_soctherm.c => tegra/tegra-soctherm.c} (100%)
 
-diff --git a/drivers/thermal/tegra/tegra-soctherm.c b/drivers/thermal/tegra/tegra-soctherm.c
-index b3ec0faa2bee..cc94069e0a31 100644
---- a/drivers/thermal/tegra/tegra-soctherm.c
-+++ b/drivers/thermal/tegra/tegra-soctherm.c
-@@ -48,14 +48,12 @@
- #define SENSOR_CONFIG2_THERMB_SHIFT		0
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 8cc4ac64a91c..1802629f5051 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -254,16 +254,6 @@ config ARMADA_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
  
- #define SENSOR_PDIV				0x1c0
--#define SENSOR_PDIV_T124			0x8888
- #define SENSOR_PDIV_CPU_MASK			(0xf << 12)
- #define SENSOR_PDIV_GPU_MASK			(0xf << 8)
- #define SENSOR_PDIV_MEM_MASK			(0xf << 4)
- #define SENSOR_PDIV_PLLX_MASK			(0xf << 0)
+-config TEGRA_SOCTHERM
+-	tristate "Tegra SOCTHERM thermal management"
+-	depends on ARCH_TEGRA
+-	help
+-	  Enable this option for integrated thermal management support on NVIDIA
+-	  Tegra124 systems-on-chip. The driver supports four thermal zones
+-	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
+-	  zones to manage temperatures. This option is also required for the
+-	  emergency thermal reset (thermtrip) feature to function.
+-
+ config DB8500_CPUFREQ_COOLING
+ 	tristate "DB8500 cpufreq cooling"
+ 	depends on ARCH_U8500
+@@ -380,6 +370,8 @@ depends on ARCH_STI && OF
+ source "drivers/thermal/st/Kconfig"
+ endmenu
  
- #define SENSOR_HOTSPOT_OFF			0x1c4
--#define SENSOR_HOTSPOT_OFF_T124			0x00060600
- #define SENSOR_HOTSPOT_CPU_MASK			(0xff << 16)
- #define SENSOR_HOTSPOT_GPU_MASK			(0xff << 8)
- #define SENSOR_HOTSPOT_MEM_MASK			(0xff << 0)
-@@ -436,6 +434,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	unsigned int i;
- 	int err;
-+	u32 pdiv, hotspot;
- 
- 	const struct tegra_tsensor *tsensors = t124_tsensors;
- 	const struct tegra_tsensor_group **ttgs = tegra124_tsensor_groups;
-@@ -493,8 +492,20 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 			goto disable_clocks;
- 	}
- 
--	writel(SENSOR_PDIV_T124, tegra->regs + SENSOR_PDIV);
--	writel(SENSOR_HOTSPOT_OFF_T124, tegra->regs + SENSOR_HOTSPOT_OFF);
-+	/* Program pdiv and hotspot offsets per THERM */
-+	pdiv = readl(tegra->regs + SENSOR_PDIV);
-+	hotspot = readl(tegra->regs + SENSOR_HOTSPOT_OFF);
-+	for (i = 0; i < TEGRA124_SOCTHERM_SENSOR_NUM; ++i) {
-+		pdiv = REG_SET_MASK(pdiv, ttgs[i]->pdiv_mask,
-+				    ttgs[i]->pdiv);
-+		/* hotspot offset from PLLX, doesn't need to configure PLLX */
-+		if (ttgs[i]->id != TEGRA124_SOCTHERM_SENSOR_PLLX)
-+			hotspot =  REG_SET_MASK(hotspot,
-+						ttgs[i]->pllx_hotspot_mask,
-+						ttgs[i]->pllx_hotspot_diff);
-+	}
-+	writel(pdiv, tegra->regs + SENSOR_PDIV);
-+	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
- 
- 	/* Initialize thermctl sensors */
- 
++source "drivers/thermal/tegra/Kconfig"
++
+ config QCOM_SPMI_TEMP_ALARM
+ 	tristate "Qualcomm SPMI PMIC Temperature Alarm"
+ 	depends on OF && SPMI && IIO
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index cfae6a654793..119e25cdcc66 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -46,5 +46,5 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+-obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
++obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+new file mode 100644
+index 000000000000..bed898858d02
+--- /dev/null
++++ b/drivers/thermal/tegra/Kconfig
+@@ -0,0 +1,13 @@
++menu "NVIDIA Tegra thermal drivers"
++depends on ARCH_TEGRA
++
++config TEGRA_SOCTHERM
++	tristate "Tegra SOCTHERM thermal management"
++	help
++	  Enable this option for integrated thermal management support on NVIDIA
++	  Tegra124 systems-on-chip. The driver supports four thermal zones
++	  (CPU, GPU, MEM, PLLX). Cooling devices can be bound to the thermal
++	  zones to manage temperatures. This option is also required for the
++	  emergency thermal reset (thermtrip) feature to function.
++
++endmenu
+diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/Makefile
+new file mode 100644
+index 000000000000..d4dc4e7f279e
+--- /dev/null
++++ b/drivers/thermal/tegra/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra-soctherm.o
+diff --git a/drivers/thermal/tegra_soctherm.c b/drivers/thermal/tegra/tegra-soctherm.c
+similarity index 100%
+rename from drivers/thermal/tegra_soctherm.c
+rename to drivers/thermal/tegra/tegra-soctherm.c
 -- 
 1.9.1
