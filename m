@@ -1,55 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 7/7] cpufreq: schedutil: New governor based on scheduler utilization data
-Date: Wed, 16 Mar 2016 23:53:47 +0100
-Message-ID: <3401840.ChzILGGFZI@vostro.rjw.lan>
-References: <1711281.bPmSjlBT7c@vostro.rjw.lan> <3456066.ocPAtCXNWC@vostro.rjw.lan> <20160316224054.GL6344@twins.programming.kicks-ass.net>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: Should suspend plug low-level devices?
+Date: Thu, 17 Mar 2016 00:18:30 +0100 (CET)
+Message-ID: <alpine.LNX.2.00.1603170017280.3656@cbobk.fhfr.pm>
+References: <20160316150053.GG6980@mtj.duckdns.org> <Pine.LNX.4.44L0.1603161127020.2250-100000@iolanthe.rowland.org> <CAJZ5v0j4DGEiKzKwnw4vc2gD-6XXKt2H656Q1kGrRD==y-s5Fw@mail.gmail.com> <20160316163554.GK6980@mtj.duckdns.org>
+ <CAJZ5v0i=BUSGx6ZKMS8QFeO6ybhbqekzBY+qV2Gn01yTw2DcWg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160316224054.GL6344@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:40046 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752454AbcCPXSc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Mar 2016 19:18:32 -0400
+In-Reply-To: <CAJZ5v0i=BUSGx6ZKMS8QFeO6ybhbqekzBY+qV2Gn01yTw2DcWg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, florian@mickler.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Wednesday, March 16, 2016 11:40:54 PM Peter Zijlstra wrote:
-> On Wed, Mar 16, 2016 at 10:38:55PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday, March 16, 2016 07:14:20 PM Peter Zijlstra wrote:
-> > > On Wed, Mar 16, 2016 at 03:59:18PM +0100, Rafael J. Wysocki wrote:
-> > > > +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> > > > +				unsigned int next_freq)
-> > > > +{
-> > > > +	struct cpufreq_policy *policy = sg_policy->policy;
-> > > > +
-> > > > +	if (next_freq > policy->max)
-> > > > +		next_freq = policy->max;
-> > > > +	else if (next_freq < policy->min)
-> > > > +		next_freq = policy->min;
-> > > > +
-> > > > +	sg_policy->last_freq_update_time = time;
-> > > > +	if (sg_policy->next_freq == next_freq) {
-> > > > +		if (policy->fast_switch_enabled)
-> > > > +			trace_cpu_frequency(policy->cur, smp_processor_id());
-> > > > +
-> > > > +		return;
-> > > > +	}
-> > > > +
-> > > > +	sg_policy->next_freq = next_freq;
-> > > > +	if (policy->fast_switch_enabled) {
-> > > > +		unsigned int freq;
-> > > > +
-> > > > +		freq = cpufreq_driver_fast_switch(policy, next_freq);
-> > > 
-> > > So you're assuming a RELATION_L for ->fast_switch() ?
-> > 
-> > Yes, I am.
+On Wed, 16 Mar 2016, Rafael J. Wysocki wrote:
+
+> > That's what we're doing now.  What I'm suggesting is that we should be
+> > plugging the point where they come together instead of the sources of
+> > which there can be many.  Freezing does block a lot of those sources
+> > but not all.
 > 
-> Should we document that fact somewhere? Or alternatively, if you already
-> did, I simply missed it.
+> Well, is there any point where they come together?  Say somebody
+> communicates with user space over mmaped address range and writes to
+> that go to hardware.  What do we do then?
 
-I thought I did, but clearly that's not the case (I think I wrote about that
-in a changelog comments somewhere).
+There are no more writes happening to that region after userspace has been 
+frozen. And we're definitely not getting rid of userspace freezing.
 
-I'll document it in the kerneldoc for cpufreq_driver_fast_switch() (patch [6/7]).
+Or have I missed the point of your question?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
 
