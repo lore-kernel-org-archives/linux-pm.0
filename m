@@ -1,7 +1,7 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH V8 10/14] thermal: tegra: handle clocks in one function
-Date: Wed, 16 Mar 2016 16:58:26 +0800
-Message-ID: <1458118706-29993-1-git-send-email-wni@nvidia.com>
+Subject: [PATCH V8 12/14] thermal: tegra: add PM support
+Date: Wed, 16 Mar 2016 16:58:46 +0800
+Message-ID: <1458118726-30079-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,99 +10,95 @@ To: edubezval@gmail.com, thierry.reding@gmail.com, rui.zhang@intel.com
 Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Handle clock enable/disable codes in one funcion
-soctherm_clk_enable(), so that the codes are more clear.
+Add suspend/resume function in soctherm driver.
 
 Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- drivers/thermal/tegra/soctherm.c | 51 ++++++++++++++++++++++++++++------------
- 1 file changed, 36 insertions(+), 15 deletions(-)
+ drivers/thermal/tegra/soctherm.c | 46 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 67e4a094b430..f60106884ac4 100644
+index 52793132bd4e..f2b4c4e390bb 100644
 --- a/drivers/thermal/tegra/soctherm.c
 +++ b/drivers/thermal/tegra/soctherm.c
-@@ -428,6 +428,39 @@ static void soctherm_debug_init(struct platform_device *pdev)
- static inline void soctherm_debug_init(struct platform_device *pdev) {}
- #endif
+@@ -88,6 +88,7 @@ struct tegra_soctherm {
+ 	struct clk *clock_tsensor;
+ 	struct clk *clock_soctherm;
+ 	void __iomem *regs;
++	struct thermal_zone_device **thermctl_tzs;
  
-+static int soctherm_clk_enable(struct platform_device *pdev, bool enable)
+ 	u32 *calib;
+ 	struct tegra_soctherm_soc *soc;
+@@ -566,6 +567,12 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 			return err;
+ 	}
+ 
++	tegra->thermctl_tzs = devm_kzalloc(&pdev->dev,
++					   sizeof(*z) * soc->num_ttgs,
++					   GFP_KERNEL);
++	if (!tegra->thermctl_tzs)
++		return -ENOMEM;
++
+ 	err = soctherm_clk_enable(pdev, true);
+ 	if (err)
+ 		return err;
+@@ -595,6 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 		}
+ 
+ 		zone->tz = z;
++		tegra->thermctl_tzs[soc->ttgs[i]->id] = z;
+ 
+ 		/* Configure hw trip points */
+ 		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
+@@ -621,11 +629,49 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int soctherm_suspend(struct device *dev)
 +{
-+	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	int err;
++	struct platform_device *pdev = to_platform_device(dev);
 +
-+	if (tegra->clock_soctherm == NULL || tegra->clock_tsensor == NULL)
-+		return -EINVAL;
-+
-+	reset_control_assert(tegra->reset);
-+
-+	if (enable) {
-+		err = clk_prepare_enable(tegra->clock_soctherm);
-+		if (err) {
-+			reset_control_deassert(tegra->reset);
-+			return err;
-+		}
-+
-+		err = clk_prepare_enable(tegra->clock_tsensor);
-+		if (err) {
-+			clk_disable_unprepare(tegra->clock_soctherm);
-+			reset_control_deassert(tegra->reset);
-+			return err;
-+		}
-+	} else {
-+		clk_disable_unprepare(tegra->clock_tsensor);
-+		clk_disable_unprepare(tegra->clock_soctherm);
-+	}
-+
-+	reset_control_deassert(tegra->reset);
++	soctherm_clk_enable(pdev, false);
 +
 +	return 0;
 +}
 +
- static const struct of_device_id tegra_soctherm_of_match[] = {
- #ifdef CONFIG_ARCH_TEGRA_124_SOC
- 	{
-@@ -496,20 +529,10 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->clock_soctherm);
- 	}
- 
--	reset_control_assert(tegra->reset);
--
--	err = clk_prepare_enable(tegra->clock_soctherm);
++static int soctherm_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
++	struct tegra_soctherm_soc *soc = tegra->soc;
++	int err, i;
++
 +	err = soctherm_clk_enable(pdev, true);
- 	if (err)
- 		return err;
- 
--	err = clk_prepare_enable(tegra->clock_tsensor);
--	if (err) {
--		clk_disable_unprepare(tegra->clock_soctherm);
--		return err;
--	}
--
--	reset_control_deassert(tegra->reset);
--
- 	/* Initialize raw sensors */
- 
- 	tegra->calib = devm_kzalloc(&pdev->dev,
-@@ -579,8 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	return 0;
- 
- disable_clocks:
--	clk_disable_unprepare(tegra->clock_tsensor);
--	clk_disable_unprepare(tegra->clock_soctherm);
-+	soctherm_clk_enable(pdev, false);
- 
- 	return err;
- }
-@@ -591,8 +613,7 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
- 
- 	debugfs_remove_recursive(tegra->debugfs_dir);
- 
--	clk_disable_unprepare(tegra->clock_tsensor);
--	clk_disable_unprepare(tegra->clock_soctherm);
-+	soctherm_clk_enable(pdev, false);
- 
- 	return 0;
- }
++	if (err) {
++		dev_err(&pdev->dev,
++			"Resume failed: enable clocks failed\n");
++		return err;
++	}
++
++	soctherm_init(pdev);
++
++	for (i = 0; i < soc->num_ttgs; ++i) {
++		struct thermal_zone_device *tz;
++
++		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
++		tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
++	}
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, soctherm_resume);
++
+ static struct platform_driver tegra_soctherm_driver = {
+ 	.probe = tegra_soctherm_probe,
+ 	.remove = tegra_soctherm_remove,
+ 	.driver = {
+ 		.name = "tegra_soctherm",
++		.pm = &tegra_soctherm_pm,
+ 		.of_match_table = tegra_soctherm_of_match,
+ 	},
+ };
 -- 
 1.9.1
