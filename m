@@ -1,103 +1,115 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Wed, 16 Mar 2016 10:46:40 -0400
-Message-ID: <1458139600.14723.29.camel@redhat.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	 <CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
-	 <1458007395.8898.19.camel@redhat.com> <2600831.Qfymhh5Hpv@vostro.rjw.lan>
-	 <1458089721.8898.25.camel@redhat.com>
-	 <CAJZ5v0iC2CUKRJokVL5xsbebOPzxNUzXxzo8hxRvm-Y=0v_LQg@mail.gmail.com>
-	 <CAJZ5v0hDGmReO9KQrofSu3K25xzP08yo+qqgLiEHejKrSXEy4w@mail.gmail.com>
-	 <20160316100144.75bfef53@annuminas.surriel.com>
-	 <CAJZ5v0iz87xKYFV_wiJgppfiCWt7uQGXyrQhoxpZ3E7GBhA5_A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-eMcdwzVogZCwWcbYHExV"
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [RFC 0/4] Runtime pm for thunderbolt.ko
+Date: Wed, 16 Mar 2016 15:50:35 +0100
+Message-ID: <cover.1458126755.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:38639 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964900AbcCPOqo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Mar 2016 10:46:44 -0400
-In-Reply-To: <CAJZ5v0iz87xKYFV_wiJgppfiCWt7uQGXyrQhoxpZ3E7GBhA5_A@mail.gmail.com>
+Received: from mailout3.hostsharing.net ([176.9.242.54]:56636 "EHLO
+	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933471AbcCPOtS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:49:18 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+
+This series adds runtime pm to the Thunderbolt driver for Macs.
+Patches 1 to 3 are just preparatory material, the real action
+is in patch 4.
+
+The series fixes (at least partially) a power regression introduced in
+Linux 3.17 by 7bc5a2bad0b8 ("ACPI: Support _OSI("Darwin") correctly"):
+https://bugzilla.kernel.org/show_bug.cgi?id=92111
+
+It would be good if someone could test it with Cactus Ridge or
+Falcon Ridge. So far I've only tested it with the Light Ridge
+controller built into older Macs.
+
+I've also pushed the patches to GitHub to ease reviewing:
+https://github.com/l1k/linux/commits/thunderbolt_runpm_v1
 
 
---=-eMcdwzVogZCwWcbYHExV
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I'm posting this as an RFC to get feedback in particular on 2 issues:
 
-On Wed, 2016-03-16 at 15:14 +0100, Rafael J. Wysocki wrote:
-> On Wed, Mar 16, 2016 at 3:01 PM, Rik van Riel <riel@redhat.com>
-> wrote:
-> >=C2=A0
-> > On the other hand, being more aggressive about C1 allows
-> > other cores to run at higher frequencies...
-> Good point.
->=20
-> We need to decide, though.
->=20
-> Do we generally want to use more polling or more C1?
+(1) There are 3 drivers interacting with the Thunderbolt controller:
+    thunderbolt.ko (controls the NHI, Native Host Interface),
+    pcieport (controls the upstream bridge) and pciehp (controls
+    the downstream bridges). The Linux pm model assumes that a child
+    cannot resume before its parent, yet my implementation lets the
+    NHI govern runtime pm and the NHI is a child. So this is a total
+    violation of the Linux pm model. There's an ascii drawing in
+    patch 4 which should make this clearer.
 
-I can see five distinct data points for decision making:
-
-1) data->next_timer_us where we know for sure the sleep
-=C2=A0 =C2=A0interval will be less than C1 latency -> poll
-
-2) latency_req as configured by the user, if this is
-=C2=A0 =C2=A0smaller than C1
-latency we need poll =C2=A0(we currently
-=C2=A0 =C2=A0get this wrong)
-
-3) interval determined by get_typical_interval, this we
-=C2=A0 =C2=A0may know with a higher confidence value, and choosing
-=C2=A0 =C2=A0poll may actually be appropriate
-
-4) data->predicted_us corrected only by bucket correction
-=C2=A0 =C2=A0factor - this is a gamble, so we probably want C1,
-=C2=A0 =C2=A0even if data->predicted_us is low
-
-5) interactivity_req, which is data->predicted_us
-=C2=A0 =C2=A0divided by a load factor - we should probably ignore
-=C2=A0 =C2=A0that for poll since it is way too aggressive, and
-=C2=A0 =C2=A0stick to C1 and deeper for this factor
-
-Does the above make sense?
-
-Currently the code merges (3) and (4) into the same
-value before making a comparison, and neglects to take
-(2) into account at all when deciding whether to poll.
-
-Would you like me to write a patch to take the user
-configured latency_req into account, separate out
-the predicted_us and typical_interval, and test whether
-to poll against the smaller of next_timer_us, latency_req,
-and the typical_interval, while we continue to use the
-predicted_us as is in the main selection loop?
-
---=20
-All Rights Reversed.
+    To let the parent (upstream bridge) govern runtime pm, I could
+    maybe write a pcieport service driver specifically for Thunderbolt
+    which governs the runtime pm (but does nothing else). However
+    pcieport currently has no runtime pm (yes I know Mika is on it)
+    and a service driver lacks the necessary runtime pm callbacks.
+    So with pcieport the way it is now, that solution isn't attainable.
 
 
---=-eMcdwzVogZCwWcbYHExV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+(2) When the system goes to sleep, it shouldn't wake the controller
+    from runtime suspend. Waking the controller takes 2 seconds and
+    costs energy. The ->prepare callback must return 1 to achieve that.
+    However pci_pm_prepare() doesn't do so as it can't deal properly
+    with devices that can be runtime suspended to D3cold even though
+    they're not power manageable by the platform. This could be fixed
+    with something like this:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1918,7 +1918,8 @@ EXPORT_SYMBOL(pci_wake_from_d3);
+  */
+ static pci_power_t pci_target_state(struct pci_dev *dev)
+ {
+-	pci_power_t target_state = PCI_D3hot;
++	pci_power_t target_state =
++		(dev->current_state == PCI_D3cold) ? PCI_D3cold : PCI_D3hot;
+ 
+ 	if (platform_pci_power_manageable(dev)) {
+ 		/*
 
-iQEcBAABCAAGBQJW6XHQAAoJEM553pKExN6DWc4IAIjDxsRzaG+oeoLQsyRefv9u
-hXU75WO7TKuJAUaXOZj4cg51aQRJwiqTWQbG+PsdTAYALKKJvpoQTPY4BEhpWM9S
-D5x49opJGBOUKhP1YWzj25ZC6bhckKLxFK7kec9Gms6u6gVEYuJsJfHDKpqzk+NI
-+H5pgB8A0OeCUNO551GTyBjoMXnxZA229uaUOFsOBUDkRhOwenu2wg/tGYtPBtkv
-SYUm4pW3+6x3iR4EjNZqKlyvK9eYD7qtZdQ/H8JtMf4tH+R0GzgrwFoldGwBEsBf
-/BoCFF4ay9GPqax4ViYhvy0ByixN5mCS1AUyfYtfkIPUNJPLkBm8hjs8DQR+dsk=
-=kQL4
------END PGP SIGNATURE-----
+    But there's another problem: pci_pm_complete() wakes up the device
+    after resuming from system sleep and there's no need to do that.
+    The controller may stay asleep and will be woken on hotplug by a GPE.
+    We could fix that with an additional flag in struct dev_pm_info.
 
---=-eMcdwzVogZCwWcbYHExV--
+    Meanwhile the only solution I could find was a PCI enable fixup
+    which overrides pci_pm_prepare() and pci_pm_complete() using a
+    power domain. That's fairly kludgy, I can never remove and free
+    the allocated struct dev_pm_domain since there is no PCI remove
+    fixup section. It's also not possible to bail out of the ->probe
+    callback if allocation fails since the PCI enable fixup does not
+    allow return values to be passed back.
+
+Thanks,
+
+Lukas
+
+
+Lukas Wunner (4):
+  PCI: Add Thunderbolt device IDs
+  thunderbolt: Fix typos and magic number
+  thunderbolt: Move pm code to separate file
+  thunderbolt: Support runtime pm
+
+ drivers/pci/quirks.c          |  51 +++++++-
+ drivers/thunderbolt/Kconfig   |   2 +-
+ drivers/thunderbolt/Makefile  |   3 +-
+ drivers/thunderbolt/ctl.c     |   2 +-
+ drivers/thunderbolt/eeprom.c  |   2 +-
+ drivers/thunderbolt/nhi.c     |  45 ++-----
+ drivers/thunderbolt/nhi.h     |   3 +
+ drivers/thunderbolt/power.c   | 288 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/thunderbolt/power.h   |  17 +++
+ drivers/thunderbolt/switch.c  |  28 ++--
+ drivers/thunderbolt/tb.c      |   8 +-
+ drivers/thunderbolt/tb.h      |   2 +-
+ drivers/thunderbolt/tb_regs.h |   2 +-
+ include/linux/pci_ids.h       |  18 +++
+ 14 files changed, 413 insertions(+), 58 deletions(-)
+ create mode 100644 drivers/thunderbolt/power.c
+ create mode 100644 drivers/thunderbolt/power.h
+
+-- 
+2.7.0
 
