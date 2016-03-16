@@ -1,61 +1,69 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
- platforms without _S5
-Date: Wed, 16 Mar 2016 05:59:29 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640286D5713@shsmsx102.ccr.corp.intel.com>
-References: <1457687133-3730-1-git-send-email-yu.c.chen@intel.com>
- <20160311155546.GJ15775@codeblueprint.co.uk>
- <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
- <20160314200033.GG2619@codeblueprint.co.uk>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 6/8] cpufreq/schedutil: sum per-sched class utilization
+Date: Wed, 16 Mar 2016 08:38:50 +0100
+Message-ID: <20160316073850.GO6344@twins.programming.kicks-ass.net>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+ <1457932932-28444-7-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315212926.GG6344@twins.programming.kicks-ass.net>
+ <20160315220951.30639.12872@quark.deferred.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:15071 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbcCPF7k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 01:59:40 -0400
-In-Reply-To: <20160314200033.GG2619@codeblueprint.co.uk>
-Content-Language: en-US
+Received: from casper.infradead.org ([85.118.1.10]:47671 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932730AbcCPHiy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 03:38:54 -0400
+Content-Disposition: inline
+In-Reply-To: <20160315220951.30639.12872@quark.deferred.io>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Matt Fleming <matt@codeblueprint.co.uk>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, steve.muckle@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-Hi Matt,
-
-> -----Original Message-----
-> From: Matt Fleming [mailto:matt@codeblueprint.co.uk]
-> Sent: Tuesday, March 15, 2016 4:01 AM
-> To: Chen, Yu C
-> Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J. Wysocki;
-> Len Brown; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui; linux-
-> efi@vger.kernel.org; x86@kernel.org; linux-kernel@vger.kernel.org; Ard
-> Biesheuvel; Mark Salter
-> Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
-> platforms without _S5
+On Tue, Mar 15, 2016 at 03:09:51PM -0700, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2016-03-15 14:29:26)
+> > On Sun, Mar 13, 2016 at 10:22:10PM -0700, Michael Turquette wrote:
+> > 
+> > > +static unsigned long sugov_sum_total_util(struct sugov_cpu *sg_cpu)
+> > > +{
+> > > +     enum sched_class_util sc;
+> > > +
+> > > +     /* sum the utilization of all sched classes */
+> > > +     sg_cpu->total_util = 0;
+> > > +     for (sc = 0; sc < nr_util_types; sc++)
+> > > +             sg_cpu->total_util += sg_cpu->util[sc];
+> > > +
+> > > +     return sg_cpu->total_util;
+> > > +}
+> > 
+> > > @@ -153,7 +172,7 @@ static unsigned int sugov_next_freq(struct sugov_policy *sg_policy,
+> > >               if ((s64)delta_ns > NSEC_PER_SEC / HZ)
+> > >                       continue;
+> > >  
+> > > -             j_util = j_sg_cpu->util;
+> > > +             j_util = j_sg_cpu->total_util;
+> > >               j_max = j_sg_cpu->max;
+> > >               if (j_util > j_max)
+> > >                       return max_f;
+> > 
+> > So while not strictly wrong, I think we can do so much better.
+> > 
+> > Changelog doesn't mention anything useful, like that this is indeed very
+> > rough and what we really should be doing etc..
 > 
-> On Fri, 11 Mar, at 04:33:46PM, Chen, Yu C wrote:
-> >
-> > There is  a future Base-IA platform, we are planning to skip
-> > implementing the SLP_TYP register and the S5 object.  (already there
-> > will be no S3 and no S4)
+> What should we really be doing? Summing the scheduler class
+> contributions seems correct to me.
 > 
-> Cool. This is really valuable information that should go into the commit
-> message.
-> 
-> Because if this is the rationale for the change, I don't see why we'd need to
-> provide the default stuff. Instead we should just enforce EFI reboot, and
-> only add the pm_poweroff_default hook if there is an explicit user in the
-> future, IMO.
+> Are you referring to the fact that dl and rt are passing bogus values
+> into cpufreq_update_util()? If so I'm happy to add a note about that in
+> the changelog.
 
-Do you mean the patch v3 make sense
-https://patchwork.kernel.org/patch/8514751/
-and we should use efi power off as our first choice, if there is no _S5  available(no acpi_power_off),
-even there is a customized  poweroff(driver provided, eg)? 
+Somewhere in the giant discussions I mentioned that we should be looking
+at a CPPC like interface and pass {min,max} tuples to the cpufreq
+selection thingy.
 
-Meanwhile, the legacy platforms will not be affected because
-there is no path to overwrite pm_power_off to efi power off.
+In that same discussion I also mentioned that we must compute min as the
+hard dl reservation, but that for max we can actually use the avg dl +
+avg rt + avg cfs.
 
-thanks,
-yu
+That way there is far more room for selecting a sensible frequency.
