@@ -1,538 +1,357 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [RFC 4/4] thunderbolt: Support runtime pm
-Date: Wed, 16 Mar 2016 15:50:35 +0100
-Message-ID: <4560ddb26a2bb15eeaf8eab565ac41c35e36d092.1458126755.git.lukas@wunner.de>
-References: <cover.1458126755.git.lukas@wunner.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v4 6/7] cpufreq: Support for fast frequency switching
+Date: Wed, 16 Mar 2016 15:52:28 +0100
+Message-ID: <1989596.XAKfhFj1lz@vostro.rjw.lan>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <4088601.C2vItRYpQn@vostro.rjw.lan> <1711281.bPmSjlBT7c@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:60018 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935079AbcCPOt5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:49:57 -0400
-In-Reply-To: <cover.1458126755.git.lukas@wunner.de>
+Received: from v094114.home.net.pl ([79.96.170.134]:50246 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S935013AbcCPO7z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:59:55 -0400
+In-Reply-To: <1711281.bPmSjlBT7c@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-Document and implement Apple's ACPI-based (but nonstandard) mechanism
-to power the controller up and down as needed.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This fixes (at least partially) a power regression introduced in
-Linux 3.17 by 7bc5a2bad0b8 ("ACPI: Support _OSI("Darwin") correctly").
+Modify the ACPI cpufreq driver to provide a method for switching
+CPU frequencies from interrupt context and update the cpufreq core
+to support that method if available.
 
-A Thunderbolt controller consists of an NHI (Native Host Interface) and
-a set of bridges. Power is cut to the entire chip. The Linux pm model
-assumes that runtime pm is governed by the parent device, i.e. the
-upstream bridge driver, pcieport. In violation of this model we let a
-child govern it, i.e. the NHI driver thunderbolt.ko. The traditional
-hierarchical pm model is defeated by setting ignore_children on the
-upstream bridge and downstream bridge 0, and by having the NHI update
-all the bridges' runtime pm state in unison with itself. It is also the
-NHI driver's job to save and restore PCI state of the bridges.
+Introduce a new cpufreq driver callback, ->fast_switch, to be
+invoked for frequency switching from interrupt context by (future)
+governors supporting that feature via (new) helper function
+cpufreq_driver_fast_switch().
 
-PCIe Port --- Upstream Bridge --+
-                                |
-                                +-- Downstream Bridge 0 --+
-                                |                         |
-                                |                         +-- NHI
-                                |
-                                +-- Downstream Bridge 1 ...
-                                |
-                                +-- Downstream Bridge 2 ... hotplugged
-                                |                           devices
-                                +-- Downstream Bridge 3 ...
-                                |
-                                +-- Downstream Bridge 4 ...
+Add two new policy flags, fast_switch_possible, to be set by the
+cpufreq driver if fast frequency switching can be used for the
+given policy and fast_switch_enabled, to be set by the governor
+if it is going to use fast frequency switching for the given
+policy.  Also add a helper for setting the latter.
 
-The PCI subsystem pm_ops do not work properly for devices which can be
-put into D3cold by some other means than the standard _PSx ACPI platform
-methods: We do not want to wake up the chip before system sleep, yet
-pci_pm_prepare() does not return 1 as it should since pci_target_state()
-returns D3hot. We solve this by overriding pci_pm_prepare() using power
-domains. They are assigned to the bridges using a PCI quirk. We also do
-not want to wake the chip after system resume as pci_pm_complete() does,
-so we override that as well. Note that we can never remove and free the
-dev_pm_domain assigned to the bridges as there is no PCI remove fixup
-section. We also cannot bail out of the ->probe callback if allocation
-of the struct dev_pm_domain fails since the PCI enable fixup does not
-allow return values to be passed back.
+Since fast frequency switching is inherently incompatible with
+cpufreq transition notifiers, make it possible to set the
+fast_switch_enabled only if there are no transition notifiers
+already registered and make the registration of new transition
+notifiers fail if fast_switch_enabled is set for at least one
+policy.
 
-It might be possible to implement a less kludgy solution which adheres
-to the hierarchical pm model and does not need a PCI enable quirk for
-the bridges if pcieport had runtime pm support both for itself and
-any service drivers registering with it. The runtime pm code could
-then be moved from the NHI to a new Thunderbolt service driver that
-gets used on the upstream bridge.
+Implement the ->fast_switch callback in the ACPI cpufreq driver
+and make it set fast_switch_possible during policy initialization
+as appropriate.
 
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=92111
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Andreas Noever <andreas.noever@gmail.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/quirks.c         |  35 ++++++
- drivers/thunderbolt/Kconfig  |   2 +-
- drivers/thunderbolt/nhi.c    |   4 +
- drivers/thunderbolt/nhi.h    |   3 +
- drivers/thunderbolt/power.c  | 247 +++++++++++++++++++++++++++++++++++++++++++
- drivers/thunderbolt/power.h  |   3 +
- drivers/thunderbolt/switch.c |   9 ++
- drivers/thunderbolt/tb.c     |   6 ++
- 8 files changed, 308 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index d1e3956..a007485 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -25,6 +25,7 @@
- #include <linux/sched.h>
- #include <linux/ktime.h>
- #include <linux/mm.h>
-+#include <linux/pm_domain.h>
- #include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
+Changes from v3:
+- New fast_switch_enabled field in struct cpufreq_policy to help
+  avoid affecting existing setups by setting the fast_switch_possible
+  flag in the driver.
+- __cpufreq_get() skips the policy->cur check if fast_switch_enabled is set.
+
+Changes from v2:
+- The driver ->fast_switch callback and cpufreq_driver_fast_switch()
+  don't need the relation argument as they will always do RELATION_L now.
+- New mechanism to make fast switch and cpufreq notifiers mutually
+  exclusive.
+- cpufreq_driver_fast_switch() doesn't do anything in addition to
+  invoking the driver callback and returns its return value.
+
+---
+ drivers/cpufreq/acpi-cpufreq.c |   41 +++++++++++++++
+ drivers/cpufreq/cpufreq.c      |  108 +++++++++++++++++++++++++++++++++++++----
+ include/linux/cpufreq.h        |    9 +++
+ 3 files changed, 149 insertions(+), 9 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
++++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+@@ -458,6 +458,43 @@ static int acpi_cpufreq_target(struct cp
+ 	return result;
+ }
  
-@@ -3255,6 +3256,40 @@ DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
- DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
- 			       PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE,
- 			       quirk_apple_wait_for_thunderbolt);
-+
-+static int bridge_prepare(struct device *dev)
++unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
++				      unsigned int target_freq)
 +{
-+	return 1; /* stay asleep if already runtime suspended */
-+}
++	struct acpi_cpufreq_data *data = policy->driver_data;
++	struct acpi_processor_performance *perf;
++	struct cpufreq_frequency_table *entry;
++	unsigned int next_perf_state, next_freq, freq;
 +
-+static void quirk_apple_thunderbolt_runpm(struct pci_dev *dev)
-+{
-+	struct dev_pm_domain *bridge_pm_domain;
++	/*
++	 * Find the closest frequency above target_freq.
++	 *
++	 * The table is sorted in the reverse order with respect to the
++	 * frequency and all of the entries are valid (see the initialization).
++	 */
++	entry = data->freq_table;
++	do {
++		entry++;
++		freq = entry->frequency;
++	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
++	entry--;
++	next_freq = entry->frequency;
++	next_perf_state = entry->driver_data;
 +
-+	if (!dmi_match(DMI_BOARD_VENDOR, "Apple Inc."))
-+		return;
-+	if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		return;
-+	if (dev->dev.pm_domain)
-+		return;
-+
-+	bridge_pm_domain = kzalloc(sizeof(*bridge_pm_domain), GFP_KERNEL);
-+	if (!bridge_pm_domain) {
-+		dev_err(&dev->dev, "cannot allocate pm_domain\n");
-+		return;
++	perf = to_perf_data(data);
++	if (perf->state == next_perf_state) {
++		if (unlikely(data->resume))
++			data->resume = 0;
++		else
++			return next_freq;
 +	}
 +
-+	bridge_pm_domain->ops	       = *pci_bus_type.pm;
-+	bridge_pm_domain->ops.prepare  = bridge_prepare;
-+	bridge_pm_domain->ops.complete = NULL;
-+	dev_pm_domain_set(&dev->dev, bridge_pm_domain);
++	data->cpu_freq_write(&perf->control_register,
++			     perf->states[next_perf_state].control);
++	perf->state = next_perf_state;
++	return next_freq;
 +}
-+DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_INTEL,
-+			 PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
-+			 quirk_apple_thunderbolt_runpm);
-+DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_INTEL,
-+			 PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE,
-+			 quirk_apple_thunderbolt_runpm);
- #endif
- 
- static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
-diff --git a/drivers/thunderbolt/Kconfig b/drivers/thunderbolt/Kconfig
-index c121acc..40335f7 100644
---- a/drivers/thunderbolt/Kconfig
-+++ b/drivers/thunderbolt/Kconfig
-@@ -1,6 +1,6 @@
- menuconfig THUNDERBOLT
- 	tristate "Thunderbolt support for Apple devices"
--	depends on PCI
-+	depends on PCI && ACPI
- 	select CRC32
- 	help
- 	  Cactus Ridge Thunderbolt Controller driver
-diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
-index fa89160..964b006 100644
---- a/drivers/thunderbolt/nhi.c
-+++ b/drivers/thunderbolt/nhi.c
-@@ -588,6 +588,8 @@ static int nhi_probe(struct pci_dev *pdev, const struct pci_device_id *id)
++
+ static unsigned long
+ acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
+ {
+@@ -740,6 +777,9 @@ static int acpi_cpufreq_cpu_init(struct
+ 		goto err_unreg;
  	}
- 	pci_set_drvdata(pdev, tb);
  
-+	nhi_runtime_pm_init(nhi);
++	policy->fast_switch_possible = !acpi_pstate_strict &&
++		!(policy_is_shared(policy) && policy->shared_type != CPUFREQ_SHARED_TYPE_ANY);
 +
- 	return 0;
- }
+ 	data->freq_table = kzalloc(sizeof(*data->freq_table) *
+ 		    (perf->state_count+1), GFP_KERNEL);
+ 	if (!data->freq_table) {
+@@ -874,6 +914,7 @@ static struct freq_attr *acpi_cpufreq_at
+ static struct cpufreq_driver acpi_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= acpi_cpufreq_target,
++	.fast_switch	= acpi_cpufreq_fast_switch,
+ 	.bios_limit	= acpi_processor_get_bios_limit,
+ 	.init		= acpi_cpufreq_cpu_init,
+ 	.exit		= acpi_cpufreq_cpu_exit,
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -102,6 +102,10 @@ struct cpufreq_policy {
+ 	 */
+ 	struct rw_semaphore	rwsem;
  
-@@ -595,6 +597,8 @@ static void nhi_remove(struct pci_dev *pdev)
++	/* Fast switch flags */
++	bool			fast_switch_possible;	/* Set by the driver. */
++	bool			fast_switch_enabled;
++
+ 	/* Synchronization for frequency transitions */
+ 	bool			transition_ongoing; /* Tracks transition status */
+ 	spinlock_t		transition_lock;
+@@ -156,6 +160,7 @@ int cpufreq_get_policy(struct cpufreq_po
+ int cpufreq_update_policy(unsigned int cpu);
+ bool have_governor_per_policy(void);
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
++void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
+ #else
+ static inline unsigned int cpufreq_get(unsigned int cpu)
  {
- 	struct tb *tb = pci_get_drvdata(pdev);
- 	struct tb_nhi *nhi = tb->nhi;
-+
-+	nhi_runtime_pm_fini(nhi);
- 	thunderbolt_shutdown_and_free(tb);
- 	nhi_shutdown(nhi);
+@@ -236,6 +241,8 @@ struct cpufreq_driver {
+ 				  unsigned int relation);	/* Deprecated */
+ 	int		(*target_index)(struct cpufreq_policy *policy,
+ 					unsigned int index);
++	unsigned int	(*fast_switch)(struct cpufreq_policy *policy,
++				       unsigned int target_freq);
+ 	/*
+ 	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
+ 	 * unset.
+@@ -464,6 +471,8 @@ struct cpufreq_governor {
+ };
+ 
+ /* Pass a target to the cpufreq driver */
++unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
++					unsigned int target_freq);
+ int cpufreq_driver_target(struct cpufreq_policy *policy,
+ 				 unsigned int target_freq,
+ 				 unsigned int relation);
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -428,6 +428,39 @@ void cpufreq_freq_transition_end(struct
  }
-diff --git a/drivers/thunderbolt/nhi.h b/drivers/thunderbolt/nhi.h
-index 3172429..dd725f7 100644
---- a/drivers/thunderbolt/nhi.h
-+++ b/drivers/thunderbolt/nhi.h
-@@ -7,6 +7,7 @@
- #ifndef DSL3510_H_
- #define DSL3510_H_
+ EXPORT_SYMBOL_GPL(cpufreq_freq_transition_end);
  
-+#include <linux/acpi.h>
- #include <linux/mutex.h>
- #include <linux/workqueue.h>
- 
-@@ -25,6 +26,8 @@ struct tb_nhi {
- 	struct tb_ring **rx_rings;
- 	struct work_struct interrupt_work;
- 	u32 hop_count; /* Number of rings (end point hops) supported by NHI. */
-+	unsigned long long wake_gpe; /* Hotplug interrupt during powerdown. */
-+	acpi_handle set_power; /* Method to power controller up/down. */
- };
- 
- /**
-diff --git a/drivers/thunderbolt/power.c b/drivers/thunderbolt/power.c
-index 1095ad0..cc83940 100644
---- a/drivers/thunderbolt/power.c
-+++ b/drivers/thunderbolt/power.c
-@@ -2,11 +2,15 @@
-  * Thunderbolt Cactus Ridge driver - power management
-  *
-  * Copyright (c) 2014 Andreas Noever <andreas.noever@gmail.com>
-+ * Copyright (c) 2016 Lukas Wunner <lukas@wunner.de>
-  */
- 
-+#include <linux/delay.h>
- #include <linux/pci.h>
-+#include <linux/pm_domain.h>
- #include <linux/pm_runtime.h>
- 
-+#include "nhi.h"
- #include "tb.h"
- 
- static int nhi_suspend_noirq(struct device *dev)
-@@ -39,3 +43,246 @@ const struct dev_pm_ops nhi_pm_ops = {
- 					     */
- 	.restore_noirq = nhi_resume_noirq,
- };
-+
 +/*
-+ * Runtime Power Management
-+ *
-+ * Apple provides the following means for runtime pm in ACPI:
-+ *
-+ * * XRPE method (TRPE on Cactus Ridge and newer), takes argument 1 or 0,
-+ *   toggles a GPIO pin to switch the controller on or off.
-+ * * XRIN named object (alternatively _GPE), contains number of a GPE which
-+ *   fires as long as something is plugged in (regardless of power state).
-+ * * XRIL method returns 0 as long as something is plugged in, 1 otherwise.
-+ * * XRIP + XRIO methods, unused by OS X driver. (Flip interrupt polarity?)
-+ *
-+ * If there are multiple Thunderbolt controllers (e.g. MacPro6,1), each NHI
-+ * device has a separate XRIN GPE and separate instances of these methods.
-+ *
-+ * We acquire a runtime pm ref for each newly allocated switch (except for
-+ * the root switch) and drop one when a switch is freed. The controller is
-+ * thus powered up as long as something is plugged in. This behaviour is
-+ * identical to the OS X driver.
-+ *
-+ * Powering the controller down is almost instantaneous, but powering up takes
-+ * about 2 sec. To handle situations gracefully where a device is unplugged
-+ * and immediately replaced by another one, we afford a grace period of 10 sec
-+ * before powering down. This autosuspend_delay_ms may be reduced to 0 via
-+ * sysfs and to handle that properly we need to wait during runtime_resume
-+ * since it takes about 0.7 sec after resuming until a hotplug event appears.
-+ *
-+ * When the system wakes from suspend-to-RAM, the controller's power state is
-+ * as it was before. However if it was powered down, calling XRPE once to power
-+ * it up is not sufficient: An additional call to XRPE is necessary to reset
-+ * the power switch first.
++ * Fast frequency switching status count.  Positive means "enabled", negative
++ * means "disabled" and 0 means "not decided yet".
 + */
++static int cpufreq_fast_switch_count;
++static DEFINE_MUTEX(cpufreq_fast_switch_lock);
 +
-+static int nhi_prepare(struct device *dev)
++/**
++ * cpufreq_enable_fast_switch - Enable fast frequency switching for policy.
++ * @policy: cpufreq policy to enable fast frequency switching for.
++ *
++ * Try to enable fast frequency switching for @policy.
++ *
++ * The attempt will fail if there is at least one transition notifier registered
++ * at this point, as fast frequency switching is quite fundamentally at odds
++ * with transition notifiers.  Thus if successful, it will make registration of
++ * transition notifiers fail going forward.
++ *
++ * Call under policy->rwsem.
++ */
++void cpufreq_enable_fast_switch(struct cpufreq_policy *policy)
 +{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct tb *tb = pci_get_drvdata(pdev);
-+	acpi_status res;
-+
-+	if (pm_runtime_active(dev))
-+		return 0;
-+
-+	res = acpi_disable_gpe(NULL, tb->nhi->wake_gpe);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot disable wake GPE, resuming\n");
-+		return 0;
-+	} else
-+		return 1; /* stay asleep if already runtime suspended */
++	mutex_lock(&cpufreq_fast_switch_lock);
++	if (policy->fast_switch_possible && cpufreq_fast_switch_count >= 0) {
++		cpufreq_fast_switch_count++;
++		policy->fast_switch_enabled = true;
++	} else {
++		pr_warn("cpufreq: CPU%u: Fast freqnency switching not enabled\n",
++			policy->cpu);
++	}
++	mutex_unlock(&cpufreq_fast_switch_lock);
 +}
-+
-+static void nhi_complete(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct tb *tb = pci_get_drvdata(pdev);
-+	acpi_status res;
-+
-+	if (pm_runtime_active(dev))
-+		return;
-+
-+	tb_info(tb, "resetting power switch\n");
-+	res = acpi_execute_simple_method(tb->nhi->set_power, NULL, 0);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot call set_power method\n");
-+		dev->power.runtime_error = -ENODEV;
-+	}
-+
-+	res = acpi_enable_gpe(NULL, tb->nhi->wake_gpe);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot enable wake GPE, resuming\n");
-+		pm_request_resume(dev);
-+	}
-+}
-+
-+static int pci_save_state_cb(struct pci_dev *pdev, void *ptr)
-+{
-+	pci_save_state(pdev);
-+	if ((pdev->class >> 8) == PCI_CLASS_BRIDGE_PCI) {
-+		pm_runtime_disable(&pdev->dev);
-+		pm_runtime_set_suspended(&pdev->dev);
-+		pm_runtime_enable(&pdev->dev);
-+	}
-+	pdev->current_state = PCI_D3cold;
-+	return 0;
-+}
-+
-+static int pci_restore_state_cb(struct pci_dev *pdev, void *ptr)
-+{
-+	pdev->current_state = PCI_D0;
-+	if ((pdev->class >> 8) == PCI_CLASS_BRIDGE_PCI) {
-+		pm_runtime_disable(&pdev->dev);
-+		pm_runtime_set_active(&pdev->dev);
-+		pm_runtime_enable(&pdev->dev);
-+	}
-+	pci_restore_state(pdev);
-+	return 0;
-+}
-+
-+static int nhi_runtime_suspend(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_bus *upstream_bridge = pdev->bus->parent->parent;
-+	struct tb *tb = pci_get_drvdata(pdev);
-+	acpi_status res;
-+
-+	if (!pdev->d3cold_allowed)
-+		return -EAGAIN;
-+
-+	thunderbolt_suspend(tb);
-+	pci_walk_bus(upstream_bridge, pci_save_state_cb, NULL);
-+
-+	tb_info(tb, "powering down\n");
-+	res = acpi_execute_simple_method(tb->nhi->set_power, NULL, 0);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot call set_power method, resuming\n");
-+		goto err;
-+	}
-+
-+	res = acpi_enable_gpe(NULL, tb->nhi->wake_gpe);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot enable wake GPE, resuming\n");
-+		goto err;
-+	}
-+
-+	return 0;
-+
-+err:
-+	acpi_execute_simple_method(tb->nhi->set_power, NULL, 1);
-+	pci_walk_bus(upstream_bridge, pci_restore_state_cb, NULL);
-+	thunderbolt_resume(tb);
-+	return -EAGAIN;
-+}
-+
-+static int nhi_runtime_resume(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_bus *upstream_bridge = pdev->bus->parent->parent;
-+	struct tb *tb = pci_get_drvdata(pdev);
-+	acpi_status res;
-+
-+	if (system_state >= SYSTEM_HALT)
-+		return -ESHUTDOWN;
-+
-+	res = acpi_disable_gpe(NULL, tb->nhi->wake_gpe);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot disable wake GPE, disabling runtime pm\n");
-+		pm_runtime_disable(dev);
-+	}
-+
-+	tb_info(tb, "powering up\n");
-+	res = acpi_execute_simple_method(tb->nhi->set_power, NULL, 1);
-+	if (ACPI_FAILURE(res)) {
-+		dev_err(dev, "cannot call set_power method\n");
-+		return -ENODEV;
-+	}
-+
-+	pci_walk_bus(upstream_bridge, pci_restore_state_cb, NULL);
-+	thunderbolt_resume(tb);
-+	msleep(1500); /* allow 1.5 sec for hotplug event to arrive */
-+	pm_runtime_mark_last_busy(dev);
-+
-+	return 0;
-+}
-+
-+static u32 nhi_runtime_wake(acpi_handle gpe_device, u32 gpe_number, void *ctx)
-+{
-+	struct device *dev = ctx;
-+	WARN_ON(pm_request_resume(dev) < 0);
-+	return ACPI_INTERRUPT_HANDLED;
-+}
-+
-+static struct dev_pm_domain nhi_pm_domain;
-+
-+void nhi_runtime_pm_init(struct tb_nhi *nhi)
-+{
-+	struct device *dev = &nhi->pdev->dev;
-+	struct acpi_handle *nhi_handle = ACPI_HANDLE(dev);
-+	acpi_status res;
-+
-+	/* gen 1 controllers use XRPE, gen 2+ controllers use TRPE */
-+	if (nhi->pdev->device <= PCI_DEVICE_ID_INTEL_EAGLE_RIDGE)
-+		res = acpi_get_handle(nhi_handle, "XRPE", &nhi->set_power);
-+	else
-+		res = acpi_get_handle(nhi_handle, "TRPE", &nhi->set_power);
-+	if (ACPI_FAILURE(res)) {
-+		dev_warn(dev, "cannot find set_power method, disabling runtime pm\n");
-+		goto err;
-+	}
-+
-+	res = acpi_evaluate_integer(nhi_handle, "XRIN", NULL, &nhi->wake_gpe);
-+	if (ACPI_FAILURE(res)) {
-+		dev_warn(dev, "cannot find wake GPE, disabling runtime pm\n");
-+		goto err;
-+	}
-+
-+	res = acpi_install_gpe_handler(NULL, nhi->wake_gpe,
-+				       ACPI_GPE_LEVEL_TRIGGERED,
-+				       nhi_runtime_wake, dev);
-+	if (ACPI_FAILURE(res)) {
-+		dev_warn(dev, "cannot install GPE handler, disabling runtime pm\n");
-+		goto err;
-+	}
-+
-+	nhi_pm_domain.ops		  = *pci_bus_type.pm;
-+	nhi_pm_domain.ops.prepare	  = nhi_prepare;
-+	nhi_pm_domain.ops.complete	  = nhi_complete;
-+	nhi_pm_domain.ops.runtime_suspend = nhi_runtime_suspend;
-+	nhi_pm_domain.ops.runtime_resume  = nhi_runtime_resume;
-+	dev_pm_domain_set(dev, &nhi_pm_domain);
-+
-+	/* apply to upstream bridge and downstream bridge 0 */
-+	pm_suspend_ignore_children(dev->parent->parent, true);
-+	pm_suspend_ignore_children(dev->parent, true);
-+
-+	pm_runtime_allow(dev);
-+	pm_runtime_set_autosuspend_delay(dev, 10000);
-+	pm_runtime_use_autosuspend(dev);
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put(dev);
-+	return;
-+
-+err:
-+	nhi->wake_gpe = -1;
-+	if (pm_runtime_enabled(dev))
-+		pm_runtime_disable(dev);
-+}
-+
-+void nhi_runtime_pm_fini(struct tb_nhi *nhi)
-+{
-+	struct device *dev = &nhi->pdev->dev;
-+	acpi_status res;
-+
-+	if (nhi->wake_gpe == -1)
-+		return;
-+
-+	res = acpi_remove_gpe_handler(NULL, nhi->wake_gpe, nhi_runtime_wake);
-+	if (ACPI_FAILURE(res))
-+		dev_warn(dev, "cannot remove GPE handler\n");
-+
-+	pm_runtime_get(dev);
-+	pm_runtime_forbid(dev);
-+	dev_pm_domain_set(dev, NULL);
-+}
-diff --git a/drivers/thunderbolt/power.h b/drivers/thunderbolt/power.h
-index 99cb900..4fc836d 100644
---- a/drivers/thunderbolt/power.h
-+++ b/drivers/thunderbolt/power.h
-@@ -11,4 +11,7 @@
++EXPORT_SYMBOL_GPL(cpufreq_enable_fast_switch);
  
- extern const struct dev_pm_ops nhi_pm_ops;
- 
-+void nhi_runtime_pm_fini(struct tb_nhi *nhi);
-+void nhi_runtime_pm_init(struct tb_nhi *nhi);
-+
- #endif
-diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
-index c6270f0..e9be3d5 100644
---- a/drivers/thunderbolt/switch.c
-+++ b/drivers/thunderbolt/switch.c
-@@ -5,6 +5,7 @@
-  */
- 
- #include <linux/delay.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- 
- #include "tb.h"
-@@ -326,6 +327,11 @@ void tb_switch_free(struct tb_switch *sw)
- 	if (!sw->is_unplugged)
- 		tb_plug_events_active(sw, false);
- 
-+	if (sw != sw->tb->root_switch) {
-+		pm_runtime_mark_last_busy(&sw->tb->nhi->pdev->dev);
-+		pm_runtime_put(&sw->tb->nhi->pdev->dev);
-+	}
-+
- 	kfree(sw->ports);
- 	kfree(sw->drom);
- 	kfree(sw);
-@@ -417,6 +423,9 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
- 	if (tb_plug_events_active(sw, true))
- 		goto err;
- 
-+	if (tb->root_switch)
-+		pm_runtime_get(&tb->nhi->pdev->dev);
-+
- 	return sw;
- err:
- 	kfree(sw->ports);
-diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
-index 24b6d30..c33d3f1 100644
---- a/drivers/thunderbolt/tb.c
-+++ b/drivers/thunderbolt/tb.c
-@@ -7,6 +7,7 @@
- #include <linux/slab.h>
- #include <linux/errno.h>
- #include <linux/delay.h>
-+#include <linux/pm_runtime.h>
- 
- #include "tb.h"
- #include "tb_regs.h"
-@@ -217,8 +218,11 @@ static void tb_handle_hotplug(struct work_struct *work)
- {
- 	struct tb_hotplug_event *ev = container_of(work, typeof(*ev), work);
- 	struct tb *tb = ev->tb;
-+	struct device *dev = &tb->nhi->pdev->dev;
- 	struct tb_switch *sw;
- 	struct tb_port *port;
-+
-+	pm_runtime_get(dev);
- 	mutex_lock(&tb->lock);
- 	if (!tb->hotplug_active)
- 		goto out; /* during init, suspend or shutdown */
-@@ -274,6 +278,8 @@ static void tb_handle_hotplug(struct work_struct *work)
- out:
- 	mutex_unlock(&tb->lock);
- 	kfree(ev);
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put(dev);
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+@@ -1083,6 +1116,24 @@ static void cpufreq_policy_free(struct c
+ 	kfree(policy);
  }
  
- /**
--- 
-2.7.0
++static void cpufreq_driver_exit_policy(struct cpufreq_policy *policy)
++{
++	if (policy->fast_switch_enabled) {
++		mutex_lock(&cpufreq_fast_switch_lock);
++
++		policy->fast_switch_enabled = false;
++		if (!WARN_ON(cpufreq_fast_switch_count <= 0))
++			cpufreq_fast_switch_count--;
++
++		mutex_unlock(&cpufreq_fast_switch_lock);
++	}
++
++	if (cpufreq_driver->exit) {
++		cpufreq_driver->exit(policy);
++		policy->freq_table = NULL;
++	}
++}
++
+ static int cpufreq_online(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy;
+@@ -1236,8 +1287,7 @@ static int cpufreq_online(unsigned int c
+ out_exit_policy:
+ 	up_write(&policy->rwsem);
+ 
+-	if (cpufreq_driver->exit)
+-		cpufreq_driver->exit(policy);
++	cpufreq_driver_exit_policy(policy);
+ out_free_policy:
+ 	cpufreq_policy_free(policy, !new_policy);
+ 	return ret;
+@@ -1334,10 +1384,7 @@ static void cpufreq_offline(unsigned int
+ 	 * since this is a core component, and is essential for the
+ 	 * subsequent light-weight ->init() to succeed.
+ 	 */
+-	if (cpufreq_driver->exit) {
+-		cpufreq_driver->exit(policy);
+-		policy->freq_table = NULL;
+-	}
++	cpufreq_driver_exit_policy(policy);
+ 
+ unlock:
+ 	up_write(&policy->rwsem);
+@@ -1444,8 +1491,12 @@ static unsigned int __cpufreq_get(struct
+ 
+ 	ret_freq = cpufreq_driver->get(policy->cpu);
+ 
+-	/* Updating inactive policies is invalid, so avoid doing that. */
+-	if (unlikely(policy_is_inactive(policy)))
++	/*
++	 * Updating inactive policies is invalid, so avoid doing that.  Also
++	 * if fast frequency switching is used with the given policy, the check
++	 * against policy->cur is pointless, so skip it in that case too.
++	 */
++	if (unlikely(policy_is_inactive(policy)) || policy->fast_switch_enabled)
+ 		return ret_freq;
+ 
+ 	if (ret_freq && policy->cur &&
+@@ -1457,7 +1508,6 @@ static unsigned int __cpufreq_get(struct
+ 			schedule_work(&policy->update);
+ 		}
+ 	}
+-
+ 	return ret_freq;
+ }
+ 
+@@ -1653,8 +1703,18 @@ int cpufreq_register_notifier(struct not
+ 
+ 	switch (list) {
+ 	case CPUFREQ_TRANSITION_NOTIFIER:
++		mutex_lock(&cpufreq_fast_switch_lock);
++
++		if (cpufreq_fast_switch_count > 0) {
++			mutex_unlock(&cpufreq_fast_switch_lock);
++			return -EPERM;
++		}
+ 		ret = srcu_notifier_chain_register(
+ 				&cpufreq_transition_notifier_list, nb);
++		if (!ret)
++			cpufreq_fast_switch_count--;
++
++		mutex_unlock(&cpufreq_fast_switch_lock);
+ 		break;
+ 	case CPUFREQ_POLICY_NOTIFIER:
+ 		ret = blocking_notifier_chain_register(
+@@ -1687,8 +1747,14 @@ int cpufreq_unregister_notifier(struct n
+ 
+ 	switch (list) {
+ 	case CPUFREQ_TRANSITION_NOTIFIER:
++		mutex_lock(&cpufreq_fast_switch_lock);
++
+ 		ret = srcu_notifier_chain_unregister(
+ 				&cpufreq_transition_notifier_list, nb);
++		if (!ret && !WARN_ON(cpufreq_fast_switch_count >= 0))
++			cpufreq_fast_switch_count++;
++
++		mutex_unlock(&cpufreq_fast_switch_lock);
+ 		break;
+ 	case CPUFREQ_POLICY_NOTIFIER:
+ 		ret = blocking_notifier_chain_unregister(
+@@ -1707,6 +1773,30 @@ EXPORT_SYMBOL(cpufreq_unregister_notifie
+  *                              GOVERNORS                            *
+  *********************************************************************/
+ 
++/**
++ * cpufreq_driver_fast_switch - Carry out a fast CPU frequency switch.
++ * @policy: cpufreq policy to switch the frequency for.
++ * @target_freq: New frequency to set (may be approximate).
++ *
++ * Carry out a fast frequency switch from interrupt context.
++ *
++ * This function must not be called if policy->fast_switch_enabled is unset.
++ *
++ * Governors calling this function must guarantee that it will never be invoked
++ * twice in parallel for the same policy and that it will never be called in
++ * parallel with either ->target() or ->target_index() for the same policy.
++ *
++ * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
++ * callback to indicate an error condition, the hardware configuration must be
++ * preserved.
++ */
++unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
++					unsigned int target_freq)
++{
++	return cpufreq_driver->fast_switch(policy, target_freq);
++}
++EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
++
+ /* Must set freqs->new to intermediate frequency */
+ static int __target_intermediate(struct cpufreq_policy *policy,
+ 				 struct cpufreq_freqs *freqs, int index)
 
