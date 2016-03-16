@@ -1,66 +1,41 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: SKL BOOT FAILURE unless idle=nomwait (was Re: PROBLEM: Cpufreq
- constantly keeps frequency at maximum on 4.5-rc4)
-Date: Wed, 16 Mar 2016 02:53:55 +0100
-Message-ID: <CAJZ5v0iC2CUKRJokVL5xsbebOPzxNUzXxzo8hxRvm-Y=0v_LQg@mail.gmail.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<CAJZ5v0jf4g7iZWDGwJ0Kc3MRNPRNFk_hmsZuk-WJRFnuC=c6sQ@mail.gmail.com>
-	<1458007395.8898.19.camel@redhat.com>
-	<2600831.Qfymhh5Hpv@vostro.rjw.lan>
-	<1458089721.8898.25.camel@redhat.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 2/8] sched/fair: add margin to utilization update
+Date: Tue, 15 Mar 2016 19:52:59 -0700
+Message-ID: <56E8CA8B.8080506@linaro.org>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+ <1457932932-28444-3-git-send-email-mturquette+renesas@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f180.google.com ([209.85.217.180]:35603 "EHLO
-	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbcCPBx4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 21:53:56 -0400
-Received: by mail-lb0-f180.google.com with SMTP id bc4so38631334lbc.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Mar 2016 18:53:56 -0700 (PDT)
-In-Reply-To: <1458089721.8898.25.camel@redhat.com>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35610 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbcCPCxE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Mar 2016 22:53:04 -0400
+Received: by mail-pf0-f173.google.com with SMTP id n5so54754488pfn.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Mar 2016 19:53:03 -0700 (PDT)
+In-Reply-To: <1457932932-28444-3-git-send-email-mturquette+renesas@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: Michael Turquette <mturquette@baylibre.com>, peterz@infradead.org, rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri.Lelli@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Wed, Mar 16, 2016 at 1:55 AM, Rik van Riel <riel@redhat.com> wrote:
-> On Wed, 2016-03-16 at 01:32 +0100, Rafael J. Wysocki wrote:
->>
->>                * We want to default to C1 (hlt), not to busy
->> polling
->> -              * unless the timer is happening really really soon.
->> +              * unless the timer is happening really really
->> soon.  Still, if
->> +              * the exit latency of C1 is too high, we need to
->> poll anyway.
->>                */
->> -             if (interactivity_req > 20 &&
->> +             if (data->next_timer_us > 20 &&
->> +                 drv-
->> >states[CPUIDLE_DRIVER_STATE_START].exit_latency <= 2 &&
->>                   !drv-
->
-> I wonder if replacing these two tests with
->            data->next_timer_us
->> states[CPUIDLE_DRIVER_STATE_START].exit_latency
-> would do the right thing?
->
-> That way any time we do not know for sure we are waking
-> up before the HLT exit latency has gone, we will poll.
->
-> Any time we suspect we will wake up sooner (data->predicted_us
-> is smaller than the HLT exit latency) we will still pick HLT,
-> anyway.
->
-> This makes the behaviour consistent between CPUs.
+On 03/13/2016 10:22 PM, Michael Turquette wrote:
+> +unsigned long cfs_capacity_margin = CAPACITY_MARGIN_DEFAULT;
+> +
+>  #ifdef CONFIG_CFS_BANDWIDTH
+>  /*
+>   * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+> @@ -2840,6 +2853,8 @@ static inline void update_load_avg(struct sched_entity *se, int update_tg)
+>  
+>  	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
+>  		unsigned long max = rq->cpu_capacity_orig;
+> +		unsigned long cap = cfs_rq->avg.util_avg *
+> +			cfs_capacity_margin / max;
 
-The idea makes sense to me, but I'd test against the sum of C1 exit
-latency and C1 target residency, ie
+Doesn't rq->cpu_capacity_orig get scaled per the microarch invariance?
+This would mean that the margin we're applying here would differ based
+on that.
 
-data->next_timer_us > states[CPUIDLE_DRIVER_STATE_START].exit_latency
-+ states[CPUIDLE_DRIVER_STATE_START].target_residency
-
-because that's the time that has to pass before the next timer event
-for us to make sense to go to C1 from the energy efficiency
-perspective (if we are woken up earlier, we'll burn more energy that
-we would if we didn't enter C1 at all, at least in theory).
+I'd expect that the margin would be * (cfs_capacity_margin /
+SCHED_CAPACITY_SCALE) which would then reduce the division into a shift.
