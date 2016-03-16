@@ -1,41 +1,43 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: acpi: Allow new dynamics attributes to be added
- to acpi_cpufreq_attr
-Date: Wed, 16 Mar 2016 13:30:56 +0100
-Message-ID: <CAJZ5v0ijjunydksVHHwttKzi798nXA2grypZ3oXoJEqqDsYR2Q@mail.gmail.com>
-References: <1456945994-5616-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<f73d4b3690f7166730bafa2e0d7b5b9dcf29f2de.1456983554.git.viresh.kumar@linaro.org>
-	<CAJZ5v0i1HxQha52+G+G_1RC2Gv7Fr7Wifohhx8pqkh-MXbo6Zg@mail.gmail.com>
-	<20160309094126.GJ23015@vireshk-mac-ubuntu>
-	<CAJZ5v0i6Lv+-A4ZC3JOtr8FNcXYn1copS4C8oEmLrh+1eXT0MQ@mail.gmail.com>
-	<20160316045314.GD16250@vireshk-mac-ubuntu>
+Subject: Re: [PATCH 5/8] sched/cpufreq: pass sched class into cpufreq_update_util
+Date: Wed, 16 Mar 2016 13:39:10 +0100
+Message-ID: <CAJZ5v0jPtobKGR01D9obxhHibz4aPrPFjmuX19zAE5a5Uz8aEQ@mail.gmail.com>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+	<1457932932-28444-6-git-send-email-mturquette+renesas@baylibre.com>
+	<20160315212520.GF6344@twins.programming.kicks-ass.net>
+	<20160315220609.30639.67271@quark.deferred.io>
+	<20160316074123.GP6344@twins.programming.kicks-ass.net>
+	<CAKfTPtA8hJUT4HGXjoyX4=qh9iup3_GUMwuJGgbXtBFGgAPFdQ@mail.gmail.com>
+	<20160316085339.GU6344@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f50.google.com ([209.85.215.50]:35238 "EHLO
-	mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752965AbcCPMa6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 08:30:58 -0400
-In-Reply-To: <20160316045314.GD16250@vireshk-mac-ubuntu>
+Received: from mail-lb0-f195.google.com ([209.85.217.195]:34026 "EHLO
+	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932460AbcCPMjM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 08:39:12 -0400
+In-Reply-To: <20160316085339.GU6344@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Juri Lelli <Juri.Lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Wed, Mar 16, 2016 at 5:53 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 09-03-16, 14:13, Rafael J. Wysocki wrote:
->> On Wed, Mar 9, 2016 at 10:41 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > On 03-03-16, 18:29, Rafael J. Wysocki wrote:
->> >> Srinivas, can you please take this and rebase your patch on top of it?
->> >>  Or if you prefer, I can take it into my linux-next branch.
->> >
->> > Right, so you need to apply this patch as Srinivas already sent a separate patch
->> > for his stuff, rebased over this.
->>
->> I know, but I'm deferring that one as we aren't entirely sure about
->> the approach yet.
+On Wed, Mar 16, 2016 at 9:53 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, Mar 16, 2016 at 09:29:59AM +0100, Vincent Guittot wrote:
+>> I wonder if it's really worth passing per sched_class request to
+>> sched_util ? sched_util is about selecting a frequency based on the
+>> utilization of the CPU, it only needs a value that reflect the whole
+>> utilization. Can't we sum  (or whatever the formula we want to apply)
+>> utilizations before calling cpufreq_update_util
 >
-> I might have missed, but what are we not sure about here ? I thought, all three
-> of us agreed that this is a good idea ..
+> So I've thought the same; but I'm conflicted, its a shame to compute
+> anything if the call then doesn't do anything with it.
+>
+> And keeping a structure of all the various numbers to pass in also has
+> cost of yet another cacheline to touch.
 
-We are not sure if the new attribute is needed.
+In principle we can use high-order bits of util and max to encode the
+information on where they come from.
+
+Of course, that translates to additional ifs in the governor, but I
+guess they are unavoidable anyway.
