@@ -1,56 +1,81 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 7/7] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Wed, 16 Mar 2016 23:40:54 +0100
-Message-ID: <20160316224054.GL6344@twins.programming.kicks-ass.net>
-References: <1711281.bPmSjlBT7c@vostro.rjw.lan>
- <11678919.CQLTrQTYxG@vostro.rjw.lan>
- <20160316181420.GH6344@twins.programming.kicks-ass.net>
- <3456066.ocPAtCXNWC@vostro.rjw.lan>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
+ device correctly") causes performance drop
+Date: Wed, 16 Mar 2016 15:46:34 -0700
+Message-ID: <20160316224634.GA3580@kroah.com>
+References: <56E9DDED.7000805@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:52413 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932524AbcCPWk7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 18:40:59 -0400
+Received: from mail.linuxfoundation.org ([140.211.169.12]:45815 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbcCPWqg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 18:46:36 -0400
 Content-Disposition: inline
-In-Reply-To: <3456066.ocPAtCXNWC@vostro.rjw.lan>
+In-Reply-To: <56E9DDED.7000805@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: Laura Abbott <labbott@redhat.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Chen Yu <yu.c.chen@intel.com>, Manuel Krause <manuelkrause@netscape.net>, szegad <szegadlo@poczta.onet.pl>, prash <prash.n.rao@gmail.com>, amish <ammdispose-arch@yahoo.com>, Matthias <morpheusxyz123@yahoo.de>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Mar 16, 2016 at 10:38:55PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, March 16, 2016 07:14:20 PM Peter Zijlstra wrote:
-> > On Wed, Mar 16, 2016 at 03:59:18PM +0100, Rafael J. Wysocki wrote:
-> > > +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> > > +				unsigned int next_freq)
-> > > +{
-> > > +	struct cpufreq_policy *policy = sg_policy->policy;
-> > > +
-> > > +	if (next_freq > policy->max)
-> > > +		next_freq = policy->max;
-> > > +	else if (next_freq < policy->min)
-> > > +		next_freq = policy->min;
-> > > +
-> > > +	sg_policy->last_freq_update_time = time;
-> > > +	if (sg_policy->next_freq == next_freq) {
-> > > +		if (policy->fast_switch_enabled)
-> > > +			trace_cpu_frequency(policy->cur, smp_processor_id());
-> > > +
-> > > +		return;
-> > > +	}
-> > > +
-> > > +	sg_policy->next_freq = next_freq;
-> > > +	if (policy->fast_switch_enabled) {
-> > > +		unsigned int freq;
-> > > +
-> > > +		freq = cpufreq_driver_fast_switch(policy, next_freq);
-> > 
-> > So you're assuming a RELATION_L for ->fast_switch() ?
+On Wed, Mar 16, 2016 at 03:27:57PM -0700, Laura Abbott wrote:
+> Hi,
 > 
-> Yes, I am.
+> Fedora received a bug report (https://bugzilla.redhat.com/show_bug.cgi?id=1317190)
+> of a major performance drop on various bench marks and general system
+> sluggishness with the 4.4.4 kernel update. The benchmarks were showing
+> a reduction to about 18% performance (not minor).
+> 
+> Bisection showed the first bad commit was
+> 
+> commit 774ac8b7eff69e0786970157de2157e68b22f456
+> Author: Zhang Rui <rui.zhang@intel.com>
+> Date:   Fri Oct 30 16:31:47 2015 +0800
+> 
+>     Thermal: initialize thermal zone device correctly
+>     commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461 upstream.
+>     After thermal zone device registered, as we have not read any
+>     temperature before, thus tz->temperature should not be 0,
+>     which actually means 0C, and thermal trend is not available.
+>     In this case, we need specially handling for the first
+>     thermal_zone_device_update().
+>     Both thermal core framework and step_wise governor is
+>     enhanced to handle this. And since the step_wise governor
+>     is the only one that uses trends, so it's the only thermal
+>     governor that needs to be updated.
+>     Tested-by: Manuel Krause <manuelkrause@netscape.net>
+>     Tested-by: szegad <szegadlo@poczta.onet.pl>
+>     Tested-by: prash <prash.n.rao@gmail.com>
+>     Tested-by: amish <ammdispose-arch@yahoo.com>
+>     Tested-by: Matthias <morpheusxyz123@yahoo.de>
+>     Reviewed-by: Javi Merino <javi.merino@arm.com>
+>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>     Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> 
+> 
+> 
+> Reverting this plus to other commits in the series (a67208e94d94
+> "Thermal: handle thermal zone device properly during system sleep"
+> and 27f356149d59 "Thermal: do thermal zone update after a cooling
+> device registered") confirmed the performance was back to normal.
+> 
+> Bugzilla has the full discussion but this comment from one of the
+> reporters sums it up:
+> 
+> "In 4.4.3 and prior, my 2.40 MHz processor would fluctuate between
+> 1000 and 3400 MHz.  In 4.4.4, the processor would fluctuate between
+> 400 and 700 MHz, according to /proc/cpuinfo.
+> 
+> Setting /sys/devices/system/cpu/cpufreq/policy0/scaling_governor to
+> performance, instead of the default "powersave" forces the CPU to
+> 2400 MHz, and improves performance greatly, but still not to the
+> same level as in 4.4.3."
+> 
+> Any ideas?
 
-Should we document that fact somewhere? Or alternatively, if you already
-did, I simply missed it.
+Is this same "slowdown" also seen in 4.5?
+
+thanks,
+
+greg k-h
