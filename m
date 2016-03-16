@@ -1,88 +1,63 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v4 5/7] cpufreq: Move governor symbols to cpufreq.h
-Date: Wed, 16 Mar 2016 15:47:32 +0100
-Message-ID: <2965496.HBVagNvH4H@vostro.rjw.lan>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <4088601.C2vItRYpQn@vostro.rjw.lan> <1711281.bPmSjlBT7c@vostro.rjw.lan>
+Subject: [PATCH v4 0/7] cpufreq: schedutil governor
+Date: Wed, 16 Mar 2016 15:41:53 +0100
+Message-ID: <1711281.bPmSjlBT7c@vostro.rjw.lan>
+References: <2495375.dFbdlAZmA6@vostro.rjw.lan> <2409306.qzzMXcm4dm@vostro.rjw.lan> <4088601.C2vItRYpQn@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61594 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S935009AbcCPO7y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 10:59:54 -0400
-In-Reply-To: <1711281.bPmSjlBT7c@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4088601.C2vItRYpQn@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Move definitions of symbols related to transition latency and
-sampling rate to include/linux/cpufreq.h so they can be used by
-(future) goverernors located outside of drivers/cpufreq/.
+Here's a new iteration of the schedutil governor series.  It is based on
+linux-next (particularly on the material from my pull request for 4.6-rc1),
+so I'm not resending the patches already included there.  It has been
+present in my pm-cpufreq-experimental branch for a few days.
 
-No functional changes.
+The first patch is new, but it is just something I think would be useful
+(and seems to be kind of compatible with thigs currently under discussion:
+http://marc.info/?l=linux-pm&m=145813384117349&w=4).
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+The next four patches are needed for sharing code between the new governor
+and the existing ones.  Three of them have not changed since the previous
+iteration of the series and the fourth one is new (but it only moves some
+symbols around).
 
-New patch.
+Patch [6/7] adds fast frequency switching support to cpufreq.  It has changed
+since the previous version.  Most importantly, there's a new fast_switch_enabled
+field in struct cpufreq_policy which is to be set when fast switching is actually
+enabled for the given policy and governors are supposed to set it (using a
+helper function provided for that).  This way notifier registrations are only
+affected if someone is really using fast switching and that prevents existing
+setups from being affected in particular.
 
----
- drivers/cpufreq/cpufreq_governor.h |   14 --------------
- include/linux/cpufreq.h            |   14 ++++++++++++++
- 2 files changed, 14 insertions(+), 14 deletions(-)
+Patch [7/7] introduces the schedutil governor.  There are a few changes in it
+from the previous version.
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -24,20 +24,6 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- 
--/*
-- * The polling frequency depends on the capability of the processor. Default
-- * polling frequency is 1000 times the transition latency of the processor. The
-- * governor will work on any processor with transition latency <= 10ms, using
-- * appropriate sampling rate.
-- *
-- * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
-- * this governor will not work. All times here are in us (micro seconds).
-- */
--#define MIN_SAMPLING_RATE_RATIO			(2)
--#define LATENCY_MULTIPLIER			(1000)
--#define MIN_LATENCY_MULTIPLIER			(20)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
--
- /* Ondemand Sampling types */
- enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -426,6 +426,20 @@ static inline unsigned long cpufreq_scal
- #define CPUFREQ_POLICY_POWERSAVE	(1)
- #define CPUFREQ_POLICY_PERFORMANCE	(2)
- 
-+/*
-+ * The polling frequency depends on the capability of the processor. Default
-+ * polling frequency is 1000 times the transition latency of the processor. The
-+ * ondemand governor will work on any processor with transition latency <= 10ms,
-+ * using appropriate sampling rate.
-+ *
-+ * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
-+ * the ondemand governor will not work. All times here are in us (microseconds).
-+ */
-+#define MIN_SAMPLING_RATE_RATIO		(2)
-+#define LATENCY_MULTIPLIER		(1000)
-+#define MIN_LATENCY_MULTIPLIER		(20)
-+#define TRANSITION_LATENCY_LIMIT	(10 * 1000 * 1000)
-+
- /* Governor Events */
- #define CPUFREQ_GOV_START	1
- #define CPUFREQ_GOV_STOP	2
+First off, I've attempted to address some points made during the recent
+discussion on the next frequency selection formula
+(http://marc.info/?t=145688568600003&r=1&w=4).  It essentially uses the
+formula from http://marc.info/?l=linux-acpi&m=145756618321500&w=4 (bottom
+of the message body), but with the modification that if the utilization
+is frequency-invariant, it will use max_freq instead of the current frequency.
+It uses the mechanism suggested by Peter to recognize whether or not the
+utilization is frequency invariant
+(http://marc.info/?l=linux-kernel&m=145760739700716&w=4).
 
+Second, because of the above, the schedutil governor goes into kernel/sched/
+(again).  Namely, I don't want arch_scale_freq_invariant() to be visible by
+all cpufreq governors that won't need it.
+
+Now, since we seem to want to build upon this series (ref the recent Mike's
+patchset: http://marc.info/?l=linux-kernel&m=145793318016832&w=4), I need
+you to tell me what to change before it is good enough to be queued up for
+4.7 (assuming that my 4.6 material is merged, that is).
+
+Thanks,
+Rafael
