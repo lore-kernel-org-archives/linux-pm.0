@@ -1,93 +1,61 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] mmc: sdhci-of-at91: fix wakeup issue when using runtime pm
-Date: Wed, 16 Mar 2016 12:04:46 +0100
-Message-ID: <CAPDyKFrs9PoqkH1YLYziuzfGPn25PAjs8+ukz-t7LTk7OU6hDA@mail.gmail.com>
-References: <20160309163809.GM2690@odux.rfo.atmel.com>
-	<1457605858-30907-1-git-send-email-ludovic.desroches@atmel.com>
+From: Felipe Balbi <felipe.balbi@linux.intel.com>
+Subject: Re: [PATCH v7 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Wed, 16 Mar 2016 13:05:27 +0200
+Message-ID: <87zityhedk.fsf@intel.com>
+References: <cover.1451876014.git.baolin.wang@linaro.org> <20160229142212.GB18327@sirena.org.uk> <20160315163918.GQ2566@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:38237 "EHLO
-	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966672AbcCPLEs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 07:04:48 -0400
-Received: by mail-wm0-f50.google.com with SMTP id l68so66749854wml.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 04:04:47 -0700 (PDT)
-In-Reply-To: <1457605858-30907-1-git-send-email-ludovic.desroches@atmel.com>
+Received: from mga14.intel.com ([192.55.52.115]:55801 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754853AbcCPLGa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Mar 2016 07:06:30 -0400
+In-Reply-To: <20160315163918.GQ2566@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ludovic Desroches <ludovic.desroches@atmel.com>
-Cc: Adrian Hunter <adrian.hunter@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>
+To: Mark Brown <broonie@kernel.org>, Baolin Wang <baolin.wang@linaro.org>
+Cc: gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-On 10 March 2016 at 11:30, Ludovic Desroches
-<ludovic.desroches@atmel.com> wrote:
-> It was impossible to wake-up on card detect event because when sdhci
-> controller is runtime suspend, it is assumed that all the clocks are
-> disabled so we can't get irqs.
-> If the device is removable and there is no gpio to manage the card
-> detection then card detection polling is used.
->
-> Signed-off-by: Ludovic Desroches <ludovic.desroches@atmel.com>
-> ---
->
-> Hi Ulf, Adrian,
->
-> Following the discussion, I need to fix my issue. I think we could both agree
-> on this patch that I see more as temporary workaround.
->
-> I will try to change the muxing of the card detect pio in order to no more
-> use the sdhci controller to manage it but a gpio. If it do not work then
-> I may send another patch in the spirit of the previous one (keeping one clock
-> enabled and not calling sdhci_runtime_suspend_host()).
->
-> Regards
->
->  drivers/mmc/host/sdhci-of-at91.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->
-> diff --git a/drivers/mmc/host/sdhci-of-at91.c b/drivers/mmc/host/sdhci-of-at91.c
-> index 35c02fc..dac8508 100644
-> --- a/drivers/mmc/host/sdhci-of-at91.c
-> +++ b/drivers/mmc/host/sdhci-of-at91.c
-> @@ -18,6 +18,7 @@
->  #include <linux/err.h>
->  #include <linux/io.h>
->  #include <linux/mmc/host.h>
-> +#include <linux/mmc/slot-gpio.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/of_device.h>
-> @@ -204,6 +205,21 @@ static int sdhci_at91_probe(struct platform_device *pdev)
->         if (ret)
->                 goto pm_runtime_disable;
->
-> +       /*
-> +        * When calling sdhci_runtime_suspend_host(), the sdhci layer makes
-> +        * the assumption that all the clocks of the controller are disabled.
-> +        * It means we can't get irq from it when it is runtime suspended.
-> +        * For that reason, it is not planned to wake-up on a card detect irq
-> +        * from the controller.
-> +        * If we want to use runtime PM and to be able to wake-up on card
-> +        * insertion, we have to use a GPIO for the card detection or we can
-> +        * use polling for the card detection. Be aware that using polling
-> +        * will resume/suspend the controller between each attempt.
-> +        */
-> +       if (!(host->mmc->caps & MMC_CAP_NONREMOVABLE) &&
-> +           IS_ERR_VALUE(mmc_gpio_get_cd(host->mmc)))
-> +               host->mmc->caps |= MMC_CAP_NEEDS_POLL;
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps also clearing SDHCI_QUIRK_BROKEN_CARD_DETECTION, as this
-doesn't play well if this is set via parsing the DTS.
 
-> +
->         pm_runtime_put_autosuspend(&pdev->dev);
+Hi,
+
+Mark Brown <broonie@kernel.org> writes:
+> [ text/plain ]
+> On Mon, Feb 29, 2016 at 11:22:12PM +0900, Mark Brown wrote:
+>> On Mon, Jan 04, 2016 at 11:04:26AM +0800, Baolin Wang wrote:
 >
->         return 0;
-> --
-> 2.5.0
->
+> I see Felipe is no longer at TI so his e-mail was bouncing - let's
+> resend this with his kernel.org address:
 
-Otherwise this looks okay to me.
+I don't have the patches on my inbox. Neither on kernel.org nor on my
+linux.intel.com account. Care to resend ?
 
-Kind regards
-Uffe
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJW6T33AAoJEIaOsuA1yqRE54AP/AuB9YVK9Rlfw9s6B8v6KRuF
+sDDADh1dprcLJYwLsXfk45Js4eGE79rvG3Fh0CEiQJ7oT6m2VLN6OaiG7/dfJw69
+S3gHzgjxCLxhSQHwnVeX/Fzh1glc/M0b9yBdQqPsm4rj/BoamqQAUVQAbSJbepF7
+1EbIDzL7Rvr5CNtzV2gcBOJvHASMj2R42x1VjJPea68g53QhgGB68fPACL2rmGmR
+68kooKcNVlkqTkdmJO0KDGi04BTQOdTopPVhjIAGOplRfPngVDBWlV9njx0cOnI7
+/gcNn/1WZr3avGVcrhz+1afBLiYZWF34i3SXHkItSbSS3zoY1qqwIL+QHyv/QsIA
+NLfgU9ilC2qOuWmH+arMcgV+dzZi73O2gWHfljvQEsJPfmnSIrYxMqxSMerH1LoV
+MJN2d73s28W7jbk/WYJe5Dwi7R9HBut6Wa++it9gmpYwOQJMhqAgnTgn61NqiTcX
+B6aNwAaAlC9jnpAGLkHhrOsj3D9kvujAg4JGFD4DjKc17bgcowzAbdMGJePNTHsG
+BJyfBi8v74zuFkJXJIAZbmgPLebUf6Gs309WQAUAKEgwaldbj/v5hwCpn/6ereus
+luXk16Ixl3PlY6ZyPrlAwgWhF63uMZzTwEKoMinjO/pLWr2N6c2Xx34y4gA0zf8P
+UYcg/pl6T/Weg9DwP5/5
+=yH8R
+-----END PGP SIGNATURE-----
+--=-=-=--
