@@ -1,84 +1,42 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
- device correctly") causes performance drop
-Date: Thu, 17 Mar 2016 00:20:35 +0000
-Message-ID: <1458173863.4703.18.camel@intel.com>
-References: <56E9DDED.7000805@redhat.com> <20160316224634.GA3580@kroah.com>
-	 <56E9F387.9080703@redhat.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Thu, 17 Mar 2016 09:58:28 +0800
+Message-ID: <CAMz4ku++hi2tXjqvUH7du2tzZ1Vjk7OtHfNuMPrmZ_m9EsOwUA@mail.gmail.com>
+References: <cover.1458128215.git.baolin.wang@linaro.org>
+	<11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+	<1458130190.6570.6.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56E9F387.9080703@redhat.com>
-Content-Language: en-US
-Content-ID: <2B33502BE4F6D944AB3D36EB24E51EB3@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "labbott@redhat.com" <labbott@redhat.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "ammdispose-arch@yahoo.com" <ammdispose-arch@yahoo.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "manuelkrause@netscape.net" <manuelkrause@netscape.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "szegadlo@poczta.onet.pl" <szegadlo@poczta.onet.pl>, "prash.n.rao@gmail.com" <prash.n.rao@gmail.com>, "javi.merino@arm.com" <javi.merino@arm.com>, "morpheusxyz123@yahoo.de" <morpheusxyz123@yahoo.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f182.google.com ([209.85.161.182]:36104 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbcCQB63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 21:58:29 -0400
+Received: by mail-yw0-f182.google.com with SMTP id g3so84012123ywa.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 18:58:29 -0700 (PDT)
+In-Reply-To: <1458130190.6570.6.camel@suse.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-T24gV2VkLCAyMDE2LTAzLTE2IGF0IDE3OjAwIC0wNzAwLCBMYXVyYSBBYmJvdHQgd3JvdGU6DQo+
-IE9uIDAzLzE2LzIwMTYgMDM6NDYgUE0sIEdyZWcgS3JvYWgtSGFydG1hbiB3cm90ZToNCj4gPiBP
-biBXZWQsIE1hciAxNiwgMjAxNiBhdCAwMzoyNzo1N1BNIC0wNzAwLCBMYXVyYSBBYmJvdHQgd3Jv
-dGU6DQo+ID4gPiBIaSwNCj4gPiA+IA0KPiA+ID4gRmVkb3JhIHJlY2VpdmVkIGEgYnVnIHJlcG9y
-dCAoaHR0cHM6Ly9idWd6aWxsYS5yZWRoYXQuY29tL3Nob3dfYnUNCj4gPiA+IGcuY2dpP2lkPTEz
-MTcxOTApDQo+ID4gPiBvZiBhIG1ham9yIHBlcmZvcm1hbmNlIGRyb3Agb24gdmFyaW91cyBiZW5j
-aCBtYXJrcyBhbmQgZ2VuZXJhbA0KPiA+ID4gc3lzdGVtDQo+ID4gPiBzbHVnZ2lzaG5lc3Mgd2l0
-aCB0aGUgNC40LjQga2VybmVsIHVwZGF0ZS4gVGhlIGJlbmNobWFya3Mgd2VyZQ0KPiA+ID4gc2hv
-d2luZw0KPiA+ID4gYSByZWR1Y3Rpb24gdG8gYWJvdXQgMTglIHBlcmZvcm1hbmNlIChub3QgbWlu
-b3IpLg0KPiA+ID4gDQo+ID4gPiBCaXNlY3Rpb24gc2hvd2VkIHRoZSBmaXJzdCBiYWQgY29tbWl0
-IHdhcw0KPiA+ID4gDQo+ID4gPiBjb21taXQgNzc0YWM4YjdlZmY2OWUwNzg2OTcwMTU3ZGUyMTU3
-ZTY4YjIyZjQ1Ng0KPiA+ID4gQXV0aG9yOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+
-DQo+ID4gPiBEYXRlOsKgwqDCoEZyaSBPY3QgMzAgMTY6MzE6NDcgMjAxNSArMDgwMA0KPiA+ID4g
-DQo+ID4gPiDCoMKgwqDCoMKgVGhlcm1hbDogaW5pdGlhbGl6ZSB0aGVybWFsIHpvbmUgZGV2aWNl
-IGNvcnJlY3RseQ0KPiA+ID4gwqDCoMKgwqDCoGNvbW1pdCBiYjQzMWJhMjZjNWNkMGExN2M5NDFj
-YTZjM2ExOTVhM2E2ZDVkNDYxIHVwc3RyZWFtLg0KPiA+ID4gwqDCoMKgwqDCoEFmdGVyIHRoZXJt
-YWwgem9uZSBkZXZpY2UgcmVnaXN0ZXJlZCwgYXMgd2UgaGF2ZSBub3QgcmVhZA0KPiA+ID4gYW55
-DQo+ID4gPiDCoMKgwqDCoMKgdGVtcGVyYXR1cmUgYmVmb3JlLCB0aHVzIHR6LT50ZW1wZXJhdHVy
-ZSBzaG91bGQgbm90IGJlIDAsDQo+ID4gPiDCoMKgwqDCoMKgd2hpY2ggYWN0dWFsbHkgbWVhbnMg
-MEMsIGFuZCB0aGVybWFsIHRyZW5kIGlzIG5vdCBhdmFpbGFibGUuDQo+ID4gPiDCoMKgwqDCoMKg
-SW4gdGhpcyBjYXNlLCB3ZSBuZWVkIHNwZWNpYWxseSBoYW5kbGluZyBmb3IgdGhlIGZpcnN0DQo+
-ID4gPiDCoMKgwqDCoMKgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoKS4NCj4gPiA+IMKgwqDC
-oMKgwqBCb3RoIHRoZXJtYWwgY29yZSBmcmFtZXdvcmsgYW5kIHN0ZXBfd2lzZSBnb3Zlcm5vciBp
-cw0KPiA+ID4gwqDCoMKgwqDCoGVuaGFuY2VkIHRvIGhhbmRsZSB0aGlzLiBBbmQgc2luY2UgdGhl
-IHN0ZXBfd2lzZSBnb3Zlcm5vcg0KPiA+ID4gwqDCoMKgwqDCoGlzIHRoZSBvbmx5IG9uZSB0aGF0
-IHVzZXMgdHJlbmRzLCBzbyBpdCdzIHRoZSBvbmx5IHRoZXJtYWwNCj4gPiA+IMKgwqDCoMKgwqBn
-b3Zlcm5vciB0aGF0IG5lZWRzIHRvIGJlIHVwZGF0ZWQuDQo+ID4gPiDCoMKgwqDCoMKgVGVzdGVk
-LWJ5OiBNYW51ZWwgS3JhdXNlIDxtYW51ZWxrcmF1c2VAbmV0c2NhcGUubmV0Pg0KPiA+ID4gwqDC
-oMKgwqDCoFRlc3RlZC1ieTogc3plZ2FkIDxzemVnYWRsb0Bwb2N6dGEub25ldC5wbD4NCj4gPiA+
-IMKgwqDCoMKgwqBUZXN0ZWQtYnk6IHByYXNoIDxwcmFzaC5uLnJhb0BnbWFpbC5jb20+DQo+ID4g
-PiDCoMKgwqDCoMKgVGVzdGVkLWJ5OiBhbWlzaCA8YW1tZGlzcG9zZS1hcmNoQHlhaG9vLmNvbT4N
-Cj4gPiA+IMKgwqDCoMKgwqBUZXN0ZWQtYnk6IE1hdHRoaWFzIDxtb3JwaGV1c3h5ejEyM0B5YWhv
-by5kZT4NCj4gPiA+IMKgwqDCoMKgwqBSZXZpZXdlZC1ieTogSmF2aSBNZXJpbm8gPGphdmkubWVy
-aW5vQGFybS5jb20+DQo+ID4gPiDCoMKgwqDCoMKgU2lnbmVkLW9mZi1ieTogWmhhbmcgUnVpIDxy
-dWkuemhhbmdAaW50ZWwuY29tPg0KPiA+ID4gwqDCoMKgwqDCoFNpZ25lZC1vZmYtYnk6IENoZW4g
-WXUgPHl1LmMuY2hlbkBpbnRlbC5jb20+DQo+ID4gPiDCoMKgwqDCoMKgU2lnbmVkLW9mZi1ieTog
-R3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yDQo+ID4gPiBnPg0K
-PiA+ID4gDQo+ID4gPiANCj4gPiA+IA0KPiA+ID4gUmV2ZXJ0aW5nIHRoaXMgcGx1cyB0byBvdGhl
-ciBjb21taXRzIGluIHRoZSBzZXJpZXMgKGE2NzIwOGU5NGQ5NA0KPiA+ID4gIlRoZXJtYWw6IGhh
-bmRsZSB0aGVybWFsIHpvbmUgZGV2aWNlIHByb3Blcmx5IGR1cmluZyBzeXN0ZW0NCj4gPiA+IHNs
-ZWVwIg0KPiA+ID4gYW5kIDI3ZjM1NjE0OWQ1OSAiVGhlcm1hbDogZG8gdGhlcm1hbCB6b25lIHVw
-ZGF0ZSBhZnRlciBhIGNvb2xpbmcNCj4gPiA+IGRldmljZSByZWdpc3RlcmVkIikgY29uZmlybWVk
-IHRoZSBwZXJmb3JtYW5jZSB3YXMgYmFjayB0byBub3JtYWwuDQo+ID4gPiANCj4gPiA+IEJ1Z3pp
-bGxhIGhhcyB0aGUgZnVsbCBkaXNjdXNzaW9uIGJ1dCB0aGlzIGNvbW1lbnQgZnJvbSBvbmUgb2Yg
-dGhlDQo+ID4gPiByZXBvcnRlcnMgc3VtcyBpdCB1cDoNCj4gPiA+IA0KPiA+ID4gIkluIDQuNC4z
-IGFuZCBwcmlvciwgbXkgMi40MCBNSHogcHJvY2Vzc29yIHdvdWxkIGZsdWN0dWF0ZQ0KPiA+ID4g
-YmV0d2Vlbg0KPiA+ID4gMTAwMCBhbmQgMzQwMCBNSHouwqDCoEluIDQuNC40LCB0aGUgcHJvY2Vz
-c29yIHdvdWxkIGZsdWN0dWF0ZQ0KPiA+ID4gYmV0d2Vlbg0KPiA+ID4gNDAwIGFuZCA3MDAgTUh6
-LCBhY2NvcmRpbmcgdG8gL3Byb2MvY3B1aW5mby4NCj4gPiA+IA0KPiA+ID4gU2V0dGluZyAvc3lz
-L2RldmljZXMvc3lzdGVtL2NwdS9jcHVmcmVxL3BvbGljeTAvc2NhbGluZ19nb3Zlcm5vcg0KPiA+
-ID4gdG8NCj4gPiA+IHBlcmZvcm1hbmNlLCBpbnN0ZWFkIG9mIHRoZSBkZWZhdWx0ICJwb3dlcnNh
-dmUiIGZvcmNlcyB0aGUgQ1BVIHRvDQo+ID4gPiAyNDAwIE1IeiwgYW5kIGltcHJvdmVzIHBlcmZv
-cm1hbmNlIGdyZWF0bHksIGJ1dCBzdGlsbCBub3QgdG8gdGhlDQo+ID4gPiBzYW1lIGxldmVsIGFz
-IGluIDQuNC4zLiINCj4gPiA+IA0KPiA+ID4gQW55IGlkZWFzPw0KPiA+IA0KPiA+IElzIHRoaXMg
-c2FtZSAic2xvd2Rvd24iIGFsc28gc2VlbiBpbiA0LjU/DQo+ID4gDQo+ID4gdGhhbmtzLA0KPiA+
-IA0KPiA+IGdyZWcgay1oDQo+ID4gDQo+IA0KPiBZZXMsIHRoZSBzYW1lIGlzc3VlIGlzIHNlZW4g
-b24gNC41IGFjY29yZGluZyB0byB0aGUgcmVwb3J0ZXIuDQpXaGF0IGRvZXMgaXQgc2hvdyBoZXJl
-IHdoZW4gcGVyZm9ybWFuY2UgZHJvcHM/DQpncmVwIC4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUv
-aW50ZWxfcHN0YXRlLyoNCg0KSXMgdGhlIHByb2JsZW0gc3RpbGwgb2NjdXJzIGlmIHlvdSBzZXTC
-oA0KL3N5cy9jbGFzcy90aGVybWFsL3RoZXJtYWxfem9uZSovbW9kZSB0byAiZGlzYWJsZWQiwqAN
-Cg0KVGhhbmtzLA0KU3Jpbml2YXMNCg0KPiANCj4gVGhhbmtzLA0KPiBMYXVyYQ0KPiAtLQ0KPiBU
-byB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUg
-bGludXgtcG0iDQo+IGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
-ci5rZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXTCoMKgaHR0cDovL3ZnZXIua2Vy
-bmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+On 16 March 2016 at 20:09, Oliver Neukum <oneukum@suse.com> wrote:
+> On Wed, 2016-03-16 at 19:46 +0800, Baolin Wang wrote:
+>> This patch introduces the usb charger driver based on usb gadget that
+>> makes an enhancement to a power driver. It works well in practice but
+>> that requires a system with suitable hardware.
+>>
+>> The basic conception of the usb charger is that, when one usb charger
+>> is added or removed by reporting from the usb gadget state change or
+>> the extcon device state change, the usb charger will report to power
+>> user to set the current limitation.
+>
+> This patch adds sysfs attributes without adding Documentation for them.
+> That's bad.
+
+I'll add Documentation for the sysfs attributes in next version
+patchset. Thanks for your comments.
+
+-- 
+Baolin.wang
+Best Regards
