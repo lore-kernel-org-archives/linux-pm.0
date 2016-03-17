@@ -1,42 +1,35 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 7/7][Update] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Thu, 17 Mar 2016 12:36:22 +0100
-Message-ID: <20160317113622.GS6344@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH v5 6/7][Update] cpufreq: Support for fast frequency
+ switching
+Date: Thu, 17 Mar 2016 12:40:37 +0100
+Message-ID: <20160317114037.GB6356@twins.programming.kicks-ass.net>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
  <4088601.C2vItRYpQn@vostro.rjw.lan>
  <1711281.bPmSjlBT7c@vostro.rjw.lan>
- <18957412.GBWZqUOZtk@vostro.rjw.lan>
+ <4785370.no59v8qjgi@vostro.rjw.lan>
+ <20160317113507.GH18212@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:57207 "EHLO
+Received: from casper.infradead.org ([85.118.1.10]:57304 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbcCQLg0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 07:36:26 -0400
+	with ESMTP id S1752645AbcCQLkj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 07:40:39 -0400
 Content-Disposition: inline
-In-Reply-To: <18957412.GBWZqUOZtk@vostro.rjw.lan>
+In-Reply-To: <20160317113507.GH18212@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On Thu, Mar 17, 2016 at 01:01:45AM +0100, Rafael J. Wysocki wrote:
-> +	} else if (sg_policy->next_freq != next_freq) {
-> +		sg_policy->work_cpu = smp_processor_id();
-> +		irq_work_queue(&sg_policy->irq_work);
-> +	}
-> +}
+On Thu, Mar 17, 2016 at 11:35:07AM +0000, Juri Lelli wrote:
 
-> +static void sugov_irq_work(struct irq_work *irq_work)
-> +{
-> +	struct sugov_policy *sg_policy;
-> +
-> +	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
-> +	schedule_work_on(sg_policy->work_cpu, &sg_policy->work);
-> +}
+> > +		pr_warn("cpufreq: CPU%u: Fast freqnency switching not enabled\n",
+> 
+> Ultra-minor nit: s/freqnency/frequency/
+> 
+> Also, is this really a warning or just a debug message? (everything
+> seems to work fine on Juno even if this is printed :-)).
 
-Not sure I see the point of ->work_cpu, irq_work_queue() does guarantee
-the same CPU, so the above is identical to:
-
-	schedule_work_on(smp_processor_id(), &sq_policy->work);
+I would consider it a warn; this _should_ not happen. If your platform
+supports fast_switch, then you really rather want to use it.
