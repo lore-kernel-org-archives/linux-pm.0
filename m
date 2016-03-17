@@ -1,162 +1,120 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] powercap: intel_rapl: PSys support
-Date: Thu, 17 Mar 2016 15:23:29 -0700
-Message-ID: <1458253409-13318-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 4/8] cpufreq/schedutil: sysfs capacity margin tunable
+Date: Thu, 17 Mar 2016 23:34:42 +0100
+Message-ID: <CAJZ5v0j3832JdsbXQF+doR1yMhKExYiin-52oLh0MaPHBXdY_g@mail.gmail.com>
+References: <20160315214043.30639.75507@quark.deferred.io>
+	<20160315223701.30639.43127@quark.deferred.io>
+	<56E8D4D9.1060202@linaro.org>
+	<20160316080503.GS6344@twins.programming.kicks-ass.net>
+	<20160316100257.GC18212@e106622-lin>
+	<56E99E25.9070002@linaro.org>
+	<20160317094046.GF18212@e106622-lin>
+	<56EAB756.1050805@linaro.org>
+	<20160317155357.GA31104@derkdell>
+	<20160317175407.GO18212@e106622-lin>
+	<20160317185605.11016.62512@quark.deferred.io>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:15390 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755468AbcCQWXU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Mar 2016 18:23:20 -0400
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:34195 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbcCQWep (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 18:34:45 -0400
+In-Reply-To: <20160317185605.11016.62512@quark.deferred.io>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de, x86@kernel.org, hpa@zytor.com, bp@suse.de, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette+renesas@baylibre.com>
 
-Skylake processor supports a new set of RAPL registers for controlling
-entire platform instead of just CPU package. This is useful for thermal
-and power control when source of power/thermal is not just CPU/GPU.
-This change adds a new platform domain (AKA PSys) to the current
-power capping Intel RAPL driver.
-PSys also supports PL1 (long term) and PL2 (short term) control like
-package domain. This also follows same MSRs for energy and time
-units as package domain.
-Unlike package domain, PSys support requires more than just processor
-level implementation. The other parts in the system need additional
-implementation, which OEMs needs to support. So not all Skylake
-systems will support PSys.
+On Thu, Mar 17, 2016 at 7:56 PM, Michael Turquette
+<mturquette@baylibre.com> wrote:
+> Quoting Juri Lelli (2016-03-17 10:54:07)
+>> Hi,
+>>
+>> On 17/03/16 15:53, Patrick Bellasi wrote:
+>> > On 17-Mar 06:55, Steve Muckle wrote:
+>> > > On 03/17/2016 02:40 AM, Juri Lelli wrote:
+>> > > >> Could the default schedtune value not serve as the out of the box margin?
+>> > > >>
+>> > > > I'm not sure I understand you here. For me schedtune should be disabled
+>> > > > by default, so I'd say that it doesn't introduce any additional margin
+>> > > > by default. But we still need a margin to make the governor work without
+>> > > > schedtune in the mix.
+>> > >
+>> > > Why not have schedtune be enabled always, and use it to add the margin?
+>> > > It seems like it'd simplify things.
+>> >
+>> > Actually one of the effects we noticed when SchedTune and SchedFreq
+>> > are both in use is that we have a sort of "double boosting" effect.
+>> >
+>> > SchedTune boosts the CPU utilization signal, thus already providing a
+>> > sort of margin for the selection of the OPP. This margin overlaps with
+>> > the SchedFreq margin, which in turns could results in the selection of
+>> > an OPP even more higher than required (with boost already accouned).
+>> >
+>> > > I haven't looked at the schedtune code at all so I don't know whether
+>> > > this makes sense given its current implementation.
+>> >
+>> > The current implementation requires review, of course ;-)
+>> > Last (and only) posting is based on top of SchedFreq code, as it was
+>> > at that time.
+>> >
+>> > > But conceptually I don't know why we'd need or want one margin in
+>> > > schedutil which will be tunable, and then another mechanism for
+>> > > tuning as well.
+>> >
+>> > I agree with Steve on the conceptual standpoint. The main goal of
+>> > SchedTune is actually to provide a "single tunable" to bias many
+>> > different subsystem in a "consistent" way. Thus, from a conceptual
+>> > standpoint, IMO it makes sens to investigate better how the boost value
+>> > can be linked with SchedFreq.
+>> >
+>> > A possible option can be to:
+>> > 1. use an hardcoded margin (M) defined by SchedFreq
+>> >    this margin is used to trigger OPP jumps
+>> >    when SchedTune _is not_ in use
+>> > 2. "compose" the M margin with a boost value defined margin (B)
+>> >    when SchedTune _is_ in use
+>> >
+>> > This means, e.g.
+>> >   schedfreq_margin = max(M, B)
+>> > Thus:
+>> > a) non boosted tasks (and in general when SchedTune is not in use)
+>> >    gets OPPs jumps based on the hardcoded M margin
+>> > b) boosted tasks can get more aggressive OPPs jumps based on the B
+>> >    margin
+>> >
+>> > While the M margin is hardcoded, the B one is defined via CGroups
+>> > depending on the how much tasks needs to be boosted.
+>> >
+>>
+>> Makes sense to me. And I think M margin is the one we don't want to make
+>> part of the ABI and only play with it under DEBUG.
+>
+> Correct.
+>
+> Regarding "composing" the margin, schedtune could even overwrite the
+> margin entirely via cpufreq_set_cfs_capacity_margin (see patch #2 in
+> this series). This avoids complications around a "double boosting"
+> effect.
+>
+> Either way, it sounds like the schedtune angle is something that we can
+> figure out in due time and change the code as needed later on. For
+> schedutil to make sense for frequency-invariant platforms we do need a
+> margin today, and there is desire to tune it easily, so I will move this
+> sysfs knob to a debug knob in v2.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- arch/x86/include/asm/msr-index.h |  3 ++
- drivers/powercap/intel_rapl.c    | 63 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
+Sounds good!
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 2da46ac..bd383f5 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -190,6 +190,9 @@
- #define MSR_PP1_ENERGY_STATUS		0x00000641
- #define MSR_PP1_POLICY			0x00000642
- 
-+#define MSR_PLATFORM_ENERGY_STATUS	0x0000064d
-+#define MSR_PLATFORM_POWER_LIMIT	0x0000065c
-+
- #define MSR_CONFIG_TDP_NOMINAL		0x00000648
- #define MSR_CONFIG_TDP_LEVEL_1		0x00000649
- #define MSR_CONFIG_TDP_LEVEL_2		0x0000064A
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index cdfd01f0..29f1368 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -86,6 +86,7 @@ enum rapl_domain_type {
- 	RAPL_DOMAIN_PP0, /* core power plane */
- 	RAPL_DOMAIN_PP1, /* graphics uncore */
- 	RAPL_DOMAIN_DRAM,/* DRAM control_type */
-+	RAPL_DOMAIN_PLATFORM, /* PSys control_type */
- 	RAPL_DOMAIN_MAX,
- };
- 
-@@ -251,9 +252,11 @@ static const char * const rapl_domain_names[] = {
- 	"core",
- 	"uncore",
- 	"dram",
-+	"psys",
- };
- 
- static struct powercap_control_type *control_type; /* PowerCap Controller */
-+static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
- /* caller to ensure CPU hotplug lock is held */
- static struct rapl_package *find_package_by_id(int id)
-@@ -409,6 +412,14 @@ static const struct powercap_zone_ops zone_ops[] = {
- 		.set_enable = set_domain_enable,
- 		.get_enable = get_domain_enable,
- 	},
-+	/* RAPL_DOMAIN_PLATFORM */
-+	{
-+		.get_energy_uj = get_energy_counter,
-+		.get_max_energy_range_uj = get_max_energy_counter,
-+		.release = release_zone,
-+		.set_enable = set_domain_enable,
-+		.get_enable = get_domain_enable,
-+	},
- };
- 
- static int set_power_limit(struct powercap_zone *power_zone, int id,
-@@ -1159,6 +1170,13 @@ static int rapl_unregister_powercap(void)
- 			powercap_unregister_zone(control_type,
- 						&rd_package->power_zone);
- 	}
-+
-+	if (platform_rapl_domain) {
-+		powercap_unregister_zone(control_type,
-+					 &platform_rapl_domain->power_zone);
-+		kfree(platform_rapl_domain);
-+	}
-+
- 	powercap_unregister_control_type(control_type);
- 
- 	return 0;
-@@ -1238,6 +1256,47 @@ err_cleanup:
- 	return ret;
- }
- 
-+static int rapl_register_psys(void)
-+{
-+	struct rapl_domain *rd;
-+	struct powercap_zone *power_zone;
-+	u64 val;
-+
-+	if (rdmsrl_safe_on_cpu(0, MSR_PLATFORM_ENERGY_STATUS, &val) || !val)
-+		return -ENODEV;
-+
-+	if (rdmsrl_safe_on_cpu(0, MSR_PLATFORM_POWER_LIMIT, &val) || !val)
-+		return -ENODEV;
-+
-+	rd = kzalloc(sizeof(*rd), GFP_KERNEL);
-+	if (!rd)
-+		return -ENOMEM;
-+
-+	rd->name = rapl_domain_names[RAPL_DOMAIN_PLATFORM];
-+	rd->id = RAPL_DOMAIN_PLATFORM;
-+	rd->msrs[0] = MSR_PLATFORM_POWER_LIMIT;
-+	rd->msrs[1] = MSR_PLATFORM_ENERGY_STATUS;
-+	rd->rpl[0].prim_id = PL1_ENABLE;
-+	rd->rpl[0].name = pl1_name;
-+	rd->rpl[1].prim_id = PL2_ENABLE;
-+	rd->rpl[1].name = pl2_name;
-+	rd->rp = find_package_by_id(0);
-+
-+	power_zone = powercap_register_zone(&rd->power_zone, control_type,
-+					    "psys", NULL,
-+					    &zone_ops[RAPL_DOMAIN_PLATFORM],
-+					    2, &constraint_ops);
-+
-+	if (IS_ERR(power_zone)) {
-+		kfree(rd);
-+		return PTR_ERR(power_zone);
-+	}
-+
-+	platform_rapl_domain = rd;
-+
-+	return 0;
-+}
-+
- static int rapl_register_powercap(void)
- {
- 	struct rapl_domain *rd;
-@@ -1254,6 +1313,10 @@ static int rapl_register_powercap(void)
- 	list_for_each_entry(rp, &rapl_packages, plist)
- 		if (rapl_package_register_powercap(rp))
- 			goto err_cleanup_package;
-+
-+	/* Don't bail out if PSys is not supported */
-+	rapl_register_psys();
-+
- 	return ret;
- 
- err_cleanup_package:
--- 
-2.5.0
+Also, if you look at the latest iteration of the schedutil patch
+(https://patchwork.kernel.org/patch/8612561/), it maps the choice of
+the margin to the choice of the frequency tipping point.  That is, the
+value of (util / max) for which the frequency will stay the same as it
+was before.  [For (util / max) below the tipping point the new
+frequency will be less than the old one (unless it already is minimum)
+and for (util / max) above it, the new frequency will be greater than
+the old one.]
 
+The tipping point seems to be a good candidate for a tunable to me,
+because its meaning is well defined and the range of values that make
+sense is quite easy to figure out too.
