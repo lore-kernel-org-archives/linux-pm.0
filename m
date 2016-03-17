@@ -1,68 +1,47 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v5 7/7][Update] cpufreq: schedutil: New governor based on
  scheduler utilization data
-Date: Thu, 17 Mar 2016 13:54:05 +0100
-Message-ID: <CAJZ5v0j-NKveJEN9fuySrbWDy++rWKTr_QWLY3vcA7Df0e3rGQ@mail.gmail.com>
+Date: Thu, 17 Mar 2016 13:54:58 +0100
+Message-ID: <CAJZ5v0j2TtZQKsPZ-rM8sPWeiy4m6v5yiXcjfN5KBA-vT+9FBg@mail.gmail.com>
 References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
 	<4088601.C2vItRYpQn@vostro.rjw.lan>
 	<1711281.bPmSjlBT7c@vostro.rjw.lan>
 	<18957412.GBWZqUOZtk@vostro.rjw.lan>
-	<20160317113054.GG18212@e106622-lin>
+	<20160317113622.GS6344@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160317113054.GG18212@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:36421 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933037AbcCQMzB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 08:55:01 -0400
+In-Reply-To: <20160317113622.GS6344@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On Thu, Mar 17, 2016 at 12:30 PM, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi Rafael,
->
-> On 17/03/16 01:01, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> [...]
->
->> +static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
->> +                             unsigned int next_freq)
->> +{
->> +     struct cpufreq_policy *policy = sg_policy->policy;
->> +
->> +     sg_policy->last_freq_update_time = time;
->> +
->> +     if (policy->fast_switch_enabled) {
->> +             if (next_freq > policy->max)
->> +                     next_freq = policy->max;
->> +             else if (next_freq < policy->min)
->> +                     next_freq = policy->min;
->> +
->> +             if (sg_policy->next_freq == next_freq) {
->> +                     trace_cpu_frequency(policy->cur, smp_processor_id());
->> +                     return;
->> +             }
->> +             sg_policy->next_freq = next_freq;
->> +             next_freq = cpufreq_driver_fast_switch(policy, next_freq);
->> +             if (next_freq == CPUFREQ_ENTRY_INVALID)
->> +                     return;
->> +
->> +             policy->cur = next_freq;
->> +             trace_cpu_frequency(next_freq, smp_processor_id());
+On Thu, Mar 17, 2016 at 12:36 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, Mar 17, 2016 at 01:01:45AM +0100, Rafael J. Wysocki wrote:
 >> +     } else if (sg_policy->next_freq != next_freq) {
 >> +             sg_policy->work_cpu = smp_processor_id();
->
->   +             sg_policy->next_freq = next_freq;
->
-
-Doh.
-
 >> +             irq_work_queue(&sg_policy->irq_work);
 >> +     }
 >> +}
 >
-> Or we remain at max_f :-).
+>> +static void sugov_irq_work(struct irq_work *irq_work)
+>> +{
+>> +     struct sugov_policy *sg_policy;
+>> +
+>> +     sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
+>> +     schedule_work_on(sg_policy->work_cpu, &sg_policy->work);
+>> +}
+>
+> Not sure I see the point of ->work_cpu, irq_work_queue() does guarantee
+> the same CPU, so the above is identical to:
+>
+>         schedule_work_on(smp_processor_id(), &sq_policy->work);
 
-Sure, thanks!
+OK
 
-Will fix.
+I'll do that and restore work_in_progress, then.
