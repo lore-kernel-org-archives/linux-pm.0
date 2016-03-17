@@ -1,72 +1,93 @@
-From: Josh Boyer <jwboyer@fedoraproject.org>
-Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
-Date: Thu, 17 Mar 2016 12:44:54 -0400
-Message-ID: <CA+5PVA4iMHGEhSjDOwR_JB2i+wL2o6v7-aTErfsJ5nqFHp+JMA@mail.gmail.com>
-References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com>
-	<1704778.QLUl50G1uZ@vostro.rjw.lan>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [PATCH 4/8] cpufreq/schedutil: sysfs capacity margin tunable
+Date: Thu, 17 Mar 2016 17:54:07 +0000
+Message-ID: <20160317175407.GO18212@e106622-lin>
+References: <20160315214043.30639.75507@quark.deferred.io>
+ <20160315214821.GM6344@twins.programming.kicks-ass.net>
+ <20160315223701.30639.43127@quark.deferred.io>
+ <56E8D4D9.1060202@linaro.org>
+ <20160316080503.GS6344@twins.programming.kicks-ass.net>
+ <20160316100257.GC18212@e106622-lin>
+ <56E99E25.9070002@linaro.org>
+ <20160317094046.GF18212@e106622-lin>
+ <56EAB756.1050805@linaro.org>
+ <20160317155357.GA31104@derkdell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:34811 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031014AbcCQQoz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 12:44:55 -0400
-In-Reply-To: <1704778.QLUl50G1uZ@vostro.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:50031 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031144AbcCQRww (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Mar 2016 13:52:52 -0400
+Content-Disposition: inline
+In-Reply-To: <20160317155357.GA31104@derkdell>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>
 
-On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
->> Hello,
->
-> Hi,
->
->> I have an Intel Atom based NUC that is producing the following
->> backtraces on boot of Linus' tree as of last evening.  This does not
->> happen with a tree with top level commit 271ecc5253e2, but does happen
->> when using the tree mentioned in the subject with top level commit
->> 63e30271b04c.
->>
->> The first backtrace appears to be a warning because the intel_pstate
->> driver is calling wrmsrl_on_cpu when interrupts are disabled?  Not
->> sure on that one.
->>
->> The second backtrace is a lockdep report.  Both are from the same boot.
->
-> OK, thanks for the report.
->
-> Can you please try the patch below?
->
-> I'm actually unsure if we can do that safely in general for Atom because
-> of the initialization, but that's what Core does anyway.
->
-> Srinivas, Philippe, why exactly do we need the wrmsrl_on_cpu() in
-> atom_set_pstate()?  core_set_pstate() uses wrmsrl() and seems to be doing fine.
->
-> ---
->  drivers/cpufreq/intel_pstate.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -587,7 +587,7 @@ static void atom_set_pstate(struct cpuda
->
->         val |= vid;
->
-> -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-> +       wrmsrl(MSR_IA32_PERF_CTL, val);
->  }
->
->  static int silvermont_get_scaling(void)
->
+Hi,
 
-I applied this on top of commit 09fd671ccb24 and the backtrace and
-lockdep report both go away.  So yes, this seems to clear up the
-issue.  I tested it on a variety of different CPU types and didn't
-notice anything wrong on them either.
+On 17/03/16 15:53, Patrick Bellasi wrote:
+> On 17-Mar 06:55, Steve Muckle wrote:
+> > On 03/17/2016 02:40 AM, Juri Lelli wrote:
+> > >> Could the default schedtune value not serve as the out of the box margin?
+> > >>
+> > > I'm not sure I understand you here. For me schedtune should be disabled
+> > > by default, so I'd say that it doesn't introduce any additional margin
+> > > by default. But we still need a margin to make the governor work without
+> > > schedtune in the mix.
+> > 
+> > Why not have schedtune be enabled always, and use it to add the margin?
+> > It seems like it'd simplify things.
+> 
+> Actually one of the effects we noticed when SchedTune and SchedFreq
+> are both in use is that we have a sort of "double boosting" effect.
+> 
+> SchedTune boosts the CPU utilization signal, thus already providing a
+> sort of margin for the selection of the OPP. This margin overlaps with
+> the SchedFreq margin, which in turns could results in the selection of
+> an OPP even more higher than required (with boost already accouned).
+>  
+> > I haven't looked at the schedtune code at all so I don't know whether
+> > this makes sense given its current implementation.
+> 
+> The current implementation requires review, of course ;-)
+> Last (and only) posting is based on top of SchedFreq code, as it was
+> at that time.
+> 
+> > But conceptually I don't know why we'd need or want one margin in
+> > schedutil which will be tunable, and then another mechanism for
+> > tuning as well.
+> 
+> I agree with Steve on the conceptual standpoint. The main goal of
+> SchedTune is actually to provide a "single tunable" to bias many
+> different subsystem in a "consistent" way. Thus, from a conceptual
+> standpoint, IMO it makes sens to investigate better how the boost value
+> can be linked with SchedFreq.
+> 
+> A possible option can be to:
+> 1. use an hardcoded margin (M) defined by SchedFreq
+>    this margin is used to trigger OPP jumps
+>    when SchedTune _is not_ in use
+> 2. "compose" the M margin with a boost value defined margin (B)
+>    when SchedTune _is_ in use
+> 
+> This means, e.g.
+>   schedfreq_margin = max(M, B)
+> Thus:
+> a) non boosted tasks (and in general when SchedTune is not in use)
+>    gets OPPs jumps based on the hardcoded M margin
+> b) boosted tasks can get more aggressive OPPs jumps based on the B
+>    margin
+> 
+> While the M margin is hardcoded, the B one is defined via CGroups
+> depending on the how much tasks needs to be boosted.
+> 
 
-josh
+Makes sense to me. And I think M margin is the one we don't want to make
+part of the ABI and only play with it under DEBUG.
+
+Best,
+
+- Juri
