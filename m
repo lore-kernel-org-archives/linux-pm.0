@@ -1,68 +1,75 @@
-From: Matt Fleming <matt@codeblueprint.co.uk>
-Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
- platforms without _S5
-Date: Thu, 17 Mar 2016 14:39:26 +0000
-Message-ID: <20160317143926.GL2619@codeblueprint.co.uk>
-References: <1457687133-3730-1-git-send-email-yu.c.chen@intel.com>
- <20160311155546.GJ15775@codeblueprint.co.uk>
- <36DF59CE26D8EE47B0655C516E9CE640286D442A@shsmsx102.ccr.corp.intel.com>
- <20160314200033.GG2619@codeblueprint.co.uk>
- <36DF59CE26D8EE47B0655C516E9CE640286D5713@shsmsx102.ccr.corp.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC 4/4] thunderbolt: Support runtime pm
+Date: Thu, 17 Mar 2016 10:54:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1603171042520.2097-100000@iolanthe.rowland.org>
+References: <20160316162017.GA28372@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640286D5713@shsmsx102.ccr.corp.intel.com>
+In-Reply-To: <20160316162017.GA28372@wunner.de>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Mark Salter <msalter@redhat.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Mar, at 05:59:29AM, Chen, Yu C wrote:
-> Hi Matt,
+On Wed, 16 Mar 2016, Lukas Wunner wrote:
+
+> > In all other controllers that I'm familiar with, there's a device to 
+> > represent the controller, another device representing its upward link, 
+> > and a bunch of devices representing the downward links.  The analogous 
+> > approach here would make bridges 1 ... n children of bridge 0 (which 
+> > sounds strange but might make more sense in the end).
+> > 
+> > The way you're doing it, how does the NHI driver know when to go into 
+> > suspend?  The runtime PM core won't notify it when all the hotplugged 
+> > devices attached to the other bridges have been suspended, since it's 
+> > not their parent.
 > 
-> > -----Original Message-----
-> > From: Matt Fleming [mailto:matt@codeblueprint.co.uk]
-> > Sent: Tuesday, March 15, 2016 4:01 AM
-> > To: Chen, Yu C
-> > Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J. Wysocki;
-> > Len Brown; Thomas Gleixner; Ingo Molnar; H. Peter Anvin; Zhang, Rui; linux-
-> > efi@vger.kernel.org; x86@kernel.org; linux-kernel@vger.kernel.org; Ard
-> > Biesheuvel; Mark Salter
-> > Subject: Re: [PATCH][RFC,v4] ACPI / PM: Introduce efi poweroff for HW-full
-> > platforms without _S5
+> The NHI knows when something is plugged in, it talks to the switches
+> in devices that are hotplugged to the controller. As I've explained
+> in the lengthy comment in the middle of patch [4/4], we acquire a
+> runtime pm ref for each switch that is plugged in and release one
+> whenever a switch is unplugged.
+
+If I understand correctly, that means you allow the Thunderbolt
+controller to go into runtime suspend only when nothing is plugged into
+any of the ports.  Is that right?  It's quite inefficient.
+
+> > > The PCI subsystem pm_ops do not work properly for devices which can be
+> > > put into D3cold by some other means than the standard _PSx ACPI platform
+> > > methods: We do not want to wake up the chip before system sleep, yet
+> > > pci_pm_prepare() does not return 1 as it should since pci_target_state()
+> > > returns D3hot. We solve this by overriding pci_pm_prepare() using power
+> > > domains. They are assigned to the bridges using a PCI quirk. We also do
+> > > not want to wake the chip after system resume as pci_pm_complete() does,
+> > > so we override that as well. Note that we can never remove and free the
+> > > dev_pm_domain assigned to the bridges as there is no PCI remove fixup
+> > > section. We also cannot bail out of the ->probe callback if allocation
+> > > of the struct dev_pm_domain fails since the PCI enable fixup does not
+> > > allow return values to be passed back.
+> > > 
+> > > It might be possible to implement a less kludgy solution which adheres
+> > > to the hierarchical pm model and does not need a PCI enable quirk for
+> > > the bridges if pcieport had runtime pm support both for itself and
+> > > any service drivers registering with it. The runtime pm code could
+> > > then be moved from the NHI to a new Thunderbolt service driver that
+> > > gets used on the upstream bridge.
 > > 
-> > On Fri, 11 Mar, at 04:33:46PM, Chen, Yu C wrote:
-> > >
-> > > There is  a future Base-IA platform, we are planning to skip
-> > > implementing the SLP_TYP register and the S5 object.  (already there
-> > > will be no S3 and no S4)
-> > 
-> > Cool. This is really valuable information that should go into the commit
-> > message.
-> > 
-> > Because if this is the rationale for the change, I don't see why we'd need to
-> > provide the default stuff. Instead we should just enforce EFI reboot, and
-> > only add the pm_poweroff_default hook if there is an explicit user in the
-> > future, IMO.
+> > Or you could interpose another device structure between the upstream 
+> > bridge and all the downstream bridges.
 > 
-> Do you mean the patch v3 make sense
-> https://patchwork.kernel.org/patch/8514751/
-> and we should use efi power off as our first choice, if there is no _S5  available(no acpi_power_off),
-> even there is a customized  poweroff(driver provided, eg)? 
+> How? The structure is predetermined by the way the PCI devices and
+> bridges are connected to each other. That was Intel's idea.
 
-Unless someone can point to a platform driver that is in the upstream
-kernel where this is actually a problem, the answer is: yes.
- 
-For that matter, unless someone can do the same for pm_power_off
-overriding efi_reboot() (which on x86 would only happen for ACPI
-HW-reduced platforms), I would be much prefer the original patch,
-where you had,
+What I'm getting at is that we should have proper runtime-PM support
+for bridges, i.e., I agree with what you wrote above.  A bridge can
+safely go into runtime suspend when there are no unsuspended devices
+attached to any of its downstream ports.  (That's how the USB hub
+driver works, for instance.)  Doing things that way would make
+everything simpler in the long run.
 
-bool efi_poweroff_reqired(voi)
-{
-	return acpi_gbl_reduced_hardware || acpi_no_s5;
-}
+So my suggestion is that you change over to the "less kludgy solution"  
+and work on that instead.
 
-since you've already explained that this change won't break legacy
-platforms that are missing _S5 (if any even exist in the wild).
+Alan Stern
+
