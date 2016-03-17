@@ -1,104 +1,99 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] thermal/powerclamp: remove cpu whitelist
-Date: Thu, 17 Mar 2016 11:26:13 -0700
-Message-ID: <1458239173-14896-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Should suspend plug low-level devices?
+Date: Thu, 17 Mar 2016 14:51:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1603171433300.2097-100000@iolanthe.rowland.org>
+References: <20160316163410.GJ6980@mtj.duckdns.org>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:25707 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933192AbcCQS1n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Mar 2016 14:27:43 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53588 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753134AbcCQSvh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 14:51:37 -0400
+In-Reply-To: <20160316163410.GJ6980@mtj.duckdns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, florian@mickler.org, jkosina@suse.cz, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-Powerclamp works by aligning idle time to achieve package level
-idle states, aka cstates. As long as one of the package cstates
-is available, synchronized idle injection is meaningful.
+On Wed, 16 Mar 2016, Tejun Heo wrote:
 
-This patch replaces the CPU whitelist with CPU feature and
-package cstate counter check such that we don't have to modify
-this whitelist for every new CPU.
+> Hello, Alan.
+> 
+> On Wed, Mar 16, 2016 at 11:37:35AM -0400, Alan Stern wrote:
+> > Doing what you suggest would require a tremendous effort.  There are
+> 
+> I don't know.  Is it?
+> 
+> > lots and lots of drivers that have no provisions for plugging; they
+> > would all need to be modified.  Changing the higher layers instead (to
+> > prevent them from generating I/O requests during suspend) seems much
+> > easier.
+> 
+> Big lock and "much easier" usually don't go together.  I get why we
+> started out this way - there wasn't anything working and we didn't
+> quite understand what the actual requirements were and wanted
+> something more or less working with manageable amount of effort, but I
+> think we're past the point where we need to address the issue
+> properly.  The more complex drivers are already doing most of what's
+> necessary and even for drivers which depend on the freezer the changes
+> don't need to be too difficult.
+> 
+> Stopping kthreads in itself is fine but the problem is that we
+> currently don't know who's stopping what.  Just making each freezing
+> explicit, say, an explicit invocation of kthread_freeze_kthread(),
+> wouldn't be that difficult and would go a long way.  e.g. It would
+> immediately solve the problem arising from kthread freezing order not
+> matching device dependency hierarchy.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/intel_powerclamp.c | 47 ++++++++------------------------------
- 1 file changed, 9 insertions(+), 38 deletions(-)
+We're talking about workqueues in particular.  Freezing order is not 
+the issue.
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 6c79588..015ce2e 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -510,12 +510,6 @@ static int start_power_clamp(void)
- 	unsigned long cpu;
- 	struct task_struct *thread;
- 
--	/* check if pkg cstate counter is completely 0, abort in this case */
--	if (!has_pkg_state_counter()) {
--		pr_err("pkg cstate counter not functional, abort\n");
--		return -EINVAL;
--	}
--
- 	set_target_ratio = clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
- 	/* prevent cpu hotplug */
- 	get_online_cpus();
-@@ -672,35 +666,11 @@ static struct thermal_cooling_device_ops powerclamp_cooling_ops = {
- 	.set_cur_state = powerclamp_set_cur_state,
- };
- 
--/* runs on Nehalem and later */
- static const struct x86_cpu_id intel_powerclamp_ids[] __initconst = {
--	{ X86_VENDOR_INTEL, 6, 0x1a},
--	{ X86_VENDOR_INTEL, 6, 0x1c},
--	{ X86_VENDOR_INTEL, 6, 0x1e},
--	{ X86_VENDOR_INTEL, 6, 0x1f},
--	{ X86_VENDOR_INTEL, 6, 0x25},
--	{ X86_VENDOR_INTEL, 6, 0x26},
--	{ X86_VENDOR_INTEL, 6, 0x2a},
--	{ X86_VENDOR_INTEL, 6, 0x2c},
--	{ X86_VENDOR_INTEL, 6, 0x2d},
--	{ X86_VENDOR_INTEL, 6, 0x2e},
--	{ X86_VENDOR_INTEL, 6, 0x2f},
--	{ X86_VENDOR_INTEL, 6, 0x37},
--	{ X86_VENDOR_INTEL, 6, 0x3a},
--	{ X86_VENDOR_INTEL, 6, 0x3c},
--	{ X86_VENDOR_INTEL, 6, 0x3d},
--	{ X86_VENDOR_INTEL, 6, 0x3e},
--	{ X86_VENDOR_INTEL, 6, 0x3f},
--	{ X86_VENDOR_INTEL, 6, 0x45},
--	{ X86_VENDOR_INTEL, 6, 0x46},
--	{ X86_VENDOR_INTEL, 6, 0x47},
--	{ X86_VENDOR_INTEL, 6, 0x4c},
--	{ X86_VENDOR_INTEL, 6, 0x4d},
--	{ X86_VENDOR_INTEL, 6, 0x4e},
--	{ X86_VENDOR_INTEL, 6, 0x4f},
--	{ X86_VENDOR_INTEL, 6, 0x56},
--	{ X86_VENDOR_INTEL, 6, 0x57},
--	{ X86_VENDOR_INTEL, 6, 0x5e},
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_MWAIT },
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_ARAT },
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_NONSTOP_TSC },
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_CONSTANT_TSC},
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
-@@ -712,11 +682,12 @@ static int __init powerclamp_probe(void)
- 				boot_cpu_data.x86, boot_cpu_data.x86_model);
- 		return -ENODEV;
- 	}
--	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC) ||
--		!boot_cpu_has(X86_FEATURE_CONSTANT_TSC) ||
--		!boot_cpu_has(X86_FEATURE_MWAIT) ||
--		!boot_cpu_has(X86_FEATURE_ARAT))
-+
-+	/* The goal for idle time alignment is to achieve package cstate. */
-+	if (!has_pkg_state_counter()) {
-+		pr_info("No package C-state available");
- 		return -ENODEV;
-+	}
- 
- 	/* find the deepest mwait value */
- 	find_target_mwait();
--- 
-1.9.1
+The problem that started this discussion was that a block device can be
+hot-unplugged while the system is asleep.  The device driver's resume
+routine realizes the device is gone and unregisters it.  As part of the
+unregistration, the block layer (bdi_unregister) does a
+flush_delayed_work.
+
+I'm not sure exactly what work it's trying to flush (the code is
+difficult to follow), but evidently it can't go forward while the
+system is still resuming.  Maybe the workqueue thread is frozen.
+
+> > The original design of the PM subsystem was intended to make life
+> > easier for drivers by minimizing the amount of work needed to support
+> > suspend/resume.  Maybe the decision to do it that way was wrong, but
+> > it's kind of late to change the design now.
+> 
+> Hmmm... but that's how most subsystems evolve.  We start out with
+> something coarse and not quite optimal or even correct and then as we
+> learn more, the code and design evolve.  I frankly don't think
+> shifting to driver-side plugging would be *that* difficult.  It's
+> gonna be quite a bit of work, for sure, but things can be gradual.
+> For example,
+> 
+> * Make block layer plug bio's from upper layers.
+> 
+> * Visit each freezable workqueue or kthread users and convert them to
+>   plug explicitly.
+
+How would this help the case in question?  If a workqueue is plugged 
+instead of frozen, won't flush_delayed_work still deadlock?
+
+> > I foresee other kinds of problems, too.  Suppose after a suspend 
+> > starts, some higher layer code creates an I/O request with a short 
+> > timeout.  If the device weren't suspended the request would succeed -- 
+> > should it time out and fail now that the system is going to sleep?  
+> > That would make system sleep transitions non-transparent.
+> 
+> I can't see how freezing or not freezing would make any difference
+> there.  What if a kthread gets frozen with with IOs in flight?  The
+> timeouts would still trigger whether the issuer is frozen or not.  IO
+> timeouts are mostly implemented in block layer and block layer just
+> needs to handle it sensibly.
+
+kthreads (including workqueues) get frozen at controlled places.  
+Presumably they are smart enough not to allow themselves to be frozen
+while any I/Os are in flight.
+
+Alan Stern
 
