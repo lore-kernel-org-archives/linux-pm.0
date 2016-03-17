@@ -1,64 +1,44 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH 3/6] PCI: Move PCIe ports to D3hot during suspend
-Date: Thu, 17 Mar 2016 08:40:26 -0500
-Message-ID: <20160317134026.GA17069@localhost>
-References: <1456750566-116248-1-git-send-email-mika.westerberg@linux.intel.com>
- <1456750566-116248-4-git-send-email-mika.westerberg@linux.intel.com>
- <20160312002039.GK4725@localhost>
- <20160314093259.GD1796@lahna.fi.intel.com>
- <20160317103154.GR1793@lahna.fi.intel.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 4/8] cpufreq/schedutil: sysfs capacity margin tunable
+Date: Thu, 17 Mar 2016 06:55:34 -0700
+Message-ID: <56EAB756.1050805@linaro.org>
+References: <1457932932-28444-1-git-send-email-mturquette+renesas@baylibre.com>
+ <1457932932-28444-5-git-send-email-mturquette+renesas@baylibre.com>
+ <20160315212047.GE6344@twins.programming.kicks-ass.net>
+ <20160315214043.30639.75507@quark.deferred.io>
+ <20160315214821.GM6344@twins.programming.kicks-ass.net>
+ <20160315223701.30639.43127@quark.deferred.io> <56E8D4D9.1060202@linaro.org>
+ <20160316080503.GS6344@twins.programming.kicks-ass.net>
+ <20160316100257.GC18212@e106622-lin> <56E99E25.9070002@linaro.org>
+ <20160317094046.GF18212@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46404 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932614AbcCQNkg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Mar 2016 09:40:36 -0400
-Content-Disposition: inline
-In-Reply-To: <20160317103154.GR1793@lahna.fi.intel.com>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:34262 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030842AbcCQNzh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 09:55:37 -0400
+Received: by mail-pf0-f170.google.com with SMTP id x3so122134014pfb.1
+        for <linux-pm@vger.kernel.org>; Thu, 17 Mar 2016 06:55:37 -0700 (PDT)
+In-Reply-To: <20160317094046.GF18212@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, Michael Turquette <mturquette+renesas@baylibre.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-On Thu, Mar 17, 2016 at 12:31:54PM +0200, Mika Westerberg wrote:
-> On Mon, Mar 14, 2016 at 11:32:59AM +0200, Mika Westerberg wrote:
-> > > What happens if the PCIe port initially can be put in D3hot, but we we
-> > > later hot-add a device that would disqualify it?
-> > > 
-> > > Oh, I think I see -- we walk the subordinate devices every time we
-> > > would like to put the port in D3hot:
-> > > 
-> > >   pcie_port_suspend_noirq
-> > >     pcie_port_suspend_allowed
-> > >       dmi_get_date
-> > >       pcie_port_can_suspend
-> > >         pci_walk_bus
-> > > 
-> > > I guess that should work, but it seems clunky to do all that work,
-> > > even though it's not really a performance path.  What if we did this:
-> > > 
-> > >   - add a d3hot_allowed bit in struct pci_dev
-> > > 
-> > >   - when enumerating a port, set d3hot_allowed if BIOS is new enough
-> > >     (it makes me a bit nervous that we apparently default to enabling
-> > >     D3hot on arches without DMI)
-> > > 
-> > >   - when enumerating devices, clear d3hot_allowed in upstream bridge
-> > >     if necessary
-> > > 
-> > >   - when removing last device on a bus, re-do port config (set
-> > >     d3hot_allowed if appropriate)
-> > 
-> > Sounds reasonable. I'll give it a try.
-> 
-> It looks like we cannot use this approach. Userspace (and drivers) can
-> prevent devices from entering D3cold by changing dev->d3cold_allowed.
-> That can happen after the device has been enumerated.
+On 03/17/2016 02:40 AM, Juri Lelli wrote:
+>> Could the default schedtune value not serve as the out of the box margin?
+>>
+> I'm not sure I understand you here. For me schedtune should be disabled
+> by default, so I'd say that it doesn't introduce any additional margin
+> by default. But we still need a margin to make the governor work without
+> schedtune in the mix.
 
-Well, maybe.  If we want to change d3cold_allowed after enumeration,
-we could propagate that change through whatever part of the hierarchy
-it affects at that time.  I'd rather have the complexity of DMI
-checks, walking the bus, etc., there than in the suspend path.
+Why not have schedtune be enabled always, and use it to add the margin?
+It seems like it'd simplify things.
 
-Bjorn
+I haven't looked at the schedtune code at all so I don't know whether
+this makes sense given its current implementation. But conceptually I
+don't know why we'd need or want one margin in schedutil which will be
+tunable, and then another mechanism for tuning as well.
