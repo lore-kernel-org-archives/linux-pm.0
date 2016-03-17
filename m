@@ -1,42 +1,45 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Thu, 17 Mar 2016 09:58:28 +0800
-Message-ID: <CAMz4ku++hi2tXjqvUH7du2tzZ1Vjk7OtHfNuMPrmZ_m9EsOwUA@mail.gmail.com>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
-	<11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
-	<1458130190.6570.6.camel@suse.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Do not schedule policy update work in
+ cpufreq_resume()
+Date: Thu, 17 Mar 2016 13:30:00 +0700
+Message-ID: <20160317063000.GC14898@vireshk-mac-ubuntu>
+References: <5379622.iJjZa2C2Nq@vostro.rjw.lan>
+ <20160315061059.GB13831@vireshk-mac-ubuntu>
+ <CAJZ5v0iW7mkKTdgLm953nPAWVu4Cbx_P-E9bDg9WXwQtjDwb5A@mail.gmail.com>
+ <20160316044757.GB16250@vireshk-mac-ubuntu>
+ <CAJZ5v0gdnaw_BwW6ugT102YA+-Pb8O578Anf1b2vetEXsvCgzw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f182.google.com ([209.85.161.182]:36104 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbcCQB63 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 21:58:29 -0400
-Received: by mail-yw0-f182.google.com with SMTP id g3so84012123ywa.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Mar 2016 18:58:29 -0700 (PDT)
-In-Reply-To: <1458130190.6570.6.camel@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gdnaw_BwW6ugT102YA+-Pb8O578Anf1b2vetEXsvCgzw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 16 March 2016 at 20:09, Oliver Neukum <oneukum@suse.com> wrote:
-> On Wed, 2016-03-16 at 19:46 +0800, Baolin Wang wrote:
->> This patch introduces the usb charger driver based on usb gadget that
->> makes an enhancement to a power driver. It works well in practice but
->> that requires a system with suitable hardware.
->>
->> The basic conception of the usb charger is that, when one usb charger
->> is added or removed by reporting from the usb gadget state change or
->> the extcon device state change, the usb charger will report to power
->> user to set the current limitation.
->
-> This patch adds sysfs attributes without adding Documentation for them.
-> That's bad.
+On 16-03-16, 14:12, Rafael J. Wysocki wrote:
+> No, it won't.  This might be applicable to other governors, but not to
+> "performance" (look at what it does on _START instead of just
+> guessing).
+> 
+> > So, your patch break things for sure.
+> 
+> I'm not actually sure it breaks anything.
+> 
+> Theoretically, it may, but practically?  Is there any system out there
+> where it makes any difference?
 
-I'll add Documentation for the sysfs attributes in next version
-patchset. Thanks for your comments.
+AFAIU, this patch will break currently working governors.
+
+-> cpufreq_resume()
+  -> cpufreq_governor_performance(START)
+    -> __cpufreq_driver_target(target_freq = policy->max)
+    //policy->cur is already set to policy->max before suspend.
+        if (target_freq == policy->cur)
+                return 0;
+
+And so, the real frequency stays to 500 MHz and policy->cur contains 1 GHz.
 
 -- 
-Baolin.wang
-Best Regards
+viresh
