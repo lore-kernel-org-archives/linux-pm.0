@@ -1,99 +1,81 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
  device correctly") causes performance drop
-Date: Wed, 16 Mar 2016 17:11:04 -0700
-Message-ID: <20160317001104.GA13087@kroah.com>
+Date: Thu, 17 Mar 2016 00:17:07 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092633A9763D2@SHSMSX101.ccr.corp.intel.com>
 References: <56E9DDED.7000805@redhat.com>
- <20160316224634.GA3580@kroah.com>
- <56E9F387.9080703@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:48845 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbcCQALJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Mar 2016 20:11:09 -0400
-Content-Disposition: inline
-In-Reply-To: <56E9F387.9080703@redhat.com>
+Received: from mga04.intel.com ([192.55.52.120]:20286 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934565AbcCQARg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Mar 2016 20:17:36 -0400
+In-Reply-To: <56E9DDED.7000805@redhat.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laura Abbott <labbott@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Chen Yu <yu.c.chen@intel.com>, Manuel Krause <manuelkrause@netscape.net>, szegad <szegadlo@poczta.onet.pl>, prash <prash.n.rao@gmail.com>, amish <ammdispose-arch@yahoo.com>, Matthias <morpheusxyz123@yahoo.de>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Laura Abbott <labbott@redhat.com>, Javi Merino <javi.merino@arm.com>, "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Manuel Krause <manuelkrause@netscape.net>, szegad <szegadlo@poczta.onet.pl>, prash <prash.n.rao@gmail.com>, amish <ammdispose-arch@yahoo.com>, Matthias <morpheusxyz123@yahoo.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Mar 16, 2016 at 05:00:07PM -0700, Laura Abbott wrote:
-> On 03/16/2016 03:46 PM, Greg Kroah-Hartman wrote:
-> >On Wed, Mar 16, 2016 at 03:27:57PM -0700, Laura Abbott wrote:
-> >>Hi,
-> >>
-> >>Fedora received a bug report (https://bugzilla.redhat.com/show_bug.cgi?id=1317190)
-> >>of a major performance drop on various bench marks and general system
-> >>sluggishness with the 4.4.4 kernel update. The benchmarks were showing
-> >>a reduction to about 18% performance (not minor).
-> >>
-> >>Bisection showed the first bad commit was
-> >>
-> >>commit 774ac8b7eff69e0786970157de2157e68b22f456
-> >>Author: Zhang Rui <rui.zhang@intel.com>
-> >>Date:   Fri Oct 30 16:31:47 2015 +0800
-> >>
-> >>     Thermal: initialize thermal zone device correctly
-> >>     commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461 upstream.
-> >>     After thermal zone device registered, as we have not read any
-> >>     temperature before, thus tz->temperature should not be 0,
-> >>     which actually means 0C, and thermal trend is not available.
-> >>     In this case, we need specially handling for the first
-> >>     thermal_zone_device_update().
-> >>     Both thermal core framework and step_wise governor is
-> >>     enhanced to handle this. And since the step_wise governor
-> >>     is the only one that uses trends, so it's the only thermal
-> >>     governor that needs to be updated.
-> >>     Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> >>     Tested-by: szegad <szegadlo@poczta.onet.pl>
-> >>     Tested-by: prash <prash.n.rao@gmail.com>
-> >>     Tested-by: amish <ammdispose-arch@yahoo.com>
-> >>     Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> >>     Reviewed-by: Javi Merino <javi.merino@arm.com>
-> >>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> >>     Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> >>     Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> >>
-> >>
-> >>
-> >>Reverting this plus to other commits in the series (a67208e94d94
-> >>"Thermal: handle thermal zone device properly during system sleep"
-> >>and 27f356149d59 "Thermal: do thermal zone update after a cooling
-> >>device registered") confirmed the performance was back to normal.
-> >>
-> >>Bugzilla has the full discussion but this comment from one of the
-> >>reporters sums it up:
-> >>
-> >>"In 4.4.3 and prior, my 2.40 MHz processor would fluctuate between
-> >>1000 and 3400 MHz.  In 4.4.4, the processor would fluctuate between
-> >>400 and 700 MHz, according to /proc/cpuinfo.
-> >>
-> >>Setting /sys/devices/system/cpu/cpufreq/policy0/scaling_governor to
-> >>performance, instead of the default "powersave" forces the CPU to
-> >>2400 MHz, and improves performance greatly, but still not to the
-> >>same level as in 4.4.3."
-> >>
-> >>Any ideas?
-> >
-> >Is this same "slowdown" also seen in 4.5?
-> >
-> >thanks,
-> >
-> >greg k-h
-> >
-> 
-> Yes, the same issue is seen on 4.5 according to the reporter.
-
-Great, we are "bug compatible" :)
-
-Can you please work to get this resolved in Linus's tree and then we can
-backport the needed changes into the 4.4-stable release.
-
-Zhang, any ideas here?
-
-thanks,
-
-greg k-h
+Q2FuIHlvdSBzZW5kIG1lIHRoZSBvdXRwdXQgb2YgImdyZXAgLiAvc3lzL2NsYXNzL3RoZXJtYWwv
+Ki8qIiBib3RoIHcvIGFuZCB3L28gdGhlIGJyb2tlbiBwYXRjaCBzZXJpZXM/DQoNClRoYW5rcywN
+CnJ1aQ0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IExhdXJhIEFiYm90
+dCBbbWFpbHRvOmxhYmJvdHRAcmVkaGF0LmNvbV0NCj4gU2VudDogVGh1cnNkYXksIE1hcmNoIDE3
+LCAyMDE2IDY6MjggQU0NCj4gVG86IFpoYW5nLCBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+OyBK
+YXZpIE1lcmlubyA8amF2aS5tZXJpbm9AYXJtLmNvbT47DQo+IENoZW4sIFl1IEMgPHl1LmMuY2hl
+bkBpbnRlbC5jb20+DQo+IENjOiBHcmVnIEtyb2FoLUhhcnRtYW4gPGdyZWdraEBsaW51eGZvdW5k
+YXRpb24ub3JnPjsgTWFudWVsIEtyYXVzZQ0KPiA8bWFudWVsa3JhdXNlQG5ldHNjYXBlLm5ldD47
+IHN6ZWdhZCA8c3plZ2FkbG9AcG9jenRhLm9uZXQucGw+OyBwcmFzaA0KPiA8cHJhc2gubi5yYW9A
+Z21haWwuY29tPjsgYW1pc2ggPGFtbWRpc3Bvc2UtYXJjaEB5YWhvby5jb20+OyBNYXR0aGlhcw0K
+PiA8bW9ycGhldXN4eXoxMjNAeWFob28uZGU+OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExp
+bnV4IEtlcm5lbA0KPiBNYWlsaW5nIExpc3QgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+
+DQo+IFN1YmplY3Q6IFtSRUdSRVNTSU9OXSA3NzRhYzhiN2VmZjYgKCJUaGVybWFsOiBpbml0aWFs
+aXplIHRoZXJtYWwgem9uZSBkZXZpY2UNCj4gY29ycmVjdGx5IikgY2F1c2VzIHBlcmZvcm1hbmNl
+IGRyb3ANCj4gSW1wb3J0YW5jZTogSGlnaA0KPiANCj4gSGksDQo+IA0KPiBGZWRvcmEgcmVjZWl2
+ZWQgYSBidWcgcmVwb3J0DQo+IChodHRwczovL2J1Z3ppbGxhLnJlZGhhdC5jb20vc2hvd19idWcu
+Y2dpP2lkPTEzMTcxOTApDQo+IG9mIGEgbWFqb3IgcGVyZm9ybWFuY2UgZHJvcCBvbiB2YXJpb3Vz
+IGJlbmNoIG1hcmtzIGFuZCBnZW5lcmFsIHN5c3RlbQ0KPiBzbHVnZ2lzaG5lc3Mgd2l0aCB0aGUg
+NC40LjQga2VybmVsIHVwZGF0ZS4gVGhlIGJlbmNobWFya3Mgd2VyZSBzaG93aW5nIGENCj4gcmVk
+dWN0aW9uIHRvIGFib3V0IDE4JSBwZXJmb3JtYW5jZSAobm90IG1pbm9yKS4NCj4gDQo+IEJpc2Vj
+dGlvbiBzaG93ZWQgdGhlIGZpcnN0IGJhZCBjb21taXQgd2FzDQo+IA0KPiBjb21taXQgNzc0YWM4
+YjdlZmY2OWUwNzg2OTcwMTU3ZGUyMTU3ZTY4YjIyZjQ1Ng0KPiBBdXRob3I6IFpoYW5nIFJ1aSA8
+cnVpLnpoYW5nQGludGVsLmNvbT4NCj4gRGF0ZTogICBGcmkgT2N0IDMwIDE2OjMxOjQ3IDIwMTUg
+KzA4MDANCj4gDQo+ICAgICAgVGhlcm1hbDogaW5pdGlhbGl6ZSB0aGVybWFsIHpvbmUgZGV2aWNl
+IGNvcnJlY3RseQ0KPiANCj4gICAgICBjb21taXQgYmI0MzFiYTI2YzVjZDBhMTdjOTQxY2E2YzNh
+MTk1YTNhNmQ1ZDQ2MSB1cHN0cmVhbS4NCj4gDQo+ICAgICAgQWZ0ZXIgdGhlcm1hbCB6b25lIGRl
+dmljZSByZWdpc3RlcmVkLCBhcyB3ZSBoYXZlIG5vdCByZWFkIGFueQ0KPiAgICAgIHRlbXBlcmF0
+dXJlIGJlZm9yZSwgdGh1cyB0ei0+dGVtcGVyYXR1cmUgc2hvdWxkIG5vdCBiZSAwLA0KPiAgICAg
+IHdoaWNoIGFjdHVhbGx5IG1lYW5zIDBDLCBhbmQgdGhlcm1hbCB0cmVuZCBpcyBub3QgYXZhaWxh
+YmxlLg0KPiAgICAgIEluIHRoaXMgY2FzZSwgd2UgbmVlZCBzcGVjaWFsbHkgaGFuZGxpbmcgZm9y
+IHRoZSBmaXJzdA0KPiAgICAgIHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKCkuDQo+IA0KPiAg
+ICAgIEJvdGggdGhlcm1hbCBjb3JlIGZyYW1ld29yayBhbmQgc3RlcF93aXNlIGdvdmVybm9yIGlz
+DQo+ICAgICAgZW5oYW5jZWQgdG8gaGFuZGxlIHRoaXMuIEFuZCBzaW5jZSB0aGUgc3RlcF93aXNl
+IGdvdmVybm9yDQo+ICAgICAgaXMgdGhlIG9ubHkgb25lIHRoYXQgdXNlcyB0cmVuZHMsIHNvIGl0
+J3MgdGhlIG9ubHkgdGhlcm1hbA0KPiAgICAgIGdvdmVybm9yIHRoYXQgbmVlZHMgdG8gYmUgdXBk
+YXRlZC4NCj4gDQo+ICAgICAgVGVzdGVkLWJ5OiBNYW51ZWwgS3JhdXNlIDxtYW51ZWxrcmF1c2VA
+bmV0c2NhcGUubmV0Pg0KPiAgICAgIFRlc3RlZC1ieTogc3plZ2FkIDxzemVnYWRsb0Bwb2N6dGEu
+b25ldC5wbD4NCj4gICAgICBUZXN0ZWQtYnk6IHByYXNoIDxwcmFzaC5uLnJhb0BnbWFpbC5jb20+
+DQo+ICAgICAgVGVzdGVkLWJ5OiBhbWlzaCA8YW1tZGlzcG9zZS1hcmNoQHlhaG9vLmNvbT4NCj4g
+ICAgICBUZXN0ZWQtYnk6IE1hdHRoaWFzIDxtb3JwaGV1c3h5ejEyM0B5YWhvby5kZT4NCj4gICAg
+ICBSZXZpZXdlZC1ieTogSmF2aSBNZXJpbm8gPGphdmkubWVyaW5vQGFybS5jb20+DQo+ICAgICAg
+U2lnbmVkLW9mZi1ieTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiAgICAgIFNp
+Z25lZC1vZmYtYnk6IENoZW4gWXUgPHl1LmMuY2hlbkBpbnRlbC5jb20+DQo+ICAgICAgU2lnbmVk
+LW9mZi1ieTogR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz4N
+Cj4gDQo+IA0KPiANCj4gUmV2ZXJ0aW5nIHRoaXMgcGx1cyB0byBvdGhlciBjb21taXRzIGluIHRo
+ZSBzZXJpZXMgKGE2NzIwOGU5NGQ5NA0KPiAiVGhlcm1hbDogaGFuZGxlIHRoZXJtYWwgem9uZSBk
+ZXZpY2UgcHJvcGVybHkgZHVyaW5nIHN5c3RlbSBzbGVlcCINCj4gYW5kIDI3ZjM1NjE0OWQ1OSAi
+VGhlcm1hbDogZG8gdGhlcm1hbCB6b25lIHVwZGF0ZSBhZnRlciBhIGNvb2xpbmcgZGV2aWNlDQo+
+IHJlZ2lzdGVyZWQiKSBjb25maXJtZWQgdGhlIHBlcmZvcm1hbmNlIHdhcyBiYWNrIHRvIG5vcm1h
+bC4NCj4gDQo+IEJ1Z3ppbGxhIGhhcyB0aGUgZnVsbCBkaXNjdXNzaW9uIGJ1dCB0aGlzIGNvbW1l
+bnQgZnJvbSBvbmUgb2YgdGhlIHJlcG9ydGVycw0KPiBzdW1zIGl0IHVwOg0KPiANCj4gIkluIDQu
+NC4zIGFuZCBwcmlvciwgbXkgMi40MCBNSHogcHJvY2Vzc29yIHdvdWxkIGZsdWN0dWF0ZSBiZXR3
+ZWVuDQo+IDEwMDAgYW5kIDM0MDAgTUh6LiAgSW4gNC40LjQsIHRoZSBwcm9jZXNzb3Igd291bGQg
+Zmx1Y3R1YXRlIGJldHdlZW4NCj4gNDAwIGFuZCA3MDAgTUh6LCBhY2NvcmRpbmcgdG8gL3Byb2Mv
+Y3B1aW5mby4NCj4gDQo+IFNldHRpbmcgL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1ZnJlcS9w
+b2xpY3kwL3NjYWxpbmdfZ292ZXJub3IgdG8NCj4gcGVyZm9ybWFuY2UsIGluc3RlYWQgb2YgdGhl
+IGRlZmF1bHQgInBvd2Vyc2F2ZSIgZm9yY2VzIHRoZSBDUFUgdG8NCj4gMjQwMCBNSHosIGFuZCBp
+bXByb3ZlcyBwZXJmb3JtYW5jZSBncmVhdGx5LCBidXQgc3RpbGwgbm90IHRvIHRoZSBzYW1lIGxl
+dmVsDQo+IGFzIGluIDQuNC4zLiINCj4gDQo+IEFueSBpZGVhcz8NCj4gDQo+IFRoYW5rcywNCj4g
+TGF1cmENCg0K
