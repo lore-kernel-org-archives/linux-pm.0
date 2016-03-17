@@ -1,75 +1,173 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC 4/4] thunderbolt: Support runtime pm
-Date: Thu, 17 Mar 2016 10:54:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1603171042520.2097-100000@iolanthe.rowland.org>
-References: <20160316162017.GA28372@wunner.de>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
+Date: Thu, 17 Mar 2016 10:03:20 -0500
+Message-ID: <20160317150320.GA22769@localhost>
+References: <cover.1458126755.git.lukas@wunner.de>
+ <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160316162017.GA28372@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:56470 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967326AbcCQPDZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Mar 2016 11:03:25 -0400
+Content-Disposition: inline
+In-Reply-To: <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
 Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
-List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Mar 2016, Lukas Wunner wrote:
+On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
+> Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
+> Gen 3 chips and onward use a distinct ID for the NHI.
 
-> > In all other controllers that I'm familiar with, there's a device to 
-> > represent the controller, another device representing its upward link, 
-> > and a bunch of devices representing the downward links.  The analogous 
-> > approach here would make bridges 1 ... n children of bridge 0 (which 
-> > sounds strange but might make more sense in the end).
-> > 
-> > The way you're doing it, how does the NHI driver know when to go into 
-> > suspend?  The runtime PM core won't notify it when all the hotplugged 
-> > devices attached to the other bridges have been suspended, since it's 
-> > not their parent.
+I assume this is strictly using #defines instead of bare numbers and
+hence "no functional change intended."
+
+> Cc: Andreas Noever <andreas.noever@gmail.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+I assume somebody else will merge this with the rest of the series.
+Let me know if you need anything else from me.
+
+> ---
+>  drivers/pci/quirks.c         | 16 ++++++++++------
+>  drivers/thunderbolt/nhi.c    |  8 +++++---
+>  drivers/thunderbolt/switch.c |  9 +++++----
+>  include/linux/pci_ids.h      | 18 ++++++++++++++++++
+>  4 files changed, 38 insertions(+), 13 deletions(-)
 > 
-> The NHI knows when something is plugged in, it talks to the switches
-> in devices that are hotplugged to the controller. As I've explained
-> in the lengthy comment in the middle of patch [4/4], we acquire a
-> runtime pm ref for each switch that is plugged in and release one
-> whenever a switch is unplugged.
-
-If I understand correctly, that means you allow the Thunderbolt
-controller to go into runtime suspend only when nothing is plugged into
-any of the ports.  Is that right?  It's quite inefficient.
-
-> > > The PCI subsystem pm_ops do not work properly for devices which can be
-> > > put into D3cold by some other means than the standard _PSx ACPI platform
-> > > methods: We do not want to wake up the chip before system sleep, yet
-> > > pci_pm_prepare() does not return 1 as it should since pci_target_state()
-> > > returns D3hot. We solve this by overriding pci_pm_prepare() using power
-> > > domains. They are assigned to the bridges using a PCI quirk. We also do
-> > > not want to wake the chip after system resume as pci_pm_complete() does,
-> > > so we override that as well. Note that we can never remove and free the
-> > > dev_pm_domain assigned to the bridges as there is no PCI remove fixup
-> > > section. We also cannot bail out of the ->probe callback if allocation
-> > > of the struct dev_pm_domain fails since the PCI enable fixup does not
-> > > allow return values to be passed back.
-> > > 
-> > > It might be possible to implement a less kludgy solution which adheres
-> > > to the hierarchical pm model and does not need a PCI enable quirk for
-> > > the bridges if pcieport had runtime pm support both for itself and
-> > > any service drivers registering with it. The runtime pm code could
-> > > then be moved from the NHI to a new Thunderbolt service driver that
-> > > gets used on the upstream bridge.
-> > 
-> > Or you could interpose another device structure between the upstream 
-> > bridge and all the downstream bridges.
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 0575a1e..d1e3956 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -3203,7 +3203,8 @@ static void quirk_apple_poweroff_thunderbolt(struct pci_dev *dev)
+>  	acpi_execute_simple_method(SXIO, NULL, 0);
+>  	acpi_execute_simple_method(SXLV, NULL, 0);
+>  }
+> -DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL, 0x1547,
+> +DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL,
+> +			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+>  			       quirk_apple_poweroff_thunderbolt);
+>  
+>  /*
+> @@ -3237,9 +3238,10 @@ static void quirk_apple_wait_for_thunderbolt(struct pci_dev *dev)
+>  	if (!nhi)
+>  		goto out;
+>  	if (nhi->vendor != PCI_VENDOR_ID_INTEL
+> -			|| (nhi->device != 0x1547 && nhi->device != 0x156c)
+> -			|| nhi->subsystem_vendor != 0x2222
+> -			|| nhi->subsystem_device != 0x1111)
+> +		    || (nhi->device != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
+> +			nhi->device != PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI)
+> +		    || nhi->subsystem_vendor != 0x2222
+> +		    || nhi->subsystem_device != 0x1111)
+>  		goto out;
+>  	dev_info(&dev->dev, "quirk: waiting for thunderbolt to reestablish PCI tunnels...\n");
+>  	device_pm_wait_for_dev(&dev->dev, &nhi->dev);
+> @@ -3247,9 +3249,11 @@ out:
+>  	pci_dev_put(nhi);
+>  	pci_dev_put(sibling);
+>  }
+> -DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x1547,
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
+> +			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+>  			       quirk_apple_wait_for_thunderbolt);
+> -DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x156d,
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
+> +			       PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE,
+>  			       quirk_apple_wait_for_thunderbolt);
+>  #endif
+>  
+> diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
+> index 20a41f7..36be23b 100644
+> --- a/drivers/thunderbolt/nhi.c
+> +++ b/drivers/thunderbolt/nhi.c
+> @@ -633,16 +633,18 @@ static const struct dev_pm_ops nhi_pm_ops = {
+>  static struct pci_device_id nhi_ids[] = {
+>  	/*
+>  	 * We have to specify class, the TB bridges use the same device and
+> -	 * vendor (sub)id.
+> +	 * vendor (sub)id on gen 1 and gen 2 controllers.
+>  	 */
+>  	{
+>  		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
+> -		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x1547,
+> +		.vendor = PCI_VENDOR_ID_INTEL,
+> +		.device = PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+>  		.subvendor = 0x2222, .subdevice = 0x1111,
+>  	},
+>  	{
+>  		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
+> -		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x156c,
+> +		.vendor = PCI_VENDOR_ID_INTEL,
+> +		.device = PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI,
+>  		.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID,
+>  	},
+>  	{ 0,}
+> diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
+> index aeb9829..db73ffe 100644
+> --- a/drivers/thunderbolt/switch.c
+> +++ b/drivers/thunderbolt/switch.c
+> @@ -293,9 +293,9 @@ static int tb_plug_events_active(struct tb_switch *sw, bool active)
+>  	if (active) {
+>  		data = data & 0xFFFFFF83;
+>  		switch (sw->config.device_id) {
+> -		case 0x1513:
+> -		case 0x151a:
+> -		case 0x1549:
+> +		case PCI_DEVICE_ID_INTEL_LIGHT_RIDGE:
+> +		case PCI_DEVICE_ID_INTEL_EAGLE_RIDGE:
+> +		case PCI_DEVICE_ID_INTEL_PORT_RIDGE:
+>  			break;
+>  		default:
+>  			data |= 4;
+> @@ -370,7 +370,8 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
+>  		tb_sw_warn(sw, "unknown switch vendor id %#x\n",
+>  			   sw->config.vendor_id);
+>  
+> -	if (sw->config.device_id != 0x1547 && sw->config.device_id != 0x1549)
+> +	if (sw->config.device_id != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
+> +	    sw->config.device_id != PCI_DEVICE_ID_INTEL_PORT_RIDGE)
+>  		tb_sw_warn(sw, "unsupported switch device id %#x\n",
+>  			   sw->config.device_id);
+>  
+> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> index 37f05cb..bec46b7 100644
+> --- a/include/linux/pci_ids.h
+> +++ b/include/linux/pci_ids.h
+> @@ -2599,6 +2599,24 @@
+>  #define PCI_DEVICE_ID_INTEL_82441	0x1237
+>  #define PCI_DEVICE_ID_INTEL_82380FB	0x124b
+>  #define PCI_DEVICE_ID_INTEL_82439	0x1250
+> +#define PCI_DEVICE_ID_INTEL_LIGHT_RIDGE             0x1513 /* Tbt 1 Gen 1 */
+> +#define PCI_DEVICE_ID_INTEL_EAGLE_RIDGE             0x151a
+> +#define PCI_DEVICE_ID_INTEL_LIGHT_PEAK              0x151b
+> +#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C         0x1547 /* Tbt 1 Gen 2 */
+> +#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_2C         0x1548
+> +#define PCI_DEVICE_ID_INTEL_PORT_RIDGE              0x1549
+> +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_NHI    0x1566 /* Tbt 1 Gen 3 */
+> +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_BRIDGE 0x1567
+> +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_NHI    0x1568
+> +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_BRIDGE 0x1569
+> +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_NHI     0x156a /* Thunderbolt 2 */
+> +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_BRIDGE  0x156b
+> +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI     0x156c
+> +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE  0x156d
+> +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_NHI     0x1575 /* Thunderbolt 3 */
+> +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_BRIDGE  0x1576
+> +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_NHI     0x1577
+> +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_BRIDGE  0x1578
+>  #define PCI_DEVICE_ID_INTEL_80960_RP	0x1960
+>  #define PCI_DEVICE_ID_INTEL_82840_HB	0x1a21
+>  #define PCI_DEVICE_ID_INTEL_82845_HB	0x1a30
+> -- 
+> 2.7.0
 > 
-> How? The structure is predetermined by the way the PCI devices and
-> bridges are connected to each other. That was Intel's idea.
-
-What I'm getting at is that we should have proper runtime-PM support
-for bridges, i.e., I agree with what you wrote above.  A bridge can
-safely go into runtime suspend when there are no unsuspended devices
-attached to any of its downstream ports.  (That's how the USB hub
-driver works, for instance.)  Doing things that way would make
-everything simpler in the long run.
-
-So my suggestion is that you change over to the "less kludgy solution"  
-and work on that instead.
-
-Alan Stern
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
