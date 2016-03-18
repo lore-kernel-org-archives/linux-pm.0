@@ -1,143 +1,84 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 7/7][Update] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Fri, 18 Mar 2016 12:34:09 +0000
-Message-ID: <20160318123409.GA900@e105326-lin>
-References: <2495375.dFbdlAZmA6@vostro.rjw.lan>
- <4088601.C2vItRYpQn@vostro.rjw.lan>
- <1711281.bPmSjlBT7c@vostro.rjw.lan>
- <1614814.usHvZ58O6A@vostro.rjw.lan>
+From: Josh Boyer <jwboyer@fedoraproject.org>
+Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
+Date: Fri, 18 Mar 2016 08:37:15 -0400
+Message-ID: <CA+5PVA78uXrqgm5a9h5ytbrd5sun4mVU5+u9V9GnY1V6rizhzg@mail.gmail.com>
+References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com>
+	<1704778.QLUl50G1uZ@vostro.rjw.lan>
+	<CA+5PVA4iMHGEhSjDOwR_JB2i+wL2o6v7-aTErfsJ5nqFHp+JMA@mail.gmail.com>
+	<10670722.U2p4NnYGsS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1614814.usHvZ58O6A@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:35093 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbcCRMhQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 08:37:16 -0400
+In-Reply-To: <10670722.U2p4NnYGsS@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-Hi Rafael, all,
-I have (yet another) consideration regarding the definition of the
-margin for the frequency selection.
+On Thu, Mar 17, 2016 at 8:20 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, March 17, 2016 12:44:54 PM Josh Boyer wrote:
+>> On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
+>> >> Hello,
+>> >
+>> > Hi,
+>> >
+>> >> I have an Intel Atom based NUC that is producing the following
+>> >> backtraces on boot of Linus' tree as of last evening.  This does not
+>> >> happen with a tree with top level commit 271ecc5253e2, but does happen
+>> >> when using the tree mentioned in the subject with top level commit
+>> >> 63e30271b04c.
+>> >>
+>> >> The first backtrace appears to be a warning because the intel_pstate
+>> >> driver is calling wrmsrl_on_cpu when interrupts are disabled?  Not
+>> >> sure on that one.
+>> >>
+>> >> The second backtrace is a lockdep report.  Both are from the same boot.
+>> >
+>> > OK, thanks for the report.
+>> >
+>> > Can you please try the patch below?
+>> >
+>> > I'm actually unsure if we can do that safely in general for Atom because
+>> > of the initialization, but that's what Core does anyway.
+>> >
+>> > Srinivas, Philippe, why exactly do we need the wrmsrl_on_cpu() in
+>> > atom_set_pstate()?  core_set_pstate() uses wrmsrl() and seems to be doing fine.
+>> >
+>> > ---
+>> >  drivers/cpufreq/intel_pstate.c |    2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
+>> > ===================================================================
+>> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+>> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
+>> > @@ -587,7 +587,7 @@ static void atom_set_pstate(struct cpuda
+>> >
+>> >         val |= vid;
+>> >
+>> > -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+>> > +       wrmsrl(MSR_IA32_PERF_CTL, val);
+>> >  }
+>> >
+>> >  static int silvermont_get_scaling(void)
+>> >
+>>
+>> I applied this on top of commit 09fd671ccb24 and the backtrace and
+>> lockdep report both go away.  So yes, this seems to clear up the
+>> issue.  I tested it on a variety of different CPU types and didn't
+>> notice anything wrong on them either.
+>
+> The problems may show up during initialization and cleanup where one CPU
+> may be running code trying to configure a different one.  In those cases
+> wrmsrl_on_cpu() needs to be used.
+>
+> Let me cut a patch taking that into account.
 
-On 17-Mar 17:01, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] cpufreq: schedutil: New governor based on scheduler utilization data
-> 
-> Add a new cpufreq scaling governor, called "schedutil", that uses
-> scheduler-provided CPU utilization information as input for making
-> its decisions.
-> 
-> Doing that is possible after commit 34e2c555f3e1 (cpufreq: Add
-> mechanism for registering utilization update callbacks) that
-> introduced cpufreq_update_util() called by the scheduler on
-> utilization changes (from CFS) and RT/DL task status updates.
-> In particular, CPU frequency scaling decisions may be based on
-> the the utilization data passed to cpufreq_update_util() by CFS.
-> 
-> The new governor is relatively simple.
-> 
-> The frequency selection formula used by it depends on whether or not
-> the utilization is frequency-invariant.  In the frequency-invariant
-> case the new CPU frequency is given by
-> 
-> 	next_freq = 1.25 * max_freq * util / max
-> 
-> where util and max are the last two arguments of cpufreq_update_util().
-> In turn, if util is not frequency-invariant, the maximum frequency in
-> the above formula is replaced with the current frequency of the CPU:
-> 
-> 	next_freq = 1.25 * curr_freq * util / max
-> 
-> The coefficient 1.25 corresponds to the frequency tipping point at
-> (util / max) = 0.8.
+OK.  Happy to test when you have it ready.
 
-
-In both this formulas the OPP jump is driven by a margin which is
-effectively proportional to the capacity of the current OPP.
-For example, if we consider a simple system with this set of OPPs:
-
-  [200,400,600,800,1000) MHz
-
-and we apply the formula for the frequency-invariant case, we get:
-
-   util/max    min_opp    min_util   margin
-        1.0       1000        0.80      20%
-        0.8        800        0.64      16%
-        0.6        600        0.48      12%
-        0.4        400        0.32       8%
-        0.2        200        0.16       4%
-
-Where:
-- min_opp: is the minimum OPP which can satisfy (util/max) capacity
-  request
-- min_util: is the minimum utilization value which effectively trigger
-  a switch to the upper OPP
-- margin: is the effective capacity margin to remain at min_opp
-
-This means that when running at the lower OPP we can build up to 16%
-utilization (i.e. 4% less than the capacity of the min_opp) before
-jumping to the next OPP. But, for example, switching at the 800MHz
-OPP we need to build up just 4% utilization (i.e. 16% less than the
-capacity of that OPP) to jump up.
-
-This is a really simple example, with OPPs that are equally distributed.
-However, the question is: does is really make sense to have different
-effective margins for different starting OPPs?
-
-AFAIU, this solution is biasing the frequency selection to higher
-OPPs.  The bigger the utilization of a CPU the more we are likely to
-run at an higher the minimum OPP.
-The advantage is a reduce time to reach the highest OPP, which can be
-beneficial for performance oriented workload. The disadvantage is
-instead a quite likely reduction of residencies on mid-range OPPs.
-
-We should consider also that, at least in its current implementation,
-PELT "builds up" slower when running at lower OPPs, which further
-amplify this unbalance on OPP residencies.
-
-IMO, biasing the selection of an OPP over another is something which
-sound more like a "policy" than a "mechanism". Since here the goal
-should be to provide just a mechanism, perhaps a different approach
-can be evaluated.
-
-Have we ever considered to use a "constant margin" for each OPP?
-
-The value of such a margin can still be defined as a (configurable)
-percentage of the max (or min) OPP. But once defined, the same
-margin can be used to decide whenever to switch to the next OPP.
-
-In the previous example, considering a 5% margin wrt the max capacity,
-these are the new margins:
-
-   util/max    min_opp    min_util   margin
-        1.0       1000        0.95       5%
-        0.8        800        0.75       5%
-        0.6        600        0.55       5%
-        0.4        400        0.35       5%
-        0.2        200        0.15       5%
-
-That means that when running both at the lowest OPP or in a mid-range
-one, we always need to build up the same amount of utilization before
-switching to the next one.
-
-What is the translation in residencies time? This is still affected by
-the PELT behaviors when running at different OPPs but IMO it should
-improve a bit the fairness on OPP selections.
-
-Moreover, from an implementation standpoint, what is now a couple of
-multiplications and comparison, can potentially be reduced to a single
-comparison, e.g.
-
-   next_freq = util > (curr_cap - margin)
-               ?  curr_freq + 1
-               :  curr_freq
-
-where margin is pre-computed to be for example 51 (i.e. 5% of 1024) as
-well as (curr_cap - margin), which can be cached at each OPP change.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+josh
