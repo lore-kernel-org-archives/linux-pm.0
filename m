@@ -1,74 +1,81 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] powercap: intel_rapl: PSys support
-Date: Thu, 17 Mar 2016 15:56:03 -0700
-Message-ID: <1458255363.3861.40.camel@linux.intel.com>
-References: <1458253409-13318-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20160317225100.GA3805@pd.tnic>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
+Date: Fri, 18 Mar 2016 01:20:59 +0100
+Message-ID: <10670722.U2p4NnYGsS@vostro.rjw.lan>
+References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com> <1704778.QLUl50G1uZ@vostro.rjw.lan> <CA+5PVA4iMHGEhSjDOwR_JB2i+wL2o6v7-aTErfsJ5nqFHp+JMA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:45811 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbcCQW4I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Mar 2016 18:56:08 -0400
-In-Reply-To: <20160317225100.GA3805@pd.tnic>
+Received: from v094114.home.net.pl ([79.96.170.134]:60098 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S967380AbcCRAS4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Mar 2016 20:18:56 -0400
+In-Reply-To: <CA+5PVA4iMHGEhSjDOwR_JB2i+wL2o6v7-aTErfsJ5nqFHp+JMA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de, x86@kernel.org, hpa@zytor.com, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
+To: Josh Boyer <jwboyer@fedoraproject.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
-On Thu, 2016-03-17 at 23:51 +0100, Borislav Petkov wrote:
-> On Thu, Mar 17, 2016 at 03:23:29PM -0700, Srinivas Pandruvada wrote:
-> >=20
-> > Skylake processor supports a new set of RAPL registers for
-> > controlling
-> > entire platform instead of just CPU package. This is useful for
-> > thermal
-> > and power control when source of power/thermal is not just CPU/GPU.
-> > This change adds a new platform domain (AKA PSys) to the current
-> > power capping Intel RAPL driver.
-> > PSys also supports PL1 (long term) and PL2 (short term) control
-> > like
-> > package domain. This also follows same MSRs for energy and time
-> > units as package domain.
-> > Unlike package domain, PSys support requires more than just
-> > processor
-> > level implementation. The other parts in the system need additional
-> > implementation, which OEMs needs to support. So not all Skylake
-> > systems will support PSys.
-> >=20
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > .com>
+On Thursday, March 17, 2016 12:44:54 PM Josh Boyer wrote:
+> On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
+> >> Hello,
+> >
+> > Hi,
+> >
+> >> I have an Intel Atom based NUC that is producing the following
+> >> backtraces on boot of Linus' tree as of last evening.  This does not
+> >> happen with a tree with top level commit 271ecc5253e2, but does happen
+> >> when using the tree mentioned in the subject with top level commit
+> >> 63e30271b04c.
+> >>
+> >> The first backtrace appears to be a warning because the intel_pstate
+> >> driver is calling wrmsrl_on_cpu when interrupts are disabled?  Not
+> >> sure on that one.
+> >>
+> >> The second backtrace is a lockdep report.  Both are from the same boot.
+> >
+> > OK, thanks for the report.
+> >
+> > Can you please try the patch below?
+> >
+> > I'm actually unsure if we can do that safely in general for Atom because
+> > of the initialization, but that's what Core does anyway.
+> >
+> > Srinivas, Philippe, why exactly do we need the wrmsrl_on_cpu() in
+> > atom_set_pstate()?  core_set_pstate() uses wrmsrl() and seems to be doing fine.
+> >
 > > ---
-> > =C2=A0arch/x86/include/asm/msr-index.h |=C2=A0=C2=A03 ++
-> > =C2=A0drivers/powercap/intel_rapl.c=C2=A0=C2=A0=C2=A0=C2=A0| 63
-> > ++++++++++++++++++++++++++++++++++++++++
-> > =C2=A02 files changed, 66 insertions(+)
-> >=20
-> > diff --git a/arch/x86/include/asm/msr-index.h
-> > b/arch/x86/include/asm/msr-index.h
-> > index 2da46ac..bd383f5 100644
-> > --- a/arch/x86/include/asm/msr-index.h
-> > +++ b/arch/x86/include/asm/msr-index.h
-> > @@ -190,6 +190,9 @@
-> > =C2=A0#define MSR_PP1_ENERGY_STATUS		0x00000641
-> > =C2=A0#define MSR_PP1_POLICY			0x00000642
-> > =C2=A0
-> > +#define MSR_PLATFORM_ENERGY_STATUS	0x0000064d
-> > +#define MSR_PLATFORM_POWER_LIMIT	0x0000065c
-> Please add those defines to intel_rapl.c as they're being used only
-> there, apparently.
-OK. I will move them.
+> >  drivers/cpufreq/intel_pstate.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> > @@ -587,7 +587,7 @@ static void atom_set_pstate(struct cpuda
+> >
+> >         val |= vid;
+> >
+> > -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+> > +       wrmsrl(MSR_IA32_PERF_CTL, val);
+> >  }
+> >
+> >  static int silvermont_get_scaling(void)
+> >
+> 
+> I applied this on top of commit 09fd671ccb24 and the backtrace and
+> lockdep report both go away.  So yes, this seems to clear up the
+> issue.  I tested it on a variety of different CPU types and didn't
+> notice anything wrong on them either.
+
+The problems may show up during initialization and cleanup where one CPU
+may be running code trying to configure a different one.  In those cases
+wrmsrl_on_cpu() needs to be used.
+
+Let me cut a patch taking that into account.
 
 Thanks,
-Srinivas
+Rafael
 
->=20
-> --=C2=A0
-> Regards/Gruss,
-> =C2=A0=C2=A0=C2=A0=C2=A0Boris.
->=20
-> SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham No=
-rton,
-> HRB 21284 (AG N=C3=BCrnberg)
