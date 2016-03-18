@@ -1,32 +1,58 @@
 From: Tejun Heo <tj@kernel.org>
 Subject: Re: Should suspend plug low-level devices?
-Date: Fri, 18 Mar 2016 16:29:54 -0400
-Message-ID: <20160318202954.GK20028@mtj.duckdns.org>
-References: <CAJZ5v0i=7Sz17yr1_1fLiJq6oWRDRHOFukkzn3N=y3empshVGw@mail.gmail.com>
- <Pine.LNX.4.44L0.1603171452140.2097-100000@iolanthe.rowland.org>
+Date: Fri, 18 Mar 2016 16:32:42 -0400
+Message-ID: <20160318203242.GL20028@mtj.duckdns.org>
+References: <20160316163410.GJ6980@mtj.duckdns.org>
+ <Pine.LNX.4.44L0.1603171433300.2097-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f175.google.com ([209.85.220.175]:33950 "EHLO
-	mail-qk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbcCRU37 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 16:29:59 -0400
-Received: by mail-qk0-f175.google.com with SMTP id p130so383444qke.1
-        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 13:29:58 -0700 (PDT)
+Received: from mail-qk0-f178.google.com ([209.85.220.178]:35368 "EHLO
+	mail-qk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756651AbcCRUcq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 16:32:46 -0400
+Received: by mail-qk0-f178.google.com with SMTP id o6so54239334qkc.2
+        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 13:32:45 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1603171452140.2097-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1603171433300.2097-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jiri Kosina <jikos@kernel.org>, Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Cc: Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, florian@mickler.org, jkosina@suse.cz, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, Mar 17, 2016 at 02:53:42PM -0400, Alan Stern wrote:
-> I agree, except that I think the most likely solution is to delay the 
-> operations that require a freezable thing until after the system is 
-> resumed.
+Hello,
 
-Yes, by following the existing and well-established device suspend
-order.
+On Thu, Mar 17, 2016 at 02:51:36PM -0400, Alan Stern wrote:
+> > Stopping kthreads in itself is fine but the problem is that we
+> > currently don't know who's stopping what.  Just making each freezing
+> > explicit, say, an explicit invocation of kthread_freeze_kthread(),
+> > wouldn't be that difficult and would go a long way.  e.g. It would
+> > immediately solve the problem arising from kthread freezing order not
+> > matching device dependency hierarchy.
+> 
+> We're talking about workqueues in particular.  Freezing order is not 
+> the issue.
+
+Whether something is running on kthread or workqueue doesn't make any
+difference.  Why would it?  It's about dependency chain, not what
+something is running on.
+
+> > * Make block layer plug bio's from upper layers.
+> > 
+> > * Visit each freezable workqueue or kthread users and convert them to
+> >   plug explicitly.
+> 
+> How would this help the case in question?  If a workqueue is plugged 
+> instead of frozen, won't flush_delayed_work still deadlock?
+
+By plugging and unplugging in a well defined order rather than
+"whatever comes first in workqueue or task lists".
+
+> kthreads (including workqueues) get frozen at controlled places.  
+> Presumably they are smart enough not to allow themselves to be frozen
+> while any I/Os are in flight.
+
+I don't think that's the main problem here.
 
 Thanks.
 
