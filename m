@@ -1,121 +1,233 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
- device correctly") causes performance drop
-Date: Fri, 18 Mar 2016 23:36:00 +0000
-Message-ID: <1458343981.2619.2.camel@intel.com>
-References: <56E9DDED.7000805@redhat.com> <20160316224634.GA3580@kroah.com>
-	 <56E9F387.9080703@redhat.com> <1458173863.4703.18.camel@intel.com>
-	 <56EC811C.6020404@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle: use high confidence factors only when
+ considering polling
+Date: Sat, 19 Mar 2016 00:40:01 +0100
+Message-ID: <CAJZ5v0iZwhEer2F4wyY5P7FFfnnEMxs0pMdgmgLjLXbFngYPgw@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<CAJZ5v0iK=vO1HPKfbpMwNx_Tk-kjGEUKrCmehaK7nN+-Up7BoA@mail.gmail.com>
+	<20160316121400.680a6a46@annuminas.surriel.com>
+	<10828426.sI6CaBvZhk@vostro.rjw.lan>
+	<000701d180df$e8a14340$b9e3c9c0$@net>
+	<CAJZ5v0gLXE=sRxv35hKuX88L4tphSBtPb9Y2oLERuEhjsbTGJQ@mail.gmail.com>
+	<003301d18144$87bb8df0$9732a9d0$@net>
+	<20160318152957.5c3b91bc@annuminas.surriel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:35603 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751948AbcCRXgF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 18 Mar 2016 19:36:05 -0400
-In-Reply-To: <56EC811C.6020404@redhat.com>
-Content-Language: en-US
-Content-ID: <212C6C1D9127744A88C1893FFAB3A952@intel.com>
+Received: from mail-lf0-f50.google.com ([209.85.215.50]:33154 "EHLO
+	mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbcCRXkD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 19:40:03 -0400
+Received: by mail-lf0-f50.google.com with SMTP id h198so75442653lfh.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 16:40:02 -0700 (PDT)
+In-Reply-To: <20160318152957.5c3b91bc@annuminas.surriel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "labbott@redhat.com" <labbott@redhat.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "ammdispose-arch@yahoo.com" <ammdispose-arch@yahoo.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Chen, Yu C" <yu.c.chen@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "manuelkrause@netscape.net" <manuelkrause@netscape.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "frolvlad@gmail.com" <frolvlad@gmail.com>, "szegadlo@poczta.onet.pl" <szegadlo@poczta.onet.pl>, "prash.n.rao@gmail.com" <prash.n.rao@gmail.com>, "javi.merino@arm.com" <javi.merino@arm.com>, "morpheusxyz123@yahoo.de" <morpheusxyz123@yahoo.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-T24gRnJpLCAyMDE2LTAzLTE4IGF0IDE1OjI4IC0wNzAwLCBMYXVyYSBBYmJvdHQgd3JvdGU6DQo+
-IChicmluZ2luZyB0aGlzIGJhY2sgdG8gdGhlIG1haW4gdGhyZWFkKQ0KPiANCj4gT24gMDMvMTYv
-MjAxNiAwNToyMCBQTSwgUGFuZHJ1dmFkYSwgU3Jpbml2YXMgd3JvdGU6DQo+ID4gT24gV2VkLCAy
-MDE2LTAzLTE2IGF0IDE3OjAwIC0wNzAwLCBMYXVyYSBBYmJvdHQgd3JvdGU6DQo+ID4gPiBPbiAw
-My8xNi8yMDE2IDAzOjQ2IFBNLCBHcmVnIEtyb2FoLUhhcnRtYW4gd3JvdGU6DQo+ID4gPiA+IE9u
-IFdlZCwgTWFyIDE2LCAyMDE2IGF0IDAzOjI3OjU3UE0gLTA3MDAsIExhdXJhIEFiYm90dCB3cm90
-ZToNCj4gPiA+ID4gPiBIaSwNCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBGZWRvcmEgcmVjZWl2ZWQg
-YSBidWcgcmVwb3J0IChodHRwczovL2J1Z3ppbGxhLnJlZGhhdC5jb20vc2hvDQo+ID4gPiA+ID4g
-d19idQ0KPiA+ID4gPiA+IGcuY2dpP2lkPTEzMTcxOTApDQo+ID4gPiA+ID4gb2YgYSBtYWpvciBw
-ZXJmb3JtYW5jZSBkcm9wIG9uIHZhcmlvdXMgYmVuY2ggbWFya3MgYW5kDQo+ID4gPiA+ID4gZ2Vu
-ZXJhbA0KPiA+ID4gPiA+IHN5c3RlbQ0KPiA+ID4gPiA+IHNsdWdnaXNobmVzcyB3aXRoIHRoZSA0
-LjQuNCBrZXJuZWwgdXBkYXRlLiBUaGUgYmVuY2htYXJrcw0KPiA+ID4gPiA+IHdlcmUNCj4gPiA+
-ID4gPiBzaG93aW5nDQo+ID4gPiA+ID4gYSByZWR1Y3Rpb24gdG8gYWJvdXQgMTglIHBlcmZvcm1h
-bmNlIChub3QgbWlub3IpLg0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IEJpc2VjdGlvbiBzaG93ZWQg
-dGhlIGZpcnN0IGJhZCBjb21taXQgd2FzDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gY29tbWl0IDc3
-NGFjOGI3ZWZmNjllMDc4Njk3MDE1N2RlMjE1N2U2OGIyMmY0NTYNCj4gPiA+ID4gPiBBdXRob3I6
-IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4NCj4gPiA+ID4gPiBEYXRlOsKgwqDCoEZy
-aSBPY3QgMzAgMTY6MzE6NDcgMjAxNSArMDgwMA0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IMKgwqDC
-oMKgwqDCoFRoZXJtYWw6IGluaXRpYWxpemUgdGhlcm1hbCB6b25lIGRldmljZSBjb3JyZWN0bHkN
-Cj4gPiA+ID4gPiDCoMKgwqDCoMKgwqBjb21taXQgYmI0MzFiYTI2YzVjZDBhMTdjOTQxY2E2YzNh
-MTk1YTNhNmQ1ZDQ2MQ0KPiA+ID4gPiA+IHVwc3RyZWFtLg0KPiA+ID4gPiA+IMKgwqDCoMKgwqDC
-oEFmdGVyIHRoZXJtYWwgem9uZSBkZXZpY2UgcmVnaXN0ZXJlZCwgYXMgd2UgaGF2ZSBub3QNCj4g
-PiA+ID4gPiByZWFkDQo+ID4gPiA+ID4gYW55DQo+ID4gPiA+ID4gwqDCoMKgwqDCoMKgdGVtcGVy
-YXR1cmUgYmVmb3JlLCB0aHVzIHR6LT50ZW1wZXJhdHVyZSBzaG91bGQgbm90IGJlDQo+ID4gPiA+
-ID4gMCwNCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqB3aGljaCBhY3R1YWxseSBtZWFucyAwQywgYW5k
-IHRoZXJtYWwgdHJlbmQgaXMgbm90DQo+ID4gPiA+ID4gYXZhaWxhYmxlLg0KPiA+ID4gPiA+IMKg
-wqDCoMKgwqDCoEluIHRoaXMgY2FzZSwgd2UgbmVlZCBzcGVjaWFsbHkgaGFuZGxpbmcgZm9yIHRo
-ZSBmaXJzdA0KPiA+ID4gPiA+IMKgwqDCoMKgwqDCoHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRl
-KCkuDQo+ID4gPiA+ID4gwqDCoMKgwqDCoMKgQm90aCB0aGVybWFsIGNvcmUgZnJhbWV3b3JrIGFu
-ZCBzdGVwX3dpc2UgZ292ZXJub3IgaXMNCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqBlbmhhbmNlZCB0
-byBoYW5kbGUgdGhpcy4gQW5kIHNpbmNlIHRoZSBzdGVwX3dpc2UNCj4gPiA+ID4gPiBnb3Zlcm5v
-cg0KPiA+ID4gPiA+IMKgwqDCoMKgwqDCoGlzIHRoZSBvbmx5IG9uZSB0aGF0IHVzZXMgdHJlbmRz
-LCBzbyBpdCdzIHRoZSBvbmx5DQo+ID4gPiA+ID4gdGhlcm1hbA0KPiA+ID4gPiA+IMKgwqDCoMKg
-wqDCoGdvdmVybm9yIHRoYXQgbmVlZHMgdG8gYmUgdXBkYXRlZC4NCj4gPiA+ID4gPiDCoMKgwqDC
-oMKgwqBUZXN0ZWQtYnk6IE1hbnVlbCBLcmF1c2UgPG1hbnVlbGtyYXVzZUBuZXRzY2FwZS5uZXQ+
-DQo+ID4gPiA+ID4gwqDCoMKgwqDCoMKgVGVzdGVkLWJ5OiBzemVnYWQgPHN6ZWdhZGxvQHBvY3p0
-YS5vbmV0LnBsPg0KPiA+ID4gPiA+IMKgwqDCoMKgwqDCoFRlc3RlZC1ieTogcHJhc2ggPHByYXNo
-Lm4ucmFvQGdtYWlsLmNvbT4NCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqBUZXN0ZWQtYnk6IGFtaXNo
-IDxhbW1kaXNwb3NlLWFyY2hAeWFob28uY29tPg0KPiA+ID4gPiA+IMKgwqDCoMKgwqDCoFRlc3Rl
-ZC1ieTogTWF0dGhpYXMgPG1vcnBoZXVzeHl6MTIzQHlhaG9vLmRlPg0KPiA+ID4gPiA+IMKgwqDC
-oMKgwqDCoFJldmlld2VkLWJ5OiBKYXZpIE1lcmlubyA8amF2aS5tZXJpbm9AYXJtLmNvbT4NCj4g
-PiA+ID4gPiDCoMKgwqDCoMKgwqBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0Bp
-bnRlbC5jb20+DQo+ID4gPiA+ID4gwqDCoMKgwqDCoMKgU2lnbmVkLW9mZi1ieTogQ2hlbiBZdSA8
-eXUuYy5jaGVuQGludGVsLmNvbT4NCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqBTaWduZWQtb2ZmLWJ5
-OiBHcmVnIEtyb2FoLUhhcnRtYW4gPGdyZWdraEBsaW51eGZvdW5kYXRpDQo+ID4gPiA+ID4gb24u
-b3INCj4gPiA+ID4gPiBnPg0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IA0KPiA+
-ID4gPiA+IFJldmVydGluZyB0aGlzIHBsdXMgdG8gb3RoZXIgY29tbWl0cyBpbiB0aGUgc2VyaWVz
-DQo+ID4gPiA+ID4gKGE2NzIwOGU5NGQ5NA0KPiA+ID4gPiA+ICJUaGVybWFsOiBoYW5kbGUgdGhl
-cm1hbCB6b25lIGRldmljZSBwcm9wZXJseSBkdXJpbmcgc3lzdGVtDQo+ID4gPiA+ID4gc2xlZXAi
-DQo+ID4gPiA+ID4gYW5kIDI3ZjM1NjE0OWQ1OSAiVGhlcm1hbDogZG8gdGhlcm1hbCB6b25lIHVw
-ZGF0ZSBhZnRlciBhDQo+ID4gPiA+ID4gY29vbGluZw0KPiA+ID4gPiA+IGRldmljZSByZWdpc3Rl
-cmVkIikgY29uZmlybWVkIHRoZSBwZXJmb3JtYW5jZSB3YXMgYmFjayB0bw0KPiA+ID4gPiA+IG5v
-cm1hbC4NCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBCdWd6aWxsYSBoYXMgdGhlIGZ1bGwgZGlzY3Vz
-c2lvbiBidXQgdGhpcyBjb21tZW50IGZyb20gb25lIG9mDQo+ID4gPiA+ID4gdGhlDQo+ID4gPiA+
-ID4gcmVwb3J0ZXJzIHN1bXMgaXQgdXA6DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gIkluIDQuNC4z
-IGFuZCBwcmlvciwgbXkgMi40MCBNSHogcHJvY2Vzc29yIHdvdWxkIGZsdWN0dWF0ZQ0KPiA+ID4g
-PiA+IGJldHdlZW4NCj4gPiA+ID4gPiAxMDAwIGFuZCAzNDAwIE1Iei7CoMKgSW4gNC40LjQsIHRo
-ZSBwcm9jZXNzb3Igd291bGQgZmx1Y3R1YXRlDQo+ID4gPiA+ID4gYmV0d2Vlbg0KPiA+ID4gPiA+
-IDQwMCBhbmQgNzAwIE1IeiwgYWNjb3JkaW5nIHRvIC9wcm9jL2NwdWluZm8uDQo+ID4gPiA+ID4g
-DQo+ID4gPiA+ID4gU2V0dGluZw0KPiA+ID4gPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2Nw
-dWZyZXEvcG9saWN5MC9zY2FsaW5nX2dvdmVybm9yDQo+ID4gPiA+ID4gdG8NCj4gPiA+ID4gPiBw
-ZXJmb3JtYW5jZSwgaW5zdGVhZCBvZiB0aGUgZGVmYXVsdCAicG93ZXJzYXZlIiBmb3JjZXMgdGhl
-DQo+ID4gPiA+ID4gQ1BVIHRvDQo+ID4gPiA+ID4gMjQwMCBNSHosIGFuZCBpbXByb3ZlcyBwZXJm
-b3JtYW5jZSBncmVhdGx5LCBidXQgc3RpbGwgbm90IHRvDQo+ID4gPiA+ID4gdGhlDQo+ID4gPiA+
-ID4gc2FtZSBsZXZlbCBhcyBpbiA0LjQuMy4iDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gQW55IGlk
-ZWFzPw0KPiA+ID4gPiANCj4gPiA+ID4gSXMgdGhpcyBzYW1lICJzbG93ZG93biIgYWxzbyBzZWVu
-IGluIDQuNT8NCj4gPiA+ID4gDQo+ID4gPiA+IHRoYW5rcywNCj4gPiA+ID4gDQo+ID4gPiA+IGdy
-ZWcgay1oDQo+ID4gPiA+IA0KPiA+ID4gDQo+ID4gPiBZZXMsIHRoZSBzYW1lIGlzc3VlIGlzIHNl
-ZW4gb24gNC41IGFjY29yZGluZyB0byB0aGUgcmVwb3J0ZXIuDQo+ID4gV2hhdCBkb2VzIGl0IHNo
-b3cgaGVyZSB3aGVuIHBlcmZvcm1hbmNlIGRyb3BzPw0KPiA+IGdyZXAgLiAvc3lzL2RldmljZXMv
-c3lzdGVtL2NwdS9pbnRlbF9wc3RhdGUvKg0KPiA+IA0KPiA+IElzIHRoZSBwcm9ibGVtIHN0aWxs
-IG9jY3VycyBpZiB5b3Ugc2V0DQo+ID4gL3N5cy9jbGFzcy90aGVybWFsL3RoZXJtYWxfem9uZSov
-bW9kZSB0byAiZGlzYWJsZWQiDQo+ID4gDQo+ID4gVGhhbmtzLA0KPiA+IFNyaW5pdmFzDQo+ID4g
-DQo+IA0KPiBBIHNlcGFyYXRlIHRocmVhZCB3YXMgc3RhcnRlZCB3aGljaCBnYXZlIHRoaXMgaW5z
-aWdodDoNCj4gDQo+ICJJIHRoaW5rDQo+IHRoZSBwcm9ibGVtIGlzIHlvdXIgZGV2aWNlIGhhcyBh
-IHBhc3NpdmUgdHJpcCB0ZW1wIG9mIDANCj4gL3N5cy9jbGFzcy90aGVybWFsL3RoZXJtYWxfem9u
-ZTAvdHJpcF9wb2ludF8yX3RlbXA6MA0KPiAvc3lzL2NsYXNzL3RoZXJtYWwvdGhlcm1hbF96b25l
-MC90cmlwX3BvaW50XzJfdHlwZTpwYXNzaXZlDQo+IA0KPiBXaGljaCB0cmlnZ2VycyBhIGZhbHNl
-IHRocm90dGxlID0gdHJ1ZS4gSSB0aGluayB3ZSBzaG91bGQgdGhpcyB0cmlwDQo+IGFzDQo+IGlu
-dmFsaWQgaW4gdGhlIGNhc2Ugb2YNCj4gaWYgKHR6LT50ZW1wZXJhdHVyZSA+PSB0cmlwX3RlbXAp
-IHt9IGNoZWNrDQo+IGluIHRoZXJtYWxfem9uZV90cmlwX3VwZGF0ZSgpLiINCj4gDQo+IFNvIHdv
-dWxkIHNvbWV0aGluZyBsaWtlIHRoZSBmb2xsb3dpbmcgd29yaz8NCj4gDQo+IGRpZmYgLS1naXQg
-YS9kcml2ZXJzL3RoZXJtYWwvc3RlcF93aXNlLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwvc3RlcF93
-aXNlLmMNCj4gaW5kZXggZWE5MzY2YS4uMTIyODc5NyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy90
-aGVybWFsL3N0ZXBfd2lzZS5jDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9zdGVwX3dpc2UuYw0K
-PiBAQCAtMTQzLDcgKzE0Myw3IEBAIHN0YXRpYyB2b2lkIHRoZXJtYWxfem9uZV90cmlwX3VwZGF0
-ZShzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2RldmljZSAqdHosIGludCB0cmlwKQ0KPiDCoMKgDQo+
-IMKgwqDCoMKgwqDCoMKgwqDCoHRyZW5kID0gZ2V0X3R6X3RyZW5kKHR6LCB0cmlwKTsNCj4gwqDC
-oA0KPiAtwqDCoMKgwqDCoMKgwqBpZiAodHotPnRlbXBlcmF0dXJlID49IHRyaXBfdGVtcCkgew0K
-PiArwqDCoMKgwqDCoMKgwqBpZiAodHJpcF90eXBlICE9IFRIRVJNQUxfVFJJUFNfTk9ORSAmJiB0
-ei0+dGVtcGVyYXR1cmUgPj0NCj4gdHJpcF90ZW1wKSB7DQoJaWYgKHRyaXBfdGVtcMKgJiYgdHot
-PnRlbXBlcmF0dXJlID49IHRyaXBfdGVtcCkgew0KwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB0
-aHJvdHRsZSA9IHRydWU7DQo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB0cmFj
-ZV90aGVybWFsX3pvbmVfdHJpcCh0eiwgdHJpcCwgdHJpcF90eXBlKTsNCj4gwqDCoMKgwqDCoMKg
-wqDCoMKgfQ0KPiANCkkgdGhpbmsgUnVpIGlzIHdvcmtpbmcgb24gc29tZSBjaGFuZ2UuDQoNClRo
-YW5rcywNClNyaW5pdmFzDQoNCj4gKGNvbXBsZXRlbHkgdW50ZXN0ZWQsIG5vIGlkZWEgaWYgSSdt
-IGV2ZW4gY2xvc2UpDQo+IA0KPiBUaGFua3MsDQo+IExhdXJh
+On Fri, Mar 18, 2016 at 8:29 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Fri, 18 Mar 2016 11:32:28 -0700
+> "Doug Smythies" <dsmythies@telus.net> wrote:
+>> On 2016.03.18 06:12 Rafael J. Wysocki wrote:
+>
+>> > I'm wondering what happens if you replace the expected_interval in the
+>> > "expected_interval >
+>> > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency" test with
+>> > data->next_timer_us (with the Rik's patch applied, of course).  Can
+>> > you please try doing that?
+>>
+>> O.K. my reference: rvr6 is the above modification to rvr5
+>> It works as well as "reverted"/
+>>
+>> State k45rc7-rjw10-rvr6 (mins)
+>> 0.00  0.87
+>> 1.00  24.20
+>> 2.00  4.05
+>> 3.00  1.72
+>> 4.00  147.50
+>>
+>> total 178.34
+>>
+>> Energy:
+>> Kernel 4.5-rc7-rjw10-rvr6: 55864 Joules
+>>
+>> Trace data (very crude summary):
+>> Kernel 4.5-rc7-rjw10-rvr5: ~3049 long durations at high CPU load (idle state 0)
+>> Kernel 4.5-rc7-rjw10-rvr5: ~183 long durations at high, but less, CPU load (not all idle state 0)
+>
+> What does "long duration" mean?
+> Dozens of microseconds?
+> Hundreds of microseconds?
+> Milliseconds?
+>
+> Either way, it appears there is something wrong with the
+> code in get_typical_interval.  One of the problems is
+> that calculating in microseconds, when working with a
+> threshold of 1-2 microseconds is not going to work well,
+> and secondly the code declares success the moment the
+> standard deviation is below 20 microseconds, which is
+> also not the best idea when dealing with 1-2 microsecond
+> thresholds :)
+>
+> Does the below patch help?
+>
+> If it does, we will probably want to change the values in
+> the driver tables to nanoseconds too, so we can get rid of
+> the multiplications :)
+>
+> ---8<---
+>
+> Subject: cpuidle: track time in nsecs not usecs
+>
+> The cpuidle code currently tracks time in microseconds, which
+> has a few issues. For one, the kernel natively tracks time in
+> nanoseconds, and we do a divide by 1000 when tracking how long
+> the CPU spent in an idle state.
+>
+> Secondly, get_typical_interval in the menu governor cannot do
+> very useful math when working with small numbers, while the
+> HLT cutoff is only 1 or 2 microseconds on many CPUs.
+>
+> Converting to nanoseconds avoids the expensive divide, and
+> also allows get_typical_interval to do calculations that
+> may make more sense for smaller intervals.
+>
+> While we're there, also remove the code that allows
+> get_typical_interval to return a value as soon as the
+> standard deviation is under 20 microseconds.  That
+> threshold makes little sense when C1 and C2 both
+> have latencies much lower than that.
+>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+>  drivers/cpuidle/cpuidle.c          | 10 ++---
+>  drivers/cpuidle/governors/ladder.c |  2 +-
+>  drivers/cpuidle/governors/menu.c   | 90 +++++++++++++++++---------------------
+>  drivers/cpuidle/sysfs.c            |  8 +++-
+>  include/linux/cpuidle.h            |  4 +-
+>  5 files changed, 56 insertions(+), 58 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index f996efc56605..8a0673880fbe 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -217,18 +217,18 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>         if (!cpuidle_state_is_coupled(drv, entered_state))
+>                 local_irq_enable();
+>
+> -       diff = ktime_to_us(ktime_sub(time_end, time_start));
+> -       if (diff > INT_MAX)
+> -               diff = INT_MAX;
+> +       diff = ktime_to_ns(ktime_sub(time_end, time_start));
+> +       if (diff > LONG_MAX)
+> +               diff = LONG_MAX;
+>
+> -       dev->last_residency = (int) diff;
+> +       dev->last_residency = diff;
+>
+>         if (entered_state >= 0) {
+>                 /* Update cpuidle counters */
+>                 /* This can be moved to within driver enter routine
+>                  * but that results in multiple copies of same code.
+>                  */
+> -               dev->states_usage[entered_state].time += dev->last_residency;
+> +               dev->states_usage[entered_state].time += diff;
+>                 dev->states_usage[entered_state].usage++;
+>         } else {
+>                 dev->last_residency = 0;
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 63bd5a403e22..6b480a3a3a2e 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>
+>         last_state = &ldev->states[last_idx];
+>
+> -       last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
+> +       last_residency = ktime_to_us(cpuidle_get_last_residency(dev)) - drv->states[last_idx].exit_latency;
+>
+>         /* consider promotion */
+>         if (last_idx < drv->state_count - 1 &&
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index fba867d917f7..69adb6ab7b8c 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -33,9 +33,9 @@
+>  #define BUCKETS 12
+>  #define INTERVAL_SHIFT 3
+>  #define INTERVALS (1UL << INTERVAL_SHIFT)
+> -#define RESOLUTION 1024
+> +#define RESOLUTION NSEC_PER_USEC
+>  #define DECAY 8
+> -#define MAX_INTERESTING 50000
+> +#define MAX_INTERESTING 4000000
+>
+>
+>  /*
+> @@ -122,11 +122,11 @@ struct menu_device {
+>         int             last_state_idx;
+>         int             needs_update;
+>
+> -       unsigned int    next_timer_us;
+> -       unsigned int    predicted_us;
+> +       u64             next_timer_ns;
+> +       u64             predicted_ns;
+>         unsigned int    bucket;
+>         unsigned int    correction_factor[BUCKETS];
+> -       unsigned int    intervals[INTERVALS];
+> +       u64             intervals[INTERVALS];
+>         int             interval_ptr;
+>  };
+>
+> @@ -152,15 +152,15 @@ static inline int which_bucket(unsigned int duration, unsigned long nr_iowaiters
+>         if (nr_iowaiters)
+>                 bucket = BUCKETS/2;
+>
+> -       if (duration < 10)
+> +       if (duration < 10000)
+>                 return bucket;
+> -       if (duration < 100)
+> +       if (duration < 100000)
+>                 return bucket + 1;
+> -       if (duration < 1000)
+> +       if (duration < 1000000)
+>                 return bucket + 2;
+> -       if (duration < 10000)
+> +       if (duration < 10000000)
+>                 return bucket + 3;
+> -       if (duration < 100000)
+> +       if (duration < 100000000)
+>                 return bucket + 4;
+>         return bucket + 5;
+>  }
+> @@ -242,21 +242,12 @@ static unsigned int get_typical_interval(struct menu_device *data)
+>          * The typical interval is obtained when standard deviation is small
+>          * or standard deviation is small compared to the average interval.
+>          *
+> -        * int_sqrt() formal parameter type is unsigned long. When the
+> -        * greatest difference to an outlier exceeds ~65 ms * sqrt(divisor)
+> -        * the resulting squared standard deviation exceeds the input domain
+> -        * of int_sqrt on platforms where unsigned long is 32 bits in size.
+> -        * In such case reject the candidate average.
+> -        *
+> -        * Use this result only if there is no timer to wake us up sooner.
+> +        * Instead of taking the square root of the standard deviation,
+> +        * use the square of the average. Be careful to avoid overflow.
+>          */
+> -       if (likely(stddev <= ULONG_MAX)) {
+> -               stddev = int_sqrt(stddev);
+> -               if (((avg > stddev * 6) && (divisor * 4 >= INTERVALS * 3))
+> -                                                       || stddev <= 20) {
+> -                       return avg;
+> -               }
+> -       }
+> +       if (avg < INT_MAX && (avg * avg) > stddev * 9 &&
+> +                                       divisor * 4 >= INTERVALS * 3)
+> +               return avg;
+>
+>         /*
+>          * If we have outliers to the upside in our distribution, discard
+
+This has to be rebased on top of the current Linus' tree.  It already
+uses variance here.
