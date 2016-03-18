@@ -1,26 +1,30 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v4 4/8] arm, dts: add TC2 cpu capacity information
-Date: Fri, 18 Mar 2016 14:24:10 +0000
-Message-ID: <1458311054-13524-5-git-send-email-juri.lelli@arm.com>
+Subject: [PATCH v4 6/8] arm64, dts: add Juno cpu capacity information
+Date: Fri, 18 Mar 2016 14:24:12 +0000
+Message-ID: <1458311054-13524-7-git-send-email-juri.lelli@arm.com>
 References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Liviu Dudau <liviu.dudau@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jon Medhurst <tixy@linaro.org>, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add TC2 cpu capacity binding information.
+Add Juno cpu capacity bindings information.
 
-Cc: Liviu Dudau <liviu.dudau@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Cc: Rob Herring <robh+dt@kernel.org>
 Cc: Pawel Moll <pawel.moll@arm.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
 Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
 Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Liviu Dudau <Liviu.Dudau@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Jon Medhurst <tixy@linaro.org>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Robin Murphy <robin.murphy@arm.com>
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
@@ -28,52 +32,60 @@ Signed-off-by: Juri Lelli <juri.lelli@arm.com>
  Changes from v1:
   - capacity-scale removed
 ---
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm64/boot/dts/arm/juno.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-index 17f63f7..0924844 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-@@ -39,6 +39,7 @@
- 			reg = <0>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index dcfcf15..a15c781 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -90,6 +90,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
 +			capacity = <1024>;
  		};
  
- 		cpu1: cpu@1 {
-@@ -47,6 +48,7 @@
- 			reg = <1>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
+ 		A57_1: cpu@1 {
+@@ -100,6 +101,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
 +			capacity = <1024>;
  		};
  
- 		cpu2: cpu@2 {
-@@ -55,6 +57,7 @@
- 			reg = <0x100>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity = <430>;
+ 		A53_0: cpu@100 {
+@@ -110,6 +112,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity = <447>;
  		};
  
- 		cpu3: cpu@3 {
-@@ -63,6 +66,7 @@
- 			reg = <0x101>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity = <430>;
+ 		A53_1: cpu@101 {
+@@ -120,6 +123,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity = <447>;
  		};
  
- 		cpu4: cpu@4 {
-@@ -71,6 +75,7 @@
- 			reg = <0x102>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity = <430>;
+ 		A53_2: cpu@102 {
+@@ -130,6 +134,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity = <447>;
  		};
  
- 		idle-states {
+ 		A53_3: cpu@103 {
+@@ -140,6 +145,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity = <447>;
+ 		};
+ 
+ 		A57_L2: l2-cache0 {
 -- 
 2.7.0
