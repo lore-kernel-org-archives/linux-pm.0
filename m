@@ -1,14 +1,18 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v4 7/8] arm: add sysfs cpu_capacity attribute
-Date: Fri, 18 Mar 2016 14:24:13 +0000
-Message-ID: <1458311054-13524-8-git-send-email-juri.lelli@arm.com>
+Subject: [PATCH v4 8/8] arm64: add sysfs cpu_capacity attribute
+Date: Fri, 18 Mar 2016 14:24:14 +0000
+Message-ID: <1458311054-13524-9-git-send-email-juri.lelli@arm.com>
 References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:54690 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933475AbcCROYG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Mar 2016 10:24:06 -0400
 In-Reply-To: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Mark Brown <broonie@linaro.org>
 
 Add a sysfs cpu_capacity attribute with which it is possible to read and
 write (thus over-writing default values) CPUs capacity. This might be
@@ -18,17 +22,20 @@ The new attribute shows up as:
 
  /sys/devices/system/cpu/cpu*/cpu_capacity
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Brown <broonie@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/arm64/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 68 insertions(+)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 53c13c1..28a4029 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -52,6 +52,74 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 69229b3..4d1fddb 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -36,6 +36,74 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
  	per_cpu(cpu_scale, cpu) = capacity;
  }
  
@@ -100,8 +107,9 @@ index 53c13c1..28a4029 100644
 +late_initcall(register_cpu_capacity_sysctl);
 +#endif
 +
- #ifdef CONFIG_OF
- struct cpu_efficiency {
- 	const char *compatible;
+ static u32 capacity_scale;
+ static u32 *raw_capacity;
+ static bool cap_parsing_failed;
 -- 
 2.7.0
+
