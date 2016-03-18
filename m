@@ -1,82 +1,70 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: use high confidence factors only when
- considering polling
-Date: Fri, 18 Mar 2016 14:11:52 +0100
-Message-ID: <CAJZ5v0gLXE=sRxv35hKuX88L4tphSBtPb9Y2oLERuEhjsbTGJQ@mail.gmail.com>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
-	<CAJZ5v0iK=vO1HPKfbpMwNx_Tk-kjGEUKrCmehaK7nN+-Up7BoA@mail.gmail.com>
-	<20160316121400.680a6a46@annuminas.surriel.com>
-	<10828426.sI6CaBvZhk@vostro.rjw.lan>
-	<000701d180df$e8a14340$b9e3c9c0$@net>
+Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+Date: Fri, 18 Mar 2016 14:13:59 +0100
+Message-ID: <CAJZ5v0jj8+QWseRv0Qw+HqFmpEJdkg0v4iuu3rwM9rOXgMSXZQ@mail.gmail.com>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	<1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	<1458273857.6622.75.camel@neuling.org>
+	<1458274308.6622.79.camel@neuling.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f46.google.com ([209.85.215.46]:36305 "EHLO
-	mail-lf0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932795AbcCRNLy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:11:54 -0400
-Received: by mail-lf0-f46.google.com with SMTP id d82so18523291lfe.3
-        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 06:11:53 -0700 (PDT)
-In-Reply-To: <000701d180df$e8a14340$b9e3c9c0$@net>
+Received: from mail-lb0-f193.google.com ([209.85.217.193]:35317 "EHLO
+	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbcCRNOB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:14:01 -0400
+In-Reply-To: <1458274308.6622.79.camel@neuling.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, pc@us.ibm.com, shreyas@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>
 
-On Fri, Mar 18, 2016 at 7:32 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> Sorry for the delay in my reply / test. The patch e-mail went
-> to my junk folder for some reason.
+On Fri, Mar 18, 2016 at 5:11 AM, Michael Neuling <mikey@neuling.org> wrote:
+> On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
 >
-> On 2106.03.17 17:46 Rafael J. Wysocki wrote:
->> On Wednesday, March 16, 2016 12:14:00 PM Rik van Riel wrote:
->>> The menu governor uses five different factors to pick the
->>> idle state:
->>> - the user configured latency_req
->>> - the time until the next timer (next_timer_us)
->>> - the typical sleep interval, as measured recently
->>> - an estimate of sleep time by dividing next_timer_us by an observed factor
->>> - a load corrected version of the above, divided again by load
->>>
->>> Only the first three items are known with enough confidence that
->>> we can use them to consider polling, instead of an actual CPU
->>> idle state, because the cost of being wrong about polling can be
->>> excessive power use.
->>>
->>> The latter two are used in the menu governor's main selection
->>> loop, and can result in choosing a shallower idle state when
->>> the system is expected to be busy again soon.
->>>
->>> This pushes a busy system in the "performance" direction of
->>> the performance<>power tradeoff, when choosing between idle
->>> states, but stays more strictly on the "power" state when
->>> deciding between polling and C1.
->>>
->>> Signed-off-by: Rik van Riel <riel@redhat.com>
+>> On Wed, 2016-02-03 at 01:11 +0530, Shilpasri G Bhat wrote:
+>>
 >
-> For my part of it, this patch seems to be not O.K.
-> (reference rvr5 = this patch)
->
-> Aggregate idle for the 2000 second test. All in minutes.
-> (old tests re-stated)
->
-> State   k45rc7-rjw10    k45rc7-rjw10-reverted   k45rc7-rjw10-rvr5
-> 0.00    18.07                   0.92                            18.67
-> 1.00    12.35                   19.51                           12.82
-> 2.00    3.96                    4.28                            3.97
-> 3.00    1.55                    1.53                            1.58
-> 4.00    138.96          141.99                  143.80
->
-> total   174.90          168.24                  180.84
->
-> Energy:
->>> Kernel 4.5-rc7-rjw10: 61983 Joules
->>> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules (test 2 was 55040 Joules)
-> Kernel 4.5-rc7-rjw10-rvr5: 62243 Joules
->
-> I did acquire trace data with this test, but haven't post processed it yet.
+>> > cpu_to_chip_id() does a DT walk through to find out the chip id by
+>> > taking a contended device tree lock. This adds an unnecessary
+>> > overhead
+>> > in a hot path. So instead of calling cpu_to_chip_id() everytime
+>> > cache
+>> > the chip ids for all cores in the array 'core_to_chip_map' and use
+>> > it
+>> > in the hotpath.
+>> >
+>> > Reported-by: Anton Blanchard <anton@samba.org>
+>> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > ---
+>> > No changes from v7.
+>>
+>> How about this instead?  It removes the linear lookup and seems a lot
+>> less complex.
 
-I'm wondering what happens if you replace the expected_interval in the
-"expected_interval >
-drv->states[CPUIDLE_DRIVER_STATE_START].target_residency" test with
-data->next_timer_us (with the Rik's patch applied, of course).  Can
-you please try doing that?
+This has gone in already.  Can you please send a patch on top of it?
+
+> BTW we never init nr_chips before using it.  We also need something
+> like.
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index d63d2cb..c819ed4 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -556,6 +556,8 @@ static int init_chip_info(void)
+>         unsigned int cpu, i;
+>         unsigned int prev_chip_id = UINT_MAX;
+>
+> +       nr_chips = 0;
+> +
+>         for_each_possible_cpu(cpu) {
+>                 unsigned int id = cpu_to_chip_id(cpu);
+>
+>
+
+Including this part too maybe?
+
+Thanks,
+Rafael
