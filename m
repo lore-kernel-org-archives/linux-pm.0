@@ -1,96 +1,146 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: use high confidence factors only when considering polling
-Date: Fri, 18 Mar 2016 23:09:25 +0100
-Message-ID: <1596370.PSmUAlHJf5@vostro.rjw.lan>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com> <CAJZ5v0iRn7eZY_g8UYze_Wq4v9pCTBMrgjHcuM1OVuTvJHUpAg@mail.gmail.com> <1458337969.14723.44.camel@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
+Date: Fri, 18 Mar 2016 23:23:35 +0100
+Message-ID: <CAJZ5v0hh-G1MthLYOn3jzP7S2648utWmTwik6C3YdZ=vpRwkPg@mail.gmail.com>
+References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com>
+	<10670722.U2p4NnYGsS@vostro.rjw.lan>
+	<CA+5PVA78uXrqgm5a9h5ytbrd5sun4mVU5+u9V9GnY1V6rizhzg@mail.gmail.com>
+	<6130650.QZM8FIW1Fl@vostro.rjw.lan>
+	<CA+5PVA4LEd=QmH4=u9CO9dGHU0kY+Yz1BoZDR+KhY3WJe5cMXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1928826.CcXgSrbnDm"; micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47866 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750778AbcCRWH2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 18:07:28 -0400
-In-Reply-To: <1458337969.14723.44.camel@redhat.com>
+Received: from mail-lf0-f49.google.com ([209.85.215.49]:35519 "EHLO
+	mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbcCRWXj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 18:23:39 -0400
+In-Reply-To: <CA+5PVA4LEd=QmH4=u9CO9dGHU0kY+Yz1BoZDR+KhY3WJe5cMXA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: Josh Boyer <jwboyer@fedoraproject.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 
+On Fri, Mar 18, 2016 at 6:35 PM, Josh Boyer <jwboyer@fedoraproject.org> wrote:
+> On Fri, Mar 18, 2016 at 10:36 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Friday, March 18, 2016 08:37:15 AM Josh Boyer wrote:
+>>> On Thu, Mar 17, 2016 at 8:20 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> > On Thursday, March 17, 2016 12:44:54 PM Josh Boyer wrote:
+>>> >> On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> >> > On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
+>>> >> >> Hello,
+>>> >> >
+>>> >> > Hi,
+>>> >> >
+>>> >> >> I have an Intel Atom based NUC that is producing the following
+>>> >> >> backtraces on boot of Linus' tree as of last evening.  This does not
+>>> >> >> happen with a tree with top level commit 271ecc5253e2, but does happen
+>>> >> >> when using the tree mentioned in the subject with top level commit
+>>> >> >> 63e30271b04c.
+>>> >> >>
+>>> >> >> The first backtrace appears to be a warning because the intel_pstate
+>>> >> >> driver is calling wrmsrl_on_cpu when interrupts are disabled?  Not
+>>> >> >> sure on that one.
+>>> >> >>
+>>> >> >> The second backtrace is a lockdep report.  Both are from the same boot.
+>>> >> >
+>>> >> > OK, thanks for the report.
+>>> >> >
+>>> >> > Can you please try the patch below?
+>>> >> >
+>>> >> > I'm actually unsure if we can do that safely in general for Atom because
+>>> >> > of the initialization, but that's what Core does anyway.
+>>> >> >
+>>> >> > Srinivas, Philippe, why exactly do we need the wrmsrl_on_cpu() in
+>>> >> > atom_set_pstate()?  core_set_pstate() uses wrmsrl() and seems to be doing fine.
+>>> >> >
+>>> >> > ---
+>>> >> >  drivers/cpufreq/intel_pstate.c |    2 +-
+>>> >> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>>> >> >
+>>> >> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
+>>> >> > ===================================================================
+>>> >> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+>>> >> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
+>>> >> > @@ -587,7 +587,7 @@ static void atom_set_pstate(struct cpuda
+>>> >> >
+>>> >> >         val |= vid;
+>>> >> >
+>>> >> > -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+>>> >> > +       wrmsrl(MSR_IA32_PERF_CTL, val);
+>>> >> >  }
+>>> >> >
+>>> >> >  static int silvermont_get_scaling(void)
+>>> >> >
+>>> >>
+>>> >> I applied this on top of commit 09fd671ccb24 and the backtrace and
+>>> >> lockdep report both go away.  So yes, this seems to clear up the
+>>> >> issue.  I tested it on a variety of different CPU types and didn't
+>>> >> notice anything wrong on them either.
+>>> >
+>>> > The problems may show up during initialization and cleanup where one CPU
+>>> > may be running code trying to configure a different one.  In those cases
+>>> > wrmsrl_on_cpu() needs to be used.
+>>> >
+>>> > Let me cut a patch taking that into account.
+>>>
+>>> OK.  Happy to test when you have it ready.
+>>
+>> Thanks!
+>>
+>> Please test the patch below.
+>>
+>> ---
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Subject: [PATCH] intel_pstate: Do not call wrmsrl_on_cpu() with disabled interrupts
+>>
+>> After commit a4675fbc4a7a (cpufreq: intel_pstate: Replace timers with
+>> utilization update callbacks) wrmsrl_on_cpu() cannot be called in the
+>> intel_pstate_adjust_busy_pstate() path as that is executed with
+>> disabled interrupts.  However, atom_set_pstate() called from there
+>> via intel_pstate_set_pstate() uses wrmsrl_on_cpu() to update the
+>> IA32_PERF_CTL MSR which triggers the WARN_ON_ONCE() in
+>> smp_call_function_single().
+>>
+>> The reason why wrmsrl_on_cpu() is used by atom_set_pstate() is
+>> because intel_pstate_set_pstate() calling it is also invoked during
+>> the initialization and cleanup of the driver and in those cases it is
+>> not guaranteed to be run on the CPU that is being updated.  However,
+>> in the case when intel_pstate_set_pstate() is called by
+>> intel_pstate_adjust_busy_pstate(), wrmsrl() can be used to update
+>> the register safely.  Moreover, intel_pstate_set_pstate() already
+>> contains code that only is executed if the function is called by
+>> intel_pstate_adjust_busy_pstate() and there is a special argument
+>> passed to it because of that.
+>>
+>> To fix the problem at hand, rearrange the code taking the above
+>> observations into account.
+>>
+>> First, replace the ->set() callback in struct pstate_funcs with a
+>> ->get_val() one that will return the value to be written to the
+>> IA32_PERF_CTL MSR without updating the register.
+>>
+>> Second, split intel_pstate_set_pstate() into two functions,
+>> intel_pstate_update_pstate() to be called by
+>> intel_pstate_adjust_busy_pstate() that will contain all of the
+>> intel_pstate_set_pstate() code which only needs to be executed in
+>> that case and will use wrmsrl() to update the MSR (after obtaining
+>> the value to write to it from the ->get_val() callback), and
+>> intel_pstate_set_min_pstate() to be invoked during the
+>> initialization and cleanup that will set the P-state to the
+>> minimum one and will update the MSR using wrmsrl_on_cpu().
+>>
+>> Finally, move the code shared between intel_pstate_update_pstate()
+>> and intel_pstate_set_min_pstate() to a new static inline function
+>> intel_pstate_record_pstate() and make them both call it.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Fixes: a4675fbc4a7a (cpufreq: intel_pstate: Replace timers with utilization update callbacks)
+>
+> Tested-by: Josh Boyer <jwboyer@fedoraproject.org>
+>
+> This worked fine on the original problem machine, and the other
+> machines I also tested.  No backtrace or lockdeps reported.
 
---nextPart1928826.CcXgSrbnDm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+Thanks!
 
-On Friday, March 18, 2016 05:52:49 PM Rik van Riel wrote:
-> On Fri, 2016-03-18 at 22:48 +0100, Rafael J. Wysocki wrote:
-> > On Fri, Mar 18, 2016 at 10:35 PM, Rik van Riel <riel@redhat.com>
-> > wrote:
-> > > 
-> > > On Fri, 18 Mar 2016 11:32:28 -0700
-> > > "Doug Smythies" <dsmythies@telus.net> wrote:
-> > > 
-> > > > 
-> > > > Energy:
-> > > > Kernel 4.5-rc7-rjw10-rvr6: 55864 Joules
-> > > > 
-> > > > Trace data (very crude summary):
-> > > > Kernel 4.5-rc7-rjw10-rvr5: ~3049 long durations at high CPU load
-> > > > (idle state 0)
-> > > > Kernel 4.5-rc7-rjw10-rvr5: ~183 long durations at high, but less,
-> > > > CPU load (not all idle state 0)
-> > > This is a bit of a big hammer, but since the polling loop already
-> > > uses
-> > > full CPU power anyway, this could be harmless, and solve your
-> > > problem.
-> > Yes, it would be good to test this.
-> > 
-> > No, I don't like it.
-> > 
-> > If we are to break out of the polling loop after a specific time, we
-> > shouldn't be using polling at all in the first place.
-> > 
-> > So I very much prefer to compare data->next_timer_us with the target
-> > residency of C1 instead of doing this.
-> 
-> The problem is that data->next_timer_us does not tell us
-> when the next network packet is about to arrive, though.
-> 
-> This could cause issues when dealing with a fast stream
-> of network traffic, which get_typical_interval() would
-> be able to deal with.
-
-If it predicted things correctly for small intervals, that is.
-
-It doesn't seem to be able to do that, however.
-
-You seem to want to trade energy consumption for performance with a very narrow
-use case in mind and that by changing bahavior that's been there pretty much
-forever, so by now it really has become the expected one.
-
-Needless to say I'm not a fan of changes like that.
-
---nextPart1928826.CcXgSrbnDm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAABCAAGBQJW7HydAAoJEILEb/54YlRxtYAP/31SGFSaYwMgLoHppjoPW5gP
-68PY4Gr/sijD9sQkegq+vqly5MbS3qMt1Erfmf97VTOkmbYGGm6YcOuvMPk4Fr78
-FX1axk8m2W4hws+nunfliBW3rD7wvy+LIrqjOvnw2n3+NLh9pTcv8YpjL6oyef6e
-lxRQW3Busnm8BTUSyXE9+GssjdfZSOLuhYIJWEp5k+PJISaLX2Cb53wRI0wlz3+6
-2niYfxBZmLhfeA9NT00BBdgSRTV+hebTOQBgEQYT9zjjyUw0GOXGoB7NJKT6l3GL
-+aBRfeQOgVBBgkNtUuuKOVPK5NNpJMA6/ZQ0QJbH6qWF9BoG9DWzsdO2kAtt4lQ/
-m8a86dRwSU5tWLm4+okCKvtbYcw0E0cgTE/3GJLR6XZXIsMNlcPB0W3T/F2rhiTM
-Ddh2Dnu8g4JDPJCJTwPnZQxV1XxlK1n2Z9i8j7CAD1TeuLrPSsbpGn4t0D15w1Dx
-af5PFGn9Pmfp451IYljDkxMA581fAifVpobU6h6zIbZ5XMFneNwuwDXScK67OUX9
-drnFxGXmAT6pC33hSotBQ3cw4M2KM65T/3b+BNMSGfUz6AFZxrGIZmmmRjcOPHg6
-PoFRJXLmEYfPYgK9kYGeAB+ePHdTekbT4t5Lo+Hgu+vBCNz+QPBU9LGOpCbWSuCu
-jYEOwp45vMOoHhmtQbwF
-=ANjo
------END PGP SIGNATURE-----
-
---nextPart1928826.CcXgSrbnDm--
-
+Patch applied.
