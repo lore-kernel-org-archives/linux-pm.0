@@ -1,64 +1,60 @@
-From: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from
- hot-path
-Date: Fri, 18 Mar 2016 15:11:48 +1100
-Message-ID: <1458274308.6622.79.camel@neuling.org>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	 <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	 <1458273857.6622.75.camel@neuling.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [patch] power/max8925: freeing wrong variable
+Date: Fri, 18 Mar 2016 08:40:16 +0300
+Message-ID: <20160318054016.GD2111@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:55522 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751442AbcCRELu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 00:11:50 -0400
-In-Reply-To: <1458273857.6622.75.camel@neuling.org>
+Received: from userp1040.oracle.com ([156.151.31.81]:19379 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbcCRFlD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 01:41:03 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, pc@us.ibm.com, shreyas@linux.vnet.ibm.com, anton@samba.org
+To: Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@marvell.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
+We were freeing "info->battery" instead of "info->usb", which leads to
+an OOps and a resource leak.
 
-> On Wed, 2016-02-03 at 01:11 +0530, Shilpasri G Bhat wrote:
-> 
+The labels were wonky, "out_battery" did release the battery but out_usb
+did not release usb.  I was introducing a call to free usb so it sort
+conflicted with existing misleading name.  I renamed them.
 
-> > cpu_to_chip_id() does a DT walk through to find out the chip id by
-> > taking a contended device tree lock. This adds an unnecessary
-> > overhead
-> > in a hot path. So instead of calling cpu_to_chip_id() everytime
-> > cache
-> > the chip ids for all cores in the array 'core_to_chip_map' and use
-> > it
-> > in the hotpath.
-> > 
-> > Reported-by: Anton Blanchard <anton@samba.org>
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > No changes from v7.
-> 
-> How about this instead?  It removes the linear lookup and seems a lot
-> less complex.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-BTW we never init nr_chips before using it.  We also need something
-like.
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index d63d2cb..c819ed4 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -556,6 +556,8 @@ static int init_chip_info(void)
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id = UINT_MAX;
+diff --git a/drivers/power/max8925_power.c b/drivers/power/max8925_power.c
+index 57eb5c2..3b94620 100644
+--- a/drivers/power/max8925_power.c
++++ b/drivers/power/max8925_power.c
+@@ -540,14 +540,14 @@ static int max8925_power_probe(struct platform_device *pdev)
+ 	info->usb = power_supply_register(&pdev->dev, &usb_desc, &psy_cfg);
+ 	if (IS_ERR(info->usb)) {
+ 		ret = PTR_ERR(info->usb);
+-		goto out_usb;
++		goto out_unregister_ac;
+ 	}
+ 	info->usb->dev.parent = &pdev->dev;
  
-+	nr_chips = 0;
-+
- 	for_each_possible_cpu(cpu) {
- 		unsigned int id = cpu_to_chip_id(cpu);
+ 	info->battery = power_supply_register(&pdev->dev, &battery_desc, NULL);
+ 	if (IS_ERR(info->battery)) {
+ 		ret = PTR_ERR(info->battery);
+-		goto out_battery;
++		goto out_unregister_usb;
+ 	}
+ 	info->battery->dev.parent = &pdev->dev;
  
-
-
+@@ -560,9 +560,9 @@ static int max8925_power_probe(struct platform_device *pdev)
+ 
+ 	max8925_init_charger(chip, info);
+ 	return 0;
+-out_battery:
+-	power_supply_unregister(info->battery);
+-out_usb:
++out_unregister_usb:
++	power_supply_unregister(info->usb);
++out_unregister_ac:
+ 	power_supply_unregister(info->ac);
+ out:
+ 	return ret;
