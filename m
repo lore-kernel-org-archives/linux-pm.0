@@ -1,100 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: use high confidence factors only when considering polling
-Date: Fri, 18 Mar 2016 23:38:48 +0100
-Message-ID: <2872717.8glRvO6UyU@vostro.rjw.lan>
-References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com> <CAJZ5v0iRn7eZY_g8UYze_Wq4v9pCTBMrgjHcuM1OVuTvJHUpAg@mail.gmail.com> <5840060.D0yKLcstnf@vostro.rjw.lan>
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from
+ hot-path
+Date: Sat, 19 Mar 2016 09:37:15 +1100
+Message-ID: <1458340635.3107.89.camel@au1.ibm.com>
+References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	 <1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	 <1458273857.6622.75.camel@neuling.org>
+Reply-To: benh@au1.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63436 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752642AbcCRWgo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 18:36:44 -0400
-In-Reply-To: <5840060.D0yKLcstnf@vostro.rjw.lan>
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:57466 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbcCRWiV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 18:38:21 -0400
+Received: from localhost
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <benh@au1.ibm.com>;
+	Sat, 19 Mar 2016 08:38:19 +1000
+In-Reply-To: <1458273857.6622.75.camel@neuling.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
+To: Michael Neuling <mikey@neuling.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, shreyas@linux.vnet.ibm.com, rjw@rjwysocki.net, pc@us.ibm.com, viresh.kumar@linaro.org, anton@samba.org
 
-On Friday, March 18, 2016 10:56:38 PM Rafael J. Wysocki wrote:
-> On Friday, March 18, 2016 10:48:45 PM Rafael J. Wysocki wrote:
-> > On Fri, Mar 18, 2016 at 10:35 PM, Rik van Riel <riel@redhat.com> wrote:
-> > > On Fri, 18 Mar 2016 11:32:28 -0700
-> > > "Doug Smythies" <dsmythies@telus.net> wrote:
-> > >
-> > >> Energy:
-> > >> Kernel 4.5-rc7-rjw10-rvr6: 55864 Joules
-> > >>
-> > >> Trace data (very crude summary):
-> > >> Kernel 4.5-rc7-rjw10-rvr5: ~3049 long durations at high CPU load (idle state 0)
-> > >> Kernel 4.5-rc7-rjw10-rvr5: ~183 long durations at high, but less, CPU load (not all idle state 0)
-> > >
-> > > This is a bit of a big hammer, but since the polling loop already uses
-> > > full CPU power anyway, this could be harmless, and solve your problem.
-> > 
-> > Yes, it would be good to test this.
-> > 
-> > No, I don't like it.
-> > 
-> > If we are to break out of the polling loop after a specific time, we
-> > shouldn't be using polling at all in the first place.
-> > 
-> > So I very much prefer to compare data->next_timer_us with the target
-> > residency of C1 instead of doing this.
-> 
-> IOW, something like the below (on top of the $subject patch).
-> 
-> ---
->  drivers/cpuidle/governors/menu.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/cpuidle/governors/menu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> +++ linux-pm/drivers/cpuidle/governors/menu.c
-> @@ -321,7 +321,7 @@ static int menu_select(struct cpuidle_dr
->  		 * unless the timer is happening really really soon, or
->  		 * C1's exit latency exceeds the user configured limit.
->  		 */
-> -		if (expected_interval > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
-> +		if (data->next_timer_us > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
->  		    latency_req > drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency &&
->  		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
->  		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
-> 
+On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
+>=20
+> =C2=A0static int nr_chips;
+> +static DEFINE_PER_CPU(unsigned int, chip_id);
+> =C2=A0
+> =C2=A0/*
+> =C2=A0 * Note: The set of pstates consists of contiguous integers, th=
+e
+> @@ -317,9 +318,7 @@ static void powernv_cpufreq_throttle_check(void
+> *data)
+> =C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pmsr =3D get_pmspr(SP=
+RN_PMSR);
+> =C2=A0
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0for (i =3D 0; i < nr_chips=
+; i++)
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0if (chips[i].id =3D=3D cpu_to_chip_id(cpu))
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0br=
+eak;
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0i =3D this_cpu_read(chip_i=
+d);
 
-Actually, that may be made somewhat less aggressive:
+Except it's not a chip_id, so your patch confused me for a good 2mn ...
+Call it chip_idx maybe ? ie, index.
 
----
- drivers/cpuidle/governors/menu.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Cheers,
+Ben.
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -315,13 +315,18 @@ static int menu_select(struct cpuidle_dr
- 	expected_interval = min(expected_interval, data->next_timer_us);
- 
- 	if (CPUIDLE_DRIVER_STATE_START > 0) {
-+		unsigned int next_timer_limit_us = drv->states[CPUIDLE_DRIVER_STATE_START].target_residency;
-+
- 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 		/*
- 		 * We want to default to C1 (hlt), not to busy polling
- 		 * unless the timer is happening really really soon, or
- 		 * C1's exit latency exceeds the user configured limit.
- 		 */
--		if (expected_interval > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
-+		if (next_timer_limit_us < 20)
-+			next_timer_limit_us = 20;
-+
-+		if (data->next_timer_us > next_timer_limit_us &&
- 		    latency_req > drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency &&
- 		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
- 		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
-
-except that next_timer_limit_us only needs to be computed once for the given
-driver, because it won't change.
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* Check for Pmax Cap=
+ping */
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pmsr_pmax =3D (s8)PMS=
+R_MAX(pmsr);
+> @@ -560,6 +559,7 @@ static int init_chip_info(void)
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0for_each_possible_cpu=
+(cpu) {
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned int id =3D cpu_to_chip_id(cpu);
+> =C2=A0
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0per_cpu(chip_id, cpu) =3D nr_chips;
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0if (prev_chip_id !=3D id) {
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0prev_chip_id =3D id;
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0chip[nr_chips++] =3D id;
+> _______________________________________________
 
