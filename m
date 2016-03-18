@@ -1,323 +1,163 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
-Date: Fri, 18 Mar 2016 15:36:25 +0100
-Message-ID: <6130650.QZM8FIW1Fl@vostro.rjw.lan>
-References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com> <10670722.U2p4NnYGsS@vostro.rjw.lan> <CA+5PVA78uXrqgm5a9h5ytbrd5sun4mVU5+u9V9GnY1V6rizhzg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Define per_cpu chip pointer to optimize hot-path
+Date: Fri, 18 Mar 2016 20:28:20 +0530
+Message-ID: <1458313100-27676-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1458274308.6622.79.camel@neuling.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54092 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752572AbcCROeW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 10:34:22 -0400
-In-Reply-To: <CA+5PVA78uXrqgm5a9h5ytbrd5sun4mVU5+u9V9GnY1V6rizhzg@mail.gmail.com>
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:47803 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbcCRO73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 10:59:29 -0400
+Received: from localhost
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Sat, 19 Mar 2016 00:59:27 +1000
+In-Reply-To: <1458274308.6622.79.camel@neuling.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Boyer <jwboyer@fedoraproject.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, pc@us.ibm.com, shreyas@linux.vnet.ibm.com, anton@samba.org, mikey@neuling.org, shilpa.bhat@linux.vnet.ibm.com
 
-On Friday, March 18, 2016 08:37:15 AM Josh Boyer wrote:
-> On Thu, Mar 17, 2016 at 8:20 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, March 17, 2016 12:44:54 PM Josh Boyer wrote:
-> >> On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
-> >> >> Hello,
-> >> >
-> >> > Hi,
-> >> >
-> >> >> I have an Intel Atom based NUC that is producing the following
-> >> >> backtraces on boot of Linus' tree as of last evening.  This does not
-> >> >> happen with a tree with top level commit 271ecc5253e2, but does happen
-> >> >> when using the tree mentioned in the subject with top level commit
-> >> >> 63e30271b04c.
-> >> >>
-> >> >> The first backtrace appears to be a warning because the intel_pstate
-> >> >> driver is calling wrmsrl_on_cpu when interrupts are disabled?  Not
-> >> >> sure on that one.
-> >> >>
-> >> >> The second backtrace is a lockdep report.  Both are from the same boot.
-> >> >
-> >> > OK, thanks for the report.
-> >> >
-> >> > Can you please try the patch below?
-> >> >
-> >> > I'm actually unsure if we can do that safely in general for Atom because
-> >> > of the initialization, but that's what Core does anyway.
-> >> >
-> >> > Srinivas, Philippe, why exactly do we need the wrmsrl_on_cpu() in
-> >> > atom_set_pstate()?  core_set_pstate() uses wrmsrl() and seems to be doing fine.
-> >> >
-> >> > ---
-> >> >  drivers/cpufreq/intel_pstate.c |    2 +-
-> >> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >> >
-> >> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> >> > ===================================================================
-> >> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> >> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> >> > @@ -587,7 +587,7 @@ static void atom_set_pstate(struct cpuda
-> >> >
-> >> >         val |= vid;
-> >> >
-> >> > -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-> >> > +       wrmsrl(MSR_IA32_PERF_CTL, val);
-> >> >  }
-> >> >
-> >> >  static int silvermont_get_scaling(void)
-> >> >
-> >>
-> >> I applied this on top of commit 09fd671ccb24 and the backtrace and
-> >> lockdep report both go away.  So yes, this seems to clear up the
-> >> issue.  I tested it on a variety of different CPU types and didn't
-> >> notice anything wrong on them either.
-> >
-> > The problems may show up during initialization and cleanup where one CPU
-> > may be running code trying to configure a different one.  In those cases
-> > wrmsrl_on_cpu() needs to be used.
-> >
-> > Let me cut a patch taking that into account.
-> 
-> OK.  Happy to test when you have it ready.
+From: Michael Neuling <mikey@neuling.org>
 
-Thanks!
+"cpufreq: powernv: Remove cpu_to_chip_id() from hot-path" introduced
+'core_to_chip_map' array to cache the chip-id of all cores. Replace
+this with per_cpu variable that stores the pointer to the chip-array.
+This removes the linear lookup and provides a neater and simpler
+solution.
 
-Please test the patch below.
-
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] intel_pstate: Do not call wrmsrl_on_cpu() with disabled interrupts
 
-After commit a4675fbc4a7a (cpufreq: intel_pstate: Replace timers with
-utilization update callbacks) wrmsrl_on_cpu() cannot be called in the
-intel_pstate_adjust_busy_pstate() path as that is executed with
-disabled interrupts.  However, atom_set_pstate() called from there
-via intel_pstate_set_pstate() uses wrmsrl_on_cpu() to update the
-IA32_PERF_CTL MSR which triggers the WARN_ON_ONCE() in
-smp_call_function_single().
+- Rebased the patch on top of linux-pm/linux-next
+- nr_chips is defined static, so it will be initialized to zero
+- Moved the initialization of the per_cpu variable after 'chips' is
+  allocated
+- Removed 'core_to_chip_map'
 
-The reason why wrmsrl_on_cpu() is used by atom_set_pstate() is
-because intel_pstate_set_pstate() calling it is also invoked during
-the initialization and cleanup of the driver and in those cases it is
-not guaranteed to be run on the CPU that is being updated.  However,
-in the case when intel_pstate_set_pstate() is called by
-intel_pstate_adjust_busy_pstate(), wrmsrl() can be used to update
-the register safely.  Moreover, intel_pstate_set_pstate() already
-contains code that only is executed if the function is called by
-intel_pstate_adjust_busy_pstate() and there is a special argument
-passed to it because of that.
+ drivers/cpufreq/powernv-cpufreq.c | 50 +++++++++++++--------------------------
+ 1 file changed, 17 insertions(+), 33 deletions(-)
 
-To fix the problem at hand, rearrange the code taking the above
-observations into account.
-
-First, replace the ->set() callback in struct pstate_funcs with a
-->get_val() one that will return the value to be written to the
-IA32_PERF_CTL MSR without updating the register.
-
-Second, split intel_pstate_set_pstate() into two functions,
-intel_pstate_update_pstate() to be called by
-intel_pstate_adjust_busy_pstate() that will contain all of the
-intel_pstate_set_pstate() code which only needs to be executed in
-that case and will use wrmsrl() to update the MSR (after obtaining
-the value to write to it from the ->get_val() callback), and
-intel_pstate_set_min_pstate() to be invoked during the
-initialization and cleanup that will set the P-state to the
-minimum one and will update the MSR using wrmsrl_on_cpu().
-
-Finally, move the code shared between intel_pstate_update_pstate()
-and intel_pstate_set_min_pstate() to a new static inline function
-intel_pstate_record_pstate() and make them both call it.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Fixes: a4675fbc4a7a (cpufreq: intel_pstate: Replace timers with utilization update callbacks)
----
- drivers/cpufreq/intel_pstate.c |   73 ++++++++++++++++++++++++-----------------
- 1 file changed, 43 insertions(+), 30 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -134,7 +134,7 @@ struct pstate_funcs {
- 	int (*get_min)(void);
- 	int (*get_turbo)(void);
- 	int (*get_scaling)(void);
--	void (*set)(struct cpudata*, int pstate);
-+	u64 (*get_val)(struct cpudata*, int pstate);
- 	void (*get_vid)(struct cpudata *);
- 	int32_t (*get_target_pstate)(struct cpudata *);
- };
-@@ -565,7 +565,7 @@ static int atom_get_turbo_pstate(void)
- 	return value & 0x7F;
- }
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 50bf120..a00bcc2 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -44,7 +44,6 @@
  
--static void atom_set_pstate(struct cpudata *cpudata, int pstate)
-+static u64 atom_get_val(struct cpudata *cpudata, int pstate)
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
+-static unsigned int *core_to_chip_map;
+ 
+ static const char * const throttle_reason[] = {
+ 	"No throttling",
+@@ -65,6 +64,7 @@ static struct chip {
+ } *chips;
+ 
+ static int nr_chips;
++static DEFINE_PER_CPU(struct chip *, chip_info);
+ 
+ /*
+  * Note: The set of pstates consists of contiguous integers, the
+@@ -324,34 +324,31 @@ static inline unsigned int get_nominal_index(void)
+ 
+ static void powernv_cpufreq_throttle_check(void *data)
  {
- 	u64 val;
- 	int32_t vid_fp;
-@@ -585,9 +585,7 @@ static void atom_set_pstate(struct cpuda
- 	if (pstate > cpudata->pstate.max_pstate)
- 		vid = cpudata->vid.turbo;
++	struct chip *chip;
+ 	unsigned int cpu = smp_processor_id();
+-	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
+ 	unsigned long pmsr;
+-	int pmsr_pmax, i;
++	int pmsr_pmax;
  
--	val |= vid;
+ 	pmsr = get_pmspr(SPRN_PMSR);
 -
--	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-+	return val | vid;
+-	for (i = 0; i < nr_chips; i++)
+-		if (chips[i].id == chip_id)
+-			break;
++	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+ 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+ 	if (pmsr_pmax != powernv_pstate_info.max) {
+-		if (chips[i].throttled)
++		if (chip->throttled)
+ 			goto next;
+-		chips[i].throttled = true;
++		chip->throttled = true;
+ 		if (pmsr_pmax < powernv_pstate_info.nominal)
+ 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+-				     cpu, chips[i].id, pmsr_pmax,
++				     cpu, chip->id, pmsr_pmax,
+ 				     powernv_pstate_info.nominal);
+-		trace_powernv_throttle(chips[i].id,
+-				      throttle_reason[chips[i].throttle_reason],
++		trace_powernv_throttle(chip->id,
++				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+-	} else if (chips[i].throttled) {
+-		chips[i].throttled = false;
+-		trace_powernv_throttle(chips[i].id,
+-				      throttle_reason[chips[i].throttle_reason],
++	} else if (chip->throttled) {
++		chip->throttled = false;
++		trace_powernv_throttle(chip->id,
++				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+ 	}
+ 
+@@ -558,47 +555,34 @@ static int init_chip_info(void)
+ 	unsigned int chip[256];
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id = UINT_MAX;
+-	cpumask_t cpu_mask;
+-	int ret = -ENOMEM;
+-
+-	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
+-				   GFP_KERNEL);
+-	if (!core_to_chip_map)
+-		goto out;
+ 
+-	cpumask_copy(&cpu_mask, cpu_possible_mask);
+-	for_each_cpu(cpu, &cpu_mask) {
++	for_each_possible_cpu(cpu) {
+ 		unsigned int id = cpu_to_chip_id(cpu);
+ 
+ 		if (prev_chip_id != id) {
+ 			prev_chip_id = id;
+ 			chip[nr_chips++] = id;
+ 		}
+-		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
+-		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
+ 	}
+ 
+ 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips)
+-		goto free_chip_map;
++		return -ENOMEM;
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+ 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+ 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
++		for_each_cpu(cpu, &chips[i].mask)
++			per_cpu(chip_info, cpu) =  &chips[i];
+ 	}
+ 
+ 	return 0;
+-free_chip_map:
+-	kfree(core_to_chip_map);
+-out:
+-	return ret;
  }
  
- static int silvermont_get_scaling(void)
-@@ -711,7 +709,7 @@ static inline int core_get_scaling(void)
- 	return 100000;
- }
- 
--static void core_set_pstate(struct cpudata *cpudata, int pstate)
-+static u64 core_get_val(struct cpudata *cpudata, int pstate)
+ static inline void clean_chip_info(void)
  {
- 	u64 val;
- 
-@@ -719,7 +717,7 @@ static void core_set_pstate(struct cpuda
- 	if (limits->no_turbo && !limits->turbo_disabled)
- 		val |= (u64)1 << 32;
- 
--	wrmsrl(MSR_IA32_PERF_CTL, val);
-+	return val;
+ 	kfree(chips);
+-	kfree(core_to_chip_map);
  }
  
- static int knl_get_turbo_pstate(void)
-@@ -750,7 +748,7 @@ static struct cpu_defaults core_params =
- 		.get_min = core_get_min_pstate,
- 		.get_turbo = core_get_turbo_pstate,
- 		.get_scaling = core_get_scaling,
--		.set = core_set_pstate,
-+		.get_val = core_get_val,
- 		.get_target_pstate = get_target_pstate_use_performance,
- 	},
- };
-@@ -769,7 +767,7 @@ static struct cpu_defaults silvermont_pa
- 		.get_max_physical = atom_get_max_pstate,
- 		.get_min = atom_get_min_pstate,
- 		.get_turbo = atom_get_turbo_pstate,
--		.set = atom_set_pstate,
-+		.get_val = atom_get_val,
- 		.get_scaling = silvermont_get_scaling,
- 		.get_vid = atom_get_vid,
- 		.get_target_pstate = get_target_pstate_use_cpu_load,
-@@ -790,7 +788,7 @@ static struct cpu_defaults airmont_param
- 		.get_max_physical = atom_get_max_pstate,
- 		.get_min = atom_get_min_pstate,
- 		.get_turbo = atom_get_turbo_pstate,
--		.set = atom_set_pstate,
-+		.get_val = atom_get_val,
- 		.get_scaling = airmont_get_scaling,
- 		.get_vid = atom_get_vid,
- 		.get_target_pstate = get_target_pstate_use_cpu_load,
-@@ -812,7 +810,7 @@ static struct cpu_defaults knl_params =
- 		.get_min = core_get_min_pstate,
- 		.get_turbo = knl_get_turbo_pstate,
- 		.get_scaling = core_get_scaling,
--		.set = core_set_pstate,
-+		.get_val = core_get_val,
- 		.get_target_pstate = get_target_pstate_use_performance,
- 	},
- };
-@@ -839,25 +837,24 @@ static void intel_pstate_get_min_max(str
- 	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
- }
- 
--static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate, bool force)
-+static inline void intel_pstate_record_pstate(struct cpudata *cpu, int pstate)
- {
--	int max_perf, min_perf;
--
--	if (force) {
--		update_turbo_state();
--
--		intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
--
--		pstate = clamp_t(int, pstate, min_perf, max_perf);
--
--		if (pstate == cpu->pstate.current_pstate)
--			return;
--	}
- 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
--
- 	cpu->pstate.current_pstate = pstate;
-+}
- 
--	pstate_funcs.set(cpu, pstate);
-+static void intel_pstate_set_min_pstate(struct cpudata *cpu)
-+{
-+	int pstate = cpu->pstate.min_pstate;
-+
-+	intel_pstate_record_pstate(cpu, pstate);
-+	/*
-+	 * Generally, there is no guarantee that this code will always run on
-+	 * the CPU being updated, so force the register update to run on the
-+	 * right CPU.
-+	 */
-+	wrmsrl_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
-+		      pstate_funcs.get_val(cpu, pstate));
- }
- 
- static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
-@@ -870,7 +867,8 @@ static void intel_pstate_get_cpu_pstates
- 
- 	if (pstate_funcs.get_vid)
- 		pstate_funcs.get_vid(cpu);
--	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, false);
-+
-+	intel_pstate_set_min_pstate(cpu);
- }
- 
- static inline void intel_pstate_calc_busy(struct cpudata *cpu)
-@@ -997,6 +995,21 @@ static inline int32_t get_target_pstate_
- 	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
- }
- 
-+static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
-+{
-+	int max_perf, min_perf;
-+
-+	update_turbo_state();
-+
-+	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-+	pstate = clamp_t(int, pstate, min_perf, max_perf);
-+	if (pstate == cpu->pstate.current_pstate)
-+		return;
-+
-+	intel_pstate_record_pstate(cpu, pstate);
-+	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu, pstate));
-+}
-+
- static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- {
- 	int from, target_pstate;
-@@ -1006,7 +1019,7 @@ static inline void intel_pstate_adjust_b
- 
- 	target_pstate = pstate_funcs.get_target_pstate(cpu);
- 
--	intel_pstate_set_pstate(cpu, target_pstate, true);
-+	intel_pstate_update_pstate(cpu, target_pstate);
- 
- 	sample = &cpu->sample;
- 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
-@@ -1180,7 +1193,7 @@ static void intel_pstate_stop_cpu(struct
- 	if (hwp_active)
- 		return;
- 
--	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, false);
-+	intel_pstate_set_min_pstate(cpu);
- }
- 
- static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
-@@ -1255,7 +1268,7 @@ static void copy_cpu_funcs(struct pstate
- 	pstate_funcs.get_min   = funcs->get_min;
- 	pstate_funcs.get_turbo = funcs->get_turbo;
- 	pstate_funcs.get_scaling = funcs->get_scaling;
--	pstate_funcs.set       = funcs->set;
-+	pstate_funcs.get_val   = funcs->get_val;
- 	pstate_funcs.get_vid   = funcs->get_vid;
- 	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
- 
+ static inline void unregister_all_notifiers(void)
+-- 
+1.9.3
 
