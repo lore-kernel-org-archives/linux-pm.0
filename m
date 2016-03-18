@@ -1,70 +1,98 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v8 3/6] cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
-Date: Fri, 18 Mar 2016 14:13:59 +0100
-Message-ID: <CAJZ5v0jj8+QWseRv0Qw+HqFmpEJdkg0v4iuu3rwM9rOXgMSXZQ@mail.gmail.com>
-References: <1454442102-1229-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	<1454442102-1229-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	<1458273857.6622.75.camel@neuling.org>
-	<1458274308.6622.79.camel@neuling.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v6 0/6] EC-based USB Power Delivery support for Chrome machines
+Date: Fri, 18 Mar 2016 14:36:09 +0100
+Message-ID: <1458308175-9508-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f193.google.com ([209.85.217.193]:35317 "EHLO
-	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752328AbcCRNOB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:14:01 -0400
-In-Reply-To: <1458274308.6622.79.camel@neuling.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:34933 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753840AbcCRNgm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:36:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Neuling <mikey@neuling.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, pc@us.ibm.com, shreyas@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>
+To: linux-kernel@vger.kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
 
-On Fri, Mar 18, 2016 at 5:11 AM, Michael Neuling <mikey@neuling.org> wrote:
-> On Fri, 2016-03-18 at 15:04 +1100, Michael Neuling wrote:
->
->> On Wed, 2016-02-03 at 01:11 +0530, Shilpasri G Bhat wrote:
->>
->
->> > cpu_to_chip_id() does a DT walk through to find out the chip id by
->> > taking a contended device tree lock. This adds an unnecessary
->> > overhead
->> > in a hot path. So instead of calling cpu_to_chip_id() everytime
->> > cache
->> > the chip ids for all cores in the array 'core_to_chip_map' and use
->> > it
->> > in the hotpath.
->> >
->> > Reported-by: Anton Blanchard <anton@samba.org>
->> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> > No changes from v7.
->>
->> How about this instead?  It removes the linear lookup and seems a lot
->> less complex.
+Hi,
 
-This has gone in already.  Can you please send a patch on top of it?
+this series contains a driver that exposes a power_supply to userspace
+representing a port that support USB PD charging.
 
-> BTW we never init nr_chips before using it.  We also need something
-> like.
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index d63d2cb..c819ed4 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -556,6 +556,8 @@ static int init_chip_info(void)
->         unsigned int cpu, i;
->         unsigned int prev_chip_id = UINT_MAX;
->
-> +       nr_chips = 0;
-> +
->         for_each_possible_cpu(cpu) {
->                 unsigned int id = cpu_to_chip_id(cpu);
->
->
+Allows userspace to display to the user if the machine is charging and
+on which port, and if another device is being charged by a port.
 
-Including this part too maybe?
+This series may be best integrated through the MFD tree, for which we'll
+need ACKs from Olof (for the changes to platform/chrome), from Dmitry
+(for changes to cros_ec_keyb.c) and from Sebastian Reichel for the
+new driver.
 
 Thanks,
-Rafael
+
+Tomeu
+
+Changes in v6:
+- Return 0 if the EC doesn't support MKBP, as expected by callers.
+
+Changes in v5:
+- Check explicitly for !EC_RES_SUCCESS as suggested by Benson Leung.
+- Fix type of variable passed to do_div.
+
+Changes in v4:
+- Calculate correctly the size of the payloads in
+  cros_ec_get_host_command_version_mask.
+- Declare size parameters in ec_command as size_t
+
+Changes in v3:
+- Remove duplicated prototype of cros_ec_get_host_event.
+- Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
+- Remove sysfs attributes ext_current_lim and ext_voltage_lim because
+  I don't know yet where they should be placed (and don't have HW to
+  test them).
+- Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
+- Lots of misc comments from Stephen Boyd were addressed.
+- Unregister notification listener in .remove callback.
+- Only register the PD charger device if there are any PD ports in this
+  EC.
+- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
+  charger device because we are now only creating one if a EC has any PD
+  ports.
+- Dropped patch adding power_supply types because it has been merged
+  already.
+
+Changes in v2:
+- Allocate enough for the structs in cros_ec_get_host_command_version_mask,
+  not their pointers.
+- Allocate msg in the stack in get_next_event and
+  get_keyboard_state_event, as suggested by Gwendal.
+- Split out changes to cros_ec_commands.h and the helpers added to
+  mfd/cros_ec.h from the patch that adds the charger driver, as
+  suggested by Lee.
+- Actually call get_ec_num_ports.
+- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
+
+Sameer Nanda (1):
+  power: cros_usbpd-charger: Add EC-based USB PD charger driver
+
+Tomeu Vizoso (4):
+  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
+  mfd: cros_ec: Add cros_ec_get_host_event
+  mfd: cros_ec: Add more definitions for PD commands
+  platform/chrome: Register USB PD charger device
+
+Vic Yang (1):
+  mfd: cros_ec: Add MKBP event support
+
+ drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
+ drivers/mfd/cros_ec.c                   |  57 ++-
+ drivers/platform/chrome/cros_ec_dev.c   |  44 ++
+ drivers/platform/chrome/cros_ec_proto.c | 129 ++++++
+ drivers/power/Kconfig                   |  10 +
+ drivers/power/Makefile                  |   1 +
+ drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/cros_ec.h             |  62 +++
+ include/linux/mfd/cros_ec_commands.h    | 358 ++++++++++++++-
+ 9 files changed, 1464 insertions(+), 112 deletions(-)
+ create mode 100644 drivers/power/cros_usbpd-charger.c
+
+-- 
+2.5.0
+
