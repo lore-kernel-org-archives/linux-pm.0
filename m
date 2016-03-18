@@ -1,103 +1,82 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH] cpufreq: rockchip: add driver
-Date: Fri, 18 Mar 2016 13:56:57 +0100
-Message-ID: <1787319.AFAWVqkdk0@diego>
-References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle: use high confidence factors only when
+ considering polling
+Date: Fri, 18 Mar 2016 14:11:52 +0100
+Message-ID: <CAJZ5v0gLXE=sRxv35hKuX88L4tphSBtPb9Y2oLERuEhjsbTGJQ@mail.gmail.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<CAJZ5v0iK=vO1HPKfbpMwNx_Tk-kjGEUKrCmehaK7nN+-Up7BoA@mail.gmail.com>
+	<20160316121400.680a6a46@annuminas.surriel.com>
+	<10828426.sI6CaBvZhk@vostro.rjw.lan>
+	<000701d180df$e8a14340$b9e3c9c0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:60478 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756836AbcCRM5J convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 08:57:09 -0400
-In-Reply-To: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
+Received: from mail-lf0-f46.google.com ([209.85.215.46]:36305 "EHLO
+	mail-lf0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932795AbcCRNLy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:11:54 -0400
+Received: by mail-lf0-f46.google.com with SMTP id d82so18523291lfe.3
+        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 06:11:53 -0700 (PDT)
+In-Reply-To: <000701d180df$e8a14340$b9e3c9c0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Feng Xiao <xf@rock-chips.com>
-Cc: linux@arm.linux.org.uk, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-Hi Feng,
+On Fri, Mar 18, 2016 at 7:32 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> Sorry for the delay in my reply / test. The patch e-mail went
+> to my junk folder for some reason.
+>
+> On 2106.03.17 17:46 Rafael J. Wysocki wrote:
+>> On Wednesday, March 16, 2016 12:14:00 PM Rik van Riel wrote:
+>>> The menu governor uses five different factors to pick the
+>>> idle state:
+>>> - the user configured latency_req
+>>> - the time until the next timer (next_timer_us)
+>>> - the typical sleep interval, as measured recently
+>>> - an estimate of sleep time by dividing next_timer_us by an observed factor
+>>> - a load corrected version of the above, divided again by load
+>>>
+>>> Only the first three items are known with enough confidence that
+>>> we can use them to consider polling, instead of an actual CPU
+>>> idle state, because the cost of being wrong about polling can be
+>>> excessive power use.
+>>>
+>>> The latter two are used in the menu governor's main selection
+>>> loop, and can result in choosing a shallower idle state when
+>>> the system is expected to be busy again soon.
+>>>
+>>> This pushes a busy system in the "performance" direction of
+>>> the performance<>power tradeoff, when choosing between idle
+>>> states, but stays more strictly on the "power" state when
+>>> deciding between polling and C1.
+>>>
+>>> Signed-off-by: Rik van Riel <riel@redhat.com>
+>
+> For my part of it, this patch seems to be not O.K.
+> (reference rvr5 = this patch)
+>
+> Aggregate idle for the 2000 second test. All in minutes.
+> (old tests re-stated)
+>
+> State   k45rc7-rjw10    k45rc7-rjw10-reverted   k45rc7-rjw10-rvr5
+> 0.00    18.07                   0.92                            18.67
+> 1.00    12.35                   19.51                           12.82
+> 2.00    3.96                    4.28                            3.97
+> 3.00    1.55                    1.53                            1.58
+> 4.00    138.96          141.99                  143.80
+>
+> total   174.90          168.24                  180.84
+>
+> Energy:
+>>> Kernel 4.5-rc7-rjw10: 61983 Joules
+>>> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules (test 2 was 55040 Joules)
+> Kernel 4.5-rc7-rjw10-rvr5: 62243 Joules
+>
+> I did acquire trace data with this test, but haven't post processed it yet.
 
-Am Freitag, 18. M=E4rz 2016, 20:10:04 schrieb Feng Xiao:
-> This driver will directly use cpufreq-dt driver as backend.
->=20
-> As there is not a generic devicetree board file(rockchip.c)
-> on ARM64 architecture, so remove platform_device_register_simple
-> in rockchip.c and add a new cpufreq driver to support for all
-> Rockchip SoCs.
->=20
-> Signed-off-by: Feng Xiao <xf@rock-chips.com>
-
-[...]
-
-> diff --git a/drivers/cpufreq/rockchip-cpufreq.c
-> b/drivers/cpufreq/rockchip-cpufreq.c new file mode 100644
-> index 0000000..ecbadcd
-> --- /dev/null
-> +++ b/drivers/cpufreq/rockchip-cpufreq.c
-> @@ -0,0 +1,36 @@
-> +/*
-> + * Rockchip Platforms CPUFreq Support
-> + *
-> + * Copyright (C) 2016 Fuzhou Rockchip Electronics Co., Ltd
-> + *
-> + * Feng Xiao <xf@rock-chips.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warran=
-ty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +
-> +static int __init rockchip_cpufreq_driver_init(void)
-> +{
-> +	struct platform_device *pdev;
-> +
-> +	pdev =3D platform_device_register_simple("cpufreq-dt", -1, NULL, 0)=
-;
-> +	return PTR_ERR_OR_ZERO(pdev);
-
-This would create that cpufreq-dt device on all non-Rockchip platforms=20
-compiled into the same kernel image as well - we definitly don't want t=
-hat.
-
-Also, on both the rk3368 as well as the rk3399, you probably want the c=
-luster-
-handling of arm-bL-cpufreq-dt.
-Contrary to its name it is _not_ limited to switching between clusters,=
- but=20
-can also control frequencies of multiple cpu-clusters running at the sa=
-me=20
-time.
-
-
-Implementation-wise, I guess doing it similar to the scpi-implementatio=
-n might=20
-make more sense. Please take a look at drivers/clk/clk-scpi.c that regi=
-sters=20
-the virtual cpufreq device there.
-
-So we could do something similar, move the cpufreq from mach-rockchip t=
-o the=20
-clock drivers and register the appropriate cpufreq-driver for each soc.
-cpufreq-dt for socs with a single cluster, the bL-thing for socs with m=
-ultiple=20
-clusters.
-
-
-Heiko
-
+I'm wondering what happens if you replace the expected_interval in the
+"expected_interval >
+drv->states[CPUIDLE_DRIVER_STATE_START].target_residency" test with
+data->next_timer_us (with the Rik's patch applied, of course).  Can
+you please try doing that?
