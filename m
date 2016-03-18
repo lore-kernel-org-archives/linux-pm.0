@@ -1,36 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [patch] power: ipaq-micro-battery: freeing the wrong variable
-Date: Fri, 18 Mar 2016 12:00:51 +0300
-Message-ID: <20160318090051.GA19233@mwanda>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH] powercap: intel_rapl: PSys support
+Date: Fri, 18 Mar 2016 10:09:28 +0100
+Message-ID: <20160318090928.GB7889@pd.tnic>
+References: <1458253409-13318-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20160317225100.GA3805@pd.tnic>
+ <1458255363.3861.40.camel@linux.intel.com>
+ <20160317185532.7ab0adc5@yairi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:26118 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbcCRJBu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 05:01:50 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42286 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786AbcCRJJd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Mar 2016 05:09:33 -0400
 Content-Disposition: inline
+In-Reply-To: <20160317185532.7ab0adc5@yairi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de, x86@kernel.org, hpa@zytor.com, linux-kernel@vger.kernel.org
 
-We accidentally free "micro_ac_power" which is an error pointer and it
-leads to an oops.  We intended to free "micro_batt_power".
+On Thu, Mar 17, 2016 at 06:55:32PM -0700, Jacob Pan wrote:
+> I think it could be used by perf rapl pmu also, but later.
 
-Fixes: a2c1d531854c ('power_supply: ipaq_micro_battery: Check return values in probe')
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Once that happens, you can move them to msr-index.h, of course.
 
-diff --git a/drivers/power/ipaq_micro_battery.c b/drivers/power/ipaq_micro_battery.c
-index 3f314b1..35b01c7 100644
---- a/drivers/power/ipaq_micro_battery.c
-+++ b/drivers/power/ipaq_micro_battery.c
-@@ -261,7 +261,7 @@ static int micro_batt_probe(struct platform_device *pdev)
- 	return 0;
- 
- ac_err:
--	power_supply_unregister(micro_ac_power);
-+	power_supply_unregister(micro_batt_power);
- batt_err:
- 	cancel_delayed_work_sync(&mb->update);
- 	destroy_workqueue(mb->wq);
+--=20
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Nort=
+on, HRB 21284 (AG N=C3=BCrnberg)
+--=20
