@@ -1,438 +1,407 @@
-From: Stephane Gasparini <stephane.gasparini@linux.intel.com>
-Subject: Re: intel_pstate oopses and lockdep report with Linux v4.5-1822-g63e30271b04c
-Date: Fri, 18 Mar 2016 19:32:31 +0100
-Message-ID: <2FBA4108-2F11-438D-B521-62B577967B94@linux.intel.com>
-References: <CA+5PVA5=CJ=yf0EAZqNJX0XMc+ofDDJ-CHBrwuaANQwdhh2XbA@mail.gmail.com> <10670722.U2p4NnYGsS@vostro.rjw.lan> <CA+5PVA78uXrqgm5a9h5ytbrd5sun4mVU5+u9V9GnY1V6rizhzg@mail.gmail.com> <6130650.QZM8FIW1Fl@vostro.rjw.lan> <E8E228AA-B140-4C15-8984-EFACDC95FB9F@linux.intel.com> <1458323535.3861.76.camel@linux.intel.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.2 \(3112\))
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] cpuidle: use high confidence factors only when
+ considering polling
+Date: Fri, 18 Mar 2016 15:29:57 -0400
+Message-ID: <20160318152957.5c3b91bc@annuminas.surriel.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	<CAJZ5v0iK=vO1HPKfbpMwNx_Tk-kjGEUKrCmehaK7nN+-Up7BoA@mail.gmail.com>
+	<20160316121400.680a6a46@annuminas.surriel.com>
+	<10828426.sI6CaBvZhk@vostro.rjw.lan>
+	<000701d180df$e8a14340$b9e3c9c0$@net>
+	<CAJZ5v0gLXE=sRxv35hKuX88L4tphSBtPb9Y2oLERuEhjsbTGJQ@mail.gmail.com>
+	<003301d18144$87bb8df0$9732a9d0$@net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:18030 "EHLO mga02.intel.com"
+Received: from mx1.redhat.com ([209.132.183.28]:56357 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753404AbcCRScf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 14:32:35 -0400
-In-Reply-To: <1458323535.3861.76.camel@linux.intel.com>
+	id S1751795AbcCRTaC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Mar 2016 15:30:02 -0400
+In-Reply-To: <003301d18144$87bb8df0$9732a9d0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Josh Boyer <jwboyer@fedoraproject.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Chen, Yu C'" <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, 'Arto Jantunen' <viiru@iki.fi>, 'Len Brown' <lenb@kernel.org>
 
+On Fri, 18 Mar 2016 11:32:28 -0700
+"Doug Smythies" <dsmythies@telus.net> wrote:
+> On 2016.03.18 06:12 Rafael J. Wysocki wrote:
 
-=E2=80=94
-Steph
+> > I'm wondering what happens if you replace the expected_interval in the
+> > "expected_interval >
+> > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency" test with
+> > data->next_timer_us (with the Rik's patch applied, of course).  Can
+> > you please try doing that?  
+> 
+> O.K. my reference: rvr6 is the above modification to rvr5
+> It works as well as "reverted"/
+> 
+> State	k45rc7-rjw10-rvr6 (mins)
+> 0.00	0.87
+> 1.00	24.20
+> 2.00	4.05
+> 3.00	1.72
+> 4.00	147.50
+> 
+> total	178.34
+> 
+> Energy:
+> Kernel 4.5-rc7-rjw10-rvr6: 55864 Joules
+> 
+> Trace data (very crude summary):
+> Kernel 4.5-rc7-rjw10-rvr5: ~3049 long durations at high CPU load (idle state 0)
+> Kernel 4.5-rc7-rjw10-rvr5: ~183 long durations at high, but less, CPU load (not all idle state 0)
 
+What does "long duration" mean? 
+Dozens of microseconds?
+Hundreds of microseconds?
+Milliseconds?
 
+Either way, it appears there is something wrong with the
+code in get_typical_interval.  One of the problems is
+that calculating in microseconds, when working with a
+threshold of 1-2 microseconds is not going to work well,
+and secondly the code declares success the moment the
+standard deviation is below 20 microseconds, which is
+also not the best idea when dealing with 1-2 microsecond
+thresholds :)
 
+Does the below patch help?
 
-> On Mar 18, 2016, at 6:52 PM, Srinivas Pandruvada <srinivas.pandruvada=
-@linux.intel.com> wrote:
->=20
-> On Fri, 2016-03-18 at 17:13 +0100, Stephane Gasparini wrote:
->> Rafael,
->>=20
->> Why in step 3) both atom_set_pstate() and atom_set_pstate() were not
->> both
->> changed to use wrmsrl ?
-> Initial Atom support was experimental as there were no users, till
-> Chrome started using. So it was just a miss.
->=20
-> We should never have to use wrmsrl_on_cpu. But looks like
-> cpufreq_driver.init() can't guarantee that.
->=20
->> BTW, what is the interest of setting the pstate to LFM during
->> initialization ?
->> The BIOS is setting the pstate to either LFM, HFM or BFM, and why
->> bothering
->> changing it.
-> This is a different issue. BIOS has different configuration option to
-> enable fast boot modes which are not necessarily optimized for Linux.
-> Some aggressive setting will force system to reboot on boot. So I wil=
-l
-> leave the way it is.
->=20
-> Thanks,
-> Srinivas
->=20
+If it does, we will probably want to change the values in
+the driver tables to nanoseconds too, so we can get rid of
+the multiplications :)
 
-Still it does not answer my question, why when implementing a4675fbc4a7=
-a
-we did changed core for wrmsrl and not atom ?
+---8<---
 
-My point is that the issue was more due to a miss in the patch a4675fbc=
-4a7a
-rather than a difference of behavior between atom and core.
+Subject: cpuidle: track time in nsecs not usecs
 
-The commit message is a bit misleading around this.
-The wrmrl_on_cpu() is needed on both core and atom during init.
+The cpuidle code currently tracks time in microseconds, which
+has a few issues. For one, the kernel natively tracks time in
+nanoseconds, and we do a divide by 1000 when tracking how long
+the CPU spent in an idle state.
 
+Secondly, get_typical_interval in the menu governor cannot do
+very useful math when working with small numbers, while the
+HLT cutoff is only 1 or 2 microseconds on many CPUs.
 
->> =20
->> =E2=80=94
->> Steph
->>=20
->>=20
->>=20
->>=20
->>>=20
->>> On Mar 18, 2016, at 3:36 PM, Rafael J. Wysocki <rjw@rjwysocki.net>
->>> wrote:
->>>=20
->>> On Friday, March 18, 2016 08:37:15 AM Josh Boyer wrote:
->>>>=20
->>>> On Thu, Mar 17, 2016 at 8:20 PM, Rafael J. Wysocki <rjw@rjwysocki
->>>> .net> wrote:
->>>>>=20
->>>>> On Thursday, March 17, 2016 12:44:54 PM Josh Boyer wrote:
->>>>>>=20
->>>>>> On Thu, Mar 17, 2016 at 10:07 AM, Rafael J. Wysocki <rjw@rjwy
->>>>>> socki.net> wrote:
->>>>>>>=20
->>>>>>> On Thursday, March 17, 2016 09:02:29 AM Josh Boyer wrote:
->>>>>>>>=20
->>>>>>>> Hello,
->>>>>>> Hi,
->>>>>>>=20
->>>>>>>>=20
->>>>>>>> I have an Intel Atom based NUC that is producing the
->>>>>>>> following
->>>>>>>> backtraces on boot of Linus' tree as of last
->>>>>>>> evening.  This does not
->>>>>>>> happen with a tree with top level commit 271ecc5253e2,
->>>>>>>> but does happen
->>>>>>>> when using the tree mentioned in the subject with top
->>>>>>>> level commit
->>>>>>>> 63e30271b04c.
->>>>>>>>=20
->>>>>>>> The first backtrace appears to be a warning because the
->>>>>>>> intel_pstate
->>>>>>>> driver is calling wrmsrl_on_cpu when interrupts are
->>>>>>>> disabled?  Not
->>>>>>>> sure on that one.
->>>>>>>>=20
->>>>>>>> The second backtrace is a lockdep report.  Both are from
->>>>>>>> the same boot.
->>>>>>> OK, thanks for the report.
->>>>>>>=20
->>>>>>> Can you please try the patch below?
->>>>>>>=20
->>>>>>> I'm actually unsure if we can do that safely in general for
->>>>>>> Atom because
->>>>>>> of the initialization, but that's what Core does anyway.
->>>>>>>=20
->>>>>>> Srinivas, Philippe, why exactly do we need the
->>>>>>> wrmsrl_on_cpu() in
->>>>>>> atom_set_pstate()?  core_set_pstate() uses wrmsrl() and
->>>>>>> seems to be doing fine.
->>>>>>>=20
->>>>>>> ---
->>>>>>> drivers/cpufreq/intel_pstate.c |    2 +-
->>>>>>> 1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>>>=20
->>>>>>> Index: linux-pm/drivers/cpufreq/intel_pstate.c
->>>>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>>>>>> =3D=3D=3D=3D=3D=3D=3D=3D
->>>>>>> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
->>>>>>> +++ linux-pm/drivers/cpufreq/intel_pstate.c
->>>>>>> @@ -587,7 +587,7 @@ static void atom_set_pstate(struct
->>>>>>> cpuda
->>>>>>>=20
->>>>>>>        val |=3D vid;
->>>>>>>=20
->>>>>>> -       wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL,
->>>>>>> val);
->>>>>>> +       wrmsrl(MSR_IA32_PERF_CTL, val);
->>>>>>> }
->>>>>>>=20
->>>>>>> static int silvermont_get_scaling(void)
->>>>>>>=20
->>>>>> I applied this on top of commit 09fd671ccb24 and the
->>>>>> backtrace and
->>>>>> lockdep report both go away.  So yes, this seems to clear up
->>>>>> the
->>>>>> issue.  I tested it on a variety of different CPU types and
->>>>>> didn't
->>>>>> notice anything wrong on them either.
->>>>> The problems may show up during initialization and cleanup
->>>>> where one CPU
->>>>> may be running code trying to configure a different one.  In
->>>>> those cases
->>>>> wrmsrl_on_cpu() needs to be used.
->>>>>=20
->>>>> Let me cut a patch taking that into account.
->>>> OK.  Happy to test when you have it ready.
->>> Thanks!
->>>=20
->>> Please test the patch below.
->>>=20
->>> ---
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> Subject: [PATCH] intel_pstate: Do not call wrmsrl_on_cpu() with
->>> disabled interrupts
->>>=20
->>> After commit a4675fbc4a7a (cpufreq: intel_pstate: Replace timers
->>> with
->>> utilization update callbacks) wrmsrl_on_cpu() cannot be called in
->>> the
->>> intel_pstate_adjust_busy_pstate() path as that is executed with
->>> disabled interrupts.  However, atom_set_pstate() called from there
->>> via intel_pstate_set_pstate() uses wrmsrl_on_cpu() to update the
->>> IA32_PERF_CTL MSR which triggers the WARN_ON_ONCE() in
->>> smp_call_function_single().
->>>=20
->>> The reason why wrmsrl_on_cpu() is used by atom_set_pstate() is
->>> because intel_pstate_set_pstate() calling it is also invoked during
->>> the initialization and cleanup of the driver and in those cases it
->>> is
->>> not guaranteed to be run on the CPU that is being
->>> updated.  However,
->>> in the case when intel_pstate_set_pstate() is called by
->>> intel_pstate_adjust_busy_pstate(), wrmsrl() can be used to update
->>> the register safely.  Moreover, intel_pstate_set_pstate() already
->>> contains code that only is executed if the function is called by
->>> intel_pstate_adjust_busy_pstate() and there is a special argument
->>> passed to it because of that.
->>>=20
->>> To fix the problem at hand, rearrange the code taking the above
->>> observations into account.
->>>=20
->>> First, replace the ->set() callback in struct pstate_funcs with a
->>> ->get_val() one that will return the value to be written to the
->>> IA32_PERF_CTL MSR without updating the register.
->>>=20
->>> Second, split intel_pstate_set_pstate() into two functions,
->>> intel_pstate_update_pstate() to be called by
->>> intel_pstate_adjust_busy_pstate() that will contain all of the
->>> intel_pstate_set_pstate() code which only needs to be executed in
->>> that case and will use wrmsrl() to update the MSR (after obtaining
->>> the value to write to it from the ->get_val() callback), and
->>> intel_pstate_set_min_pstate() to be invoked during the
->>> initialization and cleanup that will set the P-state to the
->>> minimum one and will update the MSR using wrmsrl_on_cpu().
->>>=20
->>> Finally, move the code shared between intel_pstate_update_pstate()
->>> and intel_pstate_set_min_pstate() to a new static inline function
->>> intel_pstate_record_pstate() and make them both call it.
->>>=20
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> Fixes: a4675fbc4a7a (cpufreq: intel_pstate: Replace timers with
->>> utilization update callbacks)
->>> ---
->>> drivers/cpufreq/intel_pstate.c |   73 ++++++++++++++++++++++++-----
->>> ------------
->>> 1 file changed, 43 insertions(+), 30 deletions(-)
->>>=20
->>> Index: linux-pm/drivers/cpufreq/intel_pstate.c
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
->>> +++ linux-pm/drivers/cpufreq/intel_pstate.c
->>> @@ -134,7 +134,7 @@ struct pstate_funcs {
->>> 	int (*get_min)(void);
->>> 	int (*get_turbo)(void);
->>> 	int (*get_scaling)(void);
->>> -	void (*set)(struct cpudata*, int pstate);
->>> +	u64 (*get_val)(struct cpudata*, int pstate);
->>> 	void (*get_vid)(struct cpudata *);
->>> 	int32_t (*get_target_pstate)(struct cpudata *);
->>> };
->>> @@ -565,7 +565,7 @@ static int atom_get_turbo_pstate(void)
->>> 	return value & 0x7F;
->>> }
->>>=20
->>> -static void atom_set_pstate(struct cpudata *cpudata, int pstate)
->>> +static u64 atom_get_val(struct cpudata *cpudata, int pstate)
->>> {
->>> 	u64 val;
->>> 	int32_t vid_fp;
->>> @@ -585,9 +585,7 @@ static void atom_set_pstate(struct cpuda
->>> 	if (pstate > cpudata->pstate.max_pstate)
->>> 		vid =3D cpudata->vid.turbo;
->>>=20
->>> -	val |=3D vid;
->>> -
->>> -	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
->>> +	return val | vid;
->>> }
->>>=20
->>> static int silvermont_get_scaling(void)
->>> @@ -711,7 +709,7 @@ static inline int core_get_scaling(void)
->>> 	return 100000;
->>> }
->>>=20
->>> -static void core_set_pstate(struct cpudata *cpudata, int pstate)
->>> +static u64 core_get_val(struct cpudata *cpudata, int pstate)
->>> {
->>> 	u64 val;
->>>=20
->>> @@ -719,7 +717,7 @@ static void core_set_pstate(struct cpuda
->>> 	if (limits->no_turbo && !limits->turbo_disabled)
->>> 		val |=3D (u64)1 << 32;
->>>=20
->>> -	wrmsrl(MSR_IA32_PERF_CTL, val);
->>> +	return val;
->>> }
->>>=20
->>> static int knl_get_turbo_pstate(void)
->>> @@ -750,7 +748,7 @@ static struct cpu_defaults core_params =3D
->>> 		.get_min =3D core_get_min_pstate,
->>> 		.get_turbo =3D core_get_turbo_pstate,
->>> 		.get_scaling =3D core_get_scaling,
->>> -		.set =3D core_set_pstate,
->>> +		.get_val =3D core_get_val,
->>> 		.get_target_pstate =3D get_target_pstate_use_performance,
->>> 	},
->>> };
->>> @@ -769,7 +767,7 @@ static struct cpu_defaults silvermont_pa
->>> 		.get_max_physical =3D atom_get_max_pstate,
->>> 		.get_min =3D atom_get_min_pstate,
->>> 		.get_turbo =3D atom_get_turbo_pstate,
->>> -		.set =3D atom_set_pstate,
->>> +		.get_val =3D atom_get_val,
->>> 		.get_scaling =3D silvermont_get_scaling,
->>> 		.get_vid =3D atom_get_vid,
->>> 		.get_target_pstate =3D get_target_pstate_use_cpu_load,
->>> @@ -790,7 +788,7 @@ static struct cpu_defaults airmont_param
->>> 		.get_max_physical =3D atom_get_max_pstate,
->>> 		.get_min =3D atom_get_min_pstate,
->>> 		.get_turbo =3D atom_get_turbo_pstate,
->>> -		.set =3D atom_set_pstate,
->>> +		.get_val =3D atom_get_val,
->>> 		.get_scaling =3D airmont_get_scaling,
->>> 		.get_vid =3D atom_get_vid,
->>> 		.get_target_pstate =3D get_target_pstate_use_cpu_load,
->>> @@ -812,7 +810,7 @@ static struct cpu_defaults knl_params =3D
->>> 		.get_min =3D core_get_min_pstate,
->>> 		.get_turbo =3D knl_get_turbo_pstate,
->>> 		.get_scaling =3D core_get_scaling,
->>> -		.set =3D core_set_pstate,
->>> +		.get_val =3D core_get_val,
->>> 		.get_target_pstate =3D get_target_pstate_use_performance,
->>> 	},
->>> };
->>> @@ -839,25 +837,24 @@ static void intel_pstate_get_min_max(str
->>> 	*min =3D clamp_t(int, min_perf, cpu->pstate.min_pstate,
->>> max_perf);
->>> }
->>>=20
->>> -static void intel_pstate_set_pstate(struct cpudata *cpu, int
->>> pstate, bool force)
->>> +static inline void intel_pstate_record_pstate(struct cpudata *cpu,
->>> int pstate)
->>> {
->>> -	int max_perf, min_perf;
->>> -
->>> -	if (force) {
->>> -		update_turbo_state();
->>> -
->>> -		intel_pstate_get_min_max(cpu, &min_perf,
->>> &max_perf);
->>> -
->>> -		pstate =3D clamp_t(int, pstate, min_perf, max_perf);
->>> -
->>> -		if (pstate =3D=3D cpu->pstate.current_pstate)
->>> -			return;
->>> -	}
->>> 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
->>> -
->>> 	cpu->pstate.current_pstate =3D pstate;
->>> +}
->>>=20
->>> -	pstate_funcs.set(cpu, pstate);
->>> +static void intel_pstate_set_min_pstate(struct cpudata *cpu)
->>> +{
->>> +	int pstate =3D cpu->pstate.min_pstate;
->>> +
->>> +	intel_pstate_record_pstate(cpu, pstate);
->>> +	/*
->>> +	 * Generally, there is no guarantee that this code will
->>> always run on
->>> +	 * the CPU being updated, so force the register update to
->>> run on the
->>> +	 * right CPU.
->>> +	 */
->>> +	wrmsrl_on_cpu(cpu->cpu, MSR_IA32_PERF_CTL,
->>> +		      pstate_funcs.get_val(cpu, pstate));
->>> }
->>>=20
->>> static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
->>> @@ -870,7 +867,8 @@ static void intel_pstate_get_cpu_pstates
->>>=20
->>> 	if (pstate_funcs.get_vid)
->>> 		pstate_funcs.get_vid(cpu);
->>> -	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate,
->>> false);
->>> +
->>> +	intel_pstate_set_min_pstate(cpu);
->>> }
->>>=20
->>> static inline void intel_pstate_calc_busy(struct cpudata *cpu)
->>> @@ -997,6 +995,21 @@ static inline int32_t get_target_pstate_
->>> 	return cpu->pstate.current_pstate - pid_calc(&cpu->pid,
->>> core_busy);
->>> }
->>>=20
->>> +static inline void intel_pstate_update_pstate(struct cpudata *cpu,
->>> int pstate)
->>> +{
->>> +	int max_perf, min_perf;
->>> +
->>> +	update_turbo_state();
->>> +
->>> +	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
->>> +	pstate =3D clamp_t(int, pstate, min_perf, max_perf);
->>> +	if (pstate =3D=3D cpu->pstate.current_pstate)
->>> +		return;
->>> +
->>> +	intel_pstate_record_pstate(cpu, pstate);
->>> +	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu,
->>> pstate));
->>> +}
->>> +
->>> static inline void intel_pstate_adjust_busy_pstate(struct cpudata
->>> *cpu)
->>> {
->>> 	int from, target_pstate;
->>> @@ -1006,7 +1019,7 @@ static inline void intel_pstate_adjust_b
->>>=20
->>> 	target_pstate =3D pstate_funcs.get_target_pstate(cpu);
->>>=20
->>> -	intel_pstate_set_pstate(cpu, target_pstate, true);
->>> +	intel_pstate_update_pstate(cpu, target_pstate);
->>>=20
->>> 	sample =3D &cpu->sample;
->>> 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
->>> @@ -1180,7 +1193,7 @@ static void intel_pstate_stop_cpu(struct
->>> 	if (hwp_active)
->>> 		return;
->>>=20
->>> -	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate,
->>> false);
->>> +	intel_pstate_set_min_pstate(cpu);
->>> }
->>>=20
->>> static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>> @@ -1255,7 +1268,7 @@ static void copy_cpu_funcs(struct pstate
->>> 	pstate_funcs.get_min   =3D funcs->get_min;
->>> 	pstate_funcs.get_turbo =3D funcs->get_turbo;
->>> 	pstate_funcs.get_scaling =3D funcs->get_scaling;
->>> -	pstate_funcs.set       =3D funcs->set;
->>> +	pstate_funcs.get_val   =3D funcs->get_val;
->>> 	pstate_funcs.get_vid   =3D funcs->get_vid;
->>> 	pstate_funcs.get_target_pstate =3D funcs->get_target_pstate;
->>>=20
->>>=20
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm"=
-=20
->>> in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Converting to nanoseconds avoids the expensive divide, and
+also allows get_typical_interval to do calculations that
+may make more sense for smaller intervals.
 
+While we're there, also remove the code that allows
+get_typical_interval to return a value as soon as the
+standard deviation is under 20 microseconds.  That
+threshold makes little sense when C1 and C2 both
+have latencies much lower than that.
+
+Signed-off-by: Rik van Riel <riel@redhat.com>
+---
+ drivers/cpuidle/cpuidle.c          | 10 ++---
+ drivers/cpuidle/governors/ladder.c |  2 +-
+ drivers/cpuidle/governors/menu.c   | 90 +++++++++++++++++---------------------
+ drivers/cpuidle/sysfs.c            |  8 +++-
+ include/linux/cpuidle.h            |  4 +-
+ 5 files changed, 56 insertions(+), 58 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index f996efc56605..8a0673880fbe 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -217,18 +217,18 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	if (!cpuidle_state_is_coupled(drv, entered_state))
+ 		local_irq_enable();
+ 
+-	diff = ktime_to_us(ktime_sub(time_end, time_start));
+-	if (diff > INT_MAX)
+-		diff = INT_MAX;
++	diff = ktime_to_ns(ktime_sub(time_end, time_start));
++	if (diff > LONG_MAX)
++		diff = LONG_MAX;
+ 
+-	dev->last_residency = (int) diff;
++	dev->last_residency = diff;
+ 
+ 	if (entered_state >= 0) {
+ 		/* Update cpuidle counters */
+ 		/* This can be moved to within driver enter routine
+ 		 * but that results in multiple copies of same code.
+ 		 */
+-		dev->states_usage[entered_state].time += dev->last_residency;
++		dev->states_usage[entered_state].time += diff;
+ 		dev->states_usage[entered_state].usage++;
+ 	} else {
+ 		dev->last_residency = 0;
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 63bd5a403e22..6b480a3a3a2e 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 
+ 	last_state = &ldev->states[last_idx];
+ 
+-	last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
++	last_residency = ktime_to_us(cpuidle_get_last_residency(dev)) - drv->states[last_idx].exit_latency;
+ 
+ 	/* consider promotion */
+ 	if (last_idx < drv->state_count - 1 &&
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index fba867d917f7..69adb6ab7b8c 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -33,9 +33,9 @@
+ #define BUCKETS 12
+ #define INTERVAL_SHIFT 3
+ #define INTERVALS (1UL << INTERVAL_SHIFT)
+-#define RESOLUTION 1024
++#define RESOLUTION NSEC_PER_USEC
+ #define DECAY 8
+-#define MAX_INTERESTING 50000
++#define MAX_INTERESTING 4000000
+ 
+ 
+ /*
+@@ -122,11 +122,11 @@ struct menu_device {
+ 	int		last_state_idx;
+ 	int             needs_update;
+ 
+-	unsigned int	next_timer_us;
+-	unsigned int	predicted_us;
++	u64		next_timer_ns;
++	u64		predicted_ns;
+ 	unsigned int	bucket;
+ 	unsigned int	correction_factor[BUCKETS];
+-	unsigned int	intervals[INTERVALS];
++	u64		intervals[INTERVALS];
+ 	int		interval_ptr;
+ };
+ 
+@@ -152,15 +152,15 @@ static inline int which_bucket(unsigned int duration, unsigned long nr_iowaiters
+ 	if (nr_iowaiters)
+ 		bucket = BUCKETS/2;
+ 
+-	if (duration < 10)
++	if (duration < 10000)
+ 		return bucket;
+-	if (duration < 100)
++	if (duration < 100000)
+ 		return bucket + 1;
+-	if (duration < 1000)
++	if (duration < 1000000)
+ 		return bucket + 2;
+-	if (duration < 10000)
++	if (duration < 10000000)
+ 		return bucket + 3;
+-	if (duration < 100000)
++	if (duration < 100000000)
+ 		return bucket + 4;
+ 	return bucket + 5;
+ }
+@@ -242,21 +242,12 @@ static unsigned int get_typical_interval(struct menu_device *data)
+ 	 * The typical interval is obtained when standard deviation is small
+ 	 * or standard deviation is small compared to the average interval.
+ 	 *
+-	 * int_sqrt() formal parameter type is unsigned long. When the
+-	 * greatest difference to an outlier exceeds ~65 ms * sqrt(divisor)
+-	 * the resulting squared standard deviation exceeds the input domain
+-	 * of int_sqrt on platforms where unsigned long is 32 bits in size.
+-	 * In such case reject the candidate average.
+-	 *
+-	 * Use this result only if there is no timer to wake us up sooner.
++	 * Instead of taking the square root of the standard deviation,
++	 * use the square of the average. Be careful to avoid overflow.
+ 	 */
+-	if (likely(stddev <= ULONG_MAX)) {
+-		stddev = int_sqrt(stddev);
+-		if (((avg > stddev * 6) && (divisor * 4 >= INTERVALS * 3))
+-							|| stddev <= 20) {
+-			return avg;
+-		}
+-	}
++	if (avg < INT_MAX && (avg * avg) > stddev * 9 &&
++					divisor * 4 >= INTERVALS * 3)
++		return avg;
+ 
+ 	/*
+ 	 * If we have outliers to the upside in our distribution, discard
+@@ -282,10 +273,10 @@ static unsigned int get_typical_interval(struct menu_device *data)
+ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+-	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++	u64 latency_req = NSEC_PER_USEC * pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
+-	unsigned int interactivity_req;
+-	unsigned int expected_interval;
++	u64 interactivity_req;
++	u64 expected_interval;
+ 	unsigned long nr_iowaiters, cpu_load;
+ 
+ 	if (data->needs_update) {
+@@ -298,22 +289,21 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		return 0;
+ 
+ 	/* determine the expected residency time, round up */
+-	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
++	data->next_timer_ns = ktime_to_ns(tick_nohz_get_sleep_length());
+ 
+-	get_iowait_load(&nr_iowaiters, &cpu_load);
+-	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
++	data->bucket = which_bucket(data->next_timer_ns, nr_iowaiters);
+ 
+ 	/*
+ 	 * Force the result of multiplication to be 64 bits even if both
+ 	 * operands are 32 bits.
+-	 * Make sure to round up for half microseconds.
++	 * Make sure to round up for half nanoseconds.
+ 	 */
+-	data->predicted_us = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_us *
++	data->predicted_ns = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_ns *
+ 					 data->correction_factor[data->bucket],
+ 					 RESOLUTION * DECAY);
+ 
+ 	expected_interval = get_typical_interval(data);
+-	expected_interval = min(expected_interval, data->next_timer_us);
++	expected_interval = min(expected_interval, data->next_timer_ns);
+ 
+ 	if (CPUIDLE_DRIVER_STATE_START > 0) {
+ 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
+@@ -322,8 +312,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		 * unless the timer is happening really really soon, or
+ 		 * C1's exit latency exceeds the user configured limit.
+ 		 */
+-		if (expected_interval > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
+-		    latency_req > drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency &&
++		if (expected_interval > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency * NSEC_PER_USEC &&
++		    latency_req > drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency * NSEC_PER_USEC &&
+ 		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+ 		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
+ 			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+@@ -334,13 +324,15 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	/*
+ 	 * Use the lowest expected idle interval to pick the idle state.
+ 	 */
+-	data->predicted_us = min(data->predicted_us, expected_interval);
++	data->predicted_ns = min(data->predicted_ns, expected_interval);
+ 
+ 	/*
+ 	 * Use the performance multiplier and the user-configurable
+ 	 * latency_req to determine the maximum exit latency.
+ 	 */
+-	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
++	get_iowait_load(&nr_iowaiters, &cpu_load);
++	interactivity_req = data->predicted_ns;
++	do_div(interactivity_req, performance_multiplier(nr_iowaiters, cpu_load));
+ 	if (latency_req > interactivity_req)
+ 		latency_req = interactivity_req;
+ 
+@@ -354,9 +346,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 
+ 		if (s->disabled || su->disable)
+ 			continue;
+-		if (s->target_residency > data->predicted_us)
++		if (s->target_residency * NSEC_PER_USEC > data->predicted_ns)
+ 			continue;
+-		if (s->exit_latency > latency_req)
++		if (s->exit_latency * NSEC_PER_USEC > latency_req)
+ 			continue;
+ 
+ 		data->last_state_idx = i;
+@@ -391,8 +383,8 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int last_idx = data->last_state_idx;
+ 	struct cpuidle_state *target = &drv->states[last_idx];
+-	unsigned int measured_us;
+ 	unsigned int new_factor;
++	u64 measured_ns;
+ 
+ 	/*
+ 	 * Try to figure out how much time passed between entry to low
+@@ -410,24 +402,24 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	 */
+ 
+ 	/* measured value */
+-	measured_us = cpuidle_get_last_residency(dev);
++	measured_ns = cpuidle_get_last_residency(dev);
+ 
+ 	/* Deduct exit latency */
+-	if (measured_us > 2 * target->exit_latency)
+-		measured_us -= target->exit_latency;
++	if (measured_ns > 2 * NSEC_PER_USEC * target->exit_latency)
++		measured_ns -= NSEC_PER_USEC * target->exit_latency;
+ 	else
+-		measured_us /= 2;
++		measured_ns /= 2;
+ 
+ 	/* Make sure our coefficients do not exceed unity */
+-	if (measured_us > data->next_timer_us)
+-		measured_us = data->next_timer_us;
++	if (measured_ns > data->next_timer_ns)
++		measured_ns = data->next_timer_ns;
+ 
+ 	/* Update our correction ratio */
+ 	new_factor = data->correction_factor[data->bucket];
+ 	new_factor -= new_factor / DECAY;
+ 
+-	if (data->next_timer_us > 0 && measured_us < MAX_INTERESTING)
+-		new_factor += RESOLUTION * measured_us / data->next_timer_us;
++	if (data->next_timer_ns > 0 && measured_ns < MAX_INTERESTING)
++		new_factor += measured_ns / data->next_timer_ns;
+ 	else
+ 		/*
+ 		 * we were idle so long that we count it as a perfect
+@@ -447,7 +439,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	data->correction_factor[data->bucket] = new_factor;
+ 
+ 	/* update the repeating-pattern data */
+-	data->intervals[data->interval_ptr++] = measured_us;
++	data->intervals[data->interval_ptr++] = measured_ns;
+ 	if (data->interval_ptr >= INTERVALS)
+ 		data->interval_ptr = 0;
+ }
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 832a2c3f01ff..e2fa2cf4f8a5 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -292,11 +292,17 @@ static ssize_t show_state_##_name(struct cpuidle_state *state, \
+ 	return sprintf(buf, "%s\n", state->_name);\
+ }
+ 
++static ssize_t show_state_time(struct cpuidle_state *state,
++				  struct cpuidle_state_usage *state_usage,
++				  char *buf)
++{
++	return sprintf(buf, "%llu\n", NSEC_PER_USEC * state_usage->time);
++}
++
+ define_show_state_function(exit_latency)
+ define_show_state_function(target_residency)
+ define_show_state_function(power_usage)
+ define_show_state_ull_function(usage)
+-define_show_state_ull_function(time)
+ define_show_state_str_function(name)
+ define_show_state_str_function(desc)
+ define_show_state_ull_function(disable)
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 786ad32631a6..e6bab06d5502 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -76,7 +76,7 @@ struct cpuidle_device {
+ 	unsigned int		enabled:1;
+ 	unsigned int		cpu;
+ 
+-	int			last_residency;
++	u64			last_residency;
+ 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
+ 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+ 	struct cpuidle_driver_kobj *kobj_driver;
+@@ -96,7 +96,7 @@ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
+  * cpuidle_get_last_residency - retrieves the last state's residency time
+  * @dev: the target CPU
+  */
+-static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
++static inline u64 cpuidle_get_last_residency(struct cpuidle_device *dev)
+ {
+ 	return dev->last_residency;
+ }
