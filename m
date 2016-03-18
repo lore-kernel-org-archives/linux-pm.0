@@ -1,48 +1,33 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v6 0/6] EC-based USB Power Delivery support for Chrome machines
-Date: Fri, 18 Mar 2016 14:36:09 +0100
-Message-ID: <1458308175-9508-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34933 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbcCRNgm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 09:36:42 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v6 5/6] power: cros_usbpd-charger: Add EC-based USB PD charger driver
+Date: Fri, 18 Mar 2016 14:36:14 +0100
+Message-ID: <1458308175-9508-6-git-send-email-tomeu.vizoso@collabora.com>
+References: <1458308175-9508-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1458308175-9508-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
+Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Shawn Nematbakhsh <shawnn@chromium.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Sameer Nanda <snanda@chromium.org>
 
-this series contains a driver that exposes a power_supply to userspace
-representing a port that support USB PD charging.
+This driver exposes the charger functionality in the PD EC to userspace.
 
-Allows userspace to display to the user if the machine is charging and
-on which port, and if another device is being charged by a port.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Sameer Nanda <snanda@chromium.org>
+Cc: Benson Leung <bleung@chromium.org>
+Cc: Shawn Nematbakhsh <shawnn@chromium.org>
+---
 
-This series may be best integrated through the MFD tree, for which we'll
-need ACKs from Olof (for the changes to platform/chrome), from Dmitry
-(for changes to cros_ec_keyb.c) and from Sebastian Reichel for the
-new driver.
-
-Thanks,
-
-Tomeu
-
-Changes in v6:
-- Return 0 if the EC doesn't support MKBP, as expected by callers.
-
+Changes in v6: None
 Changes in v5:
-- Check explicitly for !EC_RES_SUCCESS as suggested by Benson Leung.
 - Fix type of variable passed to do_div.
 
 Changes in v4:
-- Calculate correctly the size of the payloads in
-  cros_ec_get_host_command_version_mask.
 - Declare size parameters in ec_command as size_t
 
 Changes in v3:
-- Remove duplicated prototype of cros_ec_get_host_event.
 - Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
 - Remove sysfs attributes ext_current_lim and ext_voltage_lim because
   I don't know yet where they should be placed (and don't have HW to
@@ -50,49 +35,834 @@ Changes in v3:
 - Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
 - Lots of misc comments from Stephen Boyd were addressed.
 - Unregister notification listener in .remove callback.
-- Only register the PD charger device if there are any PD ports in this
-  EC.
-- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
-  charger device because we are now only creating one if a EC has any PD
-  ports.
-- Dropped patch adding power_supply types because it has been merged
-  already.
 
 Changes in v2:
-- Allocate enough for the structs in cros_ec_get_host_command_version_mask,
-  not their pointers.
-- Allocate msg in the stack in get_next_event and
-  get_keyboard_state_event, as suggested by Gwendal.
 - Split out changes to cros_ec_commands.h and the helpers added to
   mfd/cros_ec.h from the patch that adds the charger driver, as
   suggested by Lee.
 - Actually call get_ec_num_ports.
-- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
 
-Sameer Nanda (1):
-  power: cros_usbpd-charger: Add EC-based USB PD charger driver
-
-Tomeu Vizoso (4):
-  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
-  mfd: cros_ec: Add cros_ec_get_host_event
-  mfd: cros_ec: Add more definitions for PD commands
-  platform/chrome: Register USB PD charger device
-
-Vic Yang (1):
-  mfd: cros_ec: Add MKBP event support
-
- drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
- drivers/mfd/cros_ec.c                   |  57 ++-
- drivers/platform/chrome/cros_ec_dev.c   |  44 ++
- drivers/platform/chrome/cros_ec_proto.c | 129 ++++++
- drivers/power/Kconfig                   |  10 +
- drivers/power/Makefile                  |   1 +
- drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
- include/linux/mfd/cros_ec.h             |  62 +++
- include/linux/mfd/cros_ec_commands.h    | 358 ++++++++++++++-
- 9 files changed, 1464 insertions(+), 112 deletions(-)
+ drivers/power/Kconfig              |  10 +
+ drivers/power/Makefile             |   1 +
+ drivers/power/cros_usbpd-charger.c | 780 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 791 insertions(+)
  create mode 100644 drivers/power/cros_usbpd-charger.c
 
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 1ddd13cc0c07..26355850d91b 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -502,6 +502,16 @@ config AXP20X_POWER
+ 	  This driver provides support for the power supply features of
+ 	  AXP20x PMIC.
+ 
++config CHARGER_CROS_USB_PD
++	tristate "Chrome OS EC based USB PD charger"
++	depends on MFD_CROS_EC
++	default y
++	help
++	  Say Y here to enable Chrome OS EC based USB PD charger driver. This
++	  driver gets various bits of information about what is connected to
++	  USB PD ports from the EC and converts that into power_supply
++	  properties.
++
+ endif # POWER_SUPPLY
+ 
+ source "drivers/power/reset/Kconfig"
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index 0e4eab55f8d7..b83685bfae61 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -73,3 +73,4 @@ obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
+ obj-$(CONFIG_POWER_RESET)	+= reset/
+ obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
+ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
++obj-$(CONFIG_CHARGER_CROS_USB_PD)	+= cros_usbpd-charger.o
+diff --git a/drivers/power/cros_usbpd-charger.c b/drivers/power/cros_usbpd-charger.c
+new file mode 100644
+index 000000000000..7ba983286dc0
+--- /dev/null
++++ b/drivers/power/cros_usbpd-charger.c
+@@ -0,0 +1,780 @@
++/*
++ * Power supply driver for ChromeOS EC based USB PD Charger.
++ *
++ * Copyright (c) 2014 Google, Inc
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/ktime.h>
++#include <linux/module.h>
++#include <linux/mfd/cros_ec.h>
++#include <linux/mfd/cros_ec_commands.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/rtc.h>
++#include <linux/slab.h>
++
++#define CROS_USB_PD_MAX_PORTS		8
++#define CROS_USB_PD_MAX_LOG_ENTRIES	30
++
++#define CROS_USB_PD_LOG_UPDATE_DELAY msecs_to_jiffies(60000)
++#define CROS_USB_PD_CACHE_UPDATE_DELAY msecs_to_jiffies(500)
++
++/* Buffer + macro for building PDLOG string */
++#define BUF_SIZE 80
++#define APPEND_STRING(buf, len, str, ...) ((len) += \
++	snprintf((buf) + (len), max(BUF_SIZE - (len), 0), (str), ##__VA_ARGS__))
++
++#define CHARGER_DIR_NAME		"CROS_USB_PD_CHARGER%d"
++#define CHARGER_DIR_NAME_LENGTH		sizeof(CHARGER_DIR_NAME)
++
++#define MANUFACTURER_MODEL_LENGTH	32
++
++struct port_data {
++	int port_number;
++	char name[CHARGER_DIR_NAME_LENGTH];
++	char manufacturer[MANUFACTURER_MODEL_LENGTH];
++	char model_name[MANUFACTURER_MODEL_LENGTH];
++	struct power_supply *psy;
++	struct power_supply_desc psy_desc;
++	int psy_type;
++	int psy_online;
++	int psy_status;
++	int psy_current_max;
++	int psy_voltage_max_design;
++	int psy_voltage_now;
++	int psy_power_max;
++	struct charger_data *charger;
++	unsigned long last_update;
++};
++
++struct charger_data {
++	struct device *dev;
++	struct cros_ec_dev *ec_dev;
++	struct cros_ec_device *ec_device;
++	int num_charger_ports;
++	int num_registered_psy;
++	struct port_data *ports[CROS_USB_PD_MAX_PORTS];
++	struct delayed_work log_work;
++	struct workqueue_struct *log_workqueue;
++	struct notifier_block notifier;
++	bool suspended;
++};
++
++static enum power_supply_property cros_usb_pd_charger_props[] = {
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++};
++
++static int ec_command(struct cros_ec_dev *ec_dev, int version, int command,
++		      uint8_t *outdata, size_t outsize, uint8_t *indata,
++		      size_t insize)
++{
++	struct cros_ec_device *ec_device = ec_dev->ec_dev;
++	struct cros_ec_command *msg;
++	int ret;
++
++	msg = kmalloc(sizeof(*msg) + max(outsize, insize), GFP_KERNEL);
++	if (!msg)
++		return -ENOMEM;
++
++	msg->version = version;
++	msg->command = ec_dev->cmd_offset + command;
++	msg->outsize = outsize;
++	msg->insize = insize;
++
++	memcpy(msg->data, outdata, outsize);
++	ret = cros_ec_cmd_xfer_status(ec_device, msg);
++	memcpy(indata, msg->data, insize);
++
++	kfree(msg);
++
++	return ret;
++}
++
++static int set_ec_usb_pd_override_ports(struct charger_data *charger,
++					int port_num)
++{
++	struct device *dev = charger->dev;
++	struct ec_params_charge_port_override req;
++	int ret;
++
++	req.override_port = port_num;
++
++	ret = ec_command(charger->ec_dev, 0, EC_CMD_PD_CHARGE_PORT_OVERRIDE,
++			 (uint8_t *)&req, sizeof(req),
++			 NULL, 0);
++	if (ret < 0) {
++		dev_err(dev, "Port Override command returned 0x%x\n", ret);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int get_ec_num_ports(struct charger_data *charger, int *num_ports)
++{
++	struct device *dev = charger->dev;
++	struct ec_response_usb_pd_ports resp;
++	int ret;
++
++	*num_ports = 0;
++	ret = ec_command(charger->ec_dev, 0, EC_CMD_USB_PD_PORTS, NULL, 0,
++			 (uint8_t *)&resp, sizeof(resp));
++	if (ret < 0) {
++		dev_err(dev, "Unable to query PD ports (err:0x%x)\n", ret);
++		return ret;
++	}
++	*num_ports = resp.num_ports;
++	dev_dbg(dev, "Num ports = %d\n", *num_ports);
++
++	return 0;
++}
++
++static int get_ec_usb_pd_discovery_info(struct port_data *port)
++{
++	struct charger_data *charger = port->charger;
++	struct device *dev = charger->dev;
++	struct ec_params_usb_pd_info_request req;
++	struct ec_params_usb_pd_discovery_entry resp;
++	int ret;
++
++	req.port = port->port_number;
++
++	ret = ec_command(charger->ec_dev, 0, EC_CMD_USB_PD_DISCOVERY,
++			 (uint8_t *)&req, sizeof(req),
++			 (uint8_t *)&resp, sizeof(resp));
++	if (ret < 0) {
++		dev_err(dev, "Unable to query Discovery info (err:0x%x)\n",
++			 ret);
++		return -EINVAL;
++	}
++
++	dev_dbg(dev, "Port %d: VID = 0x%x, PID=0x%x, PTYPE=0x%x\n",
++		port->port_number, resp.vid, resp.pid, resp.ptype);
++
++	snprintf(port->manufacturer, MANUFACTURER_MODEL_LENGTH, "%x", resp.vid);
++	snprintf(port->model_name, MANUFACTURER_MODEL_LENGTH, "%x", resp.pid);
++
++	return 0;
++}
++
++static int get_ec_usb_pd_power_info(struct port_data *port)
++{
++	struct charger_data *charger = port->charger;
++	struct device *dev = charger->dev;
++	struct ec_params_usb_pd_power_info req;
++	struct ec_response_usb_pd_power_info resp;
++	char role_str[80];
++	int ret, last_psy_status, last_psy_type;
++
++	req.port = port->port_number;
++	ret = ec_command(charger->ec_dev, 0, EC_CMD_USB_PD_POWER_INFO,
++			 (uint8_t *)&req, sizeof(req),
++			 (uint8_t *)&resp, sizeof(resp));
++	if (ret < 0) {
++		dev_err(dev, "Unable to query PD power info (err:0x%x)\n", ret);
++		return -EINVAL;
++	}
++
++	last_psy_status = port->psy_status;
++	last_psy_type = port->psy_type;
++
++	switch (resp.role) {
++	case USB_PD_PORT_POWER_DISCONNECTED:
++		snprintf(role_str, sizeof(role_str), "%s", "DISCONNECTED");
++		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		port->psy_online = 0;
++		break;
++	case USB_PD_PORT_POWER_SOURCE:
++		snprintf(role_str, sizeof(role_str), "%s", "SOURCE");
++		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		port->psy_online = 0;
++		break;
++	case USB_PD_PORT_POWER_SINK:
++		snprintf(role_str, sizeof(role_str), "%s", "SINK");
++		port->psy_status = POWER_SUPPLY_STATUS_CHARGING;
++		port->psy_online = 1;
++		break;
++	case USB_PD_PORT_POWER_SINK_NOT_CHARGING:
++		snprintf(role_str, sizeof(role_str), "%s", "NOT CHARGING");
++		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		port->psy_online = 1;
++		break;
++	default:
++		snprintf(role_str, sizeof(role_str), "%s", "UNKNOWN");
++		dev_err(dev, "Unknown role %d\n", resp.role);
++		break;
++	}
++
++	port->psy_voltage_max_design = resp.meas.voltage_max;
++	port->psy_voltage_now = resp.meas.voltage_now;
++	port->psy_current_max = resp.meas.current_max;
++	port->psy_power_max = resp.max_power;
++
++	switch (resp.type) {
++	case USB_CHG_TYPE_BC12_SDP:
++	case USB_CHG_TYPE_VBUS:
++		port->psy_type = POWER_SUPPLY_TYPE_USB;
++		break;
++	case USB_CHG_TYPE_NONE:
++		/*
++		 * For dual-role devices when we are a source, the firmware
++		 * reports the type as NONE. Report such chargers as type
++		 * USB_PD_DRP.
++		 */
++		if (resp.role == USB_PD_PORT_POWER_SOURCE && resp.dualrole)
++			port->psy_type = POWER_SUPPLY_TYPE_USB_PD_DRP;
++		else
++			port->psy_type = POWER_SUPPLY_TYPE_USB;
++		break;
++	case USB_CHG_TYPE_PROPRIETARY:
++		port->psy_type = POWER_SUPPLY_TYPE_MAINS;
++		break;
++	case USB_CHG_TYPE_C:
++		port->psy_type = POWER_SUPPLY_TYPE_USB_TYPE_C;
++		break;
++	case USB_CHG_TYPE_BC12_DCP:
++		port->psy_type = POWER_SUPPLY_TYPE_USB_DCP;
++		break;
++	case USB_CHG_TYPE_BC12_CDP:
++		port->psy_type = POWER_SUPPLY_TYPE_USB_CDP;
++		break;
++	case USB_CHG_TYPE_PD:
++		if (resp.dualrole)
++			port->psy_type = POWER_SUPPLY_TYPE_USB_PD_DRP;
++		else
++			port->psy_type = POWER_SUPPLY_TYPE_USB_PD;
++		break;
++	case USB_CHG_TYPE_UNKNOWN:
++		/*
++		 * While the EC is trying to determine the type of charger that
++		 * has been plugged in, it will report the charger type as
++		 * unknown. Treat this case as a dedicated charger since we
++		 * don't know any better just yet. Additionally since the power
++		 * capabilities are unknown, report the max current and voltage
++		 * as zero.
++		 */
++		port->psy_type = POWER_SUPPLY_TYPE_MAINS;
++		port->psy_voltage_max_design = 0;
++		port->psy_current_max = 0;
++		break;
++	default:
++		dev_err(dev, "Port %d: default case!\n",
++			port->port_number);
++		port->psy_type = POWER_SUPPLY_TYPE_USB;
++	}
++
++	port->psy_desc.type = port->psy_type;
++
++	dev_dbg(dev,
++		"Port %d: %s type=%d=vmax=%d vnow=%d cmax=%d clim=%d pmax=%d\n",
++		port->port_number, role_str, resp.type,
++		resp.meas.voltage_max, resp.meas.voltage_now,
++		resp.meas.current_max, resp.meas.current_lim,
++		resp.max_power);
++
++	/*
++	 * If power supply type or status changed, explicitly call
++	 * power_supply_changed. This results in udev event getting generated
++	 * and allows user mode apps to react quicker instead of waiting for
++	 * their next poll of power supply status.
++	 */
++	if (last_psy_type != port->psy_type ||
++	    last_psy_status != port->psy_status) {
++		dev_dbg(dev, "Port %d: Calling power_supply_changed\n",
++			port->port_number);
++		power_supply_changed(port->psy);
++	}
++
++	return 0;
++}
++
++static int get_ec_port_status(struct port_data *port, bool ratelimit)
++{
++	int ret;
++
++	if (ratelimit &&
++	    time_is_after_jiffies(port->last_update +
++				  CROS_USB_PD_CACHE_UPDATE_DELAY))
++		return 0;
++
++	ret = get_ec_usb_pd_power_info(port);
++	if (ret < 0)
++		return ret;
++
++	ret = get_ec_usb_pd_discovery_info(port);
++	port->last_update = jiffies;
++
++	return ret;
++}
++
++static void cros_usb_pd_charger_power_changed(struct power_supply *psy)
++{
++	struct port_data *port = power_supply_get_drvdata(psy);
++	struct charger_data *charger = port->charger;
++	struct device *dev = charger->dev;
++	int i;
++
++	dev_dbg(dev, "cros_usb_pd_charger_power_changed\n");
++	for (i = 0; i < charger->num_registered_psy; i++)
++		get_ec_port_status(charger->ports[i], false);
++}
++
++static int cros_usb_pd_charger_get_prop(struct power_supply *psy,
++				    enum power_supply_property psp,
++				    union power_supply_propval *val)
++{
++	struct port_data *port = power_supply_get_drvdata(psy);
++	struct charger_data *charger = port->charger;
++	struct device *dev = charger->dev;
++	int ret;
++
++
++	/* Only refresh ec_port_status for dynamic properties */
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
++		ret = get_ec_port_status(port, true);
++		if (ret < 0) {
++			dev_err(dev, "Failed to get port status (err:0x%x)\n",
++				ret);
++			return -EINVAL;
++		}
++		break;
++	default:
++		break;
++	}
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = port->psy_online;
++		break;
++	case POWER_SUPPLY_PROP_STATUS:
++		val->intval = port->psy_status;
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++		val->intval = port->psy_current_max * 1000;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++		val->intval = port->psy_voltage_max_design * 1000;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		val->intval = port->psy_voltage_now * 1000;
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
++		/* TODO: send a TBD host command to the EC. */
++		val->intval = 0;
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = port->model_name;
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = port->manufacturer;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int cros_usb_pd_charger_set_prop(struct power_supply *psy,
++				    enum power_supply_property psp,
++				    const union power_supply_propval *val)
++{
++	struct port_data *port = power_supply_get_drvdata(psy);
++	struct charger_data *charger = port->charger;
++	int port_number;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
++		/*
++		 * A value of -1 implies switching to battery as the power
++		 * source. Any other value implies using this port as the
++		 * power source.
++		 */
++		port_number = val->intval;
++		if (port_number != -1)
++			port_number = port->port_number;
++		return set_ec_usb_pd_override_ports(charger, port_number);
++	default:
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static int cros_usb_pd_charger_is_writeable(struct power_supply *psy,
++		enum power_supply_property psp)
++{
++	int ret;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
++		ret = 1;
++		break;
++	default:
++		ret = 0;
++	}
++
++	return ret;
++}
++
++static void cros_usb_pd_print_log_entry(struct ec_response_pd_log *r,
++					ktime_t tstamp)
++{
++	static const char * const fault_names[] = {
++		"---", "OCP", "fast OCP", "OVP", "Discharge"
++	};
++	static const char * const role_names[] = {
++		"Disconnected", "SRC", "SNK", "SNK (not charging)"
++	};
++	static const char * const chg_type_names[] = {
++		"None", "PD", "Type-C", "Proprietary",
++		"DCP", "CDP", "SDP", "Other", "VBUS"
++	};
++	int i;
++	int role_idx, type_idx;
++	const char *fault, *role, *chg_type;
++	struct usb_chg_measures *meas;
++	struct mcdp_info *minfo;
++	struct rtc_time rt;
++	u64 msecs;
++	int len = 0;
++	char buf[BUF_SIZE + 1];
++
++	/* the timestamp is the number of 1024th of seconds in the past */
++	tstamp = ktime_sub_us(tstamp,
++		 (uint64_t)r->timestamp << PD_LOG_TIMESTAMP_SHIFT);
++	rt = rtc_ktime_to_tm(tstamp);
++
++	switch (r->type) {
++	case PD_EVENT_MCU_CHARGE:
++		if (r->data & CHARGE_FLAGS_OVERRIDE)
++			APPEND_STRING(buf, len, "override ");
++		if (r->data & CHARGE_FLAGS_DELAYED_OVERRIDE)
++			APPEND_STRING(buf, len, "pending_override ");
++		role_idx = r->data & CHARGE_FLAGS_ROLE_MASK;
++		role = role_idx < ARRAY_SIZE(role_names) ?
++			role_names[role_idx] : "Unknown";
++		type_idx = (r->data & CHARGE_FLAGS_TYPE_MASK)
++			 >> CHARGE_FLAGS_TYPE_SHIFT;
++		chg_type = type_idx < ARRAY_SIZE(chg_type_names) ?
++			chg_type_names[type_idx] : "???";
++
++		if ((role_idx == USB_PD_PORT_POWER_DISCONNECTED) ||
++		    (role_idx == USB_PD_PORT_POWER_SOURCE)) {
++			APPEND_STRING(buf, len, "%s", role);
++			break;
++		}
++
++		meas = (struct usb_chg_measures *)r->payload;
++		APPEND_STRING(buf, len, "%s %s %s %dmV max %dmV / %dmA", role,
++			r->data & CHARGE_FLAGS_DUAL_ROLE ? "DRP" : "Charger",
++			chg_type,
++			meas->voltage_now,
++			meas->voltage_max,
++			meas->current_max);
++		break;
++	case PD_EVENT_ACC_RW_FAIL:
++		APPEND_STRING(buf, len, "RW signature check failed");
++		break;
++	case PD_EVENT_PS_FAULT:
++		fault = r->data < ARRAY_SIZE(fault_names) ? fault_names[r->data]
++							  : "???";
++		APPEND_STRING(buf, len, "Power supply fault: %s", fault);
++		break;
++	case PD_EVENT_VIDEO_DP_MODE:
++		APPEND_STRING(buf, len, "DP mode %sabled",
++			      (r->data == 1) ? "en" : "dis");
++		break;
++	case PD_EVENT_VIDEO_CODEC:
++		minfo = (struct mcdp_info *)r->payload;
++		APPEND_STRING(buf, len,
++			      "HDMI info: family:%04x chipid:%04x irom:%d.%d.%d fw:%d.%d.%d",
++			      MCDP_FAMILY(minfo->family),
++			      MCDP_CHIPID(minfo->chipid),
++			      minfo->irom.major, minfo->irom.minor,
++			      minfo->irom.build, minfo->fw.major,
++			      minfo->fw.minor, minfo->fw.build);
++		break;
++	default:
++		APPEND_STRING(buf, len,
++			"Event %02x (%04x) [", r->type, r->data);
++		for (i = 0; i < PD_LOG_SIZE(r->size_port); i++)
++			APPEND_STRING(buf, len, "%02x ", r->payload[i]);
++		APPEND_STRING(buf, len, "]");
++		break;
++	}
++
++	msecs = ktime_to_ms(tstamp);
++	do_div(msecs, MSEC_PER_SEC);
++	pr_info("PDLOG %d/%02d/%02d %02d:%02d:%02d.%03llu P%d %s\n",
++		rt.tm_year + 1900, rt.tm_mon + 1, rt.tm_mday,
++		rt.tm_hour, rt.tm_min, rt.tm_sec, msecs,
++		PD_LOG_PORT(r->size_port), buf);
++}
++
++static void cros_usb_pd_log_check(struct work_struct *work)
++{
++	struct charger_data *charger = container_of(to_delayed_work(work),
++		struct charger_data, log_work);
++	struct device *dev = charger->dev;
++	union {
++		struct ec_response_pd_log r;
++		uint32_t words[8]; /* space for the payload */
++	} u;
++	int ret;
++	int entries = 0;
++	ktime_t now;
++
++	if (charger->suspended) {
++		dev_dbg(dev, "Suspended...bailing out\n");
++		return;
++	}
++
++	while (entries++ < CROS_USB_PD_MAX_LOG_ENTRIES) {
++		ret = ec_command(charger->ec_dev, 0, EC_CMD_PD_GET_LOG_ENTRY,
++				 NULL, 0, (uint8_t *)&u, sizeof(u));
++		now = ktime_get_real();
++		if (ret < 0) {
++			dev_dbg(dev, "Cannot get PD log %d\n", ret);
++			break;
++		}
++		if (u.r.type == PD_EVENT_NO_ENTRY)
++			break;
++
++		cros_usb_pd_print_log_entry(&u.r, now);
++	}
++
++	queue_delayed_work(charger->log_workqueue, &charger->log_work,
++		CROS_USB_PD_LOG_UPDATE_DELAY);
++}
++
++static int cros_usb_pd_ec_event(struct notifier_block *nb,
++	unsigned long queued_during_suspend, void *_notify)
++{
++	struct charger_data *charger;
++	struct device *dev;
++	struct cros_ec_device *ec_device;
++	u32 host_event;
++
++	charger = container_of(nb, struct charger_data, notifier);
++	dev = charger->dev;
++	ec_device = charger->ec_device;
++
++	host_event = cros_ec_get_host_event(ec_device);
++	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_PD_MCU)) {
++		cros_usb_pd_charger_power_changed(charger->ports[0]->psy);
++		return NOTIFY_OK;
++	}
++
++	return NOTIFY_DONE;
++}
++
++static char *charger_supplied_to[] = {"cros-usb_pd-charger"};
++
++static int cros_usb_pd_charger_probe(struct platform_device *pd)
++{
++	struct device *dev = &pd->dev;
++	struct cros_ec_dev *ec_dev = dev_get_drvdata(pd->dev.parent);
++	struct cros_ec_device *ec_device;
++	struct charger_data *charger;
++	struct port_data *port;
++	struct power_supply_desc *psy_desc;
++	struct power_supply_config psy_cfg = {};
++	int i;
++	int ret = -EINVAL;
++
++	dev_dbg(dev, "cros_usb_pd_charger_probe\n");
++	if (!ec_dev) {
++		WARN(1, "%s: No EC dev found\n", dev_name(dev));
++		return -EINVAL;
++	}
++
++	ec_device = ec_dev->ec_dev;
++	if (!ec_device) {
++		WARN(1, "%s: No EC device found\n", dev_name(dev));
++		return -EINVAL;
++	}
++
++	charger = devm_kzalloc(dev, sizeof(struct charger_data),
++				    GFP_KERNEL);
++	if (!charger)
++		return -ENOMEM;
++
++	charger->dev = dev;
++	charger->ec_dev = ec_dev;
++	charger->ec_device = ec_device;
++
++	platform_set_drvdata(pd, charger);
++
++	if ((get_ec_num_ports(charger, &charger->num_charger_ports) < 0) ||
++	    !charger->num_charger_ports) {
++		dev_err(dev, "No charging ports found\n");
++		ret = -ENODEV;
++		goto fail;
++	}
++
++	for (i = 0; i < charger->num_charger_ports; i++) {
++		port = devm_kzalloc(dev, sizeof(struct port_data), GFP_KERNEL);
++		if (!port) {
++			ret = -ENOMEM;
++			goto fail;
++		}
++
++		port->charger = charger;
++		port->port_number = i;
++		sprintf(port->name, CHARGER_DIR_NAME, i);
++
++		psy_desc = &port->psy_desc;
++		psy_desc->name = port->name;
++		psy_desc->type = POWER_SUPPLY_TYPE_USB;
++		psy_desc->get_property = cros_usb_pd_charger_get_prop;
++		psy_desc->set_property = cros_usb_pd_charger_set_prop;
++		psy_desc->property_is_writeable =
++			cros_usb_pd_charger_is_writeable;
++		psy_desc->external_power_changed =
++			cros_usb_pd_charger_power_changed;
++		psy_desc->properties = cros_usb_pd_charger_props;
++		psy_desc->num_properties = ARRAY_SIZE(
++			cros_usb_pd_charger_props);
++
++		psy_cfg.drv_data = port;
++		psy_cfg.supplied_to = charger_supplied_to;
++		psy_cfg.num_supplicants = ARRAY_SIZE(charger_supplied_to);
++
++		port->psy = power_supply_register_no_ws(dev, psy_desc,
++							&psy_cfg);
++		if (IS_ERR(port->psy)) {
++			dev_err(dev, "Failed to register power supply: %ld\n",
++				PTR_ERR(port->psy));
++			continue;
++		}
++
++		charger->ports[charger->num_registered_psy++] = port;
++	}
++
++	if (!charger->num_registered_psy) {
++		ret = -ENODEV;
++		dev_err(dev, "No power supplies registered\n");
++		goto fail;
++	}
++
++	if (ec_device->mkbp_event_supported) {
++		/* Get PD events from the EC */
++		charger->notifier.notifier_call = cros_usb_pd_ec_event;
++		ret = blocking_notifier_chain_register(
++			&ec_device->event_notifier, &charger->notifier);
++		if (ret < 0)
++			dev_warn(dev, "failed to register notifier\n");
++	}
++
++	/* Retrieve PD event logs periodically */
++	INIT_DELAYED_WORK(&charger->log_work, cros_usb_pd_log_check);
++	charger->log_workqueue =
++		create_singlethread_workqueue("cros_usb_pd_log");
++	queue_delayed_work(charger->log_workqueue, &charger->log_work,
++		CROS_USB_PD_LOG_UPDATE_DELAY);
++
++	return 0;
++
++fail:
++	for (i = 0; i < charger->num_registered_psy; i++) {
++		port = charger->ports[i];
++		power_supply_unregister(port->psy);
++		devm_kfree(dev, port);
++	}
++	platform_set_drvdata(pd, NULL);
++
++	return ret;
++}
++
++static int cros_usb_pd_charger_remove(struct platform_device *pd)
++{
++	struct charger_data *charger = platform_get_drvdata(pd);
++	struct port_data *port;
++	int i;
++
++	if (charger->notifier.notifier_call)
++		blocking_notifier_chain_unregister(
++			&charger->ec_device->event_notifier,
++			&charger->notifier);
++
++	for (i = 0; i < charger->num_registered_psy; i++) {
++		port = charger->ports[i];
++		power_supply_unregister(port->psy);
++	}
++	flush_delayed_work(&charger->log_work);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int cros_usb_pd_charger_resume(struct device *dev)
++{
++	struct charger_data *charger = dev_get_drvdata(dev);
++	int i;
++
++	if (!charger)
++		return 0;
++
++	charger->suspended = false;
++
++	dev_dbg(dev, "cros_usb_pd_charger_resume: updating power supplies\n");
++	for (i = 0; i < charger->num_registered_psy; i++) {
++		power_supply_changed(charger->ports[i]->psy);
++		charger->ports[i]->last_update =
++				jiffies - CROS_USB_PD_CACHE_UPDATE_DELAY;
++	}
++	queue_delayed_work(charger->log_workqueue, &charger->log_work,
++		CROS_USB_PD_LOG_UPDATE_DELAY);
++
++	return 0;
++}
++
++static int cros_usb_pd_charger_suspend(struct device *dev)
++{
++	struct charger_data *charger = dev_get_drvdata(dev);
++
++	charger->suspended = true;
++
++	flush_delayed_work(&charger->log_work);
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(cros_usb_pd_charger_pm_ops,
++	cros_usb_pd_charger_suspend, cros_usb_pd_charger_resume);
++
++static struct platform_driver cros_usb_pd_charger_driver = {
++	.driver = {
++		.name = "cros-usb-pd-charger",
++		.pm = &cros_usb_pd_charger_pm_ops,
++	},
++	.probe = cros_usb_pd_charger_probe,
++	.remove = cros_usb_pd_charger_remove,
++};
++
++module_platform_driver(cros_usb_pd_charger_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Chrome USB PD charger");
++MODULE_ALIAS("power_supply:cros-usb-pd-charger");
 -- 
 2.5.0
-
