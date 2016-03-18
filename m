@@ -1,143 +1,123 @@
-From: Laura Abbott <labbott@redhat.com>
-Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
- device correctly") causes performance drop
-Date: Fri, 18 Mar 2016 15:28:44 -0700
-Message-ID: <56EC811C.6020404@redhat.com>
-References: <56E9DDED.7000805@redhat.com> <20160316224634.GA3580@kroah.com>
- <56E9F387.9080703@redhat.com> <1458173863.4703.18.camel@intel.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] cpuidle: use high confidence factors only when
+ considering polling
+Date: Fri, 18 Mar 2016 18:28:59 -0400
+Message-ID: <1458340139.14723.50.camel@redhat.com>
+References: <CAJvTdK=d-LngrEXavQKX9C2p=9qrZ-DhnBG_mRnP9RDVHjKhpA@mail.gmail.com>
+	 <CAJZ5v0iRn7eZY_g8UYze_Wq4v9pCTBMrgjHcuM1OVuTvJHUpAg@mail.gmail.com>
+	 <1458337969.14723.44.camel@redhat.com> <1596370.PSmUAlHJf5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg="pgp-sha256";
+	protocol="application/pgp-signature"; boundary="=-/jqvhnvAvuGPdMcHYbwV"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34019 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbcCRW2s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Mar 2016 18:28:48 -0400
-Received: by mail-pf0-f180.google.com with SMTP id x3so184659843pfb.1
-        for <linux-pm@vger.kernel.org>; Fri, 18 Mar 2016 15:28:47 -0700 (PDT)
-In-Reply-To: <1458173863.4703.18.camel@intel.com>
+Received: from mx1.redhat.com ([209.132.183.28]:33054 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbcCRW3C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Mar 2016 18:29:02 -0400
+In-Reply-To: <1596370.PSmUAlHJf5@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "ammdispose-arch@yahoo.com" <ammdispose-arch@yahoo.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "manuelkrause@netscape.net" <manuelkrause@netscape.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "szegadlo@poczta.onet.pl" <szegadlo@poczta.onet.pl>, "prash.n.rao@gmail.com" <prash.n.rao@gmail.com>, "javi.merino@arm.com" <javi.merino@arm.com>, "morpheusxyz123@yahoo.de" <morpheusxyz123@yahoo.de>, frolvlad@gmail.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arto Jantunen <viiru@iki.fi>, Len Brown <lenb@kernel.org>
 
-(bringing this back to the main thread)
 
-On 03/16/2016 05:20 PM, Pandruvada, Srinivas wrote:
-> On Wed, 2016-03-16 at 17:00 -0700, Laura Abbott wrote:
->> On 03/16/2016 03:46 PM, Greg Kroah-Hartman wrote:
->>> On Wed, Mar 16, 2016 at 03:27:57PM -0700, Laura Abbott wrote:
->>>> Hi,
->>>>
->>>> Fedora received a bug report (https://bugzilla.redhat.com/show_bu
->>>> g.cgi?id=1317190)
->>>> of a major performance drop on various bench marks and general
->>>> system
->>>> sluggishness with the 4.4.4 kernel update. The benchmarks were
->>>> showing
->>>> a reduction to about 18% performance (not minor).
->>>>
->>>> Bisection showed the first bad commit was
->>>>
->>>> commit 774ac8b7eff69e0786970157de2157e68b22f456
->>>> Author: Zhang Rui <rui.zhang@intel.com>
->>>> Date:   Fri Oct 30 16:31:47 2015 +0800
->>>>
->>>>       Thermal: initialize thermal zone device correctly
->>>>       commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461 upstream.
->>>>       After thermal zone device registered, as we have not read
->>>> any
->>>>       temperature before, thus tz->temperature should not be 0,
->>>>       which actually means 0C, and thermal trend is not available.
->>>>       In this case, we need specially handling for the first
->>>>       thermal_zone_device_update().
->>>>       Both thermal core framework and step_wise governor is
->>>>       enhanced to handle this. And since the step_wise governor
->>>>       is the only one that uses trends, so it's the only thermal
->>>>       governor that needs to be updated.
->>>>       Tested-by: Manuel Krause <manuelkrause@netscape.net>
->>>>       Tested-by: szegad <szegadlo@poczta.onet.pl>
->>>>       Tested-by: prash <prash.n.rao@gmail.com>
->>>>       Tested-by: amish <ammdispose-arch@yahoo.com>
->>>>       Tested-by: Matthias <morpheusxyz123@yahoo.de>
->>>>       Reviewed-by: Javi Merino <javi.merino@arm.com>
->>>>       Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->>>>       Signed-off-by: Chen Yu <yu.c.chen@intel.com>
->>>>       Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.or
->>>> g>
->>>>
->>>>
->>>>
->>>> Reverting this plus to other commits in the series (a67208e94d94
->>>> "Thermal: handle thermal zone device properly during system
->>>> sleep"
->>>> and 27f356149d59 "Thermal: do thermal zone update after a cooling
->>>> device registered") confirmed the performance was back to normal.
->>>>
->>>> Bugzilla has the full discussion but this comment from one of the
->>>> reporters sums it up:
->>>>
->>>> "In 4.4.3 and prior, my 2.40 MHz processor would fluctuate
->>>> between
->>>> 1000 and 3400 MHz.  In 4.4.4, the processor would fluctuate
->>>> between
->>>> 400 and 700 MHz, according to /proc/cpuinfo.
->>>>
->>>> Setting /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
->>>> to
->>>> performance, instead of the default "powersave" forces the CPU to
->>>> 2400 MHz, and improves performance greatly, but still not to the
->>>> same level as in 4.4.3."
->>>>
->>>> Any ideas?
->>>
->>> Is this same "slowdown" also seen in 4.5?
->>>
->>> thanks,
->>>
->>> greg k-h
->>>
->>
->> Yes, the same issue is seen on 4.5 according to the reporter.
-> What does it show here when performance drops?
-> grep . /sys/devices/system/cpu/intel_pstate/*
->
-> Is the problem still occurs if you set
-> /sys/class/thermal/thermal_zone*/mode to "disabled"
->
-> Thanks,
-> Srinivas
->
+--=-/jqvhnvAvuGPdMcHYbwV
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-A separate thread was started which gave this insight:
+On Fri, 2016-03-18 at 23:09 +0100, Rafael J. Wysocki wrote:
+> On Friday, March 18, 2016 05:52:49 PM Rik van Riel wrote:
+> >=20
+> > On Fri, 2016-03-18 at 22:48 +0100, Rafael J. Wysocki wrote:
+> > >=20
+> > > On Fri, Mar 18, 2016 at 10:35 PM, Rik van Riel <riel@redhat.com>
+> > > wrote:
+> > > >=20
+> > > >=20
+> > > > On Fri, 18 Mar 2016 11:32:28 -0700
+> > > > "Doug Smythies" <dsmythies@telus.net> wrote:
+> > > >=20
+> > > > >=20
+> > > > >=20
+> > > > > Energy:
+> > > > > Kernel 4.5-rc7-rjw10-rvr6: 55864 Joules
+> > > > >=20
+> > > > > Trace data (very crude summary):
+> > > > > Kernel 4.5-rc7-rjw10-rvr5: ~3049 long durations at high CPU
+> > > > > load
+> > > > > (idle state 0)
+> > > > > Kernel 4.5-rc7-rjw10-rvr5: ~183 long durations at high, but
+> > > > > less,
+> > > > > CPU load (not all idle state 0)
+> > > > This is a bit of a big hammer, but since the polling loop
+> > > > already
+> > > > uses
+> > > > full CPU power anyway, this could be harmless, and solve your
+> > > > problem.
+> > > Yes, it would be good to test this.
+> > >=20
+> > > No, I don't like it.
+> > >=20
+> > > If we are to break out of the polling loop after a specific time,
+> > > we
+> > > shouldn't be using polling at all in the first place.
+> > >=20
+> > > So I very much prefer to compare data->next_timer_us with the
+> > > target
+> > > residency of C1 instead of doing this.
+> > The problem is that data->next_timer_us does not tell us
+> > when the next network packet is about to arrive, though.
+> >=20
+> > This could cause issues when dealing with a fast stream
+> > of network traffic, which get_typical_interval() would
+> > be able to deal with.
+> If it predicted things correctly for small intervals, that is.
+>=20
+> It doesn't seem to be able to do that, however.
 
-"I think
-the problem is your device has a passive trip temp of 0
-/sys/class/thermal/thermal_zone0/trip_point_2_temp:0
-/sys/class/thermal/thermal_zone0/trip_point_2_type:passive
+It appears to get it right the vast majority of the
+time, it is just that when it gets wrong in a tiny
+minority of the cases, the penalty for polling is
+really high.
 
-Which triggers a false throttle = true. I think we should this trip as
-invalid in the case of
-if (tz->temperature >= trip_temp) {} check
-in thermal_zone_trip_update()."
+> You seem to want to trade energy consumption for performance with a
+> very narrow
+> use case in mind and that by changing bahavior that's been there
+> pretty much
+> forever, so by now it really has become the expected one.
+>=20
+> Needless to say I'm not a fan of changes like that.
 
-So would something like the following work?
+I am not sure it is a narrow use case, and I suspect
+cases with over half a million wakeups a second are
+not going to be all that unusual.
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index ea9366a..1228797 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -143,7 +143,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
-  
-         trend = get_tz_trend(tz, trip);
-  
--       if (tz->temperature >= trip_temp) {
-+       if (trip_type != THERMAL_TRIPS_NONE && tz->temperature >= trip_temp) {
-                 throttle = true;
-                 trace_thermal_zone_trip(tz, trip, trip_type);
-         }
+The same thing applies not just to network traffic,
+but also to tasks ping-ponging info between CPUs,
+eg. because some tasks are pinned, or because we
+are dealing with a controller thread and a larger
+number of workers.
 
-(completely untested, no idea if I'm even close)
+--=20
+All Rights Reversed.
 
-Thanks,
-Laura
+
+--=-/jqvhnvAvuGPdMcHYbwV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJW7IErAAoJEM553pKExN6Dh5sH/26nro4pZaHYypS/P4iW+KLi
+QemI1x9gjSp4ERG2XxyDSJs/3gP4gofSa+ynwqYYFtF7QxHQ30SnjuPni3UemCzX
+vuPaQweyJMN3CDIaurK5N5yRkot6ctwNlKyZDXGJG/dnkuXoS1dOWOhQ1M+WbThu
+HocjcefnX/hFcZEryMS2UV22SQUUKWJ0TNBRMWleQBm5QBE6Obj9fMbjlZIDMA0O
+WYvcEtIvq9lFthPWlgQAiQ2sQrOGOR4vAinJS/KFvaQm88ZAKs0nB5HPcxgwVAI9
+0eC3RCziMWiVrISjjbORG06EhZjj6UCFSlGhS5g0rAiNmABf68XDSYcZ2DWWPNk=
+=cfZ0
+-----END PGP SIGNATURE-----
+
+--=-/jqvhnvAvuGPdMcHYbwV--
+
