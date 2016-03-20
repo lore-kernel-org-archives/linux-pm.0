@@ -1,70 +1,70 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH v2 1/5] thermal: change "hysteresis" as optional property
-Date: Sun, 20 Mar 2016 23:40:31 +0800
-Message-ID: <20160320154031.GA12693@leoy-linaro>
-References: <1456458227-12950-1-git-send-email-leo.yan@linaro.org>
- <1456458227-12950-2-git-send-email-leo.yan@linaro.org>
- <20160303162942.GA2445@localhost.localdomain>
- <20160304030349.GA11012@leoy-linaro>
- <20160304115752.GA13894@e104805>
- <20160308135743.GC4921@leoy-linaro>
- <20160308205558.GA7010@localhost.localdomain>
- <20160309111051.GA3369@e104805>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
+Date: Sun, 20 Mar 2016 09:35:52 -0700
+Message-ID: <1458491752.10868.4.camel@edumazet-glaptop3.roam.corp.google.com>
+References: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f46.google.com ([209.85.213.46]:35195 "EHLO
-	mail-vk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755873AbcCTPkn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 11:40:43 -0400
-Received: by mail-vk0-f46.google.com with SMTP id e6so191467516vkh.2
-        for <linux-pm@vger.kernel.org>; Sun, 20 Mar 2016 08:40:42 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160309111051.GA3369@e104805>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
+Sender: netdev-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Javi,
+On Sun, 2016-03-20 at 11:43 +0100, Geert Uytterhoeven wrote:
+> If CONFIG_PM=3Dn:
+>=20
+>     drivers/net/usb/lan78xx.c: In function =E2=80=98lan78xx_get_stats=
+64=E2=80=99:
+>     drivers/net/usb/lan78xx.c:3274: error: =E2=80=98struct dev_pm_inf=
+o=E2=80=99 has no member named =E2=80=98runtime_auto=E2=80=99
+>=20
+> If PM is disabled, the runtime_auto flag is not available, but auto
+> suspend is not enabled anyway.  Hence protect the check for runtime_a=
+uto
+> by #ifdef CONFIG_PM to fix this.
+>=20
+> Fixes: a59f8c5b048dc938 ("lan78xx: add ndo_get_stats64")
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> Alternatively, we can add a dev_pm_runtime_auto_is_enabled() wrapper =
+to
+> include/linux/pm.h, which always return false if CONFIG_PM is disable=
+d.
+>=20
+> The only other user in non-core code (drivers/usb/core/sysfs.c) has a
+> big #ifdef CONFIG_PM check around all PM-related code.
+>=20
+> Thoughts?
+> ---
+>  drivers/net/usb/lan78xx.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
+> index d36d5ebf37f355f2..7b9ac47b2ecf9905 100644
+> --- a/drivers/net/usb/lan78xx.c
+> +++ b/drivers/net/usb/lan78xx.c
+> @@ -3271,7 +3271,9 @@ struct rtnl_link_stats64 *lan78xx_get_stats64(s=
+truct net_device *netdev,
+>  	 * periodic reading from HW will prevent from entering USB auto sus=
+pend.
+>  	 * if autosuspend is disabled, read from HW.
+>  	 */
+> +#ifdef CONFIG_PM
+>  	if (!dev->udev->dev.power.runtime_auto)
+> +#endif
+>  		lan78xx_update_stats(dev);
+> =20
+>  	mutex_lock(&dev->stats.access_lock);
 
-Sorry for late response.
+Note that a ndo_get_stat64() handler is not allowed to sleep,
+so the mutex_lock() is not wise...
 
-On Wed, Mar 09, 2016 at 11:10:52AM +0000, Javi Merino wrote:
-> On Tue, Mar 08, 2016 at 12:55:59PM -0800, Eduardo Valentin wrote:
-> > On Tue, Mar 08, 2016 at 09:57:43PM +0800, Leo Yan wrote:
+Historically /proc/net/dev handler but also bonding ndo_get_stats() use=
+d
+RCU or a rwlock or a spinlock.
 
-[...]
-
-> > > > > > > The property "hysteresis" is mandatory for trip points, so if without
-> > > > > > > it the thermal zone cannot register successfully. But "hysteresis" is
-> > > > > > > ignored in the thermal subsystem and only inquired by several thermal
-> > > > > > > sensor drivers.
-> > > > > > 
-> > > > > > If the Linux thermal subsystem has a problem with handling hysteresis, I
-> > > > > > would rather fix Linux code than relaxing the DT binding. Or if you
-> > > > > > still believe hysteresis is really optional, I would prefer to see a
-> > > > > > better justification than "Linux ignores it".
-> > > > 
-> > > > I see it the other way round, Is hysteresis a property that, without
-> > > > it, the thermal code can't configure itself so it fails to create the
-> > > > trip point?  The current code goes "There is no hysteresis for this
-> > > > property, I don't know how to set up this trip point!".  I think we
-> > > > can do better than this.
-> > > 
-> > > Do you agree with Javi's suggestion? If you think it's okay, I will
-> > > move on to send out a new version patch based on Javi's comments.
-> > 
-> > No I don't. This discussion so far has been about Linux code. I still
-> > havent seen an argument explaining why hysteresis has to be optional.
-> 
-> Fair enough.  Looks like I'm holding this driver from being
-> upstreamed, so I'll back off.
-> 
-> Leo, sorry for misguiding you.  Please bring back the hysteresis
-> property you had in v1.
-
-Not at all. I will add back hysteresis property and resend new patches.
-
-Thanks,
-Leo Yan
+So a complete fix would need to get rid of this mutex as well.
