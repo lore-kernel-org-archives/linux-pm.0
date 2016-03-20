@@ -1,83 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: menu: Fall back to polling if next timer event is near
-Date: Sun, 20 Mar 2016 01:33:35 +0100
-Message-ID: <11672478.oHFBPvKbda@vostro.rjw.lan>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Sat, 19 Mar 2016 20:15:17 -0500
+Message-ID: <20160320011517.GA17705@rob-hp-laptop>
+References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
+ <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62310 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932626AbcCTAb3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Mar 2016 20:31:29 -0400
+Received: from mail.kernel.org ([198.145.29.136]:47717 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932619AbcCTBP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Mar 2016 21:15:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Rik van Riel <riel@redhat.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Mar 18, 2016 at 02:24:08PM +0000, Juri Lelli wrote:
+> ARM systems may be configured to have cpus with different power/performance
+> characteristics within the same chip. In this case, additional information
+> has to be made available to the kernel (the scheduler in particular) for it
+> to be aware of such differences and take decisions accordingly.
+> 
+> Therefore, this patch aims at standardizing cpu capacities device tree
+> bindings for ARM platforms. Bindings define cpu capacity parameter, to
+> allow operating systems to retrieve such information from the device tree
+> and initialize related kernel structures, paving the way for common code in
+> the kernel to deal with heterogeneity.
+> 
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Pawel Moll <pawel.moll@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> Cc: Kumar Gala <galak@codeaurora.org>
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Olof Johansson <olof@lixom.net>
+> Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> Cc: Paul Walmsley <paul@pwsan.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Chen-Yu Tsai <wens@csie.org>
+> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+> 
+> Changes from v1:
+>  - removed section regarding capacity-scale
+>  - added information regarding normalization
+> ---
+>  .../devicetree/bindings/arm/cpu-capacity.txt       | 222 +++++++++++++++++++++
+>  Documentation/devicetree/bindings/arm/cpus.txt     |   9 +
+>  2 files changed, 231 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> new file mode 100644
+> index 0000000..fdfc453
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> @@ -0,0 +1,222 @@
+> +==========================================
+> +ARM CPUs capacity bindings
+> +==========================================
+> +
+> +==========================================
+> +1 - Introduction
+> +==========================================
+> +
+> +ARM systems may be configured to have cpus with different power/performance
+> +characteristics within the same chip. In this case, additional information
+> +has to be made available to the kernel (the scheduler in particular) for
+> +it to be aware of such differences and take decisions accordingly.
+> +
+> +==========================================
+> +2 - CPU capacity definition
+> +==========================================
+> +
+> +CPU capacity is a number that provides the scheduler information about CPUs
+> +heterogeneity. Such heterogeneity can come from micro-architectural differences
+> +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+> +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+> +context is about differing performance characteristics; this binding tries to
+> +capture a first-order approximation of the relative performance of CPUs.
+> +
+> +One simple way to estimate CPU capacities is to iteratively run a well-known
+> +CPU user space benchmark (e.g, sysbench) on each CPU at maximum frequency and
+> +then normalize values w.r.t.  the best performing CPU.  One can also do a
+> +statistically significant study of a wide collection of benchmarks, but pros
+> +of such an approach are not really evident at the time of writing.
 
-Commit a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable
-polling) changed the behavior of the fallback state selection part
-of menu_select() so it looks at interactivity_req instead of
-data->next_timer_us when it makes its decision.  That effectively
-caused polling to be used more often as fallback idle which led to
-significant increases of energy consumption in some cases.
+I'll say again what I did previously. I don't have a problem this being 
+in DT, but I want to see a defined method for determining the value. The 
+above is a pretty vague statement. That can be run X to generate the 
+value on the cpu. Or ARM providing the "golden" value for each core. As 
+you said, it is only a 1st order approximation, so vendor to vendor 
+implementation variations should not matter. 
 
-Commit e132b9b3bc7f (cpuidle: menu: use high confidence factors
-only when considering polling) changed that logic again to be more
-predictable, but that didn't help with the increased energy
-consumption problem.
+I also worry about what happens in more complex cases with lots of 
+possible OPPs such as Qualcomm chips. This single value may not be 
+sufficient.
 
-For this reason, go back to making decisions on which state to fall
-back to based on data->next_timer_us which is the time we know for
-sure something will happen rather than a prediction (which may be
-inaccurate and turns out to be so often enough to be problematic).
-However, take the target residency of the first proper idle state
-(C1) into account, so that state is not used as the fallback one
-if its target residency is greater than data->next_timer_us.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-Doug, can you please see if this patch helps to address the problem
-you're seeing?
-
-Commit e132b9b3bc7f is in linux-next only ATM, but it is a rebased
-version of https://patchwork.kernel.org/patch/8602101/.
-
----
- drivers/cpuidle/governors/menu.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -315,17 +315,21 @@ static int menu_select(struct cpuidle_dr
- 	expected_interval = min(expected_interval, data->next_timer_us);
- 
- 	if (CPUIDLE_DRIVER_STATE_START > 0) {
--		data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-+		struct cpuidle_state *s = &drv->states[CPUIDLE_DRIVER_STATE_START];
-+		unsigned int polling_threshold;
-+
- 		/*
- 		 * We want to default to C1 (hlt), not to busy polling
- 		 * unless the timer is happening really really soon, or
- 		 * C1's exit latency exceeds the user configured limit.
- 		 */
--		if (expected_interval > drv->states[CPUIDLE_DRIVER_STATE_START].target_residency &&
--		    latency_req > drv->states[CPUIDLE_DRIVER_STATE_START].exit_latency &&
--		    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
-+		polling_threshold = max_t(unsigned int, 20, s->target_residency);
-+		if (data->next_timer_us > polling_threshold &&
-+		    latency_req > s->exit_latency && !s->disabled &&
- 		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
- 			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-+		else
-+			data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 	} else {
- 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
- 	}
-
+Rob
