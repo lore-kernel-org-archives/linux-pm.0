@@ -1,88 +1,63 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpuidle: menu: Fall back to polling if next timer event is near
-Date: Sat, 19 Mar 2016 23:54:39 -0700
-Message-ID: <000c01d18275$60543190$20fc94b0$@net>
-References: <11672478.oHFBPvKbda@vostro.rjw.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
+Date: Sun, 20 Mar 2016 11:43:56 +0100
+Message-ID: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta8.telus.net ([209.171.16.81]:49863 "EHLO cmta8.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbcCTGyl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 20 Mar 2016 02:54:41 -0400
-In-Reply-To: <11672478.oHFBPvKbda@vostro.rjw.lan>
-Content-Language: en-ca
+Received: from andre.telenet-ops.be ([195.130.132.53]:41708 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755295AbcCTKn6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 06:43:58 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Rik van Riel' <riel@redhat.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>
+To: Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 2016.03.19 17:34 Rafael J. Wysocki wrote:
+If CONFIG_PM=3Dn:
 
-> Commit a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable
-> polling) changed the behavior of the fallback state selection part
-> of menu_select() so it looks at interactivity_req instead of
-> data->next_timer_us when it makes its decision.  That effectively
-> caused polling to be used more often as fallback idle which led to
-> significant increases of energy consumption in some cases.
->
-> Commit e132b9b3bc7f (cpuidle: menu: use high confidence factors
-> only when considering polling) changed that logic again to be more
-> predictable, but that didn't help with the increased energy
-> consumption problem.
->
-> For this reason, go back to making decisions on which state to fall
-> back to based on data->next_timer_us which is the time we know for
-> sure something will happen rather than a prediction (which may be
-> inaccurate and turns out to be so often enough to be problematic).
-> However, take the target residency of the first proper idle state
-> (C1) into account, so that state is not used as the fallback one
-> if its target residency is greater than data->next_timer_us.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Doug, can you please see if this patch helps to address the problem
-> you're seeing?
-> 
+    drivers/net/usb/lan78xx.c: In function =E2=80=98lan78xx_get_stats64=
+=E2=80=99:
+    drivers/net/usb/lan78xx.c:3274: error: =E2=80=98struct dev_pm_info=E2=
+=80=99 has no member named =E2=80=98runtime_auto=E2=80=99
 
-Yes, it appears to work great.
+If PM is disabled, the runtime_auto flag is not available, but auto
+suspend is not enabled anyway.  Hence protect the check for runtime_aut=
+o
+by #ifdef CONFIG_PM to fix this.
 
->
-> Commit e132b9b3bc7f is in linux-next only ATM, but it is a rebased
-> version of https://patchwork.kernel.org/patch/8602101/.
+=46ixes: a59f8c5b048dc938 ("lan78xx: add ndo_get_stats64")
+Reported-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Alternatively, we can add a dev_pm_runtime_auto_is_enabled() wrapper to
+include/linux/pm.h, which always return false if CONFIG_PM is disabled.
 
-So, I applied it to my existing kernel 4.5-rc7 work, i.e. the not
-rebased version.
+The only other user in non-core code (drivers/usb/core/sysfs.c) has a
+big #ifdef CONFIG_PM check around all PM-related code.
 
-My reference = rvr7:
-Kernel 4.5-rc7 +
-Rafael's 3 patch set version 10 "cpufreq: Replace timers with utilization update callbacks" +
-Rik's patch (rvr5) "cpuidle: menu: use high confidence factors only when considering polling" +
-Rafael's patch from herein.
+Thoughts?
+---
+ drivers/net/usb/lan78xx.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-My reference: k45rc7-rjw10-rvr7
-
-Aggregate Idle States in minutes for 2000 second test (some old data re-stated for reference):
-
-State	k45rc7-rjw10	k45rc7-rjw10-reverted	k45rc7-rjw10-rvr7
-0.00	18.07			0.92				0.41
-1.00	12.35			19.51				21.17
-2.00	3.96			4.28				4.40
-3.00	1.55			1.53				1.66
-4.00	138.96		141.99			150.77
-			
-total	174.90		168.24			178.41
-
-Energy:
->>>> Kernel 4.5-rc7-rjw10: 61983 Joules
->>>> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules (test 2 was 55040 Joules)
-k45rc7-rjw10-rvr7: 54748 Joules
-
-The trace data has a record low number of long durations at 71.
-
-... Doug
-
+diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
+index d36d5ebf37f355f2..7b9ac47b2ecf9905 100644
+--- a/drivers/net/usb/lan78xx.c
++++ b/drivers/net/usb/lan78xx.c
+@@ -3271,7 +3271,9 @@ struct rtnl_link_stats64 *lan78xx_get_stats64(str=
+uct net_device *netdev,
+ 	 * periodic reading from HW will prevent from entering USB auto suspe=
+nd.
+ 	 * if autosuspend is disabled, read from HW.
+ 	 */
++#ifdef CONFIG_PM
+ 	if (!dev->udev->dev.power.runtime_auto)
++#endif
+ 		lan78xx_update_stats(dev);
+=20
+ 	mutex_lock(&dev->stats.access_lock);
+--=20
+1.9.1
 
