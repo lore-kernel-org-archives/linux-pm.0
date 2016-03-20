@@ -1,63 +1,194 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Sun, 20 Mar 2016 11:43:56 +0100
-Message-ID: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
+Date: Sun, 20 Mar 2016 14:11:35 +0100
+Message-ID: <20160320131135.GA29174@wunner.de>
+References: <cover.1458126755.git.lukas@wunner.de>
+ <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
+ <20160317150320.GA22769@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from andre.telenet-ops.be ([195.130.132.53]:41708 "EHLO
-	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755295AbcCTKn6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 06:43:58 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160317150320.GA22769@localhost>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>
-Cc: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-If CONFIG_PM=3Dn:
+Hi Bjorn,
 
-    drivers/net/usb/lan78xx.c: In function =E2=80=98lan78xx_get_stats64=
-=E2=80=99:
-    drivers/net/usb/lan78xx.c:3274: error: =E2=80=98struct dev_pm_info=E2=
-=80=99 has no member named =E2=80=98runtime_auto=E2=80=99
+On Thu, Mar 17, 2016 at 10:03:20AM -0500, Bjorn Helgaas wrote:
+> On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
+> > Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
+> > Gen 3 chips and onward use a distinct ID for the NHI.
+> 
+> I assume this is strictly using #defines instead of bare numbers and
+> hence "no functional change intended."
+> 
+> > Cc: Andreas Noever <andreas.noever@gmail.com>
+> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> 
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-If PM is disabled, the runtime_auto flag is not available, but auto
-suspend is not enabled anyway.  Hence protect the check for runtime_aut=
-o
-by #ifdef CONFIG_PM to fix this.
+Thanks, I've just posted a 3 patch series to support the Light Ridge
+Thunderbolt controller and included your ack for this patch.
 
-=46ixes: a59f8c5b048dc938 ("lan78xx: add ndo_get_stats64")
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Alternatively, we can add a dev_pm_runtime_auto_is_enabled() wrapper to
-include/linux/pm.h, which always return false if CONFIG_PM is disabled.
 
-The only other user in non-core code (drivers/usb/core/sysfs.c) has a
-big #ifdef CONFIG_PM check around all PM-related code.
+> I assume somebody else will merge this with the rest of the series.
 
-Thoughts?
----
- drivers/net/usb/lan78xx.c | 2 ++
- 1 file changed, 2 insertions(+)
+The maintainer of the thunderbolt driver is Andreas Noever, however
+I don't think Andreas sends pull requests to Linus. Everything in
+drivers/thunderbolt/ has so far been picked up by Greg KH.
 
-diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
-index d36d5ebf37f355f2..7b9ac47b2ecf9905 100644
---- a/drivers/net/usb/lan78xx.c
-+++ b/drivers/net/usb/lan78xx.c
-@@ -3271,7 +3271,9 @@ struct rtnl_link_stats64 *lan78xx_get_stats64(str=
-uct net_device *netdev,
- 	 * periodic reading from HW will prevent from entering USB auto suspe=
-nd.
- 	 * if autosuspend is disabled, read from HW.
- 	 */
-+#ifdef CONFIG_PM
- 	if (!dev->udev->dev.power.runtime_auto)
-+#endif
- 		lan78xx_update_stats(dev);
-=20
- 	mutex_lock(&dev->stats.access_lock);
---=20
-1.9.1
+I have more thunderbolt stuff in the pipeline, some of which needs
+changes to drivers/pci/. Therefore it would be ideal from my perspective
+if my thunderbolt patches could go in via your tree, if that is possible.
 
+Thank you!
+
+Lukas
+
+> Let me know if you need anything else from me.
+> 
+> > ---
+> >  drivers/pci/quirks.c         | 16 ++++++++++------
+> >  drivers/thunderbolt/nhi.c    |  8 +++++---
+> >  drivers/thunderbolt/switch.c |  9 +++++----
+> >  include/linux/pci_ids.h      | 18 ++++++++++++++++++
+> >  4 files changed, 38 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> > index 0575a1e..d1e3956 100644
+> > --- a/drivers/pci/quirks.c
+> > +++ b/drivers/pci/quirks.c
+> > @@ -3203,7 +3203,8 @@ static void quirk_apple_poweroff_thunderbolt(struct pci_dev *dev)
+> >  	acpi_execute_simple_method(SXIO, NULL, 0);
+> >  	acpi_execute_simple_method(SXLV, NULL, 0);
+> >  }
+> > -DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL, 0x1547,
+> > +DECLARE_PCI_FIXUP_SUSPEND_LATE(PCI_VENDOR_ID_INTEL,
+> > +			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+> >  			       quirk_apple_poweroff_thunderbolt);
+> >  
+> >  /*
+> > @@ -3237,9 +3238,10 @@ static void quirk_apple_wait_for_thunderbolt(struct pci_dev *dev)
+> >  	if (!nhi)
+> >  		goto out;
+> >  	if (nhi->vendor != PCI_VENDOR_ID_INTEL
+> > -			|| (nhi->device != 0x1547 && nhi->device != 0x156c)
+> > -			|| nhi->subsystem_vendor != 0x2222
+> > -			|| nhi->subsystem_device != 0x1111)
+> > +		    || (nhi->device != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
+> > +			nhi->device != PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI)
+> > +		    || nhi->subsystem_vendor != 0x2222
+> > +		    || nhi->subsystem_device != 0x1111)
+> >  		goto out;
+> >  	dev_info(&dev->dev, "quirk: waiting for thunderbolt to reestablish PCI tunnels...\n");
+> >  	device_pm_wait_for_dev(&dev->dev, &nhi->dev);
+> > @@ -3247,9 +3249,11 @@ out:
+> >  	pci_dev_put(nhi);
+> >  	pci_dev_put(sibling);
+> >  }
+> > -DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x1547,
+> > +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
+> > +			       PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+> >  			       quirk_apple_wait_for_thunderbolt);
+> > -DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL, 0x156d,
+> > +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_INTEL,
+> > +			       PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE,
+> >  			       quirk_apple_wait_for_thunderbolt);
+> >  #endif
+> >  
+> > diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
+> > index 20a41f7..36be23b 100644
+> > --- a/drivers/thunderbolt/nhi.c
+> > +++ b/drivers/thunderbolt/nhi.c
+> > @@ -633,16 +633,18 @@ static const struct dev_pm_ops nhi_pm_ops = {
+> >  static struct pci_device_id nhi_ids[] = {
+> >  	/*
+> >  	 * We have to specify class, the TB bridges use the same device and
+> > -	 * vendor (sub)id.
+> > +	 * vendor (sub)id on gen 1 and gen 2 controllers.
+> >  	 */
+> >  	{
+> >  		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
+> > -		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x1547,
+> > +		.vendor = PCI_VENDOR_ID_INTEL,
+> > +		.device = PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C,
+> >  		.subvendor = 0x2222, .subdevice = 0x1111,
+> >  	},
+> >  	{
+> >  		.class = PCI_CLASS_SYSTEM_OTHER << 8, .class_mask = ~0,
+> > -		.vendor = PCI_VENDOR_ID_INTEL, .device = 0x156c,
+> > +		.vendor = PCI_VENDOR_ID_INTEL,
+> > +		.device = PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI,
+> >  		.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID,
+> >  	},
+> >  	{ 0,}
+> > diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
+> > index aeb9829..db73ffe 100644
+> > --- a/drivers/thunderbolt/switch.c
+> > +++ b/drivers/thunderbolt/switch.c
+> > @@ -293,9 +293,9 @@ static int tb_plug_events_active(struct tb_switch *sw, bool active)
+> >  	if (active) {
+> >  		data = data & 0xFFFFFF83;
+> >  		switch (sw->config.device_id) {
+> > -		case 0x1513:
+> > -		case 0x151a:
+> > -		case 0x1549:
+> > +		case PCI_DEVICE_ID_INTEL_LIGHT_RIDGE:
+> > +		case PCI_DEVICE_ID_INTEL_EAGLE_RIDGE:
+> > +		case PCI_DEVICE_ID_INTEL_PORT_RIDGE:
+> >  			break;
+> >  		default:
+> >  			data |= 4;
+> > @@ -370,7 +370,8 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
+> >  		tb_sw_warn(sw, "unknown switch vendor id %#x\n",
+> >  			   sw->config.vendor_id);
+> >  
+> > -	if (sw->config.device_id != 0x1547 && sw->config.device_id != 0x1549)
+> > +	if (sw->config.device_id != PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C &&
+> > +	    sw->config.device_id != PCI_DEVICE_ID_INTEL_PORT_RIDGE)
+> >  		tb_sw_warn(sw, "unsupported switch device id %#x\n",
+> >  			   sw->config.device_id);
+> >  
+> > diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> > index 37f05cb..bec46b7 100644
+> > --- a/include/linux/pci_ids.h
+> > +++ b/include/linux/pci_ids.h
+> > @@ -2599,6 +2599,24 @@
+> >  #define PCI_DEVICE_ID_INTEL_82441	0x1237
+> >  #define PCI_DEVICE_ID_INTEL_82380FB	0x124b
+> >  #define PCI_DEVICE_ID_INTEL_82439	0x1250
+> > +#define PCI_DEVICE_ID_INTEL_LIGHT_RIDGE             0x1513 /* Tbt 1 Gen 1 */
+> > +#define PCI_DEVICE_ID_INTEL_EAGLE_RIDGE             0x151a
+> > +#define PCI_DEVICE_ID_INTEL_LIGHT_PEAK              0x151b
+> > +#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_4C         0x1547 /* Tbt 1 Gen 2 */
+> > +#define PCI_DEVICE_ID_INTEL_CACTUS_RIDGE_2C         0x1548
+> > +#define PCI_DEVICE_ID_INTEL_PORT_RIDGE              0x1549
+> > +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_NHI    0x1566 /* Tbt 1 Gen 3 */
+> > +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_2C_BRIDGE 0x1567
+> > +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_NHI    0x1568
+> > +#define PCI_DEVICE_ID_INTEL_REDWOOD_RIDGE_4C_BRIDGE 0x1569
+> > +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_NHI     0x156a /* Thunderbolt 2 */
+> > +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_2C_BRIDGE  0x156b
+> > +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_NHI     0x156c
+> > +#define PCI_DEVICE_ID_INTEL_FALCON_RIDGE_4C_BRIDGE  0x156d
+> > +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_NHI     0x1575 /* Thunderbolt 3 */
+> > +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_BRIDGE  0x1576
+> > +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_NHI     0x1577
+> > +#define PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_BRIDGE  0x1578
+> >  #define PCI_DEVICE_ID_INTEL_80960_RP	0x1960
+> >  #define PCI_DEVICE_ID_INTEL_82840_HB	0x1a21
+> >  #define PCI_DEVICE_ID_INTEL_82845_HB	0x1a30
+> > -- 
+> > 2.7.0
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
