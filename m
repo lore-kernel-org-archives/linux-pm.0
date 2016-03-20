@@ -1,55 +1,49 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
-Date: Sun, 20 Mar 2016 10:12:46 -0700
-Message-ID: <20160320171246.GB16658@kroah.com>
-References: <cover.1458126755.git.lukas@wunner.de>
- <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
- <20160317150320.GA22769@localhost>
- <20160320131135.GA29174@wunner.de>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: Should suspend plug low-level devices?
+Date: Sun, 20 Mar 2016 14:29:58 -0400
+Message-ID: <20160320182958.GR20028@mtj.duckdns.org>
+References: <20160318203242.GL20028@mtj.duckdns.org>
+ <Pine.LNX.4.44L0.1603181651400.1866-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f180.google.com ([209.85.161.180]:35869 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbcCTSaA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 14:30:00 -0400
+Received: by mail-yw0-f180.google.com with SMTP id g3so193949752ywa.3
+        for <linux-pm@vger.kernel.org>; Sun, 20 Mar 2016 11:30:00 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20160320131135.GA29174@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.1603181651400.1866-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, florian@mickler.org, jkosina@suse.cz, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Sun, Mar 20, 2016 at 02:11:35PM +0100, Lukas Wunner wrote:
-> Hi Bjorn,
-> 
-> On Thu, Mar 17, 2016 at 10:03:20AM -0500, Bjorn Helgaas wrote:
-> > On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
-> > > Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
-> > > Gen 3 chips and onward use a distinct ID for the NHI.
-> > 
-> > I assume this is strictly using #defines instead of bare numbers and
-> > hence "no functional change intended."
-> > 
-> > > Cc: Andreas Noever <andreas.noever@gmail.com>
-> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > 
-> > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> Thanks, I've just posted a 3 patch series to support the Light Ridge
-> Thunderbolt controller and included your ack for this patch.
-> 
-> 
-> > I assume somebody else will merge this with the rest of the series.
-> 
-> The maintainer of the thunderbolt driver is Andreas Noever, however
-> I don't think Andreas sends pull requests to Linus. Everything in
-> drivers/thunderbolt/ has so far been picked up by Greg KH.
-> 
-> I have more thunderbolt stuff in the pipeline, some of which needs
-> changes to drivers/pci/. Therefore it would be ideal from my perspective
-> if my thunderbolt patches could go in via your tree, if that is possible.
+Hello,
 
-I have no objection if they go through the PCI tree, especially as
-Thunderbolt really just is PCI express, it makes sense to take them that
-way.
+On Fri, Mar 18, 2016 at 05:06:01PM -0400, Alan Stern wrote:
+> The original problem here was that some unfreezable code was waiting
+> (via flush_delayed_work) on frozen code, and it was blocking the
+> routine that would unfreeze things.  Therefore the order of freezing or
+> thawing has no bearing on this particular problem.
 
-thanks,
+Yeah, this one is caused by a high-level kernel construct being frozen
+and device resuming as a whole taking place before unfreezing.  The
+eventual goal would be avoiding freezing any high-level kernel
+constructs as it can lead to circular dependencies as shown here.
 
-greg k-h
+> Now, I have nothing against finer-grained control of freezing, although
+> I'm not sure how you would implement it in cases where a kthread is not
+> per-device but rather is per-driver or per-subsystem.  But we will 
+> still have to handle inversions where unfreezable code is waiting for 
+> frozen code.
+
+It won't be simple one-to-one conversion for all cases.  It's about
+terminating suspend handling where the endpoints actually are after
+all.
+
+thanks.
+
+-- 
+tejun
