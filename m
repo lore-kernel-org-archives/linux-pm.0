@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 1/2] perf/x86/intel/rapl: support Skylake RAPL domains
-Date: Sun, 20 Mar 2016 16:26:31 -0700
-Message-ID: <1458516392-2130-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 2/2] powercap: intel_rapl: PSys support
+Date: Sun, 20 Mar 2016 16:26:32 -0700
+Message-ID: <1458516392-2130-3-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1458516392-2130-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:12878 "EHLO mga03.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:4566 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbcCTX0Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1751348AbcCTX0Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Sun, 20 Mar 2016 19:26:25 -0400
 In-Reply-To: <1458516392-2130-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,155 +14,146 @@ List-Id: linux-pm@vger.kernel.org
 To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rjw@rjwysocki.net
 Cc: bp@alien8.de, ak@linux.intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com, x86@kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Added Skylake support for RAPL domains. In addition to RAPL domains in
-Broadwell clients, it has support for platform domain (aka PSys).
-
-Also fixed error in comment for gpu counter, which previously was dram
-counter.
+Skylake processor supports a new set of RAPL registers for controlling
+entire SoC instead of just CPU package. This is useful for thermal
+and power control when source of power/thermal is not just CPU/GPU.
+This change adds a new platform domain (AKA PSys) to the current
+power capping Intel RAPL driver.
+PSys also supports PL1 (long term) and PL2 (short term) control like
+package domain. This also follows same MSRs for energy and time
+units as package domain.
+Unlike package domain, PSys support requires more than just processor
+level implementation. The other parts in the system need additional
+implementation, which OEMs needs to support. So not all Skylake
+systems will support PSys.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/events/intel/rapl.c     | 50 ++++++++++++++++++++++++++++++++++++++--
- arch/x86/include/asm/msr-index.h |  2 ++
- 2 files changed, 50 insertions(+), 2 deletions(-)
+ drivers/powercap/intel_rapl.c | 66 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/arch/x86/events/intel/rapl.c b/arch/x86/events/intel/rapl.c
-index b834a3f..69904e7 100644
---- a/arch/x86/events/intel/rapl.c
-+++ b/arch/x86/events/intel/rapl.c
-@@ -27,10 +27,14 @@
-  *	  event: rapl_energy_dram
-  *    perf code: 0x3
-  *
-- * dram counter: consumption of the builtin-gpu domain (client only)
-+ * gpu counter: consumption of the builtin-gpu domain (client only)
-  *	  event: rapl_energy_gpu
-  *    perf code: 0x4
-  *
-+ *  psys counter: consumption of the builtin-psys domain (client only)
-+ *	  event: rapl_energy_psys
-+ *    perf code: 0x5
-+ *
-  * We manage those counters as free running (read-only). They may be
-  * use simultaneously by other tools, such as turbostat.
-  *
-@@ -64,13 +68,16 @@
- #define INTEL_RAPL_RAM		0x3	/* pseudo-encoding */
- #define RAPL_IDX_PP1_NRG_STAT	3	/* gpu */
- #define INTEL_RAPL_PP1		0x4	/* pseudo-encoding */
-+#define RAPL_IDX_PSYS_NRG_STAT	4	/* psys */
-+#define INTEL_RAPL_PSYS		0x5	/* pseudo-encoding */
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index cdfd01f0..2c0235d 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -34,6 +34,9 @@
+ #include <asm/processor.h>
+ #include <asm/cpu_device_id.h>
  
--#define NR_RAPL_DOMAINS         0x4
-+#define NR_RAPL_DOMAINS         0x5
- static const char *const rapl_domain_names[NR_RAPL_DOMAINS] __initconst = {
- 	"pp0-core",
- 	"package",
++/* Local defines */
++#define MSR_PLATFORM_POWER_LIMIT	0x0000065c
++
+ /* bitmasks for RAPL MSRs, used by primitive access functions */
+ #define ENERGY_STATUS_MASK      0xffffffff
+ 
+@@ -86,6 +89,7 @@ enum rapl_domain_type {
+ 	RAPL_DOMAIN_PP0, /* core power plane */
+ 	RAPL_DOMAIN_PP1, /* graphics uncore */
+ 	RAPL_DOMAIN_DRAM,/* DRAM control_type */
++	RAPL_DOMAIN_PLATFORM, /* PSys control_type */
+ 	RAPL_DOMAIN_MAX,
+ };
+ 
+@@ -251,9 +255,11 @@ static const char * const rapl_domain_names[] = {
+ 	"core",
+ 	"uncore",
  	"dram",
- 	"pp1-gpu",
 +	"psys",
  };
  
- /* Clients have PP0, PKG */
-@@ -89,6 +96,13 @@ static const char *const rapl_domain_names[NR_RAPL_DOMAINS] __initconst = {
- 			 1<<RAPL_IDX_RAM_NRG_STAT|\
- 			 1<<RAPL_IDX_PP1_NRG_STAT)
+ static struct powercap_control_type *control_type; /* PowerCap Controller */
++static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
  
-+/* SKL clients have PP0, PKG, RAM, PP1, PSYS */
-+#define RAPL_IDX_SKL	(1<<RAPL_IDX_PP0_NRG_STAT|\
-+			 1<<RAPL_IDX_PKG_NRG_STAT|\
-+			 1<<RAPL_IDX_RAM_NRG_STAT|\
-+			 1<<RAPL_IDX_PP1_NRG_STAT|\
-+			 1<<RAPL_IDX_PSYS_NRG_STAT)
-+
- /* Knights Landing has PKG, RAM */
- #define RAPL_IDX_KNL	(1<<RAPL_IDX_PKG_NRG_STAT|\
- 			 1<<RAPL_IDX_RAM_NRG_STAT)
-@@ -360,6 +374,10 @@ static int rapl_pmu_event_init(struct perf_event *event)
- 		bit = RAPL_IDX_PP1_NRG_STAT;
- 		msr = MSR_PP1_ENERGY_STATUS;
- 		break;
-+	case INTEL_RAPL_PSYS:
-+		bit = RAPL_IDX_PSYS_NRG_STAT;
-+		msr = MSR_PLATFORM_ENERGY_STATUS;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -414,11 +432,13 @@ RAPL_EVENT_ATTR_STR(energy-cores, rapl_cores, "event=0x01");
- RAPL_EVENT_ATTR_STR(energy-pkg  ,   rapl_pkg, "event=0x02");
- RAPL_EVENT_ATTR_STR(energy-ram  ,   rapl_ram, "event=0x03");
- RAPL_EVENT_ATTR_STR(energy-gpu  ,   rapl_gpu, "event=0x04");
-+RAPL_EVENT_ATTR_STR(energy-psys,   rapl_psys, "event=0x05");
- 
- RAPL_EVENT_ATTR_STR(energy-cores.unit, rapl_cores_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-pkg.unit  ,   rapl_pkg_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-ram.unit  ,   rapl_ram_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-gpu.unit  ,   rapl_gpu_unit, "Joules");
-+RAPL_EVENT_ATTR_STR(energy-psys.unit,   rapl_psys_unit, "Joules");
- 
- /*
-  * we compute in 0.23 nJ increments regardless of MSR
-@@ -427,6 +447,7 @@ RAPL_EVENT_ATTR_STR(energy-cores.scale, rapl_cores_scale, "2.3283064365386962890
- RAPL_EVENT_ATTR_STR(energy-pkg.scale,     rapl_pkg_scale, "2.3283064365386962890625e-10");
- RAPL_EVENT_ATTR_STR(energy-ram.scale,     rapl_ram_scale, "2.3283064365386962890625e-10");
- RAPL_EVENT_ATTR_STR(energy-gpu.scale,     rapl_gpu_scale, "2.3283064365386962890625e-10");
-+RAPL_EVENT_ATTR_STR(energy-psys.scale,   rapl_psys_scale, "2.3283064365386962890625e-10");
- 
- static struct attribute *rapl_events_srv_attr[] = {
- 	EVENT_PTR(rapl_cores),
-@@ -476,6 +497,27 @@ static struct attribute *rapl_events_hsw_attr[] = {
- 	NULL,
+ /* caller to ensure CPU hotplug lock is held */
+ static struct rapl_package *find_package_by_id(int id)
+@@ -409,6 +415,14 @@ static const struct powercap_zone_ops zone_ops[] = {
+ 		.set_enable = set_domain_enable,
+ 		.get_enable = get_domain_enable,
+ 	},
++	/* RAPL_DOMAIN_PLATFORM */
++	{
++		.get_energy_uj = get_energy_counter,
++		.get_max_energy_range_uj = get_max_energy_counter,
++		.release = release_zone,
++		.set_enable = set_domain_enable,
++		.get_enable = get_domain_enable,
++	},
  };
  
-+static struct attribute *rapl_events_skl_attr[] = {
-+	EVENT_PTR(rapl_cores),
-+	EVENT_PTR(rapl_pkg),
-+	EVENT_PTR(rapl_gpu),
-+	EVENT_PTR(rapl_ram),
-+	EVENT_PTR(rapl_psys),
+ static int set_power_limit(struct powercap_zone *power_zone, int id,
+@@ -1159,6 +1173,13 @@ static int rapl_unregister_powercap(void)
+ 			powercap_unregister_zone(control_type,
+ 						&rd_package->power_zone);
+ 	}
 +
-+	EVENT_PTR(rapl_cores_unit),
-+	EVENT_PTR(rapl_pkg_unit),
-+	EVENT_PTR(rapl_gpu_unit),
-+	EVENT_PTR(rapl_ram_unit),
-+	EVENT_PTR(rapl_psys_unit),
++	if (platform_rapl_domain) {
++		powercap_unregister_zone(control_type,
++					 &platform_rapl_domain->power_zone);
++		kfree(platform_rapl_domain);
++	}
 +
-+	EVENT_PTR(rapl_cores_scale),
-+	EVENT_PTR(rapl_pkg_scale),
-+	EVENT_PTR(rapl_gpu_scale),
-+	EVENT_PTR(rapl_ram_scale),
-+	EVENT_PTR(rapl_psys_scale),
-+	NULL,
-+};
-+
- static struct attribute *rapl_events_knl_attr[] = {
- 	EVENT_PTR(rapl_pkg),
- 	EVENT_PTR(rapl_ram),
-@@ -726,6 +768,10 @@ static int __init rapl_pmu_init(void)
- 		rapl_cntr_mask = RAPL_IDX_SRV;
- 		rapl_pmu_events_group.attrs = rapl_events_srv_attr;
- 		break;
-+	case 78: /* Skylake client */
-+		rapl_cntr_mask = RAPL_IDX_SKL;
-+		rapl_pmu_events_group.attrs = rapl_events_skl_attr;
-+		break;
- 	case 87: /* Knights Landing */
- 		apply_quirk = true;
- 		rapl_cntr_mask = RAPL_IDX_KNL;
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 2da46ac..cfb1587 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -190,6 +190,8 @@
- #define MSR_PP1_ENERGY_STATUS		0x00000641
- #define MSR_PP1_POLICY			0x00000642
+ 	powercap_unregister_control_type(control_type);
  
-+#define MSR_PLATFORM_ENERGY_STATUS	0x0000064d
+ 	return 0;
+@@ -1238,6 +1259,47 @@ err_cleanup:
+ 	return ret;
+ }
+ 
++static int rapl_register_psys(void)
++{
++	struct rapl_domain *rd;
++	struct powercap_zone *power_zone;
++	u64 val;
 +
- #define MSR_CONFIG_TDP_NOMINAL		0x00000648
- #define MSR_CONFIG_TDP_LEVEL_1		0x00000649
- #define MSR_CONFIG_TDP_LEVEL_2		0x0000064A
++	if (rdmsrl_safe_on_cpu(0, MSR_PLATFORM_ENERGY_STATUS, &val) || !val)
++		return -ENODEV;
++
++	if (rdmsrl_safe_on_cpu(0, MSR_PLATFORM_POWER_LIMIT, &val) || !val)
++		return -ENODEV;
++
++	rd = kzalloc(sizeof(*rd), GFP_KERNEL);
++	if (!rd)
++		return -ENOMEM;
++
++	rd->name = rapl_domain_names[RAPL_DOMAIN_PLATFORM];
++	rd->id = RAPL_DOMAIN_PLATFORM;
++	rd->msrs[0] = MSR_PLATFORM_POWER_LIMIT;
++	rd->msrs[1] = MSR_PLATFORM_ENERGY_STATUS;
++	rd->rpl[0].prim_id = PL1_ENABLE;
++	rd->rpl[0].name = pl1_name;
++	rd->rpl[1].prim_id = PL2_ENABLE;
++	rd->rpl[1].name = pl2_name;
++	rd->rp = find_package_by_id(0);
++
++	power_zone = powercap_register_zone(&rd->power_zone, control_type,
++					    "psys", NULL,
++					    &zone_ops[RAPL_DOMAIN_PLATFORM],
++					    2, &constraint_ops);
++
++	if (IS_ERR(power_zone)) {
++		kfree(rd);
++		return PTR_ERR(power_zone);
++	}
++
++	platform_rapl_domain = rd;
++
++	return 0;
++}
++
+ static int rapl_register_powercap(void)
+ {
+ 	struct rapl_domain *rd;
+@@ -1254,6 +1316,10 @@ static int rapl_register_powercap(void)
+ 	list_for_each_entry(rp, &rapl_packages, plist)
+ 		if (rapl_package_register_powercap(rp))
+ 			goto err_cleanup_package;
++
++	/* Don't bail out if PSys is not supported */
++	rapl_register_psys();
++
+ 	return ret;
+ 
+ err_cleanup_package:
 -- 
 2.5.0
 
