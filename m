@@ -1,62 +1,71 @@
-From: David Miller <davem@davemloft.net>
+From: Guenter Roeck <linux@roeck-us.net>
 Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Sun, 20 Mar 2016 16:52:51 -0400 (EDT)
-Message-ID: <20160320.165251.836830192768797071.davem@davemloft.net>
+Date: Sun, 20 Mar 2016 15:59:16 -0700
+Message-ID: <56EF2B44.9040807@roeck-us.net>
 References: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
-	<1458491752.10868.4.camel@edumazet-glaptop3.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-7
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shards.monkeyblade.net ([149.20.54.216]:60296 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbcCTUwy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 16:52:54 -0400
-In-Reply-To: <1458491752.10868.4.camel@edumazet-glaptop3.roam.corp.google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: eric.dumazet@gmail.com
-Cc: geert@linux-m68k.org, woojung.huh@microchip.com, UNGLinuxDriver@microchip.com, linux@roeck-us.net, rjw@rjwysocki.net, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-RnJvbTogRXJpYyBEdW1hemV0IDxlcmljLmR1bWF6ZXRAZ21haWwuY29tPg0KRGF0ZTogU3VuLCAy
-MCBNYXIgMjAxNiAwOTozNTo1MiAtMDcwMA0KDQo+IE9uIFN1biwgMjAxNi0wMy0yMCBhdCAxMTo0
-MyArMDEwMCwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPj4gSWYgQ09ORklHX1BNPW46DQo+
-PiANCj4+ICAgICBkcml2ZXJzL25ldC91c2IvbGFuNzh4eC5jOiBJbiBmdW5jdGlvbiChbGFuNzh4
-eF9nZXRfc3RhdHM2NKI6DQo+PiAgICAgZHJpdmVycy9uZXQvdXNiL2xhbjc4eHguYzozMjc0OiBl
-cnJvcjogoXN0cnVjdCBkZXZfcG1faW5mb6IgaGFzIG5vIG1lbWJlciBuYW1lZCChcnVudGltZV9h
-dXRvog0KPj4gDQo+PiBJZiBQTSBpcyBkaXNhYmxlZCwgdGhlIHJ1bnRpbWVfYXV0byBmbGFnIGlz
-IG5vdCBhdmFpbGFibGUsIGJ1dCBhdXRvDQo+PiBzdXNwZW5kIGlzIG5vdCBlbmFibGVkIGFueXdh
-eS4gIEhlbmNlIHByb3RlY3QgdGhlIGNoZWNrIGZvciBydW50aW1lX2F1dG8NCj4+IGJ5ICNpZmRl
-ZiBDT05GSUdfUE0gdG8gZml4IHRoaXMuDQo+PiANCj4+IEZpeGVzOiBhNTlmOGM1YjA0OGRjOTM4
-ICgibGFuNzh4eDogYWRkIG5kb19nZXRfc3RhdHM2NCIpDQo+PiBSZXBvcnRlZC1ieTogR3VlbnRl
-ciBSb2VjayA8bGludXhAcm9lY2stdXMubmV0Pg0KPj4gU2lnbmVkLW9mZi1ieTogR2VlcnQgVXl0
-dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4NCj4+IC0tLQ0KPj4gQWx0ZXJuYXRpdmVs
-eSwgd2UgY2FuIGFkZCBhIGRldl9wbV9ydW50aW1lX2F1dG9faXNfZW5hYmxlZCgpIHdyYXBwZXIg
-dG8NCj4+IGluY2x1ZGUvbGludXgvcG0uaCwgd2hpY2ggYWx3YXlzIHJldHVybiBmYWxzZSBpZiBD
-T05GSUdfUE0gaXMgZGlzYWJsZWQuDQo+PiANCj4+IFRoZSBvbmx5IG90aGVyIHVzZXIgaW4gbm9u
-LWNvcmUgY29kZSAoZHJpdmVycy91c2IvY29yZS9zeXNmcy5jKSBoYXMgYQ0KPj4gYmlnICNpZmRl
-ZiBDT05GSUdfUE0gY2hlY2sgYXJvdW5kIGFsbCBQTS1yZWxhdGVkIGNvZGUuDQo+PiANCj4+IFRo
-b3VnaHRzPw0KPj4gLS0tDQo+PiAgZHJpdmVycy9uZXQvdXNiL2xhbjc4eHguYyB8IDIgKysNCj4+
-ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+PiANCj4+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL25ldC91c2IvbGFuNzh4eC5jIGIvZHJpdmVycy9uZXQvdXNiL2xhbjc4eHguYw0KPj4g
-aW5kZXggZDM2ZDVlYmYzN2YzNTVmMi4uN2I5YWM0N2IyZWNmOTkwNSAxMDA2NDQNCj4+IC0tLSBh
-L2RyaXZlcnMvbmV0L3VzYi9sYW43OHh4LmMNCj4+ICsrKyBiL2RyaXZlcnMvbmV0L3VzYi9sYW43
-OHh4LmMNCj4+IEBAIC0zMjcxLDcgKzMyNzEsOSBAQCBzdHJ1Y3QgcnRubF9saW5rX3N0YXRzNjQg
-Kmxhbjc4eHhfZ2V0X3N0YXRzNjQoc3RydWN0IG5ldF9kZXZpY2UgKm5ldGRldiwNCj4+ICAJICog
-cGVyaW9kaWMgcmVhZGluZyBmcm9tIEhXIHdpbGwgcHJldmVudCBmcm9tIGVudGVyaW5nIFVTQiBh
-dXRvIHN1c3BlbmQuDQo+PiAgCSAqIGlmIGF1dG9zdXNwZW5kIGlzIGRpc2FibGVkLCByZWFkIGZy
-b20gSFcuDQo+PiAgCSAqLw0KPj4gKyNpZmRlZiBDT05GSUdfUE0NCj4+ICAJaWYgKCFkZXYtPnVk
-ZXYtPmRldi5wb3dlci5ydW50aW1lX2F1dG8pDQo+PiArI2VuZGlmDQo+PiAgCQlsYW43OHh4X3Vw
-ZGF0ZV9zdGF0cyhkZXYpOw0KPj4gIA0KPj4gIAltdXRleF9sb2NrKCZkZXYtPnN0YXRzLmFjY2Vz
-c19sb2NrKTsNCj4gDQo+IE5vdGUgdGhhdCBhIG5kb19nZXRfc3RhdDY0KCkgaGFuZGxlciBpcyBu
-b3QgYWxsb3dlZCB0byBzbGVlcCwNCj4gc28gdGhlIG11dGV4X2xvY2soKSBpcyBub3Qgd2lzZS4u
-Lg0KPiANCj4gSGlzdG9yaWNhbGx5IC9wcm9jL25ldC9kZXYgaGFuZGxlciBidXQgYWxzbyBib25k
-aW5nIG5kb19nZXRfc3RhdHMoKSB1c2VkDQo+IFJDVSBvciBhIHJ3bG9jayBvciBhIHNwaW5sb2Nr
-Lg0KPiANCj4gU28gYSBjb21wbGV0ZSBmaXggd291bGQgbmVlZCB0byBnZXQgcmlkIG9mIHRoaXMg
-bXV0ZXggYXMgd2VsbC4NCg0KVGhpcyBmdW5jdGlvbiBpcyBhbHNvIGJ1Z2d5IGZvciBhbm90aGVy
-IHJlYXNvbi4gIFRoZSBkcml2ZXIgbmVlZHMgdG8NCmNhcHR1cmUgdGhlIHN0YXRpc3RpY3Mgd2hl
-biB0aGUgcnVudGltZSBzdXNwZW5kIGhhcHBlbnMuDQoNClNpbmNlIGl0J3MgbXVjaCBlYXNpZXIg
-dG8gZmluZCB0aGluZ3Mgd3JvbmcgcmF0aGVyIHRoYW4gcmlnaHQgd2l0aA0KdGhpcyBuZXcgY29k
-ZSwgSSd2ZSBkZWNpZGVkIHRvIGNvbXBsZXRlbHkgcmV2ZXJ0IHRoZSBjb21taXQgdGhhdCBhZGRl
-ZA0KbGFuNzh4eF9nZXRfc3RhdHM2NCgpLg0KDQpPbmNlIGEgY29ycmVjdCB2ZXJzaW9uIGlzIGlt
-cGxlbWVudGVkIHdlIGNhbiBhZGQgaXQgYmFjay4NCg0KVGhhbmtzLg0K
+On 03/20/2016 03:43 AM, Geert Uytterhoeven wrote:
+> If CONFIG_PM=3Dn:
+>
+>      drivers/net/usb/lan78xx.c: In function =E2=80=98lan78xx_get_stat=
+s64=E2=80=99:
+>      drivers/net/usb/lan78xx.c:3274: error: =E2=80=98struct dev_pm_in=
+fo=E2=80=99 has no member named =E2=80=98runtime_auto=E2=80=99
+>
+> If PM is disabled, the runtime_auto flag is not available, but auto
+> suspend is not enabled anyway.  Hence protect the check for runtime_a=
+uto
+> by #ifdef CONFIG_PM to fix this.
+>
+> Fixes: a59f8c5b048dc938 ("lan78xx: add ndo_get_stats64")
+> Reported-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> Alternatively, we can add a dev_pm_runtime_auto_is_enabled() wrapper =
+to
+> include/linux/pm.h, which always return false if CONFIG_PM is disable=
+d.
+>
+> The only other user in non-core code (drivers/usb/core/sysfs.c) has a
+> big #ifdef CONFIG_PM check around all PM-related code.
+>
+> Thoughts?
+
+Not that it matters anymore since David reverted the original patch,
+but my reason for not sending a similar patch was that I wasn't sure
+if .runtime_auto should be accessed from drivers in the first place,
+or if there is some logical problem with the code.
+
+Guenter
+
+> ---
+>   drivers/net/usb/lan78xx.c | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/net/usb/lan78xx.c b/drivers/net/usb/lan78xx.c
+> index d36d5ebf37f355f2..7b9ac47b2ecf9905 100644
+> --- a/drivers/net/usb/lan78xx.c
+> +++ b/drivers/net/usb/lan78xx.c
+> @@ -3271,7 +3271,9 @@ struct rtnl_link_stats64 *lan78xx_get_stats64(s=
+truct net_device *netdev,
+>   	 * periodic reading from HW will prevent from entering USB auto su=
+spend.
+>   	 * if autosuspend is disabled, read from HW.
+>   	 */
+> +#ifdef CONFIG_PM
+>   	if (!dev->udev->dev.power.runtime_auto)
+> +#endif
+>   		lan78xx_update_stats(dev);
+>
+>   	mutex_lock(&dev->stats.access_lock);
+>
