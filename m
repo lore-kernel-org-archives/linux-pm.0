@@ -1,55 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_resume warning issue
-Date: Mon, 21 Mar 2016 13:02:28 +0530
-Message-ID: <20160321073228.GC1803@vireshk-i7>
+From: "Zengtao (B)" <prime.zeng@hisilicon.com>
+Subject: RE: cpufreq_resume warning issue
+Date: Mon, 21 Mar 2016 08:05:36 +0000
+Message-ID: <678F3D1BB717D949B966B68EAEB446ED0A6D96C7@SZXEMA509-MBX.china.huawei.com>
 References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
+ <20160321073228.GC1803@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:35132 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbcCUHcc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 03:32:32 -0400
-Received: by mail-pf0-f170.google.com with SMTP id n5so255017794pfn.2
-        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 00:32:31 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
+Received: from szxga01-in.huawei.com ([58.251.152.64]:5756 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750965AbcCUIFt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 04:05:49 -0400
+In-Reply-To: <20160321073228.GC1803@vireshk-i7>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zengtao (B)" <prime.zeng@hisilicon.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 21-03-16, 03:43, Zengtao (B) wrote:
-> Hi all:
-> 	I have got the warning in the following code, 
-> 	/*
-> 	 * schedule call cpufreq_update_policy() for first-online CPU, as that
-> 	 * wouldn't be hotplugged-out on suspend. It will verify that the
-> 	 * current freq is in sync with what we believe it to be.
-> 	 */
-> 	policy = cpufreq_cpu_get_raw(cpumask_first(cpu_online_mask));
-> 	if (WARN_ON(!policy))
-> 		return;
-> 	schedule_work(&policy->update);
-> 
-> in my platform, two cores, core 1 don't have the dvfs feature, but core 2 has.
-> So I think that is the warning reason.
-> 
-> My question:
-> 1. Do we need to warning here? 
-
-Yes. But your system just broke an assumption we always had. i.e. all the CPUs
-take part in DVFS :)
-
-And its not just about this piece of code, but everything else that cpufreq
-does.
-
-For example, cpufreq core must be calling ->init() callback for CPU0 as well..
-What are you doing there ?
-
-I am not sure what's the right way of handling this thing is going to be.
-
-Why doesn't you have DVFS for both the cores ?
-
--- 
-viresh
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBWaXJlc2ggS3VtYXIgW21haWx0
+bzp2aXJlc2gua3VtYXJAbGluYXJvLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyMSwgMjAx
+NiAzOjMyIFBNDQo+IFRvOiBaZW5ndGFvIChCKQ0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogY3B1ZnJlcV9yZXN1bWUgd2Fy
+bmluZyBpc3N1ZQ0KPiANCj4gT24gMjEtMDMtMTYsIDAzOjQzLCBaZW5ndGFvIChCKSB3cm90ZToN
+Cj4gPiBIaSBhbGw6DQo+ID4gCUkgaGF2ZSBnb3QgdGhlIHdhcm5pbmcgaW4gdGhlIGZvbGxvd2lu
+ZyBjb2RlLA0KPiA+IAkvKg0KPiA+IAkgKiBzY2hlZHVsZSBjYWxsIGNwdWZyZXFfdXBkYXRlX3Bv
+bGljeSgpIGZvciBmaXJzdC1vbmxpbmUgQ1BVLCBhcyB0aGF0DQo+ID4gCSAqIHdvdWxkbid0IGJl
+IGhvdHBsdWdnZWQtb3V0IG9uIHN1c3BlbmQuIEl0IHdpbGwgdmVyaWZ5IHRoYXQgdGhlDQo+ID4g
+CSAqIGN1cnJlbnQgZnJlcSBpcyBpbiBzeW5jIHdpdGggd2hhdCB3ZSBiZWxpZXZlIGl0IHRvIGJl
+Lg0KPiA+IAkgKi8NCj4gPiAJcG9saWN5ID0gY3B1ZnJlcV9jcHVfZ2V0X3JhdyhjcHVtYXNrX2Zp
+cnN0KGNwdV9vbmxpbmVfbWFzaykpOw0KPiA+IAlpZiAoV0FSTl9PTighcG9saWN5KSkNCj4gPiAJ
+CXJldHVybjsNCj4gPiAJc2NoZWR1bGVfd29yaygmcG9saWN5LT51cGRhdGUpOw0KPiA+DQo+ID4g
+aW4gbXkgcGxhdGZvcm0sIHR3byBjb3JlcywgY29yZSAxIGRvbid0IGhhdmUgdGhlIGR2ZnMgZmVh
+dHVyZSwgYnV0IGNvcmUgMiBoYXMuDQo+ID4gU28gSSB0aGluayB0aGF0IGlzIHRoZSB3YXJuaW5n
+IHJlYXNvbi4NCj4gPg0KPiA+IE15IHF1ZXN0aW9uOg0KPiA+IDEuIERvIHdlIG5lZWQgdG8gd2Fy
+bmluZyBoZXJlPw0KPiANCj4gWWVzLiBCdXQgeW91ciBzeXN0ZW0ganVzdCBicm9rZSBhbiBhc3N1
+bXB0aW9uIHdlIGFsd2F5cyBoYWQuIGkuZS4gYWxsIHRoZSBDUFVzDQo+IHRha2UgcGFydCBpbiBE
+VkZTIDopDQo+IA0KPiBBbmQgaXRzIG5vdCBqdXN0IGFib3V0IHRoaXMgcGllY2Ugb2YgY29kZSwg
+YnV0IGV2ZXJ5dGhpbmcgZWxzZSB0aGF0IGNwdWZyZXENCj4gZG9lcy4NCj4gDQo+IEZvciBleGFt
+cGxlLCBjcHVmcmVxIGNvcmUgbXVzdCBiZSBjYWxsaW5nIC0+aW5pdCgpIGNhbGxiYWNrIGZvciBD
+UFUwIGFzIHdlbGwuLg0KPiBXaGF0IGFyZSB5b3UgZG9pbmcgdGhlcmUgPw0KRm9yIENQVTAsIGp1
+c3QgcmV0dXJuZXMgZmFsc2UgZm9yIGNwdWZyZXFfZHJpdmVyLT5pbml0KHBvbGljeSkuDQoNCj4g
+DQo+IEkgYW0gbm90IHN1cmUgd2hhdCdzIHRoZSByaWdodCB3YXkgb2YgaGFuZGxpbmcgdGhpcyB0
+aGluZyBpcyBnb2luZyB0byBiZS4NCj4NCkl0IGxvb2tzIHRoYXQgdGhlIERWRlMgd29ya3Mgd2Vs
+bCBmb3IgQ1BVMSBleGNlcHQgdGhlIFdhcm5pbmcgbWVzc2FnZSBtZW50aW9uZWQgYWJvdmUuDQoN
+Cj4gV2h5IGRvZXNuJ3QgeW91IGhhdmUgRFZGUyBmb3IgYm90aCB0aGUgY29yZXMgPw0KPiANClRo
+ZSBDUFUwIGlzIGxvdyBwb3dlciwgbm90IHNvIG11Y2ggYmVuZWZpdCBmcm9tIGR2ZnMsIHNvIHdl
+IGp1c3QgZGVzaWduIG9uZSBwb3dlci1kb21haW4gZm9yIENQVTEgdG8gY29zdCBkb3duLiANCj4g
+LS0NCj4gdmlyZXNoDQoNCg0KQlINClplbmd0YW8gDQo=
