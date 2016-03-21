@@ -1,30 +1,25 @@
-From: "Zengtao (B)" <prime.zeng@hisilicon.com>
-Subject: cpufreq_resume warning issue
-Date: Mon, 21 Mar 2016 03:43:51 +0000
-Message-ID: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [RFC v3 11/12] ARM64: dts: Add PSCI cpuidle support for MSM8916
+Date: Sun, 20 Mar 2016 22:50:43 -0500
+Message-ID: <20160321034639.GA3106@hector.attlocal.net>
+References: <1456866931-37851-1-git-send-email-lina.iyer@linaro.org>
+ <1456866931-37851-13-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga01-in.huawei.com ([58.251.152.64]:13910 "EHLO
-	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbcCUDrW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Mar 2016 23:47:22 -0400
-Content-Language: zh-CN
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1456866931-37851-13-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-SGkgYWxsOg0KCUkgaGF2ZSBnb3QgdGhlIHdhcm5pbmcgaW4gdGhlIGZvbGxvd2luZyBjb2RlLCAN
-CgkvKg0KCSAqIHNjaGVkdWxlIGNhbGwgY3B1ZnJlcV91cGRhdGVfcG9saWN5KCkgZm9yIGZpcnN0
-LW9ubGluZSBDUFUsIGFzIHRoYXQNCgkgKiB3b3VsZG4ndCBiZSBob3RwbHVnZ2VkLW91dCBvbiBz
-dXNwZW5kLiBJdCB3aWxsIHZlcmlmeSB0aGF0IHRoZQ0KCSAqIGN1cnJlbnQgZnJlcSBpcyBpbiBz
-eW5jIHdpdGggd2hhdCB3ZSBiZWxpZXZlIGl0IHRvIGJlLg0KCSAqLw0KCXBvbGljeSA9IGNwdWZy
-ZXFfY3B1X2dldF9yYXcoY3B1bWFza19maXJzdChjcHVfb25saW5lX21hc2spKTsNCglpZiAoV0FS
-Tl9PTighcG9saWN5KSkNCgkJcmV0dXJuOw0KCXNjaGVkdWxlX3dvcmsoJnBvbGljeS0+dXBkYXRl
-KTsNCg0KaW4gbXkgcGxhdGZvcm0sIHR3byBjb3JlcywgY29yZSAxIGRvbid0IGhhdmUgdGhlIGR2
-ZnMgZmVhdHVyZSwgYnV0IGNvcmUgMiBoYXMuDQpTbyBJIHRoaW5rIHRoYXQgaXMgdGhlIHdhcm5p
-bmcgcmVhc29uLg0KDQpNeSBxdWVzdGlvbjoNCjEuIERvIHdlIG5lZWQgdG8gd2FybmluZyBoZXJl
-PyANCjIuIGluIG15IGNhc2UsIHRoZSBzY2hlZHVsZV93b3JrIHdpbGwgYmUgc2tpcHBlZCwgaXMg
-dGhlcmUgYW55IHByb2JsZW0/IA0KDQpUaGFuayB5b3UuDQoNCkJSDQpaZW5ndGFvIA0KDQoNCg==
+On Tue, Mar 01, 2016 at 02:15:30PM -0700, Lina Iyer wrote:
+> Add device bindings for CPUs to suspend using PSCI as the enable-method.
+> 
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+
+Works great.  All CPUs functional and I saw SPC idle states incrementing.
+
+Tested-by: Andy Gross <andy.gross@linaro.org>
