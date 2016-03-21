@@ -1,66 +1,79 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3] cpufreq: Always update current frequency before startig governor
-Date: Mon, 21 Mar 2016 15:47:48 +0100
-Message-ID: <1847835.ROHO9MEN8J@vostro.rjw.lan>
+Subject: [PATCH 2/3] cpufreq: Introduce cpufreq_update_current_freq()
+Date: Mon, 21 Mar 2016 15:46:25 +0100
+Message-ID: <4711274.maD9A8j7Lu@vostro.rjw.lan>
 References: <1780622.pJaGsuQWcI@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47769 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755911AbcCUOqK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 10:46:10 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1780622.pJaGsuQWcI@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make policy->cur match the current frequency returned by the driver's
-->get() callback before starting the governor in case they went out of
-sync in the meantime and drop the piece of code attempting to
-resync policy->cur with the real frequency of the boot CPU from
-cpufreq_resume() as it serves no purpose any more (and it's racy and
-super-ugly anyway).
+Move the part of cpufreq_update_policy() that obtains the current
+frequency from the driver and updates policy->cur if necessary to
+a separate function, cpufreq_get_current_freq().
+
+That should not introduce functional changes and subsequent change
+set will need it.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |   14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ drivers/cpufreq/cpufreq.c |   28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1680,17 +1680,6 @@ void cpufreq_resume(void)
- 				       __func__, policy);
- 		}
- 	}
--
--	/*
--	 * schedule call cpufreq_update_policy() for first-online CPU, as that
--	 * wouldn't be hotplugged-out on suspend. It will verify that the
--	 * current freq is in sync with what we believe it to be.
--	 */
--	policy = cpufreq_cpu_get_raw(cpumask_first(cpu_online_mask));
--	if (WARN_ON(!policy))
--		return;
--
--	schedule_work(&policy->update);
+@@ -1555,6 +1555,24 @@ unsigned int cpufreq_get(unsigned int cp
  }
+ EXPORT_SYMBOL(cpufreq_get);
  
- /**
-@@ -2062,6 +2051,9 @@ static int cpufreq_start_governor(struct
- {
- 	int ret;
- 
-+	if (cpufreq_driver->get && !cpufreq_driver->setpolicy)
-+		cpufreq_update_current_freq(policy);
++static unsigned int cpufreq_update_current_freq(struct cpufreq_policy *policy)
++{
++	unsigned int new_freq;
 +
- 	ret = cpufreq_governor(policy, CPUFREQ_GOV_START);
- 	return ret ? ret : cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
- }
-
++	new_freq = cpufreq_driver->get(policy->cpu);
++	if (!new_freq)
++		return 0;
++
++	if (!policy->cur) {
++		pr_debug("cpufreq: Driver did not initialize current freq\n");
++		policy->cur = new_freq;
++	} else if (policy->cur != new_freq && has_target()) {
++		cpufreq_out_of_sync(policy, new_freq);
++	}
++
++	return new_freq;
++}
++
+ static struct subsys_interface cpufreq_interface = {
+ 	.name		= "cpufreq",
+ 	.subsys		= &cpu_subsys,
+@@ -2264,19 +2282,11 @@ int cpufreq_update_policy(unsigned int c
+ 	 * -> ask driver for current freq and notify governors about a change
+ 	 */
+ 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+-		new_policy.cur = cpufreq_driver->get(cpu);
++		new_policy.cur = cpufreq_update_current_freq(policy);
+ 		if (WARN_ON(!new_policy.cur)) {
+ 			ret = -EIO;
+ 			goto unlock;
+ 		}
+-
+-		if (!policy->cur) {
+-			pr_debug("Driver did not initialize current freq\n");
+-			policy->cur = new_policy.cur;
+-		} else {
+-			if (policy->cur != new_policy.cur && has_target())
+-				cpufreq_out_of_sync(policy, new_policy.cur);
+-		}
+ 	}
+ 
+ 	ret = cpufreq_set_policy(policy, &new_policy);
