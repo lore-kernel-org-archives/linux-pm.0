@@ -1,294 +1,82 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v11] cpufreq: powernv: Add sysfs attributes to show throttle stats
-Date: Mon, 21 Mar 2016 22:29:51 +0530
-Message-ID: <1458579591-27573-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:44874 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbcCURA6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 13:00:58 -0400
-Received: from localhost
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Tue, 22 Mar 2016 03:00:55 +1000
-Sender: linux-pm-owner@vger.kernel.org
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Mon, 21 Mar 2016 17:24:52 +0000
+Message-ID: <20160321172452.GE12319@e106622-lin>
+References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
+ <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
+ <56EC3F9E.4050209@nvidia.com>
+ <20160321105330.GB12319@e106622-lin>
+ <CAKfTPtDP3zMR+zbvvqJCBvJ5r44do8NS03wC7pAejxPd0zHTMA@mail.gmail.com>
+ <20160321114956.GD12319@e106622-lin>
+ <20160321121210.GQ2566@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160321121210.GQ2566-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sai Gurrappadi <sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-api@vger.kernel.org
 
-Create sysfs attributes to export throttle information in
-/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
-newly added sysfs files are as follows:
+Hi Mark,
 
-1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
-2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
-3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
-4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
-5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
-6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
-7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
-8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
+On 21/03/16 12:12, Mark Brown wrote:
+> On Mon, Mar 21, 2016 at 11:49:56AM +0000, Juri Lelli wrote:
+> 
+> > But we'll still need to normalize this w.r.t the highest score we get on
+> > a specific platform, right? And while we are at normalizing it, it is
+> > probably simpler if we keep the frequency component as part of the
+> > number, IMHO. But, maybe keeping the frequency component separate is
+> > more acceptable from a DT binding perspective?
+> 
+> One possible issue with that: if we keep the frequency number as part of
+> the core number then that might cause issues for devices with variants
+> or system deployment decisions that remove some OPPs from a table.  If
+> the top OPP gets removed that would throw off the numbers.
 
-Detailed explanation of each attribute is added to
-Documentation/ABI/testing/sysfs-devices-system-cpu
+If we want to remove the frequency number from the capacity values I
+think what we could do is:
 
-CC: linux-api@vger.kernel.org
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-Changes from v10:
-- Removed policy_notifiers to use driver->init() instead to create sysfs
-- sysfs attributes are removed by kobject_put(policy->kobj)
-- Rebased on top of
-  http://lkml.iu.edu/hypermail/linux/kernel/1603.2/02268.html 
+ - agree on a benchmark (it seems to me this is what Rob is also asking
+   for) (e.g., sysbench); this is maybe optional, as what below should
+   work for any kind of benchmark for which events/operations performed
+   can be measured
+ - for that benchmark measure the number of operations performed in a
+   second (e.g., sysbench number of events per second or SEPS)
+ - divide the number for the frequency we did the profiling at (e.g.,
+   SEPS/MHz * 1024, to end up with an integer number)
+ - normalize values and put them in DT (IMHO, we don't want absolute
+   values there)
 
-Changes from v9:
-- Modified documentation.
-- s/throttle_nominal/throttle_sub_turbo
+To compute the capacities at boot we then have to:
 
-Changes from v8:
-- Moved the sysfs attributes from cpu/cpufreq/chipX to cpuX/cpufreq/throttle_stats
-- Adhering to one-value-per-file, replace throttle_table with multiple
-  sysfs files.
-- Using CPUFREQ_POLICY_NOTIFIER to add/remove attribute_group.
+ - multiply the value parsed from DT by the max frequency (e.g.,
+   SEPS/MHz * max_freq)
+ - normalize capacities obtained with the step above w.r.t. the max
+   capacity of the system
 
- Documentation/ABI/testing/sysfs-devices-system-cpu | 69 +++++++++++++++++++
- drivers/cpufreq/powernv-cpufreq.c                  | 80 +++++++++++++++++++++-
- 2 files changed, 146 insertions(+), 3 deletions(-)
+I think this should work, but we have to understand how do we obtain the
+max frequency of each cluster while parsing DT. OPP bindings are
+helpful, but AFAIK there are platforms for which firmware is responsible
+for setting up and advertise available OPPs. I'm not sure if this
+happens later on during the boot process. We might still be able to use
+the clock-frequency property in this case, but that might need changing
+again if the top OPP gets removed/changed.
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index b683e8e..1650133 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -271,3 +271,72 @@ Description:	Parameters for the CPU cache attributes
- 			- WriteBack: data is written only to the cache line and
- 				     the modified cache line is written to main
- 				     memory only when it is replaced
-+
-+What:		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub_turbo_stat
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
-+		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
-+Date:		March 2016
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
-+		attributes
-+
-+		'cpuX/cpufreq/throttle_stats' directory contains the CPU frequency
-+		throttle stat attributes for the chip. The throttle stats of a cpu
-+		is common across all the cpus belonging to a chip. Below are the
-+		throttle attributes exported in the 'throttle_stats' directory:
-+
-+		- turbo_stat : This file gives the total number of times the max
-+		frequency is throttled to lower frequency in turbo (at and above
-+		nominal frequency) range of frequencies.
-+
-+		- sub_turbo_stat : This file gives the total number of times the
-+		max frequency is throttled to lower frequency in sub-turbo(below
-+		nominal frequency) range of frequencies.
-+
-+		- unthrottle : This file gives the total number of times the max
-+		frequency is unthrottled after being throttled.
-+
-+		- powercap : This file gives the total number of times the max
-+		frequency is throttled due to 'Power Capping'.
-+
-+		- overtemp : This file gives the total number of times the max
-+		frequency is throttled due to 'CPU Over Temperature'.
-+
-+		- supply_fault : This file gives the total number of times the
-+		max frequency is throttled due to 'Power Supply Failure'.
-+
-+		- overcurrent : This file gives the total number of times the
-+		max frequency is throttled due to 'Overcurrent'.
-+
-+		- occ_reset : This file gives the total number of times the max
-+		frequency is throttled due to 'OCC Reset'.
-+
-+		The sysfs attributes representing different throttle reasons like
-+		powercap, overtemp, supply_fault, overcurrent and occ_reset map to
-+		the reasons provided by OCC firmware for throttling the frequency.
-+
-+What:		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/turbo_stat
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/sub_turbo_stat
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/unthrottle
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/powercap
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overtemp
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/supply_fault
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overcurrent
-+		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/occ_reset
-+Date:		March 2016
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
-+		attributes
-+
-+		'policyX/throttle_stats' directory and all the attributes are same as
-+		the /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory and
-+		attributes which give the frequency throttle information of the chip.
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index a00bcc2..dc8363d 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -44,6 +44,7 @@
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
-+static bool *create_throttle_sysfs;
- 
- static const char * const throttle_reason[] = {
- 	"No throttling",
-@@ -54,6 +55,16 @@ static const char * const throttle_reason[] = {
- 	"OCC Reset"
- };
- 
-+enum throttle_reason_type {
-+	NO_THROTTLE = 0,
-+	POWERCAP,
-+	CPU_OVERTEMP,
-+	POWER_SUPPLY_FAILURE,
-+	OVERCURRENT,
-+	OCC_RESET_THROTTLE,
-+	OCC_MAX_REASON
-+};
-+
- static struct chip {
- 	unsigned int id;
- 	bool throttled;
-@@ -61,6 +72,9 @@ static struct chip {
- 	u8 throttle_reason;
- 	cpumask_t mask;
- 	struct work_struct throttle;
-+	int throttle_turbo;
-+	int throttle_sub_turbo;
-+	int reason[OCC_MAX_REASON];
- } *chips;
- 
- static int nr_chips;
-@@ -196,6 +210,42 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
- 	NULL,
- };
- 
-+#define throttle_attr(name, member)					\
-+static ssize_t name##_show(struct cpufreq_policy *policy, char *buf)	\
-+{									\
-+	struct chip *chip = per_cpu(chip_info, policy->cpu);		\
-+									\
-+	return sprintf(buf, "%u\n", chip->member);			\
-+}									\
-+									\
-+static struct freq_attr throttle_attr_##name = __ATTR_RO(name)		\
-+
-+throttle_attr(unthrottle, reason[NO_THROTTLE]);
-+throttle_attr(powercap, reason[POWERCAP]);
-+throttle_attr(overtemp, reason[CPU_OVERTEMP]);
-+throttle_attr(supply_fault, reason[POWER_SUPPLY_FAILURE]);
-+throttle_attr(overcurrent, reason[OVERCURRENT]);
-+throttle_attr(occ_reset, reason[OCC_RESET_THROTTLE]);
-+throttle_attr(turbo_stat, throttle_turbo);
-+throttle_attr(sub_turbo_stat, throttle_sub_turbo);
-+
-+static struct attribute *throttle_attrs[] = {
-+	&throttle_attr_unthrottle.attr,
-+	&throttle_attr_powercap.attr,
-+	&throttle_attr_overtemp.attr,
-+	&throttle_attr_supply_fault.attr,
-+	&throttle_attr_overcurrent.attr,
-+	&throttle_attr_occ_reset.attr,
-+	&throttle_attr_turbo_stat.attr,
-+	&throttle_attr_sub_turbo_stat.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group throttle_attr_grp = {
-+	.name	= "throttle_stats",
-+	.attrs	= throttle_attrs,
-+};
-+
- /* Helper routines */
- 
- /* Access helpers to power mgt SPR */
-@@ -338,10 +388,14 @@ static void powernv_cpufreq_throttle_check(void *data)
- 		if (chip->throttled)
- 			goto next;
- 		chip->throttled = true;
--		if (pmsr_pmax < powernv_pstate_info.nominal)
-+		if (pmsr_pmax < powernv_pstate_info.nominal) {
- 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
- 				     cpu, chip->id, pmsr_pmax,
- 				     powernv_pstate_info.nominal);
-+			chip->throttle_sub_turbo++;
-+		} else {
-+			chip->throttle_turbo++;
-+		}
- 		trace_powernv_throttle(chip->id,
- 				      throttle_reason[chip->throttle_reason],
- 				      pmsr_pmax);
-@@ -401,13 +455,23 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i;
-+	int base, i, ret;
- 
- 	base = cpu_first_thread_sibling(policy->cpu);
- 
- 	for (i = 0; i < threads_per_core; i++)
- 		cpumask_set_cpu(base + i, policy->cpus);
- 
-+	i = cpu_core_index_of_thread(policy->cpu);
-+	if (!create_throttle_sysfs[i]) {
-+		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
-+		if (ret) {
-+			pr_info("Failed to create throttle stats directory for cpu %d\n",
-+				policy->cpu);
-+			return ret;
-+		}
-+		create_throttle_sysfs[i] = true;
-+	}
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
- 
-@@ -514,8 +578,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- 				break;
- 
- 		if (omsg.throttle_status >= 0 &&
--		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
-+		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS) {
- 			chips[i].throttle_reason = omsg.throttle_status;
-+			chips[i].reason[omsg.throttle_status]++;
-+		}
- 
- 		if (!omsg.throttle_status)
- 			chips[i].restore = true;
-@@ -569,6 +635,13 @@ static int init_chip_info(void)
- 	if (!chips)
- 		return -ENOMEM;
- 
-+	create_throttle_sysfs = kcalloc(cpu_nr_cores(), sizeof(bool),
-+					GFP_KERNEL);
-+	if (!create_throttle_sysfs) {
-+		kfree(chips);
-+		return -ENOMEM;
-+	}
-+
- 	for (i = 0; i < nr_chips; i++) {
- 		chips[i].id = chip[i];
- 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
-@@ -582,6 +655,7 @@ static int init_chip_info(void)
- 
- static inline void clean_chip_info(void)
- {
-+	kfree(create_throttle_sysfs);
- 	kfree(chips);
- }
- 
--- 
-1.9.3
+OTH, we might simply want to say that capacity values are to be obtained
+once the platform is "stable" (no additional changes to configuration,
+OPPs, etc.). But this is maybe not acceptable?
 
+Also, I fear that for variants of a particular implementation we will
+still have to redo the profiling anyway (like we alreaady did for Juno
+and Juno-r2 for example).
+
+Thanks,
+
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
