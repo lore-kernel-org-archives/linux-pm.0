@@ -1,124 +1,60 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 1/3] idle, rename MSR_NHM_SNB_PKG_CST_CFG_CTL to MSR_PKG_CST_CONFIG_CONTROL
-Date: Mon, 21 Mar 2016 08:49:27 -0400
-Message-ID: <1458564569-19672-2-git-send-email-prarit@redhat.com>
-References: <1458564569-19672-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458564569-19672-1-git-send-email-prarit@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, x86@kernel.org, Len Brown <lenb@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, linux-pm@vger.kernel.org
+From: Feng Xiao <xf@rock-chips.com>
+Subject: Re: [PATCH] cpufreq: rockchip: add driver
+Date: Mon, 21 Mar 2016 21:24:32 +0800
+Message-ID: <56EFF610.6040402@rock-chips.com>
+References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
+ <1787319.AFAWVqkdk0@diego> <20160321095049.GD27778@vireshk-i7>
+ <1505152.fhSnu3pvDr@diego> <20160321095855.GE27778@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular2.263xmail.com ([211.157.152.3]:51492 "EHLO
+	regular2.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbcCUNYW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 09:24:22 -0400
+In-Reply-To: <20160321095855.GE27778@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
+Cc: linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
 
-MSR 0xE2 is not a Nehalem specific register and is used by newer
-processors.  This patch renames the processor to the name given in the
-Intel SDM [1]
 
-[1] http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 
-Cc: x86@kernel.org
-Cc: Len Brown <lenb@kernel.org>
-Cc: "Peter Zijlstra (Intel)" <peterz@infradead.org>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- arch/x86/include/asm/msr-index.h      |    2 +-
- drivers/idle/intel_idle.c             |    4 ++--
- tools/power/x86/turbostat/turbostat.8 |    2 +-
- tools/power/x86/turbostat/turbostat.c |   10 +++++-----
- 4 files changed, 9 insertions(+), 9 deletions(-)
+=E5=9C=A8 2016/3/21 17:58, Viresh Kumar =E5=86=99=E9=81=93:
+> On 21-03-16, 10:54, Heiko St=C3=BCbner wrote:
+>> I hadn't seen that yet ... nice that cpufreq-dt now also supports cl=
+usters :-)
+>>
+>> The other part still stands though, as we probably should register t=
+he
+>> platform-device somewhere else and not in some new special module.
+>>
+>> When everything is using cpufreq-dt now, I guess we could just add i=
+t to the
+>> core rockchip clk-code. Or was there some agreement where this shoul=
+d be done
+>> (obviously not the devicetree itself)?
+Of_clk_init is called early, and platform_device_register_simple should=
+=20
+be called after devices_init, it will be failed to do it from clk-code.
+So we need add a new file or add module_init to each clock controller=20
+driver(like clk-rk3368.c, clk-rk3399.c) ?
+> Yeah, there was a discussion around creating a white or black list of=
+ platforms
+> that want to create a platform device for cpufreq-dt. That can be don=
+e in
+> cpufreq-dt.c or a new file, but I haven't worked out on that yet.
+>
+> You can do it from clk-code or from the driver that was added in this=
+ thread.
+> Just that you need to match your platform's compatible string before =
+doing that.
+Rockchip-cpufreq.c depends on ARM_ROCKCHIP_CPUFREQ, it will not be=20
+compiled on non-Rockchip platforms.
+The driver can support all Rockchip SoCs up to now, add=20
+of_machine_is_compatible may be redundant ?
+>
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 984ab75..63909ba 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -42,7 +42,7 @@
- #define MSR_FSB_FREQ			0x000000cd
- #define MSR_PLATFORM_INFO		0x000000ce
- 
--#define MSR_NHM_SNB_PKG_CST_CFG_CTL	0x000000e2
-+#define MSR_PKG_CST_CONFIG_CONTROL	0x000000e2
- #define NHM_C3_AUTO_DEMOTE		(1UL << 25)
- #define NHM_C1_AUTO_DEMOTE		(1UL << 26)
- #define ATM_LNC_C6_AUTO_DEMOTE		(1UL << 25)
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index cd4510a..2609dff 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -814,9 +814,9 @@ static void auto_demotion_disable(void *dummy)
- {
- 	unsigned long long msr_bits;
- 
--	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
-+	rdmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr_bits);
- 	msr_bits &= ~(icpu->auto_demotion_disable_flags);
--	wrmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
-+	wrmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr_bits);
- }
- static void c1e_promotion_disable(void *dummy)
- {
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 622db68..7973d2a 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -118,7 +118,7 @@ cpu0: MSR_NHM_PLATFORM_INFO: 0x80838f3012300
- 8 * 100 = 800 MHz max efficiency
- 35 * 100 = 3500 MHz TSC frequency
- cpu0: MSR_IA32_POWER_CTL: 0x0004005d (C1E auto-promotion: DISabled)
--cpu0: MSR_NHM_SNB_PKG_CST_CFG_CTL: 0x1e000400 (UNdemote-C3, UNdemote-C1, demote-C3, demote-C1, UNlocked: pkg-cstate-limit=0: pc0)
-+cpu0: MSR_PKG_CST_CONFIG_CONTROL: 0x1e000400 (UNdemote-C3, UNdemote-C1, demote-C3, demote-C1, UNlocked: pkg-cstate-limit=0: pc0)
- cpu0: MSR_NHM_TURBO_RATIO_LIMIT: 0x25262727
- 37 * 100 = 3700 MHz max turbo 4 active cores
- 38 * 100 = 3800 MHz max turbo 3 active cores
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 3fa94e2..289ff9f 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1384,12 +1384,12 @@ dump_nhm_cst_cfg(void)
- {
- 	unsigned long long msr;
- 
--	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
-+	get_msr(base_cpu, MSR_PKG_CST_CONFIG_CONTROL, &msr);
- 
- #define SNB_C1_AUTO_UNDEMOTE              (1UL << 27)
- #define SNB_C3_AUTO_UNDEMOTE              (1UL << 28)
- 
--	fprintf(stderr, "cpu%d: MSR_NHM_SNB_PKG_CST_CFG_CTL: 0x%08llx", base_cpu, msr);
-+	fprintf(stderr, "cpu%d: MSR_PKG_CST_CONFIG_CONTROL: 0x%08llx", base_cpu, msr);
- 
- 	fprintf(stderr, " (%s%s%s%s%slocked: pkg-cstate-limit=%d: %s)\n",
- 		(msr & SNB_C3_AUTO_UNDEMOTE) ? "UNdemote-C3, " : "",
-@@ -1808,7 +1808,7 @@ void check_permissions()
-  * MSR_SMI_COUNT                   0x00000034
-  *
-  * MSR_PLATFORM_INFO               0x000000ce
-- * MSR_NHM_SNB_PKG_CST_CFG_CTL     0x000000e2
-+ * MSR_PKG_CST_CONFIG_CONTROL     0x000000e2
-  *
-  * MSR_PKG_C3_RESIDENCY            0x000003f8
-  * MSR_PKG_C6_RESIDENCY            0x000003f9
-@@ -1816,7 +1816,7 @@ void check_permissions()
-  * MSR_CORE_C6_RESIDENCY           0x000003fd
-  *
-  * Side effect:
-- * sets global pkg_cstate_limit to decode MSR_NHM_SNB_PKG_CST_CFG_CTL
-+ * sets global pkg_cstate_limit to decode MSR_PKG_CST_CONFIG_CONTROL
-  */
- int probe_nhm_msrs(unsigned int family, unsigned int model)
- {
-@@ -1873,7 +1873,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 	default:
- 		return 0;
- 	}
--	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
-+	get_msr(base_cpu, MSR_PKG_CST_CONFIG_CONTROL, &msr);
- 	pkg_cstate_limit = pkg_cstate_limits[msr & 0xF];
- 
- 	get_msr(base_cpu, MSR_PLATFORM_INFO, &msr);
--- 
-1.7.9.3
+
