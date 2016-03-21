@@ -1,233 +1,141 @@
-From: Vladyslav Frolov <frolvlad@gmail.com>
-Subject: Re: [REGRESSION] 774ac8b7eff6 ("Thermal: initialize thermal zone
- device correctly") causes performance drop
-Date: Mon, 21 Mar 2016 18:14:53 +0700
-Message-ID: <CAJABK0P3nO24OjH3v9Fs3tCgdayAWT+Nx9ivfNiCgZua0_L-XQ@mail.gmail.com>
-References: <56E9DDED.7000805@redhat.com> <1458362616.3043.1.camel@rzhang1-mobl4>
- <CAJABK0MXJRh9wtud+RQrL-==afymcqVovRC8FAZ6=qG4Sob+Tw@mail.gmail.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Mon, 21 Mar 2016 11:39:38 +0000
+Message-ID: <20160321113938.GC12319@e106622-lin>
+References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
+ <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
+ <20160320011517.GA17705@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f180.google.com ([209.85.161.180]:35016 "EHLO
-	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbcCULPN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 07:15:13 -0400
-In-Reply-To: <CAJABK0MXJRh9wtud+RQrL-==afymcqVovRC8FAZ6=qG4Sob+Tw@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:34764 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754554AbcCULiX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Mar 2016 07:38:23 -0400
+Content-Disposition: inline
+In-Reply-To: <20160320011517.GA17705@rob-hp-laptop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Laura Abbott <labbott@redhat.com>, Javi Merino <javi.merino@arm.com>, Chen Yu <yu.c.chen@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Manuel Krause <manuelkrause@netscape.net>, szegad <szegadlo@poczta.onet.pl>, prash <prash.n.rao@gmail.com>, amish <ammdispose-arch@yahoo.com>, Matthias <morpheusxyz123@yahoo.de>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hi Rui,
+On 19/03/16 20:15, Rob Herring wrote:
+> On Fri, Mar 18, 2016 at 02:24:08PM +0000, Juri Lelli wrote:
+> > ARM systems may be configured to have cpus with different power/performance
+> > characteristics within the same chip. In this case, additional information
+> > has to be made available to the kernel (the scheduler in particular) for it
+> > to be aware of such differences and take decisions accordingly.
+> > 
+> > Therefore, this patch aims at standardizing cpu capacities device tree
+> > bindings for ARM platforms. Bindings define cpu capacity parameter, to
+> > allow operating systems to retrieve such information from the device tree
+> > and initialize related kernel structures, paving the way for common code in
+> > the kernel to deal with heterogeneity.
+> > 
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: Pawel Moll <pawel.moll@arm.com>
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+> > Cc: Kumar Gala <galak@codeaurora.org>
+> > Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> > Cc: Olof Johansson <olof@lixom.net>
+> > Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> > Cc: Paul Walmsley <paul@pwsan.com>
+> > Cc: Linus Walleij <linus.walleij@linaro.org>
+> > Cc: Chen-Yu Tsai <wens@csie.org>
+> > Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+> > Cc: devicetree@vger.kernel.org
+> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> > ---
+> > 
+> > Changes from v1:
+> >  - removed section regarding capacity-scale
+> >  - added information regarding normalization
+> > ---
+> >  .../devicetree/bindings/arm/cpu-capacity.txt       | 222 +++++++++++++++++++++
+> >  Documentation/devicetree/bindings/arm/cpus.txt     |   9 +
+> >  2 files changed, 231 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> > new file mode 100644
+> > index 0000000..fdfc453
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> > @@ -0,0 +1,222 @@
+> > +==========================================
+> > +ARM CPUs capacity bindings
+> > +==========================================
+> > +
+> > +==========================================
+> > +1 - Introduction
+> > +==========================================
+> > +
+> > +ARM systems may be configured to have cpus with different power/performance
+> > +characteristics within the same chip. In this case, additional information
+> > +has to be made available to the kernel (the scheduler in particular) for
+> > +it to be aware of such differences and take decisions accordingly.
+> > +
+> > +==========================================
+> > +2 - CPU capacity definition
+> > +==========================================
+> > +
+> > +CPU capacity is a number that provides the scheduler information about CPUs
+> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
+> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+> > +context is about differing performance characteristics; this binding tries to
+> > +capture a first-order approximation of the relative performance of CPUs.
+> > +
+> > +One simple way to estimate CPU capacities is to iteratively run a well-known
+> > +CPU user space benchmark (e.g, sysbench) on each CPU at maximum frequency and
+> > +then normalize values w.r.t.  the best performing CPU.  One can also do a
+> > +statistically significant study of a wide collection of benchmarks, but pros
+> > +of such an approach are not really evident at the time of writing.
+> 
+> I'll say again what I did previously. I don't have a problem this being 
+> in DT, but I want to see a defined method for determining the value. The 
+> above is a pretty vague statement. That can be run X to generate the 
+> value on the cpu. Or ARM providing the "golden" value for each core. As 
+> you said, it is only a 1st order approximation, so vendor to vendor 
+> implementation variations should not matter. 
+> 
 
-I'm sorry for the delay; Reading the e-mail the first time I have
-missed the part about the patch, so I'm building the kernel now.
+OK, sorry if I didn't get it. :-)
 
-By the way, the patch reported a slight offset missmatch:
+What we usually do to come up with these numbers for a new platform is
+really something as simple as:
 
-patching file drivers/thermal/thermal_core.c
-Hunk #2 succeeded at 1800 (offset -4 lines).
-Hunk #3 succeeded at 1872 (offset -4 lines).
+ - set every CPUs to performance governor
+ - run the following on first CPU of each cluster
+   # taskset '<CPUmask>' sysbench --test=cpu --num-threads=1 --max-time=10 \
+     run | grep "events:" | awk '{print $5}'
+ - normalize numbers w.r.t. highest value obtained by running the former
 
-Is this fine?
+I'm not sure we can put something like this in the definition above, but
+I wont raise any objections if we actually can. :-)
 
+The "golden" value solution I don't think is feasible. Different
+implementations of the same CPU, and different configurations of caches
+etc., will end up giving different numbers. This values has to be a per
+platform thing, IMHO. Also, being it a per platform and relative number,
+it will be "confined" to a certain platform only (comparing capacities
+across different DTs has no meaning).
 
-On 21 March 2016 at 18:09, Vladyslav Frolov <frolvlad@gmail.com> wrote:
-> Hi Rui,
->
-> I'm sorry for the delay; Reading the e-mail the first time I have missed the
-> part about the patch, so I'm building the kernel now.
->
-> By the way, the patch reported a slight offset missmatch:
->
-> patching file drivers/thermal/thermal_core.c
-> Hunk #2 succeeded at 1800 (offset -4 lines).
-> Hunk #3 succeeded at 1872 (offset -4 lines).
->
-> Is this fine?
->
->
->
-> On 19 March 2016 at 11:43, Zhang Rui <rui.zhang@intel.com> wrote:
->>
->>
->> Hi, all,
->>
->> On Wed, 2016-03-16 at 15:27 -0700, Laura Abbott wrote:
->> > Hi,
->> >
->> > Fedora received a bug report
->> > (https://bugzilla.redhat.com/show_bug.cgi?id=1317190)
->> > of a major performance drop on various bench marks and general system
->> > sluggishness with the 4.4.4 kernel update. The benchmarks were showing
->> > a reduction to about 18% performance (not minor).
->> >
->> > Bisection showed the first bad commit was
->> >
->> > commit 774ac8b7eff69e0786970157de2157e68b22f456
->> > Author: Zhang Rui <rui.zhang@intel.com>
->> > Date:   Fri Oct 30 16:31:47 2015 +0800
->> >
->> >      Thermal: initialize thermal zone device correctly
->> >
->> >      commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461 upstream.
->> >
->> >      After thermal zone device registered, as we have not read any
->> >      temperature before, thus tz->temperature should not be 0,
->> >      which actually means 0C, and thermal trend is not available.
->> >      In this case, we need specially handling for the first
->> >      thermal_zone_device_update().
->> >
->> >      Both thermal core framework and step_wise governor is
->> >      enhanced to handle this. And since the step_wise governor
->> >      is the only one that uses trends, so it's the only thermal
->> >      governor that needs to be updated.
->> >
->> >      Tested-by: Manuel Krause <manuelkrause@netscape.net>
->> >      Tested-by: szegad <szegadlo@poczta.onet.pl>
->> >      Tested-by: prash <prash.n.rao@gmail.com>
->> >      Tested-by: amish <ammdispose-arch@yahoo.com>
->> >      Tested-by: Matthias <morpheusxyz123@yahoo.de>
->> >      Reviewed-by: Javi Merino <javi.merino@arm.com>
->> >      Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->> >      Signed-off-by: Chen Yu <yu.c.chen@intel.com>
->> >      Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>
->> According to https://bugzilla.redhat.com/show_bug.cgi?id=1317190#c30
->> and https://bugzilla.kernel.org/show_bug.cgi?id=114551,
->> the root cause of the problem is that
->> 1. BIOS reports bogus passive trip point value, which is 0 degree
->> Celsius
->> 2. Without the thermal patches, thermal core does nothing upon driver
->> probe, thus processor cooling states are not changed.
->> 3. With the thermal patches applied, thermal core checks the new
->> registered thermal zone driver when it is probed, and set the cooling
->> devices to proper state, for example, fan device could be spinning
->> during boot, even if the system is cool.
->> 4. Thus, on these Lenovo laptops, processor cooling devices are
->> throttled because the current temperature (around 50C) is higher than
->> the passive trip point (0C), and the thermal zone is considered as
->> overheating.
->>
->> In order to workaround this bogus BIOS, we should disable those invalid
->> trip points by checking the trip point value, like the patch below,
->> Laura and Vlad,
->> can you please try the patch below and confirm if it fixes the problem
->> for you?
->>
->> From 81ad4276b505e987dd8ebbdf63605f92cd172b52 Mon Sep 17 00:00:00 2001
->> From: Zhang Rui <rui.zhang@intel.com>
->> Date: Fri, 18 Mar 2016 10:03:24 +0800
->> Subject: [PATCH] Thermal: Ignore invalid trip points
->>
->> In some cases, platform thermal driver may report invalid trip points,
->> thermal core should not take any action for these trip points.
->>
->> This fixed a regression that bogus trip point starts to screw up thermal
->> control on some Lenovo laptops, after
->> commit bb431ba26c5cd0a17c941ca6c3a195a3a6d5d461
->> Author: Zhang Rui <rui.zhang@intel.com>
->> Date:   Fri Oct 30 16:31:47 2015 +0800
->>
->>     Thermal: initialize thermal zone device correctly
->>
->>     After thermal zone device registered, as we have not read any
->>     temperature before, thus tz->temperature should not be 0,
->>     which actually means 0C, and thermal trend is not available.
->>     In this case, we need specially handling for the first
->>     thermal_zone_device_update().
->>
->>     Both thermal core framework and step_wise governor is
->>     enhanced to handle this. And since the step_wise governor
->>     is the only one that uses trends, so it's the only thermal
->>     governor that needs to be updated.
->>
->>     Tested-by: Manuel Krause <manuelkrause@netscape.net>
->>     Tested-by: szegad <szegadlo@poczta.onet.pl>
->>     Tested-by: prash <prash.n.rao@gmail.com>
->>     Tested-by: amish <ammdispose-arch@yahoo.com>
->>     Tested-by: Matthias <morpheusxyz123@yahoo.de>
->>     Reviewed-by: Javi Merino <javi.merino@arm.com>
->>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->>     Signed-off-by: Chen Yu <yu.c.chen@intel.com>
->>
->> CC: <stable@vger.kernel.org> #3.18+
->> Link: https://bugzilla.redhat.com/show_bug.cgi?id=1317190
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=114551
->> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->> ---
->>  drivers/thermal/thermal_core.c | 13 ++++++++++++-
->>  include/linux/thermal.h        |  2 ++
->>  2 files changed, 14 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/thermal/thermal_core.c
->> b/drivers/thermal/thermal_core.c
->> index a0a8fd1..d4b5465 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -454,6 +454,10 @@ static void handle_thermal_trip(struct
->> thermal_zone_device *tz, int trip)
->>  {
->>         enum thermal_trip_type type;
->>
->> +       /* Ignore disabled trip points */
->> +       if (test_bit(trip, &tz->trips_disabled))
->> +               return;
->> +
->>         tz->ops->get_trip_type(tz, trip, &type);
->>
->>         if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
->> @@ -1800,6 +1804,7 @@ struct thermal_zone_device
->> *thermal_zone_device_register(const char *type,
->>  {
->>         struct thermal_zone_device *tz;
->>         enum thermal_trip_type trip_type;
->> +       int trip_temp;
->>         int result;
->>         int count;
->>         int passive = 0;
->> @@ -1871,9 +1876,15 @@ struct thermal_zone_device
->> *thermal_zone_device_register(const char *type,
->>                 goto unregister;
->>
->>         for (count = 0; count < trips; count++) {
->> -               tz->ops->get_trip_type(tz, count, &trip_type);
->> +               if (tz->ops->get_trip_type(tz, count, &trip_type))
->> +                       set_bit(count, &tz->trips_disabled);
->>                 if (trip_type == THERMAL_TRIP_PASSIVE)
->>                         passive = 1;
->> +               if (tz->ops->get_trip_temp(tz, count, &trip_temp))
->> +                       set_bit(count, &tz->trips_disabled);
->> +               /* Check for bogus trip points */
->> +               if (trip_temp == 0)
->> +                       set_bit(count, &tz->trips_disabled);
->>         }
->>
->>         if (!passive) {
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index 9c48199..a55d052 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -156,6 +156,7 @@ struct thermal_attr {
->>   * @trip_hyst_attrs:   attributes for trip points for sysfs: trip
->> hysteresis
->>   * @devdata:   private pointer for device private data
->>   * @trips:     number of trip points the thermal zone supports
->> + * @trips_disabled;    bitmap for disabled trips
->>   * @passive_delay:     number of milliseconds to wait between polls when
->>   *                     performing passive cooling.
->>   * @polling_delay:     number of milliseconds to wait between polls when
->> @@ -191,6 +192,7 @@ struct thermal_zone_device {
->>         struct thermal_attr *trip_hyst_attrs;
->>         void *devdata;
->>         int trips;
->> +       unsigned long trips_disabled;   /* bitmap for disabled trips */
->>         int passive_delay;
->>         int polling_delay;
->>         int temperature;
->> --
->> 1.9.1
->>
->>
->>
->
+> I also worry about what happens in more complex cases with lots of 
+> possible OPPs such as Qualcomm chips. This single value may not be 
+> sufficient.
+> 
+
+Having many OPPs are not a problem. This value only tells about
+micro-arch differences and it is used to obtain CPU scale invariance
+component.  We then have a frequency invariant component to handle clock
+frequency differences (there is also an on-going discussion about this
+[1]). The capacity values are to be obtained running at max freq.
+
+Thanks,
+
+- Juri
+
+[1] https://lkml.org/lkml/2016/3/14/64
