@@ -1,56 +1,60 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v3 2/4] devicetree: bindings: let thermal-sensor point to
- other thermal zones
-Date: Mon, 21 Mar 2016 11:55:11 +0000
-Message-ID: <20160321115511.GA6590@e104805>
-References: <1448464186-26289-1-git-send-email-javi.merino@arm.com>
- <1448464186-26289-3-git-send-email-javi.merino@arm.com>
- <20160104141709.GB19256@pengutronix.de>
- <20160303032152.GD3379@localhost.localdomain>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Mon, 21 Mar 2016 12:12:10 +0000
+Message-ID: <20160321121210.GQ2566@sirena.org.uk>
+References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
+ <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
+ <56EC3F9E.4050209@nvidia.com>
+ <20160321105330.GB12319@e106622-lin>
+ <CAKfTPtDP3zMR+zbvvqJCBvJ5r44do8NS03wC7pAejxPd0zHTMA@mail.gmail.com>
+ <20160321114956.GD12319@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34875 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754251AbcCULzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Mar 2016 07:55:16 -0400
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="W+SeThb1UGlzpiPr"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160303032152.GD3379@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160321114956.GD12319@e106622-lin>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sai Gurrappadi <sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 
-On Wed, Mar 02, 2016 at 07:21:53PM -0800, Eduardo Valentin wrote:
-> On Mon, Jan 04, 2016 at 03:17:09PM +0100, Sascha Hauer wrote:
-> > On Wed, Nov 25, 2015 at 03:09:44PM +0000, Javi Merino wrote:
-> > > The thermal-sensor property of the thermal zone node accepts phandles to
-> > > thermal sensors.  However, thermal zones can be created as an
-> > > +
-> > > +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
-> > 
-> > This seems inconsistent. Why can a thermal zone only have multiple
-> > thermal sensors when they are thermal zones themselves? Either we assume
-> > that one thermal zone has a single sensor or we assume that it can have
-> > multiple sensors, but this should not depend on the zone being a sub zone
-> > or not.
-> > 
-> > I think the thermal-sensors property should always point to one or
-> > multiple sensors. I see no point in "This property either points to
-> > exactly one sensor or multiple other thermal zones (from which we only
-> > use the temperature)"
-> 
-> 
-> Agreed here. In fact, if we are going to allow thermal zones to be
-> treated as sensors, it means there should be no limits on what you put
-> of there, as long as all items have #thermal-sensor-cells. So, mixing
-> one (or more) regular sensors, with other thermal zones shall be
-> allowed, if we agree in this semantics.
 
-Eduardo, thanks for the review.  There doesn't seem to be much
-interest in this and I currently have no time to work on it so I am
-dropping this series for the time being.  I'm happy for this to be
-picked up by somebody else (or who knows, maybe I will be able to work
-on it again in the future).
+--W+SeThb1UGlzpiPr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Javi
+On Mon, Mar 21, 2016 at 11:49:56AM +0000, Juri Lelli wrote:
+
+> But we'll still need to normalize this w.r.t the highest score we get on
+> a specific platform, right? And while we are at normalizing it, it is
+> probably simpler if we keep the frequency component as part of the
+> number, IMHO. But, maybe keeping the frequency component separate is
+> more acceptable from a DT binding perspective?
+
+One possible issue with that: if we keep the frequency number as part of
+the core number then that might cause issues for devices with variants
+or system deployment decisions that remove some OPPs from a table.  If
+the top OPP gets removed that would throw off the numbers.
+
+--W+SeThb1UGlzpiPr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJW7+UYAAoJECTWi3JdVIfQwhwH+wSHJuuvTb53sqB4q3Mml/1v
+rbErBmWKupzkHUVzynyLaTWCF6ZOkXI7AHPguMO3W7TeF17zRKZsDVUvIP62F2WT
+VSpcuT0mr2QY6/sA6nO2pKOymaWYm+6yXoWIJZuTCIeKmtl/vhqhruT9ngOeQwbl
+qM4vkSFgBBS7/motSHhWPAkPtceOKpU8QaqH1vhrtOGDkHh+RS2fSIELrTb1gQWa
+4kFpMoM04nH5V1g1tEMGpl6ZsGUJzrG/dXxq7oBdusFhUFeSZ+nZppdsMzWFgFqz
+1MNQaSFMycpybtsmmrH2jrPOM/SsAVKL29Ms87sze45TZA8PREl0/Ax4X2Z6D70=
+=tX7c
+-----END PGP SIGNATURE-----
+
+--W+SeThb1UGlzpiPr--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
