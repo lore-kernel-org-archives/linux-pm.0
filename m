@@ -1,141 +1,85 @@
 From: Juri Lelli <juri.lelli@arm.com>
 Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
  bindings
-Date: Mon, 21 Mar 2016 11:39:38 +0000
-Message-ID: <20160321113938.GC12319@e106622-lin>
+Date: Mon, 21 Mar 2016 11:49:56 +0000
+Message-ID: <20160321114956.GD12319@e106622-lin>
 References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
  <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
- <20160320011517.GA17705@rob-hp-laptop>
+ <56EC3F9E.4050209@nvidia.com>
+ <20160321105330.GB12319@e106622-lin>
+ <CAKfTPtDP3zMR+zbvvqJCBvJ5r44do8NS03wC7pAejxPd0zHTMA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34764 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:34810 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754554AbcCULiX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Mar 2016 07:38:23 -0400
+	id S1753296AbcCULsl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Mar 2016 07:48:41 -0400
 Content-Disposition: inline
-In-Reply-To: <20160320011517.GA17705@rob-hp-laptop>
+In-Reply-To: <CAKfTPtDP3zMR+zbvvqJCBvJ5r44do8NS03wC7pAejxPd0zHTMA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Sai Gurrappadi <sgurrappadi@nvidia.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@l>
 
-On 19/03/16 20:15, Rob Herring wrote:
-> On Fri, Mar 18, 2016 at 02:24:08PM +0000, Juri Lelli wrote:
-> > ARM systems may be configured to have cpus with different power/performance
-> > characteristics within the same chip. In this case, additional information
-> > has to be made available to the kernel (the scheduler in particular) for it
-> > to be aware of such differences and take decisions accordingly.
-> > 
-> > Therefore, this patch aims at standardizing cpu capacities device tree
-> > bindings for ARM platforms. Bindings define cpu capacity parameter, to
-> > allow operating systems to retrieve such information from the device tree
-> > and initialize related kernel structures, paving the way for common code in
-> > the kernel to deal with heterogeneity.
-> > 
-> > Cc: Rob Herring <robh+dt@kernel.org>
-> > Cc: Pawel Moll <pawel.moll@arm.com>
-> > Cc: Mark Rutland <mark.rutland@arm.com>
-> > Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> > Cc: Kumar Gala <galak@codeaurora.org>
-> > Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> > Cc: Olof Johansson <olof@lixom.net>
-> > Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> > Cc: Paul Walmsley <paul@pwsan.com>
-> > Cc: Linus Walleij <linus.walleij@linaro.org>
-> > Cc: Chen-Yu Tsai <wens@csie.org>
-> > Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> > Cc: devicetree@vger.kernel.org
-> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> > ---
-> > 
-> > Changes from v1:
-> >  - removed section regarding capacity-scale
-> >  - added information regarding normalization
-> > ---
-> >  .../devicetree/bindings/arm/cpu-capacity.txt       | 222 +++++++++++++++++++++
-> >  Documentation/devicetree/bindings/arm/cpus.txt     |   9 +
-> >  2 files changed, 231 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> > new file mode 100644
-> > index 0000000..fdfc453
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> > @@ -0,0 +1,222 @@
-> > +==========================================
-> > +ARM CPUs capacity bindings
-> > +==========================================
-> > +
-> > +==========================================
-> > +1 - Introduction
-> > +==========================================
-> > +
-> > +ARM systems may be configured to have cpus with different power/performance
-> > +characteristics within the same chip. In this case, additional information
-> > +has to be made available to the kernel (the scheduler in particular) for
-> > +it to be aware of such differences and take decisions accordingly.
-> > +
-> > +==========================================
-> > +2 - CPU capacity definition
-> > +==========================================
-> > +
-> > +CPU capacity is a number that provides the scheduler information about CPUs
-> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
-> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
-> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
-> > +context is about differing performance characteristics; this binding tries to
-> > +capture a first-order approximation of the relative performance of CPUs.
-> > +
-> > +One simple way to estimate CPU capacities is to iteratively run a well-known
-> > +CPU user space benchmark (e.g, sysbench) on each CPU at maximum frequency and
-> > +then normalize values w.r.t.  the best performing CPU.  One can also do a
-> > +statistically significant study of a wide collection of benchmarks, but pros
-> > +of such an approach are not really evident at the time of writing.
+Hi Vincent,
+
+On 21/03/16 12:09, Vincent Guittot wrote:
+> On 21 March 2016 at 11:53, Juri Lelli <juri.lelli@arm.com> wrote:
+> > Hi Sai,
+> >
+> > On 18/03/16 10:49, Sai Gurrappadi wrote:
+> >> Hi Juri,
+> >>
+> >> On 03/18/2016 07:24 AM, Juri Lelli wrote:
+> >>
+> >> <snip>
+> >>
+> >> > +
+> >> > +==========================================
+> >> > +2 - CPU capacity definition
+> >> > +==========================================
+> >> > +
+> >> > +CPU capacity is a number that provides the scheduler information about CPUs
+> >> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
+> >> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+> >> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+> >> > +context is about differing performance characteristics; this binding tries to
+> >> > +capture a first-order approximation of the relative performance of CPUs.
+> >>
+> >> Any reason why this capacity number is not dynamically generated based on the
+> >> max frequency for each CPU? The DT property would then instead specify just
+> >> the micro-architectural differences between the CPU types.
+> >>
+> >
+> > I'm not sure I clearly understand your question, so I'll try to
+> > reiterate it.
+> >
+> > Are you asking why we don't dynamically profile the system, at boot for
+> > example, to get this number? Or do you ask why this number couldn't be
+> > only describing micro-arch differences (so, if I get it right, we should
+> > then multiply it by max freq to get the capacity of a CPU)?
+> >
+> > We already played with the first option (please refer to v2 and v3), but
+> > we ended up agreeing that dynamic profiling adds overhead to the boot
+> > process (while a DT approach can provide information to speed up boot)
+> > and it is in general not repeatable/reliable (as numbers can vary from
+> > boot to boot for different reasons).
+> >
+> > The second option I think can be feasible, but I'm not sure what we gain
+> > in practice. We will still need to specify a per-platform number, right?
 > 
-> I'll say again what I did previously. I don't have a problem this being 
-> in DT, but I want to see a defined method for determining the value. The 
-> above is a pretty vague statement. That can be run X to generate the 
-> value on the cpu. Or ARM providing the "golden" value for each core. As 
-> you said, it is only a 1st order approximation, so vendor to vendor 
-> implementation variations should not matter. 
+> So could we use dt binding like dhrystone = <xyz> (with a unit like
+> DMIPS/Mhz)  which can then be combined with OPP table to gives a
+> 1st-order approximation of each CPU capacity ?
 > 
 
-OK, sorry if I didn't get it. :-)
-
-What we usually do to come up with these numbers for a new platform is
-really something as simple as:
-
- - set every CPUs to performance governor
- - run the following on first CPU of each cluster
-   # taskset '<CPUmask>' sysbench --test=cpu --num-threads=1 --max-time=10 \
-     run | grep "events:" | awk '{print $5}'
- - normalize numbers w.r.t. highest value obtained by running the former
-
-I'm not sure we can put something like this in the definition above, but
-I wont raise any objections if we actually can. :-)
-
-The "golden" value solution I don't think is feasible. Different
-implementations of the same CPU, and different configurations of caches
-etc., will end up giving different numbers. This values has to be a per
-platform thing, IMHO. Also, being it a per platform and relative number,
-it will be "confined" to a certain platform only (comparing capacities
-across different DTs has no meaning).
-
-> I also worry about what happens in more complex cases with lots of 
-> possible OPPs such as Qualcomm chips. This single value may not be 
-> sufficient.
-> 
-
-Having many OPPs are not a problem. This value only tells about
-micro-arch differences and it is used to obtain CPU scale invariance
-component.  We then have a frequency invariant component to handle clock
-frequency differences (there is also an on-going discussion about this
-[1]). The capacity values are to be obtained running at max freq.
+But we'll still need to normalize this w.r.t the highest score we get on
+a specific platform, right? And while we are at normalizing it, it is
+probably simpler if we keep the frequency component as part of the
+number, IMHO. But, maybe keeping the frequency component separate is
+more acceptable from a DT binding perspective?
 
 Thanks,
 
 - Juri
-
-[1] https://lkml.org/lkml/2016/3/14/64
