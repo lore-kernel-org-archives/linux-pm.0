@@ -1,81 +1,61 @@
-From: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity bindings
-Date: Mon, 21 Mar 2016 12:20:57 -0700
-Message-ID: <56F04999.6090902@nvidia.com>
-References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
- <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
- <56EC3F9E.4050209@nvidia.com> <20160321105330.GB12319@e106622-lin>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
+Date: Mon, 21 Mar 2016 19:51:09 +0100
+Message-ID: <1458586269.9609.14.camel@suse.com>
+References: <Pine.LNX.4.44L0.1603211415380.1708-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160321105330.GB12319@e106622-lin>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: mark.rutland@arm.com, peterz@infradead.org, catalin.marinas@arm.com, Linus Walleij <linus.walleij@linaro.org>, will.deacon@arm.com, morten.rasmussen@arm.com, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Chen-Yu Tsai <wens@csie.org>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, broonie@kernel.org, Gregory CLEMENT <gregory.clement@free-electrons.com>, linux@arm.linux.org.uk, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, pboonstoppel@nvidia.com, linux-kernel@vger.kernel.org, robh+dt@kernel.org, sudeep.holla@arm.com, Olof Johansson <olof@lixom.net>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1603211415380.1708-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "David S. Miller" <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, Woojung Huh <woojung.huh@microchip.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 2016-03-21 at 14:24 -0400, Alan Stern wrote:
+> On Mon, 21 Mar 2016, Oliver Neukum wrote:
+> 
+> > On Mon, 2016-03-21 at 10:57 -0400, Alan Stern wrote:
+> > 
+> > > One possible solution is to export a sysfs parameter to prevent 
+> > > statistics collection (or more generally, to change the interval at 
+> > > which it occurs).
+> > 
+> > Surely, not performing a task can hardly be beaten in terms of power
+> > consumption. That is not meant to be flippant, but I think these
+> > issues are orthogonal. The question of how much to do doesn't
+> > solve the question of doing efficiently what we do.
+> 
+> In other words, what's the best way to collect the statistics without 
+> interfering with runtime PM, right?
 
+Yes.
 
-On 03/21/2016 03:53 AM, Juri Lelli wrote:
-> Hi Sai,
-> 
-> On 18/03/16 10:49, Sai Gurrappadi wrote:
->> Hi Juri,
->>
->> On 03/18/2016 07:24 AM, Juri Lelli wrote:
->>
->> <snip>
->>
->>> +
->>> +==========================================
->>> +2 - CPU capacity definition
->>> +==========================================
->>> +
->>> +CPU capacity is a number that provides the scheduler information about CPUs
->>> +heterogeneity. Such heterogeneity can come from micro-architectural differences
->>> +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
->>> +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
->>> +context is about differing performance characteristics; this binding tries to
->>> +capture a first-order approximation of the relative performance of CPUs.
->>
->> Any reason why this capacity number is not dynamically generated based on the
->> max frequency for each CPU? The DT property would then instead specify just
->> the micro-architectural differences between the CPU types.
->>
-> 
-> I'm not sure I clearly understand your question, so I'll try to
-> reiterate it.
-> 
-> Are you asking why we don't dynamically profile the system, at boot for
-> example, to get this number? Or do you ask why this number couldn't be
-> only describing micro-arch differences (so, if I get it right, we should
-> then multiply it by max freq to get the capacity of a CPU)?
-> 
-> We already played with the first option (please refer to v2 and v3), but
-> we ended up agreeing that dynamic profiling adds overhead to the boot
-> process (while a DT approach can provide information to speed up boot)
-> and it is in general not repeatable/reliable (as numbers can vary from
-> boot to boot for different reasons).
-> 
-> The second option I think can be feasible, but I'm not sure what we gain
-> in practice. We will still need to specify a per-platform number, right?
+> If the device is suspended, presumably we know there's nothing to
+> collect -- especially if we already collected the statistics at the
+> time the device got suspended.  Hence my suggestion to avoid querying 
+> the device while it is suspended.
 
-I meant the second bit. We only need some per-platform fudge factor for
-micro-architectural differences. Tying in the Fmax like this statically means
-that we need to manually synchronize DVFS tables and this number which seems
-unnecessary given that the kernel already has this info on boot.
+That is perfectly alright if we just collect statistics.
+As a generic mechanism it is bad. Think about the polling
+for media detection.
 
-> 
-> Best,
-> 
-> - Juri
-> 
+> But this leaves open the issue that querying the device too often will 
+> prevent it from going into autosuspend.  It seems to me that the best 
+> way to deal with this is to make sure that the autosuspend timeout is 
+> shorter than the interal between queries, not to make the querying 
+> conditional on !runtime_auto.
+[..]
+> > If we know when the next activity will come, why not pass this
+> > information down?
+
+We have an autosuspend timeout because we think that IO, if it will
+come at all, is likeliest to come soon. If, however, the IO is
+periodic that heuristics is false.
+To save most power the driver must either decide that the interval
+is too short or suspend immediately. So if we are lucky enough
+to have the frequency in the kernel, we should use that information.
+
+	Regards
+		Oliver
