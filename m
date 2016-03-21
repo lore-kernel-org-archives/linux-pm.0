@@ -1,97 +1,137 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH] cpufreq: rockchip: add driver
-Date: Mon, 21 Mar 2016 16:52:23 +0100
-Message-ID: <1677635.LBekym086Y@diego>
-References: <1458303004-26445-1-git-send-email-xf@rock-chips.com> <56EFF610.6040402@rock-chips.com> <1971421.XfIKeB8O8v@diego>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [Bug 112121] New: Some PCIe options cause devices to be removed
+ after suspend
+Date: Mon, 21 Mar 2016 11:36:37 -0500
+Message-ID: <20160321163637.GA12288@localhost>
+References: <bug-112121-41252@https.bugzilla.kernel.org/>
+ <CAErSpo4beDk_ajsgqMUNJ3TGxDv=ysyPzhXHcx2AhUEUE9ROKA@mail.gmail.com>
+ <CAHbf0-GBiMVr4=n3ZT1NSH8Xgdh3TcdDd=Di+pok6Ep6h42ZOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:46464 "EHLO gloria.sntech.de"
+Received: from mail.kernel.org ([198.145.29.136]:48276 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756044AbcCUPwd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 11:52:33 -0400
-In-Reply-To: <1971421.XfIKeB8O8v@diego>
+	id S1756270AbcCUQgm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Mar 2016 12:36:42 -0400
+Content-Disposition: inline
+In-Reply-To: <CAHbf0-GBiMVr4=n3ZT1NSH8Xgdh3TcdDd=Di+pok6Ep6h42ZOQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Feng Xiao <xf@rock-chips.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
+To: Mike Lothian <mike@fireburn.co.uk>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme <linux-nvme@lists.infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
 
-Am Montag, 21. M=C3=A4rz 2016, 16:13:40 schrieb Heiko St=C3=BCbner:
-> Hi,
->=20
-> Am Montag, 21. M=C3=A4rz 2016, 21:24:32 schrieb Feng Xiao:
-> > =E5=9C=A8 2016/3/21 17:58, Viresh Kumar =E5=86=99=E9=81=93:
-> > > On 21-03-16, 10:54, Heiko St=C3=BCbner wrote:
-> > >> I hadn't seen that yet ... nice that cpufreq-dt now also support=
-s
-> > >> clusters :-)
-> > >>=20
-> > >> The other part still stands though, as we probably should regist=
-er the
-> > >> platform-device somewhere else and not in some new special modul=
-e.
-> > >>=20
-> > >> When everything is using cpufreq-dt now, I guess we could just a=
-dd it
-> > >> to
-> > >> the core rockchip clk-code. Or was there some agreement where th=
-is
-> > >> should be done (obviously not the devicetree itself)?
-> >=20
-> > Of_clk_init is called early, and platform_device_register_simple sh=
-ould
-> > be called after devices_init, it will be failed to do it from clk-c=
-ode.
-> > So we need add a new file or add module_init to each clock controll=
-er
-> > driver(like clk-rk3368.c, clk-rk3399.c) ?
->=20
-> as Viresh said, it should be ok to do it like your approach creating =
-a
-> module in drivers/cpufreq. But the compatible check is necessary.
->=20
-> Doing it this way also makes it easier to have
+Hi Mike,
 
-Seem like I forgot the complete my sentence here. This should've been
+I'm sorry this slipped through the cracks.   I apologize for the
+inability of Google Inbox to send plaintext email; I use mutt
+because that's a hassle for me, too.
 
-Doing it this way also makes it easier to have everything go into cpufr=
-eq-dt=20
-once that whitelist appears that Viresh wrote about. So this might be b=
-etter=20
-than to distribute this stuff around other subsystems, as I originally=20
-suggested.
+On Sat, Feb 13, 2016 at 11:39:52PM +0000, Mike Lothian wrote:
+> On 8 February 2016 at 13:51, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> > [+cc linux-pci, NVMe folks, power management folks]
+> >
+> > On Sun, Feb 7, 2016 at 11:04 AM,  <bugzilla-daemon@bugzilla.kernel.org> wrote:
+> >> https://bugzilla.kernel.org/show_bug.cgi?id=112121
+> >>
+> >>             Bug ID: 112121
+> >>            Summary: Some PCIe options cause devices to be removed after
+> >>                     syspend
+> >>            Product: Drivers
+> >>            Version: 2.5
+> >>     Kernel Version: 4.5-rc2
+> >>           Hardware: All
+> >>                 OS: Linux
+> >>               Tree: Mainline
+> >>             Status: NEW
+> >>           Severity: normal
+> >>           Priority: P1
+> >>          Component: PCI
+> >>           Assignee: drivers_pci@kernel-bugs.osdl.org
+> >>           Reporter: mike@fireburn.co.uk
+> >>         Regression: No
+> >>
+> >> Created attachment 203091
+> >>   --> https://bugzilla.kernel.org/attachment.cgi?id=203091&action=edit
+> >> Dmesg showing PCIe device removals
+> >>
+> >> I was having issues with suspend, when the machine was being resumed iommu
+> >> started removing devices - including my PCIe NVMe drive which contained my root
+> >> partition
+> >>
+> >> The problem showed up with:
+> >>
+> >> [*] PCI support
+> >> [*]   Support mmconfig PCI config space access
+> >> [*]   PCI Express Port Bus support
+> >> [*]     PCI Express Hotplug driver
+> >> [*]     Root Port Advanced Error Reporting support
+> >> [*]       PCI Express ECRC settings control
+> >> < >       PCIe AER error injector support
+> >> -*-     PCI Express ASPM control
+> >> [ ]       Debug PCI Express ASPM
+> >>           Default ASPM policy (BIOS default)  --->
+> >> [*]   Message Signaled Interrupts (MSI and MSI-X)
+> >> [ ]   PCI Debugging
+> >> [*]   Enable PCI resource re-allocation detection
+> >> < >   PCI Stub driver
+> >> [*]   Interrupts on hypertransport devices
+> >> [ ] PCI IOV support
+> >> [*] PCI PRI support
+> >> -*- PCI PASID support
+> >>     PCI host controller drivers  ----
+> >> < > PCCard (PCMCIA/CardBus) support  ----
+> >> [*] Support for PCI Hotplug  --->
+> >> < > RapidIO support
+> >>
+> >>
+> >> This is what I have now:
+> >>
+> >> [*] PCI support
+> >> [*]   Support mmconfig PCI config space access
+> >> [*]   PCI Express Port Bus support
+> >> [ ]     Root Port Advanced Error Reporting support
+> >> -*-     PCI Express ASPM control
+> >> [ ]       Debug PCI Express ASPM
+> >>           Default ASPM policy (BIOS default)  --->
+> >> [*]   Message Signaled Interrupts (MSI and MSI-X)
+> >> [*]   PCI Debugging
+> >> [ ]   Enable PCI resource re-allocation detection
+> >> < >   PCI Stub driver
+> >> [*]   Interrupts on hypertransport devices
+> >> [ ] PCI IOV support
+> >> [ ] PCI PRI support
+> >> [ ] PCI PASID support
+> >>     PCI host controller drivers  ----
+> >> < > PCCard (PCMCIA/CardBus) support  ----
+> >> [ ] Support for PCI Hotplug  ----
+> >> < > RapidIO support
+> >>
+> >> I tried disabling the iommu driver first but it had no effect
+> >>
+> >> If people are interested I could play with the above options to see which one
+> >> causes the issue
+> >
+> > My guess is that PCI hotplug is the important one.  It would be nice
+> > if dmesg contained enough information to connect nvme0n1 to a PCI
+> > device.  It'd be even nicer if the PCI core noted device removals or
+> > whatever happened here.
+> >
+> > You don't get any more details if you boot with "ignore_loglevel", do you?
+> >
+> > Mike, you didn't mark this as a regression, so I assume it's always
+> > been this way, and we just haven't noticed it because most people
+> > enable PCI hotplug (or whatever the relevant config option is).
+> 
+> I've just tested this again, I enabled PCI Hotplug & PCIe Hotplug and
+> nothing - then I noticed I hadn't enabled the ACPI Hotplug driver -
+> once I did the issue re-appeared
+> 
+> I then had to use testdisk to restore my partition table :'(
+> 
+> I've attached the updated dmesg & my .config
 
->=20
-> > > Yeah, there was a discussion around creating a white or black lis=
-t of
-> > > platforms that want to create a platform device for cpufreq-dt. T=
-hat can
-> > > be done in cpufreq-dt.c or a new file, but I haven't worked out o=
-n that
-> > > yet.
-> > >=20
-> > > You can do it from clk-code or from the driver that was added in =
-this
-> > > thread. Just that you need to match your platform's compatible st=
-ring
-> > > before doing that.
-> >=20
-> > Rockchip-cpufreq.c depends on ARM_ROCKCHIP_CPUFREQ, it will not be
-> > compiled on non-Rockchip platforms.
-> > The driver can support all Rockchip SoCs up to now, add
-> > of_machine_is_compatible may be redundant ?
->=20
-> Please always keep multiplatform in mind. These days the kernel can b=
-e
-> compiled for multiple architectures at the same time, so you can have
-> support for Rockchip, Exynos, Qualcom and whatever in the same kernel
-> image.
->=20
-> Therefore a compile-time check is not enough and you need to check th=
-e
-> actually running machine as well.
->=20
->=20
-> Heiko
+Correct me if I'm wrong:
 
+  - With CONFIG_HOTPLUG_PCI_ACPI not set, suspend/resume works fine
+  - With CONFIG_HOTPLUG_PCI_ACPI=y, resume fails as shown in your dmesg log
+    (https://bugzilla.kernel.org/attachment.cgi?id=203621)
