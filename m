@@ -1,41 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq_resume warning issue
-Date: Mon, 21 Mar 2016 15:14:41 +0530
-Message-ID: <20160321094441.GC27778@vireshk-i7>
-References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
- <20160321073228.GC1803@vireshk-i7>
- <678F3D1BB717D949B966B68EAEB446ED0A6D96C7@SZXEMA509-MBX.china.huawei.com>
- <20160321083422.GE1803@vireshk-i7>
- <678F3D1BB717D949B966B68EAEB446ED0A6D9738@SZXEMA509-MBX.china.huawei.com>
- <20160321090920.GB27778@vireshk-i7>
- <678F3D1BB717D949B966B68EAEB446ED0A6D9756@SZXEMA509-MBX.china.huawei.com>
+Subject: Re: [PATCH] cpufreq: rockchip: add driver
+Date: Mon, 21 Mar 2016 15:20:49 +0530
+Message-ID: <20160321095049.GD27778@vireshk-i7>
+References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
+ <1787319.AFAWVqkdk0@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:36418 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbcCUJop (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 05:44:45 -0400
-Received: by mail-pf0-f177.google.com with SMTP id u190so259653187pfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 02:44:44 -0700 (PDT)
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:34146 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbcCUJux (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 05:50:53 -0400
+Received: by mail-pf0-f180.google.com with SMTP id x3so258926935pfb.1
+        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 02:50:52 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <678F3D1BB717D949B966B68EAEB446ED0A6D9756@SZXEMA509-MBX.china.huawei.com>
+In-Reply-To: <1787319.AFAWVqkdk0@diego>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zengtao (B)" <prime.zeng@hisilicon.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: Feng Xiao <xf@rock-chips.com>, linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 21-03-16, 09:26, Zengtao (B) wrote:
-> Actually the freq is tunable, but voltage is fixed, So we fix it to a high freq because little benefit by freq tuning.
+On 18-03-16, 13:56, Heiko St=FCbner wrote:
+> Also, on both the rk3368 as well as the rk3399, you probably want the=
+ cluster-
+> handling of arm-bL-cpufreq-dt.
+> Contrary to its name it is _not_ limited to switching between cluster=
+s, but=20
+> can also control frequencies of multiple cpu-clusters running at the =
+same=20
+> time.
 
-Okay, then just enable cpufreq and select performace governor for it, which will
-select the highest frequency for the CPU.
+We aren't adding any new users to bL driver, please use cpufreq-dt as t=
+hat also
+supports multiple clusters now.
 
-> Since the DVFS has percpu dvfs policy, so I think it is reasonable to allow cpu to disable dvfs, what do you think about that?
-
-Its not that we can't update core code for some specific use cases, but here you
-should be using cpufreq core for the CPU0 as well, with a proper governor which
-would not have any overheads during operations.
-
--- 
+--=20
 viresh
