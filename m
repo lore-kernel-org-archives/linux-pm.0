@@ -1,148 +1,107 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 1/3 v4] powercap, intel_rapl, implement get_max_time_window
-Date: Mon, 21 Mar 2016 08:27:14 -0400
-Message-ID: <1458563236-19269-2-git-send-email-prarit@redhat.com>
-References: <1458563236-19269-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458563236-19269-1-git-send-email-prarit@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Radivoje Jovanovic <radivoje.jovanovic@intel.com>, Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>, Mathias Krause <minipli@googlemail.com>, Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH][v5] ACPI / PM: Introduce efi poweroff for HW-full
+ platforms without _S5
+Date: Mon, 21 Mar 2016 13:43:18 +0100
+Message-ID: <CAJZ5v0j1TpjQ8nD3gr7NYA_dpcghDidsvSoAOuobLMw6-3waCg@mail.gmail.com>
+References: <1458484268-18311-1-git-send-email-yu.c.chen@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1458484268-18311-1-git-send-email-yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
+Cc: ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The MSR_PKG_POWER_INFO register (Intel ASDM, section 14.9.3
-"Package RAPL Domain") provides a maximum time window which the
-system can support.  This window is read-only and is currently
-not examined when setting the time windows for the package.
+On Sun, Mar 20, 2016 at 3:31 PM, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
+> The problem is Linux registers pm_power_off = efi_power_off
+> only if we are in hardware reduced mode. Actually, what we also
+> want is to do this when ACPI S5 is simply not supported on
+> non-legacy platforms. Since there will be HW-full mode where
+> the DSDT fails to supply an _S5 object(without SLP_TYP), we
+> should let such kind of platform to leverage efi runtime service
+> to poweroff.
+>
+> This patch uses efi power off as first choice when S5 is
+> unavailable, even if there is a customized poweroff(driver provided, eg).
+> Meanwhile, the legacy platforms will not be affected because there is no
+> path for them to overwrite the pm_power_off to efi power off.
+>
+> Suggested-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ---
+> v5:
+>  - Revert to version 2, enforce EFI poweroff for such kind
+>    of platforms.
+> v4:
+>  - Since in v3 efi_poweroff_required() is not guaranteed to run
+>    after all of the other code that may register alternative
+>    power off handling, add the pm_power_off_default that would
+>    be used by pm_power_off if nothing else is available.
+> v3:
+>  - Only assign pm_power_off to efi_power_off when there are no
+>    other pm_power_off registered at that time, in case other
+>    commponents would like to customize their own implementation.
+> ---
+> v2:
+>  - Convert the acpi_no_s5 to a global bool variable in sleep.c and
+>    add a declaration to include/linux/acpi.h.
+> ---
+>  arch/x86/platform/efi/quirks.c | 2 +-
+>  drivers/acpi/sleep.c           | 7 +++++++
+>  include/linux/acpi.h           | 1 +
+>  3 files changed, 9 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
+> index ed30e79..7e5ec62 100644
+> --- a/arch/x86/platform/efi/quirks.c
+> +++ b/arch/x86/platform/efi/quirks.c
+> @@ -340,5 +340,5 @@ bool efi_reboot_required(void)
+>
+>  bool efi_poweroff_required(void)
+>  {
+> -       return !!acpi_gbl_reduced_hardware;
+> +       return acpi_gbl_reduced_hardware || acpi_no_s5;
+>  }
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 9cb9752..a33859c 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -25,6 +25,11 @@
+>  #include "internal.h"
+>  #include "sleep.h"
+>
+> +/*
+> + * Some HW-full platforms do not have _S5, so they may need
+> + * to leverage efi power off for a shutdown.
+> + */
+> +bool acpi_no_s5;
+>  static u8 sleep_states[ACPI_S_STATE_COUNT];
+>
+>  static void acpi_sleep_tts_switch(u32 acpi_state)
+> @@ -846,6 +851,8 @@ int __init acpi_sleep_init(void)
+>                 sleep_states[ACPI_STATE_S5] = 1;
+>                 pm_power_off_prepare = acpi_power_off_prepare;
+>                 pm_power_off = acpi_power_off;
+> +       } else {
+> +               acpi_no_s5 = true;
+>         }
+>
+>         supported[0] = 0;
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 06ed7e5..4d2e67f 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -278,6 +278,7 @@ void acpi_irq_stats_init(void);
+>  extern u32 acpi_irq_handled;
+>  extern u32 acpi_irq_not_handled;
+>  extern unsigned int acpi_sci_irq;
+> +extern bool acpi_no_s5;
+>  #define INVALID_ACPI_IRQ       ((unsigned)-1)
+>  static inline bool acpi_sci_irq_valid(void)
+>  {
+> --
 
-This patch implements get_max_time_window_us() and checks the window when
-a user attempts to set power capping for the package.
+OK, this is fine by me.
 
-Before the patch it was possible to set the window to, for example, 10000
-micro seconds:
-
-[root@intel-chiefriver-03 rhel7]# echo 10000 >
-/sys/devices/virtual/powercap/intel-rapl/intel-rapl\:0/constraint_0_time_window_us;
-egrep ^ /sys/devices/virtual/powercap/intel-rapl/intel-rapl\:0/constraint_0_time_window_us
-
-/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0/constraint_0_time_window_us:1:9765
-
-but from 'turbostat -d', the package is limited to 976us:
-
-cpu0: MSR_PKG_POWER_INFO: 0x01200168 (45 W TDP, RAPL 36 - 0 W, 0.000977 sec.)
-
-(Note, there appears to be a rounding issue in turbostat which needs to
-also be fixed.  Looking at the values in the register it is clear the
-value is 1/1024 = 976us.)
-
-After the patch we are limited by the maximum time window:
-
-[root@intel-chiefriver-03 rhel7]# echo 10000 >
-/sys/devices/virtual/powercap/intel-rapl/intel-rapl\:0/constraint_0_time_window_us;
-egrep ^ /sys/devices/virtual/powercap/intel-rapl/intel-rapl\:0/constraint_0_time_window_us
-
--bash: echo: write error: Invalid argument
-/sys/devices/virtual/powercap/intel-rapl/intel-rapl:0/constraint_0_time_window_us:1:976
-
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Prarit Bhargava <prarit@redhat.com>
-Cc: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-Cc: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
-Cc: Mathias Krause <minipli@googlemail.com>
-Cc: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- drivers/powercap/intel_rapl.c   |   31 +++++++++++++++++++++++++++++++
- drivers/powercap/powercap_sys.c |    6 ++++--
- 2 files changed, 35 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 6c592dc..feb063d 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -493,13 +493,42 @@ static int get_current_power_limit(struct powercap_zone *power_zone, int id,
- 	return ret;
- }
- 
-+static int get_max_time_window(struct powercap_zone *power_zone, int id,
-+			       u64 *data)
-+{
-+	struct rapl_domain *rd;
-+	int ret = 0;
-+	u64 val;
-+
-+	get_online_cpus();
-+	rd = power_zone_to_rapl_domain(power_zone);
-+
-+	if (rapl_read_data_raw(rd, MAX_TIME_WINDOW, true, &val))
-+		ret = -EIO;
-+	else
-+		*data = val;
-+
-+	put_online_cpus();
-+	return ret;
-+}
-+
- static int set_time_window(struct powercap_zone *power_zone, int id,
- 								u64 window)
- {
- 	struct rapl_domain *rd;
- 	int ret = 0;
-+	u64 max_window;
- 
- 	get_online_cpus();
-+	ret = get_max_time_window(power_zone, id, &max_window);
-+	if (ret < 0)
-+		goto out;
-+
-+	if (window > max_window) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
- 	rd = power_zone_to_rapl_domain(power_zone);
- 	switch (rd->rpl[id].prim_id) {
- 	case PL1_ENABLE:
-@@ -511,6 +540,7 @@ static int set_time_window(struct powercap_zone *power_zone, int id,
- 	default:
- 		ret = -EINVAL;
- 	}
-+out:
- 	put_online_cpus();
- 	return ret;
- }
-@@ -590,6 +620,7 @@ static const struct powercap_zone_constraint_ops constraint_ops = {
- 	.set_time_window_us = set_time_window,
- 	.get_time_window_us = get_time_window,
- 	.get_max_power_uw = get_max_power,
-+	.get_max_time_window_us = get_max_time_window,
- 	.get_name = get_constraint_name,
- };
- 
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index 14bde0d..53fad0f 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -101,7 +101,7 @@ static ssize_t store_constraint_##_attr(struct device *dev,\
- 	int err; \
- 	u64 value; \
- 	struct powercap_zone *power_zone = to_powercap_zone(dev); \
--	int id; \
-+	int id, ret; \
- 	struct powercap_zone_constraint *pconst;\
- 	\
- 	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
-@@ -113,8 +113,10 @@ static ssize_t store_constraint_##_attr(struct device *dev,\
- 	if (err) \
- 		return -EINVAL; \
- 	if (pconst && pconst->ops && pconst->ops->set_##_attr) { \
--		if (!pconst->ops->set_##_attr(power_zone, id, value)) \
-+		ret = pconst->ops->set_##_attr(power_zone, id, value); \
-+		if (!ret) \
- 			return count; \
-+		return ret; \
- 	} \
- 	\
- 	return -ENODATA; \
--- 
-1.7.9.3
+Matt, what do you think?
