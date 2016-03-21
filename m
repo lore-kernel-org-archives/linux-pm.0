@@ -1,31 +1,149 @@
-From: =?utf-8?b?SsO2cmc=?= Krause <joerg.krause@embedded.rocks>
-Subject: Re: [PATCH V2 0/6] regulator: enable regulator support for i.MX23/i.MX28
-Date: Mon, 21 Mar 2016 16:21:15 +0000 (UTC)
-Message-ID: <loom.20160321T171914-881@post.gmane.org>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from plane.gmane.org ([80.91.229.3]:49091 "EHLO plane.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756299AbcCUQkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Mar 2016 12:40:06 -0400
-Received: from list by plane.gmane.org with local (Exim 4.69)
-	(envelope-from <gll-linux-pm2@m.gmane.org>)
-	id 1ai2s8-0005G4-L2
-	for linux-pm@vger.kernel.org; Mon, 21 Mar 2016 17:40:04 +0100
-Received: from ip5b40bc83.dynamic.kabel-deutschland.de ([91.64.188.131])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 17:40:04 +0100
-Received: from joerg.krause by ip5b40bc83.dynamic.kabel-deutschland.de with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 17:40:04 +0100
-Sender: linux-pm-owner@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH RESEND] cpufreq: powernv: Define per_cpu chip pointer to optimize hot-path
+Date: Mon, 21 Mar 2016 22:24:52 +0530
+Message-ID: <1458579292-27424-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, pc@us.ibm.com, shreyas@linux.vnet.ibm.com, anton@samba.org, mikey@neuling.org, shilpa.bhat@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-SGkgU3RlZmFuLAoKU3RlZmFuIFdhaHJlbiA8c3RlZmFuLndhaHJlbiA8YXQ+IGkyc2UuY29tPiB3cml0ZXM6Cgo+IAo+IFRoaXMgcGF0Y2ggc2VyaWVzIGFkZHMgb24tY2hpcCByZWd1bGF0b3Igc3VwcG9ydCB0byBGcmVlc2NhbGUgaS5NWDIzIGFuZAppLk1YMjguCj4gSXQncyB0aGUgcmVzdWx0IG9mIHRoZSBsYXN0IGRpc2N1c3Npb24gYWJvdXQgY3B1ZnJlcS1kdCBzdXBwb3J0IFsxXS4gVGhpcwpzZXJpZXMKPiBkb2Vzbid0IGNvbnRhaW4gY3B1ZnJlcS1kdCBzdXBwb3J0IGFueW1vcmUgYmVjYXVzZSBpdCB2aW9sYXRlZCBhIGNvbnN0cmFpbnQKPiBiZXR3ZWVuIFZEREQgdm9sdGFnZSBhbmQgRU1JIGNsb2NrIGZyZXF1ZW5jeSAoVGhhbmtzIHRvIEp1ZXJnZW4gQm9ybGVpcyAKPiBmb3IgcG9pbnRpbmcgb3V0KS4KPiAKPiBUaGUgY3B1ZnJlcS1kdCBzdXBwb3J0IHdvdWxkIGJlIGEgZnVydGhlciBwYXRjaCBzZXJpZXMuCgoKQW55IHBsYW5zIGZvciBhbiB2ZXJzaW9uIDMgb2YgdGhpcyBwYXRjaD8gSSdtIHJlYWxseSBsb29raW5nIGZvcndhcmQgaW50bwpoYXZpbmcgdGhpcyBwYXRjaHNldCBiZSBtZXJnZWQgaW50byBtYWlubGluZSEKCkJlc3QgcmVn
- YXJkcwpKw7ZyZyBLcmF1c2U=
+From: Michael Neuling <mikey@neuling.org>
 
+"96c4726f01cd cpufreq: powernv: Remove cpu_to_chip_id() from hot-path"
+introduced 'core_to_chip_map' array to cache the chip-id of all cores.
+Replace this with per_cpu variable that stores the pointer to the
+chip-array. This removes the linear lookup and provides a neater and
+simpler solution.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+- Included S-o-b and ACK tags
+- Added the commit id to the commit log
+
+ drivers/cpufreq/powernv-cpufreq.c | 50 +++++++++++++--------------------------
+ 1 file changed, 17 insertions(+), 33 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 50bf120..a00bcc2 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -44,7 +44,6 @@
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
+-static unsigned int *core_to_chip_map;
+ 
+ static const char * const throttle_reason[] = {
+ 	"No throttling",
+@@ -65,6 +64,7 @@ static struct chip {
+ } *chips;
+ 
+ static int nr_chips;
++static DEFINE_PER_CPU(struct chip *, chip_info);
+ 
+ /*
+  * Note: The set of pstates consists of contiguous integers, the
+@@ -324,34 +324,31 @@ static inline unsigned int get_nominal_index(void)
+ 
+ static void powernv_cpufreq_throttle_check(void *data)
+ {
++	struct chip *chip;
+ 	unsigned int cpu = smp_processor_id();
+-	unsigned int chip_id = core_to_chip_map[cpu_core_index_of_thread(cpu)];
+ 	unsigned long pmsr;
+-	int pmsr_pmax, i;
++	int pmsr_pmax;
+ 
+ 	pmsr = get_pmspr(SPRN_PMSR);
+-
+-	for (i = 0; i < nr_chips; i++)
+-		if (chips[i].id == chip_id)
+-			break;
++	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+ 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+ 	if (pmsr_pmax != powernv_pstate_info.max) {
+-		if (chips[i].throttled)
++		if (chip->throttled)
+ 			goto next;
+-		chips[i].throttled = true;
++		chip->throttled = true;
+ 		if (pmsr_pmax < powernv_pstate_info.nominal)
+ 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+-				     cpu, chips[i].id, pmsr_pmax,
++				     cpu, chip->id, pmsr_pmax,
+ 				     powernv_pstate_info.nominal);
+-		trace_powernv_throttle(chips[i].id,
+-				      throttle_reason[chips[i].throttle_reason],
++		trace_powernv_throttle(chip->id,
++				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+-	} else if (chips[i].throttled) {
+-		chips[i].throttled = false;
+-		trace_powernv_throttle(chips[i].id,
+-				      throttle_reason[chips[i].throttle_reason],
++	} else if (chip->throttled) {
++		chip->throttled = false;
++		trace_powernv_throttle(chip->id,
++				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+ 	}
+ 
+@@ -558,47 +555,34 @@ static int init_chip_info(void)
+ 	unsigned int chip[256];
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id = UINT_MAX;
+-	cpumask_t cpu_mask;
+-	int ret = -ENOMEM;
+-
+-	core_to_chip_map = kcalloc(cpu_nr_cores(), sizeof(unsigned int),
+-				   GFP_KERNEL);
+-	if (!core_to_chip_map)
+-		goto out;
+ 
+-	cpumask_copy(&cpu_mask, cpu_possible_mask);
+-	for_each_cpu(cpu, &cpu_mask) {
++	for_each_possible_cpu(cpu) {
+ 		unsigned int id = cpu_to_chip_id(cpu);
+ 
+ 		if (prev_chip_id != id) {
+ 			prev_chip_id = id;
+ 			chip[nr_chips++] = id;
+ 		}
+-		core_to_chip_map[cpu_core_index_of_thread(cpu)] = id;
+-		cpumask_andnot(&cpu_mask, &cpu_mask, cpu_sibling_mask(cpu));
+ 	}
+ 
+ 	chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+ 	if (!chips)
+-		goto free_chip_map;
++		return -ENOMEM;
+ 
+ 	for (i = 0; i < nr_chips; i++) {
+ 		chips[i].id = chip[i];
+ 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+ 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
++		for_each_cpu(cpu, &chips[i].mask)
++			per_cpu(chip_info, cpu) =  &chips[i];
+ 	}
+ 
+ 	return 0;
+-free_chip_map:
+-	kfree(core_to_chip_map);
+-out:
+-	return ret;
+ }
+ 
+ static inline void clean_chip_info(void)
+ {
+ 	kfree(chips);
+-	kfree(core_to_chip_map);
+ }
+ 
+ static inline void unregister_all_notifiers(void)
+-- 
+1.9.3
