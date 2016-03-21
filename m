@@ -1,137 +1,31 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [Bug 112121] New: Some PCIe options cause devices to be removed
- after suspend
-Date: Mon, 21 Mar 2016 11:36:37 -0500
-Message-ID: <20160321163637.GA12288@localhost>
-References: <bug-112121-41252@https.bugzilla.kernel.org/>
- <CAErSpo4beDk_ajsgqMUNJ3TGxDv=ysyPzhXHcx2AhUEUE9ROKA@mail.gmail.com>
- <CAHbf0-GBiMVr4=n3ZT1NSH8Xgdh3TcdDd=Di+pok6Ep6h42ZOQ@mail.gmail.com>
+From: =?utf-8?b?SsO2cmc=?= Krause <joerg.krause@embedded.rocks>
+Subject: Re: [PATCH V2 0/6] regulator: enable regulator support for i.MX23/i.MX28
+Date: Mon, 21 Mar 2016 16:21:15 +0000 (UTC)
+Message-ID: <loom.20160321T171914-881@post.gmane.org>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48276 "EHLO mail.kernel.org"
+Received: from plane.gmane.org ([80.91.229.3]:49091 "EHLO plane.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756270AbcCUQgm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Mar 2016 12:36:42 -0400
-Content-Disposition: inline
-In-Reply-To: <CAHbf0-GBiMVr4=n3ZT1NSH8Xgdh3TcdDd=Di+pok6Ep6h42ZOQ@mail.gmail.com>
+	id S1756299AbcCUQkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Mar 2016 12:40:06 -0400
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1ai2s8-0005G4-L2
+	for linux-pm@vger.kernel.org; Mon, 21 Mar 2016 17:40:04 +0100
+Received: from ip5b40bc83.dynamic.kabel-deutschland.de ([91.64.188.131])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 17:40:04 +0100
+Received: from joerg.krause by ip5b40bc83.dynamic.kabel-deutschland.de with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Mon, 21 Mar 2016 17:40:04 +0100
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Lothian <mike@fireburn.co.uk>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme <linux-nvme@lists.infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Hi Mike,
+SGkgU3RlZmFuLAoKU3RlZmFuIFdhaHJlbiA8c3RlZmFuLndhaHJlbiA8YXQ+IGkyc2UuY29tPiB3cml0ZXM6Cgo+IAo+IFRoaXMgcGF0Y2ggc2VyaWVzIGFkZHMgb24tY2hpcCByZWd1bGF0b3Igc3VwcG9ydCB0byBGcmVlc2NhbGUgaS5NWDIzIGFuZAppLk1YMjguCj4gSXQncyB0aGUgcmVzdWx0IG9mIHRoZSBsYXN0IGRpc2N1c3Npb24gYWJvdXQgY3B1ZnJlcS1kdCBzdXBwb3J0IFsxXS4gVGhpcwpzZXJpZXMKPiBkb2Vzbid0IGNvbnRhaW4gY3B1ZnJlcS1kdCBzdXBwb3J0IGFueW1vcmUgYmVjYXVzZSBpdCB2aW9sYXRlZCBhIGNvbnN0cmFpbnQKPiBiZXR3ZWVuIFZEREQgdm9sdGFnZSBhbmQgRU1JIGNsb2NrIGZyZXF1ZW5jeSAoVGhhbmtzIHRvIEp1ZXJnZW4gQm9ybGVpcyAKPiBmb3IgcG9pbnRpbmcgb3V0KS4KPiAKPiBUaGUgY3B1ZnJlcS1kdCBzdXBwb3J0IHdvdWxkIGJlIGEgZnVydGhlciBwYXRjaCBzZXJpZXMuCgoKQW55IHBsYW5zIGZvciBhbiB2ZXJzaW9uIDMgb2YgdGhpcyBwYXRjaD8gSSdtIHJlYWxseSBsb29raW5nIGZvcndhcmQgaW50bwpoYXZpbmcgdGhpcyBwYXRjaHNldCBiZSBtZXJnZWQgaW50byBtYWlubGluZSEKCkJlc3QgcmVn
+ YXJkcwpKw7ZyZyBLcmF1c2U=
 
-I'm sorry this slipped through the cracks.   I apologize for the
-inability of Google Inbox to send plaintext email; I use mutt
-because that's a hassle for me, too.
-
-On Sat, Feb 13, 2016 at 11:39:52PM +0000, Mike Lothian wrote:
-> On 8 February 2016 at 13:51, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> > [+cc linux-pci, NVMe folks, power management folks]
-> >
-> > On Sun, Feb 7, 2016 at 11:04 AM,  <bugzilla-daemon@bugzilla.kernel.org> wrote:
-> >> https://bugzilla.kernel.org/show_bug.cgi?id=112121
-> >>
-> >>             Bug ID: 112121
-> >>            Summary: Some PCIe options cause devices to be removed after
-> >>                     syspend
-> >>            Product: Drivers
-> >>            Version: 2.5
-> >>     Kernel Version: 4.5-rc2
-> >>           Hardware: All
-> >>                 OS: Linux
-> >>               Tree: Mainline
-> >>             Status: NEW
-> >>           Severity: normal
-> >>           Priority: P1
-> >>          Component: PCI
-> >>           Assignee: drivers_pci@kernel-bugs.osdl.org
-> >>           Reporter: mike@fireburn.co.uk
-> >>         Regression: No
-> >>
-> >> Created attachment 203091
-> >>   --> https://bugzilla.kernel.org/attachment.cgi?id=203091&action=edit
-> >> Dmesg showing PCIe device removals
-> >>
-> >> I was having issues with suspend, when the machine was being resumed iommu
-> >> started removing devices - including my PCIe NVMe drive which contained my root
-> >> partition
-> >>
-> >> The problem showed up with:
-> >>
-> >> [*] PCI support
-> >> [*]   Support mmconfig PCI config space access
-> >> [*]   PCI Express Port Bus support
-> >> [*]     PCI Express Hotplug driver
-> >> [*]     Root Port Advanced Error Reporting support
-> >> [*]       PCI Express ECRC settings control
-> >> < >       PCIe AER error injector support
-> >> -*-     PCI Express ASPM control
-> >> [ ]       Debug PCI Express ASPM
-> >>           Default ASPM policy (BIOS default)  --->
-> >> [*]   Message Signaled Interrupts (MSI and MSI-X)
-> >> [ ]   PCI Debugging
-> >> [*]   Enable PCI resource re-allocation detection
-> >> < >   PCI Stub driver
-> >> [*]   Interrupts on hypertransport devices
-> >> [ ] PCI IOV support
-> >> [*] PCI PRI support
-> >> -*- PCI PASID support
-> >>     PCI host controller drivers  ----
-> >> < > PCCard (PCMCIA/CardBus) support  ----
-> >> [*] Support for PCI Hotplug  --->
-> >> < > RapidIO support
-> >>
-> >>
-> >> This is what I have now:
-> >>
-> >> [*] PCI support
-> >> [*]   Support mmconfig PCI config space access
-> >> [*]   PCI Express Port Bus support
-> >> [ ]     Root Port Advanced Error Reporting support
-> >> -*-     PCI Express ASPM control
-> >> [ ]       Debug PCI Express ASPM
-> >>           Default ASPM policy (BIOS default)  --->
-> >> [*]   Message Signaled Interrupts (MSI and MSI-X)
-> >> [*]   PCI Debugging
-> >> [ ]   Enable PCI resource re-allocation detection
-> >> < >   PCI Stub driver
-> >> [*]   Interrupts on hypertransport devices
-> >> [ ] PCI IOV support
-> >> [ ] PCI PRI support
-> >> [ ] PCI PASID support
-> >>     PCI host controller drivers  ----
-> >> < > PCCard (PCMCIA/CardBus) support  ----
-> >> [ ] Support for PCI Hotplug  ----
-> >> < > RapidIO support
-> >>
-> >> I tried disabling the iommu driver first but it had no effect
-> >>
-> >> If people are interested I could play with the above options to see which one
-> >> causes the issue
-> >
-> > My guess is that PCI hotplug is the important one.  It would be nice
-> > if dmesg contained enough information to connect nvme0n1 to a PCI
-> > device.  It'd be even nicer if the PCI core noted device removals or
-> > whatever happened here.
-> >
-> > You don't get any more details if you boot with "ignore_loglevel", do you?
-> >
-> > Mike, you didn't mark this as a regression, so I assume it's always
-> > been this way, and we just haven't noticed it because most people
-> > enable PCI hotplug (or whatever the relevant config option is).
-> 
-> I've just tested this again, I enabled PCI Hotplug & PCIe Hotplug and
-> nothing - then I noticed I hadn't enabled the ACPI Hotplug driver -
-> once I did the issue re-appeared
-> 
-> I then had to use testdisk to restore my partition table :'(
-> 
-> I've attached the updated dmesg & my .config
-
-Correct me if I'm wrong:
-
-  - With CONFIG_HOTPLUG_PCI_ACPI not set, suspend/resume works fine
-  - With CONFIG_HOTPLUG_PCI_ACPI=y, resume fails as shown in your dmesg log
-    (https://bugzilla.kernel.org/attachment.cgi?id=203621)
