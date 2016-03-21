@@ -1,60 +1,91 @@
-From: Feng Xiao <xf@rock-chips.com>
-Subject: Re: [PATCH] cpufreq: rockchip: add driver
-Date: Mon, 21 Mar 2016 21:24:32 +0800
-Message-ID: <56EFF610.6040402@rock-chips.com>
-References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
- <1787319.AFAWVqkdk0@diego> <20160321095049.GD27778@vireshk-i7>
- <1505152.fhSnu3pvDr@diego> <20160321095855.GE27778@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle: menu: Fall back to polling if next timer event is near
+Date: Mon, 21 Mar 2016 14:55:33 +0100
+Message-ID: <4466659.vztXJQGl4O@vostro.rjw.lan>
+References: <11672478.oHFBPvKbda@vostro.rjw.lan> <000c01d18275$60543190$20fc94b0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular2.263xmail.com ([211.157.152.3]:51492 "EHLO
-	regular2.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754583AbcCUNYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 09:24:22 -0400
-In-Reply-To: <20160321095855.GE27778@vireshk-i7>
+Received: from v094114.home.net.pl ([79.96.170.134]:58563 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755863AbcCUNxZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 09:53:25 -0400
+In-Reply-To: <000c01d18275$60543190$20fc94b0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
-Cc: linux@arm.linux.org.uk, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Rik van Riel' <riel@redhat.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>
 
+On Saturday, March 19, 2016 11:54:39 PM Doug Smythies wrote:
+> On 2016.03.19 17:34 Rafael J. Wysocki wrote:
+> 
+> > Commit a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable
+> > polling) changed the behavior of the fallback state selection part
+> > of menu_select() so it looks at interactivity_req instead of
+> > data->next_timer_us when it makes its decision.  That effectively
+> > caused polling to be used more often as fallback idle which led to
+> > significant increases of energy consumption in some cases.
+> >
+> > Commit e132b9b3bc7f (cpuidle: menu: use high confidence factors
+> > only when considering polling) changed that logic again to be more
+> > predictable, but that didn't help with the increased energy
+> > consumption problem.
+> >
+> > For this reason, go back to making decisions on which state to fall
+> > back to based on data->next_timer_us which is the time we know for
+> > sure something will happen rather than a prediction (which may be
+> > inaccurate and turns out to be so often enough to be problematic).
+> > However, take the target residency of the first proper idle state
+> > (C1) into account, so that state is not used as the fallback one
+> > if its target residency is greater than data->next_timer_us.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > Doug, can you please see if this patch helps to address the problem
+> > you're seeing?
+> > 
+> 
+> Yes, it appears to work great.
+> 
+> >
+> > Commit e132b9b3bc7f is in linux-next only ATM, but it is a rebased
+> > version of https://patchwork.kernel.org/patch/8602101/.
+> 
+> So, I applied it to my existing kernel 4.5-rc7 work, i.e. the not
+> rebased version.
+> 
+> My reference = rvr7:
+> Kernel 4.5-rc7 +
+> Rafael's 3 patch set version 10 "cpufreq: Replace timers with utilization update callbacks" +
+> Rik's patch (rvr5) "cpuidle: menu: use high confidence factors only when considering polling" +
+> Rafael's patch from herein.
+> 
+> My reference: k45rc7-rjw10-rvr7
+> 
+> Aggregate Idle States in minutes for 2000 second test (some old data re-stated for reference):
+> 
+> State	k45rc7-rjw10	k45rc7-rjw10-reverted	k45rc7-rjw10-rvr7
+> 0.00	18.07			0.92				0.41
+> 1.00	12.35			19.51				21.17
+> 2.00	3.96			4.28				4.40
+> 3.00	1.55			1.53				1.66
+> 4.00	138.96		141.99			150.77
+> 			
+> total	174.90		168.24			178.41
+> 
+> Energy:
+> >>>> Kernel 4.5-rc7-rjw10: 61983 Joules
+> >>>> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules (test 2 was 55040 Joules)
+> k45rc7-rjw10-rvr7: 54748 Joules
+> 
+> The trace data has a record low number of long durations at 71.
 
+OK, thanks!
 
-=E5=9C=A8 2016/3/21 17:58, Viresh Kumar =E5=86=99=E9=81=93:
-> On 21-03-16, 10:54, Heiko St=C3=BCbner wrote:
->> I hadn't seen that yet ... nice that cpufreq-dt now also supports cl=
-usters :-)
->>
->> The other part still stands though, as we probably should register t=
-he
->> platform-device somewhere else and not in some new special module.
->>
->> When everything is using cpufreq-dt now, I guess we could just add i=
-t to the
->> core rockchip clk-code. Or was there some agreement where this shoul=
-d be done
->> (obviously not the devicetree itself)?
-Of_clk_init is called early, and platform_device_register_simple should=
-=20
-be called after devices_init, it will be failed to do it from clk-code.
-So we need add a new file or add module_init to each clock controller=20
-driver(like clk-rk3368.c, clk-rk3399.c) ?
-> Yeah, there was a discussion around creating a white or black list of=
- platforms
-> that want to create a platform device for cpufreq-dt. That can be don=
-e in
-> cpufreq-dt.c or a new file, but I haven't worked out on that yet.
->
-> You can do it from clk-code or from the driver that was added in this=
- thread.
-> Just that you need to match your platform's compatible string before =
-doing that.
-Rockchip-cpufreq.c depends on ARM_ROCKCHIP_CPUFREQ, it will not be=20
-compiled on non-Rockchip platforms.
-The driver can support all Rockchip SoCs up to now, add=20
-of_machine_is_compatible may be redundant ?
->
+I'm going to apply it for 4.6, then.
 
+Thanks,
+Rafael
 
