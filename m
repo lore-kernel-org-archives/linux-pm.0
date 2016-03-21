@@ -1,59 +1,28 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Mon, 21 Mar 2016 14:24:07 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1603211415380.1708-100000@iolanthe.rowland.org>
+From: <Woojung.Huh@microchip.com>
+Subject: RE: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
+Date: Mon, 21 Mar 2016 18:42:06 +0000
+Message-ID: <9235D6609DB808459E95D78E17F2E43D404CC166@CHN-SV-EXMX02.mchp-main.com>
 References: <1458581670.9609.5.camel@suse.com>
+ <Pine.LNX.4.44L0.1603211415380.1708-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:36176 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757871AbcCUSYI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 14:24:08 -0400
-In-Reply-To: <1458581670.9609.5.camel@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1603211415380.1708-100000@iolanthe.rowland.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: stern@rowland.harvard.edu, oneukum@suse.com
+Cc: geert@linux-m68k.org, UNGLinuxDriver@microchip.com, davem@davemloft.net, linux@roeck-us.net, rjw@rjwysocki.net, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 21 Mar 2016, Oliver Neukum wrote:
+> But this leaves open the issue that querying the device too often will
+> prevent it from going into autosuspend.  It seems to me that the best
+> way to deal with this is to make sure that the autosuspend timeout is
+> shorter than the interal between queries, not to make the querying
+> conditional on !runtime_auto.
 
-> On Mon, 2016-03-21 at 10:57 -0400, Alan Stern wrote:
-> 
-> > One possible solution is to export a sysfs parameter to prevent 
-> > statistics collection (or more generally, to change the interval at 
-> > which it occurs).
-> 
-> Surely, not performing a task can hardly be beaten in terms of power
-> consumption. That is not meant to be flippant, but I think these
-> issues are orthogonal. The question of how much to do doesn't
-> solve the question of doing efficiently what we do.
+Short autosuspend timeout can affect performance. For instance our experiments showed that
+shorter than 10sec timeout made Ethernet performance degrade because of wakeup delays.
+So, just putting shorter timeout may have some side effects.
 
-In other words, what's the best way to collect the statistics without 
-interfering with runtime PM, right?
-
-If the device is suspended, presumably we know there's nothing to
-collect -- especially if we already collected the statistics at the
-time the device got suspended.  Hence my suggestion to avoid querying 
-the device while it is suspended.
-
-But this leaves open the issue that querying the device too often will 
-prevent it from going into autosuspend.  It seems to me that the best 
-way to deal with this is to make sure that the autosuspend timeout is 
-shorter than the interal between queries, not to make the querying 
-conditional on !runtime_auto.
-
-> > But checking the runtime_auto flag is probably not a great idea.  Even
-> > if it isn't set, collecting statistics is likely to wait up a device
-> > that otherwise would have remained suspended.
-> > 
-> > Perhaps the best solution is to collect the statistics only when the 
-> > device is not suspended or is about to suspend.
-> 
-> If we know when the next activity will come, why not pass this
-> information down?
-
-I don't follow.
-
-Alan Stern
-
+Woojung
