@@ -1,91 +1,31 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: menu: Fall back to polling if next timer event is near
-Date: Mon, 21 Mar 2016 14:55:33 +0100
-Message-ID: <4466659.vztXJQGl4O@vostro.rjw.lan>
-References: <11672478.oHFBPvKbda@vostro.rjw.lan> <000c01d18275$60543190$20fc94b0$@net>
+From: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
+Subject: Re: [PATCH][v5] ACPI / PM: Introduce efi poweroff for HW-full
+ platforms without _S5
+Date: Mon, 21 Mar 2016 14:05:12 +0000
+Message-ID: <20160321140512.GA11676@codeblueprint.co.uk>
+References: <1458484268-18311-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0j1TpjQ8nD3gr7NYA_dpcghDidsvSoAOuobLMw6-3waCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58563 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755863AbcCUNxZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 09:53:25 -0400
-In-Reply-To: <000c01d18275$60543190$20fc94b0$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0j1TpjQ8nD3gr7NYA_dpcghDidsvSoAOuobLMw6-3waCg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Rik van Riel' <riel@redhat.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>
 
-On Saturday, March 19, 2016 11:54:39 PM Doug Smythies wrote:
-> On 2016.03.19 17:34 Rafael J. Wysocki wrote:
+On Mon, 21 Mar, at 01:43:18PM, Rafael J. Wysocki wrote:
 > 
-> > Commit a9ceb78bc75c (cpuidle,menu: use interactivity_req to disable
-> > polling) changed the behavior of the fallback state selection part
-> > of menu_select() so it looks at interactivity_req instead of
-> > data->next_timer_us when it makes its decision.  That effectively
-> > caused polling to be used more often as fallback idle which led to
-> > significant increases of energy consumption in some cases.
-> >
-> > Commit e132b9b3bc7f (cpuidle: menu: use high confidence factors
-> > only when considering polling) changed that logic again to be more
-> > predictable, but that didn't help with the increased energy
-> > consumption problem.
-> >
-> > For this reason, go back to making decisions on which state to fall
-> > back to based on data->next_timer_us which is the time we know for
-> > sure something will happen rather than a prediction (which may be
-> > inaccurate and turns out to be so often enough to be problematic).
-> > However, take the target residency of the first proper idle state
-> > (C1) into account, so that state is not used as the fallback one
-> > if its target residency is greater than data->next_timer_us.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > Doug, can you please see if this patch helps to address the problem
-> > you're seeing?
-> > 
+> OK, this is fine by me.
 > 
-> Yes, it appears to work great.
-> 
-> >
-> > Commit e132b9b3bc7f is in linux-next only ATM, but it is a rebased
-> > version of https://patchwork.kernel.org/patch/8602101/.
-> 
-> So, I applied it to my existing kernel 4.5-rc7 work, i.e. the not
-> rebased version.
-> 
-> My reference = rvr7:
-> Kernel 4.5-rc7 +
-> Rafael's 3 patch set version 10 "cpufreq: Replace timers with utilization update callbacks" +
-> Rik's patch (rvr5) "cpuidle: menu: use high confidence factors only when considering polling" +
-> Rafael's patch from herein.
-> 
-> My reference: k45rc7-rjw10-rvr7
-> 
-> Aggregate Idle States in minutes for 2000 second test (some old data re-stated for reference):
-> 
-> State	k45rc7-rjw10	k45rc7-rjw10-reverted	k45rc7-rjw10-rvr7
-> 0.00	18.07			0.92				0.41
-> 1.00	12.35			19.51				21.17
-> 2.00	3.96			4.28				4.40
-> 3.00	1.55			1.53				1.66
-> 4.00	138.96		141.99			150.77
-> 			
-> total	174.90		168.24			178.41
-> 
-> Energy:
-> >>>> Kernel 4.5-rc7-rjw10: 61983 Joules
-> >>>> Kernel 4.5-rc7-rjw10-reverted: 48409 Joules (test 2 was 55040 Joules)
-> k45rc7-rjw10-rvr7: 54748 Joules
-> 
-> The trace data has a record low number of long durations at 71.
+> Matt, what do you think?
 
-OK, thanks!
+If possible I'd like to see some mention in the commit message of
+future Intel Base-IA platforms requiring this support, so when someone
+asks me in the future (and I've forgotten the answer) "Why was this
+patch get merged?" I can point to the commit log.
 
-I'm going to apply it for 4.6, then.
+But other than that, yeah, this looks good to me. Thanks!
 
-Thanks,
-Rafael
-
+Reviewed-by: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
