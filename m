@@ -1,49 +1,33 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Mon, 21 Mar 2016 09:36:01 +0100
-Message-ID: <1458549361.2299.1.camel@suse.com>
-References: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
+From: "Zengtao (B)" <prime.zeng@hisilicon.com>
+Subject: RE: cpufreq_resume warning issue
+Date: Mon, 21 Mar 2016 09:07:21 +0000
+Message-ID: <678F3D1BB717D949B966B68EAEB446ED0A6D9738@SZXEMA509-MBX.china.huawei.com>
+References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
+ <20160321073228.GC1803@vireshk-i7>
+ <678F3D1BB717D949B966B68EAEB446ED0A6D96C7@SZXEMA509-MBX.china.huawei.com>
+ <20160321083422.GE1803@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:52413 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbcCUIgI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 21 Mar 2016 04:36:08 -0400
-In-Reply-To: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
+Received: from szxga01-in.huawei.com ([58.251.152.64]:64172 "EHLO
+	szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbcCUJHo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 05:07:44 -0400
+In-Reply-To: <20160321083422.GE1803@vireshk-i7>
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Woojung Huh <woojung.huh@microchip.com>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, "David S. Miller" <davem@davemloft.net>, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Sun, 2016-03-20 at 11:43 +0100, Geert Uytterhoeven wrote:
-> If CONFIG_PM=3Dn:
->=20
->     drivers/net/usb/lan78xx.c: In function =E2=80=98lan78xx_get_stats=
-64=E2=80=99:
->     drivers/net/usb/lan78xx.c:3274: error: =E2=80=98struct dev_pm_inf=
-o=E2=80=99 has no
-> member named =E2=80=98runtime_auto=E2=80=99
->=20
-> If PM is disabled, the runtime_auto flag is not available, but auto
-> suspend is not enabled anyway.  Hence protect the check for
-> runtime_auto
-> by #ifdef CONFIG_PM to fix this.
->=20
-> Fixes: a59f8c5b048dc938 ("lan78xx: add ndo_get_stats64")
-> Reported-by: Guenter Roeck <linux@roeck-us.net>
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> Alternatively, we can add a dev_pm_runtime_auto_is_enabled() wrapper
-> to
-> include/linux/pm.h, which always return false if CONFIG_PM is
-> disabled.
-
-That is what we do for almost everything else in include/pm_runtime.h
-So it is the best solution to add the stub.
-
-	Regards
-		Oliver
-
-
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBWaXJlc2ggS3VtYXIgW21haWx0
+bzp2aXJlc2gua3VtYXJAbGluYXJvLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyMSwgMjAx
+NiA0OjM0IFBNDQo+IFRvOiBaZW5ndGFvIChCKQ0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogY3B1ZnJlcV9yZXN1bWUgd2Fy
+bmluZyBpc3N1ZQ0KPiANCj4gT24gMjEtMDMtMTYsIDA4OjA1LCBaZW5ndGFvIChCKSB3cm90ZToN
+Cj4gPiA+IFdoeSBkb2Vzbid0IHlvdSBoYXZlIERWRlMgZm9yIGJvdGggdGhlIGNvcmVzID8NCj4g
+PiA+DQo+ID4gVGhlIENQVTAgaXMgbG93IHBvd2VyLCBub3Qgc28gbXVjaCBiZW5lZml0IGZyb20g
+ZHZmcywgc28gd2UganVzdCBkZXNpZ24gb25lDQo+IHBvd2VyLWRvbWFpbiBmb3IgQ1BVMSB0byBj
+b3N0IGRvd24uDQo+IA0KPiBXaGF0IENQVSBpcyB0aGF0ID8gQTc/DQpDUFUwIGlzIEE3IGFuZCBD
+UFUxIEExNy4NCj4gDQo+IC0tDQo+IHZpcmVzaA0K
