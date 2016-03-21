@@ -1,31 +1,66 @@
-From: <Woojung.Huh-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org>
-Subject: RE: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Mon, 21 Mar 2016 14:41:03 +0000
-Message-ID: <9235D6609DB808459E95D78E17F2E43D404CBFC0@CHN-SV-EXMX02.mchp-main.com>
-References: <1458470636-18986-1-git-send-email-geert@linux-m68k.org>
- <1458549361.2299.1.camel@suse.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/3] cpufreq: Always update current frequency before startig governor
+Date: Mon, 21 Mar 2016 15:47:48 +0100
+Message-ID: <1847835.ROHO9MEN8J@vostro.rjw.lan>
+References: <1780622.pJaGsuQWcI@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1458549361.2299.1.camel-IBi9RG/b67k@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: oneukum-IBi9RG/b67k@public.gmane.org, geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-Cc: UNGLinuxDriver-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:47769 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755911AbcCUOqK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 10:46:10 -0400
+In-Reply-To: <1780622.pJaGsuQWcI@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBPbGl2ZXIgTmV1a3VtIFttYWls
-dG86b25ldWt1bUBzdXNlLmNvbV0NCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyMSwgMjAxNiA0OjM2
-IEFNDQo+IFRvOiBHZWVydCBVeXR0ZXJob2V2ZW4NCj4gQ2M6IFdvb2p1bmcgSHVoIC0gQzIxNjk5
-OyBVTkdMaW51eERyaXZlcjsgRGF2aWQgUy4gTWlsbGVyOyBHdWVudGVyIFJvZWNrOw0KPiBSYWZh
-ZWwgSi4gV3lzb2NraTsgbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgtdXNiQHZnZXIua2Vy
-bmVsLm9yZzsNCj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5r
-ZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGxhbjc4eHg6IFByb3RlY3QgcnVudGlt
-ZV9hdXRvIGNoZWNrIGJ5ICNpZmRlZg0KPiBDT05GSUdfUE0NCg0KVGhhbmtzIGZvciBhbGwgY29t
-bWVudHMuDQpXaWxsIGxvb2sgaW50byBpdCBhbmQgc3VibWl0IG5ldyBwYXRjaC4NCg0KLSBXb29q
-dW5nDQo=
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Make policy->cur match the current frequency returned by the driver's
+->get() callback before starting the governor in case they went out of
+sync in the meantime and drop the piece of code attempting to
+resync policy->cur with the real frequency of the boot CPU from
+cpufreq_resume() as it serves no purpose any more (and it's racy and
+super-ugly anyway).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1680,17 +1680,6 @@ void cpufreq_resume(void)
+ 				       __func__, policy);
+ 		}
+ 	}
+-
+-	/*
+-	 * schedule call cpufreq_update_policy() for first-online CPU, as that
+-	 * wouldn't be hotplugged-out on suspend. It will verify that the
+-	 * current freq is in sync with what we believe it to be.
+-	 */
+-	policy = cpufreq_cpu_get_raw(cpumask_first(cpu_online_mask));
+-	if (WARN_ON(!policy))
+-		return;
+-
+-	schedule_work(&policy->update);
+ }
+ 
+ /**
+@@ -2062,6 +2051,9 @@ static int cpufreq_start_governor(struct
+ {
+ 	int ret;
+ 
++	if (cpufreq_driver->get && !cpufreq_driver->setpolicy)
++		cpufreq_update_current_freq(policy);
++
+ 	ret = cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 	return ret ? ret : cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ }
+
