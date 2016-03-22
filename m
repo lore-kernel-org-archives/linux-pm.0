@@ -1,36 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: acpi-cpufreq: make Intel/AMD MSR access, io
- port access static
-Date: Tue, 22 Mar 2016 20:13:53 +0530
-Message-ID: <20160322144353.GN5272@vireshk-i7>
-References: <1458657270-2440-1-git-send-email-jszhang@marvell.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
+Date: Tue, 22 Mar 2016 11:13:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1603221111040.1793-100000@iolanthe.rowland.org>
+References: <1458656903.1990.12.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:34016 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbcCVOn6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 10:43:58 -0400
-Received: by mail-pf0-f176.google.com with SMTP id x3so314370532pfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2016 07:43:58 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1458657270-2440-1-git-send-email-jszhang@marvell.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:40692 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751005AbcCVPNL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 11:13:11 -0400
+In-Reply-To: <1458656903.1990.12.camel@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jisheng Zhang <jszhang@marvell.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: "David S. Miller" <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, Woojung Huh <woojung.huh@microchip.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, netdev@vger.kernel.org
 
-On 22-03-16, 22:34, Jisheng Zhang wrote:
-> These frequency register read/write operations' implementations for the
-> given processor (Intel/AMD MSR access or I/O port access) are only used
-> internally in acpi-cpufreq, so make them static.
+On Tue, 22 Mar 2016, Oliver Neukum wrote:
+
+> On Tue, 2016-03-22 at 10:21 -0400, Alan Stern wrote:
+> > I don't see any point in resuming the device just in order to collect 
+> > operating statistics.  If it was already suspended then it wasn't 
+> > operating, so there will be no statistics to collect.
 > 
-> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+> Indeed. In that case the point is moot. But it is correct to ask
+> the core whether the device is autosuspended at that point rather
+> than keep a private flag if you can.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+That's why we have pm_runtime_status_suspended().
 
--- 
-viresh
+> All that is relevant only if the upper layers ask for information
+> that the driver cannot provide without resuming the device.
+> Those are fundamentally different issues.
+
+Of course.
+
+Alan Stern
+
