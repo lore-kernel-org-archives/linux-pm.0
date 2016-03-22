@@ -1,66 +1,65 @@
-From: dawei chien <dawei.chien@mediatek.com>
-Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
- model.
-Date: Tue, 22 Mar 2016 13:13:06 +0800
-Message-ID: <1458623586.674.2.camel@mtksdaap41>
-References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
-	 <20151217015231.GC3496@ubuntu> <1458017620.30412.3.camel@mtksdaap41>
-	 <20160315061709.GC13831@vireshk-mac-ubuntu>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Tue, 22 Mar 2016 09:50:22 +0000
+Message-ID: <20160322095022.GA23909@e106622-lin>
+References: <1458311054-13524-1-git-send-email-juri.lelli@arm.com>
+ <1458311054-13524-3-git-send-email-juri.lelli@arm.com>
+ <56EC3F9E.4050209@nvidia.com>
+ <20160321105330.GB12319@e106622-lin>
+ <CAKfTPtDP3zMR+zbvvqJCBvJ5r44do8NS03wC7pAejxPd0zHTMA@mail.gmail.com>
+ <20160321114956.GD12319@e106622-lin>
+ <20160321121210.GQ2566@sirena.org.uk>
+ <20160321172452.GE12319@e106622-lin>
+ <20160321175112.GY2566@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:48619 "EHLO
-	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750824AbcCVFNO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 01:13:14 -0400
-In-Reply-To: <20160315061709.GC13831@vireshk-mac-ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160321175112.GY2566-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sai Gurrappadi <sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Tue, 2016-03-15 at 13:17 +0700, Viresh Kumar wrote:
-> On 15-03-16, 12:53, dawei chien wrote:
-> > On Thu, 2015-12-17 at 09:52 +0800, Viresh Kumar wrote:
-> > > On 16-12-15, 21:29, Dawei Chien wrote:
-> > > > Use Intelligent Power Allocation (IPA) technical to add dynamic power model
-> > > > for binding CPU thermal zone. The power allocator governor allocates power
-> > > > budget to control CPU temperature.
-> > > >
-> > > > Power Allocator governor is able to keep SOC temperature within a defined
-> > > > temperature range to avoid SOC overheat and keep it's performance.
-> > > > mt8173-cpufreq.c need to register its' own power model with power allocator
-> > > > thermal governor, so that power allocator governor can allocates suitable
-> > > > power budget to control CPU temperature.
-> > > >
-> > > > Binding document is refer to this patchset
-> > > > https://lkml.org/lkml/2015/11/30/239
-> > > >
-> > > > Change since V5:
-> > > > 1. Remove thermal sensor ID from phandles
-> > > 
-> > > Though you should have included this in the new version, but still
-> > > 
-> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > 
-> > > --
-> > > viresh
-> > 
-> > Hi Viresh,
-> > Would you please pull this patch to your tree since following patch
-> > already pulled in, thank you.
-> > 
-> > https://lkml.org/lkml/2015/11/30/239
+On 21/03/16 17:51, Mark Brown wrote:
+> On Mon, Mar 21, 2016 at 05:24:52PM +0000, Juri Lelli wrote:
 > 
-> Its Rafael, who is going to apply this one.
+> > I think this should work, but we have to understand how do we obtain the
+> > max frequency of each cluster while parsing DT. OPP bindings are
+> > helpful, but AFAIK there are platforms for which firmware is responsible
+> > for setting up and advertise available OPPs. I'm not sure if this
+> > happens later on during the boot process. We might still be able to use
+> > the clock-frequency property in this case, but that might need changing
+> > again if the top OPP gets removed/changed.
 > 
-> Can you please resend it as he may not have it in patchworks?
+> > OTH, we might simply want to say that capacity values are to be obtained
+> > once the platform is "stable" (no additional changes to configuration,
+> > OPPs, etc.). But this is maybe not acceptable?
+> 
+> How about we just punt and let the cpufreq driver tell us - it can parse
+> DT, use built in tables or whatever?  We could even remember the raw
+> values and recalculate if it ever decides to change for some reason.
+> Until cpufreq comes up we'll be stuck at whatever OPP that we're at on
+> startup which may not match whatever we define the numbers relative to
+> anyway.
 > 
 
-Hi Rafael,
-Would you merge this patch to your tee, thank you.
+OK, I'll try and see how that can be done.
 
-BR,
-Dawei
+Thanks,
 
+- Juri
+
+> > Also, I fear that for variants of a particular implementation we will
+> > still have to redo the profiling anyway (like we alreaady did for Juno
+> > and Juno-r2 for example).
+> 
+> This sometimes happens either through binning or through board design
+> decisions rather than through new silicon so we might be able to reuse.
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
