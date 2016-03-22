@@ -1,139 +1,270 @@
-From: Feng Xiao <xf@rock-chips.com>
-Subject: [PATCH v1] cpufreq: rockchip: add driver
-Date: Tue, 22 Mar 2016 19:57:28 +0800
-Message-ID: <1458647848-48999-1-git-send-email-xf@rock-chips.com>
-References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux@arm.linux.org.uk, heiko@sntech.de, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Feng Xiao <xf@rock-chips.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v13] cpufreq: powernv: Add sysfs attributes to show throttle stats
+Date: Tue, 22 Mar 2016 18:57:09 +0530
+Message-ID: <1458653229-10318-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:36031 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758354AbcCVN2p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 09:28:45 -0400
+Received: from localhost
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Tue, 22 Mar 2016 23:28:42 +1000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-api@vger.kernel.org
 
-This driver will directly use cpufreq-dt driver as backend.
+Create sysfs attributes to export throttle information in
+/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory. The
+newly added sysfs files are as follows:
 
-As there is not a generic devicetree board file(rockchip.c)
-on ARM64 architecture, so remove platform_device_register_simple
-in rockchip.c and add a new cpufreq driver to support Rockchip
-SoCs.
+1)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
+2)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub-turbo_stat
+3)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
+4)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
+5)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
+6)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
+7)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
+8)/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
 
-Signed-off-by: Feng Xiao <xf@rock-chips.com>
+Detailed explanation of each attribute is added to
+Documentation/ABI/testing/sysfs-devices-system-cpu
+
+CC: linux-api@vger.kernel.org
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
-change in v1:
-- add compatible check
+Changes from v12:
+- Removed (void *) typecast
+- Move the definition of ret inside the 'if' block
 
- arch/arm/mach-rockchip/rockchip.c  |  1 -
- drivers/cpufreq/Kconfig.arm        | 10 +++++++
- drivers/cpufreq/Makefile           |  1 +
- drivers/cpufreq/rockchip-cpufreq.c | 55 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 66 insertions(+), 1 deletion(-)
- create mode 100644 drivers/cpufreq/rockchip-cpufreq.c
+Changes from v11:
+- Removed '*create_throttle_sysfs' 
+- policy->driver_data is used instead to maintain the flag for
+  one-time creation of throttle sysfs files.
 
-diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
-index 3f07cc5..beb71da 100644
---- a/arch/arm/mach-rockchip/rockchip.c
-+++ b/arch/arm/mach-rockchip/rockchip.c
-@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
- {
- 	rockchip_suspend_init();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
- }
+Changes from v10:
+- Removed policy_notifiers to use driver->init() instead to create sysfs
+- sysfs attributes are removed by kobject_put(policy->kobj)
+- Rebased on top of
+  http://lkml.iu.edu/hypermail/linux/kernel/1603.2/02268.html
+
+Changes from v9:
+- Modified documentation.
+- s/throttle_nominal/throttle_sub_turbo
+
+Changes from v8:
+- Moved the sysfs attributes from cpu/cpufreq/chipX to cpuX/cpufreq/throttle_stats
+- Adhering to one-value-per-file, replace throttle_table with multiple
+  sysfs files.
+- Using CPUFREQ_POLICY_NOTIFIER to add/remove attribute_group.
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu | 69 ++++++++++++++++++++
+ drivers/cpufreq/powernv-cpufreq.c                  | 74 +++++++++++++++++++++-
+ 2 files changed, 141 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index b683e8e..1650133 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -271,3 +271,72 @@ Description:	Parameters for the CPU cache attributes
+ 			- WriteBack: data is written only to the cache line and
+ 				     the modified cache line is written to main
+ 				     memory only when it is replaced
++
++What:		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/powercap
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpuX/cpufreq/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'cpuX/cpufreq/throttle_stats' directory contains the CPU frequency
++		throttle stat attributes for the chip. The throttle stats of a cpu
++		is common across all the cpus belonging to a chip. Below are the
++		throttle attributes exported in the 'throttle_stats' directory:
++
++		- turbo_stat : This file gives the total number of times the max
++		frequency is throttled to lower frequency in turbo (at and above
++		nominal frequency) range of frequencies.
++
++		- sub_turbo_stat : This file gives the total number of times the
++		max frequency is throttled to lower frequency in sub-turbo(below
++		nominal frequency) range of frequencies.
++
++		- unthrottle : This file gives the total number of times the max
++		frequency is unthrottled after being throttled.
++
++		- powercap : This file gives the total number of times the max
++		frequency is throttled due to 'Power Capping'.
++
++		- overtemp : This file gives the total number of times the max
++		frequency is throttled due to 'CPU Over Temperature'.
++
++		- supply_fault : This file gives the total number of times the
++		max frequency is throttled due to 'Power Supply Failure'.
++
++		- overcurrent : This file gives the total number of times the
++		max frequency is throttled due to 'Overcurrent'.
++
++		- occ_reset : This file gives the total number of times the max
++		frequency is throttled due to 'OCC Reset'.
++
++		The sysfs attributes representing different throttle reasons like
++		powercap, overtemp, supply_fault, overcurrent and occ_reset map to
++		the reasons provided by OCC firmware for throttling the frequency.
++
++What:		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/sub_turbo_stat
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/unthrottle
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/powercap
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overtemp
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/supply_fault
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/overcurrent
++		/sys/devices/system/cpu/cpufreq/policyX/throttle_stats/occ_reset
++Date:		March 2016
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	POWERNV CPUFreq driver's frequency throttle stats directory and
++		attributes
++
++		'policyX/throttle_stats' directory and all the attributes are same as
++		the /sys/devices/system/cpu/cpuX/cpufreq/throttle_stats directory and
++		attributes which give the frequency throttle information of the chip.
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index a00bcc2..39ac78c 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -54,6 +54,16 @@ static const char * const throttle_reason[] = {
+ 	"OCC Reset"
+ };
  
- static const char * const rockchip_board_dt_compat[] = {
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 14b1f93..1786315 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -97,6 +97,16 @@ config ARM_OMAP2PLUS_CPUFREQ
- 	depends on ARCH_OMAP2PLUS
- 	default ARCH_OMAP2PLUS
- 
-+config ARM_ROCKCHIP_CPUFREQ
-+	tristate "Rockchip CPUfreq driver"
-+	depends on ARCH_ROCKCHIP && CPUFREQ_DT
-+	select PM_OPP
-+	help
-+	  This adds the CPUFreq driver support for Rockchip SoCs.
-+	  The driver will directly use cpufreq-dt driver as backend.
-+
-+	  If in doubt, say N.
-+
- config ARM_S3C_CPUFREQ
- 	bool
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 9e63fb1..91d8bb7 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -61,6 +61,7 @@ obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-+obj-$(CONFIG_ARM_ROCKCHIP_CPUFREQ)	+= rockchip-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
- obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
-diff --git a/drivers/cpufreq/rockchip-cpufreq.c b/drivers/cpufreq/rockchip-cpufreq.c
-new file mode 100644
-index 0000000..65c1de9
---- /dev/null
-+++ b/drivers/cpufreq/rockchip-cpufreq.c
-@@ -0,0 +1,55 @@
-+/*
-+ * Rockchip Platforms CPUFreq Support
-+ *
-+ * Copyright (C) 2016 Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * Feng Xiao <xf@rock-chips.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+
-+static const char * const rockchip_compat[] = {
-+	"rockchip,rk2928",
-+	"rockchip,rk3066a",
-+	"rockchip,rk3066b",
-+	"rockchip,rk3188",
-+	"rockchip,rk3288",
-+	"rockchip,rk3366",
-+	"rockchip,rk3368",
-+	"rockchip,rk3399",
++enum throttle_reason_type {
++	NO_THROTTLE = 0,
++	POWERCAP,
++	CPU_OVERTEMP,
++	POWER_SUPPLY_FAILURE,
++	OVERCURRENT,
++	OCC_RESET_THROTTLE,
++	OCC_MAX_REASON
 +};
 +
-+static int __init rockchip_cpufreq_driver_init(void)
-+{
-+	struct platform_device *pdev;
-+	int i;
+ static struct chip {
+ 	unsigned int id;
+ 	bool throttled;
+@@ -61,6 +71,9 @@ static struct chip {
+ 	u8 throttle_reason;
+ 	cpumask_t mask;
+ 	struct work_struct throttle;
++	int throttle_turbo;
++	int throttle_sub_turbo;
++	int reason[OCC_MAX_REASON];
+ } *chips;
+ 
+ static int nr_chips;
+@@ -196,6 +209,42 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	NULL,
+ };
+ 
++#define throttle_attr(name, member)					\
++static ssize_t name##_show(struct cpufreq_policy *policy, char *buf)	\
++{									\
++	struct chip *chip = per_cpu(chip_info, policy->cpu);		\
++									\
++	return sprintf(buf, "%u\n", chip->member);			\
++}									\
++									\
++static struct freq_attr throttle_attr_##name = __ATTR_RO(name)		\
 +
-+	for (i = 0; i < ARRAY_SIZE(rockchip_compat); i++) {
-+		if (of_machine_is_compatible(rockchip_compat[i])) {
-+			pdev = platform_device_register_simple("cpufreq-dt",
-+							       -1, NULL, 0);
-+			return PTR_ERR_OR_ZERO(pdev);
++throttle_attr(unthrottle, reason[NO_THROTTLE]);
++throttle_attr(powercap, reason[POWERCAP]);
++throttle_attr(overtemp, reason[CPU_OVERTEMP]);
++throttle_attr(supply_fault, reason[POWER_SUPPLY_FAILURE]);
++throttle_attr(overcurrent, reason[OVERCURRENT]);
++throttle_attr(occ_reset, reason[OCC_RESET_THROTTLE]);
++throttle_attr(turbo_stat, throttle_turbo);
++throttle_attr(sub_turbo_stat, throttle_sub_turbo);
++
++static struct attribute *throttle_attrs[] = {
++	&throttle_attr_unthrottle.attr,
++	&throttle_attr_powercap.attr,
++	&throttle_attr_overtemp.attr,
++	&throttle_attr_supply_fault.attr,
++	&throttle_attr_overcurrent.attr,
++	&throttle_attr_occ_reset.attr,
++	&throttle_attr_turbo_stat.attr,
++	&throttle_attr_sub_turbo_stat.attr,
++	NULL,
++};
++
++static const struct attribute_group throttle_attr_grp = {
++	.name	= "throttle_stats",
++	.attrs	= throttle_attrs,
++};
++
+ /* Helper routines */
+ 
+ /* Access helpers to power mgt SPR */
+@@ -338,10 +387,14 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 		if (chip->throttled)
+ 			goto next;
+ 		chip->throttled = true;
+-		if (pmsr_pmax < powernv_pstate_info.nominal)
++		if (pmsr_pmax < powernv_pstate_info.nominal) {
+ 			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+ 				     cpu, chip->id, pmsr_pmax,
+ 				     powernv_pstate_info.nominal);
++			chip->throttle_sub_turbo++;
++		} else {
++			chip->throttle_turbo++;
 +		}
+ 		trace_powernv_throttle(chip->id,
+ 				      throttle_reason[chip->throttle_reason],
+ 				      pmsr_pmax);
+@@ -408,6 +461,21 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for (i = 0; i < threads_per_core; i++)
+ 		cpumask_set_cpu(base + i, policy->cpus);
+ 
++	if (!policy->driver_data) {
++		int ret;
++
++		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
++		if (ret) {
++			pr_info("Failed to create throttle stats directory for cpu %d\n",
++				policy->cpu);
++			return ret;
++		}
++		/*
++		 * policy->driver_data is used as a flag for one-time
++		 * creation of throttle sysfs files.
++		 */
++		policy->driver_data = policy;
 +	}
-+
-+	return -ENODEV;
-+}
-+module_init(rockchip_cpufreq_driver_init);
-+
-+MODULE_AUTHOR("Feng Xiao <xf@rock-chips.com>");
-+MODULE_DESCRIPTION("Rockchip cpufreq driver");
-+MODULE_LICENSE("GPL v2");
+ 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
+ }
+ 
+@@ -514,8 +582,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 				break;
+ 
+ 		if (omsg.throttle_status >= 0 &&
+-		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
++		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS) {
+ 			chips[i].throttle_reason = omsg.throttle_status;
++			chips[i].reason[omsg.throttle_status]++;
++		}
+ 
+ 		if (!omsg.throttle_status)
+ 			chips[i].restore = true;
 -- 
-1.9.1
+1.9.3
+
