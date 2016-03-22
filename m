@@ -1,7 +1,7 @@
-From: "Zengtao (B)" <prime.zeng@hisilicon.com>
-Subject: RE: cpufreq_resume warning issue
-Date: Tue, 22 Mar 2016 09:58:23 +0000
-Message-ID: <678F3D1BB717D949B966B68EAEB446ED0A6D9D5A@SZXEMA509-MBX.china.huawei.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq_resume warning issue
+Date: Tue, 22 Mar 2016 16:02:04 +0530
+Message-ID: <20160322103204.GG5272@vireshk-i7>
 References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
  <20160321073228.GC1803@vireshk-i7>
  <678F3D1BB717D949B966B68EAEB446ED0A6D96C7@SZXEMA509-MBX.china.huawei.com>
@@ -10,41 +10,51 @@ References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei
  <20160321090920.GB27778@vireshk-i7>
  <678F3D1BB717D949B966B68EAEB446ED0A6D9756@SZXEMA509-MBX.china.huawei.com>
  <20160321094441.GC27778@vireshk-i7>
+ <678F3D1BB717D949B966B68EAEB446ED0A6D9D5A@SZXEMA509-MBX.china.huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:25249 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757023AbcCVKIM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 06:08:12 -0400
-In-Reply-To: <20160321094441.GC27778@vireshk-i7>
-Content-Language: zh-CN
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35948 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbcCVKck (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 06:32:40 -0400
+Received: by mail-pf0-f173.google.com with SMTP id u190so305780341pfb.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Mar 2016 03:32:39 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <678F3D1BB717D949B966B68EAEB446ED0A6D9D5A@SZXEMA509-MBX.china.huawei.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Zengtao (B)" <prime.zeng@hisilicon.com>
 Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBWaXJlc2ggS3VtYXIgW21haWx0
-bzp2aXJlc2gua3VtYXJAbGluYXJvLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyMSwgMjAx
-NiA1OjQ1IFBNDQo+IFRvOiBaZW5ndGFvIChCKQ0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IGxp
-bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogY3B1ZnJlcV9yZXN1bWUgd2Fy
-bmluZyBpc3N1ZQ0KPiANCj4gT24gMjEtMDMtMTYsIDA5OjI2LCBaZW5ndGFvIChCKSB3cm90ZToN
-Cj4gPiBBY3R1YWxseSB0aGUgZnJlcSBpcyB0dW5hYmxlLCBidXQgdm9sdGFnZSBpcyBmaXhlZCwg
-U28gd2UgZml4IGl0IHRvIGEgaGlnaCBmcmVxDQo+IGJlY2F1c2UgbGl0dGxlIGJlbmVmaXQgYnkg
-ZnJlcSB0dW5pbmcuDQo+IA0KPiBPa2F5LCB0aGVuIGp1c3QgZW5hYmxlIGNwdWZyZXEgYW5kIHNl
-bGVjdCBwZXJmb3JtYWNlIGdvdmVybm9yIGZvciBpdCwgd2hpY2ggd2lsbA0KPiBzZWxlY3QgdGhl
-IGhpZ2hlc3QgZnJlcXVlbmN5IGZvciB0aGUgQ1BVLg0KPiANCj4gPiBTaW5jZSB0aGUgRFZGUyBo
-YXMgcGVyY3B1IGR2ZnMgcG9saWN5LCBzbyBJIHRoaW5rIGl0IGlzIHJlYXNvbmFibGUgdG8gYWxs
-b3cgY3B1DQo+IHRvIGRpc2FibGUgZHZmcywgd2hhdCBkbyB5b3UgdGhpbmsgYWJvdXQgdGhhdD8N
-Cj4gDQo+IEl0cyBub3QgdGhhdCB3ZSBjYW4ndCB1cGRhdGUgY29yZSBjb2RlIGZvciBzb21lIHNw
-ZWNpZmljIHVzZSBjYXNlcywgYnV0IGhlcmUNCj4geW91DQo+IHNob3VsZCBiZSB1c2luZyBjcHVm
-cmVxIGNvcmUgZm9yIHRoZSBDUFUwIGFzIHdlbGwsIHdpdGggYSBwcm9wZXIgZ292ZXJub3INCj4g
-d2hpY2gNCj4gd291bGQgbm90IGhhdmUgYW55IG92ZXJoZWFkcyBkdXJpbmcgb3BlcmF0aW9ucy4N
-Cg0KWWVzLCBidXQgd2UgYXJlIGp1c3QgY2hlYXRpbmcgdGhlIGtlcm5lbCBieSBkb2luZyBzbywg
-dGhlIGNwdSBmcmVxdWVuY3kgZ292ZXJub3Igb2YgQ1BVMCBpcyBmaXhlZCANCmV2ZW4gaXQgaGFz
-IGdvdCB0aGUgdHVuYWJsZSBpbnRlcmZhY2UgdG8gdXNlcnMuIA0KDQpPZiBjb3Vyc2UsIEkgY2Fu
-IHJlc29sdmUgbXkgcHJvYmxlbSBieSB5b3VyIG1ldGhvZCwgYnV0IEkgc3RpbGwgdGhpbmsgdGhh
-dCB0aGUgZHZmcyBzaG91bGQgZ2V0IGZsZXhpYmxlDQogZW5vdWdoIHRvIGRlYWwgd2l0aCBteSBj
-YXNlKG1heWJlIGJpZyBjaGFuZ2UgZnJvbSB0aGUgY3VycmVudCBmcmFtZXdvcms/KS4gDQoNCkJS
-DQpaZW5ndGFvIA0KDQo=
+On 22-03-16, 09:58, Zengtao (B) wrote:
+> Yes, but we are just cheating the kernel by doing so, the cpu frequency governor of CPU0 is fixed 
+> even it has got the tunable interface to users. 
+
+You are mixing policy and features here..
+
+Feature wise, your platform has the capability of supporting dynamic-frequency
+scaling for CPU0 (A7), but as a policy you don't see much advantage of doing
+that today.
+
+But things will change, and perhaps your customers would want to do things
+differently to save small amounts of powers lately. They would be required to go
+through the code then to make that happen.
+
+That's why I said, Keep the feature in place and support dynamic-frequency
+switching for CPU0 as well (Its not gonna consume much of your time, I am quite
+sure), and let people deal with policy. They can choose performance/powersave or
+ondemand later on. They would be required to touch few sysfs file only then.
+
+Changing core for this would mean, that we go through each and every line of
+cpufreq-core again, as its an assumption we always had. Its not impossible and
+may be required to be done in future, but it has to be worth the effort.
+
+In this case, you are trying to avoid a small amount of effort, as you don't see
+much value in terms of saving power.
+
+But believe me, its a new platform and things will change. All current platforms
+that are supporting DVFS for A7s aren't idiots :)
+
+-- 
+viresh
