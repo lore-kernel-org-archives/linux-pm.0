@@ -1,60 +1,66 @@
-From: Mike Galbraith <umgwanakikbuti@gmail.com>
-Subject: Re: [PATCH] cpufreq: governor: Always schedule work on the CPU
- running update
-Date: Tue, 22 Mar 2016 05:51:45 +0100
-Message-ID: <1458622305.29862.9.camel@gmail.com>
-References: <3454445.v5QdUCRORG@vostro.rjw.lan>
-	 <20160322025112.GQ27778@vireshk-i7>
+From: dawei chien <dawei.chien@mediatek.com>
+Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Tue, 22 Mar 2016 13:13:06 +0800
+Message-ID: <1458623586.674.2.camel@mtksdaap41>
+References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
+	 <20151217015231.GC3496@ubuntu> <1458017620.30412.3.camel@mtksdaap41>
+	 <20160315061709.GC13831@vireshk-mac-ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160322025112.GQ27778@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw02.mediatek.com ([210.61.82.184]:48619 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750824AbcCVFNO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 01:13:14 -0400
+In-Reply-To: <20160315061709.GC13831@vireshk-mac-ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Tue, 2016-03-22 at 08:21 +0530, Viresh Kumar wrote:
-> On 22-03-16, 01:17, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, 2016-03-15 at 13:17 +0700, Viresh Kumar wrote:
+> On 15-03-16, 12:53, dawei chien wrote:
+> > On Thu, 2015-12-17 at 09:52 +0800, Viresh Kumar wrote:
+> > > On 16-12-15, 21:29, Dawei Chien wrote:
+> > > > Use Intelligent Power Allocation (IPA) technical to add dynamic power model
+> > > > for binding CPU thermal zone. The power allocator governor allocates power
+> > > > budget to control CPU temperature.
+> > > >
+> > > > Power Allocator governor is able to keep SOC temperature within a defined
+> > > > temperature range to avoid SOC overheat and keep it's performance.
+> > > > mt8173-cpufreq.c need to register its' own power model with power allocator
+> > > > thermal governor, so that power allocator governor can allocates suitable
+> > > > power budget to control CPU temperature.
+> > > >
+> > > > Binding document is refer to this patchset
+> > > > https://lkml.org/lkml/2015/11/30/239
+> > > >
+> > > > Change since V5:
+> > > > 1. Remove thermal sensor ID from phandles
+> > > 
+> > > Though you should have included this in the new version, but still
+> > > 
+> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > 
+> > > --
+> > > viresh
 > > 
-> > Modify dbs_irq_work() to always schedule the process-context work
-> > on the current CPU which also ran the dbs_update_util_handler()
-> > that the irq_work being handled came from.
+> > Hi Viresh,
+> > Would you please pull this patch to your tree since following patch
+> > already pulled in, thank you.
 > > 
-> > This causes the entire frequency update handling (involving the
-> > "ondemand" or "conservative" governors) to be carried out by the
-> > CPU whose frequency is to be updated and reduces the overall amount
-> > of inter-CPU noise related to cpufreq.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/cpufreq/cpufreq_governor.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> > +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> > @@ -245,7 +245,7 @@ static void dbs_irq_work(struct irq_work
-> >  	struct policy_dbs_info *policy_dbs;
-> >  
-> >  	policy_dbs = container_of(irq_work,
-> > structwq_unbound_cpumask policy_dbs_info, irq_work);
-> > -	schedule_work(&policy_dbs->work);
-> > +	schedule_work_on(smp_processor_id(), &policy_dbs->work);
-> >  }
-> >  
-> >  static void dbs_update_util_handler(struct update_util_data *data,
-> > u64 time,
+> > https://lkml.org/lkml/2015/11/30/239
 > 
-> queue_work() used to queue the work on local cpu by default, has that
-> changed now ?
+> Its Rafael, who is going to apply this one.
+> 
+> Can you please resend it as he may not have it in patchworks?
+> 
 
-By default it still will, but the user now has the option to deflect
-work items with an unspecified target.  These will land on a CPU
-included in wq_unbound_cpumask iff the current CPU is excluded
-therefrom.
+Hi Rafael,
+Would you merge this patch to your tee, thank you.
 
-	-Mike
+BR,
+Dawei
+
