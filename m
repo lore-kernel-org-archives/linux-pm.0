@@ -1,46 +1,50 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH] lan78xx: Protect runtime_auto check by #ifdef CONFIG_PM
-Date: Tue, 22 Mar 2016 10:50:09 +0100
-Message-ID: <1458640209.1990.8.camel@suse.com>
-References: <Pine.LNX.4.44L0.1603211527570.1708-100000@iolanthe.rowland.org>
+From: "Zengtao (B)" <prime.zeng@hisilicon.com>
+Subject: RE: cpufreq_resume warning issue
+Date: Tue, 22 Mar 2016 09:58:23 +0000
+Message-ID: <678F3D1BB717D949B966B68EAEB446ED0A6D9D5A@SZXEMA509-MBX.china.huawei.com>
+References: <678F3D1BB717D949B966B68EAEB446ED0A6D8624@SZXEMA509-MBX.china.huawei.com>
+ <20160321073228.GC1803@vireshk-i7>
+ <678F3D1BB717D949B966B68EAEB446ED0A6D96C7@SZXEMA509-MBX.china.huawei.com>
+ <20160321083422.GE1803@vireshk-i7>
+ <678F3D1BB717D949B966B68EAEB446ED0A6D9738@SZXEMA509-MBX.china.huawei.com>
+ <20160321090920.GB27778@vireshk-i7>
+ <678F3D1BB717D949B966B68EAEB446ED0A6D9756@SZXEMA509-MBX.china.huawei.com>
+ <20160321094441.GC27778@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1603211527570.1708-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "David S. Miller" <davem@davemloft.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>, Woojung Huh <woojung.huh@microchip.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:25249 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757023AbcCVKIM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Mar 2016 06:08:12 -0400
+In-Reply-To: <20160321094441.GC27778@vireshk-i7>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, 2016-03-21 at 15:30 -0400, Alan Stern wrote:
-> On Mon, 21 Mar 2016, Oliver Neukum wrote:
-> 
-
-> > We have an autosuspend timeout because we think that IO, if it will
-> > come at all, is likeliest to come soon. If, however, the IO is
-> > periodic that heuristics is false.
-> > To save most power the driver must either decide that the interval
-> > is too short or suspend immediately. So if we are lucky enough
-> > to have the frequency in the kernel, we should use that information.
-> 
-> The autosuspend timeout is set by userspace.  The kernel may assign a
-
-Thus it should apply to all IO originating in user space.
-But only to that IO.
-
-> default value, but the user can always override it.  Given this, I 
-> don't see how the kernel can use frequency information (and I'm not 
-> sure where that information would come from in the first place).
-
-It can ignore internal IO for the purpose of the timeout.
-If such IO is performed while the device is active, don't
-alter the timer. Otherwise resume the device and look at
-the provided hint and suspend again immediately if the period is long
-enough.
-If IO is generated periodically in the kernel, the kernel must know that
-period.
-
-	Regards
-		Oliver
- 
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBWaXJlc2ggS3VtYXIgW21haWx0
+bzp2aXJlc2gua3VtYXJAbGluYXJvLm9yZ10NCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyMSwgMjAx
+NiA1OjQ1IFBNDQo+IFRvOiBaZW5ndGFvIChCKQ0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IGxp
+bnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogY3B1ZnJlcV9yZXN1bWUgd2Fy
+bmluZyBpc3N1ZQ0KPiANCj4gT24gMjEtMDMtMTYsIDA5OjI2LCBaZW5ndGFvIChCKSB3cm90ZToN
+Cj4gPiBBY3R1YWxseSB0aGUgZnJlcSBpcyB0dW5hYmxlLCBidXQgdm9sdGFnZSBpcyBmaXhlZCwg
+U28gd2UgZml4IGl0IHRvIGEgaGlnaCBmcmVxDQo+IGJlY2F1c2UgbGl0dGxlIGJlbmVmaXQgYnkg
+ZnJlcSB0dW5pbmcuDQo+IA0KPiBPa2F5LCB0aGVuIGp1c3QgZW5hYmxlIGNwdWZyZXEgYW5kIHNl
+bGVjdCBwZXJmb3JtYWNlIGdvdmVybm9yIGZvciBpdCwgd2hpY2ggd2lsbA0KPiBzZWxlY3QgdGhl
+IGhpZ2hlc3QgZnJlcXVlbmN5IGZvciB0aGUgQ1BVLg0KPiANCj4gPiBTaW5jZSB0aGUgRFZGUyBo
+YXMgcGVyY3B1IGR2ZnMgcG9saWN5LCBzbyBJIHRoaW5rIGl0IGlzIHJlYXNvbmFibGUgdG8gYWxs
+b3cgY3B1DQo+IHRvIGRpc2FibGUgZHZmcywgd2hhdCBkbyB5b3UgdGhpbmsgYWJvdXQgdGhhdD8N
+Cj4gDQo+IEl0cyBub3QgdGhhdCB3ZSBjYW4ndCB1cGRhdGUgY29yZSBjb2RlIGZvciBzb21lIHNw
+ZWNpZmljIHVzZSBjYXNlcywgYnV0IGhlcmUNCj4geW91DQo+IHNob3VsZCBiZSB1c2luZyBjcHVm
+cmVxIGNvcmUgZm9yIHRoZSBDUFUwIGFzIHdlbGwsIHdpdGggYSBwcm9wZXIgZ292ZXJub3INCj4g
+d2hpY2gNCj4gd291bGQgbm90IGhhdmUgYW55IG92ZXJoZWFkcyBkdXJpbmcgb3BlcmF0aW9ucy4N
+Cg0KWWVzLCBidXQgd2UgYXJlIGp1c3QgY2hlYXRpbmcgdGhlIGtlcm5lbCBieSBkb2luZyBzbywg
+dGhlIGNwdSBmcmVxdWVuY3kgZ292ZXJub3Igb2YgQ1BVMCBpcyBmaXhlZCANCmV2ZW4gaXQgaGFz
+IGdvdCB0aGUgdHVuYWJsZSBpbnRlcmZhY2UgdG8gdXNlcnMuIA0KDQpPZiBjb3Vyc2UsIEkgY2Fu
+IHJlc29sdmUgbXkgcHJvYmxlbSBieSB5b3VyIG1ldGhvZCwgYnV0IEkgc3RpbGwgdGhpbmsgdGhh
+dCB0aGUgZHZmcyBzaG91bGQgZ2V0IGZsZXhpYmxlDQogZW5vdWdoIHRvIGRlYWwgd2l0aCBteSBj
+YXNlKG1heWJlIGJpZyBjaGFuZ2UgZnJvbSB0aGUgY3VycmVudCBmcmFtZXdvcms/KS4gDQoNCkJS
+DQpaZW5ndGFvIA0KDQo=
