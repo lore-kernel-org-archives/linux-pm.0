@@ -1,66 +1,139 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v6 4/4] ARM64: dts: rockchip: add syscon-reboot-mode DT node
-Date: Tue, 22 Mar 2016 19:38:58 +0800
-Message-ID: <1458646738-687-1-git-send-email-andy.yan@rock-chips.com>
-References: <1458646525-491-1-git-send-email-andy.yan@rock-chips.com>
+From: Feng Xiao <xf@rock-chips.com>
+Subject: [PATCH v1] cpufreq: rockchip: add driver
+Date: Tue, 22 Mar 2016 19:57:28 +0800
+Message-ID: <1458647848-48999-1-git-send-email-xf@rock-chips.com>
+References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458646525-491-1-git-send-email-andy.yan@rock-chips.com>
+In-Reply-To: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
-Cc: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, olof@lixom.net, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, matthias.bgg@gmail.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, f.fainelli@gmail.com, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, linux-kernel@vger.kernel.org, wxt@rock-chips.com, dwmw2@infradead.org, mark.rutland@arm.com, Andy Yan <andy.yan@rock-chips.com>
+To: linux@arm.linux.org.uk, heiko@sntech.de, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com, Feng Xiao <xf@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add syscon-reboot-mode driver DT node for rk3368 platform
+This driver will directly use cpufreq-dt driver as backend.
 
-Tested-by: Caesar Wang <caesar.upstream@gmail.com>
-Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+As there is not a generic devicetree board file(rockchip.c)
+on ARM64 architecture, so remove platform_device_register_simple
+in rockchip.c and add a new cpufreq driver to support Rockchip
+SoCs.
 
+Signed-off-by: Feng Xiao <xf@rock-chips.com>
 ---
+change in v1:
+- add compatible check
 
-Changes in v6: None
-Changes in v5: None
-Changes in v4: None
-Changes in v3:
-- descirbe all reboot mode as properity instead of subnode
+ arch/arm/mach-rockchip/rockchip.c  |  1 -
+ drivers/cpufreq/Kconfig.arm        | 10 +++++++
+ drivers/cpufreq/Makefile           |  1 +
+ drivers/cpufreq/rockchip-cpufreq.c | 55 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 66 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/cpufreq/rockchip-cpufreq.c
 
-Changes in v2:
-- make this node as a subnode of pmugrf
-
-Changes in v1: None
-
- arch/arm64/boot/dts/rockchip/rk3368.dtsi | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3368.dtsi b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-index 122777b..df062ea 100644
---- a/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-@@ -45,6 +45,7 @@
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
-+#include <dt-bindings/soc/rockchip_boot-mode.h>
- #include <dt-bindings/thermal/thermal.h>
+diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
+index 3f07cc5..beb71da 100644
+--- a/arch/arm/mach-rockchip/rockchip.c
++++ b/arch/arm/mach-rockchip/rockchip.c
+@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
+ {
+ 	rockchip_suspend_init();
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+-	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
+ }
  
- / {
-@@ -554,8 +555,17 @@
- 	};
+ static const char * const rockchip_board_dt_compat[] = {
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 14b1f93..1786315 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -97,6 +97,16 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
  
- 	pmugrf: syscon@ff738000 {
--		compatible = "rockchip,rk3368-pmugrf", "syscon";
-+		compatible = "rockchip,rk3368-pmugrf", "syscon", "simple-mfd";
- 		reg = <0x0 0xff738000 0x0 0x1000>;
++config ARM_ROCKCHIP_CPUFREQ
++	tristate "Rockchip CPUfreq driver"
++	depends on ARCH_ROCKCHIP && CPUFREQ_DT
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver support for Rockchip SoCs.
++	  The driver will directly use cpufreq-dt driver as backend.
 +
-+		reboot-mode {
-+			compatible = "syscon-reboot-mode";
-+			offset = <0x200>;
-+			mode-normal = <BOOT_NORMAL>;
-+			mode-recovery = <BOOT_RECOVERY>;
-+			mode-bootloader = <BOOT_FASTBOOT>;
-+			mode-loader = <BOOT_BL_DOWNLOAD>;
-+		};
- 	};
- 
- 	cru: clock-controller@ff760000 {
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 9e63fb1..91d8bb7 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
++obj-$(CONFIG_ARM_ROCKCHIP_CPUFREQ)	+= rockchip-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+diff --git a/drivers/cpufreq/rockchip-cpufreq.c b/drivers/cpufreq/rockchip-cpufreq.c
+new file mode 100644
+index 0000000..65c1de9
+--- /dev/null
++++ b/drivers/cpufreq/rockchip-cpufreq.c
+@@ -0,0 +1,55 @@
++/*
++ * Rockchip Platforms CPUFreq Support
++ *
++ * Copyright (C) 2016 Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * Feng Xiao <xf@rock-chips.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++static const char * const rockchip_compat[] = {
++	"rockchip,rk2928",
++	"rockchip,rk3066a",
++	"rockchip,rk3066b",
++	"rockchip,rk3188",
++	"rockchip,rk3288",
++	"rockchip,rk3366",
++	"rockchip,rk3368",
++	"rockchip,rk3399",
++};
++
++static int __init rockchip_cpufreq_driver_init(void)
++{
++	struct platform_device *pdev;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(rockchip_compat); i++) {
++		if (of_machine_is_compatible(rockchip_compat[i])) {
++			pdev = platform_device_register_simple("cpufreq-dt",
++							       -1, NULL, 0);
++			return PTR_ERR_OR_ZERO(pdev);
++		}
++	}
++
++	return -ENODEV;
++}
++module_init(rockchip_cpufreq_driver_init);
++
++MODULE_AUTHOR("Feng Xiao <xf@rock-chips.com>");
++MODULE_DESCRIPTION("Rockchip cpufreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
