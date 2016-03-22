@@ -1,47 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: governor: Always schedule work on the CPU running update
-Date: Tue, 22 Mar 2016 01:17:43 +0100
-Message-ID: <3454445.v5QdUCRORG@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41600 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750934AbcCVAPe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 20:15:34 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: [PATCH 2/2] sched/fair: do not call cpufreq hook unless util changed
+Date: Mon, 21 Mar 2016 17:21:08 -0700
+Message-ID: <1458606068-7476-2-git-send-email-smuckle@linaro.org>
+References: <1458606068-7476-1-git-send-email-smuckle@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1458606068-7476-1-git-send-email-smuckle@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+There's no reason to call the cpufreq hook if the root cfs_rq
+utilization has not been modified.
 
-Modify dbs_irq_work() to always schedule the process-context work
-on the current CPU which also ran the dbs_update_util_handler()
-that the irq_work being handled came from.
-
-This causes the entire frequency update handling (involving the
-"ondemand" or "conservative" governors) to be carried out by the
-CPU whose frequency is to be updated and reduces the overall amount
-of inter-CPU noise related to cpufreq.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/sched/fair.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -245,7 +245,7 @@ static void dbs_irq_work(struct irq_work
- 	struct policy_dbs_info *policy_dbs;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index d418deb04049..af58e826cffe 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2826,20 +2826,21 @@ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ {
+ 	struct sched_avg *sa = &cfs_rq->avg;
+ 	struct rq *rq = rq_of(cfs_rq);
+-	int decayed, removed = 0;
++	int decayed, removed_load = 0, removed_util = 0;
+ 	int cpu = cpu_of(rq);
  
- 	policy_dbs = container_of(irq_work, struct policy_dbs_info, irq_work);
--	schedule_work(&policy_dbs->work);
-+	schedule_work_on(smp_processor_id(), &policy_dbs->work);
+ 	if (atomic_long_read(&cfs_rq->removed_load_avg)) {
+ 		s64 r = atomic_long_xchg(&cfs_rq->removed_load_avg, 0);
+ 		sa->load_avg = max_t(long, sa->load_avg - r, 0);
+ 		sa->load_sum = max_t(s64, sa->load_sum - r * LOAD_AVG_MAX, 0);
+-		removed = 1;
++		removed_load = 1;
+ 	}
+ 
+ 	if (atomic_long_read(&cfs_rq->removed_util_avg)) {
+ 		long r = atomic_long_xchg(&cfs_rq->removed_util_avg, 0);
+ 		sa->util_avg = max_t(long, sa->util_avg - r, 0);
+ 		sa->util_sum = max_t(s32, sa->util_sum - r * LOAD_AVG_MAX, 0);
++		removed_util = 1;
+ 	}
+ 
+ 	decayed = __update_load_avg(now, cpu, sa,
+@@ -2850,7 +2851,8 @@ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+ #endif
+ 
+-	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
++	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq &&
++	    (decayed || removed_util)) {
+ 		unsigned long max = rq->cpu_capacity_orig;
+ 
+ 		/*
+@@ -2873,7 +2875,7 @@ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 				    min(sa->util_avg, max), max);
+ 	}
+ 
+-	return decayed || removed;
++	return decayed || removed_load;
  }
  
- static void dbs_update_util_handler(struct update_util_data *data, u64 time,
-
+ /* Update task and its cfs_rq load average */
+-- 
+2.4.10
