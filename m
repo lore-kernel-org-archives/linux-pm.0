@@ -1,100 +1,73 @@
-From: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH][v6] ACPI / PM: Introduce efi poweroff for HW-full platforms without _S5
-Date: Tue, 22 Mar 2016 08:51:10 +0800
-Message-ID: <1458607870-22522-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Cc: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Feng Xiao <xf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [PATCH] cpufreq: rockchip: add driver
+Date: Tue, 22 Mar 2016 09:28:00 +0800
+Message-ID: <56F09FA0.4030201@rock-chips.com>
+References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
+ <56EFF610.6040402@rock-chips.com> <1971421.XfIKeB8O8v@diego>
+ <1677635.LBekym086Y@diego>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1677635.LBekym086Y@diego>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, zyw-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The problem is Linux registers pm_power_off = efi_power_off only if
-we are in hardware reduced mode. Actually, what we also want is to do
-this when ACPI S5 is simply not supported on non-legacy platforms.
-Since some future Intel platforms are HW-full mode where the DSDT
-fails to supply an _S5 object(without SLP_TYP), we should let such
-kind of platform to leverage efi runtime service to poweroff.
-
-This patch uses efi power off as first choice when S5 is unavailable,
-even if there is a customized poweroff(driver provided, eg).
-Meanwhile, the legacy platforms will not be affected because there is
-no path for them to overwrite the pm_power_off to efi power off.
-
-Suggested-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Reviewed-by: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
----
-v6:
- - Some modifications in the commit message.
-v5:
- - Revert to version 2, enforce EFI poweroff for such kind
-   of platforms.
-v4:
- - Since in v3 efi_poweroff_required() is not guaranteed to run
-   after all of the other code that may register alternative
-   power off handling, add the pm_power_off_default that would
-   be used by pm_power_off if nothing else is available.
-v3:
- - Only assign pm_power_off to efi_power_off when there are no
-   other pm_power_off registered at that time, in case other
-   commponents would like to customize their own implementation.
----
-v2:
- - Convert the acpi_no_s5 to a global bool variable in sleep.c and
-   add a declaration to include/linux/acpi.h.
----
- arch/x86/platform/efi/quirks.c | 2 +-
- drivers/acpi/sleep.c           | 7 +++++++
- include/linux/acpi.h           | 1 +
- 3 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
-index ed30e79..7e5ec62 100644
---- a/arch/x86/platform/efi/quirks.c
-+++ b/arch/x86/platform/efi/quirks.c
-@@ -340,5 +340,5 @@ bool efi_reboot_required(void)
- 
- bool efi_poweroff_required(void)
- {
--	return !!acpi_gbl_reduced_hardware;
-+	return acpi_gbl_reduced_hardware || acpi_no_s5;
- }
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 9cb9752..a33859c 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -25,6 +25,11 @@
- #include "internal.h"
- #include "sleep.h"
- 
-+/*
-+ * Some HW-full platforms do not have _S5, so they may need
-+ * to leverage efi power off for a shutdown.
-+ */
-+bool acpi_no_s5;
- static u8 sleep_states[ACPI_S_STATE_COUNT];
- 
- static void acpi_sleep_tts_switch(u32 acpi_state)
-@@ -846,6 +851,8 @@ int __init acpi_sleep_init(void)
- 		sleep_states[ACPI_STATE_S5] = 1;
- 		pm_power_off_prepare = acpi_power_off_prepare;
- 		pm_power_off = acpi_power_off;
-+	} else {
-+		acpi_no_s5 = true;
- 	}
- 
- 	supported[0] = 0;
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 06ed7e5..4d2e67f 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -278,6 +278,7 @@ void acpi_irq_stats_init(void);
- extern u32 acpi_irq_handled;
- extern u32 acpi_irq_not_handled;
- extern unsigned int acpi_sci_irq;
-+extern bool acpi_no_s5;
- #define INVALID_ACPI_IRQ	((unsigned)-1)
- static inline bool acpi_sci_irq_valid(void)
- {
--- 
-1.8.4.2
+SSBnZXQgaXQsIHRoYW5rcy4KCuWcqCAyMDE2LzMvMjEgMjM6NTIsIEhlaWtvIFN0w7xibmVyIOWG
+memBkzoKPiBBbSBNb250YWcsIDIxLiBNw6RyeiAyMDE2LCAxNjoxMzo0MCBzY2hyaWViIEhlaWtv
+IFN0w7xibmVyOgo+PiBIaSwKPj4KPj4gQW0gTW9udGFnLCAyMS4gTcOkcnogMjAxNiwgMjE6MjQ6
+MzIgc2NocmllYiBGZW5nIFhpYW86Cj4+PiDlnKggMjAxNi8zLzIxIDE3OjU4LCBWaXJlc2ggS3Vt
+YXIg5YaZ6YGTOgo+Pj4+IE9uIDIxLTAzLTE2LCAxMDo1NCwgSGVpa28gU3TDvGJuZXIgd3JvdGU6
+Cj4+Pj4+IEkgaGFkbid0IHNlZW4gdGhhdCB5ZXQgLi4uIG5pY2UgdGhhdCBjcHVmcmVxLWR0IG5v
+dyBhbHNvIHN1cHBvcnRzCj4+Pj4+IGNsdXN0ZXJzIDotKQo+Pj4+Pgo+Pj4+PiBUaGUgb3RoZXIg
+cGFydCBzdGlsbCBzdGFuZHMgdGhvdWdoLCBhcyB3ZSBwcm9iYWJseSBzaG91bGQgcmVnaXN0ZXIg
+dGhlCj4+Pj4+IHBsYXRmb3JtLWRldmljZSBzb21ld2hlcmUgZWxzZSBhbmQgbm90IGluIHNvbWUg
+bmV3IHNwZWNpYWwgbW9kdWxlLgo+Pj4+Pgo+Pj4+PiBXaGVuIGV2ZXJ5dGhpbmcgaXMgdXNpbmcg
+Y3B1ZnJlcS1kdCBub3csIEkgZ3Vlc3Mgd2UgY291bGQganVzdCBhZGQgaXQKPj4+Pj4gdG8KPj4+
+Pj4gdGhlIGNvcmUgcm9ja2NoaXAgY2xrLWNvZGUuIE9yIHdhcyB0aGVyZSBzb21lIGFncmVlbWVu
+dCB3aGVyZSB0aGlzCj4+Pj4+IHNob3VsZCBiZSBkb25lIChvYnZpb3VzbHkgbm90IHRoZSBkZXZp
+Y2V0cmVlIGl0c2VsZik/Cj4+PiBPZl9jbGtfaW5pdCBpcyBjYWxsZWQgZWFybHksIGFuZCBwbGF0
+Zm9ybV9kZXZpY2VfcmVnaXN0ZXJfc2ltcGxlIHNob3VsZAo+Pj4gYmUgY2FsbGVkIGFmdGVyIGRl
+dmljZXNfaW5pdCwgaXQgd2lsbCBiZSBmYWlsZWQgdG8gZG8gaXQgZnJvbSBjbGstY29kZS4KPj4+
+IFNvIHdlIG5lZWQgYWRkIGEgbmV3IGZpbGUgb3IgYWRkIG1vZHVsZV9pbml0IHRvIGVhY2ggY2xv
+Y2sgY29udHJvbGxlcgo+Pj4gZHJpdmVyKGxpa2UgY2xrLXJrMzM2OC5jLCBjbGstcmszMzk5LmMp
+ID8KPj4gYXMgVmlyZXNoIHNhaWQsIGl0IHNob3VsZCBiZSBvayB0byBkbyBpdCBsaWtlIHlvdXIg
+YXBwcm9hY2ggY3JlYXRpbmcgYQo+PiBtb2R1bGUgaW4gZHJpdmVycy9jcHVmcmVxLiBCdXQgdGhl
+IGNvbXBhdGlibGUgY2hlY2sgaXMgbmVjZXNzYXJ5Lgo+Pgo+PiBEb2luZyBpdCB0aGlzIHdheSBh
+bHNvIG1ha2VzIGl0IGVhc2llciB0byBoYXZlCj4gU2VlbSBsaWtlIEkgZm9yZ290IHRoZSBjb21w
+bGV0ZSBteSBzZW50ZW5jZSBoZXJlLiBUaGlzIHNob3VsZCd2ZSBiZWVuCj4KPiBEb2luZyBpdCB0
+aGlzIHdheSBhbHNvIG1ha2VzIGl0IGVhc2llciB0byBoYXZlIGV2ZXJ5dGhpbmcgZ28gaW50byBj
+cHVmcmVxLWR0Cj4gb25jZSB0aGF0IHdoaXRlbGlzdCBhcHBlYXJzIHRoYXQgVmlyZXNoIHdyb3Rl
+IGFib3V0LiBTbyB0aGlzIG1pZ2h0IGJlIGJldHRlcgo+IHRoYW4gdG8gZGlzdHJpYnV0ZSB0aGlz
+IHN0dWZmIGFyb3VuZCBvdGhlciBzdWJzeXN0ZW1zLCBhcyBJIG9yaWdpbmFsbHkKPiBzdWdnZXN0
+ZWQuCj4KPj4+PiBZZWFoLCB0aGVyZSB3YXMgYSBkaXNjdXNzaW9uIGFyb3VuZCBjcmVhdGluZyBh
+IHdoaXRlIG9yIGJsYWNrIGxpc3Qgb2YKPj4+PiBwbGF0Zm9ybXMgdGhhdCB3YW50IHRvIGNyZWF0
+ZSBhIHBsYXRmb3JtIGRldmljZSBmb3IgY3B1ZnJlcS1kdC4gVGhhdCBjYW4KPj4+PiBiZSBkb25l
+IGluIGNwdWZyZXEtZHQuYyBvciBhIG5ldyBmaWxlLCBidXQgSSBoYXZlbid0IHdvcmtlZCBvdXQg
+b24gdGhhdAo+Pj4+IHlldC4KPj4+Pgo+Pj4+IFlvdSBjYW4gZG8gaXQgZnJvbSBjbGstY29kZSBv
+ciBmcm9tIHRoZSBkcml2ZXIgdGhhdCB3YXMgYWRkZWQgaW4gdGhpcwo+Pj4+IHRocmVhZC4gSnVz
+dCB0aGF0IHlvdSBuZWVkIHRvIG1hdGNoIHlvdXIgcGxhdGZvcm0ncyBjb21wYXRpYmxlIHN0cmlu
+Zwo+Pj4+IGJlZm9yZSBkb2luZyB0aGF0Lgo+Pj4gUm9ja2NoaXAtY3B1ZnJlcS5jIGRlcGVuZHMg
+b24gQVJNX1JPQ0tDSElQX0NQVUZSRVEsIGl0IHdpbGwgbm90IGJlCj4+PiBjb21waWxlZCBvbiBu
+b24tUm9ja2NoaXAgcGxhdGZvcm1zLgo+Pj4gVGhlIGRyaXZlciBjYW4gc3VwcG9ydCBhbGwgUm9j
+a2NoaXAgU29DcyB1cCB0byBub3csIGFkZAo+Pj4gb2ZfbWFjaGluZV9pc19jb21wYXRpYmxlIG1h
+eSBiZSByZWR1bmRhbnQgPwo+PiBQbGVhc2UgYWx3YXlzIGtlZXAgbXVsdGlwbGF0Zm9ybSBpbiBt
+aW5kLiBUaGVzZSBkYXlzIHRoZSBrZXJuZWwgY2FuIGJlCj4+IGNvbXBpbGVkIGZvciBtdWx0aXBs
+ZSBhcmNoaXRlY3R1cmVzIGF0IHRoZSBzYW1lIHRpbWUsIHNvIHlvdSBjYW4gaGF2ZQo+PiBzdXBw
+b3J0IGZvciBSb2NrY2hpcCwgRXh5bm9zLCBRdWFsY29tIGFuZCB3aGF0ZXZlciBpbiB0aGUgc2Ft
+ZSBrZXJuZWwKPj4gaW1hZ2UuCj4+Cj4+IFRoZXJlZm9yZSBhIGNvbXBpbGUtdGltZSBjaGVjayBp
+cyBub3QgZW5vdWdoIGFuZCB5b3UgbmVlZCB0byBjaGVjayB0aGUKPj4gYWN0dWFsbHkgcnVubmlu
+ZyBtYWNoaW5lIGFzIHdlbGwuCj4+Cj4+Cj4+IEhlaWtvCj4KPgo+CgoKCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1haWxpbmcg
+bGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZy
+YWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
