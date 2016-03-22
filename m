@@ -1,73 +1,88 @@
-From: Feng Xiao <xf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: rockchip: add driver
-Date: Tue, 22 Mar 2016 09:28:00 +0800
-Message-ID: <56F09FA0.4030201@rock-chips.com>
-References: <1458303004-26445-1-git-send-email-xf@rock-chips.com>
- <56EFF610.6040402@rock-chips.com> <1971421.XfIKeB8O8v@diego>
- <1677635.LBekym086Y@diego>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v6 5/7][Resend] cpufreq: Move governor symbols to cpufreq.h
+Date: Tue, 22 Mar 2016 02:51:56 +0100
+Message-ID: <1586499.XsEFRqGpvD@vostro.rjw.lan>
+References: <7262976.zPkLj56ATU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1677635.LBekym086Y@diego>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, zyw-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64686 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754366AbcCVB4h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Mar 2016 21:56:37 -0400
+In-Reply-To: <7262976.zPkLj56ATU@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-SSBnZXQgaXQsIHRoYW5rcy4KCuWcqCAyMDE2LzMvMjEgMjM6NTIsIEhlaWtvIFN0w7xibmVyIOWG
-memBkzoKPiBBbSBNb250YWcsIDIxLiBNw6RyeiAyMDE2LCAxNjoxMzo0MCBzY2hyaWViIEhlaWtv
-IFN0w7xibmVyOgo+PiBIaSwKPj4KPj4gQW0gTW9udGFnLCAyMS4gTcOkcnogMjAxNiwgMjE6MjQ6
-MzIgc2NocmllYiBGZW5nIFhpYW86Cj4+PiDlnKggMjAxNi8zLzIxIDE3OjU4LCBWaXJlc2ggS3Vt
-YXIg5YaZ6YGTOgo+Pj4+IE9uIDIxLTAzLTE2LCAxMDo1NCwgSGVpa28gU3TDvGJuZXIgd3JvdGU6
-Cj4+Pj4+IEkgaGFkbid0IHNlZW4gdGhhdCB5ZXQgLi4uIG5pY2UgdGhhdCBjcHVmcmVxLWR0IG5v
-dyBhbHNvIHN1cHBvcnRzCj4+Pj4+IGNsdXN0ZXJzIDotKQo+Pj4+Pgo+Pj4+PiBUaGUgb3RoZXIg
-cGFydCBzdGlsbCBzdGFuZHMgdGhvdWdoLCBhcyB3ZSBwcm9iYWJseSBzaG91bGQgcmVnaXN0ZXIg
-dGhlCj4+Pj4+IHBsYXRmb3JtLWRldmljZSBzb21ld2hlcmUgZWxzZSBhbmQgbm90IGluIHNvbWUg
-bmV3IHNwZWNpYWwgbW9kdWxlLgo+Pj4+Pgo+Pj4+PiBXaGVuIGV2ZXJ5dGhpbmcgaXMgdXNpbmcg
-Y3B1ZnJlcS1kdCBub3csIEkgZ3Vlc3Mgd2UgY291bGQganVzdCBhZGQgaXQKPj4+Pj4gdG8KPj4+
-Pj4gdGhlIGNvcmUgcm9ja2NoaXAgY2xrLWNvZGUuIE9yIHdhcyB0aGVyZSBzb21lIGFncmVlbWVu
-dCB3aGVyZSB0aGlzCj4+Pj4+IHNob3VsZCBiZSBkb25lIChvYnZpb3VzbHkgbm90IHRoZSBkZXZp
-Y2V0cmVlIGl0c2VsZik/Cj4+PiBPZl9jbGtfaW5pdCBpcyBjYWxsZWQgZWFybHksIGFuZCBwbGF0
-Zm9ybV9kZXZpY2VfcmVnaXN0ZXJfc2ltcGxlIHNob3VsZAo+Pj4gYmUgY2FsbGVkIGFmdGVyIGRl
-dmljZXNfaW5pdCwgaXQgd2lsbCBiZSBmYWlsZWQgdG8gZG8gaXQgZnJvbSBjbGstY29kZS4KPj4+
-IFNvIHdlIG5lZWQgYWRkIGEgbmV3IGZpbGUgb3IgYWRkIG1vZHVsZV9pbml0IHRvIGVhY2ggY2xv
-Y2sgY29udHJvbGxlcgo+Pj4gZHJpdmVyKGxpa2UgY2xrLXJrMzM2OC5jLCBjbGstcmszMzk5LmMp
-ID8KPj4gYXMgVmlyZXNoIHNhaWQsIGl0IHNob3VsZCBiZSBvayB0byBkbyBpdCBsaWtlIHlvdXIg
-YXBwcm9hY2ggY3JlYXRpbmcgYQo+PiBtb2R1bGUgaW4gZHJpdmVycy9jcHVmcmVxLiBCdXQgdGhl
-IGNvbXBhdGlibGUgY2hlY2sgaXMgbmVjZXNzYXJ5Lgo+Pgo+PiBEb2luZyBpdCB0aGlzIHdheSBh
-bHNvIG1ha2VzIGl0IGVhc2llciB0byBoYXZlCj4gU2VlbSBsaWtlIEkgZm9yZ290IHRoZSBjb21w
-bGV0ZSBteSBzZW50ZW5jZSBoZXJlLiBUaGlzIHNob3VsZCd2ZSBiZWVuCj4KPiBEb2luZyBpdCB0
-aGlzIHdheSBhbHNvIG1ha2VzIGl0IGVhc2llciB0byBoYXZlIGV2ZXJ5dGhpbmcgZ28gaW50byBj
-cHVmcmVxLWR0Cj4gb25jZSB0aGF0IHdoaXRlbGlzdCBhcHBlYXJzIHRoYXQgVmlyZXNoIHdyb3Rl
-IGFib3V0LiBTbyB0aGlzIG1pZ2h0IGJlIGJldHRlcgo+IHRoYW4gdG8gZGlzdHJpYnV0ZSB0aGlz
-IHN0dWZmIGFyb3VuZCBvdGhlciBzdWJzeXN0ZW1zLCBhcyBJIG9yaWdpbmFsbHkKPiBzdWdnZXN0
-ZWQuCj4KPj4+PiBZZWFoLCB0aGVyZSB3YXMgYSBkaXNjdXNzaW9uIGFyb3VuZCBjcmVhdGluZyBh
-IHdoaXRlIG9yIGJsYWNrIGxpc3Qgb2YKPj4+PiBwbGF0Zm9ybXMgdGhhdCB3YW50IHRvIGNyZWF0
-ZSBhIHBsYXRmb3JtIGRldmljZSBmb3IgY3B1ZnJlcS1kdC4gVGhhdCBjYW4KPj4+PiBiZSBkb25l
-IGluIGNwdWZyZXEtZHQuYyBvciBhIG5ldyBmaWxlLCBidXQgSSBoYXZlbid0IHdvcmtlZCBvdXQg
-b24gdGhhdAo+Pj4+IHlldC4KPj4+Pgo+Pj4+IFlvdSBjYW4gZG8gaXQgZnJvbSBjbGstY29kZSBv
-ciBmcm9tIHRoZSBkcml2ZXIgdGhhdCB3YXMgYWRkZWQgaW4gdGhpcwo+Pj4+IHRocmVhZC4gSnVz
-dCB0aGF0IHlvdSBuZWVkIHRvIG1hdGNoIHlvdXIgcGxhdGZvcm0ncyBjb21wYXRpYmxlIHN0cmlu
-Zwo+Pj4+IGJlZm9yZSBkb2luZyB0aGF0Lgo+Pj4gUm9ja2NoaXAtY3B1ZnJlcS5jIGRlcGVuZHMg
-b24gQVJNX1JPQ0tDSElQX0NQVUZSRVEsIGl0IHdpbGwgbm90IGJlCj4+PiBjb21waWxlZCBvbiBu
-b24tUm9ja2NoaXAgcGxhdGZvcm1zLgo+Pj4gVGhlIGRyaXZlciBjYW4gc3VwcG9ydCBhbGwgUm9j
-a2NoaXAgU29DcyB1cCB0byBub3csIGFkZAo+Pj4gb2ZfbWFjaGluZV9pc19jb21wYXRpYmxlIG1h
-eSBiZSByZWR1bmRhbnQgPwo+PiBQbGVhc2UgYWx3YXlzIGtlZXAgbXVsdGlwbGF0Zm9ybSBpbiBt
-aW5kLiBUaGVzZSBkYXlzIHRoZSBrZXJuZWwgY2FuIGJlCj4+IGNvbXBpbGVkIGZvciBtdWx0aXBs
-ZSBhcmNoaXRlY3R1cmVzIGF0IHRoZSBzYW1lIHRpbWUsIHNvIHlvdSBjYW4gaGF2ZQo+PiBzdXBw
-b3J0IGZvciBSb2NrY2hpcCwgRXh5bm9zLCBRdWFsY29tIGFuZCB3aGF0ZXZlciBpbiB0aGUgc2Ft
-ZSBrZXJuZWwKPj4gaW1hZ2UuCj4+Cj4+IFRoZXJlZm9yZSBhIGNvbXBpbGUtdGltZSBjaGVjayBp
-cyBub3QgZW5vdWdoIGFuZCB5b3UgbmVlZCB0byBjaGVjayB0aGUKPj4gYWN0dWFsbHkgcnVubmlu
-ZyBtYWNoaW5lIGFzIHdlbGwuCj4+Cj4+Cj4+IEhlaWtvCj4KPgo+CgoKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1haWxpbmcg
-bGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZy
-YWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Move definitions of symbols related to transition latency and
+sampling rate to include/linux/cpufreq.h so they can be used by
+(future) goverernors located outside of drivers/cpufreq/.
+
+No functional changes.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This patch was new in v4, no changes since then.
+
+---
+ drivers/cpufreq/cpufreq_governor.h |   14 --------------
+ include/linux/cpufreq.h            |   14 ++++++++++++++
+ 2 files changed, 14 insertions(+), 14 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -24,20 +24,6 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ 
+-/*
+- * The polling frequency depends on the capability of the processor. Default
+- * polling frequency is 1000 times the transition latency of the processor. The
+- * governor will work on any processor with transition latency <= 10ms, using
+- * appropriate sampling rate.
+- *
+- * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
+- * this governor will not work. All times here are in us (micro seconds).
+- */
+-#define MIN_SAMPLING_RATE_RATIO			(2)
+-#define LATENCY_MULTIPLIER			(1000)
+-#define MIN_LATENCY_MULTIPLIER			(20)
+-#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
+-
+ /* Ondemand Sampling types */
+ enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
+ 
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -426,6 +426,20 @@ static inline unsigned long cpufreq_scal
+ #define CPUFREQ_POLICY_POWERSAVE	(1)
+ #define CPUFREQ_POLICY_PERFORMANCE	(2)
+ 
++/*
++ * The polling frequency depends on the capability of the processor. Default
++ * polling frequency is 1000 times the transition latency of the processor. The
++ * ondemand governor will work on any processor with transition latency <= 10ms,
++ * using appropriate sampling rate.
++ *
++ * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
++ * the ondemand governor will not work. All times here are in us (microseconds).
++ */
++#define MIN_SAMPLING_RATE_RATIO		(2)
++#define LATENCY_MULTIPLIER		(1000)
++#define MIN_LATENCY_MULTIPLIER		(20)
++#define TRANSITION_LATENCY_LIMIT	(10 * 1000 * 1000)
++
+ /* Governor Events */
+ #define CPUFREQ_GOV_START	1
+ #define CPUFREQ_GOV_STOP	2
+
