@@ -1,34 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] Hibernate runtime-resume fixes
-Date: Wed, 23 Mar 2016 22:42:02 +0100
-Message-ID: <2065134.sandJm4dU7@vostro.rjw.lan>
-References: <cover.1458641423.git.lukas@wunner.de>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for rk3399
+Date: Wed, 23 Mar 2016 14:44:11 -0700
+Message-ID: <CAOi56cUPGFfbDO8j7QvdNieebmWqLJnbANOAavd2t76cjQr7Kg@mail.gmail.com>
+References: <1458067526-11319-1-git-send-email-david.wu@rock-chips.com>
+	<4748955.K1DVHdsoLd@diego>
+	<7h8u19q6dw.fsf@baylibre.com>
+	<3859377.YHUlbhqqCy@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1458641423.git.lukas@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3859377.YHUlbhqqCy@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, David Wu <david.wu@rock-chips.com>, Nishanth Menon <nm@ti.com>, Tao Huang <huangtao@rock-chips.com>, cf@rock-chips.com, Chris Zhong <zyw@rock-chips.com>, xjq@rock-chips.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 23, 2016 12:11:20 AM Lukas Wunner wrote:
-> I stumbled across these two issues while implementing runtime pm for
-> Thunderbolt. Unfortunately hibernate is not working on my machine
-> (no swap partition) so I could not test the patches beyond verifying
-> that they compile. I merely had the impression that this is wrong
-> when reading the code. Somebody please double-check if the patches
-> are legitimate. If they are not then I apologize for the noise.
+On Wed, Mar 23, 2016 at 2:24 PM, Rafael J. Wysocki <rjw@rjwysocki.net> =
+wrote:
+> On Wednesday, March 23, 2016 01:35:55 PM Kevin Hilman wrote:
+>> Heiko St=C3=BCbner <heiko@sntech.de> writes:
+>>
+>> > Hi David,
+>> >
+>> > Am Mittwoch, 16. M=C3=A4rz 2016, 02:45:26 schrieb David Wu:
+>> >> This adds the necessary data for handling io voltage domains on t=
+he rk3399.
+>> >> As interesting tidbit, the rk3399 contains two separate iodomain =
+areas.
+>> >> One in the regular General Register Files (GRF) and one in PMUGRF=
+ in the
+>> >> pmu power domain.
+>> >>
+>> >> Signed-off-by: David Wu <david.wu@rock-chips.com>
+>> >
+>> > looks good, so
+>> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+>>
+>> Acked-by: Kevin Hilman <khilman@baylibre.com>
+>>
+>> Rafael, can you queue this directly?  I don't currently have any oth=
+er
+>> AVS patches in the queue.
+>
+> OK, applied.
+>
+> That said it's the last minute for this to get into 4.6, so I'd appre=
+ciate
+> getting ACKs earlier during merge windows.
 
-Both are legitimate in my view, so I've applied them and marked them for
-"stable".
+Oh, I knew it was late so I assumed it would be queued for the next
+merge window.
 
-The subject of the second one is slightly not to the point (as this is
-more about telling drivers that platform firmware has been involved
-in the resume operation, which may or may not be related to runtime
-resuming them etc), but then I can't invent a better one anyway.
-
-Thanks,
-Rafael
-
+Kevin
