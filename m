@@ -1,124 +1,86 @@
-From: Feng Xiao <xf@rock-chips.com>
-Subject: Re: [PATCH v2] cpufreq: rockchip: add driver
-Date: Thu, 24 Mar 2016 11:01:40 +0800
-Message-ID: <56F35894.3020106@rock-chips.com>
-References: <1458647848-48999-1-git-send-email-xf@rock-chips.com>
- <1458699487-58470-1-git-send-email-xf@rock-chips.com>
- <20160323044033.GQ5272@vireshk-i7>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery is dry
+Date: Thu, 24 Mar 2016 12:01:36 +0800
+Message-ID: <CAGS+omDTmJDkJYsf=gDJMrmAos+30enoAa2xfTPyirXUd37=9g@mail.gmail.com>
+References: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.131]:34610 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbcCXDBJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Mar 2016 23:01:09 -0400
-In-Reply-To: <20160323044033.GQ5272@vireshk-i7>
+Received: from mail-vk0-f49.google.com ([209.85.213.49]:36743 "EHLO
+	mail-vk0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbcCXEB5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 00:01:57 -0400
+Received: by mail-vk0-f49.google.com with SMTP id z68so44351344vkg.3
+        for <linux-pm@vger.kernel.org>; Wed, 23 Mar 2016 21:01:56 -0700 (PDT)
+In-Reply-To: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux@arm.linux.org.uk, heiko@sntech.de, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.comrjw@rjwysocki.net
+To: YH Huang <yh.huang@mediatek.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>
 
-hi all,
-      I found that it could match the cpufreq-dt driver succesfully onl=
-y=20
-with the following changes.
---- a/arch/arm64/boot/dts/rockchip/rk3366.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3366.dtsi
-@@ -139,6 +139,10 @@
-                 };
-         };
+Hi YH,
 
-+       cpufreq-dt {   //the node name must be cpufreq-dt
-+               compatible =3D "rockchip,cpufreq";  //  the compatible=20
-name is insignificant
-+       };
-+
-
-This was supported by the commit 07e461cd7e73a84f0e3757932b93cc80976fd7=
-49
-
-commit 07e461cd7e73a84f0e3757932b93cc80976fd749
-Author: Grant Likely <grant.likely@linaro.org>
-Date:   Wed May 21 15:40:31 2014 +0900
-
-     of: Ensure unique names without sacrificing determinism
-
-     The way the driver core is implemented, every device using the sam=
-e bus
-     type is required to have a unique name because a symlink to each d=
-evice
-     is created in the appropriate /sys/bus/*/devices directory, and tw=
-o
-     identical names causes a collision.
-
-     The current code handles the requirement by using an globally
-     incremented counter that is appended to the device name. It works,=
- but
-     it means any change to device registration will change the assigne=
-d
-     numbers. Instead, if we build up the name by using information fro=
-m the
-     parent nodes, then it can be guaranteed to be unique without addin=
-g a
-     random number to the end of it.
-
-     Signed-off-by: Grant Likely <grant.likely@linaro.org>
-     Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-     Cc: Rob Herring <robh@kernel.org>
-
-If so, do I need to continue to add the new cpufreq driver ?
-
-=E5=9C=A8 2016/3/23 12:40, Viresh Kumar =E5=86=99=E9=81=93:
-> On 23-03-16, 10:18, Feng Xiao wrote:
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.a=
-rm
->> index 14b1f93..1786315 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -97,6 +97,16 @@ config ARM_OMAP2PLUS_CPUFREQ
->>   	depends on ARCH_OMAP2PLUS
->>   	default ARCH_OMAP2PLUS
->>  =20
->> +config ARM_ROCKCHIP_CPUFREQ
->> +	tristate "Rockchip CPUfreq driver"
-> Since you are allowing it to be built as a module ...
+On Wed, Mar 23, 2016 at 5:53 PM, YH Huang <yh.huang@mediatek.com> wrote:
+> When the battery is dry and BATTERY_FULL_DISCHARGED is set,
+> we should check BATTERY_DISCHARGING to decide the power status.
+> If BATTERY_DISCHARGING is set, the power status is not charging.
+> Or the power status should be charging.
 >
->> +	depends on ARCH_ROCKCHIP && CPUFREQ_DT
->> +	select PM_OPP
->> +	help
->> +	  This adds the CPUFreq driver support for Rockchip SoCs.
->> +	  The driver will directly use cpufreq-dt driver as backend.
->> +
->> +	  If in doubt, say N.
->> +++ b/drivers/cpufreq/rockchip-cpufreq.c
->> +static int __init rockchip_cpufreq_driver_init(void)
->> +{
->> +	struct platform_device *pdev;
->> +	int i;
->> +
->> +	for (i =3D 0; i < ARRAY_SIZE(rockchip_compat); i++) {
->> +		if (of_machine_is_compatible(rockchip_compat[i])) {
->> +			pdev =3D platform_device_register_simple("cpufreq-dt",
->> +							       -1, NULL, 0);
->> +			return PTR_ERR_OR_ZERO(pdev);
->> +		}
->> +	}
->> +
->> +	return -ENODEV;
->> +}
->> +module_init(rockchip_cpufreq_driver_init);
-> You need a module exit as well to remove the device. Otherwise follow=
-ing
-> sequence will give you errors:
+> Signed-off-by: YH Huang <yh.huang@mediatek.com>
+> ---
+>  drivers/power/sbs-battery.c |   22 ++++++++++++----------
+>  1 file changed, 12 insertions(+), 10 deletions(-)
 >
-> insmod rockchip-cpufreq.ko
-> rmmod rockchip-cpufreq.ko
-> insmod rockchip-cpufreq.ko //Errors on this..
+> diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs-battery.c
+> index d6226d6..d86db0e 100644
+> --- a/drivers/power/sbs-battery.c
+> +++ b/drivers/power/sbs-battery.c
+> @@ -382,11 +382,12 @@ static int sbs_get_battery_property(struct i2c_client *client,
 >
-> So, either don't allow it to be built as a module or fix the module-e=
-xit path.
->
+>                 if (ret & BATTERY_FULL_CHARGED)
+>                         val->intval = POWER_SUPPLY_STATUS_FULL;
+> -               else if (ret & BATTERY_FULL_DISCHARGED)
+> -                       val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> -               else if (ret & BATTERY_DISCHARGING)
+> -                       val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+> -               else
+> +               else if (ret & BATTERY_DISCHARGING) {
+> +                       if (ret & BATTERY_FULL_DISCHARGED)
+> +                               val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +                       else
+> +                               val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+> +               } else
 
 
+I think (BATTERY_DISCHARGING && BATTERY_FULL_DISCHARGED) is still
+POWER_SUPPLY_STATUS_DISCHARGING.
+So, let's just report what the battery says and do:
+
+               else if (ret & BATTERY_DISCHARGING)
+                               val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+
+
+>                         val->intval = POWER_SUPPLY_STATUS_CHARGING;
+>
+>                 if (chip->poll_time == 0)
+> @@ -702,11 +703,12 @@ static void sbs_delayed_work(struct work_struct *work)
+>
+>         if (ret & BATTERY_FULL_CHARGED)
+>                 ret = POWER_SUPPLY_STATUS_FULL;
+> -       else if (ret & BATTERY_FULL_DISCHARGED)
+> -               ret = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> -       else if (ret & BATTERY_DISCHARGING)
+> -               ret = POWER_SUPPLY_STATUS_DISCHARGING;
+> -       else
+> +       else if (ret & BATTERY_DISCHARGING) {
+> +               if (ret & BATTERY_FULL_DISCHARGED)
+> +                       ret = POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +               else
+> +                       ret = POWER_SUPPLY_STATUS_DISCHARGING;
+> +       } else
+>                 ret = POWER_SUPPLY_STATUS_CHARGING;
+>
+>         if (chip->last_state != ret) {
+> --
+> 1.7.9.5
+>
