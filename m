@@ -1,42 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 14/17] cpufreq: ipq4019: add cpufreq driver
-Date: Thu, 24 Mar 2016 12:14:10 +0530
-Message-ID: <20160324064410.GH22062@vireshk-i7>
-References: <1458770712-10880-1-git-send-email-mmcclint@codeaurora.org>
- <1458770712-10880-15-git-send-email-mmcclint@codeaurora.org>
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: RE: [acpi:release 3/3] intel_idle.c:undefined reference to
+ `__udivdi3'
+Date: Thu, 24 Mar 2016 06:55:52 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E883BB64024@SHSMSX101.ccr.corp.intel.com>
+References: <201603241443.6LBLekqw%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:33885 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752780AbcCXGod (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 02:44:33 -0400
-Received: by mail-pf0-f171.google.com with SMTP id x3so50008308pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 23 Mar 2016 23:44:33 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1458770712-10880-15-git-send-email-mmcclint@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201603241443.6LBLekqw%fengguang.wu@intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Wu, Fengguang" <fengguang.wu@intel.com>, "Brown, Len" <len.brown@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Matthew McClintock <mmcclint@codeaurora.org>
-Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, qca-upstream.external@qca.qualcomm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, open list <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
 
-On 23-03-16, 17:05, Matthew McClintock wrote:
-> Add cpufreq driver for ipq4019 SoC. This driver simply instantiates
-> cpufreq-dt.
+Hi, Len
+
+This looks like a job that human should do because machines cannot do that for us.
+We need to use div64() in the kernel because kernel doesn't link CRT.
+While for the indentation issue, it won't hurt anybody.
+
+Thanks
+-Lv
+
+> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> Subject: [acpi:release 3/3] intel_idle.c:undefined reference to `__udivdi3'
 > 
-> Signed-off-by: Matthew McClintock <mmcclint@codeaurora.org>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git release
+> head:   1664c8b16a75e9f73f4f40186c0c843bbf7dbde8
+> commit: 1664c8b16a75e9f73f4f40186c0c843bbf7dbde8 [3/3] intel_idle: add
+> BXT support
+> config: i386-randconfig-n0-03241107 (attached as .config)
+> reproduce:
+>         git checkout 1664c8b16a75e9f73f4f40186c0c843bbf7dbde8
+>         # save the attached .config to linux build tree
+>         make ARCH=i386
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    drivers/built-in.o: In function `intel_idle_init':
+> >> intel_idle.c:(.init.text+0x16a3): undefined reference to `__udivdi3'
+>    intel_idle.c:(.init.text+0x16e4): undefined reference to `__udivdi3'
+>    intel_idle.c:(.init.text+0x1725): undefined reference to `__udivdi3'
+>    intel_idle.c:(.init.text+0x1766): undefined reference to `__udivdi3'
+>    intel_idle.c:(.init.text+0x17ab): undefined reference to `__udivdi3'
+> 
 > ---
->  drivers/cpufreq/Kconfig.arm       |  9 +++++++++
->  drivers/cpufreq/Makefile          |  1 +
->  drivers/cpufreq/ipq4019-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
->  3 files changed, 45 insertions(+)
->  create mode 100644 drivers/cpufreq/ipq4019-cpufreq.c
-
-I have just sent a patchset and cc'd you:
-"[PATCH 0/3] cpufreq: dt: Create platform device from generic code"
-
-and so this patch may get replaced now.
-
-
--- 
-viresh
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
