@@ -1,37 +1,85 @@
-From: Matthew McClintock <mmcclint@codeaurora.org>
-Subject: Re: [PATCH 14/17] cpufreq: ipq4019: add cpufreq driver
-Date: Thu, 24 Mar 2016 10:42:57 -0500
-Message-ID: <C5B27D64-0C56-4815-BC0A-023C7A955032@codeaurora.org>
-References: <1458770712-10880-1-git-send-email-mmcclint@codeaurora.org> <1458770712-10880-15-git-send-email-mmcclint@codeaurora.org> <20160324064410.GH22062@vireshk-i7>
-Mime-Version: 1.0 (Mac OS X Mail 9.2 \(3112\))
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH] cpuidle: arm: make enter idle operation a bit more
+ efficient
+Date: Thu, 24 Mar 2016 16:06:00 +0000
+Message-ID: <20160324160600.GA21749@red-moon>
+References: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160324064410.GH22062@vireshk-i7>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, qca-upstream.external@qca.qualcomm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, open list <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:52253 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbcCXQDc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 24 Mar 2016 12:03:32 -0400
+Content-Disposition: inline
+In-Reply-To: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jisheng Zhang <jszhang@marvell.com>
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mar 24, 2016, at 1:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Thu, Mar 24, 2016 at 01:07:18PM +0800, Jisheng Zhang wrote:
+> Currently, entering idle need to check the idx every time to choose the
+> real entering idle routine. But this check could be avoided by pointing
+> the idle enter function pointer of each idle states to the routines
+> suitable for each states directly.
 > 
-> On 23-03-16, 17:05, Matthew McClintock wrote:
->> Add cpufreq driver for ipq4019 SoC. This driver simply instantiates
->> cpufreq-dt.
->> 
->> Signed-off-by: Matthew McClintock <mmcclint@codeaurora.org>
->> ---
->> drivers/cpufreq/Kconfig.arm       |  9 +++++++++
->> drivers/cpufreq/Makefile          |  1 +
->> drivers/cpufreq/ipq4019-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
->> 3 files changed, 45 insertions(+)
->> create mode 100644 drivers/cpufreq/ipq4019-cpufreq.c
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+> ---
+>  drivers/cpuidle/cpuidle-arm.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 > 
-> I have just sent a patchset and cc'd you:
-> "[PATCH 0/3] cpufreq: dt: Create platform device from generic code"
-> 
-> and so this patch may get replaced now.
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index 545069d..48a620f 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -23,6 +23,13 @@
+>  
+>  #include "dt_idle_states.h"
+>  
+> +static int arm_enter_wfi_state(struct cpuidle_device *dev,
+> +			       struct cpuidle_driver *drv, int idx)
+> +{
+> +	cpu_do_idle();
+> +	return 0;
+> +}
+> +
+>  /*
+>   * arm_enter_idle_state - Programs CPU to enter the specified state
+>   *
+> @@ -38,11 +45,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>  {
+>  	int ret;
+>  
+> -	if (!idx) {
+> -		cpu_do_idle();
+> -		return idx;
+> -	}
 
-Cool, thanks. I will look at re-spinning with your changes.
+Mmm...if I wanted to paint your bikeshed I would say idx is in a
+register and you are removing a simple comparison to exchange it
+with a function that adds to code footprint and may even make
+performance worse instead of improving anything.
 
--M
+I am not sure this patch makes anything more efficient, happy to be
+proven wrong, with significant data.
+
+Thanks,
+Lorenzo
+
+> -
+>  	ret = cpu_pm_enter();
+>  	if (!ret) {
+>  		/*
+> @@ -69,7 +71,7 @@ static struct cpuidle_driver arm_idle_driver = {
+>  	 * handler for idle state index 0.
+>  	 */
+>  	.states[0] = {
+> -		.enter                  = arm_enter_idle_state,
+> +		.enter                  = arm_enter_wfi_state,
+>  		.exit_latency           = 1,
+>  		.target_residency       = 1,
+>  		.power_usage		= UINT_MAX,
+> -- 
+> 2.8.0.rc3
+> 
