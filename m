@@ -1,90 +1,68 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v5 09/21] PM / devfreq: exynos: Add the detailed correlation
- between sub-blocks and power line
-Date: Thu, 24 Mar 2016 13:25:18 +0900
-Message-ID: <1458793530-31897-10-git-send-email-cw00.choi@samsung.com>
-References: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1458793530-31897-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: [PATCH] cpuidle: arm: make enter idle operation a bit more efficient
+Date: Thu, 24 Mar 2016 13:07:18 +0800
+Message-ID: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:64977 "EHLO
+	mx0a-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750798AbcCXFLf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 01:11:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jisheng Zhang <jszhang@marvell.com>
 
-This patch adds the detailed corrleation between sub-blocks and power line
-for Exynos3250, Exynos4210 and Exynos4x12.
+Currently, entering idle need to check the idx every time to choose the
+real entering idle routine. But this check could be avoided by pointing
+the idle enter function pointer of each idle states to the routines
+suitable for each states directly.
 
-Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 51 ++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ drivers/cpuidle/cpuidle-arm.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-index 03f13d38f1a1..b098fa2ba5d4 100644
---- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -53,6 +53,57 @@ Optional properties only for parent bus device:
- - exynos,voltage-tolerance: the percentage value for bus voltage tolerance
- 			which is used to calculate the max voltage.
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index 545069d..48a620f 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -23,6 +23,13 @@
  
-+Detailed correlation between sub-blocks and power line according to Exynos SoC:
-+- In case of Exynos3250, there are two power line as following:
-+	VDD_MIF |--- DMC
+ #include "dt_idle_states.h"
+ 
++static int arm_enter_wfi_state(struct cpuidle_device *dev,
++			       struct cpuidle_driver *drv, int idx)
++{
++	cpu_do_idle();
++	return 0;
++}
 +
-+	VDD_INT |--- LEFTBUS (parent device)
-+		|--- PERIL
-+		|--- MFC
-+		|--- G3D
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- FSYS
-+		|--- LCD0
-+		|--- PERIR
-+		|--- ISP
-+		|--- CAM
-+
-+- In case of Exynos4210, there is one power line as following:
-+	VDD_INT |--- DMC (parent device)
-+		|--- LEFTBUS
-+		|--- PERIL
-+		|--- MFC(L)
-+		|--- G3D
-+		|--- TV
-+		|--- LCD0
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- MFC(R)
-+		|--- CAM
-+		|--- FSYS
-+		|--- GPS
-+		|--- LCD0
-+		|--- LCD1
-+
-+- In case of Exynos4x12, there are two power line as following:
-+	VDD_MIF |--- DMC
-+
-+	VDD_INT |--- LEFTBUS (parent device)
-+		|--- PERIL
-+		|--- MFC(L)
-+		|--- G3D
-+		|--- TV
-+		|--- IMAGE
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- MFC(R)
-+		|--- CAM
-+		|--- FSYS
-+		|--- GPS
-+		|--- LCD0
-+		|--- ISP
-+
- Example1:
- 	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
- 	power line (regulator). The MIF (Memory Interface) AXI bus is used to
+ /*
+  * arm_enter_idle_state - Programs CPU to enter the specified state
+  *
+@@ -38,11 +45,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ {
+ 	int ret;
+ 
+-	if (!idx) {
+-		cpu_do_idle();
+-		return idx;
+-	}
+-
+ 	ret = cpu_pm_enter();
+ 	if (!ret) {
+ 		/*
+@@ -69,7 +71,7 @@ static struct cpuidle_driver arm_idle_driver = {
+ 	 * handler for idle state index 0.
+ 	 */
+ 	.states[0] = {
+-		.enter                  = arm_enter_idle_state,
++		.enter                  = arm_enter_wfi_state,
+ 		.exit_latency           = 1,
+ 		.target_residency       = 1,
+ 		.power_usage		= UINT_MAX,
 -- 
-1.9.1
+2.8.0.rc3
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
