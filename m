@@ -1,104 +1,151 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
-Date: Wed, 23 Mar 2016 19:50:51 -0400
-Message-ID: <56F32BDB.1010107@redhat.com>
-References: <1458564569-19672-1-git-send-email-prarit@redhat.com> <CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v6 1/4] dt-bindings: power: reset: add document for
+ reboot-mode driver
+Date: Thu, 24 Mar 2016 11:27:34 +0900
+Message-ID: <CAJKOXPdUW5f6_sz14NMU8LP+QoKStB9omXticMkQX4D866okWw@mail.gmail.com>
+References: <1458646525-491-1-git-send-email-andy.yan@rock-chips.com>
+	<1458646592-540-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51538 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbcCWXuy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 23 Mar 2016 19:50:54 -0400
-In-Reply-To: <CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1458646592-540-1-git-send-email-andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jun.nie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, mbrugger-IBi9RG/b67k@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
+Interesting idea. While looking at the code I stumped over few things below:
 
+On Tue, Mar 22, 2016 at 8:36 PM, Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
+> add device tree bindings document for reboot-mode driver
 
-On 03/23/2016 04:05 PM, Len Brown wrote:
-> This patch assumes that if a package state is disabled,
-> the corresponding core state must be disabled.
-> That assumption is false.
-> Indeed, that is a very popular and useful configuration.
-> 
-> But even if that were not the case, this software is not necessary,
-> since the hardware handles demotion "c-state clipping" automatically.
-> 
-> Yes, there is a case where a certain version of a certain processor
-> has broken demotion, but this isn't the right fix for that.
-> The right fix for that is here:
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=109081
+s/add/Add/
+Plus a full-stop at the end of sentence.
 
-Len, should I rebase on top of this?  Would that work for you?
+>
+> Signed-off-by: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>
+> binding
 
-P.
+What is that?
 
-> 
-> and will be upstream shortly.
-> 
-> thanks,
-> -Len
-> 
-> 
-> 
-> On Mon, Mar 21, 2016 at 8:49 AM, Prarit Bhargava <prarit@redhat.com> wrote:
->> Some Intel processors have cstates limited by MSR_PKG_CST_CONFIG_CONTROL
->> (0xE2), which specifies the lowest processor-specific C-state code name
->> (consuming the least power).  The intel_idle driver does not query this MSR to
->> see if states are limited by hardware.  In the case of the i7-6700HQ the value
->> of bits 3:0 on the MSR are 0x6, meaning that C9-SKL (0x7) and C10-SKL (0x8)
->> should have been disabled.
->>
->> This patch adds a limit field to the cpuidle_state struct to hold the
->> cstate encodings for each processor, and queries the values the values
->> to confirm support.
->>
->> After applying this patchset the system now boots and reports that
->> some states have been disabled:
->>
->> [root@dhcp40-125 ~]# dmesg | grep intel_idle
->> [    1.163367] intel_idle: MWAIT substates: 0x11142120
->> [    1.163368] intel_idle: v0.4 model 0x5E
->> [    1.163369] intel_idle: lapic_timer_reliable_states 0xffffffff
->> [    1.163370] intel_idle: state C9-SKL (0x7) is disabled.  Max Package limit is 0x6.
->> [    1.163371] intel_idle: state C10-SKL (0x8) is disabled.  Max Package limit is 0x6.
->>
->> Cc: x86@kernel.org
->> Cc: Len Brown <lenb@kernel.org>
->> Cc: "Peter Zijlstra (Intel)" <peterz@infradead.org>
->> Cc: Borislav Petkov <bp@suse.de>
->> Cc: Andi Kleen <ak@linux.intel.com>
->> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
->> Cc: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>
->> Prarit Bhargava (3):
->>   idle, rename MSR_NHM_SNB_PKG_CST_CFG_CTL to
->>     MSR_PKG_CST_CONFIG_CONTROL
->>   intel_idle, Introduce cstate limits and fix hardware cstate disable
->>     value
->>   cpuidle, Prevent users from enabling cstates that are disabled in
->>     Hardware
->>
->>  arch/x86/include/asm/msr-index.h      |    2 +-
->>  drivers/cpuidle/governors/ladder.c    |    3 ++
->>  drivers/cpuidle/governors/menu.c      |    4 ++
->>  drivers/cpuidle/sysfs.c               |   34 +++++++++++-
->>  drivers/idle/intel_idle.c             |   93 ++++++++++++++++++++++++++++++++-
->>  include/linux/cpuidle.h               |   11 +++-
->>  tools/power/x86/turbostat/turbostat.8 |    2 +-
->>  tools/power/x86/turbostat/turbostat.c |   10 ++--
->>  8 files changed, 146 insertions(+), 13 deletions(-)
->>
->> --
->> 1.7.9.3
->>
-> 
-> 
-> 
+>
+> ---
+>
+> Changes in v6:
+> - fix a typo with "property"
+> - describe property "mask" more clear
+>
+> Changes in v5:
+> - delete a unnecessary blank line in syscon-reboot-mode.txt
+> - rename mode-fastoboot to mode-bootloader in syscon-reboot-mode.txt
+> - rename macro BOOT_LOADER to BOOT_BL_DOWNLOAD, which gives a more clear mean
+>
+> Changes in v4:
+> - remove mode-maskrom
+> - rename mode-fastboot to mode-bootloader to keep compatible with the exiting Android device
+>
+> Changes in v3:
+> - descirbe all reboot mode as properity instead of subnode
+>
+> Changes in v2: None
+> Changes in v1: None
+>
+>  .../bindings/power/reset/reboot-mode.txt           | 24 +++++++++++++++
+>  .../bindings/power/reset/syscon-reboot-mode.txt    | 35 ++++++++++++++++++++++
+>  2 files changed, 59 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> new file mode 100644
+> index 0000000..3457949
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+> @@ -0,0 +1,24 @@
+> +Generic reboot mode core map driver
+> +
+> +This driver get reboot mode arguments and call the write
+> +interface to stores the magic value in special register
+s/stores/store/
+> +or ram . Then the bootloader can read it and take different
+
+s/ram ./ram./
+
+> +action according the argument stored.
+
+according to
+
+> +
+> +All mode properties are vendor specific, it is a indication to tell
+> +the bootloder what to do when the system reboot, and should be named
+
+s/bootloder/bootloader/
+s/reboot/reboots/
+
+> +as mode-xxx = <magic> (xxx is mode name).
+> +
+
+These are examples? If yes then add a note, like:
+
++For example modes common on Android platform:
+
+> +- mode-normal: Normal reboot mode, system reboot with command "reboot".
+> +- mode-recovery: Android Recovery mode, it is a mode to format the device or update a new image.
+> +- mode-bootloader: Android fastboot mode, it's a mode to re-flash partitions on the Android based device.
+> +- mode-loader: A bootloader mode, it's a mode used to download image on Rockchip platform,
+> +              usually used in development.
+
+The "bootloader" and "loader" examples are very confusing. Maybe just
+name the first one as "mode-fastboot" and second as
+"rockchip-download"? The term "loader" does not look for me as
+anything related to uploading/downloading new firmware.
+
+> +
+> +Example:
+> +       reboot-mode {
+> +               mode-normal = <BOOT_NORMAL>;
+> +               mode-recovery = <BOOT_RECOVERY>;
+> +               mode-bootloader = <BOOT_FASTBOOT>;
+> +               mode-loader = <BOOT_BL_DOWNLOAD>;
+> +       }
+> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+> new file mode 100644
+> index 0000000..eb28469
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+> @@ -0,0 +1,35 @@
+> +SYSCON reboot mode driver
+> +
+> +This driver get reboot mode magic value form reboot-mode driver
+
+s/get/gets/
+
+> +and stores it in a SYSCON mapped register. Then the bootloader
+> +can read it and take different action according to the magic
+> +value stored.
+> +
+> +This DT node should be represented as a sub-node of a "syscon", "simple-mfd"
+> +node.
+> +
+> +Required properties:
+> +- compatible: should be "syscon-reboot-mode"
+> +- offset: offset in the register map for the storage register (in bytes)
+> +
+> +Optional property:
+> +- mask: bits mask of the bits in the register to store the reboot mode magic value,
+> +  default set to 0xffffffff if missing.
+> +
+> +The rest of the properties should follow the generic reboot-mode discription
+
+s/discription/description/
+
+Please, run the spell check...
+
+Best regards,
+Krzysztof
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
