@@ -1,137 +1,275 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 02/21] PM / devfreq: exynos: Add documentation for generic
- exynos bus frequency driver
-Date: Thu, 24 Mar 2016 13:25:11 +0900
-Message-ID: <1458793530-31897-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 18/21] ARM: dts: Add exynos4412-ppmu-common dtsi to delete
+ duplicate PPMU nodes
+Date: Thu, 24 Mar 2016 13:25:27 +0900
+Message-ID: <1458793530-31897-19-git-send-email-cw00.choi@samsung.com>
 References: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, tjakobi@math.uni-bielefeld.de, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, tjakobi@math.uni-bielefeld.de, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the documentation for generic exynos bus frequency
-driver.
+This patch adds the exynos4412-ppmu-common.dtsi to remove duplicate PPMU nodes
+because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
+PPMU device tree node.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 95 ++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+ arch/arm/boot/dts/exynos3250-monk.dts           | 41 +-------------------
+ arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +-------------------
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
+ arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 50 +++++++++++++++++++++++++
+ arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +-------------------
+ 5 files changed, 54 insertions(+), 120 deletions(-)
+ create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
+index 1fd7ecb5c415..fbe09d640c9a 100644
+--- a/arch/arm/boot/dts/exynos3250-monk.dts
++++ b/arch/arm/boot/dts/exynos3250-monk.dts
+@@ -14,6 +14,7 @@
+ 
+ /dts-v1/;
+ #include "exynos3250.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/clock/samsung,s2mps11.h>
+@@ -464,46 +465,6 @@
+ 	status = "okay";
+ };
+ 
+-&ppmu_dmc0 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &xusbxti {
+ 	clock-frequency = <24000000>;
+ };
+diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
+index 5175bd7e015f..9710e79e10a0 100644
+--- a/arch/arm/boot/dts/exynos3250-rinato.dts
++++ b/arch/arm/boot/dts/exynos3250-rinato.dts
+@@ -14,6 +14,7 @@
+ 
+ /dts-v1/;
+ #include "exynos3250.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/clock/samsung,s2mps11.h>
+@@ -641,46 +642,6 @@
+ 	status = "okay";
+ };
+ 
+-&ppmu_dmc0 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &xusbxti {
+ 	clock-frequency = <24000000>;
+ };
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index 5e5d3fecb04c..cba37c974703 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -11,6 +11,7 @@
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/clock/maxim,max77686.h>
+ #include "exynos4412.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ 
+ / {
+diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
 new file mode 100644
-index 000000000000..78171b918e3f
+index 000000000000..16e4b77d8cb1
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -0,0 +1,95 @@
-+* Generic Exynos Bus frequency device
++++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+@@ -0,0 +1,50 @@
++/*
++ * Device tree sources for Exynos4412 PPMU common device tree
++ *
++ * Copyright (C) 2015 Samsung Electronics
++ * Author: Chanwoo Choi <cw00.choi@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+The Samsung Exynos SoC has many buses for data transfer between DRAM
-+and sub-blocks in SoC. Most Exynos SoCs share the common architecture
-+for buses. Generally, each bus of Exynos SoC includes a source clock
-+and a power line, which are able to change the clock frequency
-+of the bus in runtime. To monitor the usage of each bus in runtime,
-+the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of sub-blocks.
++&ppmu_dmc0 {
++       status = "okay";
 +
-+There are a little different composition among Exynos SoC because each Exynos
-+SoC has different sub-blocks. Therefore, shch difference should be specified
-+in devicetree file instead of each device driver. In result, this driver
-+is able to support the bus frequency for all Exynos SoCs.
++       events {
++	       ppmu_dmc0_3: ppmu-event3-dmc0 {
++		       event-name = "ppmu-event3-dmc0";
++	       };
++       };
++};
 +
-+Required properties for bus device:
-+- compatible: Should be "samsung,exynos-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- operating-points-v2: the OPP table including frequency/voltage information
-+  to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-+- vdd-supply: the regulator to provide the buses with the voltage.
-+- devfreq-events: the devfreq-event device to monitor the current utilization
-+  of buses.
++&ppmu_dmc1 {
++       status = "okay";
 +
-+Optional properties for bus device:
-+- exynos,saturation-ratio: the percentage value which is used to calibrate
-+			the performance count against total cycle count.
-+- exynos,voltage-tolerance: the percentage value for bus voltage tolerance
-+			which is used to calculate the max voltage.
++       events {
++	       ppmu_dmc1_3: ppmu-event3-dmc1 {
++		       event-name = "ppmu-event3-dmc1";
++	       };
++       };
++};
 +
-+Example1:
-+	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
-+	power line (regulator). The MIF (Memory Interface) AXI bus is used to
-+	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
++&ppmu_leftbus {
++       status = "okay";
 +
-+	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
++       events {
++	       ppmu_leftbus_3: ppmu-event3-leftbus {
++		       event-name = "ppmu-event3-leftbus";
++	       };
++       };
++};
 +
-+	- MIF bus's frequency/voltage table
-+	-----------------------
-+	|Lv| Freq   | Voltage |
-+	-----------------------
-+	|L1| 50000  |800000   |
-+	|L2| 100000 |800000   |
-+	|L3| 134000 |800000   |
-+	|L4| 200000 |825000   |
-+	|L5| 400000 |875000   |
-+	-----------------------
++&ppmu_rightbus {
++       status = "okay";
 +
-+Example2 :
-+	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dtsi
-+	is listed below:
-+
-+	bus_dmc: bus_dmc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&cmu_dmc CLK_DIV_DMC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_dmc_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_dmc_opp_table: opp_table1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <825000>;
-+		};
-+		opp@400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <875000>;
-+		};
-+	};
-+
-+	Usage case to handle the frequency and voltage of bus on runtime
-+	in exynos3250-rinato.dts is listed below:
-+
-+	&bus_dmc {
-+		devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
-+		vdd-supply = <&buck1_reg>;	/* VDD_MIF */
-+		status = "okay";
-+	};
++       events {
++	       ppmu_rightbus_3: ppmu-event3-rightbus {
++		       event-name = "ppmu-event3-rightbus";
++	       };
++       };
++};
+diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
+index ed017cc7b14f..dce3cebe0606 100644
+--- a/arch/arm/boot/dts/exynos4412-trats2.dts
++++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+@@ -14,6 +14,7 @@
+ 
+ /dts-v1/;
+ #include "exynos4412.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/clock/maxim,max77686.h>
+@@ -871,46 +872,6 @@
+ 	assigned-clock-parents =  <&clock CLK_XUSBXTI>;
+ };
+ 
+-&ppmu_dmc0 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &pinctrl_0 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sleep0>;
 -- 
 1.9.1
