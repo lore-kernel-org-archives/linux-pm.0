@@ -1,84 +1,47 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] intel_idle: Support for Intel Xeon Phi Processor x200 Product Family
-Date: Thu, 24 Mar 2016 01:16:02 -0400
-Message-ID: <281baf7a702693deaa45c98ef0c5161006b48257.1458796304.git.len.brown@intel.com>
-References: <1458796562-19744-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458796562-19744-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <d70e28f57e14a481977436695b0c9ba165472431.1458796304.git.len.brown@intel.com>
-References: <d70e28f57e14a481977436695b0c9ba165472431.1458796304.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Micah Barany <micah.barany@intel.com>, Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>, Pawel Karczewski <pawel.karczewski@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [GIT PULL] cpuidle patches for merge
+Date: Thu, 24 Mar 2016 01:23:04 -0400
+Message-ID: <CAJvTdKkCFLxRhSgyZRriq=kP8enWnXS7FH6HORw-cc5tK_yJqw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f48.google.com ([209.85.215.48]:36759 "EHLO
+	mail-lf0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbcCXFXH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 01:23:07 -0400
+Received: by mail-lf0-f48.google.com with SMTP id d82so26442250lfe.3
+        for <linux-pm@vger.kernel.org>; Wed, 23 Mar 2016 22:23:05 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rafael@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-From: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
+Hi Rafael,
 
-Enables "Intel(R) Xeon Phi(TM) Processor x200 Product Family" support,
-formerly code-named KNL. It is based on modified Intel Atom Silvermont
-microarchitecture.
+Please pull these two cpuidle patches
 
-Signed-off-by: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
-[micah.barany@intel.com: adjusted values of residency and latency]
-Signed-off-by: Micah Barany <micah.barany@intel.com>
-[hubert.chrzaniuk@intel.com: removed deprecated CPUIDLE_FLAG_TIME_VALID flag]
-Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-Signed-off-by: Pawel Karczewski <pawel.karczewski@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/idle/intel_idle.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+thanks!
+Len Brown, Intel Open Source Technology Center
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 146eed70b..ba947df 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -716,6 +716,26 @@ static struct cpuidle_state avn_cstates[] = {
- 	{
- 		.enter = NULL }
- };
-+static struct cpuidle_state knl_cstates[] = {
-+	{
-+		.name = "C1-KNL",
-+		.desc = "MWAIT 0x00",
-+		.flags = MWAIT2flg(0x00),
-+		.exit_latency = 1,
-+		.target_residency = 2,
-+		.enter = &intel_idle,
-+		.enter_freeze = intel_idle_freeze },
-+	{
-+		.name = "C6-KNL",
-+		.desc = "MWAIT 0x10",
-+		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.exit_latency = 120,
-+		.target_residency = 500,
-+		.enter = &intel_idle,
-+		.enter_freeze = intel_idle_freeze },
-+	{
-+		.enter = NULL }
-+};
- 
- /**
-  * intel_idle
-@@ -890,6 +910,10 @@ static const struct idle_cpu idle_cpu_avn = {
- 	.disable_promotion_to_c1e = true,
- };
- 
-+static const struct idle_cpu idle_cpu_knl = {
-+	.state_table = knl_cstates,
-+};
-+
- #define ICPU(model, cpu) \
- 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
- 
-@@ -921,6 +945,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	ICPU(0x56, idle_cpu_bdw),
- 	ICPU(0x4e, idle_cpu_skl),
- 	ICPU(0x5e, idle_cpu_skl),
-+	ICPU(0x57, idle_cpu_knl),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
--- 
-2.7.1.339.g0233b80
+The following changes since commit afd2ff9b7e1b367172f18ba7f693dfb62bdcb2dc:
+
+  Linux 4.4 (2016-01-10 15:01:32 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git cpuidle
+
+for you to fetch changes up to 281baf7a702693deaa45c98ef0c5161006b48257:
+
+  intel_idle: Support for Intel Xeon Phi Processor x200 Product Family
+(2016-03-23 16:19:38 -0400)
+
+----------------------------------------------------------------
+Dasaratharaman Chandramouli (1):
+      intel_idle: Support for Intel Xeon Phi Processor x200 Product Family
+
+Len Brown (1):
+      intel_idle: prevent SKL-H boot failure when C8+C9+C10 enabled
+
+ drivers/idle/intel_idle.c | 133 ++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 111 insertions(+), 22 deletions(-)
