@@ -1,86 +1,39 @@
-From: Finley Xiao <finley.xiao@rock-chips.com>
-Subject: Re: [PATCH v2] cpufreq: rockchip: add driver
-Date: Thu, 24 Mar 2016 23:09:28 +0800
-Message-ID: <56F40328.5090001@rock-chips.com>
-References: <1458647848-48999-1-git-send-email-xf@rock-chips.com>
- <1458699487-58470-1-git-send-email-xf@rock-chips.com>
- <20160323044033.GQ5272@vireshk-i7> <56F35894.3020106@rock-chips.com>
- <20160324064324.GG22062@vireshk-i7>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH v3 3/7] soc: renesas: Add r8a7790 SYSC PM Domain Binding Definitions
+Date: Thu, 24 Mar 2016 16:35:30 +0100
+Message-ID: <CAMuHMdX_Aw=HqJHEpyPdg3qBpReTA0jLk60BGhhdiF=Bf5JV1w@mail.gmail.com>
+References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be>
+	<1457551122-21838-4-git-send-email-geert+renesas@glider.be>
+	<9850717.l0t66FzFha@avalon>
+	<CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.137]:47695 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbcCXPJA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 11:09:00 -0400
-In-Reply-To: <20160324064324.GG22062@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Feng Xiao <xf@rock-chips.com>
-Cc: linux@arm.linux.org.uk, heiko@sntech.de, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, zyw@rock-chips.com, jay.xu@rock-chips.com, tim.chen@rock-chips.com, xxx@rock-chips.com, huangtao@rock-chips.com
 
-Hi Viresh,
-
-can we add a of_match_table with a common compatible name as follows ?
-
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -470,10 +470,16 @@ static int dt_cpufreq_remove(struct=20
-platform_device *pdev)
-         cpufreq_unregister_driver(&dt_cpufreq_driver);
-         return 0;
-  }
-+static const struct of_device_id dt_cpufreq_of_match[] =3D {
-+       { .compatible =3D "***,***", },
-+       { }
-+};
-+MODULE_DEVICE_TABLE(of, dt_cpufreq_of_match);
-  static struct platform_driver dt_cpufreq_platdrv =3D {
-         .driver =3D {
-                 .name   =3D "cpufreq-dt",
-+               .of_match_table =3D dt_cpufreq_of_match,
-         },
-
---- a/arch/arm64/boot/dts/rockchip/rk3366.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3366.dtsi
-+       cpufreq {
-+               compatible =3D "***,***";
-+       }
-
-Does it create a DT node for a dummy device too ?
-
-
-=E5=9C=A8 2016/3/24 14:43, Viresh Kumar =E5=86=99=E9=81=93:
-> On 24-03-16, 11:01, Feng Xiao wrote:
->> hi all,
->>       I found that it could match the cpufreq-dt driver succesfully =
-only with
->> the following changes.
->> --- a/arch/arm64/boot/dts/rockchip/rk3366.dtsi
->> +++ b/arch/arm64/boot/dts/rockchip/rk3366.dtsi
->> @@ -139,6 +139,10 @@
->>                  };
->>          };
->>
->> +       cpufreq-dt {   //the node name must be cpufreq-dt
->> +               compatible =3D "rockchip,cpufreq";  //  the compatib=
-le name is
->> insignificant
->> +       };
->> +
-> Its not allowed to create a DT node for a dummy device and so we neve=
-r
-> followed this way.
+On Thu, Mar 10, 2016 at 9:26 AM, Geert Uytterhoeven
+<geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+>>> +#define R8A7790_PD_IMP                       24
 >
-> I have just sent a patchset and cc'd you:
-> "[PATCH 0/3] cpufreq: dt: Create platform device from generic code"
->
-> and so this patch shall get replaced now.
->
+> Then this has to become R8A7790_PD_IMP_X4.
 
---=20
-=46inley
+Actually this bit is called IMP, so I'll keep it.
 
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
