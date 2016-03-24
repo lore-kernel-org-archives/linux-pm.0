@@ -1,41 +1,47 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH v3] thermal: add temperature sensor support for tango SoC
-Date: Thu, 24 Mar 2016 18:56:03 +0100
-Message-ID: <56F42A33.108@free.fr>
-References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain> <56F3DB1E.9050605@free.fr>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
+Date: Thu, 24 Mar 2016 17:54:05 -0400
+Message-ID: <CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>
+References: <1458564569-19672-1-git-send-email-prarit@redhat.com>
+	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
+	<56F32BDB.1010107@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:31301 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbcCXR4P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Mar 2016 13:56:15 -0400
-In-Reply-To: <56F3DB1E.9050605@free.fr>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:33679 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbcCXVyI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 17:54:08 -0400
+In-Reply-To: <56F32BDB.1010107@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 24/03/2016 13:18, Mason wrote:
+On Wed, Mar 23, 2016 at 7:50 PM, Prarit Bhargava <prarit@redhat.com> wrote:
+>
+>
+> On 03/23/2016 04:05 PM, Len Brown wrote:
+>> This patch assumes that if a package state is disabled,
+>> the corresponding core state must be disabled.
+>> That assumption is false.
+>> Indeed, that is a very popular and useful configuration.
+>>
+>> But even if that were not the case, this software is not necessary,
+>> since the hardware handles demotion "c-state clipping" automatically.
+>>
+>> Yes, there is a case where a certain version of a certain processor
+>> has broken demotion, but this isn't the right fix for that.
+>> The right fix for that is here:
+>>
+>> https://bugzilla.kernel.org/show_bug.cgi?id=109081
+>
+> Len, should I rebase on top of this?  Would that work for you?
 
-> +	if (temp_above_thresh(base, idx)) {
-> +		/* Downward linear search */
-> +		while (idx > IDX_MIN && temp_above_thresh(base, --idx))
-> +			cpu_relax();
-> +	} else {
-> +		/* Upward linear search */
-> +		while (idx < IDX_MAX && !temp_above_thresh(base, ++idx))
-> +			cpu_relax();
-> +		idx = idx - 1;
-> +	}
 
-That's wrong, I mixed up the two branches.
+I guess I wasn't clear.
+I don't see the benefit of your patch.
+Please explain it to me.
 
-When temp is above thresh, we should search upward.
-
-I'll send v4 in a few days (needs more testing).
-
-Regards.
-
+thanks,
+-Len
