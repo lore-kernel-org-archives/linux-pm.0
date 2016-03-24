@@ -1,50 +1,72 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] cpuidle patches for merge
-Date: Thu, 24 Mar 2016 13:55:06 +0100
-Message-ID: <CAJZ5v0i1RaE8zUORDHUGV_+r2E7-kMBUQvvZ-858pw_dko0WDQ@mail.gmail.com>
-References: <CAJvTdKkCFLxRhSgyZRriq=kP8enWnXS7FH6HORw-cc5tK_yJqw@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: arm: make enter idle operation a bit more efficient
+Date: Thu, 24 Mar 2016 14:01:02 +0100
+Message-ID: <CAJZ5v0jJ=0eMcJVvBE3ewzj5_jWmkwqbwVu5CFRAA+BFysiCdQ@mail.gmail.com>
+References: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:36089 "EHLO
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:36731 "EHLO
 	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757422AbcCXMzS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 08:55:18 -0400
-Received: by mail-lf0-f68.google.com with SMTP id r8so3539459lfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 24 Mar 2016 05:55:12 -0700 (PDT)
-In-Reply-To: <CAJvTdKkCFLxRhSgyZRriq=kP8enWnXS7FH6HORw-cc5tK_yJqw@mail.gmail.com>
+	with ESMTP id S1757445AbcCXNBJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 09:01:09 -0400
+In-Reply-To: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Rafael Wysocki <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Jisheng Zhang <jszhang@marvell.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, Mar 24, 2016 at 6:23 AM, Len Brown <lenb@kernel.org> wrote:
-> Hi Rafael,
+On Thu, Mar 24, 2016 at 6:07 AM, Jisheng Zhang <jszhang@marvell.com> wrote:
+> Currently, entering idle need to check the idx every time to choose the
+> real entering idle routine. But this check could be avoided by pointing
+> the idle enter function pointer of each idle states to the routines
+> suitable for each states directly.
 >
-> Please pull these two cpuidle patches
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
 
-Pulled, thanks!
+This looks reasonable to me, but I need an ACK from the maintainer of this code.
 
-
-> The following changes since commit afd2ff9b7e1b367172f18ba7f693dfb62bdcb2dc:
+> ---
+>  drivers/cpuidle/cpuidle-arm.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 >
->   Linux 4.4 (2016-01-10 15:01:32 -0800)
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index 545069d..48a620f 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -23,6 +23,13 @@
 >
-> are available in the git repository at:
+>  #include "dt_idle_states.h"
 >
->   git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git cpuidle
+> +static int arm_enter_wfi_state(struct cpuidle_device *dev,
+> +                              struct cpuidle_driver *drv, int idx)
+> +{
+> +       cpu_do_idle();
+> +       return 0;
+> +}
+> +
+>  /*
+>   * arm_enter_idle_state - Programs CPU to enter the specified state
+>   *
+> @@ -38,11 +45,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>  {
+>         int ret;
 >
-> for you to fetch changes up to 281baf7a702693deaa45c98ef0c5161006b48257:
->
->   intel_idle: Support for Intel Xeon Phi Processor x200 Product Family
-> (2016-03-23 16:19:38 -0400)
->
-> ----------------------------------------------------------------
-> Dasaratharaman Chandramouli (1):
->       intel_idle: Support for Intel Xeon Phi Processor x200 Product Family
->
-> Len Brown (1):
->       intel_idle: prevent SKL-H boot failure when C8+C9+C10 enabled
->
->  drivers/idle/intel_idle.c | 133 ++++++++++++++++++++++++++++++++++++++--------
->  1 file changed, 111 insertions(+), 22 deletions(-)
+> -       if (!idx) {
+> -               cpu_do_idle();
+> -               return idx;
+> -       }
+> -
+>         ret = cpu_pm_enter();
+>         if (!ret) {
+>                 /*
+> @@ -69,7 +71,7 @@ static struct cpuidle_driver arm_idle_driver = {
+>          * handler for idle state index 0.
+>          */
+>         .states[0] = {
+> -               .enter                  = arm_enter_idle_state,
+> +               .enter                  = arm_enter_wfi_state,
+>                 .exit_latency           = 1,
+>                 .target_residency       = 1,
+>                 .power_usage            = UINT_MAX,
+> --
