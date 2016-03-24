@@ -1,39 +1,37 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v3 3/7] soc: renesas: Add r8a7790 SYSC PM Domain Binding Definitions
-Date: Thu, 24 Mar 2016 16:35:30 +0100
-Message-ID: <CAMuHMdX_Aw=HqJHEpyPdg3qBpReTA0jLk60BGhhdiF=Bf5JV1w@mail.gmail.com>
-References: <1457551122-21838-1-git-send-email-geert+renesas@glider.be>
-	<1457551122-21838-4-git-send-email-geert+renesas@glider.be>
-	<9850717.l0t66FzFha@avalon>
-	<CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdVy1eY1t55NSmdkJ=haFEPYWoTReecOOK-63XaJj6ztew-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Matthew McClintock <mmcclint@codeaurora.org>
+Subject: Re: [PATCH 14/17] cpufreq: ipq4019: add cpufreq driver
+Date: Thu, 24 Mar 2016 10:42:57 -0500
+Message-ID: <C5B27D64-0C56-4815-BC0A-023C7A955032@codeaurora.org>
+References: <1458770712-10880-1-git-send-email-mmcclint@codeaurora.org> <1458770712-10880-15-git-send-email-mmcclint@codeaurora.org> <20160324064410.GH22062@vireshk-i7>
+Mime-Version: 1.0 (Mac OS X Mail 9.2 \(3112\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20160324064410.GH22062@vireshk-i7>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, qca-upstream.external@qca.qualcomm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, open list <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 10, 2016 at 9:26 AM, Geert Uytterhoeven
-<geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
->>> +#define R8A7790_PD_IMP                       24
->
-> Then this has to become R8A7790_PD_IMP_X4.
+On Mar 24, 2016, at 1:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> 
+> On 23-03-16, 17:05, Matthew McClintock wrote:
+>> Add cpufreq driver for ipq4019 SoC. This driver simply instantiates
+>> cpufreq-dt.
+>> 
+>> Signed-off-by: Matthew McClintock <mmcclint@codeaurora.org>
+>> ---
+>> drivers/cpufreq/Kconfig.arm       |  9 +++++++++
+>> drivers/cpufreq/Makefile          |  1 +
+>> drivers/cpufreq/ipq4019-cpufreq.c | 35 +++++++++++++++++++++++++++++++++++
+>> 3 files changed, 45 insertions(+)
+>> create mode 100644 drivers/cpufreq/ipq4019-cpufreq.c
+> 
+> I have just sent a patchset and cc'd you:
+> "[PATCH 0/3] cpufreq: dt: Create platform device from generic code"
+> 
+> and so this patch may get replaced now.
 
-Actually this bit is called IMP, so I'll keep it.
+Cool, thanks. I will look at re-spinning with your changes.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-M
