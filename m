@@ -1,7 +1,7 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 05/21] PM / devfreq: Add governer type with unique number
-Date: Thu, 24 Mar 2016 13:25:14 +0900
-Message-ID: <1458793530-31897-6-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 11/21] MAINTAINERS: Add samsung bus frequency driver entry
+Date: Thu, 24 Mar 2016 13:25:20 +0900
+Message-ID: <1458793530-31897-12-git-send-email-cw00.choi@samsung.com>
 References: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,103 +21,34 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, tjakobi@math.uni-bielefeld.de, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch just adds the governor type to identify them
-by using the defined constant.
+This patch adds the 'BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS' entry to review the
+patches as maintainer. Patches will be picked up by DEVFREQ maintainer
+on devfreq git repository.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/governor.h                | 6 ++++++
- drivers/devfreq/governor_performance.c    | 1 +
- drivers/devfreq/governor_powersave.c      | 1 +
- drivers/devfreq/governor_simpleondemand.c | 1 +
- drivers/devfreq/governor_userspace.c      | 1 +
- include/linux/devfreq.h                   | 2 ++
- 6 files changed, 12 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index fad7d6321978..cf19b923c362 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -18,6 +18,12 @@
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 32bafda47c2f..9040f6a89ffe 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3539,6 +3539,15 @@ F:	drivers/devfreq/devfreq-event.c
+ F:	include/linux/devfreq-event.h
+ F:	Documentation/devicetree/bindings/devfreq/event/
  
- #define to_devfreq(DEV)	container_of((DEV), struct devfreq, dev)
- 
-+/* Devfreq governor type */
-+#define DEVFREQ_GOV_ONDEMAND			0x1
-+#define DEVFREQ_GOV_PERFORMANCE			0x2
-+#define DEVFREQ_GOV_POWERSAVE			0x3
-+#define DEVFREQ_GOV_USERSPACE			0x4
++BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS
++M:	Chanwoo Choi <cw00.choi@samsung.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-samsung-soc@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
++S:	Maintained
++F:	drivers/devfreq/exynos-bus.c
++F:	Documentation/devicetree/bindings/devfreq/exynos-bus.txt
 +
- /* Devfreq events */
- #define DEVFREQ_GOV_START			0x1
- #define DEVFREQ_GOV_STOP			0x2
-diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-index c72f942f30a8..594d8ecb13fb 100644
---- a/drivers/devfreq/governor_performance.c
-+++ b/drivers/devfreq/governor_performance.c
-@@ -43,6 +43,7 @@ static int devfreq_performance_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_performance = {
- 	.name = "performance",
-+	.type = DEVFREQ_GOV_PERFORMANCE,
- 	.get_target_freq = devfreq_performance_func,
- 	.event_handler = devfreq_performance_handler,
- };
-diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
-index 0c6bed567e6d..e2817e1f2a31 100644
---- a/drivers/devfreq/governor_powersave.c
-+++ b/drivers/devfreq/governor_powersave.c
-@@ -40,6 +40,7 @@ static int devfreq_powersave_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_powersave = {
- 	.name = "powersave",
-+	.type = DEVFREQ_GOV_POWERSAVE,
- 	.get_target_freq = devfreq_powersave_func,
- 	.event_handler = devfreq_powersave_handler,
- };
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index ae72ba5e78df..b905a535d486 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -126,6 +126,7 @@ static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_simple_ondemand = {
- 	.name = "simple_ondemand",
-+	.type = DEVFREQ_GOV_ONDEMAND,
- 	.get_target_freq = devfreq_simple_ondemand_func,
- 	.event_handler = devfreq_simple_ondemand_handler,
- };
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 35de6e83c1fe..c78ab78a5220 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -138,6 +138,7 @@ static int devfreq_userspace_handler(struct devfreq *devfreq,
- 
- static struct devfreq_governor devfreq_userspace = {
- 	.name = "userspace",
-+	.type = DEVFREQ_GOV_USERSPACE,
- 	.get_target_freq = devfreq_userspace_func,
- 	.event_handler = devfreq_userspace_handler,
- };
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 152ea342529c..9baf45f661ad 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -104,6 +104,7 @@ struct devfreq_dev_profile {
-  * struct devfreq_governor - Devfreq policy governor
-  * @node:		list node - contains registered devfreq governors
-  * @name:		Governor's name
-+ * @type:		Governor's type
-  * @get_target_freq:	Returns desired operating frequency for the device.
-  *			Basically, get_target_freq will run
-  *			devfreq_dev_profile.get_dev_status() to get the
-@@ -121,6 +122,7 @@ struct devfreq_governor {
- 	struct list_head node;
- 
- 	const char name[DEVFREQ_NAME_LEN];
-+	const int type;
- 	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
- 	int (*event_handler)(struct devfreq *devfreq,
- 				unsigned int event, void *data);
+ DEVICE NUMBER REGISTRY
+ M:	Torben Mathiasen <device@lanana.org>
+ W:	http://lanana.org/docs/device-list/index.html
 -- 
 1.9.1
