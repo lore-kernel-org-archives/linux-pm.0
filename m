@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 18/21] ARM: dts: Add exynos4412-ppmu-common dtsi to delete
- duplicate PPMU nodes
-Date: Thu, 24 Mar 2016 13:25:27 +0900
-Message-ID: <1458793530-31897-19-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 08/21] PM / devfreq: exynos: Update documentation for bus
+ devices using passive governor
+Date: Thu, 24 Mar 2016 13:25:17 +0900
+Message-ID: <1458793530-31897-9-git-send-email-cw00.choi@samsung.com>
 References: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
@@ -11,265 +11,313 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, tjakobi@math.uni-bielefeld.de, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the exynos4412-ppmu-common.dtsi to remove duplicate PPMU nodes
-because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
-PPMU device tree node.
+This patch updates the documentation for passive bus devices and adds the
+detailed example of Exynos3250.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/arm/boot/dts/exynos3250-monk.dts           | 41 +-------------------
- arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +-------------------
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
- arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 50 +++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +-------------------
- 5 files changed, 54 insertions(+), 120 deletions(-)
- create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+ .../devicetree/bindings/devfreq/exynos-bus.txt     | 250 ++++++++++++++++++++-
+ 1 file changed, 247 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
-index 1fd7ecb5c415..fbe09d640c9a 100644
---- a/arch/arm/boot/dts/exynos3250-monk.dts
-+++ b/arch/arm/boot/dts/exynos3250-monk.dts
-@@ -14,6 +14,7 @@
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+index 78171b918e3f..03f13d38f1a1 100644
+--- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
++++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+@@ -8,22 +8,46 @@ of the bus in runtime. To monitor the usage of each bus in runtime,
+ the driver uses the PPMU (Platform Performance Monitoring Unit), which
+ is able to measure the current load of sub-blocks.
  
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -464,46 +465,6 @@
- 	status = "okay";
- };
++The Exynos SoC includes the various sub-blocks which have the each AXI bus.
++The each AXI bus has the owned source clock but, has not the only owned
++power line. The power line might be shared among one more sub-blocks.
++So, we can divide into two type of device as the role of each sub-block.
++There are two type of bus devices as following:
++- parent bus device
++- passive bus device
++
++Basically, parent and passive bus device share the same power line.
++The parent bus device can only change the voltage of shared power line
++and the rest bus devices (passive bus device) depend on the decision of
++the parent bus device. If there are three blocks which share the VDD_xxx
++power line, Only one block should be parent device and then the rest blocks
++should depend on the parent device as passive device.
++
++	VDD_xxx |--- A block (parent)
++		|--- B block (passive)
++		|--- C block (passive)
++
+ There are a little different composition among Exynos SoC because each Exynos
+ SoC has different sub-blocks. Therefore, shch difference should be specified
+ in devicetree file instead of each device driver. In result, this driver
+ is able to support the bus frequency for all Exynos SoCs.
  
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 5175bd7e015f..9710e79e10a0 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -14,6 +14,7 @@
+-Required properties for bus device:
++Required properties for all bus devices:
+ - compatible: Should be "samsung,exynos-bus".
+ - clock-names : the name of clock used by the bus, "bus".
+ - clocks : phandles for clock specified in "clock-names" property.
+ - operating-points-v2: the OPP table including frequency/voltage information
+   to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
++
++Required properties only for parent bus device:
+ - vdd-supply: the regulator to provide the buses with the voltage.
+ - devfreq-events: the devfreq-event device to monitor the current utilization
+   of buses.
  
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -641,46 +642,6 @@
- 	status = "okay";
- };
+-Optional properties for bus device:
++Required properties only for passive bus device:
++- devfreq: the parent bus device.
++
++Optional properties only for parent bus device:
+ - exynos,saturation-ratio: the percentage value which is used to calibrate
+ 			the performance count against total cycle count.
+ - exynos,voltage-tolerance: the percentage value for bus voltage tolerance
+@@ -34,7 +58,20 @@ Example1:
+ 	power line (regulator). The MIF (Memory Interface) AXI bus is used to
+ 	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
  
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 5e5d3fecb04c..cba37c974703 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/clock/maxim,max77686.h>
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
+-	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
++	- MIF (Memory Interface) block
++	: VDD_MIF |--- DMC (Dynamic Memory Controller)
++
++	- INT (Internal) block
++	: VDD_INT |--- LEFTBUS (parent device)
++		  |--- PERIL
++		  |--- MFC
++		  |--- G3D
++		  |--- RIGHTBUS
++		  |--- FSYS
++		  |--- LCD0
++		  |--- PERIR
++		  |--- ISP
++		  |--- CAM
  
- / {
-diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-new file mode 100644
-index 000000000000..16e4b77d8cb1
---- /dev/null
-+++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-@@ -0,0 +1,50 @@
-+/*
-+ * Device tree sources for Exynos4412 PPMU common device tree
-+ *
-+ * Copyright (C) 2015 Samsung Electronics
-+ * Author: Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+&ppmu_dmc0 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc0_3: ppmu-event3-dmc0 {
-+		       event-name = "ppmu-event3-dmc0";
-+	       };
-+       };
-+};
-+
-+&ppmu_dmc1 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc1_3: ppmu-event3-dmc1 {
-+		       event-name = "ppmu-event3-dmc1";
-+	       };
-+       };
-+};
-+
-+&ppmu_leftbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_leftbus_3: ppmu-event3-leftbus {
-+		       event-name = "ppmu-event3-leftbus";
-+	       };
-+       };
-+};
-+
-+&ppmu_rightbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_rightbus_3: ppmu-event3-rightbus {
-+		       event-name = "ppmu-event3-rightbus";
-+	       };
-+       };
-+};
-diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
-index ed017cc7b14f..dce3cebe0606 100644
---- a/arch/arm/boot/dts/exynos4412-trats2.dts
-+++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-@@ -14,6 +14,7 @@
+ 	- MIF bus's frequency/voltage table
+ 	-----------------------
+@@ -47,6 +84,24 @@ Example1:
+ 	|L5| 400000 |875000   |
+ 	-----------------------
  
- /dts-v1/;
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/clock/maxim,max77686.h>
-@@ -871,46 +872,6 @@
- 	assigned-clock-parents =  <&clock CLK_XUSBXTI>;
- };
++	- INT bus's frequency/voltage table
++	----------------------------------------------------------
++	|Block|LEFTBUS|RIGHTBUS|MCUISP |ISP    |PERIL  ||VDD_INT |
++	| name|       |LCD0    |       |       |       ||        |
++	|     |       |FSYS    |       |       |       ||        |
++	|     |       |MFC     |       |       |       ||        |
++	----------------------------------------------------------
++	|Mode |*parent|passive |passive|passive|passive||        |
++	----------------------------------------------------------
++	|Lv   |Frequency                               ||Voltage |
++	----------------------------------------------------------
++	|L1   |50000  |50000   |50000  |50000  |50000  ||900000  |
++	|L2   |80000  |80000   |80000  |80000  |80000  ||900000  |
++	|L3   |100000 |100000  |100000 |100000 |100000 ||1000000 |
++	|L4   |134000 |134000  |200000 |200000 |       ||1000000 |
++	|L5   |200000 |200000  |400000 |300000 |       ||1000000 |
++	----------------------------------------------------------
++
+ Example2 :
+ 	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dtsi
+ 	is listed below:
+@@ -85,6 +140,154 @@ Example2 :
+ 		};
+ 	};
  
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &pinctrl_0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&sleep0>;
++	bus_leftbus: bus_leftbus {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_GDL>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_rightbus: bus_rightbus {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_GDR>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_lcd0: bus_lcd0 {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_ACLK_160>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_fsys: bus_fsys {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_ACLK_200>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_mcuisp: bus_mcuisp {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_ACLK_400_MCUISP>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_mcuisp_opp_table>;
++		status = "disabled";
++	};
++
++	bus_isp: bus_isp {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_ACLK_266>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_isp_opp_table>;
++		status = "disabled";
++	};
++
++	bus_peril: bus_peril {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_DIV_ACLK_100>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_peril_opp_table>;
++		status = "disabled";
++	};
++
++	bus_mfc: bus_mfc {
++		compatible = "samsung,exynos-bus";
++		clocks = <&cmu CLK_SCLK_MFC>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_leftbus_opp_table: opp_table1 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@50000000 {
++			opp-hz = /bits/ 64 <50000000>;
++			opp-microvolt = <900000>;
++		};
++		opp@80000000 {
++			opp-hz = /bits/ 64 <80000000>;
++			opp-microvolt = <900000>;
++		};
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++			opp-microvolt = <1000000>;
++		};
++	};
++
++	bus_mcuisp_opp_table: opp_table2 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@50000000 {
++			opp-hz = /bits/ 64 <50000000>;
++		};
++		opp@80000000 {
++			opp-hz = /bits/ 64 <80000000>;
++		};
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++		opp@400000000 {
++			opp-hz = /bits/ 64 <400000000>;
++		};
++	};
++
++	bus_isp_opp_table: opp_table3 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@50000000 {
++			opp-hz = /bits/ 64 <50000000>;
++		};
++		opp@80000000 {
++			opp-hz = /bits/ 64 <80000000>;
++		};
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++		opp@300000000 {
++			opp-hz = /bits/ 64 <300000000>;
++		};
++	};
++
++	bus_peril_opp_table: opp_table4 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@50000000 {
++			opp-hz = /bits/ 64 <50000000>;
++		};
++		opp@80000000 {
++			opp-hz = /bits/ 64 <80000000>;
++		};
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++	};
++
++
+ 	Usage case to handle the frequency and voltage of bus on runtime
+ 	in exynos3250-rinato.dts is listed below:
+ 
+@@ -93,3 +296,44 @@ Example2 :
+ 		vdd-supply = <&buck1_reg>;	/* VDD_MIF */
+ 		status = "okay";
+ 	};
++
++	&bus_leftbus {
++		devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
++		vdd-supply = <&buck3_reg>;
++		status = "okay";
++	};
++
++	&bus_rightbus {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_lcd0 {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_fsys {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_mcuisp {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_isp {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_peril {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
++
++	&bus_mfc {
++		devfreq = <&bus_leftbus>;
++		status = "okay";
++	};
 -- 
 1.9.1
