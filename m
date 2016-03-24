@@ -1,92 +1,337 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 19/21] ARM: dts: Add support of bus frequency using VDD_INT
- for exynos3250-rinato
-Date: Thu, 24 Mar 2016 13:25:28 +0900
-Message-ID: <1458793530-31897-20-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 04/21] PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER
+ notifier
+Date: Thu, 24 Mar 2016 13:25:13 +0900
+Message-ID: <1458793530-31897-5-git-send-email-cw00.choi@samsung.com>
 References: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:40785 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbcCXEZu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Mar 2016 00:25:50 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1458793530-31897-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, tjakobi@math.uni-bielefeld.de, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, tjakobi@math.uni-bielefeld.de, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus device-tree nodes of INT (internal) block
-to enable the bus frequency scaling. The following sub-blocks share
-the VDD_INT power source:
-- LEFTBUS (parent device)
-- RIGHTBUS
-- PERIL
-- LCD0
-- FSYS
-- MCUISP / ISP
-- MFC
+This patch adds the new DEVFREQ_TRANSITION_NOTIFIER notifier to send
+the notification when the frequency of device is changed.
+This notifier has two state as following:
+- DEVFREQ_PRECHANGE  : Notify it before chaning the frequency of device
+- DEVFREQ_POSTCHANGE : Notify it after changed the frequency of device
 
-The LEFTBUS is parent device with devfreq ondemand governor
-and the rest of devices depend on the LEFTBUS device.
+And this patch adds the resourced-managed function to release the resource
+automatically when error happen.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/arm/boot/dts/exynos3250-rinato.dts | 41 +++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ drivers/devfreq/devfreq.c | 163 +++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/devfreq.h   |  58 ++++++++++++++++-
+ 2 files changed, 219 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 9710e79e10a0..09444897b416 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -154,6 +154,47 @@
- 	status = "okay";
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 20a9422c2552..1d6c803804d5 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -189,6 +189,29 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++static int devfreq_notify_transition(struct devfreq *devfreq,
++		struct devfreq_freqs *freqs, unsigned int state)
++{
++	if (!devfreq)
++		return -EINVAL;
++
++	switch (state) {
++	case DEVFREQ_PRECHANGE:
++		srcu_notifier_call_chain(&devfreq->transition_notifier_list,
++				DEVFREQ_PRECHANGE, freqs);
++		break;
++
++	case DEVFREQ_POSTCHANGE:
++		srcu_notifier_call_chain(&devfreq->transition_notifier_list,
++				DEVFREQ_POSTCHANGE, freqs);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ /* Load monitoring helper functions for governors use */
+ 
+ /**
+@@ -200,7 +223,8 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
+  */
+ int update_devfreq(struct devfreq *devfreq)
+ {
+-	unsigned long freq;
++	struct devfreq_freqs freqs;
++	unsigned long freq, cur_freq;
+ 	int err = 0;
+ 	u32 flags = 0;
+ 
+@@ -234,10 +258,22 @@ int update_devfreq(struct devfreq *devfreq)
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
+ 
++	if (devfreq->profile->get_cur_freq)
++		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
++	else
++		cur_freq = devfreq->previous_freq;
++
++	freqs.old = cur_freq;
++	freqs.new = freq;
++	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
++
+ 	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+ 	if (err)
+ 		return err;
+ 
++	freqs.new = freq;
++	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
++
+ 	if (devfreq->profile->freq_table)
+ 		if (devfreq_update_status(devfreq, freq))
+ 			dev_err(&devfreq->dev,
+@@ -542,6 +578,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_out;
+ 	}
+ 
++	srcu_init_notifier_head(&devfreq->transition_notifier_list);
++
+ 	mutex_unlock(&devfreq->lock);
+ 
+ 	mutex_lock(&devfreq_list_lock);
+@@ -1310,6 +1348,129 @@ void devm_devfreq_unregister_opp_notifier(struct device *dev,
+ }
+ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
+ 
++/**
++ * devfreq_register_notifier() - Register a driver with devfreq
++ * @devfreq:	The devfreq object.
++ * @nb:		The notifier block to register.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ */
++int devfreq_register_notifier(struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++	int ret = 0;
++
++	if (!devfreq)
++		return -EINVAL;
++
++	switch (list) {
++	case DEVFREQ_TRANSITION_NOTIFIER:
++		ret = srcu_notifier_chain_register(
++				&devfreq->transition_notifier_list, nb);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(devfreq_register_notifier);
++
++/*
++ * devfreq_unregister_notifier() - Unregister a driver with devfreq
++ * @devfreq:	The devfreq object.
++ * @nb:		The notifier block to be unregistered.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ */
++int devfreq_unregister_notifier(struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++	int ret = 0;
++
++	if (!devfreq)
++		return -EINVAL;
++
++	switch (list) {
++	case DEVFREQ_TRANSITION_NOTIFIER:
++		ret = srcu_notifier_chain_unregister(
++				&devfreq->transition_notifier_list, nb);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(devfreq_unregister_notifier);
++
++struct devfreq_notifier_devres {
++	struct devfreq *devfreq;
++	struct notifier_block *nb;
++	unsigned int list;
++};
++
++static void devm_devfreq_notifier_release(struct device *dev, void *res)
++{
++	struct devfreq_notifier_devres *this = res;
++
++	devfreq_unregister_notifier(this->devfreq, this->nb, this->list);
++}
++
++/**
++ * devm_devfreq_register_notifier()
++	- Resource-managed devfreq_register_notifier()
++ * @dev:	The devfreq user device. (parent of devfreq)
++ * @devfreq:	The devfreq object.
++ * @nb:		The notifier block to be unregistered.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ */
++int devm_devfreq_register_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++	struct devfreq_notifier_devres *ptr;
++	int ret;
++
++	ptr = devres_alloc(devm_devfreq_notifier_release, sizeof(*ptr),
++				GFP_KERNEL);
++	if (!ptr)
++		return -ENOMEM;
++
++	ret = devfreq_register_notifier(devfreq, nb, list);
++	if (ret) {
++		devres_free(ptr);
++		return ret;
++	}
++
++	ptr->devfreq = devfreq;
++	ptr->nb = nb;
++	ptr->list = list;
++	devres_add(dev, ptr);
++
++	return 0;
++}
++EXPORT_SYMBOL(devm_devfreq_register_notifier);
++
++/**
++ * devm_devfreq_unregister_notifier()
++	- Resource-managed devfreq_unregister_notifier()
++ * @dev:	The devfreq user device. (parent of devfreq)
++ * @devfreq:	The devfreq object.
++ * @nb:		The notifier block to be unregistered.
++ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
++ */
++void devm_devfreq_unregister_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++	WARN_ON(devres_release(dev, devm_devfreq_notifier_release,
++			       devm_devfreq_dev_match, devfreq));
++}
++EXPORT_SYMBOL(devm_devfreq_unregister_notifier);
++
+ MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
+ MODULE_DESCRIPTION("devfreq class support");
+ MODULE_LICENSE("GPL");
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index aa0b8424ebc3..152ea342529c 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -19,6 +19,13 @@
+ 
+ #define DEVFREQ_NAME_LEN 16
+ 
++/* DEVFREQ notifier interface */
++#define DEVFREQ_TRANSITION_NOTIFIER	(0)
++
++/* Transition notifiers of DEVFREQ_TRANSITION_NOTIFIER */
++#define	DEVFREQ_PRECHANGE		(0)
++#define DEVFREQ_POSTCHANGE		(1)
++
+ struct devfreq;
+ 
+ /**
+@@ -177,6 +184,13 @@ struct devfreq {
+ 	unsigned int *trans_table;
+ 	unsigned long *time_in_state;
+ 	unsigned long last_stat_updated;
++
++	struct srcu_notifier_head transition_notifier_list;
++};
++
++struct devfreq_freqs {
++	unsigned long old;
++	unsigned long new;
  };
  
-+&bus_leftbus {
-+	devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
-+	vdd-supply = <&buck3_reg>;
-+	status = "okay";
-+};
+ #if defined(CONFIG_PM_DEVFREQ)
+@@ -207,7 +221,20 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
+ 					      struct devfreq *devfreq);
+ extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
+ 						struct devfreq *devfreq);
+-
++extern int devfreq_register_notifier(struct devfreq *devfreq,
++					struct notifier_block *nb,
++					unsigned int list);
++extern int devfreq_unregister_notifier(struct devfreq *devfreq,
++					struct notifier_block *nb,
++					unsigned int list);
++extern int devm_devfreq_register_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list);
++extern void devm_devfreq_unregister_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list);
+ extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 						int index);
+ 
+@@ -310,6 +337,35 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
+ {
+ }
+ 
++static inline int devfreq_register_notifier(struct devfreq *devfreq,
++					struct notifier_block *nb,
++					unsigned int list)
++{
++	return 0;
++}
 +
-+&bus_rightbus {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
++static inline int devfreq_unregister_notifier(struct devfreq *devfreq,
++					struct notifier_block *nb,
++					unsigned int list)
++{
++	return 0;
++}
 +
-+&bus_lcd0 {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
++static inline int devm_devfreq_register_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++	return 0;
++}
 +
-+&bus_fsys {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
++static inline void devm_devfreq_unregister_notifier(struct device *dev,
++				struct devfreq *devfreq,
++				struct notifier_block *nb,
++				unsigned int list)
++{
++}
 +
-+&bus_mcuisp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_isp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_peril {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_mfc {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
- &cpu0 {
- 	cpu0-supply = <&buck2_reg>;
- };
+ static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
+ 							int index)
+ {
 -- 
 1.9.1
-
