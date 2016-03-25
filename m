@@ -1,122 +1,76 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V8 00/14] Add T210 support in Tegra soctherm
-Date: Fri, 25 Mar 2016 13:37:17 +0800
-Message-ID: <56F4CE8D.5020108@nvidia.com>
-References: <1458118571-29717-1-git-send-email-wni@nvidia.com>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: Re: [PATCH] cpuidle: arm: make enter idle operation a bit more
+ efficient
+Date: Fri, 25 Mar 2016 14:25:13 +0800
+Message-ID: <20160325142513.6814ee41@xhacker>
+References: <1458796038-6062-1-git-send-email-jszhang@marvell.com>
+	<20160324160600.GA21749@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1458118571-29717-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:1928 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751809AbcCYGcA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2016 02:32:00 -0400
+In-Reply-To: <20160324160600.GA21749@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi, Eduardo
-Will you take this series, it seems no more comments.
+Hi Lorenzo,
 
-Thanks.
-Wei.
+On Thu, 24 Mar 2016 16:06:00 +0000 Lorenzo Pieralisi wrote:
 
-On 2016=E5=B9=B403=E6=9C=8816=E6=97=A5 16:55, Wei Ni wrote:
-> This patchset adds following functions for tegra_soctherm driver:
-> 1. add T210 support.
-> 2. export debugfs to show some registers.
-> 3. add thermtrip funciton.
-> 4. add suspend/resume function.
->=20
-> The v7 series is in:
-> https://patchwork.kernel.org/patch/8561681/
-> The v6 series is in:
-> https://lkml.org/lkml/2016/2/22/66
-> The v5 series is in:
-> http://www.spinics.net/lists/linux-tegra/msg25079.html
-> The v4 series is in:
-> http://www.spinics.net/lists/linux-tegra/msg24972.html
-> The V3 series is in:
-> http://www.spinics.net/lists/linux-tegra/msg24911.html
-> The V2 series is in:
-> http://www.spinics.net/lists/linux-tegra/msg24901.html
-> The V1 series is in:
-> http://www.spinics.net/lists/linux-tegra/msg24808.html
->=20
-> Main changes from V7:
-> 1. Split PM support patch into three smaller patches.
-> 2. Few changes per Eduardo's comments.
->=20
-> Main changes from V6:
-> 1. rebased patches on Eduardo's
-> [PATCH 00/13] thermal: convert users of thermal_zone_of_sensor_regist=
-er to devm_
->=20
-> Main changes from V5:
-> 1. Change to use linux thermal framework to implement
-> thermtrip funciton, per Rob's comment.
-> 2. Add .set_trip_temp() in of-thermal driver, so that
-> we can set trips on hardware.
->=20
-> Main changes from V4:
-> 1. Change description of devicetree binding per Rob's comment.
-> 2. Call of_node_put to decrement refcount of the node.
->=20
-> Main changes from V3:
-> 1. Change structures to "const" in chip specific files.
-> 2. Minor changes per Thieery's comments.
->=20
-> Main changes from V2:
-> 1. Fix build error in patch [1/11].
-> 2. Use of_get_child_by_name instead of of_find_node_by_name in patch =
-[8/11].
-> 3. Use debugfs_remove_recursive to remove debugfs in patch [6/11].
->=20
-> Main changes from V1:
-> 1. Use the new type to handl different Tegra chips in one driver, whi=
-ch suggested by Thierry.
-> 2. Changes per Thieery's other comments.
->=20
-> Wei Ni (14):
->   thermal: tegra: move tegra thermal files into tegra directory
->   thermal: tegra: combine sensor group-related data
->   thermal: tegra: get rid of PDIV/HOTSPOT hack
->   thermal: tegra: split tegra_soctherm driver
->   thermal: tegra: add Tegra210 specific SOC_THERM driver
->   thermal: tegra: add a debugfs to show registers
->   thermal: of-thermal: allow setting trip_temp on hardware
->   of: add notes of critical trips for soctherm
->   thermal: tegra: add thermtrip function
->   thermal: tegra: handle clocks in one function
->   thermal: tegra: handle HW initialization in one funcotion
->   thermal: tegra: add PM support
->   arm64: tegra: add soctherm node for Tegra210
->   arm: tegra: set critical trips for Tegra124
->=20
->  .../devicetree/bindings/thermal/tegra-soctherm.txt |  12 +
->  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  18 +-
->  arch/arm/boot/dts/tegra124.dtsi                    |  48 ++
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi           |  92 +++
->  drivers/thermal/Kconfig                            |  12 +-
->  drivers/thermal/Makefile                           |   2 +-
->  drivers/thermal/of-thermal.c                       |   8 +
->  drivers/thermal/tegra/Kconfig                      |  13 +
->  drivers/thermal/tegra/Makefile                     |   5 +
->  drivers/thermal/tegra/soctherm-fuse.c              | 169 +++++
->  drivers/thermal/tegra/soctherm.c                   | 682 +++++++++++=
-++++++++++
->  drivers/thermal/tegra/soctherm.h                   | 123 ++++
->  drivers/thermal/tegra/tegra124-soctherm.c          | 196 ++++++
->  drivers/thermal/tegra/tegra210-soctherm.c          | 197 ++++++
->  drivers/thermal/tegra_soctherm.c                   | 463 -----------=
----
->  include/dt-bindings/thermal/tegra124-soctherm.h    |   1 +
->  include/linux/thermal.h                            |   1 +
->  17 files changed, 1553 insertions(+), 489 deletions(-)
->  create mode 100644 drivers/thermal/tegra/Kconfig
->  create mode 100644 drivers/thermal/tegra/Makefile
->  create mode 100644 drivers/thermal/tegra/soctherm-fuse.c
->  create mode 100644 drivers/thermal/tegra/soctherm.c
->  create mode 100644 drivers/thermal/tegra/soctherm.h
->  create mode 100644 drivers/thermal/tegra/tegra124-soctherm.c
->  create mode 100644 drivers/thermal/tegra/tegra210-soctherm.c
->  delete mode 100644 drivers/thermal/tegra_soctherm.c
->=20
+> On Thu, Mar 24, 2016 at 01:07:18PM +0800, Jisheng Zhang wrote:
+> > Currently, entering idle need to check the idx every time to choose the
+> > real entering idle routine. But this check could be avoided by pointing
+> > the idle enter function pointer of each idle states to the routines
+> > suitable for each states directly.
+> > 
+> > Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-arm.c | 14 ++++++++------
+> >  1 file changed, 8 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> > index 545069d..48a620f 100644
+> > --- a/drivers/cpuidle/cpuidle-arm.c
+> > +++ b/drivers/cpuidle/cpuidle-arm.c
+> > @@ -23,6 +23,13 @@
+> >  
+> >  #include "dt_idle_states.h"
+> >  
+> > +static int arm_enter_wfi_state(struct cpuidle_device *dev,
+> > +			       struct cpuidle_driver *drv, int idx)
+> > +{
+> > +	cpu_do_idle();
+> > +	return 0;
+> > +}
+> > +
+> >  /*
+> >   * arm_enter_idle_state - Programs CPU to enter the specified state
+> >   *
+> > @@ -38,11 +45,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+> >  {
+> >  	int ret;
+> >  
+> > -	if (!idx) {
+> > -		cpu_do_idle();
+> > -		return idx;
+> > -	}  
+> 
+> Mmm...if I wanted to paint your bikeshed I would say idx is in a
+> register and you are removing a simple comparison to exchange it
+> with a function that adds to code footprint and may even make
+> performance worse instead of improving anything.
+> 
+> I am not sure this patch makes anything more efficient, happy to be
+> proven wrong, with significant data.
+
+Thanks for pointing this out. I'll do some measurement and get back to you
+
+Thanks,
+Jisheng
+
