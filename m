@@ -1,42 +1,101 @@
-From: Ulises Brindis <brindisu@lab126.com>
-Subject: [PATCH] thermal: of: fix cleanup when building a thermal zone
-Date: Fri, 25 Mar 2016 12:55:41 -0700
-Message-ID: <1458935741-21355-1-git-send-email-brindisu@lab126.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-fw-6001.amazon.com ([52.95.48.154]:56393 "EHLO
-	smtp-fw-6001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbcCYTzX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2016 15:55:23 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [PATCH 2/2] sched/fair: do not call cpufreq hook unless util
+ changed
+Date: Fri, 25 Mar 2016 14:24:05 -0700
+Message-ID: <56F5AC75.1000305@nvidia.com>
+References: <1458606068-7476-1-git-send-email-smuckle@linaro.org> <1458606068-7476-2-git-send-email-smuckle@linaro.org> <56F47C89.9070201@nvidia.com> <56F48DFA.8020602@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <56F48DFA.8020602@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, pboonstoppel@nvidia.com
 List-Id: linux-pm@vger.kernel.org
-Cc: Ulises Brindis <brindisu@lab126.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-of_node_put is iterating through all terms in the tbps array even though
-the bind has failed. We need to only iterate through the terms that have
-already passed the binding step.
+On 03/24/2016 06:01 PM, Steve Muckle wrote:
+> Hi Sai,
+> 
+> On 03/24/2016 04:47 PM, Sai Gurrappadi wrote:
+>>> @@ -2850,7 +2851,8 @@ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+>>>  	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+>>>  #endif
+>>>  
+>>> -	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
+>>> +	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq &&
+>>> +	    (decayed || removed_util)) {
+>>>  		unsigned long max = rq->cpu_capacity_orig;
+>>
+>> Should this filtering instead happen on the governor side?
+> 
+> Perhaps but that also means making a trip into that logic from this hot
+> path. To me it seemed better to avoid the overhead if possible,
+> especially since we already have info here on whether the util changed.
+> But if everyone agrees the overhead is negligible I'm happy to drop the
+> patch.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Ulises Brindis <brindisu@lab126.com>
----
- drivers/thermal/of-thermal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I agree, ideally we skip a pointless function call as long as we make sure we
+aren't dropping important frequency requests.
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 9043f8f..0f1c420 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -825,7 +825,7 @@ finish:
- 	return tz;
- 
- free_tbps:
--	for (i = 0; i < tz->num_tbps; i++)
-+	for (i = i - 1; i >= 0; i--)
- 		of_node_put(tz->tbps[i].cooling_device);
- 	kfree(tz->tbps);
- free_trips:
--- 
-1.7.9.5
+> 
+>> Even if the CFS load itself didn't change, we could have switched from an
+>> RT/DL thread to a CFS thread so util would have to be updated from ULONG_MAX
+>> to whatever CFS needs right?
+> 
+> Agreed, given the current state of things this will delay the ramp down
+> in that case. The current scheme of having a single vote for CPU
+> capacity seems broken overall to me however.
 
+Yup, the current hooks just stomp on each other. Need to organize that better.
+Not to mention the interaction with the throttling bit on the governor side.
+
+> 
+> If the CPU goes idle after RT/DL execution we'll leave the vote at fmax
+> until cpufreq_sched starts ignoring it due to staleness.
+
+Note that the same thing can happen due to throttling on the governor side so
+it isn't just this change per-say. I do realize it won't be possible to track
+all freq. requests perfectly especially given how often the hook fires right
+now but something to keep in mind.
+
+> 
+> More importantly though, without capacity vote aggregation from
+> CFS/RT/DL it doesn't seem possible to ensure appropriate capacity. If
+> CFS keeps setting the capacity when it runs to a capacity based solely
+> on the CFS requirement, and there is RT or DL utilization in the system,
+> won't it tend to be underserved? It may actually be better to be lazy in
+> ramping down from fmax to compensate for not including RT/DL's
+> utilization, until we can more accurately calculate it.
+
+Could potentially make CFS requests based off of max available CFS capacity
+i.e cpu_capacity instead of cpu_capacity_orig. But yes I agree, there needs to
+be better interaction between the classes.
+
+> 
+> We need vote aggregation from each sched class. This has been posted
+> both as part of the now-defunct schedfreq series as well as Mike
+> Turquette's recent series, which I hear he's working on rebasing.
+> 
+> Once that is in we need to decide how RT tasks should vote. I'm not
+> really a fan of the decision to run them at fmax. I think this changes
+> their semantics and it will be a non-starter for platforms with power
+> constraints and/or slow frequency transition times. Perhaps we could
+> make it configurable how the RT class should vote. It should be the RT
+> class's responsibility though IMO to reduce/drop its vote when necessary
+> though, which would address your concern above.
+
+The Fmax bit for RT I think is very much a per-platform decision based on
+voltage ramp up/down times, power/thermal budget etc.
+
+> 
+>> Also now that CFS enqueue calls cpufreq_update_util, RT/DL requests could
+>> potentially get overridden.
+> 
+> I think this was already busted - enqueue_task_fair() calls
+> update_load_avg() on the sched entities in the hierarchy which were
+> already enqueued.
+
+Yup, that was busted before too.
+
+-Sai
