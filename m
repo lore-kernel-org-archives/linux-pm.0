@@ -1,101 +1,49 @@
-From: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Subject: Re: [PATCH 2/2] sched/fair: do not call cpufreq hook unless util
- changed
-Date: Fri, 25 Mar 2016 14:24:05 -0700
-Message-ID: <56F5AC75.1000305@nvidia.com>
-References: <1458606068-7476-1-git-send-email-smuckle@linaro.org> <1458606068-7476-2-git-send-email-smuckle@linaro.org> <56F47C89.9070201@nvidia.com> <56F48DFA.8020602@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.6-rc1
+Date: Fri, 25 Mar 2016 23:08:51 +0100
+Message-ID: <CAJZ5v0jMF=76ZvF3Er_iCt4hnOxf-b96Uy-PzsO=kQ7Dyy1FYQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <56F48DFA.8020602@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, pboonstoppel@nvidia.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f54.google.com ([209.85.215.54]:36014 "EHLO
+	mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754466AbcCYWIx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Mar 2016 18:08:53 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-On 03/24/2016 06:01 PM, Steve Muckle wrote:
-> Hi Sai,
-> 
-> On 03/24/2016 04:47 PM, Sai Gurrappadi wrote:
->>> @@ -2850,7 +2851,8 @@ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
->>>  	cfs_rq->load_last_update_time_copy = sa->last_update_time;
->>>  #endif
->>>  
->>> -	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
->>> +	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq &&
->>> +	    (decayed || removed_util)) {
->>>  		unsigned long max = rq->cpu_capacity_orig;
->>
->> Should this filtering instead happen on the governor side?
-> 
-> Perhaps but that also means making a trip into that logic from this hot
-> path. To me it seemed better to avoid the overhead if possible,
-> especially since we already have info here on whether the util changed.
-> But if everyone agrees the overhead is negligible I'm happy to drop the
-> patch.
+Hi Linus,
 
-I agree, ideally we skip a pointless function call as long as we make sure we
-aren't dropping important frequency requests.
+One of commits in my previous pull request changed the permissions
+of drivers/power/avs/rockchip-io-domain.c to executable by mistake.
 
-> 
->> Even if the CFS load itself didn't change, we could have switched from an
->> RT/DL thread to a CFS thread so util would have to be updated from ULONG_MAX
->> to whatever CFS needs right?
-> 
-> Agreed, given the current state of things this will delay the ramp down
-> in that case. The current scheme of having a single vote for CPU
-> capacity seems broken overall to me however.
+Please pull from
 
-Yup, the current hooks just stomp on each other. Need to organize that better.
-Not to mention the interaction with the throttling bit on the governor side.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.6-rc1-3
 
-> 
-> If the CPU goes idle after RT/DL execution we'll leave the vote at fmax
-> until cpufreq_sched starts ignoring it due to staleness.
+to receive the fix as commit 8e653b654497350f9cb3d6c2088207bc503f2c7c
 
-Note that the same thing can happen due to throttling on the governor side so
-it isn't just this change per-say. I do realize it won't be possible to track
-all freq. requests perfectly especially given how often the hook fires right
-now but something to keep in mind.
+ Fix permissions of drivers/power/avs/rockchip-io-domain.c
 
-> 
-> More importantly though, without capacity vote aggregation from
-> CFS/RT/DL it doesn't seem possible to ensure appropriate capacity. If
-> CFS keeps setting the capacity when it runs to a capacity based solely
-> on the CFS requirement, and there is RT or DL utilization in the system,
-> won't it tend to be underserved? It may actually be better to be lazy in
-> ramping down from fmax to compensate for not including RT/DL's
-> utilization, until we can more accurately calculate it.
+on top of commit f447671b9e4fa4b0c9faf39455269d62d94218ae
 
-Could potentially make CFS requests based off of max available CFS capacity
-i.e cpu_capacity instead of cpu_capacity_orig. But yes I agree, there needs to
-be better interaction between the classes.
+ PM / AVS: rockchip-io: add io selectors and supplies for rk3399
 
-> 
-> We need vote aggregation from each sched class. This has been posted
-> both as part of the now-defunct schedfreq series as well as Mike
-> Turquette's recent series, which I hear he's working on rebasing.
-> 
-> Once that is in we need to decide how RT tasks should vote. I'm not
-> really a fan of the decision to run them at fmax. I think this changes
-> their semantics and it will be a non-starter for platforms with power
-> constraints and/or slow frequency transition times. Perhaps we could
-> make it configurable how the RT class should vote. It should be the RT
-> class's responsibility though IMO to reduce/drop its vote when necessary
-> though, which would address your concern above.
+This changes the file mode of drivers/power/avs/rockchip-io-domain.c
+back to 644.
 
-The Fmax bit for RT I think is very much a per-platform decision based on
-voltage ramp up/down times, power/thermal budget etc.
+Thanks!
 
-> 
->> Also now that CFS enqueue calls cpufreq_update_util, RT/DL requests could
->> potentially get overridden.
-> 
-> I think this was already busted - enqueue_task_fair() calls
-> update_load_avg() on the sched entities in the hierarchy which were
-> already enqueued.
 
-Yup, that was busted before too.
+---------------
 
--Sai
+Rafael J. Wysocki (1):
+      Fix permissions of drivers/power/avs/rockchip-io-domain.c
+
+---------------
+
+ drivers/power/avs/rockchip-io-domain.c | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
