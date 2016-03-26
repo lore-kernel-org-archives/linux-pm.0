@@ -1,20 +1,37 @@
-From: forumperlamemoria@nodo50.org
-Subject: nagroda
-Date: Sat, 26 Mar 2016 12:37:20 +0100
-Message-ID: <00c64cf1cb46cc79c99443d6eab53deb.squirrel__44004.7393007719$1458992979$gmane$org@correo.nodo50.org>
-Reply-To: vcdssdcda@outlook.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] powercap: intel_rapl: Add missing Haswell model
+Date: Sat, 26 Mar 2016 05:03:38 -0700
+Message-ID: <1458993818-19387-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from revolware.nodo50.org ([91.226.176.133]:53439 "EHLO
-	revolware.nodo50.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173AbcCZLtS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 26 Mar 2016 07:49:18 -0400
+Received: from mga14.intel.com ([192.55.52.115]:26881 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbcCZMGo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 26 Mar 2016 08:06:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lista_de_destinatarios_oculta@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-wygrales dziewiecset tysiecy w miesiacu marcu, wyslij swoje imie i
-nazwisko, kraj oraz numer telefonu
+Added missing model 0x46.
+
+Tested-and-reported-by: Piotr Maksymiuk <piotr.maksymiuk@movishell.pl>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 2c0235d..769a803 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1105,6 +1105,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(0x3f, rapl_defaults_hsw_server),/* Haswell servers */
+ 	RAPL_CPU(0x4f, rapl_defaults_hsw_server),/* Broadwell servers */
+ 	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
++	RAPL_CPU(0x46, rapl_defaults_core),/* Haswell */
+ 	RAPL_CPU(0x47, rapl_defaults_core),/* Broadwell-H */
+ 	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
+ 	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
+-- 
+1.9.1
 
