@@ -1,126 +1,208 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH] drivers/idle: make intel_idle.c driver more explicitly non-modular
-Date: Sun, 27 Mar 2016 13:29:37 -0400
-Message-ID: <1459099777-4962-1-git-send-email-paul.gortmaker@windriver.com>
+From: Mason <slash.tmp@free.fr>
+Subject: [PATCH v4] thermal: add temperature sensor support for tango SoC
+Date: Sun, 27 Mar 2016 22:35:51 +0200
+Message-ID: <56F84427.1000507@free.fr>
+References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
+ <20160308214846.GA10950@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.windriver.com ([147.11.1.11]:62003 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbcC0RaK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Mar 2016 13:30:10 -0400
+Received: from smtp4-g21.free.fr ([212.27.42.4]:36530 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751562AbcC0UgG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 27 Mar 2016 16:36:06 -0400
+In-Reply-To: <20160308214846.GA10950@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
 
-The Kconfig for this driver is currently declared with:
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 
-config INTEL_IDLE
-        bool "Cpuidle Driver for Intel Processors"
+Since the SMP8758, Tango SoCs include several instances of a rudimentary
+bandgap temperature sensor.
 
-...meaning that it currently is not being built as a module by anyone.
-
-This was done in commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
-("intel_idle: disable module support") since "...the module capability
-is cauing more trouble than it is worth."
-
-Since this was done over 5y ago, it is safe to say there is no big desire
-to overcome the issues with modular versions.  So lets remove the modular
-code that is essentially orphaned, so that when reading the driver there
-is no doubt it is builtin-only.
-
-Since module_init translates to device_initcall in the non-modular
-case, the init ordering remains unchanged with this commit.  At a
-later date we might want to consider whether subsys_init or another
-init category seems more appropriate than device_init.
-
-We replace module.h with moduleparam.h since the file does declare
-some module parameters, and leaving them as such is currently the
-easiest way to remain compatible with existing boot arg use cases.
-
-Note that MODULE_DEVICE_TABLE is a no-op for non-modular code.
-
-Also note that we can't remove intel_idle_cpuidle_devices_uninit() as
-that is still used for unwind purposes if the init fails.
-
-We also delete the MODULE_LICENSE tag etc. since all that information
-is already contained at the top of the file in the comments.
-
-Cc: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 ---
- drivers/idle/intel_idle.c | 35 ++++++++---------------------------
- 1 file changed, 8 insertions(+), 27 deletions(-)
+ Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
+ drivers/thermal/Kconfig                                     |   7 ++
+ drivers/thermal/Makefile                                    |   1 +
+ drivers/thermal/tango_thermal.c                             | 114 +++++++++++++++++++++++++++
+ 4 files changed, 139 insertions(+)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index ba947df5a8c7..d1b5a821664d 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -46,8 +46,6 @@
-  * to avoid complications with the lapic timer workaround.
-  * Have not seen issues with suspend, but may need same workaround here.
-  *
-- * There is currently no kernel-based automatic probing/loading mechanism
-- * if the driver is built as a module.
-  */
+diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+new file mode 100644
+index 000000000000..a203f7d60d35
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+@@ -0,0 +1,17 @@
++* Tango Thermal
++
++The SMP8758 SoC includes 3 instances of this temperature sensor
++(in the CPU, video decoder, and PCIe controller).
++
++Required properties:
++- compatible: "sigma,smp8758-thermal"
++- #thermal-sensor-cells: Should be 0 (see thermal.txt)
++- reg: Address range of the thermal registers
++
++Example:
++
++	cpu_temp: thermal@920100 {
++		compatible = "sigma,smp8758-thermal";
++		#thermal-sensor-cells = <0>;
++		reg = <0x920100 12>;
++	};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index c37eedc35a24..b6bf563f05dc 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -260,6 +260,13 @@ config ARMADA_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
  
- /* un-comment DEBUG to enable pr_debug() statements */
-@@ -60,7 +58,7 @@
- #include <linux/sched.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
--#include <linux/module.h>
-+#include <linux/moduleparam.h>
- #include <asm/cpu_device_id.h>
- #include <asm/mwait.h>
- #include <asm/msr.h>
-@@ -948,7 +946,6 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	ICPU(0x57, idle_cpu_knl),
- 	{}
- };
--MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
- 
- /*
-  * intel_idle_probe()
-@@ -1247,28 +1244,12 @@ static int __init intel_idle_init(void)
- 
- 	return 0;
- }
-+device_initcall(intel_idle_init);
- 
--static void __exit intel_idle_exit(void)
--{
--	intel_idle_cpuidle_devices_uninit();
--	cpuidle_unregister_driver(&intel_idle_driver);
--
--	cpu_notifier_register_begin();
--
--	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
--		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
--	__unregister_cpu_notifier(&cpu_hotplug_notifier);
--
--	cpu_notifier_register_done();
--
--	return;
--}
--
--module_init(intel_idle_init);
--module_exit(intel_idle_exit);
--
-+/*
-+ * We are not really modular, but we used to support that.  Meaning we also
-+ * support "intel_idle.max_cstate=..." at boot and also a read-only export of
-+ * it at /sys/module/intel_idle/parameters/max_cstate -- so using module_param
-+ * is the easiest way (currently) to continue doing that.
-+ */
- module_param(max_cstate, int, 0444);
--
--MODULE_AUTHOR("Len Brown <len.brown@intel.com>");
--MODULE_DESCRIPTION("Cpuidle driver for Intel Hardware v" INTEL_IDLE_VERSION);
--MODULE_LICENSE("GPL");
++config TANGO_THERMAL
++	tristate "Tango thermal management"
++	depends on ARCH_TANGO || COMPILE_TEST
++	help
++	  Enable the Tango temperature sensor driver, which provides support
++	  for the sensors used since the SMP8758.
++
+ config TEGRA_SOCTHERM
+ 	tristate "Tegra SOCTHERM thermal management"
+ 	depends on ARCH_TEGRA
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 8e9cbc3b5679..06387279883d 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -35,6 +35,7 @@ obj-y				+= samsung/
+ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
++obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+ obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
+new file mode 100644
+index 000000000000..decfe857e1a6
+--- /dev/null
++++ b/drivers/thermal/tango_thermal.c
+@@ -0,0 +1,114 @@
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++
++#define TEMPSI_CMD	0
++#define TEMPSI_RES	4
++#define TEMPSI_CFG	8
++
++#define CMD_OFF		0
++#define CMD_ON		1
++#define CMD_READ	2
++
++#define IDX_MIN		0
++#define IDX_MAX		40
++#define CYCLE_COUNT	5000 /* Time to wait before sampling the result */
++
++struct tango_thermal_priv {
++	struct thermal_zone_device *zone;
++	void __iomem *base;
++	int thresh_idx;
++};
++
++static bool temp_above_thresh(void __iomem *base, int thresh_idx)
++{
++	writel(thresh_idx << 8 | CMD_READ, base + TEMPSI_CMD);
++	usleep_range(100, 200);
++	return readl(base + TEMPSI_RES);
++}
++
++static int tango_get_temp(void *arg, int *res)
++{
++	struct tango_thermal_priv *priv = arg;
++	void __iomem *base = priv->base;
++	int idx = priv->thresh_idx;
++
++	if (temp_above_thresh(base, idx)) {
++		/* Upward linear search, increment thresh */
++		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
++			cpu_relax();
++		idx = idx - 1; /* always return lower bound */
++	} else {
++		/* Downward linear search, decrement thresh */
++		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
++			cpu_relax();
++	}
++
++	*res = idx * 4500 - 38000; /* millidegrees Celsius */
++	priv->thresh_idx = idx;
++	return 0;
++}
++
++static const struct thermal_zone_of_device_ops ops = {
++	.get_temp	= tango_get_temp,
++};
++
++static int tango_thermal_probe(struct platform_device *pdev)
++{
++	struct resource *res;
++	struct tango_thermal_priv *priv;
++	struct device *dev = &pdev->dev;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	priv->base = devm_ioremap_resource(dev, res);
++	if (IS_ERR(priv->base))
++		return PTR_ERR(priv->base);
++
++	writel(CMD_ON, priv->base + TEMPSI_CMD);
++	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
++
++	priv->zone = thermal_zone_of_sensor_register(dev, 0, priv, &ops);
++	if (IS_ERR(priv->zone))
++		return PTR_ERR(priv->zone);
++
++	priv->thresh_idx = 15; /* arbitrary starting point */
++	platform_set_drvdata(pdev, priv);
++	return 0;
++}
++
++static int tango_thermal_remove(struct platform_device *pdev)
++{
++	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
++
++	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
++	writel(CMD_OFF, priv->base + TEMPSI_CMD);
++	return 0;
++}
++
++static const struct of_device_id tango_sensor_ids[] = {
++	{
++		.compatible = "sigma,smp8758-thermal",
++	},
++	{ /* sentinel */ }
++};
++
++static struct platform_driver tango_thermal_driver = {
++	.probe	= tango_thermal_probe,
++	.remove	= tango_thermal_remove,
++	.driver	= {
++		.name		= "tango-thermal",
++		.of_match_table	= tango_sensor_ids,
++	},
++};
++
++module_platform_driver(tango_thermal_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Sigma Designs");
++MODULE_DESCRIPTION("Tango temperature sensor");
 -- 
-2.6.1
-
+2.7.4
