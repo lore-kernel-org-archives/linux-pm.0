@@ -1,66 +1,157 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 0/3] powerpc: remove unused modular code from non-modular drivers
-Date: Sun, 27 Mar 2016 18:08:14 -0400
-Message-ID: <1459116497-19991-1-git-send-email-paul.gortmaker@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Andrzej Hajda <a.hajda@samsung.com>, Anton Blanchard <anton@samba.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christian Krafft <krafft@de.ibm.com>, Hari Bathini <hbathini@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nathan Fontenot <nfont@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 1/3] power: charger-manager: Replace deprecatd API of extcon
+Date: Mon, 28 Mar 2016 08:25:40 +0900
+Message-ID: <1459121142-3768-2-git-send-email-cw00.choi@samsung.com>
+References: <1459121142-3768-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:34180 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbcC0XZt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Mar 2016 19:25:49 -0400
+In-reply-to: <1459121142-3768-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, myungjoo.ham@samsung.com
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-My ongoing audit looking for non-modular code that needlessly uses
-modular macros (vs. built-in equivalents) and/or has dead code
-relating to module unloading that can never be executed led to the
-creation of these three powerpc related commits.
+This patch removes the deprecated notifier API of extcon framework and then use
+the new extcon API[2] with the unique id[1] to indicate the each external
+connector. Alter deprecated API as following:
+- extcon_register_interest() -> extcon_register_notifier()
+- extcon_unregister_interest() -> extcon_unregister_notifier()
 
-One is of the trivial kind, where we substitute in the non-modular
-versions that CPP would have put in place anyway, resulting in no
-actual changes, even at the binary output level.
+And, extcon alters the name of USB charger connector in patch[3] as following:
+- EXTCON_CHG_USB_SDP /* Standard Downstream Port */
+- EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
+- EXTCON_CHG_USB_CDP /* Charging Downstream Port */
+- EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
 
-The other two are almost as trivial.  In addition to the above, we
-toss out the __exit function registered by module_exit, since that
-will never get called for non modular code/drivers.
+So, the name of external charger connector are changed as following:
+- "USB" -> "SDP"
+- "TA" -> "DCP"
 
-For anyone new to the underlying goal of this cleanup, we are trying to
-not use module support for code that can never be built as a module since:
+[1] Commit 2a9de9c0f08d61
+- ("extcon: Use the unique id for external connector instead of string)
+[2] Commit 046050f6e623e4
+- ("extcon: Update the prototype of extcon_register_notifier() with enum extcon
+[3] Commit 11eecf910bd81d
+- ("extcon: Modify the id and name of external connector")
 
- (1) it is easy to accidentally write unused module_exit and remove code
- (2) it can be misleading when reading the source, thinking it can be
-     modular when the Makefile and/or Kconfig prohibit it
- (3) it requires the include of the module.h header file which in turn
-     includes nearly everything else, thus adding to CPP overhead.
- (4) it gets copied/replicated into other code and spreads like weeds.
-
-Build tested on v4.6-rc1 to ensure no silly typos that would break
-compilation crept in.
-
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
-Cc: Andrzej Hajda <a.hajda@samsung.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christian Krafft <krafft@de.ibm.com>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
+ .../bindings/power_supply/charger-manager.txt      |  4 +--
+ drivers/power/charger-manager.c                    | 31 ++++++++++++++--------
+ include/linux/power/charger-manager.h              |  4 +--
+ 3 files changed, 24 insertions(+), 15 deletions(-)
 
-Paul Gortmaker (3):
-  powerpc: make cell/spu_base.c explicitly non-modular
-  powerpc: make kernel/nvram_64.c explicitly non-modular
-  drivers/cpufreq: make ppc_cbe_cpufreq_pmi driver explicitly
-    non-modular
-
- arch/powerpc/kernel/nvram_64.c         | 12 +-----------
- arch/powerpc/platforms/cell/spu_base.c |  7 ++-----
- drivers/cpufreq/ppc_cbe_cpufreq_pmi.c  | 15 ++-------------
- 3 files changed, 5 insertions(+), 29 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/power_supply/charger-manager.txt b/Documentation/devicetree/bindings/power_supply/charger-manager.txt
+index ec4fe9de3137..73193e380dc2 100644
+--- a/Documentation/devicetree/bindings/power_supply/charger-manager.txt
++++ b/Documentation/devicetree/bindings/power_supply/charger-manager.txt
+@@ -65,13 +65,13 @@ Example :
+ 		regulator@0 {
+ 			cm-regulator-name = "chg-reg";
+ 			cable@0 {
+-				cm-cable-name = "USB";
++				cm-cable-id = 5; /* EXTCON_CHG_USB_SDP */
+ 				cm-cable-extcon = "extcon-dev.0";
+ 				cm-cable-min = <475000>;
+ 				cm-cable-max = <500000>;
+ 			};
+ 			cable@1 {
+-				cm-cable-name = "TA";
++				cm-cable-id = 6; /* EXTCON_CHG_USB_DCP */
+ 				cm-cable-extcon = "extcon-dev.0";
+ 				cm-cable-min = <650000>;
+ 				cm-cable-max = <675000>;
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index e664ca7c0afd..ed63dc086eb6 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -1137,8 +1137,8 @@ static void charger_extcon_work(struct work_struct *work)
+ 		ret = regulator_set_current_limit(cable->charger->consumer,
+ 					cable->min_uA, cable->max_uA);
+ 		if (ret < 0) {
+-			pr_err("Cannot set current limit of %s (%s)\n",
+-			       cable->charger->regulator_name, cable->name);
++			pr_err("Cannot set current limit of %s (%d)\n",
++			       cable->charger->regulator_name, cable->id);
+ 			return;
+ 		}
+ 
+@@ -1207,11 +1207,18 @@ static int charger_extcon_init(struct charger_manager *cm,
+ 	 */
+ 	INIT_WORK(&cable->wq, charger_extcon_work);
+ 	cable->nb.notifier_call = charger_extcon_notifier;
+-	ret = extcon_register_interest(&cable->extcon_dev,
+-			cable->extcon_name, cable->name, &cable->nb);
++
++	cable->extcon_dev = extcon_get_extcon_dev(cable->extcon_name);
++	if (IS_ERR(cable->extcon_dev)) {
++		pr_err("Cannot get extcon_dev for %s\n", cable->extcon_name);
++		return PTR_ERR(cable->extcon_dev);
++	}
++
++	ret = extcon_register_notifier(cable->extcon_dev, cable->id,
++			&cable->nb);
+ 	if (ret < 0) {
+-		pr_info("Cannot register extcon_dev for %s(cable: %s)\n",
+-			cable->extcon_name, cable->name);
++		pr_info("Cannot register extcon_dev for %s(cable: %d)\n",
++			cable->extcon_name, cable->id);
+ 		ret = -EINVAL;
+ 	}
+ 
+@@ -1589,8 +1596,8 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
+ 				chg_regs->cables = cables;
+ 
+ 				for_each_child_of_node(child, _child) {
+-					of_property_read_string(_child,
+-					"cm-cable-name", &cables->name);
++					of_property_read_u32(_child,
++					"cm-cable-id", &cables->id);
+ 					of_property_read_string(_child,
+ 					"cm-cable-extcon",
+ 					&cables->extcon_name);
+@@ -1833,8 +1840,9 @@ err_reg_extcon:
+ 		for (j = 0; j < charger->num_cables; j++) {
+ 			struct charger_cable *cable = &charger->cables[j];
+ 			/* Remove notifier block if only edev exists */
+-			if (cable->extcon_dev.edev)
+-				extcon_unregister_interest(&cable->extcon_dev);
++			if (cable->extcon_dev)
++				extcon_unregister_notifier(cable->extcon_dev,
++						cable->id, &cable->nb);
+ 		}
+ 
+ 		regulator_put(desc->charger_regulators[i].consumer);
+@@ -1865,7 +1873,8 @@ static int charger_manager_remove(struct platform_device *pdev)
+ 				= &desc->charger_regulators[i];
+ 		for (j = 0 ; j < charger->num_cables ; j++) {
+ 			struct charger_cable *cable = &charger->cables[j];
+-			extcon_unregister_interest(&cable->extcon_dev);
++			extcon_unregister_notifier(cable->extcon_dev,
++						cable->id, &cable->nb);
+ 		}
+ 	}
+ 
+diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+index c4fa907c8f14..b3404bb825d6 100644
+--- a/include/linux/power/charger-manager.h
++++ b/include/linux/power/charger-manager.h
+@@ -63,10 +63,10 @@ enum cm_event_types {
+  */
+ struct charger_cable {
+ 	const char *extcon_name;
+-	const char *name;
++	unsigned int id;
+ 
+ 	/* The charger-manager use Extcon framework */
+-	struct extcon_specific_cable_nb extcon_dev;
++	struct extcon_dev *extcon_dev;
+ 	struct work_struct wq;
+ 	struct notifier_block nb;
+ 
 -- 
-2.6.1
+1.9.1
+
