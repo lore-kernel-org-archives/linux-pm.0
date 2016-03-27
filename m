@@ -1,283 +1,54 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v6 18/21] ARM: dts: Add exynos4412-ppmu-common dtsi to delete
- duplicate PPMU nodes
-Date: Mon, 28 Mar 2016 08:38:07 +0900
-Message-ID: <1459121890-4601-19-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v6 20/21] ARM: dts: Expand the voltage range of buck1/3
+ regulator for exynos4412-odroidu3
+Date: Mon, 28 Mar 2016 08:38:09 +0900
+Message-ID: <1459121890-4601-21-git-send-email-cw00.choi@samsung.com>
 References: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1459121890-4601-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the exynos4412-ppmu-common.dtsi to remove duplicate PPMU nodes
-because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
-PPMU device tree node.
+This patch expands the voltage range of buck1/3 regulator due to as following:
+- MIF (Memory Interface) bus frequency needs the range of '900 - 1100 mV'.
+- INT (Internal) bus frequency needs the range of '900 - 1050 mV'.
 
-Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org>
-Tested-by: Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- arch/arm/boot/dts/exynos3250-monk.dts           | 41 +-------------------
- arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +-------------------
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
- arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 50 +++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +-------------------
- 5 files changed, 54 insertions(+), 120 deletions(-)
- create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
-index 1fd7ecb5c415..fbe09d640c9a 100644
---- a/arch/arm/boot/dts/exynos3250-monk.dts
-+++ b/arch/arm/boot/dts/exynos3250-monk.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -464,46 +465,6 @@
- 	status = "okay";
- };
- 
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 5175bd7e015f..9710e79e10a0 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -641,46 +642,6 @@
- 	status = "okay";
- };
- 
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
 diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 5e5d3fecb04c..cba37c974703 100644
+index cba37c974703..b4983cbc4f8c 100644
 --- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
 +++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/clock/maxim,max77686.h>
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
+@@ -356,8 +356,8 @@
  
- / {
-diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-new file mode 100644
-index 000000000000..16e4b77d8cb1
---- /dev/null
-+++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-@@ -0,0 +1,50 @@
-+/*
-+ * Device tree sources for Exynos4412 PPMU common device tree
-+ *
-+ * Copyright (C) 2015 Samsung Electronics
-+ * Author: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+&ppmu_dmc0 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc0_3: ppmu-event3-dmc0 {
-+		       event-name = "ppmu-event3-dmc0";
-+	       };
-+       };
-+};
-+
-+&ppmu_dmc1 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc1_3: ppmu-event3-dmc1 {
-+		       event-name = "ppmu-event3-dmc1";
-+	       };
-+       };
-+};
-+
-+&ppmu_leftbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_leftbus_3: ppmu-event3-leftbus {
-+		       event-name = "ppmu-event3-leftbus";
-+	       };
-+       };
-+};
-+
-+&ppmu_rightbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_rightbus_3: ppmu-event3-rightbus {
-+		       event-name = "ppmu-event3-rightbus";
-+	       };
-+       };
-+};
-diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
-index ed017cc7b14f..dce3cebe0606 100644
---- a/arch/arm/boot/dts/exynos4412-trats2.dts
-+++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-@@ -14,6 +14,7 @@
+ 			buck1_reg: BUCK1 {
+ 				regulator-name = "vdd_mif";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1100000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
+@@ -372,8 +372,8 @@
  
- /dts-v1/;
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/clock/maxim,max77686.h>
-@@ -871,46 +872,6 @@
- 	assigned-clock-parents =  <&clock CLK_XUSBXTI>;
- };
- 
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &pinctrl_0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&sleep0>;
+ 			buck3_reg: BUCK3 {
+ 				regulator-name = "vdd_int";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1050000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
