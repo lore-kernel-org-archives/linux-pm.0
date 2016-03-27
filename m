@@ -1,329 +1,283 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v6 04/21] PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER
- notifier
-Date: Mon, 28 Mar 2016 08:37:53 +0900
-Message-ID: <1459121890-4601-5-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v6 18/21] ARM: dts: Add exynos4412-ppmu-common dtsi to delete
+ duplicate PPMU nodes
+Date: Mon, 28 Mar 2016 08:38:07 +0900
+Message-ID: <1459121890-4601-19-git-send-email-cw00.choi@samsung.com>
 References: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1459121890-4601-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the new DEVFREQ_TRANSITION_NOTIFIER notifier to send
-the notification when the frequency of device is changed.
-This notifier has two state as following:
-- DEVFREQ_PRECHANGE  : Notify it before chaning the frequency of device
-- DEVFREQ_POSTCHANGE : Notify it after changed the frequency of device
+This patch adds the exynos4412-ppmu-common.dtsi to remove duplicate PPMU nodes
+because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
+PPMU device tree node.
 
-And this patch adds the resourced-managed function to release the resource
-automatically when error happen.
-
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+Tested-by: Markus Reichl <m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org>
+Tested-by: Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- drivers/devfreq/devfreq.c | 163 +++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/devfreq.h   |  58 ++++++++++++++++-
- 2 files changed, 219 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/exynos3250-monk.dts           | 41 +-------------------
+ arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +-------------------
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
+ arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 50 +++++++++++++++++++++++++
+ arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +-------------------
+ 5 files changed, 54 insertions(+), 120 deletions(-)
+ create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 20a9422c2552..1d6c803804d5 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -189,6 +189,29 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
- 	return ERR_PTR(-ENODEV);
- }
+diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
+index 1fd7ecb5c415..fbe09d640c9a 100644
+--- a/arch/arm/boot/dts/exynos3250-monk.dts
++++ b/arch/arm/boot/dts/exynos3250-monk.dts
+@@ -14,6 +14,7 @@
  
-+static int devfreq_notify_transition(struct devfreq *devfreq,
-+		struct devfreq_freqs *freqs, unsigned int state)
-+{
-+	if (!devfreq)
-+		return -EINVAL;
-+
-+	switch (state) {
-+	case DEVFREQ_PRECHANGE:
-+		srcu_notifier_call_chain(&devfreq->transition_notifier_list,
-+				DEVFREQ_PRECHANGE, freqs);
-+		break;
-+
-+	case DEVFREQ_POSTCHANGE:
-+		srcu_notifier_call_chain(&devfreq->transition_notifier_list,
-+				DEVFREQ_POSTCHANGE, freqs);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /* Load monitoring helper functions for governors use */
- 
- /**
-@@ -200,7 +223,8 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
-  */
- int update_devfreq(struct devfreq *devfreq)
- {
--	unsigned long freq;
-+	struct devfreq_freqs freqs;
-+	unsigned long freq, cur_freq;
- 	int err = 0;
- 	u32 flags = 0;
- 
-@@ -234,10 +258,22 @@ int update_devfreq(struct devfreq *devfreq)
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
- 
-+	if (devfreq->profile->get_cur_freq)
-+		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
-+	else
-+		cur_freq = devfreq->previous_freq;
-+
-+	freqs.old = cur_freq;
-+	freqs.new = freq;
-+	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
-+
- 	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
- 	if (err)
- 		return err;
- 
-+	freqs.new = freq;
-+	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
-+
- 	if (devfreq->profile->freq_table)
- 		if (devfreq_update_status(devfreq, freq))
- 			dev_err(&devfreq->dev,
-@@ -542,6 +578,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_out;
- 	}
- 
-+	srcu_init_notifier_head(&devfreq->transition_notifier_list);
-+
- 	mutex_unlock(&devfreq->lock);
- 
- 	mutex_lock(&devfreq_list_lock);
-@@ -1310,6 +1348,129 @@ void devm_devfreq_unregister_opp_notifier(struct device *dev,
- }
- EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
- 
-+/**
-+ * devfreq_register_notifier() - Register a driver with devfreq
-+ * @devfreq:	The devfreq object.
-+ * @nb:		The notifier block to register.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ */
-+int devfreq_register_notifier(struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+	int ret = 0;
-+
-+	if (!devfreq)
-+		return -EINVAL;
-+
-+	switch (list) {
-+	case DEVFREQ_TRANSITION_NOTIFIER:
-+		ret = srcu_notifier_chain_register(
-+				&devfreq->transition_notifier_list, nb);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(devfreq_register_notifier);
-+
-+/*
-+ * devfreq_unregister_notifier() - Unregister a driver with devfreq
-+ * @devfreq:	The devfreq object.
-+ * @nb:		The notifier block to be unregistered.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ */
-+int devfreq_unregister_notifier(struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+	int ret = 0;
-+
-+	if (!devfreq)
-+		return -EINVAL;
-+
-+	switch (list) {
-+	case DEVFREQ_TRANSITION_NOTIFIER:
-+		ret = srcu_notifier_chain_unregister(
-+				&devfreq->transition_notifier_list, nb);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(devfreq_unregister_notifier);
-+
-+struct devfreq_notifier_devres {
-+	struct devfreq *devfreq;
-+	struct notifier_block *nb;
-+	unsigned int list;
-+};
-+
-+static void devm_devfreq_notifier_release(struct device *dev, void *res)
-+{
-+	struct devfreq_notifier_devres *this = res;
-+
-+	devfreq_unregister_notifier(this->devfreq, this->nb, this->list);
-+}
-+
-+/**
-+ * devm_devfreq_register_notifier()
-+	- Resource-managed devfreq_register_notifier()
-+ * @dev:	The devfreq user device. (parent of devfreq)
-+ * @devfreq:	The devfreq object.
-+ * @nb:		The notifier block to be unregistered.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ */
-+int devm_devfreq_register_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+	struct devfreq_notifier_devres *ptr;
-+	int ret;
-+
-+	ptr = devres_alloc(devm_devfreq_notifier_release, sizeof(*ptr),
-+				GFP_KERNEL);
-+	if (!ptr)
-+		return -ENOMEM;
-+
-+	ret = devfreq_register_notifier(devfreq, nb, list);
-+	if (ret) {
-+		devres_free(ptr);
-+		return ret;
-+	}
-+
-+	ptr->devfreq = devfreq;
-+	ptr->nb = nb;
-+	ptr->list = list;
-+	devres_add(dev, ptr);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(devm_devfreq_register_notifier);
-+
-+/**
-+ * devm_devfreq_unregister_notifier()
-+	- Resource-managed devfreq_unregister_notifier()
-+ * @dev:	The devfreq user device. (parent of devfreq)
-+ * @devfreq:	The devfreq object.
-+ * @nb:		The notifier block to be unregistered.
-+ * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-+ */
-+void devm_devfreq_unregister_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+	WARN_ON(devres_release(dev, devm_devfreq_notifier_release,
-+			       devm_devfreq_dev_match, devfreq));
-+}
-+EXPORT_SYMBOL(devm_devfreq_unregister_notifier);
-+
- MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
- MODULE_DESCRIPTION("devfreq class support");
- MODULE_LICENSE("GPL");
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index aa0b8424ebc3..152ea342529c 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -19,6 +19,13 @@
- 
- #define DEVFREQ_NAME_LEN 16
- 
-+/* DEVFREQ notifier interface */
-+#define DEVFREQ_TRANSITION_NOTIFIER	(0)
-+
-+/* Transition notifiers of DEVFREQ_TRANSITION_NOTIFIER */
-+#define	DEVFREQ_PRECHANGE		(0)
-+#define DEVFREQ_POSTCHANGE		(1)
-+
- struct devfreq;
- 
- /**
-@@ -177,6 +184,13 @@ struct devfreq {
- 	unsigned int *trans_table;
- 	unsigned long *time_in_state;
- 	unsigned long last_stat_updated;
-+
-+	struct srcu_notifier_head transition_notifier_list;
-+};
-+
-+struct devfreq_freqs {
-+	unsigned long old;
-+	unsigned long new;
+ /dts-v1/;
+ #include "exynos3250.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/clock/samsung,s2mps11.h>
+@@ -464,46 +465,6 @@
+ 	status = "okay";
  };
  
- #if defined(CONFIG_PM_DEVFREQ)
-@@ -207,7 +221,20 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
- 					      struct devfreq *devfreq);
- extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 						struct devfreq *devfreq);
+-&ppmu_dmc0 {
+-	status = "okay";
 -
-+extern int devfreq_register_notifier(struct devfreq *devfreq,
-+					struct notifier_block *nb,
-+					unsigned int list);
-+extern int devfreq_unregister_notifier(struct devfreq *devfreq,
-+					struct notifier_block *nb,
-+					unsigned int list);
-+extern int devm_devfreq_register_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list);
-+extern void devm_devfreq_unregister_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list);
- extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
- 						int index);
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &xusbxti {
+ 	clock-frequency = <24000000>;
+ };
+diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
+index 5175bd7e015f..9710e79e10a0 100644
+--- a/arch/arm/boot/dts/exynos3250-rinato.dts
++++ b/arch/arm/boot/dts/exynos3250-rinato.dts
+@@ -14,6 +14,7 @@
  
-@@ -310,6 +337,35 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
- {
- }
+ /dts-v1/;
+ #include "exynos3250.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/clock/samsung,s2mps11.h>
+@@ -641,46 +642,6 @@
+ 	status = "okay";
+ };
  
-+static inline int devfreq_register_notifier(struct devfreq *devfreq,
-+					struct notifier_block *nb,
-+					unsigned int list)
-+{
-+	return 0;
-+}
+-&ppmu_dmc0 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &xusbxti {
+ 	clock-frequency = <24000000>;
+ };
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index 5e5d3fecb04c..cba37c974703 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -11,6 +11,7 @@
+ #include <dt-bindings/input/input.h>
+ #include <dt-bindings/clock/maxim,max77686.h>
+ #include "exynos4412.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ 
+ / {
+diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+new file mode 100644
+index 000000000000..16e4b77d8cb1
+--- /dev/null
++++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+@@ -0,0 +1,50 @@
++/*
++ * Device tree sources for Exynos4412 PPMU common device tree
++ *
++ * Copyright (C) 2015 Samsung Electronics
++ * Author: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+static inline int devfreq_unregister_notifier(struct devfreq *devfreq,
-+					struct notifier_block *nb,
-+					unsigned int list)
-+{
-+	return 0;
-+}
++&ppmu_dmc0 {
++       status = "okay";
 +
-+static inline int devm_devfreq_register_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+	return 0;
-+}
++       events {
++	       ppmu_dmc0_3: ppmu-event3-dmc0 {
++		       event-name = "ppmu-event3-dmc0";
++	       };
++       };
++};
 +
-+static inline void devm_devfreq_unregister_notifier(struct device *dev,
-+				struct devfreq *devfreq,
-+				struct notifier_block *nb,
-+				unsigned int list)
-+{
-+}
++&ppmu_dmc1 {
++       status = "okay";
 +
- static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
- 							int index)
- {
++       events {
++	       ppmu_dmc1_3: ppmu-event3-dmc1 {
++		       event-name = "ppmu-event3-dmc1";
++	       };
++       };
++};
++
++&ppmu_leftbus {
++       status = "okay";
++
++       events {
++	       ppmu_leftbus_3: ppmu-event3-leftbus {
++		       event-name = "ppmu-event3-leftbus";
++	       };
++       };
++};
++
++&ppmu_rightbus {
++       status = "okay";
++
++       events {
++	       ppmu_rightbus_3: ppmu-event3-rightbus {
++		       event-name = "ppmu-event3-rightbus";
++	       };
++       };
++};
+diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
+index ed017cc7b14f..dce3cebe0606 100644
+--- a/arch/arm/boot/dts/exynos4412-trats2.dts
++++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+@@ -14,6 +14,7 @@
+ 
+ /dts-v1/;
+ #include "exynos4412.dtsi"
++#include "exynos4412-ppmu-common.dtsi"
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/clock/maxim,max77686.h>
+@@ -871,46 +872,6 @@
+ 	assigned-clock-parents =  <&clock CLK_XUSBXTI>;
+ };
+ 
+-&ppmu_dmc0 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc0_3: ppmu-event3-dmc0 {
+-			event-name = "ppmu-event3-dmc0";
+-		};
+-	};
+-};
+-
+-&ppmu_dmc1 {
+-	status = "okay";
+-
+-	events {
+-		ppmu_dmc1_3: ppmu-event3-dmc1 {
+-			event-name = "ppmu-event3-dmc1";
+-		};
+-	};
+-};
+-
+-&ppmu_leftbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_leftbus_3: ppmu-event3-leftbus {
+-			event-name = "ppmu-event3-leftbus";
+-		};
+-	};
+-};
+-
+-&ppmu_rightbus {
+-	status = "okay";
+-
+-	events {
+-		ppmu_rightbus_3: ppmu-event3-rightbus {
+-			event-name = "ppmu-event3-rightbus";
+-		};
+-	};
+-};
+-
+ &pinctrl_0 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&sleep0>;
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
