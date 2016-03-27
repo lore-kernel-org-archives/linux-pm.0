@@ -1,126 +1,123 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v6 02/21] PM / devfreq: exynos: Add documentation for generic
- exynos bus frequency driver
-Date: Mon, 28 Mar 2016 08:37:51 +0900
-Message-ID: <1459121890-4601-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v6 05/21] PM / devfreq: Add governer type with unique number
+Date: Mon, 28 Mar 2016 08:37:54 +0900
+Message-ID: <1459121890-4601-6-git-send-email-cw00.choi@samsung.com>
 References: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1459121890-4601-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the documentation for generic exynos bus frequency
-driver.
+This patch just adds the governor type to identify them
+by using the defined constant.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 95 ++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+ drivers/devfreq/governor.h                | 6 ++++++
+ drivers/devfreq/governor_performance.c    | 1 +
+ drivers/devfreq/governor_powersave.c      | 1 +
+ drivers/devfreq/governor_simpleondemand.c | 1 +
+ drivers/devfreq/governor_userspace.c      | 1 +
+ include/linux/devfreq.h                   | 2 ++
+ 6 files changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-new file mode 100644
-index 000000000000..78171b918e3f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -0,0 +1,95 @@
-+* Generic Exynos Bus frequency device
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index fad7d6321978..cf19b923c362 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -18,6 +18,12 @@
+ 
+ #define to_devfreq(DEV)	container_of((DEV), struct devfreq, dev)
+ 
++/* Devfreq governor type */
++#define DEVFREQ_GOV_ONDEMAND			0x1
++#define DEVFREQ_GOV_PERFORMANCE			0x2
++#define DEVFREQ_GOV_POWERSAVE			0x3
++#define DEVFREQ_GOV_USERSPACE			0x4
 +
-+The Samsung Exynos SoC has many buses for data transfer between DRAM
-+and sub-blocks in SoC. Most Exynos SoCs share the common architecture
-+for buses. Generally, each bus of Exynos SoC includes a source clock
-+and a power line, which are able to change the clock frequency
-+of the bus in runtime. To monitor the usage of each bus in runtime,
-+the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of sub-blocks.
-+
-+There are a little different composition among Exynos SoC because each Exynos
-+SoC has different sub-blocks. Therefore, shch difference should be specified
-+in devicetree file instead of each device driver. In result, this driver
-+is able to support the bus frequency for all Exynos SoCs.
-+
-+Required properties for bus device:
-+- compatible: Should be "samsung,exynos-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- operating-points-v2: the OPP table including frequency/voltage information
-+  to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-+- vdd-supply: the regulator to provide the buses with the voltage.
-+- devfreq-events: the devfreq-event device to monitor the current utilization
-+  of buses.
-+
-+Optional properties for bus device:
-+- exynos,saturation-ratio: the percentage value which is used to calibrate
-+			the performance count against total cycle count.
-+- exynos,voltage-tolerance: the percentage value for bus voltage tolerance
-+			which is used to calculate the max voltage.
-+
-+Example1:
-+	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
-+	power line (regulator). The MIF (Memory Interface) AXI bus is used to
-+	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
-+
-+	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
-+
-+	- MIF bus's frequency/voltage table
-+	-----------------------
-+	|Lv| Freq   | Voltage |
-+	-----------------------
-+	|L1| 50000  |800000   |
-+	|L2| 100000 |800000   |
-+	|L3| 134000 |800000   |
-+	|L4| 200000 |825000   |
-+	|L5| 400000 |875000   |
-+	-----------------------
-+
-+Example2 :
-+	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dtsi
-+	is listed below:
-+
-+	bus_dmc: bus_dmc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&cmu_dmc CLK_DIV_DMC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_dmc_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_dmc_opp_table: opp_table1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <825000>;
-+		};
-+		opp@400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <875000>;
-+		};
-+	};
-+
-+	Usage case to handle the frequency and voltage of bus on runtime
-+	in exynos3250-rinato.dts is listed below:
-+
-+	&bus_dmc {
-+		devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
-+		vdd-supply = <&buck1_reg>;	/* VDD_MIF */
-+		status = "okay";
-+	};
+ /* Devfreq events */
+ #define DEVFREQ_GOV_START			0x1
+ #define DEVFREQ_GOV_STOP			0x2
+diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
+index c72f942f30a8..594d8ecb13fb 100644
+--- a/drivers/devfreq/governor_performance.c
++++ b/drivers/devfreq/governor_performance.c
+@@ -43,6 +43,7 @@ static int devfreq_performance_handler(struct devfreq *devfreq,
+ 
+ static struct devfreq_governor devfreq_performance = {
+ 	.name = "performance",
++	.type = DEVFREQ_GOV_PERFORMANCE,
+ 	.get_target_freq = devfreq_performance_func,
+ 	.event_handler = devfreq_performance_handler,
+ };
+diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
+index 0c6bed567e6d..e2817e1f2a31 100644
+--- a/drivers/devfreq/governor_powersave.c
++++ b/drivers/devfreq/governor_powersave.c
+@@ -40,6 +40,7 @@ static int devfreq_powersave_handler(struct devfreq *devfreq,
+ 
+ static struct devfreq_governor devfreq_powersave = {
+ 	.name = "powersave",
++	.type = DEVFREQ_GOV_POWERSAVE,
+ 	.get_target_freq = devfreq_powersave_func,
+ 	.event_handler = devfreq_powersave_handler,
+ };
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index ae72ba5e78df..b905a535d486 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -126,6 +126,7 @@ static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+ 
+ static struct devfreq_governor devfreq_simple_ondemand = {
+ 	.name = "simple_ondemand",
++	.type = DEVFREQ_GOV_ONDEMAND,
+ 	.get_target_freq = devfreq_simple_ondemand_func,
+ 	.event_handler = devfreq_simple_ondemand_handler,
+ };
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 35de6e83c1fe..c78ab78a5220 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -138,6 +138,7 @@ static int devfreq_userspace_handler(struct devfreq *devfreq,
+ 
+ static struct devfreq_governor devfreq_userspace = {
+ 	.name = "userspace",
++	.type = DEVFREQ_GOV_USERSPACE,
+ 	.get_target_freq = devfreq_userspace_func,
+ 	.event_handler = devfreq_userspace_handler,
+ };
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 152ea342529c..9baf45f661ad 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -104,6 +104,7 @@ struct devfreq_dev_profile {
+  * struct devfreq_governor - Devfreq policy governor
+  * @node:		list node - contains registered devfreq governors
+  * @name:		Governor's name
++ * @type:		Governor's type
+  * @get_target_freq:	Returns desired operating frequency for the device.
+  *			Basically, get_target_freq will run
+  *			devfreq_dev_profile.get_dev_status() to get the
+@@ -121,6 +122,7 @@ struct devfreq_governor {
+ 	struct list_head node;
+ 
+ 	const char name[DEVFREQ_NAME_LEN];
++	const int type;
+ 	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
+ 	int (*event_handler)(struct devfreq *devfreq,
+ 				unsigned int event, void *data);
 -- 
 1.9.1
