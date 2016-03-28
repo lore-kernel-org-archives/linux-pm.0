@@ -1,76 +1,43 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v6 04/21] PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER
- notifier
-Date: Mon, 28 Mar 2016 12:35:21 +0900
-Message-ID: <56F8A679.5010009@samsung.com>
-References: <190611333.27621459133690582.JavaMail.weblogic@epmlwas02a>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 1/7][Resend] cpufreq: sched: Helpers to add and remove
+ update_util hooks
+Date: Mon, 28 Mar 2016 11:01:26 +0530
+Message-ID: <20160328053126.GG32495@vireshk-i7>
+References: <7262976.zPkLj56ATU@vostro.rjw.lan>
+ <4984400.nsZvPb32HI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <190611333.27621459133690582.JavaMail.weblogic@epmlwas02a>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, =?UTF-8?B?7YGs7Ims7Iuc7Yag7ZSE?= <k.kozlowski@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "m.reichl@fivetechno.de" <m.reichl@fivetechno.de>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:35364 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbcC1Fba (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 01:31:30 -0400
+Received: by mail-pa0-f52.google.com with SMTP id td3so89808728pab.2
+        for <linux-pm@vger.kernel.org>; Sun, 27 Mar 2016 22:31:30 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <4984400.nsZvPb32HI@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On 2016=EB=85=84 03=EC=9B=94 28=EC=9D=BC 11:54, MyungJoo Ham wrote:
->>  =20
->>  This patch adds the new DEVFREQ_TRANSITION_NOTIFIER notifier to sen=
-d
->> the notification when the frequency of device is changed.
->> This notifier has two state as following:
->> - DEVFREQ_PRECHANGE  : Notify it before chaning the frequency of dev=
-ice
->> - DEVFREQ_POSTCHANGE : Notify it after changed the frequency of devi=
-ce
->>
->> And this patch adds the resourced-managed function to release the re=
-source
->> automatically when error happen.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
->> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
->> Tested-by: Anand Moon <linux.amoon@gmail.com>
->> ---
->>  drivers/devfreq/devfreq.c | 163 +++++++++++++++++++++++++++++++++++=
-++++++++++-
->>  include/linux/devfreq.h   |  58 ++++++++++++++++-
->>  2 files changed, 219 insertions(+), 2 deletions(-)
->=20
-> []
->=20
->> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
->> index aa0b8424ebc3..152ea342529c 100644
->> --- a/include/linux/devfreq.h
->> +++ b/include/linux/devfreq.h
->> @@ -19,6 +19,13 @@
->> =20
->>  #define DEVFREQ_NAME_LEN 16
->> =20
->> +/* DEVFREQ notifier interface */
->> +#define DEVFREQ_TRANSITION_NOTIFIER	(0)
->> +
->> +/* Transition notifiers of DEVFREQ_TRANSITION_NOTIFIER */
->> +#define	DEVFREQ_PRECHANGE		(0)
->> +#define DEVFREQ_POSTCHANGE		(1)
->> +
->>  struct devfreq;
->> =20
->>  /**
->> @@ -177,6 +184,13 @@ struct devfreq {
->>  	unsigned int *trans_table;
->>  	unsigned long *time_in_state;
->>  	unsigned long last_stat_updated;
->> +
->> +	struct srcu_notifier_head transition_notifier_list;
->> +};
->=20
-> Like other properties of struct devfreq, please add
-> descriptions above. Other than that, it looks good.
+On 22-03-16, 02:46, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Replace the single helper for adding and removing cpufreq utilization
+> update hooks, cpufreq_set_update_util_data(), with a pair of helpers,
+> cpufreq_add_update_util_hook() and cpufreq_remove_update_util_hook(),
+> and modify the users of cpufreq_set_update_util_data() accordingly.
+> 
+> With the new helpers, the code using them doesn't need to worry
+> about the internals of struct update_util_data and in particular
+> it doesn't need to worry about populating the func field in it
+> properly upfront.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 
-OK. I was missing the description. I'll add it.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Best Regards,
-Chanwoo Choi
+-- 
+viresh
