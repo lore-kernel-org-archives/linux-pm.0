@@ -1,164 +1,112 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v6 2/4] power: reset: add reboot mode driver
-Date: Mon, 28 Mar 2016 15:34:32 +0900
-Message-ID: <56F8D078.6040503@samsung.com>
-References: <1458646525-491-1-git-send-email-andy.yan@rock-chips.com>
- <1458646642-591-1-git-send-email-andy.yan@rock-chips.com>
- <CAJKOXPcKzGTAicbsXK-cC9WQT0vBhpSG_q2GCn37+72x2hdhsQ@mail.gmail.com>
- <56F39F36.5050702@rock-chips.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v8 4/4] power: wm831x_power: Support USB charger current
+ limit management
+Date: Mon, 28 Mar 2016 14:45:10 +0800
+Message-ID: <CAMz4ku+7-LmTMO0i-NCbWk6RiiA2Cbdcu6upkwy3xxa0EtMV7g@mail.gmail.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<3609d98d4603efab7b2e50635efa9e36f64017a8.1458822334.git.baolin.wang@linaro.org>
+	<CAMuHMdVUwbp4bJDYWjw6QyfngxYJgJCBe4=DN53tpFhjxUagcA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:31964 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536AbcC1Gep (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 02:34:45 -0400
-In-reply-to: <56F39F36.5050702@rock-chips.com>
+Received: from mail-qk0-f181.google.com ([209.85.220.181]:36228 "EHLO
+	mail-qk0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbcC1GpL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 02:45:11 -0400
+Received: by mail-qk0-f181.google.com with SMTP id i4so60292995qkc.3
+        for <linux-pm@vger.kernel.org>; Sun, 27 Mar 2016 23:45:10 -0700 (PDT)
+In-Reply-To: <CAMuHMdVUwbp4bJDYWjw6QyfngxYJgJCBe4=DN53tpFhjxUagcA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, olof@lixom.net, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, matthias.bgg@gmail.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, f.fainelli@gmail.com, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, linux-kernel@vger.kernel.org, wxt@rock-chips.com, dwmw2@infradead.org, mark.rutland@arm.com
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB list <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 24.03.2016 17:03, Andy Yan wrote:
-> Hi Krzystof:
-
-(...)
-
->>> +static int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
->>> +                                const char *cmd)
->>> +{
->>> +       const char *normal = "normal";
->>> +       int magic = 0;
->>> +       struct mode_info *info;
->>> +
->>> +       if (!cmd)
->>> +               cmd = normal;
->>> +
->>> +       list_for_each_entry(info, &reboot->head, list) {
->>> +               if (!strcmp(info->mode, cmd)) {
->>> +                       magic = info->magic;
->>> +                       break;
->>> +               }
->>> +       }
->>> +
->>> +       return magic;
->> In absence of 'normal' mode (it is not described as required property)
->> the magic will be '0'. It would be nice to document that in bindings.
->> Imagine someone forgets about this and will wonder why 0x0 is written
->> to his precious register on normal reboot...
-> 
->     If the magic value is '0', we won't touch the register, please see
-> reboot_mode_notify bellow.
-
-Ah, indeed... so we cannot use value of '0' for magic (e.g. to clear any
-existing value for normal reboot)?
-
->> It would be nice to document that 'mode-normal' has a special
->> (hard-coded) meaning.
+On 27 March 2016 at 16:22, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Thu, Mar 24, 2016 at 1:35 PM, Baolin Wang <baolin.wang@linaro.org> wrote:
+>> --- a/drivers/power/wm831x_power.c
+>> +++ b/drivers/power/wm831x_power.c
+>> @@ -13,6 +13,7 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/power_supply.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/usb/usb_charger.h>
 >>
->>> +}
->>> +
->>> +static int reboot_mode_notify(struct notifier_block *this,
->>> +                             unsigned long mode, void *cmd)
->>> +{
->>> +       struct reboot_mode_driver *reboot;
->>> +       int magic;
->>> +
->>> +       reboot = container_of(this, struct reboot_mode_driver,
->>> reboot_notifier);
->>> +       magic = get_reboot_mode_magic(reboot, cmd);
->>> +       if (magic)
->>> +               reboot->write(magic);
->>> +
->>> +       return NOTIFY_DONE;
->>> +}
->>> +
->>> +int reboot_mode_register(struct device *dev, int (*write)(int))
->>> +{
->>> +       struct reboot_mode_driver *reboot;
->>> +       struct mode_info *info;
->>> +       struct property *prop;
->>> +       size_t len = strlen(PREFIX);
->>> +       int ret;
->>> +
->>> +       reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
->>> +       if (!reboot)
->>> +               return -ENOMEM;
->>> +
->>> +       reboot->write = write;
->>> +       INIT_LIST_HEAD(&reboot->head);
->>> +       for_each_property_of_node(dev->of_node, prop) {
->>> +               if (len > strlen(prop->name) || strncmp(prop->name,
->>> PREFIX, len))
->>> +                       continue;
->> New line please for readability.
-> 
->     Okay
+>>  #include <linux/mfd/wm831x/core.h>
+>>  #include <linux/mfd/wm831x/auxadc.h>
+>> @@ -31,6 +32,8 @@ struct wm831x_power {
+>>         char usb_name[20];
+>>         char battery_name[20];
+>>         bool have_battery;
+>> +       struct usb_charger *usb_charger;
+>> +       struct notifier_block usb_notify;
+>>  };
 >>
->>> +               info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
->>> +               if (!info)
->>> +                       return -ENOMEM;
->> Ditto.
-> 
->     Okay
+>>  static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
+>> @@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
+>>         POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>  };
 >>
->>> +               strcpy(info->mode, prop->name + len);
->> Ehm, and how do you protect that name of mode is shorter than 32
->> characters?
-> 
->     How about info->mode = prop->name + len ?
+>> +/* In milliamps */
+>> +static unsigned int wm831x_usb_limits[] = {
+>
+> const
 
-I don't get your answer.
-As fair as I read the code, the prop->name can be very long and you are
-copying it from 5 character. If the name of the mode has bazillion
-characters then again my question: how do you protect that it will fit
-in 32 bytes of 'mode'?
+OK.
+
+>
+>> +       0,
+>> +       2,
+>> +       100,
+>> +       500,
+>> +       900,
+>> +       1500,
+>> +       1800,
+>> +       550,
+>> +};
+>> +
+>> +static int wm831x_usb_limit_change(struct notifier_block *nb,
+>> +                                  unsigned long limit, void *data)
+>> +{
+>> +       struct wm831x_power *wm831x_power = container_of(nb,
+>> +                                                        struct wm831x_power,
+>> +                                                        usb_notify);
+>> +       int i, best;
+>
+> unsigned int
+
+OK.
+
+>
+>> +
+>> +       /* Find the highest supported limit */
+>> +       best = 0;
+>> +       for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+>> +               if (limit >= wm831x_usb_limits[i] &&
+>> +                   wm831x_usb_limits[best] < wm831x_usb_limits[i])
+>> +                       best = i;
+>> +       }
+>> +
+>> +       dev_dbg(wm831x_power->wm831x->dev,
+>> +               "Limiting USB current to %dmA", wm831x_usb_limits[best]);
+>
+> %u
+
+OK. Thanks for your comments.
+
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
 
->>
->>> +               if (of_property_read_u32(dev->of_node, prop->name,
->>> &info->magic)) {
->>> +                       dev_err(dev, "reboot mode %s without magic
->>> number\n",
->>> +                               info->mode);
->>> +                       devm_kfree(dev, info);
->>> +                       continue;
->>> +               }
->>> +               list_add_tail(&info->list, &reboot->head);
->>> +       }
->>> +       reboot->reboot_notifier.notifier_call = reboot_mode_notify;
->>> +       ret = register_reboot_notifier(&reboot->reboot_notifier);
->>> +       if (ret)
->>> +               dev_err(dev, "can't register reboot notifier\n");
->>> +
->>> +       return ret;
->>> +}
->>> +EXPORT_SYMBOL_GPL(reboot_mode_register);
->>> +
->>> +MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
->>> +MODULE_DESCRIPTION("System reboot mode driver");
->>> +MODULE_LICENSE("GPL v2");
->>> diff --git a/drivers/power/reset/reboot-mode.h
->>> b/drivers/power/reset/reboot-mode.h
->>> new file mode 100644
->>> index 0000000..44ed34f
->>> --- /dev/null
->>> +++ b/drivers/power/reset/reboot-mode.h
->>> @@ -0,0 +1,6 @@
->>> +#ifndef __REBOOT_MODE_H__
->>> +#define __REBOOT_MODE_H__
->>> +
->>> +int reboot_mode_register(struct device *dev, int (*write)(int));
->> Documentation would be appreciated. Although it is local header but
->> you decoupled them and you are exporting the function.
-> 
->     I think I should remove the EXPORT_SYMBOL_GPL.
 
-You need to export symbols which are located in modules. Is it located
-in module?
-
-Best regards,
-Krzysztof
-
-
+-- 
+Baolin.wang
+Best Regards
