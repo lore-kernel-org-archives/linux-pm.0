@@ -1,100 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 6/7][Resend] cpufreq: Support for fast frequency
- switching
-Date: Mon, 28 Mar 2016 12:33:41 +0530
-Message-ID: <20160328070341.GJ32495@vireshk-i7>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
- <25154681.B5BGJ94JlQ@vostro.rjw.lan>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 28 Mar 2016 15:13:51 +0800
+Message-ID: <20160328071351.GC3302@peterchendt>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+ <20160325070937.GA22398@peterchendt>
+ <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:35512 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753738AbcC1HOE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 03:14:04 -0400
 Content-Disposition: inline
-In-Reply-To: <25154681.B5BGJ94JlQ@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-forgot to review acpi update earlier ..
+On Mon, Mar 28, 2016 at 02:51:40PM +0800, Baolin Wang wrote:
+> On 25 March 2016 at 15:09, Peter Chen <hzpeterchen@gmail.com> wrote:
+> > On Thu, Mar 24, 2016 at 08:35:53PM +0800, Baolin Wang wrote:
+> >> Currently the Linux kernel does not provide any standard integration of this
+> >> feature that integrates the USB subsystem with the system power regulation
+> >> provided by PMICs meaning that either vendors must add this in their kernels
+> >> or USB gadget devices based on Linux (such as mobile phones) may not behave
+> >> as they should. Thus provide a standard framework for doing this in kernel.
+> >>
+> >> Now introduce one user with wm831x_power to support and test the usb charger,
+> >> which is pending testing. Moreover there may be other potential users will use
+> >> it in future.
+> >>
+> >
+> > I am afraid I still not find the user (udc driver) for this framework, I would
+> > like to see how udc driver block the enumeration until the charger detection
+> > has finished, or am I missing something?
+> 
+> It is not for udc driver but for power users who want to negotiate
+> with USB subsystem.
+> 
 
-On 22-03-16, 02:53, Rafael J. Wysocki wrote:
-> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> @@ -458,6 +458,43 @@ static int acpi_cpufreq_target(struct cp
->  	return result;
->  }
->  
-> +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> +				      unsigned int target_freq)
-> +{
-> +	struct acpi_cpufreq_data *data = policy->driver_data;
-> +	struct acpi_processor_performance *perf;
-> +	struct cpufreq_frequency_table *entry;
-> +	unsigned int next_perf_state, next_freq, freq;
-> +
-> +	/*
-> +	 * Find the closest frequency above target_freq.
-> +	 *
-> +	 * The table is sorted in the reverse order with respect to the
-> +	 * frequency and all of the entries are valid (see the initialization).
-> +	 */
-> +	entry = data->freq_table;
-> +	do {
-> +		entry++;
-> +		freq = entry->frequency;
-> +	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-
-Consider this table:
-
-11000
-10000
-9000
-
-And a target-freq of 10000.
-
-Wouldn't you end up selecting 11000 ? Or did I misread it ?
-
-> +	entry--;
-> +	next_freq = entry->frequency;
-> +	next_perf_state = entry->driver_data;
-> +
-> +	perf = to_perf_data(data);
-> +	if (perf->state == next_perf_state) {
-> +		if (unlikely(data->resume))
-> +			data->resume = 0;
-> +		else
-> +			return next_freq;
-> +	}
-> +
-> +	data->cpu_freq_write(&perf->control_register,
-> +			     perf->states[next_perf_state].control);
-> +	perf->state = next_perf_state;
-> +	return next_freq;
-> +}
-> +
->  static unsigned long
->  acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
->  {
-> @@ -740,6 +777,9 @@ static int acpi_cpufreq_cpu_init(struct
->  		goto err_unreg;
->  	}
->  
-> +	policy->fast_switch_possible = !acpi_pstate_strict &&
-> +		!(policy_is_shared(policy) && policy->shared_type != CPUFREQ_SHARED_TYPE_ANY);
-> +
->  	data->freq_table = kzalloc(sizeof(*data->freq_table) *
->  		    (perf->state_count+1), GFP_KERNEL);
->  	if (!data->freq_table) {
-> @@ -874,6 +914,7 @@ static struct freq_attr *acpi_cpufreq_at
->  static struct cpufreq_driver acpi_cpufreq_driver = {
->  	.verify		= cpufreq_generic_frequency_table_verify,
->  	.target_index	= acpi_cpufreq_target,
-> +	.fast_switch	= acpi_cpufreq_fast_switch,
->  	.bios_limit	= acpi_processor_get_bios_limit,
->  	.init		= acpi_cpufreq_cpu_init,
->  	.exit		= acpi_cpufreq_cpu_exit,
+Then, where is the code the test user to decide what kinds of USB charger
+(SDP, CDP, DCP) is connecting now?
 
 -- 
-viresh
+Best Regards,
+Peter Chen
