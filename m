@@ -1,25 +1,52 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v6 05/21] PM / devfreq: Add governer type with unique number
-Date: Mon, 28 Mar 2016 15:46:37 +0900
-Message-ID: <56F8D34D.8040408@samsung.com>
-References: <386437144.28901459134748866.JavaMail.weblogic@epmlwas02a>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 28 Mar 2016 14:51:40 +0800
+Message-ID: <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <386437144.28901459134748866.JavaMail.weblogic@epmlwas02a>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, =?UTF-8?B?7YGs7Ims7Iuc7Yag7ZSE?= <k.kozlowski@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "m.reichl@fivetechno.de" <m.reichl@fivetechno.de>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f179.google.com ([209.85.220.179]:35885 "EHLO
+	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753303AbcC1Gvl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 02:51:41 -0400
+Received: by mail-qk0-f179.google.com with SMTP id i4so60435350qkc.3
+        for <linux-pm@vger.kernel.org>; Sun, 27 Mar 2016 23:51:40 -0700 (PDT)
+In-Reply-To: <20160325070937.GA22398@peterchendt>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 2016=EB=85=84 03=EC=9B=94 28=EC=9D=BC 12:12, MyungJoo Ham wrote:
->> This patch just adds the governor type to identify them
->> by using the defined constant.
->=20
-> We do not need this one.
+On 25 March 2016 at 15:09, Peter Chen <hzpeterchen@gmail.com> wrote:
+> On Thu, Mar 24, 2016 at 08:35:53PM +0800, Baolin Wang wrote:
+>> Currently the Linux kernel does not provide any standard integration of this
+>> feature that integrates the USB subsystem with the system power regulation
+>> provided by PMICs meaning that either vendors must add this in their kernels
+>> or USB gadget devices based on Linux (such as mobile phones) may not behave
+>> as they should. Thus provide a standard framework for doing this in kernel.
+>>
+>> Now introduce one user with wm831x_power to support and test the usb charger,
+>> which is pending testing. Moreover there may be other potential users will use
+>> it in future.
+>>
+>
+> I am afraid I still not find the user (udc driver) for this framework, I would
+> like to see how udc driver block the enumeration until the charger detection
+> has finished, or am I missing something?
 
-Ok. I'll drop this patch on next patchset(v7).
+It is not for udc driver but for power users who want to negotiate
+with USB subsystem.
 
-Best Regards,
-Chanwoo Choi
+>
+> --
+> Best Regards,
+> Peter Chen
+
+
+
+-- 
+Baolin.wang
+Best Regards
