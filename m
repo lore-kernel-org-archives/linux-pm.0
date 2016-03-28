@@ -1,208 +1,57 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [PATCH v5] thermal: add temperature sensor support for tango SoC
-Date: Mon, 28 Mar 2016 13:49:27 +0200
-Message-ID: <56F91A47.9060901@free.fr>
-References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/8] PM / Domains: Add support for removing PM domains
+Date: Mon, 28 Mar 2016 13:38:49 +0100
+Message-ID: <56F925D9.3080703@nvidia.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFq3hNARzjSOoP+-NmcgfSWzG6GDmh7qVX6yx6QPgN9Arw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:38120 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbcC1Ltm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Mar 2016 07:49:42 -0400
-In-Reply-To: <56F84427.1000507@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFq3hNARzjSOoP+-NmcgfSWzG6GDmh7qVX6yx6QPgN9Arw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
 
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Hi Uffe,
 
-Since the SMP8758, Tango SoCs include several instances of a rudimentary
-bandgap temperature sensor.
+On 04/03/16 12:33, Ulf Hansson wrote:
+> On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> In order to safely remove PM domains there are a few changes that need to be
+>> made to ensure that no one is holding an external reference to a PM domain
+>> after it has been removed. One solution, implemented here, solves this by
+>> eliminating external references to PM domain. Another alternative would be
+>> to employ some reference counting for the PM domains, however, I did not see
+>> a good reason for allowing external references in the first place (as always
+>> there could be something that I have over-looked!).
+>>
+>> Jon Hunter (8):
+>>   PM / Domains: Add new helper functions for device-tree
+>>   ARM: EXYNOS: Remove calls to of_genpd_get_from_provider()
+>>   staging: board: Remove calls to of_genpd_get_from_provider()
+>>   PM / Domains: Don't expose generic_pm_domain structure
+>>   PM / Domains: Verify the PM domain is present when adding a provider
+>>   PM / Domains: Remove a provider by referencing the data pointer
+>>   PM / Domains: Prepare for adding support to remove PM domains
+>>   PM / Domains: Add support for removing PM domains
+>>
+>>  arch/arm/mach-exynos/pm_domains.c |  23 +--
+>>  drivers/base/power/domain.c       | 324 +++++++++++++++++++++++++++++++++++---
+>>  drivers/staging/board/board.c     |   9 +-
+>>  include/linux/pm_domain.h         |  55 ++++---
+>>  4 files changed, 348 insertions(+), 63 deletions(-)
+>>
+>> --
+>> 2.1.4
+>>
+> 
+> Jon, thanks for posting this!
+> My initial impressions is the I like the ideas for where you moves this.
+> 
+> I will review it in more details as soon as I can (travelling next week).
 
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
- Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
- drivers/thermal/Kconfig                                     |   7 ++
- drivers/thermal/Makefile                                    |   1 +
- drivers/thermal/tango_thermal.c                             | 114 +++++++++++++++++++++++++++
- 4 files changed, 139 insertions(+)
+Just wanted to see if you have had chance to look at this yet? Not urgent.
 
-diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
-new file mode 100644
-index 000000000000..a203f7d60d35
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
-@@ -0,0 +1,17 @@
-+* Tango Thermal
-+
-+The SMP8758 SoC includes 3 instances of this temperature sensor
-+(in the CPU, video decoder, and PCIe controller).
-+
-+Required properties:
-+- compatible: "sigma,smp8758-thermal"
-+- #thermal-sensor-cells: Should be 0 (see thermal.txt)
-+- reg: Address range of the thermal registers
-+
-+Example:
-+
-+	cpu_temp: thermal@920100 {
-+		compatible = "sigma,smp8758-thermal";
-+		#thermal-sensor-cells = <0>;
-+		reg = <0x920100 12>;
-+	};
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c37eedc35a24..b6bf563f05dc 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -260,6 +260,13 @@ config ARMADA_THERMAL
- 	  Enable this option if you want to have support for thermal management
- 	  controller present in Armada 370 and Armada XP SoC.
- 
-+config TANGO_THERMAL
-+	tristate "Tango thermal management"
-+	depends on ARCH_TANGO || COMPILE_TEST
-+	help
-+	  Enable the Tango temperature sensor driver, which provides support
-+	  for the sensors used since the SMP8758.
-+
- config TEGRA_SOCTHERM
- 	tristate "Tegra SOCTHERM thermal management"
- 	depends on ARCH_TEGRA
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 8e9cbc3b5679..06387279883d 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -35,6 +35,7 @@ obj-y				+= samsung/
- obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-+obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
-new file mode 100644
-index 000000000000..8c9abdf6a507
---- /dev/null
-+++ b/drivers/thermal/tango_thermal.c
-@@ -0,0 +1,114 @@
-+#include <linux/io.h>
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+#include <linux/thermal.h>
-+#include <linux/platform_device.h>
-+
-+#define TEMPSI_CMD	0
-+#define TEMPSI_RES	4
-+#define TEMPSI_CFG	8
-+
-+#define CMD_OFF		0
-+#define CMD_ON		1
-+#define CMD_READ	2
-+
-+#define IDX_MIN		0
-+#define IDX_MAX		40
-+#define CYCLE_COUNT	5000 /* Time to wait before sampling the result */
-+
-+struct tango_thermal_priv {
-+	struct thermal_zone_device *zone;
-+	void __iomem *base;
-+	int thresh_idx;
-+};
-+
-+static bool temp_above_thresh(void __iomem *base, int thresh_idx)
-+{
-+	writel(thresh_idx << 8 | CMD_READ, base + TEMPSI_CMD);
-+	usleep_range(100, 200);
-+	return readl(base + TEMPSI_RES);
-+}
-+
-+static int tango_get_temp(void *arg, int *res)
-+{
-+	struct tango_thermal_priv *priv = arg;
-+	void __iomem *base = priv->base;
-+	int idx = priv->thresh_idx;
-+
-+	if (temp_above_thresh(base, idx)) {
-+		/* Upward linear search, increment thresh */
-+		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
-+			cpu_relax();
-+		idx = idx - 1; /* always return lower bound */
-+	} else {
-+		/* Downward linear search, decrement thresh */
-+		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
-+			cpu_relax();
-+	}
-+
-+	*res = (idx * 9 / 2 - 38) * 1000; /* millidegrees Celsius */
-+	priv->thresh_idx = idx;
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops ops = {
-+	.get_temp	= tango_get_temp,
-+};
-+
-+static int tango_thermal_probe(struct platform_device *pdev)
-+{
-+	struct resource *res;
-+	struct tango_thermal_priv *priv;
-+	struct device *dev = &pdev->dev;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(priv->base))
-+		return PTR_ERR(priv->base);
-+
-+	writel(CMD_ON, priv->base + TEMPSI_CMD);
-+	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
-+
-+	priv->zone = thermal_zone_of_sensor_register(dev, 0, priv, &ops);
-+	if (IS_ERR(priv->zone))
-+		return PTR_ERR(priv->zone);
-+
-+	priv->thresh_idx = 15; /* arbitrary starting point */
-+	platform_set_drvdata(pdev, priv);
-+	return 0;
-+}
-+
-+static int tango_thermal_remove(struct platform_device *pdev)
-+{
-+	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
-+	writel(CMD_OFF, priv->base + TEMPSI_CMD);
-+	return 0;
-+}
-+
-+static const struct of_device_id tango_sensor_ids[] = {
-+	{
-+		.compatible = "sigma,smp8758-thermal",
-+	},
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver tango_thermal_driver = {
-+	.probe	= tango_thermal_probe,
-+	.remove	= tango_thermal_remove,
-+	.driver	= {
-+		.name		= "tango-thermal",
-+		.of_match_table	= tango_sensor_ids,
-+	},
-+};
-+
-+module_platform_driver(tango_thermal_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Sigma Designs");
-+MODULE_DESCRIPTION("Tango temperature sensor");
--- 
-2.7.4
+Cheers
+Jon
