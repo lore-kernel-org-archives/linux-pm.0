@@ -1,123 +1,129 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] thermal/powerclamp: remove cpu whitelist
-Date: Mon, 28 Mar 2016 08:49:20 -0700
-Message-ID: <20160328084920.21ac8f81@icelake>
-References: <1458239173-14896-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery is dry
+Date: Mon, 28 Mar 2016 11:57:05 -0400
+Message-ID: <56F95451.5040607@nvidia.com>
+References: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
+ <CAGS+omDTmJDkJYsf=gDJMrmAos+30enoAa2xfTPyirXUd37=9g@mail.gmail.com>
+ <1458801832.16645.7.camel@mtksdaap41>
+ <CAGS+omDhFP+_shCqEWasLDsHf-ab0-OWJJ-gZZkgihAgrZwBHA@mail.gmail.com>
+ <1459132330.16645.14.camel@mtksdaap41>
+ <CAGS+omBVStB3mfXtDHdbsOK+y2UesGYtZBtYm=ctcpBfm88VEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:26725 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbcC1PvD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Mar 2016 11:51:03 -0400
-In-Reply-To: <1458239173-14896-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:1950 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753738AbcC1P5I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 11:57:08 -0400
+In-Reply-To: <CAGS+omBVStB3mfXtDHdbsOK+y2UesGYtZBtYm=ctcpBfm88VEg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>
+To: Daniel Kurtz <djkurtz@chromium.org>, YH Huang <yh.huang@mediatek.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>
 
-On Thu, 17 Mar 2016 11:26:13 -0700
-Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
+On 3/28/2016 6:05 AM, Daniel Kurtz wrote:
+> +Rhyland Klein who original wrote this code...
+>=20
+> On Mon, Mar 28, 2016 at 10:32 AM, YH Huang <yh.huang@mediatek.com> wr=
+ote:
+>>
+>> On Fri, 2016-03-25 at 11:06 +0800, Daniel Kurtz wrote:
+>>> On Thu, Mar 24, 2016 at 2:43 PM, YH Huang <yh.huang@mediatek.com> w=
+rote:
+>>>>
+>>>> Hi Daniel,
+>>>>
+>>>> On Thu, 2016-03-24 at 12:01 +0800, Daniel Kurtz wrote:
+>>>>> Hi YH,
+>>>>>
+>>>>> On Wed, Mar 23, 2016 at 5:53 PM, YH Huang <yh.huang@mediatek.com>=
+ wrote:
+>>>>>> When the battery is dry and BATTERY_FULL_DISCHARGED is set,
+>>>>>> we should check BATTERY_DISCHARGING to decide the power status.
+>>>>>> If BATTERY_DISCHARGING is set, the power status is not charging.
+>>>>>> Or the power status should be charging.
+>>>>>>
+>>>>>> Signed-off-by: YH Huang <yh.huang@mediatek.com>
+>>>>>> ---
+>>>>>>  drivers/power/sbs-battery.c |   22 ++++++++++++----------
+>>>>>>  1 file changed, 12 insertions(+), 10 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs-bat=
+tery.c
+>>>>>> index d6226d6..d86db0e 100644
+>>>>>> --- a/drivers/power/sbs-battery.c
+>>>>>> +++ b/drivers/power/sbs-battery.c
+>>>>>> @@ -382,11 +382,12 @@ static int sbs_get_battery_property(struct=
+ i2c_client *client,
+>>>>>>
+>>>>>>                 if (ret & BATTERY_FULL_CHARGED)
+>>>>>>                         val->intval =3D POWER_SUPPLY_STATUS_FULL=
+;
+>>>>>> -               else if (ret & BATTERY_FULL_DISCHARGED)
+>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_NOT_=
+CHARGING;
+>>>>>> -               else if (ret & BATTERY_DISCHARGING)
+>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_DISC=
+HARGING;
+>>>>>> -               else
+>>>>>> +               else if (ret & BATTERY_DISCHARGING) {
+>>>>>> +                       if (ret & BATTERY_FULL_DISCHARGED)
+>>>>>> +                               val->intval =3D POWER_SUPPLY_STA=
+TUS_NOT_CHARGING;
+>>>>>> +                       else
+>>>>>> +                               val->intval =3D POWER_SUPPLY_STA=
+TUS_DISCHARGING;
+>>>>>> +               } else
+>>>>>
+>>>>>
+>>>>> I think (BATTERY_DISCHARGING && BATTERY_FULL_DISCHARGED) is still
+>>>>> POWER_SUPPLY_STATUS_DISCHARGING.
+>>>>> So, let's just report what the battery says and do:
+>>>>>
+>>>>>                else if (ret & BATTERY_DISCHARGING)
+>>>>>                                val->intval =3D POWER_SUPPLY_STATU=
+S_DISCHARGING;
+>>>>>
+>>>> So we just ignore the special situation (BATTERY_DISCHARGING &&
+>>>> BATTERY_FULL_DISCHARGED).
+>>>> Isn't POWER_SUPPLY_STATUS_NOT_CHARGING a useful information?
+>>>
+>>> The battery is discharging.  The fact that it is also reporting tha=
+t
+>>> it is already "discharged" just seems premature.   I would expect t=
+o
+>>> only see NOT_CHARGING if completely discharged *and* not dischargin=
+g.
+>>
+>> I check the "Smart Battery Data Specification Revision 1.1".
+>> And there are some words about FULLY_DISCHARGED.
+>> "Discharge should be stopped soon."
+>> "This status bit may be set prior to the
+>> =E2=80=98TERMINATE_DISCHARGE_ALARM=E2=80=99 as an early or first lev=
+el warning of end of
+>> battery charge."
+>> It looks like the FULLY_DISCHARGED status is used to announce the
+>> warning of battery charge and it is still discharging if there is no=
+ one
+>> takes care of it.
 
-> Powerclamp works by aligning idle time to achieve package level
-> idle states, aka cstates. As long as one of the package cstates
-> is available, synchronized idle injection is meaningful.
-> 
-> This patch replaces the CPU whitelist with CPU feature and
-> package cstate counter check such that we don't have to modify
-> this whitelist for every new CPU.
-> 
-Rui/Rafael,
 
-Any comments on this?
+The only difference I see in the patch above is that in the case where
+DISCHARGING isn't set, it won't check FULL_DISCHARGE. Nothing seems to
+be changed in the case where FULL_DISCHARGE & DISCHARGING are set.
 
-Jacob
+I think in the case that both flags are set, it makes sense to
+prioritize the FULL_DISCHARGE, since as quote above actually starts wit=
+h
+"FULLY_DISCHARGED bit is set when the Smart Battery determines that it
+has supplied all the charge it can." I think at the point where both
+statuses are reported, the fact that it is still DISCHARGING doesn't
+matter. The code as is handles this in that manner, so I don't see a
+need to change it.
 
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> ---
->  drivers/thermal/intel_powerclamp.c | 47
-> ++++++++------------------------------ 1 file changed, 9
-> insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c
-> b/drivers/thermal/intel_powerclamp.c index 6c79588..015ce2e 100644
-> --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -510,12 +510,6 @@ static int start_power_clamp(void)
->  	unsigned long cpu;
->  	struct task_struct *thread;
->  
-> -	/* check if pkg cstate counter is completely 0, abort in
-> this case */
-> -	if (!has_pkg_state_counter()) {
-> -		pr_err("pkg cstate counter not functional, abort\n");
-> -		return -EINVAL;
-> -	}
-> -
->  	set_target_ratio = clamp(set_target_ratio, 0U,
-> MAX_TARGET_RATIO - 1); /* prevent cpu hotplug */
->  	get_online_cpus();
-> @@ -672,35 +666,11 @@ static struct thermal_cooling_device_ops
-> powerclamp_cooling_ops = { .set_cur_state = powerclamp_set_cur_state,
->  };
->  
-> -/* runs on Nehalem and later */
->  static const struct x86_cpu_id intel_powerclamp_ids[] __initconst = {
-> -	{ X86_VENDOR_INTEL, 6, 0x1a},
-> -	{ X86_VENDOR_INTEL, 6, 0x1c},
-> -	{ X86_VENDOR_INTEL, 6, 0x1e},
-> -	{ X86_VENDOR_INTEL, 6, 0x1f},
-> -	{ X86_VENDOR_INTEL, 6, 0x25},
-> -	{ X86_VENDOR_INTEL, 6, 0x26},
-> -	{ X86_VENDOR_INTEL, 6, 0x2a},
-> -	{ X86_VENDOR_INTEL, 6, 0x2c},
-> -	{ X86_VENDOR_INTEL, 6, 0x2d},
-> -	{ X86_VENDOR_INTEL, 6, 0x2e},
-> -	{ X86_VENDOR_INTEL, 6, 0x2f},
-> -	{ X86_VENDOR_INTEL, 6, 0x37},
-> -	{ X86_VENDOR_INTEL, 6, 0x3a},
-> -	{ X86_VENDOR_INTEL, 6, 0x3c},
-> -	{ X86_VENDOR_INTEL, 6, 0x3d},
-> -	{ X86_VENDOR_INTEL, 6, 0x3e},
-> -	{ X86_VENDOR_INTEL, 6, 0x3f},
-> -	{ X86_VENDOR_INTEL, 6, 0x45},
-> -	{ X86_VENDOR_INTEL, 6, 0x46},
-> -	{ X86_VENDOR_INTEL, 6, 0x47},
-> -	{ X86_VENDOR_INTEL, 6, 0x4c},
-> -	{ X86_VENDOR_INTEL, 6, 0x4d},
-> -	{ X86_VENDOR_INTEL, 6, 0x4e},
-> -	{ X86_VENDOR_INTEL, 6, 0x4f},
-> -	{ X86_VENDOR_INTEL, 6, 0x56},
-> -	{ X86_VENDOR_INTEL, 6, 0x57},
-> -	{ X86_VENDOR_INTEL, 6, 0x5e},
-> +	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY,
-> X86_FEATURE_MWAIT },
-> +	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY,
-> X86_FEATURE_ARAT },
-> +	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY,
-> X86_FEATURE_NONSTOP_TSC },
-> +	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY,
-> X86_FEATURE_CONSTANT_TSC}, {}
->  };
->  MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
-> @@ -712,11 +682,12 @@ static int __init powerclamp_probe(void)
->  				boot_cpu_data.x86,
-> boot_cpu_data.x86_model); return -ENODEV;
->  	}
-> -	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC) ||
-> -		!boot_cpu_has(X86_FEATURE_CONSTANT_TSC) ||
-> -		!boot_cpu_has(X86_FEATURE_MWAIT) ||
-> -		!boot_cpu_has(X86_FEATURE_ARAT))
-> +
-> +	/* The goal for idle time alignment is to achieve package
-> cstate. */
-> +	if (!has_pkg_state_counter()) {
-> +		pr_info("No package C-state available");
->  		return -ENODEV;
-> +	}
->  
->  	/* find the deepest mwait value */
->  	find_target_mwait();
+-rhyland
 
-[Jacob Pan]
+
+--=20
+nvpublic
