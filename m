@@ -1,54 +1,99 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 29 Mar 2016 00:32:12 +0000
-Message-ID: <HE1PR04MB145070EE7CAC373C00C539478B870@HE1PR04MB1450.eurprd04.prod.outlook.com>
-References: <cover.1458822334.git.baolin.wang@linaro.org>
-	<20160325070937.GA22398@peterchendt>
-	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
-	<20160328071351.GC3302@peterchendt>
- <CAMz4kuK33mfiO9OttbRF9yVbQE1DFeuOtwyUWkCa5iPYbE-H8g@mail.gmail.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
+Date: Mon, 28 Mar 2016 18:35:42 -0700
+Message-ID: <20160329013540.GA15615@localhost.localdomain>
+References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
+ <1458079520.4486.39.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMz4kuK33mfiO9OttbRF9yVbQE1DFeuOtwyUWkCa5iPYbE-H8g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1458079520.4486.39.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-IA0KPiANCj4gT24gMjggTWFyY2ggMjAxNiBhdCAxNToxMywgUGV0ZXIgQ2hlbiA8aHpwZXRlcmNo
-ZW5AZ21haWwuY29tPiB3cm90ZToNCj4gPiBPbiBNb24sIE1hciAyOCwgMjAxNiBhdCAwMjo1MTo0
-MFBNICswODAwLCBCYW9saW4gV2FuZyB3cm90ZToNCj4gPj4gT24gMjUgTWFyY2ggMjAxNiBhdCAx
-NTowOSwgUGV0ZXIgQ2hlbiA8aHpwZXRlcmNoZW5AZ21haWwuY29tPiB3cm90ZToNCj4gPj4gPiBP
-biBUaHUsIE1hciAyNCwgMjAxNiBhdCAwODozNTo1M1BNICswODAwLCBCYW9saW4gV2FuZyB3cm90
-ZToNCj4gPj4gPj4gQ3VycmVudGx5IHRoZSBMaW51eCBrZXJuZWwgZG9lcyBub3QgcHJvdmlkZSBh
-bnkgc3RhbmRhcmQNCj4gPj4gPj4gaW50ZWdyYXRpb24gb2YgdGhpcyBmZWF0dXJlIHRoYXQgaW50
-ZWdyYXRlcyB0aGUgVVNCIHN1YnN5c3RlbSB3aXRoDQo+ID4+ID4+IHRoZSBzeXN0ZW0gcG93ZXIg
-cmVndWxhdGlvbiBwcm92aWRlZCBieSBQTUlDcyBtZWFuaW5nIHRoYXQgZWl0aGVyDQo+ID4+ID4+
-IHZlbmRvcnMgbXVzdCBhZGQgdGhpcyBpbiB0aGVpciBrZXJuZWxzIG9yIFVTQiBnYWRnZXQgZGV2
-aWNlcyBiYXNlZA0KPiA+PiA+PiBvbiBMaW51eCAoc3VjaCBhcyBtb2JpbGUgcGhvbmVzKSBtYXkg
-bm90IGJlaGF2ZSBhcyB0aGV5IHNob3VsZC4gVGh1cw0KPiBwcm92aWRlIGEgc3RhbmRhcmQgZnJh
-bWV3b3JrIGZvciBkb2luZyB0aGlzIGluIGtlcm5lbC4NCj4gPj4gPj4NCj4gPj4gPj4gTm93IGlu
-dHJvZHVjZSBvbmUgdXNlciB3aXRoIHdtODMxeF9wb3dlciB0byBzdXBwb3J0IGFuZCB0ZXN0IHRo
-ZQ0KPiA+PiA+PiB1c2IgY2hhcmdlciwgd2hpY2ggaXMgcGVuZGluZyB0ZXN0aW5nLiBNb3Jlb3Zl
-ciB0aGVyZSBtYXkgYmUgb3RoZXINCj4gPj4gPj4gcG90ZW50aWFsIHVzZXJzIHdpbGwgdXNlIGl0
-IGluIGZ1dHVyZS4NCj4gPj4gPj4NCj4gPj4gPg0KPiA+PiA+IEkgYW0gYWZyYWlkIEkgc3RpbGwg
-bm90IGZpbmQgdGhlIHVzZXIgKHVkYyBkcml2ZXIpIGZvciB0aGlzDQo+ID4+ID4gZnJhbWV3b3Jr
-LCBJIHdvdWxkIGxpa2UgdG8gc2VlIGhvdyB1ZGMgZHJpdmVyIGJsb2NrIHRoZSBlbnVtZXJhdGlv
-bg0KPiA+PiA+IHVudGlsIHRoZSBjaGFyZ2VyIGRldGVjdGlvbiBoYXMgZmluaXNoZWQsIG9yIGFt
-IEkgbWlzc2luZyBzb21ldGhpbmc/DQo+ID4+DQo+ID4+IEl0IGlzIG5vdCBmb3IgdWRjIGRyaXZl
-ciBidXQgZm9yIHBvd2VyIHVzZXJzIHdobyB3YW50IHRvIG5lZ290aWF0ZQ0KPiA+PiB3aXRoIFVT
-QiBzdWJzeXN0ZW0uDQo+ID4+DQo+ID4NCj4gPiBUaGVuLCB3aGVyZSBpcyB0aGUgY29kZSB0aGUg
-dGVzdCB1c2VyIHRvIGRlY2lkZSB3aGF0IGtpbmRzIG9mIFVTQg0KPiA+IGNoYXJnZXIgKFNEUCwg
-Q0RQLCBEQ1ApIGlzIGNvbm5lY3Rpbmcgbm93Pw0KPiANCj4gVXNlcnMgY2FuIGNob29zZSB0byBp
-bXBsZW1lbnQgbXVsdGlwbGUgd2F5cyB0byBnZXQgdGhlIGNoYXJnZXIgdHlwZSBJbg0KPiAndXNi
-X2NoYXJnZXJfZGV0ZWN0X3R5cGUoKScgZnVuY3Rpb24uDQo+IA0KPiA+DQogDQpUaGVuLCBob3cg
-eW91IHRlc3QgeW91ciBjb2RlPyBXaGVuIHdlIGludHJvZHVjZSBhbiBBUEksIGF0IGxlYXN0LCB0
-aGVyZSBpcyBvbmUNCnVzZXIgZm9yIGl0Lg0KDQpQZXRlcg0K
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue, Mar 15, 2016 at 11:08:00PM +0000, Pandruvada, Srinivas wrote:
+> On Mon, 2016-03-14 at 11:12 -0700, Srikar Srimath Tirumala wrote:
+> > Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
+> > cur_state whenever any trip is triggered or cur state is changed.
+> >=20
+> > This change allows usermode apps to register themselves to get
+> > notified, when certain thermal conditions occur and reduce their
+> > workload. This workload throttling allows usermode to react before
+> > hardware clocks are throttled and keep some critical apps running
+> > reliably longer.
+> I think we need a combination of proposal in=A0
+> https://patchwork.kernel.org/patch/7876351/=A0and this.
+>=20
+> For example this patch notifies that some trip is violated, but that =
+is
+> not enough for user space application to take any action. Some trips
+> violations user space may not care as this may be a transient one. Th=
+e
+> patch from=A0Eduardo address that by providing trip, temperature and =
+last
+> temperature information. But that patch only address hot trips. I
+> understand why Eduardo doesn't want to be notified for passive trips =
+as
+> there will be too many.
+>=20
+
+Yeah, my original intention was to avoid flooding userland, specially
+through a pipe like the sysfs netlink, which is in use to deal with
+other stuff.
+
+> So IMO we need some mechanism to turn off notification and decide wha=
+t
+> notification will result in user space notifications.
+> On some x86 systems we have 10+ passive/active trips, this will resul=
+ts
+> in too many notifications. We may be in thermally sensitive zone, whe=
+re
+> more code excecution is more heat.
+>=20
+
+Exactly, that has direct impact not only on the process waiting for
+thermal notifications, but also on other process listening to sysfs.
+
+> We may have some mask of trips for which will result in notifications=
+=2E
+> By default no notifications, unless some user space requests.
+>=20
+
+The complexity of such communication (or even the current status of
+sysfs ABI) starts to reach limit of such channel. We may definitely
+consider other means, such as /dev interface, just like IIO does.
+
+> During last LPC we discussed about using IIO for temperature threshol=
+d
+> notifications and I submitted multiple changes for that. Looks like w=
+e
+> also care of trip point changes. So I think we need more comprehensiv=
+e
+> mechanism to address this.
+>=20
+> May be we should have thermal mini summit during LPC again and decide=
+ a
+> comprehensive plan to address all asynchronous thermal notifications.
+>=20
+
+I have created a wiki for LPC 2016
+http://wiki.linuxplumbersconf.org/2016:thermal
+
+Overall I believe we need to solve the (temperature) sensing in a more
+structured way within the kernel. We have three subsystem that allow
+performing temperature sensing. They are different in design and
+concept, but still solve similar problems.
+
+I would still prefer to get this better architectured.
+
+Of course, we do not need to wait until LPC to start drafting this.
+
+Again, please lets generate enough quorum to run the micro conf.
+
+BR,=20
+
+Eduardo Valentin
