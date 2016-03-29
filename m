@@ -1,44 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Changes in sleep mode, on x86 PC
-Date: Tue, 29 Mar 2016 15:06:36 +0200
-Message-ID: <4224351.Xlkh4fNNHG@vostro.rjw.lan>
-References: <20160328212010.GA22713@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47838 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751526AbcC2NEQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 09:04:16 -0400
-In-Reply-To: <20160328212010.GA22713@amd>
-Sender: linux-pm-owner@vger.kernel.org
+From: Richard Cochran <rcochran@linutronix.de>
+Subject: [PATCH 09/10] intel_idle: Propagate hot plug errors.
+Date: Tue, 29 Mar 2016 15:16:01 +0200
+Message-ID: <a5a301488f49f278c7998d72cfadce052f5eadb8.1459257096.git.rcochran@linutronix.de>
+References: <cover.1459257096.git.rcochran@linutronix.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1459257096.git.rcochran@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rt@linutronix.de, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, lenb@kernel.org, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Jiri Kosina <jikos@kernel.org>
 
-On Monday, March 28, 2016 11:20:12 PM Pavel Machek wrote:
-> Hi!
-> 
-> Few releases ago, I could wake up PC from S3 sleep by hitting any
-> key. That ceased to work some time before, keyboard would just light a
-> NUM lock LED when I hit a key (4.5). Now PC seems to be sleeping (in
-> S3) with NUM lock LED on (4.6-rc0).
-> 
-> Any idea what is going on there? Does it happen for you, too? What is
-> the expected behaviour?
->
-> Debian 8.3, with MATE desktop, I just hit the "moon" key to make it
-> sleep. Keyboard is on USB.
+If a cpuidle registration error occurs during the hot plug notifier
+callback, we should really inform the hot plug machinery instead of
+just ignoring the error.  This patch changes the callback to properly
+return on error.
 
-That's rather important.
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Richard Cochran <rcochran@linutronix.de>
+---
+ drivers/idle/intel_idle.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Clearly, something in the USB HID land has changed lately.
-
-The expected behavior depends on whether or not the keyboard itself and the
-USB controller are both enabled to wake up.  If they are, I'd expect any
-key press to generate a wakeup event.
-
-Thanks,
-Rafael
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 4418cfa..8420ba1 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -818,8 +818,11 @@ static int cpu_hotplug_notify(struct notifier_block *n,
+ 		 * driver in this case
+ 		 */
+ 		dev = per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
+-		if (!dev->registered)
+-			intel_idle_cpu_init(hotcpu);
++		if (dev->registered)
++			break;
++
++		if (intel_idle_cpu_init(hotcpu))
++			return NOTIFY_BAD;
+ 
+ 		break;
+ 	}
+-- 
+2.1.4
