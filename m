@@ -1,69 +1,100 @@
-From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
-Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
  usb gadget power negotation
-Date: Tue, 29 Mar 2016 08:45:43 +0000
-Message-ID: <AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+Date: Tue, 29 Mar 2016 17:48:46 +0800
+Message-ID: <CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
 References: <cover.1458822334.git.baolin.wang@linaro.org>
 	<20160325070937.GA22398@peterchendt>
- <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f178.google.com ([209.85.161.178]:35305 "EHLO
+	mail-yw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbcC2Jsr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 05:48:47 -0400
+Received: by mail-yw0-f178.google.com with SMTP id g127so11464921ywf.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Mar 2016 02:48:47 -0700 (PDT)
+In-Reply-To: <AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jun Li <jun.li@nxp.com>
+Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtdXNiLW93bmVy
-QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXVzYi0NCj4gb3duZXJAdmdlci5rZXJuZWwu
-b3JnXSBPbiBCZWhhbGYgT2YgQmFvbGluIFdhbmcNCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyOCwg
-MjAxNiAyOjUyIFBNDQo+IFRvOiBQZXRlciBDaGVuIDxoenBldGVyY2hlbkBnbWFpbC5jb20+DQo+
-IENjOiBGZWxpcGUgQmFsYmkgPGJhbGJpQGtlcm5lbC5vcmc+OyBHcmVnIEtIIDxncmVna2hAbGlu
-dXhmb3VuZGF0aW9uLm9yZz47DQo+IFNlYmFzdGlhbiBSZWljaGVsIDxzcmVAa2VybmVsLm9yZz47
-IERtaXRyeSBFcmVtaW4tU29sZW5pa292DQo+IDxkYmFyeXNoa292QGdtYWlsLmNvbT47IERhdmlk
-IFdvb2Rob3VzZSA8ZHdtdzJAaW5mcmFkZWFkLm9yZz47IFBldGVyIENoZW4NCj4gPHBldGVyLmNo
-ZW5AZnJlZXNjYWxlLmNvbT47IEFsYW4gU3Rlcm4gPHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+
-Ow0KPiByLmJhbGR5Z2FAc2Ftc3VuZy5jb207IFlvc2hpaGlybyBTaGltb2RhDQo+IDx5b3NoaWhp
-cm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT47IExlZSBKb25lcyA8bGVlLmpvbmVzQGxpbmFyby5v
-cmc+OyBNYXJrDQo+IEJyb3duIDxicm9vbmllQGtlcm5lbC5vcmc+OyBDaGFybGVzIEtlZXBheA0K
-PiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+OyBwYXRjaGVzQG9wZW5zb3Vy
-Y2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gTGludXggUE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJu
-ZWwub3JnPjsgVVNCIDxsaW51eC11c2JAdmdlci5rZXJuZWwub3JnPjsNCj4gZGV2aWNlLW1haW5s
-aW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZzsgTEtNTCA8bGludXgtDQo+IGtlcm5lbEB2
-Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjggMC80XSBJbnRyb2R1Y2Ug
-dXNiIGNoYXJnZXIgZnJhbWV3b3JrIHRvIGRlYWwgd2l0aA0KPiB0aGUgdXNiIGdhZGdldCBwb3dl
-ciBuZWdvdGF0aW9uDQo+IA0KPiBPbiAyNSBNYXJjaCAyMDE2IGF0IDE1OjA5LCBQZXRlciBDaGVu
-IDxoenBldGVyY2hlbkBnbWFpbC5jb20+IHdyb3RlOg0KPiA+IE9uIFRodSwgTWFyIDI0LCAyMDE2
-IGF0IDA4OjM1OjUzUE0gKzA4MDAsIEJhb2xpbiBXYW5nIHdyb3RlOg0KPiA+PiBDdXJyZW50bHkg
-dGhlIExpbnV4IGtlcm5lbCBkb2VzIG5vdCBwcm92aWRlIGFueSBzdGFuZGFyZCBpbnRlZ3JhdGlv
-bg0KPiA+PiBvZiB0aGlzIGZlYXR1cmUgdGhhdCBpbnRlZ3JhdGVzIHRoZSBVU0Igc3Vic3lzdGVt
-IHdpdGggdGhlIHN5c3RlbQ0KPiA+PiBwb3dlciByZWd1bGF0aW9uIHByb3ZpZGVkIGJ5IFBNSUNz
-IG1lYW5pbmcgdGhhdCBlaXRoZXIgdmVuZG9ycyBtdXN0DQo+ID4+IGFkZCB0aGlzIGluIHRoZWly
-IGtlcm5lbHMgb3IgVVNCIGdhZGdldCBkZXZpY2VzIGJhc2VkIG9uIExpbnV4IChzdWNoDQo+ID4+
-IGFzIG1vYmlsZSBwaG9uZXMpIG1heSBub3QgYmVoYXZlIGFzIHRoZXkgc2hvdWxkLiBUaHVzIHBy
-b3ZpZGUgYQ0KPiBzdGFuZGFyZCBmcmFtZXdvcmsgZm9yIGRvaW5nIHRoaXMgaW4ga2VybmVsLg0K
-PiA+Pg0KPiA+PiBOb3cgaW50cm9kdWNlIG9uZSB1c2VyIHdpdGggd204MzF4X3Bvd2VyIHRvIHN1
-cHBvcnQgYW5kIHRlc3QgdGhlIHVzYg0KPiA+PiBjaGFyZ2VyLCB3aGljaCBpcyBwZW5kaW5nIHRl
-c3RpbmcuIE1vcmVvdmVyIHRoZXJlIG1heSBiZSBvdGhlcg0KPiA+PiBwb3RlbnRpYWwgdXNlcnMg
-d2lsbCB1c2UgaXQgaW4gZnV0dXJlLg0KPiA+Pg0KPiA+DQo+ID4gSSBhbSBhZnJhaWQgSSBzdGls
-bCBub3QgZmluZCB0aGUgdXNlciAodWRjIGRyaXZlcikgZm9yIHRoaXMgZnJhbWV3b3JrLA0KPiA+
-IEkgd291bGQgbGlrZSB0byBzZWUgaG93IHVkYyBkcml2ZXIgYmxvY2sgdGhlIGVudW1lcmF0aW9u
-IHVudGlsIHRoZQ0KPiA+IGNoYXJnZXIgZGV0ZWN0aW9uIGhhcyBmaW5pc2hlZCwgb3IgYW0gSSBt
-aXNzaW5nIHNvbWV0aGluZz8NCj4gDQo+IEl0IGlzIG5vdCBmb3IgdWRjIGRyaXZlciBidXQgZm9y
-IHBvd2VyIHVzZXJzIHdobyB3YW50IHRvIG5lZ290aWF0ZSB3aXRoDQo+IFVTQiBzdWJzeXN0ZW0u
-DQo+IA0KDQpTZWVtcyB5b3UgZG9uJ3Qgd2FudCB0byBndWFyYW50ZWUgY2hhcmdlciB0eXBlIGRl
-dGVjdGlvbiBpcyBkb25lIGJlZm9yZQ0KZ2FkZ2V0IGNvbm5lY3Rpb24ocHVsbHVwIERQKSwgcmln
-aHQ/DQpJIHNlZSB5b3UgY2FsbCB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpIGluIGVhY2ggZ2Fk
-Z2V0IHVzYiBzdGF0ZSBjaGFuZ2VzLg0KDQpMaSBKdW4gIA0KPiA+DQo+ID4gLS0NCj4gPiBCZXN0
-IFJlZ2FyZHMsDQo+ID4gUGV0ZXIgQ2hlbg0KPiANCj4gDQo+IA0KPiAtLQ0KPiBCYW9saW4ud2Fu
-Zw0KPiBCZXN0IFJlZ2FyZHMNCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6
-IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXVzYiIgaW4NCj4gdGhlIGJvZHkgb2Yg
-YSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5m
-byBhdA0KPiBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 29 March 2016 at 16:45, Jun Li <jun.li@nxp.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
+>> owner@vger.kernel.org] On Behalf Of Baolin Wang
+>> Sent: Monday, March 28, 2016 2:52 PM
+>> To: Peter Chen <hzpeterchen@gmail.com>
+>> Cc: Felipe Balbi <balbi@kernel.org>; Greg KH <gregkh@linuxfoundation.org>;
+>> Sebastian Reichel <sre@kernel.org>; Dmitry Eremin-Solenikov
+>> <dbaryshkov@gmail.com>; David Woodhouse <dwmw2@infradead.org>; Peter Chen
+>> <peter.chen@freescale.com>; Alan Stern <stern@rowland.harvard.edu>;
+>> r.baldyga@samsung.com; Yoshihiro Shimoda
+>> <yoshihiro.shimoda.uh@renesas.com>; Lee Jones <lee.jones@linaro.org>; Mark
+>> Brown <broonie@kernel.org>; Charles Keepax
+>> <ckeepax@opensource.wolfsonmicro.com>; patches@opensource.wolfsonmicro.com;
+>> Linux PM list <linux-pm@vger.kernel.org>; USB <linux-usb@vger.kernel.org>;
+>> device-mainlining@lists.linuxfoundation.org; LKML <linux-
+>> kernel@vger.kernel.org>
+>> Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with
+>> the usb gadget power negotation
+>>
+>> On 25 March 2016 at 15:09, Peter Chen <hzpeterchen@gmail.com> wrote:
+>> > On Thu, Mar 24, 2016 at 08:35:53PM +0800, Baolin Wang wrote:
+>> >> Currently the Linux kernel does not provide any standard integration
+>> >> of this feature that integrates the USB subsystem with the system
+>> >> power regulation provided by PMICs meaning that either vendors must
+>> >> add this in their kernels or USB gadget devices based on Linux (such
+>> >> as mobile phones) may not behave as they should. Thus provide a
+>> standard framework for doing this in kernel.
+>> >>
+>> >> Now introduce one user with wm831x_power to support and test the usb
+>> >> charger, which is pending testing. Moreover there may be other
+>> >> potential users will use it in future.
+>> >>
+>> >
+>> > I am afraid I still not find the user (udc driver) for this framework,
+>> > I would like to see how udc driver block the enumeration until the
+>> > charger detection has finished, or am I missing something?
+>>
+>> It is not for udc driver but for power users who want to negotiate with
+>> USB subsystem.
+>>
+>
+> Seems you don't want to guarantee charger type detection is done before
+> gadget connection(pullup DP), right?
+> I see you call usb_charger_detect_type() in each gadget usb state changes.
+
+I am not sure I get your point correctly, please correct me if I
+misunderstand you.
+We need to check the charger type at every event comes from the usb
+gadget state changes or the extcon device state changes, which means a
+new charger plugin or pullup.
+
+>
+> Li Jun
+>> >
+>> > --
+>> > Best Regards,
+>> > Peter Chen
+>>
+>>
+>>
+>> --
+>> Baolin.wang
+>> Best Regards
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+>> the body of a message to majordomo@vger.kernel.org More majordomo info at
+>> http://vger.kernel.org/majordomo-info.html
+
+
+
+-- 
+Baolin.wang
+Best Regards
