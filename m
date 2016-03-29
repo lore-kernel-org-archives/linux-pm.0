@@ -1,163 +1,111 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V9 RESEND 11/14] thermal: tegra: handle HW initialization in one funcotion
-Date: Tue, 29 Mar 2016 18:29:21 +0800
-Message-ID: <1459247364-1139-12-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH V9 RESEND 12/14] thermal: tegra: add PM support
+Date: Tue, 29 Mar 2016 18:29:22 +0800
+Message-ID: <1459247364-1139-13-git-send-email-wni@nvidia.com>
 References: <1459247364-1139-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1459247364-1139-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from nat-hk.nvidia.com ([203.18.50.4]:6313 "EHLO
+	hkmmgate101.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753209AbcC2KeY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 06:34:24 -0400
+In-Reply-To: <1459247364-1139-1-git-send-email-wni@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, thierry.reding@gmail.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-Handle HW initialization in one function soctherm_init(),
-so that the codes are more clear.
+Add suspend/resume function in soctherm driver.
 
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- drivers/thermal/tegra/soctherm.c | 85 +++++++++++++++++++++-------------------
- 1 file changed, 44 insertions(+), 41 deletions(-)
+ drivers/thermal/tegra/soctherm.c | 46 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index deeb3b7e4dac..d2b7c255d71f 100644
+index d2b7c255d71f..559c74279eb8 100644
 --- a/drivers/thermal/tegra/soctherm.c
 +++ b/drivers/thermal/tegra/soctherm.c
-@@ -95,19 +95,11 @@ struct tegra_soctherm {
- 	struct dentry *debugfs_dir;
- };
+@@ -88,6 +88,7 @@ struct tegra_soctherm {
+ 	struct clk *clock_tsensor;
+ 	struct clk *clock_soctherm;
+ 	void __iomem *regs;
++	struct thermal_zone_device **thermctl_tzs;
  
--static int enable_tsensor(struct tegra_soctherm *tegra,
--			  unsigned int i,
--			  const struct tsensor_shared_calib *shared)
-+static void enable_tsensor(struct tegra_soctherm *tegra, unsigned int i)
- {
- 	const struct tegra_tsensor *sensor = &tegra->soc->tsensors[i];
- 	void __iomem *base = tegra->regs + sensor->base;
--	u32 *calib = &tegra->calib[i];
- 	unsigned int val;
--	int err;
--
--	err = tegra_calc_tsensor_calib(sensor, shared, calib);
--	if (err)
--		return err;
+ 	u32 *calib;
+ 	struct tegra_soctherm_soc *soc;
+@@ -566,6 +567,12 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 			return err;
+ 	}
  
- 	val = sensor->config->tall << SENSOR_CONFIG0_TALL_SHIFT;
- 	writel(val, base + SENSOR_CONFIG0);
-@@ -118,9 +110,7 @@ static int enable_tsensor(struct tegra_soctherm *tegra,
- 	val |= SENSOR_CONFIG1_TEMP_ENABLE;
- 	writel(val, base + SENSOR_CONFIG1);
++	tegra->thermctl_tzs = devm_kzalloc(&pdev->dev,
++					   sizeof(*z) * soc->num_ttgs,
++					   GFP_KERNEL);
++	if (!tegra->thermctl_tzs)
++		return -ENOMEM;
++
+ 	err = soctherm_clk_enable(pdev, true);
+ 	if (err)
+ 		return err;
+@@ -595,6 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 		}
  
--	writel(*calib, base + SENSOR_CONFIG2);
--
--	return 0;
-+	writel(tegra->calib[i], base + SENSOR_CONFIG2);
- }
+ 		zone->tz = z;
++		tegra->thermctl_tzs[soc->ttgs[i]->id] = z;
  
- /*
-@@ -461,6 +451,34 @@ static int soctherm_clk_enable(struct platform_device *pdev, bool enable)
+ 		/* Configure hw trip points */
+ 		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
+@@ -621,11 +629,49 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
  	return 0;
  }
  
-+static void soctherm_init(struct platform_device *pdev)
++static int soctherm_suspend(struct device *dev)
 +{
-+	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	const struct tegra_tsensor_group **ttgs = tegra->soc->ttgs;
-+	int i;
-+	u32 pdiv, hotspot;
++	struct platform_device *pdev = to_platform_device(dev);
 +
-+	/* Initialize raw sensors */
-+	for (i = 0; i < tegra->soc->num_tsensors; ++i)
-+		enable_tsensor(tegra, i);
++	soctherm_clk_enable(pdev, false);
 +
-+	/* program pdiv and hotspot offsets per THERM */
-+	pdiv = readl(tegra->regs + SENSOR_PDIV);
-+	hotspot = readl(tegra->regs + SENSOR_HOTSPOT_OFF);
-+	for (i = 0; i < tegra->soc->num_ttgs; ++i) {
-+		pdiv = REG_SET_MASK(pdiv, ttgs[i]->pdiv_mask,
-+				    ttgs[i]->pdiv);
-+		/* hotspot offset from PLLX, doesn't need to configure PLLX */
-+		if (ttgs[i]->id == TEGRA124_SOCTHERM_SENSOR_PLLX)
-+			continue;
-+		hotspot =  REG_SET_MASK(hotspot,
-+					ttgs[i]->pllx_hotspot_mask,
-+					ttgs[i]->pllx_hotspot_diff);
-+	}
-+	writel(pdiv, tegra->regs + SENSOR_PDIV);
-+	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
++	return 0;
 +}
 +
- static const struct of_device_id tegra_soctherm_of_match[] = {
- #ifdef CONFIG_ARCH_TEGRA_124_SOC
- 	{
-@@ -488,7 +506,6 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	struct tegra_soctherm_soc *soc;
- 	unsigned int i;
- 	int err;
--	u32 pdiv, hotspot;
- 
- 	match = of_match_node(tegra_soctherm_of_match, pdev->dev.of_node);
- 	if (!match)
-@@ -529,45 +546,31 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->clock_soctherm);
- 	}
- 
--	err = soctherm_clk_enable(pdev, true);
--	if (err)
--		return err;
--
--	/* Initialize raw sensors */
--
- 	tegra->calib = devm_kzalloc(&pdev->dev,
- 				    sizeof(u32) * soc->num_tsensors,
- 				    GFP_KERNEL);
--	if (!tegra->calib) {
--		err = -ENOMEM;
--		goto disable_clocks;
--	}
-+	if (!tegra->calib)
-+		return -ENOMEM;
- 
-+	/* calculate shared calibration data */
- 	err = tegra_calc_shared_calib(soc->tfuse, &shared_calib);
- 	if (err)
--		goto disable_clocks;
-+		return err;
- 
-+	/* calculate tsensor calibaration data */
- 	for (i = 0; i < soc->num_tsensors; ++i) {
--		err = enable_tsensor(tegra, i, &shared_calib);
-+		err = tegra_calc_tsensor_calib(&soc->tsensors[i],
-+					       &shared_calib,
-+					       &tegra->calib[i]);
- 		if (err)
--			goto disable_clocks;
-+			return err;
- 	}
- 
--	/* Program pdiv and hotspot offsets per THERM */
--	pdiv = readl(tegra->regs + SENSOR_PDIV);
--	hotspot = readl(tegra->regs + SENSOR_HOTSPOT_OFF);
--	for (i = 0; i < soc->num_ttgs; ++i) {
--		pdiv = REG_SET_MASK(pdiv, soc->ttgs[i]->pdiv_mask,
--				    soc->ttgs[i]->pdiv);
--		/* hotspot offset from PLLX, doesn't need to configure PLLX */
--		if (soc->ttgs[i]->id == TEGRA124_SOCTHERM_SENSOR_PLLX)
--			continue;
--		hotspot =  REG_SET_MASK(hotspot,
--					soc->ttgs[i]->pllx_hotspot_mask,
--					soc->ttgs[i]->pllx_hotspot_diff);
--	}
--	writel(pdiv, tegra->regs + SENSOR_PDIV);
--	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
++static int soctherm_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
++	struct tegra_soctherm_soc *soc = tegra->soc;
++	int err, i;
++
 +	err = soctherm_clk_enable(pdev, true);
-+	if (err)
++	if (err) {
++		dev_err(&pdev->dev,
++			"Resume failed: enable clocks failed\n");
 +		return err;
++	}
 +
 +	soctherm_init(pdev);
- 
- 	for (i = 0; i < soc->num_ttgs; ++i) {
- 		struct tegra_thermctl_zone *zone =
++
++	for (i = 0; i < soc->num_ttgs; ++i) {
++		struct thermal_zone_device *tz;
++
++		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
++		tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
++	}
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, soctherm_resume);
++
+ static struct platform_driver tegra_soctherm_driver = {
+ 	.probe = tegra_soctherm_probe,
+ 	.remove = tegra_soctherm_remove,
+ 	.driver = {
+ 		.name = "tegra_soctherm",
++		.pm = &tegra_soctherm_pm,
+ 		.of_match_table = tegra_soctherm_of_match,
+ 	},
+ };
 -- 
 1.9.1
+
