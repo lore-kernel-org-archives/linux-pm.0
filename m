@@ -1,43 +1,63 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V8 00/14] Add T210 support in Tegra soctherm
-Date: Tue, 29 Mar 2016 12:22:35 +0800
-Message-ID: <56FA030B.3060407@nvidia.com>
-References: <1458118571-29717-1-git-send-email-wni@nvidia.com> <56F4CE8D.5020108@nvidia.com> <20160329030440.GA2315@localhost.localdomain> <20160329032953.GA24089@localhost.localdomain>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 3/3] cpufreq: exynos: Use generic platdev driver
+Date: Tue, 29 Mar 2016 13:39:46 +0900
+Message-ID: <56FA0712.6020802@samsung.com>
+References: <cover.1458801338.git.viresh.kumar@linaro.org>
+ <6cb29053bce7026dd9429326236a67c45e901c7b.1458801338.git.viresh.kumar@linaro.org>
+ <56FA0039.6030007@samsung.com> <20160329041827.GA25424@vireshk-i7>
+ <20160329041923.GB25424@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160329032953.GA24089-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:25602 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755829AbcC2Ej4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 00:39:56 -0400
+In-reply-to: <20160329041923.GB25424@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, Kukjin Kim <kgene@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, mmcclint@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
-
-On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 11:29, Eduardo Valentin wrote:
-> On Mon, Mar 28, 2016 at 08:04:41PM -0700, Eduardo Valentin wrote:
->> On Fri, Mar 25, 2016 at 01:37:17PM +0800, Wei Ni wrote:
->>> Hi, Eduardo
->>> Will you take this series, it seems no more comments.
->>
->> Yeah, I am taking a look at it. Something is fishy about it. Patch 0=
-4
->> does not apply cleanly. Also, why did you split the patches into two
->> email threads, one which is 1-4 and another one is 5-14?
->>
->> I have ammended patch 04 at my side, but you need to validate your
->> series is one piece (please check my tree and linux-next).
->=20
-> This didn't quite work. Please refresh your series on top of my fixes
-> branch so I can apply your series cleanly.
-
-Yes, I will do it.
-
->=20
->>
->> BR,
->>
->> Eduardo Valentin
->>
+On 29.03.2016 13:19, Viresh Kumar wrote:
+> On 29-03-16, 09:48, Viresh Kumar wrote:
+>> On 29-03-16, 13:10, Krzysztof Kozlowski wrote:
+>>> On 24.03.2016 15:40, Viresh Kumar wrote:
+>>>> The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+>>>> device now, reuse that and remove similar code from platform code.
+>>>>
+>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> ---
+>>>>  arch/arm/mach-exynos/exynos.c        | 25 -------------------------
+>>>>  drivers/cpufreq/cpufreq-dt-platdev.c |  5 +++++
+>>>>  2 files changed, 5 insertions(+), 25 deletions(-)
 >>>
+>>> Looks fine to me... except that it is a little bit outdated. Please
+>>> rebase on v4.6-rc1 because Bartlomiej added support for cpufreq @Exynos542x.
+>>
+>> Yeah, I know. I already have the updated version.
+> 
+> Here it is:
+> 
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Thu, 24 Mar 2016 12:04:10 +0530
+> Subject: [PATCH] cpufreq: exynos: Use generic platdev driver
+> 
+> The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+> device now, reuse that and remove similar code from platform code.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/mach-exynos/exynos.c        | 29 -----------------------------
+>  drivers/cpufreq/cpufreq-dt-platdev.c |  9 +++++++++
+>  2 files changed, 9 insertions(+), 29 deletions(-)
+
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+
+
+Best regards,
+
+Krzysztof
+
