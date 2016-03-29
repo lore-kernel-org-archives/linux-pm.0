@@ -1,43 +1,133 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 0/4] thermal: hisilicon: enable power allocator for
- Hi6220
-Date: Tue, 29 Mar 2016 08:45:59 -0700
-Message-ID: <20160329154548.GE1855@localhost.localdomain>
-References: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
+From: Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Tue, 29 Mar 2016 17:35:00 +0100
+Message-ID: <20160329163500.GI6745@arm.com>
+References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: fu.wei@linaro.org
+Cc: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 29, 2016 at 07:27:11PM +0800, Leo Yan wrote:
-> Hi6220 has octa-core so it has quite high power consumption when run
-> benchmark and introduces high temperature for SoC. So need enable
-> thermal governor to control temperature and also cannot hurt much for
-> performance after impose cooling operations on CPU.
+On Tue, Mar 29, 2016 at 03:44:18PM +0800, fu.wei@linaro.org wrote:
+> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 > 
-> This patch series is to enable power allocator for Hi6220. Patch 1 is to
-> change "hysteresis" as optional property for trip points, so when enable
-> power allocator governor we can ignore this property.
+> This commit provides APEI arch-specific bits for aarch64
 > 
-> During profiling also found two issues for thermal sensor's driver. The
-> power allocator just uses only one sensor, so patch 2 is to fix sensor
-> driver to let it can initialize driver successfully with only enabling
-> one sensor; patch 3 is to dismiss warning of IRQ imbalance enabling.
+> Meanwhile,
+> (1)add a new subfunction "hest_ia32_init" for
+> "acpi_disable_cmcff" which is used by IA-32 Architecture
+> Corrected Machine Check (CMC).
+> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+> a generic place.
+> (3)select EFI when ACPI_APEI is set on ARM64,
+> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
 > 
-> After profiling on Hikey, the power model has been simplized with only
-> dynamic coefficient, and now it's convienence to pass it from CPU node.
-> So patch 4 and 5 bind sensor and pass power model parameters.
+> [Fu Wei: improve && upstream]
 > 
-> This patch series have been tested on 96boards Hikey.
+> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+> Signed-off-by: Fu Wei <fu.wei@linaro.org>
+> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+> ---
+> Changelog:
+> v8: Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+>     on ARM64.
+> 
+> v7: https://lkml.org/lkml/2016/3/17/183
+>     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
+> 
+> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+>     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>     a generic place.
+>     Delete HAVE_ACPI_APEI_HEST_IA32.
+> 
+> v5: https://lkml.org/lkml/2015/12/10/131
+>     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+>     "#if defined(__i386__) || defined(__x86_64__)".
+> 
+> v4: https://lkml.org/lkml/2015/12/8/188
+>     Rebase to latest kernel version(4.4-rc4).
+>     Move arch_apei_flush_tlb_one into header file as a inline function
+>     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+> 
+> v3: https://lkml.org/lkml/2015/12/3/521
+>     Remove "acpi_disable_cmcff" from arm64 code,
+>     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+> 
+> v2: https://lkml.org/lkml/2015/12/2/432
+>     Rebase to latest kernel version(4.4-rc3).
+>     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+> 
+> v1: https://lkml.org/lkml/2015/8/14/199
+>     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+>     Delete arch/arm64/kernel/apei.c.
+>     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+> 
+>  arch/arm64/Kconfig            |  1 +
+>  arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
+>  arch/x86/kernel/acpi/apei.c   |  3 ---
+>  drivers/acpi/apei/Kconfig     |  1 +
+>  drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+>  5 files changed, 31 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 4f43622..08952ec 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -3,6 +3,7 @@ config ARM64
+>  	select ACPI_CCA_REQUIRED if ACPI
+>  	select ACPI_GENERIC_GSI if ACPI
+>  	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+> +	select HAVE_ACPI_APEI if ACPI
+>  	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+>  	select ARCH_HAS_ELF_RANDOMIZE
+> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+> index aee323b..4a6c959 100644
+> --- a/arch/arm64/include/asm/acpi.h
+> +++ b/arch/arm64/include/asm/acpi.h
+> @@ -17,6 +17,7 @@
+>  
+>  #include <asm/cputype.h>
+>  #include <asm/smp_plat.h>
+> +#include <asm/tlbflush.h>
+>  
+>  /* Macros for consistency checks of the GICC subtable of MADT */
+>  #define ACPI_MADT_GICC_LENGTH	\
+> @@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
+>  }
+>  
+>  #ifdef	CONFIG_ACPI_APEI
+> +#define acpi_disable_cmcff 1
+>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+> -#endif
+>  
+> +/*
+> + * This inline function is used in IRQ context (by GHES driver now),
+> + * see ghes_iounmap_irq and ghes_iounmap_nmi in drivers/acpi/apei/ghes.c.
+> + * The page mapped is reserved for firmware in kernel. This invalidate TLB
+> + * maintenance should be broadcasted safely to make sure that all the cores
+> + * will do TLB invalidation, then get the right pages.
+> + */
 
-Applied patches 1 and 2 in my fixes branch. Patches 3 and 4 need to go
-via the hisi platform tree. You may add my
+How about:
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+ /*
+  * Despite its name, this function must still broadcast the TLB
+  * invalidation in order to ensure other CPUs don't up with with junk
+  * entries as a result of speculation. Unusually, its also called in
+  * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
+  * TLB broadcasting, then we're in trouble here.
+  */
 
-on patches 3 and 4 if you want.
+With that,
+
+Acked-by: Will Deacon <will.deacon@arm.com>
+
+Will
