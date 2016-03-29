@@ -1,82 +1,35 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Changes in sleep mode, on x86 PC
-Date: Tue, 29 Mar 2016 16:24:05 +0200
-Message-ID: <20160329142405.GA24781@amd>
-References: <20160328212010.GA22713@amd>
- <4224351.Xlkh4fNNHG@vostro.rjw.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH V2 3/3] cpufreq: exynos: Use generic platdev driver
+Date: Tue, 29 Mar 2016 17:04:26 +0200
+Message-ID: <3810049.oQlCXiQ5bk@wuerfel>
+References: <cover.1459233524.git.viresh.kumar@linaro.org> <81a8da75a0e7783e2b47f9e04297f167e8134afe.1459233524.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41837 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbcC2OYI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 10:24:08 -0400
-Content-Disposition: inline
-In-Reply-To: <4224351.Xlkh4fNNHG@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <81a8da75a0e7783e2b47f9e04297f167e8134afe.1459233524.git.viresh.kumar@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, kgene.kim@samsung.com, heiko@sntech.de, xf@rock-chips.com, mmcclint@codeaurora.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>, lenb@kernel.org, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Jiri Kosina <jikos@kernel.org>
 
+On Tuesday 29 March 2016 12:09:49 Viresh Kumar wrote:
+> -static void __init exynos_cpufreq_init(void)
+> -{
+> -       struct device_node *root = of_find_node_by_path("/");
+> -       const struct of_device_id *match;
+> -
+> -       match = of_match_node(exynos_cpufreq_matches, root);
+> -       if (!match) {
+> -               platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+> -               return;
+> -       }
+> -
+> -       platform_device_register_simple(match->data, -1, NULL, 0);
+> -}
 
-On Tue 2016-03-29 15:06:36, Rafael J. Wysocki wrote:
-> On Monday, March 28, 2016 11:20:12 PM Pavel Machek wrote:
-> > Hi!
-> > 
-> > Few releases ago, I could wake up PC from S3 sleep by hitting any
-> > key. That ceased to work some time before, keyboard would just light a
-> > NUM lock LED when I hit a key (4.5). Now PC seems to be sleeping (in
-> > S3) with NUM lock LED on (4.6-rc0).
-> > 
-> > Any idea what is going on there? Does it happen for you, too? What is
-> > the expected behaviour?
-> >
-> > Debian 8.3, with MATE desktop, I just hit the "moon" key to make it
-> > sleep. Keyboard is on USB.
-> 
-> That's rather important.
-> 
-> Clearly, something in the USB HID land has changed lately.
-> 
-> The expected behavior depends on whether or not the keyboard itself and the
-> USB controller are both enabled to wake up.  If they are, I'd expect any
-> key press to generate a wakeup event.
+How is the "exynos-cpufreq" case handled now? Is that no longer used now?
+I assume the patch is correct based on Krzysztof's review, but it might be
+good to explain this better.
 
-Is there anything in /sys I should check?
-
-pavel@amd:/sys/class/input/input43$ ls
-capabilities  id			 input43::scrolllock  phys
- subsystem
- device	      input43::capslock  modalias	      power
- uevent
- event8	      input43::numlock	 name		      properties  uniq
- pavel@amd:/sys/class/input/input43$ cat power/
- async                   runtime_active_kids     runtime_status
- autosuspend_delay_ms    runtime_active_time
- runtime_suspended_time
- control                 runtime_enabled         runtime_usage
- pavel@amd:/sys/class/input/input43$ cat power/
-
-Ok, this is slightly weird, but it seems to be just multimedia keys
-having separate device:
-
-pavel@amd:/sys/class/input$ grep . input4*/name
-input43/name:Chicony USB Keyboard
-input44/name:Chicony USB Keyboard
-
-pavel@amd:/sys/class/input$ ls input43/
-capabilities  id	        input43::scrolllock  phys
-subsystem
-device	      input43::capslock  modalias	      power
-uevent
-event8	      input43::numlock	 name		      properties  uniq
-pavel@amd:/sys/class/input$ ls input44
-capabilities  event9  modalias phys   properties  uevent
-device	            id      name      power  subsystem   uniq
-
-
-Thanks,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Arnd
