@@ -1,149 +1,176 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH v5] thermal: add temperature sensor support for tango SoC
-Date: Tue, 29 Mar 2016 20:48:43 +0200
-Message-ID: <56FACE0B.9060606@free.fr>
-References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
- <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:51573 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751877AbcC2Ss7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Mar 2016 14:48:59 -0400
-In-Reply-To: <20160329020050.GA15721@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: [PATCH 1/8] mfd: twl-core: Rename struct twl4030_platform_data to twl_platform_data
+Date: Tue, 29 Mar 2016 21:22:14 +0200
+Message-ID: <1459279341-17389-1-git-send-email-contact@paulk.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Paul Kocialkowski <contact@paulk.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
 
-On 29/03/2016 04:00, Eduardo Valentin wrote:
+Since twl4030_platform_data also holds platform data (e.g. regulators) for other
+TWL chips, it makes sense to rename it to a non-model-specific name.
 
-> Again, only minor comments, as follows.
+This will also allow hooking more platform data structure to it in the future.
 
-I do hope we can get this driver sorted out in time for the 4.7
-merge window.
+Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+---
+ arch/arm/mach-omap2/board-ldp.c              |  2 +-
+ arch/arm/mach-omap2/board-rx51-peripherals.c |  2 +-
+ arch/arm/mach-omap2/twl-common.c             |  8 ++++----
+ arch/arm/mach-omap2/twl-common.h             | 14 +++++++-------
+ drivers/mfd/twl-core.c                       |  4 ++--
+ include/linux/i2c/twl.h                      |  3 ++-
+ 6 files changed, 17 insertions(+), 16 deletions(-)
 
->> +The SMP8758 SoC includes 3 instances of this temperature sensor
->> +(in the CPU, video decoder, and PCIe controller).
->=20
-> Would you be able to add a link to sensor documentation?
-
-I couldn't find any documentation online, even on Chinese sites.
-
->> +	cpu_temp: thermal@920100 {
->> +		compatible =3D "sigma,smp8758-thermal";
->> +		#thermal-sensor-cells =3D <0>;
->> +		reg =3D <0x920100 12>;
->=20
-> I believe you have to put #thermal-sensor-cells as last entry.
-
-I've been using the node as-is in my DT, which works as expected.
-What kinds of failure did you have in mind?
-
->> +	  Enable the Tango temperature sensor driver, which provides suppo=
-rt
->> +	  for the sensors used since the SMP8758.
->=20
-> Please add a better description, e.g. which sensors are supported,
-> locations, accuracy, and more meaningful info an engineer could read =
-out
-> of the help section.
-
-I will try to give a few more details, but AFAICS the majority
-of entries for other SoCs are as short as mine...
-
-What do you mean by "which sensors"?
-
-Locations isn't really relevant here because different SoCs
-will have them in different places.
-
-> No license/author/contact section here?
-
-License is given by MODULE_LICENSE("GPL");
-author and contact are given by git log or git blame.
-
->> +	writel(thresh_idx << 8 | CMD_READ, base + TEMPSI_CMD);
->> +	usleep_range(100, 200);
->
-> nip: blank line here.
-
-Did you mean "nit"? :-)
-
->> +	return readl(base + TEMPSI_RES);
-
-Hmm, I don't see this rule in the CodingStyle document.
-
-There are even examples to the contrary:
-
-		kfree(foo->bar);
-		kfree(foo);
-		return ret;
-
->> +	if (temp_above_thresh(base, idx)) {
->> +		/* Upward linear search, increment thresh */
->> +		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
->> +			cpu_relax();
->> +		idx =3D idx - 1; /* always return lower bound */
->> +	} else {
->> +		/* Downward linear search, decrement thresh */
->> +		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
->> +			cpu_relax();
->> +	}
->=20
-> Did I understand this right? We can only read if the temperature is
-> above an index or not, right?
-
-Right, the hardware's output is a single bit:
-"Is the temperature above the programmed threshold?" yes/no.
-
-> and we spin for 100-200us after every=20
-> attempt to check if temperature is above and index.
-
-Nit: we don't spin, we sleep.
-
-100-200 =B5s is a bit conservative, the hardware doesn't need
-that much. But I wanted to give Linux the opportunity to
-group multiple checks together, and even switch to a different
-task if necessary. I assumed that it doesn't make sense to
-context switch for only tens of microseconds?
-
-> So, worst case,
-> if we start from IDX_MIN, and temp is at IDX_MAX, we spin for
-> 40 * (100 .. 200) us (with cpu_relax in between).
-
-On my system, cpu_relax is just a compiler barrier, so barely
-a blip. And the worst case doesn't occur. But I will change
-IDX_MIN to 10, because I don't care about sub-zero temperatures.
-
-> Does the chip support different temperature read strategy?
-
-I'm not sure what you mean.
-
-> How does this perform in average case?
-
-Typical idle temps are index 18-20 (43-52 =B0C)
-When I load the CPU with cpuburn, the temp climbs to
-index 22-24 (61-70 =B0C).
-But obviously, these numbers depend on the thermal solution.
-
-> How about a local search within +-2 indexes of thresh_idx?
-
-What problem would that solve?
-
->> +	priv->zone =3D thermal_zone_of_sensor_register(dev, 0, priv, &ops)=
-;
->=20
-> Would it make sense to use the devm_thermal_zone_of_sensor_register
-> version instead?
-
-Does that automatically call thermal_zone_of_sensor_unregister
-in the remove() method?
-
-I prefer having the symmetry of register/unregister, but
-I guess it's your call as maintainer.
-
-Regards.
-
+diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
+index d9c3ffc..b8c2e21 100644
+--- a/arch/arm/mach-omap2/board-ldp.c
++++ b/arch/arm/mach-omap2/board-ldp.c
+@@ -321,7 +321,7 @@ static struct regulator_init_data ldp_vpll2 = {
+ 	.consumer_supplies	= ldp_vpll2_supplies,
+ };
+ 
+-static struct twl4030_platform_data ldp_twldata = {
++static struct twl_platform_data ldp_twldata = {
+ 	/* platform_data for children goes here */
+ 	.vmmc1		= &ldp_vmmc1,
+ 	.vaux1		= &ldp_vaux1,
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index da174c0..3739bff 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -957,7 +957,7 @@ static struct twl4030_audio_data rx51_audio_data __initdata = {
+ 	.vibra		= &rx51_vibra_data,
+ };
+ 
+-static struct twl4030_platform_data rx51_twldata __initdata = {
++static struct twl_platform_data rx51_twldata __initdata = {
+ 	/* platform_data for children goes here */
+ 	.gpio			= &rx51_gpio_data,
+ 	.keypad			= &rx51_kp_data,
+diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
+index 292eca0..4e6532f 100644
+--- a/arch/arm/mach-omap2/twl-common.c
++++ b/arch/arm/mach-omap2/twl-common.c
+@@ -55,7 +55,7 @@ static int twl_get_voltage(void *data)
+ 
+ void __init omap_pmic_init(int bus, u32 clkrate,
+ 			   const char *pmic_type, int pmic_irq,
+-			   struct twl4030_platform_data *pmic_data)
++			   struct twl_platform_data *pmic_data)
+ {
+ 	omap_mux_init_signal("sys_nirq", OMAP_PIN_INPUT_PULLUP | OMAP_PIN_OFF_WAKEUPENABLE);
+ 	strlcpy(pmic_i2c_board_info.type, pmic_type,
+@@ -68,7 +68,7 @@ void __init omap_pmic_init(int bus, u32 clkrate,
+ 
+ #ifdef CONFIG_ARCH_OMAP4
+ void __init omap4_pmic_init(const char *pmic_type,
+-		    struct twl4030_platform_data *pmic_data,
++		    struct twl_platform_data *pmic_data,
+ 		    struct i2c_board_info *devices, int nr_devices)
+ {
+ 	/* PMIC part*/
+@@ -205,7 +205,7 @@ static struct twl_regulator_driver_data omap3_vdd2_drvdata = {
+ 	.set_voltage = twl_set_voltage,
+ };
+ 
+-void __init omap3_pmic_get_config(struct twl4030_platform_data *pmic_data,
++void __init omap3_pmic_get_config(struct twl_platform_data *pmic_data,
+ 				  u32 pdata_flags, u32 regulators_flags)
+ {
+ 	if (!pmic_data->vdd1) {
+@@ -470,7 +470,7 @@ static struct regulator_init_data omap4_v2v1_idata = {
+ 	.consumer_supplies	= omap4_v2v1_supply,
+ };
+ 
+-void __init omap4_pmic_get_config(struct twl4030_platform_data *pmic_data,
++void __init omap4_pmic_get_config(struct twl_platform_data *pmic_data,
+ 				  u32 pdata_flags, u32 regulators_flags)
+ {
+ 	if (!pmic_data->vdd1) {
+diff --git a/arch/arm/mach-omap2/twl-common.h b/arch/arm/mach-omap2/twl-common.h
+index 24b65d0..e7caa23 100644
+--- a/arch/arm/mach-omap2/twl-common.h
++++ b/arch/arm/mach-omap2/twl-common.h
+@@ -30,35 +30,35 @@
+ #define TWL_COMMON_REGULATOR_VPLL2	(1 << 5)
+ 
+ 
+-struct twl4030_platform_data;
++struct twl_platform_data;
+ struct twl6040_platform_data;
+ struct omap_tw4030_pdata;
+ struct i2c_board_info;
+ 
+ void omap_pmic_init(int bus, u32 clkrate, const char *pmic_type, int pmic_irq,
+-		    struct twl4030_platform_data *pmic_data);
++		    struct twl_platform_data *pmic_data);
+ void omap_pmic_late_init(void);
+ 
+ static inline void omap2_pmic_init(const char *pmic_type,
+-				   struct twl4030_platform_data *pmic_data)
++				   struct twl_platform_data *pmic_data)
+ {
+ 	omap_pmic_init(2, 2600, pmic_type, 7 + OMAP_INTC_START, pmic_data);
+ }
+ 
+ static inline void omap3_pmic_init(const char *pmic_type,
+-				   struct twl4030_platform_data *pmic_data)
++				   struct twl_platform_data *pmic_data)
+ {
+ 	omap_pmic_init(1, 2600, pmic_type, 7 + OMAP_INTC_START, pmic_data);
+ }
+ 
+ void omap4_pmic_init(const char *pmic_type,
+-		    struct twl4030_platform_data *pmic_data,
++		    struct twl_platform_data *pmic_data,
+ 		    struct i2c_board_info *devices, int nr_devices);
+ 
+-void omap3_pmic_get_config(struct twl4030_platform_data *pmic_data,
++void omap3_pmic_get_config(struct twl_platform_data *pmic_data,
+ 			   u32 pdata_flags, u32 regulators_flags);
+ 
+-void omap4_pmic_get_config(struct twl4030_platform_data *pmic_data,
++void omap4_pmic_get_config(struct twl_platform_data *pmic_data,
+ 			   u32 pdata_flags, u32 regulators_flags);
+ 
+ void omap_twl4030_audio_init(char *card_name, struct omap_tw4030_pdata *pdata);
+diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+index 831696e..dae52f7 100644
+--- a/drivers/mfd/twl-core.c
++++ b/drivers/mfd/twl-core.c
+@@ -721,7 +721,7 @@ add_regulator(int num, struct regulator_init_data *pdata,
+  */
+ 
+ static int
+-add_children(struct twl4030_platform_data *pdata, unsigned irq_base,
++add_children(struct twl_platform_data *pdata, unsigned irq_base,
+ 		unsigned long features)
+ {
+ 	struct device	*child;
+@@ -1083,7 +1083,7 @@ static struct of_dev_auxdata twl_auxdata_lookup[] = {
+ static int
+ twl_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+-	struct twl4030_platform_data	*pdata = dev_get_platdata(&client->dev);
++	struct twl_platform_data	*pdata = dev_get_platdata(&client->dev);
+ 	struct device_node		*node = client->dev.of_node;
+ 	struct platform_device		*pdev;
+ 	const struct regmap_config	*twl_regmap_config;
+diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
+index 9ad7828..27bea30 100644
+--- a/include/linux/i2c/twl.h
++++ b/include/linux/i2c/twl.h
+@@ -704,7 +704,8 @@ struct twl4030_audio_data {
+ 	unsigned int irq_base;
+ };
+ 
+-struct twl4030_platform_data {
++struct twl_platform_data {
++	/* TWL4030 platform data */
+ 	struct twl4030_clock_init_data		*clock;
+ 	struct twl4030_bci_platform_data	*bci;
+ 	struct twl4030_gpio_platform_data	*gpio;
+-- 
+2.7.4
