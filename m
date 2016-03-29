@@ -1,7 +1,7 @@
 From: Richard Cochran <rcochran@linutronix.de>
-Subject: [PATCH 05/10] intel_idle: Fix dangling registration on error path.
-Date: Tue, 29 Mar 2016 15:15:57 +0200
-Message-ID: <3a0f327af48507403d9ca332251e63a127efeb4b.1459257096.git.rcochran@linutronix.de>
+Subject: [PATCH 06/10] intel_idle: Avoid a double free of the per-CPU data.
+Date: Tue, 29 Mar 2016 15:15:58 +0200
+Message-ID: <f99e3e5ea9cc8b2b18cb37e3ed10015833e257ec.1459257096.git.rcochran@linutronix.de>
 References: <cover.1459257096.git.rcochran@linutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1459257096.git.rcochran@linutronix.de>
@@ -10,46 +10,65 @@ To: linux-kernel@vger.kernel.org
 Cc: rt@linutronix.de, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In the module_init() method, if the per-CPU allocation fails, then the
-active cpuidle registration is not cleaned up.  This patch fixes the
-issue by attempting the allocation before registration, and then
-cleaning it up again on registration failure.
+The helper function, intel_idle_cpuidle_devices_uninit, frees the
+globally allocated per-CPU data.  However, this function is invoked
+from the hot plug notifier callback at a time when freeing that data
+is not safe.
+
+If the call to cpuidle_register_driver() should fail (say, due to lack
+of memory), then the driver will free its per-CPU region.  On the
+*next* CPU_ONLINE event, the driver will happily use the region again
+and even free it again if the failure repeats.
+
+This patch fixes the issue by moving the call to free_percpu() outside
+of the helper function at the two call sites that actually need to
+free the per-CPU data.
 
 Cc: Len Brown <lenb@kernel.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 ---
- drivers/idle/intel_idle.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/idle/intel_idle.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 4a1de3d..5dd741f 100644
+index 5dd741f..0b56872 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1210,19 +1210,20 @@ static int __init intel_idle_init(void)
- 	if (retval)
- 		return retval;
+@@ -1002,7 +1002,7 @@ static int __init intel_idle_probe(void)
  
-+	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-+	if (intel_idle_cpuidle_devices == NULL)
-+		return -ENOMEM;
-+
- 	intel_idle_cpuidle_driver_init();
- 	retval = cpuidle_register_driver(&intel_idle_driver);
- 	if (retval) {
- 		struct cpuidle_driver *drv = cpuidle_get_driver();
- 		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
- 			drv ? drv->name : "none");
-+		free_percpu(intel_idle_cpuidle_devices);
- 		return retval;
+ /*
+  * intel_idle_cpuidle_devices_uninit()
+- * unregister, free cpuidle_devices
++ * Unregisters the cpuidle devices.
+  */
+ static void intel_idle_cpuidle_devices_uninit(void)
+ {
+@@ -1013,9 +1013,6 @@ static void intel_idle_cpuidle_devices_uninit(void)
+ 		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
+ 		cpuidle_unregister_device(dev);
  	}
- 
--	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
--	if (intel_idle_cpuidle_devices == NULL)
--		return -ENOMEM;
 -
- 	cpu_notifier_register_begin();
+-	free_percpu(intel_idle_cpuidle_devices);
+-	return;
+ }
  
- 	for_each_online_cpu(i) {
+ /*
+@@ -1231,6 +1228,7 @@ static int __init intel_idle_init(void)
+ 		if (retval) {
+ 			cpu_notifier_register_done();
+ 			cpuidle_unregister_driver(&intel_idle_driver);
++			free_percpu(intel_idle_cpuidle_devices);
+ 			return retval;
+ 		}
+ 	}
+@@ -1253,6 +1251,7 @@ static void __exit intel_idle_exit(void)
+ 	cpu_notifier_register_done();
+ 
+ 	cpuidle_unregister_driver(&intel_idle_driver);
++	free_percpu(intel_idle_cpuidle_devices);
+ }
+ 
+ module_init(intel_idle_init);
 -- 
 2.1.4
