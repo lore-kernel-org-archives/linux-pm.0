@@ -1,47 +1,38 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V8 00/14] Add T210 support in Tegra soctherm
-Date: Tue, 29 Mar 2016 12:57:41 +0800
-Message-ID: <56FA0B45.70404@nvidia.com>
-References: <1458118571-29717-1-git-send-email-wni@nvidia.com> <56F4CE8D.5020108@nvidia.com> <20160329030440.GA2315@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Simon Horman <horms+renesas@verge.net.au>
+Subject: [PATCH] thermal: rcar: Remove binding docs for r8a7794
+Date: Tue, 29 Mar 2016 14:07:45 +0900
+Message-ID: <1459228065-18674-1-git-send-email-horms+renesas@verge.net.au>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nat-hk.nvidia.com ([203.18.50.4]:65195 "EHLO
-	hkmmgate102.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750727AbcC2E5U convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 00:57:20 -0400
-In-Reply-To: <20160329030440.GA2315@localhost.localdomain>
+Received: from kirsty.vergenet.net ([202.4.237.240]:58098 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbcC2FIM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 01:08:12 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: thierry.reding@gmail.com, rui.zhang@intel.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>
 
+The latest information that I have is that there is no thermal IP
+block present on the r8a7794 SoC so remove the corresponding binding.
 
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+---
+ Documentation/devicetree/bindings/thermal/rcar-thermal.txt | 1 -
+ 1 file changed, 1 deletion(-)
 
-On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 11:04, Eduardo Valentin wrote:
-> On Fri, Mar 25, 2016 at 01:37:17PM +0800, Wei Ni wrote:
->> Hi, Eduardo
->> Will you take this series, it seems no more comments.
->=20
-> Yeah, I am taking a look at it. Something is fishy about it. Patch 04
-> does not apply cleanly. Also, why did you split the patches into two
-> email threads, one which is 1-4 and another one is 5-14?
+diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+index e5ee3f159893..a8e52c8ccfcc 100644
+--- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+@@ -11,7 +11,6 @@ Required properties:
+ 			    - "renesas,thermal-r8a7791" (R-Car M2-W)
+ 			    - "renesas,thermal-r8a7792" (R-Car V2H)
+ 			    - "renesas,thermal-r8a7793" (R-Car M2-N)
+-			    - "renesas,thermal-r8a7794" (R-Car E2)
+ - reg			: Address range of the thermal registers.
+ 			  The 1st reg will be recognized as common register
+ 			  if it has "interrupts".
+-- 
+2.1.4
 
-Sorry, what do you mean "split the patches into two email threads"? And=
- what's
-the 1-4 and 5-14?
-I think I didn't split my patches into two email thread.
-
-Thanks.
-Wei.
-
->=20
-> I have ammended patch 04 at my side, but you need to validate your
-> series is one piece (please check my tree and linux-next).
->=20
-> BR,
->=20
-> Eduardo Valentin
->=20
->>
