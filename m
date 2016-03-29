@@ -1,104 +1,69 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH V9 12/14] thermal: tegra: add PM support
-Date: Tue, 29 Mar 2016 17:18:36 +0800
-Message-ID: <1459243116-25676-1-git-send-email-wni@nvidia.com>
+From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
+Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Tue, 29 Mar 2016 08:45:43 +0000
+Message-ID: <AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
+ <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, thierry.reding@gmail.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add suspend/resume function in soctherm driver.
-
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
- drivers/thermal/tegra/soctherm.c | 46 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
-
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index d2b7c255d71f..559c74279eb8 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -88,6 +88,7 @@ struct tegra_soctherm {
- 	struct clk *clock_tsensor;
- 	struct clk *clock_soctherm;
- 	void __iomem *regs;
-+	struct thermal_zone_device **thermctl_tzs;
- 
- 	u32 *calib;
- 	struct tegra_soctherm_soc *soc;
-@@ -566,6 +567,12 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 			return err;
- 	}
- 
-+	tegra->thermctl_tzs = devm_kzalloc(&pdev->dev,
-+					   sizeof(*z) * soc->num_ttgs,
-+					   GFP_KERNEL);
-+	if (!tegra->thermctl_tzs)
-+		return -ENOMEM;
-+
- 	err = soctherm_clk_enable(pdev, true);
- 	if (err)
- 		return err;
-@@ -595,6 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		}
- 
- 		zone->tz = z;
-+		tegra->thermctl_tzs[soc->ttgs[i]->id] = z;
- 
- 		/* Configure hw trip points */
- 		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
-@@ -621,11 +629,49 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int soctherm_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+
-+	soctherm_clk_enable(pdev, false);
-+
-+	return 0;
-+}
-+
-+static int soctherm_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	struct tegra_soctherm_soc *soc = tegra->soc;
-+	int err, i;
-+
-+	err = soctherm_clk_enable(pdev, true);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"Resume failed: enable clocks failed\n");
-+		return err;
-+	}
-+
-+	soctherm_init(pdev);
-+
-+	for (i = 0; i < soc->num_ttgs; ++i) {
-+		struct thermal_zone_device *tz;
-+
-+		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
-+		tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
-+	}
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, soctherm_resume);
-+
- static struct platform_driver tegra_soctherm_driver = {
- 	.probe = tegra_soctherm_probe,
- 	.remove = tegra_soctherm_remove,
- 	.driver = {
- 		.name = "tegra_soctherm",
-+		.pm = &tegra_soctherm_pm,
- 		.of_match_table = tegra_soctherm_of_match,
- 	},
- };
--- 
-1.9.1
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtdXNiLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXVzYi0NCj4gb3duZXJAdmdlci5rZXJuZWwu
+b3JnXSBPbiBCZWhhbGYgT2YgQmFvbGluIFdhbmcNCj4gU2VudDogTW9uZGF5LCBNYXJjaCAyOCwg
+MjAxNiAyOjUyIFBNDQo+IFRvOiBQZXRlciBDaGVuIDxoenBldGVyY2hlbkBnbWFpbC5jb20+DQo+
+IENjOiBGZWxpcGUgQmFsYmkgPGJhbGJpQGtlcm5lbC5vcmc+OyBHcmVnIEtIIDxncmVna2hAbGlu
+dXhmb3VuZGF0aW9uLm9yZz47DQo+IFNlYmFzdGlhbiBSZWljaGVsIDxzcmVAa2VybmVsLm9yZz47
+IERtaXRyeSBFcmVtaW4tU29sZW5pa292DQo+IDxkYmFyeXNoa292QGdtYWlsLmNvbT47IERhdmlk
+IFdvb2Rob3VzZSA8ZHdtdzJAaW5mcmFkZWFkLm9yZz47IFBldGVyIENoZW4NCj4gPHBldGVyLmNo
+ZW5AZnJlZXNjYWxlLmNvbT47IEFsYW4gU3Rlcm4gPHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+
+Ow0KPiByLmJhbGR5Z2FAc2Ftc3VuZy5jb207IFlvc2hpaGlybyBTaGltb2RhDQo+IDx5b3NoaWhp
+cm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT47IExlZSBKb25lcyA8bGVlLmpvbmVzQGxpbmFyby5v
+cmc+OyBNYXJrDQo+IEJyb3duIDxicm9vbmllQGtlcm5lbC5vcmc+OyBDaGFybGVzIEtlZXBheA0K
+PiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+OyBwYXRjaGVzQG9wZW5zb3Vy
+Y2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gTGludXggUE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJu
+ZWwub3JnPjsgVVNCIDxsaW51eC11c2JAdmdlci5rZXJuZWwub3JnPjsNCj4gZGV2aWNlLW1haW5s
+aW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZzsgTEtNTCA8bGludXgtDQo+IGtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjggMC80XSBJbnRyb2R1Y2Ug
+dXNiIGNoYXJnZXIgZnJhbWV3b3JrIHRvIGRlYWwgd2l0aA0KPiB0aGUgdXNiIGdhZGdldCBwb3dl
+ciBuZWdvdGF0aW9uDQo+IA0KPiBPbiAyNSBNYXJjaCAyMDE2IGF0IDE1OjA5LCBQZXRlciBDaGVu
+IDxoenBldGVyY2hlbkBnbWFpbC5jb20+IHdyb3RlOg0KPiA+IE9uIFRodSwgTWFyIDI0LCAyMDE2
+IGF0IDA4OjM1OjUzUE0gKzA4MDAsIEJhb2xpbiBXYW5nIHdyb3RlOg0KPiA+PiBDdXJyZW50bHkg
+dGhlIExpbnV4IGtlcm5lbCBkb2VzIG5vdCBwcm92aWRlIGFueSBzdGFuZGFyZCBpbnRlZ3JhdGlv
+bg0KPiA+PiBvZiB0aGlzIGZlYXR1cmUgdGhhdCBpbnRlZ3JhdGVzIHRoZSBVU0Igc3Vic3lzdGVt
+IHdpdGggdGhlIHN5c3RlbQ0KPiA+PiBwb3dlciByZWd1bGF0aW9uIHByb3ZpZGVkIGJ5IFBNSUNz
+IG1lYW5pbmcgdGhhdCBlaXRoZXIgdmVuZG9ycyBtdXN0DQo+ID4+IGFkZCB0aGlzIGluIHRoZWly
+IGtlcm5lbHMgb3IgVVNCIGdhZGdldCBkZXZpY2VzIGJhc2VkIG9uIExpbnV4IChzdWNoDQo+ID4+
+IGFzIG1vYmlsZSBwaG9uZXMpIG1heSBub3QgYmVoYXZlIGFzIHRoZXkgc2hvdWxkLiBUaHVzIHBy
+b3ZpZGUgYQ0KPiBzdGFuZGFyZCBmcmFtZXdvcmsgZm9yIGRvaW5nIHRoaXMgaW4ga2VybmVsLg0K
+PiA+Pg0KPiA+PiBOb3cgaW50cm9kdWNlIG9uZSB1c2VyIHdpdGggd204MzF4X3Bvd2VyIHRvIHN1
+cHBvcnQgYW5kIHRlc3QgdGhlIHVzYg0KPiA+PiBjaGFyZ2VyLCB3aGljaCBpcyBwZW5kaW5nIHRl
+c3RpbmcuIE1vcmVvdmVyIHRoZXJlIG1heSBiZSBvdGhlcg0KPiA+PiBwb3RlbnRpYWwgdXNlcnMg
+d2lsbCB1c2UgaXQgaW4gZnV0dXJlLg0KPiA+Pg0KPiA+DQo+ID4gSSBhbSBhZnJhaWQgSSBzdGls
+bCBub3QgZmluZCB0aGUgdXNlciAodWRjIGRyaXZlcikgZm9yIHRoaXMgZnJhbWV3b3JrLA0KPiA+
+IEkgd291bGQgbGlrZSB0byBzZWUgaG93IHVkYyBkcml2ZXIgYmxvY2sgdGhlIGVudW1lcmF0aW9u
+IHVudGlsIHRoZQ0KPiA+IGNoYXJnZXIgZGV0ZWN0aW9uIGhhcyBmaW5pc2hlZCwgb3IgYW0gSSBt
+aXNzaW5nIHNvbWV0aGluZz8NCj4gDQo+IEl0IGlzIG5vdCBmb3IgdWRjIGRyaXZlciBidXQgZm9y
+IHBvd2VyIHVzZXJzIHdobyB3YW50IHRvIG5lZ290aWF0ZSB3aXRoDQo+IFVTQiBzdWJzeXN0ZW0u
+DQo+IA0KDQpTZWVtcyB5b3UgZG9uJ3Qgd2FudCB0byBndWFyYW50ZWUgY2hhcmdlciB0eXBlIGRl
+dGVjdGlvbiBpcyBkb25lIGJlZm9yZQ0KZ2FkZ2V0IGNvbm5lY3Rpb24ocHVsbHVwIERQKSwgcmln
+aHQ/DQpJIHNlZSB5b3UgY2FsbCB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpIGluIGVhY2ggZ2Fk
+Z2V0IHVzYiBzdGF0ZSBjaGFuZ2VzLg0KDQpMaSBKdW4gIA0KPiA+DQo+ID4gLS0NCj4gPiBCZXN0
+IFJlZ2FyZHMsDQo+ID4gUGV0ZXIgQ2hlbg0KPiANCj4gDQo+IA0KPiAtLQ0KPiBCYW9saW4ud2Fu
+Zw0KPiBCZXN0IFJlZ2FyZHMNCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6
+IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXVzYiIgaW4NCj4gdGhlIGJvZHkgb2Yg
+YSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5m
+byBhdA0KPiBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
