@@ -1,77 +1,40 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 29 Mar 2016 10:05:23 +0800
-Message-ID: <CAMz4kuJxJbd8LOKNbduoGdQdByB0r0aU_2z9oAbsZB3RPPOjbg@mail.gmail.com>
-References: <cover.1458822334.git.baolin.wang@linaro.org>
-	<20160325070937.GA22398@peterchendt>
-	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
-	<20160328071351.GC3302@peterchendt>
-	<CAMz4kuK33mfiO9OttbRF9yVbQE1DFeuOtwyUWkCa5iPYbE-H8g@mail.gmail.com>
-	<HE1PR04MB145070EE7CAC373C00C539478B870@HE1PR04MB1450.eurprd04.prod.outlook.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 3/3] cpufreq: exynos: Use generic platdev driver
+Date: Tue, 29 Mar 2016 11:35:40 +0900
+Message-ID: <56F9E9FC.7080007@samsung.com>
+References: <cover.1458801338.git.viresh.kumar@linaro.org>
+ <6cb29053bce7026dd9429326236a67c45e901c7b.1458801338.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <HE1PR04MB145070EE7CAC373C00C539478B870@HE1PR04MB1450.eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>
-Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:23642 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbcC2Cft (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Mar 2016 22:35:49 -0400
+In-reply-to: <6cb29053bce7026dd9429326236a67c45e901c7b.1458801338.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, Kukjin Kim <kgene@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, mmcclint@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 29 March 2016 at 08:32, Peter Chen <peter.chen@nxp.com> wrote:
->
->>
->> On 28 March 2016 at 15:13, Peter Chen <hzpeterchen@gmail.com> wrote:
->> > On Mon, Mar 28, 2016 at 02:51:40PM +0800, Baolin Wang wrote:
->> >> On 25 March 2016 at 15:09, Peter Chen <hzpeterchen@gmail.com> wrote:
->> >> > On Thu, Mar 24, 2016 at 08:35:53PM +0800, Baolin Wang wrote:
->> >> >> Currently the Linux kernel does not provide any standard
->> >> >> integration of this feature that integrates the USB subsystem with
->> >> >> the system power regulation provided by PMICs meaning that either
->> >> >> vendors must add this in their kernels or USB gadget devices based
->> >> >> on Linux (such as mobile phones) may not behave as they should. Thus
->> provide a standard framework for doing this in kernel.
->> >> >>
->> >> >> Now introduce one user with wm831x_power to support and test the
->> >> >> usb charger, which is pending testing. Moreover there may be other
->> >> >> potential users will use it in future.
->> >> >>
->> >> >
->> >> > I am afraid I still not find the user (udc driver) for this
->> >> > framework, I would like to see how udc driver block the enumeration
->> >> > until the charger detection has finished, or am I missing something?
->> >>
->> >> It is not for udc driver but for power users who want to negotiate
->> >> with USB subsystem.
->> >>
->> >
->> > Then, where is the code the test user to decide what kinds of USB
->> > charger (SDP, CDP, DCP) is connecting now?
->>
->> Users can choose to implement multiple ways to get the charger type In
->> 'usb_charger_detect_type()' function.
->>
->> >
->
-> Then, how you test your code? When we introduce an API, at least, there is one
-> user for it.
+On 24.03.2016 15:40, Viresh Kumar wrote:
+> The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+> device now, reuse that and remove similar code from platform code.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/mach-exynos/exynos.c        | 25 -------------------------
+>  drivers/cpufreq/cpufreq-dt-platdev.c |  5 +++++
+>  2 files changed, 5 insertions(+), 25 deletions(-)
 
-At first I've tested the API on my board to make sure it can work
-well, another hand we introduce one user 'wm831x_power' to support and
-test the usb charger.
+Hi,
 
-Yes, The user 'wm831x_power' did not implement any callbacks in
-'usb_charger_detect_type()' function, but in
-'usb_charger_detect_type()' function it just supplies different
-callbacks to get the charger type with simple logic. Anyway we can try
-to implement one callback to get the charger type and test the API.
-Thanks.
+I got only 3rd patch (and no cover letter). I don't know what is the
+background or what is your plan for this. I suppose you want to merge it
+through cupfreq tree? Anyway could you cc-me on everything (or at least
+cover letter)?
 
->
-> Peter
+Best regards,
+Krzysztof
 
-
-
--- 
-Baolin.wang
-Best Regards
