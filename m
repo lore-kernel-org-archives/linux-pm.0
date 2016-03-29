@@ -1,133 +1,44 @@
-From: Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Tue, 29 Mar 2016 17:35:00 +0100
-Message-ID: <20160329163500.GI6745@arm.com>
-References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V1 Resend 2/3] cpufreq: dt: Add generic platform-device
+ creation support
+Date: Tue, 29 Mar 2016 22:06:49 +0530
+Message-ID: <20160329163649.GE14322@vireshk-i7>
+References: <cover.1459233524.git.viresh.kumar@linaro.org>
+ <2f2947872d41ecccc393d6ae95eafc72f205e03c.1459233524.git.viresh.kumar@linaro.org>
+ <5412084.gVvuDFzkvo@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:35403 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754718AbcC2Qg4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 12:36:56 -0400
+Received: by mail-pa0-f42.google.com with SMTP id td3so17438729pab.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Mar 2016 09:36:55 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: fu.wei@linaro.org
-Cc: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>
+In-Reply-To: <5412084.gVvuDFzkvo@wuerfel>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linaro-kernel@lists.linaro.org, k.kozlowski@samsung.com, kgene.kim@samsung.com, heiko@sntech.de, xf@rock-chips.com, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mmcclint@codeaurora.org
 
-On Tue, Mar 29, 2016 at 03:44:18PM +0800, fu.wei@linaro.org wrote:
-> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+On 29-03-16, 17:14, Arnd Bergmann wrote:
+> On Tuesday 29 March 2016 12:09:48 Viresh Kumar wrote:
+> > +config CPUFREQ_DT_PLATDEV
+> > +	bool
+> > +	depends on CPUFREQ_DT
 > 
-> This commit provides APEI arch-specific bits for aarch64
-> 
-> Meanwhile,
-> (1)add a new subfunction "hest_ia32_init" for
-> "acpi_disable_cmcff" which is used by IA-32 Architecture
-> Corrected Machine Check (CMC).
-> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-> a generic place.
-> (3)select EFI when ACPI_APEI is set on ARM64,
-> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
-> 
-> [Fu Wei: improve && upstream]
-> 
-> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
-> Signed-off-by: Fu Wei <fu.wei@linaro.org>
-> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
-> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
-> ---
-> Changelog:
-> v8: Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
->     on ARM64.
-> 
-> v7: https://lkml.org/lkml/2016/3/17/183
->     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
-> 
-> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
->     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->     a generic place.
->     Delete HAVE_ACPI_APEI_HEST_IA32.
-> 
-> v5: https://lkml.org/lkml/2015/12/10/131
->     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
->     "#if defined(__i386__) || defined(__x86_64__)".
-> 
-> v4: https://lkml.org/lkml/2015/12/8/188
->     Rebase to latest kernel version(4.4-rc4).
->     Move arch_apei_flush_tlb_one into header file as a inline function
->     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
-> 
-> v3: https://lkml.org/lkml/2015/12/3/521
->     Remove "acpi_disable_cmcff" from arm64 code,
->     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
-> 
-> v2: https://lkml.org/lkml/2015/12/2/432
->     Rebase to latest kernel version(4.4-rc3).
->     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
-> 
-> v1: https://lkml.org/lkml/2015/8/14/199
->     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
->     Delete arch/arm64/kernel/apei.c.
->     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
-> 
->  arch/arm64/Kconfig            |  1 +
->  arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
->  arch/x86/kernel/acpi/apei.c   |  3 ---
->  drivers/acpi/apei/Kconfig     |  1 +
->  drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
->  5 files changed, 31 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 4f43622..08952ec 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -3,6 +3,7 @@ config ARM64
->  	select ACPI_CCA_REQUIRED if ACPI
->  	select ACPI_GENERIC_GSI if ACPI
->  	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
-> +	select HAVE_ACPI_APEI if ACPI
->  	select ARCH_HAS_DEVMEM_IS_ALLOWED
->  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
->  	select ARCH_HAS_ELF_RANDOMIZE
-> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-> index aee323b..4a6c959 100644
-> --- a/arch/arm64/include/asm/acpi.h
-> +++ b/arch/arm64/include/asm/acpi.h
-> @@ -17,6 +17,7 @@
->  
->  #include <asm/cputype.h>
->  #include <asm/smp_plat.h>
-> +#include <asm/tlbflush.h>
->  
->  /* Macros for consistency checks of the GICC subtable of MADT */
->  #define ACPI_MADT_GICC_LENGTH	\
-> @@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
->  }
->  
->  #ifdef	CONFIG_ACPI_APEI
-> +#define acpi_disable_cmcff 1
->  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
-> -#endif
->  
-> +/*
-> + * This inline function is used in IRQ context (by GHES driver now),
-> + * see ghes_iounmap_irq and ghes_iounmap_nmi in drivers/acpi/apei/ghes.c.
-> + * The page mapped is reserved for firmware in kernel. This invalidate TLB
-> + * maintenance should be broadcasted safely to make sure that all the cores
-> + * will do TLB invalidation, then get the right pages.
-> + */
+> The 'depends on' line is redundant as you always 'select' the code
+> from CPUFREQ_DT. Since they are always set together, you can also
+> just drop the new symbol, or put the new code into the same file.
 
-How about:
+I would like to keep a separate file for this, it looks awkward to update the
+driver for any new user platform.
 
- /*
-  * Despite its name, this function must still broadcast the TLB
-  * invalidation in order to ensure other CPUs don't up with with junk
-  * entries as a result of speculation. Unusually, its also called in
-  * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
-  * TLB broadcasting, then we're in trouble here.
-  */
+I added a separate symbol to take care of the Modular case of cpufreq-dt. i.e. I
+didn't wanted to add module_exit() code in the new file. Currently, it gets
+included in the kernel even if cpufreq-dt is selected as a Module, so we just
+create the platform-device just once and never touch it again.
 
-With that,
-
-Acked-by: Will Deacon <will.deacon@arm.com>
-
-Will
+-- 
+viresh
