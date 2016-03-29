@@ -1,111 +1,145 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH V9 RESEND 12/14] thermal: tegra: add PM support
-Date: Tue, 29 Mar 2016 18:29:22 +0800
-Message-ID: <1459247364-1139-13-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V9 RESEND 13/14] arm64: tegra: add soctherm node for Tegra210
+Date: Tue, 29 Mar 2016 18:29:23 +0800
+Message-ID: <1459247364-1139-14-git-send-email-wni@nvidia.com>
 References: <1459247364-1139-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nat-hk.nvidia.com ([203.18.50.4]:6313 "EHLO
-	hkmmgate101.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753209AbcC2KeY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 06:34:24 -0400
-In-Reply-To: <1459247364-1139-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1459247364-1139-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, thierry.reding@gmail.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-Add suspend/resume function in soctherm driver.
+Adds soctherm node for Tegra210, and add cpu,
+gpu, mem, pllx as thermal-zones. Set critical
+trip temperatures for them.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
+Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/thermal/tegra/soctherm.c | 46 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi | 104 +++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index d2b7c255d71f..559c74279eb8 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -88,6 +88,7 @@ struct tegra_soctherm {
- 	struct clk *clock_tsensor;
- 	struct clk *clock_soctherm;
- 	void __iomem *regs;
-+	struct thermal_zone_device **thermctl_tzs;
+diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+index 23b0630602cf..232fa14a913d 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
+@@ -3,6 +3,7 @@
+ #include <dt-bindings/memory/tegra210-mc.h>
+ #include <dt-bindings/pinctrl/pinctrl-tegra.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/tegra124-soctherm.h>
  
- 	u32 *calib;
- 	struct tegra_soctherm_soc *soc;
-@@ -566,6 +567,12 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 			return err;
- 	}
- 
-+	tegra->thermctl_tzs = devm_kzalloc(&pdev->dev,
-+					   sizeof(*z) * soc->num_ttgs,
-+					   GFP_KERNEL);
-+	if (!tegra->thermctl_tzs)
-+		return -ENOMEM;
+ / {
+ 	compatible = "nvidia,tegra210";
+@@ -802,4 +803,107 @@
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+ 		interrupt-parent = <&gic>;
+ 	};
 +
- 	err = soctherm_clk_enable(pdev, true);
- 	if (err)
- 		return err;
-@@ -595,6 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 		}
- 
- 		zone->tz = z;
-+		tegra->thermctl_tzs[soc->ttgs[i]->id] = z;
- 
- 		/* Configure hw trip points */
- 		tegra_soctherm_set_hwtrips(&pdev->dev, soc->ttgs[i], z);
-@@ -621,11 +629,49 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int soctherm_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
++	soctherm: thermal-sensor@0,700e2000 {
++		compatible = "nvidia,tegra210-soctherm";
++		reg = <0x0 0x700e2000 0x0 0x1000>;
++		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&tegra_car TEGRA210_CLK_TSENSOR>,
++			<&tegra_car TEGRA210_CLK_SOC_THERM>;
++		clock-names = "tsensor", "soctherm";
++		resets = <&tegra_car 78>;
++		reset-names = "soctherm";
++		#thermal-sensor-cells = <1>;
++	};
 +
-+	soctherm_clk_enable(pdev, false);
++	thermal-zones {
++		cpu {
++			polling-delay-passive = <1000>;
++			polling-delay = <0>;
 +
-+	return 0;
-+}
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
 +
-+static int soctherm_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	struct tegra_soctherm_soc *soc = tegra->soc;
-+	int err, i;
++			trips {
++				cpu-shutdown-trip {
++					temperature = <102500>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
 +
-+	err = soctherm_clk_enable(pdev, true);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"Resume failed: enable clocks failed\n");
-+		return err;
-+	}
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
++		};
++		mem {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
 +
-+	soctherm_init(pdev);
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
 +
-+	for (i = 0; i < soc->num_ttgs; ++i) {
-+		struct thermal_zone_device *tz;
++			trips {
++				mem-shutdown-trip {
++					temperature = <103000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
 +
-+		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
-+		tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
-+	}
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
++		};
++		gpu {
++			polling-delay-passive = <1000>;
++			polling-delay = <0>;
 +
-+	return 0;
-+}
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
 +
-+static SIMPLE_DEV_PM_OPS(tegra_soctherm_pm, soctherm_suspend, soctherm_resume);
++			trips {
++				gpu-shutdown-trip {
++					temperature = <103000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
 +
- static struct platform_driver tegra_soctherm_driver = {
- 	.probe = tegra_soctherm_probe,
- 	.remove = tegra_soctherm_remove,
- 	.driver = {
- 		.name = "tegra_soctherm",
-+		.pm = &tegra_soctherm_pm,
- 		.of_match_table = tegra_soctherm_of_match,
- 	},
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
++		};
++		pllx {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++
++			thermal-sensors =
++				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
++
++			trips {
++				pllx-shutdown-trip {
++					temperature = <103000>;
++					hysteresis = <0>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
++		};
++	};
  };
 -- 
 1.9.1
-
