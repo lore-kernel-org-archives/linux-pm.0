@@ -1,64 +1,58 @@
-From: Richard Cochran <rcochran@linutronix.de>
-Subject: [PATCH 07/10] intel_idle: Setup the timer broadcast only on successful driver load.
-Date: Tue, 29 Mar 2016 15:15:59 +0200
-Message-ID: <9b83c07a9a0bf153f1d82cfbea1be93d9267bbb5.1459257096.git.rcochran@linutronix.de>
-References: <cover.1459257096.git.rcochran@linutronix.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1459257096.git.rcochran@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rt@linutronix.de, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/3] cpufreq: dt: Create platform device from generic code
+Date: Tue, 29 Mar 2016 15:22:59 +0200
+Message-ID: <4279257.XRWOdgISPj@wuerfel>
+References: <cover.1458801338.git.viresh.kumar@linaro.org> <4531000.a0G78BGFu1@wuerfel> <20160325044124.GN22062@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.13]:54160 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbcC2NX2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 09:23:28 -0400
+In-Reply-To: <20160325044124.GN22062@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, kgene.kim@samsung.com, heiko@sntech.de, xf@rock-chips.com, mmcclint@codeaurora.org, linux-pm@vger.kernel.org
 
-This driver sets the broadcast tick quite early on during probe and does
-not clean up again in cast of failure.  This patch moves the setup call
-after the registration, placing the on_each_cpu() calls within the global
-CPU lock region.
+On Friday 25 March 2016 10:11:24 Viresh Kumar wrote:
+> On 24-03-16, 15:16, Arnd Bergmann wrote:
+> > Hmm, can you give an example where this is needed?
+> 
+> I don't remember them, but I am quite sure that I have seen people
+> asking for that support again and again.
+> 
+> > I assume you are
+> > thinking of some clock controller or regulator that gets initialized
+> > after the cpufreq driver, right?
+> 
+> Yeah.
+> 
+> > Are there any that are in loadable modules, rather than just later
+> > in the init sequence for built-in drivers?
+> 
+> Maybe both, don't remember. Sorry.
+> 
+> Over that, independent of what the users are doing today, I think its
+> important to support defer probing for anyone that wants to use it.
 
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Richard Cochran <rcochran@linutronix.de>
----
- drivers/idle/intel_idle.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+Ok.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 0b56872..ab34cd8 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -987,16 +987,9 @@ static int __init intel_idle_probe(void)
- 	icpu = (const struct idle_cpu *)id->driver_data;
- 	cpuidle_state_table = icpu->state_table;
- 
--	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
--		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
--	else
--		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
--
- 	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
- 		" model 0x%X\n", boot_cpu_data.x86_model);
- 
--	pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n",
--		lapic_timer_reliable_states);
- 	return 0;
- }
- 
-@@ -1234,8 +1227,16 @@ static int __init intel_idle_init(void)
- 	}
- 	__register_cpu_notifier(&cpu_hotplug_notifier);
- 
-+	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
-+		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
-+	else
-+		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
-+
- 	cpu_notifier_register_done();
- 
-+	pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n",
-+		lapic_timer_reliable_states);
-+
- 	return 0;
- }
- 
--- 
-2.1.4
+> > I think we do care about compatibility there, but there are clearly
+> > other ways to handle the special case for opp-v1 if we want to.
+> 
+> Okay, and what are those ? There is only one platform which has used
+> the pdata, mvebu.
+
+The platform already calls dev_pm_opp_add(), so it directly interacts
+with the cpufreq infrastructure. One way to do it would be to add
+another function call to set the independent_clocks flag in a static
+variable owned by that. Another way would be to have a separate
+function call for doing dev_pm_opp_add() with independent clocks.
+As far as I can tell, the two (dev_pm_opp_add and independent_clocks)
+are already tightly coupled interfaces, so it makes sense to
+combine them.
+
+	Arnd
