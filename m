@@ -1,7 +1,7 @@
 From: Richard Cochran <rcochran@linutronix.de>
-Subject: [PATCH 10/10] intel_idle: Clean up all registered devices on exit.
-Date: Tue, 29 Mar 2016 15:16:02 +0200
-Message-ID: <533dcd7cc5c914a1632e539d901c89bccb296ad4.1459257096.git.rcochran@linutronix.de>
+Subject: [PATCH 05/10] intel_idle: Fix dangling registration on error path.
+Date: Tue, 29 Mar 2016 15:15:57 +0200
+Message-ID: <3a0f327af48507403d9ca332251e63a127efeb4b.1459257096.git.rcochran@linutronix.de>
 References: <cover.1459257096.git.rcochran@linutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1459257096.git.rcochran@linutronix.de>
@@ -10,45 +10,46 @@ To: linux-kernel@vger.kernel.org
 Cc: rt@linutronix.de, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This driver registers cpuidle devices when a CPU comes online, but it
-leaves the registrations in place when a CPU goes offline.  The module
-exit code only unregisters the currently online CPUs, leaving the
-devices for offline CPUs dangling.
-
-This patch changes the driver to clean up all registrations on exit,
-even those from CPUs that are offline.
+In the module_init() method, if the per-CPU allocation fails, then the
+active cpuidle registration is not cleaned up.  This patch fixes the
+issue by attempting the allocation before registration, and then
+cleaning it up again on registration failure.
 
 Cc: Len Brown <lenb@kernel.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 ---
- drivers/idle/intel_idle.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/idle/intel_idle.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 8420ba1..862346b 100644
+index 4a1de3d..5dd741f 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1245,12 +1245,19 @@ static int __init intel_idle_init(void)
+@@ -1210,19 +1210,20 @@ static int __init intel_idle_init(void)
+ 	if (retval)
+ 		return retval;
  
- static void __exit intel_idle_exit(void)
- {
-+	struct cpuidle_device *dev;
-+	int i;
++	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
++	if (intel_idle_cpuidle_devices == NULL)
++		return -ENOMEM;
 +
+ 	intel_idle_cpuidle_driver_init();
+ 	retval = cpuidle_register_driver(&intel_idle_driver);
+ 	if (retval) {
+ 		struct cpuidle_driver *drv = cpuidle_get_driver();
+ 		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
+ 			drv ? drv->name : "none");
++		free_percpu(intel_idle_cpuidle_devices);
+ 		return retval;
+ 	}
+ 
+-	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+-	if (intel_idle_cpuidle_devices == NULL)
+-		return -ENOMEM;
+-
  	cpu_notifier_register_begin();
  
- 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
- 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
- 	__unregister_cpu_notifier(&cpu_hotplug_notifier);
--	intel_idle_cpuidle_devices_uninit();
-+
-+	for_each_possible_cpu(i) {
-+		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
-+		cpuidle_unregister_device(dev);
-+	}
- 
- 	cpu_notifier_register_done();
- 
+ 	for_each_online_cpu(i) {
 -- 
 2.1.4
