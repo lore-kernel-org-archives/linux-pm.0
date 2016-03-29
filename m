@@ -1,108 +1,161 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V9 10/14] thermal: tegra: handle clocks in one function
-Date: Tue, 29 Mar 2016 17:18:13 +0800
-Message-ID: <1459243093-25554-1-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH V9 11/14] thermal: tegra: handle HW initialization in one funcotion
+Date: Tue, 29 Mar 2016 17:18:28 +0800
+Message-ID: <1459243108-25633-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, thierry.reding@gmail.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Handle clock enable/disable codes in one function
-soctherm_clk_enable(), so that the codes are more clear.
+Handle HW initialization in one function soctherm_init(),
+so that the codes are more clear.
 
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- drivers/thermal/tegra/soctherm.c | 51 ++++++++++++++++++++++++++++------------
- 1 file changed, 36 insertions(+), 15 deletions(-)
+ drivers/thermal/tegra/soctherm.c | 85 +++++++++++++++++++++-------------------
+ 1 file changed, 44 insertions(+), 41 deletions(-)
 
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 365b45213327..deeb3b7e4dac 100644
+index deeb3b7e4dac..d2b7c255d71f 100644
 --- a/drivers/thermal/tegra/soctherm.c
 +++ b/drivers/thermal/tegra/soctherm.c
-@@ -428,6 +428,39 @@ static void soctherm_debug_init(struct platform_device *pdev)
- static inline void soctherm_debug_init(struct platform_device *pdev) {}
- #endif
+@@ -95,19 +95,11 @@ struct tegra_soctherm {
+ 	struct dentry *debugfs_dir;
+ };
  
-+static int soctherm_clk_enable(struct platform_device *pdev, bool enable)
+-static int enable_tsensor(struct tegra_soctherm *tegra,
+-			  unsigned int i,
+-			  const struct tsensor_shared_calib *shared)
++static void enable_tsensor(struct tegra_soctherm *tegra, unsigned int i)
+ {
+ 	const struct tegra_tsensor *sensor = &tegra->soc->tsensors[i];
+ 	void __iomem *base = tegra->regs + sensor->base;
+-	u32 *calib = &tegra->calib[i];
+ 	unsigned int val;
+-	int err;
+-
+-	err = tegra_calc_tsensor_calib(sensor, shared, calib);
+-	if (err)
+-		return err;
+ 
+ 	val = sensor->config->tall << SENSOR_CONFIG0_TALL_SHIFT;
+ 	writel(val, base + SENSOR_CONFIG0);
+@@ -118,9 +110,7 @@ static int enable_tsensor(struct tegra_soctherm *tegra,
+ 	val |= SENSOR_CONFIG1_TEMP_ENABLE;
+ 	writel(val, base + SENSOR_CONFIG1);
+ 
+-	writel(*calib, base + SENSOR_CONFIG2);
+-
+-	return 0;
++	writel(tegra->calib[i], base + SENSOR_CONFIG2);
+ }
+ 
+ /*
+@@ -461,6 +451,34 @@ static int soctherm_clk_enable(struct platform_device *pdev, bool enable)
+ 	return 0;
+ }
+ 
++static void soctherm_init(struct platform_device *pdev)
 +{
 +	struct tegra_soctherm *tegra = platform_get_drvdata(pdev);
-+	int err;
++	const struct tegra_tsensor_group **ttgs = tegra->soc->ttgs;
++	int i;
++	u32 pdiv, hotspot;
 +
-+	if (!tegra->clock_soctherm || !tegra->clock_tsensor)
-+		return -EINVAL;
++	/* Initialize raw sensors */
++	for (i = 0; i < tegra->soc->num_tsensors; ++i)
++		enable_tsensor(tegra, i);
 +
-+	reset_control_assert(tegra->reset);
-+
-+	if (enable) {
-+		err = clk_prepare_enable(tegra->clock_soctherm);
-+		if (err) {
-+			reset_control_deassert(tegra->reset);
-+			return err;
-+		}
-+
-+		err = clk_prepare_enable(tegra->clock_tsensor);
-+		if (err) {
-+			clk_disable_unprepare(tegra->clock_soctherm);
-+			reset_control_deassert(tegra->reset);
-+			return err;
-+		}
-+	} else {
-+		clk_disable_unprepare(tegra->clock_tsensor);
-+		clk_disable_unprepare(tegra->clock_soctherm);
++	/* program pdiv and hotspot offsets per THERM */
++	pdiv = readl(tegra->regs + SENSOR_PDIV);
++	hotspot = readl(tegra->regs + SENSOR_HOTSPOT_OFF);
++	for (i = 0; i < tegra->soc->num_ttgs; ++i) {
++		pdiv = REG_SET_MASK(pdiv, ttgs[i]->pdiv_mask,
++				    ttgs[i]->pdiv);
++		/* hotspot offset from PLLX, doesn't need to configure PLLX */
++		if (ttgs[i]->id == TEGRA124_SOCTHERM_SENSOR_PLLX)
++			continue;
++		hotspot =  REG_SET_MASK(hotspot,
++					ttgs[i]->pllx_hotspot_mask,
++					ttgs[i]->pllx_hotspot_diff);
 +	}
-+
-+	reset_control_deassert(tegra->reset);
-+
-+	return 0;
++	writel(pdiv, tegra->regs + SENSOR_PDIV);
++	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
 +}
 +
  static const struct of_device_id tegra_soctherm_of_match[] = {
  #ifdef CONFIG_ARCH_TEGRA_124_SOC
  	{
-@@ -496,20 +529,10 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+@@ -488,7 +506,6 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+ 	struct tegra_soctherm_soc *soc;
+ 	unsigned int i;
+ 	int err;
+-	u32 pdiv, hotspot;
+ 
+ 	match = of_match_node(tegra_soctherm_of_match, pdev->dev.of_node);
+ 	if (!match)
+@@ -529,45 +546,31 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
  		return PTR_ERR(tegra->clock_soctherm);
  	}
  
--	reset_control_assert(tegra->reset);
--
--	err = clk_prepare_enable(tegra->clock_soctherm);
-+	err = soctherm_clk_enable(pdev, true);
- 	if (err)
- 		return err;
- 
--	err = clk_prepare_enable(tegra->clock_tsensor);
--	if (err) {
--		clk_disable_unprepare(tegra->clock_soctherm);
+-	err = soctherm_clk_enable(pdev, true);
+-	if (err)
 -		return err;
--	}
 -
--	reset_control_deassert(tegra->reset);
+-	/* Initialize raw sensors */
 -
- 	/* Initialize raw sensors */
- 
  	tegra->calib = devm_kzalloc(&pdev->dev,
-@@ -579,8 +602,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	return 0;
+ 				    sizeof(u32) * soc->num_tsensors,
+ 				    GFP_KERNEL);
+-	if (!tegra->calib) {
+-		err = -ENOMEM;
+-		goto disable_clocks;
+-	}
++	if (!tegra->calib)
++		return -ENOMEM;
  
- disable_clocks:
--	clk_disable_unprepare(tegra->clock_tsensor);
--	clk_disable_unprepare(tegra->clock_soctherm);
-+	soctherm_clk_enable(pdev, false);
++	/* calculate shared calibration data */
+ 	err = tegra_calc_shared_calib(soc->tfuse, &shared_calib);
+ 	if (err)
+-		goto disable_clocks;
++		return err;
  
- 	return err;
- }
-@@ -591,8 +613,7 @@ static int tegra_soctherm_remove(struct platform_device *pdev)
++	/* calculate tsensor calibaration data */
+ 	for (i = 0; i < soc->num_tsensors; ++i) {
+-		err = enable_tsensor(tegra, i, &shared_calib);
++		err = tegra_calc_tsensor_calib(&soc->tsensors[i],
++					       &shared_calib,
++					       &tegra->calib[i]);
+ 		if (err)
+-			goto disable_clocks;
++			return err;
+ 	}
  
- 	debugfs_remove_recursive(tegra->debugfs_dir);
+-	/* Program pdiv and hotspot offsets per THERM */
+-	pdiv = readl(tegra->regs + SENSOR_PDIV);
+-	hotspot = readl(tegra->regs + SENSOR_HOTSPOT_OFF);
+-	for (i = 0; i < soc->num_ttgs; ++i) {
+-		pdiv = REG_SET_MASK(pdiv, soc->ttgs[i]->pdiv_mask,
+-				    soc->ttgs[i]->pdiv);
+-		/* hotspot offset from PLLX, doesn't need to configure PLLX */
+-		if (soc->ttgs[i]->id == TEGRA124_SOCTHERM_SENSOR_PLLX)
+-			continue;
+-		hotspot =  REG_SET_MASK(hotspot,
+-					soc->ttgs[i]->pllx_hotspot_mask,
+-					soc->ttgs[i]->pllx_hotspot_diff);
+-	}
+-	writel(pdiv, tegra->regs + SENSOR_PDIV);
+-	writel(hotspot, tegra->regs + SENSOR_HOTSPOT_OFF);
++	err = soctherm_clk_enable(pdev, true);
++	if (err)
++		return err;
++
++	soctherm_init(pdev);
  
--	clk_disable_unprepare(tegra->clock_tsensor);
--	clk_disable_unprepare(tegra->clock_soctherm);
-+	soctherm_clk_enable(pdev, false);
- 
- 	return 0;
- }
+ 	for (i = 0; i < soc->num_ttgs; ++i) {
+ 		struct tegra_thermctl_zone *zone =
 -- 
 1.9.1
