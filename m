@@ -1,40 +1,57 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v3 3/4] arm64: dts: register Hi6220's thermal sensor
-Date: Tue, 29 Mar 2016 19:27:14 +0800
-Message-ID: <1459250835-25561-4-git-send-email-leo.yan@linaro.org>
-References: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Xu <xuwei5@hisilicon.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Leo Yan <leo.yan@linaro.org>
+From: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v3 0/4] thermal: hisilicon: enable power allocator for Hi6220
+Date: Tue, 29 Mar 2016 19:27:11 +0800
+Message-ID: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Bind thermal sensor driver for Hi6220.
+Hi6220 has octa-core so it has quite high power consumption when run
+benchmark and introduces high temperature for SoC. So need enable
+thermal governor to control temperature and also cannot hurt much for
+performance after impose cooling operations on CPU.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+This patch series is to enable power allocator for Hi6220. Patch 1 is to
+change "hysteresis" as optional property for trip points, so when enable
+power allocator governor we can ignore this property.
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index f588be9..50ba1b0 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -313,5 +313,14 @@
- 			interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
- 			#mbox-cells = <3>;
- 		};
-+
-+		tsensor: tsensor@0,f7030700 {
-+			compatible = "hisilicon,tsensor";
-+			reg = <0x0 0xf7030700 0x0 0x1000>;
-+			interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&sys_ctrl 22>;
-+			clock-names = "thermal_clk";
-+			#thermal-sensor-cells = <1>;
-+		};
- 	};
- };
+During profiling also found two issues for thermal sensor's driver. The
+power allocator just uses only one sensor, so patch 2 is to fix sensor
+driver to let it can initialize driver successfully with only enabling
+one sensor; patch 3 is to dismiss warning of IRQ imbalance enabling.
+
+After profiling on Hikey, the power model has been simplized with only
+dynamic coefficient, and now it's convienence to pass it from CPU node.
+So patch 4 and 5 bind sensor and pass power model parameters.
+
+This patch series have been tested on 96boards Hikey.
+
+Changes from v2:
+* Discarded patch for changing "hysteresis" as optional property
+* Added back "hysteresis" property
+
+Changes from v1:
+* According to Javi's review, removed unecessary properties for DT
+* Added patch 1 for change "hysteresis" as optional property
+* Added patch 3 to fix IRQ imbalance enabling issue
+
+
+Leo Yan (4):
+  thermal: hisilicon: support to use any sensor
+  thermal: hisilicon: fix IRQ imbalance enabling
+  arm64: dts: register Hi6220's thermal sensor
+  arm64: dts: register Hi6220's thermal zone for power allocator
+
+ arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 44 +++++++++++++++++++++++++++++++
+ drivers/thermal/hisi_thermal.c            | 40 +++++++++++++++++-----------
+ 2 files changed, 68 insertions(+), 16 deletions(-)
+
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
