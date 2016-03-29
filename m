@@ -1,143 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Changes in sleep mode, on x86 PC
-Date: Wed, 30 Mar 2016 00:04:48 +0200
-Message-ID: <2324877.Sek1ZF4eXV@vostro.rjw.lan>
-References: <20160328212010.GA22713@amd> <1757366.1UQHDJLEeh@vostro.rjw.lan> <20160329215645.GA11979@amd>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH V2 3/3] cpufreq: exynos: Use generic platdev driver
+Date: Wed, 30 Mar 2016 08:46:36 +0900
+Message-ID: <56FB13DC.2090902@samsung.com>
+References: <cover.1459233524.git.viresh.kumar@linaro.org>
+ <81a8da75a0e7783e2b47f9e04297f167e8134afe.1459233524.git.viresh.kumar@linaro.org>
+ <3810049.oQlCXiQ5bk@wuerfel>
+ <CAKohpomQ9=YK79o0fqHqZ7xexHv5EMJSPx+4KrT0RxeMh+hwWg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47854 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754288AbcC2WC3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 18:02:29 -0400
-In-Reply-To: <20160329215645.GA11979@amd>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:18442 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbcC2Xqq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 19:46:46 -0400
+In-reply-to: <CAKohpomQ9=YK79o0fqHqZ7xexHv5EMJSPx+4KrT0RxeMh+hwWg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: oneukum@suse.com, kernel list <linux-kernel@vger.kernel.org>, lenb@kernel.org, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Jiri Kosina <jikos@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Kukjin Kim <kgene@kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>, Feng Xiao <xf@rock-chips.com>, Matthew McClintock <mmcclint@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>
 
-On Tuesday, March 29, 2016 11:56:45 PM Pavel Machek wrote:
+On 30.03.2016 00:22, Viresh Kumar wrote:
+> On 29 March 2016 at 20:34, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Tuesday 29 March 2016 12:09:49 Viresh Kumar wrote:
+>>> -static void __init exynos_cpufreq_init(void)
+>>> -{
+>>> -       struct device_node *root = of_find_node_by_path("/");
+>>> -       const struct of_device_id *match;
+>>> -
+>>> -       match = of_match_node(exynos_cpufreq_matches, root);
+>>> -       if (!match) {
+>>> -               platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+>>> -               return;
+>>> -       }
+>>> -
+>>> -       platform_device_register_simple(match->data, -1, NULL, 0);
+>>> -}
+>>
+>> How is the "exynos-cpufreq" case handled now? Is that no longer used now?
+>> I assume the patch is correct based on Krzysztof's review, but it might be
+>> good to explain this better.
 > 
-> On Tue 2016-03-29 23:46:23, Rafael J. Wysocki wrote:
-> > On Tuesday, March 29, 2016 04:24:05 PM Pavel Machek wrote:
-> > > 
-> > > On Tue 2016-03-29 15:06:36, Rafael J. Wysocki wrote:
-> > > > On Monday, March 28, 2016 11:20:12 PM Pavel Machek wrote:
-> > > > > Hi!
-> > > > > 
-> > > > > Few releases ago, I could wake up PC from S3 sleep by hitting any
-> > > > > key. That ceased to work some time before, keyboard would just light a
-> > > > > NUM lock LED when I hit a key (4.5). Now PC seems to be sleeping (in
-> > > > > S3) with NUM lock LED on (4.6-rc0).
-> > > > > 
-> > > > > Any idea what is going on there? Does it happen for you, too? What is
-> > > > > the expected behaviour?
-> > > > >
-> > > > > Debian 8.3, with MATE desktop, I just hit the "moon" key to make it
-> > > > > sleep. Keyboard is on USB.
-> > > > 
-> > > > That's rather important.
-> > > > 
-> > > > Clearly, something in the USB HID land has changed lately.
-> > > > 
-> > > > The expected behavior depends on whether or not the keyboard itself and the
-> > > > USB controller are both enabled to wake up.  If they are, I'd expect any
-> > > > key press to generate a wakeup event.
-> > > 
-> > > Is there anything in /sys I should check?
-> > 
-> > Generally, power/wakeup files under the involved devices (ie. if they are
-> > present and what's in them if so).
-> 
-> /sys/class/input43 and 44 (corresponding to USB keyboard) has no such
-> files.
-> 
-> pavel@amd:/sys/devices/pci0000:00$ lsusb
-> Bus 001 Device 008: ID 046d:c05a Logitech, Inc. M90/M100 Optical Mouse
-> Bus 001 Device 064: ID 04f2:0111 Chicony Electronics Co., Ltd KU-9908
-> Keyboard
-> Bus 001 Device 005: ID 1a40:0101 Terminus Technology Inc. 4-Port HUB
-> Bus 001 Device 006: ID 0557:2008 ATEN International Co., Ltd UC-232A
-> Serial Port [pl2303]
-> Bus 001 Device 004: ID 058f:6254 Alcor Micro Corp. USB Hub
-> Bus 001 Device 071: ID 1004:618e LG Electronics, Inc. Ally/Optimus
-> One/Vortex (debug mode)
-> Bus 001 Device 002: ID 058f:6362 Alcor Micro Corp. Flash Card
-> Reader/Writer
-> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> 
-> There are rather a lot of wakeup files here:
-> 
-> pavel@amd:/sys/devices/pci0000:00$ find . -name "wakeup"
-> ./0000:00:01.0/power/wakeup
-> ./0000:00:1b.0/power/wakeup
-> ./0000:00:1c.0/power/wakeup
-> ./0000:00:1c.1/power/wakeup
-> ./0000:00:1c.1/0000:03:00.0/power/wakeup
-> ./0000:00:1d.0/usb2/power/wakeup
-> ./0000:00:1d.0/power/wakeup
-> ./0000:00:1d.1/usb3/power/wakeup
-> ./0000:00:1d.1/power/wakeup
-> ./0000:00:1d.2/usb4/power/wakeup
-> ./0000:00:1d.2/power/wakeup
-> ./0000:00:1d.3/usb5/power/wakeup
-> ./0000:00:1d.3/power/wakeup
-> ./0000:00:1d.7/usb1/1-5/power/wakeup
-> ./0000:00:1d.7/usb1/1-6/1-6.2/power/wakeup
-> ./0000:00:1d.7/usb1/1-6/power/wakeup
-> ./0000:00:1d.7/usb1/1-7/1-7.1/power/wakeup
-> ./0000:00:1d.7/usb1/1-7/1-7.2/power/wakeup
-> ./0000:00:1d.7/usb1/1-7/power/wakeup
-> ./0000:00:1d.7/usb1/power/wakeup
-> ./0000:00:1d.7/power/wakeup
-> ./0000:00:1e.0/power/wakeup
-> ./0000:00:1f.2/power/wakeup
-> pavel@amd:/sys/devices/pci0000:00$
-> 
-> root@amd:/sys/devices/pci0000:00# for a in `find . -name "wakeup"`; do
-> echo $a `cat $a`; done
-> ./0000:00:01.0/power/wakeup disabled
-> ./0000:00:1b.0/power/wakeup disabled
-> ./0000:00:1c.0/power/wakeup disabled
-> ./0000:00:1c.1/power/wakeup disabled
-> ./0000:00:1c.1/0000:03:00.0/power/wakeup enabled
-> ./0000:00:1d.0/usb2/power/wakeup disabled
-> ./0000:00:1d.0/power/wakeup enabled
-> ./0000:00:1d.1/usb3/power/wakeup disabled
-> ./0000:00:1d.1/power/wakeup enabled
-> ./0000:00:1d.2/usb4/power/wakeup disabled
-> ./0000:00:1d.2/power/wakeup enabled
-> ./0000:00:1d.3/usb5/power/wakeup disabled
-> ./0000:00:1d.3/power/wakeup enabled
-> ./0000:00:1d.7/usb1/1-5/power/wakeup disabled
-> ./0000:00:1d.7/usb1/1-6/1-6.2/power/wakeup disabled
-> ./0000:00:1d.7/usb1/1-6/power/wakeup disabled
-> ./0000:00:1d.7/usb1/1-7/1-7.1/power/wakeup enabled
-> ./0000:00:1d.7/usb1/1-7/1-7.2/power/wakeup disabled
-> ./0000:00:1d.7/usb1/1-7/power/wakeup disabled
-> ./0000:00:1d.7/usb1/power/wakeup disabled
-> ./0000:00:1d.7/power/wakeup enabled
-> ./0000:00:1e.0/power/wakeup disabled
-> ./0000:00:1f.2/power/wakeup disabled
-> root@amd:/sys/devices/pci0000:00#
-> 
-> And the defaults are interesting, to say. But with:
-> 
-> for a in `find . -name "wakeup"`; do echo enabled > $a; done
-> 
-> It seems to wake up when I hit a key. So next question is... what
-> should be the default behaviour?
+> That's stale code, the driver got removed some time back.
 
-That's rather hard to answer.
+Yeah, that's old driver, no longer existing. It makes sense to split the
+patch - first remove the stale exynos-cpufreq and then move cpufreq-dt.
+This would help avoid confusion when grepping through the history.
 
-Ideally, "enabled", but then some of those things generate spurious wakeup
-events and the owners of these prefer "disabled".
-
-Thanks,
-Rafael
+Best regards,
+Krzysztof
 
