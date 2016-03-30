@@ -1,56 +1,100 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic code
-Date: Wed, 30 Mar 2016 13:45:24 +0530
-Message-ID: <cover.1459325515.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:33147 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbcC3IPg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 04:15:36 -0400
-Received: by mail-pf0-f180.google.com with SMTP id 4so36226022pfd.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2016 01:15:36 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V3 4/4] cpufreq: exynos: Use generic platdev driver
+Date: Wed, 30 Mar 2016 13:45:28 +0530
+Message-ID: <edd0da0dc76bfef1eebee9e033ee4363a35ed449.1459325515.git.viresh.kumar@linaro.org>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1459325515.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1459325515.git.viresh.kumar@linaro.org>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: kgene.kim@samsung.com, heiko@sntech.de, xf@rock-chips.com, mmcclint@codeaurora.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, mmcclint@codeaurora.org, k.kozlowski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Multiple platforms are using the generic cpufreq-dt driver now, and all
-of them are required to create a platform device with name "cpufreq-dt",
-in order to get the cpufreq-dt probed.
+The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+device now, reuse that and remove similar code from platform code.
 
-Many of them do it from platform code, others have special drivers just
-to do that.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ arch/arm/mach-exynos/exynos.c        | 25 -------------------------
+ drivers/cpufreq/cpufreq-dt-platdev.c |  9 +++++++++
+ 2 files changed, 9 insertions(+), 25 deletions(-)
 
-It would be more sensible to do this at a generic place, where all such
-platform can mark their entries.
-
-The first patch fixes an issue that came up with an earlier version of
-patch 2/4, but its still worth fixing it.  The second one creates a new
-driver to create platform-device based on current platform and the last
-two converts exynos platform to use this common infrastructure.
-
-I will migrate rest of the platforms after this is accepted as the right
-way ahead.
-
-V2->V3:
-- 2/3 is very lightweight now and doesn't support cpufreq-dt
-  platform-data and an extra depends_on from Kconfig is dropped as well.
-- 3/3 is separated into two patches.
-
-Viresh Kumar (4):
-  cpufreq: dt: Include types.h from cpufreq-dt.h
-  cpufreq: dt: Add generic platform-device creation support
-  ARM: exynos: exynos-cpufreq platform device isn't supported anymore
-  cpufreq: exynos: Use generic platdev driver
-
- arch/arm/mach-exynos/exynos.c        | 29 -------------------------
- drivers/cpufreq/Kconfig              | 10 +++++++++
- drivers/cpufreq/Makefile             |  1 +
- drivers/cpufreq/cpufreq-dt-platdev.c | 41 ++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq-dt.h           |  2 ++
- 5 files changed, 54 insertions(+), 29 deletions(-)
- create mode 100644 drivers/cpufreq/cpufreq-dt-platdev.c
-
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 4dfce1069406..4d3b056fd786 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -213,29 +213,6 @@ static void __init exynos_init_irq(void)
+ 	exynos_map_pmu();
+ }
+ 
+-static const struct of_device_id exynos_cpufreq_matches[] = {
+-	{ .compatible = "samsung,exynos3250", .data = "cpufreq-dt" },
+-	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+-	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
+-	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
+-	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
+-#ifndef CONFIG_BL_SWITCHER
+-	{ .compatible = "samsung,exynos5420", .data = "cpufreq-dt" },
+-	{ .compatible = "samsung,exynos5800", .data = "cpufreq-dt" },
+-#endif
+-	{ /* sentinel */ }
+-};
+-
+-static void __init exynos_cpufreq_init(void)
+-{
+-	struct device_node *root = of_find_node_by_path("/");
+-	const struct of_device_id *match;
+-
+-	match = of_match_node(exynos_cpufreq_matches, root);
+-	if (match)
+-		platform_device_register_simple(match->data, -1, NULL, 0);
+-}
+-
+ static void __init exynos_dt_machine_init(void)
+ {
+ 	/*
+@@ -258,8 +235,6 @@ static void __init exynos_dt_machine_init(void)
+ 	    of_machine_is_compatible("samsung,exynos5250"))
+ 		platform_device_register(&exynos_cpuidle);
+ 
+-	exynos_cpufreq_init();
+-
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 2a3532427ecf..f2ae7ad99a3c 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -12,6 +12,15 @@
+ #include <linux/platform_device.h>
+ 
+ static const struct of_device_id machines[] = {
++	{ .compatible = "samsung,exynos3250", },
++	{ .compatible = "samsung,exynos4210", },
++	{ .compatible = "samsung,exynos4212", },
++	{ .compatible = "samsung,exynos4412", },
++	{ .compatible = "samsung,exynos5250", },
++#ifndef CONFIG_BL_SWITCHER
++	{ .compatible = "samsung,exynos5420", },
++	{ .compatible = "samsung,exynos5800", },
++#endif
+ };
+ 
+ static int __init cpufreq_dt_platdev_init(void)
 -- 
 2.7.1.410.g6faf27b
-
