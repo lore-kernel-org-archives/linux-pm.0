@@ -1,40 +1,45 @@
-From: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v3 4/4] thermal: update documentation for new device ops
-Date: Tue, 29 Mar 2016 17:41:37 -0700
-Message-ID: <1459298497-29481-5-git-send-email-srikars@nvidia.com>
-References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1459298497-29481-1-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [RESEND v2] power: reset: keystone: Enable COMPILE_TEST
+Date: Wed, 30 Mar 2016 09:49:48 +0900
+Message-ID: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:52503 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751828AbcC3AuL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 20:50:11 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Add documentation for two new thermal_zone_device_ops.
+Enable the COMPILE_TEST to get build coverage, except on platforms
+!HAS_IOMEM (required by selected MFD_SYSCON).
 
-Change-Id: Id1c5cc2ae4051a398dfe81c7ff0b27c1eab02579
-Signed-off-by: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
 ---
- Documentation/thermal/sysfs-api.txt | 5 +++++
- 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index ed419d6..13344167 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -59,6 +59,11 @@ temperature) and throttle appropriate devices.
- 			will be fired.
- 	.set_emul_temp: set the emulation temperature which helps in debugging
- 			different threshold temperature points.
-+	.get_trip_state: get the current state (TRIPPED or NOT_TRIPPED) of a
-+		certain trip point.
-+	.set_trip_state: set the state of a certain trip point.
-+	.enb_temp_notify: check if temperature notifications are enabled for a
-+		certain trip point.
-     tzp: thermal zone platform parameters.
-     passive_delay: number of milliseconds to wait between polls when
- 	performing passive cooling.
+Changes since v1:
+1. Fix comments from Arnd: Change this to COMPILE_TEST and then add
+   required HAS_IOMEM dependency.
+---
+ drivers/power/reset/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index 0a6408a39c66..0b8f7470bb9c 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -140,7 +140,8 @@ config POWER_RESET_XGENE
+ 
+ config POWER_RESET_KEYSTONE
+ 	bool "Keystone reset driver"
+-	depends on ARCH_KEYSTONE
++	depends on ARCH_KEYSTONE || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	select MFD_SYSCON
+ 	help
+ 	  Reboot support for the KEYSTONE SoCs.
 -- 
-2.1.4
+2.5.0
+
