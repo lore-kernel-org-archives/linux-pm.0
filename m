@@ -1,113 +1,85 @@
-From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
-Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Wed, 30 Mar 2016 10:58:52 +0000
-Message-ID: <AM4PR04MB1665E85D823D5AB59B54B56D89980@AM4PR04MB1665.eurprd04.prod.outlook.com>
-References: <cover.1458822334.git.baolin.wang@linaro.org>
-	<20160325070937.GA22398@peterchendt>
-	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
-	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
-	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
-	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
-	<CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
-	<AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com>
- <CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Wed, 30 Mar 2016 13:05:22 +0200
+Message-ID: <CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	<CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>
+	<4187911.uaFVupaTVL@vostro.rjw.lan>
+	<CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f170.google.com ([209.85.217.170]:36340 "EHLO
+	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbcC3LFZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 07:05:25 -0400
+In-Reply-To: <CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcgW21h
-aWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDMw
-LCAyMDE2IDU6MzEgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBQZXRl
-ciBDaGVuIDxoenBldGVyY2hlbkBnbWFpbC5jb20+OyBGZWxpcGUgQmFsYmkgPGJhbGJpQGtlcm5l
-bC5vcmc+Ow0KPiBHcmVnIEtIIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IFNlYmFzdGlh
-biBSZWljaGVsIDxzcmVAa2VybmVsLm9yZz47DQo+IERtaXRyeSBFcmVtaW4tU29sZW5pa292IDxk
-YmFyeXNoa292QGdtYWlsLmNvbT47IERhdmlkIFdvb2Rob3VzZQ0KPiA8ZHdtdzJAaW5mcmFkZWFk
-Lm9yZz47IFBldGVyIENoZW4gPHBldGVyLmNoZW5AZnJlZXNjYWxlLmNvbT47IEFsYW4gU3Rlcm4N
-Cj4gPHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+OyByLmJhbGR5Z2FAc2Ftc3VuZy5jb207IFlv
-c2hpaGlybyBTaGltb2RhDQo+IDx5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT47IExl
-ZSBKb25lcyA8bGVlLmpvbmVzQGxpbmFyby5vcmc+OyBNYXJrDQo+IEJyb3duIDxicm9vbmllQGtl
-cm5lbC5vcmc+OyBDaGFybGVzIEtlZXBheA0KPiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25t
-aWNyby5jb20+OyBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gTGludXgg
-UE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgVVNCIDxsaW51eC11c2JAdmdlci5r
-ZXJuZWwub3JnPjsNCj4gZGV2aWNlLW1haW5saW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9y
-ZzsgTEtNTCA8bGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJl
-OiBbUEFUQ0ggdjggMC80XSBJbnRyb2R1Y2UgdXNiIGNoYXJnZXIgZnJhbWV3b3JrIHRvIGRlYWwg
-d2l0aA0KPiB0aGUgdXNiIGdhZGdldCBwb3dlciBuZWdvdGF0aW9uDQo+IA0KPiBPbiAzMCBNYXJj
-aCAyMDE2IGF0IDE2OjA3LCBKdW4gTGkgPGp1bi5saUBueHAuY29tPiB3cm90ZToNCj4gPiBIaQ0K
-PiANCj4gPj4gT24gMzAgTWFyY2ggMjAxNiBhdCAxMDo1NCwgSnVuIExpIDxqdW4ubGlAbnhwLmNv
-bT4gd3JvdGU6DQo+ID4+ID4+ID4+IEl0IGlzIG5vdCBmb3IgdWRjIGRyaXZlciBidXQgZm9yIHBv
-d2VyIHVzZXJzIHdobyB3YW50IHRvDQo+ID4+ID4+ID4+IG5lZ290aWF0ZSB3aXRoIFVTQiBzdWJz
-eXN0ZW0uDQo+ID4+ID4+ID4+DQo+ID4+ID4+ID4NCj4gPj4gPj4gPiBTZWVtcyB5b3UgZG9uJ3Qg
-d2FudCB0byBndWFyYW50ZWUgY2hhcmdlciB0eXBlIGRldGVjdGlvbiBpcyBkb25lDQo+ID4+ID4+
-ID4gYmVmb3JlIGdhZGdldCBjb25uZWN0aW9uKHB1bGx1cCBEUCksIHJpZ2h0Pw0KPiA+PiA+PiA+
-IEkgc2VlIHlvdSBjYWxsIHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgaW4gZWFjaCBnYWRnZXQg
-dXNiDQo+ID4+ID4+ID4gc3RhdGUNCj4gPj4gPj4gY2hhbmdlcy4NCj4gPj4gPj4NCj4gPj4gPj4g
-SSBhbSBub3Qgc3VyZSBJIGdldCB5b3VyIHBvaW50IGNvcnJlY3RseSwgcGxlYXNlIGNvcnJlY3Qg
-bWUgaWYgSQ0KPiA+PiA+PiBtaXN1bmRlcnN0YW5kIHlvdS4NCj4gPj4gPj4gV2UgbmVlZCB0byBj
-aGVjayB0aGUgY2hhcmdlciB0eXBlIGF0IGV2ZXJ5IGV2ZW50IGNvbWVzIGZyb20gdGhlDQo+ID4+
-ID4+IHVzYiBnYWRnZXQgc3RhdGUgY2hhbmdlcyBvciB0aGUgZXh0Y29uIGRldmljZSBzdGF0ZSBj
-aGFuZ2VzLCB3aGljaA0KPiA+PiA+PiBtZWFucyBhIG5ldyBjaGFyZ2VyIHBsdWdpbiBvciBwdWxs
-dXAuDQo+ID4+ID4+DQo+ID4+ID4NCj4gPj4gPiBBY2NvcmRpbmcgdG8gdXNiIGNoYXJnZXIgc3Bl
-YywgbXkgdW5kZXJzdGFuZGluZyBpcyB5b3UgY2FuJ3QgZG8NCj4gPj4gPiByZWFsIGNoYXJnZXIg
-ZGV0ZWN0aW9uIHByb2NlZHVyZSAqYWZ0ZXIqIGdhZGdldCBfY29ubmVjdGlvbl8ocHVsbHVwDQo+
-ID4+ID4gRFApLCBhbHNvIEkgZG9uJ3QNCj4gPj4NCj4gPj4gV2h5IGNhbiBub3Q/IENoYXJnZXIg
-ZGV0ZWN0aW9uIGlzIHVzdWFsbHkgZnJvbSBQTUlDLg0KPiA+DQo+ID4gQ2hhcmdlciBkZXRlY3Rp
-b24gcHJvY2VzcyB3aWxsIGltcGFjdCBEUC9ETSBsaW5lIHN0YXRlLCBzZWUgdXNiDQo+ID4gY2hh
-cmdlciBzcGVjIHYxLjIgZm9yIGRldGFpbCBkZXRlY3Rpb24gcHJvY2Vzcywgc2VjdGlvbiA0LjYu
-MyBzYXlzOg0KPiA+DQo+ID4gIkEgUEQgaXMgYWxsb3dlZCB0byAqZGlzY29ubmVjdCogYW5kIHJl
-cGVhdCB0aGUgY2hhcmdlciBkZXRlY3Rpb24NCj4gPiBwcm9jZXNzIG11bHRpcGxlIHRpbWVzIHdo
-aWxlIGF0dGFjaGVkLiBUaGUgUEQgaXMgcmVxdWlyZWQgdG8gd2FpdCBmb3INCj4gPiBhIHRpbWUg
-b2YgYXQgbGVhc3QgVENQX1ZETV9FTiBtYXggYmV0d2VlbiBkaXNjb25uZWN0aW5nIGFuZCByZXN0
-YXJ0aW5nDQo+ID4gdGhlIGNoYXJnZXIgZGV0ZWN0aW9uIHByb2Nlc3MuIg0KPiA+DQo+ID4gQXMg
-UGV0ZXIgbWVudGlvbmVkLCB0aGUgY2hhcmdlciBkZXRlY3Rpb24gc2hvdWxkIGhhcHBlbiBiZXR3
-ZWVuIFZCVVMNCj4gPiBkZXRlY3Rpb24gYW5kIGdhZGdldCBwdWxsIHVwIERQIGZvciBmaXJzdCBw
-bHVnIGluIGNhc2UuIFNvIHdoZW4mYWZ0ZXINCj4gPiBnYWRnZXQgY29ubmVjdCAocHVsbHVwIERQ
-KSwgeW91IHNob3VsZCBhbHJlYWR5IGtub3cgdGhlIGNoYXJnZXIgdHlwZS4NCj4gDQo+IE1ha2Ug
-c2Vuc2UuIEluIG91ciBjb21wYW55J3Mgc29sdXRpb24sIGNoYXJnZXIgZGV0ZWN0aW9uIGNhbiBi
-ZSBkb25lIGJ5DQo+IGhhcmR3YXJlIGZyb20gUE1JQyBhdCBmaXJzdCwgdGhlbiBpdCB3aWxsIG5v
-dCBhZmZlY3QgdGhlIERQL0RNIGxpbmUgd2hlbg0KPiBnYWRnZXQgc3RhcnRzIHRvIGVudW1lcmF0
-aW9uLiANCg0KSSBzZWUsIGNoYXJnZXIgdHlwZSBkZXRlY3Rpb24gaXMgZG9uZSBhdXRvbWF0aWNh
-bGx5IGJ5IFBNSUMgd2hlbiBWQlVTIGlzDQpkZXRlY3RlZCBpbiB5b3VyIGNhc2UsIHlvdSBqdXN0
-IGFzc3VtZSB0aGUgcHJvY2VzcyBpcyBjb21wbGV0ZSBiZWZvcmUgU1cNCmRvIGdhZGdldCBjb25u
-ZWN0LiBUbyBtYWtlIHRoZSBmcmFtZXdvcmsgY29tbW9uLCB5b3UgbWF5IGRvIG9uZSB0aW1lIGNo
-YXJnZXIgdHlwZSBjaGVjayB3aGVuIHZidXMgaXMgb24sIGFuZCBzYXZlIGl0IHRvIGF2b2lkIHJl
-cGVhdCBjaGFyZ2VyIHR5cGUgY2hlY2suDQoNCj4gSW4gdGhlICd1c2JfY2hhcmdlcl9kZXRlY3Rf
-dHlwZSgpJywgaXQNCj4gdXN1YWxseSBnZXQgdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHR5cGUgcmVn
-aXN0ZXJzIGhhcyBiZWVuIGRvbmUgYnkgaGFyZHdhcmUNCj4gZnJvbSBQTUlDLCB3aGljaCBjYW4g
-bm90IGFmZmVjdCB0aGUgRFAvRE0gbGluZS4NCj4gDQo+ID4NCj4gPiBMaSBKdW4NCj4gPg0KPiA+
-Pg0KPiA+PiA+IHRoaW5rIGl0J3MgbmVjZXNzYXJ5IHRvIGNoZWNrIGNoYXJnZXIgdHlwZSBhdCBl
-dmVyeSBldmVudCBmcm9tIHVzYg0KPiA+PiBnYWRnZXQuDQo+ID4+DQo+ID4+IE15IG1lYW5pbmcg
-aXMgbm90IGV2ZXJ5IGV2ZW50IGZyb20gdXNiIGdhZGdldC4gV2hlbiB0aGUgdXNiIGdhZGdldA0K
-PiA+PiBzdGF0ZSBjaGFuZ2VzIG9yIHRoZSBleHRjb24gZGV2aWNlIChtYXliZSBHUElPIGRldGVj
-dGlvbikgc3RhdGUNCj4gPj4gY2hhbmdlcywgd2hpY2ggbWVhbnMgY2hhcmdlciBwbHVnaW4gb3Ig
-cHVsbHVwLCB3ZSBuZWVkIHRvIGNoZWNrIHRoZQ0KPiA+PiBjaGFyZ2VyIHR5cGUgdG8gc2V0IGN1
-cnJlbnQuDQo+ID4NCj4gPiBGcm9tIHlvdXIgYmVsb3cgY29kZSwgeW91IGNhbGwgdXNiX2NoYXJn
-ZXJfbm90aWZ5X290aGVycygpIGluIGV2ZXJ5DQo+ID4gc3RhdGUgY2hhbmdlLg0KPiANCj4gSSB0
-aGluayBpdCBkb2VzIG5vdCBtYXR0ZXIuIEluIGNhc2UgdGhlIHVzYiBjaGFyZ2VyIG1pc3NlZCBz
-b21lIGdhZGdldA0KPiBzdGF0ZSBjaGFuZ2VzLiBPciBJIHJlcGxhY2UgaXQgd2l0aCAnVVNCX1NU
-QVRFX0NPTkZJR1VSRUQnIHN0YXRlLg0KPiBUaGFua3MuDQo+IA0KPiA+DQo+ID4gaWYgKHVjaGdl
-ci0+b2xkX2dhZGdldF9zdGF0ZSAhPSBzdGF0ZSkgew0KPiA+ICAgICAgICAgdWNoZ2VyLT5vbGRf
-Z2FkZ2V0X3N0YXRlID0gc3RhdGU7DQo+ID4NCj4gPiAgICAgICAgIGlmIChzdGF0ZSA+PSBVU0Jf
-U1RBVEVfQVRUQUNIRUQpDQo+ID4gICAgICAgICAgICAgICAgIHVjaGdlcl9zdGF0ZSA9IFVTQl9D
-SEFSR0VSX1BSRVNFTlQ7DQo+ID4gICAgICAgICBlbHNlIGlmIChzdGF0ZSA9PSBVU0JfU1RBVEVf
-Tk9UQVRUQUNIRUQpDQo+ID4gICAgICAgICAgICAgICAgIHVjaGdlcl9zdGF0ZSA9IFVTQl9DSEFS
-R0VSX1JFTU9WRTsNCj4gPiAgICAgICAgIGVsc2UNCj4gPiAvKiB0aGlzIGVsc2Ugd2lsbCBuZXZl
-ciBoYXBwZW4gKi8NCj4gPiAgICAgICAgICAgICAgICAgdWNoZ2VyX3N0YXRlID0gVVNCX0NIQVJH
-RVJfREVGQVVMVDsNCj4gPg0KPiA+ICAgICAgICAgdXNiX2NoYXJnZXJfbm90aWZ5X290aGVycyh1
-Y2hnZXIsIHVjaGdlcl9zdGF0ZSk7IH0NCj4gPg0KPiA+Pg0KPiA+PiA+IFNvbWV0aGluZyBpbiBn
-YWRnZXQgZHJpdmVyIHlvdSBjYW4gdXRpbGl6ZSBpcyBvbmx5IHZidXMgZGV0ZWN0aW9uLA0KPiA+
-PiA+IGFuZCByZXBvcnQgZGlmZiBjdXJyZW50IGJ5IGRpZmYgdXNiIHN0YXRlIGlmIGl0J3MgYSBT
-RFAuDQo+ID4+DQo+ID4+IC0tDQo+ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0K
-PiANCj4gDQo+IA0KPiAtLQ0KPiBCYW9saW4ud2FuZw0KPiBCZXN0IFJlZ2FyZHMNCg==
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Wed, Mar 30, 2016 at 12:17 PM, J=C3=B6rg Otte <jrg.otte@gmail.com> w=
+rote:
+> 2016-03-29 23:34 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> On Tuesday, March 29, 2016 07:32:27 PM J=C3=B6rg Otte wrote:
+>>> 2016-03-29 19:24 GMT+02:00 J=C3=B6rg Otte <jrg.otte@gmail.com>:
+>>> > in v4.5 and earlier intel-pstate downscaled idle processors (load
+>>> > 0.1-0.2%) to minumum frequency, in my case 800MHz.
+>>> >
+>>> > Now in v4.6-rc1 the characteristic has dramatically changed. If i=
+n
+>>> > idle the processor frequency is more or less a few MHz around 250=
+0Mhz.
+>>> > This is the maximum non turbo frequency.
+>>> >
+>>> > No difference between powersafe or performance governor.
+>>> >
+>>> > I currently use acpi_cpufreq which works as usual.
+>>> >
+>>> > Processor:
+>>> > Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz (family: 0x6, model: 0x3=
+c,
+>>> > stepping: 0x3)
+>>> >
+>>> > Last known good kernel is: 4.5.0-01127-g9256d5a
+>>> > First known bad kernel is: 4.5.0-02535-g09fd671
+>>> >
+>>> > There is
+>>> > commit 277edba Merge tag 'pm+acpi-4.6-rc1-1' of
+>>> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+>>> > in between, which brought a few changes in intel_pstate.
+>>
+>> Can you please check commit a4675fbc4a7a (cpufreq: intel_pstate: Rep=
+lace timers
+>> with utilization update callbacks)?
+>>
+> Yes , this solved the problem for me.
+> I had to resolve some conflicts myself when reverting that
+> commit. Hard work :).
+
+Thanks for doing this.  Can you please post the revert patch you have u=
+sed?
+
+> Here is a 10-seconds trace of the used frequencies when
+> in "desktop-idle":
+>
+> driver          cpu0 cpu1 cpu2 cpu3
+> -------------------------------------
+> intel_pstate (  800  928  941 1200) MHz   load:( 0.2)%
+> intel_pstate (  800  928 1181 1800) MHz   load:( 0.0)%
+> intel_pstate ( 1675 1576 1347  800) MHz   load:( 0.0)%
+> intel_pstate ( 1198 1576  842  800) MHz   load:( 0.5)%
+> intel_pstate (  800 1181 1113 1600) MHz   load:( 0.0)%
+> intel_pstate (  808 1181  805  800) MHz   load:( 0.5)%
+> intel_pstate (  844 1191  900 1082) MHz   load:( 0.3)%
+> intel_pstate (  816 1191  800  800) MHz   load:( 0.0)%
+> intel_pstate (  800  905  892 1082) MHz   load:( 0.2)%
+> intel_pstate (  945  905 1340  800) MHz   load:( 0.3)%
+
+Please also run turbostat with and without your revert patch applied.
+
+Thanks,
+Rafael
