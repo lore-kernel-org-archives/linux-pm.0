@@ -1,45 +1,60 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RESEND v2] power: reset: keystone: Enable COMPILE_TEST
-Date: Wed, 30 Mar 2016 09:49:48 +0900
-Message-ID: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 7/7][Resend] cpufreq: schedutil: New governor based on
+ scheduler utilization data
+Date: Wed, 30 Mar 2016 03:12:40 +0200
+Message-ID: <CAJZ5v0jEueokR+bZJVRjQtmUe6BeKqUgnjWy9BZm4nGnKjT9mg@mail.gmail.com>
+References: <7262976.zPkLj56ATU@vostro.rjw.lan>
+	<6666532.7ULg06hQ7e@vostro.rjw.lan>
+	<20160328090333.GK32495@vireshk-i7>
+	<2253696.9jRPsKRmxz@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:52503 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbcC3AuL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 20:50:11 -0400
+Received: from mail-lb0-f196.google.com ([209.85.217.196]:36434 "EHLO
+	mail-lb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbcC3BMm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 21:12:42 -0400
+In-Reply-To: <2253696.9jRPsKRmxz@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-Enable the COMPILE_TEST to get build coverage, except on platforms
-!HAS_IOMEM (required by selected MFD_SYSCON).
+On Tue, Mar 29, 2016 at 2:58 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, March 28, 2016 02:33:33 PM Viresh Kumar wrote:
+>> On 22-03-16, 02:54, Rafael J. Wysocki wrote:
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+[cut]
 
----
+>> > +static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
+>> > +                                      unsigned long util, unsigned long max)
+>> > +{
+>> > +   struct cpufreq_policy *policy = sg_policy->policy;
+>> > +   unsigned int max_f = policy->cpuinfo.max_freq;
+>> > +   u64 last_freq_update_time = sg_policy->last_freq_update_time;
+>> > +   unsigned int j;
+>> > +
+>> > +   if (util == ULONG_MAX)
+>> > +           return max_f;
+>> > +
+>> > +   for_each_cpu(j, policy->cpus) {
+>> > +           struct sugov_cpu *j_sg_cpu;
+>> > +           unsigned long j_util, j_max;
+>> > +           u64 delta_ns;
+>> > +
+>> > +           if (j == smp_processor_id())
+>> > +                   continue;
+>>
+>> Why skip local CPU completely ?
+>
+> Because the original util and max come from it.
+>
+>> And if we really want to do that, what about something like for_each_cpu_and_not
+>> to kill the unnecessary if {} statement ?
+>
+> That will work.
 
-Changes since v1:
-1. Fix comments from Arnd: Change this to COMPILE_TEST and then add
-   required HAS_IOMEM dependency.
----
- drivers/power/reset/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Except that for_each_cpu_and_not is not defined as of today.
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 0a6408a39c66..0b8f7470bb9c 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -140,7 +140,8 @@ config POWER_RESET_XGENE
- 
- config POWER_RESET_KEYSTONE
- 	bool "Keystone reset driver"
--	depends on ARCH_KEYSTONE
-+	depends on ARCH_KEYSTONE || COMPILE_TEST
-+	depends on HAS_IOMEM
- 	select MFD_SYSCON
- 	help
- 	  Reboot support for the KEYSTONE SoCs.
--- 
-2.5.0
-
+I guess I can play with cpumasks, but then I'm not sure that will end
+up actually more efficient.
