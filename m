@@ -1,58 +1,102 @@
-From: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 0/4] thermal: hisilicon: enable power allocator for
- Hi6220
-Date: Wed, 30 Mar 2016 10:53:53 +0800
-Message-ID: <20160330025353.GA28401@leoy-linaro>
-References: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
- <20160329154548.GE1855@localhost.localdomain>
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Wed, 30 Mar 2016 02:54:05 +0000
+Message-ID: <AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
+	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+ <CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160329154548.GE1855-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 29, 2016 at 08:45:59AM -0700, Eduardo Valentin wrote:
-> On Tue, Mar 29, 2016 at 07:27:11PM +0800, Leo Yan wrote:
-> > Hi6220 has octa-core so it has quite high power consumption when run
-> > benchmark and introduces high temperature for SoC. So need enable
-> > thermal governor to control temperature and also cannot hurt much for
-> > performance after impose cooling operations on CPU.
-> > 
-> > This patch series is to enable power allocator for Hi6220. Patch 1 is to
-> > change "hysteresis" as optional property for trip points, so when enable
-> > power allocator governor we can ignore this property.
-> > 
-> > During profiling also found two issues for thermal sensor's driver. The
-> > power allocator just uses only one sensor, so patch 2 is to fix sensor
-> > driver to let it can initialize driver successfully with only enabling
-> > one sensor; patch 3 is to dismiss warning of IRQ imbalance enabling.
-> > 
-> > After profiling on Hikey, the power model has been simplized with only
-> > dynamic coefficient, and now it's convienence to pass it from CPU node.
-> > So patch 4 and 5 bind sensor and pass power model parameters.
-> > 
-> > This patch series have been tested on 96boards Hikey.
-> 
-> Applied patches 1 and 2 in my fixes branch. Patches 3 and 4 need to go
-> via the hisi platform tree. You may add my
-> 
-> Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> 
-> on patches 3 and 4 if you want.
-
-Thanks, Eduardo.
-
-Hi Wei,
-
-Could you help pick up patches 3/4 for enabling thermal in dts?
-
-Thanks,
-Leo Yan
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcgW21h
+aWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUdWVzZGF5LCBNYXJjaCAyOSwg
+MjAxNiA1OjQ5IFBNDQo+IFRvOiBKdW4gTGkgPGp1bi5saUBueHAuY29tPg0KPiBDYzogUGV0ZXIg
+Q2hlbiA8aHpwZXRlcmNoZW5AZ21haWwuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwu
+b3JnPjsNCj4gR3JlZyBLSCA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4g
+UmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+Ow0KPiBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdiA8ZGJh
+cnlzaGtvdkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPGR3bXcyQGluZnJhZGVhZC5v
+cmc+OyBQZXRlciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+OyBBbGFuIFN0ZXJuDQo+
+IDxzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1Pjsgci5iYWxkeWdhQHNhbXN1bmcuY29tOyBZb3No
+aWhpcm8gU2hpbW9kYQ0KPiA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBMZWUg
+Sm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPjsgTWFyaw0KPiBCcm93biA8YnJvb25pZUBrZXJu
+ZWwub3JnPjsgQ2hhcmxlcyBLZWVwYXgNCj4gPGNrZWVwYXhAb3BlbnNvdXJjZS53b2xmc29ubWlj
+cm8uY29tPjsgcGF0Y2hlc0BvcGVuc291cmNlLndvbGZzb25taWNyby5jb207DQo+IExpbnV4IFBN
+IGxpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZnZXIua2Vy
+bmVsLm9yZz47DQo+IGRldmljZS1tYWlubGluaW5nQGxpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmc7
+IExLTUwgPGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTog
+W1BBVENIIHY4IDAvNF0gSW50cm9kdWNlIHVzYiBjaGFyZ2VyIGZyYW1ld29yayB0byBkZWFsIHdp
+dGgNCj4gdGhlIHVzYiBnYWRnZXQgcG93ZXIgbmVnb3RhdGlvbg0KPiANCj4gT24gMjkgTWFyY2gg
+MjAxNiBhdCAxNjo0NSwgSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4gd3JvdGU6DQo+ID4NCj4gPg0K
+PiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBsaW51eC11c2Itb3du
+ZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtdXNiLQ0KPiA+PiBvd25lckB2Z2VyLmtl
+cm5lbC5vcmddIE9uIEJlaGFsZiBPZiBCYW9saW4gV2FuZw0KPiA+PiBTZW50OiBNb25kYXksIE1h
+cmNoIDI4LCAyMDE2IDI6NTIgUE0NCj4gPj4gVG86IFBldGVyIENoZW4gPGh6cGV0ZXJjaGVuQGdt
+YWlsLmNvbT4NCj4gPj4gQ2M6IEZlbGlwZSBCYWxiaSA8YmFsYmlAa2VybmVsLm9yZz47IEdyZWcg
+S0gNCj4gPj4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgU2ViYXN0aWFuIFJlaWNoZWwg
+PHNyZUBrZXJuZWwub3JnPjsNCj4gPj4gRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3YgPGRiYXJ5c2hr
+b3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlDQo+ID4+IDxkd213MkBpbmZyYWRlYWQub3Jn
+PjsgUGV0ZXIgQ2hlbiA8cGV0ZXIuY2hlbkBmcmVlc2NhbGUuY29tPjsgQWxhbg0KPiA+PiBTdGVy
+biA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT47IHIuYmFsZHlnYUBzYW1zdW5nLmNvbTsgWW9z
+aGloaXJvDQo+ID4+IFNoaW1vZGEgPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPjsg
+TGVlIEpvbmVzDQo+ID4+IDxsZWUuam9uZXNAbGluYXJvLm9yZz47IE1hcmsgQnJvd24gPGJyb29u
+aWVAa2VybmVsLm9yZz47IENoYXJsZXMNCj4gPj4gS2VlcGF4IDxja2VlcGF4QG9wZW5zb3VyY2Uu
+d29sZnNvbm1pY3JvLmNvbT47DQo+ID4+IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8u
+Y29tOw0KPiA+PiBMaW51eCBQTSBsaXN0IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBVU0IN
+Cj4gPj4gPGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiA+PiBkZXZpY2UtbWFpbmxpbmlu
+Z0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBMS01MIDxsaW51eC0NCj4gPj4ga2VybmVsQHZn
+ZXIua2VybmVsLm9yZz4NCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCB2OCAwLzRdIEludHJvZHVj
+ZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVhbA0KPiA+PiB3aXRoIHRoZSB1c2IgZ2FkZ2V0
+IHBvd2VyIG5lZ290YXRpb24NCj4gPj4NCj4gPj4gT24gMjUgTWFyY2ggMjAxNiBhdCAxNTowOSwg
+UGV0ZXIgQ2hlbiA8aHpwZXRlcmNoZW5AZ21haWwuY29tPiB3cm90ZToNCj4gPj4gPiBPbiBUaHUs
+IE1hciAyNCwgMjAxNiBhdCAwODozNTo1M1BNICswODAwLCBCYW9saW4gV2FuZyB3cm90ZToNCj4g
+Pj4gPj4gQ3VycmVudGx5IHRoZSBMaW51eCBrZXJuZWwgZG9lcyBub3QgcHJvdmlkZSBhbnkgc3Rh
+bmRhcmQNCj4gPj4gPj4gaW50ZWdyYXRpb24gb2YgdGhpcyBmZWF0dXJlIHRoYXQgaW50ZWdyYXRl
+cyB0aGUgVVNCIHN1YnN5c3RlbSB3aXRoDQo+ID4+ID4+IHRoZSBzeXN0ZW0gcG93ZXIgcmVndWxh
+dGlvbiBwcm92aWRlZCBieSBQTUlDcyBtZWFuaW5nIHRoYXQgZWl0aGVyDQo+ID4+ID4+IHZlbmRv
+cnMgbXVzdCBhZGQgdGhpcyBpbiB0aGVpciBrZXJuZWxzIG9yIFVTQiBnYWRnZXQgZGV2aWNlcyBi
+YXNlZA0KPiA+PiA+PiBvbiBMaW51eCAoc3VjaCBhcyBtb2JpbGUgcGhvbmVzKSBtYXkgbm90IGJl
+aGF2ZSBhcyB0aGV5IHNob3VsZC4NCj4gPj4gPj4gVGh1cyBwcm92aWRlIGENCj4gPj4gc3RhbmRh
+cmQgZnJhbWV3b3JrIGZvciBkb2luZyB0aGlzIGluIGtlcm5lbC4NCj4gPj4gPj4NCj4gPj4gPj4g
+Tm93IGludHJvZHVjZSBvbmUgdXNlciB3aXRoIHdtODMxeF9wb3dlciB0byBzdXBwb3J0IGFuZCB0
+ZXN0IHRoZQ0KPiA+PiA+PiB1c2IgY2hhcmdlciwgd2hpY2ggaXMgcGVuZGluZyB0ZXN0aW5nLiBN
+b3Jlb3ZlciB0aGVyZSBtYXkgYmUgb3RoZXINCj4gPj4gPj4gcG90ZW50aWFsIHVzZXJzIHdpbGwg
+dXNlIGl0IGluIGZ1dHVyZS4NCj4gPj4gPj4NCj4gPj4gPg0KPiA+PiA+IEkgYW0gYWZyYWlkIEkg
+c3RpbGwgbm90IGZpbmQgdGhlIHVzZXIgKHVkYyBkcml2ZXIpIGZvciB0aGlzDQo+ID4+ID4gZnJh
+bWV3b3JrLCBJIHdvdWxkIGxpa2UgdG8gc2VlIGhvdyB1ZGMgZHJpdmVyIGJsb2NrIHRoZSBlbnVt
+ZXJhdGlvbg0KPiA+PiA+IHVudGlsIHRoZSBjaGFyZ2VyIGRldGVjdGlvbiBoYXMgZmluaXNoZWQs
+IG9yIGFtIEkgbWlzc2luZyBzb21ldGhpbmc/DQo+ID4+DQo+ID4+IEl0IGlzIG5vdCBmb3IgdWRj
+IGRyaXZlciBidXQgZm9yIHBvd2VyIHVzZXJzIHdobyB3YW50IHRvIG5lZ290aWF0ZQ0KPiA+PiB3
+aXRoIFVTQiBzdWJzeXN0ZW0uDQo+ID4+DQo+ID4NCj4gPiBTZWVtcyB5b3UgZG9uJ3Qgd2FudCB0
+byBndWFyYW50ZWUgY2hhcmdlciB0eXBlIGRldGVjdGlvbiBpcyBkb25lDQo+ID4gYmVmb3JlIGdh
+ZGdldCBjb25uZWN0aW9uKHB1bGx1cCBEUCksIHJpZ2h0Pw0KPiA+IEkgc2VlIHlvdSBjYWxsIHVz
+Yl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgaW4gZWFjaCBnYWRnZXQgdXNiIHN0YXRlDQo+IGNoYW5n
+ZXMuDQo+IA0KPiBJIGFtIG5vdCBzdXJlIEkgZ2V0IHlvdXIgcG9pbnQgY29ycmVjdGx5LCBwbGVh
+c2UgY29ycmVjdCBtZSBpZiBJDQo+IG1pc3VuZGVyc3RhbmQgeW91Lg0KPiBXZSBuZWVkIHRvIGNo
+ZWNrIHRoZSBjaGFyZ2VyIHR5cGUgYXQgZXZlcnkgZXZlbnQgY29tZXMgZnJvbSB0aGUgdXNiIGdh
+ZGdldA0KPiBzdGF0ZSBjaGFuZ2VzIG9yIHRoZSBleHRjb24gZGV2aWNlIHN0YXRlIGNoYW5nZXMs
+IHdoaWNoIG1lYW5zIGEgbmV3DQo+IGNoYXJnZXIgcGx1Z2luIG9yIHB1bGx1cC4NCj4gDQoNCkFj
+Y29yZGluZyB0byB1c2IgY2hhcmdlciBzcGVjLCBteSB1bmRlcnN0YW5kaW5nIGlzIHlvdSBjYW4n
+dCBkbyByZWFsIGNoYXJnZXINCmRldGVjdGlvbiBwcm9jZWR1cmUgKmFmdGVyKiBnYWRnZXQgX2Nv
+bm5lY3Rpb25fKHB1bGx1cCBEUCksIGFsc28gSSBkb24ndA0KdGhpbmsgaXQncyBuZWNlc3Nhcnkg
+dG8gY2hlY2sgY2hhcmdlciB0eXBlIGF0IGV2ZXJ5IGV2ZW50IGZyb20gdXNiIGdhZGdldC4NClNv
+bWV0aGluZyBpbiBnYWRnZXQgZHJpdmVyIHlvdSBjYW4gdXRpbGl6ZSBpcyBvbmx5IHZidXMgZGV0
+ZWN0aW9uLCBhbmQNCnJlcG9ydCBkaWZmIGN1cnJlbnQgYnkgZGlmZiB1c2Igc3RhdGUgaWYgaXQn
+cyBhIFNEUC4NCg0KPiA+DQo+ID4gTGkgSnVuDQo+ID4+ID4NCj4gPj4gPiAtLQ0KPiA+PiA+IEJl
+c3QgUmVnYXJkcywNCj4gPj4gPiBQZXRlciBDaGVuDQo+ID4+DQo+ID4+DQo+ID4+DQo+ID4+IC0t
+DQo+ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0KPiA+PiAtLQ0KPiA+PiBUbyB1
+bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGlu
+dXgtdXNiIg0KPiA+PiBpbiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIu
+a2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbw0KPiA+PiBpbmZvIGF0IGh0dHA6Ly92Z2VyLmtlcm5l
+bC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KPiANCj4gDQo+IA0KPiAtLQ0KPiBCYW9saW4ud2Fu
+Zw0KPiBCZXN0IFJlZ2FyZHMNCg==
