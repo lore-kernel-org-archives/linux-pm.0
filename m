@@ -1,156 +1,65 @@
-From: Fu Wei <fu.wei@linaro.org>
-Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Thu, 31 Mar 2016 01:41:52 +0800
-Message-ID: <CADyBb7sCx2ifdbf3JDJ4+CoEEO0L6SdtmCTiKnYsK1uFU42rZA@mail.gmail.com>
-References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
-	<20160329163500.GI6745@arm.com>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Wed, 30 Mar 2016 10:44:58 -0700
+Message-ID: <20160330174458.GP2350@sirena.org.uk>
+References: <cover.1458128215.git.baolin.wang@linaro.org>
+ <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+ <87h9foqnur.fsf@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160329163500.GI6745@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: Tomasz Nowicki <tn@semihalf.com>, Rafael Wysocki <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, Catalin Marinas <catalin.marinas@arm.com>, Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com, LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, x86@kernel.org, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, G Gregory <graeme.gregory@linaro.org>, Al Stone <al.stone@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Marc Zyngier <Marc.Zyngier@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Richard Ruigrok <rruigrok@codeaurora.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Jon Masters <jcm@redhat.com>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.o>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Uc2nn8srCdMFAHlk"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <87h9foqnur.fsf-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Will,
 
-On 30 March 2016 at 00:35, Will Deacon <will.deacon@arm.com> wrote:
-> On Tue, Mar 29, 2016 at 03:44:18PM +0800, fu.wei@linaro.org wrote:
->> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
->>
->> This commit provides APEI arch-specific bits for aarch64
->>
->> Meanwhile,
->> (1)add a new subfunction "hest_ia32_init" for
->> "acpi_disable_cmcff" which is used by IA-32 Architecture
->> Corrected Machine Check (CMC).
->> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->> a generic place.
->> (3)select EFI when ACPI_APEI is set on ARM64,
->> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
->>
->> [Fu Wei: improve && upstream]
->>
->> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
->> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
->> Signed-off-by: Fu Wei <fu.wei@linaro.org>
->> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
->> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
->> ---
->> Changelog:
->> v8: Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
->>     on ARM64.
->>
->> v7: https://lkml.org/lkml/2016/3/17/183
->>     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
->>
->> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
->>     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->>     a generic place.
->>     Delete HAVE_ACPI_APEI_HEST_IA32.
->>
->> v5: https://lkml.org/lkml/2015/12/10/131
->>     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
->>     "#if defined(__i386__) || defined(__x86_64__)".
->>
->> v4: https://lkml.org/lkml/2015/12/8/188
->>     Rebase to latest kernel version(4.4-rc4).
->>     Move arch_apei_flush_tlb_one into header file as a inline function
->>     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
->>
->> v3: https://lkml.org/lkml/2015/12/3/521
->>     Remove "acpi_disable_cmcff" from arm64 code,
->>     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
->>
->> v2: https://lkml.org/lkml/2015/12/2/432
->>     Rebase to latest kernel version(4.4-rc3).
->>     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
->>
->> v1: https://lkml.org/lkml/2015/8/14/199
->>     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
->>     Delete arch/arm64/kernel/apei.c.
->>     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
->>
->>  arch/arm64/Kconfig            |  1 +
->>  arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
->>  arch/x86/kernel/acpi/apei.c   |  3 ---
->>  drivers/acpi/apei/Kconfig     |  1 +
->>  drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
->>  5 files changed, 31 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
->> index 4f43622..08952ec 100644
->> --- a/arch/arm64/Kconfig
->> +++ b/arch/arm64/Kconfig
->> @@ -3,6 +3,7 @@ config ARM64
->>       select ACPI_CCA_REQUIRED if ACPI
->>       select ACPI_GENERIC_GSI if ACPI
->>       select ACPI_REDUCED_HARDWARE_ONLY if ACPI
->> +     select HAVE_ACPI_APEI if ACPI
->>       select ARCH_HAS_DEVMEM_IS_ALLOWED
->>       select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
->>       select ARCH_HAS_ELF_RANDOMIZE
->> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
->> index aee323b..4a6c959 100644
->> --- a/arch/arm64/include/asm/acpi.h
->> +++ b/arch/arm64/include/asm/acpi.h
->> @@ -17,6 +17,7 @@
->>
->>  #include <asm/cputype.h>
->>  #include <asm/smp_plat.h>
->> +#include <asm/tlbflush.h>
->>
->>  /* Macros for consistency checks of the GICC subtable of MADT */
->>  #define ACPI_MADT_GICC_LENGTH        \
->> @@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
->>  }
->>
->>  #ifdef       CONFIG_ACPI_APEI
->> +#define acpi_disable_cmcff 1
->>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
->> -#endif
->>
->> +/*
->> + * This inline function is used in IRQ context (by GHES driver now),
->> + * see ghes_iounmap_irq and ghes_iounmap_nmi in drivers/acpi/apei/ghes.c.
->> + * The page mapped is reserved for firmware in kernel. This invalidate TLB
->> + * maintenance should be broadcasted safely to make sure that all the cores
->> + * will do TLB invalidation, then get the right pages.
->> + */
->
-> How about:
->
->  /*
->   * Despite its name, this function must still broadcast the TLB
->   * invalidation in order to ensure other CPUs don't up with with junk
->   * entries as a result of speculation. Unusually, its also called in
->   * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
->   * TLB broadcasting, then we're in trouble here.
->   */
+--Uc2nn8srCdMFAHlk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Good, thanks for your help
+On Wed, Mar 30, 2016 at 01:09:00PM +0300, Felipe Balbi wrote:
+> Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
 
->
-> With that,
->
-> Acked-by: Will Deacon <will.deacon@arm.com>
+> > +#include <linux/of.h>
+> > +#include <linux/of_device.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/platform_device.h>
 
-Thanks ! :-)
+> not very nice to depend on either of or platform_device here. What about
+> PCI-based devices ?
 
->
-> Will
+The header inclusion shouldn't be conditional though.  But looking at
+the patch I can't immediately see any use of these in the code anyway.
 
+> > +static DEVICE_ATTR_RW(sdp_limit);
 
+> why RW ? Who's going to use these ? Also, you're not documenting this
+> new sysfs file.
 
--- 
-Best regards,
+If they end up not writeable should we just remove them entirely since
+they should just be the spec values?
 
-Fu Wei
-Software Engineer
-Red Hat Software (Beijing) Co.,Ltd.Shanghai Branch
-Ph: +86 21 61221326(direct)
-Ph: +86 186 2020 4684 (mobile)
-Room 1512, Regus One Corporate Avenue,Level 15,
-One Corporate Avenue,222 Hubin Road,Huangpu District,
-Shanghai,China 200021
+--Uc2nn8srCdMFAHlk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJW/BCRAAoJECTWi3JdVIfQVRAH/04NkweSyILzir/w7glvhIQR
+LIgVc2KvRQ0637Ce2NKDJ8XedXvY7642E8tVMT1ieFd/DaIk0VwaUolmcmw0c4pi
+4kbtoWy9YYKi1K72oTUbFnEbuZgiNZTXnY8VEFmbnRy9yJOznrnc3dt3CwHw1Eqx
+QpoeGEiZLD9p+uMOw2J01KQKfatLkVKYPstNz0vkFTb+ibLMzurEe0X99Fd3iPVL
+niiH1+ExzmnjkAQuTCZ6F/AJSRMYIQr0I8RvWrr2iwGXR+4hTNlpj01g1VLHiMPq
+Xy//VXMbcM2HmCgMdMFBIeBflwBdiMZnVswzD9mlQUOlNqMVCyxSOk6cIrK3JjE=
+=6eD0
+-----END PGP SIGNATURE-----
+
+--Uc2nn8srCdMFAHlk--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
