@@ -1,7 +1,7 @@
 From: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v3 1/4] thermal: send notifications for cdev state change
-Date: Tue, 29 Mar 2016 17:41:34 -0700
-Message-ID: <1459298497-29481-2-git-send-email-srikars@nvidia.com>
+Subject: [PATCH v3 3/4] thermal: of: enable temperature notifications
+Date: Tue, 29 Mar 2016 17:41:36 -0700
+Message-ID: <1459298497-29481-4-git-send-email-srikars@nvidia.com>
 References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,30 +12,83 @@ To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxt
 Cc: mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Send notifications using sysfs_notify to indicate that a cooling
-device cur state has changed. This can alert the listeners that
-hardware clocks are about to be throttled.
+* Add a state variable to track if trip point is triggered.
+* Enable trip events only when the state of the tirp point changes.
+* Implement the get\set callbacks for trip state.
 
-A listening user space application can use this notification to
-perform workload throttling.
-
-Change-Id: I71cd6d11bff87f181fa3b7db36bf6c953d1d77eb
+Change-Id: I1bd6a7b0e5e520d8ee678b83111d23cada7a580c
 Signed-off-by: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/thermal/thermal_core.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/of-thermal.c | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d4b5465..b09fff1 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1642,6 +1642,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	cdev->updated = true;
- 	trace_cdev_update(cdev, target);
- 	dev_dbg(&cdev->device, "set to state %lu\n", target);
-+	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 49ac23d..f6d9d3d 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -379,6 +379,43 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+ 	return -EINVAL;
  }
- EXPORT_SYMBOL(thermal_cdev_update);
  
++static bool of_thermal_enb_temp_notify(struct thermal_zone_device *tz, int trip)
++{
++	bool ret = true;
++	struct __thermal_zone *data = tz->devdata;
++
++	if (trip >= data->ntrips || trip < 0)
++		ret = false;
++
++	return ret;
++}
++
++static int of_thermal_get_trip_state(struct thermal_zone_device *tz, int trip,
++				     enum thermal_trip_state *state)
++{
++	struct __thermal_zone *data = tz->devdata;
++
++	if (trip >= data->ntrips || trip < 0)
++		return -EDOM;
++
++	*state = data->trips[trip].state;
++
++	return 0;
++}
++
++static int of_thermal_set_trip_state(struct thermal_zone_device *tz, int trip,
++				     enum thermal_trip_state state)
++{
++	struct __thermal_zone *data = tz->devdata;
++
++	if (trip >= data->ntrips || trip < 0)
++		return -EDOM;
++
++	data->trips[trip].state = state;
++
++	return 0;
++}
++
+ static struct thermal_zone_device_ops of_thermal_ops = {
+ 	.get_mode = of_thermal_get_mode,
+ 	.set_mode = of_thermal_set_mode,
+@@ -392,6 +429,10 @@ static struct thermal_zone_device_ops of_thermal_ops = {
+ 
+ 	.bind = of_thermal_bind,
+ 	.unbind = of_thermal_unbind,
++
++	.get_trip_state = of_thermal_get_trip_state,
++	.set_trip_state = of_thermal_set_trip_state,
++	.enb_temp_notify = of_thermal_enb_temp_notify,
+ };
+ 
+ /***   sensor API   ***/
+@@ -782,6 +823,8 @@ static int thermal_of_populate_trip(struct device_node *np,
+ 		return ret;
+ 	}
+ 
++	trip->state = THERMAL_TRIP_NOT_TRIPPED;
++
+ 	/* Required for cooling map matching */
+ 	trip->np = np;
+ 	of_node_get(np);
 -- 
 2.1.4
