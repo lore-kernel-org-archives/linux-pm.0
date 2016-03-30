@@ -1,43 +1,37 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH v4 0/2] Add UCS1002 USB Port Power Controller
-Date: Wed, 30 Mar 2016 18:51:39 +0200
-Message-ID: <CAFqH_53AwUYKZAoUPN0VDiF_zGb=hkzB4k0KV+a9EX06HrdkiA@mail.gmail.com>
-References: <1457947485-14140-1-git-send-email-enric.balletbo@collabora.com>
+From: Matt Longnecker <mlongnecker@nvidia.com>
+Subject: Re: [PATCH v3 2/4] thermal: send notifications for tz temperature
+Date: Wed, 30 Mar 2016 09:53:37 -0700
+Message-ID: <56FC0491.10309@nvidia.com>
+References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
+ <1459298497-29481-3-git-send-email-srikars@nvidia.com>
+ <56FC0215.1060802@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1457947485-14140-1-git-send-email-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:3715 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755224AbcC3Qxj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 12:53:39 -0400
+In-Reply-To: <56FC0215.1060802@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srikar Srimath Tirumala <srikars@nvidia.com>, edubezval@gmail.com, rui.zhang@intel.com, srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 
-2016-03-14 10:24 GMT+01:00 Enric Balletbo i Serra
-<enric.balletbo@collabora.com>:
-> Dear all,
->
-> This is the fourth version of the UCS1002 driver, a Programmable USB Port
-> Power Controller with Charger Emulation.
->
-> Any comments are welcome. Thanks in advance.
->
-> Enric Balletbo i Serra (2):
->   devicetree: Add UCS1002 USB Port Power Controller binding
->   power: ucs1002: Add support for Programmable USB Port Power Controller
->
->  .../devicetree/bindings/power/ucs1002.txt          |   41 +
->  drivers/power/Kconfig                              |    9 +
->  drivers/power/Makefile                             |    1 +
->  drivers/power/ucs1002_power.c                      | 1004 ++++++++++++++++++++
->  4 files changed, 1055 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
->  create mode 100644 drivers/power/ucs1002_power.c
->
-> --
-> 2.1.0
->
 
-Just a gentle reminder for if anyone can do some review, I would
-really like to see these patches ready for next merge window :)
 
-- Enric
+On 03/30/2016 09:43 AM, Matt Longnecker wrote:
+>
+>
+> On 03/29/2016 05:41 PM, Srikar Srimath Tirumala wrote:
+>>     struct thermal_trip {
+>> @@ -355,6 +366,7 @@ struct thermal_trip {
+>>       unsigned long int temperature;
+>>       unsigned long int hysteresis;
+>>       enum thermal_trip_type type;
+>> +    enum thermal_trip_state state;
+> This looks vestigial. Remove it?
+>
+>
+nevermind. I see that it's used in the next patch. And it really does 
+belong here, not in the next patch.
