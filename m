@@ -1,70 +1,243 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Update][PATCH v7 7/7] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Wed, 30 Mar 2016 19:24:04 +0200
-Message-ID: <CAJZ5v0gztvG4u=euSA0W+3Pt4dPZ58JCSJPTCbXvfVt_Zid38Q@mail.gmail.com>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
-	<6666532.7ULg06hQ7e@vostro.rjw.lan>
-	<145931680.Kk1xSBT0Ro@vostro.rjw.lan>
-	<20160330053011.GF8773@vireshk-i7>
-	<CAJZ5v0iB_7zZSu5-H-px7NYiaZ_P6DW3dqx-bKs7eohWudwxvQ@mail.gmail.com>
-	<56FC0773.6060605@linaro.org>
+From: Fu Wei <fu.wei@linaro.org>
+Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 31 Mar 2016 01:40:23 +0800
+Message-ID: <CADyBb7upVcXMw6euH1s3YNw=NXTkhD4oXVK-iD+_m4Y295wpTw@mail.gmail.com>
+References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
+	<CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:36746 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932072AbcC3RYM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 13:24:12 -0400
-In-Reply-To: <56FC0773.6060605@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Tomasz Nowicki <tn@semihalf.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Richard Ruigrok <rruigrok@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Al Stone <al.stone@linaro.org>, "x86@kernel.org" <x86@kernel.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>Tomasz
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On Wed, Mar 30, 2016 at 7:05 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> On 03/30/2016 04:31 AM, Rafael J. Wysocki wrote:
->>>> >> +static int sugov_limits(struct cpufreq_policy *policy)
->>>> >> +{
->>>> >> +     struct sugov_policy *sg_policy = policy->governor_data;
->>>> >> +
->>>> >> +     if (!policy->fast_switch_enabled) {
->>>> >> +             mutex_lock(&sg_policy->work_lock);
->>>> >> +
->>>> >> +             if (policy->max < policy->cur)
->>>> >> +                     __cpufreq_driver_target(policy, policy->max,
->>>> >> +                                             CPUFREQ_RELATION_H);
->>>> >> +             else if (policy->min > policy->cur)
->>>> >> +                     __cpufreq_driver_target(policy, policy->min,
->>>> >> +                                             CPUFREQ_RELATION_L);
->>>> >> +
->>>> >> +             mutex_unlock(&sg_policy->work_lock);
->>>> >> +     }
->>>> >> +
->>>> >> +     sg_policy->need_freq_update = true;
->>> >
->>> > I am wondering why we need to do this for !fast_switch_enabled case?
+Hi Ard,
+
+On 30 March 2016 at 15:05, Ard Biesheuvel <ard.biesheuvel@linaro.org> wrote:
+> On 29 March 2016 at 09:44,  <fu.wei@linaro.org> wrote:
+>> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 >>
->> That will cause the rate limit to be ignored in the utilization update
->> handler which may be necessary if it is set to a relatively large
->> value (like 1 s).
+>> This commit provides APEI arch-specific bits for aarch64
+>>
+>> Meanwhile,
+>> (1)add a new subfunction "hest_ia32_init" for
+>> "acpi_disable_cmcff" which is used by IA-32 Architecture
+>> Corrected Machine Check (CMC).
+>> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>> a generic place.
+>> (3)select EFI when ACPI_APEI is set on ARM64,
+>> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
 >
-> But why is that necessary for !fast_switch_enabled? In that case the
-> frequency has been adjusted to satisfy the new limits here, so ignoring
-> the rate limit shouldn't be necessary. In other words why not
+> I think selecting 'EFI' is not the right approach here, especially
+> since EFI is implied by ACPI on that architecture. But selecting a
+
+I think so "EFI is implied by ACPI",
+but I can't see it in Kconfig, maybe I miss it?
+
+> user configurable option like this is typically not recommended. Why
+> doesn't ACPI_APEI depend on ACPI?
+
+yes, it does, but indirectly.
+
+-----------------
+config ACPI_APEI
+        bool "ACPI Platform Error Interface (APEI)"
+        select MISC_FILESYSTEMS
+        select PSTORE
+        select EFI if ARM64
+        select UEFI_CPER
+        depends on HAVE_ACPI_APEI
+----------------
+config ARM64
+        def_bool y
+        select ACPI_CCA_REQUIRED if ACPI
+        select ACPI_GENERIC_GSI if ACPI
+        select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+        select HAVE_ACPI_APEI if ACPI
+...
+---------------
+
+
+
 >
-> } else {
->         sg_policy->need_freq_update = true;
-> }
+>>
+>> [Fu Wei: improve && upstream]
+>>
+>> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+>> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+>> Signed-off-by: Fu Wei <fu.wei@linaro.org>
+>> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+>> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+>> ---
+>> Changelog:
+>> v8: Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+>>     on ARM64.
+>>
+>> v7: https://lkml.org/lkml/2016/3/17/183
+>>     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
+>>
+>> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+>>     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>>     a generic place.
+>>     Delete HAVE_ACPI_APEI_HEST_IA32.
+>>
+>> v5: https://lkml.org/lkml/2015/12/10/131
+>>     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+>>     "#if defined(__i386__) || defined(__x86_64__)".
+>>
+>> v4: https://lkml.org/lkml/2015/12/8/188
+>>     Rebase to latest kernel version(4.4-rc4).
+>>     Move arch_apei_flush_tlb_one into header file as a inline function
+>>     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+>>
+>> v3: https://lkml.org/lkml/2015/12/3/521
+>>     Remove "acpi_disable_cmcff" from arm64 code,
+>>     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+>>
+>> v2: https://lkml.org/lkml/2015/12/2/432
+>>     Rebase to latest kernel version(4.4-rc3).
+>>     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+>>
+>> v1: https://lkml.org/lkml/2015/8/14/199
+>>     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+>>     Delete arch/arm64/kernel/apei.c.
+>>     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+>>
+>>  arch/arm64/Kconfig            |  1 +
+>>  arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
+>>  arch/x86/kernel/acpi/apei.c   |  3 ---
+>>  drivers/acpi/apei/Kconfig     |  1 +
+>>  drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+>>  5 files changed, 31 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 4f43622..08952ec 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -3,6 +3,7 @@ config ARM64
+>>         select ACPI_CCA_REQUIRED if ACPI
+>>         select ACPI_GENERIC_GSI if ACPI
+>>         select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+>> +       select HAVE_ACPI_APEI if ACPI
+>>         select ARCH_HAS_DEVMEM_IS_ALLOWED
+>>         select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+>>         select ARCH_HAS_ELF_RANDOMIZE
+>> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+>> index aee323b..4a6c959 100644
+>> --- a/arch/arm64/include/asm/acpi.h
+>> +++ b/arch/arm64/include/asm/acpi.h
+>> @@ -17,6 +17,7 @@
+>>
+>>  #include <asm/cputype.h>
+>>  #include <asm/smp_plat.h>
+>> +#include <asm/tlbflush.h>
+>>
+>>  /* Macros for consistency checks of the GICC subtable of MADT */
+>>  #define ACPI_MADT_GICC_LENGTH  \
+>> @@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
+>>  }
+>>
+>>  #ifdef CONFIG_ACPI_APEI
+>> +#define acpi_disable_cmcff 1
+>>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+>> -#endif
+>>
+>> +/*
+>> + * This inline function is used in IRQ context (by GHES driver now),
+>> + * see ghes_iounmap_irq and ghes_iounmap_nmi in drivers/acpi/apei/ghes.c.
+>> + * The page mapped is reserved for firmware in kernel. This invalidate TLB
+>> + * maintenance should be broadcasted safely to make sure that all the cores
+>> + * will do TLB invalidation, then get the right pages.
+>> + */
+>> +static inline void arch_apei_flush_tlb_one(unsigned long addr)
+>> +{
+>> +       flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+>> +}
+>> +#endif /* CONFIG_ACPI_APEI */
+>>  #endif /*_ASM_ACPI_H*/
+>> diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+>> index c280df6..ea3046e 100644
+>> --- a/arch/x86/kernel/acpi/apei.c
+>> +++ b/arch/x86/kernel/acpi/apei.c
+>> @@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+>>         struct acpi_hest_ia_corrected *cmc;
+>>         struct acpi_hest_ia_error_bank *mc_bank;
+>>
+>> -       if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+>> -               return 0;
+>> -
+>>         cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+>>         if (!cmc->enabled)
+>>                 return 0;
+>> diff --git a/drivers/acpi/apei/Kconfig b/drivers/acpi/apei/Kconfig
+>> index b0140c8..b037c5c 100644
+>> --- a/drivers/acpi/apei/Kconfig
+>> +++ b/drivers/acpi/apei/Kconfig
+>> @@ -8,6 +8,7 @@ config ACPI_APEI
+>>         bool "ACPI Platform Error Interface (APEI)"
+>>         select MISC_FILESYSTEMS
+>>         select PSTORE
+>> +       select EFI if ARM64
+>>         select UEFI_CPER
+>>         depends on HAVE_ACPI_APEI
+>>         help
+>> diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+>> index 20b3fcf..792a0d9 100644
+>> --- a/drivers/acpi/apei/hest.c
+>> +++ b/drivers/acpi/apei/hest.c
+>> @@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+>>   */
+>>  static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+>>  {
+>> -       return arch_apei_enable_cmcff(hest_hdr, data);
+>> +       if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+>> +               return 0;
+>> +
+>> +       if (!acpi_disable_cmcff)
+>> +               return !arch_apei_enable_cmcff(hest_hdr, data);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static inline int __init hest_ia32_init(void)
+>> +{
+>> +       return apei_hest_parse(hest_parse_cmc, NULL);
+>>  }
+>>
+>>  struct ghes_arr {
+>> @@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+>>                 goto err;
+>>         }
+>>
+>> -       if (!acpi_disable_cmcff)
+>> -               apei_hest_parse(hest_parse_cmc, NULL);
+>> +       rc = hest_ia32_init();
+>> +       if (rc)
+>> +               goto err;
+>>
+>>         if (!ghes_disable) {
+>>                 rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+>> --
+>> 2.5.0
+>>
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-My thinking here was that the governor might decide to use something
-different from the limit enforced here, so it would be good to make it
-do so as soon as possible.  In particular in the
-non-frequency-invariant utilization case in which new frequency
-depends on the current one.
 
-That said i'm not particularly opposed to making that change if that's
-preferred.
 
-Thanks,
-Rafael
+-- 
+Best regards,
+
+Fu Wei
+Software Engineer
+Red Hat Software (Beijing) Co.,Ltd.Shanghai Branch
+Ph: +86 21 61221326(direct)
+Ph: +86 186 2020 4684 (mobile)
+Room 1512, Regus One Corporate Avenue,Level 15,
+One Corporate Avenue,222 Hubin Road,Huangpu District,
+Shanghai,China 200021
