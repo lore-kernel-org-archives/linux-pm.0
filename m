@@ -1,186 +1,113 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V9 RESEND 14/14] arm: tegra: set critical trips for Tegra124
-Date: Wed, 30 Mar 2016 18:30:32 +0800
-Message-ID: <56FBAAC8.1090208@nvidia.com>
-References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-15-git-send-email-wni@nvidia.com>
+From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
+Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Wed, 30 Mar 2016 10:58:52 +0000
+Message-ID: <AM4PR04MB1665E85D823D5AB59B54B56D89980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
+	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
+	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
+	<AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+ <CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nat-hk.nvidia.com ([203.18.50.4]:14573 "EHLO
-	hkmmgate101.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751223AbcC3KaI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 06:30:08 -0400
-In-Reply-To: <1459247364-1139-15-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, Thierry Reding <thierry.reding@gmail.com>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-To: Rob Herring <robh+dt@kernel.org>
-
-
-On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 18:29, Wei Ni wrote:
-> Set general "critical" trip temperatures for cpu, gpu, mem and pllx
-> thermal zones for all Tegra124 platform, these trips can trigger
-> shut down or reset.
-> Tegra124 Jetson TK1 was already set "critical" trips before, so it
-> can overwrite the general values.
->=20
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  arch/arm/boot/dts/tegra124-jetson-tk1.dts | 18 ++--------
->  arch/arm/boot/dts/tegra124.dtsi           | 60 +++++++++++++++++++++=
-++++++++++
->  2 files changed, 63 insertions(+), 15 deletions(-)
->=20
-> diff --git a/arch/arm/boot/dts/tegra124-jetson-tk1.dts b/arch/arm/boo=
-t/dts/tegra124-jetson-tk1.dts
-> index 66b4451eb2ca..0e24ecd71ac7 100644
-> --- a/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-> +++ b/arch/arm/boot/dts/tegra124-jetson-tk1.dts
-> @@ -1931,44 +1931,32 @@
->  	thermal-zones {
->  		cpu {
->  			trips {
-> -				trip@0 {
-> +				cpu-shutdown-trip {
->  					temperature =3D <101000>;
->  					hysteresis =3D <0>;
->  					type =3D "critical";
->  				};
->  			};
-> -
-> -			cooling-maps {
-> -				/* There are currently no cooling maps because there are no cool=
-ing devices */
-> -			};
->  		};
-> =20
->  		mem {
->  			trips {
-> -				trip@0 {
-> +				mem-shutdown-trip {
->  					temperature =3D <101000>;
->  					hysteresis =3D <0>;
->  					type =3D "critical";
->  				};
->  			};
-> -
-> -			cooling-maps {
-> -				/* There are currently no cooling maps because there are no cool=
-ing devices */
-> -			};
->  		};
-> =20
->  		gpu {
->  			trips {
-> -				trip@0 {
-> +				gpu-shutdown-trip {
->  					temperature =3D <101000>;
->  					hysteresis =3D <0>;
->  					type =3D "critical";
->  				};
->  			};
-> -
-> -			cooling-maps {
-> -				/* There are currently no cooling maps because there are no cool=
-ing devices */
-> -			};
->  		};
->  	};
->  };
-> diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegr=
-a124.dtsi
-> index 68669f791c8b..076a384848ba 100644
-> --- a/arch/arm/boot/dts/tegra124.dtsi
-> +++ b/arch/arm/boot/dts/tegra124.dtsi
-> @@ -996,6 +996,21 @@
-> =20
->  			thermal-sensors =3D
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
-> +
-> +			trips {
-> +				cpu-shutdown-trip {
-> +					temperature =3D <103000>;
-> +					hysteresis =3D <0>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				/*
-> +				 * There are currently no cooling maps,
-> +				 * because there are no cooling devices.
-> +				 */
-> +			};
->  		};
-> =20
->  		mem {
-> @@ -1004,6 +1019,21 @@
-> =20
->  			thermal-sensors =3D
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
-> +
-> +			trips {
-> +				mem-shutdown-trip {
-> +					temperature =3D <103000>;
-> +					hysteresis =3D <0>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				/*
-> +				 * There are currently no cooling maps,
-> +				 * because there are no cooling devices.
-> +				 */
-> +			};
->  		};
-> =20
->  		gpu {
-> @@ -1012,6 +1042,21 @@
-> =20
->  			thermal-sensors =3D
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
-> +
-> +			trips {
-> +				gpu-shutdown-trip {
-> +					temperature =3D <101000>;
-> +					hysteresis =3D <0>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				/*
-> +				 * There are currently no cooling maps,
-> +				 * because there are no cooling devices.
-> +				 */
-> +			};
->  		};
-> =20
->  		pllx {
-> @@ -1020,6 +1065,21 @@
-> =20
->  			thermal-sensors =3D
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
-> +
-> +			trips {
-> +				pllx-shutdown-trip {
-> +					temperature =3D <103000>;
-> +					hysteresis =3D <0>;
-> +					type =3D "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				/*
-> +				 * There are currently no cooling maps,
-> +				 * because there are no cooling devices.
-> +				 */
-> +			};
->  		};
->  	};
-> =20
->=20
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcgW21h
+aWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDMw
+LCAyMDE2IDU6MzEgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBQZXRl
+ciBDaGVuIDxoenBldGVyY2hlbkBnbWFpbC5jb20+OyBGZWxpcGUgQmFsYmkgPGJhbGJpQGtlcm5l
+bC5vcmc+Ow0KPiBHcmVnIEtIIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IFNlYmFzdGlh
+biBSZWljaGVsIDxzcmVAa2VybmVsLm9yZz47DQo+IERtaXRyeSBFcmVtaW4tU29sZW5pa292IDxk
+YmFyeXNoa292QGdtYWlsLmNvbT47IERhdmlkIFdvb2Rob3VzZQ0KPiA8ZHdtdzJAaW5mcmFkZWFk
+Lm9yZz47IFBldGVyIENoZW4gPHBldGVyLmNoZW5AZnJlZXNjYWxlLmNvbT47IEFsYW4gU3Rlcm4N
+Cj4gPHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+OyByLmJhbGR5Z2FAc2Ftc3VuZy5jb207IFlv
+c2hpaGlybyBTaGltb2RhDQo+IDx5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT47IExl
+ZSBKb25lcyA8bGVlLmpvbmVzQGxpbmFyby5vcmc+OyBNYXJrDQo+IEJyb3duIDxicm9vbmllQGtl
+cm5lbC5vcmc+OyBDaGFybGVzIEtlZXBheA0KPiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25t
+aWNyby5jb20+OyBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gTGludXgg
+UE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgVVNCIDxsaW51eC11c2JAdmdlci5r
+ZXJuZWwub3JnPjsNCj4gZGV2aWNlLW1haW5saW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9y
+ZzsgTEtNTCA8bGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggdjggMC80XSBJbnRyb2R1Y2UgdXNiIGNoYXJnZXIgZnJhbWV3b3JrIHRvIGRlYWwg
+d2l0aA0KPiB0aGUgdXNiIGdhZGdldCBwb3dlciBuZWdvdGF0aW9uDQo+IA0KPiBPbiAzMCBNYXJj
+aCAyMDE2IGF0IDE2OjA3LCBKdW4gTGkgPGp1bi5saUBueHAuY29tPiB3cm90ZToNCj4gPiBIaQ0K
+PiANCj4gPj4gT24gMzAgTWFyY2ggMjAxNiBhdCAxMDo1NCwgSnVuIExpIDxqdW4ubGlAbnhwLmNv
+bT4gd3JvdGU6DQo+ID4+ID4+ID4+IEl0IGlzIG5vdCBmb3IgdWRjIGRyaXZlciBidXQgZm9yIHBv
+d2VyIHVzZXJzIHdobyB3YW50IHRvDQo+ID4+ID4+ID4+IG5lZ290aWF0ZSB3aXRoIFVTQiBzdWJz
+eXN0ZW0uDQo+ID4+ID4+ID4+DQo+ID4+ID4+ID4NCj4gPj4gPj4gPiBTZWVtcyB5b3UgZG9uJ3Qg
+d2FudCB0byBndWFyYW50ZWUgY2hhcmdlciB0eXBlIGRldGVjdGlvbiBpcyBkb25lDQo+ID4+ID4+
+ID4gYmVmb3JlIGdhZGdldCBjb25uZWN0aW9uKHB1bGx1cCBEUCksIHJpZ2h0Pw0KPiA+PiA+PiA+
+IEkgc2VlIHlvdSBjYWxsIHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgaW4gZWFjaCBnYWRnZXQg
+dXNiDQo+ID4+ID4+ID4gc3RhdGUNCj4gPj4gPj4gY2hhbmdlcy4NCj4gPj4gPj4NCj4gPj4gPj4g
+SSBhbSBub3Qgc3VyZSBJIGdldCB5b3VyIHBvaW50IGNvcnJlY3RseSwgcGxlYXNlIGNvcnJlY3Qg
+bWUgaWYgSQ0KPiA+PiA+PiBtaXN1bmRlcnN0YW5kIHlvdS4NCj4gPj4gPj4gV2UgbmVlZCB0byBj
+aGVjayB0aGUgY2hhcmdlciB0eXBlIGF0IGV2ZXJ5IGV2ZW50IGNvbWVzIGZyb20gdGhlDQo+ID4+
+ID4+IHVzYiBnYWRnZXQgc3RhdGUgY2hhbmdlcyBvciB0aGUgZXh0Y29uIGRldmljZSBzdGF0ZSBj
+aGFuZ2VzLCB3aGljaA0KPiA+PiA+PiBtZWFucyBhIG5ldyBjaGFyZ2VyIHBsdWdpbiBvciBwdWxs
+dXAuDQo+ID4+ID4+DQo+ID4+ID4NCj4gPj4gPiBBY2NvcmRpbmcgdG8gdXNiIGNoYXJnZXIgc3Bl
+YywgbXkgdW5kZXJzdGFuZGluZyBpcyB5b3UgY2FuJ3QgZG8NCj4gPj4gPiByZWFsIGNoYXJnZXIg
+ZGV0ZWN0aW9uIHByb2NlZHVyZSAqYWZ0ZXIqIGdhZGdldCBfY29ubmVjdGlvbl8ocHVsbHVwDQo+
+ID4+ID4gRFApLCBhbHNvIEkgZG9uJ3QNCj4gPj4NCj4gPj4gV2h5IGNhbiBub3Q/IENoYXJnZXIg
+ZGV0ZWN0aW9uIGlzIHVzdWFsbHkgZnJvbSBQTUlDLg0KPiA+DQo+ID4gQ2hhcmdlciBkZXRlY3Rp
+b24gcHJvY2VzcyB3aWxsIGltcGFjdCBEUC9ETSBsaW5lIHN0YXRlLCBzZWUgdXNiDQo+ID4gY2hh
+cmdlciBzcGVjIHYxLjIgZm9yIGRldGFpbCBkZXRlY3Rpb24gcHJvY2Vzcywgc2VjdGlvbiA0LjYu
+MyBzYXlzOg0KPiA+DQo+ID4gIkEgUEQgaXMgYWxsb3dlZCB0byAqZGlzY29ubmVjdCogYW5kIHJl
+cGVhdCB0aGUgY2hhcmdlciBkZXRlY3Rpb24NCj4gPiBwcm9jZXNzIG11bHRpcGxlIHRpbWVzIHdo
+aWxlIGF0dGFjaGVkLiBUaGUgUEQgaXMgcmVxdWlyZWQgdG8gd2FpdCBmb3INCj4gPiBhIHRpbWUg
+b2YgYXQgbGVhc3QgVENQX1ZETV9FTiBtYXggYmV0d2VlbiBkaXNjb25uZWN0aW5nIGFuZCByZXN0
+YXJ0aW5nDQo+ID4gdGhlIGNoYXJnZXIgZGV0ZWN0aW9uIHByb2Nlc3MuIg0KPiA+DQo+ID4gQXMg
+UGV0ZXIgbWVudGlvbmVkLCB0aGUgY2hhcmdlciBkZXRlY3Rpb24gc2hvdWxkIGhhcHBlbiBiZXR3
+ZWVuIFZCVVMNCj4gPiBkZXRlY3Rpb24gYW5kIGdhZGdldCBwdWxsIHVwIERQIGZvciBmaXJzdCBw
+bHVnIGluIGNhc2UuIFNvIHdoZW4mYWZ0ZXINCj4gPiBnYWRnZXQgY29ubmVjdCAocHVsbHVwIERQ
+KSwgeW91IHNob3VsZCBhbHJlYWR5IGtub3cgdGhlIGNoYXJnZXIgdHlwZS4NCj4gDQo+IE1ha2Ug
+c2Vuc2UuIEluIG91ciBjb21wYW55J3Mgc29sdXRpb24sIGNoYXJnZXIgZGV0ZWN0aW9uIGNhbiBi
+ZSBkb25lIGJ5DQo+IGhhcmR3YXJlIGZyb20gUE1JQyBhdCBmaXJzdCwgdGhlbiBpdCB3aWxsIG5v
+dCBhZmZlY3QgdGhlIERQL0RNIGxpbmUgd2hlbg0KPiBnYWRnZXQgc3RhcnRzIHRvIGVudW1lcmF0
+aW9uLiANCg0KSSBzZWUsIGNoYXJnZXIgdHlwZSBkZXRlY3Rpb24gaXMgZG9uZSBhdXRvbWF0aWNh
+bGx5IGJ5IFBNSUMgd2hlbiBWQlVTIGlzDQpkZXRlY3RlZCBpbiB5b3VyIGNhc2UsIHlvdSBqdXN0
+IGFzc3VtZSB0aGUgcHJvY2VzcyBpcyBjb21wbGV0ZSBiZWZvcmUgU1cNCmRvIGdhZGdldCBjb25u
+ZWN0LiBUbyBtYWtlIHRoZSBmcmFtZXdvcmsgY29tbW9uLCB5b3UgbWF5IGRvIG9uZSB0aW1lIGNo
+YXJnZXIgdHlwZSBjaGVjayB3aGVuIHZidXMgaXMgb24sIGFuZCBzYXZlIGl0IHRvIGF2b2lkIHJl
+cGVhdCBjaGFyZ2VyIHR5cGUgY2hlY2suDQoNCj4gSW4gdGhlICd1c2JfY2hhcmdlcl9kZXRlY3Rf
+dHlwZSgpJywgaXQNCj4gdXN1YWxseSBnZXQgdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHR5cGUgcmVn
+aXN0ZXJzIGhhcyBiZWVuIGRvbmUgYnkgaGFyZHdhcmUNCj4gZnJvbSBQTUlDLCB3aGljaCBjYW4g
+bm90IGFmZmVjdCB0aGUgRFAvRE0gbGluZS4NCj4gDQo+ID4NCj4gPiBMaSBKdW4NCj4gPg0KPiA+
+Pg0KPiA+PiA+IHRoaW5rIGl0J3MgbmVjZXNzYXJ5IHRvIGNoZWNrIGNoYXJnZXIgdHlwZSBhdCBl
+dmVyeSBldmVudCBmcm9tIHVzYg0KPiA+PiBnYWRnZXQuDQo+ID4+DQo+ID4+IE15IG1lYW5pbmcg
+aXMgbm90IGV2ZXJ5IGV2ZW50IGZyb20gdXNiIGdhZGdldC4gV2hlbiB0aGUgdXNiIGdhZGdldA0K
+PiA+PiBzdGF0ZSBjaGFuZ2VzIG9yIHRoZSBleHRjb24gZGV2aWNlIChtYXliZSBHUElPIGRldGVj
+dGlvbikgc3RhdGUNCj4gPj4gY2hhbmdlcywgd2hpY2ggbWVhbnMgY2hhcmdlciBwbHVnaW4gb3Ig
+cHVsbHVwLCB3ZSBuZWVkIHRvIGNoZWNrIHRoZQ0KPiA+PiBjaGFyZ2VyIHR5cGUgdG8gc2V0IGN1
+cnJlbnQuDQo+ID4NCj4gPiBGcm9tIHlvdXIgYmVsb3cgY29kZSwgeW91IGNhbGwgdXNiX2NoYXJn
+ZXJfbm90aWZ5X290aGVycygpIGluIGV2ZXJ5DQo+ID4gc3RhdGUgY2hhbmdlLg0KPiANCj4gSSB0
+aGluayBpdCBkb2VzIG5vdCBtYXR0ZXIuIEluIGNhc2UgdGhlIHVzYiBjaGFyZ2VyIG1pc3NlZCBz
+b21lIGdhZGdldA0KPiBzdGF0ZSBjaGFuZ2VzLiBPciBJIHJlcGxhY2UgaXQgd2l0aCAnVVNCX1NU
+QVRFX0NPTkZJR1VSRUQnIHN0YXRlLg0KPiBUaGFua3MuDQo+IA0KPiA+DQo+ID4gaWYgKHVjaGdl
+ci0+b2xkX2dhZGdldF9zdGF0ZSAhPSBzdGF0ZSkgew0KPiA+ICAgICAgICAgdWNoZ2VyLT5vbGRf
+Z2FkZ2V0X3N0YXRlID0gc3RhdGU7DQo+ID4NCj4gPiAgICAgICAgIGlmIChzdGF0ZSA+PSBVU0Jf
+U1RBVEVfQVRUQUNIRUQpDQo+ID4gICAgICAgICAgICAgICAgIHVjaGdlcl9zdGF0ZSA9IFVTQl9D
+SEFSR0VSX1BSRVNFTlQ7DQo+ID4gICAgICAgICBlbHNlIGlmIChzdGF0ZSA9PSBVU0JfU1RBVEVf
+Tk9UQVRUQUNIRUQpDQo+ID4gICAgICAgICAgICAgICAgIHVjaGdlcl9zdGF0ZSA9IFVTQl9DSEFS
+R0VSX1JFTU9WRTsNCj4gPiAgICAgICAgIGVsc2UNCj4gPiAvKiB0aGlzIGVsc2Ugd2lsbCBuZXZl
+ciBoYXBwZW4gKi8NCj4gPiAgICAgICAgICAgICAgICAgdWNoZ2VyX3N0YXRlID0gVVNCX0NIQVJH
+RVJfREVGQVVMVDsNCj4gPg0KPiA+ICAgICAgICAgdXNiX2NoYXJnZXJfbm90aWZ5X290aGVycyh1
+Y2hnZXIsIHVjaGdlcl9zdGF0ZSk7IH0NCj4gPg0KPiA+Pg0KPiA+PiA+IFNvbWV0aGluZyBpbiBn
+YWRnZXQgZHJpdmVyIHlvdSBjYW4gdXRpbGl6ZSBpcyBvbmx5IHZidXMgZGV0ZWN0aW9uLA0KPiA+
+PiA+IGFuZCByZXBvcnQgZGlmZiBjdXJyZW50IGJ5IGRpZmYgdXNiIHN0YXRlIGlmIGl0J3MgYSBT
+RFAuDQo+ID4+DQo+ID4+IC0tDQo+ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0K
+PiANCj4gDQo+IA0KPiAtLQ0KPiBCYW9saW4ud2FuZw0KPiBCZXN0IFJlZ2FyZHMNCg==
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
