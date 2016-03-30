@@ -1,38 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V1 Resend 2/3] cpufreq: dt: Add generic platform-device
- creation support
-Date: Wed, 30 Mar 2016 08:52:40 +0530
-Message-ID: <20160330032240.GB8773@vireshk-i7>
-References: <cover.1459233524.git.viresh.kumar@linaro.org>
- <5412084.gVvuDFzkvo@wuerfel>
- <20160329163649.GE14322@vireshk-i7>
- <12972545.Mi9sHiNJpR@wuerfel>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH V9 RESEND 13/14] arm64: tegra: add soctherm node for Tegra210
+Date: Wed, 30 Mar 2016 11:24:51 +0800
+Message-ID: <56FB4703.7020201@nvidia.com>
+References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-14-git-send-email-wni@nvidia.com> <20160329151629.GB1855@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:33746 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbcC3DWu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 23:22:50 -0400
-Received: by mail-pa0-f43.google.com with SMTP id zm5so29356174pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 29 Mar 2016 20:22:50 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <12972545.Mi9sHiNJpR@wuerfel>
+Received: from nat-hk.nvidia.com ([203.18.50.4]:25914 "EHLO
+	hkmmgate101.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753725AbcC3DYe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 23:24:34 -0400
+In-Reply-To: <20160329151629.GB1855@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linaro-kernel@lists.linaro.org, k.kozlowski@samsung.com, kgene.kim@samsung.com, heiko@sntech.de, xf@rock-chips.com, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mmcclint@codeaurora.org
+To: thierry.reding@gmail.com, swarren@wwwdotorg.org
+Cc: Eduardo Valentin <edubezval@gmail.com>, rui.zhang@intel.com, MLongnecker@nvidia.com, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 29-03-16, 21:45, Arnd Bergmann wrote:
-> Regarding new platforms, I'd hope that we could manage to define an extension
-> to the oppv2 binding that marks a machine as compatible with opp, so we can
+Hi Thierry & Stephen,
+The driver patches in this series were taken by Eduardo, so do know who=
+ can take
+these tow dts patches 13 and 14?
 
-The extension of oppv2 binding or compatible string is for platforms that really
-need extend oppv2 (like ST, which already have a new compatible string). I am
-not sure if we should be putting that into the Machine's compatible area, as I
-though it is something internal to OPP layer or their driver.
+Thanks.
+Wei.
 
-But we can see that when we handle it.
-
--- 
-viresh
+On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 23:16, Eduardo Valentin wrote:
+> On Tue, Mar 29, 2016 at 06:29:23PM +0800, Wei Ni wrote:
+>> Adds soctherm node for Tegra210, and add cpu,
+>> gpu, mem, pllx as thermal-zones. Set critical
+>> trip temperatures for them.
+>>
+>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>=20
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>=20
