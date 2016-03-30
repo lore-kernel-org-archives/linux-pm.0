@@ -1,90 +1,188 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Wed, 30 Mar 2016 08:07:44 +0000
-Message-ID: <AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com>
-References: <cover.1458822334.git.baolin.wang@linaro.org>
-	<20160325070937.GA22398@peterchendt>
-	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
-	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
-	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
-	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
- <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
+From: YH Huang <yh.huang@mediatek.com>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery is dry
+Date: Wed, 30 Mar 2016 16:58:30 +0800
+Message-ID: <1459328310.29450.24.camel@mtksdaap41>
+References: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
+	 <CAGS+omDTmJDkJYsf=gDJMrmAos+30enoAa2xfTPyirXUd37=9g@mail.gmail.com>
+	 <1458801832.16645.7.camel@mtksdaap41>
+	 <CAGS+omDhFP+_shCqEWasLDsHf-ab0-OWJJ-gZZkgihAgrZwBHA@mail.gmail.com>
+	 <1459132330.16645.14.camel@mtksdaap41>
+	 <CAGS+omBVStB3mfXtDHdbsOK+y2UesGYtZBtYm=ctcpBfm88VEg@mail.gmail.com>
+	 <56F95451.5040607@nvidia.com> <1459216353.16645.20.camel@mtksdaap41>
+	 <56FA99D0.1010004@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db3on0069.outbound.protection.outlook.com ([157.55.234.69]:7008
-	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753926AbcC3IlO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Mar 2016 04:41:14 -0400
-In-Reply-To: <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <56FA99D0.1010004@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rhyland Klein <rklein@nvidia.com>
+Cc: Daniel Kurtz <djkurtz@chromium.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
-bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IFdlZG5lc2RheSwgTWFyY2gg
-MzAsIDIwMTYgMjoxNSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IFBl
-dGVyIENoZW4gPGh6cGV0ZXJjaGVuQGdtYWlsLmNvbT47IEZlbGlwZSBCYWxiaSA8YmFsYmlAa2Vy
-bmVsLm9yZz47DQo+IEdyZWcgS0ggPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgU2ViYXN0
-aWFuIFJlaWNoZWwgPHNyZUBrZXJuZWwub3JnPjsNCj4gRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3Yg
-PGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlDQo+IDxkd213MkBpbmZyYWRl
-YWQub3JnPjsgUGV0ZXIgQ2hlbiA8cGV0ZXIuY2hlbkBmcmVlc2NhbGUuY29tPjsgQWxhbiBTdGVy
-bg0KPiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT47IHIuYmFsZHlnYUBzYW1zdW5nLmNvbTsg
-WW9zaGloaXJvIFNoaW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPjsg
-TGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz47IE1hcmsNCj4gQnJvd24gPGJyb29uaWVA
-a2VybmVsLm9yZz47IENoYXJsZXMgS2VlcGF4DQo+IDxja2VlcGF4QG9wZW5zb3VyY2Uud29sZnNv
-bm1pY3JvLmNvbT47IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBMaW51
-eCBQTSBsaXN0IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBVU0IgPGxpbnV4LXVzYkB2Z2Vy
-Lmtlcm5lbC5vcmc+Ow0KPiBkZXZpY2UtbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24u
-b3JnOyBMS01MIDxsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVjdDog
-UmU6IFtQQVRDSCB2OCAwLzRdIEludHJvZHVjZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVh
-bCB3aXRoDQo+IHRoZSB1c2IgZ2FkZ2V0IHBvd2VyIG5lZ290YXRpb24NCj4gDQo+IE9uIDMwIE1h
-cmNoIDIwMTYgYXQgMTA6NTQsIEp1biBMaSA8anVuLmxpQG54cC5jb20+IHdyb3RlOg0KPiA+PiA+
-PiBJdCBpcyBub3QgZm9yIHVkYyBkcml2ZXIgYnV0IGZvciBwb3dlciB1c2VycyB3aG8gd2FudCB0
-byBuZWdvdGlhdGUNCj4gPj4gPj4gd2l0aCBVU0Igc3Vic3lzdGVtLg0KPiA+PiA+Pg0KPiA+PiA+
-DQo+ID4+ID4gU2VlbXMgeW91IGRvbid0IHdhbnQgdG8gZ3VhcmFudGVlIGNoYXJnZXIgdHlwZSBk
-ZXRlY3Rpb24gaXMgZG9uZQ0KPiA+PiA+IGJlZm9yZSBnYWRnZXQgY29ubmVjdGlvbihwdWxsdXAg
-RFApLCByaWdodD8NCj4gPj4gPiBJIHNlZSB5b3UgY2FsbCB1c2JfY2hhcmdlcl9kZXRlY3RfdHlw
-ZSgpIGluIGVhY2ggZ2FkZ2V0IHVzYiBzdGF0ZQ0KPiA+PiBjaGFuZ2VzLg0KPiA+Pg0KPiA+PiBJ
-IGFtIG5vdCBzdXJlIEkgZ2V0IHlvdXIgcG9pbnQgY29ycmVjdGx5LCBwbGVhc2UgY29ycmVjdCBt
-ZSBpZiBJDQo+ID4+IG1pc3VuZGVyc3RhbmQgeW91Lg0KPiA+PiBXZSBuZWVkIHRvIGNoZWNrIHRo
-ZSBjaGFyZ2VyIHR5cGUgYXQgZXZlcnkgZXZlbnQgY29tZXMgZnJvbSB0aGUgdXNiDQo+ID4+IGdh
-ZGdldCBzdGF0ZSBjaGFuZ2VzIG9yIHRoZSBleHRjb24gZGV2aWNlIHN0YXRlIGNoYW5nZXMsIHdo
-aWNoIG1lYW5zDQo+ID4+IGEgbmV3IGNoYXJnZXIgcGx1Z2luIG9yIHB1bGx1cC4NCj4gPj4NCj4g
-Pg0KPiA+IEFjY29yZGluZyB0byB1c2IgY2hhcmdlciBzcGVjLCBteSB1bmRlcnN0YW5kaW5nIGlz
-IHlvdSBjYW4ndCBkbyByZWFsDQo+ID4gY2hhcmdlciBkZXRlY3Rpb24gcHJvY2VkdXJlICphZnRl
-ciogZ2FkZ2V0IF9jb25uZWN0aW9uXyhwdWxsdXAgRFApLA0KPiA+IGFsc28gSSBkb24ndA0KPiAN
-Cj4gV2h5IGNhbiBub3Q/IENoYXJnZXIgZGV0ZWN0aW9uIGlzIHVzdWFsbHkgZnJvbSBQTUlDLg0K
-DQpDaGFyZ2VyIGRldGVjdGlvbiBwcm9jZXNzIHdpbGwgaW1wYWN0IERQL0RNIGxpbmUgc3RhdGUs
-IHNlZSB1c2IgY2hhcmdlcg0Kc3BlYyB2MS4yIGZvciBkZXRhaWwgZGV0ZWN0aW9uIHByb2Nlc3Ms
-IHNlY3Rpb24gNC42LjMgc2F5czoNCg0KIkEgUEQgaXMgYWxsb3dlZCB0byAqZGlzY29ubmVjdCog
-YW5kIHJlcGVhdCB0aGUgY2hhcmdlciBkZXRlY3Rpb24gcHJvY2Vzcw0KbXVsdGlwbGUgdGltZXMg
-d2hpbGUgYXR0YWNoZWQuIFRoZSBQRCBpcyByZXF1aXJlZCB0byB3YWl0IGZvciBhIHRpbWUgb2Yg
-YXQNCmxlYXN0IFRDUF9WRE1fRU4gbWF4IGJldHdlZW4gZGlzY29ubmVjdGluZyBhbmQgcmVzdGFy
-dGluZyB0aGUgY2hhcmdlcg0KZGV0ZWN0aW9uIHByb2Nlc3MuIg0KDQpBcyBQZXRlciBtZW50aW9u
-ZWQsIHRoZSBjaGFyZ2VyIGRldGVjdGlvbiBzaG91bGQgaGFwcGVuIGJldHdlZW4gVkJVUw0KZGV0
-ZWN0aW9uIGFuZCBnYWRnZXQgcHVsbCB1cCBEUCBmb3IgZmlyc3QgcGx1ZyBpbiBjYXNlLiBTbyB3
-aGVuJmFmdGVyDQpnYWRnZXQgY29ubmVjdCAocHVsbHVwIERQKSwgeW91IHNob3VsZCBhbHJlYWR5
-IGtub3cgdGhlIGNoYXJnZXIgdHlwZS4NCg0KTGkgSnVuDQogDQo+IA0KPiA+IHRoaW5rIGl0J3Mg
-bmVjZXNzYXJ5IHRvIGNoZWNrIGNoYXJnZXIgdHlwZSBhdCBldmVyeSBldmVudCBmcm9tIHVzYg0K
-PiBnYWRnZXQuDQo+IA0KPiBNeSBtZWFuaW5nIGlzIG5vdCBldmVyeSBldmVudCBmcm9tIHVzYiBn
-YWRnZXQuIFdoZW4gdGhlIHVzYiBnYWRnZXQgc3RhdGUNCj4gY2hhbmdlcyBvciB0aGUgZXh0Y29u
-IGRldmljZSAobWF5YmUgR1BJTyBkZXRlY3Rpb24pIHN0YXRlIGNoYW5nZXMsIHdoaWNoDQo+IG1l
-YW5zIGNoYXJnZXIgcGx1Z2luIG9yIHB1bGx1cCwgd2UgbmVlZCB0byBjaGVjayB0aGUgY2hhcmdl
-ciB0eXBlIHRvIHNldA0KPiBjdXJyZW50Lg0KDQpGcm9tIHlvdXIgYmVsb3cgY29kZSwgeW91IGNh
-bGwgdXNiX2NoYXJnZXJfbm90aWZ5X290aGVycygpIGluDQpldmVyeSBzdGF0ZSBjaGFuZ2UuDQoN
-CmlmICh1Y2hnZXItPm9sZF9nYWRnZXRfc3RhdGUgIT0gc3RhdGUpIHsNCgl1Y2hnZXItPm9sZF9n
-YWRnZXRfc3RhdGUgPSBzdGF0ZTsNCg0KCWlmIChzdGF0ZSA+PSBVU0JfU1RBVEVfQVRUQUNIRUQp
-DQoJCXVjaGdlcl9zdGF0ZSA9IFVTQl9DSEFSR0VSX1BSRVNFTlQ7DQoJZWxzZSBpZiAoc3RhdGUg
-PT0gVVNCX1NUQVRFX05PVEFUVEFDSEVEKQ0KCQl1Y2hnZXJfc3RhdGUgPSBVU0JfQ0hBUkdFUl9S
-RU1PVkU7DQoJZWxzZQ0KLyogdGhpcyBlbHNlIHdpbGwgbmV2ZXIgaGFwcGVuICovDQoJCXVjaGdl
-cl9zdGF0ZSA9IFVTQl9DSEFSR0VSX0RFRkFVTFQ7DQoNCgl1c2JfY2hhcmdlcl9ub3RpZnlfb3Ro
-ZXJzKHVjaGdlciwgdWNoZ2VyX3N0YXRlKTsNCn0NCg0KPiANCj4gPiBTb21ldGhpbmcgaW4gZ2Fk
-Z2V0IGRyaXZlciB5b3UgY2FuIHV0aWxpemUgaXMgb25seSB2YnVzIGRldGVjdGlvbiwgYW5kDQo+
-ID4gcmVwb3J0IGRpZmYgY3VycmVudCBieSBkaWZmIHVzYiBzdGF0ZSBpZiBpdCdzIGEgU0RQLg0K
-PiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
+On Tue, 2016-03-29 at 11:05 -0400, Rhyland Klein wrote:
+> On 3/28/2016 9:52 PM, YH Huang wrote:
+> > On Mon, 2016-03-28 at 11:57 -0400, Rhyland Klein wrote:
+> >> On 3/28/2016 6:05 AM, Daniel Kurtz wrote:
+> >>> +Rhyland Klein who original wrote this code...
+> >>>
+> >>> On Mon, Mar 28, 2016 at 10:32 AM, YH Huang <yh.huang@mediatek.com=
+> wrote:
+> >>>>
+> >>>> On Fri, 2016-03-25 at 11:06 +0800, Daniel Kurtz wrote:
+> >>>>> On Thu, Mar 24, 2016 at 2:43 PM, YH Huang <yh.huang@mediatek.co=
+m> wrote:
+> >>>>>>
+> >>>>>> Hi Daniel,
+> >>>>>>
+> >>>>>> On Thu, 2016-03-24 at 12:01 +0800, Daniel Kurtz wrote:
+> >>>>>>> Hi YH,
+> >>>>>>>
+> >>>>>>> On Wed, Mar 23, 2016 at 5:53 PM, YH Huang <yh.huang@mediatek.=
+com> wrote:
+> >>>>>>>> When the battery is dry and BATTERY_FULL_DISCHARGED is set,
+> >>>>>>>> we should check BATTERY_DISCHARGING to decide the power stat=
+us.
+> >>>>>>>> If BATTERY_DISCHARGING is set, the power status is not charg=
+ing.
+> >>>>>>>> Or the power status should be charging.
+> >>>>>>>>
+> >>>>>>>> Signed-off-by: YH Huang <yh.huang@mediatek.com>
+> >>>>>>>> ---
+> >>>>>>>>  drivers/power/sbs-battery.c |   22 ++++++++++++----------
+> >>>>>>>>  1 file changed, 12 insertions(+), 10 deletions(-)
+> >>>>>>>>
+> >>>>>>>> diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs=
+-battery.c
+> >>>>>>>> index d6226d6..d86db0e 100644
+> >>>>>>>> --- a/drivers/power/sbs-battery.c
+> >>>>>>>> +++ b/drivers/power/sbs-battery.c
+> >>>>>>>> @@ -382,11 +382,12 @@ static int sbs_get_battery_property(st=
+ruct i2c_client *client,
+> >>>>>>>>
+> >>>>>>>>                 if (ret & BATTERY_FULL_CHARGED)
+> >>>>>>>>                         val->intval =3D POWER_SUPPLY_STATUS_=
+=46ULL;
+> >>>>>>>> -               else if (ret & BATTERY_FULL_DISCHARGED)
+> >>>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_=
+NOT_CHARGING;
+> >>>>>>>> -               else if (ret & BATTERY_DISCHARGING)
+> >>>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_=
+DISCHARGING;
+> >>>>>>>> -               else
+> >>>>>>>> +               else if (ret & BATTERY_DISCHARGING) {
+> >>>>>>>> +                       if (ret & BATTERY_FULL_DISCHARGED)
+> >>>>>>>> +                               val->intval =3D POWER_SUPPLY=
+_STATUS_NOT_CHARGING;
+> >>>>>>>> +                       else
+> >>>>>>>> +                               val->intval =3D POWER_SUPPLY=
+_STATUS_DISCHARGING;
+> >>>>>>>> +               } else
+> >>>>>>>
+> >>>>>>>
+> >>>>>>> I think (BATTERY_DISCHARGING && BATTERY_FULL_DISCHARGED) is s=
+till
+> >>>>>>> POWER_SUPPLY_STATUS_DISCHARGING.
+> >>>>>>> So, let's just report what the battery says and do:
+> >>>>>>>
+> >>>>>>>                else if (ret & BATTERY_DISCHARGING)
+> >>>>>>>                                val->intval =3D POWER_SUPPLY_S=
+TATUS_DISCHARGING;
+> >>>>>>>
+> >>>>>> So we just ignore the special situation (BATTERY_DISCHARGING &=
+&
+> >>>>>> BATTERY_FULL_DISCHARGED).
+> >>>>>> Isn't POWER_SUPPLY_STATUS_NOT_CHARGING a useful information?
+> >>>>>
+> >>>>> The battery is discharging.  The fact that it is also reporting=
+ that
+> >>>>> it is already "discharged" just seems premature.   I would expe=
+ct to
+> >>>>> only see NOT_CHARGING if completely discharged *and* not discha=
+rging.
+> >>>>
+> >>>> I check the "Smart Battery Data Specification Revision 1.1".
+> >>>> And there are some words about FULLY_DISCHARGED.
+> >>>> "Discharge should be stopped soon."
+> >>>> "This status bit may be set prior to the
+> >>>> =E2=80=98TERMINATE_DISCHARGE_ALARM=E2=80=99 as an early or first=
+ level warning of end of
+> >>>> battery charge."
+> >>>> It looks like the FULLY_DISCHARGED status is used to announce th=
+e
+> >>>> warning of battery charge and it is still discharging if there i=
+s no one
+> >>>> takes care of it.
+> >>
+> >>
+> >> The only difference I see in the patch above is that in the case w=
+here
+> >> DISCHARGING isn't set, it won't check FULL_DISCHARGE. Nothing seem=
+s to
+> >> be changed in the case where FULL_DISCHARGE & DISCHARGING are set.
+> >=20
+> > If battery is dry(FULLY_DISCHARGED) and is charging(No
+> > BATTERY_DISCHARGING) by AC at the same time,
+> > I think it is better to mark as POWER_SUPPLY_STATUS_CHARGING.
+> > Is this right?
+> >
+>=20
+> Hmm. I can see where you patch would address that situation. From the
+> spec, it looks like its expected that the flags should look something
+> like this:
+>=20
+> capacity (in the course of running from fully_charged to dry to
+> recharging...)
+>=20
+> full: FULLY_CHARGED
+> <unplug>
+> high->low: DISCHARGING
+> ~0%: (DISCHARGING & FULLY_DISCHARGED)
+> <plug in>
+> ->~20%: FULLY_DISCHARGED
+> >~20%: <nothing> =3D charging
+>=20
+> From this understanding, it seems like we can't expect FULLY_DISCHARG=
+ED
+> to ever be the only flag, nor can we expect it to go away when the
+> system is initially plugged in. In light of this, I can see why your
+> patch is preferable to the existing code, as the existing code could
+> imply that the system is either still near 0% when it is in fact
+> charging. Of course, ideally the status returned would be "LOW BUT
+> CHARGING" but I can see how CHARGING seems like a better option.
+>=20
+> I think this patch would be fine if we wanted to cover that case, tho=
+ugh
+> if we do merge this, we should probably flush out the patch descripti=
+on
+> better to clarify why we have to treat FULLY_DISCHARGED as only
+> applicable while DISCHARGING. This, IMHO, isn't because the
+> FULLY_DISCHARGED flag comes on early, but rather because it doesn't t=
+urn
+> off until ~20%.
+
+If I revise the description in this way(using your clear explanation):
+-----------------------------------------------------------------------=
+-
+The battery capacity changing course is like this:
+
+full: BATTERY_FULLY_CHARGED =3D> POWER_SUPPLY_STATUS_FULL
+<unplug AC>
+high->low: BATTERY_DISCHARGING =3D> POWER_SUPPLY_STATUS_DISCHARGING
+~0%: DISCHARGING & FULLY_DISCHARGED =3D> POWER_SUPPLY_STATUS_NOT_CHARGI=
+NG
+<plug in AC>
+0%~20%: FULLY_DISCHARGED =3D> POWER_SUPPLY_STATUS_CHARGING
+20%~: No flag =3D> POWER_SUPPLY_STATUS_CHARGING
+
+=46or now, it is not exactly right to show the status as
+POWER_SUPPLY_STATUS_NOT_CHARGING when the battery is dry
+(FULLY_DISCHARGED) and AC is plugged in.
+Although the battery is in a low level, system works fine with the AC
+charging.
+It is better to say that the battery is charging.
+-----------------------------------------------------------------------=
+-
+
+How about this?
+By the way, should I also revise the title?
