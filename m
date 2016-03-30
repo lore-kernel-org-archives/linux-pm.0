@@ -1,75 +1,68 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: [intel-pstate driver regression] processor frequency very high
  even if in idle
-Date: Wed, 30 Mar 2016 15:46:43 -0700
-Message-ID: <1459378003.13525.117.camel@linux.intel.com>
+Date: Wed, 30 Mar 2016 23:17:10 +0000
+Message-ID: <1459379847.13525.129.camel@intel.com>
 References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>
 	 <1459376311.13525.108.camel@linux.intel.com> <56FC5277.9050906@intel.com>
+	 <1459378003.13525.117.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20303 "EHLO mga09.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:13287 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752706AbcC3Wq2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Mar 2016 18:46:28 -0400
-In-Reply-To: <56FC5277.9050906@intel.com>
+	id S1751827AbcC3XRM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Mar 2016 19:17:12 -0400
+In-Reply-To: <1459378003.13525.117.camel@linux.intel.com>
+Content-Language: en-US
+Content-ID: <90D1CD930BF89D4EB212991A220663B8@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: sedat.dilek@gmail.com, Doug Smythies <dsmythies@telus.net>, =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, Linux PM List <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+To: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+Cc: "dsmythies@telus.net" <dsmythies@telus.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jrg.otte@gmail.com" <jrg.otte@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sedat.dilek@gmail.com" <sedat.dilek@gmail.com>, "rafael@kernel.org" <rafael@kernel.org>
 
-On Thu, 2016-03-31 at 00:25 +0200, Rafael J. Wysocki wrote:
-> On 3/31/2016 12:18 AM, Srinivas Pandruvada wrote:
-> >=20
-> > On Wed, 2016-03-30 at 23:41 +0200, Sedat Dilek wrote:
-> > >=20
-> > > Hi,
-> > >=20
-> > > I am using Intel-PState-Driver here with v4.6-rc1 and Intel-
-> > > SandyBridge-CPU.
-> > >=20
-> > > Here are my turbostat results attached.
-> > >=20
-> > > $ cd $BUILD_DIR
-> > > $ LC_ALL=3DC make -C tools/ turbostat
-> > >=20
-> > > $ sudo ./turbostat -i 1 --msr=3D0x199 --debug --out
-> > > /tmp/turbostat-i-1-msr-0x199-debug.txt
-> > >=20
-> > > Will try <https://patchwork.kernel.org/patch/8702071/>.
-> > >=20
-> > > Please see attached files.
-> > >=20
-> > Thanks. Your logs make sense. You have config set to performance
-> > mode
-> > by default (Which I believe default in all kernel Ubuntu). So as
-> > expected Intel P state was asking for max. So there is no issue
-> > here.
-> But the behavior is different from what it used to be, isn't it?
->=20
-There are two turbostat output files, In both I see we are requesting
-max (0x1700) in performance mode. This CPU is Sandybridge, so no config
-TDP here, the other problem system reported is Haswell
-=2E
-=C2=A00=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=C2=A00.15=C2=A0=C2=A0=C2=A0=C2=
-=A02017=C2=A0=C2=A0=C2=A0=C2=A01596=C2=A0=C2=A00x00001700=C2=A0
-
-I am not sure whether Sedat is saying that he has the same issue as
-Jorg. I think Sedat will see the same turbostat output if he ran 4.5.
-
-Sedat,=C2=A0
-Please confirm whether you see difference between 4.5 and 4.6-rc1.
-
-Thanks,
-Srinivas
-
-> So there seems to be a problem here AFAICS.
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+T24gV2VkLCAyMDE2LTAzLTMwIGF0IDE1OjQ2IC0wNzAwLCBTcmluaXZhcyBQYW5kcnV2YWRhIHdy
+b3RlOg0KPiBPbiBUaHUsIDIwMTYtMDMtMzEgYXQgMDA6MjUgKzAyMDAsIFJhZmFlbCBKLiBXeXNv
+Y2tpIHdyb3RlOg0KPiA+IA0KPiA+IE9uIDMvMzEvMjAxNiAxMjoxOCBBTSwgU3Jpbml2YXMgUGFu
+ZHJ1dmFkYSB3cm90ZToNCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBPbiBXZWQsIDIwMTYtMDMtMzAg
+YXQgMjM6NDEgKzAyMDAsIFNlZGF0IERpbGVrIHdyb3RlOg0KPiA+ID4gPiANCj4gPiA+ID4gDQo+
+ID4gPiA+IEhpLA0KPiA+ID4gPiANCj4gPiA+ID4gSSBhbSB1c2luZyBJbnRlbC1QU3RhdGUtRHJp
+dmVyIGhlcmUgd2l0aCB2NC42LXJjMSBhbmQgSW50ZWwtDQo+ID4gPiA+IFNhbmR5QnJpZGdlLUNQ
+VS4NCj4gPiA+ID4gDQo+ID4gPiA+IEhlcmUgYXJlIG15IHR1cmJvc3RhdCByZXN1bHRzIGF0dGFj
+aGVkLg0KPiA+ID4gPiANCj4gPiA+ID4gJCBjZCAkQlVJTERfRElSDQo+ID4gPiA+ICQgTENfQUxM
+PUMgbWFrZSAtQyB0b29scy8gdHVyYm9zdGF0DQo+ID4gPiA+IA0KPiA+ID4gPiAkIHN1ZG8gLi90
+dXJib3N0YXQgLWkgMSAtLW1zcj0weDE5OSAtLWRlYnVnIC0tb3V0DQo+ID4gPiA+IC90bXAvdHVy
+Ym9zdGF0LWktMS1tc3ItMHgxOTktZGVidWcudHh0DQo+ID4gPiA+IA0KPiA+ID4gPiBXaWxsIHRy
+eSA8aHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC84NzAyMDcxLz4uDQo+ID4gPiA+
+IA0KPiA+ID4gPiBQbGVhc2Ugc2VlIGF0dGFjaGVkIGZpbGVzLg0KPiA+ID4gPiANCj4gPiA+IFRo
+YW5rcy4gWW91ciBsb2dzIG1ha2Ugc2Vuc2UuIFlvdSBoYXZlIGNvbmZpZyBzZXQgdG8gcGVyZm9y
+bWFuY2UNCj4gPiA+IG1vZGUNCj4gPiA+IGJ5IGRlZmF1bHQgKFdoaWNoIEkgYmVsaWV2ZSBkZWZh
+dWx0IGluIGFsbCBrZXJuZWwgVWJ1bnR1KS4gU28gYXMNCj4gPiA+IGV4cGVjdGVkIEludGVsIFAg
+c3RhdGUgd2FzIGFza2luZyBmb3IgbWF4LiBTbyB0aGVyZSBpcyBubyBpc3N1ZQ0KPiA+ID4gaGVy
+ZS4NCj4gPiBCdXQgdGhlIGJlaGF2aW9yIGlzIGRpZmZlcmVudCBmcm9tIHdoYXQgaXQgdXNlZCB0
+byBiZSwgaXNuJ3QgaXQ/DQo+ID4gDQo+IFRoZXJlIGFyZSB0d28gdHVyYm9zdGF0IG91dHB1dCBm
+aWxlcywgSW4gYm90aCBJIHNlZSB3ZSBhcmUgcmVxdWVzdGluZw0KPiBtYXggKDB4MTcwMCkgaW4g
+cGVyZm9ybWFuY2UgbW9kZS4gVGhpcyBDUFUgaXMgU2FuZHlicmlkZ2UsIHNvIG5vDQo+IGNvbmZp
+Zw0KPiBURFAgaGVyZSwgdGhlIG90aGVyIHByb2JsZW0gc3lzdGVtIHJlcG9ydGVkIGlzIEhhc3dl
+bGwNCj4gLg0KPiDCoDDCoMKgwqDCoMKgwqDCoDHCoMKgwqDCoMKgwqDCoDPCoMKgwqDCoDAuMTXC
+oMKgwqDCoDIwMTfCoMKgwqDCoDE1OTbCoMKgMHgwMDAwMTcwMMKgDQo+IA0KPiBJIGFtIG5vdCBz
+dXJlIHdoZXRoZXIgU2VkYXQgaXMgc2F5aW5nIHRoYXQgaGUgaGFzIHRoZSBzYW1lIGlzc3VlIGFz
+DQo+IEpvcmcuIEkgdGhpbmsgU2VkYXQgd2lsbCBzZWUgdGhlIHNhbWUgdHVyYm9zdGF0IG91dHB1
+dCBpZiBoZSByYW4gNC41Lg0KPiANCkkgdGFrZWJhY2sgbXkgc3RhdGVtZW50cy4gSXQgd2lsbCBk
+ZXBlbmQgb24gd2hlbiBoZSByYW4gdHVyYm9zdGF0LCBpcw0KaXQgd2l0aGluIGEgbWludXRlIG9y
+IHNvLiBBcyBkb3VnIHN1Z2dlc3RlZCwgdWJ1bnR1IGNoYW5nZXMgdGhlIG1vZGUgdG8NCnBvd2Vy
+c2F2ZSwgdGhlbiB3ZSBzaG91bGRuJ3Qgc2VlIDB4MTcwMCBpbiBNU1IgMHgxOTkuDQpTZWRhdCwN
+CldoYXQgaXMgdGhlIG91dHB1dCBvZsKgDQpjYXQgL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1
+Py9jcHVmcmVxL3NjYWxpbmdfZ292ZXJub3LCoA0KDQpUaGFua3MsDQpTcmluaXZhcw0KDQo+IFNl
+ZGF0LMKgDQo+IFBsZWFzZSBjb25maXJtIHdoZXRoZXIgeW91IHNlZSBkaWZmZXJlbmNlIGJldHdl
+ZW4gNC41IGFuZCA0LjYtcmMxLg0KPiANCj4gVGhhbmtzLA0KPiBTcmluaXZhcw0KPiANCj4gPiAN
+Cj4gPiBTbyB0aGVyZSBzZWVtcyB0byBiZSBhIHByb2JsZW0gaGVyZSBBRkFJQ1MuDQo+ID4gDQo+
+ID4gLS0NCj4gPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAi
+dW5zdWJzY3JpYmUgbGludXgtcG0iDQo+ID4gaW4NCj4gPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2Ug
+dG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiA+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXTC
+oMKgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo+IC0tDQo+IFRv
+IHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBs
+aW51eC1wbSINCj4gaW4NCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2Vy
+Lmtlcm5lbC5vcmcNCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdMKgwqBodHRwOi8vdmdlci5rZXJu
+ZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
