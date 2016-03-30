@@ -1,271 +1,81 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH 2/8] mfd: twl-core: Rename some non-model-specific
- structures, without model name
-Date: Wed, 30 Mar 2016 18:31:33 +0300
-Message-ID: <56FBF155.6020500@ti.com>
-References: <1459279341-17389-1-git-send-email-contact@paulk.fr>
- <1459279341-17389-2-git-send-email-contact@paulk.fr>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Wed, 30 Mar 2016 15:33:21 +0000
+Message-ID: <1459352017.13525.45.camel@intel.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	 <CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>
+	 <4187911.uaFVupaTVL@vostro.rjw.lan>
+	 <CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
+	 <CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:59758 "EHLO comal.ext.ti.com"
+Received: from mga01.intel.com ([192.55.52.88]:5530 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752521AbcC3PcN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Mar 2016 11:32:13 -0400
-In-Reply-To: <1459279341-17389-2-git-send-email-contact@paulk.fr>
+	id S1751895AbcC3PdY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Mar 2016 11:33:24 -0400
+In-Reply-To: <CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <FD9373C8F1B7084EA0EAFE8609DAD174@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Kocialkowski <contact@paulk.fr>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+To: "jrg.otte@gmail.com" <jrg.otte@gmail.com>, "rafael@kernel.org" <rafael@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 
-On 03/29/2016 10:22 PM, Paul Kocialkowski wrote:
-> Some of the structures exposed in the twl_platform_data structure are common
-> to various TWL chips, so it makes sense to rename them to a non-model-specific
-> name.
-
-the same comment.
-
->
-> Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
-> ---
->   arch/arm/mach-omap2/board-rx51-peripherals.c |  4 ++--
->   arch/arm/mach-omap2/twl-common.c             |  6 +++---
->   drivers/mfd/twl4030-audio.c                  |  6 +++---
->   drivers/mfd/twl4030-power.c                  | 22 +++++++++++-----------
->   include/linux/i2c/twl.h                      | 10 ++++++----
->   5 files changed, 25 insertions(+), 23 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> index 3739bff..8273439 100644
-> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> @@ -942,7 +942,7 @@ static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
->   	{ 0, 0},
->   };
->
-> -static struct twl4030_power_data rx51_t2scripts_data __initdata = {
-> +static struct twl_power_data rx51_t2scripts_data __initdata = {
->   	.scripts        = twl4030_scripts,
->   	.num = ARRAY_SIZE(twl4030_scripts),
->   	.resource_config = twl4030_rconfig,
-> @@ -952,7 +952,7 @@ static struct twl4030_vibra_data rx51_vibra_data __initdata = {
->   	.coexist	= 0,
->   };
->
-> -static struct twl4030_audio_data rx51_audio_data __initdata = {
-> +static struct twl_audio_data rx51_audio_data __initdata = {
->   	.audio_mclk	= 26000000,
->   	.vibra		= &rx51_vibra_data,
->   };
-> diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
-> index 4e6532f..6b5519e 100644
-> --- a/arch/arm/mach-omap2/twl-common.c
-> +++ b/arch/arm/mach-omap2/twl-common.c
-> @@ -122,7 +122,7 @@ static struct twl4030_madc_platform_data omap3_madc_pdata = {
->
->   static struct twl4030_codec_data omap3_codec;
->
-> -static struct twl4030_audio_data omap3_audio_pdata = {
-> +static struct twl_audio_data omap3_audio_pdata = {
->   	.audio_mclk = 26000000,
->   	.codec = &omap3_codec,
->   };
-> @@ -537,7 +537,7 @@ void __init omap4_pmic_get_config(struct twl_platform_data *pmic_data,
->   #include <linux/platform_data/omap-twl4030.h>
->
->   /* Commonly used configuration */
-> -static struct omap_tw4030_pdata omap_twl4030_audio_data;
-> +static struct omap_tw4030_pdata omap_twl_audio_data;
->
->   static struct platform_device audio_device = {
->   	.name		= "omap-twl4030",
-> @@ -548,7 +548,7 @@ void omap_twl4030_audio_init(char *card_name,
->   				    struct omap_tw4030_pdata *pdata)
->   {
->   	if (!pdata)
-> -		pdata = &omap_twl4030_audio_data;
-> +		pdata = &omap_twl_audio_data;
->
->   	pdata->card_name = card_name;
->
-> diff --git a/drivers/mfd/twl4030-audio.c b/drivers/mfd/twl4030-audio.c
-> index 0a16064..e7354f7 100644
-> --- a/drivers/mfd/twl4030-audio.c
-> +++ b/drivers/mfd/twl4030-audio.c
-> @@ -158,7 +158,7 @@ unsigned int twl4030_audio_get_mclk(void)
->   }
->   EXPORT_SYMBOL_GPL(twl4030_audio_get_mclk);
->
-> -static bool twl4030_audio_has_codec(struct twl4030_audio_data *pdata,
-> +static bool twl4030_audio_has_codec(struct twl_audio_data *pdata,
->   			      struct device_node *node)
->   {
->   	if (pdata && pdata->codec)
-> @@ -170,7 +170,7 @@ static bool twl4030_audio_has_codec(struct twl4030_audio_data *pdata,
->   	return false;
->   }
->
-> -static bool twl4030_audio_has_vibra(struct twl4030_audio_data *pdata,
-> +static bool twl4030_audio_has_vibra(struct twl_audio_data *pdata,
->   			      struct device_node *node)
->   {
->   	int vibra;
-> @@ -187,7 +187,7 @@ static bool twl4030_audio_has_vibra(struct twl4030_audio_data *pdata,
->   static int twl4030_audio_probe(struct platform_device *pdev)
->   {
->   	struct twl4030_audio *audio;
-> -	struct twl4030_audio_data *pdata = dev_get_platdata(&pdev->dev);
-> +	struct twl_audio_data *pdata = dev_get_platdata(&pdev->dev);
->   	struct device_node *node = pdev->dev.of_node;
->   	struct mfd_cell *cell = NULL;
->   	int ret, childs = 0;
-> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> index 04b5398..b8ce270 100644
-> --- a/drivers/mfd/twl4030-power.c
-> +++ b/drivers/mfd/twl4030-power.c
-> @@ -265,7 +265,7 @@ out:
->   }
->
->   static int
-> -twl4030_config_wakeup12_sequence(const struct twl4030_power_data *pdata,
-> +twl4030_config_wakeup12_sequence(const struct twl_power_data *pdata,
->   				 u8 address)
->   {
->   	int err = 0;
-> @@ -462,7 +462,7 @@ static int twl4030_configure_resource(struct twl4030_resconfig *rconfig)
->   	return 0;
->   }
->
-> -static int load_twl4030_script(const struct twl4030_power_data *pdata,
-> +static int load_twl4030_script(const struct twl_power_data *pdata,
->   			       struct twl4030_script *tscript,
->   			       u8 address)
->   {
-> @@ -564,7 +564,7 @@ int twl4030_remove_script(u8 flags)
->   }
->
->   static int
-> -twl4030_power_configure_scripts(const struct twl4030_power_data *pdata)
-> +twl4030_power_configure_scripts(const struct twl_power_data *pdata)
->   {
->   	int err;
->   	int i;
-> @@ -598,7 +598,7 @@ static void twl4030_patch_rconfig(struct twl4030_resconfig *common,
->   }
->
->   static int
-> -twl4030_power_configure_resources(const struct twl4030_power_data *pdata)
-> +twl4030_power_configure_resources(const struct twl_power_data *pdata)
->   {
->   	struct twl4030_resconfig *resconfig = pdata->resource_config;
->   	struct twl4030_resconfig *boardconf = pdata->board_config;
-> @@ -677,7 +677,7 @@ void twl4030_power_off(void)
->   		pr_err("TWL4030 Unable to power off\n");
->   }
->
-> -static bool twl4030_power_use_poweroff(const struct twl4030_power_data *pdata,
-> +static bool twl4030_power_use_poweroff(const struct twl_power_data *pdata,
->   					struct device_node *node)
->   {
->   	if (pdata && pdata->use_poweroff)
-> @@ -725,7 +725,7 @@ static struct twl4030_resconfig omap3_rconfig[] = {
->   	{ 0, 0 },
->   };
->
-> -static struct twl4030_power_data omap3_reset = {
-> +static struct twl_power_data omap3_reset = {
->   	.scripts		= omap3_reset_scripts,
->   	.num			= ARRAY_SIZE(omap3_reset_scripts),
->   	.resource_config	= omap3_rconfig,
-> @@ -814,7 +814,7 @@ static struct twl4030_resconfig omap3_idle_rconfig[] = {
->   	{ /* Terminator */ },
->   };
->
-> -static struct twl4030_power_data omap3_idle = {
-> +static struct twl_power_data omap3_idle = {
->   	.scripts		= omap3_idle_scripts,
->   	.num			= ARRAY_SIZE(omap3_idle_scripts),
->   	.resource_config	= omap3_idle_rconfig,
-> @@ -826,21 +826,21 @@ static struct twl4030_resconfig osc_off_rconfig[] = {
->   	{ /* Terminator */ },
->   };
->
-> -static struct twl4030_power_data osc_off_idle = {
-> +static struct twl_power_data osc_off_idle = {
->   	.scripts		= omap3_idle_scripts,
->   	.num			= ARRAY_SIZE(omap3_idle_scripts),
->   	.resource_config	= omap3_idle_rconfig,
->   	.board_config		= osc_off_rconfig,
->   };
->
-> -static struct twl4030_power_data omap3_idle_ac_quirk = {
-> +static struct twl_power_data omap3_idle_ac_quirk = {
->   	.scripts		= omap3_idle_scripts,
->   	.num			= ARRAY_SIZE(omap3_idle_scripts),
->   	.resource_config	= omap3_idle_rconfig,
->   	.ac_charger_quirk	= true,
->   };
->
-> -static struct twl4030_power_data omap3_idle_ac_quirk_osc_off = {
-> +static struct twl_power_data omap3_idle_ac_quirk_osc_off = {
->   	.scripts		= omap3_idle_scripts,
->   	.num			= ARRAY_SIZE(omap3_idle_scripts),
->   	.resource_config	= omap3_idle_rconfig,
-> @@ -883,7 +883,7 @@ MODULE_DEVICE_TABLE(of, twl4030_power_of_match);
->
->   static int twl4030_power_probe(struct platform_device *pdev)
->   {
-> -	const struct twl4030_power_data *pdata = dev_get_platdata(&pdev->dev);
-> +	const struct twl_power_data *pdata = dev_get_platdata(&pdev->dev);
->   	struct device_node *node = pdev->dev.of_node;
->   	const struct of_device_id *match;
->   	int err = 0;
-> diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-> index 27bea30..4e7ea5f 100644
-> --- a/include/linux/i2c/twl.h
-> +++ b/include/linux/i2c/twl.h
-> @@ -668,7 +668,7 @@ struct twl4030_resconfig {
->   	u8 remap_sleep;	/* sleep state remapping */
->   };
->
-> -struct twl4030_power_data {
-> +struct twl_power_data {
->   	struct twl4030_script **scripts;
->   	unsigned num;
->   	struct twl4030_resconfig *resource_config;
-> @@ -693,7 +693,7 @@ struct twl4030_vibra_data {
->   	unsigned int	coexist;
->   };
->
-> -struct twl4030_audio_data {
-> +struct twl_audio_data {
->   	unsigned int	audio_mclk;
->   	struct twl4030_codec_data *codec;
->   	struct twl4030_vibra_data *vibra;
-> @@ -705,6 +705,10 @@ struct twl4030_audio_data {
->   };
->
->   struct twl_platform_data {
-> +	/* Common platform data */
-> +	struct twl_audio_data			*audio;
-> +	struct twl_power_data			*power;
-> +
->   	/* TWL4030 platform data */
->   	struct twl4030_clock_init_data		*clock;
->   	struct twl4030_bci_platform_data	*bci;
-> @@ -712,8 +716,6 @@ struct twl_platform_data {
->   	struct twl4030_madc_platform_data	*madc;
->   	struct twl4030_keypad_data		*keypad;
->   	struct twl4030_usb_data			*usb;
-> -	struct twl4030_power_data		*power;
-> -	struct twl4030_audio_data		*audio;
->
->   	/* Common LDO regulators for TWL4030/TWL6030 */
->   	struct regulator_init_data		*vdac;
->
-
-
--- 
-regards,
--grygorii
+T24gV2VkLCAyMDE2LTAzLTMwIGF0IDEzOjA1ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToNCj4gT24gV2VkLCBNYXIgMzAsIDIwMTYgYXQgMTI6MTcgUE0sIErDtnJnIE90dGUgPGpyZy5v
+dHRlQGdtYWlsLmNvbT4NCj4gd3JvdGU6DQo+ID4gDQo+ID4gMjAxNi0wMy0yOSAyMzozNCBHTVQr
+MDI6MDAgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0PjoNCj4gPiA+IA0KPiA+
+ID4gT24gVHVlc2RheSwgTWFyY2ggMjksIDIwMTYgMDc6MzI6MjcgUE0gSsO2cmcgT3R0ZSB3cm90
+ZToNCj4gPiA+ID4gDQo+ID4gPiA+IDIwMTYtMDMtMjkgMTk6MjQgR01UKzAyOjAwIErDtnJnIE90
+dGUgPGpyZy5vdHRlQGdtYWlsLmNvbT46DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gaW4gdjQuNSBh
+bmQgZWFybGllciBpbnRlbC1wc3RhdGUgZG93bnNjYWxlZCBpZGxlIHByb2Nlc3NvcnMNCj4gPiA+
+ID4gPiAobG9hZA0KPiA+ID4gPiA+IDAuMS0wLjIlKSB0byBtaW51bXVtIGZyZXF1ZW5jeSwgaW4g
+bXkgY2FzZSA4MDBNSHouDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gTm93IGluIHY0LjYtcmMxIHRo
+ZSBjaGFyYWN0ZXJpc3RpYyBoYXMgZHJhbWF0aWNhbGx5IGNoYW5nZWQuDQo+ID4gPiA+ID4gSWYg
+aW4NCj4gPiA+ID4gPiBpZGxlIHRoZSBwcm9jZXNzb3IgZnJlcXVlbmN5IGlzIG1vcmUgb3IgbGVz
+cyBhIGZldyBNSHogYXJvdW5kDQo+ID4gPiA+ID4gMjUwME1oei4NCj4gPiA+ID4gPiBUaGlzIGlz
+IHRoZSBtYXhpbXVtIG5vbiB0dXJibyBmcmVxdWVuY3kuDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4g
+Tm8gZGlmZmVyZW5jZSBiZXR3ZWVuIHBvd2Vyc2FmZSBvciBwZXJmb3JtYW5jZSBnb3Zlcm5vci4N
+Cj4gPiA+ID4gPiANCj4gPiA+ID4gPiBJIGN1cnJlbnRseSB1c2UgYWNwaV9jcHVmcmVxIHdoaWNo
+IHdvcmtzIGFzIHVzdWFsLg0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IFByb2Nlc3NvcjoNCj4gPiA+
+ID4gPiBJbnRlbChSKSBDb3JlKFRNKSBpNS00MjAwTSBDUFUgQCAyLjUwR0h6IChmYW1pbHk6IDB4
+NiwgbW9kZWw6DQo+ID4gPiA+ID4gMHgzYywNCj4gPiA+ID4gPiBzdGVwcGluZzogMHgzKQ0KPiA+
+ID4gPiA+IA0KPiA+ID4gPiA+IExhc3Qga25vd24gZ29vZCBrZXJuZWwgaXM6IDQuNS4wLTAxMTI3
+LWc5MjU2ZDVhDQo+ID4gPiA+ID4gRmlyc3Qga25vd24gYmFkIGtlcm5lbCBpczogNC41LjAtMDI1
+MzUtZzA5ZmQ2NzENCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBUaGVyZSBpcw0KPiA+ID4gPiA+IGNv
+bW1pdCAyNzdlZGJhIE1lcmdlIHRhZyAncG0rYWNwaS00LjYtcmMxLTEnIG9mDQo+ID4gPiA+ID4g
+Z2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3JhZmFlbC9saW51
+eC1wbQ0KPiA+ID4gPiA+IGluIGJldHdlZW4sIHdoaWNoIGJyb3VnaHQgYSBmZXcgY2hhbmdlcyBp
+biBpbnRlbF9wc3RhdGUuDQo+ID4gPiBDYW4geW91IHBsZWFzZSBjaGVjayBjb21taXQgYTQ2NzVm
+YmM0YTdhIChjcHVmcmVxOiBpbnRlbF9wc3RhdGU6DQo+ID4gPiBSZXBsYWNlIHRpbWVycw0KPiA+
+ID4gd2l0aCB1dGlsaXphdGlvbiB1cGRhdGUgY2FsbGJhY2tzKT8NCj4gPiA+IA0KPiA+IFllcyAs
+IHRoaXMgc29sdmVkIHRoZSBwcm9ibGVtIGZvciBtZS4NCj4gPiBJIGhhZCB0byByZXNvbHZlIHNv
+bWUgY29uZmxpY3RzIG15c2VsZiB3aGVuIHJldmVydGluZyB0aGF0DQo+ID4gY29tbWl0LiBIYXJk
+IHdvcmsgOikuDQo+IFRoYW5rcyBmb3IgZG9pbmcgdGhpcy7CoMKgQ2FuIHlvdSBwbGVhc2UgcG9z
+dCB0aGUgcmV2ZXJ0IHBhdGNoIHlvdSBoYXZlDQo+IHVzZWQ/DQo+IA0KPiA+IA0KPiA+IEhlcmUg
+aXMgYSAxMC1zZWNvbmRzIHRyYWNlIG9mIHRoZSB1c2VkIGZyZXF1ZW5jaWVzIHdoZW4NCj4gPiBp
+biAiZGVza3RvcC1pZGxlIjoNCj4gPiANCj4gPiBkcml2ZXLCoMKgwqDCoMKgwqDCoMKgwqDCoGNw
+dTAgY3B1MSBjcHUyIGNwdTMNCj4gPiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tDQo+ID4gaW50ZWxfcHN0YXRlICjCoMKgODAwwqDCoDkyOMKgwqA5NDEgMTIwMCkgTUh6wqDC
+oMKgbG9hZDooIDAuMiklDQo+ID4gaW50ZWxfcHN0YXRlICjCoMKgODAwwqDCoDkyOCAxMTgxIDE4
+MDApIE1IesKgwqDCoGxvYWQ6KCAwLjApJQ0KPiA+IGludGVsX3BzdGF0ZSAoIDE2NzUgMTU3NiAx
+MzQ3wqDCoDgwMCkgTUh6wqDCoMKgbG9hZDooIDAuMCklDQo+ID4gaW50ZWxfcHN0YXRlICggMTE5
+OCAxNTc2wqDCoDg0MsKgwqA4MDApIE1IesKgwqDCoGxvYWQ6KCAwLjUpJQ0KPiA+IGludGVsX3Bz
+dGF0ZSAowqDCoDgwMCAxMTgxIDExMTMgMTYwMCkgTUh6wqDCoMKgbG9hZDooIDAuMCklDQo+ID4g
+aW50ZWxfcHN0YXRlICjCoMKgODA4IDExODHCoMKgODA1wqDCoDgwMCkgTUh6wqDCoMKgbG9hZDoo
+IDAuNSklDQo+ID4gaW50ZWxfcHN0YXRlICjCoMKgODQ0IDExOTHCoMKgOTAwIDEwODIpIE1IesKg
+wqDCoGxvYWQ6KCAwLjMpJQ0KPiA+IGludGVsX3BzdGF0ZSAowqDCoDgxNiAxMTkxwqDCoDgwMMKg
+wqA4MDApIE1IesKgwqDCoGxvYWQ6KCAwLjApJQ0KPiA+IGludGVsX3BzdGF0ZSAowqDCoDgwMMKg
+wqA5MDXCoMKgODkyIDEwODIpIE1IesKgwqDCoGxvYWQ6KCAwLjIpJQ0KPiA+IGludGVsX3BzdGF0
+ZSAowqDCoDk0NcKgwqA5MDUgMTM0MMKgwqA4MDApIE1IesKgwqDCoGxvYWQ6KCAwLjMpJQ0KPiBQ
+bGVhc2UgYWxzbyBydW4gdHVyYm9zdGF0IHdpdGggYW5kIHdpdGhvdXQgeW91ciByZXZlcnQgcGF0
+Y2ggYXBwbGllZC4NCkkgd2FudCB0byByZXByb2R1Y2UgdGhpcyBpZiBJIGNhbi4gQ2FuIHlvdSBn
+aXZlIHVzIGluZm8gYWJvdXQgeW91cg0Kc2V0dXAgKExpbnV4IGRpc3RyaWJ1dGlvbiwgbGFwdG9w
+IG1vZGVsIGV0Yy4pPw0KDQpUaGFua3MsDQpTcmluaXZhcw0KDQo+IA0KPiBUaGFua3MsDQo+IFJh
+ZmFlbA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGlu
+ZSAidW5zdWJzY3JpYmUgbGludXgtcG0iDQo+IGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0
+byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXTCoMKg
+aHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
