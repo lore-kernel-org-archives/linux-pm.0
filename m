@@ -1,167 +1,210 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Changes in sleep mode, on x86 PC
-Date: Wed, 30 Mar 2016 10:48:44 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1603301034001.2194-100000@iolanthe.rowland.org>
-References: <2324877.Sek1ZF4eXV@vostro.rjw.lan>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery is dry
+Date: Wed, 30 Mar 2016 11:09:06 -0400
+Message-ID: <56FBEC12.10705@nvidia.com>
+References: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
+ <CAGS+omDTmJDkJYsf=gDJMrmAos+30enoAa2xfTPyirXUd37=9g@mail.gmail.com>
+ <1458801832.16645.7.camel@mtksdaap41>
+ <CAGS+omDhFP+_shCqEWasLDsHf-ab0-OWJJ-gZZkgihAgrZwBHA@mail.gmail.com>
+ <1459132330.16645.14.camel@mtksdaap41>
+ <CAGS+omBVStB3mfXtDHdbsOK+y2UesGYtZBtYm=ctcpBfm88VEg@mail.gmail.com>
+ <56F95451.5040607@nvidia.com> <1459216353.16645.20.camel@mtksdaap41>
+ <56FA99D0.1010004@nvidia.com> <1459328310.29450.24.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:50810 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752801AbcC3Osq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 10:48:46 -0400
-In-Reply-To: <2324877.Sek1ZF4eXV@vostro.rjw.lan>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:9087 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754749AbcC3PJJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 11:09:09 -0400
+In-Reply-To: <1459328310.29450.24.camel@mtksdaap41>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, oneukum@suse.com, kernel list <linux-kernel@vger.kernel.org>, lenb@kernel.org, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Jiri Kosina <jikos@kernel.org>
+To: YH Huang <yh.huang@mediatek.com>
+Cc: Daniel Kurtz <djkurtz@chromium.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, 30 Mar 2016, Rafael J. Wysocki wrote:
+On 3/30/2016 4:58 AM, YH Huang wrote:
+> On Tue, 2016-03-29 at 11:05 -0400, Rhyland Klein wrote:
+>> On 3/28/2016 9:52 PM, YH Huang wrote:
+>>> On Mon, 2016-03-28 at 11:57 -0400, Rhyland Klein wrote:
+>>>> On 3/28/2016 6:05 AM, Daniel Kurtz wrote:
+>>>>> +Rhyland Klein who original wrote this code...
+>>>>>
+>>>>> On Mon, Mar 28, 2016 at 10:32 AM, YH Huang <yh.huang@mediatek.com=
+> wrote:
+>>>>>>
+>>>>>> On Fri, 2016-03-25 at 11:06 +0800, Daniel Kurtz wrote:
+>>>>>>> On Thu, Mar 24, 2016 at 2:43 PM, YH Huang <yh.huang@mediatek.co=
+m> wrote:
+>>>>>>>>
+>>>>>>>> Hi Daniel,
+>>>>>>>>
+>>>>>>>> On Thu, 2016-03-24 at 12:01 +0800, Daniel Kurtz wrote:
+>>>>>>>>> Hi YH,
+>>>>>>>>>
+>>>>>>>>> On Wed, Mar 23, 2016 at 5:53 PM, YH Huang <yh.huang@mediatek.=
+com> wrote:
+>>>>>>>>>> When the battery is dry and BATTERY_FULL_DISCHARGED is set,
+>>>>>>>>>> we should check BATTERY_DISCHARGING to decide the power stat=
+us.
+>>>>>>>>>> If BATTERY_DISCHARGING is set, the power status is not charg=
+ing.
+>>>>>>>>>> Or the power status should be charging.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: YH Huang <yh.huang@mediatek.com>
+>>>>>>>>>> ---
+>>>>>>>>>>  drivers/power/sbs-battery.c |   22 ++++++++++++----------
+>>>>>>>>>>  1 file changed, 12 insertions(+), 10 deletions(-)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs=
+-battery.c
+>>>>>>>>>> index d6226d6..d86db0e 100644
+>>>>>>>>>> --- a/drivers/power/sbs-battery.c
+>>>>>>>>>> +++ b/drivers/power/sbs-battery.c
+>>>>>>>>>> @@ -382,11 +382,12 @@ static int sbs_get_battery_property(st=
+ruct i2c_client *client,
+>>>>>>>>>>
+>>>>>>>>>>                 if (ret & BATTERY_FULL_CHARGED)
+>>>>>>>>>>                         val->intval =3D POWER_SUPPLY_STATUS_=
+=46ULL;
+>>>>>>>>>> -               else if (ret & BATTERY_FULL_DISCHARGED)
+>>>>>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_=
+NOT_CHARGING;
+>>>>>>>>>> -               else if (ret & BATTERY_DISCHARGING)
+>>>>>>>>>> -                       val->intval =3D POWER_SUPPLY_STATUS_=
+DISCHARGING;
+>>>>>>>>>> -               else
+>>>>>>>>>> +               else if (ret & BATTERY_DISCHARGING) {
+>>>>>>>>>> +                       if (ret & BATTERY_FULL_DISCHARGED)
+>>>>>>>>>> +                               val->intval =3D POWER_SUPPLY=
+_STATUS_NOT_CHARGING;
+>>>>>>>>>> +                       else
+>>>>>>>>>> +                               val->intval =3D POWER_SUPPLY=
+_STATUS_DISCHARGING;
+>>>>>>>>>> +               } else
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> I think (BATTERY_DISCHARGING && BATTERY_FULL_DISCHARGED) is s=
+till
+>>>>>>>>> POWER_SUPPLY_STATUS_DISCHARGING.
+>>>>>>>>> So, let's just report what the battery says and do:
+>>>>>>>>>
+>>>>>>>>>                else if (ret & BATTERY_DISCHARGING)
+>>>>>>>>>                                val->intval =3D POWER_SUPPLY_S=
+TATUS_DISCHARGING;
+>>>>>>>>>
+>>>>>>>> So we just ignore the special situation (BATTERY_DISCHARGING &=
+&
+>>>>>>>> BATTERY_FULL_DISCHARGED).
+>>>>>>>> Isn't POWER_SUPPLY_STATUS_NOT_CHARGING a useful information?
+>>>>>>>
+>>>>>>> The battery is discharging.  The fact that it is also reporting=
+ that
+>>>>>>> it is already "discharged" just seems premature.   I would expe=
+ct to
+>>>>>>> only see NOT_CHARGING if completely discharged *and* not discha=
+rging.
+>>>>>>
+>>>>>> I check the "Smart Battery Data Specification Revision 1.1".
+>>>>>> And there are some words about FULLY_DISCHARGED.
+>>>>>> "Discharge should be stopped soon."
+>>>>>> "This status bit may be set prior to the
+>>>>>> =E2=80=98TERMINATE_DISCHARGE_ALARM=E2=80=99 as an early or first=
+ level warning of end of
+>>>>>> battery charge."
+>>>>>> It looks like the FULLY_DISCHARGED status is used to announce th=
+e
+>>>>>> warning of battery charge and it is still discharging if there i=
+s no one
+>>>>>> takes care of it.
+>>>>
+>>>>
+>>>> The only difference I see in the patch above is that in the case w=
+here
+>>>> DISCHARGING isn't set, it won't check FULL_DISCHARGE. Nothing seem=
+s to
+>>>> be changed in the case where FULL_DISCHARGE & DISCHARGING are set.
+>>>
+>>> If battery is dry(FULLY_DISCHARGED) and is charging(No
+>>> BATTERY_DISCHARGING) by AC at the same time,
+>>> I think it is better to mark as POWER_SUPPLY_STATUS_CHARGING.
+>>> Is this right?
+>>>
+>>
+>> Hmm. I can see where you patch would address that situation. From th=
+e
+>> spec, it looks like its expected that the flags should look somethin=
+g
+>> like this:
+>>
+>> capacity (in the course of running from fully_charged to dry to
+>> recharging...)
+>>
+>> full: FULLY_CHARGED
+>> <unplug>
+>> high->low: DISCHARGING
+>> ~0%: (DISCHARGING & FULLY_DISCHARGED)
+>> <plug in>
+>> ->~20%: FULLY_DISCHARGED
+>>> ~20%: <nothing> =3D charging
+>>
+>> From this understanding, it seems like we can't expect FULLY_DISCHAR=
+GED
+>> to ever be the only flag, nor can we expect it to go away when the
+>> system is initially plugged in. In light of this, I can see why your
+>> patch is preferable to the existing code, as the existing code could
+>> imply that the system is either still near 0% when it is in fact
+>> charging. Of course, ideally the status returned would be "LOW BUT
+>> CHARGING" but I can see how CHARGING seems like a better option.
+>>
+>> I think this patch would be fine if we wanted to cover that case, th=
+ough
+>> if we do merge this, we should probably flush out the patch descript=
+ion
+>> better to clarify why we have to treat FULLY_DISCHARGED as only
+>> applicable while DISCHARGING. This, IMHO, isn't because the
+>> FULLY_DISCHARGED flag comes on early, but rather because it doesn't =
+turn
+>> off until ~20%.
+>=20
+> If I revise the description in this way(using your clear explanation)=
+:
+> ---------------------------------------------------------------------=
+---
+> The battery capacity changing course is like this:
+>=20
+> full: BATTERY_FULLY_CHARGED =3D> POWER_SUPPLY_STATUS_FULL
+> <unplug AC>
+> high->low: BATTERY_DISCHARGING =3D> POWER_SUPPLY_STATUS_DISCHARGING
+> ~0%: DISCHARGING & FULLY_DISCHARGED =3D> POWER_SUPPLY_STATUS_NOT_CHAR=
+GING
+> <plug in AC>
+> 0%~20%: FULLY_DISCHARGED =3D> POWER_SUPPLY_STATUS_CHARGING
+> 20%~: No flag =3D> POWER_SUPPLY_STATUS_CHARGING
+>=20
+> For now, it is not exactly right to show the status as
+> POWER_SUPPLY_STATUS_NOT_CHARGING when the battery is dry
+> (FULLY_DISCHARGED) and AC is plugged in.
+> Although the battery is in a low level, system works fine with the AC
+> charging.
+> It is better to say that the battery is charging.
+> ---------------------------------------------------------------------=
+---
 
-> On Tuesday, March 29, 2016 11:56:45 PM Pavel Machek wrote:
-> > 
-> > On Tue 2016-03-29 23:46:23, Rafael J. Wysocki wrote:
-> > > On Tuesday, March 29, 2016 04:24:05 PM Pavel Machek wrote:
-> > > > 
-> > > > On Tue 2016-03-29 15:06:36, Rafael J. Wysocki wrote:
-> > > > > On Monday, March 28, 2016 11:20:12 PM Pavel Machek wrote:
-> > > > > > Hi!
-> > > > > > 
-> > > > > > Few releases ago, I could wake up PC from S3 sleep by hitting any
-> > > > > > key. That ceased to work some time before, keyboard would just light a
-> > > > > > NUM lock LED when I hit a key (4.5). Now PC seems to be sleeping (in
-> > > > > > S3) with NUM lock LED on (4.6-rc0).
-> > > > > > 
-> > > > > > Any idea what is going on there? Does it happen for you, too? What is
-> > > > > > the expected behaviour?
-> > > > > >
-> > > > > > Debian 8.3, with MATE desktop, I just hit the "moon" key to make it
-> > > > > > sleep. Keyboard is on USB.
-> > > > > 
-> > > > > That's rather important.
-> > > > > 
-> > > > > Clearly, something in the USB HID land has changed lately.
-> > > > > 
-> > > > > The expected behavior depends on whether or not the keyboard itself and the
-> > > > > USB controller are both enabled to wake up.  If they are, I'd expect any
-> > > > > key press to generate a wakeup event.
-> > > > 
-> > > > Is there anything in /sys I should check?
-> > > 
-> > > Generally, power/wakeup files under the involved devices (ie. if they are
-> > > present and what's in them if so).
-> > 
-> > /sys/class/input43 and 44 (corresponding to USB keyboard) has no such
-> > files.
-> > 
-> > pavel@amd:/sys/devices/pci0000:00$ lsusb
-> > Bus 001 Device 008: ID 046d:c05a Logitech, Inc. M90/M100 Optical Mouse
-> > Bus 001 Device 064: ID 04f2:0111 Chicony Electronics Co., Ltd KU-9908
-> > Keyboard
-> > Bus 001 Device 005: ID 1a40:0101 Terminus Technology Inc. 4-Port HUB
-> > Bus 001 Device 006: ID 0557:2008 ATEN International Co., Ltd UC-232A
-> > Serial Port [pl2303]
-> > Bus 001 Device 004: ID 058f:6254 Alcor Micro Corp. USB Hub
-> > Bus 001 Device 071: ID 1004:618e LG Electronics, Inc. Ally/Optimus
-> > One/Vortex (debug mode)
-> > Bus 001 Device 002: ID 058f:6362 Alcor Micro Corp. Flash Card
-> > Reader/Writer
-> > Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> > Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > 
-> > There are rather a lot of wakeup files here:
-> > 
-> > pavel@amd:/sys/devices/pci0000:00$ find . -name "wakeup"
-> > ./0000:00:01.0/power/wakeup
-> > ./0000:00:1b.0/power/wakeup
-> > ./0000:00:1c.0/power/wakeup
-> > ./0000:00:1c.1/power/wakeup
-> > ./0000:00:1c.1/0000:03:00.0/power/wakeup
-> > ./0000:00:1d.0/usb2/power/wakeup
-> > ./0000:00:1d.0/power/wakeup
-> > ./0000:00:1d.1/usb3/power/wakeup
-> > ./0000:00:1d.1/power/wakeup
-> > ./0000:00:1d.2/usb4/power/wakeup
-> > ./0000:00:1d.2/power/wakeup
-> > ./0000:00:1d.3/usb5/power/wakeup
-> > ./0000:00:1d.3/power/wakeup
-> > ./0000:00:1d.7/usb1/1-5/power/wakeup
-> > ./0000:00:1d.7/usb1/1-6/1-6.2/power/wakeup
-> > ./0000:00:1d.7/usb1/1-6/power/wakeup
-> > ./0000:00:1d.7/usb1/1-7/1-7.1/power/wakeup
-> > ./0000:00:1d.7/usb1/1-7/1-7.2/power/wakeup
-> > ./0000:00:1d.7/usb1/1-7/power/wakeup
-> > ./0000:00:1d.7/usb1/power/wakeup
-> > ./0000:00:1d.7/power/wakeup
-> > ./0000:00:1e.0/power/wakeup
-> > ./0000:00:1f.2/power/wakeup
-> > pavel@amd:/sys/devices/pci0000:00$
-> > 
-> > root@amd:/sys/devices/pci0000:00# for a in `find . -name "wakeup"`; do
-> > echo $a `cat $a`; done
-> > ./0000:00:01.0/power/wakeup disabled
-> > ./0000:00:1b.0/power/wakeup disabled
-> > ./0000:00:1c.0/power/wakeup disabled
-> > ./0000:00:1c.1/power/wakeup disabled
-> > ./0000:00:1c.1/0000:03:00.0/power/wakeup enabled
-> > ./0000:00:1d.0/usb2/power/wakeup disabled
-> > ./0000:00:1d.0/power/wakeup enabled
-> > ./0000:00:1d.1/usb3/power/wakeup disabled
-> > ./0000:00:1d.1/power/wakeup enabled
-> > ./0000:00:1d.2/usb4/power/wakeup disabled
-> > ./0000:00:1d.2/power/wakeup enabled
-> > ./0000:00:1d.3/usb5/power/wakeup disabled
-> > ./0000:00:1d.3/power/wakeup enabled
-> > ./0000:00:1d.7/usb1/1-5/power/wakeup disabled
-> > ./0000:00:1d.7/usb1/1-6/1-6.2/power/wakeup disabled
-> > ./0000:00:1d.7/usb1/1-6/power/wakeup disabled
-> > ./0000:00:1d.7/usb1/1-7/1-7.1/power/wakeup enabled
-> > ./0000:00:1d.7/usb1/1-7/1-7.2/power/wakeup disabled
-> > ./0000:00:1d.7/usb1/1-7/power/wakeup disabled
-> > ./0000:00:1d.7/usb1/power/wakeup disabled
-> > ./0000:00:1d.7/power/wakeup enabled
-> > ./0000:00:1e.0/power/wakeup disabled
-> > ./0000:00:1f.2/power/wakeup disabled
-> > root@amd:/sys/devices/pci0000:00#
-> > 
-> > And the defaults are interesting, to say. But with:
-> > 
-> > for a in `find . -name "wakeup"`; do echo enabled > $a; done
-> > 
-> > It seems to wake up when I hit a key. So next question is... what
-> > should be the default behaviour?
-> 
-> That's rather hard to answer.
-> 
-> Ideally, "enabled", but then some of those things generate spurious wakeup
-> events and the owners of these prefer "disabled".
+Sounds good.
 
-Unforunately, lsusb does not print out the port number information
-needed to match its output against the sysfs files.  (Not to mention
-that the lsusb output shows 7 non-root-hub devices on bus 1 but the
-sysfs listing shows only 6!)  I'd guess that the keyboard is
-0000:00:1d.7/usb1/1-7/1-7.1/ because it's the only entry with wakeup
-enabled.  What do 0000:00:1d.7/usb1/1-7/1-7.1/{product,vendor} contain?
+>=20
+> How about this?
+> By the way, should I also revise the title?
+>=20
+well, since the case this is specifically addressing is more to do with
+charging when very low than being dry, it would probably make sense to
+change it to "sbs-battery: fix power status when battery charging near
+dry" or something like that.
 
-If so, the missing ingredient may be that you need to enable
-0000:00:1d.7/usb1/1-7/power/wakeup, because that's the keyboard's
-parent hub.  The USB spec says that hubs are required always to relay
-wakeup requests from their children to their parents, but not all hubs
-do this.
+-rhyland
 
-The disadvantage of enabling wakeup on a hub is that it will then 
-generate a wakeup request whenever a device is plugged in or unplugged.  
-That's why hubs default to disabled.
 
-On the other hand, if this used to work okay then it's unlikely that
-the hub is at fault.  It's more likely that something has changed in
-PCI or ACPI, so that the wakeup signal from 0000:00:1d.7 isn't sending
-the computer back to S0.  But that doesn't explain why writing
-"enabled" to all the power/wakeup files would make things start
-working again.
-
-Alan Stern
-
+--=20
+nvpublic
