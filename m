@@ -1,119 +1,58 @@
-From: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
-Date: Tue, 29 Mar 2016 19:53:40 -0700
-Message-ID: <56FB3FB4.1010308@nvidia.com>
-References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
- <1458079520.4486.39.camel@intel.com>
- <20160329013540.GA15615@localhost.localdomain>
+From: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 0/4] thermal: hisilicon: enable power allocator for
+ Hi6220
+Date: Wed, 30 Mar 2016 10:53:53 +0800
+Message-ID: <20160330025353.GA28401@leoy-linaro>
+References: <1459250835-25561-1-git-send-email-leo.yan@linaro.org>
+ <20160329154548.GE1855@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160329013540.GA15615-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160329154548.GE1855-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/28/2016 06:35 PM, Eduardo Valentin wrote:
-> On Tue, Mar 15, 2016 at 11:08:00PM +0000, Pandruvada, Srinivas wrote:
->> On Mon, 2016-03-14 at 11:12 -0700, Srikar Srimath Tirumala wrote:
->>> Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
->>> cur_state whenever any trip is triggered or cur state is changed.
->>>
->>> This change allows usermode apps to register themselves to get
->>> notified, when certain thermal conditions occur and reduce their
->>> workload. This workload throttling allows usermode to react before
->>> hardware clocks are throttled and keep some critical apps running
->>> reliably longer.
->> I think we need a combination of proposal in
->> https://patchwork.kernel.org/patch/7876351/ and this.
->>
->> For example this patch notifies that some trip is violated, but that is
->> not enough for user space application to take any action. Some trips
->> violations user space may not care as this may be a transient one. The
->> patch from Eduardo address that by providing trip, temperature and last
->> temperature information. But that patch only address hot trips. I
->> understand why Eduardo doesn't want to be notified for passive trips as
->> there will be too many.
->>
->
-> Yeah, my original intention was to avoid flooding userland, specially
-> through a pipe like the sysfs netlink, which is in use to deal with
-> other stuff.
->
+On Tue, Mar 29, 2016 at 08:45:59AM -0700, Eduardo Valentin wrote:
+> On Tue, Mar 29, 2016 at 07:27:11PM +0800, Leo Yan wrote:
+> > Hi6220 has octa-core so it has quite high power consumption when run
+> > benchmark and introduces high temperature for SoC. So need enable
+> > thermal governor to control temperature and also cannot hurt much for
+> > performance after impose cooling operations on CPU.
+> > 
+> > This patch series is to enable power allocator for Hi6220. Patch 1 is to
+> > change "hysteresis" as optional property for trip points, so when enable
+> > power allocator governor we can ignore this property.
+> > 
+> > During profiling also found two issues for thermal sensor's driver. The
+> > power allocator just uses only one sensor, so patch 2 is to fix sensor
+> > driver to let it can initialize driver successfully with only enabling
+> > one sensor; patch 3 is to dismiss warning of IRQ imbalance enabling.
+> > 
+> > After profiling on Hikey, the power model has been simplized with only
+> > dynamic coefficient, and now it's convienence to pass it from CPU node.
+> > So patch 4 and 5 bind sensor and pass power model parameters.
+> > 
+> > This patch series have been tested on 96boards Hikey.
+> 
+> Applied patches 1 and 2 in my fixes branch. Patches 3 and 4 need to go
+> via the hisi platform tree. You may add my
+> 
+> Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> 
+> on patches 3 and 4 if you want.
 
-How about if the number of notifications were to be reduced like in v3 
-of this patch? Or is the consensus not to use sysfs_notify or uevents at 
-all?
+Thanks, Eduardo.
 
->> So IMO we need some mechanism to turn off notification and decide what
->> notification will result in user space notifications.
->> On some x86 systems we have 10+ passive/active trips, this will results
->> in too many notifications. We may be in thermally sensitive zone, where
->> more code excecution is more heat.
->>
->
-> Exactly, that has direct impact not only on the process waiting for
-> thermal notifications, but also on other process listening to sysfs.
->
->> We may have some mask of trips for which will result in notifications.
->> By default no notifications, unless some user space requests.
->>
->
-> The complexity of such communication (or even the current status of
-> sysfs ABI) starts to reach limit of such channel. We may definitely
-> consider other means, such as /dev interface, just like IIO does.
->
+Hi Wei,
 
-I agree with your point about the overhead of generating these events 
-and thought maybe the problem could be partially addressed by reducing 
-the number of notifications being sent. So with that in mind I created a 
-V3 of the patches which does this. Please do take a look at it when you 
-get a chance.
+Could you help pick up patches 3/4 for enabling thermal in dts?
 
->> During last LPC we discussed about using IIO for temperature threshold
->> notifications and I submitted multiple changes for that. Looks like we
->> also care of trip point changes. So I think we need more comprehensive
->> mechanism to address this.
->>
->> May be we should have thermal mini summit during LPC again and decide a
->> comprehensive plan to address all asynchronous thermal notifications.
->>
->
-> I have created a wiki for LPC 2016
-> http://wiki.linuxplumbersconf.org/2016:thermal
->
-> Overall I believe we need to solve the (temperature) sensing in a more
-> structured way within the kernel. We have three subsystem that allow
-> performing temperature sensing. They are different in design and
-> concept, but still solve similar problems.
->
-
-I went through the LPC presentation/patches and had a couple of questions.
-
-The thermal iio device seems perfectly suited for sending large amounts 
-of thermal data from the kernel framework to user space. Are there a lot 
-of platforms where thermal throttling happens in user space? If so, Is 
-this an indication that passive thermal throttling is going into the 
-user space some time in the future?
-
-Our use cases don't really require too many notifications. But there 
-seem to be other use cases out there that require lot more thermal info 
-from the kernel. Just trying to understand what those are and what needs 
-to be done to arrive at a solution that benefits all.
-
-> I would still prefer to get this better architectured.
->
-> Of course, we do not need to wait until LPC to start drafting this.
->
-> Again, please lets generate enough quorum to run the micro conf.
->
-> BR,
->
-> Eduardo Valentin
->
-
-Much appreciate your comments and inputs.
-Best Regards
-Srikar
+Thanks,
+Leo Yan
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
