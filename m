@@ -1,62 +1,41 @@
-From: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
-Date: Wed, 30 Mar 2016 10:06:31 -0700
-Message-ID: <1459357591.13525.62.camel@linux.intel.com>
-References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
-	 <1458079520.4486.39.camel@intel.com>
-	 <20160329013540.GA15615@localhost.localdomain>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: Should suspend plug low-level devices?
+Date: Wed, 30 Mar 2016 13:09:35 -0400
+Message-ID: <20160330170935.GH7822@mtj.duckdns.org>
+References: <20160320182958.GR20028@mtj.duckdns.org>
+ <Pine.LNX.4.44L0.1603211036360.1708-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160329013540.GA15615-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f180.google.com ([209.85.161.180]:33221 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbcC3RJi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 13:09:38 -0400
+Received: by mail-yw0-f180.google.com with SMTP id h65so66421579ywe.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2016 10:09:37 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1603211036360.1708-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jan Kara <jack@suse.cz>, Peter Chen <hzpeterchen@gmail.com>, florian@mickler.org, jkosina@suse.cz, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Mon, 2016-03-28 at 18:35 -0700, Eduardo Valentin wrote:
-> On Tue, Mar 15, 2016 at 11:08:00PM +0000, Pandruvada, Srinivas wrote:
-> >=20
-> > On Mon, 2016-03-14 at 11:12 -0700, Srikar Srimath Tirumala wrote:
-> > >=20
-> > >=20
-[...]
-> >=20
-> The complexity of such communication (or even the current status of
-> sysfs ABI) starts to reach limit of such channel. We may definitely
-> consider other means, such as /dev interface, just like IIO does.
-Yes. Instead of loading netlink I/F, we need to have thermal channel to
-notify.
+Hello, Alan.
 
-> > During last LPC we discussed about using IIO for temperature
-> > threshold
-> > notifications and I submitted multiple changes for that. Looks like
-> > we
-> > also care of trip point changes. So I think we need more
-> > comprehensive
-> > mechanism to address this.
-> >=20
-> > May be we should have thermal mini summit during LPC again and
-> > decide a
-> > comprehensive plan to address all asynchronous thermal
-> > notifications.
-> >=20
-> I have created a wiki for LPC 2016
-> http://wiki.linuxplumbersconf.org/2016:thermal
->=20
-> Overall I believe we need to solve the (temperature) sensing in a
-> more
-> structured way within the kernel. We have three subsystem that allow
-> performing temperature sensing. They are different in design and
-> concept, but still solve similar problems.
->=20
-> Again, please lets generate enough quorum to run the micro conf.
->=20
-I am planning to attend.
+On Mon, Mar 21, 2016 at 10:38:55AM -0400, Alan Stern wrote:
+> Even if we avoid freezing any high-level kernel constructs, there will 
+> _still_ be problems if a high-level construct blocks waiting for a 
+> low-level driver that is plugged... which is exactly the sort of thing 
+> that can happen when you call flush_delayed_work().
 
-Thanks,
-Srinivas
-> BR,=C2=A0
->=20
-> Eduardo Valentin
+The problem is caused by or at least made difficult to solve by having
+these dependencies lumped up together.  If a device is detected to
+have been removed across suspend, the device should be marked as gone
+and further IO requests should be failed immediately instead of
+getting blocked on filesystem layer generally blocked on global
+freezer state.
+
+Thanks.
+
+-- 
+tejun
