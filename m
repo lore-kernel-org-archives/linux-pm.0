@@ -1,49 +1,43 @@
-From: Matt Longnecker <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v3 1/4] thermal: send notifications for cdev state change
-Date: Wed, 30 Mar 2016 09:45:20 -0700
-Message-ID: <56FC02A0.7040503@nvidia.com>
-References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
- <1459298497-29481-2-git-send-email-srikars@nvidia.com>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH v4 0/2] Add UCS1002 USB Port Power Controller
+Date: Wed, 30 Mar 2016 18:51:39 +0200
+Message-ID: <CAFqH_53AwUYKZAoUPN0VDiF_zGb=hkzB4k0KV+a9EX06HrdkiA@mail.gmail.com>
+References: <1457947485-14140-1-git-send-email-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1459298497-29481-2-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1457947485-14140-1-git-send-email-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Martyn Welch <martyn.welch@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-Looks good to me.
-
-The only platforms I've ever seen with substantial numbers of cooling 
-devices whose states change relatively frequently are NVIDIA's. So I 
-don't think this will be a performance concern.
-
--Matt Longnecker
-
-On 03/29/2016 05:41 PM, Srikar Srimath Tirumala wrote:
-> Send notifications using sysfs_notify to indicate that a cooling
-> device cur state has changed. This can alert the listeners that
-> hardware clocks are about to be throttled.
+2016-03-14 10:24 GMT+01:00 Enric Balletbo i Serra
+<enric.balletbo@collabora.com>:
+> Dear all,
 >
-> A listening user space application can use this notification to
-> perform workload throttling.
+> This is the fourth version of the UCS1002 driver, a Programmable USB Port
+> Power Controller with Charger Emulation.
 >
-> Change-Id: I71cd6d11bff87f181fa3b7db36bf6c953d1d77eb
-> Signed-off-by: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->   drivers/thermal/thermal_core.c | 1 +
->   1 file changed, 1 insertion(+)
+> Any comments are welcome. Thanks in advance.
 >
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index d4b5465..b09fff1 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1642,6 +1642,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->   	cdev->updated = true;
->   	trace_cdev_update(cdev, target);
->   	dev_dbg(&cdev->device, "set to state %lu\n", target);
-> +	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
->   }
->   EXPORT_SYMBOL(thermal_cdev_update);
->   
+> Enric Balletbo i Serra (2):
+>   devicetree: Add UCS1002 USB Port Power Controller binding
+>   power: ucs1002: Add support for Programmable USB Port Power Controller
+>
+>  .../devicetree/bindings/power/ucs1002.txt          |   41 +
+>  drivers/power/Kconfig                              |    9 +
+>  drivers/power/Makefile                             |    1 +
+>  drivers/power/ucs1002_power.c                      | 1004 ++++++++++++++++++++
+>  4 files changed, 1055 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
+>  create mode 100644 drivers/power/ucs1002_power.c
+>
+> --
+> 2.1.0
+>
+
+Just a gentle reminder for if anyone can do some review, I would
+really like to see these patches ready for next merge window :)
+
+- Enric
