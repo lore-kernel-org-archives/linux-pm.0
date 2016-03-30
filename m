@@ -1,119 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Update][PATCH v7 7/7] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Wed, 30 Mar 2016 11:00:11 +0530
-Message-ID: <20160330053011.GF8773@vireshk-i7>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
- <6666532.7ULg06hQ7e@vostro.rjw.lan>
- <145931680.Kk1xSBT0Ro@vostro.rjw.lan>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Wed, 30 Mar 2016 14:15:01 +0800
+Message-ID: <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
+	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
+	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <145931680.Kk1xSBT0Ro@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f173.google.com ([209.85.161.173]:33052 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbcC3GPD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 02:15:03 -0400
+Received: by mail-yw0-f173.google.com with SMTP id h65so46547847ywe.0
+        for <linux-pm@vger.kernel.org>; Tue, 29 Mar 2016 23:15:02 -0700 (PDT)
+In-Reply-To: <AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jun Li <jun.li@nxp.com>
+Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 30-03-16, 04:00, Rafael J. Wysocki wrote:
-> +static int sugov_init(struct cpufreq_policy *policy)
-> +{
-> +	struct sugov_policy *sg_policy;
-> +	struct sugov_tunables *tunables;
-> +	unsigned int lat;
-> +	int ret = 0;
-> +
-> +	/* State should be equivalent to EXIT */
-> +	if (policy->governor_data)
-> +		return -EBUSY;
-> +
-> +	sg_policy = sugov_policy_alloc(policy);
-> +	if (!sg_policy)
-> +		return -ENOMEM;
-> +
-> +	mutex_lock(&global_tunables_lock);
-> +
-> +	if (global_tunables) {
-> +		if (WARN_ON(have_governor_per_policy())) {
-> +			ret = -EINVAL;
-> +			goto free_sg_policy;
-> +		}
-> +		policy->governor_data = sg_policy;
-> +		sg_policy->tunables = global_tunables;
-> +
-> +		gov_attr_set_get(&global_tunables->attr_set, &sg_policy->tunables_hook);
-> +		goto out;
-> +	}
-> +
-> +	tunables = sugov_tunables_alloc(sg_policy);
-> +	if (!tunables) {
-> +		ret = -ENOMEM;
-> +		goto free_sg_policy;
-> +	}
-> +
-> +	tunables->rate_limit_us = LATENCY_MULTIPLIER;
-> +	lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
-> +	if (lat)
-> +		tunables->rate_limit_us *= lat;
-> +
-> +	policy->governor_data = sg_policy;
-> +	sg_policy->tunables = tunables;
-> +
-> +	ret = kobject_init_and_add(&tunables->attr_set.kobj, &sugov_tunables_ktype,
-> +				   get_governor_parent_kobj(policy), "%s",
-> +				   schedutil_gov.name);
-> +	if (ret)
-> +		goto fail;
-> +
-> + out:
-> +	mutex_unlock(&global_tunables_lock);
-> +
-> +	cpufreq_enable_fast_switch(policy);
-> +	return 0;
-> +
-> + fail:
-> +	policy->governor_data = NULL;
-> +	sugov_tunables_free(tunables);
-> +
-> + free_sg_policy:
-> +	mutex_unlock(&global_tunables_lock);
-> +
-> +	sugov_policy_free(sg_policy);
-> +	pr_err("cpufreq: schedutil governor initialization failed (error %d)\n", ret);
-> +	return ret;
-> +}
+On 30 March 2016 at 10:54, Jun Li <jun.li@nxp.com> wrote:
+>> >> It is not for udc driver but for power users who want to negotiate
+>> >> with USB subsystem.
+>> >>
+>> >
+>> > Seems you don't want to guarantee charger type detection is done
+>> > before gadget connection(pullup DP), right?
+>> > I see you call usb_charger_detect_type() in each gadget usb state
+>> changes.
+>>
+>> I am not sure I get your point correctly, please correct me if I
+>> misunderstand you.
+>> We need to check the charger type at every event comes from the usb gadget
+>> state changes or the extcon device state changes, which means a new
+>> charger plugin or pullup.
+>>
+>
+> According to usb charger spec, my understanding is you can't do real charger
+> detection procedure *after* gadget _connection_(pullup DP), also I don't
 
-The current version of this looks good to me and takes care of all the issues I
-raised earlier. Thanks.
+Why can not? Charger detection is usually from PMIC.
 
-> +static int sugov_limits(struct cpufreq_policy *policy)
-> +{
-> +	struct sugov_policy *sg_policy = policy->governor_data;
-> +
-> +	if (!policy->fast_switch_enabled) {
-> +		mutex_lock(&sg_policy->work_lock);
-> +
-> +		if (policy->max < policy->cur)
-> +			__cpufreq_driver_target(policy, policy->max,
-> +						CPUFREQ_RELATION_H);
-> +		else if (policy->min > policy->cur)
-> +			__cpufreq_driver_target(policy, policy->min,
-> +						CPUFREQ_RELATION_L);
-> +
-> +		mutex_unlock(&sg_policy->work_lock);
-> +	}
-> +
-> +	sg_policy->need_freq_update = true;
+> think it's necessary to check charger type at every event from usb gadget.
 
-I am wondering why we need to do this for !fast_switch_enabled case?
+My meaning is not every event from usb gadget. When the usb gadget
+state changes or the extcon device (maybe GPIO detection) state
+changes, which means charger plugin or pullup, we need to check the
+charger type to set current.
 
-> +	return 0;
-> +}
-
-Apart from that:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Something in gadget driver you can utilize is only vbus detection, and
+> report diff current by diff usb state if it's a SDP.
 
 -- 
-viresh
+Baolin.wang
+Best Regards
