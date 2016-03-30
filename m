@@ -1,76 +1,42 @@
-From: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
-Subject: Re: [intel-pstate driver regression] processor frequency very high
- even if in idle
-Date: Wed, 30 Mar 2016 12:17:32 +0200
-Message-ID: <CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
-References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
-	<CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>
-	<4187911.uaFVupaTVL@vostro.rjw.lan>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V9 RESEND 13/14] arm64: tegra: add soctherm node for Tegra210
+Date: Wed, 30 Mar 2016 18:28:08 +0800
+Message-ID: <56FBAA38.6000309@nvidia.com>
+References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-14-git-send-email-wni@nvidia.com> <20160329151629.GB1855@localhost.localdomain> <56FB4703.7020201@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f41.google.com ([209.85.213.41]:36799 "EHLO
-	mail-vk0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbcC3KRe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 06:17:34 -0400
-In-Reply-To: <4187911.uaFVupaTVL@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <56FB4703.7020201-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-2016-03-29 23:34 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Tuesday, March 29, 2016 07:32:27 PM J=C3=B6rg Otte wrote:
->> 2016-03-29 19:24 GMT+02:00 J=C3=B6rg Otte <jrg.otte@gmail.com>:
->> > in v4.5 and earlier intel-pstate downscaled idle processors (load
->> > 0.1-0.2%) to minumum frequency, in my case 800MHz.
->> >
->> > Now in v4.6-rc1 the characteristic has dramatically changed. If in
->> > idle the processor frequency is more or less a few MHz around 2500=
-Mhz.
->> > This is the maximum non turbo frequency.
->> >
->> > No difference between powersafe or performance governor.
->> >
->> > I currently use acpi_cpufreq which works as usual.
->> >
->> > Processor:
->> > Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz (family: 0x6, model: 0x3c=
-,
->> > stepping: 0x3)
->> >
->> > Last known good kernel is: 4.5.0-01127-g9256d5a
->> > First known bad kernel is: 4.5.0-02535-g09fd671
->> >
->> > There is
->> > commit 277edba Merge tag 'pm+acpi-4.6-rc1-1' of
->> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
->> > in between, which brought a few changes in intel_pstate.
->
-> Can you please check commit a4675fbc4a7a (cpufreq: intel_pstate: Repl=
-ace timers
-> with utilization update callbacks)?
->
-Yes , this solved the problem for me.
-I had to resolve some conflicts myself when reverting that
-commit. Hard work :).
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Here is a 10-seconds trace of the used frequencies when
-in "desktop-idle":
-
-driver          cpu0 cpu1 cpu2 cpu3
--------------------------------------
-intel_pstate (  800  928  941 1200) MHz   load:( 0.2)%
-intel_pstate (  800  928 1181 1800) MHz   load:( 0.0)%
-intel_pstate ( 1675 1576 1347  800) MHz   load:( 0.0)%
-intel_pstate ( 1198 1576  842  800) MHz   load:( 0.5)%
-intel_pstate (  800 1181 1113 1600) MHz   load:( 0.0)%
-intel_pstate (  808 1181  805  800) MHz   load:( 0.5)%
-intel_pstate (  844 1191  900 1082) MHz   load:( 0.3)%
-intel_pstate (  816 1191  800  800) MHz   load:( 0.0)%
-intel_pstate (  800  905  892 1082) MHz   load:( 0.2)%
-intel_pstate (  945  905 1340  800) MHz   load:( 0.3)%
-
-
-Thanks, J=C3=B6rg
+On 2016=E5=B9=B403=E6=9C=8830=E6=97=A5 11:24, Wei Ni wrote:
+> Hi Thierry & Stephen,
+> The driver patches in this series were taken by Eduardo, so do know w=
+ho can take
+> these tow dts patches 13 and 14?
+>=20
+> Thanks.
+> Wei.
+>=20
+> On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 23:16, Eduardo Valentin wrote:
+>> On Tue, Mar 29, 2016 at 06:29:23PM +0800, Wei Ni wrote:
+>>> Adds soctherm node for Tegra210, and add cpu,
+>>> gpu, mem, pllx as thermal-zones. Set critical
+>>> trip temperatures for them.
+>>>
+>>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>
+>> Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
