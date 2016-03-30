@@ -1,131 +1,90 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v8 0/4] Introduce usb charger framework to deal with the
  usb gadget power negotation
-Date: Wed, 30 Mar 2016 16:40:31 +0800
-Message-ID: <CAMz4kuJ2SprO0QE4sYg0ZgmO1KvfQjaJ_APusCSbK8DG4i5ueQ@mail.gmail.com>
+Date: Wed, 30 Mar 2016 08:07:44 +0000
+Message-ID: <AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com>
 References: <cover.1458822334.git.baolin.wang@linaro.org>
 	<20160325070937.GA22398@peterchendt>
 	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
-	<20160328071351.GC3302@peterchendt>
-	<20160329172314.GZ2350@sirena.org.uk>
-	<20160330020501.GA2740@peterchendt>
-	<CAMz4kuKkSt0xj_1jGC9d_yVpEX0krBB_M6x1C3ZR9bDGabQeLQ@mail.gmail.com>
-	<20160330074229.GB2740@peterchendt>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
+	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+ <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f180.google.com ([209.85.161.180]:33378 "EHLO
-	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbcC3Ikc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 04:40:32 -0400
-Received: by mail-yw0-f180.google.com with SMTP id h65so49759635ywe.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2016 01:40:31 -0700 (PDT)
-In-Reply-To: <20160330074229.GB2740@peterchendt>
+Received: from mail-db3on0069.outbound.protection.outlook.com ([157.55.234.69]:7008
+	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753926AbcC3IlO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Mar 2016 04:41:14 -0400
+In-Reply-To: <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Peter Chen <hzpeterchen@gmail.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 30 March 2016 at 15:42, Peter Chen <hzpeterchen@gmail.com> wrote:
-> On Wed, Mar 30, 2016 at 03:07:49PM +0800, Baolin Wang wrote:
->> On 30 March 2016 at 10:05, Peter Chen <hzpeterchen@gmail.com> wrote:
->> > On Tue, Mar 29, 2016 at 10:23:14AM -0700, Mark Brown wrote:
->> >> On Mon, Mar 28, 2016 at 03:13:51PM +0800, Peter Chen wrote:
->> >> > On Mon, Mar 28, 2016 at 02:51:40PM +0800, Baolin Wang wrote:
->> >>
->> >> > > > I am afraid I still not find the user (udc driver) for this framework, I would
->> >> > > > like to see how udc driver block the enumeration until the charger detection
->> >> > > > has finished, or am I missing something?
->> >>
->> >> > > It is not for udc driver but for power users who want to negotiate
->> >> > > with USB subsystem.
->> >>
->> >> > Then, where is the code the test user to decide what kinds of USB charger
->> >> > (SDP, CDP, DCP) is connecting now?
->> >>
->> >> Even without detection of CDP and DCP we have configurability within SDP
->> >> - there's the 2.5mA suspended limit, the 100mA default limit and the
->> >> higher 500mA limit which can be negotiated.
->> >
->> > Well, things may be a little complicated.
->>
->> I try to address your comments, maybe Mark need to do some complements. Thanks.
->>
->> >
->> > - First, how to design get_charger_type for each udc driver?
->> > Since the charger detection process affects dp/dm signal, it can't be done
->> > during the enumeration or after that. So, the detection process can be only
->> > done after vbus has detected and before udc pull up dp.
->> >
->> > Then, when the get_charger_type do real charger detection? My suggestion is,
->> > if the charger type is unknown, we do real one, else, we just return the
->> > stored type value.
->>
->> I think that is why we let udc driver to implement the
->> 'gadget->ops->get_charger_type()' callback, which can be controlled by
->> udc driver.
->>
->> >
->> > - Second, When to notify charger IC to charger:
->> > For SDP and CDP, it needs to notify charger IC after set configuration
->> > has finished.
->> > For DCP (and ACA, I am not sure), can notify charger IC after charger
->> > detection has finished or later.
->> >
->> > So, when we get charger is present, we need to notify charger IC at once
->> > for DCP (and ACA); But for SDP and CDP, we need to let the gadget
->> > composite core to notify charger IC after set configuration has finished,
->> > like the patch 2/4 does.
->>
->> But mostly charger IC is separate with gadget, so the charger IC
->> doesn't need to worry about the gadget status.
->>
->
-> The reason why we need to combine charger IC with USB gadget (charger)
-> driver is the charger IC should not charge as much as it wants, it
-> needs to consider USB charger style and USB connection
-> (un-configuration vs configuration) situation.
-
-Yes, I agree with the charger IC should not charge as much as it
-wants, but we don't want to combine two separated things. Like you
-said, udc driver can implement 'get_charger_type()' callback to check
-the charger type at the right time, then set the current after
-checking the charger type (now the gadget has been set configuration).
-
->
->> >
->> > - Third, since composite driver covers 500mA (and more for CDP) after set
->> > configuration and 2mA after suspend, and vbus handler covers connect
->> > and disconnect. I can't see any reasons we need to notify gadget state
->> > for power driver, do we really need to have usb_charger_plug_by_gadget?
->>
->> In some solutions, gadget does not negotiate with the current. They
->> just send out one signal to power driver to set the current when the
->> gadget state is changed (plugin or not). So we need to check the
->> charger state by the gadget state to notify the charger IC to set
->> current.
->>
->
-> Would you give some examples?
-
-OK. I explain it in detail. Now charger detection can be from gadget
-itself or PMIC, and we focus on gadget detection. Charger IC (charger
-driver) is separate with gadget.
-When the usb cable is plugin, we need to report the plugin event to
-charger driver to set current after setting configuration for gadget.
-The usb charger is responsible for reporting plugin event to charger
-driver. But how usb charger get the plugin event? It can get the
-plugin event from gadget state (if the gadget state is more than
-'USB_STATE_ATTACHED', it means one cable plugin). So we need notify
-gadget state to usb charger.
-
->
-> --
-> Best Regards,
-> Peter Chen
-
-
-
--- 
-Baolin.wang
-Best Regards
+SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
+bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IFdlZG5lc2RheSwgTWFyY2gg
+MzAsIDIwMTYgMjoxNSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IFBl
+dGVyIENoZW4gPGh6cGV0ZXJjaGVuQGdtYWlsLmNvbT47IEZlbGlwZSBCYWxiaSA8YmFsYmlAa2Vy
+bmVsLm9yZz47DQo+IEdyZWcgS0ggPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgU2ViYXN0
+aWFuIFJlaWNoZWwgPHNyZUBrZXJuZWwub3JnPjsNCj4gRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3Yg
+PGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlDQo+IDxkd213MkBpbmZyYWRl
+YWQub3JnPjsgUGV0ZXIgQ2hlbiA8cGV0ZXIuY2hlbkBmcmVlc2NhbGUuY29tPjsgQWxhbiBTdGVy
+bg0KPiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT47IHIuYmFsZHlnYUBzYW1zdW5nLmNvbTsg
+WW9zaGloaXJvIFNoaW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPjsg
+TGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz47IE1hcmsNCj4gQnJvd24gPGJyb29uaWVA
+a2VybmVsLm9yZz47IENoYXJsZXMgS2VlcGF4DQo+IDxja2VlcGF4QG9wZW5zb3VyY2Uud29sZnNv
+bm1pY3JvLmNvbT47IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBMaW51
+eCBQTSBsaXN0IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBVU0IgPGxpbnV4LXVzYkB2Z2Vy
+Lmtlcm5lbC5vcmc+Ow0KPiBkZXZpY2UtbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24u
+b3JnOyBMS01MIDxsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVjdDog
+UmU6IFtQQVRDSCB2OCAwLzRdIEludHJvZHVjZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVh
+bCB3aXRoDQo+IHRoZSB1c2IgZ2FkZ2V0IHBvd2VyIG5lZ290YXRpb24NCj4gDQo+IE9uIDMwIE1h
+cmNoIDIwMTYgYXQgMTA6NTQsIEp1biBMaSA8anVuLmxpQG54cC5jb20+IHdyb3RlOg0KPiA+PiA+
+PiBJdCBpcyBub3QgZm9yIHVkYyBkcml2ZXIgYnV0IGZvciBwb3dlciB1c2VycyB3aG8gd2FudCB0
+byBuZWdvdGlhdGUNCj4gPj4gPj4gd2l0aCBVU0Igc3Vic3lzdGVtLg0KPiA+PiA+Pg0KPiA+PiA+
+DQo+ID4+ID4gU2VlbXMgeW91IGRvbid0IHdhbnQgdG8gZ3VhcmFudGVlIGNoYXJnZXIgdHlwZSBk
+ZXRlY3Rpb24gaXMgZG9uZQ0KPiA+PiA+IGJlZm9yZSBnYWRnZXQgY29ubmVjdGlvbihwdWxsdXAg
+RFApLCByaWdodD8NCj4gPj4gPiBJIHNlZSB5b3UgY2FsbCB1c2JfY2hhcmdlcl9kZXRlY3RfdHlw
+ZSgpIGluIGVhY2ggZ2FkZ2V0IHVzYiBzdGF0ZQ0KPiA+PiBjaGFuZ2VzLg0KPiA+Pg0KPiA+PiBJ
+IGFtIG5vdCBzdXJlIEkgZ2V0IHlvdXIgcG9pbnQgY29ycmVjdGx5LCBwbGVhc2UgY29ycmVjdCBt
+ZSBpZiBJDQo+ID4+IG1pc3VuZGVyc3RhbmQgeW91Lg0KPiA+PiBXZSBuZWVkIHRvIGNoZWNrIHRo
+ZSBjaGFyZ2VyIHR5cGUgYXQgZXZlcnkgZXZlbnQgY29tZXMgZnJvbSB0aGUgdXNiDQo+ID4+IGdh
+ZGdldCBzdGF0ZSBjaGFuZ2VzIG9yIHRoZSBleHRjb24gZGV2aWNlIHN0YXRlIGNoYW5nZXMsIHdo
+aWNoIG1lYW5zDQo+ID4+IGEgbmV3IGNoYXJnZXIgcGx1Z2luIG9yIHB1bGx1cC4NCj4gPj4NCj4g
+Pg0KPiA+IEFjY29yZGluZyB0byB1c2IgY2hhcmdlciBzcGVjLCBteSB1bmRlcnN0YW5kaW5nIGlz
+IHlvdSBjYW4ndCBkbyByZWFsDQo+ID4gY2hhcmdlciBkZXRlY3Rpb24gcHJvY2VkdXJlICphZnRl
+ciogZ2FkZ2V0IF9jb25uZWN0aW9uXyhwdWxsdXAgRFApLA0KPiA+IGFsc28gSSBkb24ndA0KPiAN
+Cj4gV2h5IGNhbiBub3Q/IENoYXJnZXIgZGV0ZWN0aW9uIGlzIHVzdWFsbHkgZnJvbSBQTUlDLg0K
+DQpDaGFyZ2VyIGRldGVjdGlvbiBwcm9jZXNzIHdpbGwgaW1wYWN0IERQL0RNIGxpbmUgc3RhdGUs
+IHNlZSB1c2IgY2hhcmdlcg0Kc3BlYyB2MS4yIGZvciBkZXRhaWwgZGV0ZWN0aW9uIHByb2Nlc3Ms
+IHNlY3Rpb24gNC42LjMgc2F5czoNCg0KIkEgUEQgaXMgYWxsb3dlZCB0byAqZGlzY29ubmVjdCog
+YW5kIHJlcGVhdCB0aGUgY2hhcmdlciBkZXRlY3Rpb24gcHJvY2Vzcw0KbXVsdGlwbGUgdGltZXMg
+d2hpbGUgYXR0YWNoZWQuIFRoZSBQRCBpcyByZXF1aXJlZCB0byB3YWl0IGZvciBhIHRpbWUgb2Yg
+YXQNCmxlYXN0IFRDUF9WRE1fRU4gbWF4IGJldHdlZW4gZGlzY29ubmVjdGluZyBhbmQgcmVzdGFy
+dGluZyB0aGUgY2hhcmdlcg0KZGV0ZWN0aW9uIHByb2Nlc3MuIg0KDQpBcyBQZXRlciBtZW50aW9u
+ZWQsIHRoZSBjaGFyZ2VyIGRldGVjdGlvbiBzaG91bGQgaGFwcGVuIGJldHdlZW4gVkJVUw0KZGV0
+ZWN0aW9uIGFuZCBnYWRnZXQgcHVsbCB1cCBEUCBmb3IgZmlyc3QgcGx1ZyBpbiBjYXNlLiBTbyB3
+aGVuJmFmdGVyDQpnYWRnZXQgY29ubmVjdCAocHVsbHVwIERQKSwgeW91IHNob3VsZCBhbHJlYWR5
+IGtub3cgdGhlIGNoYXJnZXIgdHlwZS4NCg0KTGkgSnVuDQogDQo+IA0KPiA+IHRoaW5rIGl0J3Mg
+bmVjZXNzYXJ5IHRvIGNoZWNrIGNoYXJnZXIgdHlwZSBhdCBldmVyeSBldmVudCBmcm9tIHVzYg0K
+PiBnYWRnZXQuDQo+IA0KPiBNeSBtZWFuaW5nIGlzIG5vdCBldmVyeSBldmVudCBmcm9tIHVzYiBn
+YWRnZXQuIFdoZW4gdGhlIHVzYiBnYWRnZXQgc3RhdGUNCj4gY2hhbmdlcyBvciB0aGUgZXh0Y29u
+IGRldmljZSAobWF5YmUgR1BJTyBkZXRlY3Rpb24pIHN0YXRlIGNoYW5nZXMsIHdoaWNoDQo+IG1l
+YW5zIGNoYXJnZXIgcGx1Z2luIG9yIHB1bGx1cCwgd2UgbmVlZCB0byBjaGVjayB0aGUgY2hhcmdl
+ciB0eXBlIHRvIHNldA0KPiBjdXJyZW50Lg0KDQpGcm9tIHlvdXIgYmVsb3cgY29kZSwgeW91IGNh
+bGwgdXNiX2NoYXJnZXJfbm90aWZ5X290aGVycygpIGluDQpldmVyeSBzdGF0ZSBjaGFuZ2UuDQoN
+CmlmICh1Y2hnZXItPm9sZF9nYWRnZXRfc3RhdGUgIT0gc3RhdGUpIHsNCgl1Y2hnZXItPm9sZF9n
+YWRnZXRfc3RhdGUgPSBzdGF0ZTsNCg0KCWlmIChzdGF0ZSA+PSBVU0JfU1RBVEVfQVRUQUNIRUQp
+DQoJCXVjaGdlcl9zdGF0ZSA9IFVTQl9DSEFSR0VSX1BSRVNFTlQ7DQoJZWxzZSBpZiAoc3RhdGUg
+PT0gVVNCX1NUQVRFX05PVEFUVEFDSEVEKQ0KCQl1Y2hnZXJfc3RhdGUgPSBVU0JfQ0hBUkdFUl9S
+RU1PVkU7DQoJZWxzZQ0KLyogdGhpcyBlbHNlIHdpbGwgbmV2ZXIgaGFwcGVuICovDQoJCXVjaGdl
+cl9zdGF0ZSA9IFVTQl9DSEFSR0VSX0RFRkFVTFQ7DQoNCgl1c2JfY2hhcmdlcl9ub3RpZnlfb3Ro
+ZXJzKHVjaGdlciwgdWNoZ2VyX3N0YXRlKTsNCn0NCg0KPiANCj4gPiBTb21ldGhpbmcgaW4gZ2Fk
+Z2V0IGRyaXZlciB5b3UgY2FuIHV0aWxpemUgaXMgb25seSB2YnVzIGRldGVjdGlvbiwgYW5kDQo+
+ID4gcmVwb3J0IGRpZmYgY3VycmVudCBieSBkaWZmIHVzYiBzdGF0ZSBpZiBpdCdzIGEgU0RQLg0K
+PiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
