@@ -1,74 +1,119 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v7 4/4] ARM64: dts: rockchip: add syscon-reboot-mode DT node
-Date: Wed, 30 Mar 2016 10:22:25 +0800
-Message-ID: <1459304545-9909-1-git-send-email-andy.yan@rock-chips.com>
-References: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.130]:57914 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753563AbcC3CXL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 22:23:11 -0400
-In-Reply-To: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v2] thermal: add sysfs_notify on some attributes
+Date: Tue, 29 Mar 2016 19:53:40 -0700
+Message-ID: <56FB3FB4.1010308@nvidia.com>
+References: <1457979156-10972-1-git-send-email-srikars@nvidia.com>
+ <1458079520.4486.39.camel@intel.com>
+ <20160329013540.GA15615@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160329013540.GA15615-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org" <mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
-Cc: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, olof@lixom.net, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, matthias.bgg@gmail.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, f.fainelli@gmail.com, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, linux-kernel@vger.kernel.org, wxt@rock-chips.com, dwmw2@infradead.org, mark.rutland@arm.com, k.kozlowski@samsung.com, Andy Yan <andy.yan@rock-chips.com>
 
-Add syscon-reboot-mode driver DT node for rk3368 platform
+On 03/28/2016 06:35 PM, Eduardo Valentin wrote:
+> On Tue, Mar 15, 2016 at 11:08:00PM +0000, Pandruvada, Srinivas wrote:
+>> On Mon, 2016-03-14 at 11:12 -0700, Srikar Srimath Tirumala wrote:
+>>> Add a sysfs_notify on thermal_zone*/temp and cooling_device*/
+>>> cur_state whenever any trip is triggered or cur state is changed.
+>>>
+>>> This change allows usermode apps to register themselves to get
+>>> notified, when certain thermal conditions occur and reduce their
+>>> workload. This workload throttling allows usermode to react before
+>>> hardware clocks are throttled and keep some critical apps running
+>>> reliably longer.
+>> I think we need a combination of proposal in
+>> https://patchwork.kernel.org/patch/7876351/ and this.
+>>
+>> For example this patch notifies that some trip is violated, but that is
+>> not enough for user space application to take any action. Some trips
+>> violations user space may not care as this may be a transient one. The
+>> patch from Eduardo address that by providing trip, temperature and last
+>> temperature information. But that patch only address hot trips. I
+>> understand why Eduardo doesn't want to be notified for passive trips as
+>> there will be too many.
+>>
+>
+> Yeah, my original intention was to avoid flooding userland, specially
+> through a pipe like the sysfs netlink, which is in use to deal with
+> other stuff.
+>
 
-Tested-by: Caesar Wang <caesar.upstream@gmail.com>
-Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+How about if the number of notifications were to be reduced like in v3 
+of this patch? Or is the consensus not to use sysfs_notify or uevents at 
+all?
 
----
+>> So IMO we need some mechanism to turn off notification and decide what
+>> notification will result in user space notifications.
+>> On some x86 systems we have 10+ passive/active trips, this will results
+>> in too many notifications. We may be in thermally sensitive zone, where
+>> more code excecution is more heat.
+>>
+>
+> Exactly, that has direct impact not only on the process waiting for
+> thermal notifications, but also on other process listening to sysfs.
+>
+>> We may have some mask of trips for which will result in notifications.
+>> By default no notifications, unless some user space requests.
+>>
+>
+> The complexity of such communication (or even the current status of
+> sysfs ABI) starts to reach limit of such channel. We may definitely
+> consider other means, such as /dev interface, just like IIO does.
+>
 
-Changes in v7: None
-Changes in v6: None
-Changes in v5: None
-Changes in v4: None
-Changes in v3:
-- descirbe all reboot mode as property instead of subnode
+I agree with your point about the overhead of generating these events 
+and thought maybe the problem could be partially addressed by reducing 
+the number of notifications being sent. So with that in mind I created a 
+V3 of the patches which does this. Please do take a look at it when you 
+get a chance.
 
-Changes in v2:
-- make this node as a subnode of pmugrf
+>> During last LPC we discussed about using IIO for temperature threshold
+>> notifications and I submitted multiple changes for that. Looks like we
+>> also care of trip point changes. So I think we need more comprehensive
+>> mechanism to address this.
+>>
+>> May be we should have thermal mini summit during LPC again and decide a
+>> comprehensive plan to address all asynchronous thermal notifications.
+>>
+>
+> I have created a wiki for LPC 2016
+> http://wiki.linuxplumbersconf.org/2016:thermal
+>
+> Overall I believe we need to solve the (temperature) sensing in a more
+> structured way within the kernel. We have three subsystem that allow
+> performing temperature sensing. They are different in design and
+> concept, but still solve similar problems.
+>
 
-Changes in v1: None
+I went through the LPC presentation/patches and had a couple of questions.
 
- arch/arm64/boot/dts/rockchip/rk3368.dtsi | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+The thermal iio device seems perfectly suited for sending large amounts 
+of thermal data from the kernel framework to user space. Are there a lot 
+of platforms where thermal throttling happens in user space? If so, Is 
+this an indication that passive thermal throttling is going into the 
+user space some time in the future?
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3368.dtsi b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-index 122777b..df062ea 100644
---- a/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3368.dtsi
-@@ -45,6 +45,7 @@
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/pinctrl/rockchip.h>
-+#include <dt-bindings/soc/rockchip_boot-mode.h>
- #include <dt-bindings/thermal/thermal.h>
- 
- / {
-@@ -554,8 +555,17 @@
- 	};
- 
- 	pmugrf: syscon@ff738000 {
--		compatible = "rockchip,rk3368-pmugrf", "syscon";
-+		compatible = "rockchip,rk3368-pmugrf", "syscon", "simple-mfd";
- 		reg = <0x0 0xff738000 0x0 0x1000>;
-+
-+		reboot-mode {
-+			compatible = "syscon-reboot-mode";
-+			offset = <0x200>;
-+			mode-normal = <BOOT_NORMAL>;
-+			mode-recovery = <BOOT_RECOVERY>;
-+			mode-bootloader = <BOOT_FASTBOOT>;
-+			mode-loader = <BOOT_BL_DOWNLOAD>;
-+		};
- 	};
- 
- 	cru: clock-controller@ff760000 {
--- 
-1.9.1
+Our use cases don't really require too many notifications. But there 
+seem to be other use cases out there that require lot more thermal info 
+from the kernel. Just trying to understand what those are and what needs 
+to be done to arrive at a solution that benefits all.
 
+> I would still prefer to get this better architectured.
+>
+> Of course, we do not need to wait until LPC to start drafting this.
+>
+> Again, please lets generate enough quorum to run the micro conf.
+>
+> BR,
+>
+> Eduardo Valentin
+>
 
-
+Much appreciate your comments and inputs.
+Best Regards
+Srikar
