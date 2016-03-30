@@ -1,72 +1,100 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Wed, 30 Mar 2016 10:05:01 +0800
-Message-ID: <20160330020501.GA2740@peterchendt>
-References: <cover.1458822334.git.baolin.wang@linaro.org>
- <20160325070937.GA22398@peterchendt>
- <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
- <20160328071351.GC3302@peterchendt>
- <20160329172314.GZ2350@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: [PATCH v7 0/4] add reboot mode driver
+Date: Wed, 30 Mar 2016 10:18:24 +0800
+Message-ID: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:32775 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbcC3CFO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 22:05:14 -0400
-Content-Disposition: inline
-In-Reply-To: <20160329172314.GZ2350@sirena.org.uk>
+Received: from regular1.263xmail.com ([211.150.99.137]:57955 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbcC3CTm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Mar 2016 22:19:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
+Cc: galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, olof@lixom.net, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, matthias.bgg@gmail.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, f.fainelli@gmail.com, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, linux-kernel@vger.kernel.org, wxt@rock-chips.com, dwmw2@infradead.org, mark.rutland@arm.com, k.kozlowski@samsung.com, Andy Yan <andy.yan@rock-chips.com>
 
-On Tue, Mar 29, 2016 at 10:23:14AM -0700, Mark Brown wrote:
-> On Mon, Mar 28, 2016 at 03:13:51PM +0800, Peter Chen wrote:
-> > On Mon, Mar 28, 2016 at 02:51:40PM +0800, Baolin Wang wrote:
-> 
-> > > > I am afraid I still not find the user (udc driver) for this framework, I would
-> > > > like to see how udc driver block the enumeration until the charger detection
-> > > > has finished, or am I missing something?
-> 
-> > > It is not for udc driver but for power users who want to negotiate
-> > > with USB subsystem.
-> 
-> > Then, where is the code the test user to decide what kinds of USB charger
-> > (SDP, CDP, DCP) is connecting now?
-> 
-> Even without detection of CDP and DCP we have configurability within SDP
-> - there's the 2.5mA suspended limit, the 100mA default limit and the
-> higher 500mA limit which can be negotiated.
 
-Well, things may be a little complicated.
+This driver parses the reboot commands like "reboot bootloader"
+and "reboot recovery" to get a boot mode described in the
+device tree , then call the corresponding  write interfae
+to store the boot mode in some place like special register
+or ram, which can be read by the bootloader after system
+reboot.
 
-- First, how to design get_charger_type for each udc driver?
-Since the charger detection process affects dp/dm signal, it can't be done
-during the enumeration or after that. So, the detection process can be only
-done after vbus has detected and before udc pull up dp.
+This is commonly done on Android based devices, in order to
+reboot the device into fastboot or recovery mode.
 
-Then, when the get_charger_type do real charger detection? My suggestion is,
-if the charger type is unknown, we do real one, else, we just return the
-stored type value.
 
-- Second, When to notify charger IC to charger:
-For SDP and CDP, it needs to notify charger IC after set configuration
-has finished.
-For DCP (and ACA, I am not sure), can notify charger IC after charger
-detection has finished or later.
+Changes in v7:
+- fix some spelling mistakes
+- declare that the mode magic should be none-zero value
+- address some suggestions from Krzysztof, make syscon-reboot-mode driver data self-contained.
 
-So, when we get charger is present, we need to notify charger IC at once
-for DCP (and ACA); But for SDP and CDP, we need to let the gadget
-composite core to notify charger IC after set configuration has finished,
-like the patch 2/4 does.
+Changes in v6:
+- fix a typo with "property"
+- describe property "mask" more clear
 
-- Third, since composite driver covers 500mA (and more for CDP) after set
-configuration and 2mA after suspend, and vbus handler covers connect
-and disconnect. I can't see any reasons we need to notify gadget state
-for power driver, do we really need to have usb_charger_plug_by_gadget?
+Changes in v5:
+- delete a unnecessary blank line in syscon-reboot-mode.txt
+- rename mode-fastoboot to mode-bootloader in syscon-reboot-mode.txt
+- rename macro BOOT_LOADER to BOOT_BL_DOWNLOAD, which gives a more clear mean
+- use two blank space under help in Kconfig
+- use unsigned int instead of int for member magic in struct mode_info
+
+Changes in v4:
+- remove mode-maskrom
+- rename mode-fastboot to mode-bootloader to keep compatible with the exiting Android device
+- make this driver depends on OF to avoid kbuild test error
+
+Changes in v3:
+- descirbe all reboot mode as properity instead of subnode
+- scan multi properities
+- add mask value for some platform which only use some bits of the register
+  to store boot mode magic value
+- descirbe all reboot mode as property instead of subnode
+- add rk3036 support
+- descirbe all reboot mode as property instead of subnode
+
+Changes in v2:
+- move to dir drivers/power/reset/
+- make syscon-reboot-mode a generic driver
+- make this node as a subnode of PMU
+- make this node as a subnode of pmugrf
+
+Changes in v1:
+- fix the embarrassed compile warning
+- correct the maskrom magic number
+- check for the normal reboot
+- correct the maskrom magic number
+- use macro defined in rockchip_boot-mode.h for reboot-mode DT node
+
+Andy Yan (4):
+  dt-bindings: power: reset: add document for reboot-mode driver
+  power: reset: add reboot mode driver
+  ARM: dts: rockchip: add syscon-reboot-mode DT node
+  ARM64: dts: rockchip: add syscon-reboot-mode DT node
+
+ .../bindings/power/reset/reboot-mode.txt           |  25 +++++
+ .../bindings/power/reset/syscon-reboot-mode.txt    |  35 +++++++
+ arch/arm/boot/dts/rk3036.dtsi                      |  11 +-
+ arch/arm/boot/dts/rk3288.dtsi                      |  10 ++
+ arch/arm/boot/dts/rk3xxx.dtsi                      |  12 ++-
+ arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  12 ++-
+ drivers/power/reset/Kconfig                        |  13 +++
+ drivers/power/reset/Makefile                       |   2 +
+ drivers/power/reset/reboot-mode.c                  | 115 +++++++++++++++++++++
+ drivers/power/reset/reboot-mode.h                  |   6 ++
+ drivers/power/reset/syscon-reboot-mode.c           |  86 +++++++++++++++
+ include/dt-bindings/soc/rockchip_boot-mode.h       |  15 +++
+ 12 files changed, 339 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+ create mode 100644 drivers/power/reset/reboot-mode.c
+ create mode 100644 drivers/power/reset/reboot-mode.h
+ create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+ create mode 100644 include/dt-bindings/soc/rockchip_boot-mode.h
 
 -- 
-Best Regards,
-eter Chen
+1.9.1
+
+
+
