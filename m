@@ -1,85 +1,65 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [intel-pstate driver regression] processor frequency very high
- even if in idle
-Date: Wed, 30 Mar 2016 13:05:22 +0200
-Message-ID: <CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>
-References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
-	<CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>
-	<4187911.uaFVupaTVL@vostro.rjw.lan>
-	<CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: acpi: policy->driver_data can't be NULL in ->exit()
+Date: Wed, 30 Mar 2016 13:15:00 +0200
+Message-ID: <CAJZ5v0hqrUyi2ggsDyOq9y0Q9BzktYdSG6DZQMfMF9HsqRLf0g@mail.gmail.com>
+References: <f4f0e029b46cdd09dd7d3f0035e8588f5de94e21.1459311858.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f170.google.com ([209.85.217.170]:36340 "EHLO
+Received: from mail-lb0-f170.google.com ([209.85.217.170]:32827 "EHLO
 	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbcC3LFZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 07:05:25 -0400
-In-Reply-To: <CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
+	with ESMTP id S1750890AbcC3LPC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 07:15:02 -0400
+In-Reply-To: <f4f0e029b46cdd09dd7d3f0035e8588f5de94e21.1459311858.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Mar 30, 2016 at 12:17 PM, J=C3=B6rg Otte <jrg.otte@gmail.com> w=
-rote:
-> 2016-03-29 23:34 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
->> On Tuesday, March 29, 2016 07:32:27 PM J=C3=B6rg Otte wrote:
->>> 2016-03-29 19:24 GMT+02:00 J=C3=B6rg Otte <jrg.otte@gmail.com>:
->>> > in v4.5 and earlier intel-pstate downscaled idle processors (load
->>> > 0.1-0.2%) to minumum frequency, in my case 800MHz.
->>> >
->>> > Now in v4.6-rc1 the characteristic has dramatically changed. If i=
-n
->>> > idle the processor frequency is more or less a few MHz around 250=
-0Mhz.
->>> > This is the maximum non turbo frequency.
->>> >
->>> > No difference between powersafe or performance governor.
->>> >
->>> > I currently use acpi_cpufreq which works as usual.
->>> >
->>> > Processor:
->>> > Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz (family: 0x6, model: 0x3=
-c,
->>> > stepping: 0x3)
->>> >
->>> > Last known good kernel is: 4.5.0-01127-g9256d5a
->>> > First known bad kernel is: 4.5.0-02535-g09fd671
->>> >
->>> > There is
->>> > commit 277edba Merge tag 'pm+acpi-4.6-rc1-1' of
->>> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
->>> > in between, which brought a few changes in intel_pstate.
->>
->> Can you please check commit a4675fbc4a7a (cpufreq: intel_pstate: Rep=
-lace timers
->> with utilization update callbacks)?
->>
-> Yes , this solved the problem for me.
-> I had to resolve some conflicts myself when reverting that
-> commit. Hard work :).
+On Wed, Mar 30, 2016 at 6:24 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Its always set by ->init() and so it will always be there in ->exit().
+> There is no need to have a special check for just that.
 
-Thanks for doing this.  Can you please post the revert patch you have u=
-sed?
+I'm not sure what happens if there are two (or more) CPUs in the policy, though.
 
-> Here is a 10-seconds trace of the used frequencies when
-> in "desktop-idle":
+That case is almost certainly handled incorrectly here (or rather not
+handled at all), but it may just happen to sort of work, because the
+first exiting CPU will clear driver_data and the second one will
+notice that it is NULL now.  Of course, that still is racy with
+respect to governors etc, but I'd rather fix the driver properly.
+
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
 >
-> driver          cpu0 cpu1 cpu2 cpu3
-> -------------------------------------
-> intel_pstate (  800  928  941 1200) MHz   load:( 0.2)%
-> intel_pstate (  800  928 1181 1800) MHz   load:( 0.0)%
-> intel_pstate ( 1675 1576 1347  800) MHz   load:( 0.0)%
-> intel_pstate ( 1198 1576  842  800) MHz   load:( 0.5)%
-> intel_pstate (  800 1181 1113 1600) MHz   load:( 0.0)%
-> intel_pstate (  808 1181  805  800) MHz   load:( 0.5)%
-> intel_pstate (  844 1191  900 1082) MHz   load:( 0.3)%
-> intel_pstate (  816 1191  800  800) MHz   load:( 0.0)%
-> intel_pstate (  800  905  892 1082) MHz   load:( 0.2)%
-> intel_pstate (  945  905 1340  800) MHz   load:( 0.3)%
-
-Please also run turbostat with and without your revert patch applied.
-
-Thanks,
-Rafael
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index eb2196f9d7fa..e20cbb1317cc 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -847,13 +847,11 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+>
+>         pr_debug("acpi_cpufreq_cpu_exit\n");
+>
+> -       if (data) {
+> -               policy->driver_data = NULL;
+> -               acpi_processor_unregister_performance(data->acpi_perf_cpu);
+> -               free_cpumask_var(data->freqdomain_cpus);
+> -               kfree(policy->freq_table);
+> -               kfree(data);
+> -       }
+> +       policy->driver_data = NULL;
+> +       acpi_processor_unregister_performance(data->acpi_perf_cpu);
+> +       free_cpumask_var(data->freqdomain_cpus);
+> +       kfree(policy->freq_table);
+> +       kfree(data);
+>
+>         return 0;
+>  }
+> --
+> 2.7.1.410.g6faf27b
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
