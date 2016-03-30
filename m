@@ -1,49 +1,41 @@
 From: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v3 0/4] add sysfs_notify on some attributes
-Date: Tue, 29 Mar 2016 17:41:33 -0700
-Message-ID: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
+Subject: [PATCH v3 1/4] thermal: send notifications for cdev state change
+Date: Tue, 29 Mar 2016 17:41:34 -0700
+Message-ID: <1459298497-29481-2-git-send-email-srikars@nvidia.com>
+References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1459298497-29481-1-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patchset adds support to send certain thermal notifications and
-facilitate workload throttling in userspace. Userspace apps that
-want to reduce workload when thermal throttling starts, will
-have to register for these events and interpret them as per their
-requirement. This workload throttling allows userspace to react before
-any hardware clocks are throttled and can keep some critical apps
-running reliably longer.
+Send notifications using sysfs_notify to indicate that a cooling
+device cur state has changed. This can alert the listeners that
+hardware clocks are about to be throttled.
 
-v3
- * Reduced the number of sysfs_notify calls, Notify once per trip only
-   when the temperature crosses the trip point.
- * Use hysteresis to avoid sending too many notifications when
-   temperatures are bouncing around.
- * Add trip state tracking.
- * Add support to disable trip point notifications.
+A listening user space application can use this notification to
+perform workload throttling.
 
-v2
- * Call sysfs_notify for thermal_zone*/temp only when a trip has
-   violated.
+Change-Id: I71cd6d11bff87f181fa3b7db36bf6c953d1d77eb
+Signed-off-by: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ drivers/thermal/thermal_core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-v1
- * Base version, added two sysfs_notify calls.
-
-Srikar Srimath Tirumala (4):
-  thermal: send notifications for cdev state change
-  thermal: send notifications for tz temperature
-  thermal: of: enable temperature notifications
-  thermal: update documentation for new device ops
-
- Documentation/thermal/sysfs-api.txt |  5 +++++
- drivers/thermal/of-thermal.c        | 43 +++++++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_core.c      | 29 +++++++++++++++++++++++++
- include/linux/thermal.h             | 12 +++++++++++
- 4 files changed, 89 insertions(+)
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d4b5465..b09fff1 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1642,6 +1642,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ 	cdev->updated = true;
+ 	trace_cdev_update(cdev, target);
+ 	dev_dbg(&cdev->device, "set to state %lu\n", target);
++	sysfs_notify(&cdev->device.kobj, NULL, "cur_state");
+ }
+ EXPORT_SYMBOL(thermal_cdev_update);
+ 
 -- 
 2.1.4
