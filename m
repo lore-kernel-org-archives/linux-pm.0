@@ -1,66 +1,30 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/2] PM / Domains: Retrieve PM QoS device latencies from DT
-Date: Thu, 31 Mar 2016 15:50:26 +0200
-Message-ID: <1459432226-22562-2-git-send-email-ulf.hansson@linaro.org>
-References: <1459432226-22562-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f42.google.com ([209.85.215.42]:36489 "EHLO
-	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbcCaNuf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 09:50:35 -0400
-Received: by mail-lf0-f42.google.com with SMTP id e133so60070503lfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 06:50:34 -0700 (PDT)
-In-Reply-To: <1459432226-22562-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] thermal: rcar: Remove binding docs for r8a7794
+Date: Thu, 31 Mar 2016 09:22:17 -0500
+Message-ID: <20160331142217.GA21794@rob-hp-laptop>
+References: <1459228065-18674-1-git-send-email-horms+renesas@verge.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1459228065-18674-1-git-send-email-horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org
 
-For the DT based device attach process, let's parse the device node for
-PM QoS latency properties and provide the result as the timing data when
-adding a device to its PM domain.
+On Tue, Mar 29, 2016 at 02:07:45PM +0900, Simon Horman wrote:
+> The latest information that I have is that there is no thermal IP
+> block present on the r8a7794 SoC so remove the corresponding binding.
+> 
+> Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+> Signed-off-by: Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/rcar-thermal.txt | 1 -
+>  1 file changed, 1 deletion(-)
 
-In DT based platforms, this change allows a device to have initial correct
-latency values. In the ideal scenario it should mean that the calibration
-of these values shouldn't be needed by the genpd governor, but let's leave
-that as a future change to consider.
-
-Suggested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 56705b5..f3302a9 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1790,6 +1790,7 @@ int genpd_dev_pm_attach(struct device *dev)
- {
- 	struct of_phandle_args pd_args;
- 	struct generic_pm_domain *pd;
-+	struct gpd_timing_data td;
- 	unsigned int i;
- 	int ret;
- 
-@@ -1824,10 +1825,16 @@ int genpd_dev_pm_attach(struct device *dev)
- 		return -EPROBE_DEFER;
- 	}
- 
-+	memset(&td, 0, sizeof(td));
-+	of_property_read_u64(dev->of_node, "suspend-latency",
-+			&td.suspend_latency_ns);
-+	of_property_read_u64(dev->of_node, "resume-latency",
-+			&td.resume_latency_ns);
-+
- 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
- 
- 	for (i = 1; i < GENPD_RETRY_MAX_MS; i <<= 1) {
--		ret = pm_genpd_add_device(pd, dev);
-+		ret = __pm_genpd_add_device(pd, dev, &td);
- 		if (ret != -EAGAIN)
- 			break;
- 
--- 
-1.9.1
-
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
