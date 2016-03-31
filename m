@@ -1,106 +1,91 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v7 14/20] ARM: dts: Add bus nodes using VDD_MIF for Exynos4x12
-Date: Thu, 31 Mar 2016 18:05:59 +0900
-Message-ID: <1459415165-32613-15-git-send-email-cw00.choi@samsung.com>
-References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
+Date: Thu, 31 Mar 2016 11:14:26 +0200
+Message-ID: <20160331091426.GE11035@twins.programming.kicks-ass.net>
+References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
+ <20160331075951.GG3408@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20160331075951.GG3408@twins.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus nodes using VDD_MIF for Exynos4x12 SoC.
-Exynos4x12 has the following AXI buses to translate data
-between DRAM and DMC/ACP/C2C.
+On Thu, Mar 31, 2016 at 09:59:51AM +0200, Peter Zijlstra wrote:
+> >  - passing an argument into attach_entity_load_avg() to indicate                                                 
+> >    whether calling the cpufreq hook is necessary
+> > 
+> > Both of these are ugly in their own way but would avoid a runtime
+> > cost. Opinions welcome.
+> 
+> Lemme see what this would look like while I throw the below into the bit
+> bucket.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-[m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+OK, so the below looks a lot more sane; and has the surprising benefit
+of actually shrinking the text size..
+
+  43675    1226      24   44925    af7d defconfig-build/kernel/sched/fair.o.base
+  43723    1226      24   44973    afad defconfig-build/kernel/sched/fair.o.patch
+  43595    1226      24   44845    af2d defconfig-build/kernel/sched/fair.o.patch+
+
 ---
- arch/arm/boot/dts/exynos4x12.dtsi | 68 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
-
-diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
-index 84a23f962946..99a0f4ca3d47 100644
---- a/arch/arm/boot/dts/exynos4x12.dtsi
-+++ b/arch/arm/boot/dts/exynos4x12.dtsi
-@@ -281,6 +281,74 @@
- 		clocks = <&clock CLK_SMMU_LITE1>, <&clock CLK_FIMC_LITE1>;
- 		#iommu-cells = <0>;
- 	};
-+
-+	bus_dmc: bus_dmc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_DMC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_dmc_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_acp: bus_acp {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_ACP>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_acp_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_c2c: bus_c2c {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_C2C>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_dmc_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_dmc_opp_table: opp_table1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp@267000000 {
-+			opp-hz = /bits/ 64 <267000000>;
-+			opp-microvolt = <950000>;
-+		};
-+		opp@400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <1050000>;
-+		};
-+	};
-+
-+	bus_acp_opp_table: opp_table2 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+		};
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+		};
-+		opp@267000000 {
-+			opp-hz = /bits/ 64 <267000000>;
-+		};
-+	};
- };
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2851,7 +2851,8 @@ static inline void cfs_rq_util_change(st
+ }
  
- &combiner {
--- 
-1.9.1
+ /* Group cfs_rq's load_avg is used for task_h_load and update_cfs_share */
+-static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
++static inline int
++update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq, bool update_freq)
+ {
+ 	struct sched_avg *sa = &cfs_rq->avg;
+ 	int decayed, removed_load = 0, removed_util = 0;
+@@ -2878,7 +2879,7 @@ static inline int update_cfs_rq_load_avg
+ 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+ #endif
+ 
+-	if (decayed || removed_util)
++	if (update_freq && (decayed || removed_util))
+ 		cfs_rq_util_change(cfs_rq);
+ 
+ 	return decayed || removed_load;
+@@ -2900,7 +2901,7 @@ static inline void update_load_avg(struc
+ 			  se->on_rq * scale_load_down(se->load.weight),
+ 			  cfs_rq->curr == se, NULL);
+ 
+-	if (update_cfs_rq_load_avg(now, cfs_rq) && update_tg)
++	if (update_cfs_rq_load_avg(now, cfs_rq, true) && update_tg)
+ 		update_tg_load_avg(cfs_rq, 0);
+ }
+ 
+@@ -2962,7 +2963,7 @@ enqueue_entity_load_avg(struct cfs_rq *c
+ 			cfs_rq->curr == se, NULL);
+ 	}
+ 
+-	decayed = update_cfs_rq_load_avg(now, cfs_rq);
++	decayed = update_cfs_rq_load_avg(now, cfs_rq, !migrated);
+ 
+ 	cfs_rq->runnable_load_avg += sa->load_avg;
+ 	cfs_rq->runnable_load_sum += sa->load_sum;
+@@ -6170,7 +6171,7 @@ static void update_blocked_averages(int
+ 		if (throttled_hierarchy(cfs_rq))
+ 			continue;
+ 
+-		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq))
++		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true))
+ 			update_tg_load_avg(cfs_rq, 0);
+ 	}
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+@@ -6231,7 +6232,7 @@ static inline void update_blocked_averag
+ 
+ 	raw_spin_lock_irqsave(&rq->lock, flags);
+ 	update_rq_clock(rq);
+-	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
++	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true);
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
