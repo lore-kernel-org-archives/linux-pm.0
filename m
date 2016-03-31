@@ -1,65 +1,51 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v7 01/20] PM / devfreq: exynos: Add generic exynos bus
- frequency driver
-Date: Thu, 31 Mar 2016 21:28:32 +0900
-Message-ID: <CAGTfZH0mgxyQPKBTX=ZXgtSn=bQ2zAMSNMHfO+OXh3U5qrUr4g@mail.gmail.com>
-References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
-	<1459415165-32613-2-git-send-email-cw00.choi@samsung.com>
-	<56FD13D2.1050300@samsung.com>
-Reply-To: cw00.choi@samsung.com
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 7/7][Resend] cpufreq: schedutil: New governor based on
+ scheduler utilization data
+Date: Thu, 31 Mar 2016 14:32:44 +0200
+Message-ID: <CAJZ5v0j6eDmvVSBphvygA2Xnk9nQXqracFR+dBYz3UOeyrb7qA@mail.gmail.com>
+References: <7262976.zPkLj56ATU@vostro.rjw.lan>
+	<6666532.7ULg06hQ7e@vostro.rjw.lan>
+	<56F5E1F2.5090100@linaro.org>
+	<CAJZ5v0j=LwOT=sjSOwwzY=sYLqiV1tuvVazzgU+yMwMWXmpR8A@mail.gmail.com>
+	<CAJZ5v0i1=P45wWHYHVp9mW=h7w_MywFz7x2qmEs2iiEhJSq-5g@mail.gmail.com>
+	<56F97548.1030903@linaro.org>
+	<20160331122445.GJ3408@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <56FD13D2.1050300@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Anand Moon <linux.amoon@gmail.com>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vg>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:36643 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbcCaMcq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 08:32:46 -0400
+In-Reply-To: <20160331122445.GJ3408@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
 
-On Thu, Mar 31, 2016 at 9:10 PM, Sylwester Nawrocki
-<s.nawrocki@samsung.com> wrote:
-> On 03/31/2016 11:05 AM, Chanwoo Choi wrote:
+On Thu, Mar 31, 2016 at 2:24 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, Mar 28, 2016 at 11:17:44AM -0700, Steve Muckle wrote:
+>> The scenario I'm contemplating is that while a CPU-intensive task is
+>> running a thermal interrupt goes off. The driver for this thermal
+>> interrupt responds by capping fmax. If this happens just after the tick,
+>> it seems possible that we could wait a full tick before changing the
+>> frequency. Given a 10ms tick it could be rather annoying for thermal
+>> management algorithms on some platforms (I'm familiar with a few).
 >
->> +static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
->> +{
+> So I'm blissfully unaware of all the thermal stuffs we have; but it
+> looks like its somehow bolten onto cpufreq without feedback.
 >
->> +     new_opp = devfreq_recommended_opp(dev, freq, flags);
->> +     if (IS_ERR_OR_NULL(new_opp)) {
->> +             dev_err(dev, "failed to get recommed opp instance\n");
->
-> s/recommed/recommended/
+> The thing I worry about is thermal scaling the CPU back past where RT/DL
+> tasks can still complete in time. It should not be able to do that, or
+> rather, missing deadlines because thermal is about as useful as
+> rebooting the device.
 
-OK. I'll fix it.
+Right.  If thermal throttling kicks in, the game is pretty much over.
 
->
->> +             rcu_read_unlock();
->> +             return PTR_ERR(new_opp);
->> +     }
->
->> +}
->
->> +static int exynos_bus_probe(struct platform_device *pdev)
->> +{
->
->> +     bus->devfreq = devm_devfreq_add_device(dev, profile, "simple_ondemand",
->> +                                             ondemand_data);
->> +     if (IS_ERR_OR_NULL(bus->devfreq)) {
->> +             dev_err(dev, "failed to add devfreq device\n");
->> +             return  PTR_ERR(bus->devfreq);
->> +     }
->
->> +}
->
-> You should use IS_ERR() instead of IS_ERR_OR_NULL(), since functions
-> of which the return value is being tested return only ERR_PTR() values.
-> IS_ERR_OR_NULL() suggest NULL values are possible and then constructs
-> like
->         if (IS_ERR_OR_NULL(result))
->                 return PTR_ERR(result);
->
-> are not correct anyway.
+That's why ideas float about taking the thermal constraints into
+account upfront, but that's a different discussion entirely.
 
-OK. I'll use IS_ERR() instead of IS_ERR_OR_NULL()
+> I guess I'm saying is, the whole cpufreq/thermal 'interface' needs work
+> anyhow.
 
-Thanks,
-Chanwoo Choi
+Yes, it does.
