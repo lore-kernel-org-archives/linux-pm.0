@@ -1,116 +1,341 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v7 03/20] PM / devfreq: Add devfreq_get_devfreq_by_phandle()
-Date: Thu, 31 Mar 2016 18:05:48 +0900
-Message-ID: <1459415165-32613-4-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v7 05/20] PM / devfreq: Add new passive governor
+Date: Thu, 31 Mar 2016 18:05:50 +0900
+Message-ID: <1459415165-32613-6-git-send-email-cw00.choi@samsung.com>
 References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:59798 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756314AbcCaJGj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 05:06:39 -0400
 In-reply-to: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds the new devfreq_get_devfreq_by_phandle() OF helper function
-which can find the instance of devfreq device by using phandle ("devfreq").
+This patch adds the new passive governor for DEVFREQ framework. The following
+governors are already present and used for DVFS (Dynamic Voltage and Frequency
+Scaling) drivers. The following governors are independently used for one device
+driver which don't give the influence to other device drviers and also don't
+receive the effect from other device drivers.
+- ondemand / performance / powersave / userspace
 
+The passive governor depends on operation of parent driver with specific
+governos extremely and is not able to decide the new frequency by oneself.
+According to the decided new frequency of parent driver with governor,
+the passive governor uses it to decide the appropriate frequency for own
+device driver. The passive governor must need the following information
+from device tree:
+- the source clock and OPP tables
+- the instance of parent device
+
+For exameple,
+there are one more devfreq device drivers which need to change their source
+clock according to their utilization on runtime. But, they share the same
+power line (e.g., regulator). So, specific device driver is operated as parent
+with ondemand governor and then the rest device driver with passive governor
+is influenced by parent device.
+
+Suggested-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-[m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+[tjakobi: Reported RCU locking issue and cw00.choi fix it.]
+Reported-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 ---
- drivers/devfreq/devfreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/devfreq.h   |  9 +++++++++
- 2 files changed, 53 insertions(+)
+ drivers/devfreq/Kconfig            |   8 ++
+ drivers/devfreq/Makefile           |   1 +
+ drivers/devfreq/governor_passive.c | 206 +++++++++++++++++++++++++++++++++++++
+ include/linux/devfreq.h            |  33 ++++++
+ 4 files changed, 248 insertions(+)
+ create mode 100644 drivers/devfreq/governor_passive.c
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 984c5e9e7bdd..20a9422c2552 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -25,6 +25,7 @@
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-+#include <linux/of.h>
- #include "governor.h"
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index cedda8f1e5eb..d260cd0219f6 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -64,6 +64,14 @@ config DEVFREQ_GOV_USERSPACE
+ 	  Otherwise, the governor does not change the frequency
+ 	  given at the initialization.
  
- static struct class *devfreq_class;
-@@ -639,6 +640,49 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
- }
- EXPORT_SYMBOL(devm_devfreq_add_device);
++config DEVFREQ_GOV_PASSIVE
++	tristate "Passive"
++	help
++	  Sets the frequency based on the frequency of its parent devfreq
++	  device. This governor does not change the frequency by itself
++	  through sysfs entries. The passive governor recommends that
++	  devfreq device uses the OPP table to get the frequency/voltage.
++
+ comment "DEVFREQ Drivers"
  
-+#ifdef CONFIG_OF
+ config ARM_EXYNOS_BUS_DEVFREQ
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 8af8aaf922a8..2633087d5c63 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -4,6 +4,7 @@ obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
+ obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
+ obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
+ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
++obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ 
+ # DEVFREQ Drivers
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+new file mode 100644
+index 000000000000..4fd5c1fbf23d
+--- /dev/null
++++ b/drivers/devfreq/governor_passive.c
+@@ -0,0 +1,206 @@
 +/*
-+ * devfreq_get_devfreq_by_phandle - Get the devfreq device from devicetree
-+ * @dev - instance to the given device
-+ * @index - index into list of devfreq
++ * linux/drivers/devfreq/governor_passive.c
 + *
-+ * return the instance of devfreq device
++ * Copyright (C) 2016 Samsung Electronics
++ * Author: Chanwoo Choi <cw00.choi@samsung.com>
++ * Author: MyungJoo Ham <myungjoo.ham@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
++
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/devfreq.h>
++#include "governor.h"
++
++static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
++					unsigned long *freq)
 +{
-+	struct device_node *node;
-+	struct devfreq *devfreq;
++	struct devfreq_passive_data *p_data
++			= (struct devfreq_passive_data *)devfreq->data;
++	struct devfreq *parent_devfreq = (struct devfreq *)p_data->parent;
++	unsigned long child_freq = ULONG_MAX;
++	struct dev_pm_opp *opp;
++	int i, count, ret = 0;
 +
-+	if (!dev)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!dev->of_node)
-+		return ERR_PTR(-EINVAL);
-+
-+	node = of_parse_phandle(dev->of_node, "devfreq", index);
-+	if (!node)
-+		return ERR_PTR(-ENODEV);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	list_for_each_entry(devfreq, &devfreq_list, node) {
-+		if (devfreq->dev.parent
-+			&& devfreq->dev.parent->of_node == node) {
-+			mutex_unlock(&devfreq_list_lock);
-+			return devfreq;
-+		}
++	/*
++	 * If the devfreq device with passive governor has the specific method
++	 * to determine the next frequency, should use the get_target_freq()
++	 * of struct devfreq_passive_data.
++	 */
++	if (p_data->get_target_freq) {
++		ret = p_data->get_target_freq(devfreq, freq);
++		goto out;
 +	}
-+	mutex_unlock(&devfreq_list_lock);
 +
-+	return ERR_PTR(-EPROBE_DEFER);
++	/*
++	 * If the parent and passive devfreq device uses the OPP table,
++	 * get the next frequency by using the OPP table.
++	 * - parent devfreq device uses the governors except for passive.
++	 * - passive devfreq device uses the passive governor.
++	 */
++
++	/*
++	 * Each devfreq has the OPP table. After deciding the new frequency
++	 * from the governor of parent devfreq device, the passive governor
++	 * need to get the index of new frequency on OPP table of parent
++	 * device. And then the index is used for getting the suitable
++	 * new frequency for passive devfreq device.
++	 */
++	if (!devfreq->profile || !devfreq->profile->freq_table
++		|| devfreq->profile->max_state <= 0)
++		return -EINVAL;
++
++	/*
++	 * The passive governor have to get the correct frequency from OPP
++	 * list of parent device. Because in this case, *freq is temporary
++	 * value which is decided by ondemand governor.
++	 */
++	rcu_read_lock();
++	opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
++	rcu_read_unlock();
++	if (IS_ERR_OR_NULL(opp)) {
++		ret = PTR_ERR(opp);
++		goto out;
++	}
++
++	/*
++	 * Get the OPP table's index of decided freqeuncy by governor
++	 * of parent device.
++	 */
++	for (i = 0; i < parent_devfreq->profile->max_state; i++)
++		if (parent_devfreq->profile->freq_table[i] == *freq)
++			break;
++
++	if (i == parent_devfreq->profile->max_state) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/* Get the suitable frequency by using index of parent device. */
++	if (i < devfreq->profile->max_state) {
++		child_freq = devfreq->profile->freq_table[i];
++	} else {
++		count = devfreq->profile->max_state;
++		child_freq = devfreq->profile->freq_table[count - 1];
++	}
++
++	/* Return the suitable frequency for passive device. */
++	*freq = child_freq;
++
++out:
++	return ret;
 +}
-+#else
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
++
++static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
 +{
-+	return ERR_PTR(-ENODEV);
-+}
-+#endif /* CONFIG_OF */
-+EXPORT_SYMBOL_GPL(devfreq_get_devfreq_by_phandle);
++	int ret;
 +
- /**
-  * devm_devfreq_remove_device() - Resource-managed devfreq_remove_device()
-  * @dev:	the device to add devfreq feature.
++	if (!devfreq->governor)
++		return -EINVAL;
++
++	mutex_lock(&devfreq->lock);
++
++	ret = devfreq->governor->get_target_freq(devfreq, &freq);
++	if (ret < 0)
++		goto out;
++
++	ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
++	if (ret < 0)
++		goto out;
++
++	devfreq->previous_freq = freq;
++
++out:
++	mutex_unlock(&devfreq->lock);
++
++	return 0;
++}
++
++static int devfreq_passive_notifier_call(struct notifier_block *nb,
++				unsigned long event, void *ptr)
++{
++	struct devfreq_passive_data *data
++			= container_of(nb, struct devfreq_passive_data, nb);
++	struct devfreq *devfreq = (struct devfreq *)data->this;
++	struct devfreq *parent = (struct devfreq *)data->parent;
++	struct devfreq_freqs *freqs = (struct devfreq_freqs *)ptr;
++	unsigned long freq = freqs->new;
++
++	switch (event) {
++	case DEVFREQ_PRECHANGE:
++		if (parent->previous_freq > freq)
++			update_devfreq_passive(devfreq, freq);
++		break;
++	case DEVFREQ_POSTCHANGE:
++		if (parent->previous_freq < freq)
++			update_devfreq_passive(devfreq, freq);
++		break;
++	}
++
++	return NOTIFY_DONE;
++}
++
++static int devfreq_passive_event_handler(struct devfreq *devfreq,
++				unsigned int event, void *data)
++{
++	struct device *dev = devfreq->dev.parent;
++	struct devfreq_passive_data *p_data
++			= (struct devfreq_passive_data *)devfreq->data;
++	struct devfreq *parent = (struct devfreq *)p_data->parent;
++	struct notifier_block *nb = &p_data->nb;
++	int ret = 0;
++
++	if (!parent)
++		return -EPROBE_DEFER;
++
++	switch (event) {
++	case DEVFREQ_GOV_START:
++		if (!p_data->this)
++			p_data->this = devfreq;
++
++		nb->notifier_call = devfreq_passive_notifier_call;
++		ret = devm_devfreq_register_notifier(dev, parent, nb,
++					DEVFREQ_TRANSITION_NOTIFIER);
++		break;
++	case DEVFREQ_GOV_STOP:
++		devm_devfreq_unregister_notifier(dev, parent, nb,
++					DEVFREQ_TRANSITION_NOTIFIER);
++		break;
++	default:
++		break;
++	}
++
++	return ret;
++}
++
++static struct devfreq_governor devfreq_passive = {
++	.name = "passive",
++	.get_target_freq = devfreq_passive_get_target_freq,
++	.event_handler = devfreq_passive_event_handler,
++};
++
++static int __init devfreq_passive_init(void)
++{
++	return devfreq_add_governor(&devfreq_passive);
++}
++subsys_initcall(devfreq_passive_init);
++
++static void __exit devfreq_passive_exit(void)
++{
++	int ret;
++
++	ret = devfreq_remove_governor(&devfreq_passive);
++	if (ret)
++		pr_err("%s: failed remove governor %d\n", __func__, ret);
++
++	return;
++}
++module_exit(devfreq_passive_exit);
++
++MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
++MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
++MODULE_DESCRIPTION("DEVFREQ Passive governor");
++MODULE_LICENSE("GPL v2");
 diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 6fa02a20eb63..aa0b8424ebc3 100644
+index 98c699304e12..2de4e2eea180 100644
 --- a/include/linux/devfreq.h
 +++ b/include/linux/devfreq.h
-@@ -208,6 +208,9 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
- extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 						struct devfreq *devfreq);
+@@ -272,6 +272,39 @@ struct devfreq_simple_ondemand_data {
+ };
+ #endif
  
-+extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+						int index);
++#if IS_ENABLED(CONFIG_DEVFREQ_GOV_PASSIVE)
++/**
++ * struct devfreq_passive_data - void *data fed to struct devfreq
++ *	and devfreq_add_device
++ * @parent:	the devfreq instance of parent device.
++ * @get_target_freq:	Optional callback, Returns desired operating frequency
++ *			for the device using passive governor. That is called
++ *			when passive governor should decide the next frequency
++ *			by using the new frequency of parent devfreq device
++ *			using governors except for passive governor.
++ *			If the devfreq device has the specific method to decide
++ *			the next frequency, should use this callback.
++ * @this:	the devfreq instance of own device.
++ * @nb:		the notifier block for DEVFREQ_TRANSITION_NOTIFIER list
++ *
++ * The devfreq_passive_data have to set the devfreq instance of parent
++ * device with governors except for the passive governor. But, don't need to
++ * initialize the 'this' and 'nb' field because the devfreq core will handle
++ * them.
++ */
++struct devfreq_passive_data {
++	/* Should set the devfreq instance of parent device */
++	struct devfreq *parent;
 +
- /**
-  * devfreq_update_stats() - update the last_status pointer in struct devfreq
-  * @df:		the devfreq instance whose status needs updating
-@@ -307,6 +310,12 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
- {
- }
- 
-+static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+							int index)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
++	/* Optional callback to decide the next frequency of passvice device */
++	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
 +
- static inline int devfreq_update_stats(struct devfreq *df)
- {
- 	return -EINVAL;
++	/* For passive governor's internal use. Don't need to set them */
++	struct devfreq *this;
++	struct notifier_block nb;
++};
++#endif
++
+ #else /* !CONFIG_PM_DEVFREQ */
+ static inline struct devfreq *devfreq_add_device(struct device *dev,
+ 					  struct devfreq_dev_profile *profile,
 -- 
 1.9.1
+
