@@ -1,231 +1,51 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH v2 3/5] ARM: dts: rockchip: move rk3288 io-domain nodes to the grf
-Date: Thu, 31 Mar 2016 15:48:44 +0200
-Message-ID: <1459432126-6395-4-git-send-email-heiko@sntech.de>
-References: <1459432126-6395-1-git-send-email-heiko@sntech.de>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 1/2] PM / Domains: Define DT bindings for PM QoS device latencies
+Date: Thu, 31 Mar 2016 15:50:25 +0200
+Message-ID: <1459432226-22562-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:51232 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754063AbcCaNtK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Mar 2016 09:49:10 -0400
-In-Reply-To: <1459432126-6395-1-git-send-email-heiko@sntech.de>
+Received: from mail-lf0-f49.google.com ([209.85.215.49]:36465 "EHLO
+	mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbcCaNud (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 09:50:33 -0400
+Received: by mail-lf0-f49.google.com with SMTP id e133so60069755lfe.3
+        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 06:50:32 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, khilman@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, devicetree@vger.kernel.org
 
-io-voltage control is actually part of the grf, so move the node under the
-newly available grf simple-mfd.
+PM QoS device latencies are properties of the hardware. Let's define some
+DT bindings for them.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Suggested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/arm/boot/dts/rk3288-firefly.dtsi   | 33 ++++++++++++++++----------------
- arch/arm/boot/dts/rk3288-popmetal.dts   | 34 +++++++++++++++++----------------
- arch/arm/boot/dts/rk3288-rock2-som.dtsi | 34 +++++++++++++++++----------------
- arch/arm/boot/dts/rk3288-veyron.dtsi    | 28 ++++++++++++++-------------
- 4 files changed, 68 insertions(+), 61 deletions(-)
+ Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/rk3288-firefly.dtsi b/arch/arm/boot/dts/rk3288-firefly.dtsi
-index 98c586a4..6c5f510d 100644
---- a/arch/arm/boot/dts/rk3288-firefly.dtsi
-+++ b/arch/arm/boot/dts/rk3288-firefly.dtsi
-@@ -63,22 +63,6 @@
- 		clock-output-names = "ext_gmac";
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 025b5e7..b101a20 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -65,12 +65,18 @@ Required properties:
+  - power-domains : A phandle and PM domain specifier as defined by bindings of
+                    the power controller specified by phandle.
+ 
++Optional properties:
++ - suspend-latency: Suspend latency of the device in ns.
++ - resume-latency: Resume latency of the device in ns.
++
+ Example:
+ 
+ 	leaky-device@12350000 {
+ 		compatible = "foo,i-leak-current";
+ 		reg = <0x12350000 0x1000>;
+ 		power-domains = <&power 0>;
++		suspend-latency = <250000>;
++		resume-latency = <250000>;
  	};
  
--	io_domains: io-domains {
--		compatible = "rockchip,rk3288-io-voltage-domain";
--		rockchip,grf = <&grf>;
--
--		audio-supply = <&vcca_33>;
--		bb-supply = <&vcc_io>;
--		dvp-supply = <&dovdd_1v8>;
--		flash0-supply = <&vcc_flash>;
--		flash1-supply = <&vcc_lan>;
--		gpio30-supply = <&vcc_io>;
--		gpio1830-supply = <&vcc_io>;
--		lcdc-supply = <&vcc_io>;
--		sdcard-supply = <&vccio_sd>;
--		wifi-supply = <&vccio_wl>;
--	};
--
- 	ir: ir-receiver {
- 		compatible = "gpio-ir-receiver";
- 		pinctrl-names = "default";
-@@ -237,6 +221,23 @@
- 	status = "ok";
- };
- 
-+&grf {
-+	io_domains: io-domains {
-+		compatible = "rockchip,rk3288-io-voltage-domain";
-+
-+		audio-supply = <&vcca_33>;
-+		bb-supply = <&vcc_io>;
-+		dvp-supply = <&dovdd_1v8>;
-+		flash0-supply = <&vcc_flash>;
-+		flash1-supply = <&vcc_lan>;
-+		gpio30-supply = <&vcc_io>;
-+		gpio1830-supply = <&vcc_io>;
-+		lcdc-supply = <&vcc_io>;
-+		sdcard-supply = <&vccio_sd>;
-+		wifi-supply = <&vccio_wl>;
-+	};
-+};
-+
- &hdmi {
- 	ddc-i2c-bus = <&i2c5>;
- 	status = "okay";
-diff --git a/arch/arm/boot/dts/rk3288-popmetal.dts b/arch/arm/boot/dts/rk3288-popmetal.dts
-index 2ff9689..4322eaf 100644
---- a/arch/arm/boot/dts/rk3288-popmetal.dts
-+++ b/arch/arm/boot/dts/rk3288-popmetal.dts
-@@ -79,22 +79,6 @@
- 		};
- 	};
- 
--	io_domains: io-domains {
--		compatible = "rockchip,rk3288-io-voltage-domain";
--		rockchip,grf = <&grf>;
--
--		audio-supply = <&vcca_33>;
--		bb-supply = <&vcc_io>;
--		dvp-supply = <&vcc18_dvp>;
--		flash0-supply = <&vcc_flash>;
--		flash1-supply = <&vcc_lan>;
--		gpio30-supply = <&vcc_io>;
--		gpio1830-supply = <&vcc_io>;
--		lcdc-supply = <&vcc_io>;
--		sdcard-supply = <&vccio_sd>;
--		wifi-supply = <&vccio_wl>;
--	};
--
- 	ir: ir-receiver {
- 		compatible = "gpio-ir-receiver";
- 		gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
-@@ -205,6 +189,24 @@
- 	status = "ok";
- };
- 
-+&grf {
-+	io_domains: io-domains {
-+		compatible = "rockchip,rk3288-io-voltage-domain";
-+		rockchip,grf = <&grf>;
-+
-+		audio-supply = <&vcca_33>;
-+		bb-supply = <&vcc_io>;
-+		dvp-supply = <&vcc18_dvp>;
-+		flash0-supply = <&vcc_flash>;
-+		flash1-supply = <&vcc_lan>;
-+		gpio30-supply = <&vcc_io>;
-+		gpio1830-supply = <&vcc_io>;
-+		lcdc-supply = <&vcc_io>;
-+		sdcard-supply = <&vccio_sd>;
-+		wifi-supply = <&vccio_wl>;
-+	};
-+};
-+
- &hdmi {
- 	ddc-i2c-bus = <&i2c5>;
- 	status = "okay";
-diff --git a/arch/arm/boot/dts/rk3288-rock2-som.dtsi b/arch/arm/boot/dts/rk3288-rock2-som.dtsi
-index e1ee9f9..8660b8a 100644
---- a/arch/arm/boot/dts/rk3288-rock2-som.dtsi
-+++ b/arch/arm/boot/dts/rk3288-rock2-som.dtsi
-@@ -61,22 +61,6 @@
- 		clock-output-names = "ext_gmac";
- 	};
- 
--	io_domains: io-domains {
--		compatible = "rockchip,rk3288-io-voltage-domain";
--		rockchip,grf = <&grf>;
--
--		audio-supply = <&vcc_io>;
--		bb-supply = <&vcc_io>;
--		dvp-supply = <&vcc_18>;
--		flash0-supply = <&vcc_flash>;
--		flash1-supply = <&vccio_pmu>;
--		gpio30-supply = <&vccio_pmu>;
--		gpio1830 = <&vcc_io>;
--		lcdc-supply = <&vcc_io>;
--		sdcard-supply = <&vccio_sd>;
--		wifi-supply = <&vcc_18>;
--	};
--
- 	vcc_flash: flash-regulator {
- 		compatible = "regulator-fixed";
- 		regulator-name = "vcc_sys";
-@@ -129,6 +113,24 @@
- 	tx_delay = <0x30>;
- };
- 
-+&grf {
-+	io_domains: io-domains {
-+		compatible = "rockchip,rk3288-io-voltage-domain";
-+		rockchip,grf = <&grf>;
-+
-+		audio-supply = <&vcc_io>;
-+		bb-supply = <&vcc_io>;
-+		dvp-supply = <&vcc_18>;
-+		flash0-supply = <&vcc_flash>;
-+		flash1-supply = <&vccio_pmu>;
-+		gpio30-supply = <&vccio_pmu>;
-+		gpio1830 = <&vcc_io>;
-+		lcdc-supply = <&vcc_io>;
-+		sdcard-supply = <&vccio_sd>;
-+		wifi-supply = <&vcc_18>;
-+	};
-+};
-+
- &i2c0 {
- 	status = "okay";
- 
-diff --git a/arch/arm/boot/dts/rk3288-veyron.dtsi b/arch/arm/boot/dts/rk3288-veyron.dtsi
-index 412809c..df44735 100644
---- a/arch/arm/boot/dts/rk3288-veyron.dtsi
-+++ b/arch/arm/boot/dts/rk3288-veyron.dtsi
-@@ -83,19 +83,6 @@
- 		reset-gpios = <&gpio2 9 GPIO_ACTIVE_HIGH>;
- 	};
- 
--	io_domains: io-domains {
--		compatible = "rockchip,rk3288-io-voltage-domain";
--		rockchip,grf = <&grf>;
--
--		bb-supply = <&vcc33_io>;
--		dvp-supply = <&vcc_18>;
--		flash0-supply = <&vcc18_flashio>;
--		gpio1830-supply = <&vcc33_io>;
--		gpio30-supply = <&vcc33_io>;
--		lcdc-supply = <&vcc33_lcd>;
--		wifi-supply = <&vcc18_wl>;
--	};
--
- 	sdio_pwrseq: sdio-pwrseq {
- 		compatible = "mmc-pwrseq-simple";
- 		clocks = <&rk808 RK808_CLKOUT1>;
-@@ -159,6 +146,21 @@
- 	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8>;
- };
- 
-+&grf {
-+	io_domains: io-domains {
-+		compatible = "rockchip,rk3288-io-voltage-domain";
-+		rockchip,grf = <&grf>;
-+
-+		bb-supply = <&vcc33_io>;
-+		dvp-supply = <&vcc_18>;
-+		flash0-supply = <&vcc18_flashio>;
-+		gpio1830-supply = <&vcc33_io>;
-+		gpio30-supply = <&vcc33_io>;
-+		lcdc-supply = <&vcc33_lcd>;
-+		wifi-supply = <&vcc18_wl>;
-+	};
-+};
-+
- &hdmi {
- 	ddc-i2c-bus = <&i2c5>;
- 	status = "okay";
+ The node above defines a typical PM domain consumer device, which is located
 -- 
-2.6.4
+1.9.1
 
