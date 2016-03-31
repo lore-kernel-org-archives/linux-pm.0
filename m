@@ -1,118 +1,227 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH 1/3 v4] powercap, intel_rapl, implement
- get_max_time_window
-Date: Thu, 31 Mar 2016 18:28:59 +0000
-Message-ID: <1459448760.4569.87.camel@intel.com>
-References: <1458563236-19269-1-git-send-email-prarit@redhat.com>
-	 <1458563236-19269-2-git-send-email-prarit@redhat.com>
+From: Mason <slash.tmp@free.fr>
+Subject: [PATCH v6] thermal: add temperature sensor support for tango SoC
+Date: Thu, 31 Mar 2016 22:16:02 +0200
+Message-ID: <56FD8582.80002@free.fr>
+References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
+ <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
+ <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
+ <56FACE0B.9060606@free.fr> <20160330000503.GA2625@localhost.localdomain>
+ <56FBEE4F.3060106@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458563236-19269-2-git-send-email-prarit@redhat.com>
-Content-Language: en-US
-Content-ID: <E7F3FE1EDA965D43A668A7EE9FB4737B@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "prarit@redhat.com" <prarit@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "Jovanovic, Radivoje" <radivoje.jovanovic@intel.com>, "s.ikarashi@jp.fujitsu.com" <s.ikarashi@jp.fujitsu.com>, "David Rajamanickam, Ajay Thomas" <ajay.thomas.david.rajamanickam@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "minipli@googlemail.com" <minipli@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:16049 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757764AbcCaUQW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Mar 2016 16:16:22 -0400
+In-Reply-To: <56FBEE4F.3060106@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
 
-T24gTW9uLCAyMDE2LTAzLTIxIGF0IDA4OjI3IC0wNDAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
-DQo+IFRoZSBNU1JfUEtHX1BPV0VSX0lORk8gcmVnaXN0ZXIgKEludGVsIEFTRE0sIHNlY3Rpb24g
-MTQuOS4zDQo+ICJQYWNrYWdlIFJBUEwgRG9tYWluIikgcHJvdmlkZXMgYSBtYXhpbXVtIHRpbWUg
-d2luZG93IHdoaWNoIHRoZQ0KPiBzeXN0ZW0gY2FuIHN1cHBvcnQuwqDCoFRoaXMgd2luZG93IGlz
-IHJlYWQtb25seSBhbmQgaXMgY3VycmVudGx5DQo+IG5vdCBleGFtaW5lZCB3aGVuIHNldHRpbmcg
-dGhlIHRpbWUgd2luZG93cyBmb3IgdGhlIHBhY2thZ2UuDQo+IA0KVXN1YWxseSB0aGlzIGZpZWxk
-IGhhcyBsb3Qgb2YganVuay4gSXQgaXMgbm90IHN1cHBvcnRlZCB1bmlmb3JtbHkuDQpUaGUgc3lz
-dGVtIHByb3ZpZGVzIHRoaXMgdmFsdWUgZnJvbSBhbm90aGVyIEFDUEkgZWxlbWVudCBjYWxsZWQg
-UFBDQy4NCklmIHN1cHBvcnRlZCB0aGlzIHdpbGwgYmUgaW7CoA0KDQokIC9zeXMvYnVzL3BjaS9k
-ZXZpY2VzLzAwMDA6MDA6MDQuMC9wb3dlcl9saW1pdHMNCiQgZ3JlcCAuICoNCnBvd2VyX2xpbWl0
-XzBfbWF4X3V3OjE1MDAwMDAwDQpwb3dlcl9saW1pdF8wX21pbl91dzoxMjUwMDANCnBvd2VyX2xp
-bWl0XzBfc3RlcF91dzoxMDAwMDAwDQpwb3dlcl9saW1pdF8wX3RtYXhfdXM6MzIwMDAwMDANCnBv
-d2VyX2xpbWl0XzBfdG1pbl91czoyODAwMDAwMA0KcG93ZXJfbGltaXRfMV9tYXhfdXc6MjUwMDAw
-MDANCnBvd2VyX2xpbWl0XzFfbWluX3V3OjI1MDAwMDAwDQpwb3dlcl9saW1pdF8xX3N0ZXBfdXc6
-MTAwMDAwMA0KcG93ZXJfbGltaXRfMV90bWF4X3VzOjANCnBvd2VyX2xpbWl0XzFfdG1pbl91czow
-DQoNClRoYW5rcywNClNyaW5pdmFzDQo+IFRoaXMgcGF0Y2ggaW1wbGVtZW50cyBnZXRfbWF4X3Rp
-bWVfd2luZG93X3VzKCkgYW5kIGNoZWNrcyB0aGUgd2luZG93DQo+IHdoZW4NCj4gYSB1c2VyIGF0
-dGVtcHRzIHRvIHNldCBwb3dlciBjYXBwaW5nIGZvciB0aGUgcGFja2FnZS4NCj4gDQo+IEJlZm9y
-ZSB0aGUgcGF0Y2ggaXQgd2FzIHBvc3NpYmxlIHRvIHNldCB0aGUgd2luZG93IHRvLCBmb3IgZXhh
-bXBsZSwNCj4gMTAwMDANCj4gbWljcm8gc2Vjb25kczoNCj4gDQo+IFtyb290QGludGVsLWNoaWVm
-cml2ZXItMDMgcmhlbDddIyBlY2hvIDEwMDAwID4NCj4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93
-ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0NCj4gcmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5k
-b3dfdXM7DQo+IGVncmVwIF4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFw
-bC9pbnRlbC0NCj4gcmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5kb3dfdXMNCj4gDQo+IC9z
-eXMvZGV2aWNlcy92aXJ0dWFsL3Bvd2VyY2FwL2ludGVsLXJhcGwvaW50ZWwtDQo+IHJhcGw6MC9j
-b25zdHJhaW50XzBfdGltZV93aW5kb3dfdXM6MTo5NzY1DQo+IA0KPiBidXQgZnJvbSAndHVyYm9z
-dGF0IC1kJywgdGhlIHBhY2thZ2UgaXMgbGltaXRlZCB0byA5NzZ1czoNCj4gDQo+IGNwdTA6IE1T
-Ul9QS0dfUE9XRVJfSU5GTzogMHgwMTIwMDE2OCAoNDUgVyBURFAsIFJBUEwgMzYgLSAwIFcsDQo+
-IDAuMDAwOTc3IHNlYy4pDQo+IA0KPiAoTm90ZSwgdGhlcmUgYXBwZWFycyB0byBiZSBhIHJvdW5k
-aW5nIGlzc3VlIGluIHR1cmJvc3RhdCB3aGljaCBuZWVkcw0KPiB0bw0KPiBhbHNvIGJlIGZpeGVk
-LsKgwqBMb29raW5nIGF0IHRoZSB2YWx1ZXMgaW4gdGhlIHJlZ2lzdGVyIGl0IGlzIGNsZWFyIHRo
-ZQ0KPiB2YWx1ZSBpcyAxLzEwMjQgPSA5NzZ1cy4pDQo+IA0KPiBBZnRlciB0aGUgcGF0Y2ggd2Ug
-YXJlIGxpbWl0ZWQgYnkgdGhlIG1heGltdW0gdGltZSB3aW5kb3c6DQo+IA0KPiBbcm9vdEBpbnRl
-bC1jaGllZnJpdmVyLTAzIHJoZWw3XSMgZWNobyAxMDAwMCA+DQo+IC9zeXMvZGV2aWNlcy92aXJ0
-dWFsL3Bvd2VyY2FwL2ludGVsLXJhcGwvaW50ZWwtDQo+IHJhcGxcOjAvY29uc3RyYWludF8wX3Rp
-bWVfd2luZG93X3VzOw0KPiBlZ3JlcCBeIC9zeXMvZGV2aWNlcy92aXJ0dWFsL3Bvd2VyY2FwL2lu
-dGVsLXJhcGwvaW50ZWwtDQo+IHJhcGxcOjAvY29uc3RyYWludF8wX3RpbWVfd2luZG93X3VzDQo+
-IA0KPiAtYmFzaDogZWNobzogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCj4gL3N5cy9k
-ZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0NCj4gcmFwbDowL2NvbnN0
-cmFpbnRfMF90aW1lX3dpbmRvd191czoxOjk3Ng0KPiANCj4gQ2M6ICJSYWZhZWwgSi4gV3lzb2Nr
-aSIgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPiBDYzogUHJhcml0IEJoYXJnYXZhIDxw
-cmFyaXRAcmVkaGF0LmNvbT4NCj4gQ2M6IFJhZGl2b2plIEpvdmFub3ZpYyA8cmFkaXZvamUuam92
-YW5vdmljQGludGVsLmNvbT4NCj4gQ2M6IFNlaWljaGkgSWthcmFzaGkgPHMuaWthcmFzaGlAanAu
-ZnVqaXRzdS5jb20+DQo+IENjOiBNYXRoaWFzIEtyYXVzZSA8bWluaXBsaUBnb29nbGVtYWlsLmNv
-bT4NCj4gQ2M6IEFqYXkgVGhvbWFzIDxhamF5LnRob21hcy5kYXZpZC5yYWphbWFuaWNrYW1AaW50
-ZWwuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBQcmFyaXQgQmhhcmdhdmEgPHByYXJpdEByZWRoYXQu
-Y29tPg0KPiAtLS0NCj4gwqBkcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuY8KgwqDCoHzCoMKg
-wqAzMQ0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+IMKgZHJpdmVycy9wb3dl
-cmNhcC9wb3dlcmNhcF9zeXMuYyB8wqDCoMKgwqA2ICsrKystLQ0KPiDCoDIgZmlsZXMgY2hhbmdl
-ZCwgMzUgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYw0KPiBiL2RyaXZlcnMvcG93ZXJjYXAvaW50ZWxf
-cmFwbC5jDQo+IGluZGV4IDZjNTkyZGMuLmZlYjA2M2QgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
-cG93ZXJjYXAvaW50ZWxfcmFwbC5jDQo+ICsrKyBiL2RyaXZlcnMvcG93ZXJjYXAvaW50ZWxfcmFw
-bC5jDQo+IEBAIC00OTMsMTMgKzQ5Myw0MiBAQCBzdGF0aWMgaW50IGdldF9jdXJyZW50X3Bvd2Vy
-X2xpbWl0KHN0cnVjdA0KPiBwb3dlcmNhcF96b25lICpwb3dlcl96b25lLCBpbnQgaWQsDQo+IMKg
-CXJldHVybiByZXQ7DQo+IMKgfQ0KPiDCoA0KPiArc3RhdGljIGludCBnZXRfbWF4X3RpbWVfd2lu
-ZG93KHN0cnVjdCBwb3dlcmNhcF96b25lICpwb3dlcl96b25lLCBpbnQNCj4gaWQsDQo+ICsJCQnC
-oMKgwqDCoMKgwqDCoHU2NCAqZGF0YSkNCj4gK3sNCj4gKwlzdHJ1Y3QgcmFwbF9kb21haW4gKnJk
-Ow0KPiArCWludCByZXQgPSAwOw0KPiArCXU2NCB2YWw7DQo+ICsNCj4gKwlnZXRfb25saW5lX2Nw
-dXMoKTsNCj4gKwlyZCA9IHBvd2VyX3pvbmVfdG9fcmFwbF9kb21haW4ocG93ZXJfem9uZSk7DQo+
-ICsNCj4gKwlpZiAocmFwbF9yZWFkX2RhdGFfcmF3KHJkLCBNQVhfVElNRV9XSU5ET1csIHRydWUs
-ICZ2YWwpKQ0KPiArCQlyZXQgPSAtRUlPOw0KPiArCWVsc2UNCj4gKwkJKmRhdGEgPSB2YWw7DQo+
-ICsNCj4gKwlwdXRfb25saW5lX2NwdXMoKTsNCj4gKwlyZXR1cm4gcmV0Ow0KPiArfQ0KPiArDQo+
-IMKgc3RhdGljIGludCBzZXRfdGltZV93aW5kb3coc3RydWN0IHBvd2VyY2FwX3pvbmUgKnBvd2Vy
-X3pvbmUsIGludCBpZCwNCj4gwqAJCQkJCQkJCXU2NA0KPiB3aW5kb3cpDQo+IMKgew0KPiDCoAlz
-dHJ1Y3QgcmFwbF9kb21haW4gKnJkOw0KPiDCoAlpbnQgcmV0ID0gMDsNCj4gKwl1NjQgbWF4X3dp
-bmRvdzsNCj4gwqANCj4gwqAJZ2V0X29ubGluZV9jcHVzKCk7DQo+ICsJcmV0ID0gZ2V0X21heF90
-aW1lX3dpbmRvdyhwb3dlcl96b25lLCBpZCwgJm1heF93aW5kb3cpOw0KPiArCWlmIChyZXQgPCAw
-KQ0KPiArCQlnb3RvIG91dDsNCj4gKw0KPiArCWlmICh3aW5kb3cgPiBtYXhfd2luZG93KSB7DQo+
-ICsJCXJldCA9IC1FSU5WQUw7DQo+ICsJCWdvdG8gb3V0Ow0KPiArCX0NCj4gKw0KPiDCoAlyZCA9
-IHBvd2VyX3pvbmVfdG9fcmFwbF9kb21haW4ocG93ZXJfem9uZSk7DQo+IMKgCXN3aXRjaCAocmQt
-PnJwbFtpZF0ucHJpbV9pZCkgew0KPiDCoAljYXNlIFBMMV9FTkFCTEU6DQo+IEBAIC01MTEsNiAr
-NTQwLDcgQEAgc3RhdGljIGludCBzZXRfdGltZV93aW5kb3coc3RydWN0IHBvd2VyY2FwX3pvbmUN
-Cj4gKnBvd2VyX3pvbmUsIGludCBpZCwNCj4gwqAJZGVmYXVsdDoNCj4gwqAJCXJldCA9IC1FSU5W
-QUw7DQo+IMKgCX0NCj4gK291dDoNCj4gwqAJcHV0X29ubGluZV9jcHVzKCk7DQo+IMKgCXJldHVy
-biByZXQ7DQo+IMKgfQ0KPiBAQCAtNTkwLDYgKzYyMCw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qg
-cG93ZXJjYXBfem9uZV9jb25zdHJhaW50X29wcw0KPiBjb25zdHJhaW50X29wcyA9IHsNCj4gwqAJ
-LnNldF90aW1lX3dpbmRvd191cyA9IHNldF90aW1lX3dpbmRvdywNCj4gwqAJLmdldF90aW1lX3dp
-bmRvd191cyA9IGdldF90aW1lX3dpbmRvdywNCj4gwqAJLmdldF9tYXhfcG93ZXJfdXcgPSBnZXRf
-bWF4X3Bvd2VyLA0KPiArCS5nZXRfbWF4X3RpbWVfd2luZG93X3VzID0gZ2V0X21heF90aW1lX3dp
-bmRvdywNCj4gwqAJLmdldF9uYW1lID0gZ2V0X2NvbnN0cmFpbnRfbmFtZSwNCj4gwqB9Ow0KPiDC
-oA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlcmNhcC9wb3dlcmNhcF9zeXMuYw0KPiBiL2Ry
-aXZlcnMvcG93ZXJjYXAvcG93ZXJjYXBfc3lzLmMNCj4gaW5kZXggMTRiZGUwZC4uNTNmYWQwZiAx
-MDA2NDQNCj4gLS0tIGEvZHJpdmVycy9wb3dlcmNhcC9wb3dlcmNhcF9zeXMuYw0KPiArKysgYi9k
-cml2ZXJzL3Bvd2VyY2FwL3Bvd2VyY2FwX3N5cy5jDQo+IEBAIC0xMDEsNyArMTAxLDcgQEAgc3Rh
-dGljIHNzaXplX3Qgc3RvcmVfY29uc3RyYWludF8jI19hdHRyKHN0cnVjdA0KPiBkZXZpY2UgKmRl
-dixcDQo+IMKgCWludCBlcnI7IFwNCj4gwqAJdTY0IHZhbHVlOyBcDQo+IMKgCXN0cnVjdCBwb3dl
-cmNhcF96b25lICpwb3dlcl96b25lID0gdG9fcG93ZXJjYXBfem9uZShkZXYpOyBcDQo+IC0JaW50
-IGlkOyBcDQo+ICsJaW50IGlkLCByZXQ7IFwNCj4gwqAJc3RydWN0IHBvd2VyY2FwX3pvbmVfY29u
-c3RyYWludCAqcGNvbnN0O1wNCj4gwqAJXA0KPiDCoAlpZiAoIXNzY2FuZihkZXZfYXR0ci0+YXR0
-ci5uYW1lLCAiY29uc3RyYWludF8lZF8iLCAmaWQpKSBcDQo+IEBAIC0xMTMsOCArMTEzLDEwIEBA
-IHN0YXRpYyBzc2l6ZV90IHN0b3JlX2NvbnN0cmFpbnRfIyNfYXR0cihzdHJ1Y3QNCj4gZGV2aWNl
-ICpkZXYsXA0KPiDCoAlpZiAoZXJyKSBcDQo+IMKgCQlyZXR1cm4gLUVJTlZBTDsgXA0KPiDCoAlp
-ZiAocGNvbnN0ICYmIHBjb25zdC0+b3BzICYmIHBjb25zdC0+b3BzLT5zZXRfIyNfYXR0cikgeyBc
-DQo+IC0JCWlmICghcGNvbnN0LT5vcHMtPnNldF8jI19hdHRyKHBvd2VyX3pvbmUsIGlkLA0KPiB2
-YWx1ZSkpIFwNCj4gKwkJcmV0ID0gcGNvbnN0LT5vcHMtPnNldF8jI19hdHRyKHBvd2VyX3pvbmUs
-IGlkLA0KPiB2YWx1ZSk7IFwNCj4gKwkJaWYgKCFyZXQpIFwNCj4gwqAJCQlyZXR1cm4gY291bnQ7
-IFwNCj4gKwkJcmV0dXJuIHJldDsgXA0KPiDCoAl9IFwNCj4gwqAJXA0KPiDCoAlyZXR1cm4gLUVO
-T0RBVEE7IFw=
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+
+The Tango thermal driver provides support for the primitive temperature
+sensor embedded in Tango chips since the SMP8758.
+
+This sensor only generates a 1-bit signal to indicate whether the die
+temperature exceeds a programmable threshold.
+
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+ Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
+ drivers/thermal/Kconfig                                     |   9 ++
+ drivers/thermal/Makefile                                    |   1 +
+ drivers/thermal/tango_thermal.c                             | 125 +++++++++++++++++++++++++++
+ 4 files changed, 152 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+new file mode 100644
+index 000000000000..212198d4b937
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+@@ -0,0 +1,17 @@
++* Tango Thermal
++
++The SMP8758 SoC includes 3 instances of this temperature sensor
++(in the CPU, video decoder, and PCIe controller).
++
++Required properties:
++- #thermal-sensor-cells: Should be 0 (see thermal.txt)
++- compatible: "sigma,smp8758-thermal"
++- reg: Address range of the thermal registers
++
++Example:
++
++	cpu_temp: thermal@920100 {
++		#thermal-sensor-cells = <0>;
++		compatible = "sigma,smp8758-thermal";
++		reg = <0x920100 12>;
++	};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index c37eedc35a24..1c9ab79fa3e0 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -260,6 +260,15 @@ config ARMADA_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
+ 
++config TANGO_THERMAL
++	tristate "Tango thermal management"
++	depends on ARCH_TANGO || COMPILE_TEST
++	help
++	  Enable the Tango thermal driver, which supports the primitive
++	  temperature sensor embedded in Tango chips since the SMP8758.
++	  This sensor only generates a 1-bit signal to indicate whether
++	  the die temperature exceeds a programmable threshold.
++
+ config TEGRA_SOCTHERM
+ 	tristate "Tegra SOCTHERM thermal management"
+ 	depends on ARCH_TEGRA
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 8e9cbc3b5679..06387279883d 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -35,6 +35,7 @@ obj-y				+= samsung/
+ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
++obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+ obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
+new file mode 100644
+index 000000000000..6e58af1db954
+--- /dev/null
++++ b/drivers/thermal/tango_thermal.c
+@@ -0,0 +1,125 @@
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++
++/*
++ * According to a data sheet draft, "this temperature sensor uses a bandgap
++ * type of circuit to compare a voltage which has a negative temperature
++ * coefficient with a voltage that is proportional to absolute temperature.
++ * A resistor bank allows 41 different temperature thresholds to be selected
++ * and the logic output will then indicate whether the actual die temperature
++ * lies above or below the selected threshold."
++ */
++
++#define TEMPSI_CMD	0
++#define TEMPSI_RES	4
++#define TEMPSI_CFG	8
++
++#define CMD_OFF		0
++#define CMD_ON		1
++#define CMD_READ	2
++
++#define IDX_MIN		15
++#define IDX_MAX		40
++#define CYCLE_COUNT	1000 /* Result sampled when timer expires */
++
++struct tango_thermal_priv {
++	struct thermal_zone_device *zone;
++	void __iomem *base;
++	int thresh_idx;
++};
++
++static bool temp_above_thresh(void __iomem *base, int thresh_idx)
++{
++	writel(CMD_READ | thresh_idx << 8, base + TEMPSI_CMD);
++	usleep_range(10, 20);
++	return readl(base + TEMPSI_RES);
++}
++
++static int tango_get_temp(void *arg, int *res)
++{
++	struct tango_thermal_priv *priv = arg;
++	void __iomem *base = priv->base;
++	int idx = priv->thresh_idx;
++
++	if (temp_above_thresh(base, idx)) {
++		/* Search upward by incrementing thresh_idx */
++		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
++			cpu_relax();
++		idx = idx - 1; /* always return lower bound */
++	} else {
++		/* Search downward by decrementing thresh_idx */
++		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
++			cpu_relax();
++	}
++
++	*res = (idx * 9 / 2 - 38) * 1000; /* millidegrees Celsius */
++	priv->thresh_idx = idx;
++
++	return 0;
++}
++
++static const struct thermal_zone_of_device_ops ops = {
++	.get_temp	= tango_get_temp,
++};
++
++static int tango_thermal_probe(struct platform_device *pdev)
++{
++	struct resource *res;
++	struct tango_thermal_priv *priv;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	priv->base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->base))
++		return PTR_ERR(priv->base);
++
++	writel(CMD_ON, priv->base + TEMPSI_CMD);
++	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
++
++	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
++	if (IS_ERR(priv->zone))
++		return PTR_ERR(priv->zone);
++
++	priv->thresh_idx = IDX_MIN;
++	platform_set_drvdata(pdev, priv);
++
++	return 0;
++}
++
++static int tango_thermal_remove(struct platform_device *pdev)
++{
++	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
++
++	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
++	writel(CMD_OFF, priv->base + TEMPSI_CMD);
++
++	return 0;
++}
++
++static const struct of_device_id tango_sensor_ids[] = {
++	{
++		.compatible = "sigma,smp8758-thermal",
++	},
++	{ /* sentinel */ }
++};
++
++static struct platform_driver tango_thermal_driver = {
++	.probe	= tango_thermal_probe,
++	.remove	= tango_thermal_remove,
++	.driver	= {
++		.name		= "tango-thermal",
++		.of_match_table	= tango_sensor_ids,
++	},
++};
++
++module_platform_driver(tango_thermal_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Sigma Designs");
++MODULE_DESCRIPTION("Tango temperature sensor");
+-- 
+2.7.4
