@@ -1,193 +1,220 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
-Date: Thu, 31 Mar 2016 09:59:51 +0200
-Message-ID: <20160331075951.GG3408@twins.programming.kicks-ass.net>
-References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Thu, 31 Mar 2016 16:03:45 +0800
+Message-ID: <CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w@mail.gmail.com>
+References: <cover.1458128215.git.baolin.wang@linaro.org>
+	<11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+	<87h9foqnur.fsf@intel.com>
+	<CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
+	<87poubgnbh.fsf@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:41181 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbcCaH74 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 03:59:56 -0400
-Content-Disposition: inline
-In-Reply-To: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
+Received: from mail-yw0-f178.google.com ([209.85.161.178]:36183 "EHLO
+	mail-yw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbcCaIDr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 04:03:47 -0400
+Received: by mail-yw0-f178.google.com with SMTP id g3so88557610ywa.3
+        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 01:03:46 -0700 (PDT)
+In-Reply-To: <87poubgnbh.fsf@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, Mar 24, 2016 at 03:26:07PM -0700, Steve Muckle wrote:
-> Note that this patch depends on the 2 patches I sent several days ago:
-> http://thread.gmane.org/gmane.linux.kernel/2181498
+On 31 March 2016 at 14:42, Felipe Balbi <balbi@kernel.org> wrote:
+>>>> +#define DEFAULT_CUR_PROTECT  (50)
+>>>
+>>> Where is this coming from ? Also, () are not necessary.
+>>
+>> Just want to protect the default current limitation. If that does not
+>> need, I'll remove it.
+>
+> It's your HW :-) You tell me if it's really necessary. But, hey, if you
+> get enumerated @500mA, this is the host telling you it _CAN_ give you
+> 500mA. In that case, why wouldn't you ?
 
-Right; I had something similar for a little while..
+Make sense. I'll remove the 'DEFAULT_CUR_PROTECT' macro.
 
-> Unfortunately this means that in the migration case,
-> enqueue_entity_load_avg() will end up calling the cpufreq hook twice -
-> once via update_cfs_rq_load_avg() and once via
-> attach_entity_load_avg(). 
+>
+>>>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
+>>>
+>>> According to the spec we should always be talking about unit loads (1
+>>> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
+>>> work for SS capable ports and SS gadgets (we have quite a few of them,
+>>> actually). You're missing the opportunity of charging at 900mA.
+>>
+>> I follow the DCP/SDP/CDP/ACA type's default current limitation and
+>> user can set them what they want.
+>
+> no, the user CANNOT set it to what they want. If you get enumerated
+> @100mA and the user just decides to set it to 2000mA, s/he could even
+> melt the USB connector. The kernel _must_ prevent such cases.
+>
+> In any case, DEFAULT_SDP_CUR_LIMIT shouldn't be a constant, it should be
+> variable because if you enumerate in SS, you _can_ get up to 900mA.
 
-Right; this is the point where I gave up when I looked at that.
+Make sense. But these are just default values. They can be changed
+safely by power driver with 'usb_charger_set_cur_limit_by_type()'
+function to set 900mA.
 
-> This should ideally get filtered out before
-> the cpufreq driver is invoked but nevertheless is wasteful. Possible
-> alternatives to this are
-> 
->  - moving the cpufreq hook from update_cfs_rq_load_avg() into                                                    
->    its callers (there are three) and also putting the hook                                                       
->    in attach_task_cfs_rq and detach_task_cfs_rq, resulting in                                                    
->    five call sites of the hook in fair.c as opposed to three                                                               
+>
+>>>> +#define DEFAULT_DCP_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
+>>>> +#define DEFAULT_CDP_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
+>>>> +#define DEFAULT_ACA_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
+>>>> +#define UCHGER_STATE_LENGTH  (50)
+>>>
+>>> what is this UCHGER_STATE_LENGTH ? And also, why don't you spell it out?
+>>> Is this weird name coming from a spec ? Which spec ?
+>>
+>> It is used to indicate the array size to save the charger state to
+>> report to userspace. I should move it to where it is used.
+>
+> and ARRAY_SIZE(arr) is not enough ?
 
-Its worse; you get a whole nest of extra logic to determine when to call
-what. See below (now arguably its still early so I might have made it
-more complex than it needed to be..).
+OK.
 
-> 
->  - passing an argument into attach_entity_load_avg() to indicate                                                 
->    whether calling the cpufreq hook is necessary
-> 
-> Both of these are ugly in their own way but would avoid a runtime
-> cost. Opinions welcome.
+>
+>>> sure this fits as a bus_type. There's no "usb charger" bus. There's USB
+>>> bus and its VBUS/GND lines. Why are you using a bus_type here ?
+>>
+>> I want to use bus structure to manage the charger device. Maybe choose
+>> class to manage them?
+>
+> I guess a class would fit better in this case.
 
-Lemme see what this would look like while I throw the below into the bit
-bucket.
+OK.
+
+>
+>>>> +{
+>>>> +     return container_of(udev, struct usb_charger, dev);
+>>>> +}
+>>>> +
+>>>> +static ssize_t sdp_limit_show(struct device *dev,
+>>>> +                           struct device_attribute *attr,
+>>>> +                           char *buf)
+>>>> +{
+>>>> +     struct usb_charger *uchger = dev_to_uchger(dev);
+>>>> +
+>>>> +     return sprintf(buf, "%d\n", uchger->cur_limit.sdp_cur_limit);
+>>>> +}
+>>>> +
+>>>> +static ssize_t sdp_limit_store(struct device *dev,
+>>>> +                            struct device_attribute *attr,
+>>>> +                            const char *buf, size_t count)
+>>>> +{
+>>>> +     struct usb_charger *uchger = dev_to_uchger(dev);
+>>>> +     unsigned int sdp_limit;
+>>>> +     int ret;
+>>>> +
+>>>> +     ret = kstrtouint(buf, 10, &sdp_limit);
+>>>> +     if (ret < 0)
+>>>> +             return ret;
+>>>> +
+>>>> +     ret = usb_charger_set_cur_limit_by_type(uchger, SDP_TYPE, sdp_limit);
+>>>> +     if (ret < 0)
+>>>> +             return ret;
+>>>> +
+>>>> +     return count;
+>>>> +}
+>>>> +static DEVICE_ATTR_RW(sdp_limit);
+>>>
+>>> why RW ? Who's going to use these ? Also, you're not documenting this
+>>> new sysfs file.
+>>
+>> Cause we have show and store operation for SDP type. If users want to
+>> know or set the SDP current, they can use the sysfs file.
+>> I'll add the documentation for it.
+>
+> but why would the user change it ? Here's the thing: you have a few
+> posibilities for this:
+>
+> a) you are connected to a dedicated charger
+>
+>         In this case, you can get up to 2000mA depending on the charger.
+>
+>         If $this charger can give you or not 2000mA is not detectable,
+>         so what do charging ICs do ? They slowly increase the attached
+>         load accross VBUS/GND and measure VBUS value. When IC notices
+>         VBUS dropping bit, step back to previous load.
+>
+>         This means you will always charger with maximum rating of DCP.
+>
+>         Why would user change this ? More is unsafe, less is just
+>         stupid.
+>
+> b) you are connected to a host charging port and get enumerated with
+> your 500mA configuration.
+>
+>         you *know* 500mA is okay, but you _can_ get more (it is a
+>         charging port after all). So charging IC will connect a 500mA
+>         load and step upwards until VBUS drops a little, just like (a)
+>         above.
+>
+>         This means you will always charger with maximum rating for this
+>         host charging port.
+>
+>         Why would user change this ? More is unsafe, less is just
+>         stupid.
+>
+> c) you are connected to a standard port and get enumerated with your
+> 500mA configuration.
+>
+>         you *know* 500mA is okay. So you connect a 500mA load and get it
+>         over with.
+>
+>         This means you will always charger with maximum rating for this
+>         SDP.
+>
+>         Why would user change this ? More is unsafe, less is just
+>         stupid.
+>
+> d) you are connected to a standard port and get enumerated with your
+> 100mA configuration.
+>
+>         you *know* 100mA is okay. So you connect a 100mA load and get it
+>         over with.
+>
+>         This means you will always charger with maximum rating for this
+>         SDP.
+>
+>         Why would user change this ? More is unsafe, less is just
+>         stupid.
+>
+> do you see what I mean ? It's pointless to let this
+> be-writeable. Whatever value user writes will either be unsafe or
+> sub-optimal.
+
+That sounds reasonable. Mark what do you think? Thanks.
+
+>
+> Just trust the charging IC to do a good job.
+>
+>>>> +
+>>>> +/* USB charger state */
+>>>> +enum usb_charger_state {
+>>>> +     USB_CHARGER_DEFAULT,
+>>>> +     USB_CHARGER_PRESENT,
+>>>> +     USB_CHARGER_REMOVE,
+>>>> +};
+>>>
+>>> userland really doesn't need these two ?
+>>
+>> We've reported to userspace by kobject_uevent in
+>> 'usb_charger_notify_others()' function.
+>
+> I mean as a type ;-) So userspace doesn't have to redefine these for
+> their applications.
+
+Make sense. I can introduce some sysfs files for userspace. Thanks for
+your comments.
+
+>
+> --
+> balbi
 
 
 
----
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2854,23 +2854,23 @@ static inline void cfs_rq_util_change(st
- static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
- {
- 	struct sched_avg *sa = &cfs_rq->avg;
--	int decayed, removed_load = 0, removed_util = 0;
-+	int ret = 0;
- 
- 	if (atomic_long_read(&cfs_rq->removed_load_avg)) {
- 		s64 r = atomic_long_xchg(&cfs_rq->removed_load_avg, 0);
- 		sa->load_avg = max_t(long, sa->load_avg - r, 0);
- 		sa->load_sum = max_t(s64, sa->load_sum - r * LOAD_AVG_MAX, 0);
--		removed_load = 1;
-+		ret |= 1 << 1;
- 	}
- 
- 	if (atomic_long_read(&cfs_rq->removed_util_avg)) {
- 		long r = atomic_long_xchg(&cfs_rq->removed_util_avg, 0);
- 		sa->util_avg = max_t(long, sa->util_avg - r, 0);
- 		sa->util_sum = max_t(s32, sa->util_sum - r * LOAD_AVG_MAX, 0);
--		removed_util = 1;
-+		ret |= 1 << 2;
- 	}
- 
--	decayed = __update_load_avg(now, cpu_of(rq_of(cfs_rq)), sa,
-+	decayed |= __update_load_avg(now, cpu_of(rq_of(cfs_rq)), sa,
- 		scale_load_down(cfs_rq->load.weight), cfs_rq->curr != NULL, cfs_rq);
- 
- #ifndef CONFIG_64BIT
-@@ -2878,10 +2878,7 @@ static inline int update_cfs_rq_load_avg
- 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
- #endif
- 
--	if (decayed || removed_util)
--		cfs_rq_util_change(cfs_rq);
--
--	return decayed || removed_load;
-+	return ret;
- }
- 
- /* Update task and its cfs_rq load average */
-@@ -2891,6 +2888,7 @@ static inline void update_load_avg(struc
- 	u64 now = cfs_rq_clock_task(cfs_rq);
- 	struct rq *rq = rq_of(cfs_rq);
- 	int cpu = cpu_of(rq);
-+	int updated;
- 
- 	/*
- 	 * Track task load average for carrying it to new CPU after migrated, and
-@@ -2900,9 +2898,14 @@ static inline void update_load_avg(struc
- 			  se->on_rq * scale_load_down(se->load.weight),
- 			  cfs_rq->curr == se, NULL);
- 
--	if (update_cfs_rq_load_avg(now, cfs_rq) && update_tg)
-+	updated = update_cfs_rq_load_avg(now, cfs_rq);
-+
-+	if (updated & 5)
-+		cfs_rq_util_change(cfs_rq);
-+
-+	if (update_tg && (updated & 3))
- 		update_tg_load_avg(cfs_rq, 0);
--}
-+
- 
- static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
-@@ -2953,7 +2956,7 @@ enqueue_entity_load_avg(struct cfs_rq *c
- {
- 	struct sched_avg *sa = &se->avg;
- 	u64 now = cfs_rq_clock_task(cfs_rq);
--	int migrated, decayed;
-+	int migrated, updated;
- 
- 	migrated = !sa->last_update_time;
- 	if (!migrated) {
-@@ -2962,16 +2965,18 @@ enqueue_entity_load_avg(struct cfs_rq *c
- 			cfs_rq->curr == se, NULL);
- 	}
- 
--	decayed = update_cfs_rq_load_avg(now, cfs_rq);
-+	updated = update_cfs_rq_load_avg(now, cfs_rq);
- 
- 	cfs_rq->runnable_load_avg += sa->load_avg;
- 	cfs_rq->runnable_load_sum += sa->load_sum;
- 
--	if (migrated)
-+	if (migrated) {
- 		attach_entity_load_avg(cfs_rq, se);
--
--	if (decayed || migrated)
--		update_tg_load_avg(cfs_rq, 0);
-+		if (updated & 3)
-+			update_tg_load_avg(cfs_rq, 0);
-+	} else if (updated & 5) {
-+		cfs_rq_util_change(cfs_rq);
-+	}
- }
- 
- /* Remove the runnable load generated by se from cfs_rq's runnable load average */
-@@ -6157,6 +6162,7 @@ static void update_blocked_averages(int
- 	struct rq *rq = cpu_rq(cpu);
- 	struct cfs_rq *cfs_rq;
- 	unsigned long flags;
-+	int updated;
- 
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 	update_rq_clock(rq);
-@@ -6170,7 +6176,10 @@ static void update_blocked_averages(int
- 		if (throttled_hierarchy(cfs_rq))
- 			continue;
- 
--		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq))
-+		updated = update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
-+		if (updated & 5)
-+			cfs_rq_util_change(cfs_rq);
-+		if (updated & 3)
- 			update_tg_load_avg(cfs_rq, 0);
- 	}
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
-@@ -6228,10 +6237,13 @@ static inline void update_blocked_averag
- 	struct rq *rq = cpu_rq(cpu);
- 	struct cfs_rq *cfs_rq = &rq->cfs;
- 	unsigned long flags;
-+	int updated;
- 
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 	update_rq_clock(rq);
--	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
-+	updated = update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
-+	if (updated & 5)
-+		cfs_rq_util_change(cfs_rq);
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
+-- 
+Baolin.wang
+Best Regards
