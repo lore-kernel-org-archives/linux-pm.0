@@ -1,106 +1,160 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Thu, 31 Mar 2016 19:12:32 +0800
-Message-ID: <CAMz4ku+6+iu5KzgMC1Rm1QRHjL1n8ELq+oYEpEBHu337snv0Ew@mail.gmail.com>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
-	<11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
-	<87h9foqnur.fsf@intel.com>
-	<CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
-	<87poubgnbh.fsf@intel.com>
-	<CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w@mail.gmail.com>
-	<87bn5vgiwx.fsf@intel.com>
-	<CAMz4ku+eBP1MU4kM4pP6k+SRbUXGS4m08GDdsGp7J-5a0DdPow@mail.gmail.com>
-	<8737r7gdwf.fsf@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [intel-pstate driver regression] processor frequency very high even if in idle
+Date: Thu, 31 Mar 2016 13:42:14 +0200
+Message-ID: <8393335.Q1cjiaGecN@vostro.rjw.lan>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com> <4695038.Xoqbuvkrbb@vostro.rjw.lan> <CADDKRnCQAcuA=fv+4g-3aVU3U_zwssMAcoek0mu_ip24mO-pDg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8737r7gdwf.fsf@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44215 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751771AbcCaLjw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Mar 2016 07:39:52 -0400
+In-Reply-To: <CADDKRnCQAcuA=fv+4g-3aVU3U_zwssMAcoek0mu_ip24mO-pDg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 31 March 2016 at 18:06, Felipe Balbi <balbi@kernel.org> wrote:
-> Baolin Wang <baolin.wang@linaro.org> writes:
->> [ text/plain ]
->> On 31 March 2016 at 16:18, Felipe Balbi <balbi@kernel.org> wrote:
->>>
->>> Hi,
->>>
->>> Baolin Wang <baolin.wang@linaro.org> writes:
->>>>>>>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
->>>>>>>
->>>>>>> According to the spec we should always be talking about unit loads (1
->>>>>>> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
->>>>>>> work for SS capable ports and SS gadgets (we have quite a few of them,
->>>>>>> actually). You're missing the opportunity of charging at 900mA.
->>>>>>
->>>>>> I follow the DCP/SDP/CDP/ACA type's default current limitation and
->>>>>> user can set them what they want.
->>>>>
->>>>> no, the user CANNOT set it to what they want. If you get enumerated
->>>>> @100mA and the user just decides to set it to 2000mA, s/he could even
->>>>> melt the USB connector. The kernel _must_ prevent such cases.
->>>>>
->>>>> In any case, DEFAULT_SDP_CUR_LIMIT shouldn't be a constant, it should be
->>>>> variable because if you enumerate in SS, you _can_ get up to 900mA.
->>>>
->>>> Make sense. But these are just default values. They can be changed
->>>> safely by power driver with 'usb_charger_set_cur_limit_by_type()'
->>>> function to set 900mA.
->>>
->>> oh okay. Still, the default value should be a function of gadget->speed,
->>
->> Sorry, I did not get your suggestion, could you give me an example? Thanks.
->
-> int default_current_limit = 500;
->
-> if (gadget->speed >= USB_SPEED_SUPER)
->         default_current_limit = 900;
+On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrote:
 
-Make sense.
+[cut]
 
->
->>>>>>>> +
->>>>>>>> +/* USB charger state */
->>>>>>>> +enum usb_charger_state {
->>>>>>>> +     USB_CHARGER_DEFAULT,
->>>>>>>> +     USB_CHARGER_PRESENT,
->>>>>>>> +     USB_CHARGER_REMOVE,
->>>>>>>> +};
->>>>>>>
->>>>>>> userland really doesn't need these two ?
->>>>>>
->>>>>> We've reported to userspace by kobject_uevent in
->>>>>> 'usb_charger_notify_others()' function.
->>>>>
->>>>> I mean as a type ;-) So userspace doesn't have to redefine these for
->>>>> their applications.
->>>>
->>>> Make sense. I can introduce some sysfs files for userspace. Thanks for
->>>> your comments.
->>>
->>> okay, my reply was a bit cryptic, but what I mean here is that enum
->>> usb_charger_state could be moved your include/uapi header. My question
->>> is, then, does userland need to have knowledge of enum
->>> usb_charger_state ?
->>
->> I am not sure if userland need the enum usb_charger_state. But I
->> remember you want to report the charger state to userland in previous
->> email.
->
-> right, which means this enumeration definition could be placed in the
-> UAPI header. Unless, of course, we're reporting strings, rather than
-> integers, in the sysfs file.
+> >
+>=20
+> Yes, works for me.
+>=20
+> CPUID(7): No-SGX
+>      CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
+>        -      11    0.66    1682    2494
+>        0      11    0.60    1856    2494
+>        1       6    0.34    1898    2494
+>        2      13    0.82    1628    2494
+>        3      13    0.87    1528    2494
+>      CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz
+>        -       6    0.58     963    2494
+>        0       8    0.83     957    2494
+>        1       1    0.08     984    2494
+>        2      10    1.04     975    2494
+>        3       3    0.35     934    2494
+>=20
 
-OK. Thanks.
+Great, thanks!
 
->
-> --
-> balbi
+To me, the only area where things are really different before and after=
+ the
+revert is the initialization, so that likely is when the problem trigge=
+rs.
 
+And sure enough, there is an initialization problem in intel_pstate.
 
+Please test the patch below instead of the revert and let me know if it
+makes any difference.
 
--- 
-Baolin.wang
-Best Regards
+It (or equivalent) will need to be applied anyway, so we'll work on top=
+ of it
+going forward, but also it may just be sufficient to address the proble=
+m you're
+seeing.
+
+---
+=46rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] intel_pstate: Do not set utilization update hook too e=
+arly
+
+The utilization update hook in the intel_pstate driver is set too
+early, as it only should be set after the policy has been fully
+initialized by the core.  That may cause intel_pstate_update_util()
+to use incorrect data and put the CPUs into incorrect P-states as
+a result.
+
+To prevent that from happening, make intel_pstate_set_policy() set
+the utilization update hook instead of intel_pstate_init_cpu() so
+intel_pstate_update_util() only runs when all things have been
+initialized as appropriate.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   27 +++++++++++++++++++--------
+ 1 file changed, 19 insertions(+), 8 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1103,7 +1103,6 @@ static int intel_pstate_init_cpu(unsigne
+ 	intel_pstate_sample(cpu, 0);
+=20
+ 	cpu->update_util.func =3D intel_pstate_update_util;
+-	cpufreq_set_update_util_data(cpunum, &cpu->update_util);
+=20
+ 	pr_debug("intel_pstate: controlling: cpu %d\n", cpunum);
+=20
+@@ -1122,18 +1121,29 @@ static unsigned int intel_pstate_get(uns
+ 	return get_avg_frequency(cpu);
+ }
+=20
++static void intel_pstate_set_update_util_hook(unsigned int cpu)
++{
++	cpufreq_set_update_util_data(cpu, &all_cpu_data[cpu]->update_util);
++}
++
++static void intel_pstate_clear_update_util_hook(unsigned int cpu)
++{
++	cpufreq_set_update_util_data(cpu, NULL);
++	synchronize_sched();
++}
++
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
+ 	if (!policy->cpuinfo.max_freq)
+ 		return -ENODEV;
+=20
++	intel_pstate_clear_update_util_hook(policy->cpu);
++
+ 	if (policy->policy =3D=3D CPUFREQ_POLICY_PERFORMANCE &&
+ 	    policy->max >=3D policy->cpuinfo.max_freq) {
+ 		pr_debug("intel_pstate: set performance\n");
+ 		limits =3D &performance_limits;
+-		if (hwp_active)
+-			intel_pstate_hwp_set(policy->cpus);
+-		return 0;
++		goto out;
+ 	}
+=20
+ 	pr_debug("intel_pstate: set powersave\n");
+@@ -1163,6 +1173,9 @@ static int intel_pstate_set_policy(struc
+ 	limits->max_perf =3D div_fp(int_tofp(limits->max_perf_pct),
+ 				  int_tofp(100));
+=20
++ out:
++	intel_pstate_set_update_util_hook(policy->cpu);
++
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set(policy->cpus);
+=20
+@@ -1187,8 +1200,7 @@ static void intel_pstate_stop_cpu(struct
+=20
+ 	pr_debug("intel_pstate: CPU %d exiting\n", cpu_num);
+=20
+-	cpufreq_set_update_util_data(cpu_num, NULL);
+-	synchronize_sched();
++	intel_pstate_set_update_util_hook(cpu_num);
+=20
+ 	if (hwp_active)
+ 		return;
+@@ -1455,8 +1467,7 @@ out:
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+ 		if (all_cpu_data[cpu]) {
+-			cpufreq_set_update_util_data(cpu, NULL);
+-			synchronize_sched();
++			intel_pstate_clear_update_util_hook(cpu);
+ 			kfree(all_cpu_data[cpu]);
+ 		}
+ 	}
+
