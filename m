@@ -1,37 +1,86 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v7 01/20] PM / devfreq: exynos: Add generic exynos bus
- frequency driver
-Date: Thu, 31 Mar 2016 14:54:28 +0200
-Message-ID: <56FD1E04.8050808@samsung.com>
-References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
- <1459415165-32613-2-git-send-email-cw00.choi@samsung.com>
- <56FD13D2.1050300@samsung.com>
- <CAGTfZH0mgxyQPKBTX=ZXgtSn=bQ2zAMSNMHfO+OXh3U5qrUr4g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAGTfZH0mgxyQPKBTX=ZXgtSn=bQ2zAMSNMHfO+OXh3U5qrUr4g@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: cw00.choi@samsung.com
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=c5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Anand Moon <linux.amoon@gmail.com>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vg>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH] PCI: Fix device attach failure handling
+Date: Thu, 31 Mar 2016 14:57:48 +0200
+Message-ID: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:41529 "EHLO
+	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756739AbcCaM5q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 08:57:46 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 
-On 03/31/2016 02:28 PM, Chanwoo Choi wrote:
->> > You should use IS_ERR() instead of IS_ERR_OR_NULL(), since functions
->> > of which the return value is being tested return only ERR_PTR() values.
->> > IS_ERR_OR_NULL() suggest NULL values are possible and then constructs
->> > like
->> >         if (IS_ERR_OR_NULL(result))
->> >                 return PTR_ERR(result);
->> >
->> > are not correct anyway.
->
-> OK. I'll use IS_ERR() instead of IS_ERR_OR_NULL()
+Linux 4.5 introduced a behavioral change in device probing during the
+suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
+probing during suspend/hibernation"): It defers device probing during
+the entire suspend process, starting from the prepare phase and ending
+with the complete phase. A rule existed before that "we rely on sub-
+systems not to do any probing once a device is suspended" but it is
+enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
 
-Thanks, I forgot to mention there is similar issue in patches
-5/20 and 6/20.
+This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
+plugged in while the system is asleep: Upon waking up, pciehp_resume()
+discovers new devices in the resume phase and immediately tries to bind
+them to a driver. Since probing is now deferred, device_attach() returns
+-EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
 
---
-Regards
-Sylwester
+Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
+Check device_attach() return value always"): pci_bus_add_device() no
+longer sets dev->is_added = 1 if device_attach() returned a negative
+value. This results in a BUG lockup in pci_bus_add_devices().
+
+Fix the latter by not recursing to a child bus if device_attach() failed
+for the bridge leading to it.
+
+Fix the former by not interpreting -EPROBE_DEFER as failure. The device
+will be probed eventually and there is proper locking in place to avoid
+races (e.g. if devices are unplugged again und thus deleted from the
+system before deferred probing happens, I have tested this). Also, those
+functions which dereference dev->driver (e.g. pci_pm_*()) do contain
+proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
+
+Note that even postponing the code in pciehp_resume() until the
+complete phase wouldn't avoid these troubles because dpm_complete()
+calls device_unblock_probing() only after ->complete has been
+executed for all devices. We lack a pm hook from which it would
+be safe to check a hotplug port and call device_attach() without
+risking -EPROBE_DEFER.
+
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/bus.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 6c9f546..dd7cdbe 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 
+ 	dev->match_driver = true;
+ 	retval = device_attach(&dev->dev);
+-	if (retval < 0) {
++	if (retval < 0 && retval != -EPROBE_DEFER) {
+ 		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
+ 		pci_proc_detach_device(dev);
+ 		pci_remove_sysfs_dev_files(dev);
+@@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+ 	}
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		BUG_ON(!dev->is_added);
++		/* Skip if device attach failed */
++		if (!dev->is_added)
++			continue;
+ 		child = dev->subordinate;
+ 		if (child)
+ 			pci_bus_add_devices(child);
+-- 
+2.8.0.rc3
+
