@@ -1,8 +1,7 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v7 18/20] ARM: dts: Add support of bus frequency using VDD_INT
- for exynos3250-rinato
-Date: Thu, 31 Mar 2016 18:06:03 +0900
-Message-ID: <1459415165-32613-19-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v7 10/20] MAINTAINERS: Add samsung bus frequency driver entry
+Date: Thu, 31 Mar 2016 18:05:55 +0900
+Message-ID: <1459415165-32613-11-git-send-email-cw00.choi@samsung.com>
 References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
@@ -11,77 +10,35 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus device-tree nodes of INT (internal) block
-to enable the bus frequency scaling. The following sub-blocks share
-the VDD_INT power source:
-- LEFTBUS (parent device)
-- RIGHTBUS
-- PERIL
-- LCD0
-- FSYS
-- MCUISP / ISP
-- MFC
-
-The LEFTBUS is parent device with devfreq ondemand governor
-and the rest of devices depend on the LEFTBUS device.
+This patch adds the 'BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS' entry to review the
+patches as maintainer. I can access the all datasheet of Exynos SoC and test it
+on some Exynos-based board. Patches will be picked up by DEVFREQ maintainer
+on devfreq git repository.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/arm/boot/dts/exynos3250-rinato.dts | 41 +++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 9710e79e10a0..09444897b416 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -154,6 +154,47 @@
- 	status = "okay";
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 03e00c7c88eb..a7d276d0a9f7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3539,6 +3539,15 @@ F:	drivers/devfreq/devfreq-event.c
+ F:	include/linux/devfreq-event.h
+ F:	Documentation/devicetree/bindings/devfreq/event/
  
-+&bus_leftbus {
-+	devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
-+	vdd-supply = <&buck3_reg>;
-+	status = "okay";
-+};
++BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS
++M:	Chanwoo Choi <cw00.choi@samsung.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-samsung-soc@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
++S:	Maintained
++F:	drivers/devfreq/exynos-bus.c
++F:	Documentation/devicetree/bindings/devfreq/exynos-bus.txt
 +
-+&bus_rightbus {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_lcd0 {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_fsys {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_mcuisp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_isp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_peril {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_mfc {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
- &cpu0 {
- 	cpu0-supply = <&buck2_reg>;
- };
+ DEVICE NUMBER REGISTRY
+ M:	Torben Mathiasen <device@lanana.org>
+ W:	http://lanana.org/docs/device-list/index.html
 -- 
 1.9.1
