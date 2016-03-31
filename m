@@ -1,96 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [intel-pstate driver regression] processor frequency very high
- even if in idle
-Date: Thu, 31 Mar 2016 01:41:22 +0200
-Message-ID: <CAJZ5v0h7bvhWkCAcvGQ=QjDOmV6D0X0rc9zGLQUOwCtHp021UQ@mail.gmail.com>
-References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>
-	<1459376311.13525.108.camel@linux.intel.com>
-	<56FC5277.9050906@intel.com>
-	<1459378003.13525.117.camel@linux.intel.com>
-	<1459379847.13525.129.camel@intel.com>
-	<CA+icZUVXtba6eK3pC42V68Y1c_rXzzTcK36uhAAOz58_9yJNfg@mail.gmail.com>
-	<CAJZ5v0iZB0Peb3ReupM0sr3MfKgCWAgH1eNvjNd2uyZS9gptkg@mail.gmail.com>
-	<CA+icZUUaGdeRLnvLRN6L1FXuf_cpQStRsEOmZr9Sm+YPZsR=kA@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv7 PATCH 00/10] sched: scheduler-driven CPU frequency
+ selection
+Date: Wed, 30 Mar 2016 18:35:23 -0700
+Message-ID: <56FC7EDB.707@linaro.org>
+References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
+ <20160330004506.GB22689@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:35269 "EHLO
-	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbcC3XlY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 19:41:24 -0400
-In-Reply-To: <CA+icZUUaGdeRLnvLRN6L1FXuf_cpQStRsEOmZr9Sm+YPZsR=kA@mail.gmail.com>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:32984 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753595AbcCaBf1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 21:35:27 -0400
+Received: by mail-pa0-f45.google.com with SMTP id zm5so54026998pac.0
+        for <linux-pm@vger.kernel.org>; Wed, 30 Mar 2016 18:35:26 -0700 (PDT)
+In-Reply-To: <20160330004506.GB22689@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "dsmythies@telus.net" <dsmythies@telus.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jrg.otte@gmail.com" <jrg.otte@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Yuyang Du <yuyang.du@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Thu, Mar 31, 2016 at 1:32 AM, Sedat Dilek <sedat.dilek@gmail.com> wr=
-ote:
-> On Thu, Mar 31, 2016 at 1:28 AM, Rafael J. Wysocki <rafael@kernel.org=
-> wrote:
->> On Thu, Mar 31, 2016 at 1:25 AM, Sedat Dilek <sedat.dilek@gmail.com>=
- wrote:
->>> On Thu, Mar 31, 2016 at 1:17 AM, Pandruvada, Srinivas
->>> <srinivas.pandruvada@intel.com> wrote:
->>>> On Wed, 2016-03-30 at 15:46 -0700, Srinivas Pandruvada wrote:
->>>>> On Thu, 2016-03-31 at 00:25 +0200, Rafael J. Wysocki wrote:
->>>>> >
->>>>> > On 3/31/2016 12:18 AM, Srinivas Pandruvada wrote:
->>>>> > >
->>>>> > >
->>>>> > > On Wed, 2016-03-30 at 23:41 +0200, Sedat Dilek wrote:
->>>>> > > >
->>>>> > > >
->>>>> > > > Hi,
->>>>> > > >
->>>>> > > > I am using Intel-PState-Driver here with v4.6-rc1 and Intel=
--
->>>>> > > > SandyBridge-CPU.
->>>>> > > >
->>>>> > > > Here are my turbostat results attached.
->>>>> > > >
->>>>> > > > $ cd $BUILD_DIR
->>>>> > > > $ LC_ALL=3DC make -C tools/ turbostat
->>>>> > > >
->>>>> > > > $ sudo ./turbostat -i 1 --msr=3D0x199 --debug --out
->>>>> > > > /tmp/turbostat-i-1-msr-0x199-debug.txt
->>>>> > > >
->>>>> > > > Will try <https://patchwork.kernel.org/patch/8702071/>.
->>>>> > > >
->>>>> > > > Please see attached files.
->>>>> > > >
->>>>> > > Thanks. Your logs make sense. You have config set to performa=
-nce
->>>>> > > mode
->>>>> > > by default (Which I believe default in all kernel Ubuntu). So=
- as
->>>>> > > expected Intel P state was asking for max. So there is no iss=
-ue
->>>>> > > here.
->>>>> > But the behavior is different from what it used to be, isn't it=
-?
->>>>> >
->>
->> [cut]
->>
->>>
->>> Too much questions.
->>
->> OK
->>
->>> I switched to CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE=3Dy and tested =
-with
->>> the simplified revert-patch of Rafael.
->>
->> Why do you need the revert patch in the first place?
->
-> I simply wanted to test CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE=3Dy and
-> keep the rest.
+Hi Yuyang,
 
-But it is not clear to us whether or not your system has regressed
-with respect to 4.5, which is the whole point of this thread.  Do you
-see a regression here?
+This series was dropped in favor of Rafael's schedutil. But on the
+chance that you're still curious about the test setup used to quantify
+the series I'll explain below.
 
-J=C3=B6rg in particular is saying that he sees the problem with both
-performance and powersave settings.  What about you?
+On 03/29/2016 05:45 PM, Yuyang Du wrote:
+> Hi Steve,
+> 
+> On Mon, Feb 22, 2016 at 05:22:40PM -0800, Steve Muckle wrote:
+>> The number of times the busy
+>> duration exceeds the period of the periodic workload (an "overrun") is
+>> also recorded.
+> 
+> Could you please explain more about overrun?
+
+Each of the 16 workloads is periodic. The period of the workload may not
+be long enough to fit the busy ("run") duration at lower CPU
+frequencies. If the governor has not raised the CPU frequency high
+enough, the busy duration will exceed the period of the workload. This
+is an "overrun" and in this synthetic workload represents a deadline
+being missed.
+
+>> SCHED_OTHER workload:
+>>  wload parameters	  ondemand        interactive     sched	
+>> run	period	loops	OR	OH	OR	OH	OR	OH
+>> 1	100	100	0	62.07%	0	100.02%	0	78.49%
+>> 10	1000	10	0	21.80%	0	22.74%	0	72.56%
+>> 1	10	1000	0	21.72%	0	63.08%	0	52.40%
+>> 10	100	100	0	8.09%	0	15.53%	0	17.33%
+>> 100	1000	10	0	1.83%	0	1.77%	0	0.29%
+>> 6	33	300	0	15.32%	0	8.60%	0	17.34%
+>> 66	333	30	0	0.79%	0	3.18%	0	12.26%
+>> 4	10	1000	0	5.87%	0	10.21%	0	6.15%
+>> 40	100	100	0	0.41%	0	0.04%	0	2.68%
+>> 400	1000	10	0	0.42%	0	0.50%	0	1.22%
+>> 5	9	1000	2	3.82%	1	6.10%	0	2.51%
+>> 50	90	100	0	0.19%	0	0.05%	0	1.71%
+>> 500	900	10	0	0.37%	0	0.38%	0	1.82%
+>> 9	12	1000	6	1.79%	1	0.77%	0	0.26%
+>> 90	120	100	0	0.16%	1	0.05%	0	0.49%
+>> 900	1200	10	0	0.09%	0	0.26%	0	0.62%
+>  
+> Could you please also explain what we can learn from the wload vs. OH/OR
+> results?
+
+These results are meant to show how the governors perform across varying
+workload intensities and periodicities. Higher overhead (OH) numbers
+indicate that the completion times of each period of the workload were
+closer to what they would be when run at fmin (100% overhead would be as
+slow as fmin, 0% overhead would be as fast as fmax). And as described
+above, overruns (OR) indicate that the governor was not responsive
+enough to finish the work in each period of the workload.
+
+These are just performance metrics so they only tell half the story.
+Power is not factored in at all.
+
+This provides a quick sanity check that the governor under test (in this
+case, the now defunct schedfreq, or sched for short) performs similarly
+to two of the most commonly used governors, ondemand and interactive, in
+steady state periodic workloads. In the data above sched looks good for
+the most part with the second test case being the biggest exception.
+
+thanks,
+Steve
+
