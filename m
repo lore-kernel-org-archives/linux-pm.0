@@ -1,42 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
-Date: Thu, 31 Mar 2016 13:50:24 +0200
-Message-ID: <CAJZ5v0iz2wxTbKvH4_YkE5wQswWATBGNo08RRmbY_SCA_n4tgw@mail.gmail.com>
-References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
-	<20160331075951.GG3408@twins.programming.kicks-ass.net>
-	<20160331091426.GE11035@twins.programming.kicks-ass.net>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v7 01/20] PM / devfreq: exynos: Add generic exynos bus
+ frequency driver
+Date: Thu, 31 Mar 2016 14:10:58 +0200
+Message-ID: <56FD13D2.1050300@samsung.com>
+References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
+ <1459415165-32613-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:35054 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbcCaLu0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 07:50:26 -0400
-In-Reply-To: <20160331091426.GE11035@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1459415165-32613-2-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
 
-On Thu, Mar 31, 2016 at 11:14 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, Mar 31, 2016 at 09:59:51AM +0200, Peter Zijlstra wrote:
->> >  - passing an argument into attach_entity_load_avg() to indicate
->> >    whether calling the cpufreq hook is necessary
->> >
->> > Both of these are ugly in their own way but would avoid a runtime
->> > cost. Opinions welcome.
->>
->> Lemme see what this would look like while I throw the below into the bit
->> bucket.
->
-> OK, so the below looks a lot more sane;
+On 03/31/2016 11:05 AM, Chanwoo Choi wrote:
 
-Yup.
+> +static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
+> +{
 
-> and has the surprising benefit of actually shrinking the text size..
->
->   43675    1226      24   44925    af7d defconfig-build/kernel/sched/fair.o.base
->   43723    1226      24   44973    afad defconfig-build/kernel/sched/fair.o.patch
->   43595    1226      24   44845    af2d defconfig-build/kernel/sched/fair.o.patch+
+> +	new_opp = devfreq_recommended_opp(dev, freq, flags);
+> +	if (IS_ERR_OR_NULL(new_opp)) {
+> +		dev_err(dev, "failed to get recommed opp instance\n");
 
-Interesting. :-)
+s/recommed/recommended/
+
+> +		rcu_read_unlock();
+> +		return PTR_ERR(new_opp);
+> +	}
+
+> +}
+
+> +static int exynos_bus_probe(struct platform_device *pdev)
+> +{
+
+> +	bus->devfreq = devm_devfreq_add_device(dev, profile, "simple_ondemand",
+> +						ondemand_data);
+> +	if (IS_ERR_OR_NULL(bus->devfreq)) {
+> +		dev_err(dev, "failed to add devfreq device\n");
+> +		return  PTR_ERR(bus->devfreq);
+> +	}
+
+> +}
+
+You should use IS_ERR() instead of IS_ERR_OR_NULL(), since functions
+of which the return value is being tested return only ERR_PTR() values.
+IS_ERR_OR_NULL() suggest NULL values are possible and then constructs
+like
+	if (IS_ERR_OR_NULL(result))
+		return PTR_ERR(result);
+
+are not correct anyway.
+
+-- 
+Regards,
+Sylwester
