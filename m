@@ -1,68 +1,124 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Thu, 31 Mar 2016 09:52:54 +0200
-Message-ID: <CAKv+Gu-_YhFva9RHUtzC68Ck2wTN2BvcXTEfCJbvVh98DFgn_A@mail.gmail.com>
-References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
-	<201603301450.pihQHWST%fengguang.wu@intel.com>
-	<CADyBb7spZBi-w5wFnVjioMVo4EEjWGcVdWgtbsF+wkCA0qi=gQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: [PATCH] smp: make wake up idle cpus more generic
+Date: Thu, 31 Mar 2016 00:53:14 -0700
+Message-ID: <1459410795-5693-1-git-send-email-lianwei.wang@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f179.google.com ([209.85.223.179]:35829 "EHLO
-	mail-io0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbcCaHwz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 03:52:55 -0400
-Received: by mail-io0-f179.google.com with SMTP id g185so106216105ioa.2
-        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 00:52:54 -0700 (PDT)
-In-Reply-To: <CADyBb7spZBi-w5wFnVjioMVo4EEjWGcVdWgtbsF+wkCA0qi=gQ@mail.gmail.com>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33337 "EHLO
+	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754571AbcCaHx3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 03:53:29 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Fu Wei <fu.wei@linaro.org>
-Cc: kbuild test robot <lkp@intel.com>, Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Will Deacon <will.deacon@arm.com>, Richard Ruigrok <rruigrok@codeaurora.org>, pavel@ucw.cz, "hpa@zytor.com" <hpa@zytor.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Al Stone <al.stone@linaro.org>, Tomasz Nowicki <tn@semihalf.com>, "x86@kernel.org" <x86@kernel.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, len.brown@intel.com, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, Tomasz Nowicki <tomasz>
+To: mingo@kernel.org
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
 
-On 30 March 2016 at 19:55, Fu Wei <fu.wei@linaro.org> wrote:
-> Hi Tomasz
->
-> On 30 March 2016 at 14:50, kbuild test robot <lkp@intel.com> wrote:
->> Hi Tomasz,
->>
->> [auto build test WARNING on arm64/for-next/core]
->> [also build test WARNING on v4.6-rc1 next-20160330]
->> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
->>
->> url:    https://github.com/0day-ci/linux/commits/fu-wei-linaro-org/acpi-apei-arm64-APEI-initial-support-for-aarch64/20160329-154730
->> base:   https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux for-next/core
->> config: arm64-allyesconfig (attached as .config)
->> reproduce:
->>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->>         chmod +x ~/bin/make.cross
->>         # save the attached .config to linux build tree
->>         make.cross ARCH=arm64
->>
->> All warnings (new ones prefixed by >>):
->>
->> warning: (ACPI_APEI) selects EFI which has unmet direct dependencies (OF && !CPU_BIG_ENDIAN)
->
-> I think it's caused by  CPU_BIG_ENDIAN, because  ARM64 selects OF.
->
+The wake_up_all_idle_cpus API always wake up all the online
+cpus, but sometimes we only want to wake up a set of cpus.
 
-No, as I pointed out, it is caused by the fact that you 'select' EFI
-rather than 'depend on' it.
+Use a generic function to wake up a group of cpus that is
+specified by the cpumask parameter. This generic API can
+benefit to the cases that only need to wake up a set of
+cpus.
 
-> Any suggestion ?
->
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+---
+ drivers/cpuidle/cpuidle.c |  4 ++--
+ include/linux/smp.h       |  4 ++--
+ kernel/power/suspend.c    |  2 +-
+ kernel/smp.c              | 12 +++++++-----
+ 4 files changed, 12 insertions(+), 10 deletions(-)
 
-replace
-
-select EFI if ARM64
-
-with
-
-depends on EFI || !ARM64
-
-but it would be even better to make ACPI_APEI depend on ACPI, since
-the above dependency will be implied then, although I am not sure how
-that affects other architectures.
-
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index f996efc56605..820003ec6b38 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -301,7 +301,7 @@ void cpuidle_uninstall_idle_handler(void)
+ {
+ 	if (enabled_devices) {
+ 		initialized = 0;
+-		wake_up_all_idle_cpus();
++		wake_up_idle_cpus(cpu_online_mask);
+ 	}
+ 
+ 	/*
+@@ -620,7 +620,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register);
+ static int cpuidle_latency_notify(struct notifier_block *b,
+ 		unsigned long l, void *v)
+ {
+-	wake_up_all_idle_cpus();
++	wake_up_idle_cpus((cpu_online_mask);
+ 	return NOTIFY_OK;
+ }
+ 
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index c4414074bd88..ee9d087c4c9a 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -100,7 +100,7 @@ int smp_call_function_any(const struct cpumask *mask,
+ 			  smp_call_func_t func, void *info, int wait);
+ 
+ void kick_all_cpus_sync(void);
+-void wake_up_all_idle_cpus(void);
++void wake_up_idle_cpus(const struct cpumask *mask);
+ 
+ /*
+  * Generic and arch helpers
+@@ -149,7 +149,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
+ }
+ 
+ static inline void kick_all_cpus_sync(void) {  }
+-static inline void wake_up_all_idle_cpus(void) {  }
++static inline void wake_up_idle_cpus(const struct cpumask *mask) {  }
+ 
+ #ifdef CONFIG_UP_LATE_INIT
+ extern void __init up_late_init(void);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 5b70d64b871e..a4176ab96b36 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -70,7 +70,7 @@ static void freeze_enter(void)
+ 	cpuidle_resume();
+ 
+ 	/* Push all the CPUs into the idle loop. */
+-	wake_up_all_idle_cpus();
++	wake_up_idle_cpus(cpu_online_mask);
+ 	pr_debug("PM: suspend-to-idle\n");
+ 	/* Make the current CPU wait so it can enter the idle loop too. */
+ 	wait_event(suspend_freeze_wait_head,
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 74165443c240..c2beecb5ef01 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -720,17 +720,19 @@ void kick_all_cpus_sync(void)
+ EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
+ 
+ /**
+- * wake_up_all_idle_cpus - break all cpus out of idle
+- * wake_up_all_idle_cpus try to break all cpus which is in idle state even
++ * wake_up_idle_cpus - break a set of cpus out of idle
++ * @mask: The set of cpus to break out of idle
++ *
++ * wake_up_idle_cpus try to break a set of cpus which is in idle state even
+  * including idle polling cpus, for non-idle cpus, we will do nothing
+  * for them.
+  */
+-void wake_up_all_idle_cpus(void)
++void wake_up_idle_cpus(const struct cpumask *mask)
+ {
+ 	int cpu;
+ 
+ 	preempt_disable();
+-	for_each_online_cpu(cpu) {
++	for_each_cpu_and(cpu, mask, cpu_online_mask) {
+ 		if (cpu == smp_processor_id())
+ 			continue;
+ 
+@@ -738,4 +740,4 @@ void wake_up_all_idle_cpus(void)
+ 	}
+ 	preempt_enable();
+ }
+-EXPORT_SYMBOL_GPL(wake_up_all_idle_cpus);
++EXPORT_SYMBOL_GPL(wake_up_idle_cpus);
 -- 
-Ard.
+1.9.1
+
