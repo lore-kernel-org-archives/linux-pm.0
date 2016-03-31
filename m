@@ -1,86 +1,123 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH] PCI: Fix device attach failure handling
-Date: Thu, 31 Mar 2016 14:57:48 +0200
-Message-ID: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] intel_pstate: Avoid pointless FRAC_BITS shifts under div_fp()
+Date: Thu, 31 Mar 2016 15:46:22 +0200
+Message-ID: <1928830.Q6zNtE60bQ@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:41529 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756739AbcCaM5q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 08:57:46 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44049 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757186AbcCaNoA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 09:44:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+To: Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Linux 4.5 introduced a behavioral change in device probing during the
-suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
-probing during suspend/hibernation"): It defers device probing during
-the entire suspend process, starting from the prepare phase and ending
-with the complete phase. A rule existed before that "we rely on sub-
-systems not to do any probing once a device is suspended" but it is
-enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
-plugged in while the system is asleep: Upon waking up, pciehp_resume()
-discovers new devices in the resume phase and immediately tries to bind
-them to a driver. Since probing is now deferred, device_attach() returns
--EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
+There are multiple places in intel_pstate where int_tofp() is applied
+to both arguments of div_fp(), but this is pointless, because int_tofp()
+simply shifts its argument to the left by FRAC_BITS which mathematically
+is equivalent to multuplication by 2^FRAC_BITS, so if this is done
+to both arguments of a division, the extra factors will cancel each
+other during that operation anyway.
 
-Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
-Check device_attach() return value always"): pci_bus_add_device() no
-longer sets dev->is_added = 1 if device_attach() returned a negative
-value. This results in a BUG lockup in pci_bus_add_devices().
+Drop the pointless int_tofp() applied to div_fp() arguments throughout
+the driver.
 
-Fix the latter by not recursing to a child bus if device_attach() failed
-for the bridge leading to it.
-
-Fix the former by not interpreting -EPROBE_DEFER as failure. The device
-will be probed eventually and there is proper locking in place to avoid
-races (e.g. if devices are unplugged again und thus deleted from the
-system before deferred probing happens, I have tested this). Also, those
-functions which dereference dev->driver (e.g. pci_pm_*()) do contain
-proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
-
-Note that even postponing the code in pciehp_resume() until the
-complete phase wouldn't avoid these troubles because dpm_complete()
-calls device_unblock_probing() only after ->complete has been
-executed for all devices. We lack a pm hook from which it would
-be safe to check a hotplug port and call device_attach() without
-risking -EPROBE_DEFER.
-
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/bus.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   27 +++++++++++----------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index 6c9f546..dd7cdbe 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -206,17 +206,17 @@ static inline void pid_reset(struct _pid
  
- 	dev->match_driver = true;
- 	retval = device_attach(&dev->dev);
--	if (retval < 0) {
-+	if (retval < 0 && retval != -EPROBE_DEFER) {
- 		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
- 		pci_proc_detach_device(dev);
- 		pci_remove_sysfs_dev_files(dev);
-@@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+ static inline void pid_p_gain_set(struct _pid *pid, int percent)
+ {
+-	pid->p_gain = div_fp(int_tofp(percent), int_tofp(100));
++	pid->p_gain = div_fp(percent, 100);
+ }
+ 
+ static inline void pid_i_gain_set(struct _pid *pid, int percent)
+ {
+-	pid->i_gain = div_fp(int_tofp(percent), int_tofp(100));
++	pid->i_gain = div_fp(percent, 100);
+ }
+ 
+ static inline void pid_d_gain_set(struct _pid *pid, int percent)
+ {
+-	pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
++	pid->d_gain = div_fp(percent, 100);
+ }
+ 
+ static signed int pid_calc(struct _pid *pid, int32_t busy)
+@@ -394,7 +394,7 @@ static ssize_t show_turbo_pct(struct kob
+ 
+ 	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
+ 	no_turbo = cpu->pstate.max_pstate - cpu->pstate.min_pstate + 1;
+-	turbo_fp = div_fp(int_tofp(no_turbo), int_tofp(total));
++	turbo_fp = div_fp(no_turbo, total);
+ 	turbo_pct = 100 - fp_toint(mul_fp(turbo_fp, int_tofp(100)));
+ 	return sprintf(buf, "%u\n", turbo_pct);
+ }
+@@ -465,8 +465,7 @@ static ssize_t store_max_perf_pct(struct
+ 				   limits->max_perf_pct);
+ 	limits->max_perf_pct = max(limits->min_perf_pct,
+ 				   limits->max_perf_pct);
+-	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+-				  int_tofp(100));
++	limits->max_perf = div_fp(limits->max_perf_pct, 100);
+ 
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
+@@ -490,8 +489,7 @@ static ssize_t store_min_perf_pct(struct
+ 				   limits->min_perf_pct);
+ 	limits->min_perf_pct = min(limits->max_perf_pct,
+ 				   limits->min_perf_pct);
+-	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+-				  int_tofp(100));
++	limits->min_perf = div_fp(limits->min_perf_pct, 100);
+ 
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
+@@ -973,8 +971,8 @@ static inline int32_t get_target_pstate_
+ 	 * specified pstate.
+ 	 */
+ 	core_busy = cpu->sample.core_pct_busy;
+-	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+-	current_pstate = int_tofp(cpu->pstate.current_pstate);
++	max_pstate = cpu->pstate.max_pstate_physical;
++	current_pstate = cpu->pstate.current_pstate;
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ 
+ 	/*
+@@ -986,8 +984,7 @@ static inline int32_t get_target_pstate_
+ 	duration_ns = cpu->sample.time - cpu->last_sample_time;
+ 	if ((s64)duration_ns > pid_params.sample_rate_ns * 3
+ 	    && cpu->last_sample_time > 0) {
+-		sample_ratio = div_fp(int_tofp(pid_params.sample_rate_ns),
+-				      int_tofp(duration_ns));
++		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+ 		core_busy = mul_fp(core_busy, sample_ratio);
  	}
  
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		BUG_ON(!dev->is_added);
-+		/* Skip if device attach failed */
-+		if (!dev->is_added)
-+			continue;
- 		child = dev->subordinate;
- 		if (child)
- 			pci_bus_add_devices(child);
--- 
-2.8.0.rc3
+@@ -1167,10 +1164,8 @@ static int intel_pstate_set_policy(struc
+ 	/* Make sure min_perf_pct <= max_perf_pct */
+ 	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
+ 
+-	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+-				  int_tofp(100));
+-	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+-				  int_tofp(100));
++	limits->min_perf = div_fp(limits->min_perf_pct, 100);
++	limits->max_perf = div_fp(limits->max_perf_pct, 100);
+ 
+  out:
+ 	intel_pstate_set_update_util_hook(policy->cpu);
 
