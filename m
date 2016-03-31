@@ -1,89 +1,131 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Thu, 31 Mar 2016 16:35:03 +0800
-Message-ID: <CAMz4ku+eBP1MU4kM4pP6k+SRbUXGS4m08GDdsGp7J-5a0DdPow@mail.gmail.com>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
-	<11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
-	<87h9foqnur.fsf@intel.com>
-	<CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
-	<87poubgnbh.fsf@intel.com>
-	<CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w@mail.gmail.com>
-	<87bn5vgiwx.fsf@intel.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 1/3] power: charger-manager: Replace deprecatd API of extcon
+Date: Thu, 31 Mar 2016 17:35:16 +0900
+Message-ID: <56FCE144.1070800@samsung.com>
+References: <1459121142-3768-1-git-send-email-cw00.choi@samsung.com>
+ <1459121142-3768-2-git-send-email-cw00.choi@samsung.com>
+ <20160328210737.GA21044@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87bn5vgiwx.fsf@intel.com>
+In-reply-to: <20160328210737.GA21044@rob-hp-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, myungjoo.ham@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 31 March 2016 at 16:18, Felipe Balbi <balbi@kernel.org> wrote:
->
-> Hi,
->
-> Baolin Wang <baolin.wang@linaro.org> writes:
->>>>>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
->>>>>
->>>>> According to the spec we should always be talking about unit loads (1
->>>>> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
->>>>> work for SS capable ports and SS gadgets (we have quite a few of them,
->>>>> actually). You're missing the opportunity of charging at 900mA.
->>>>
->>>> I follow the DCP/SDP/CDP/ACA type's default current limitation and
->>>> user can set them what they want.
->>>
->>> no, the user CANNOT set it to what they want. If you get enumerated
->>> @100mA and the user just decides to set it to 2000mA, s/he could even
->>> melt the USB connector. The kernel _must_ prevent such cases.
->>>
->>> In any case, DEFAULT_SDP_CUR_LIMIT shouldn't be a constant, it should be
->>> variable because if you enumerate in SS, you _can_ get up to 900mA.
+Hi Rob,
+
+On 2016=EB=85=84 03=EC=9B=94 29=EC=9D=BC 06:07, Rob Herring wrote:
+> On Mon, Mar 28, 2016 at 08:25:40AM +0900, Chanwoo Choi wrote:
+>> This patch removes the deprecated notifier API of extcon framework a=
+nd then use
+>> the new extcon API[2] with the unique id[1] to indicate the each ext=
+ernal
+>> connector. Alter deprecated API as following:
+>> - extcon_register_interest() -> extcon_register_notifier()
+>> - extcon_unregister_interest() -> extcon_unregister_notifier()
 >>
->> Make sense. But these are just default values. They can be changed
->> safely by power driver with 'usb_charger_set_cur_limit_by_type()'
->> function to set 900mA.
->
-> oh okay. Still, the default value should be a function of gadget->speed,
-
-Sorry, I did not get your suggestion, could you give me an example? Thanks.
-
-> IMO ;-)
->
->>>>>> +
->>>>>> +/* USB charger state */
->>>>>> +enum usb_charger_state {
->>>>>> +     USB_CHARGER_DEFAULT,
->>>>>> +     USB_CHARGER_PRESENT,
->>>>>> +     USB_CHARGER_REMOVE,
->>>>>> +};
->>>>>
->>>>> userland really doesn't need these two ?
->>>>
->>>> We've reported to userspace by kobject_uevent in
->>>> 'usb_charger_notify_others()' function.
->>>
->>> I mean as a type ;-) So userspace doesn't have to redefine these for
->>> their applications.
+>> And, extcon alters the name of USB charger connector in patch[3] as =
+following:
+>> - EXTCON_CHG_USB_SDP /* Standard Downstream Port */
+>> - EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
+>> - EXTCON_CHG_USB_CDP /* Charging Downstream Port */
+>> - EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
 >>
->> Make sense. I can introduce some sysfs files for userspace. Thanks for
->> your comments.
->
-> okay, my reply was a bit cryptic, but what I mean here is that enum
-> usb_charger_state could be moved your include/uapi header. My question
-> is, then, does userland need to have knowledge of enum
-> usb_charger_state ?
+>> So, the name of external charger connector are changed as following:
+>> - "USB" -> "SDP"
+>> - "TA" -> "DCP"
+>>
+>> [1] Commit 2a9de9c0f08d61
+>> - ("extcon: Use the unique id for external connector instead of stri=
+ng)
+>> [2] Commit 046050f6e623e4
+>> - ("extcon: Update the prototype of extcon_register_notifier() with =
+enum extcon
+>> [3] Commit 11eecf910bd81d
+>> - ("extcon: Modify the id and name of external connector")
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  .../bindings/power_supply/charger-manager.txt      |  4 +--
+>>  drivers/power/charger-manager.c                    | 31 +++++++++++=
++++--------
+>>  include/linux/power/charger-manager.h              |  4 +--
+>>  3 files changed, 24 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power_supply/charger-=
+manager.txt b/Documentation/devicetree/bindings/power_supply/charger-ma=
+nager.txt
+>> index ec4fe9de3137..73193e380dc2 100644
+>> --- a/Documentation/devicetree/bindings/power_supply/charger-manager=
+=2Etxt
+>> +++ b/Documentation/devicetree/bindings/power_supply/charger-manager=
+=2Etxt
+>> @@ -65,13 +65,13 @@ Example :
+>>  		regulator@0 {
+>>  			cm-regulator-name =3D "chg-reg";
+>>  			cable@0 {
+>> -				cm-cable-name =3D "USB";
+>> +				cm-cable-id =3D 5; /* EXTCON_CHG_USB_SDP */
+>=20
+> Sorry, but delete the charger-manager binding and start over. It look=
+s=20
+> designed around the needs of Linux, not what the h/w looks like. You'=
+re=20
 
-I am not sure if userland need the enum usb_charger_state. But I
-remember you want to report the charger state to userland in previous
-email.
+I agree. The charger-manager didn't express the h/w. IMHO, charging
+framework may be included in the power_supply core such as fuel-gauge d=
+evice.
+Just it is my opinion.
 
->
-> --
-> balbi
+=46or example, fuel-gauge device may include the connected device such =
+as
+charger device (battery charging), extcon device(detect the type of cha=
+rger cable)
+and rtc device (check the battery state periodically with sample rate) =
+for battery charging.
+
+I agree that we should handle the charger-manager binding.
+
+But now,
+this patch just removes the dependency of deprecated API of extcon.
+So, I think that the issue of charger-manager binding should be handled
+in other patches.
+
+> changing the driver and having to change the DT in a non-compatible w=
+ay=20
+> is the first clue.
+>=20
+>>  				cm-cable-extcon =3D "extcon-dev.0";
+>=20
+> What is this!? The linux device name?
+
+Just the name of extcon device to detect the type of charger cable.
+But, extcon framekwork has the extcon_get_edev_by_phandle() to get the
+instance by using the phandle in Device Tree.
+
+>=20
+>>  				cm-cable-min =3D <475000>;
+>>  				cm-cable-max =3D <500000>;
+>=20
+> This is set by the USB spec...
+
+I agree. we need to modify it.
+
+>=20
+>>  			};
+>>  			cable@1 {
+>> -				cm-cable-name =3D "TA";
+>> +				cm-cable-id =3D 6; /* EXTCON_CHG_USB_DCP */
+>>  				cm-cable-extcon =3D "extcon-dev.0";
+>>  				cm-cable-min =3D <650000>;
+>>  				cm-cable-max =3D <675000>;
+>=20
+>=20
+>=20
 
 
-
--- 
-Baolin.wang
-Best Regards
+Best Regards,
+Chanwoo Choi
