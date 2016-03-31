@@ -1,7 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v7 10/20] MAINTAINERS: Add samsung bus frequency driver entry
-Date: Thu, 31 Mar 2016 18:05:55 +0900
-Message-ID: <1459415165-32613-11-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v7 19/20] ARM: dts: Expand the voltage range of buck1/3
+ regulator for exynos4412-odroidu3
+Date: Thu, 31 Mar 2016 18:06:04 +0900
+Message-ID: <1459415165-32613-20-git-send-email-cw00.choi@samsung.com>
 References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
@@ -10,35 +11,44 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the 'BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS' entry to review the
-patches as maintainer. I can access the all datasheet of Exynos SoC and test it
-on some Exynos-based board. Patches will be picked up by DEVFREQ maintainer
-on devfreq git repository.
+This patch expands the voltage range of buck1/3 regulator due to as following:
+- MIF (Memory Interface) bus frequency needs the range of '900 - 1100 mV'.
+- INT (Internal) bus frequency needs the range of '900 - 1050 mV'.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+[m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 03e00c7c88eb..a7d276d0a9f7 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3539,6 +3539,15 @@ F:	drivers/devfreq/devfreq-event.c
- F:	include/linux/devfreq-event.h
- F:	Documentation/devicetree/bindings/devfreq/event/
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index cba37c974703..b4983cbc4f8c 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -356,8 +356,8 @@
  
-+BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS
-+M:	Chanwoo Choi <cw00.choi@samsung.com>
-+L:	linux-pm@vger.kernel.org
-+L:	linux-samsung-soc@vger.kernel.org
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
-+S:	Maintained
-+F:	drivers/devfreq/exynos-bus.c
-+F:	Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-+
- DEVICE NUMBER REGISTRY
- M:	Torben Mathiasen <device@lanana.org>
- W:	http://lanana.org/docs/device-list/index.html
+ 			buck1_reg: BUCK1 {
+ 				regulator-name = "vdd_mif";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1100000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
+@@ -372,8 +372,8 @@
+ 
+ 			buck3_reg: BUCK3 {
+ 				regulator-name = "vdd_int";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1050000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
 -- 
 1.9.1
