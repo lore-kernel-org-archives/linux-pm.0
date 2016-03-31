@@ -1,70 +1,66 @@
 From: "Doug Smythies" <dsmythies@telus.net>
 Subject: RE: [intel-pstate driver regression] processor frequency very high even if in idle
-Date: Thu, 31 Mar 2016 07:30:04 -0700
-Message-ID: <002301d18b59$d208fe50$761afaf0$@net>
-References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>	<1459376311.13525.108.camel@linux.intel.com>	<003b01d18ad6$831941c0$894bc540$@net> <CA+icZUXaoeQz5vMzPxjOaAzbzdQ4D1MV2dG5EvXAM54k6EOz1g@mail.gmail.com>
+Date: Thu, 31 Mar 2016 07:39:30 -0700
+Message-ID: <002701d18b5b$22ea72d0$68bf5870$@net>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>	<CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>	<4187911.uaFVupaTVL@vostro.rjw.lan>	<CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>	<CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>	<1459352017.13525.45.camel@intel.com>	<CADDKRnA5x9dK=6KZWijiP_ihrUA9Afpmqw8TSzYn9oaBeaOfKw@mail.gmail.com>	<002401d18ab5$0bf84a30$23e8de90$@net>	<1459364336.13525.69.camel@linux.intel.com>	<CAJZ5v0gDNYRNaLKFCnPRomOhavLPD=zgp1oJdRv6OtHLb031Bw@mail.gmail.com>	<1459369587.13525.75.camel@linux.intel.com> <CADDKRnCfaG35EXp_thOqfG=6sjov7f1q521LSGL8oFqRfCqSaw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+icZUXaoeQz5vMzPxjOaAzbzdQ4D1MV2dG5EvXAM54k6EOz1g@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta7.telus.net ([209.171.16.80]:47056 "EHLO cmta7.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752768AbcCaOjg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 10:39:36 -0400
+In-Reply-To: <CADDKRnCfaG35EXp_thOqfG=6sjov7f1q521LSGL8oFqRfCqSaw@mail.gmail.com>
 Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, =?utf-8?Q?'J=C3=B6rg_Otte'?= <jrg.otte@gmail.com>, linux-pm@vger.kernel.org, 'LKML' <linux-kernel@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?utf-8?Q?'J=C3=B6rg_Otte'?= <jrg.otte@gmail.com>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 
-On 2016.03.31 01:11 Sedat Dilek wrote:
-> On Thu, Mar 31, 2016 at 12:50 AM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2106.03.30 15:19 Srinivas Pandruvada wrote:
->>>>
->>>> Please see attached files.
->>>>
->>> Thanks. Your logs make sense. You have config set to performance mode
->>> by default (Which I believe default in all kernel Ubuntu).
->>
->> Yes, but via a startup script, by default Ubuntu sets the governor
->> to powersave 1 minute after boot (or ondemand if acpi-cpufreq).
->>
->
-> Can you give more and precise informations on this?
-> script-name etc.
+On 2016.03.31 02:24 J=C3=B6rg Otte wrote:
 
-The script is /etc/init.d/ondemand
-It sleeps for 1 minute and then sets the scaling
-governor, based on availability, in the following order:
-interactive
-ondemand
-powersave
+> jojo@fichte:/sys/devices/system/cpu/cpufreq/policy0$ cat scaling_gove=
+rnor
+> powersave
+>=20
+> turbostat -i 1 --msr=3D0x199
+> CPUID(7): No-SGX
+>     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+>       -      45    1.74    2590    2496  0x00000000
+>       0      45    1.76    2565    2498  0x00000a00
+>       1      72    2.84    2548    2496  0x00000800
+>       2      30    1.11    2661    2496  0x00001a00
+>       3      33    1.23    2661    2495  0x00001a00
+>     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+>       -       9    0.35    2525    2495  0x00000000
+>       0       1    0.04    2735    2495  0x00000800
+>       1       1    0.05    2501    2495  0x00000800
+>       2      17    0.65    2540    2495  0x00001a00
+>       3      16    0.64    2501    2495  0x00001a00
+>     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+>       -      11    0.43    2523    2495  0x00000000
+>       0       3    0.11    2631    2495  0x00000c00
+>       1       7    0.27    2524    2495  0x00000800
+>       2      18    0.72    2527    2495  0x00001a00
+>       3      15    0.61    2501    2495  0x00001a00
 
-See also:
+Very Interesting.
 
-$ ls -l /etc/rc?.d/S06ondemand
-lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc2.d/S06ondemand -> ../init.d/ondemand
-lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc3.d/S06ondemand -> ../init.d/ondemand
-lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc4.d/S06ondemand -> ../init.d/ondemand
-lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc5.d/S06ondemand -> ../init.d/ondemand
+I would still like to get a trace sample to post process.
+Copied from a previous e-mail:
 
->From your other e-mail:
+On an otherwise idle system, do:
 
-> is somehow showing higher
-> values than TSC_MHz.
-> Not sure if this really make sense if TSC_MHz is a max-value (which I
-> don't know it is).
+# perf record -a --event=3Dpower:pstate_sample sleep 300
 
-That is normal, and is turbo mode. Example:
+If pressed for time, your sleep time can be less than 5 minutes,
+but try to get at least 100 seconds.
 
-$ sudo turbostat -i 3 --msr=0x199
-     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz   MSR 0x199
-       -     478   12.53    3798    3413  0x00000000
-       0       3    0.09    3595    3413  0x00002500
-       4       1    0.03    3568    3413  0x00001000
-       1       4    0.11    3649    3413  0x00001200
-       5       2    0.07    3592    3413  0x00001000
-       2       3    0.08    3628    3413  0x00001000
-       6       1    0.03    3546    3413  0x00001000
-       3       1    0.02    3733    3413  0x00001000
-       7    3808   99.91    3799    3411  0x00002600
+The resulting perf.data file will be too big to include as an
+on-list attachment, but send it (or them) to me off-list for
+post processing, and I'll report back.
 
-... Doug
+=2E.. Doug
+
+
