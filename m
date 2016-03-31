@@ -1,52 +1,105 @@
-From: Yuyang Du <yuyang.du@intel.com>
-Subject: Re: [RFCv7 PATCH 00/10] sched: scheduler-driven CPU frequency
- selection
-Date: Thu, 31 Mar 2016 04:22:18 +0800
-Message-ID: <20160330202218.GC22689@intel.com>
-References: <1456190570-4475-1-git-send-email-smuckle@linaro.org>
- <20160330004506.GB22689@intel.com>
- <56FC7EDB.707@linaro.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
+Date: Thu, 31 Mar 2016 00:59:30 -0400
+Message-ID: <CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>
+References: <1458564569-19672-1-git-send-email-prarit@redhat.com>
+	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
+	<56F32BDB.1010107@redhat.com>
+	<CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>
+	<56F94439.3000908@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:23692 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbcCaEFP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Mar 2016 00:05:15 -0400
-Content-Disposition: inline
-In-Reply-To: <56FC7EDB.707@linaro.org>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:34380 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbcCaE7c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 00:59:32 -0400
+In-Reply-To: <56F94439.3000908@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Steve,
+> Len,
+>
+> Your patch does
+>
+> +       skl_cstates[5].disabled = 1;    /* C8-SKL */
+> +       skl_cstates[6].disabled = 1;    /* C9-SKL */
+>
+> and I don't think that is correct for SKY-H.
 
-On Wed, Mar 30, 2016 at 06:35:23PM -0700, Steve Muckle wrote:
-> This series was dropped in favor of Rafael's schedutil. But on the
-> chance that you're still curious about the test setup used to quantify
-> the series I'll explain below.
- 
-I will catch up and learn both.
+For https://bugzilla.kernel.org/show_bug.cgi?id=109081
+it is correct.
 
-> These results are meant to show how the governors perform across varying
-> workload intensities and periodicities. Higher overhead (OH) numbers
-> indicate that the completion times of each period of the workload were
-> closer to what they would be when run at fmin (100% overhead would be as
-> slow as fmin, 0% overhead would be as fast as fmax). And as described
-> above, overruns (OR) indicate that the governor was not responsive
-> enough to finish the work in each period of the workload.
-> 
-> These are just performance metrics so they only tell half the story.
-> Power is not factored in at all.
-> 
-> This provides a quick sanity check that the governor under test (in this
-> case, the now defunct schedfreq, or sched for short) performs similarly
-> to two of the most commonly used governors, ondemand and interactive, in
-> steady state periodic workloads. In the data above sched looks good for
-> the most part with the second test case being the biggest exception.
- 
-Yes, it is indeed a quick sanity check.
+> Your patch does not take into account that the states are explicitly disabled
+> in MSR_NHM_SNB_PKG_CST_CFG_CTL.  That is the problem here and what you've done
+> is simply hammered a disable into those states.
 
-Thanks,
-Yuyang
+ENOPARSE.
+Are we talking about the failure in
+https://bugzilla.kernel.org/show_bug.cgi?id=109081
+or a different problem?
+
+>
+> Additionally, your patch does not show the user the correct state information:
+>
+>     [root@dhcp40-125 ~]# egrep ^ /sys/devices/system/cpu/cpu0/cpuidle/state?/disable
+>     /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state5/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state6/disable:1:0
+>     /sys/devices/system/cpu/cpu0/cpuidle/state7/disable:1:0 << should be 1
+>     /sys/devices/system/cpu/cpu0/cpuidle/state8/disable:1:0 << should be 1
+
+the 'disabled' attribute you see in sysfs is not
+struct cpuidle_state.disabled
+it is
+struct cpuidle_state_usage.disabled
+
+> The fix is to honour the settings in MSR_NHM_SNB_PKG_CST_CFG_CTL.  I cannot say
+> for certain that ALL SKY-H are impacted (you are admittedly in better position
+> to say so or not).  I can say that on the 2 systems tested here the
+> MSR_NHM_SNB_PKG_CST_CFG_CTL do have the appropriate disable value set.
+>
+> /me could be missing some important info  -- again, perhaps there are some
+> SKY-H's out there that do not have states disabled in
+> MSR_NHM_SNB_PKG_CST_CFG_CTL, and that's why I've proposed rebasing on top of
+> your change.
+
+Do you see this debug message when you run current upstream on this hardware?
+
+                /* if state marked as disabled, skip it */
+                if (cpuidle_state_table[cstate].disabled != 0) {
+                        pr_debug(PREFIX "state %s is disabled",
+                                cpuidle_state_table[cstate].name);
+                        continue;
+                }
+
+
+If no, then my patch is not disabling C8/C9 on your system.
+
+Also, if it were, the code above causes the states to not appear
+at all in sysfs, because they are not registered.
+
+Re: MSR_NHM_SNB_PKG_CST_CFG_CTL
+
+if PC10 is disabled there, then functionally, it doesn't matter what we do,
+which is why my patch does nothing when PC10 is disabled.
+
+In such a scenario, pc10 presence in sysfs (and cpufreq)
+is cosmetic.  The hardware knows what to do.
+
+Do you think that cosmetic issue is worth dealing with?
+Note that the decoding of that MSR changes with every CPU,
+so to get it right (like turbostat does), we'd need a table.
+Also, it would be useful only for states which are  PC states only.
+ie. we can't disable CC7 just because PC7 is disabled. etc.
+So you could remove PC8, PC9, PC10 from sysfs on SKL
+when they are disabled, but that is all.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
