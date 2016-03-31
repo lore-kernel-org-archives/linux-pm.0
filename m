@@ -1,91 +1,215 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
-Date: Thu, 31 Mar 2016 11:14:26 +0200
-Message-ID: <20160331091426.GE11035@twins.programming.kicks-ass.net>
-References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
- <20160331075951.GG3408@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160331075951.GG3408@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 3/3] PM / Domains: Remove ->save|restore_state() callbacks
+Date: Thu, 31 Mar 2016 11:21:27 +0200
+Message-ID: <1459416087-23519-4-git-send-email-ulf.hansson@linaro.org>
+References: <1459416087-23519-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f177.google.com ([209.85.217.177]:34178 "EHLO
+	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755103AbcCaJVs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 05:21:48 -0400
+Received: by mail-lb0-f177.google.com with SMTP id vo2so48574984lbb.1
+        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 02:21:47 -0700 (PDT)
+In-Reply-To: <1459416087-23519-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 
-On Thu, Mar 31, 2016 at 09:59:51AM +0200, Peter Zijlstra wrote:
-> >  - passing an argument into attach_entity_load_avg() to indicate                                                 
-> >    whether calling the cpufreq hook is necessary
-> > 
-> > Both of these are ugly in their own way but would avoid a runtime
-> > cost. Opinions welcome.
-> 
-> Lemme see what this would look like while I throw the below into the bit
-> bucket.
+As a part of the ongoing consolidation of genpd, it's become questionable
+whether clients actually needs to be able to assign their own set of
+->save|restore_state() callbacks. Currently all users copes fine with the
+default callbacks, so let's remove the configuration option and stick to
+the default ones.
 
-OK, so the below looks a lot more sane; and has the surprising benefit
-of actually shrinking the text size..
+This enables further clarifications of the related code and let's also
+rename pm_genpd_default_save|restore_state() into
+__genpd_runtime_suspend|resume() to apply the rule of static functionnames
+in genpd.
 
-  43675    1226      24   44925    af7d defconfig-build/kernel/sched/fair.o.base
-  43723    1226      24   44973    afad defconfig-build/kernel/sched/fair.o.patch
-  43595    1226      24   44845    af2d defconfig-build/kernel/sched/fair.o.patch+
-
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2851,7 +2851,8 @@ static inline void cfs_rq_util_change(st
+ drivers/base/power/domain.c | 113 +++++++++++++++++++-------------------------
+ include/linux/pm_domain.h   |   2 -
+ 2 files changed, 49 insertions(+), 66 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 75b994a..4ce4ce0 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -229,17 +229,6 @@ static int genpd_poweron(struct generic_pm_domain *genpd, unsigned int depth)
+ 	return ret;
  }
  
- /* Group cfs_rq's load_avg is used for task_h_load and update_cfs_share */
--static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
-+static inline int
-+update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq, bool update_freq)
+-static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
+-{
+-	return GENPD_DEV_CALLBACK(genpd, int, save_state, dev);
+-}
+-
+-static int genpd_restore_dev(struct generic_pm_domain *genpd,
+-			struct device *dev)
+-{
+-	return GENPD_DEV_CALLBACK(genpd, int, restore_state, dev);
+-}
+-
+ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+ 				     unsigned long val, void *ptr)
  {
- 	struct sched_avg *sa = &cfs_rq->avg;
- 	int decayed, removed_load = 0, removed_util = 0;
-@@ -2878,7 +2879,7 @@ static inline int update_cfs_rq_load_avg
- 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
- #endif
- 
--	if (decayed || removed_util)
-+	if (update_freq && (decayed || removed_util))
- 		cfs_rq_util_change(cfs_rq);
- 
- 	return decayed || removed_load;
-@@ -2900,7 +2901,7 @@ static inline void update_load_avg(struc
- 			  se->on_rq * scale_load_down(se->load.weight),
- 			  cfs_rq->curr == se, NULL);
- 
--	if (update_cfs_rq_load_avg(now, cfs_rq) && update_tg)
-+	if (update_cfs_rq_load_avg(now, cfs_rq, true) && update_tg)
- 		update_tg_load_avg(cfs_rq, 0);
+@@ -372,6 +361,52 @@ static void genpd_power_off_work_fn(struct work_struct *work)
  }
  
-@@ -2962,7 +2963,7 @@ enqueue_entity_load_avg(struct cfs_rq *c
- 			cfs_rq->curr == se, NULL);
+ /**
++ * __genpd_runtime_suspend - walk the hierarchy of ->runtime_suspend() callbacks
++ * @dev: Device to handle.
++ */
++static int __genpd_runtime_suspend(struct device *dev)
++{
++	int (*cb)(struct device *__dev);
++
++	if (dev->type && dev->type->pm)
++		cb = dev->type->pm->runtime_suspend;
++	else if (dev->class && dev->class->pm)
++		cb = dev->class->pm->runtime_suspend;
++	else if (dev->bus && dev->bus->pm)
++		cb = dev->bus->pm->runtime_suspend;
++	else
++		cb = NULL;
++
++	if (!cb && dev->driver && dev->driver->pm)
++		cb = dev->driver->pm->runtime_suspend;
++
++	return cb ? cb(dev) : 0;
++}
++
++/**
++ * __genpd_runtime_resume - walk the hierarchy of ->runtime_resume() callbacks
++ * @dev: Device to handle.
++ */
++static int __genpd_runtime_resume(struct device *dev)
++{
++	int (*cb)(struct device *__dev);
++
++	if (dev->type && dev->type->pm)
++		cb = dev->type->pm->runtime_resume;
++	else if (dev->class && dev->class->pm)
++		cb = dev->class->pm->runtime_resume;
++	else if (dev->bus && dev->bus->pm)
++		cb = dev->bus->pm->runtime_resume;
++	else
++		cb = NULL;
++
++	if (!cb && dev->driver && dev->driver->pm)
++		cb = dev->driver->pm->runtime_resume;
++
++	return cb ? cb(dev) : 0;
++}
++
++/**
+  * genpd_runtime_suspend - Suspend a device belonging to I/O PM domain.
+  * @dev: Device to suspend.
+  *
+@@ -409,13 +444,13 @@ static int genpd_runtime_suspend(struct device *dev)
+ 	if (runtime_pm)
+ 		time_start = ktime_get();
+ 
+-	ret = genpd_save_dev(genpd, dev);
++	ret = __genpd_runtime_suspend(dev);
+ 	if (ret)
+ 		return ret;
+ 
+ 	ret = genpd_stop_dev(genpd, dev);
+ 	if (ret) {
+-		genpd_restore_dev(genpd, dev);
++		__genpd_runtime_resume(dev);
+ 		return ret;
  	}
  
--	decayed = update_cfs_rq_load_avg(now, cfs_rq);
-+	decayed = update_cfs_rq_load_avg(now, cfs_rq, !migrated);
+@@ -491,7 +526,7 @@ static int genpd_runtime_resume(struct device *dev)
+ 	if (ret)
+ 		goto err_poweroff;
  
- 	cfs_rq->runnable_load_avg += sa->load_avg;
- 	cfs_rq->runnable_load_sum += sa->load_sum;
-@@ -6170,7 +6171,7 @@ static void update_blocked_averages(int
- 		if (throttled_hierarchy(cfs_rq))
- 			continue;
+-	ret = genpd_restore_dev(genpd, dev);
++	ret = __genpd_runtime_resume(dev);
+ 	if (ret)
+ 		goto err_stop;
  
--		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq))
-+		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true))
- 			update_tg_load_avg(cfs_rq, 0);
- 	}
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
-@@ -6231,7 +6232,7 @@ static inline void update_blocked_averag
- 
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 	update_rq_clock(rq);
--	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
-+	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true);
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+@@ -1427,54 +1462,6 @@ out:
  }
+ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
  
+-/* Default device callbacks for generic PM domains. */
+-
+-/**
+- * pm_genpd_default_save_state - Default "save device state" for PM domains.
+- * @dev: Device to handle.
+- */
+-static int pm_genpd_default_save_state(struct device *dev)
+-{
+-	int (*cb)(struct device *__dev);
+-
+-	if (dev->type && dev->type->pm)
+-		cb = dev->type->pm->runtime_suspend;
+-	else if (dev->class && dev->class->pm)
+-		cb = dev->class->pm->runtime_suspend;
+-	else if (dev->bus && dev->bus->pm)
+-		cb = dev->bus->pm->runtime_suspend;
+-	else
+-		cb = NULL;
+-
+-	if (!cb && dev->driver && dev->driver->pm)
+-		cb = dev->driver->pm->runtime_suspend;
+-
+-	return cb ? cb(dev) : 0;
+-}
+-
+-/**
+- * pm_genpd_default_restore_state - Default PM domains "restore device state".
+- * @dev: Device to handle.
+- */
+-static int pm_genpd_default_restore_state(struct device *dev)
+-{
+-	int (*cb)(struct device *__dev);
+-
+-	if (dev->type && dev->type->pm)
+-		cb = dev->type->pm->runtime_resume;
+-	else if (dev->class && dev->class->pm)
+-		cb = dev->class->pm->runtime_resume;
+-	else if (dev->bus && dev->bus->pm)
+-		cb = dev->bus->pm->runtime_resume;
+-	else
+-		cb = NULL;
+-
+-	if (!cb && dev->driver && dev->driver->pm)
+-		cb = dev->driver->pm->runtime_resume;
+-
+-	return cb ? cb(dev) : 0;
+-}
+-
+ /**
+  * pm_genpd_init - Initialize a generic I/O PM domain object.
+  * @genpd: PM domain object to initialize.
+@@ -1520,8 +1507,6 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->domain.ops.restore_early = pm_genpd_resume_early;
+ 	genpd->domain.ops.restore = pm_genpd_resume;
+ 	genpd->domain.ops.complete = pm_genpd_complete;
+-	genpd->dev_ops.save_state = pm_genpd_default_save_state;
+-	genpd->dev_ops.restore_state = pm_genpd_default_restore_state;
+ 
+ 	if (genpd->flags & GENPD_FLAG_PM_CLK) {
+ 		genpd->dev_ops.stop = pm_clk_suspend;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index e913939..39285c7 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -34,8 +34,6 @@ struct dev_power_governor {
+ struct gpd_dev_ops {
+ 	int (*start)(struct device *dev);
+ 	int (*stop)(struct device *dev);
+-	int (*save_state)(struct device *dev);
+-	int (*restore_state)(struct device *dev);
+ 	bool (*active_wakeup)(struct device *dev);
+ };
+ 
+-- 
+1.9.1
+
