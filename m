@@ -1,44 +1,125 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 0/9] Add HW throttle for Tegra soctherm
-Date: Thu, 31 Mar 2016 16:43:59 +0800
-Message-ID: <1459413848-5405-1-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH 3/9] arm64: tegra: set critical trips for Tegra132
+Date: Thu, 31 Mar 2016 16:44:02 +0800
+Message-ID: <1459413848-5405-4-git-send-email-wni@nvidia.com>
+References: <1459413848-5405-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1459413848-5405-1-git-send-email-wni@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-This series add following functions for Tegra soctherm:
-1. add Tegra132 support.
-2. add HW throttle function.
-3. set hot trip temperatures which can trigger the HW throttle.
+Set general "critical" trip temperatures for cpu, gpu, mem and pllx
+thermal zones on Tegra132, these trips can trigger shut down or reset.
 
-Wei Ni (9):
-  thermal: tegra: add Tegra132 specific SOC_THERM driver
-  arm64: tegra: use tegra132-soctherm for Tegra132
-  arm64: tegra: set critical trips for Tegra132
-  of: Add bindings of hw throttle for soctherm
-  thermal: tegra: add hw-throttle function
-  thermal: tegra: add hw-throttle for Tegra132
-  arm64: tegra: set hot trips for Tegra210
-  arm64: tegra: set hot trips for Tegra132
-  arm: tegra: set hot trips for Tegra124
+Signed-off-by: Wei Ni <wni@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi | 62 +++++++++++++++++++++++++++++++-
+ 1 file changed, 61 insertions(+), 1 deletion(-)
 
- .../devicetree/bindings/thermal/tegra-soctherm.txt |  89 ++-
- arch/arm/boot/dts/tegra124.dtsi                    |  39 +-
- arch/arm64/boot/dts/nvidia/tegra132.dtsi           | 119 ++-
- arch/arm64/boot/dts/nvidia/tegra210.dtsi           |  41 +-
- drivers/thermal/tegra/Makefile                     |   1 +
- drivers/thermal/tegra/soctherm.c                   | 834 ++++++++++++++++++++-
- drivers/thermal/tegra/soctherm.h                   |  14 +
- drivers/thermal/tegra/tegra124-soctherm.c          |  18 +
- drivers/thermal/tegra/tegra132-soctherm.c          | 214 ++++++
- drivers/thermal/tegra/tegra210-soctherm.c          |  18 +
- include/dt-bindings/thermal/tegra124-soctherm.h    |   5 +
- 11 files changed, 1355 insertions(+), 37 deletions(-)
- create mode 100644 drivers/thermal/tegra/tegra132-soctherm.c
-
+diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+index bd5010a7cba4..40fe2bcb55d2 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+@@ -729,7 +729,7 @@
+ 
+ 	soctherm: thermal-sensor@0,700e2000 {
+ 		compatible = "nvidia,tegra132-soctherm";
+-		reg = <0x0 0x700e2000 0x0 0x1000>;
++		reg = <0x0 0x700e2000 0x0 0x600>;
+ 		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
+ 			<&tegra_car TEGRA124_CLK_SOC_THERM>;
+@@ -746,6 +746,21 @@
+ 
+ 			thermal-sensors =
+ 				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
++
++			trips {
++				cpu_shutdown_trip {
++					temperature = <105000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
+ 		};
+ 		mem {
+ 			polling-delay-passive = <0>;
+@@ -753,6 +768,21 @@
+ 
+ 			thermal-sensors =
+ 				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
++
++			trips {
++				mem_shutdown_trip {
++					temperature = <101000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
+ 		};
+ 		gpu {
+ 			polling-delay-passive = <1000>;
+@@ -760,6 +790,21 @@
+ 
+ 			thermal-sensors =
+ 				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
++
++			trips {
++				gpu_shutdown_trip {
++					temperature = <101000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
+ 		};
+ 		pllx {
+ 			polling-delay-passive = <0>;
+@@ -767,6 +812,21 @@
+ 
+ 			thermal-sensors =
+ 				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
++
++			trips {
++				pllx_shutdown_trip {
++					temperature = <105000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/*
++				 * There are currently no cooling maps,
++				 * because there are no cooling devices.
++				 */
++			};
+ 		};
+ 	};
+ 
 -- 
 1.9.1
