@@ -1,105 +1,74 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
-Date: Thu, 31 Mar 2016 00:59:30 -0400
-Message-ID: <CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>
-References: <1458564569-19672-1-git-send-email-prarit@redhat.com>
-	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
-	<56F32BDB.1010107@redhat.com>
-	<CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>
-	<56F94439.3000908@redhat.com>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Thu, 31 Mar 2016 13:22:38 +0800
+Message-ID: <CAMz4kuLxfEr_cOa0F-Qh+Mo+dEVGWx+YPZ_=yb9FVwWdJd8viQ@mail.gmail.com>
+References: <cover.1458822334.git.baolin.wang@linaro.org>
+	<20160325070937.GA22398@peterchendt>
+	<CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com>
+	<AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com>
+	<AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com>
+	<AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com>
+	<CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA@mail.gmail.com>
+	<AM4PR04MB1665E85D823D5AB59B54B56D89980@AM4PR04MB1665.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f194.google.com ([209.85.217.194]:34380 "EHLO
-	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbcCaE7c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 00:59:32 -0400
-In-Reply-To: <56F94439.3000908@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <AM4PR04MB1665E85D823D5AB59B54B56D89980-WOempg8NbQQyfSGIpie7pc9NdZoXdze2vxpqHgZTriW3zl9H0oFU5g@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
+Cc: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-> Len,
+On 30 March 2016 at 18:58, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org> wrote:
+>> >> >> > Seems you don't want to guarantee charger type detection is done
+>> >> >> > before gadget connection(pullup DP), right?
+>> >> >> > I see you call usb_charger_detect_type() in each gadget usb
+>> >> >> > state
+>> >> >> changes.
+>> >> >>
+>> >> >> I am not sure I get your point correctly, please correct me if I
+>> >> >> misunderstand you.
+>> >> >> We need to check the charger type at every event comes from the
+>> >> >> usb gadget state changes or the extcon device state changes, which
+>> >> >> means a new charger plugin or pullup.
+>> >> >>
+>> >> >
+>> >> > According to usb charger spec, my understanding is you can't do
+>> >> > real charger detection procedure *after* gadget _connection_(pullup
+>> >> > DP), also I don't
+>> >>
+>> >> Why can not? Charger detection is usually from PMIC.
+>> >
+>> > Charger detection process will impact DP/DM line state, see usb
+>> > charger spec v1.2 for detail detection process, section 4.6.3 says:
+>> >
+>> > "A PD is allowed to *disconnect* and repeat the charger detection
+>> > process multiple times while attached. The PD is required to wait for
+>> > a time of at least TCP_VDM_EN max between disconnecting and restarting
+>> > the charger detection process."
+>> >
+>> > As Peter mentioned, the charger detection should happen between VBUS
+>> > detection and gadget pull up DP for first plug in case. So when&after
+>> > gadget connect (pullup DP), you should already know the charger type.
+>>
+>> Make sense. In our company's solution, charger detection can be done by
+>> hardware from PMIC at first, then it will not affect the DP/DM line when
+>> gadget starts to enumeration.
 >
-> Your patch does
->
-> +       skl_cstates[5].disabled = 1;    /* C8-SKL */
-> +       skl_cstates[6].disabled = 1;    /* C9-SKL */
->
-> and I don't think that is correct for SKY-H.
+> I see, charger type detection is done automatically by PMIC when VBUS is
+> detected in your case, you just assume the process is complete before SW
+> do gadget connect. To make the framework common, you may do one time charger type check when vbus is on, and save it to avoid repeat charger type check.
 
-For https://bugzilla.kernel.org/show_bug.cgi?id=109081
-it is correct.
+OK. I'll add one judgement to check if the charger type is set in
+'usb_charger_detect_type()' function.
 
-> Your patch does not take into account that the states are explicitly disabled
-> in MSR_NHM_SNB_PKG_CST_CFG_CTL.  That is the problem here and what you've done
-> is simply hammered a disable into those states.
-
-ENOPARSE.
-Are we talking about the failure in
-https://bugzilla.kernel.org/show_bug.cgi?id=109081
-or a different problem?
-
->
-> Additionally, your patch does not show the user the correct state information:
->
->     [root@dhcp40-125 ~]# egrep ^ /sys/devices/system/cpu/cpu0/cpuidle/state?/disable
->     /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state5/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state6/disable:1:0
->     /sys/devices/system/cpu/cpu0/cpuidle/state7/disable:1:0 << should be 1
->     /sys/devices/system/cpu/cpu0/cpuidle/state8/disable:1:0 << should be 1
-
-the 'disabled' attribute you see in sysfs is not
-struct cpuidle_state.disabled
-it is
-struct cpuidle_state_usage.disabled
-
-> The fix is to honour the settings in MSR_NHM_SNB_PKG_CST_CFG_CTL.  I cannot say
-> for certain that ALL SKY-H are impacted (you are admittedly in better position
-> to say so or not).  I can say that on the 2 systems tested here the
-> MSR_NHM_SNB_PKG_CST_CFG_CTL do have the appropriate disable value set.
->
-> /me could be missing some important info  -- again, perhaps there are some
-> SKY-H's out there that do not have states disabled in
-> MSR_NHM_SNB_PKG_CST_CFG_CTL, and that's why I've proposed rebasing on top of
-> your change.
-
-Do you see this debug message when you run current upstream on this hardware?
-
-                /* if state marked as disabled, skip it */
-                if (cpuidle_state_table[cstate].disabled != 0) {
-                        pr_debug(PREFIX "state %s is disabled",
-                                cpuidle_state_table[cstate].name);
-                        continue;
-                }
-
-
-If no, then my patch is not disabling C8/C9 on your system.
-
-Also, if it were, the code above causes the states to not appear
-at all in sysfs, because they are not registered.
-
-Re: MSR_NHM_SNB_PKG_CST_CFG_CTL
-
-if PC10 is disabled there, then functionally, it doesn't matter what we do,
-which is why my patch does nothing when PC10 is disabled.
-
-In such a scenario, pc10 presence in sysfs (and cpufreq)
-is cosmetic.  The hardware knows what to do.
-
-Do you think that cosmetic issue is worth dealing with?
-Note that the decoding of that MSR changes with every CPU,
-so to get it right (like turbostat does), we'd need a table.
-Also, it would be useful only for states which are  PC states only.
-ie. we can't disable CC7 just because PC7 is disabled. etc.
-So you could remove PC8, PC9, PC10 from sysfs on SKL
-when they are disabled, but that is all.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+-- 
+Baolin.wang
+Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
