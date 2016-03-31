@@ -1,54 +1,37 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to update_cfs_rq_load_avg()
-Date: Thu, 31 Mar 2016 14:50:54 +0200
-Message-ID: <CAKfTPtDVAKZHdJp3K6fVq5K63+a0Oyxbo3ddnGBuak5ZjUcKUA@mail.gmail.com>
-References: <56F91D56.4020007@arm.com> <56F95D10.4070400@linaro.org>
- <56F97856.4040804@arm.com> <56F98832.3030207@linaro.org> <20160330193544.GD407@worktop>
- <CAKfTPtCPfd2-jGDn-9ZLjNKTni4czuvrkH7KFh5L2EtDeTQE5A@mail.gmail.com>
- <20160331093408.GB12845@twins.programming.kicks-ass.net> <CAKfTPtCuDQz8KxndwA1Kx4Xe-DohuUOhYXXabBDsp7r8j6cPgw@mail.gmail.com>
- <20160331104705.GG3430@twins.programming.kicks-ass.net> <CAKfTPtD-knx3ySY+ad8BwDLs9bK5KhAb7mKd3xXc63AXhREh3A@mail.gmail.com>
- <20160331123424.GI3430@twins.programming.kicks-ass.net>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v7 01/20] PM / devfreq: exynos: Add generic exynos bus
+ frequency driver
+Date: Thu, 31 Mar 2016 14:54:28 +0200
+Message-ID: <56FD1E04.8050808@samsung.com>
+References: <1459415165-32613-1-git-send-email-cw00.choi@samsung.com>
+ <1459415165-32613-2-git-send-email-cw00.choi@samsung.com>
+ <56FD13D2.1050300@samsung.com>
+ <CAGTfZH0mgxyQPKBTX=ZXgtSn=bQ2zAMSNMHfO+OXh3U5qrUr4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160331123424.GI3430@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CAGTfZH0mgxyQPKBTX=ZXgtSn=bQ2zAMSNMHfO+OXh3U5qrUr4g@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: cw00.choi@samsung.com
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=c5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Anand Moon <linux.amoon@gmail.com>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vg>
 List-Id: linux-pm@vger.kernel.org
 
-On 31 March 2016 at 14:34, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, Mar 31, 2016 at 02:14:50PM +0200, Vincent Guittot wrote:
->> In fact, I looks for the sequence where the utilization of a rq is not
->> updated until the next tick but i can't find it.
+On 03/31/2016 02:28 PM, Chanwoo Choi wrote:
+>> > You should use IS_ERR() instead of IS_ERR_OR_NULL(), since functions
+>> > of which the return value is being tested return only ERR_PTR() values.
+>> > IS_ERR_OR_NULL() suggest NULL values are possible and then constructs
+>> > like
+>> >         if (IS_ERR_OR_NULL(result))
+>> >                 return PTR_ERR(result);
+>> >
+>> > are not correct anyway.
 >
-> No, util it always updated, however..
->
->> If cpu doesn't share cache, task is added to wake list and an ipi is
->> sent and the utilization.
->
-> Here we run:
->
->  ttwu_do_activate()
->    ttwu_activate()
->      activate_task()
->        enqueue_task()
->          p->sched_class->enqueue_task() := enqueue_task_fair()
->            update_load_avg()
->              update_cfs_rq_load_avg()
->                cfs_rq_util_change()
->
-> On the local cpu, and we can indeed call out to have the frequency
-> changed.
->
->> Otherwise, we directly enqueue the task on
->> the rq and the utilization is updated
->
-> But here we run it on a remote cpu, so we cannot call out and the
-> frequency remains the same.
->
-> So if a remote wakeup on the same LLC domain happens, utilization will
-> increase but we will not observe until the next tick.
+> OK. I'll use IS_ERR() instead of IS_ERR_OR_NULL()
 
-ok. I forgot that we have the condition cpu == smp_processor_id() in
-cfs_rq_util_change.
+Thanks, I forgot to mention there is similar issue in patches
+5/20 and 6/20.
+
+--
+Regards
+Sylwester
