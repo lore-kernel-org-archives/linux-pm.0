@@ -1,293 +1,118 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [intel-pstate driver regression] processor frequency very high
- even if in idle
-Date: Thu, 31 Mar 2016 10:55:05 -0700
-Message-ID: <1459446905.4569.76.camel@linux.intel.com>
-References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
-	 <8393335.Q1cjiaGecN@vostro.rjw.lan>
-	 <CADDKRnBE==ea7YvXH+YL_m1v8E1zNHsZnXJgc58OQ=vrcs+cKQ@mail.gmail.com>
-	 <2727017.UmaUvtBLeX@vostro.rjw.lan>
-	 <CADDKRnAYPXip0EG0Y7ADuyt9L=FL-Nd1giHBVvPexs4kGkRj4g@mail.gmail.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH 1/3 v4] powercap, intel_rapl, implement
+ get_max_time_window
+Date: Thu, 31 Mar 2016 18:28:59 +0000
+Message-ID: <1459448760.4569.87.camel@intel.com>
+References: <1458563236-19269-1-git-send-email-prarit@redhat.com>
+	 <1458563236-19269-2-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADDKRnAYPXip0EG0Y7ADuyt9L=FL-Nd1giHBVvPexs4kGkRj4g@mail.gmail.com>
+In-Reply-To: <1458563236-19269-2-git-send-email-prarit@redhat.com>
+Content-Language: en-US
+Content-ID: <E7F3FE1EDA965D43A668A7EE9FB4737B@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "prarit@redhat.com" <prarit@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Jovanovic, Radivoje" <radivoje.jovanovic@intel.com>, "s.ikarashi@jp.fujitsu.com" <s.ikarashi@jp.fujitsu.com>, "David Rajamanickam, Ajay Thomas" <ajay.thomas.david.rajamanickam@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "minipli@googlemail.com" <minipli@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2016-03-31 at 19:27 +0200, J=C3=B6rg Otte wrote:
-> 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> > On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
-> > > 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> > > > On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrote:
-> > > >=20
-> > > > [cut]
-> > > >=20
-> > > > > >=20
-> > > > >=20
-> > > > > Yes, works for me.
-> > > > >=20
-> > > > > CPUID(7): No-SGX
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0CPU Avg_MHz=C2=A0=C2=A0=C2=A0Bu=
-sy% Bzy_MHz TSC_MHz
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0-=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A011=C2=A0=C2=A0=C2=A0=C2=A00.66 1682 2494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A00=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A011=C2=A0=C2=A0=C2=A0=C2=A00.60 1856 2494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A06=C2=A0=C2=A0=C2=A0=C2=A00.34=C2=A0=C2=A0=C2=A0=
-=C2=A01898=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A013=C2=A0=C2=A0=C2=A0=C2=A00.82=C2=A0=C2=A0=C2=A0=C2=A0=
-1628=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A013=C2=A0=C2=A0=C2=A0=C2=A00.87=C2=A0=C2=A0=C2=A0=C2=A0=
-1528=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0CPU Avg_MHz=C2=A0=C2=A0=C2=A0Bu=
-sy% Bzy_MHz TSC_MHz
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0-=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A06=C2=A0=C2=A0=C2=A0=C2=A00.58=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0963=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A00=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A08=C2=A0=C2=A0=C2=A0=C2=A00.83=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0957=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A00.08=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0984=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A010=C2=A0=C2=A0=C2=A0=C2=A01.04=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0975=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=C2=A00.35=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0934=C2=A0=C2=A0=C2=A0=C2=A02494
-> > > > >=20
-> > > >=20
-> >=20
-> > [cut]
-> >=20
-> > > >=20
-> > >=20
-> > > No, this patch doesn't help.
-> >=20
-> > Well, more work to do then.
-> >=20
-> > I've just noticed a bug in this patch, which is not relevant for
-> > the results,
-> > but below is a new version.
-> >=20
-> > > CPUID(7): No-SGX
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0CPU Avg_MHz=C2=A0=C2=A0=C2=A0=
-Busy% Bzy_MHz TSC_MHz
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0-=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A08=C2=A0=C2=A0=C2=A0=C2=A00.32=C2=A0=C2=A0=C2=A0=C2=A0=
-2507=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A00=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A013=C2=A0=C2=A0=C2=A0=C2=A00.53=C2=A0=C2=A0=C2=A0=C2=A02505=C2=
-=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=C2=A00.11=C2=A0=C2=A0=C2=A0=C2=A0=
-2523=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A00.06=C2=A0=C2=A0=C2=A0=C2=A0=
-2555=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A015=C2=A0=C2=A0=C2=A0=C2=A00.59=C2=A0=C2=A0=C2=A0=C2=A02500=C2=
-=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0CPU Avg_MHz=C2=A0=C2=A0=C2=A0Busy% =
-Bzy_MHz TSC_MHz
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0-=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A08=C2=A0=C2=A0=C2=A0=C2=A00.33=C2=A0=C2=A0=C2=A0=C2=A0=
-2486=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A00=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A012=C2=A0=C2=A0=C2=A0=C2=A00.50=C2=A0=C2=A0=C2=A0=C2=A02482=C2=
-=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A05=C2=A0=C2=A0=C2=A0=C2=A00.22=C2=A0=C2=A0=C2=A0=C2=A0=
-2489=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A00.04=C2=A0=C2=A0=C2=A0=C2=A0=
-2492=C2=A0=C2=A0=C2=A0=C2=A02495
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A03=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A015=C2=A0=C2=A0=C2=A0=C2=A00.59=C2=A0=C2=A0=C2=A0=C2=A02487=C2=
-=A0=C2=A0=C2=A0=C2=A02495
-> >=20
-> > Please apply the patch below and take a (1s or so) trace from the
-> > pstate_sample
-> > tracepoint (under /sys/kernel/debug/tracing/events/power/ on my
-> > systems).
-> >=20
-> > Then please apply the revert instead of it and take a trace from
-> > that tracepoint
-> > again and send both of the traces to me.
-> >=20
-> > ---
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: [PATCH] intel_pstate: Do not set utilization update hook
-> > too early
-> >=20
-> > The utilization update hook in the intel_pstate driver is set too
-> > early, as it only should be set after the policy has been fully
-> > initialized by the core.=C2=A0=C2=A0That may cause intel_pstate_upd=
-ate_util()
-> > to use incorrect data and put the CPUs into incorrect P-states as
-> > a result.
-> >=20
-> > To prevent that from happening, make intel_pstate_set_policy() set
-> > the utilization update hook instead of intel_pstate_init_cpu() so
-> > intel_pstate_update_util() only runs when all things have been
-> > initialized as appropriate.
-> >=20
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A027 ++++++++=
-+++++++++++--------
-> > =C2=A01 file changed, 19 insertions(+), 8 deletions(-)
-> >=20
-> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> > @@ -1103,7 +1103,6 @@ static int intel_pstate_init_cpu(unsigne
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0intel_pstate_sample=
-(cpu, 0);
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpu->update_util.fu=
-nc =3D intel_pstate_update_util;
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpufreq_set_update_util_=
-data(cpunum, &cpu->update_util);
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_debug("intel_pst=
-ate: controlling: cpu %d\n", cpunum);
-> >=20
-> > @@ -1122,18 +1121,29 @@ static unsigned int intel_pstate_get(uns
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return get_avg_freq=
-uency(cpu);
-> > =C2=A0}
-> >=20
-> > +static void intel_pstate_set_update_util_hook(unsigned int cpu)
-> > +{
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpufreq_set_update_util_=
-data(cpu, &all_cpu_data[cpu]-
-> > >update_util);
-> > +}
-> > +
-> > +static void intel_pstate_clear_update_util_hook(unsigned int cpu)
-> > +{
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpufreq_set_update_util_=
-data(cpu, NULL);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0synchronize_sched();
-> > +}
-> > +
-> > =C2=A0static int intel_pstate_set_policy(struct cpufreq_policy *pol=
-icy)
-> > =C2=A0{
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!policy->cpuinf=
-o.max_freq)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0return -ENODEV;
-> >=20
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0intel_pstate_clear_updat=
-e_util_hook(policy->cpu);
-> > +
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (policy->policy =
-=3D=3D CPUFREQ_POLICY_PERFORMANCE &&
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0policy->max >=3D policy->cpuinfo.max_freq) {
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_debug("intel_pstate: set performance\n");
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0limits =3D &performance_limits;
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0if (hwp_active)
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-intel_pstate_hwp_set(policy->cpus);
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0goto out;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_debug("intel_pst=
-ate: set powersave\n");
-> > @@ -1163,6 +1173,9 @@ static int intel_pstate_set_policy(struc
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0limits->max_perf =3D=
- div_fp(int_tofp(limits->max_perf_pct),
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int_tofp=
-(100));
-> >=20
-> > + out:
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0intel_pstate_set_update_=
-util_hook(policy->cpu);
-> > +
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (hwp_active)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0intel_pstate_hwp_set(policy->cpus);
-> >=20
-> > @@ -1187,8 +1200,7 @@ static void intel_pstate_stop_cpu(struct
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_debug("intel_pst=
-ate: CPU %d exiting\n", cpu_num);
-> >=20
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpufreq_set_update_util_=
-data(cpu_num, NULL);
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0synchronize_sched();
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0intel_pstate_clear_updat=
-e_util_hook(cpu_num);
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (hwp_active)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0return;
-> > @@ -1455,8 +1467,7 @@ out:
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0get_online_cpus();
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0for_each_online_cpu=
-(cpu) {
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0if (all_cpu_data[cpu]) {
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-cpufreq_set_update_util_data(cpu, NULL);
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-synchronize_sched();
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-intel_pstate_clear_update_util_hook(cpu);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0kfree(all_cpu_data[cpu]);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> >=20
->=20
-> OK, patch is applied.
-> After some configurations and compilations I'm there.
-> Under pstate_sample I see:
-> enable=C2=A0=C2=A0filter=C2=A0=C2=A0format=C2=A0=C2=A0id=C2=A0=C2=A0t=
-rigger
->=20
-> what to do now ? (never did tracing before)'
-
-# cd /sys/kernel/debug/tracing/
-# echo 1 > events/power/pstate_sample/enable
-# echo 1 > events/power/cpu_frequency/enable
-# cat trace
-Send us the trace file.
-
-Also your kernel config doesn't have many modules, Is it a custom
-configuration you do for your system?
-
-Thanks,
-Srinivas
-
-=C2=A0
->=20
-> Thanks, J=C3=B6rg
+T24gTW9uLCAyMDE2LTAzLTIxIGF0IDA4OjI3IC0wNDAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
+DQo+IFRoZSBNU1JfUEtHX1BPV0VSX0lORk8gcmVnaXN0ZXIgKEludGVsIEFTRE0sIHNlY3Rpb24g
+MTQuOS4zDQo+ICJQYWNrYWdlIFJBUEwgRG9tYWluIikgcHJvdmlkZXMgYSBtYXhpbXVtIHRpbWUg
+d2luZG93IHdoaWNoIHRoZQ0KPiBzeXN0ZW0gY2FuIHN1cHBvcnQuwqDCoFRoaXMgd2luZG93IGlz
+IHJlYWQtb25seSBhbmQgaXMgY3VycmVudGx5DQo+IG5vdCBleGFtaW5lZCB3aGVuIHNldHRpbmcg
+dGhlIHRpbWUgd2luZG93cyBmb3IgdGhlIHBhY2thZ2UuDQo+IA0KVXN1YWxseSB0aGlzIGZpZWxk
+IGhhcyBsb3Qgb2YganVuay4gSXQgaXMgbm90IHN1cHBvcnRlZCB1bmlmb3JtbHkuDQpUaGUgc3lz
+dGVtIHByb3ZpZGVzIHRoaXMgdmFsdWUgZnJvbSBhbm90aGVyIEFDUEkgZWxlbWVudCBjYWxsZWQg
+UFBDQy4NCklmIHN1cHBvcnRlZCB0aGlzIHdpbGwgYmUgaW7CoA0KDQokIC9zeXMvYnVzL3BjaS9k
+ZXZpY2VzLzAwMDA6MDA6MDQuMC9wb3dlcl9saW1pdHMNCiQgZ3JlcCAuICoNCnBvd2VyX2xpbWl0
+XzBfbWF4X3V3OjE1MDAwMDAwDQpwb3dlcl9saW1pdF8wX21pbl91dzoxMjUwMDANCnBvd2VyX2xp
+bWl0XzBfc3RlcF91dzoxMDAwMDAwDQpwb3dlcl9saW1pdF8wX3RtYXhfdXM6MzIwMDAwMDANCnBv
+d2VyX2xpbWl0XzBfdG1pbl91czoyODAwMDAwMA0KcG93ZXJfbGltaXRfMV9tYXhfdXc6MjUwMDAw
+MDANCnBvd2VyX2xpbWl0XzFfbWluX3V3OjI1MDAwMDAwDQpwb3dlcl9saW1pdF8xX3N0ZXBfdXc6
+MTAwMDAwMA0KcG93ZXJfbGltaXRfMV90bWF4X3VzOjANCnBvd2VyX2xpbWl0XzFfdG1pbl91czow
+DQoNClRoYW5rcywNClNyaW5pdmFzDQo+IFRoaXMgcGF0Y2ggaW1wbGVtZW50cyBnZXRfbWF4X3Rp
+bWVfd2luZG93X3VzKCkgYW5kIGNoZWNrcyB0aGUgd2luZG93DQo+IHdoZW4NCj4gYSB1c2VyIGF0
+dGVtcHRzIHRvIHNldCBwb3dlciBjYXBwaW5nIGZvciB0aGUgcGFja2FnZS4NCj4gDQo+IEJlZm9y
+ZSB0aGUgcGF0Y2ggaXQgd2FzIHBvc3NpYmxlIHRvIHNldCB0aGUgd2luZG93IHRvLCBmb3IgZXhh
+bXBsZSwNCj4gMTAwMDANCj4gbWljcm8gc2Vjb25kczoNCj4gDQo+IFtyb290QGludGVsLWNoaWVm
+cml2ZXItMDMgcmhlbDddIyBlY2hvIDEwMDAwID4NCj4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93
+ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0NCj4gcmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5k
+b3dfdXM7DQo+IGVncmVwIF4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFw
+bC9pbnRlbC0NCj4gcmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5kb3dfdXMNCj4gDQo+IC9z
+eXMvZGV2aWNlcy92aXJ0dWFsL3Bvd2VyY2FwL2ludGVsLXJhcGwvaW50ZWwtDQo+IHJhcGw6MC9j
+b25zdHJhaW50XzBfdGltZV93aW5kb3dfdXM6MTo5NzY1DQo+IA0KPiBidXQgZnJvbSAndHVyYm9z
+dGF0IC1kJywgdGhlIHBhY2thZ2UgaXMgbGltaXRlZCB0byA5NzZ1czoNCj4gDQo+IGNwdTA6IE1T
+Ul9QS0dfUE9XRVJfSU5GTzogMHgwMTIwMDE2OCAoNDUgVyBURFAsIFJBUEwgMzYgLSAwIFcsDQo+
+IDAuMDAwOTc3IHNlYy4pDQo+IA0KPiAoTm90ZSwgdGhlcmUgYXBwZWFycyB0byBiZSBhIHJvdW5k
+aW5nIGlzc3VlIGluIHR1cmJvc3RhdCB3aGljaCBuZWVkcw0KPiB0bw0KPiBhbHNvIGJlIGZpeGVk
+LsKgwqBMb29raW5nIGF0IHRoZSB2YWx1ZXMgaW4gdGhlIHJlZ2lzdGVyIGl0IGlzIGNsZWFyIHRo
+ZQ0KPiB2YWx1ZSBpcyAxLzEwMjQgPSA5NzZ1cy4pDQo+IA0KPiBBZnRlciB0aGUgcGF0Y2ggd2Ug
+YXJlIGxpbWl0ZWQgYnkgdGhlIG1heGltdW0gdGltZSB3aW5kb3c6DQo+IA0KPiBbcm9vdEBpbnRl
+bC1jaGllZnJpdmVyLTAzIHJoZWw3XSMgZWNobyAxMDAwMCA+DQo+IC9zeXMvZGV2aWNlcy92aXJ0
+dWFsL3Bvd2VyY2FwL2ludGVsLXJhcGwvaW50ZWwtDQo+IHJhcGxcOjAvY29uc3RyYWludF8wX3Rp
+bWVfd2luZG93X3VzOw0KPiBlZ3JlcCBeIC9zeXMvZGV2aWNlcy92aXJ0dWFsL3Bvd2VyY2FwL2lu
+dGVsLXJhcGwvaW50ZWwtDQo+IHJhcGxcOjAvY29uc3RyYWludF8wX3RpbWVfd2luZG93X3VzDQo+
+IA0KPiAtYmFzaDogZWNobzogd3JpdGUgZXJyb3I6IEludmFsaWQgYXJndW1lbnQNCj4gL3N5cy9k
+ZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0NCj4gcmFwbDowL2NvbnN0
+cmFpbnRfMF90aW1lX3dpbmRvd191czoxOjk3Ng0KPiANCj4gQ2M6ICJSYWZhZWwgSi4gV3lzb2Nr
+aSIgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPiBDYzogUHJhcml0IEJoYXJnYXZhIDxw
+cmFyaXRAcmVkaGF0LmNvbT4NCj4gQ2M6IFJhZGl2b2plIEpvdmFub3ZpYyA8cmFkaXZvamUuam92
+YW5vdmljQGludGVsLmNvbT4NCj4gQ2M6IFNlaWljaGkgSWthcmFzaGkgPHMuaWthcmFzaGlAanAu
+ZnVqaXRzdS5jb20+DQo+IENjOiBNYXRoaWFzIEtyYXVzZSA8bWluaXBsaUBnb29nbGVtYWlsLmNv
+bT4NCj4gQ2M6IEFqYXkgVGhvbWFzIDxhamF5LnRob21hcy5kYXZpZC5yYWphbWFuaWNrYW1AaW50
+ZWwuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBQcmFyaXQgQmhhcmdhdmEgPHByYXJpdEByZWRoYXQu
+Y29tPg0KPiAtLS0NCj4gwqBkcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuY8KgwqDCoHzCoMKg
+wqAzMQ0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+IMKgZHJpdmVycy9wb3dl
+cmNhcC9wb3dlcmNhcF9zeXMuYyB8wqDCoMKgwqA2ICsrKystLQ0KPiDCoDIgZmlsZXMgY2hhbmdl
+ZCwgMzUgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9k
+cml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYw0KPiBiL2RyaXZlcnMvcG93ZXJjYXAvaW50ZWxf
+cmFwbC5jDQo+IGluZGV4IDZjNTkyZGMuLmZlYjA2M2QgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+cG93ZXJjYXAvaW50ZWxfcmFwbC5jDQo+ICsrKyBiL2RyaXZlcnMvcG93ZXJjYXAvaW50ZWxfcmFw
+bC5jDQo+IEBAIC00OTMsMTMgKzQ5Myw0MiBAQCBzdGF0aWMgaW50IGdldF9jdXJyZW50X3Bvd2Vy
+X2xpbWl0KHN0cnVjdA0KPiBwb3dlcmNhcF96b25lICpwb3dlcl96b25lLCBpbnQgaWQsDQo+IMKg
+CXJldHVybiByZXQ7DQo+IMKgfQ0KPiDCoA0KPiArc3RhdGljIGludCBnZXRfbWF4X3RpbWVfd2lu
+ZG93KHN0cnVjdCBwb3dlcmNhcF96b25lICpwb3dlcl96b25lLCBpbnQNCj4gaWQsDQo+ICsJCQnC
+oMKgwqDCoMKgwqDCoHU2NCAqZGF0YSkNCj4gK3sNCj4gKwlzdHJ1Y3QgcmFwbF9kb21haW4gKnJk
+Ow0KPiArCWludCByZXQgPSAwOw0KPiArCXU2NCB2YWw7DQo+ICsNCj4gKwlnZXRfb25saW5lX2Nw
+dXMoKTsNCj4gKwlyZCA9IHBvd2VyX3pvbmVfdG9fcmFwbF9kb21haW4ocG93ZXJfem9uZSk7DQo+
+ICsNCj4gKwlpZiAocmFwbF9yZWFkX2RhdGFfcmF3KHJkLCBNQVhfVElNRV9XSU5ET1csIHRydWUs
+ICZ2YWwpKQ0KPiArCQlyZXQgPSAtRUlPOw0KPiArCWVsc2UNCj4gKwkJKmRhdGEgPSB2YWw7DQo+
+ICsNCj4gKwlwdXRfb25saW5lX2NwdXMoKTsNCj4gKwlyZXR1cm4gcmV0Ow0KPiArfQ0KPiArDQo+
+IMKgc3RhdGljIGludCBzZXRfdGltZV93aW5kb3coc3RydWN0IHBvd2VyY2FwX3pvbmUgKnBvd2Vy
+X3pvbmUsIGludCBpZCwNCj4gwqAJCQkJCQkJCXU2NA0KPiB3aW5kb3cpDQo+IMKgew0KPiDCoAlz
+dHJ1Y3QgcmFwbF9kb21haW4gKnJkOw0KPiDCoAlpbnQgcmV0ID0gMDsNCj4gKwl1NjQgbWF4X3dp
+bmRvdzsNCj4gwqANCj4gwqAJZ2V0X29ubGluZV9jcHVzKCk7DQo+ICsJcmV0ID0gZ2V0X21heF90
+aW1lX3dpbmRvdyhwb3dlcl96b25lLCBpZCwgJm1heF93aW5kb3cpOw0KPiArCWlmIChyZXQgPCAw
+KQ0KPiArCQlnb3RvIG91dDsNCj4gKw0KPiArCWlmICh3aW5kb3cgPiBtYXhfd2luZG93KSB7DQo+
+ICsJCXJldCA9IC1FSU5WQUw7DQo+ICsJCWdvdG8gb3V0Ow0KPiArCX0NCj4gKw0KPiDCoAlyZCA9
+IHBvd2VyX3pvbmVfdG9fcmFwbF9kb21haW4ocG93ZXJfem9uZSk7DQo+IMKgCXN3aXRjaCAocmQt
+PnJwbFtpZF0ucHJpbV9pZCkgew0KPiDCoAljYXNlIFBMMV9FTkFCTEU6DQo+IEBAIC01MTEsNiAr
+NTQwLDcgQEAgc3RhdGljIGludCBzZXRfdGltZV93aW5kb3coc3RydWN0IHBvd2VyY2FwX3pvbmUN
+Cj4gKnBvd2VyX3pvbmUsIGludCBpZCwNCj4gwqAJZGVmYXVsdDoNCj4gwqAJCXJldCA9IC1FSU5W
+QUw7DQo+IMKgCX0NCj4gK291dDoNCj4gwqAJcHV0X29ubGluZV9jcHVzKCk7DQo+IMKgCXJldHVy
+biByZXQ7DQo+IMKgfQ0KPiBAQCAtNTkwLDYgKzYyMCw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qg
+cG93ZXJjYXBfem9uZV9jb25zdHJhaW50X29wcw0KPiBjb25zdHJhaW50X29wcyA9IHsNCj4gwqAJ
+LnNldF90aW1lX3dpbmRvd191cyA9IHNldF90aW1lX3dpbmRvdywNCj4gwqAJLmdldF90aW1lX3dp
+bmRvd191cyA9IGdldF90aW1lX3dpbmRvdywNCj4gwqAJLmdldF9tYXhfcG93ZXJfdXcgPSBnZXRf
+bWF4X3Bvd2VyLA0KPiArCS5nZXRfbWF4X3RpbWVfd2luZG93X3VzID0gZ2V0X21heF90aW1lX3dp
+bmRvdywNCj4gwqAJLmdldF9uYW1lID0gZ2V0X2NvbnN0cmFpbnRfbmFtZSwNCj4gwqB9Ow0KPiDC
+oA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlcmNhcC9wb3dlcmNhcF9zeXMuYw0KPiBiL2Ry
+aXZlcnMvcG93ZXJjYXAvcG93ZXJjYXBfc3lzLmMNCj4gaW5kZXggMTRiZGUwZC4uNTNmYWQwZiAx
+MDA2NDQNCj4gLS0tIGEvZHJpdmVycy9wb3dlcmNhcC9wb3dlcmNhcF9zeXMuYw0KPiArKysgYi9k
+cml2ZXJzL3Bvd2VyY2FwL3Bvd2VyY2FwX3N5cy5jDQo+IEBAIC0xMDEsNyArMTAxLDcgQEAgc3Rh
+dGljIHNzaXplX3Qgc3RvcmVfY29uc3RyYWludF8jI19hdHRyKHN0cnVjdA0KPiBkZXZpY2UgKmRl
+dixcDQo+IMKgCWludCBlcnI7IFwNCj4gwqAJdTY0IHZhbHVlOyBcDQo+IMKgCXN0cnVjdCBwb3dl
+cmNhcF96b25lICpwb3dlcl96b25lID0gdG9fcG93ZXJjYXBfem9uZShkZXYpOyBcDQo+IC0JaW50
+IGlkOyBcDQo+ICsJaW50IGlkLCByZXQ7IFwNCj4gwqAJc3RydWN0IHBvd2VyY2FwX3pvbmVfY29u
+c3RyYWludCAqcGNvbnN0O1wNCj4gwqAJXA0KPiDCoAlpZiAoIXNzY2FuZihkZXZfYXR0ci0+YXR0
+ci5uYW1lLCAiY29uc3RyYWludF8lZF8iLCAmaWQpKSBcDQo+IEBAIC0xMTMsOCArMTEzLDEwIEBA
+IHN0YXRpYyBzc2l6ZV90IHN0b3JlX2NvbnN0cmFpbnRfIyNfYXR0cihzdHJ1Y3QNCj4gZGV2aWNl
+ICpkZXYsXA0KPiDCoAlpZiAoZXJyKSBcDQo+IMKgCQlyZXR1cm4gLUVJTlZBTDsgXA0KPiDCoAlp
+ZiAocGNvbnN0ICYmIHBjb25zdC0+b3BzICYmIHBjb25zdC0+b3BzLT5zZXRfIyNfYXR0cikgeyBc
+DQo+IC0JCWlmICghcGNvbnN0LT5vcHMtPnNldF8jI19hdHRyKHBvd2VyX3pvbmUsIGlkLA0KPiB2
+YWx1ZSkpIFwNCj4gKwkJcmV0ID0gcGNvbnN0LT5vcHMtPnNldF8jI19hdHRyKHBvd2VyX3pvbmUs
+IGlkLA0KPiB2YWx1ZSk7IFwNCj4gKwkJaWYgKCFyZXQpIFwNCj4gwqAJCQlyZXR1cm4gY291bnQ7
+IFwNCj4gKwkJcmV0dXJuIHJldDsgXA0KPiDCoAl9IFwNCj4gwqAJXA0KPiDCoAlyZXR1cm4gLUVO
+T0RBVEE7IFw=
