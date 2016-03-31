@@ -1,51 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 7/7][Resend] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Thu, 31 Mar 2016 14:32:44 +0200
-Message-ID: <CAJZ5v0j6eDmvVSBphvygA2Xnk9nQXqracFR+dBYz3UOeyrb7qA@mail.gmail.com>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
-	<6666532.7ULg06hQ7e@vostro.rjw.lan>
-	<56F5E1F2.5090100@linaro.org>
-	<CAJZ5v0j=LwOT=sjSOwwzY=sYLqiV1tuvVazzgU+yMwMWXmpR8A@mail.gmail.com>
-	<CAJZ5v0i1=P45wWHYHVp9mW=h7w_MywFz7x2qmEs2iiEhJSq-5g@mail.gmail.com>
-	<56F97548.1030903@linaro.org>
-	<20160331122445.GJ3408@twins.programming.kicks-ass.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
+ update_cfs_rq_load_avg()
+Date: Thu, 31 Mar 2016 14:34:24 +0200
+Message-ID: <20160331123424.GI3430@twins.programming.kicks-ass.net>
+References: <56F91D56.4020007@arm.com>
+ <56F95D10.4070400@linaro.org>
+ <56F97856.4040804@arm.com>
+ <56F98832.3030207@linaro.org>
+ <20160330193544.GD407@worktop>
+ <CAKfTPtCPfd2-jGDn-9ZLjNKTni4czuvrkH7KFh5L2EtDeTQE5A@mail.gmail.com>
+ <20160331093408.GB12845@twins.programming.kicks-ass.net>
+ <CAKfTPtCuDQz8KxndwA1Kx4Xe-DohuUOhYXXabBDsp7r8j6cPgw@mail.gmail.com>
+ <20160331104705.GG3430@twins.programming.kicks-ass.net>
+ <CAKfTPtD-knx3ySY+ad8BwDLs9bK5KhAb7mKd3xXc63AXhREh3A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f194.google.com ([209.85.217.194]:36643 "EHLO
-	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbcCaMcq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 08:32:46 -0400
-In-Reply-To: <20160331122445.GJ3408@twins.programming.kicks-ass.net>
+Received: from casper.infradead.org ([85.118.1.10]:47233 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbcCaMe0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 08:34:26 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtD-knx3ySY+ad8BwDLs9bK5KhAb7mKd3xXc63AXhREh3A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Thu, Mar 31, 2016 at 2:24 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, Mar 28, 2016 at 11:17:44AM -0700, Steve Muckle wrote:
->> The scenario I'm contemplating is that while a CPU-intensive task is
->> running a thermal interrupt goes off. The driver for this thermal
->> interrupt responds by capping fmax. If this happens just after the tick,
->> it seems possible that we could wait a full tick before changing the
->> frequency. Given a 10ms tick it could be rather annoying for thermal
->> management algorithms on some platforms (I'm familiar with a few).
->
-> So I'm blissfully unaware of all the thermal stuffs we have; but it
-> looks like its somehow bolten onto cpufreq without feedback.
->
-> The thing I worry about is thermal scaling the CPU back past where RT/DL
-> tasks can still complete in time. It should not be able to do that, or
-> rather, missing deadlines because thermal is about as useful as
-> rebooting the device.
+On Thu, Mar 31, 2016 at 02:14:50PM +0200, Vincent Guittot wrote:
+> In fact, I looks for the sequence where the utilization of a rq is not
+> updated until the next tick but i can't find it.
 
-Right.  If thermal throttling kicks in, the game is pretty much over.
+No, util it always updated, however..
 
-That's why ideas float about taking the thermal constraints into
-account upfront, but that's a different discussion entirely.
+> If cpu doesn't share cache, task is added to wake list and an ipi is
+> sent and the utilization. 
 
-> I guess I'm saying is, the whole cpufreq/thermal 'interface' needs work
-> anyhow.
+Here we run:
 
-Yes, it does.
+ ttwu_do_activate()
+   ttwu_activate()
+     activate_task()
+       enqueue_task()
+         p->sched_class->enqueue_task() := enqueue_task_fair()
+	   update_load_avg()
+	     update_cfs_rq_load_avg()
+	       cfs_rq_util_change()
+
+On the local cpu, and we can indeed call out to have the frequency
+changed.
+
+> Otherwise, we directly enqueue the task on
+> the rq and the utilization is updated
+
+But here we run it on a remote cpu, so we cannot call out and the
+frequency remains the same.
+
+So if a remote wakeup on the same LLC domain happens, utilization will
+increase but we will not observe until the next tick.
