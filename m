@@ -1,63 +1,73 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v8 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Thu, 31 Mar 2016 11:15:05 +0300
-Message-ID: <87egargj1y.fsf@intel.com>
-References: <cover.1458822334.git.baolin.wang@linaro.org> <20160325070937.GA22398@peterchendt> <CAMz4kuJYBg4eortA35Dhr4-jPVhLzu9XhjpOcu0hDWq6FV09mw@mail.gmail.com> <AM4PR04MB1665C9DAC2519CDCFEF92DDC89870@AM4PR04MB1665.eurprd04.prod.outlook.com> <CAMz4kuKkZ1GAjEoi7KB8EwjPQvW2Lf28VPzMgW2QdD=Ro4jzSQ@mail.gmail.com> <AM4PR04MB16657BE747BA7451511420D189980@AM4PR04MB1665.eurprd04.prod.outlook.com> <CAMz4kuLh9XfuL7kK4v2eJMU=QpdZx3d8KpMfH5Df2iZK=PLCqQ@mail.gmail.com> <AM4PR04MB1665F6673ABDDD08AAF68CE489980@AM4PR04MB1665.eurprd04.prod.outlook.com> <CAMz4kuLY8vO5qnkuY+kv91zKpdxBBSDeLZXFvD1LjnS3R3UccA@mail.gmail.com> <AM4PR04MB1665E85D823D5AB59B54B56D89980@AM4PR04MB1665.eurprd04.prod.outlook.com> <CAMz4kuLxfEr_cOa0F-Qh+Mo+dEVGWx+YPZ_=yb9FVwWdJd8viQ@mail.gmail.com> <HE1PR04MB167436923F9920CB4417FD5989
- 990@HE1PR04MB1674.eurprd04.prod.outlook.com> <CAMz4ku+Vdnv9aeE944=V=cx1rAHBVMvUehwA-ZLCNr6vzvyQgg@mail.gmail.com>
+From: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Thu, 31 Mar 2016 11:18:06 +0300
+Message-ID: <87bn5vgiwx.fsf@intel.com>
+References: <cover.1458128215.git.baolin.wang@linaro.org> <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org> <87h9foqnur.fsf@intel.com> <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com> <87poubgnbh.fsf@intel.com> <CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; boundary="=-=-=";
 	micalg=pgp-sha1; protocol="application/pgp-signature"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46906 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751455AbcCaIRi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Mar 2016 04:17:38 -0400
-In-Reply-To: <CAMz4ku+Vdnv9aeE944=V=cx1rAHBVMvUehwA-ZLCNr6vzvyQgg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>, Jun Li <jun.li@nxp.com>
-Cc: Peter Chen <hzpeterchen@gmail.com>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
 --=-=-=
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
 
-Hi Baolin,
+Hi,
 
-Baolin Wang <baolin.wang@linaro.org> writes:
->>> >> Make sense. In our company's solution, charger detection can be done
->>> >> by hardware from PMIC at first, then it will not affect the DP/DM
->>> >> line when gadget starts to enumeration.
->>> >
->>> > I see, charger type detection is done automatically by PMIC when VBUS
->>> > is detected in your case, you just assume the process is complete
->>> > before SW do gadget connect. To make the framework common, you may do
->>> one time charger type check when vbus is on, and save it to avoid repeat
->>> charger type check.
+Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+>>>>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
+>>>>
+>>>> According to the spec we should always be talking about unit loads (1
+>>>> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
+>>>> work for SS capable ports and SS gadgets (we have quite a few of them,
+>>>> actually). You're missing the opportunity of charging at 900mA.
 >>>
->>> OK. I'll add one judgement to check if the charger type is set in
->>> 'usb_charger_detect_type()' function.
+>>> I follow the DCP/SDP/CDP/ACA type's default current limitation and
+>>> user can set them what they want.
 >>
->> Just adding a judgement isn't enough here, your framework should make su=
-re
->> usb_charger_detect_type() is called before gadget connect, with that, the
->> existing caller place just gets the charger type from the saved value.
->> The real charger type detection done by usb_charger_detect_type() can
->> be called only when vbus is on.
->> e.g. maybe in usb_udc_vbus_handler() before usb_udc_connect_control().
+>> no, the user CANNOT set it to what they want. If you get enumerated
+>> @100mA and the user just decides to set it to 2000mA, s/he could even
+>> melt the USB connector. The kernel _must_ prevent such cases.
+>>
+>> In any case, DEFAULT_SDP_CUR_LIMIT shouldn't be a constant, it should be
+>> variable because if you enumerate in SS, you _can_ get up to 900mA.
 >
-> Yeah, Like Felipe suggested, I think we need to introduce one
-> 'charger_detect()' method to do the SW charger type detection at the
-> right gadget state. Thanks for your comments.
+> Make sense. But these are just default values. They can be changed
+> safely by power driver with 'usb_charger_set_cur_limit_by_type()'
+> function to set 900mA.
 
-Just to be clear, we add ->charger_detect() when we know of a platform
-which needs to manually detect the charger type. Until then, we ignore
-that situation. It might be a good idea, however, do document this in
-comments on your structure definition stating that if we need to detect
-charger type, a new method should be added ;-)
+oh okay. Still, the default value should be a function of gadget->speed,
+IMO ;-)
 
-cheers
+>>>>> +
+>>>>> +/* USB charger state */
+>>>>> +enum usb_charger_state {
+>>>>> +     USB_CHARGER_DEFAULT,
+>>>>> +     USB_CHARGER_PRESENT,
+>>>>> +     USB_CHARGER_REMOVE,
+>>>>> +};
+>>>>
+>>>> userland really doesn't need these two ?
+>>>
+>>> We've reported to userspace by kobject_uevent in
+>>> 'usb_charger_notify_others()' function.
+>>
+>> I mean as a type ;-) So userspace doesn't have to redefine these for
+>> their applications.
+>
+> Make sense. I can introduce some sysfs files for userspace. Thanks for
+> your comments.
+
+okay, my reply was a bit cryptic, but what I mean here is that enum
+usb_charger_state could be moved your include/uapi header. My question
+is, then, does userland need to have knowledge of enum
+usb_charger_state ?
 
 =2D-=20
 balbi
@@ -68,18 +78,22 @@ Content-Type: application/pgp-signature; name="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJW/NyKAAoJEIaOsuA1yqREZCcP/2/yTlS9yQQd/rv7RI4+UeYS
-fLpEqcLSb6rY3os178c47K9e/UpWr2XRcQ+PoZaqGgcIHM4wRd3Rs7RsWrKyZGY4
-1VBUOQL2Gz/TnZM/yJwC8uSYvf3NsLHTtPAQpOBnd2n8wwkiSnfnMVvuKxyUgHOS
-fx6HDIeGVhp61XihTFh4HQ2e+JXsHy7/kT7/vGFHXA6Gk9dTQqj8Hyb+VHAM7J9+
-sPmRsHfbCXgXG42Xys76e3z0AdRnyN7hWaRiUu0yJvnhhM53v6qftDxBReX6oiTC
-aSIe4/uxJjdNe5dieSmE/q9KKX4Apl0VTd84RgzP6iJN8zLHlVQon+bwU5RK6cFr
-7PJSDuGwMIIqCshLNWU/HvArvfFOP3rAZxKBxehiGwXJfIaxjl+r+G808wekCrzI
-CZ47P0gA0loO/KMftQ2z4HapcOoqs8nsdJrKm89rvBjLp4B2NqvmYBedSL5NlNzj
-Xl7HmrbpQ/b+n43GSeM9Yrr58D2j5wpKIzY2TplYKW/h2IqfLyPcouoU7lffO8U6
-6uXJ5cF92kInipt1+ZYp6VJCWyOzG/iIZLS32wkZICyGxfEwV7/JbrHJcw5+prK6
-Wvmt2Aqq8d2daNx0Z8uNRbMHRBzsDUs1mpXyuRAxo8lvzWl5uNKurA0oxHlykrDi
-alo4z99woas9XsdJGxGw
-=iZLE
+iQIcBAEBAgAGBQJW/N0+AAoJEIaOsuA1yqREBoYP/2f90uB+sSP7RobSC+fZgsBU
+0oKk4l0SJfCSBiOVqiy0LMXCOCAPTJ/AKyECCCi4wH19pSeCnCYFl7DEbk4fH8lA
+LG0/KhBYx9hQ5Tw1jbnhVrCLq/uNtshCHMH3ginle3yq42JG8HkrgcxwgW0Nz2TX
+Wjn0+kvw3/rqwJ6teRJsi+L1nMzZ0q8Rak/RK4Fv8QyKWO2y3KSHa6uQkfM2EoIo
+iUmemFHUbmtBInng1S4no6xPrWvnunHM6N4EWlCklA82qbrXTJM0T90r8cGJluT8
+AhQxw7dOzmy8a4qRqGi4MKSlYavWkexq5aLippr/B4kI5u8ksrkZE7VgKsvKEW24
+CpRpqlyXCuEcZ4nLz7rzwiGvMf1nqmxtw/uag/607WeiT1oFmvBEVEEe7c0jtsUl
+dWEhuIwAmLfWvFklnNlmeFQQyUuF8ZnXQg0/1lYJAzUahT0lcwWFU+8Npd9pm1LP
+5EpGAZ4o/oOhWvSAd4+iJtCY8h02QNHAO+vSC0i3OXxv+GoEE7YGpYJ2IsWINS0N
+8LLbRe56h2xrucOFBCya+QLeFBJtj2J2Jhvx1th5oZT+9kf6NIZRcIxRsI0EWN6c
+cnmFXMID5acZlHCMAH/cBoWkZGFDBmf8sDTcRmVmuzgD8pJSyDLDFJkpCt2SeTTR
+84tsSQ0dd2PE08YHuAAf
+=5m61
 -----END PGP SIGNATURE-----
 --=-=-=--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
