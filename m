@@ -1,158 +1,141 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 1/3] PM / Domains: Rename stop_ok to suspend_ok for the genpd governor
-Date: Thu, 31 Mar 2016 11:21:25 +0200
-Message-ID: <1459416087-23519-2-git-send-email-ulf.hansson@linaro.org>
-References: <1459416087-23519-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f54.google.com ([209.85.215.54]:36419 "EHLO
-	mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755251AbcCaJVo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 05:21:44 -0400
-Received: by mail-lf0-f54.google.com with SMTP id e133so55076386lfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 02:21:43 -0700 (PDT)
-In-Reply-To: <1459416087-23519-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Thu, 31 Mar 2016 11:23:33 +0200
+Message-ID: <CADDKRnCfaG35EXp_thOqfG=6sjov7f1q521LSGL8oFqRfCqSaw@mail.gmail.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	<CADDKRnCH3yCut7A4Gvk3gHw4OpOYXoG0VQRe5mh2nTjptYU0gw@mail.gmail.com>
+	<4187911.uaFVupaTVL@vostro.rjw.lan>
+	<CADDKRnCr0riAu4pjYRkuguoCoAjWxFoc+pU1NBymPr+3JnVanQ@mail.gmail.com>
+	<CAJZ5v0i48Xxyp880SQ1iVDzct--vhTVggCS_wHHA7bt7D+_sFg@mail.gmail.com>
+	<1459352017.13525.45.camel@intel.com>
+	<CADDKRnA5x9dK=6KZWijiP_ihrUA9Afpmqw8TSzYn9oaBeaOfKw@mail.gmail.com>
+	<002401d18ab5$0bf84a30$23e8de90$@net>
+	<1459364336.13525.69.camel@linux.intel.com>
+	<CAJZ5v0gDNYRNaLKFCnPRomOhavLPD=zgp1oJdRv6OtHLb031Bw@mail.gmail.com>
+	<1459369587.13525.75.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1459369587.13525.75.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 
-The genpd governor validates the latency constraints to find out whether
-it's acceptable to runtime suspend a device. Earlier this validation was
-made to know whether it was okay to invoke the ->stop() callback for the
-device, hence the governor used the name "stop_ok" for the related
-variables.
+2016-03-30 22:26 GMT+02:00 Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com>:
+> On Wed, 2016-03-30 at 22:12 +0200, Rafael J. Wysocki wrote:
+>> On Wed, Mar 30, 2016 at 8:58 PM, Srinivas Pandruvada
+>> <srinivas.pandruvada@linux.intel.com> wrote:
+>> >
+>> > On Wed, 2016-03-30 at 11:50 -0700, Doug Smythies wrote:
+>> > >
+>> > > On 2016.03.30 08:52 J=C3=B6rg Otte wrote:
+>> > > >
+>> > > >
+>> > > > 2016-03-30 17:33 GMT+02:00 Pandruvada, Srinivas
+>> > > > <srinivas.pandruvad
+>> > > > a@intel.com>:
+>> > > > >
+>> > > > >
+>> > > > > On Wed, 2016-03-30 at 13:05 +0200, Rafael J. Wysocki wrote:
+>> > > > > >
+>> > > > > >
+>> > > > > > On Wed, Mar 30, 2016 at 12:17 PM, J=C3=B6rg Otte <jrg.otte=
+@gmail
+>> > > > > > .com
+>> > > > > > >
+>> > > > > > >
+>> > > > >
+>> > > > >
+>> > > > > >
+>> > > > > >
+>> > > > > > >
+>> > > > > > >
+>> > > > > > > >
+>> > > > > > > >
+>> > > > > > > > >
+>> > > > > > > > >
+>> > > > > > > > > Now in v4.6-rc1 the characteristic has dramatically
+>> > > > > > > > > changed.
+>> > > > > > > > > If in idle the processor frequency is more or less a
+>> > > > > > > > > few
+>> > > > > > > > > MHz around 2500Mhz.
+>> > > > > > > > > I currently use acpi_cpufreq which works as usual.
+>> > > > > > > > > Processor: Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz
+>> > > > > > > > > (family: 0x6, model: 0x3c, stepping: 0x3)
+>> > > > >
+>> > > > >
+>> > > > > I want to reproduce this if I can. Can you give us info abou=
+t
+>> > > > > your
+>> > > > > setup (Linux distribution, laptop model etc.)?
+>> > > I would like to try to reproduce the issue also.
+>> > >
+>> > > >
+>> > > >
+>> > > > Distro: Ubuntu 14.04.4 LTS
+>> > > Note that with Ubuntu 14.04, I had issues where my CPU
+>> > > would lock at pstate 24 (not always 24, but usually),
+>> > > regardless of load.
+>> > > However, it was always after an S3 suspend, occurred 100%
+>> > > of the time, and was independent of intel_pstate or
+>> > > acpi-cpufreq CPU frequency scaling drivers.
+>> > >
+>> > > Since changing my test server to Ubuntu server edition 16.04
+>> > > (development version), I have not had those issues. While I have
+>> > > no proof, I have assumed the issue elimination was somehow
+>> > > related
+>> > > to the change to systemd.
+>> > >
+>> > > It might be worth observing both what the intel_pstate is asking
+>> > > for
+>> > > and what the processor is actually doing.
+>> > If J=C3=B6rg runs with
+>> >
+>> > turbostat -i 1 --msr=3D0x199
+>> >
+>> > We can tell whether if we requested or the same problem you had.
+>> > I tried on Ubuntu LTS 14.04 on same Haswell CPU model, I didn't se=
+e
+>> > this issue.
+>> There seems to be something odd about the J=C3=B6rg's setup, or we'd=
+ have
+>> received more reports about this issue.
+>>
+>> Question is what that is and what really makes the difference.
+>>
+> I think, somehow we entered performance mode from powersave by defaul=
+t
+>
+> turbostat -i 1 --msr=3D0x199 will tell us.
+>
 
-To clarify the code around this, let's rename these variables from
-"stop_ok" to "suspend_ok".
+jojo@fichte:/sys/devices/system/cpu/cpufreq/policy0$ cat scaling_govern=
+or
+powersave
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c          |  6 +++---
- drivers/base/power/domain_governor.c | 20 ++++++++++----------
- include/linux/pm_domain.h            |  4 ++--
- 3 files changed, 15 insertions(+), 15 deletions(-)
+turbostat -i 1 --msr=3D0x199
+CPUID(7): No-SGX
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+       -      45    1.74    2590    2496  0x00000000
+       0      45    1.76    2565    2498  0x00000a00
+       1      72    2.84    2548    2496  0x00000800
+       2      30    1.11    2661    2496  0x00001a00
+       3      33    1.23    2661    2495  0x00001a00
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+       -       9    0.35    2525    2495  0x00000000
+       0       1    0.04    2735    2495  0x00000800
+       1       1    0.05    2501    2495  0x00000800
+       2      17    0.65    2540    2495  0x00001a00
+       3      16    0.64    2501    2495  0x00001a00
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz   MSR 0x199
+       -      11    0.43    2523    2495  0x00000000
+       0       3    0.11    2631    2495  0x00000c00
+       1       7    0.27    2524    2495  0x00000800
+       2      18    0.72    2527    2495  0x00001a00
+       3      15    0.61    2501    2495  0x00001a00
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 56705b5..c62687d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -382,7 +382,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
- static int pm_genpd_runtime_suspend(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
--	bool (*stop_ok)(struct device *__dev);
-+	bool (*suspend_ok)(struct device *__dev);
- 	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
- 	bool runtime_pm = pm_runtime_enabled(dev);
- 	ktime_t time_start;
-@@ -401,8 +401,8 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 	 * runtime PM is disabled. Under these circumstances, we shall skip
- 	 * validating/measuring the PM QoS latency.
- 	 */
--	stop_ok = genpd->gov ? genpd->gov->stop_ok : NULL;
--	if (runtime_pm && stop_ok && !stop_ok(dev))
-+	suspend_ok = genpd->gov ? genpd->gov->suspend_ok : NULL;
-+	if (runtime_pm && suspend_ok && !suspend_ok(dev))
- 		return -EBUSY;
- 
- 	/* Measure suspend latency. */
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 00a5436..2e0fce7 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -37,10 +37,10 @@ static int dev_update_qos_constraint(struct device *dev, void *data)
- }
- 
- /**
-- * default_stop_ok - Default PM domain governor routine for stopping devices.
-+ * default_suspend_ok - Default PM domain governor routine to suspend devices.
-  * @dev: Device to check.
-  */
--static bool default_stop_ok(struct device *dev)
-+static bool default_suspend_ok(struct device *dev)
- {
- 	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
- 	unsigned long flags;
-@@ -51,13 +51,13 @@ static bool default_stop_ok(struct device *dev)
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 
- 	if (!td->constraint_changed) {
--		bool ret = td->cached_stop_ok;
-+		bool ret = td->cached_suspend_ok;
- 
- 		spin_unlock_irqrestore(&dev->power.lock, flags);
- 		return ret;
- 	}
- 	td->constraint_changed = false;
--	td->cached_stop_ok = false;
-+	td->cached_suspend_ok = false;
- 	td->effective_constraint_ns = -1;
- 	constraint_ns = __dev_pm_qos_read_value(dev);
- 
-@@ -83,13 +83,13 @@ static bool default_stop_ok(struct device *dev)
- 			return false;
- 	}
- 	td->effective_constraint_ns = constraint_ns;
--	td->cached_stop_ok = constraint_ns >= 0;
-+	td->cached_suspend_ok = constraint_ns >= 0;
- 
- 	/*
- 	 * The children have been suspended already, so we don't need to take
--	 * their stop latencies into account here.
-+	 * their suspend latencies into account here.
- 	 */
--	return td->cached_stop_ok;
-+	return td->cached_suspend_ok;
- }
- 
- /**
-@@ -150,7 +150,7 @@ static bool __default_power_down_ok(struct dev_pm_domain *pd,
- 		 */
- 		td = &to_gpd_data(pdd)->td;
- 		constraint_ns = td->effective_constraint_ns;
--		/* default_stop_ok() need not be called before us. */
-+		/* default_suspend_ok() need not be called before us. */
- 		if (constraint_ns < 0) {
- 			constraint_ns = dev_pm_qos_read_value(pdd->dev);
- 			constraint_ns *= NSEC_PER_USEC;
-@@ -227,7 +227,7 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- }
- 
- struct dev_power_governor simple_qos_governor = {
--	.stop_ok = default_stop_ok,
-+	.suspend_ok = default_suspend_ok,
- 	.power_down_ok = default_power_down_ok,
- };
- 
-@@ -236,5 +236,5 @@ struct dev_power_governor simple_qos_governor = {
-  */
- struct dev_power_governor pm_domain_always_on_gov = {
- 	.power_down_ok = always_on_power_down_ok,
--	.stop_ok = default_stop_ok,
-+	.suspend_ok = default_suspend_ok,
- };
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 49cd889..e913939 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -28,7 +28,7 @@ enum gpd_status {
- 
- struct dev_power_governor {
- 	bool (*power_down_ok)(struct dev_pm_domain *domain);
--	bool (*stop_ok)(struct device *dev);
-+	bool (*suspend_ok)(struct device *dev);
- };
- 
- struct gpd_dev_ops {
-@@ -94,7 +94,7 @@ struct gpd_timing_data {
- 	s64 resume_latency_ns;
- 	s64 effective_constraint_ns;
- 	bool constraint_changed;
--	bool cached_stop_ok;
-+	bool cached_suspend_ok;
- };
- 
- struct pm_domain_data {
--- 
-1.9.1
-
+Thanks, J=C3=B6rg
