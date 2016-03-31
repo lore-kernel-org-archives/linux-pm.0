@@ -1,124 +1,193 @@
-From: Lianwei Wang <lianwei.wang@gmail.com>
-Subject: [PATCH] smp: make wake up idle cpus more generic
-Date: Thu, 31 Mar 2016 00:53:14 -0700
-Message-ID: <1459410795-5693-1-git-send-email-lianwei.wang@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
+Date: Thu, 31 Mar 2016 09:59:51 +0200
+Message-ID: <20160331075951.GG3408@twins.programming.kicks-ass.net>
+References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33337 "EHLO
-	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbcCaHx3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 03:53:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41181 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbcCaH74 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 03:59:56 -0400
+Content-Disposition: inline
+In-Reply-To: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mingo@kernel.org
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
 
-The wake_up_all_idle_cpus API always wake up all the online
-cpus, but sometimes we only want to wake up a set of cpus.
+On Thu, Mar 24, 2016 at 03:26:07PM -0700, Steve Muckle wrote:
+> Note that this patch depends on the 2 patches I sent several days ago:
+> http://thread.gmane.org/gmane.linux.kernel/2181498
 
-Use a generic function to wake up a group of cpus that is
-specified by the cpumask parameter. This generic API can
-benefit to the cases that only need to wake up a set of
-cpus.
+Right; I had something similar for a little while..
 
-Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+> Unfortunately this means that in the migration case,
+> enqueue_entity_load_avg() will end up calling the cpufreq hook twice -
+> once via update_cfs_rq_load_avg() and once via
+> attach_entity_load_avg(). 
+
+Right; this is the point where I gave up when I looked at that.
+
+> This should ideally get filtered out before
+> the cpufreq driver is invoked but nevertheless is wasteful. Possible
+> alternatives to this are
+> 
+>  - moving the cpufreq hook from update_cfs_rq_load_avg() into                                                    
+>    its callers (there are three) and also putting the hook                                                       
+>    in attach_task_cfs_rq and detach_task_cfs_rq, resulting in                                                    
+>    five call sites of the hook in fair.c as opposed to three                                                               
+
+Its worse; you get a whole nest of extra logic to determine when to call
+what. See below (now arguably its still early so I might have made it
+more complex than it needed to be..).
+
+> 
+>  - passing an argument into attach_entity_load_avg() to indicate                                                 
+>    whether calling the cpufreq hook is necessary
+> 
+> Both of these are ugly in their own way but would avoid a runtime
+> cost. Opinions welcome.
+
+Lemme see what this would look like while I throw the below into the bit
+bucket.
+
+
+
 ---
- drivers/cpuidle/cpuidle.c |  4 ++--
- include/linux/smp.h       |  4 ++--
- kernel/power/suspend.c    |  2 +-
- kernel/smp.c              | 12 +++++++-----
- 4 files changed, 12 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index f996efc56605..820003ec6b38 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -301,7 +301,7 @@ void cpuidle_uninstall_idle_handler(void)
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2854,23 +2854,23 @@ static inline void cfs_rq_util_change(st
+ static inline int update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
  {
- 	if (enabled_devices) {
- 		initialized = 0;
--		wake_up_all_idle_cpus();
-+		wake_up_idle_cpus(cpu_online_mask);
+ 	struct sched_avg *sa = &cfs_rq->avg;
+-	int decayed, removed_load = 0, removed_util = 0;
++	int ret = 0;
+ 
+ 	if (atomic_long_read(&cfs_rq->removed_load_avg)) {
+ 		s64 r = atomic_long_xchg(&cfs_rq->removed_load_avg, 0);
+ 		sa->load_avg = max_t(long, sa->load_avg - r, 0);
+ 		sa->load_sum = max_t(s64, sa->load_sum - r * LOAD_AVG_MAX, 0);
+-		removed_load = 1;
++		ret |= 1 << 1;
  	}
+ 
+ 	if (atomic_long_read(&cfs_rq->removed_util_avg)) {
+ 		long r = atomic_long_xchg(&cfs_rq->removed_util_avg, 0);
+ 		sa->util_avg = max_t(long, sa->util_avg - r, 0);
+ 		sa->util_sum = max_t(s32, sa->util_sum - r * LOAD_AVG_MAX, 0);
+-		removed_util = 1;
++		ret |= 1 << 2;
+ 	}
+ 
+-	decayed = __update_load_avg(now, cpu_of(rq_of(cfs_rq)), sa,
++	decayed |= __update_load_avg(now, cpu_of(rq_of(cfs_rq)), sa,
+ 		scale_load_down(cfs_rq->load.weight), cfs_rq->curr != NULL, cfs_rq);
+ 
+ #ifndef CONFIG_64BIT
+@@ -2878,10 +2878,7 @@ static inline int update_cfs_rq_load_avg
+ 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+ #endif
+ 
+-	if (decayed || removed_util)
+-		cfs_rq_util_change(cfs_rq);
+-
+-	return decayed || removed_load;
++	return ret;
+ }
+ 
+ /* Update task and its cfs_rq load average */
+@@ -2891,6 +2888,7 @@ static inline void update_load_avg(struc
+ 	u64 now = cfs_rq_clock_task(cfs_rq);
+ 	struct rq *rq = rq_of(cfs_rq);
+ 	int cpu = cpu_of(rq);
++	int updated;
  
  	/*
-@@ -620,7 +620,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register);
- static int cpuidle_latency_notify(struct notifier_block *b,
- 		unsigned long l, void *v)
+ 	 * Track task load average for carrying it to new CPU after migrated, and
+@@ -2900,9 +2898,14 @@ static inline void update_load_avg(struc
+ 			  se->on_rq * scale_load_down(se->load.weight),
+ 			  cfs_rq->curr == se, NULL);
+ 
+-	if (update_cfs_rq_load_avg(now, cfs_rq) && update_tg)
++	updated = update_cfs_rq_load_avg(now, cfs_rq);
++
++	if (updated & 5)
++		cfs_rq_util_change(cfs_rq);
++
++	if (update_tg && (updated & 3))
+ 		update_tg_load_avg(cfs_rq, 0);
+-}
++
+ 
+ static void attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se)
  {
--	wake_up_all_idle_cpus();
-+	wake_up_idle_cpus((cpu_online_mask);
- 	return NOTIFY_OK;
+@@ -2953,7 +2956,7 @@ enqueue_entity_load_avg(struct cfs_rq *c
+ {
+ 	struct sched_avg *sa = &se->avg;
+ 	u64 now = cfs_rq_clock_task(cfs_rq);
+-	int migrated, decayed;
++	int migrated, updated;
+ 
+ 	migrated = !sa->last_update_time;
+ 	if (!migrated) {
+@@ -2962,16 +2965,18 @@ enqueue_entity_load_avg(struct cfs_rq *c
+ 			cfs_rq->curr == se, NULL);
+ 	}
+ 
+-	decayed = update_cfs_rq_load_avg(now, cfs_rq);
++	updated = update_cfs_rq_load_avg(now, cfs_rq);
+ 
+ 	cfs_rq->runnable_load_avg += sa->load_avg;
+ 	cfs_rq->runnable_load_sum += sa->load_sum;
+ 
+-	if (migrated)
++	if (migrated) {
+ 		attach_entity_load_avg(cfs_rq, se);
+-
+-	if (decayed || migrated)
+-		update_tg_load_avg(cfs_rq, 0);
++		if (updated & 3)
++			update_tg_load_avg(cfs_rq, 0);
++	} else if (updated & 5) {
++		cfs_rq_util_change(cfs_rq);
++	}
  }
  
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index c4414074bd88..ee9d087c4c9a 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -100,7 +100,7 @@ int smp_call_function_any(const struct cpumask *mask,
- 			  smp_call_func_t func, void *info, int wait);
+ /* Remove the runnable load generated by se from cfs_rq's runnable load average */
+@@ -6157,6 +6162,7 @@ static void update_blocked_averages(int
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct cfs_rq *cfs_rq;
+ 	unsigned long flags;
++	int updated;
  
- void kick_all_cpus_sync(void);
--void wake_up_all_idle_cpus(void);
-+void wake_up_idle_cpus(const struct cpumask *mask);
- 
- /*
-  * Generic and arch helpers
-@@ -149,7 +149,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
- }
- 
- static inline void kick_all_cpus_sync(void) {  }
--static inline void wake_up_all_idle_cpus(void) {  }
-+static inline void wake_up_idle_cpus(const struct cpumask *mask) {  }
- 
- #ifdef CONFIG_UP_LATE_INIT
- extern void __init up_late_init(void);
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 5b70d64b871e..a4176ab96b36 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -70,7 +70,7 @@ static void freeze_enter(void)
- 	cpuidle_resume();
- 
- 	/* Push all the CPUs into the idle loop. */
--	wake_up_all_idle_cpus();
-+	wake_up_idle_cpus(cpu_online_mask);
- 	pr_debug("PM: suspend-to-idle\n");
- 	/* Make the current CPU wait so it can enter the idle loop too. */
- 	wait_event(suspend_freeze_wait_head,
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 74165443c240..c2beecb5ef01 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -720,17 +720,19 @@ void kick_all_cpus_sync(void)
- EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
- 
- /**
-- * wake_up_all_idle_cpus - break all cpus out of idle
-- * wake_up_all_idle_cpus try to break all cpus which is in idle state even
-+ * wake_up_idle_cpus - break a set of cpus out of idle
-+ * @mask: The set of cpus to break out of idle
-+ *
-+ * wake_up_idle_cpus try to break a set of cpus which is in idle state even
-  * including idle polling cpus, for non-idle cpus, we will do nothing
-  * for them.
-  */
--void wake_up_all_idle_cpus(void)
-+void wake_up_idle_cpus(const struct cpumask *mask)
- {
- 	int cpu;
- 
- 	preempt_disable();
--	for_each_online_cpu(cpu) {
-+	for_each_cpu_and(cpu, mask, cpu_online_mask) {
- 		if (cpu == smp_processor_id())
+ 	raw_spin_lock_irqsave(&rq->lock, flags);
+ 	update_rq_clock(rq);
+@@ -6170,7 +6176,10 @@ static void update_blocked_averages(int
+ 		if (throttled_hierarchy(cfs_rq))
  			continue;
  
-@@ -738,4 +740,4 @@ void wake_up_all_idle_cpus(void)
+-		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq))
++		updated = update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
++		if (updated & 5)
++			cfs_rq_util_change(cfs_rq);
++		if (updated & 3)
+ 			update_tg_load_avg(cfs_rq, 0);
  	}
- 	preempt_enable();
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+@@ -6228,10 +6237,13 @@ static inline void update_blocked_averag
+ 	struct rq *rq = cpu_rq(cpu);
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+ 	unsigned long flags;
++	int updated;
+ 
+ 	raw_spin_lock_irqsave(&rq->lock, flags);
+ 	update_rq_clock(rq);
+-	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
++	updated = update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq);
++	if (updated & 5)
++		cfs_rq_util_change(cfs_rq);
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
  }
--EXPORT_SYMBOL_GPL(wake_up_all_idle_cpus);
-+EXPORT_SYMBOL_GPL(wake_up_idle_cpus);
--- 
-1.9.1
-
+ 
