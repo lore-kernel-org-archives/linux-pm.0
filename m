@@ -1,71 +1,96 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [Update][PATCH v7 7/7] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Wed, 30 Mar 2016 18:44:00 -0700
-Message-ID: <56FC80E0.9020206@linaro.org>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
- <6666532.7ULg06hQ7e@vostro.rjw.lan> <145931680.Kk1xSBT0Ro@vostro.rjw.lan>
- <20160330053011.GF8773@vireshk-i7>
- <CAJZ5v0iB_7zZSu5-H-px7NYiaZ_P6DW3dqx-bKs7eohWudwxvQ@mail.gmail.com>
- <56FC0773.6060605@linaro.org>
- <CAJZ5v0gztvG4u=euSA0W+3Pt4dPZ58JCSJPTCbXvfVt_Zid38Q@mail.gmail.com>
+From: YH Huang <yh.huang@mediatek.com>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery is dry
+Date: Thu, 31 Mar 2016 10:42:31 +0800
+Message-ID: <1459392151.29450.44.camel@mtksdaap41>
+References: <1458726794-48298-1-git-send-email-yh.huang@mediatek.com>
+	 <CAGS+omDTmJDkJYsf=gDJMrmAos+30enoAa2xfTPyirXUd37=9g@mail.gmail.com>
+	 <1458801832.16645.7.camel@mtksdaap41>
+	 <CAGS+omDhFP+_shCqEWasLDsHf-ab0-OWJJ-gZZkgihAgrZwBHA@mail.gmail.com>
+	 <1459132330.16645.14.camel@mtksdaap41>
+	 <CAGS+omBVStB3mfXtDHdbsOK+y2UesGYtZBtYm=ctcpBfm88VEg@mail.gmail.com>
+	 <56F95451.5040607@nvidia.com> <1459216353.16645.20.camel@mtksdaap41>
+	 <56FA99D0.1010004@nvidia.com> <1459328310.29450.24.camel@mtksdaap41>
+	 <20160330150919.GA21068@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gztvG4u=euSA0W+3Pt4dPZ58JCSJPTCbXvfVt_Zid38Q@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:10138 "EHLO
+	mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750704AbcCaCmh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Mar 2016 22:42:37 -0400
+In-Reply-To: <20160330150919.GA21068@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Rhyland Klein <rklein@nvidia.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 03/30/2016 10:24 AM, Rafael J. Wysocki wrote:
-> On Wed, Mar 30, 2016 at 7:05 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
->> On 03/30/2016 04:31 AM, Rafael J. Wysocki wrote:
->>>>>>> +static int sugov_limits(struct cpufreq_policy *policy)
->>>>>>> +{
->>>>>>> +     struct sugov_policy *sg_policy = policy->governor_data;
->>>>>>> +
->>>>>>> +     if (!policy->fast_switch_enabled) {
->>>>>>> +             mutex_lock(&sg_policy->work_lock);
->>>>>>> +
->>>>>>> +             if (policy->max < policy->cur)
->>>>>>> +                     __cpufreq_driver_target(policy, policy->max,
->>>>>>> +                                             CPUFREQ_RELATION_H);
->>>>>>> +             else if (policy->min > policy->cur)
->>>>>>> +                     __cpufreq_driver_target(policy, policy->min,
->>>>>>> +                                             CPUFREQ_RELATION_L);
->>>>>>> +
->>>>>>> +             mutex_unlock(&sg_policy->work_lock);
->>>>>>> +     }
->>>>>>> +
->>>>>>> +     sg_policy->need_freq_update = true;
->>>>>
->>>>> I am wondering why we need to do this for !fast_switch_enabled case?
->>>
->>> That will cause the rate limit to be ignored in the utilization update
->>> handler which may be necessary if it is set to a relatively large
->>> value (like 1 s).
->>
->> But why is that necessary for !fast_switch_enabled? In that case the
->> frequency has been adjusted to satisfy the new limits here, so ignoring
->> the rate limit shouldn't be necessary. In other words why not
->>
->> } else {
->>         sg_policy->need_freq_update = true;
->> }
+On Wed, 2016-03-30 at 17:09 +0200, Sebastian Reichel wrote:
+> Hi,
 > 
-> My thinking here was that the governor might decide to use something
-> different from the limit enforced here, so it would be good to make it
-> do so as soon as possible.  In particular in the
-> non-frequency-invariant utilization case in which new frequency
-> depends on the current one.
+> On Wed, Mar 30, 2016 at 04:58:30PM +0800, YH Huang wrote:
+> > If I revise the description in this way(using your clear explanation):
+> > ------------------------------------------------------------------------
+> > The battery capacity changing course is like this:
+> > 
+> > full: BATTERY_FULLY_CHARGED => POWER_SUPPLY_STATUS_FULL
+> > <unplug AC>
+> > high->low: BATTERY_DISCHARGING => POWER_SUPPLY_STATUS_DISCHARGING
+> > ~0%: DISCHARGING & FULLY_DISCHARGED => POWER_SUPPLY_STATUS_NOT_CHARGING
+> > <plug in AC>
+> > 0%~20%: FULLY_DISCHARGED => POWER_SUPPLY_STATUS_CHARGING
+> > 20%~: No flag => POWER_SUPPLY_STATUS_CHARGING
+> > 
+> > For now, it is not exactly right to show the status as
+> > POWER_SUPPLY_STATUS_NOT_CHARGING when the battery is dry
+> > (FULLY_DISCHARGED) and AC is plugged in.
+> > Although the battery is in a low level, system works fine with the AC
+> > charging.
+> > It is better to say that the battery is charging.
+> > ------------------------------------------------------------------------
+> > 
+> > How about this?
+> > By the way, should I also revise the title?
 > 
-> That said i'm not particularly opposed to making that change if that's
-> preferred.
+> POWER_SUPPLY_STATUS_NOT_CHARGING is used for AC connected, but
+> battery not charging (e.g. because battery temperature is out
+> of acceptable range). If you are discharging use
+> POWER_SUPPLY_STATUS_DISCHARGING.
+> 
+> You should just ignore the FULLY_DISCHARGED bit in the status
+> property. If you don't want to loose the information about fully
+> discharged battery add POWER_SUPPLY_PROP_CAPACITY_LEVEL, which maps:
+> 
+> BATTERY_FULLY_CHARGED => POWER_SUPPLY_CAPACITY_LEVEL_FULL
+> FULLY_DISCHARGED => POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL
+> otherwise => POWER_SUPPLY_CAPACITY_LEVEL_NORMAL
 
-Ah ok fair enough. No strong opinion from me...
+Oops.
+It looks like I misunderstand POWER_SUPPLY_STATUS_NOT_CHARGING.
+As Daniel said before, we could just ignore FULLY_DISCHARGED.
 
-thanks,
-Steve
+So change like the
+
+sbs-battery: fix power status when battery charging near
+dry
+
+POWER_SUPPLY_STATUS_NOT_CHARGING is used for AC connected, but
+battery not charging (e.g. because battery temperature is out
+of acceptable range).
+
+When battery is charging near dry and BATTERY_FULL_DISCHARGED is set,
+it is wrong to set as POWER_SUPPLY_STATUS_NOT_CHARGING.
+Just use BATTERY_DISCHARGING to decide the power supply status is
+discharging or charging.
+
+                if (ret & BATTERY_FULL_CHARGED)
+                        val->intval = POWER_SUPPLY_STATUS_FULL;
+-               else if (ret & BATTERY_FULL_DISCHARGED)
+-                       val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+                else if (ret & BATTERY_DISCHARGING)
+                        val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+
+
+YH Huang
+
 
