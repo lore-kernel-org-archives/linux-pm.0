@@ -1,53 +1,76 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [Update][PATCH v7 7/7] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Fri, 1 Apr 2016 12:23:07 -0700
-Message-ID: <56FECA9B.20902@linaro.org>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
- <6666532.7ULg06hQ7e@vostro.rjw.lan> <145931680.Kk1xSBT0Ro@vostro.rjw.lan>
- <56FEB4BA.4080403@linaro.org>
- <CAJZ5v0gHbTUGvShyxT3FwWYS58PCdw1pMPrDR8C5mhbSdERi8g@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Fri, 1 Apr 2016 21:54:08 +0200
+Message-ID: <CAJZ5v0gVvMg9FRGOkHCPJusCVG3JvEbF6kmnAtFziN+inOGiHA@mail.gmail.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	<2727017.UmaUvtBLeX@vostro.rjw.lan>
+	<CADDKRnCs8vWbqOBbk0T+A5_VSzC5ENfND=NLwb3G0XjTvF9DQA@mail.gmail.com>
+	<3623107.tlAuqH4F7s@vostro.rjw.lan>
+	<CADDKRnBBuSfU4P2QsJU42_422Ebs_qJxrx7cgBJsa=LFp158mw@mail.gmail.com>
+	<1459532674.13525.136.camel@linux.intel.com>
+	<003801d18c44$ab9134e0$02b39ea0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gHbTUGvShyxT3FwWYS58PCdw1pMPrDR8C5mhbSdERi8g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:36507 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbcDATyL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 15:54:11 -0400
+In-Reply-To: <003801d18c44$ab9134e0$02b39ea0$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 04/01/2016 12:14 PM, Rafael J. Wysocki wrote:
-> On Fri, Apr 1, 2016 at 7:49 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
->> On 03/29/2016 07:00 PM, Rafael J. Wysocki wrote:
->> ...
->>> +config CPU_FREQ_GOV_SCHEDUTIL
->>> +     tristate "'schedutil' cpufreq policy governor"
->>> +     depends on CPU_FREQ
->>> +     select CPU_FREQ_GOV_ATTR_SET
->>> +     select IRQ_WORK
->>> +     help
->>> +       This governor makes decisions based on the utilization data provided
->>> +       by the scheduler.  It sets the CPU frequency to be proportional to
->>> +       the utilization/capacity ratio coming from the scheduler.  If the
->>> +       utilization is frequency-invariant, the new frequency is also
->>> +       proportional to the maximum available frequency.  If that is not the
->>> +       case, it is proportional to the current frequency of the CPU with the
->>> +       tipping point at utilization/capacity equal to 80%.
+On Fri, Apr 1, 2016 at 8:31 PM, Doug Smythies <dsmythies@telus.net> wro=
+te:
+> On 2106.034.01 10:45 Srinivas Pandruvada wrote:
+>> On Fri, 2016-04-01 at 16:06 +0200, J=C3=B6rg Otte wrote:
+>> > > > > >
+>>> Done. Attached the tracer.
+>>> For me it looks like the previous one of the failing case.
 >>
->> This help text implies that the tipping point of 80% applies only to
->> non-frequency invariant configurations, rather than both. Possible to
->> rephrase?
-> 
-> Sure.
-> 
-> What about:
-> 
-> "If that is not the case, it is proportional to the current frequency
-> of the CPU.  The frequency tipping point is at utilization/capacity
-> equal to 80% in both cases."
+>> The traces show that idle task is constantly running without sleep.
+>
+> No, they (at least the first one, I didn't look at the next one yet)
+> show that CPUs 2 and 3 are spending around 99% of their time not in s=
+tate
+> C0.
 
-LGTM
+How do you figure that out if I may ask?  It is not so obvious to me
+to be honest.
 
-thanks,
-Steve
+> That the sample rate is ending up at ~10 Milliseconds, indicates some
+> high frequency (>=3D 100Hz) events on those CPUs. Those events, appar=
+ently,
+> take very little CPU time to complete, hence a load of about 1% on av=
+erage.
+>
+> By the way, I can recreate the high sample rate with virtually no loa=
+d
+> on my system easy, but so far have been unable to get the high CPU
+> frequencies observed by J=C3=B6rg. I can get my system to about a tar=
+get pstate of
+> 20 where it should have remained at 16, but that is about it.
+>
+>> The driver is processing samples for idle task for every 10ms and
+>> aperf/mperf are showing that we are always in turbo mode for idle ta=
+sk.
+>
+> That column pretty much always says "idle" (or swapper for my way of =
+doing
+> things). I have not found it to very useful as an indicator, and cons=
+iderably
+> more so since the utilization changes.
+>
+>>
+>> Need to find out why idle task is not sleeping.
+>
+> I contend that is it.
+
+Why?
+
+Thanks,
+Rafael
