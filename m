@@ -1,36 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: acpi: policy->driver_data can't be NULL in ->exit()
-Date: Fri, 01 Apr 2016 23:00 +0200
-Message-ID: <3085774.06cHpqj0HV@vostro.rjw.lan>
-References: <f4f0e029b46cdd09dd7d3f0035e8588f5de94e21.1459311858.git.viresh.kumar@linaro.org> <CAJZ5v0gyndbTjEYvS8BjZzC-jsKc_M2w9BZF=z-tjEVqMxqFog@mail.gmail.com> <20160401082254.GA2987@vireshk-i7>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC PATCH] sched/fair: call cpufreq hook in additional paths
+Date: Fri, 1 Apr 2016 14:40:32 -0700
+Message-ID: <56FEEAD0.2040108@linaro.org>
+References: <1458858367-2831-1-git-send-email-smuckle@linaro.org>
+ <20160331075951.GG3408@twins.programming.kicks-ass.net>
+ <20160331091426.GE11035@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58694 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753761AbcDAU5l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 16:57:41 -0400
-In-Reply-To: <20160401082254.GA2987@vireshk-i7>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:36707 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752585AbcDAVkf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 17:40:35 -0400
+Received: by mail-pf0-f178.google.com with SMTP id e128so78104600pfe.3
+        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2016 14:40:35 -0700 (PDT)
+In-Reply-To: <20160331091426.GE11035@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Byungchul Park <byungchul.park@lge.com>
 
-On Friday, April 01, 2016 01:52:54 PM Viresh Kumar wrote:
-> On 30-03-16, 13:18, Rafael J. Wysocki wrote:
-> > It conflicts with other stuff (as you know), so I'm not sure about the
-> > order in which they are going to be applied, though.
+On 03/31/2016 02:14 AM, Peter Zijlstra wrote:
+> On Thu, Mar 31, 2016 at 09:59:51AM +0200, Peter Zijlstra wrote:
+>>> > >  - passing an argument into attach_entity_load_avg() to indicate                                                 
+>>> > >    whether calling the cpufreq hook is necessary
+>>> > > 
+>>> > > Both of these are ugly in their own way but would avoid a runtime
+>>> > > cost. Opinions welcome.
+>> > 
+>> > Lemme see what this would look like while I throw the below into the bit
+>> > bucket.
+> OK, so the below looks a lot more sane; and has the surprising benefit
+> of actually shrinking the text size..
 > 
-> Please let me know when can I rebase and resend this one. I saw that you have
-> moved your patches to linux-next now.
+>   43675    1226      24   44925    af7d defconfig-build/kernel/sched/fair.o.base
+>   43723    1226      24   44973    afad defconfig-build/kernel/sched/fair.o.patch
+>   43595    1226      24   44845    af2d defconfig-build/kernel/sched/fair.o.patch+
+> 
+> ---
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
 
-I have, but they need to be rebased on top of 2 intel_pstate fixes I want to
-push for v4.6 still and some more minor changes will be necessary.
+Cool, thanks. Shall I fold this into this patch and resend the series of
+3? Or would you prefer to add this change separately?
 
-I guess next week will be the right time kind of, but I will be traveling
-10-17 Apr, so I may not have much time to process stuff.
-
-Thanks,
-Rafael
-
+thanks,
+Steve
