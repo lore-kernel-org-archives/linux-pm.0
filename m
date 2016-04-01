@@ -1,58 +1,23 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v6] thermal: add temperature sensor support for tango SoC
-Date: Thu, 31 Mar 2016 18:52:41 -0700
-Message-ID: <20160401015240.GB19409@localhost.localdomain>
-References: <56D5C7FE.7010807@free.fr>
- <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain>
- <56F84427.1000507@free.fr>
- <56F91A47.9060901@free.fr>
- <20160329020050.GA15721@localhost.localdomain>
- <56FACE0B.9060606@free.fr>
- <20160330000503.GA2625@localhost.localdomain>
- <56FBEE4F.3060106@free.fr>
- <56FD8582.80002@free.fr>
+Subject: Re: [PATCH] thermal: rcar: Remove binding docs for r8a7794
+Date: Thu, 31 Mar 2016 18:53:58 -0700
+Message-ID: <20160401015357.GC19409@localhost.localdomain>
+References: <1459228065-18674-1-git-send-email-horms+renesas@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:33805 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbcDABwr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 21:52:47 -0400
-Received: by mail-pf0-f178.google.com with SMTP id x3so82491996pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 18:52:46 -0700 (PDT)
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <56FD8582.80002@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1459228065-18674-1-git-send-email-horms+renesas@verge.net.au>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Simon Horman <horms+renesas@verge.net.au>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Rob Herring <robh@kernel.org>
 
-On Thu, Mar 31, 2016 at 10:16:02PM +0200, Mason wrote:
-> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+On Tue, Mar 29, 2016 at 02:07:45PM +0900, Simon Horman wrote:
+> The latest information that I have is that there is no thermal IP
+> block present on the r8a7794 SoC so remove the corresponding binding.
 > 
-> The Tango thermal driver provides support for the primitive temperature
-> sensor embedded in Tango chips since the SMP8758.
-> 
-> This sensor only generates a 1-bit signal to indicate whether the die
-> temperature exceeds a programmable threshold.
-> 
-> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> ---
->  Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
->  drivers/thermal/Kconfig                                     |   9 ++
->  drivers/thermal/Makefile                                    |   1 +
->  drivers/thermal/tango_thermal.c                             | 125 +++++++++++++++++++++++++++
->  4 files changed, 152 insertions(+)
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
 
-Based on previous versions discussion, I don't see issues with this
-specific patch, despite the fact that it lacks a pointer to its doc (but looks
-like there is none available).
-
-The only request I do for now, as mentioned on v5, is to include in your
-series the required dt changes to add thermal zones, describing the
-needed typical trips for this chip.
-
-BR,
-
-Eduardo Valentin
+Add this to my -fixes branch.
