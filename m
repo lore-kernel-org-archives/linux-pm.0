@@ -1,80 +1,58 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH V1 Resend 2/3] cpufreq: dt: Add generic platform-device
- creation support
-Date: Fri, 1 Apr 2016 09:15:09 -0500
-Message-ID: <CAL_JsqK2oAX2jw6GjT7RUWkhL2zPB9=QUQ--S2u-1t852GG7VQ@mail.gmail.com>
-References: <cover.1459233524.git.viresh.kumar@linaro.org> <12972545.Mi9sHiNJpR@wuerfel>
- <20160330032240.GB8773@vireshk-i7> <7250220.227umpmTug@wuerfel> <20160401102350.GA5532@vireshk-i7>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Fri, 1 Apr 2016 07:16:43 -0700
+Message-ID: <20160401141643.GX2350@sirena.org.uk>
+References: <cover.1458128215.git.baolin.wang@linaro.org>
+ <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+ <87h9foqnur.fsf@intel.com>
+ <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
+ <87poubgnbh.fsf@intel.com>
+ <20160331170635.GH2350@sirena.org.uk>
+ <87d1q9anpt.fsf@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="FkhOn4hPPRcnTymj"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f179.google.com ([209.85.161.179]:34784 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbcDAOP3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 10:15:29 -0400
-In-Reply-To: <20160401102350.GA5532@vireshk-i7>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35564 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755463AbcDAORU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 10:17:20 -0400
+Content-Disposition: inline
+In-Reply-To: <87d1q9anpt.fsf@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Matthew McClintock <mmcclint@codeaurora.org>, xf@rock-chips.com, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Mason <slash.tmp@free.fr>
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On Fri, Apr 1, 2016 at 5:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Cc'ing Rob and Mason.
->
-> On 30-03-16, 09:53, Arnd Bergmann wrote:
->> I think it should be something in the /cpus or the /opp_table hierarchy,
->> not the root of the device tree, but other than that I don't care much
->> whether it's a variation of the oppv2 compatible string or an additional
->> property in any of the nodes.
->
-> So you mean for future DT files we can have something like this:
->
->         cpus {
->                 compatible = "operation-points-v2";
->                 #address-cells = <1>;
->                 #size-cells = <0>;
->
->                 cpu@0 {
->                         compatible = "arm,cortex-a9";
->                         reg = <0>;
->                         next-level-cache = <&L2>;
->                         operating-points-v2 = <&cpu0_opp_table>;
->                 };
->         };
->
->         cpu0_opp_table: opp_table0 {
->                 opp@1000000000 {
->                         opp-hz = /bits/ 64 <1000000000>;
->                         opp-microvolt = <970000 975000 985000>;
->                         opp-microamp = <70000>;
->                         clock-latency-ns = <300000>;
->                         opp-suspend;
->                 };
->                 opp@1100000000 {
->                         opp-hz = /bits/ 64 <1100000000>;
->                         opp-microvolt = <980000 1000000 1010000>;
->                         opp-microamp = <80000>;
->                         clock-latency-ns = <310000>;
->                 };
->         };
-> };
->
->
-> And the cpufreq-dt driver can match /cpus node's compatible string against
-> "operating-points-v2" and create a device at runtime ?
->
-> @Rob: Will that be acceptable to you? We are discussing (again) about how to
-> probe cpufreq-dt driver automatically for platforms :)
 
-No, I don't think that belongs in /cpus.
+--FkhOn4hPPRcnTymj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Part of the problem is this requires a DT change if you switch between
-a platform-specific driver and generic driver.
+On Fri, Apr 01, 2016 at 08:43:10AM +0300, Felipe Balbi wrote:
+> Mark Brown <broonie@kernel.org> writes:
 
-I don't understand the issue having a little bit of code to parse the
-DT and create the device. If you are worried about having a long list
-of platforms, you could instead check the tree for operating-points-v2
-property in the cpu node and create the device unless the platform is
-black-listed.
+> > IIRC Greg didn't want new classes?
 
-Rob
+> good point. Still, this doesn't seem to fit a but_type IMO.
+
+It does in this new world order.  IIRC on an earlier round of review
+there was some code that didn't use a bus but that got complaints that
+it was trying to reimplement the bus functionality.
+
+--FkhOn4hPPRcnTymj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJW/oFFAAoJECTWi3JdVIfQRfsH/1LJaJLnZAiiycpq+Amg/bph
+reLxOFQBGadzW2eriOt+2RDSvpE9hv1VYO4j1JaUmennKTavq7usG5dISVAsYmZ9
+OYyY4SMEU6UayfMfOOOH1VDl/N+S8aejWslqTWpHdxlEVMR+WQ7SAQbTOu67huJR
+qklYgU4LrPkhg1rXEd6NlK4IC8jyTH3JrfUtZIQ3uoh2Olo1MYvLToawZ5ruWuUW
+GkqQvae21EexPgeSmJlaT1kC2xebeo7cKZcpOtVVyG2qxVXaE855vuGQSGhX6LuX
+np5M2cUAfR42fPkpsuTK8zJrqIPjLB6JB4Ay5YzQ8veRTr8W/eaGuBoIUEU93d4=
+=ll/o
+-----END PGP SIGNATURE-----
+
+--FkhOn4hPPRcnTymj--
