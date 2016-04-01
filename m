@@ -1,58 +1,59 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Fri, 1 Apr 2016 07:16:43 -0700
-Message-ID: <20160401141643.GX2350@sirena.org.uk>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
- <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
- <87h9foqnur.fsf@intel.com>
- <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
- <87poubgnbh.fsf@intel.com>
- <20160331170635.GH2350@sirena.org.uk>
- <87d1q9anpt.fsf@intel.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Fri, 01 Apr 2016 08:05:20 -0700
+Message-ID: <1459523120.5912.20.camel@linux.intel.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	 <8393335.Q1cjiaGecN@vostro.rjw.lan>
+	 <CADDKRnBE==ea7YvXH+YL_m1v8E1zNHsZnXJgc58OQ=vrcs+cKQ@mail.gmail.com>
+	 <2727017.UmaUvtBLeX@vostro.rjw.lan>
+	 <CADDKRnAYPXip0EG0Y7ADuyt9L=FL-Nd1giHBVvPexs4kGkRj4g@mail.gmail.com>
+	 <1459446905.4569.76.camel@linux.intel.com>
+	 <CADDKRnCy9frh3CZcz+4WhiFJHk1GmMbPB847iUKW2wOex7hGSw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="FkhOn4hPPRcnTymj"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35564 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbcDAORU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 10:17:20 -0400
-Content-Disposition: inline
-In-Reply-To: <87d1q9anpt.fsf@intel.com>
+Received: from mga11.intel.com ([192.55.52.93]:40138 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751410AbcDAPI2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Apr 2016 11:08:28 -0400
+In-Reply-To: <CADDKRnCy9frh3CZcz+4WhiFJHk1GmMbPB847iUKW2wOex7hGSw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
+On Fri, 2016-04-01 at 11:42 +0200, J=C3=B6rg Otte wrote:
+> 2016-03-31 19:55 GMT+02:00 Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com>:
+> > On Thu, 2016-03-31 at 19:27 +0200, J=C3=B6rg Otte wrote:
+> > > 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > > > On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
+> > > > > 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.n
+> > > > > et>:
+> > > > > > On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrot=
+e:
+[cut]
 
---FkhOn4hPPRcnTymj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> I compile a minimum kernel for my notebook. The hardware is fix and
+> will never change. So I don't need thousends of modules to compile.
+> Kbuild supports this with target "localmodconfig".
+> In the rare cases where I get new usb-hardware I add a new driver
+> and compile a new kernel which takes only a minute.
+>=20
+With this minimum config, I am not able to properly run my laptop to
+reproduce.
+May be something odd in this config is triggering this issue, we are
+not going to idle on some CPUs.
 
-On Fri, Apr 01, 2016 at 08:43:10AM +0300, Felipe Balbi wrote:
-> Mark Brown <broonie@kernel.org> writes:
+Thanks,
+Srinivas
 
-> > IIRC Greg didn't want new classes?
-
-> good point. Still, this doesn't seem to fit a but_type IMO.
-
-It does in this new world order.  IIRC on an earlier round of review
-there was some code that didn't use a bus but that got complaints that
-it was trying to reimplement the bus functionality.
-
---FkhOn4hPPRcnTymj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJW/oFFAAoJECTWi3JdVIfQRfsH/1LJaJLnZAiiycpq+Amg/bph
-reLxOFQBGadzW2eriOt+2RDSvpE9hv1VYO4j1JaUmennKTavq7usG5dISVAsYmZ9
-OYyY4SMEU6UayfMfOOOH1VDl/N+S8aejWslqTWpHdxlEVMR+WQ7SAQbTOu67huJR
-qklYgU4LrPkhg1rXEd6NlK4IC8jyTH3JrfUtZIQ3uoh2Olo1MYvLToawZ5ruWuUW
-GkqQvae21EexPgeSmJlaT1kC2xebeo7cKZcpOtVVyG2qxVXaE855vuGQSGhX6LuX
-np5M2cUAfR42fPkpsuTK8zJrqIPjLB6JB4Ay5YzQ8veRTr8W/eaGuBoIUEU93d4=
-=ll/o
------END PGP SIGNATURE-----
-
---FkhOn4hPPRcnTymj--
+> Thanks, J=C3=B6rg
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
+fo.html
