@@ -1,114 +1,56 @@
-From: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Subject: Re: [intel-pstate driver regression] processor frequency very high
  even if in idle
-Date: Fri, 1 Apr 2016 19:34:21 +0200
-Message-ID: <CADDKRnBRuMxe29dAgu5qATeZ7J_Oz50jHLV6-Xtzqf-Q8w5r3w@mail.gmail.com>
+Date: Fri, 01 Apr 2016 10:44:34 -0700
+Message-ID: <1459532674.13525.136.camel@linux.intel.com>
 References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
-	<2727017.UmaUvtBLeX@vostro.rjw.lan>
-	<CADDKRnCs8vWbqOBbk0T+A5_VSzC5ENfND=NLwb3G0XjTvF9DQA@mail.gmail.com>
-	<3623107.tlAuqH4F7s@vostro.rjw.lan>
-	<002101d18c2a$10fd0ef0$32f72cd0$@net>
-	<CADDKRnBLLM6kNHZub36ktuQ8g2XYn25trp7jeG9k7P0opDKaXw@mail.gmail.com>
+	 <2727017.UmaUvtBLeX@vostro.rjw.lan>
+	 <CADDKRnCs8vWbqOBbk0T+A5_VSzC5ENfND=NLwb3G0XjTvF9DQA@mail.gmail.com>
+	 <3623107.tlAuqH4F7s@vostro.rjw.lan>
+	 <CADDKRnBBuSfU4P2QsJU42_422Ebs_qJxrx7cgBJsa=LFp158mw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:33953 "EHLO
-	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbcDAReW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 13:34:22 -0400
-In-Reply-To: <CADDKRnBLLM6kNHZub36ktuQ8g2XYn25trp7jeG9k7P0opDKaXw@mail.gmail.com>
+Received: from mga09.intel.com ([134.134.136.24]:12679 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751775AbcDARoU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Apr 2016 13:44:20 -0400
+In-Reply-To: <CADDKRnBBuSfU4P2QsJU42_422Ebs_qJxrx7cgBJsa=LFp158mw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-2016-04-01 18:46 GMT+02:00 J=C3=B6rg Otte <jrg.otte@gmail.com>:
-> 2016-04-01 17:20 GMT+02:00 Doug Smythies <dsmythies@telus.net>:
->> On 2016.04.01 05:40 Rafael J. Wysocki wrote:
->>> On Friday, April 01, 2016 11:20:42 AM J=C3=B6rg Otte wrote:
->>>> 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
->>>>> On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
->>>>>> 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>=
-:
->>>>>>> On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrote:
->>
->>>>
->>>> here they are.
->>>>
->>
->>> First of all, the sampling mechanics works as expected
->>> in the failing case, which is the most important thing
->>> I wanted to know.
->>
->> Yes, but that might be part of the problem, as for some CPUs
->> there is never a long duration, and thus the long duration
->> check never kicks in driving the target pstate down.
->>
->>> The core_busy column is clearly suspicious and it
->>> looks like CPUs 2 and 3 never really go idle.
->>
->> This has been observed several times before [1].
->> Due to beat frequencies between desktop type frame rates
->> and such, the worst manifestation of the issue seems to be
->> for 300 Hz kernels, but Ubuntu uses uses 250 Hz.
->>
->> Oh look, J=C3=B6rg is using 300 Hz!!
->>
->> $ grep CONFIG_HZ .config_jorg
->> # CONFIG_HZ_PERIODIC is not set
->> # CONFIG_HZ_100 is not set
->> # CONFIG_HZ_250 is not set
->> CONFIG_HZ_300=3Dy
->> # CONFIG_HZ_1000 is not set
->> CONFIG_HZ=3D300
->>
->
-> I use 300Hz because of:
-> "250 Hz is a good compromise choice allowing server performance
-> while also showing good interactive responsiveness even
-> on SMP and NUMA systems. If you are going to be using NTSC video
-> or multimedia, selected 300Hz instead." (from KBuild helptext)
->
-> -> I often use multimedia so according this text 300 Hz is the better
-> choice.
->
->>> I guess we'll need to find out
->>> why they don't go idle to get to the bottom of this, but it firmly =
-falls into
->>> the weird stuff territory already.
->
->> I'm compiling a 300 Hz kernel now, also with "# CONFIG_NO_HZ is not =
-set",
->
-> Again from KBuild helptext:
-> "CONFIG_NO_HZ:
-> This is the old config entry that enables dynticks idle.
-> We keep it around for a little while to enforce backward
-> compatibility with older config files."
->
-> -> NO_HZ outdated.
->
->> but I have never been able to re-create these type of findings befor=
-e.
->>
->> I have also tried several other things in an attempt re-create J=C3=B6=
-rg's
->> Case, so far without success.
->>
->> References:
->> [1] https://bugzilla.kernel.org/show_bug.cgi?id=3D93521
->> In particular:
->> https://bugzilla.kernel.org/show_bug.cgi?id=3D93521#c35
->> https://bugzilla.kernel.org/show_bug.cgi?id=3D93521#c42
->> https://bugzilla.kernel.org/show_bug.cgi?id=3D93521#c77
->>
->> ... Doug
->
->
-> Nevertheless, I'll try setting 250Hz + NO_HZ
->
-=46or me no improvements.
-Neither 300->250Hz  nor  NO_HZ_IDLE + NO_HZ
+On Fri, 2016-04-01 at 16:06 +0200, J=C3=B6rg Otte wrote:
+> 2016-04-01 14:40 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> >=20
+> > On Friday, April 01, 2016 11:20:42 AM J=C3=B6rg Otte wrote:
+> > >=20
+> > > 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > > >=20
+> > > > On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
+> > > > >=20
+> > > > > 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.n
+> > > > > et>:
+> > > > > >=20
+> > > > > > On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrot=
+e:
+> > > > > >=20
+[Cut]
+> > > > > >=20
+> Done. Attached the tracer.
+> For me it looks like the previous one of the failing case.
+>=20
+The traces show that idle task is constantly running without sleep. The
+driver is processing samples for idle task for every 10ms and
+aperf/mperf are showing that we are always in turbo mode for idle task.
 
-Thanks, J=C3=B6rg
+Need to find out why idle task is not sleeping.
+
+Thanks,
+Srinivas
+
+
+
+> Thanks, J=C3=B6rg
