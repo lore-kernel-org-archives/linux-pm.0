@@ -1,163 +1,145 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v9 4/4] power: wm831x_power: Support USB charger current limit management
-Date: Fri,  1 Apr 2016 15:21:52 +0800
-Message-ID: <ef1e5556a6402a0775ba4110f7a1881af8bdd032.1459494744.git.baolin.wang@linaro.org>
-References: <cover.1459494743.git.baolin.wang@linaro.org>
+From: Philippe Longepe <philippe.longepe@linux.intel.com>
+Subject: Re: [PATCH] intel_pstate: Avoid pointless FRAC_BITS shifts under
+ div_fp()
+Date: Fri, 1 Apr 2016 09:44:43 +0200
+Message-ID: <56FE26EB.7090608@linux.intel.com>
+References: <1928830.Q6zNtE60bQ@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:34482 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932316AbcDAHXN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 03:23:13 -0400
-Received: by mail-pa0-f43.google.com with SMTP id fe3so84639648pab.1
-        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2016 00:23:13 -0700 (PDT)
-In-Reply-To: <cover.1459494743.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1459494743.git.baolin.wang@linaro.org>
-References: <cover.1459494743.git.baolin.wang@linaro.org>
+Received: from mga04.intel.com ([192.55.52.120]:14100 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754661AbcDAHoV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Apr 2016 03:44:21 -0400
+In-Reply-To: <1928830.Q6zNtE60bQ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
+I proposed also to simplify the intel_pstate_calc_busy function:
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Acked-by: Peter Chen <peter.chen@freescale.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
- drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pdata.h |    3 ++
- 2 files changed, 72 insertions(+)
+     core_pct = int_tofp(sample->aperf) * int_tofp(100);
+     core_pct = div64_u64(core_pct, int_tofp(sample->mperf));
 
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index 7082301..cef1812 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/charger.h>
- 
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_charger *usb_charger;
-+	struct notifier_block usb_notify;
- };
- 
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
-+/* In milliamps */
-+static const unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
-+
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
-+{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	unsigned int i, best;
-+
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit >= wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
-+	}
-+
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %umA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-+		power->usb_charger =
-+			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-+		if (IS_ERR(power->usb_charger)) {
-+			ret = PTR_ERR(power->usb_charger);
-+			dev_err(&pdev->dev,
-+				"Failed to find USB gadget: %d\n", ret);
-+			goto err_bat_irq;
-+		}
-+
-+		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+
-+		ret = usb_charger_register_notify(power->usb_charger,
-+						  &power->usb_notify);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to register notifier: %d\n", ret);
-+			goto err_usb_charger;
-+		}
-+	}
-+
- 	return ret;
- 
-+err_usb_charger:
-+	/* put_device on charger */
- err_bat_irq:
- 	--i;
- 	for (; i >= 0; i--) {
-@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
- 
-+	if (wm831x_power->usb_charger) {
-+		usb_charger_unregister_notify(wm831x_power->usb_charger,
-+					      &wm831x_power->usb_notify);
-+		/* Free charger */
-+	}
-+
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
-diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-index dcc9631..5af8399 100644
---- a/include/linux/mfd/wm831x/pdata.h
-+++ b/include/linux/mfd/wm831x/pdata.h
-@@ -126,6 +126,9 @@ struct wm831x_pdata {
- 	/** The driver should initiate a power off sequence during shutdown */
- 	bool soft_shutdown;
- 
-+	/** dev_name of USB charger gadget to integrate with */
-+	const char *usb_gadget;
-+
- 	int irq_base;
- 	int gpio_base;
- 	int gpio_defaults[WM831X_GPIO_NUM];
--- 
-1.7.9.5
+is equivalent to:
+
+     core_pct = sample->aperf * int_tofp(100);
+     core_pct = div64_u64(core_pct, sample->mperf);
+
+Regards,
+Philippe,
+
+On 31/03/2016 15:46, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> There are multiple places in intel_pstate where int_tofp() is applied
+> to both arguments of div_fp(), but this is pointless, because int_tofp()
+> simply shifts its argument to the left by FRAC_BITS which mathematically
+> is equivalent to multuplication by 2^FRAC_BITS, so if this is done
+> to both arguments of a division, the extra factors will cancel each
+> other during that operation anyway.
+>
+> Drop the pointless int_tofp() applied to div_fp() arguments throughout
+> the driver.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c |   27 +++++++++++----------------
+>   1 file changed, 11 insertions(+), 16 deletions(-)
+>
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -206,17 +206,17 @@ static inline void pid_reset(struct _pid
+>   
+>   static inline void pid_p_gain_set(struct _pid *pid, int percent)
+>   {
+> -	pid->p_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +	pid->p_gain = div_fp(percent, 100);
+>   }
+>   
+>   static inline void pid_i_gain_set(struct _pid *pid, int percent)
+>   {
+> -	pid->i_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +	pid->i_gain = div_fp(percent, 100);
+>   }
+>   
+>   static inline void pid_d_gain_set(struct _pid *pid, int percent)
+>   {
+> -	pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
+> +	pid->d_gain = div_fp(percent, 100);
+>   }
+>   
+>   static signed int pid_calc(struct _pid *pid, int32_t busy)
+> @@ -394,7 +394,7 @@ static ssize_t show_turbo_pct(struct kob
+>   
+>   	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
+>   	no_turbo = cpu->pstate.max_pstate - cpu->pstate.min_pstate + 1;
+> -	turbo_fp = div_fp(int_tofp(no_turbo), int_tofp(total));
+> +	turbo_fp = div_fp(no_turbo, total);
+>   	turbo_pct = 100 - fp_toint(mul_fp(turbo_fp, int_tofp(100)));
+>   	return sprintf(buf, "%u\n", turbo_pct);
+>   }
+> @@ -465,8 +465,7 @@ static ssize_t store_max_perf_pct(struct
+>   				   limits->max_perf_pct);
+>   	limits->max_perf_pct = max(limits->min_perf_pct,
+>   				   limits->max_perf_pct);
+> -	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+> -				  int_tofp(100));
+> +	limits->max_perf = div_fp(limits->max_perf_pct, 100);
+>   
+>   	if (hwp_active)
+>   		intel_pstate_hwp_set_online_cpus();
+> @@ -490,8 +489,7 @@ static ssize_t store_min_perf_pct(struct
+>   				   limits->min_perf_pct);
+>   	limits->min_perf_pct = min(limits->max_perf_pct,
+>   				   limits->min_perf_pct);
+> -	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+> -				  int_tofp(100));
+> +	limits->min_perf = div_fp(limits->min_perf_pct, 100);
+>   
+>   	if (hwp_active)
+>   		intel_pstate_hwp_set_online_cpus();
+> @@ -973,8 +971,8 @@ static inline int32_t get_target_pstate_
+>   	 * specified pstate.
+>   	 */
+>   	core_busy = cpu->sample.core_pct_busy;
+> -	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+> -	current_pstate = int_tofp(cpu->pstate.current_pstate);
+> +	max_pstate = cpu->pstate.max_pstate_physical;
+> +	current_pstate = cpu->pstate.current_pstate;
+>   	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+>   
+>   	/*
+> @@ -986,8 +984,7 @@ static inline int32_t get_target_pstate_
+>   	duration_ns = cpu->sample.time - cpu->last_sample_time;
+>   	if ((s64)duration_ns > pid_params.sample_rate_ns * 3
+>   	    && cpu->last_sample_time > 0) {
+> -		sample_ratio = div_fp(int_tofp(pid_params.sample_rate_ns),
+> -				      int_tofp(duration_ns));
+> +		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+>   		core_busy = mul_fp(core_busy, sample_ratio);
+>   	}
+>   
+> @@ -1167,10 +1164,8 @@ static int intel_pstate_set_policy(struc
+>   	/* Make sure min_perf_pct <= max_perf_pct */
+>   	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
+>   
+> -	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+> -				  int_tofp(100));
+> -	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+> -				  int_tofp(100));
+> +	limits->min_perf = div_fp(limits->min_perf_pct, 100);
+> +	limits->max_perf = div_fp(limits->max_perf_pct, 100);
+>   
+>    out:
+>   	intel_pstate_set_update_util_hook(policy->cpu);
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
