@@ -1,75 +1,64 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH v6 7/7][Resend] cpufreq: schedutil: New governor based on
- scheduler utilization data
-Date: Fri, 1 Apr 2016 11:15:03 -0700
-Message-ID: <56FEBAA7.3050305@linaro.org>
-References: <7262976.zPkLj56ATU@vostro.rjw.lan>
- <6666532.7ULg06hQ7e@vostro.rjw.lan> <56F5E1F2.5090100@linaro.org>
- <CAJZ5v0j=LwOT=sjSOwwzY=sYLqiV1tuvVazzgU+yMwMWXmpR8A@mail.gmail.com>
- <CAJZ5v0i1=P45wWHYHVp9mW=h7w_MywFz7x2qmEs2iiEhJSq-5g@mail.gmail.com>
- <56F97548.1030903@linaro.org>
- <20160331122445.GJ3408@twins.programming.kicks-ass.net>
- <CAJZ5v0j6eDmvVSBphvygA2Xnk9nQXqracFR+dBYz3UOeyrb7qA@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [intel-pstate driver regression] processor frequency very high even if in idle
+Date: Fri, 1 Apr 2016 11:31:12 -0700
+Message-ID: <003801d18c44$ab9134e0$02b39ea0$@net>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>	 <2727017.UmaUvtBLeX@vostro.rjw.lan>	 <CADDKRnCs8vWbqOBbk0T+A5_VSzC5ENfND=NLwb3G0XjTvF9DQA@mail.gmail.com>	 <3623107.tlAuqH4F7s@vostro.rjw.lan>	 <CADDKRnBBuSfU4P2QsJU42_422Ebs_qJxrx7cgBJsa=LFp158mw@mail.gmail.com> <1459532674.13525.136.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:34815 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbcDASPG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 14:15:06 -0400
-Received: by mail-pf0-f175.google.com with SMTP id x3so96457578pfb.1
-        for <linux-pm@vger.kernel.org>; Fri, 01 Apr 2016 11:15:06 -0700 (PDT)
-In-Reply-To: <CAJZ5v0j6eDmvVSBphvygA2Xnk9nQXqracFR+dBYz3UOeyrb7qA@mail.gmail.com>
+Received: from cmta7.telus.net ([209.171.16.80]:60662 "EHLO cmta7.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbcDASbO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 14:31:14 -0400
+In-Reply-To: <1459532674.13525.136.camel@linux.intel.com>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Ingo Molnar <mingo@kernel.org>
+To: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, =?UTF-8?Q?'J=C3=B6rg_Otte'?= <jrg.otte@gmail.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On 03/31/2016 05:32 AM, Rafael J. Wysocki wrote:
-> On Thu, Mar 31, 2016 at 2:24 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> On Mon, Mar 28, 2016 at 11:17:44AM -0700, Steve Muckle wrote:
->>> The scenario I'm contemplating is that while a CPU-intensive task is
->>> running a thermal interrupt goes off. The driver for this thermal
->>> interrupt responds by capping fmax. If this happens just after the tick,
->>> it seems possible that we could wait a full tick before changing the
->>> frequency. Given a 10ms tick it could be rather annoying for thermal
->>> management algorithms on some platforms (I'm familiar with a few).
->>
->> So I'm blissfully unaware of all the thermal stuffs we have; but it
->> looks like its somehow bolten onto cpufreq without feedback.
->>
->> The thing I worry about is thermal scaling the CPU back past where RT/DL
->> tasks can still complete in time. It should not be able to do that, or
->> rather, missing deadlines because thermal is about as useful as
->> rebooting the device.
+On 2106.034.01 10:45 Srinivas Pandruvada wrote:
+> On Fri, 2016-04-01 at 16:06 +0200, J=C3=B6rg Otte wrote:
+> > > > > >=20
+>> Done. Attached the tracer.
+>> For me it looks like the previous one of the failing case.
+>=20
+> The traces show that idle task is constantly running without sleep.
 
-I'd agree that impacting RT/DL activity because of throttling may be as
-bad as as a reset, but that seems worst case. There could be some
-graceful shutdown or notification/alarm that can be done. Or a platform
-can simply choose to reset.
+No, they (at least the first one, I didn't look at the next one yet)
+show that CPUs 2 and 3 are spending around 99% of their time not in sta=
+te
+C0. That the sample rate is ending up at ~10 Milliseconds, indicates so=
+me
+high frequency (>=3D 100Hz) events on those CPUs. Those events, apparen=
+tly,
+take very little CPU time to complete, hence a load of about 1% on aver=
+age.
 
-Shouldn't we try to give the system designer the option of doing
-something in software (by throttling the CPUs as low as necessary to
-continue operation) rather than giving up and relying on a hardware reset?
+By the way, I can recreate the high sample rate with virtually no load
+on my system easy, but so far have been unable to get the high CPU
+frequencies observed by J=C3=B6rg. I can get my system to about a targe=
+t pstate of
+20 where it should have remained at 16, but that is about it.
 
-> Right.  If thermal throttling kicks in, the game is pretty much over.
-> 
-> That's why ideas float about taking the thermal constraints into
-> account upfront, but that's a different discussion entirely.
+> The driver is processing samples for idle task for every 10ms and
+> aperf/mperf are showing that we are always in turbo mode for idle tas=
+k.
 
-Current mainstream mobile platforms frequently throttle during normal
-operation. I think it's important to have a robust throttling mechanism
-at least until the more proactive thermal management scheme is fully
-developed and proves to be equally capable (if and when that happens).
+That column pretty much always says "idle" (or swapper for my way of do=
+ing
+things). I have not found it to very useful as an indicator, and consid=
+erably
+more so since the utilization changes.
 
->> I guess I'm saying is, the whole cpufreq/thermal 'interface' needs work
->> anyhow.
-> 
-> Yes, it does.
+>=20
+> Need to find out why idle task is not sleeping.
 
-Agreed!
+I contend that is it.
+I don't have enough reverted data, but so far this seems very much like
+that bug report I referenced earlier.
 
-thanks,
-Steve
+=2E.. Doug
+
 
