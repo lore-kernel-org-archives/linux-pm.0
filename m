@@ -1,63 +1,62 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
- update_cfs_rq_load_avg()
-Date: Thu, 31 Mar 2016 14:26:06 -0700
-Message-ID: <56FD95EE.6090007@linaro.org>
-References: <1458606068-7476-1-git-send-email-smuckle@linaro.org>
- <56F91D56.4020007@arm.com> <56F95D10.4070400@linaro.org>
- <56F97856.4040804@arm.com> <56F98832.3030207@linaro.org>
- <20160330193544.GD407@worktop> <56FC807C.80204@linaro.org>
- <20160331073743.GF3408@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Fri, 1 Apr 2016 02:08:31 +0200
+Message-ID: <CAJZ5v0gf_ychFverA8NgcMSsE2rrzvGAMsfTfTUEfhukXWa8JA@mail.gmail.com>
+References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	<8393335.Q1cjiaGecN@vostro.rjw.lan>
+	<CADDKRnBE==ea7YvXH+YL_m1v8E1zNHsZnXJgc58OQ=vrcs+cKQ@mail.gmail.com>
+	<2727017.UmaUvtBLeX@vostro.rjw.lan>
+	<CADDKRnAYPXip0EG0Y7ADuyt9L=FL-Nd1giHBVvPexs4kGkRj4g@mail.gmail.com>
+	<1459446905.4569.76.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33595 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758089AbcCaV0I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 17:26:08 -0400
-Received: by mail-pf0-f169.google.com with SMTP id 4so78026545pfd.0
-        for <linux-pm@vger.kernel.org>; Thu, 31 Mar 2016 14:26:08 -0700 (PDT)
-In-Reply-To: <20160331073743.GF3408@twins.programming.kicks-ass.net>
+Received: from mail-lf0-f67.google.com ([209.85.215.67]:35915 "EHLO
+	mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757459AbcDAAId convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Mar 2016 20:08:33 -0400
+In-Reply-To: <1459446905.4569.76.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On 03/31/2016 12:37 AM, Peter Zijlstra wrote:
-> On Wed, Mar 30, 2016 at 06:42:20PM -0700, Steve Muckle wrote:
->> On 03/30/2016 12:35 PM, Peter Zijlstra wrote:
->>> On Mon, Mar 28, 2016 at 12:38:26PM -0700, Steve Muckle wrote:
->>>> Without covering all the paths where CFS utilization changes it's
->>>> possible to have to wait up to a tick to act on some changes, since the
->>>> tick is the only guaranteed regularly-occurring instance of the hook.
->>>> That's an unacceptable amount of latency IMO...
->>>
->>> Note that even with your patches that might still be the case. Remote
->>> wakeups might not happen on the destination CPU at all, so it might not
->>> be until the next tick (which always happens locally) that we'll
->>> 'observe' the utilization change brought with the wakeups.
->>>
->>> We could force all the remote wakeups to IPI the destination CPU, but
->>> that comes at a significant performance cost.
+On Thu, Mar 31, 2016 at 7:55 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Thu, 2016-03-31 at 19:27 +0200, J=C3=B6rg Otte wrote:
+>> 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> > On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
+>> > > 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>=
+:
+>> > > > On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wrote:
+>> > > >
+
+[cut]
+
 >>
->> What about only IPI'ing the destination when the utilization change is
->> known to require a higher CPU frequency?
-> 
-> Can't, the way the wakeup path is constructed we would be sending the
-> IPI way before we know about utilization.
+>> OK, patch is applied.
+>> After some configurations and compilations I'm there.
+>> Under pstate_sample I see:
+>> enable  filter  format  id  trigger
+>>
+>> what to do now ? (never did tracing before)'
+>
+> # cd /sys/kernel/debug/tracing/
+> # echo 1 > events/power/pstate_sample/enable
+> # echo 1 > events/power/cpu_frequency/enable
+> # cat trace
+> Send us the trace file.
 
-Sorry I thought we were referring to the possibility of sending an IPI
-to just run the cpufreq driver rather than to conduct the whole wakeup
-operation.
+Here's what I do, for completeness:
 
-My thinking was in CFS we get rid of the (cpu == smp_processor_id())
-condition for calling the cpufreq hook.
+# echo 0 > /sys/kernel/debug/tracing/tracing_on
+# echo global > /sys/kernel/debug/tracing/trace_clock
+# echo nop > /sys/kernel/debug/tracing/current_tracer
+# echo 1000 > /sys/kernel/debug/tracing/buffer_size_kb
+# echo 1 > /sys/kernel/debug/tracing/events/power/pstate_sample/enable
+# echo "" > /sys/kernel/debug/tracing/trace
+# echo 1 > /sys/kernel/debug/tracing/tracing_on
 
-The sched governor can then calculate utilization and frequency required
-for cpu. If (cpu == smp_processor_id()), the update is processed
-normally. If (cpu != smp_processor_id()) and the new frequency is higher
-than cpu's Fcur, the sched gov IPIs cpu to continue running the update
-operation. Otherwise, the update is dropped.
-
-Does that sound plausible?
+Then, (after a while) make a copy of the trace file.
