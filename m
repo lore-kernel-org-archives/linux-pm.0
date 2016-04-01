@@ -1,145 +1,78 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: Re: [PATCH] intel_pstate: Avoid pointless FRAC_BITS shifts under
- div_fp()
-Date: Fri, 1 Apr 2016 09:44:43 +0200
-Message-ID: <56FE26EB.7090608@linux.intel.com>
-References: <1928830.Q6zNtE60bQ@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Calculate MHz using APERF/MPERF for cpuinfo and
+ scaling_cur_freqy
+Date: Fri, 1 Apr 2016 09:56:36 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1604010953210.3978@nanos>
+References: <6e0c25e64e0fb65a42dfc63ad5f660302e07cd87.1459485198.git.len.brown@intel.com> <52f711be59539723358bea1aa3c368910a68b46d.1459485198.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:14100 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754661AbcDAHoV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 1 Apr 2016 03:44:21 -0400
-In-Reply-To: <1928830.Q6zNtE60bQ@vostro.rjw.lan>
+Received: from www.linutronix.de ([62.245.132.108]:52283 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbcDAH6N (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 03:58:13 -0400
+In-Reply-To: <52f711be59539723358bea1aa3c368910a68b46d.1459485198.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-I proposed also to simplify the intel_pstate_calc_busy function:
+On Fri, 1 Apr 2016, Len Brown wrote:
+> +/*
+> + * aperfmperf_snapshot_khz()
+> + * On the current CPU, snapshot APERF, MPERF, and jiffies
+> + * unless we already did it within 100ms
+> + * calculate kHz, save snapshot
+> + */
+> +static void aperfmperf_snapshot_khz(void *dummy)
+> +{
+> +	unsigned long long aperf, aperf_delta;
+> +	unsigned long long mperf, mperf_delta;
+> +	unsigned long long numerator;
+> +	struct aperfmperf_sample *s = &get_cpu_var(samples);
 
-     core_pct = int_tofp(sample->aperf) * int_tofp(100);
-     core_pct = div64_u64(core_pct, int_tofp(sample->mperf));
+this_cpu_ptr is sufficient. That's a smp function call ...
 
-is equivalent to:
+> +
+> +	/* Cache KHz for 100 ms */
+> +	if (time_before(jiffies, s->jiffies + HZ/10))
+> +		goto out;
+> +
+> +	rdmsrl(MSR_IA32_APERF, aperf);
+> +	rdmsrl(MSR_IA32_MPERF, mperf);
+> +
+> +	aperf_delta = aperf - s->aperf;
+> +	mperf_delta = mperf - s->mperf;
+> +
+> +	/*
+> +	 * There is no architectural guarantee that MPERF
+> +	 * increments faster than we can read it.
+> +	 */
+> +	if (mperf_delta == 0)
+> +		goto out;
+> +
+> +	numerator = cpu_khz * aperf_delta;
+> +	s->khz = div64_u64(numerator, mperf_delta);
+> +	s->jiffies = jiffies;
+> +	s->aperf = aperf;
+> +	s->mperf = mperf;
+> +
+> +out:
+> +	put_cpu_var(samples);
+> +}
+> +
+> +unsigned int aperfmperf_khz_on_cpu(int cpu)
+> +{
+> +	if (!cpu_khz)
+> +		return 0;
+> +
+> +	if (!boot_cpu_has(X86_FEATURE_APERFMPERF))
+> +		return 0;
+> +
+> +	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
 
-     core_pct = sample->aperf * int_tofp(100);
-     core_pct = div64_u64(core_pct, sample->mperf);
+You can avoid the function call if you check s->jiffies here.
 
-Regards,
-Philippe,
+Thanks,
 
-On 31/03/2016 15:46, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> There are multiple places in intel_pstate where int_tofp() is applied
-> to both arguments of div_fp(), but this is pointless, because int_tofp()
-> simply shifts its argument to the left by FRAC_BITS which mathematically
-> is equivalent to multuplication by 2^FRAC_BITS, so if this is done
-> to both arguments of a division, the extra factors will cancel each
-> other during that operation anyway.
->
-> Drop the pointless int_tofp() applied to div_fp() arguments throughout
-> the driver.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   drivers/cpufreq/intel_pstate.c |   27 +++++++++++----------------
->   1 file changed, 11 insertions(+), 16 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -206,17 +206,17 @@ static inline void pid_reset(struct _pid
->   
->   static inline void pid_p_gain_set(struct _pid *pid, int percent)
->   {
-> -	pid->p_gain = div_fp(int_tofp(percent), int_tofp(100));
-> +	pid->p_gain = div_fp(percent, 100);
->   }
->   
->   static inline void pid_i_gain_set(struct _pid *pid, int percent)
->   {
-> -	pid->i_gain = div_fp(int_tofp(percent), int_tofp(100));
-> +	pid->i_gain = div_fp(percent, 100);
->   }
->   
->   static inline void pid_d_gain_set(struct _pid *pid, int percent)
->   {
-> -	pid->d_gain = div_fp(int_tofp(percent), int_tofp(100));
-> +	pid->d_gain = div_fp(percent, 100);
->   }
->   
->   static signed int pid_calc(struct _pid *pid, int32_t busy)
-> @@ -394,7 +394,7 @@ static ssize_t show_turbo_pct(struct kob
->   
->   	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
->   	no_turbo = cpu->pstate.max_pstate - cpu->pstate.min_pstate + 1;
-> -	turbo_fp = div_fp(int_tofp(no_turbo), int_tofp(total));
-> +	turbo_fp = div_fp(no_turbo, total);
->   	turbo_pct = 100 - fp_toint(mul_fp(turbo_fp, int_tofp(100)));
->   	return sprintf(buf, "%u\n", turbo_pct);
->   }
-> @@ -465,8 +465,7 @@ static ssize_t store_max_perf_pct(struct
->   				   limits->max_perf_pct);
->   	limits->max_perf_pct = max(limits->min_perf_pct,
->   				   limits->max_perf_pct);
-> -	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
-> -				  int_tofp(100));
-> +	limits->max_perf = div_fp(limits->max_perf_pct, 100);
->   
->   	if (hwp_active)
->   		intel_pstate_hwp_set_online_cpus();
-> @@ -490,8 +489,7 @@ static ssize_t store_min_perf_pct(struct
->   				   limits->min_perf_pct);
->   	limits->min_perf_pct = min(limits->max_perf_pct,
->   				   limits->min_perf_pct);
-> -	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
-> -				  int_tofp(100));
-> +	limits->min_perf = div_fp(limits->min_perf_pct, 100);
->   
->   	if (hwp_active)
->   		intel_pstate_hwp_set_online_cpus();
-> @@ -973,8 +971,8 @@ static inline int32_t get_target_pstate_
->   	 * specified pstate.
->   	 */
->   	core_busy = cpu->sample.core_pct_busy;
-> -	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
-> -	current_pstate = int_tofp(cpu->pstate.current_pstate);
-> +	max_pstate = cpu->pstate.max_pstate_physical;
-> +	current_pstate = cpu->pstate.current_pstate;
->   	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
->   
->   	/*
-> @@ -986,8 +984,7 @@ static inline int32_t get_target_pstate_
->   	duration_ns = cpu->sample.time - cpu->last_sample_time;
->   	if ((s64)duration_ns > pid_params.sample_rate_ns * 3
->   	    && cpu->last_sample_time > 0) {
-> -		sample_ratio = div_fp(int_tofp(pid_params.sample_rate_ns),
-> -				      int_tofp(duration_ns));
-> +		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
->   		core_busy = mul_fp(core_busy, sample_ratio);
->   	}
->   
-> @@ -1167,10 +1164,8 @@ static int intel_pstate_set_policy(struc
->   	/* Make sure min_perf_pct <= max_perf_pct */
->   	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
->   
-> -	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
-> -				  int_tofp(100));
-> -	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
-> -				  int_tofp(100));
-> +	limits->min_perf = div_fp(limits->min_perf_pct, 100);
-> +	limits->max_perf = div_fp(limits->max_perf_pct, 100);
->   
->    out:
->   	intel_pstate_set_update_util_hook(policy->cpu);
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+	tglx
