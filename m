@@ -1,76 +1,58 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [intel-pstate driver regression] processor frequency very high
  even if in idle
-Date: Fri, 1 Apr 2016 21:54:08 +0200
-Message-ID: <CAJZ5v0gVvMg9FRGOkHCPJusCVG3JvEbF6kmnAtFziN+inOGiHA@mail.gmail.com>
+Date: Fri, 1 Apr 2016 22:24:00 +0200
+Message-ID: <CAJZ5v0iFgWFs+pMCJQgeiTH=zTg1pfSUa4gPGX7q2jB40dcUHA@mail.gmail.com>
 References: <CADDKRnD81Hmf+JnG6NEpQWKiKE6_mqet5yRpLJ5K_0U1GtfahQ@mail.gmail.com>
+	<8393335.Q1cjiaGecN@vostro.rjw.lan>
+	<CADDKRnBE==ea7YvXH+YL_m1v8E1zNHsZnXJgc58OQ=vrcs+cKQ@mail.gmail.com>
 	<2727017.UmaUvtBLeX@vostro.rjw.lan>
-	<CADDKRnCs8vWbqOBbk0T+A5_VSzC5ENfND=NLwb3G0XjTvF9DQA@mail.gmail.com>
-	<3623107.tlAuqH4F7s@vostro.rjw.lan>
-	<CADDKRnBBuSfU4P2QsJU42_422Ebs_qJxrx7cgBJsa=LFp158mw@mail.gmail.com>
-	<1459532674.13525.136.camel@linux.intel.com>
-	<003801d18c44$ab9134e0$02b39ea0$@net>
+	<CADDKRnAYPXip0EG0Y7ADuyt9L=FL-Nd1giHBVvPexs4kGkRj4g@mail.gmail.com>
+	<1459446905.4569.76.camel@linux.intel.com>
+	<CADDKRnCy9frh3CZcz+4WhiFJHk1GmMbPB847iUKW2wOex7hGSw@mail.gmail.com>
+	<1459523120.5912.20.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:36507 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbcDATyL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 15:54:11 -0400
-In-Reply-To: <003801d18c44$ab9134e0$02b39ea0$@net>
+Received: from mail-lb0-f193.google.com ([209.85.217.193]:35184 "EHLO
+	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbcDAUYD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Apr 2016 16:24:03 -0400
+In-Reply-To: <1459523120.5912.20.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On Fri, Apr 1, 2016 at 8:31 PM, Doug Smythies <dsmythies@telus.net> wro=
+On Fri, Apr 1, 2016 at 5:05 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Fri, 2016-04-01 at 11:42 +0200, J=C3=B6rg Otte wrote:
+>> 2016-03-31 19:55 GMT+02:00 Srinivas Pandruvada
+>> <srinivas.pandruvada@linux.intel.com>:
+>> > On Thu, 2016-03-31 at 19:27 +0200, J=C3=B6rg Otte wrote:
+>> > > 2016-03-31 17:43 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.net>=
+:
+>> > > > On Thursday, March 31, 2016 05:25:18 PM J=C3=B6rg Otte wrote:
+>> > > > > 2016-03-31 13:42 GMT+02:00 Rafael J. Wysocki <rjw@rjwysocki.=
+n
+>> > > > > et>:
+>> > > > > > On Thursday, March 31, 2016 11:05:56 AM J=C3=B6rg Otte wro=
 te:
-> On 2106.034.01 10:45 Srinivas Pandruvada wrote:
->> On Fri, 2016-04-01 at 16:06 +0200, J=C3=B6rg Otte wrote:
->> > > > > >
->>> Done. Attached the tracer.
->>> For me it looks like the previous one of the failing case.
+> [cut]
+>
+>> I compile a minimum kernel for my notebook. The hardware is fix and
+>> will never change. So I don't need thousends of modules to compile.
+>> Kbuild supports this with target "localmodconfig".
+>> In the rare cases where I get new usb-hardware I add a new driver
+>> and compile a new kernel which takes only a minute.
 >>
->> The traces show that idle task is constantly running without sleep.
->
-> No, they (at least the first one, I didn't look at the next one yet)
-> show that CPUs 2 and 3 are spending around 99% of their time not in s=
-tate
-> C0.
+> With this minimum config, I am not able to properly run my laptop to
+> reproduce.
+> May be something odd in this config is triggering this issue, we are
+> not going to idle on some CPUs.
 
-How do you figure that out if I may ask?  It is not so obvious to me
-to be honest.
-
-> That the sample rate is ending up at ~10 Milliseconds, indicates some
-> high frequency (>=3D 100Hz) events on those CPUs. Those events, appar=
-ently,
-> take very little CPU time to complete, hence a load of about 1% on av=
-erage.
->
-> By the way, I can recreate the high sample rate with virtually no loa=
-d
-> on my system easy, but so far have been unable to get the high CPU
-> frequencies observed by J=C3=B6rg. I can get my system to about a tar=
-get pstate of
-> 20 where it should have remained at 16, but that is about it.
->
->> The driver is processing samples for idle task for every 10ms and
->> aperf/mperf are showing that we are always in turbo mode for idle ta=
-sk.
->
-> That column pretty much always says "idle" (or swapper for my way of =
-doing
-> things). I have not found it to very useful as an indicator, and cons=
-iderably
-> more so since the utilization changes.
->
->>
->> Need to find out why idle task is not sleeping.
->
-> I contend that is it.
-
-Why?
-
-Thanks,
-Rafael
+You can use ./scripts/diffconfig (in the kernel source tree) to find
+differences between your working config and the J=C3=B6rg's one and try=
+ to
+flip the bits that may matter in your config.
