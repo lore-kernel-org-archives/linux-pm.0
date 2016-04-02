@@ -1,95 +1,168 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86: Calculate MHz using APERF/MPERF for cpuinfo and scaling_cur_freq
-Date: Sat, 2 Apr 2016 01:22:56 -0400
-Message-ID: <CAJvTdKnONi=Mkv8ReQbKifmeL09ddbhbK4Cn8qFCS2h1Aaqdog@mail.gmail.com>
-References: <6e0c25e64e0fb65a42dfc63ad5f660302e07cd87.1459485198.git.len.brown@intel.com>
-	<52f711be59539723358bea1aa3c368910a68b46d.1459485198.git.len.brown@intel.com>
-	<20160401080328.GC3448@twins.programming.kicks-ass.net>
-	<9222CD56-C603-449C-A049-E518DAFA6883@linux.intel.com>
-	<20160401082323.GE3448@twins.programming.kicks-ass.net>
-	<20160401082923.GH11035@twins.programming.kicks-ass.net>
-	<7239BF36-2C27-4325-A5B8-01BC4CA58B4C@linux.intel.com>
-	<20160401095005.GA25313@pd.tnic>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Sat, 2 Apr 2016 08:12:42 +0200
+Message-ID: <CA+icZUX2ZtsO8pa7ZY0JKW3vm5veVCJ08q3p0ai3FxdMNgvKww@mail.gmail.com>
+References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>
+	<1459376311.13525.108.camel@linux.intel.com>
+	<003b01d18ad6$831941c0$894bc540$@net>
+	<CA+icZUXaoeQz5vMzPxjOaAzbzdQ4D1MV2dG5EvXAM54k6EOz1g@mail.gmail.com>
+	<002301d18b59$d208fe50$761afaf0$@net>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f193.google.com ([209.85.217.193]:33926 "EHLO
-	mail-lb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbcDBFW6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Apr 2016 01:22:58 -0400
-In-Reply-To: <20160401095005.GA25313@pd.tnic>
+Received: from mail-vk0-f50.google.com ([209.85.213.50]:36169 "EHLO
+	mail-vk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbcDBGMn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Apr 2016 02:12:43 -0400
+In-Reply-To: <002301d18b59$d208fe50$761afaf0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Stephane Gasparini <stephane.gasparini@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-Thanks for the comments.
+On Thu, Mar 31, 2016 at 4:30 PM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2016.03.31 01:11 Sedat Dilek wrote:
+>> On Thu, Mar 31, 2016 at 12:50 AM, Doug Smythies <dsmythies@telus.net> wrote:
+>>> On 2106.03.30 15:19 Srinivas Pandruvada wrote:
+>>>>>
+>>>>> Please see attached files.
+>>>>>
+>>>> Thanks. Your logs make sense. You have config set to performance mode
+>>>> by default (Which I believe default in all kernel Ubuntu).
+>>>
+>>> Yes, but via a startup script, by default Ubuntu sets the governor
+>>> to powersave 1 minute after boot (or ondemand if acpi-cpufreq).
+>>>
+>>
+>> Can you give more and precise informations on this?
+>> script-name etc.
+>
+> The script is /etc/init.d/ondemand
+> It sleeps for 1 minute and then sets the scaling
+> governor, based on availability, in the following order:
+> interactive
+> ondemand
+> powersave
+>
 
-Re: is this a useful semantic?
+Thanks for these informations.
 
-Yes, average MHz over an interval is significantly more useful than
-a snapshot of the recent instantaneous frequency.
-It is possible to convert the former into the later,
-but it is not possible to reliably and efficiently convert the later
-into the former.
+$ dpkg -S /etc/init.d/ondemand
+initscripts: /etc/init.d/ondemand
 
-Indeed, we stopped using MSR_PERF_STATUS for this very reason --
-a snapshot of instantaneous frequency can be very misleading.
+For the followers...
 
-Further, the mechanism in this patch will still work even when Linux
-has no concept of frequency control,
-including firmware control and CONFIG_CPU_FREQ=n
+[ /etc/init.d/ondemand ]
 
-Of course, when there is 1 reader, this mechanism works the best --
-as they get to select whatever interval they like.
-For multi-user, the interval would shorten -- possibly
-degrading to the 100ms limit set here.  My reasoning on the
-100ms limit is that anything more frequent is abuse,
-and the users should be using user-space tools like turbostat in that case.
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          ondemand
+# Required-Start:    $remote_fs $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Set the CPU Frequency Scaling governor to "ondemand"
+### END INIT INFO
 
-Re: 64-bit math.
 
-Stephane is correct, APERF and  MPERF will not overflow in the uptime
-of the machine.
-They are both 64-bit registers, and they tick at TSC rate or slower.
-(Indeed, they tick at 0 when idle)
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
-Boris is right, this works as long as somebody doesn't scribble on these MSRs.
-Linux used to do that in 2.6.23, but we learned our lesson and we leave them
-free running since then.  I'm not going to worry about a yahoo
-scribbling on MSRs
-behind the kernel's back.  More than this will break if that happens.
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
 
-Peter is right, in the expression "numerator = cpu_khz * aperf_delta",
-the capacity of the 64-bit numerator is reduced as cpu_khz
-and aperf_delta grow.
+case "$1" in
+    start)
+        start-stop-daemon --start --background --exec
+/etc/init.d/ondemand -- background
+        ;;
+    background)
+        sleep 60 # probably enough time for desktop login
 
-For example, if this patch runs on a busy system having a 4GHz CPU,
-then APERF ticks at 2^32 Hz.
-cpu_khz = 2^22
-so max aperf_delta without overflow is 2^64/2^22 = 2^42 cycles
+        for CPUFREQ in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+        do
+                [ -f $CPUFREQ ] || continue
+                echo -n ondemand > $CPUFREQ
+        done
+        ;;
+    restart|reload|force-reload)
+        echo "Error: argument '$1' not supported" >&2
+        exit 3
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac
 
-2^42 cycles / 2^32 cycles/sec = 2^10 sec = 1024 seconds = 17 minutes.
+[ /etc/init.d/ondemand ]
 
-Though we could improve this range by 1024x by simply operating on
-cpu_mhz instead of cpu_khz, yielding 12 days.
+Will check...
 
-Or we could simply detect potential overflow:
+$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 
-2^64 < cpu_khz * delta_aperf
-so
-if (2^64/cpu_khz < delta_aperf) then overflow
+> See also:
+>
+> $ ls -l /etc/rc?.d/S06ondemand
+> lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc2.d/S06ondemand -> ../init.d/ondemand
+> lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc3.d/S06ondemand -> ../init.d/ondemand
+> lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc4.d/S06ondemand -> ../init.d/ondemand
+> lrwxrwxrwx 1 root root 18 Mar  8 09:51 /etc/rc5.d/S06ondemand -> ../init.d/ondemand
+>
 
-and since delta_aperf and delta_mperf are much larger than cpu_khz
-in this case, we can calculate this way:
+Here it is S99...
 
-khz = cpu_khz (delta_aperf)/(delta_mperf)
-khz = cpu_khz (delta_aperf/cpu_khz)/(delta_mperf/cpu_khz)
-khz = delta_aperf / (delta_mperf/cpu_khz)
+$ LC_ALL=C ls -l /etc/rc?.d/S*ondemand
+lrwxrwxrwx 1 root root 18 Mar 27  2012 /etc/rc2.d/S99ondemand ->
+../init.d/ondemand
+lrwxrwxrwx 1 root root 18 Mar 27  2012 /etc/rc3.d/S99ondemand ->
+../init.d/ondemand
+lrwxrwxrwx 1 root root 18 Mar 27  2012 /etc/rc4.d/S99ondemand ->
+../init.d/ondemand
+lrwxrwxrwx 1 root root 18 Mar 27  2012 /etc/rc5.d/S99ondemand ->
+../init.d/ondemand
 
-no calculation here can overflow 64-bits in the uptime of the machine.
+> From your other e-mail:
+>
+>> is somehow showing higher
+>> values than TSC_MHz.
+>> Not sure if this really make sense if TSC_MHz is a max-value (which I
+>> don't know it is).
+>
+> That is normal, and is turbo mode. Example:
+>
+> $ sudo turbostat -i 3 --msr=0x199
+>      CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz   MSR 0x199
+>        -     478   12.53    3798    3413  0x00000000
+>        0       3    0.09    3595    3413  0x00002500
+>        4       1    0.03    3568    3413  0x00001000
+>        1       4    0.11    3649    3413  0x00001200
+>        5       2    0.07    3592    3413  0x00001000
+>        2       3    0.08    3628    3413  0x00001000
+>        6       1    0.03    3546    3413  0x00001000
+>        3       1    0.02    3733    3413  0x00001000
+>        7    3808   99.91    3799    3411  0x00002600
+>
 
-I'll send an updated patch.
+Ah, OK.
 
-thanks,
--Len
+Thanks again.
+That helped me.
+
+I am trying CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y from
+linux-pm.git#linux-next out of curiosity...
+
+$ ./scripts/diffconfig /boot/config-$(uname -r) .config
+ CPU_FREQ_DEFAULT_GOV_PERFORMANCE y -> n
++CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
++CPU_FREQ_GOV_ATTR_SET y
++CPU_FREQ_GOV_SCHEDUTIL y
+
+...will report.
+
+- sed@ -
+
+[1] https://en.wikipedia.org/wiki/Curiosity_killed_the_cat
