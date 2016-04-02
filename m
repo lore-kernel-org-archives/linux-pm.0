@@ -1,251 +1,516 @@
-From: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
-Subject: Re: [PATCH 1/8] mfd: twl-core: Rename struct twl4030_platform_data
- to twl_platform_data
-Date: Sat, 02 Apr 2016 21:58:33 +0200
-Message-ID: <1459627113.12073.24.camel@paulk.fr>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 3/8] mfd: twl-core: Rename TWL4030_CORE Kconfig option
+ to TWL_CORE
+Date: Sat, 02 Apr 2016 22:12:15 +0200
+Message-ID: <1459627935.12073.35.camel@paulk.fr>
 References: <1459279341-17389-1-git-send-email-contact@paulk.fr>
-	 <56FBEEC9.1020508@ti.com>
+	 <1459279341-17389-3-git-send-email-contact@paulk.fr>
+	 <56FBF1FD.8090903@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-sDOAotwi9TTDR+Dw08/+"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56FBEEC9.1020508-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+	protocol="application/pgp-signature"; boundary="=-IXWGdjJgmjWra26uxv9C"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gagarine.paulk.fr ([109.190.93.129]:52195 "EHLO
+	gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbcDBUMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Apr 2016 16:12:50 -0400
+In-Reply-To: <56FBF1FD.8090903@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 
 
---=-sDOAotwi9TTDR+Dw08/+
+--=-IXWGdjJgmjWra26uxv9C
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-Le mercredi 30 mars 2016 =C3=A0 18:20 +0300, Grygorii Strashko a =C3=A9crit=
+Le mercredi 30 mars 2016 =C3=A0 18:34 +0300, Grygorii Strashko a =C3=A9crit=
 =C2=A0:
 > On 03/29/2016 10:22 PM, Paul Kocialkowski wrote:
-> > Since twl4030_platform_data also holds platform data (e.g. regulators) =
-for
-> > other
-> > TWL chips, it makes sense to rename it to a non-model-specific name.
 > >=20
-> > This will also allow hooking more platform data structure to it in the
-> > future.
+> > Since the twl-core mfd driver is not limited to twl4030 support, but al=
+so
+> > supports other chips of the TWL family, it makes sense to rename its
+> > matching
+> > Kconfig opton to a non-model-specific name.
 >
-> Do we really need this patch?
-> In general ldb and r51 board files are going to be dropped soon and
-> it not expected to support this PMIC devices for non-DT use cases.
-> As result twl4030_platform_data will be dropped at all or made private.
+> Personally I don't see too much reason for this, but it's up to maintaine=
+rs to
+> decide.
 
-I understand. Depending on how soon these legacy boards are dropped, a clea=
-nup
-might still be a good thing to have. Either way, it doesn't hurt and the pa=
-tch
-is ready already.
+I'm a strong advocate of consistency in naming and using twl4030 prefixes f=
+or
+drivers that are common to more twl chips looks very inconsistent to me.
+Besides, some common twl drivers are already using the twl prefix, so this =
+can
+also be seen as harmonisation.
 
-However, I'll refrain from introducing more twl cleanups (which I had plann=
-ed on
-doing) until we get rid of all the platform data stuff.
+> Regarding this patch - pls, do not mix Kconfig and code changes.
 
-> > Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Do you mean that for code changes that are directly affected by Kconfig cha=
+nges
+(e.g. #ifdef CONFIG_)? Is the policy that "each commit must produce a worki=
+ng
+result" or is it okay to break drivers in between commits of the same serie=
+s?
+
+> And it will be good to have cover letter.
+
+Noted, I'll come up with something for v2.
+
+> > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
 > > ---
-> > =C2=A0 arch/arm/mach-omap2/board-ldp.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A02 +-
-> > =C2=A0 arch/arm/mach-omap2/board-rx51-peripherals.c |=C2=A0=C2=A02 +-
-> > =C2=A0 arch/arm/mach-omap2/twl-common.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A08 ++++----
-> > =C2=A0 arch/arm/mach-omap2/twl-common.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 14 +++++++-------
-> > =C2=A0 drivers/mfd/twl-core.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A04 ++--
+> > =C2=A0 arch/arm/mach-omap2/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 arch/arm/mach-omap2/Makefile=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 arch/arm/mach-omap2/pm.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 2 +-
+> > =C2=A0 arch/arm/plat-omap/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| =
+2 +-
+> > =C2=A0 drivers/gpio/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/iio/adc/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0| 4 ++--
+> > =C2=A0 drivers/input/keyboard/Kconfig=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/input/misc/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| =
+4 ++--
+> > =C2=A0 drivers/mfd/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 6 +++---
+> > =C2=A0 drivers/mfd/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/mfd/twl4030-irq.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0| 6 +++---
+> > =C2=A0 drivers/phy/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/power/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/pwm/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 4 ++--
+> > =C2=A0 drivers/regulator/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0| 2 +-
+> > =C2=A0 drivers/rtc/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/usb/phy/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0| 2 +-
+> > =C2=A0 drivers/video/backlight/Kconfig | 2 +-
+> > =C2=A0 drivers/watchdog/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 2 +-
 > > =C2=A0 include/linux/i2c/twl.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A03 ++-
-> > =C2=A0 6 files changed, 17 insertions(+), 16 deletions(-)
+=A0=C2=A0=C2=A0| 4 ++--
+> > =C2=A0 sound/soc/codecs/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 2 +-
+> > =C2=A0 sound/soc/omap/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0| 4 ++--
+> > =C2=A0 22 files changed, 31 insertions(+), 31 deletions(-)
 > >=20
-> > diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/boar=
-d-
-> > ldp.c
-> > index d9c3ffc..b8c2e21 100644
-> > --- a/arch/arm/mach-omap2/board-ldp.c
-> > +++ b/arch/arm/mach-omap2/board-ldp.c
-> > @@ -321,7 +321,7 @@ static struct regulator_init_data ldp_vpll2 =3D {
-> > =C2=A0=C2=A0	.consumer_supplies	=3D ldp_vpll2_supplies,
-> > =C2=A0 };
-> >=20
-> > -static struct twl4030_platform_data ldp_twldata =3D {
-> > +static struct twl_platform_data ldp_twldata =3D {
-> > =C2=A0=C2=A0	/* platform_data for children goes here */
-> > =C2=A0=C2=A0	.vmmc1		=3D &ldp_vmmc1,
-> > =C2=A0=C2=A0	.vaux1		=3D &ldp_vaux1,
-> > diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/ma=
-ch-
-> > omap2/board-rx51-peripherals.c
-> > index da174c0..3739bff 100644
-> > --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> > +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> > @@ -957,7 +957,7 @@ static struct twl4030_audio_data rx51_audio_data
-> > __initdata =3D {
-> > =C2=A0=C2=A0	.vibra		=3D &rx51_vibra_data,
-> > =C2=A0 };
-> >=20
-> > -static struct twl4030_platform_data rx51_twldata __initdata =3D {
-> > +static struct twl_platform_data rx51_twldata __initdata =3D {
-> > =C2=A0=C2=A0	/* platform_data for children goes here */
-> > =C2=A0=C2=A0	.gpio			=3D &rx51_gpio_data,
-> > =C2=A0=C2=A0	.keypad			=3D &rx51_kp_data,
-> > diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl=
--
-> > common.c
-> > index 292eca0..4e6532f 100644
-> > --- a/arch/arm/mach-omap2/twl-common.c
-> > +++ b/arch/arm/mach-omap2/twl-common.c
-> > @@ -55,7 +55,7 @@ static int twl_get_voltage(void *data)
-> >=20
-> > =C2=A0 void __init omap_pmic_init(int bus, u32 clkrate,
-> > =C2=A0=C2=A0			=C2=A0=C2=A0=C2=A0const char *pmic_type, int pmic_irq,
-> > -			=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data)
-> > +			=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	omap_mux_init_signal("sys_nirq", OMAP_PIN_INPUT_PULLUP |
-> > OMAP_PIN_OFF_WAKEUPENABLE);
-> > =C2=A0=C2=A0	strlcpy(pmic_i2c_board_info.type, pmic_type,
-> > @@ -68,7 +68,7 @@ void __init omap_pmic_init(int bus, u32 clkrate,
-> >=20
-> > =C2=A0 #ifdef CONFIG_ARCH_OMAP4
-> > =C2=A0 void __init omap4_pmic_init(const char *pmic_type,
-> > -		=C2=A0=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data,
-> > +		=C2=A0=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0		=C2=A0=C2=A0=C2=A0=C2=A0struct i2c_board_info *devices, i=
-nt nr_devices)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	/* PMIC part*/
-> > @@ -205,7 +205,7 @@ static struct twl_regulator_driver_data
-> > omap3_vdd2_drvdata =3D {
-> > =C2=A0=C2=A0	.set_voltage =3D twl_set_voltage,
-> > =C2=A0 };
-> >=20
-> > -void __init omap3_pmic_get_config(struct twl4030_platform_data *pmic_d=
-ata,
-> > +void __init omap3_pmic_get_config(struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0				=C2=A0=C2=A0u32 pdata_flags, u32 regulators_flags)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	if (!pmic_data->vdd1) {
-> > @@ -470,7 +470,7 @@ static struct regulator_init_data omap4_v2v1_idata =
-=3D {
-> > =C2=A0=C2=A0	.consumer_supplies	=3D omap4_v2v1_supply,
-> > =C2=A0 };
-> >=20
-> > -void __init omap4_pmic_get_config(struct twl4030_platform_data *pmic_d=
-ata,
-> > +void __init omap4_pmic_get_config(struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0				=C2=A0=C2=A0u32 pdata_flags, u32 regulators_flags)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	if (!pmic_data->vdd1) {
-> > diff --git a/arch/arm/mach-omap2/twl-common.h b/arch/arm/mach-omap2/twl=
--
-> > common.h
-> > index 24b65d0..e7caa23 100644
-> > --- a/arch/arm/mach-omap2/twl-common.h
-> > +++ b/arch/arm/mach-omap2/twl-common.h
-> > @@ -30,35 +30,35 @@
-> > =C2=A0 #define TWL_COMMON_REGULATOR_VPLL2	(1 << 5)
-> >=20
-> >=20
-> > -struct twl4030_platform_data;
-> > +struct twl_platform_data;
-> > =C2=A0 struct twl6040_platform_data;
-> > =C2=A0 struct omap_tw4030_pdata;
-> > =C2=A0 struct i2c_board_info;
-> >=20
-> > =C2=A0 void omap_pmic_init(int bus, u32 clkrate, const char *pmic_type,=
- int
-> > pmic_irq,
-> > -		=C2=A0=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data);
-> > +		=C2=A0=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data);
-> > =C2=A0 void omap_pmic_late_init(void);
-> >=20
-> > =C2=A0 static inline void omap2_pmic_init(const char *pmic_type,
-> > -				=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data)
-> > +				=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	omap_pmic_init(2, 2600, pmic_type, 7 + OMAP_INTC_START,
-> > pmic_data);
-> > =C2=A0 }
-> >=20
-> > =C2=A0 static inline void omap3_pmic_init(const char *pmic_type,
-> > -				=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data)
-> > +				=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	omap_pmic_init(1, 2600, pmic_type, 7 + OMAP_INTC_START,
-> > pmic_data);
-> > =C2=A0 }
-> >=20
-> > =C2=A0 void omap4_pmic_init(const char *pmic_type,
-> > -		=C2=A0=C2=A0=C2=A0=C2=A0struct twl4030_platform_data *pmic_data,
-> > +		=C2=A0=C2=A0=C2=A0=C2=A0struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0		=C2=A0=C2=A0=C2=A0=C2=A0struct i2c_board_info *devices, i=
-nt nr_devices);
-> >=20
-> > -void omap3_pmic_get_config(struct twl4030_platform_data *pmic_data,
-> > +void omap3_pmic_get_config(struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0			=C2=A0=C2=A0=C2=A0u32 pdata_flags, u32 regulators_flags)=
-;
-> >=20
-> > -void omap4_pmic_get_config(struct twl4030_platform_data *pmic_data,
-> > +void omap4_pmic_get_config(struct twl_platform_data *pmic_data,
-> > =C2=A0=C2=A0			=C2=A0=C2=A0=C2=A0u32 pdata_flags, u32 regulators_flags)=
-;
-> >=20
-> > =C2=A0 void omap_twl4030_audio_init(char *card_name, struct omap_tw4030=
-_pdata
-> > *pdata);
-> > diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
-> > index 831696e..dae52f7 100644
-> > --- a/drivers/mfd/twl-core.c
-> > +++ b/drivers/mfd/twl-core.c
-> > @@ -721,7 +721,7 @@ add_regulator(int num, struct regulator_init_data
-> > *pdata,
+> > diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+> > index 0517f0c..ada4c7a1 100644
+> > --- a/arch/arm/mach-omap2/Kconfig
+> > +++ b/arch/arm/mach-omap2/Kconfig
+> > @@ -124,7 +124,7 @@ config ARCH_OMAP2PLUS_TYPICAL
+> > =C2=A0=C2=A0	select PM
+> > =C2=A0=C2=A0	select REGULATOR
+> > =C2=A0=C2=A0	select REGULATOR_FIXED_VOLTAGE
+> > -	select TWL4030_CORE if ARCH_OMAP3 || ARCH_OMAP4
+> > +	select TWL_CORE if ARCH_OMAP3 || ARCH_OMAP4
+> > =C2=A0=C2=A0	select TWL4030_POWER if ARCH_OMAP3 || ARCH_OMAP4
+> > =C2=A0=C2=A0	select VFP
+> > =C2=A0=C2=A0	help
+> > diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefil=
+e
+> > index 0ba6a0e..6eb680a 100644
+> > --- a/arch/arm/mach-omap2/Makefile
+> > +++ b/arch/arm/mach-omap2/Makefile
+> > @@ -27,7 +27,7 @@ ifneq ($(CONFIG_SND_OMAP_SOC_MCBSP),)
+> > =C2=A0 obj-y +=3D mcbsp.o
+> > =C2=A0 endif
+> > =C2=A0=C2=A0
+> > -obj-$(CONFIG_TWL4030_CORE) +=3D omap_twl.o
+> > +obj-$(CONFIG_TWL_CORE) +=3D omap_twl.o
+> > =C2=A0 obj-$(CONFIG_SOC_HAS_OMAP2_SDRC)	+=3D sdrc.o
+> > =C2=A0=C2=A0
+> > =C2=A0 # SMP support ONLY available for OMAP4
+> > diff --git a/arch/arm/mach-omap2/pm.h b/arch/arm/mach-omap2/pm.h
+> > index b668719..bf4dac2 100644
+> > --- a/arch/arm/mach-omap2/pm.h
+> > +++ b/arch/arm/mach-omap2/pm.h
+> > @@ -123,7 +123,7 @@ static inline int omap_devinit_smartreflex(void)
+> > =C2=A0 static inline void omap_enable_smartreflex_on_init(void) {}
+> > =C2=A0 #endif
+> > =C2=A0=C2=A0
+> > -#ifdef CONFIG_TWL4030_CORE
+> > +#ifdef CONFIG_TWL_CORE
+> > =C2=A0 extern int omap3_twl_init(void);
+> > =C2=A0 extern int omap4_twl_init(void);
+> > =C2=A0 extern int omap3_twl_set_sr_bit(bool enable);
+> > diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+> > index d055db3..8631a45 100644
+> > --- a/arch/arm/plat-omap/Kconfig
+> > +++ b/arch/arm/plat-omap/Kconfig
+> > @@ -44,7 +44,7 @@ config POWER_AVS_OMAP
+> > =C2=A0=C2=A0
+> > =C2=A0 config POWER_AVS_OMAP_CLASS3
+> > =C2=A0=C2=A0	bool "Class 3 mode of Smartreflex Implementation"
+> > -	depends on POWER_AVS_OMAP && TWL4030_CORE
+> > +	depends on POWER_AVS_OMAP && TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say Y to enable Class 3 implementation of Smar=
+treflex
+> > =C2=A0=C2=A0
+> > diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> > index 5f3429f..62ca9b4 100644
+> > --- a/drivers/gpio/Kconfig
+> > +++ b/drivers/gpio/Kconfig
+> > @@ -933,7 +933,7 @@ config GPIO_TPS65912
+> > =C2=A0=C2=A0
+> > =C2=A0 config GPIO_TWL4030
+> > =C2=A0=C2=A0	tristate "TWL4030, TWL5030, and TPS659x0 GPIOs"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say yes here to access the GPIO signals of var=
+ious multi-
+> > function
+> > =C2=A0=C2=A0	=C2=A0=C2=A0power management chips from Texas Instruments.
+> > diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> > index af4aea7..3360492 100644
+> > --- a/drivers/iio/adc/Kconfig
+> > +++ b/drivers/iio/adc/Kconfig
+> > @@ -440,7 +440,7 @@ config TI_AM335X_ADC
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL4030_MADC
+> > =C2=A0=C2=A0	tristate "TWL4030 MADC (Monitoring A/D Converter)"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0This driver provides support for Triton TWL403=
+0-MADC. The
+> > =C2=A0=C2=A0	=C2=A0=C2=A0driver supports both RT and SW conversion meth=
+ods.
+> > @@ -450,7 +450,7 @@ config TWL4030_MADC
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL6030_GPADC
+> > =C2=A0=C2=A0	tristate "TWL6030 GPADC (General Purpose A/D Converter) Su=
+pport"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	default n
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say yes here if you want support for the TWL60=
+30/TWL6032 General
+> > diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kc=
+onfig
+> > index 509608c..9cfa09b 100644
+> > --- a/drivers/input/keyboard/Kconfig
+> > +++ b/drivers/input/keyboard/Kconfig
+> > @@ -653,7 +653,7 @@ config KEYBOARD_TC3589X
+> > =C2=A0=C2=A0
+> > =C2=A0 config KEYBOARD_TWL4030
+> > =C2=A0=C2=A0	tristate "TI TWL4030/TWL5030/TPS659x0 keypad support"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	select INPUT_MATRIXKMAP
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say Y here if your board use the keypad contro=
+ller on
+> > diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> > index 1f2337a..6abb6df 100644
+> > --- a/drivers/input/misc/Kconfig
+> > +++ b/drivers/input/misc/Kconfig
+> > @@ -461,7 +461,7 @@ config INPUT_AXP20X_PEK
+> > =C2=A0=C2=A0
+> > =C2=A0 config INPUT_TWL4030_PWRBUTTON
+> > =C2=A0=C2=A0	tristate "TWL4030 Power button Driver"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say Y here if you want to enable power key rep=
+orting via the
+> > =C2=A0=C2=A0	=C2=A0=C2=A0TWL4030 family of chips.
+> > @@ -471,7 +471,7 @@ config INPUT_TWL4030_PWRBUTTON
+> > =C2=A0=C2=A0
+> > =C2=A0 config INPUT_TWL4030_VIBRA
+> > =C2=A0=C2=A0	tristate "Support for TWL4030 Vibrator"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	select MFD_TWL4030_AUDIO
+> > =C2=A0=C2=A0	select INPUT_FF_MEMLESS
+> > =C2=A0=C2=A0	help
+> > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> > index eea61e3..28bfe3d 100644
+> > --- a/drivers/mfd/Kconfig
+> > +++ b/drivers/mfd/Kconfig
+> > @@ -1266,7 +1266,7 @@ config MFD_TPS80031
+> > =C2=A0=C2=A0	=C2=A0=C2=A0ADC, RTC, 2 PWM, System Voltage Regulator/Batt=
+ery Charger with
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Power Path from USB, 32K clock generator.
+> > =C2=A0=C2=A0
+> > -config TWL4030_CORE
+> > +config TWL_CORE
+> > =C2=A0=C2=A0	bool "TI TWL4030/TWL5030/TWL6030/TPS659x0 Support"
+> > =C2=A0=C2=A0	depends on I2C=3Dy
+> > =C2=A0=C2=A0	select IRQ_DOMAIN
+> > @@ -1284,7 +1284,7 @@ config TWL4030_CORE
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL4030_POWER
+> > =C2=A0=C2=A0	bool "TI TWL4030 power resources"
+> > -	depends on TWL4030_CORE && ARM
+> > +	depends on TWL_CORE && ARM
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say yes here if you want to use the power reso=
+urces on the
+> > =C2=A0=C2=A0	=C2=A0=C2=A0TWL4030 family chips.=C2=A0=C2=A0Most of these=
+ resources are regulators,
+> > @@ -1297,7 +1297,7 @@ config TWL4030_POWER
+> > =C2=A0=C2=A0
+> > =C2=A0 config MFD_TWL4030_AUDIO
+> > =C2=A0=C2=A0	bool "TI TWL4030 Audio"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	select MFD_CORE
+> > =C2=A0=C2=A0	default n
+> > =C2=A0=C2=A0
+> > diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> > index 5eaa6465d..7daeab5 100644
+> > --- a/drivers/mfd/Makefile
+> > +++ b/drivers/mfd/Makefile
+> > @@ -81,7 +81,7 @@ obj-$(CONFIG_MFD_TPS65912_SPI)=C2=A0=C2=A0+=3D tps659=
+12-spi.o
+> > =C2=A0 obj-$(CONFIG_MFD_TPS80031)	+=3D tps80031.o
+> > =C2=A0 obj-$(CONFIG_MENELAUS)		+=3D menelaus.o
+> > =C2=A0=C2=A0
+> > -obj-$(CONFIG_TWL4030_CORE)	+=3D twl-core.o twl4030-irq.o twl6030-irq.o
+> > +obj-$(CONFIG_TWL_CORE)	+=3D twl-core.o twl4030-irq.o twl6030-irq.o
+> > =C2=A0 obj-$(CONFIG_TWL4030_POWER)=C2=A0=C2=A0=C2=A0=C2=A0+=3D twl4030-=
+power.o
+> > =C2=A0 obj-$(CONFIG_MFD_TWL4030_AUDIO)	+=3D twl4030-audio.o
+> > =C2=A0 obj-$(CONFIG_TWL6040_CORE)	+=3D twl6040.o
+> > diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
+> > index 40e51b0..52dc294 100644
+> > --- a/drivers/mfd/twl4030-irq.c
+> > +++ b/drivers/mfd/twl4030-irq.c
+> > @@ -54,7 +54,7 @@
+> > =C2=A0=C2=A0=C2=A0*	base + 8=C2=A0=C2=A0.. base + 15	SIH for PWR_INT
+> > =C2=A0=C2=A0=C2=A0*	base + 16 .. base + 33	SIH for GPIO
 > > =C2=A0=C2=A0=C2=A0*/
-> >=20
-> > =C2=A0 static int
-> > -add_children(struct twl4030_platform_data *pdata, unsigned irq_base,
-> > +add_children(struct twl_platform_data *pdata, unsigned irq_base,
-> > =C2=A0=C2=A0		unsigned long features)
-> > =C2=A0 {
-> > =C2=A0=C2=A0	struct device	*child;
-> > @@ -1083,7 +1083,7 @@ static struct of_dev_auxdata twl_auxdata_lookup[]=
- =3D {
-> > =C2=A0 static int
-> > =C2=A0 twl_probe(struct i2c_client *client, const struct i2c_device_id =
-*id)
-> > =C2=A0 {
-> > -	struct twl4030_platform_data	*pdata =3D
-> > dev_get_platdata(&client->dev);
-> > +	struct twl_platform_data	*pdata =3D dev_get_platdata(&client-
-> > >dev);
-> > =C2=A0=C2=A0	struct device_node		*node =3D client->dev.of_node;
-> > =C2=A0=C2=A0	struct platform_device		*pdev;
-> > =C2=A0=C2=A0	const struct regmap_config	*twl_regmap_config;
+> > -#define TWL4030_CORE_NR_IRQS	8
+> > +#define TWL_CORE_NR_IRQS	8
+> > =C2=A0 #define TWL4030_PWR_NR_IRQS	8
+> > =C2=A0=C2=A0
+> > =C2=A0 /* PIH register offsets */
+> > @@ -693,7 +693,7 @@ int twl4030_init_irq(struct device *dev, int irq_nu=
+m)
+> > =C2=A0=C2=A0	=C2=A0* the hwirqs numbers are defined contiguously from 1=
+ to 15.
+> > =C2=A0=C2=A0	=C2=A0* Create only one domain for both.
+> > =C2=A0=C2=A0	=C2=A0*/
+> > -	nr_irqs =3D TWL4030_PWR_NR_IRQS + TWL4030_CORE_NR_IRQS;
+> > +	nr_irqs =3D TWL4030_PWR_NR_IRQS + TWL_CORE_NR_IRQS;
+> > =C2=A0=C2=A0
+> > =C2=A0=C2=A0	irq_base =3D irq_alloc_descs(-1, 0, nr_irqs, 0);
+> > =C2=A0=C2=A0	if (IS_ERR_VALUE(irq_base)) {
+> > @@ -704,7 +704,7 @@ int twl4030_init_irq(struct device *dev, int irq_nu=
+m)
+> > =C2=A0=C2=A0	irq_domain_add_legacy(node, nr_irqs, irq_base, 0,
+> > =C2=A0=C2=A0			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0&irq_domain_simple_o=
+ps, NULL);
+> > =C2=A0=C2=A0
+> > -	irq_end =3D irq_base + TWL4030_CORE_NR_IRQS;
+> > +	irq_end =3D irq_base + TWL_CORE_NR_IRQS;
+> > =C2=A0=C2=A0
+> > =C2=A0=C2=A0	/*
+> > =C2=A0=C2=A0	=C2=A0* Mask and clear all TWL4030 interrupts since initia=
+lly we do
+> > diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+> > index 26566db..6193565 100644
+> > --- a/drivers/phy/Kconfig
+> > +++ b/drivers/phy/Kconfig
+> > @@ -164,7 +164,7 @@ config TI_PIPE3
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL4030_USB
+> > =C2=A0=C2=A0	tristate "TWL4030 USB Transceiver Driver"
+> > -	depends on TWL4030_CORE && REGULATOR_TWL4030 && USB_MUSB_OMAP2PLUS
+> > +	depends on TWL_CORE && REGULATOR_TWL4030 && USB_MUSB_OMAP2PLUS
+> > =C2=A0=C2=A0	depends on USB_SUPPORT
+> > =C2=A0=C2=A0	select GENERIC_PHY
+> > =C2=A0=C2=A0	select USB_PHY
+> > diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> > index 421770d..cc5fe9a 100644
+> > --- a/drivers/power/Kconfig
+> > +++ b/drivers/power/Kconfig
+> > @@ -323,7 +323,7 @@ config CHARGER_MAX8903
+> > =C2=A0=C2=A0
+> > =C2=A0 config CHARGER_TWL4030
+> > =C2=A0=C2=A0	tristate "OMAP TWL4030 BCI charger driver"
+> > -	depends on IIO && TWL4030_CORE
+> > +	depends on IIO && TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Say Y here to enable support for TWL4030 Batte=
+ry Charge
+> > Interface.
+> > =C2=A0=C2=A0
+> > diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
+> > index c182efc..6318f19 100644
+> > --- a/drivers/pwm/Kconfig
+> > +++ b/drivers/pwm/Kconfig
+> > @@ -413,7 +413,7 @@ config=C2=A0=C2=A0PWM_TIPWMSS
+> > =C2=A0=C2=A0
+> > =C2=A0 config PWM_TWL
+> > =C2=A0=C2=A0	tristate "TWL4030/6030 PWM support"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Generic PWM framework driver for TWL4030/6030.
+> > =C2=A0=C2=A0
+> > @@ -422,7 +422,7 @@ config PWM_TWL
+> > =C2=A0=C2=A0
+> > =C2=A0 config PWM_TWL_LED
+> > =C2=A0=C2=A0	tristate "TWL4030/6030 PWM support for LED drivers"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Generic PWM framework driver for TWL4030/6030 =
+LED terminals.
+> > =C2=A0=C2=A0
+> > diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+> > index c77dc08..b62b4b4 100644
+> > --- a/drivers/regulator/Kconfig
+> > +++ b/drivers/regulator/Kconfig
+> > @@ -803,7 +803,7 @@ config REGULATOR_TPS80031
+> > =C2=A0=C2=A0
+> > =C2=A0 config REGULATOR_TWL4030
+> > =C2=A0=C2=A0	tristate "TI TWL4030/TWL5030/TWL6030/TPS659x0 PMIC"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0This driver supports the voltage regulators pr=
+ovided by
+> > =C2=A0=C2=A0	=C2=A0=C2=A0this family of companion chips.
+> > diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> > index 3e84315..198ac54 100644
+> > --- a/drivers/rtc/Kconfig
+> > +++ b/drivers/rtc/Kconfig
+> > @@ -462,7 +462,7 @@ config RTC_DRV_TWL92330
+> > =C2=A0=C2=A0
+> > =C2=A0 config RTC_DRV_TWL4030
+> > =C2=A0=C2=A0	tristate "TI TWL4030/TWL5030/TWL6030/TPS659x0"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0If you say yes here you get support for the RT=
+C on the
+> > =C2=A0=C2=A0	=C2=A0=C2=A0TWL4030/TWL5030/TWL6030 family chips, used mos=
+tly with OMAP3
+> > platforms.
+> > diff --git a/drivers/usb/phy/Kconfig b/drivers/usb/phy/Kconfig
+> > index c690474..2911b11 100644
+> > --- a/drivers/usb/phy/Kconfig
+> > +++ b/drivers/usb/phy/Kconfig
+> > @@ -80,7 +80,7 @@ config SAMSUNG_USBPHY
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL6030_USB
+> > =C2=A0=C2=A0	tristate "TWL6030 USB Transceiver Driver"
+> > -	depends on TWL4030_CORE && OMAP_USB2 && USB_MUSB_OMAP2PLUS
+> > +	depends on TWL_CORE && OMAP_USB2 && USB_MUSB_OMAP2PLUS
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Enable this to support the USB OTG transceiver=
+ on TWL6030
+> > =C2=A0=C2=A0	=C2=A0=C2=A0family chips. This TWL6030 transceiver has the=
+ VBUS and ID GND
+> > diff --git a/drivers/video/backlight/Kconfig
+> > b/drivers/video/backlight/Kconfig
+> > index 5ffa4b4..8d6e4e0 100644
+> > --- a/drivers/video/backlight/Kconfig
+> > +++ b/drivers/video/backlight/Kconfig
+> > @@ -412,7 +412,7 @@ config BACKLIGHT_OT200
+> > =C2=A0=C2=A0
+> > =C2=A0 config BACKLIGHT_PANDORA
+> > =C2=A0=C2=A0	tristate "Backlight driver for Pandora console"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0If you have a Pandora console, say Y to enable=
+ the
+> > =C2=A0=C2=A0	=C2=A0=C2=A0backlight driver.
+> > diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> > index fb94765..4b24418 100644
+> > --- a/drivers/watchdog/Kconfig
+> > +++ b/drivers/watchdog/Kconfig
+> > @@ -462,7 +462,7 @@ config COH901327_WATCHDOG
+> > =C2=A0=C2=A0
+> > =C2=A0 config TWL4030_WATCHDOG
+> > =C2=A0=C2=A0	tristate "TWL4030 Watchdog"
+> > -	depends on TWL4030_CORE
+> > +	depends on TWL_CORE
+> > =C2=A0=C2=A0	select WATCHDOG_CORE
+> > =C2=A0=C2=A0	help
+> > =C2=A0=C2=A0	=C2=A0=C2=A0Support for TI TWL4030 watchdog.=C2=A0=C2=A0Sa=
+y 'Y' here to enable the
 > > diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
-> > index 9ad7828..27bea30 100644
+> > index 4e7ea5f..2decb190 100644
 > > --- a/include/linux/i2c/twl.h
 > > +++ b/include/linux/i2c/twl.h
-> > @@ -704,7 +704,8 @@ struct twl4030_audio_data {
-> > =C2=A0=C2=A0	unsigned int irq_base;
-> > =C2=A0 };
-> >=20
-> > -struct twl4030_platform_data {
-> > +struct twl_platform_data {
-> > +	/* TWL4030 platform data */
-> > =C2=A0=C2=A0	struct twl4030_clock_init_data		*clock;
-> > =C2=A0=C2=A0	struct twl4030_bci_platform_data	*bci;
-> > =C2=A0=C2=A0	struct twl4030_gpio_platform_data	*gpio;
+> > @@ -214,7 +214,7 @@ int twl6030_interrupt_unmask(u8 bit_mask, u8 offset=
+);
+> > =C2=A0 int twl6030_interrupt_mask(u8 bit_mask, u8 offset);
+> > =C2=A0=C2=A0
+> > =C2=A0 /* Card detect Configuration for MMC1 Controller on OMAP4 */
+> > -#ifdef CONFIG_TWL4030_CORE
+> > +#ifdef CONFIG_TWL_CORE
+> > =C2=A0 int twl6030_mmc_card_detect_config(void);
+> > =C2=A0 #else
+> > =C2=A0 static inline int twl6030_mmc_card_detect_config(void)
+> > @@ -225,7 +225,7 @@ static inline int twl6030_mmc_card_detect_config(vo=
+id)
+> > =C2=A0 #endif
+> > =C2=A0=C2=A0
+> > =C2=A0 /* MMC1 Controller on OMAP4 uses Phoenix irq for Card detect */
+> > -#ifdef CONFIG_TWL4030_CORE
+> > +#ifdef CONFIG_TWL_CORE
+> > =C2=A0 int twl6030_mmc_card_detect(struct device *dev, int slot);
+> > =C2=A0 #else
+> > =C2=A0 static inline int twl6030_mmc_card_detect(struct device *dev, in=
+t slot)
+> > diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
+> > index 649e92a..009feb4 100644
+> > --- a/sound/soc/codecs/Kconfig
+> > +++ b/sound/soc/codecs/Kconfig
+> > @@ -134,7 +134,7 @@ config SND_SOC_ALL_CODECS
+> > =C2=A0=C2=A0	select SND_SOC_TPA6130A2 if I2C
+> > =C2=A0=C2=A0	select SND_SOC_TLV320DAC33 if I2C
+> > =C2=A0=C2=A0	select SND_SOC_TS3A227E if I2C
+> > -	select SND_SOC_TWL4030 if TWL4030_CORE
+> > +	select SND_SOC_TWL4030 if TWL_CORE
+> > =C2=A0=C2=A0	select SND_SOC_TWL6040 if TWL6040_CORE
+> > =C2=A0=C2=A0	select SND_SOC_UDA134X
+> > =C2=A0=C2=A0	select SND_SOC_UDA1380 if I2C
+> > diff --git a/sound/soc/omap/Kconfig b/sound/soc/omap/Kconfig
+> > index 5185a38..49af002 100644
+> > --- a/sound/soc/omap/Kconfig
+> > +++ b/sound/soc/omap/Kconfig
+> > @@ -85,7 +85,7 @@ config SND_OMAP_SOC_AM3517EVM
+> > =C2=A0=C2=A0
+> > =C2=A0 config SND_OMAP_SOC_OMAP_TWL4030
+> > =C2=A0=C2=A0	tristate "SoC Audio support for TI SoC based boards with t=
+wl4030
+> > codec"
+> > -	depends on TWL4030_CORE && SND_OMAP_SOC
+> > +	depends on TWL_CORE && SND_OMAP_SOC
+> > =C2=A0=C2=A0	select SND_OMAP_SOC_MCBSP
+> > =C2=A0=C2=A0	select SND_SOC_TWL4030
+> > =C2=A0=C2=A0	help
+> > @@ -117,7 +117,7 @@ config SND_OMAP_SOC_OMAP_ABE_TWL6040
+> > =C2=A0=C2=A0
+> > =C2=A0 config SND_OMAP_SOC_OMAP3_PANDORA
+> > =C2=A0=C2=A0	tristate "SoC Audio support for OMAP3 Pandora"
+> > -	depends on TWL4030_CORE && SND_OMAP_SOC && MACH_OMAP3_PANDORA
+> > +	depends on TWL_CORE && SND_OMAP_SOC && MACH_OMAP3_PANDORA
+> > =C2=A0=C2=A0	select SND_OMAP_SOC_MCBSP
+> > =C2=A0=C2=A0	select SND_SOC_TWL4030
+> > =C2=A0=C2=A0	help
 > >=20
 >=20
---=-sDOAotwi9TTDR+Dw08/+
+--=-IXWGdjJgmjWra26uxv9C
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -253,24 +518,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJXACRpAAoJEIT9weqP7pUMjIcP/2OIheCHu8e+WGtDMWvviuax
-JnxRUiTgqCPKVCVQAxMbxnHBHrkh507gCcMK02Pb7m/+yBnHvQDs4ETDFvL4fodR
-DkZaw/We4smOpKBABsXmsjnIfSeYkMxtLCV8yLBD3oextXvo+OEy8r7J0FTh75RR
-dCUQsd3zt2bFN4SNtfikRxFXuLDCxthOoJXyx8Iry8KBMIfpf1/3sEfdaMl+yfeL
-K3XklsFCpbV+1jHrSQiQF8yEhK1MRzAOtIlardj76T8LMtmSdWjjxDJM3lAinUz2
-UC1z5yOsKpflwXjmLm18E4CRffrx8NPR95j95GuWdxj1JTp+7E5M75LcP1UTPlVS
-kkqtzXCn9WAGCLt7nL0dCWakLHmTVfQ4emzXkY8KpG1UUtRTsv9KsApOlwLsCFLU
-DvHpSG2A0Q1LELu2LBpUKtx8CPFh3DWQeuI/BEvX3vq8iDjivjTq6sm/Vvb1aTjR
-KsUpw5O5JQE8b4hDF7f/48VMlDGE0zhELtyqvOLq0yyGQJ7XnbQByVYKLY+CkN6o
-uk/Hc2lP4DazDIw7rHmXkL9qkQB8d9cEDT9wpEuIyHydDkmcRZIi760MJysbjoX+
-i84U2w4QbJe/PxJtIl0DuqUSFh5B3PTKe2DTLmNkySrG7VkrNfk8MbT26oDRnOAO
-3qL+js9r402MKXysSBZh
-=RKAS
+iQIcBAABCAAGBQJXACegAAoJEIT9weqP7pUM//kP/0vTOivCrs6ubKjVK9g/j9HN
+4mFfHu4R70aL6UJk8y0e1jiQxEII/2kRCC+W7oLnpt6aWeCdpOZ7VL2ly7ZOytRf
+1IcKhlJNhWcXPuTLV+vrKXduaueXrUFS6dRBK1HTjh1u9qXB/+ShSZYOu4Cwg4h2
+gtiKV/3BfBQTmnOxEV2/vrSC/iK7pGam5eT3lmWo4K+54/HKIvafROEJa589hfCG
+RWwL4GKa91QeO5wUAbpMlFreXCqdriYNdvXWweRj0efkp32U5h518Ra0XCk2Z77U
+/zJqb+/h88VbVMGTF5q6O/yRT7NBOcL4h34NHjKEbt6QacGDwSErdF5dPiY+v5bz
+mxqrcO6fdETtMZkbhCsrgMPY8yTa9MX//QUhub7jTlsPDndImtaMujkmenU5kEZt
+cPZnCp77UPPeuLOXaTDPlCivAbI4hFo7s7RlEs4BvBgE7tjlTmERwoeUHOA7wSrv
+NRYn8l8nAqMsc5bxb0ckjGxPoDY96nwoDeRM3CxPzX9FHRCyd8I2lHMA0eY8R4X+
+kPbhzcefK7eOA53bXHcuAt1Ar6R/OA59jsqYSrGN5b3/Ga4u9yaXK/ELfscCoVGA
+uX3yCRB22HC3i4bswBA3iMr6M27XNYM26qb1xsaMaNt1b7P4vACaGl1VvQIALPRe
+T5uWTGxbcAOWJ+npg5YO
+=tFj9
 -----END PGP SIGNATURE-----
 
---=-sDOAotwi9TTDR+Dw08/+--
+--=-IXWGdjJgmjWra26uxv9C--
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
