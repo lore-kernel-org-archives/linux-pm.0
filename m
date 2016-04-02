@@ -1,61 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH RESEND] smp: make wake up idle cpus more generic
-Date: Sat, 2 Apr 2016 15:10:40 +0200
-Message-ID: <56FFC4D0.4090609@linaro.org>
-References: <1459489819-20435-1-git-send-email-lianwei.wang@gmail.com>
- <20160401070758.GA28352@gmail.com>
- <CAJFUiJiHDmhPOnO6NYnTnvaXMaB6E3Jc9MSau-juq2BtHWq-Qg@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Sat, 02 Apr 2016 08:28:43 -0700
+Message-ID: <1459610923.5912.36.camel@linux.intel.com>
+References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>
+	 <1459376311.13525.108.camel@linux.intel.com>
+	 <003b01d18ad6$831941c0$894bc540$@net>
+	 <CA+icZUXaoeQz5vMzPxjOaAzbzdQ4D1MV2dG5EvXAM54k6EOz1g@mail.gmail.com>
+	 <002301d18b59$d208fe50$761afaf0$@net>
+	 <CA+icZUX2ZtsO8pa7ZY0JKW3vm5veVCJ08q3p0ai3FxdMNgvKww@mail.gmail.com>
+	 <CA+icZUVHyq7dOh457rYv+2nmNxPevY0ZcqxhQVhYG4Z1D-NaDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJFUiJiHDmhPOnO6NYnTnvaXMaB6E3Jc9MSau-juq2BtHWq-Qg@mail.gmail.com>
+In-Reply-To: <CA+icZUVHyq7dOh457rYv+2nmNxPevY0ZcqxhQVhYG4Z1D-NaDA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lianwei Wang <lianwei.wang@gmail.com>, Ingo Molnar <mingo@kernel.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kbuild-all@01.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Gleixner <tglx@linutronix.de>
+To: sedat.dilek@gmail.com, Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/02/2016 08:15 AM, Lianwei Wang wrote:
->>
->> * Lianwei Wang <lianwei.wang@gmail.com> wrote:
->>
->>> The wake_up_all_idle_cpus API always wake up all the online
->>> cpus, but sometimes we only want to wake up a set of cpus.
->>> Use a generic function to wake up a group of cpus that is
->>> specified by the cpumask parameter. This generic API can
->>> benefit to the cases that only need to wake up a set of
->>> cpus.
->>
->> What is the new user of this new argument to the wake-up call?
->>
->> Thanks,
->>
->>          Ingo
->
-> The ARM big.LITTLE arch is one of the users to use the new wake up
-> call. Two clusters in these SoCs and each cluster has 2 or more CPUs.
-> For some cases, we only need to wake up the cpus on one cluster, not
-> all the cpus. The other cluster can keep in idle state to save power.
-> Another use case is that for the threads/irqs that bind to some cpus,
-> we also want to wake up the cpus that the threads/irqs bind to, and
-> the other cpus can stay in idle state. I'm updating the pm_qos code t=
-o
-> support binding the request to a set of cpus, and the
-> cpuidle_latency_notify call can pass the cpumask parameter to the new
-> wake-up call.
 
-Hi Lianwei,
+On Sat, 2016-04-02 at 08:30 +0200, Sedat Dilek wrote:
+> > I am trying CPU_FREQ_DEFAULT_GOV_PERFORMANCE=3Dy from
+> > linux-pm.git#linux-next out of curiosity...
+> >=20
+> > $ ./scripts/diffconfig /boot/config-$(uname -r) .config
+> > =C2=A0CPU_FREQ_DEFAULT_GOV_PERFORMANCE y -> n
+> > +CPU_FREQ_DEFAULT_GOV_SCHEDUTIL y
+> > +CPU_FREQ_GOV_ATTR_SET y
+> > +CPU_FREQ_GOV_SCHEDUTIL y
+> >=20
+> > ...will report.
+> >=20
+>=20
+> Not sure why I see here "powersave".
+> Does Intel-PState driver not support CPU_FREQ_GOV_SCHEDUTIL?
+>=20
+> $ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_driver
+> intel_pstate
+> intel_pstate
+> intel_pstate
+> intel_pstate
+>=20
+> $ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+> powersave
+> powersave
+> powersave
+> powersave
 
-a quick suggestion : cpuidle_driver->cpumask
+If you are using Ubuntu, the OS has a script which will automatically
+change from performance.
+Doug can give more information on this script.
 
-   -- Daniel
+Thanks,
+Srinivas
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>=20
+> See also attached files.
+>=20
+> - sed@ -
