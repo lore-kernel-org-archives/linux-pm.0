@@ -1,39 +1,45 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal SoC management updates for v4.6-rc2
-Date: Sat, 2 Apr 2016 18:32:56 -0700
-Message-ID: <20160403013255.GA10768@localhost.localdomain>
-References: <20160403010436.GA10468@localhost.localdomain>
- <CA+55aFxHBTZVuYN_zQ2vbUg604wuZjr7SPLHZH22ZXUbduHLVQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFxHBTZVuYN_zQ2vbUg604wuZjr7SPLHZH22ZXUbduHLVQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v2] PM / runtime: Document steps for device removal
+Date: Sun,  3 Apr 2016 12:23:07 +0900
+Message-ID: <1459653787-5963-1-git-send-email-krzk@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:45709 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbcDCDXa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Apr 2016 23:23:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Krzysztof Kozlowski <krzk@kernel.org>
 
-On Sat, Apr 02, 2016 at 08:09:08PM -0500, Linus Torvalds wrote:
-> On Sat, Apr 2, 2016 at 8:04 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> >
-> > Please pull from
-> >
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-> >
-> > to receive Thermal-SoC Management updates for v4.6-rc2 with top-most
-> 
-> This is not a "fixes" pull.
-> 
-> This is a merge window pull, long after the merge window has closed.
-> 
-> Not pulled.
+Put a reminder that during device removal drivers should revert all PM
+runtime changes from the probe.
 
-OK. Redirecting this material to 4.7-rc1 then.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Thanks,
+---
 
-Eduardo Valentin
+Changes since v1:
+1. Address Alan's comments.
+---
+ Documentation/power/runtime_pm.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> 
->             Linus
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 7328cf85236c..1fd1fbe9ce95 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -586,6 +586,10 @@ drivers to make their ->remove() callbacks avoid races with runtime PM directly,
+ but also it allows of more flexibility in the handling of devices during the
+ removal of their drivers.
+ 
++Drivers in ->remove() callback should undo the runtime PM changes done
++in ->probe(). Usually this means calling pm_runtime_disable(),
++pm_runtime_dont_use_autosuspend() etc.
++
+ The user space can effectively disallow the driver of the device to power manage
+ it at run time by changing the value of its /sys/devices/.../power/control
+ attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
+-- 
+2.1.4
+
