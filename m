@@ -1,66 +1,256 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 04 Apr 2016 13:47:50 +0300
-Message-ID: <877fgd7iqx.fsf@intel.com>
-References: <cover.1458128215.git.baolin.wang@linaro.org> <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org> <87h9foqnur.fsf@intel.com> <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com> <87poubgnbh.fsf@intel.com> <20160331170635.GH2350@sirena.org.uk> <87d1q9anpt.fsf@intel.com> <20160401141643.GX2350@sirena.org.uk>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH v6] thermal: add temperature sensor support for tango SoC
+Date: Mon, 4 Apr 2016 13:48:40 +0200
+Message-ID: <57025498.4080408@free.fr>
+References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
+ <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
+ <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
+ <56FACE0B.9060606@free.fr> <20160330000503.GA2625@localhost.localdomain>
+ <56FBEE4F.3060106@free.fr> <56FD8582.80002@free.fr>
+ <20160401015240.GB19409@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:35825 "EHLO mga01.intel.com"
+Received: from smtp2-g21.free.fr ([212.27.42.2]:55085 "EHLO smtp2-g21.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbcDDKuv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 06:50:51 -0400
-In-Reply-To: <20160401141643.GX2350@sirena.org.uk>
+	id S1753154AbcDDLsx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Apr 2016 07:48:53 -0400
+In-Reply-To: <20160401015240.GB19409@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, arm-soc <arm@kernel.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 
+The Tango thermal driver provides support for the primitive temperature
+sensor embedded in Tango chips since the SMP8758.
 
-Hi,
+This sensor only generates a 1-bit signal to indicate whether the die
+temperature exceeds a programmable threshold.
 
-Mark Brown <broonie@kernel.org> writes:
-> On Fri, Apr 01, 2016 at 08:43:10AM +0300, Felipe Balbi wrote:
->> Mark Brown <broonie@kernel.org> writes:
->
->> > IIRC Greg didn't want new classes?
->
->> good point. Still, this doesn't seem to fit a but_type IMO.
->
-> It does in this new world order.  IIRC on an earlier round of review
-> there was some code that didn't use a bus but that got complaints that
-> it was trying to reimplement the bus functionality.
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+CCing Rob and Mark for the DT parts
+---
+ Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
+ arch/arm/boot/dts/tango4-smp8758.dtsi                       |  16 ++++
+ drivers/thermal/Kconfig                                     |   9 ++
+ drivers/thermal/Makefile                                    |   1 +
+ drivers/thermal/tango_thermal.c                             | 125 +++++++++++++++++++++++++++
+ 5 files changed, 168 insertions(+)
 
-fair enough, I'll wait for Greg to have some time to comment on
-this. Bottomline is that there is *no* real bus. Charger ICs will use
-SPI or I2C and that's a real bus, $subject is not.
-
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXAkZXAAoJEIaOsuA1yqREdHsP/2knzrys9jx8e9ipS70Pka/f
-JqYhtEj1sxATBRcf1Z1rYDMeowGSVczlCelyfHzld4wboguzCFS+MPgnMT0YgTM2
-37O6PCmb5Xsc8g9omxCfXvAozkcpRo+f7U+i2gEx2fIfl73D0kLihacqEqiaWxU+
-9Qp3+SvN1oENeqseC7pe+AAHFL9wtIujLvCTEoIa7MsafEJ0CH0vaKs9UgF9e042
-K3MMTxKP2leLORfuV5+8tYCD9TOr5RRKOe5V1pxvR3A7tKpnMK2Lr/6KJ8wASfrN
-CBH0czLVWsIMIDodXJFrY9w6IjUL3OrbdWHMEbIO4sDZliIW7REqejGY+gkIZDGO
-w/WCc+/POQ01kFGVugFGeHua2CoN8q+mzvEYnISNLUXWRheE+sPSj9ebZnk8uSfW
-6lkmV9ysBh1mtFKhEH/aCB3K32zcYedLD/jjBOivhal//3OSiKgxhl7ph6IqJSGR
-6+fLgpEvh9QzdTKsVL8gPgklyoVB9g9kMNhuX/5EwQJuoFYmLhM8KtBVEoHwkbn6
-wVFkK3H77nPonGvFFrCJTlnHvL6JFlGxRo2XRR4cyLx69iQzQEGguTiuigQSL5vy
-t+lQUGOf3u8N/RE/M7nLiodinowQ7lfqSAGGeScbYI0AW7FXM3gYemydRaGGWgRk
-M0gW6dMkvoYsbMbfwa/9
-=UY6W
------END PGP SIGNATURE-----
---=-=-=--
+diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+new file mode 100644
+index 000000000000..212198d4b937
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+@@ -0,0 +1,17 @@
++* Tango Thermal
++
++The SMP8758 SoC includes 3 instances of this temperature sensor
++(in the CPU, video decoder, and PCIe controller).
++
++Required properties:
++- #thermal-sensor-cells: Should be 0 (see thermal.txt)
++- compatible: "sigma,smp8758-thermal"
++- reg: Address range of the thermal registers
++
++Example:
++
++	cpu_temp: thermal@920100 {
++		#thermal-sensor-cells = <0>;
++		compatible = "sigma,smp8758-thermal";
++		reg = <0x920100 12>;
++	};
+diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
+index 7ed88ee629fb..44d57c02e934 100644
+--- a/arch/arm/boot/dts/tango4-smp8758.dtsi
++++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
+@@ -28,4 +28,20 @@
+ 			<GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>,
+ 			<GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
+ 	};
++
++	soc {
++		cpu_temp: thermal@920100 {
++			#thermal-sensor-cells = <0>;
++			compatible = "sigma,smp8758-thermal";
++			reg = <0x920100 12>;
++		};
++	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			polling-delay-passive = <2003>;	/* ms */
++			polling-delay = <1009>;		/* ms */
++			thermal-sensors = <&cpu_temp>;
++		};
++	};
+ };
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 8cc4ac64a91c..4b0776797700 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -254,6 +254,15 @@ config ARMADA_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Armada 370 and Armada XP SoC.
+ 
++config TANGO_THERMAL
++	tristate "Tango thermal management"
++	depends on ARCH_TANGO || COMPILE_TEST
++	help
++	  Enable the Tango thermal driver, which supports the primitive
++	  temperature sensor embedded in Tango chips since the SMP8758.
++	  This sensor only generates a 1-bit signal to indicate whether
++	  the die temperature exceeds a programmable threshold.
++
+ config TEGRA_SOCTHERM
+ 	tristate "Tegra SOCTHERM thermal management"
+ 	depends on ARCH_TEGRA
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index cfae6a654793..8bfea2b7e722 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -35,6 +35,7 @@ obj-y				+= samsung/
+ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
++obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+ obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
+new file mode 100644
+index 000000000000..4bb741662087
+--- /dev/null
++++ b/drivers/thermal/tango_thermal.c
+@@ -0,0 +1,125 @@
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++
++/*
++ * According to a data sheet draft, "this temperature sensor uses a bandgap
++ * type of circuit to compare a voltage which has a negative temperature
++ * coefficient with a voltage that is proportional to absolute temperature.
++ * A resistor bank allows 41 different temperature thresholds to be selected
++ * and the logic output will then indicate whether the actual die temperature
++ * lies above or below the selected threshold."
++ */
++
++#define TEMPSI_CMD	0
++#define TEMPSI_RES	4
++#define TEMPSI_CFG	8
++
++#define CMD_OFF		0
++#define CMD_ON		1
++#define CMD_READ	2
++
++#define IDX_MIN		15
++#define IDX_MAX		40
++#define CYCLE_COUNT	500 /* Result sampled when timer expires */
++
++struct tango_thermal_priv {
++	struct thermal_zone_device *zone;
++	void __iomem *base;
++	int thresh_idx;
++};
++
++static bool temp_above_thresh(void __iomem *base, int thresh_idx)
++{
++	writel(CMD_READ | thresh_idx << 8, base + TEMPSI_CMD);
++	usleep_range(10, 20);
++	return readl(base + TEMPSI_RES);
++}
++
++static int tango_get_temp(void *arg, int *res)
++{
++	struct tango_thermal_priv *priv = arg;
++	void __iomem *base = priv->base;
++	int idx = priv->thresh_idx;
++
++	if (temp_above_thresh(base, idx)) {
++		/* Search upward by incrementing thresh_idx */
++		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
++			cpu_relax();
++		idx = idx - 1; /* always return lower bound */
++	} else {
++		/* Search downward by decrementing thresh_idx */
++		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
++			cpu_relax();
++	}
++
++	*res = (idx * 9 / 2 - 38) * 1000; /* millidegrees Celsius */
++	priv->thresh_idx = idx;
++
++	return 0;
++}
++
++static const struct thermal_zone_of_device_ops ops = {
++	.get_temp	= tango_get_temp,
++};
++
++static int tango_thermal_probe(struct platform_device *pdev)
++{
++	struct resource *res;
++	struct tango_thermal_priv *priv;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	priv->base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->base))
++		return PTR_ERR(priv->base);
++
++	writel(CMD_ON, priv->base + TEMPSI_CMD);
++	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
++
++	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
++	if (IS_ERR(priv->zone))
++		return PTR_ERR(priv->zone);
++
++	priv->thresh_idx = IDX_MIN;
++	platform_set_drvdata(pdev, priv);
++
++	return 0;
++}
++
++static int tango_thermal_remove(struct platform_device *pdev)
++{
++	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
++
++	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
++	writel(CMD_OFF, priv->base + TEMPSI_CMD);
++
++	return 0;
++}
++
++static const struct of_device_id tango_sensor_ids[] = {
++	{
++		.compatible = "sigma,smp8758-thermal",
++	},
++	{ /* sentinel */ }
++};
++
++static struct platform_driver tango_thermal_driver = {
++	.probe	= tango_thermal_probe,
++	.remove	= tango_thermal_remove,
++	.driver	= {
++		.name		= "tango-thermal",
++		.of_match_table	= tango_sensor_ids,
++	},
++};
++
++module_platform_driver(tango_thermal_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Sigma Designs");
++MODULE_DESCRIPTION("Tango temperature sensor");
+-- 
+2.8.0
