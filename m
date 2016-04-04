@@ -1,50 +1,69 @@
-From: Tomasz Nowicki <tn@semihalf.com>
-Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Mon, 4 Apr 2016 10:32:37 +0200
-Message-ID: <570226A5.4000304@semihalf.com>
-References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
- <CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Define DT bindings for PM QoS device latencies
+Date: Mon, 4 Apr 2016 11:42:04 +0200
+Message-ID: <CAPDyKFombK0Kv-r40xbTm=Y3q07bM5woOPB63xzbrck37Vxrqw@mail.gmail.com>
+References: <1459432226-22562-1-git-send-email-ulf.hansson@linaro.org>
+	<20160401184429.GA18950@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Fu Wei <fu.wei@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Richard Ruigrok <rruigrok@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Al Stone <al.stone@linaro.org>, "x86@kernel.org" <x86@kernel.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f48.google.com ([209.85.192.48]:36544 "EHLO
+	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751339AbcDDJmF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2016 05:42:05 -0400
+Received: by mail-qg0-f48.google.com with SMTP id f52so47656666qga.3
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2016 02:42:04 -0700 (PDT)
+In-Reply-To: <20160401184429.GA18950@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 30.03.2016 09:05, Ard Biesheuvel wrote:
-> On 29 March 2016 at 09:44,  <fu.wei@linaro.org> wrote:
->> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+On 1 April 2016 at 20:44, Rob Herring <robh@kernel.org> wrote:
+> On Thu, Mar 31, 2016 at 03:50:25PM +0200, Ulf Hansson wrote:
+>> PM QoS device latencies are properties of the hardware. Let's define some
+>> DT bindings for them.
 >>
->> This commit provides APEI arch-specific bits for aarch64
+>> Suggested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+>>  1 file changed, 6 insertions(+)
 >>
->> Meanwhile,
->> (1)add a new subfunction "hest_ia32_init" for
->> "acpi_disable_cmcff" which is used by IA-32 Architecture
->> Corrected Machine Check (CMC).
->> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->> a generic place.
->> (3)select EFI when ACPI_APEI is set on ARM64,
->> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> index 025b5e7..b101a20 100644
+>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> @@ -65,12 +65,18 @@ Required properties:
+>>   - power-domains : A phandle and PM domain specifier as defined by bindings of
+>>                     the power controller specified by phandle.
+>>
+>> +Optional properties:
+>> + - suspend-latency: Suspend latency of the device in ns.
+>> + - resume-latency: Resume latency of the device in ns.
 >
-> I think selecting 'EFI' is not the right approach here, especially
-> since EFI is implied by ACPI on that architecture. But selecting a
-> user configurable option like this is typically not recommended. Why
-> doesn't ACPI_APEI depend on ACPI?
+> The names are a bit Linux specific, but I don't have a better
+> suggestion. Could be power-up/down, but then you may have other
+> latencies such as link up times.
+>
+> Whatever we end up with, add a unit suffix (-ns).
 
-It does, ACPI_APEI is subsection of the main ACPI menu option, but I 
-don't see that ACPI implies EFI in Kconfig.
+Okay.
 
-Also, I agree with Ard, EFI should not be selected conditionally for 
-ARM64 for ACPI_APEI.
+>
+> Shouldn't this be split into latency of the domain (and in the domain's
+> node) and latency of the device?
 
-We need EFI only for ARM64 so how about:
-+       select HAVE_ACPI_APEI if (ACPI && EFI)
-in arch/arm64/Kconfig and leave ACPI_APEI as is?
+Yes! $Subject patch only takes device latencies into account.
 
-Regards,
-Tomasz
+Perhaps what you mean is that we should document device PM QoS
+latencies in another place than
+Documentation/devicetree/bindings/power/power_domain.txt as well?
 
+Regarding bindings for the domain latencies, I will post that as a
+separate patch soonish.
 
+[...]
+
+Kind regards
+Uffe
