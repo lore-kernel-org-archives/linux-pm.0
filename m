@@ -1,112 +1,50 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V4] intel_pstate: Use avg_pstate instead of current_pstate
-Date: Mon,  4 Apr 2016 09:23:36 +0200
-Message-ID: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
+From: Tomasz Nowicki <tn@semihalf.com>
+Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Mon, 4 Apr 2016 10:32:37 +0200
+Message-ID: <570226A5.4000304@semihalf.com>
+References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
+ <CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:55996 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbcDDHXY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 03:23:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Fu Wei <fu.wei@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Richard Ruigrok <rruigrok@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Al Stone <al.stone@linaro.org>, "x86@kernel.org" <x86@kernel.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, Tomasz Nowicki <tomasz.nowicki@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, rafael@kernel.org, len.brown@intel.com
 
-The result returned by pid_calc() is subtracted from current_pstate
-(which is the pstate requested during the last period) in order to
-obtain the target pstate for the current iteration.
-However, current_pstate may not reflect the real current P-state of
-the CPU.  In particular, that P-state may be higher because of the
-frequency sharing per module.
+On 30.03.2016 09:05, Ard Biesheuvel wrote:
+> On 29 March 2016 at 09:44,  <fu.wei@linaro.org> wrote:
+>> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+>>
+>> This commit provides APEI arch-specific bits for aarch64
+>>
+>> Meanwhile,
+>> (1)add a new subfunction "hest_ia32_init" for
+>> "acpi_disable_cmcff" which is used by IA-32 Architecture
+>> Corrected Machine Check (CMC).
+>> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>> a generic place.
+>> (3)select EFI when ACPI_APEI is set on ARM64,
+>> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+>
+> I think selecting 'EFI' is not the right approach here, especially
+> since EFI is implied by ACPI on that architecture. But selecting a
+> user configurable option like this is typically not recommended. Why
+> doesn't ACPI_APEI depend on ACPI?
 
-The theory is:
+It does, ACPI_APEI is subsection of the main ACPI menu option, but I 
+don't see that ACPI implies EFI in Kconfig.
 
-- The load is the percentage of time spent in C0 and is related to
-the average frequency during the same period (We'll not have the
-same load at 1GHz or at 2GHz for the same task running).
+Also, I agree with Ard, EFI should not be selected conditionally for 
+ARM64 for ACPI_APEI.
 
-- The current frequency can be completely different than the
-average frequency (because of frequency sharing or throttling).
+We need EFI only for ARM64 so how about:
++       select HAVE_ACPI_APEI if (ACPI && EFI)
+in arch/arm64/Kconfig and leave ACPI_APEI as is?
 
-=3D> The frequency shift computed by the pid_calc is based on the
-load, so it must be applied to the frequency with which the load
-was measured.
+Regards,
+Tomasz
 
-Using the average pstate instead of current pstate solve some
-migration issues (e.g when a task migrates from one core to another
-in the same package/module and all of the cores in there except for
-that particular one are basically idle).
-
-Performance and power comparison with this patch on Android:
-
-IPLoad+Avg-Pstate vs IP Load:
-
-Benchmark               =E2=88=86Perf    =E2=88=86Power
-=46ishTank                10.45%    3.1%
-SmartBench-Gaming       -0.1%   -10.4%
-SmartBench-Productivity -0.8%   -10.4%
-CandyCrush                n/a   -17.4%
-AngryBirds                n/a    -5.9%
-videoPlayback             n/a   -13.9%
-audioPlayback             n/a    -4.9%
-IcyRocks-20-50           0.0%   -38.4%
-iozone RR               -0.16%  -1.3%
-iozone RW                0.74%  -1.3%
-
-Comparison with the perf algorithm:
-(this patch in cpu_load vs Core algorithm)
-
-Benchmark               =E2=88=86Perf    =E2=88=86Power
-SmartBench-Gaming       -0.58%   -22.8%
-SmartBench-Productivity  0.82%
-CandyCrush                n/a    -20.8%
-AngryBirds                n/a    -37.0%
-videoPlayback             n/a    -53.4%
-audioPlayback             n/a     -2.1%
-iozone RR               -0.55%   -13.29%
-iozone RW                2.22%
-
-=3D> No regression > 1% observed and a huge power improvement!
-
-Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pst=
-ate.c
-index 4b64452..b998e1d 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -919,6 +919,12 @@ static inline int32_t get_avg_frequency(struct cpu=
-data *cpu)
- 		cpu->pstate.scaling, cpu->sample.mperf);
- }
-=20
-+static inline int32_t get_avg_pstate(struct cpudata *cpu)
-+{
-+	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aperf,
-+		cpu->sample.mperf);
-+}
-+
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *c=
-pu)
- {
- 	struct sample *sample =3D &cpu->sample;
-@@ -951,7 +957,7 @@ static inline int32_t get_target_pstate_use_cpu_loa=
-d(struct cpudata *cpu)
- 	cpu_load =3D div64_u64(int_tofp(100) * mperf, sample->tsc);
- 	cpu->sample.busy_scaled =3D cpu_load;
-=20
--	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
-+	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, cpu_load);
- }
-=20
- static inline int32_t get_target_pstate_use_performance(struct cpudata=
- *cpu)
---=20
-1.9.1
 
