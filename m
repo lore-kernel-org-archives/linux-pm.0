@@ -1,17 +1,15 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
 Subject: [PATCH V4] intel_pstate: Use avg_pstate instead of current_pstate
-Date: Mon,  4 Apr 2016 09:23:37 +0200
-Message-ID: <1459754617-8872-2-git-send-email-philippe.longepe@linux.intel.com>
-References: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
+Date: Mon,  4 Apr 2016 09:23:36 +0200
+Message-ID: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga09.intel.com ([134.134.136.24]:55996 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbcDDHXZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 03:23:25 -0400
-In-Reply-To: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
+	id S1750979AbcDDHXY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Apr 2016 03:23:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
