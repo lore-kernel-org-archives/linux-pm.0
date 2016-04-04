@@ -1,256 +1,82 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [PATCH v7] thermal: add temperature sensor support for tango SoC
-Date: Mon, 4 Apr 2016 13:49:44 +0200
-Message-ID: <570254D8.3090406@free.fr>
-References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
- <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
- <56FACE0B.9060606@free.fr> <20160330000503.GA2625@localhost.localdomain>
- <56FBEE4F.3060106@free.fr> <56FD8582.80002@free.fr>
- <20160401015240.GB19409@localhost.localdomain>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [intel-pstate driver regression] processor frequency very high
+ even if in idle
+Date: Mon, 4 Apr 2016 16:12:46 +0200
+Message-ID: <CA+icZUUKT0+UUZZNpUNg8v_wrjz7NTVOTsSjdfmqL_RZyQzgew@mail.gmail.com>
+References: <CA+icZUVGq+rmnyGSbyNEfWJ+LsNg6j6daPPwoZM1zUp4WCJFGQ@mail.gmail.com>
+	<1459376311.13525.108.camel@linux.intel.com>
+	<003b01d18ad6$831941c0$894bc540$@net>
+	<CA+icZUXaoeQz5vMzPxjOaAzbzdQ4D1MV2dG5EvXAM54k6EOz1g@mail.gmail.com>
+	<002301d18b59$d208fe50$761afaf0$@net>
+	<CA+icZUX2ZtsO8pa7ZY0JKW3vm5veVCJ08q3p0ai3FxdMNgvKww@mail.gmail.com>
+	<CA+icZUVHyq7dOh457rYv+2nmNxPevY0ZcqxhQVhYG4Z1D-NaDA@mail.gmail.com>
+	<1459610923.5912.36.camel@linux.intel.com>
+	<CADDKRnC0rtxp8JapQ13s9RnRf-iySB=TdkwS1x=W7+e-vDGXuA@mail.gmail.com>
+	<CA+icZUUCEgs1-eeRje4zb_Lj=0=hWM8OPvoKrquMCAXAj=Gy4g@mail.gmail.com>
+	<001201d18ddb$0102ccd0$03086670$@net>
+	<CA+icZUVhnH563=8zyrsvH86y0HTqeT57OJ1ETES5_ZsDOwae-w@mail.gmail.com>
+	<002f01d18e39$3b1691f0$b143b5d0$@net>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:58533 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbcDDLty (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 07:49:54 -0400
-In-Reply-To: <20160401015240.GB19409@localhost.localdomain>
+Received: from mail-vk0-f65.google.com ([209.85.213.65]:36350 "EHLO
+	mail-vk0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbcDDOMr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2016 10:12:47 -0400
+In-Reply-To: <002f01d18e39$3b1691f0$b143b5d0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, arm-soc <arm@kernel.org>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
 
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+On Mon, Apr 4, 2016 at 8:14 AM, Doug Smythies <dsmythies@telus.net> wro=
+te:
+> On 2016.03.04 22:14 Sedat Dilek wrote:
+>> On Sun, Apr 3, 2016 at 8:59 PM, Doug Smythies <dsmythies@telus.net> =
+wrote:
+>>> On 2016.04.02 11:21 Sedat Dilek wrote:
+>>>> On Sat, Apr 2, 2016 at 7:19 PM, J=C3=B6rg Otte wrote:
+>>>>> 2016-04-02 17:28 GMT+02:00 Srinivas Pandruvada wrote:
+>>>>>
+>
+>> are you involved in the Ubuntu-OS? Developer for Canonical?
+>
+> I try to help with Ubuntu as a community volunteer.
+> I am not a developer with Canonical.
+>
+> ... [cut]...
+>
+>>> As far as I know the /etc/init.d/ondemand is working properly. It s=
+ets the acpi-cpufreq
+>>> driver to use the "ondemand" governor and it sets the intel_pstate =
+driver to use the
+>>> "powersave" governor.
+>>>
+>
+>> I haven't looked at this exactly.
+>> The ondemand-script is not saying to fall back to "powersave" in cas=
+e
+>> of intel_pstate-driver (here on Ubuntu/precise).
+>
+> It is likely that newer versions of /etc/init.d/ondemand script
+> were never backported to the older 12.04 precise release.
+> Why not? Well, because, as far as I know, that release never used the
+> intel_pstate driver by default and so never had to fall through
+> to the powersave alternative.
+>
+> Earlier on this thread, Srinivas correctly asked J=C3=B6rg what distr=
+ibution
+> was being used, so as to hopefully make it easier to reproduce the is=
+sue.
+> If we want to continue this distro specific conversation, perhaps
+> we should move it off-list or to some Ubuntu specific forum.
+>
 
-The Tango thermal driver provides support for the primitive temperature
-sensor embedded in Tango chips since the SMP8758.
+Yes, it is getting off-topic.
+Sorry for this.
+I know I am here on my own and I think how to fix this.
+( Honestly, I forgot about the initial issue. )
 
-This sensor only generates a 1-bit signal to indicate whether the die
-temperature exceeds a programmable threshold.
-
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
-CCing Rob and Mark for the DT parts
----
- Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
- arch/arm/boot/dts/tango4-smp8758.dtsi                       |  16 ++++
- drivers/thermal/Kconfig                                     |   9 ++
- drivers/thermal/Makefile                                    |   1 +
- drivers/thermal/tango_thermal.c                             | 125 +++++++++++++++++++++++++++
- 5 files changed, 168 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
-new file mode 100644
-index 000000000000..212198d4b937
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
-@@ -0,0 +1,17 @@
-+* Tango Thermal
-+
-+The SMP8758 SoC includes 3 instances of this temperature sensor
-+(in the CPU, video decoder, and PCIe controller).
-+
-+Required properties:
-+- #thermal-sensor-cells: Should be 0 (see thermal.txt)
-+- compatible: "sigma,smp8758-thermal"
-+- reg: Address range of the thermal registers
-+
-+Example:
-+
-+	cpu_temp: thermal@920100 {
-+		#thermal-sensor-cells = <0>;
-+		compatible = "sigma,smp8758-thermal";
-+		reg = <0x920100 12>;
-+	};
-diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
-index 7ed88ee629fb..44d57c02e934 100644
---- a/arch/arm/boot/dts/tango4-smp8758.dtsi
-+++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
-@@ -28,4 +28,20 @@
- 			<GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>,
- 			<GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
- 	};
-+
-+	soc {
-+		cpu_temp: thermal@920100 {
-+			#thermal-sensor-cells = <0>;
-+			compatible = "sigma,smp8758-thermal";
-+			reg = <0x920100 12>;
-+		};
-+	};
-+
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			polling-delay-passive = <2003>;	/* ms */
-+			polling-delay = <1009>;		/* ms */
-+			thermal-sensors = <&cpu_temp>;
-+		};
-+	};
- };
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 8cc4ac64a91c..4b0776797700 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -254,6 +254,15 @@ config ARMADA_THERMAL
- 	  Enable this option if you want to have support for thermal management
- 	  controller present in Armada 370 and Armada XP SoC.
- 
-+config TANGO_THERMAL
-+	tristate "Tango thermal management"
-+	depends on ARCH_TANGO || COMPILE_TEST
-+	help
-+	  Enable the Tango thermal driver, which supports the primitive
-+	  temperature sensor embedded in Tango chips since the SMP8758.
-+	  This sensor only generates a 1-bit signal to indicate whether
-+	  the die temperature exceeds a programmable threshold.
-+
- config TEGRA_SOCTHERM
- 	tristate "Tegra SOCTHERM thermal management"
- 	depends on ARCH_TEGRA
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index cfae6a654793..8bfea2b7e722 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -35,6 +35,7 @@ obj-y				+= samsung/
- obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-+obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
-new file mode 100644
-index 000000000000..4bb741662087
---- /dev/null
-+++ b/drivers/thermal/tango_thermal.c
-@@ -0,0 +1,125 @@
-+#include <linux/io.h>
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+#include <linux/thermal.h>
-+#include <linux/platform_device.h>
-+
-+/*
-+ * According to a data sheet draft, "this temperature sensor uses a bandgap
-+ * type of circuit to compare a voltage which has a negative temperature
-+ * coefficient with a voltage that is proportional to absolute temperature.
-+ * A resistor bank allows 41 different temperature thresholds to be selected
-+ * and the logic output will then indicate whether the actual die temperature
-+ * lies above or below the selected threshold."
-+ */
-+
-+#define TEMPSI_CMD	0
-+#define TEMPSI_RES	4
-+#define TEMPSI_CFG	8
-+
-+#define CMD_OFF		0
-+#define CMD_ON		1
-+#define CMD_READ	2
-+
-+#define IDX_MIN		15
-+#define IDX_MAX		40
-+#define CYCLE_COUNT	500 /* Result sampled when timer expires */
-+
-+struct tango_thermal_priv {
-+	struct thermal_zone_device *zone;
-+	void __iomem *base;
-+	int thresh_idx;
-+};
-+
-+static bool temp_above_thresh(void __iomem *base, int thresh_idx)
-+{
-+	writel(CMD_READ | thresh_idx << 8, base + TEMPSI_CMD);
-+	usleep_range(10, 20);
-+	return readl(base + TEMPSI_RES);
-+}
-+
-+static int tango_get_temp(void *arg, int *res)
-+{
-+	struct tango_thermal_priv *priv = arg;
-+	void __iomem *base = priv->base;
-+	int idx = priv->thresh_idx;
-+
-+	if (temp_above_thresh(base, idx)) {
-+		/* Search upward by incrementing thresh_idx */
-+		while (idx < IDX_MAX && temp_above_thresh(base, ++idx))
-+			cpu_relax();
-+		idx = idx - 1; /* always return lower bound */
-+	} else {
-+		/* Search downward by decrementing thresh_idx */
-+		while (idx > IDX_MIN && !temp_above_thresh(base, --idx))
-+			cpu_relax();
-+	}
-+
-+	*res = (idx * 9 / 2 - 38) * 1000; /* millidegrees Celsius */
-+	priv->thresh_idx = idx;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops ops = {
-+	.get_temp	= tango_get_temp,
-+};
-+
-+static int tango_thermal_probe(struct platform_device *pdev)
-+{
-+	struct resource *res;
-+	struct tango_thermal_priv *priv;
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv->base))
-+		return PTR_ERR(priv->base);
-+
-+	writel(CMD_ON, priv->base + TEMPSI_CMD);
-+	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
-+
-+	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
-+	if (IS_ERR(priv->zone))
-+		return PTR_ERR(priv->zone);
-+
-+	priv->thresh_idx = IDX_MIN;
-+	platform_set_drvdata(pdev, priv);
-+
-+	return 0;
-+}
-+
-+static int tango_thermal_remove(struct platform_device *pdev)
-+{
-+	struct tango_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, priv->zone);
-+	writel(CMD_OFF, priv->base + TEMPSI_CMD);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id tango_sensor_ids[] = {
-+	{
-+		.compatible = "sigma,smp8758-thermal",
-+	},
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver tango_thermal_driver = {
-+	.probe	= tango_thermal_probe,
-+	.remove	= tango_thermal_remove,
-+	.driver	= {
-+		.name		= "tango-thermal",
-+		.of_match_table	= tango_sensor_ids,
-+	},
-+};
-+
-+module_platform_driver(tango_thermal_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Sigma Designs");
-+MODULE_DESCRIPTION("Tango temperature sensor");
--- 
-2.8.0
+- Sedat -
