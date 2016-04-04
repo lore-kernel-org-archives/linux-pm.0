@@ -1,66 +1,148 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 4 Apr 2016 09:04:48 -0700
-Message-ID: <20160404160448.GI2350@sirena.org.uk>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
- <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
- <87h9foqnur.fsf@intel.com>
- <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
- <87poubgnbh.fsf@intel.com>
- <20160331170635.GH2350@sirena.org.uk>
- <87d1q9anpt.fsf@intel.com>
- <20160401141643.GX2350@sirena.org.uk>
- <877fgd7iqx.fsf@intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="4cXE7lVpOAUQvDc2"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <877fgd7iqx.fsf-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC] cpufreq: governor: Fix overflow when calculating idle time
+Date: Tue,  5 Apr 2016 00:32:33 +0800
+Message-ID: <1459787553-20092-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+It was reported that after Commit 0df35026c6a5 ("cpufreq: governor: Fix
+negative idle_time when configured with CONFIG_HZ_PERIODIC"),
+cpufreq ondemand governor started to act oddly. Without any load,
+with freshly booted system, it pumped cpu frequency up to maximum
+at some point of time and stayed there. The problem is caused by
+jiffies oveflow in get_cpu_idle_time:
 
---4cXE7lVpOAUQvDc2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Since jiffies is not counted from zero but from -300HZ, after booting
+up 5 minutes, the jiffies will round up to zero. As a result,
+the following condition will always be true:
+if (cur_idle_time < j_cdbs->prev_cpu_idle)
+        cur_idle_time = j_cdbs->prev_cpu_idle;
+Say, once cur_idle_time rounds up to zero, while prev_cpu_idle remains
+negative(because of -300HZ), the cur_idle_time will be modified to the
+same as prev_cpu_idle(negative), thus we get a zero of idle running time
+during this sample(cur_idle_time - prev_cpu_idle), which causes a high
+busy time, thus governor always requests for the highest freq.
+So the patch mentioned above has triggered this overflow issue more easily.
 
-On Mon, Apr 04, 2016 at 01:47:50PM +0300, Felipe Balbi wrote:
-> Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> writes:
+This patch fixes this problem by doing two modifications in the
+get_cpu_idle_time_jiffy:
 
-> > It does in this new world order.  IIRC on an earlier round of review
-> > there was some code that didn't use a bus but that got complaints that
-> > it was trying to reimplement the bus functionality.
+1. Count the wall time from INITIAL_JIFFIES rather than 0.
+2. Use 64bit rather than 32bit to convert jiffies64 to usec.
 
-> fair enough, I'll wait for Greg to have some time to comment on
-> this. Bottomline is that there is *no* real bus. Charger ICs will use
+In this way, either the wall time or the idle time will be
+monotonically increased, thus avoid the jiffies overflow problem.
+(If CONFIG_HZ_1000=y, it would be at least 500000000 years for
+64bit to overflow, which would not possibly happen.)
 
-I've got a feeling Greg is zoning this out by now...
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=115261
+Reported-by: Timo Valtoaho <timo.valtoaho@gmail.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/cpufreq.c             |  6 +++---
+ include/asm-generic/cputime_jiffies.h |  2 ++
+ include/linux/cputime.h               |  5 +++++
+ include/linux/jiffies.h               |  1 +
+ kernel/time/time.c                    | 20 ++++++++++++++++++++
+ 5 files changed, 31 insertions(+), 3 deletions(-)
 
-> SPI or I2C and that's a real bus, $subject is not.
-
-Well, there's the physical connection between the system power supply
-and the USB port if you're very keen on looking for hardware.
-
---4cXE7lVpOAUQvDc2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXApCfAAoJECTWi3JdVIfQuesH/2lTBlAGc7td0yZ7oBU3UWtz
-VSdvdlPXAtasE10IbCs/WQnv6ldRTETPJIR19qi7rIUAxjn4tMobdOYUpaHbclEy
-zgomt2hGLz2P4Bkt7LjrUlksG6QcSrfeKK20ZUQOBdX1QvIehYBsEgqpRRsj+9Am
-dxD2cyJgEhJiOu071U0dEsC58SHPnfB86QKTzT1wOqvoYLyYfLD4Lait4aBNn/Zu
-I5vPSCH0sngUP1Xw3xOqk+fXEvS47NI8amx/4ZI0W7Jwhg/bjKkh0Y6CVXGNRnEc
-M5GGDa37yRXmohABgLDyWh3aD504xkksFvJ4dVdMo5mh8QLp2dCs/wEuIjippFM=
-=FJq0
------END PGP SIGNATURE-----
-
---4cXE7lVpOAUQvDc2--
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b87596b..2dc327a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -138,7 +138,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ 	u64 cur_wall_time;
+ 	u64 busy_time;
+ 
+-	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
++	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64() - INITIAL_JIFFIES);
+ 
+ 	busy_time = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
+ 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
+@@ -149,9 +149,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ 
+ 	idle_time = cur_wall_time - busy_time;
+ 	if (wall)
+-		*wall = cputime_to_usecs(cur_wall_time);
++		*wall = cputime64_to_usecs(cur_wall_time);
+ 
+-	return cputime_to_usecs(idle_time);
++	return cputime64_to_usecs(idle_time);
+ }
+ 
+ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
+index fe386fc..ff1cf39 100644
+--- a/include/asm-generic/cputime_jiffies.h
++++ b/include/asm-generic/cputime_jiffies.h
+@@ -36,6 +36,8 @@ typedef u64 __nocast cputime64_t;
+ 	jiffies_to_cputime(usecs_to_jiffies(__usec))
+ #define usecs_to_cputime64(__usec)	\
+ 	jiffies64_to_cputime64(nsecs_to_jiffies64((__usec) * 1000))
++#define cputime64_to_usecs(__ct)		\
++	jiffies64_to_usecs(cputime64_to_jiffies64(__ct))
+ 
+ /*
+  * Convert cputime to seconds and back.
+diff --git a/include/linux/cputime.h b/include/linux/cputime.h
+index f2eb2ee..ffa8665 100644
+--- a/include/linux/cputime.h
++++ b/include/linux/cputime.h
+@@ -13,4 +13,9 @@
+ 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
+ #endif
+ 
++#ifndef cputime64_to_usecs
++#define cputime64_to_usecs(__ct)		\
++	cputime_to_usecs(__ct)
++#endif
++
+ #endif /* __LINUX_CPUTIME_H */
+diff --git a/include/linux/jiffies.h b/include/linux/jiffies.h
+index 5fdc553..f26ceb4 100644
+--- a/include/linux/jiffies.h
++++ b/include/linux/jiffies.h
+@@ -283,6 +283,7 @@ extern unsigned long preset_lpj;
+  */
+ extern unsigned int jiffies_to_msecs(const unsigned long j);
+ extern unsigned int jiffies_to_usecs(const unsigned long j);
++extern u64 jiffies64_to_usecs(const u64 j);
+ 
+ static inline u64 jiffies_to_nsecs(const unsigned long j)
+ {
+diff --git a/kernel/time/time.c b/kernel/time/time.c
+index be115b0..5167c4b 100644
+--- a/kernel/time/time.c
++++ b/kernel/time/time.c
+@@ -286,6 +286,26 @@ unsigned int jiffies_to_usecs(const unsigned long j)
+ }
+ EXPORT_SYMBOL(jiffies_to_usecs);
+ 
++u64 jiffies64_to_usecs(const u64 j)
++{
++	/*
++	 * Hz usually doesn't go much further MSEC_PER_SEC.
++	 * jiffies_to_usecs() and usecs_to_jiffies() depend on that.
++	 */
++	BUILD_BUG_ON(HZ > USEC_PER_SEC);
++
++#if !(USEC_PER_SEC % HZ)
++	return (USEC_PER_SEC / HZ) * j;
++#else
++# if BITS_PER_LONG == 32
++	return (HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
++# else
++	return (j * HZ_TO_USEC_NUM) / HZ_TO_USEC_DEN;
++# endif
++#endif
++}
++EXPORT_SYMBOL(jiffies64_to_usecs);
++
+ /**
+  * timespec_trunc - Truncate timespec to a granularity
+  * @t: Timespec
+-- 
+1.8.4.2
