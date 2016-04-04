@@ -1,7 +1,7 @@
 From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH v6] thermal: add temperature sensor support for tango SoC
-Date: Mon, 4 Apr 2016 13:48:40 +0200
-Message-ID: <57025498.4080408@free.fr>
+Subject: [PATCH v7] thermal: add temperature sensor support for tango SoC
+Date: Mon, 4 Apr 2016 13:49:44 +0200
+Message-ID: <570254D8.3090406@free.fr>
 References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
  <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
  <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
@@ -12,10 +12,10 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:55085 "EHLO smtp2-g21.free.fr"
+Received: from smtp2-g21.free.fr ([212.27.42.2]:58533 "EHLO smtp2-g21.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbcDDLsx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 07:48:53 -0400
+	id S1753154AbcDDLty (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Apr 2016 07:49:54 -0400
 In-Reply-To: <20160401015240.GB19409@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
