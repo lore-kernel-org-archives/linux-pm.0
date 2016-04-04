@@ -1,69 +1,66 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Define DT bindings for PM QoS device latencies
-Date: Mon, 4 Apr 2016 11:42:04 +0200
-Message-ID: <CAPDyKFombK0Kv-r40xbTm=Y3q07bM5woOPB63xzbrck37Vxrqw@mail.gmail.com>
-References: <1459432226-22562-1-git-send-email-ulf.hansson@linaro.org>
-	<20160401184429.GA18950@rob-hp-laptop>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Mon, 04 Apr 2016 13:47:50 +0300
+Message-ID: <877fgd7iqx.fsf@intel.com>
+References: <cover.1458128215.git.baolin.wang@linaro.org> <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org> <87h9foqnur.fsf@intel.com> <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com> <87poubgnbh.fsf@intel.com> <20160331170635.GH2350@sirena.org.uk> <87d1q9anpt.fsf@intel.com> <20160401141643.GX2350@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f48.google.com ([209.85.192.48]:36544 "EHLO
-	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbcDDJmF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2016 05:42:05 -0400
-Received: by mail-qg0-f48.google.com with SMTP id f52so47656666qga.3
-        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2016 02:42:04 -0700 (PDT)
-In-Reply-To: <20160401184429.GA18950@rob-hp-laptop>
+Received: from mga01.intel.com ([192.55.52.88]:35825 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619AbcDDKuv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Apr 2016 06:50:51 -0400
+In-Reply-To: <20160401141643.GX2350@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 1 April 2016 at 20:44, Rob Herring <robh@kernel.org> wrote:
-> On Thu, Mar 31, 2016 at 03:50:25PM +0200, Ulf Hansson wrote:
->> PM QoS device latencies are properties of the hardware. Let's define some
->> DT bindings for them.
->>
->> Suggested-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->> index 025b5e7..b101a20 100644
->> --- a/Documentation/devicetree/bindings/power/power_domain.txt
->> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->> @@ -65,12 +65,18 @@ Required properties:
->>   - power-domains : A phandle and PM domain specifier as defined by bindings of
->>                     the power controller specified by phandle.
->>
->> +Optional properties:
->> + - suspend-latency: Suspend latency of the device in ns.
->> + - resume-latency: Resume latency of the device in ns.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi,
+
+Mark Brown <broonie@kernel.org> writes:
+> On Fri, Apr 01, 2016 at 08:43:10AM +0300, Felipe Balbi wrote:
+>> Mark Brown <broonie@kernel.org> writes:
 >
-> The names are a bit Linux specific, but I don't have a better
-> suggestion. Could be power-up/down, but then you may have other
-> latencies such as link up times.
+>> > IIRC Greg didn't want new classes?
 >
-> Whatever we end up with, add a unit suffix (-ns).
-
-Okay.
-
+>> good point. Still, this doesn't seem to fit a but_type IMO.
 >
-> Shouldn't this be split into latency of the domain (and in the domain's
-> node) and latency of the device?
+> It does in this new world order.  IIRC on an earlier round of review
+> there was some code that didn't use a bus but that got complaints that
+> it was trying to reimplement the bus functionality.
 
-Yes! $Subject patch only takes device latencies into account.
+fair enough, I'll wait for Greg to have some time to comment on
+this. Bottomline is that there is *no* real bus. Charger ICs will use
+SPI or I2C and that's a real bus, $subject is not.
 
-Perhaps what you mean is that we should document device PM QoS
-latencies in another place than
-Documentation/devicetree/bindings/power/power_domain.txt as well?
+=2D-=20
+balbi
 
-Regarding bindings for the domain latencies, I will post that as a
-separate patch soonish.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-[...]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Kind regards
-Uffe
+iQIcBAEBAgAGBQJXAkZXAAoJEIaOsuA1yqREdHsP/2knzrys9jx8e9ipS70Pka/f
+JqYhtEj1sxATBRcf1Z1rYDMeowGSVczlCelyfHzld4wboguzCFS+MPgnMT0YgTM2
+37O6PCmb5Xsc8g9omxCfXvAozkcpRo+f7U+i2gEx2fIfl73D0kLihacqEqiaWxU+
+9Qp3+SvN1oENeqseC7pe+AAHFL9wtIujLvCTEoIa7MsafEJ0CH0vaKs9UgF9e042
+K3MMTxKP2leLORfuV5+8tYCD9TOr5RRKOe5V1pxvR3A7tKpnMK2Lr/6KJ8wASfrN
+CBH0czLVWsIMIDodXJFrY9w6IjUL3OrbdWHMEbIO4sDZliIW7REqejGY+gkIZDGO
+w/WCc+/POQ01kFGVugFGeHua2CoN8q+mzvEYnISNLUXWRheE+sPSj9ebZnk8uSfW
+6lkmV9ysBh1mtFKhEH/aCB3K32zcYedLD/jjBOivhal//3OSiKgxhl7ph6IqJSGR
+6+fLgpEvh9QzdTKsVL8gPgklyoVB9g9kMNhuX/5EwQJuoFYmLhM8KtBVEoHwkbn6
+wVFkK3H77nPonGvFFrCJTlnHvL6JFlGxRo2XRR4cyLx69iQzQEGguTiuigQSL5vy
+t+lQUGOf3u8N/RE/M7nLiodinowQ7lfqSAGGeScbYI0AW7FXM3gYemydRaGGWgRk
+M0gW6dMkvoYsbMbfwa/9
+=UY6W
+-----END PGP SIGNATURE-----
+--=-=-=--
