@@ -1,226 +1,77 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Documenation for structures
-Date: Sun,  3 Apr 2016 13:06:46 -0700
-Message-ID: <1459714006-5826-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: intel_pstate: fix inconsistency in setting
+ policy limits
+Date: Mon, 4 Apr 2016 03:16:09 +0200
+Message-ID: <CAJZ5v0iA7r6yP-dViiXjOuKuvED2eNWZdVACe=ByrzLR47QEMQ@mail.gmail.com>
+References: <1459713972-5654-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:64705 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbcDCUJt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 3 Apr 2016 16:09:49 -0400
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:36214 "EHLO
+	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754082AbcDDBQL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Apr 2016 21:16:11 -0400
+In-Reply-To: <1459713972-5654-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-No code change. Only added kernel doc style comments for structures.
+On Sun, Apr 3, 2016 at 10:06 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> When user sets performance policy using cpufreq interface, it is possible
+> that because of policy->max limits, the actual performance is still
+> limited. But the current implementation will silently switch the
+> policy to powersave and start using powersave limits. If user modifies
+> any limits using intel_pstate sysfs, this is actually changing powersave
+> limits.
+>
+> The current implementation tracks limits under powersave and performance
+> policy using two different variables. When policy->max is less than
+> policy->cpuinfo.max_freq, only powersave limit variable is used.
+>
+> This fix involves uses performance limits variable always when policy
+> is performance.
+>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 40 ++++++++++++++++++++++++++++++++--------
+>  1 file changed, 32 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 4b64452..776cea7 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1122,22 +1122,46 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
+>         return get_avg_frequency(cpu);
+>  }
+>
+> +static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+> +{
+> +       limits->no_turbo = 0;
+> +       limits->turbo_disabled = 0;
+> +       limits->max_perf_pct = 100;
+> +       limits->max_perf = int_tofp(1);
+> +       limits->min_perf_pct = 100;
+> +       limits->min_perf = int_tofp(1);
+> +       limits->max_policy_pct = 100;
+> +       limits->max_sysfs_pct = 100;
+> +       limits->min_policy_pct = 0;
+> +       limits->min_sysfs_pct = 0;
+> +}
+> +
+>  static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  {
+>         if (!policy->cpuinfo.max_freq)
+>                 return -ENODEV;
+>
+> -       if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
+> -           policy->max >= policy->cpuinfo.max_freq) {
+> -               pr_debug("intel_pstate: set performance\n");
+> +       if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+>                 limits = &performance_limits;
+> -               if (hwp_active)
+> -                       intel_pstate_hwp_set(policy->cpus);
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 135 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 135 insertions(+)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 776cea7..f7d4047 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -64,6 +64,25 @@ static inline int ceiling_fp(int32_t x)
- 	return ret;
- }
- 
-+/**
-+ * struct sample -	Store performance sample
-+ * @core_pct_busy:	Ratio of APERF/MPERF in percent, which is actual
-+ *			performance during last sample period
-+ * @busy_scaled:	Scaled busy value which is used to calculate next
-+ *			P state. This can be different than core_pct_busy
-+ *			to account for cpu idle period
-+ * @aperf:		Difference of actual performance frequency clock count
-+ *			read from APERF MSR between last and current sample
-+ * @mperf:		Difference of maximum performance frequency clock count
-+ *			read from MPERF MSR between last and current sample
-+ * @tsc:		Difference of time stamp counter between last and
-+ *			current sample
-+ * @freq:		Effective frequency calculated from APERF/MPERF
-+ * @time:		Current time from scheduler
-+ *
-+ * This structure is used in the cpudata structure to store performance sample
-+ * data for choosing next P State.
-+ */
- struct sample {
- 	int32_t core_pct_busy;
- 	int32_t busy_scaled;
-@@ -74,6 +93,20 @@ struct sample {
- 	u64 time;
- };
- 
-+/**
-+ * struct pstate_data - Store P state data
-+ * @current_pstate:	Current requested P state
-+ * @min_pstate:		Min P state possible for this platform
-+ * @max_pstate:		Max P state possible for this platform
-+ * @max_pstate_physical:This is physical Max P state for a processor
-+ *			This can be higher than the max_pstate which can
-+ *			be limited by platform thermal design power limits
-+ * @scaling:		Scaling factor to  convert frequency to cpufreq
-+ *			frequency units
-+ * @turbo_pstate:	Max Turbo P state possible for this platform
-+ *
-+ * Stores the per cpu model P state limits and current P state.
-+ */
- struct pstate_data {
- 	int	current_pstate;
- 	int	min_pstate;
-@@ -83,6 +116,19 @@ struct pstate_data {
- 	int	turbo_pstate;
- };
- 
-+/**
-+ * struct vid_data -	Stores voltage information data
-+ * @min:		VID data for this platform corresponding to
-+ *			the lowest P state
-+ * @max:		VID data corresponding to the highest P State.
-+ * @turbo:		VID data for turbo P state
-+ * @ratio:		Ratio of (vid max - vid min) /
-+ *			(max P state - Min P State)
-+ *
-+ * Stores the voltage data for DVFS (Dynamic Voltage and Frequency Scaling)
-+ * This data is used in Atom platforms, where in addition to target P state,
-+ * the voltage data needs to be specified to select next P State.
-+ */
- struct vid_data {
- 	int min;
- 	int max;
-@@ -90,6 +136,18 @@ struct vid_data {
- 	int32_t ratio;
- };
- 
-+/**
-+ * struct _pid -	Stores PID data
-+ * @setpoint:		Target set point for busyness or performance
-+ * @integral:		Storage for accumulated error values
-+ * @p_gain:		PID proportional gain
-+ * @i_gain:		PID integral gain
-+ * @d_gain:		PID derivative gain
-+ * @deadband:		PID deadband
-+ * @last_err:		Last error storage for integral part of PID calculation
-+ *
-+ * Stores PID coefficients and last error for PID controller.
-+ */
- struct _pid {
- 	int setpoint;
- 	int32_t integral;
-@@ -100,6 +158,23 @@ struct _pid {
- 	int32_t last_err;
- };
- 
-+/**
-+ * struct cpudata -	Per CPU instance data storage
-+ * @cpu:		CPU number for this instance data
-+ * @update_util:	CPUFreq utility callback information
-+ * @pstate:		Stores P state limits for this CPU
-+ * @vid:		Stores VID limits for this CPU
-+ * @pid:		Stores PID parameters for this CPU
-+ * @last_sample_time:	Last Sample time
-+ * @prev_aperf:		Last APERF value read from APERF MSR
-+ * @prev_mperf:		Last MPERF value read from MPERF MSR
-+ * @prev_tsc:		Last timestamp counter (TSC) value
-+ * @prev_cummulative_iowait: IO Wait time difference from last and
-+ *			current sample
-+ * @sample:		Storage for storing last Sample data
-+ *
-+ * This structure stores per CPU instance data for all CPUs.
-+ */
- struct cpudata {
- 	int cpu;
- 
-@@ -118,6 +193,19 @@ struct cpudata {
- };
- 
- static struct cpudata **all_cpu_data;
-+
-+/**
-+ * struct pid_adjust_policy - Stores static PID configuration data
-+ * @sample_rate_ms:	PID calculation sample rate in ms
-+ * @sample_rate_ns:	Sample rate calculation in ns
-+ * @deadband:		PID deadband
-+ * @setpoint:		PID Setpoint
-+ * @p_gain_pct:		PID proportional gain
-+ * @i_gain_pct:		PID integral gain
-+ * @d_gain_pct:		PID derivative gain
-+ *
-+ * Stores per CPU model static PID configuration data.
-+ */
- struct pstate_adjust_policy {
- 	int sample_rate_ms;
- 	s64 sample_rate_ns;
-@@ -128,6 +216,20 @@ struct pstate_adjust_policy {
- 	int i_gain_pct;
- };
- 
-+/**
-+ * struct pstate_funcs - Per CPU model specific callbacks
-+ * @get_max:		Callback to get maximum non turbo effective P state
-+ * @get_max_physical:	Callback to get maximum non turbo physical P state
-+ * @get_min:		Callback to get minimum P state
-+ * @get_turbo:		Callback to get turbo P state
-+ * @get_scaling:	Callback to get frequency scaling factor
-+ * @get_val:		Callback to convert P state to actual MSR write value
-+ * @get_vid:		Callback to get VID data for Atom platforms
-+ * @get_target_pstate:	Callback to a function to calculate next P state to use
-+ *
-+ * Core and Atom CPU models have different way to get P State limits. This
-+ * structure is used to store those callbacks.
-+ */
- struct pstate_funcs {
- 	int (*get_max)(void);
- 	int (*get_max_physical)(void);
-@@ -139,6 +241,11 @@ struct pstate_funcs {
- 	int32_t (*get_target_pstate)(struct cpudata *);
- };
- 
-+/**
-+ * struct cpu_defaults- Per CPU model default config data
-+ * @pid_policy:	PID config data
-+ * @funcs:		Callback function data
-+ */
- struct cpu_defaults {
- 	struct pstate_adjust_policy pid_policy;
- 	struct pstate_funcs funcs;
-@@ -151,6 +258,34 @@ static struct pstate_adjust_policy pid_params;
- static struct pstate_funcs pstate_funcs;
- static int hwp_active;
- 
-+
-+/**
-+ * struct perf_limits - Store user and policy limits
-+ * @no_turbo:		User requested turbo state from intel_pstate sysfs
-+ * @turbo_disabled:	Platform turbo status either from msr
-+ *			MSR_IA32_MISC_ENABLE or when maximum available pstate
-+ *			matches the maximum turbo pstate
-+ * @max_perf_pct:	Effective maximum performance limit in percentage, this
-+ *			is minimum of either limits enforced by cpufreq policy
-+ *			or limits from user set limits via intel_pstate sysfs
-+ * @min_perf_pct:	Effective minimum performance limit in percentage, this
-+ *			is maximum of either limits enforced by cpufreq policy
-+ *			or limits from user set limits via intel_pstate sysfs
-+ * @max_perf:		This is a scaled value between 0 to 255 for max_perf_pct
-+ *			This value is used to limit max pstate
-+ * @min_perf:		This is a scaled value between 0 to 255 for min_perf_pct
-+ *			This value is used to limit min pstate
-+ * @max_policy_pct:	The maximum performance in percentage enforced by
-+ *			cpufreq setpolicy interface
-+ * @max_sysfs_pct:	The maximum performance in percentage enforced by
-+ *			intel pstate sysfs interface
-+ * @min_policy_pct:	The minimum performance in percentage enforced by
-+ *			cpufreq setpolicy interface
-+ * @min_sysfs_pct:	The minimum performance in percentage enforced by
-+ *			intel pstate sysfs interface
-+ *
-+ * Storage for user and policy defined limits.
-+ */
- struct perf_limits {
- 	int no_turbo;
- 	int turbo_disabled;
--- 
-2.5.0
-
+Can you please rebase this on top of my linux-next branch?  This
+change in particular will conflict with one commit already in there.
