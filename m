@@ -1,46 +1,100 @@
-From: Marcin Niestroj <m.niestroj@grinn-global.com>
-Subject: Re: [PATCH 1/5] mfd: tps65217: Add support for IRQs
-Date: Tue, 5 Apr 2016 13:16:04 +0200
-Message-ID: <57039E74.7030704@grinn-global.com>
-References: <1459789865-3704-1-git-send-email-m.niestroj@grinn-global.com>
- <1459789865-3704-3-git-send-email-m.niestroj@grinn-global.com>
- <57038E46.9070204@ti.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH] PCI: Fix device attach failure handling
+Date: Tue, 5 Apr 2016 14:29:38 +0300
+Message-ID: <5703A1A2.8040002@ti.com>
+References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 2780.rev.megiteam.pl ([91.227.39.128]:50555 "EHLO
-	vk1046.megiteam.com.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757141AbcDELQK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 07:16:10 -0400
-In-Reply-To: <57038E46.9070204@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
+On 03/31/2016 03:57 PM, Lukas Wunner wrote:
+> Linux 4.5 introduced a behavioral change in device probing during the
+> suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
+> probing during suspend/hibernation"): It defers device probing during
+> the entire suspend process, starting from the prepare phase and ending
+> with the complete phase. A rule existed before that "we rely on sub-
+> systems not to do any probing once a device is suspended" but it is
+> enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
+> 
+> This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
+> plugged in while the system is asleep: Upon waking up, pciehp_resume()
+> discovers new devices in the resume phase and immediately tries to bind
+> them to a driver. Since probing is now deferred, device_attach() returns
+> -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
+> 
+> Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
+> Check device_attach() return value always"): pci_bus_add_device() no
+> longer sets dev->is_added = 1 if device_attach() returned a negative
+> value. This results in a BUG lockup in pci_bus_add_devices().
+> 
+> Fix the latter by not recursing to a child bus if device_attach() failed
+> for the bridge leading to it.
+> 
+> Fix the former by not interpreting -EPROBE_DEFER as failure. The device
+> will be probed eventually and there is proper locking in place to avoid
+> races (e.g. if devices are unplugged again und thus deleted from the
+> system before deferred probing happens, I have tested this). Also, those
+> functions which dereference dev->driver (e.g. pci_pm_*()) do contain
+> proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
+> 
+> Note that even postponing the code in pciehp_resume() until the
+> complete phase wouldn't avoid these troubles because dpm_complete()
+> calls device_unblock_probing() only after ->complete has been
+> executed for all devices. We lack a pm hook from which it would
+> be safe to check a hotplug port and call device_attach() without
+> risking -EPROBE_DEFER.
 
+Unfortunately, I can't say too much about pci in general.
+Regarding checking a hotplug port - Potentially,
+PM notifiers can be used PM_SUSPEND_PREPARE/PM_POST_SUSPEND.
+Smth. similar (more or less) was implemented for MMC
 
-On 05.04.2016 12:07, Grygorii Strashko wrote:
-> On 04/04/2016 08:11 PM, Marcin Niestroj wrote:
->> Add support for handling IRQs: power button, AC and USB power state
->> changes. Mask and interrupt bits are shared within one register, which
->> prevents us to use regmap_irq implementation. New irq_domain is
->> created in
->> order to add interrupt handling for each tps65217's subsystem. IRQ
->> resources have been added for charger subsystem to be able to notify
->> about
->> AC and USB state changes.
->>
->> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->> ---
->
-> Just curious Why not use a regmap_irq?
->
+bbd4368 mmc: core: Signal wakeup event at card insert/removal
+4c2ef25 mmc: fix all hangs related to mmc/sd card insert/removal during suspend/resume
 
-tps65217 has IRQ mask and status bits in a single register. regmap_irq 
-works in case of two different registers (one mask, one status), but 
-with the same layout of mask and status bits in both.
+> 
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Rafael J. Wysocki <rafael@kernel.org>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>   drivers/pci/bus.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index 6c9f546..dd7cdbe 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+>   
+>   	dev->match_driver = true;
+>   	retval = device_attach(&dev->dev);
+> -	if (retval < 0) {
+> +	if (retval < 0 && retval != -EPROBE_DEFER) {
+>   		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
+>   		pci_proc_detach_device(dev);
+>   		pci_remove_sysfs_dev_files(dev);
+> @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+>   	}
+>   
+>   	list_for_each_entry(dev, &bus->devices, bus_list) {
+> -		BUG_ON(!dev->is_added);
+> +		/* Skip if device attach failed */
+> +		if (!dev->is_added)
+> +			continue;
+>   		child = dev->subordinate;
+>   		if (child)
+>   			pci_bus_add_devices(child);
+> 
+
 
 -- 
-Marcin Niestroj
+regards,
+-grygorii
