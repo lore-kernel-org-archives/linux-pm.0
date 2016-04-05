@@ -1,67 +1,98 @@
-From: Chanwoo Choi <cwchoi00-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 0/3] power: Remove the deprecated extcon functions
-Date: Tue, 5 Apr 2016 17:06:05 +0900
-Message-ID: <CAGTfZH1A=vt8NojozADUg2HAamVcffDosyvktYD2L2Mu8-FbMA@mail.gmail.com>
-References: <1459121142-3768-1-git-send-email-cw00.choi@samsung.com>
-Reply-To: cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v9 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Tue, 5 Apr 2016 16:12:22 +0800
+Message-ID: <20160405081222.GC31351@shlinux2.ap.freescale.net>
+References: <cover.1459494743.git.baolin.wang@linaro.org>
+ <20160405064637.GA31351@shlinux2.ap.freescale.net>
+ <CAMz4kuKWpFLbYJM+m3syT+aMNVxjBipU_3=qwz=X0L_oB5bR0w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1459121142-3768-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMz4kuKWpFLbYJM+m3syT+aMNVxjBipU_3=qwz=X0L_oB5bR0w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ping.
+On Tue, Apr 05, 2016 at 03:54:31PM +0800, Baolin Wang wrote:
+> Hi Peter,
+> 
+> On 5 April 2016 at 14:46, Peter Chen <hzpeterchen@gmail.com> wrote:
+> >
+> > We are thinking USB charger framework for Freescale i.mx SoC series,
+> > since our internal framework is not good enough.
+> > So I have more questions for your framework since there are many
+> > different USB charger designs, and I hope it is universal.
+> 
+> Great, thanks for your attention and suggestions.
+> 
+> >
+> > - I would like to see your all code to let the charger work, eg
+> > you have said the charger detection is done by PMIC automatically,
+> > but I did not find your PMIC code to read charger type.
+> 
+> Yeah, this patchset did not give an example to read charger type from
+> PMIC registers. (Cause now the user 'wm831x_power' don't need this.)
+> But I think user can get it easily by implementing below callbacks.
+> (1) gadget->ops->get_charger_type();
+> (2) power_supply_get_property(uchger->psy, POWER_SUPPLY_PROP_CHARGE_TYPE, &val);
+> (3) uchger->get_charger_type();
+> 
 
-Hi Sebastian,
+I just would like if you can have this, then, we (you) can test it, eg,
+you can test if the wm831x can charge more than 1500mA for DCP.
 
-Could you please review this patch-set?
+> In some solutions, when one cable is plugin, the PMIC will detect the
+> charger type automatically and you can read it from PMIC registers
+> then. Then maybe one interrupt or other ways to report to gadget to do
+> enumeration. So user can read the PMIC registers to get charger type
+> by implementing any above methods.
+> 
 
-Regards,
-Chanwoo Choi
+Wait. When the USB cable is plugging in, which module will get
+interrupt? Only PMIC or Both PMIC and USB (or extcon)? If PMIC
+can trigger USB "connect" interrupt, then it is ok.
 
+> >
+> > Besides, how you can make sure the charger detection has finished
+> > before the framework handles USB_CHARGER_PRESENT event?
+> 
+> I think we don't need to care about this situation. If the charger
+> type is 'UNKNOWN_TYPE' (maybe charger detection is not finished yet),
+> the charger framework will not set current (current is 0) for power
+> driver.
 
-On Mon, Mar 28, 2016 at 8:25 AM, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
-> This patch-set removes the deprecated notifier API of extcon framework and
-> then use the new extcon API[2] with the unique id[1] to indicate the each
-> external connector. Alter deprecated API as following:
-> - extcon_register_interest() -> extcon_register_notifier()
-> - extcon_unregister_interest() -> extcon_unregister_notifier()
-> - extcon_set_cable_state() -> extcon_set_cable_state_()
-> - extcon_get_cable_state() -> extcon_get_cable_state_()
->
-> And, extcon alters the name of USB charger connector in patch[3] as following:
-> - EXTCON_CHG_USB_SDP /* Standard Downstream Port */
-> - EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
-> - EXTCON_CHG_USB_CDP /* Charging Downstream Port */
-> - EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
->
-> [1] Commit 2a9de9c0f08d61
-> - ("extcon: Use the unique id for external connector instead of string)
-> [2] Commit 046050f6e623e4
-> - ("extcon: Update the prototype of extcon_register_notifier() with enum extcon
-> [3] Commit 11eecf910bd81d
-> - ("extcon: Modify the id and name of external connector")
->
-> Chanwoo Choi (3):
->   power: charger-manager: Replace deprecatd API of extcon
->   power: axp288_charger: Replace deprecatd API of extcon
->   extcon: Remove the deprecated extcon functions
->
->  .../bindings/power_supply/charger-manager.txt      |   4 +-
->  drivers/extcon/extcon.c                            | 201 +++------------------
->  drivers/power/axp288_charger.c                     |  77 +++++---
->  drivers/power/charger-manager.c                    |  31 ++--
->  include/linux/extcon.h                             |  59 ------
->  include/linux/power/charger-manager.h              |   4 +-
->  6 files changed, 101 insertions(+), 275 deletions(-)
->
-> --
-> 1.9.1
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Then, when we notify the charger IC for larger current, eg, for DCP.
+
+> 
+> >
+> > - I commented the current limit at different situations for USB
+> > charger last time, but I have not seen your further comments.
+> > I would like give it again. For DCP, you can notify charger IC
+> > once you get the charger type. But for CDP/SDP, you need to
+> > notify charger IC after set configuration has finished, since
+> > the host may still not be ready to give high current.
+> 
+> As my understanding, if the usb charger framework get the charger
+> type, it means we can notify the power driver to set the current. If
+> you don't ready for setting current, please don't give the charger
+> type to usb charger framework.
+> 
+> The framework does not want to focus on charger detection too much,
+> and just supplies one callback '->charger_detect()' for user to be
+> implemented if they ensure they need to do the SW charger detection
+> manually (Note: must at the right time to do the SW detection.). So
+> the usb charger just focus on dealing with the usb gadget power
+> negotiation, and it does not need to care much how to do charger
+> detection on your platform.
+
+No, this comment is common one, but only for SW detection. Eg, when
+the PMIC tells you it is a SDP, you can't notify to charger IC about
+500mA at once, you need to do it after host allows you to do it.
+
+-- 
+
+Best Regards,
+Peter Chen
