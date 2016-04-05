@@ -1,100 +1,101 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] PCI: Fix device attach failure handling
-Date: Tue, 5 Apr 2016 14:29:38 +0300
-Message-ID: <5703A1A2.8040002@ti.com>
-References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH 00/27] block: cleanup direct access on .bi_vcnt & .bi_io_vec
+Date: Tue,  5 Apr 2016 19:56:45 +0800
+Message-ID: <1459857443-20611-1-git-send-email-tom.leiming@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33495 "EHLO
+	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755803AbcDEL6O (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 07:58:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org
+Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <boaz@plexistor.com>, Ming Lei <tom.leiming@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>, Andreas Dilger <andreas.dilger@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:DEVICE-MAPPER LVM" <dm-devel@redhat.com>, "open list:DRBD DRIVER" <drbd-dev@lists.linbit.com>, Frank Zago <fzago@cray.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hannes Reinecke <hare@suse.de>, James Simmons <jsimmons@infradead.org>, Jan Kara <jack@suse.cz>, Jarod Wilson <jarod@redhat.com>, Jiri Kosina <jkosina@suse.cz>, Joe Perches <joe@perches.com>, "John L. Hammond" <john.hammond@intel.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Keith Busch <keith.busch@intel.com>, Kent Overstreet <kent.overstreet@gmail.com>, linux-bcache@vger.kernel
 
-On 03/31/2016 03:57 PM, Lukas Wunner wrote:
-> Linux 4.5 introduced a behavioral change in device probing during the
-> suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
-> probing during suspend/hibernation"): It defers device probing during
-> the entire suspend process, starting from the prepare phase and ending
-> with the complete phase. A rule existed before that "we rely on sub-
-> systems not to do any probing once a device is suspended" but it is
-> enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
-> 
-> This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
-> plugged in while the system is asleep: Upon waking up, pciehp_resume()
-> discovers new devices in the resume phase and immediately tries to bind
-> them to a driver. Since probing is now deferred, device_attach() returns
-> -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
-> 
-> Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
-> Check device_attach() return value always"): pci_bus_add_device() no
-> longer sets dev->is_added = 1 if device_attach() returned a negative
-> value. This results in a BUG lockup in pci_bus_add_devices().
-> 
-> Fix the latter by not recursing to a child bus if device_attach() failed
-> for the bridge leading to it.
-> 
-> Fix the former by not interpreting -EPROBE_DEFER as failure. The device
-> will be probed eventually and there is proper locking in place to avoid
-> races (e.g. if devices are unplugged again und thus deleted from the
-> system before deferred probing happens, I have tested this). Also, those
-> functions which dereference dev->driver (e.g. pci_pm_*()) do contain
-> proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
-> 
-> Note that even postponing the code in pciehp_resume() until the
-> complete phase wouldn't avoid these troubles because dpm_complete()
-> calls device_unblock_probing() only after ->complete has been
-> executed for all devices. We lack a pm hook from which it would
-> be safe to check a hotplug port and call device_attach() without
-> risking -EPROBE_DEFER.
+Hi Guys,
 
-Unfortunately, I can't say too much about pci in general.
-Regarding checking a hotplug port - Potentially,
-PM notifiers can be used PM_SUSPEND_PREPARE/PM_POST_SUSPEND.
-Smth. similar (more or less) was implemented for MMC
+It is always not a good practice to access bio->bi_vcnt and
+bio->bi_io_vec from drivers directly. Also this kind of direct
+access will cause trouble when converting to multipage bvecs.
 
-bbd4368 mmc: core: Signal wakeup event at card insert/removal
-4c2ef25 mmc: fix all hangs related to mmc/sd card insert/removal during suspend/resume
+The 1st patch introduces the following 4 bio helpers which can be
+used inside drivers for avoiding direct access to .bi_vcnt and .bi_io_vec.
 
-> 
-> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->   drivers/pci/bus.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-> index 6c9f546..dd7cdbe 100644
-> --- a/drivers/pci/bus.c
-> +++ b/drivers/pci/bus.c
-> @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
->   
->   	dev->match_driver = true;
->   	retval = device_attach(&dev->dev);
-> -	if (retval < 0) {
-> +	if (retval < 0 && retval != -EPROBE_DEFER) {
->   		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
->   		pci_proc_detach_device(dev);
->   		pci_remove_sysfs_dev_files(dev);
-> @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
->   	}
->   
->   	list_for_each_entry(dev, &bus->devices, bus_list) {
-> -		BUG_ON(!dev->is_added);
-> +		/* Skip if device attach failed */
-> +		if (!dev->is_added)
-> +			continue;
->   		child = dev->subordinate;
->   		if (child)
->   			pci_bus_add_devices(child);
-> 
+	bio_pages()
+	bio_is_full()
+	bio_get_base_vec()
+	bio_set_vec_table()
 
+Both bio_pages() and bio_is_full() can be easy to convert to
+multipage bvecs.
+
+For bio_get_base_vec() and bio_set_vec_table(), they are often used
+during initializing a new bio or in case of single bvec bio. With the
+two new helpers, it becomes quite easy to audit access to .bi_io_vec
+and .bi_vcnt.
+
+Most of the other patches use the 4 helpers to clean up most of direct
+access to .bi_vcnt and .bi_io_vec from drivers, except for MD and btrfs,
+which two subsystems will be done in the future. 
+
+Also bio_add_page() is used in floppy, dm-crypt and fs/logfs to
+avoiding direct access to .bi_vcnt & .bi_io_vec.
+
+Thanks,
+Ming
+
+Ming Lei (27):
+  block: bio: introduce 4 helpers for cleanup
+  block: drbd: use bio_get_base_vec() to retrieve the 1st bvec
+  block: drbd: remove impossible failure handling
+  block: loop: use bio_get_base_vec() to retrive bvec table
+  block: pktcdvd: use bio_get_base_vec() to retrive bvec table
+  block: floppy: use bio_set_vec_table()
+  block: floppy: use bio_add_page()
+  staging: lustre: avoid to use bio->bi_vcnt directly
+  target: use bio_is_full()
+  bcache: debug: avoid to access .bi_io_vec directly
+  bcache: io.c: use bio_set_vec_table
+  bcache: journal.c: use bio_set_vec_table()
+  bcache: movinggc: use bio_set_vec_table()
+  bcache: writeback: use bio_set_vec_table()
+  bcache: super: use bio_set_vec_table()
+  bcache: super: use bio_get_base_vec
+  dm: crypt: use bio_add_page()
+  dm: dm-io.c: use bio_get_base_vec()
+  dm: dm.c: replace 'bio->bi_vcnt == 1' with !bio_multiple_segments
+  dm: dm-bufio.c: use bio_set_vec_table()
+  fs: logfs: use bio_set_vec_table()
+  fs: logfs: convert to bio_add_page() in sync_request()
+  fs: logfs: use bio_add_page() in __bdev_writeseg()
+  fs: logfs: use bio_add_page() in do_erase()
+  fs: logfs: remove unnecesary check
+  kernel/power/swap.c: use bio_get_base_vec()
+  mm: page_io.c: use bio_get_base_vec()
+
+ drivers/block/drbd/drbd_bitmap.c            |   4 +-
+ drivers/block/drbd/drbd_receiver.c          |  14 +---
+ drivers/block/floppy.c                      |   9 +--
+ drivers/block/loop.c                        |   5 +-
+ drivers/block/pktcdvd.c                     |   3 +-
+ drivers/md/bcache/debug.c                   |  11 ++-
+ drivers/md/bcache/io.c                      |   3 +-
+ drivers/md/bcache/journal.c                 |   3 +-
+ drivers/md/bcache/movinggc.c                |   6 +-
+ drivers/md/bcache/super.c                   |  28 +++++---
+ drivers/md/bcache/writeback.c               |   4 +-
+ drivers/md/dm-bufio.c                       |   3 +-
+ drivers/md/dm-crypt.c                       |   8 +--
+ drivers/md/dm-io.c                          |   7 +-
+ drivers/md/dm.c                             |   3 +-
+ drivers/staging/lustre/lustre/llite/lloop.c |   9 +--
+ drivers/target/target_core_pscsi.c          |   2 +-
+ fs/logfs/dev_bdev.c                         | 107 +++++++++++-----------------
+ include/linux/bio.h                         |  28 ++++++++
+ kernel/power/swap.c                         |  10 ++-
+ mm/page_io.c                                |  18 ++++-
+ 21 files changed, 156 insertions(+), 129 deletions(-)
 
 -- 
-regards,
--grygorii
+1.9.1
+
