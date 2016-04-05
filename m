@@ -1,179 +1,98 @@
-From: fu.wei@linaro.org
-Subject: [PATCH v9] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Tue,  5 Apr 2016 22:49:48 +0800
-Message-ID: <1459867788-14678-1-git-send-email-fu.wei@linaro.org>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH v7] thermal: add temperature sensor support for tango SoC
+Date: Tue, 5 Apr 2016 16:58:22 +0200
+Message-ID: <5703D28E.4040805@free.fr>
+References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
+ <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
+ <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
+ <56FACE0B.9060606@free.fr> <20160330000503.GA2625@localhost.localdomain>
+ <56FBEE4F.3060106@free.fr> <56FD8582.80002@free.fr>
+ <20160401015240.GB19409@localhost.localdomain> <570254D8.3090406@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:53658 "EHLO mx1.redhat.com"
+Received: from smtp2-g21.free.fr ([212.27.42.2]:56888 "EHLO smtp2-g21.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbcDEOu1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 10:50:27 -0400
+	id S1758064AbcDEO6d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Apr 2016 10:58:33 -0400
+In-Reply-To: <570254D8.3090406@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>, Fu Wei <fu.wei@linaro.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sebastian Frias <sf84@laposte.net>
 
-From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+On 04/04/2016 13:49, Mason wrote:
 
-This commit provides APEI arch-specific bits for aarch64
+> +static bool temp_above_thresh(void __iomem *base, int thresh_idx)
+> +{
+> +	writel(CMD_READ | thresh_idx << 8, base + TEMPSI_CMD);
+> +	usleep_range(10, 20);
+> +	return readl(base + TEMPSI_RES);
+> +}
 
-Meanwhile,
-(1)add a new subfunction "hest_ia32_init" for
-"acpi_disable_cmcff" which is used by IA-32 Architecture
-Corrected Machine Check (CMC).
-(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-a generic place.
-(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
-because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+A colleague suggested a tweak for temp_above_thresh() which does not
+require messing with TEMPSI_CFG => v8 required.
 
-[Fu Wei: improve && upstream]
+> +static int tango_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct resource *res;
+> +	struct tango_thermal_priv *priv;
+> +
+> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	priv->base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->base))
+> +		return PTR_ERR(priv->base);
+> +
+> +	writel(CMD_ON, priv->base + TEMPSI_CMD);
+> +	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
+> +
+> +	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
+> +	if (IS_ERR(priv->zone))
+> +		return PTR_ERR(priv->zone);
+> +
+> +	priv->thresh_idx = IDX_MIN;
+> +	platform_set_drvdata(pdev, priv);
+> +
+> +	return 0;
+> +}
 
-Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
-Signed-off-by: Fu Wei <fu.wei@linaro.org>
-Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
-Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
-Acked-by: Will Deacon <will.deacon@arm.com>
----
-Changelog:
-v9: Improve the comment for arch_apei_flush_tlb_one.
-    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
-    problem.
+It seems tango_get_temp() is called (at least once) before the end of tango_thermal_probe()
 
-v8: https://lkml.org/lkml/2016/3/29/132
-    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
-    on ARM64.
+Does that mean that the device must be fully initialized *BEFORE*
+thermal_zone_of_sensor_register() is called?
+(I assume it's that function that triggers the call to get_temp)
 
-v7: https://lkml.org/lkml/2016/3/17/183
-    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
+In that case, I need to move priv->thresh_idx = IDX_MIN; earlier.
 
-v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
-    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-    a generic place.
-    Delete HAVE_ACPI_APEI_HEST_IA32.
 
-v5: https://lkml.org/lkml/2015/12/10/131
-    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
-    "#if defined(__i386__) || defined(__x86_64__)".
+Also, can get_temp() be called concurrently?
+For example, from user-space reading /sys/class/thermal/thermal_zone0/temp
+and from the kernel thread polling the sensor?
+Is locking taken care of in higher levels?
 
-v4: https://lkml.org/lkml/2015/12/8/188
-    Rebase to latest kernel version(4.4-rc4).
-    Move arch_apei_flush_tlb_one into header file as a inline function
-    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
 
-v3: https://lkml.org/lkml/2015/12/3/521
-    Remove "acpi_disable_cmcff" from arm64 code,
-    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+For the record, I test the driver with the following script.
+Is it good enough?
 
-v2: https://lkml.org/lkml/2015/12/2/432
-    Rebase to latest kernel version(4.4-rc3).
-    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+TEMP="/sys/class/thermal/thermal_zone0/temp"
 
-v1: https://lkml.org/lkml/2015/8/14/199
-    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
-    Delete arch/arm64/kernel/apei.c.
-    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+echo RUN IDLE
+for ((I=0; I<30; ++I)); do cat $TEMP; sleep 2; done
 
- arch/arm64/Kconfig            |  1 +
- arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
- arch/x86/kernel/acpi/apei.c   |  3 ---
- drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
- 4 files changed, 30 insertions(+), 7 deletions(-)
+echo RUN HEAVY LOAD
+cpuburn-a9 &
+cpuburn-a9 &
+for ((I=0; I<60; ++I)); do cat $TEMP; sleep 2; done
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 4f43622..308fdb1 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -3,6 +3,7 @@ config ARM64
- 	select ACPI_CCA_REQUIRED if ACPI
- 	select ACPI_GENERIC_GSI if ACPI
- 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
-+	select HAVE_ACPI_APEI if (ACPI && EFI)
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select ARCH_HAS_ELF_RANDOMIZE
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index aee323b..8db8379 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -17,6 +17,7 @@
- 
- #include <asm/cputype.h>
- #include <asm/smp_plat.h>
-+#include <asm/tlbflush.h>
- 
- /* Macros for consistency checks of the GICC subtable of MADT */
- #define ACPI_MADT_GICC_LENGTH	\
-@@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
- }
- 
- #ifdef	CONFIG_ACPI_APEI
-+#define acpi_disable_cmcff 1
- pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
--#endif
- 
-+/*
-+ * Despite its name, this function must still broadcast the TLB
-+ * invalidation in order to ensure other CPUs don't up with with junk
-+ * entries as a result of speculation. Unusually, its also called in
-+ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
-+ * TLB broadcasting, then we're in trouble here.
-+ */
-+static inline void arch_apei_flush_tlb_one(unsigned long addr)
-+{
-+	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+}
-+#endif /* CONFIG_ACPI_APEI */
- #endif /*_ASM_ACPI_H*/
-diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
-index c280df6..ea3046e 100644
---- a/arch/x86/kernel/acpi/apei.c
-+++ b/arch/x86/kernel/acpi/apei.c
-@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
- 	struct acpi_hest_ia_corrected *cmc;
- 	struct acpi_hest_ia_error_bank *mc_bank;
- 
--	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
--		return 0;
--
- 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
- 	if (!cmc->enabled)
- 		return 0;
-diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
-index 20b3fcf..792a0d9 100644
---- a/drivers/acpi/apei/hest.c
-+++ b/drivers/acpi/apei/hest.c
-@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
-  */
- static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
- {
--	return arch_apei_enable_cmcff(hest_hdr, data);
-+	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
-+		return 0;
-+
-+	if (!acpi_disable_cmcff)
-+		return !arch_apei_enable_cmcff(hest_hdr, data);
-+
-+	return 0;
-+}
-+
-+static inline int __init hest_ia32_init(void)
-+{
-+	return apei_hest_parse(hest_parse_cmc, NULL);
- }
- 
- struct ghes_arr {
-@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
- 		goto err;
- 	}
- 
--	if (!acpi_disable_cmcff)
--		apei_hest_parse(hest_parse_cmc, NULL);
-+	rc = hest_ia32_init();
-+	if (rc)
-+		goto err;
- 
- 	if (!ghes_disable) {
- 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
--- 
-2.5.5
+echo KILL HEAVY LOAD
+kill $(jobs -p)
+for ((I=0; I<30; ++I)); do cat $TEMP; sleep 2; done
+
+
+Regards.
 
