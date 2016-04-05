@@ -1,62 +1,69 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v9 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 5 Apr 2016 10:01:53 -0700
-Message-ID: <20160405170153.GE1924@sirena.org.uk>
-References: <cover.1459494743.git.baolin.wang@linaro.org>
- <20160405064637.GA31351@shlinux2.ap.freescale.net>
- <CAMz4kuKWpFLbYJM+m3syT+aMNVxjBipU_3=qwz=X0L_oB5bR0w@mail.gmail.com>
- <20160405081222.GC31351@shlinux2.ap.freescale.net>
- <CAMz4kuJAq0RGsqz5XoKOft_DKGTDXscwenPp97Drbm79ON49=w@mail.gmail.com>
- <20160405094320.GA6301@shlinux2.ap.freescale.net>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly
+ non-modular
+Date: Tue, 5 Apr 2016 14:22:52 -0400
+Message-ID: <20160405182251.GX1778@windriver.com>
+References: <1459099777-4962-1-git-send-email-paul.gortmaker@windriver.com>
+ <20160404195535.GQ1778@windriver.com>
+ <20160405031152.GA22836@linutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="xA/XKXTdy9G3iaIz"
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:45468 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbcDERCU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 13:02:20 -0400
+Received: from mail5.windriver.com ([192.103.53.11]:37704 "EHLO mail5.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbcDESXI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Apr 2016 14:23:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20160405094320.GA6301@shlinux2.ap.freescale.net>
+In-Reply-To: <20160405031152.GA22836@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+To: rcochran@linutronix.de
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 
+[Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 05/04/2016 (Tue 05:11) rcochran@linutronix.de wrote:
 
---xA/XKXTdy9G3iaIz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Mon, Apr 04, 2016 at 03:55:35PM -0400, Paul Gortmaker wrote:
+> > > This was done in commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
+> > > ("intel_idle: disable module support") since "...the module capability
+> > > is cauing more trouble than it is worth."
+> 
+> The reason given in that commit was that "it lost the init race with
+> ACPI", whatever that means.
+> 
+> > > Since this was done over 5y ago, it is safe to say there is no big desire
+> > > to overcome the issues with modular versions.  So lets remove the modular
+> > > code that is essentially orphaned, so that when reading the driver there
+> > > is no doubt it is builtin-only.
+> 
+> So you want to make the driver non-modular due to lack of desire to
+> fix it?
+> 
+> > This patch will no longer apply since there were several updates to this
+> > driver by Richard Cochran dated March 29th.   Before I go and refresh
+> > the patch for a v2, is there any objections to the general goal of what
+> > the patch was aiming to achieve -- avoiding use of modular infrastructure
+> > in non-modular code, and not having module_exit code that can't be run?
+> 
+> On the one hand, the better way is to fix the issues, keeping the
+> driver's modular form.  That way, by loading and unloading, you can
+> observe how well it works.  I already started by fixing several bugs
+> WRT module init/exit.
 
-On Tue, Apr 05, 2016 at 05:43:20PM +0800, Peter Chen wrote:
-> On Tue, Apr 05, 2016 at 05:34:02PM +0800, Baolin Wang wrote:
+So, to be clear, I really don't have a horse in this race.  Be it
+built-in or be it modular, I don't care.  But if code pretends to be
+modular and is not, and hence has dead code, then I care.  So fixing
+this driver to be functionally tristate is just as good as killing
+the (currently) unreachable module_exit code IMHO.
 
-> > Mark, could you please address Peter's comments about if the the
-> > wm831x can charge more than 1500mA for DCP? (I have no environment to
-> > test wm831x) Thanks.
+It sounds like this discussion will lead us to one of the two, so that
+is good.
 
-> I don't want you or Mark to test at hardware, I just would like to see
-> some code that how PMIC, wm831x, and USB gadget driver work together.
+Paul.
+--
 
-If you want to see this running it's going to be easier for you to just
-write an equivalent driver that just does a print instead of writing to
-a register (which is all that the wm831x driver boils down to) and test
-on hardware you have in front of you.
-
---xA/XKXTdy9G3iaIz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXA++AAAoJECTWi3JdVIfQda4H/in01TtmiEra/8YzHOWYWRan
-VpI/CJet5JgWzhirBht56L1rpFqY+wOk/C95JqMIWu1xdqvUVvS6b+WLb98ynsDx
-+wVdt7gs8TzIulcqJFg08yyIzMqwm7lMcoAlIWhceEl3FrEkvUFdtyKeMJcYMhWp
-f1aeoGpKj9OzGemkF0Y+JmoIzrpc+eBgLoJm9/z/T2QdCL6z1Y7E1T3LtbWgrxlJ
-JJh+a4psfYh+G1tIDmxbpf/lG1f/Vh/aBpHum781/8m5R7XhY4WFkrPAe7u9iyv9
-SkXg0ga4H8xsGyaTQJr+fb8pn7ILHkch9RjeL2n9WS9vqUKQaD6lnQIfX6IiNKQ=
-=9WW+
------END PGP SIGNATURE-----
-
---xA/XKXTdy9G3iaIz--
+> 
+> On the other hand, if there is some technical reason why the modular
+> form is impossible, then the patch should state it.
+> 
+> Thanks,
+> Richard
