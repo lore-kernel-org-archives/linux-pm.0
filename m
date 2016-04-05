@@ -1,69 +1,48 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly
- non-modular
-Date: Tue, 5 Apr 2016 14:22:52 -0400
-Message-ID: <20160405182251.GX1778@windriver.com>
-References: <1459099777-4962-1-git-send-email-paul.gortmaker@windriver.com>
- <20160404195535.GQ1778@windriver.com>
- <20160405031152.GA22836@linutronix.de>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH] cpuidle: Indicate when a device has been unregistered
+Date: Tue, 5 Apr 2016 14:05:38 -0500
+Message-ID: <1459883138-21136-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail5.windriver.com ([192.103.53.11]:37704 "EHLO mail5.wrs.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:58478 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbcDESXI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 14:23:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20160405031152.GA22836@linutronix.de>
+	id S1751916AbcDETGS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Apr 2016 15:06:18 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rcochran@linutronix.de
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>
 
-[Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 05/04/2016 (Tue 05:11) rcochran@linutronix.de wrote:
+Currently the 'registered' member of the cpuidle_device struct is set
+to 1 during cpuidle_register_device. In this same function there are
+checks to see if the device is already registered to prevent duplicate
+calls to register the device, but this value is never set to 0 even on
+unregister of the device. Because of this, any attempt to call
+cpuidle_register_device after a call to cpuidle_unregister_device will
+fail which shouldn't be the case.
 
-> On Mon, Apr 04, 2016 at 03:55:35PM -0400, Paul Gortmaker wrote:
-> > > This was done in commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
-> > > ("intel_idle: disable module support") since "...the module capability
-> > > is cauing more trouble than it is worth."
-> 
-> The reason given in that commit was that "it lost the init race with
-> ACPI", whatever that means.
-> 
-> > > Since this was done over 5y ago, it is safe to say there is no big desire
-> > > to overcome the issues with modular versions.  So lets remove the modular
-> > > code that is essentially orphaned, so that when reading the driver there
-> > > is no doubt it is builtin-only.
-> 
-> So you want to make the driver non-modular due to lack of desire to
-> fix it?
-> 
-> > This patch will no longer apply since there were several updates to this
-> > driver by Richard Cochran dated March 29th.   Before I go and refresh
-> > the patch for a v2, is there any objections to the general goal of what
-> > the patch was aiming to achieve -- avoiding use of modular infrastructure
-> > in non-modular code, and not having module_exit code that can't be run?
-> 
-> On the one hand, the better way is to fix the issues, keeping the
-> driver's modular form.  That way, by loading and unloading, you can
-> observe how well it works.  I already started by fixing several bugs
-> WRT module init/exit.
+To prevent this, set registered to 0 when the device is unregistered.
 
-So, to be clear, I really don't have a horse in this race.  Be it
-built-in or be it modular, I don't care.  But if code pretends to be
-modular and is not, and hence has dead code, then I care.  So fixing
-this driver to be functionally tristate is just as good as killing
-the (currently) unreachable module_exit code IMHO.
+Fixes: c878a52d3c7c ("cpuidle: Check if device is already registered")
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ drivers/cpuidle/cpuidle.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-It sounds like this discussion will lead us to one of the two, so that
-is good.
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index f996efc56605..c2dd99ab1648 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -433,6 +433,8 @@ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+ 	list_del(&dev->device_list);
+ 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
+ 	module_put(drv->owner);
++
++	dev->registered = 0;
+ }
+ 
+ static void __cpuidle_device_init(struct cpuidle_device *dev)
+-- 
+2.7.3
 
-Paul.
---
-
-> 
-> On the other hand, if there is some technical reason why the modular
-> form is impossible, then the patch should state it.
-> 
-> Thanks,
-> Richard
