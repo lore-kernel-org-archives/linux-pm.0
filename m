@@ -1,145 +1,83 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v9 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 5 Apr 2016 17:34:02 +0800
-Message-ID: <CAMz4kuJAq0RGsqz5XoKOft_DKGTDXscwenPp97Drbm79ON49=w@mail.gmail.com>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
+Date: Tue, 5 Apr 2016 17:41:44 +0800
+Message-ID: <CAMz4kuKxAnYz=KA46B8arKA2jOaAw6WMEc4+5D+kv+W55Ef6=Q@mail.gmail.com>
 References: <cover.1459494743.git.baolin.wang@linaro.org>
-	<20160405064637.GA31351@shlinux2.ap.freescale.net>
-	<CAMz4kuKWpFLbYJM+m3syT+aMNVxjBipU_3=qwz=X0L_oB5bR0w@mail.gmail.com>
-	<20160405081222.GC31351@shlinux2.ap.freescale.net>
+	<6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
+	<20160405075612.GB31351@shlinux2.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f175.google.com ([209.85.161.175]:35605 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbcDEJeE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 05:34:04 -0400
-Received: by mail-yw0-f175.google.com with SMTP id i84so3327730ywc.2
-        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2016 02:34:03 -0700 (PDT)
-In-Reply-To: <20160405081222.GC31351@shlinux2.ap.freescale.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160405075612.GB31351-Fb7DQEYuewWctlrPMvKcciBecyulp+rMXqFh9Ls21Oc@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 5 April 2016 at 16:12, Peter Chen <hzpeterchen@gmail.com> wrote:
-> On Tue, Apr 05, 2016 at 03:54:31PM +0800, Baolin Wang wrote:
->> Hi Peter,
->>
->> On 5 April 2016 at 14:46, Peter Chen <hzpeterchen@gmail.com> wrote:
->> >
->> > We are thinking USB charger framework for Freescale i.mx SoC series,
->> > since our internal framework is not good enough.
->> > So I have more questions for your framework since there are many
->> > different USB charger designs, and I hope it is universal.
->>
->> Great, thanks for your attention and suggestions.
->>
->> >
->> > - I would like to see your all code to let the charger work, eg
->> > you have said the charger detection is done by PMIC automatically,
->> > but I did not find your PMIC code to read charger type.
->>
->> Yeah, this patchset did not give an example to read charger type from
->> PMIC registers. (Cause now the user 'wm831x_power' don't need this.)
->> But I think user can get it easily by implementing below callbacks.
->> (1) gadget->ops->get_charger_type();
->> (2) power_supply_get_property(uchger->psy, POWER_SUPPLY_PROP_CHARGE_TYPE, &val);
->> (3) uchger->get_charger_type();
->>
+On 5 April 2016 at 15:56, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> On Fri, Apr 01, 2016 at 03:21:49PM +0800, Baolin Wang wrote:
+>> +
+>> +int devm_usb_charger_register(struct device *dev,
+>> +                           struct usb_charger *uchger)
+>> +{
+>> +     struct usb_charger **ptr;
+>> +     int ret;
+>> +
+>> +     ptr = devres_alloc(devm_uchger_dev_unreg, sizeof(*ptr), GFP_KERNEL);
+>> +     if (!ptr)
+>> +             return -ENOMEM;
+>> +
+>> +     ret = usb_charger_register(dev, uchger);
+>> +     if (ret) {
+>> +             devres_free(ptr);
+>> +             return ret;
+>> +     }
+>> +
+>> +     *ptr = uchger;
+>> +     devres_add(dev, ptr);
+>> +
+>> +     return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(devm_usb_charger_register);
 >
-> I just would like if you can have this, then, we (you) can test it, eg,
-> you can test if the wm831x can charge more than 1500mA for DCP.
+> When the above API is expected to call? Can we use the USB charger
+> without USB gadget?
 
-Mark, could you please address Peter's comments about if the the
-wm831x can charge more than 1500mA for DCP? (I have no environment to
-test wm831x) Thanks.
+I think this is open for user to do their specific initialization for
+usb charger. That depends on how to initialize your usb charger
+structure.
 
 >
->> In some solutions, when one cable is plugin, the PMIC will detect the
->> charger type automatically and you can read it from PMIC registers
->> then. Then maybe one interrupt or other ways to report to gadget to do
->> enumeration. So user can read the PMIC registers to get charger type
->> by implementing any above methods.
->>
+>> +
+>> +int usb_charger_init(struct usb_gadget *ugadget)
+>> +{
+>> +     struct usb_charger *uchger;
+>> +     struct extcon_dev *edev;
+>> +     struct power_supply *psy;
+>> +     int ret;
+>> +
+>> +     uchger = kzalloc(sizeof(struct usb_charger), GFP_KERNEL);
+>> +     if (!uchger)
+>> +             return -ENOMEM;
+>> +
+>> +     uchger->type = UNKNOWN_TYPE;
+>> +     uchger->state = USB_CHARGER_DEFAULT;
+>> +     uchger->id = -1;
+>> +
+>> +     if (ugadget->speed >= USB_SPEED_SUPER)
+>> +             uchger->cur_limit.sdp_cur_limit = DEFAULT_SDP_CUR_LIMIT_SS;
+>> +     else
+>> +             uchger->cur_limit.sdp_cur_limit = DEFAULT_SDP_CUR_LIMIT;
 >
-> Wait. When the USB cable is plugging in, which module will get
-> interrupt? Only PMIC or Both PMIC and USB (or extcon)? If PMIC
-> can trigger USB "connect" interrupt, then it is ok.
+> We still haven't known bus speed here, it is better do it after
+> setting configuration has finished.
 
-Sorry for confusing you. What I mean is this is one hardware design,
-when USB cable is plugging in, the PMIC will detect the charger type
-automatically and the gadget does not know any plugin event at the
-same time. Then after the hardware detection, system will create one
-VBUS interrupt to gadget to do enumeration. Anyway, no matter how you
-design your hardware detection method, it should guarantee the charger
-detection action safely.
-
->
->> >
->> > Besides, how you can make sure the charger detection has finished
->> > before the framework handles USB_CHARGER_PRESENT event?
->>
->> I think we don't need to care about this situation. If the charger
->> type is 'UNKNOWN_TYPE' (maybe charger detection is not finished yet),
->> the charger framework will not set current (current is 0) for power
->> driver.
->
-> Then, when we notify the charger IC for larger current, eg, for DCP.
-
-I suppose If the usb charger framework gets the charger type, then
-notify the charger IC for larger current.
-
->
->>
->> >
->> > - I commented the current limit at different situations for USB
->> > charger last time, but I have not seen your further comments.
->> > I would like give it again. For DCP, you can notify charger IC
->> > once you get the charger type. But for CDP/SDP, you need to
->> > notify charger IC after set configuration has finished, since
->> > the host may still not be ready to give high current.
->>
->> As my understanding, if the usb charger framework get the charger
->> type, it means we can notify the power driver to set the current. If
->> you don't ready for setting current, please don't give the charger
->> type to usb charger framework.
->>
->> The framework does not want to focus on charger detection too much,
->> and just supplies one callback '->charger_detect()' for user to be
->> implemented if they ensure they need to do the SW charger detection
->> manually (Note: must at the right time to do the SW detection.). So
->> the usb charger just focus on dealing with the usb gadget power
->> negotiation, and it does not need to care much how to do charger
->> detection on your platform.
->
-> No, this comment is common one, but only for SW detection. Eg, when
-> the PMIC tells you it is a SDP, you can't notify to charger IC about
-> 500mA at once, you need to do it after host allows you to do it.
-
-Well. Sounds reasonable. I just give an ugly example to implement the
-'gadget->ops->get_charger_type()' method to get the charger type.
-
-enum usb_charger_type get_charger_type(struct usb_gadget *gadget)
-{
-        if (host is allowed)
-                read charger type from PMIC;
-        else
-                return UNKNOWN_TYPE;
-}
-
-So that will makes usb charger do not need to care about too much to
-make things more complicated. Or do you have any other good
-suggestions? Thanks.
-
->
-> --
->
-> Best Regards,
-> Peter Chen
-
-
+OK. Make sense.
 
 -- 
 Baolin.wang
 Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
