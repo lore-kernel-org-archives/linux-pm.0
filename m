@@ -1,101 +1,40 @@
 From: Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 00/27] block: cleanup direct access on .bi_vcnt & .bi_io_vec
-Date: Tue,  5 Apr 2016 19:56:45 +0800
-Message-ID: <1459857443-20611-1-git-send-email-tom.leiming@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33495 "EHLO
-	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755803AbcDEL6O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 07:58:14 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 26/27] kernel/power/swap.c: use bio_get_base_vec()
+Date: Tue,  5 Apr 2016 20:07:41 +0800
+Message-ID: <1459858062-21075-12-git-send-email-tom.leiming@gmail.com>
+References: <1459858062-21075-1-git-send-email-tom.leiming@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1459858062-21075-1-git-send-email-tom.leiming@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org
-Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <boaz@plexistor.com>, Ming Lei <tom.leiming@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>, Andreas Dilger <andreas.dilger@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:DEVICE-MAPPER LVM" <dm-devel@redhat.com>, "open list:DRBD DRIVER" <drbd-dev@lists.linbit.com>, Frank Zago <fzago@cray.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hannes Reinecke <hare@suse.de>, James Simmons <jsimmons@infradead.org>, Jan Kara <jack@suse.cz>, Jarod Wilson <jarod@redhat.com>, Jiri Kosina <jkosina@suse.cz>, Joe Perches <joe@perches.com>, "John L. Hammond" <john.hammond@intel.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Keith Busch <keith.busch@intel.com>, Kent Overstreet <kent.overstreet@gmail.com>, linux-bcache@vger.kernel
+Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <boaz@plexistor.com>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Guys,
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ kernel/power/swap.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-It is always not a good practice to access bio->bi_vcnt and
-bio->bi_io_vec from drivers directly. Also this kind of direct
-access will cause trouble when converting to multipage bvecs.
-
-The 1st patch introduces the following 4 bio helpers which can be
-used inside drivers for avoiding direct access to .bi_vcnt and .bi_io_vec.
-
-	bio_pages()
-	bio_is_full()
-	bio_get_base_vec()
-	bio_set_vec_table()
-
-Both bio_pages() and bio_is_full() can be easy to convert to
-multipage bvecs.
-
-For bio_get_base_vec() and bio_set_vec_table(), they are often used
-during initializing a new bio or in case of single bvec bio. With the
-two new helpers, it becomes quite easy to audit access to .bi_io_vec
-and .bi_vcnt.
-
-Most of the other patches use the 4 helpers to clean up most of direct
-access to .bi_vcnt and .bi_io_vec from drivers, except for MD and btrfs,
-which two subsystems will be done in the future. 
-
-Also bio_add_page() is used in floppy, dm-crypt and fs/logfs to
-avoiding direct access to .bi_vcnt & .bi_io_vec.
-
-Thanks,
-Ming
-
-Ming Lei (27):
-  block: bio: introduce 4 helpers for cleanup
-  block: drbd: use bio_get_base_vec() to retrieve the 1st bvec
-  block: drbd: remove impossible failure handling
-  block: loop: use bio_get_base_vec() to retrive bvec table
-  block: pktcdvd: use bio_get_base_vec() to retrive bvec table
-  block: floppy: use bio_set_vec_table()
-  block: floppy: use bio_add_page()
-  staging: lustre: avoid to use bio->bi_vcnt directly
-  target: use bio_is_full()
-  bcache: debug: avoid to access .bi_io_vec directly
-  bcache: io.c: use bio_set_vec_table
-  bcache: journal.c: use bio_set_vec_table()
-  bcache: movinggc: use bio_set_vec_table()
-  bcache: writeback: use bio_set_vec_table()
-  bcache: super: use bio_set_vec_table()
-  bcache: super: use bio_get_base_vec
-  dm: crypt: use bio_add_page()
-  dm: dm-io.c: use bio_get_base_vec()
-  dm: dm.c: replace 'bio->bi_vcnt == 1' with !bio_multiple_segments
-  dm: dm-bufio.c: use bio_set_vec_table()
-  fs: logfs: use bio_set_vec_table()
-  fs: logfs: convert to bio_add_page() in sync_request()
-  fs: logfs: use bio_add_page() in __bdev_writeseg()
-  fs: logfs: use bio_add_page() in do_erase()
-  fs: logfs: remove unnecesary check
-  kernel/power/swap.c: use bio_get_base_vec()
-  mm: page_io.c: use bio_get_base_vec()
-
- drivers/block/drbd/drbd_bitmap.c            |   4 +-
- drivers/block/drbd/drbd_receiver.c          |  14 +---
- drivers/block/floppy.c                      |   9 +--
- drivers/block/loop.c                        |   5 +-
- drivers/block/pktcdvd.c                     |   3 +-
- drivers/md/bcache/debug.c                   |  11 ++-
- drivers/md/bcache/io.c                      |   3 +-
- drivers/md/bcache/journal.c                 |   3 +-
- drivers/md/bcache/movinggc.c                |   6 +-
- drivers/md/bcache/super.c                   |  28 +++++---
- drivers/md/bcache/writeback.c               |   4 +-
- drivers/md/dm-bufio.c                       |   3 +-
- drivers/md/dm-crypt.c                       |   8 +--
- drivers/md/dm-io.c                          |   7 +-
- drivers/md/dm.c                             |   3 +-
- drivers/staging/lustre/lustre/llite/lloop.c |   9 +--
- drivers/target/target_core_pscsi.c          |   2 +-
- fs/logfs/dev_bdev.c                         | 107 +++++++++++-----------------
- include/linux/bio.h                         |  28 ++++++++
- kernel/power/swap.c                         |  10 ++-
- mm/page_io.c                                |  18 ++++-
- 21 files changed, 156 insertions(+), 129 deletions(-)
-
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 12cd989..cedf752 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -230,7 +230,15 @@ static void hib_init_batch(struct hib_bio_batch *hb)
+ static void hib_end_io(struct bio *bio)
+ {
+ 	struct hib_bio_batch *hb = bio->bi_private;
+-	struct page *page = bio->bi_io_vec[0].bv_page;
++
++	/*
++	 * Single bvec bio.
++	 *
++	 * For accessing page pointed to by the 1st bvec, it
++	 * works too after multipage bvecs.
++	 */
++	struct bio_vec *bvec = bio_get_base_vec(bio);
++	struct page *page = bvec->bv_page;
+ 
+ 	if (bio->bi_error) {
+ 		printk(KERN_ALERT "Read-error on swap-device (%u:%u:%Lu)\n",
 -- 
 1.9.1
-
