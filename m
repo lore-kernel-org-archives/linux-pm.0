@@ -1,82 +1,60 @@
-From: Fu Wei <fu.wei@linaro.org>
-Subject: Re: [PATCH v8] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Tue, 5 Apr 2016 21:49:52 +0800
-Message-ID: <CADyBb7ssjznmnX7smtDxf0K9xQyxg8MaUsXmp9EpvR5MhH2F3Q@mail.gmail.com>
-References: <1459237458-12352-1-git-send-email-fu.wei@linaro.org>
-	<CAKv+Gu-BHhf=aQ6ZP3J=q8T9FRtq-hfzTNvdJ3=HgMt=hVP8nQ@mail.gmail.com>
-	<570226A5.4000304@semihalf.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V8 1/4] ARM64: tegra: Remove unused #power-domain-cells
+ property
+Date: Tue, 5 Apr 2016 16:03:49 +0200
+Message-ID: <20160405140349.GA28814@ulmo.ba.sec>
+References: <1459329316-27293-1-git-send-email-jonathanh@nvidia.com>
+ <1459329316-27293-2-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:36693 "EHLO
-	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759072AbcDENtx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 09:49:53 -0400
-Received: by mail-oi0-f41.google.com with SMTP id y204so17840284oie.3
-        for <linux-pm@vger.kernel.org>; Tue, 05 Apr 2016 06:49:53 -0700 (PDT)
-In-Reply-To: <570226A5.4000304@semihalf.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1459329316-27293-2-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Nowicki <tn@semihalf.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, pavel@ucw.cz, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, "Baicar, Tyler" <tbaicar@codeaurora.org>, Richard Ruigrok <rruigrok@codeaurora.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Al Stone <al.stone@linaro.org>, "x86@kernel.org" <x86@kernel.org>, "Abdulhamid, Harb" <harba@qti.qualcomm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Mark Salter <msalter@redhat.com>, Grant Likely <grant.likely@linaro.org>, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>
-
-Hi Tomasz,
-
-On 4 April 2016 at 16:32, Tomasz Nowicki <tn@semihalf.com> wrote:
-> On 30.03.2016 09:05, Ard Biesheuvel wrote:
->>
->> On 29 March 2016 at 09:44,  <fu.wei@linaro.org> wrote:
->>>
->>> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
->>>
->>> This commit provides APEI arch-specific bits for aarch64
->>>
->>> Meanwhile,
->>> (1)add a new subfunction "hest_ia32_init" for
->>> "acpi_disable_cmcff" which is used by IA-32 Architecture
->>> Corrected Machine Check (CMC).
->>> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->>> a generic place.
->>> (3)select EFI when ACPI_APEI is set on ARM64,
->>> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
->>
->>
->> I think selecting 'EFI' is not the right approach here, especially
->> since EFI is implied by ACPI on that architecture. But selecting a
->> user configurable option like this is typically not recommended. Why
->> doesn't ACPI_APEI depend on ACPI?
->
->
-> It does, ACPI_APEI is subsection of the main ACPI menu option, but I don't
-> see that ACPI implies EFI in Kconfig.
->
-> Also, I agree with Ard, EFI should not be selected conditionally for ARM64
-> for ACPI_APEI.
->
-> We need EFI only for ARM64 so how about:
-> +       select HAVE_ACPI_APEI if (ACPI && EFI)
-> in arch/arm64/Kconfig and leave ACPI_APEI as is?
-
-I also agree with Ard, and I like "select HAVE_ACPI_APEI if (ACPI && EFI)"
-
-Thanks for your suggestion !! :-)
-
->
-> Regards,
-> Tomasz
->
->
 
 
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Best regards,
+On Wed, Mar 30, 2016 at 10:15:13AM +0100, Jon Hunter wrote:
+> Remove the "#power-domain-cells" property which was incorrectly
+> included by commit e53095857166 ("arm64: tegra: Add Tegra210
+> support").
+>=20
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 2 --
+>  1 file changed, 2 deletions(-)
 
-Fu Wei
-Software Engineer
-Red Hat Software (Beijing) Co.,Ltd.Shanghai Branch
-Ph: +86 21 61221326(direct)
-Ph: +86 186 2020 4684 (mobile)
-Room 1512, Regus One Corporate Avenue,Level 15,
-One Corporate Avenue,222 Hubin Road,Huangpu District,
-Shanghai,China 200021
+Applied, thanks.
+
+Thierry
+
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJXA8XFAAoJEN0jrNd/PrOhea4P/2jzGq1mdF/l8QiSBjCEZe/e
+d7vbalcWN+UEuVLoxylXCjlt8Do9BJrXU4XvZbiGEouMtHE8PF2ZD6EKR6rjdmjM
++Ti0zKEJ8v+K1cihfbGN8TNbIWVHaYwJDIWFSFdgRSGc0tfKQ/AYvyP5fDbEDCG9
+GjARoUrS+V5uRhTvAL6FIcmQ9+ukwpwgVvGdmtuttxYAHkASSI9mE5Ji5WUA+rS1
+NgrYQ4gzQ97Mt186hrNmuOVNLl0OYHKSwN81YYU8d/Tk7iTn/C3qa29hdjNryPr8
+GjIICMnV+xZwa5I1JZaf2zkIkk57RNRY8xayvkkG4wI0XEti46Zd3QUx5wjaz90H
+lMP1lPQAe38YClb+usg5JOJQ4mzQkOQpl6FsPX+AMZUYOcziA6M73nNKGHnu+mvj
+edrjssngaIX0d+f6otVhIaD8Qfz+21Wdm0blliGfawnB3qw71vw5KOiW8afuA5Ak
+9mvgn40hH8RA7oO9kS7itSxEu8v4JpGUCsj1p65s/htWkqjvpw2HJa05dp8GHL8D
+WiljwCP6b642b/8d2gmtXwa060aAf75Y3PT1O6Q+EmxWZweUlEUg8cOIz7Z5+seg
+SQ6yhx2NdvEpRqzATXvzj6mVPCk8uwpCAo3VIf/e3nI342eRCVePhLlkioBdnYA6
+85Q3yW3mcqKUItwGf5yq
+=yaP9
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
