@@ -1,98 +1,115 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH v7] thermal: add temperature sensor support for tango SoC
-Date: Tue, 5 Apr 2016 16:58:22 +0200
-Message-ID: <5703D28E.4040805@free.fr>
-References: <56D5C7FE.7010807@free.fr> <56D9AF4F.1010304@free.fr>
- <20160308214846.GA10950@localhost.localdomain> <56F84427.1000507@free.fr>
- <56F91A47.9060901@free.fr> <20160329020050.GA15721@localhost.localdomain>
- <56FACE0B.9060606@free.fr> <20160330000503.GA2625@localhost.localdomain>
- <56FBEE4F.3060106@free.fr> <56FD8582.80002@free.fr>
- <20160401015240.GB19409@localhost.localdomain> <570254D8.3090406@free.fr>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH] PCI: Fix device attach failure handling
+Date: Tue, 5 Apr 2016 18:45:47 +0200
+Message-ID: <20160405164547.GA11953@wunner.de>
+References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+ <5703A1A2.8040002@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:56888 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758064AbcDEO6d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 10:58:33 -0400
-In-Reply-To: <570254D8.3090406@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5703A1A2.8040002@ti.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sebastian Frias <sf84@laposte.net>
 
-On 04/04/2016 13:49, Mason wrote:
+Hi Grygorii,
 
-> +static bool temp_above_thresh(void __iomem *base, int thresh_idx)
-> +{
-> +	writel(CMD_READ | thresh_idx << 8, base + TEMPSI_CMD);
-> +	usleep_range(10, 20);
-> +	return readl(base + TEMPSI_RES);
-> +}
+On Tue, Apr 05, 2016 at 02:29:38PM +0300, Grygorii Strashko wrote:
+> On 03/31/2016 03:57 PM, Lukas Wunner wrote:
+> > Linux 4.5 introduced a behavioral change in device probing during the
+> > suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
+> > probing during suspend/hibernation"): It defers device probing during
+> > the entire suspend process, starting from the prepare phase and ending
+> > with the complete phase. A rule existed before that "we rely on sub-
+> > systems not to do any probing once a device is suspended" but it is
+> > enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
+> > 
+> > This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
+> > plugged in while the system is asleep: Upon waking up, pciehp_resume()
+> > discovers new devices in the resume phase and immediately tries to bind
+> > them to a driver. Since probing is now deferred, device_attach() returns
+> > -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
+> > 
+> > Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
+> > Check device_attach() return value always"): pci_bus_add_device() no
+> > longer sets dev->is_added = 1 if device_attach() returned a negative
+> > value. This results in a BUG lockup in pci_bus_add_devices().
+> > 
+> > Fix the latter by not recursing to a child bus if device_attach() failed
+> > for the bridge leading to it.
+> > 
+> > Fix the former by not interpreting -EPROBE_DEFER as failure. The device
+> > will be probed eventually and there is proper locking in place to avoid
+> > races (e.g. if devices are unplugged again und thus deleted from the
+> > system before deferred probing happens, I have tested this). Also, those
+> > functions which dereference dev->driver (e.g. pci_pm_*()) do contain
+> > proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
+> > 
+> > Note that even postponing the code in pciehp_resume() until the
+> > complete phase wouldn't avoid these troubles because dpm_complete()
+> > calls device_unblock_probing() only after ->complete has been
+> > executed for all devices. We lack a pm hook from which it would
+> > be safe to check a hotplug port and call device_attach() without
+> > risking -EPROBE_DEFER.
+> 
+> Unfortunately, I can't say too much about pci in general.
+> Regarding checking a hotplug port - Potentially,
+> PM notifiers can be used PM_SUSPEND_PREPARE/PM_POST_SUSPEND.
+> Smth. similar (more or less) was implemented for MMC
+> 
+> bbd4368 mmc: core: Signal wakeup event at card insert/removal
+> 4c2ef25 mmc: fix all hangs related to mmc/sd card insert/removal during suspend/resume
 
-A colleague suggested a tweak for temp_above_thresh() which does not
-require messing with TEMPSI_CFG => v8 required.
+Thank you, I hadn't thought of PM notifiers.
 
-> +static int tango_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct resource *res;
-> +	struct tango_thermal_priv *priv;
-> +
-> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	priv->base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->base))
-> +		return PTR_ERR(priv->base);
-> +
-> +	writel(CMD_ON, priv->base + TEMPSI_CMD);
-> +	writel(CYCLE_COUNT, priv->base + TEMPSI_CFG);
-> +
-> +	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
-> +	if (IS_ERR(priv->zone))
-> +		return PTR_ERR(priv->zone);
-> +
-> +	priv->thresh_idx = IDX_MIN;
-> +	platform_set_drvdata(pdev, priv);
-> +
-> +	return 0;
-> +}
+That would indeed be a viable alternative solution:
+- Call pcie_disable_notification() on PM_SUSPEND_PREPARE /
+  PM_HIBERNATION_PREPARE.
+- Run the code in pciehp_resume() on PM_POST_SUSPEND / PM_POST_HIBERNATION.
+  (This includes pcie_enable_notification(). The pciehp_suspend() and
+  pciehp_resume() could be dropped completely.)
 
-It seems tango_get_temp() is called (at least once) before the end of tango_thermal_probe()
+Bjorn, please let me know if you'd prefer that in favor of the patch below.
+(The portion which replaces the BUG_ON would still be needed though.)
 
-Does that mean that the device must be fully initialized *BEFORE*
-thermal_zone_of_sensor_register() is called?
-(I assume it's that function that triggers the call to get_temp)
+Thanks,
 
-In that case, I need to move priv->thresh_idx = IDX_MIN; earlier.
+Lukas
 
-
-Also, can get_temp() be called concurrently?
-For example, from user-space reading /sys/class/thermal/thermal_zone0/temp
-and from the kernel thread polling the sensor?
-Is locking taken care of in higher levels?
-
-
-For the record, I test the driver with the following script.
-Is it good enough?
-
-TEMP="/sys/class/thermal/thermal_zone0/temp"
-
-echo RUN IDLE
-for ((I=0; I<30; ++I)); do cat $TEMP; sleep 2; done
-
-echo RUN HEAVY LOAD
-cpuburn-a9 &
-cpuburn-a9 &
-for ((I=0; I<60; ++I)); do cat $TEMP; sleep 2; done
-
-echo KILL HEAVY LOAD
-kill $(jobs -p)
-for ((I=0; I<30; ++I)); do cat $TEMP; sleep 2; done
-
-
-Regards.
-
+> > 
+> > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Cc: Rafael J. Wysocki <rafael@kernel.org>
+> > Cc: Bjorn Helgaas <bhelgaas@google.com>
+> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > ---
+> >   drivers/pci/bus.c | 6 ++++--
+> >   1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> > index 6c9f546..dd7cdbe 100644
+> > --- a/drivers/pci/bus.c
+> > +++ b/drivers/pci/bus.c
+> > @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+> >   
+> >   	dev->match_driver = true;
+> >   	retval = device_attach(&dev->dev);
+> > -	if (retval < 0) {
+> > +	if (retval < 0 && retval != -EPROBE_DEFER) {
+> >   		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
+> >   		pci_proc_detach_device(dev);
+> >   		pci_remove_sysfs_dev_files(dev);
+> > @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+> >   	}
+> >   
+> >   	list_for_each_entry(dev, &bus->devices, bus_list) {
+> > -		BUG_ON(!dev->is_added);
+> > +		/* Skip if device attach failed */
+> > +		if (!dev->is_added)
+> > +			continue;
+> >   		child = dev->subordinate;
+> >   		if (child)
+> >   			pci_bus_add_devices(child);
+> > 
