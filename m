@@ -1,63 +1,23 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH] sdhci: wakeup from runtime PM
-Date: Tue, 5 Apr 2016 15:40:33 +0300
-Message-ID: <5703B241.6030007@intel.com>
-References: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 26/27] kernel/power/swap.c: use bio_get_base_vec()
+Date: Tue, 5 Apr 2016 05:56:30 -0700
+Message-ID: <20160405125630.GE11986@infradead.org>
+References: <1459858062-21075-1-git-send-email-tom.leiming@gmail.com>
+ <1459858062-21075-12-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:28290 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754316AbcDEMow (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 08:44:52 -0400
-In-Reply-To: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1459858062-21075-12-git-send-email-tom.leiming@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <boaz@plexistor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ludovic Desroches <ludovic.desroches@atmel.com>, ulf.hansson@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, nicolas.ferre@atmel.com
 
-On 25/03/16 18:05, Ludovic Desroches wrote:
-> Hi,
-> 
-> When not using the SDHCI controller, it is logical to save power by suspending
-> it. The issue is that SDHCI assumes that the controller is completely disabled.
-> It means the only way to wake up on a card event is to have a gpio for the card
-> detection (so two pins for the same signal). A possible workaround is to use
-> polling but the controller will be resumed/suspended between each attempts.
-> 
-> We have already discussed a long time about this and it seems we don't agree.
-> In my opinion, even if I can't disable all clocks, I should use runtime PM 
-> to save some power.
-> 
-> I propose two patches, one which is a draft to try to solve it at sdhci level
-> and one at sdhci-of-at91 level.
-> 
-> Concerning the first one, I don't understand why we need to reject irqs if
-> runtime_suspended is true.
+I really don't like all these bio_get_base_vec uses.  The end_io
+handlers generall want to iterate over all pages in the bio, with
+a special case where all of them is the fixed number one.
 
-The interrupt handler might be called because the interrupt is shared i.e.
-the interrupt is for a different device.  In that case the host controller
-might be off and the registers inaccessible.  In that case we cannot even
-look at the interrupt register to determine if we were expecting the interrupt.
-
->                            Only SDHCI_INT_CARD_INT irq is enabled so why we
-> should have other IRQs than this one?
-
-In the case of SDIO Card interrupt, it is delivered via the host controller,
-so we have to assume the registers are accessible if we are
-runtime-suspended with the SDIO IRQ enabled.
-
-> 
-> Since you were not in favour of allowing to wakeup on SDHCI_INT_CARD_INSERT or
-> SDHCI_INT_CARD_REMOVE, I assume you won't take it so I
-> solved my issue only by modifying my driver.
-
-I don't mind allowing card detect interrupts while runtime suspended, but we
-need a flag so that:
-- runtime suspend leaves the insert/remove interrupts enabled
-- irq handler knows it can access registers
-- irq thread handler knows to runtime resume before doing anything else
-
-But it seems like you need to persuade Ulf first.
-
+So What I think we'll need is a bio_for_each_page, and if there is
+any good justification for it as special version of the single
+page case.
