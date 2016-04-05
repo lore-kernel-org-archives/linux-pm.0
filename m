@@ -1,46 +1,101 @@
-From: rcochran@linutronix.de
-Subject: Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly
- non-modular
-Date: Tue, 5 Apr 2016 09:33:12 +0200
-Message-ID: <20160405073312.GA30124@linutronix.de>
-References: <1459099777-4962-1-git-send-email-paul.gortmaker@windriver.com>
- <20160404195535.GQ1778@windriver.com>
- <20160405031152.GA22836@linutronix.de>
- <1A7043D5F58CCB44A599DFD55ED4C94846A1C854@fmsmsx115.amr.corp.intel.com>
- <20160405043017.GA24357@linutronix.de>
- <1A7043D5F58CCB44A599DFD55ED4C94846A1CD40@fmsmsx115.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [RESEND PATCH v7 0/6] EC-based USB Power Delivery support for Chrome machines
+Date: Tue,  5 Apr 2016 09:53:03 +0200
+Message-ID: <1459842789-13852-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:36828 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbcDEHdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 03:33:22 -0400
-Content-Disposition: inline
-In-Reply-To: <1A7043D5F58CCB44A599DFD55ED4C94846A1CD40@fmsmsx115.amr.corp.intel.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36565 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbcDEHxe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 03:53:34 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Brown, Len" <len.brown@intel.com>
-Cc: "Gortmaker, Paul (Wind River)" <paul.gortmaker@windriver.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
 
-On Tue, Apr 05, 2016 at 05:53:47AM +0000, Brown, Len wrote:
-> > On Tue, Apr 05, 2016 at 04:20:47AM +0000, Brown, Len wrote:
-> > > No, I do not believe that cpuidle should bother
-> > > supporting changing idle drivers at run-time.
-> > 
-> > Huh?  But you just said, "it would be good to be able to unload it
-> > when it doesn't probe."
-> 
-> being able to switch the registered driver at run-time
-> does not require the driver to be modular.
+Hi,
 
-Uh, right, but you don't think that the cpuidle core should allow
-changing drivers.  If it doesn't allowing changing drivers, then there
-would be just one choice, compiled in, and thus none of the drivers
-should be modular.
+this series contains a driver that exposes a power_supply to userspace
+representing a port that support USB PD charging.
 
-Or what do you mean?
+Allows userspace to display to the user if the machine is charging and
+on which port, and if another device is being charged by a port.
 
-Confused,
-Richard
+This series may be best integrated through the MFD tree, for which we'll
+need ACKs from Olof (for the changes to platform/chrome), from Dmitry
+(for changes to cros_ec_keyb.c) and from Sebastian Reichel for the
+new driver.
+
+Thanks,
+
+Tomeu
+
+Changes in v7:
+- Rebased onto 4.6-rc1, with no conflicts.
+
+Changes in v6:
+- Return 0 if the EC doesn't support MKBP, as expected by callers.
+
+Changes in v5:
+- Check explicitly for !EC_RES_SUCCESS as suggested by Benson Leung.
+- Fix type of variable passed to do_div.
+
+Changes in v4:
+- Calculate correctly the size of the payloads in
+  cros_ec_get_host_command_version_mask.
+- Declare size parameters in ec_command as size_t
+
+Changes in v3:
+- Remove duplicated prototype of cros_ec_get_host_event.
+- Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
+- Remove sysfs attributes ext_current_lim and ext_voltage_lim because
+  I don't know yet where they should be placed (and don't have HW to
+  test them).
+- Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
+- Lots of misc comments from Stephen Boyd were addressed.
+- Unregister notification listener in .remove callback.
+- Only register the PD charger device if there are any PD ports in this
+  EC.
+- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
+  charger device because we are now only creating one if a EC has any PD
+  ports.
+- Dropped patch adding power_supply types because it has been merged
+  already.
+
+Changes in v2:
+- Allocate enough for the structs in cros_ec_get_host_command_version_mask,
+  not their pointers.
+- Allocate msg in the stack in get_next_event and
+  get_keyboard_state_event, as suggested by Gwendal.
+- Split out changes to cros_ec_commands.h and the helpers added to
+  mfd/cros_ec.h from the patch that adds the charger driver, as
+  suggested by Lee.
+- Actually call get_ec_num_ports.
+- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
+
+Sameer Nanda (1):
+  power: cros_usbpd-charger: Add EC-based USB PD charger driver
+
+Tomeu Vizoso (4):
+  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
+  mfd: cros_ec: Add cros_ec_get_host_event
+  mfd: cros_ec: Add more definitions for PD commands
+  platform/chrome: Register USB PD charger device
+
+Vic Yang (1):
+  mfd: cros_ec: Add MKBP event support
+
+ drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
+ drivers/mfd/cros_ec.c                   |  57 ++-
+ drivers/platform/chrome/cros_ec_dev.c   |  44 ++
+ drivers/platform/chrome/cros_ec_proto.c | 129 ++++++
+ drivers/power/Kconfig                   |  10 +
+ drivers/power/Makefile                  |   1 +
+ drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/cros_ec.h             |  62 +++
+ include/linux/mfd/cros_ec_commands.h    | 358 ++++++++++++++-
+ 9 files changed, 1464 insertions(+), 112 deletions(-)
+ create mode 100644 drivers/power/cros_usbpd-charger.c
+
+-- 
+2.5.5
 
