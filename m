@@ -1,122 +1,62 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 1/3] intel_pstate: Use pr_fmt
-Date: Tue, 05 Apr 2016 14:43:39 -0700
-Message-ID: <1459892619.7030.2.camel@linux.intel.com>
-References: <cover.1459887986.git.joe@perches.com>
-	 <710e23a9e0846d1aaa660849321e433b5f5dd4e7.1459887986.git.joe@perches.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
+Date: Tue, 5 Apr 2016 18:27:12 -0500
+Message-ID: <20160405232712.GI15353@localhost>
+References: <cover.1458126755.git.lukas@wunner.de>
+ <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
+ <20160317150320.GA22769@localhost>
+ <20160320131135.GA29174@wunner.de>
+ <20160320171246.GB16658@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:22219 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760304AbcDEV6F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 17:58:05 -0400
-In-Reply-To: <710e23a9e0846d1aaa660849321e433b5f5dd4e7.1459887986.git.joe@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160320171246.GB16658@kroah.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 2016-04-05 at 13:28 -0700, Joe Perches wrote:
-> Prefix the output using the more common kernel style.
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
-> =C2=A0drivers/cpufreq/intel_pstate.c | 18 ++++++++++--------
-> =C2=A01 file changed, 10 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index a382195..e674db8 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -10,6 +10,8 @@
-> =C2=A0 * of the License.
-> =C2=A0 */
-> =C2=A0
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> =C2=A0#include <linux/kernel.h>
-> =C2=A0#include <linux/kernel_stat.h>
-> =C2=A0#include <linux/module.h>
-> @@ -436,7 +438,7 @@ static ssize_t store_no_turbo(struct kobject *a,
-> struct attribute *b,
-> =C2=A0
-> =C2=A0	update_turbo_state();
-> =C2=A0	if (limits->turbo_disabled) {
-> -		pr_warn("intel_pstate: Turbo disabled by BIOS or
-> unavailable on processor\n");
-> +		pr_warn("Turbo disabled by BIOS or unavailable on
-> processor\n");
-> =C2=A0		return -EPERM;
-> =C2=A0	}
-> =C2=A0
-> @@ -1107,7 +1109,7 @@ static int intel_pstate_init_cpu(unsigned int
-> cpunum)
-> =C2=A0
-> =C2=A0	intel_pstate_busy_pid_reset(cpu);
-> =C2=A0
-> -	pr_debug("intel_pstate: controlling: cpu %d\n", cpunum);
-> +	pr_debug("controlling: cpu %d\n", cpunum);
-> =C2=A0
-> =C2=A0	return 0;
-> =C2=A0}
-> @@ -1149,12 +1151,12 @@ static int intel_pstate_set_policy(struct
-> cpufreq_policy *policy)
-> =C2=A0
-> =C2=A0	if (policy->policy =3D=3D CPUFREQ_POLICY_PERFORMANCE &&
-> =C2=A0	=C2=A0=C2=A0=C2=A0=C2=A0policy->max >=3D policy->cpuinfo.max_f=
-req) {
-> -		pr_debug("intel_pstate: set performance\n");
-> +		pr_debug("set performance\n");
-> =C2=A0		limits =3D &performance_limits;
-> =C2=A0		goto out;
-> =C2=A0	}
-> =C2=A0
-> -	pr_debug("intel_pstate: set powersave\n");
-> +	pr_debug("set powersave\n");
-> =C2=A0	limits =3D &powersave_limits;
-> =C2=A0	limits->min_policy_pct =3D (policy->min * 100) / policy-
-> >cpuinfo.max_freq;
-> =C2=A0	limits->min_policy_pct =3D clamp_t(int, limits-
-> >min_policy_pct, 0 , 100);
-> @@ -1206,7 +1208,7 @@ static void intel_pstate_stop_cpu(struct
-> cpufreq_policy *policy)
-> =C2=A0	int cpu_num =3D policy->cpu;
-> =C2=A0	struct cpudata *cpu =3D all_cpu_data[cpu_num];
-> =C2=A0
-> -	pr_debug("intel_pstate: CPU %d exiting\n", cpu_num);
-> +	pr_debug("CPU %d exiting\n", cpu_num);
-> =C2=A0
-> =C2=A0	intel_pstate_clear_update_util_hook(cpu_num);
-> =C2=A0
-> @@ -1451,7 +1453,7 @@ hwp_cpu_matched:
-> =C2=A0	if (intel_pstate_platform_pwr_mgmt_exists())
-> =C2=A0		return -ENODEV;
-> =C2=A0
-> -	pr_info("Intel P-state driver initializing.\n");
-> +	pr_info("Intel P-state driver initializing\n");
-> =C2=A0
-> =C2=A0	all_cpu_data =3D vzalloc(sizeof(void *) *
-> num_possible_cpus());
-> =C2=A0	if (!all_cpu_data)
-> @@ -1468,7 +1470,7 @@ hwp_cpu_matched:
-> =C2=A0	intel_pstate_sysfs_expose_params();
-> =C2=A0
-> =C2=A0	if (hwp_active)
-> -		pr_info("intel_pstate: HWP enabled\n");
-> +		pr_info("HWP enabled\n");
-> =C2=A0
-> =C2=A0	return rc;
-> =C2=A0out:
-> @@ -1494,7 +1496,7 @@ static int __init intel_pstate_setup(char *str)
-> =C2=A0	if (!strcmp(str, "disable"))
-> =C2=A0		no_load =3D 1;
-> =C2=A0	if (!strcmp(str, "no_hwp")) {
-> -		pr_info("intel_pstate: HWP disabled\n");
-> +		pr_info("HWP disabled\n");
-> =C2=A0		no_hwp =3D 1;
-> =C2=A0	}
-> =C2=A0	if (!strcmp(str, "force"))
+On Sun, Mar 20, 2016 at 10:12:46AM -0700, Greg Kroah-Hartman wrote:
+> On Sun, Mar 20, 2016 at 02:11:35PM +0100, Lukas Wunner wrote:
+> > Hi Bjorn,
+> > 
+> > On Thu, Mar 17, 2016 at 10:03:20AM -0500, Bjorn Helgaas wrote:
+> > > On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
+> > > > Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
+> > > > Gen 3 chips and onward use a distinct ID for the NHI.
+> > > 
+> > > I assume this is strictly using #defines instead of bare numbers and
+> > > hence "no functional change intended."
+> > > 
+> > > > Cc: Andreas Noever <andreas.noever@gmail.com>
+> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > > 
+> > > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> > 
+> > Thanks, I've just posted a 3 patch series to support the Light Ridge
+> > Thunderbolt controller and included your ack for this patch.
+> > 
+> > 
+> > > I assume somebody else will merge this with the rest of the series.
+> > 
+> > The maintainer of the thunderbolt driver is Andreas Noever, however
+> > I don't think Andreas sends pull requests to Linus. Everything in
+> > drivers/thunderbolt/ has so far been picked up by Greg KH.
+> > 
+> > I have more thunderbolt stuff in the pipeline, some of which needs
+> > changes to drivers/pci/. Therefore it would be ideal from my perspective
+> > if my thunderbolt patches could go in via your tree, if that is possible.
+> 
+> I have no objection if they go through the PCI tree, especially as
+> Thunderbolt really just is PCI express, it makes sense to take them that
+> way.
+
+Andreas, what's your preference?  If you want me to merge Thunderbolt
+stuff via my PCI tree, I can do that.  But I don't know anything about
+Thunderbolt and don't have specs or ability to test it, so I would
+rely on you to ack any changes.  If you'd like to merge Thunderbolt
+stuff yourself, that would be less work for me, so even better :)  But
+either way is fine.
+
+Bjorn
