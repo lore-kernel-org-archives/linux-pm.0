@@ -1,60 +1,179 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V8 1/4] ARM64: tegra: Remove unused #power-domain-cells
- property
-Date: Tue, 5 Apr 2016 16:03:49 +0200
-Message-ID: <20160405140349.GA28814@ulmo.ba.sec>
-References: <1459329316-27293-1-git-send-email-jonathanh@nvidia.com>
- <1459329316-27293-2-git-send-email-jonathanh@nvidia.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1459329316-27293-2-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: fu.wei@linaro.org
+Subject: [PATCH v9] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Tue,  5 Apr 2016 22:49:48 +0800
+Message-ID: <1459867788-14678-1-git-send-email-fu.wei@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:53658 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751775AbcDEOu1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Apr 2016 10:50:27 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>, Fu Wei <fu.wei@linaro.org>
 
+From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 
---+QahgC5+KEYLbs62
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This commit provides APEI arch-specific bits for aarch64
 
-On Wed, Mar 30, 2016 at 10:15:13AM +0100, Jon Hunter wrote:
-> Remove the "#power-domain-cells" property which was incorrectly
-> included by commit e53095857166 ("arm64: tegra: Add Tegra210
-> support").
->=20
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 2 --
->  1 file changed, 2 deletions(-)
+Meanwhile,
+(1)add a new subfunction "hest_ia32_init" for
+"acpi_disable_cmcff" which is used by IA-32 Architecture
+Corrected Machine Check (CMC).
+(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+a generic place.
+(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
 
-Applied, thanks.
+[Fu Wei: improve && upstream]
 
-Thierry
+Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+Signed-off-by: Fu Wei <fu.wei@linaro.org>
+Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+Acked-by: Will Deacon <will.deacon@arm.com>
+---
+Changelog:
+v9: Improve the comment for arch_apei_flush_tlb_one.
+    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+    problem.
 
---+QahgC5+KEYLbs62
-Content-Type: application/pgp-signature; name="signature.asc"
+v8: https://lkml.org/lkml/2016/3/29/132
+    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+    on ARM64.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+v7: https://lkml.org/lkml/2016/3/17/183
+    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
 
-iQIcBAABCAAGBQJXA8XFAAoJEN0jrNd/PrOhea4P/2jzGq1mdF/l8QiSBjCEZe/e
-d7vbalcWN+UEuVLoxylXCjlt8Do9BJrXU4XvZbiGEouMtHE8PF2ZD6EKR6rjdmjM
-+Ti0zKEJ8v+K1cihfbGN8TNbIWVHaYwJDIWFSFdgRSGc0tfKQ/AYvyP5fDbEDCG9
-GjARoUrS+V5uRhTvAL6FIcmQ9+ukwpwgVvGdmtuttxYAHkASSI9mE5Ji5WUA+rS1
-NgrYQ4gzQ97Mt186hrNmuOVNLl0OYHKSwN81YYU8d/Tk7iTn/C3qa29hdjNryPr8
-GjIICMnV+xZwa5I1JZaf2zkIkk57RNRY8xayvkkG4wI0XEti46Zd3QUx5wjaz90H
-lMP1lPQAe38YClb+usg5JOJQ4mzQkOQpl6FsPX+AMZUYOcziA6M73nNKGHnu+mvj
-edrjssngaIX0d+f6otVhIaD8Qfz+21Wdm0blliGfawnB3qw71vw5KOiW8afuA5Ak
-9mvgn40hH8RA7oO9kS7itSxEu8v4JpGUCsj1p65s/htWkqjvpw2HJa05dp8GHL8D
-WiljwCP6b642b/8d2gmtXwa060aAf75Y3PT1O6Q+EmxWZweUlEUg8cOIz7Z5+seg
-SQ6yhx2NdvEpRqzATXvzj6mVPCk8uwpCAo3VIf/e3nI342eRCVePhLlkioBdnYA6
-85Q3yW3mcqKUItwGf5yq
-=yaP9
------END PGP SIGNATURE-----
+v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+    a generic place.
+    Delete HAVE_ACPI_APEI_HEST_IA32.
 
---+QahgC5+KEYLbs62--
+v5: https://lkml.org/lkml/2015/12/10/131
+    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+    "#if defined(__i386__) || defined(__x86_64__)".
+
+v4: https://lkml.org/lkml/2015/12/8/188
+    Rebase to latest kernel version(4.4-rc4).
+    Move arch_apei_flush_tlb_one into header file as a inline function
+    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+
+v3: https://lkml.org/lkml/2015/12/3/521
+    Remove "acpi_disable_cmcff" from arm64 code,
+    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+
+v2: https://lkml.org/lkml/2015/12/2/432
+    Rebase to latest kernel version(4.4-rc3).
+    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+
+v1: https://lkml.org/lkml/2015/8/14/199
+    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+    Delete arch/arm64/kernel/apei.c.
+    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+
+ arch/arm64/Kconfig            |  1 +
+ arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
+ arch/x86/kernel/acpi/apei.c   |  3 ---
+ drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+ 4 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 4f43622..308fdb1 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -3,6 +3,7 @@ config ARM64
+ 	select ACPI_CCA_REQUIRED if ACPI
+ 	select ACPI_GENERIC_GSI if ACPI
+ 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
++	select HAVE_ACPI_APEI if (ACPI && EFI)
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+index aee323b..8db8379 100644
+--- a/arch/arm64/include/asm/acpi.h
++++ b/arch/arm64/include/asm/acpi.h
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/cputype.h>
+ #include <asm/smp_plat.h>
++#include <asm/tlbflush.h>
+ 
+ /* Macros for consistency checks of the GICC subtable of MADT */
+ #define ACPI_MADT_GICC_LENGTH	\
+@@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
+ }
+ 
+ #ifdef	CONFIG_ACPI_APEI
++#define acpi_disable_cmcff 1
+ pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+-#endif
+ 
++/*
++ * Despite its name, this function must still broadcast the TLB
++ * invalidation in order to ensure other CPUs don't up with with junk
++ * entries as a result of speculation. Unusually, its also called in
++ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
++ * TLB broadcasting, then we're in trouble here.
++ */
++static inline void arch_apei_flush_tlb_one(unsigned long addr)
++{
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
++}
++#endif /* CONFIG_ACPI_APEI */
+ #endif /*_ASM_ACPI_H*/
+diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+index c280df6..ea3046e 100644
+--- a/arch/x86/kernel/acpi/apei.c
++++ b/arch/x86/kernel/acpi/apei.c
+@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+ 	struct acpi_hest_ia_corrected *cmc;
+ 	struct acpi_hest_ia_error_bank *mc_bank;
+ 
+-	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+-		return 0;
+-
+ 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+ 	if (!cmc->enabled)
+ 		return 0;
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index 20b3fcf..792a0d9 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+  */
+ static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+ {
+-	return arch_apei_enable_cmcff(hest_hdr, data);
++	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
++		return 0;
++
++	if (!acpi_disable_cmcff)
++		return !arch_apei_enable_cmcff(hest_hdr, data);
++
++	return 0;
++}
++
++static inline int __init hest_ia32_init(void)
++{
++	return apei_hest_parse(hest_parse_cmc, NULL);
+ }
+ 
+ struct ghes_arr {
+@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+ 		goto err;
+ 	}
+ 
+-	if (!acpi_disable_cmcff)
+-		apei_hest_parse(hest_parse_cmc, NULL);
++	rc = hest_ia32_init();
++	if (rc)
++		goto err;
+ 
+ 	if (!ghes_disable) {
+ 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+-- 
+2.5.5
+
