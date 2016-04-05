@@ -1,168 +1,108 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC v2] cpufreq: governor: Fix overflow when calculating idle time
-Date: Tue,  5 Apr 2016 10:26:36 +0800
-Message-ID: <1459823196-23244-1-git-send-email-yu.c.chen@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v7] thermal: add temperature sensor support for tango SoC
+Date: Mon, 4 Apr 2016 19:05:36 -0700
+Message-ID: <20160405020534.GA13345@localhost.localdomain>
+References: <20160308214846.GA10950@localhost.localdomain>
+ <56F84427.1000507@free.fr>
+ <56F91A47.9060901@free.fr>
+ <20160329020050.GA15721@localhost.localdomain>
+ <56FACE0B.9060606@free.fr>
+ <20160330000503.GA2625@localhost.localdomain>
+ <56FBEE4F.3060106@free.fr>
+ <56FD8582.80002@free.fr>
+ <20160401015240.GB19409@localhost.localdomain>
+ <570254D8.3090406@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:52181 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbcDECVW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Apr 2016 22:21:22 -0400
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35402 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755488AbcDECOL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Apr 2016 22:14:11 -0400
+Received: by mail-pf0-f175.google.com with SMTP id n1so27027pfn.2
+        for <linux-pm@vger.kernel.org>; Mon, 04 Apr 2016 19:13:54 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <570254D8.3090406@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Nicholas Mc Guire <hofrat@osadl.org>, Ingo Molnar <mingo@kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>, Baolin Wang <baolin.wang@linaro.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Mason <slash.tmp@free.fr>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, arm-soc <arm@kernel.org>
 
-It was reported that after Commit 0df35026c6a5 ("cpufreq: governor:
-Fix negative idle_time when configured with CONFIG_HZ_PERIODIC"),
-cpufreq ondemand governor started to act oddly. Without any load,
-with freshly booted system, it pumped cpu frequency up to maximum
-at some point of time and stayed there. The problem is caused by
-jiffies oveflow in get_cpu_idle_time:
+On Mon, Apr 04, 2016 at 01:49:44PM +0200, Mason wrote:
+> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> 
+> The Tango thermal driver provides support for the primitive temperature
+> sensor embedded in Tango chips since the SMP8758.
+> 
+> This sensor only generates a 1-bit signal to indicate whether the die
+> temperature exceeds a programmable threshold.
+> 
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> ---
+> CCing Rob and Mark for the DT parts
+> ---
+>  Documentation/devicetree/bindings/thermal/tango-thermal.txt |  17 ++++
+>  arch/arm/boot/dts/tango4-smp8758.dtsi                       |  16 ++++
+>  drivers/thermal/Kconfig                                     |   9 ++
+>  drivers/thermal/Makefile                                    |   1 +
+>  drivers/thermal/tango_thermal.c                             | 125 +++++++++++++++++++++++++++
+>  5 files changed, 168 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/tango-thermal.txt b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+> new file mode 100644
+> index 000000000000..212198d4b937
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/tango-thermal.txt
+> @@ -0,0 +1,17 @@
+> +* Tango Thermal
+> +
+> +The SMP8758 SoC includes 3 instances of this temperature sensor
+> +(in the CPU, video decoder, and PCIe controller).
+> +
+> +Required properties:
+> +- #thermal-sensor-cells: Should be 0 (see thermal.txt)
+> +- compatible: "sigma,smp8758-thermal"
+> +- reg: Address range of the thermal registers
+> +
+> +Example:
+> +
+> +	cpu_temp: thermal@920100 {
+> +		#thermal-sensor-cells = <0>;
+> +		compatible = "sigma,smp8758-thermal";
+> +		reg = <0x920100 12>;
+> +	};
+> diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
+> index 7ed88ee629fb..44d57c02e934 100644
+> --- a/arch/arm/boot/dts/tango4-smp8758.dtsi
+> +++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
+> @@ -28,4 +28,20 @@
+>  			<GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>,
+>  			<GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>;
+>  	};
+> +
+> +	soc {
+> +		cpu_temp: thermal@920100 {
+> +			#thermal-sensor-cells = <0>;
+> +			compatible = "sigma,smp8758-thermal";
+> +			reg = <0x920100 12>;
+> +		};
+> +	};
+> +
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			polling-delay-passive = <2003>;	/* ms */
+> +			polling-delay = <1009>;		/* ms */
+> +			thermal-sensors = <&cpu_temp>;
+> +		};
 
-Since:
-1. jiffies is not counted from zero but from -300HZ, and
-2. get_cpu_idle_time_jiffy is using cputime_to_usecs to convert
-   jiffies64 to usec, however cputime_to_usecs returns a 32bit value if
-   CONFIG_VIRT_CPU_ACCOUNTING is not set.
+Please add all the required properties for a thermal zone (check the
+Documentation for examples or existing dtsi as I mentioned before).
 
-After booting up 5 minutes, the jiffies will round up to zero.
-As a result, the following condition in cpu governor will always be true:
-if (cur_idle_time < j_cdbs->prev_cpu_idle)
-        cur_idle_time = j_cdbs->prev_cpu_idle;
-which caused problems.
+Also, send the diff that adds the dtsi changes into a separated patch.
+This recommendation is to avoid conflicts with the tango tree.
+I typically I apply the driver changes, and the maintainer of your
+platform would apply the DT changes.
 
-For example, once cur_idle_time has rounded up to zero, meanwhile
-prev_cpu_idle still remains negative(because of initial value of
--300HZ, which is very big after converted to unsigned), thus above
-condition is met and the cur_idle_time will be modified to the same
-as prev_cpu_idle, thus we get a zero of idle running time during
-this sample:
-(idle_time = cur_idle_time - prev_cpu_idle), which causes a high
-busy time, thus governor always requests for the highest freq.
-So the patch mentioned above has triggered this overflow issue
-more easily.
+BR,
 
-This patch fixes this problem by doing two modifications in the
-get_cpu_idle_time_jiffy:
-
-1. Count the wall time from INITIAL_JIFFIES rather than 0.
-2. Use 64bit rather than 32bit to convert jiffies64 to usec.
-
-In this way, either the wall time or the idle time will be
-monotonically increased, thus avoid the jiffies overflow problem.
-(If CONFIG_HZ_1000=y, it would be at least 500000000 years for
-64bit to overflow, which would not possibly happen.)
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=115261
-Reported-by: Timo Valtoaho <timo.valtoaho@gmail.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
-v2:
- - Send this patch to a wider scope, including timing-system maintainers,
-   as well as some modifications in the commit message to make it more clear.
----
- drivers/cpufreq/cpufreq.c             |  6 +++---
- include/asm-generic/cputime_jiffies.h |  2 ++
- include/linux/cputime.h               |  5 +++++
- include/linux/jiffies.h               |  1 +
- kernel/time/time.c                    | 20 ++++++++++++++++++++
- 5 files changed, 31 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b87596b..2dc327a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -138,7 +138,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 	u64 cur_wall_time;
- 	u64 busy_time;
- 
--	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-+	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64() - INITIAL_JIFFIES);
- 
- 	busy_time = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
- 	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-@@ -149,9 +149,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 
- 	idle_time = cur_wall_time - busy_time;
- 	if (wall)
--		*wall = cputime_to_usecs(cur_wall_time);
-+		*wall = cputime64_to_usecs(cur_wall_time);
- 
--	return cputime_to_usecs(idle_time);
-+	return cputime64_to_usecs(idle_time);
- }
- 
- u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
-diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
-index fe386fc..ff1cf39 100644
---- a/include/asm-generic/cputime_jiffies.h
-+++ b/include/asm-generic/cputime_jiffies.h
-@@ -36,6 +36,8 @@ typedef u64 __nocast cputime64_t;
- 	jiffies_to_cputime(usecs_to_jiffies(__usec))
- #define usecs_to_cputime64(__usec)	\
- 	jiffies64_to_cputime64(nsecs_to_jiffies64((__usec) * 1000))
-+#define cputime64_to_usecs(__ct)		\
-+	jiffies64_to_usecs(cputime64_to_jiffies64(__ct))
- 
- /*
-  * Convert cputime to seconds and back.
-diff --git a/include/linux/cputime.h b/include/linux/cputime.h
-index f2eb2ee..ffa8665 100644
---- a/include/linux/cputime.h
-+++ b/include/linux/cputime.h
-@@ -13,4 +13,9 @@
- 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
- #endif
- 
-+#ifndef cputime64_to_usecs
-+#define cputime64_to_usecs(__ct)		\
-+	cputime_to_usecs(__ct)
-+#endif
-+
- #endif /* __LINUX_CPUTIME_H */
-diff --git a/include/linux/jiffies.h b/include/linux/jiffies.h
-index 5fdc553..f26ceb4 100644
---- a/include/linux/jiffies.h
-+++ b/include/linux/jiffies.h
-@@ -283,6 +283,7 @@ extern unsigned long preset_lpj;
-  */
- extern unsigned int jiffies_to_msecs(const unsigned long j);
- extern unsigned int jiffies_to_usecs(const unsigned long j);
-+extern u64 jiffies64_to_usecs(const u64 j);
- 
- static inline u64 jiffies_to_nsecs(const unsigned long j)
- {
-diff --git a/kernel/time/time.c b/kernel/time/time.c
-index be115b0..5167c4b 100644
---- a/kernel/time/time.c
-+++ b/kernel/time/time.c
-@@ -286,6 +286,26 @@ unsigned int jiffies_to_usecs(const unsigned long j)
- }
- EXPORT_SYMBOL(jiffies_to_usecs);
- 
-+u64 jiffies64_to_usecs(const u64 j)
-+{
-+	/*
-+	 * Hz usually doesn't go much further MSEC_PER_SEC.
-+	 * jiffies_to_usecs() and usecs_to_jiffies() depend on that.
-+	 */
-+	BUILD_BUG_ON(HZ > USEC_PER_SEC);
-+
-+#if !(USEC_PER_SEC % HZ)
-+	return (USEC_PER_SEC / HZ) * j;
-+#else
-+# if BITS_PER_LONG == 32
-+	return (HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
-+# else
-+	return (j * HZ_TO_USEC_NUM) / HZ_TO_USEC_DEN;
-+# endif
-+#endif
-+}
-+EXPORT_SYMBOL(jiffies64_to_usecs);
-+
- /**
-  * timespec_trunc - Truncate timespec to a granularity
-  * @t: Timespec
--- 
-1.8.4.2
-
+Eduardo Valentin
