@@ -1,48 +1,52 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH] cpuidle: Indicate when a device has been unregistered
-Date: Tue, 5 Apr 2016 14:05:38 -0500
-Message-ID: <1459883138-21136-1-git-send-email-d-gerlach@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 0/3] cpufreq: logging consistency changes
+Date: Tue,  5 Apr 2016 13:28:22 -0700
+Message-ID: <cover.1459887986.git.joe@perches.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:58478 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbcDETGS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Apr 2016 15:06:18 -0400
+Received: from smtprelay0058.hostedemail.com ([216.40.44.58]:35787 "EHLO
+	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752233AbcDEU2c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Apr 2016 16:28:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>
+To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org
 
-Currently the 'registered' member of the cpuidle_device struct is set
-to 1 during cpuidle_register_device. In this same function there are
-checks to see if the device is already registered to prevent duplicate
-calls to register the device, but this value is never set to 0 even on
-unregister of the device. Because of this, any attempt to call
-cpuidle_register_device after a call to cpuidle_unregister_device will
-fail which shouldn't be the case.
+Trivial consistency changes.
 
-To prevent this, set registered to 0 when the device is unregistered.
+Joe Perches (3):
+  intel_pstate: Use pr_fmt
+  cpufreq: Convert printk(KERN_<LEVEL> to pr_<level>
+  cpufreq: Use consistent prefixing via pr_fmt
 
-Fixes: c878a52d3c7c ("cpuidle: Check if device is already registered")
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
----
- drivers/cpuidle/cpuidle.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/cpufreq/acpi-cpufreq.c            | 16 +++---
+ drivers/cpufreq/cpufreq-nforce2.c         | 28 +++++------
+ drivers/cpufreq/e_powersaver.c            | 62 ++++++++++-------------
+ drivers/cpufreq/elanfreq.c                |  4 +-
+ drivers/cpufreq/ia64-acpi-cpufreq.c       | 10 ++--
+ drivers/cpufreq/intel_pstate.c            | 18 ++++---
+ drivers/cpufreq/longhaul.c                | 84 +++++++++++++------------------
+ drivers/cpufreq/loongson2_cpufreq.c       |  7 ++-
+ drivers/cpufreq/maple-cpufreq.c           | 11 ++--
+ drivers/cpufreq/omap-cpufreq.c            |  7 ++-
+ drivers/cpufreq/p4-clockmod.c             | 19 ++-----
+ drivers/cpufreq/pmac32-cpufreq.c          | 14 +++---
+ drivers/cpufreq/pmac64-cpufreq.c          | 47 +++++++++--------
+ drivers/cpufreq/powernow-k6.c             | 16 +++---
+ drivers/cpufreq/powernow-k7.c             | 70 +++++++++++---------------
+ drivers/cpufreq/pxa2xx-cpufreq.c          | 18 +++----
+ drivers/cpufreq/s3c2412-cpufreq.c         | 15 +++---
+ drivers/cpufreq/s3c2440-cpufreq.c         |  6 ++-
+ drivers/cpufreq/s3c24xx-cpufreq-debugfs.c |  4 +-
+ drivers/cpufreq/s3c24xx-cpufreq.c         | 59 +++++++++++-----------
+ drivers/cpufreq/s5pv210-cpufreq.c         | 10 ++--
+ drivers/cpufreq/sc520_freq.c              | 10 ++--
+ drivers/cpufreq/speedstep-centrino.c      |  6 +--
+ drivers/cpufreq/speedstep-ich.c           |  8 +--
+ drivers/cpufreq/speedstep-lib.c           | 11 ++--
+ drivers/cpufreq/speedstep-smi.c           |  7 +--
+ 26 files changed, 269 insertions(+), 298 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index f996efc56605..c2dd99ab1648 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -433,6 +433,8 @@ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
- 	list_del(&dev->device_list);
- 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
- 	module_put(drv->owner);
-+
-+	dev->registered = 0;
- }
- 
- static void __cpuidle_device_init(struct cpuidle_device *dev)
 -- 
-2.7.3
+2.8.0.rc4.16.g56331f8
 
