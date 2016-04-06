@@ -1,14 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 11/13] intel_idle: Clean up all registered devices on exit.
-Date: Wed,  6 Apr 2016 17:00:57 -0400
-Message-ID: <61e55da835d4d205e413f5b00a4fb689a22bb2ed.1459975717.git.len.brown@intel.com>
+Subject: [PATCH 06/13] intel_idle: Fix dangling registration on error path.
+Date: Wed,  6 Apr 2016 17:00:52 -0400
+Message-ID: <5d037867513fc625797e489d052ce1c874709994.1459975717.git.len.brown@intel.com>
 References: <1459976459-2532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:36429 "EHLO
+Received: from mail-yw0-f196.google.com ([209.85.161.196]:34693 "EHLO
 	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbcDFVBs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 17:01:48 -0400
+	with ESMTP id S1753814AbcDFVBr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 17:01:47 -0400
 In-Reply-To: <1459976459-2532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6513da0f2332d2333848af18e374b99f77c124aa.1459975717.git.len.brown@intel.com>
 References: <6513da0f2332d2333848af18e374b99f77c124aa.1459975717.git.len.brown@intel.com>
@@ -19,45 +19,46 @@ Cc: linux-kernel@vger.kernel.org, Richard Cochran <rcochran@linutronix.de>, Len 
 
 From: Richard Cochran <rcochran@linutronix.de>
 
-This driver registers cpuidle devices when a CPU comes online, but it
-leaves the registrations in place when a CPU goes offline.  The module
-exit code only unregisters the currently online CPUs, leaving the
-devices for offline CPUs dangling.
-
-This patch changes the driver to clean up all registrations on exit,
-even those from CPUs that are offline.
+In the module_init() method, if the per-CPU allocation fails, then the
+active cpuidle registration is not cleaned up.  This patch fixes the
+issue by attempting the allocation before registration, and then
+cleaning it up again on registration failure.
 
 Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/idle/intel_idle.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 45e93f4..7575699 100644
+index 5b309e5..085538a 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1382,12 +1382,19 @@ static int __init intel_idle_init(void)
+@@ -1347,19 +1347,20 @@ static int __init intel_idle_init(void)
+ 	if (retval)
+ 		return retval;
  
- static void __exit intel_idle_exit(void)
- {
-+	struct cpuidle_device *dev;
-+	int i;
++	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
++	if (intel_idle_cpuidle_devices == NULL)
++		return -ENOMEM;
 +
+ 	intel_idle_cpuidle_driver_init();
+ 	retval = cpuidle_register_driver(&intel_idle_driver);
+ 	if (retval) {
+ 		struct cpuidle_driver *drv = cpuidle_get_driver();
+ 		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
+ 			drv ? drv->name : "none");
++		free_percpu(intel_idle_cpuidle_devices);
+ 		return retval;
+ 	}
+ 
+-	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+-	if (intel_idle_cpuidle_devices == NULL)
+-		return -ENOMEM;
+-
  	cpu_notifier_register_begin();
  
- 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
- 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
- 	__unregister_cpu_notifier(&cpu_hotplug_notifier);
--	intel_idle_cpuidle_devices_uninit();
-+
-+	for_each_possible_cpu(i) {
-+		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
-+		cpuidle_unregister_device(dev);
-+	}
- 
- 	cpu_notifier_register_done();
- 
+ 	for_each_online_cpu(i) {
 -- 
 2.8.0.rc4.16.g56331f8
 
