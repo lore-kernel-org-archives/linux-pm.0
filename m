@@ -1,13 +1,13 @@
 From: Felipe Balbi <balbi@kernel.org>
 Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 06 Apr 2016 13:25:06 +0300
-Message-ID: <87k2kb2fwd.fsf@intel.com>
-References: <cover.1459494743.git.baolin.wang@linaro.org> <6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org> <20160406072513.GB21101@shlinux2.ap.freescale.net> <87vb3v2nm8.fsf@intel.com> <20160406074310.GC21101@shlinux2.ap.freescale.net> <87shyz2md5.fsf@intel.com> <20160406081006.GD21101@shlinux2.ap.freescale.net>
+Date: Wed, 06 Apr 2016 13:25:35 +0300
+Message-ID: <87h9ff2fvk.fsf@intel.com>
+References: <cover.1459494743.git.baolin.wang@linaro.org> <6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org> <20160406072513.GB21101@shlinux2.ap.freescale.net> <87vb3v2nm8.fsf@intel.com> <20160406074310.GC21101@shlinux2.ap.freescale.net> <87shyz2md5.fsf@intel.com> <20160406081124.GE21101@shlinux2.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; boundary="=-=-=";
 	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160406081006.GD21101@shlinux2.ap.freescale.net>
+In-Reply-To: <20160406081124.GE21101@shlinux2.ap.freescale.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Chen <hzpeterchen@gmail.com>
 Cc: Baolin Wang <baolin.wang@linaro.org>, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
@@ -55,18 +55,9 @@ ly
 >> limit is 2000mA but we're charging at 1000mA ;-)
 >>=20
 >
-> Does the user need to know the $this charger limit? Don't they only
-> care about the current charging value? I have a USB cable which can
+> The user doesn't need to know the value which spec designs.
 
-Why not ? UI might want to change the color of the battery charging icon
-if we're charging @ 2000mA or @ 1000mA to give some visual feedback as
-to "how fast" battery is supposed to be charged.
-
-> show charging current value, it changes from time to time, when it
-> connects to host pc, it shows 430mA; when it connects to dedicated
-> charger, it shows 1000mA.
-
-good for you, now what does that have to do with $subject ?
+because... ?
 
 =2D-=20
 balbi
@@ -77,18 +68,18 @@ Content-Type: application/pgp-signature; name="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJXBOQDAAoJEIaOsuA1yqREVj4P/j7dJPMSfQzinWl12/zTjPi6
-wTWMK/IXG97jd+QNSJdr+A7ZpaVjrrxbnA/w9K/Hm3Dsjs/6D7x8jj+7O9V5Dxji
-NrQroVwqiTBYrHVDUngtNGXRfBOLhv2UIvPPzJ18EURzHn9YRo08R/S3FchPRFoY
-1Z0pwmC0HA+npBk9BFgGHGE90tgs7yhCfDhY0v0SxAX5wxMhrTieGD6mGGgEwIHK
-55Sw2VEA4MazrDr9WHHaEvDfxa/Ro7H5JGopVVlkEHfq0UZALysTauqmI4Sei8ls
-kxzM0br0dZ5O2HHOxdn+RXsPNlmF37vcqNF+WmpAlAq+n0mgRmYh79YbBy+bidj1
-YZ5SVjXmmVBARUnparJdRFDJvRuABxoc7dM4Hn+zcMy62XHjfCjoW2FuGNWo22vZ
-LwD2wmxTH/wWEB2DVbMQc/qqUxqD8z4DnPR998cAs/guwig51nnKcd50ACFMvgNy
-1nEb5bfUovd2UzqHkDVIi7Z9OFgm/+ucCXob1oCVIwwspHfd8JXjLiWL92/7+FfK
-vzL4126olI8h/99u2y76pDNUW1IoaMlHjVV/UBUWLt4DoXIoaoDscJRWbGKnajzp
-UtTwqTAHt11ca2I0BBmOjtnaz28Eqtr+PpxG9ZWj15Un+cE/6FZ5wW0tElC2F5fy
-GEVwKzwut7B7jToBpuvw
-=zE9s
+iQIcBAEBAgAGBQJXBOQgAAoJEIaOsuA1yqREUs0P/1q1/pxA2Y+sTFCucbhhCFg5
+idIQXSle9osENE8yNXA8L517NkHPpyQRQ8bSHzOKc9g5leRyo+Ld80zJevBStG07
+ii37yCus65O1Wz+Y9o57JFB4JJKNXWYrvyv3il7JE67XnSMJ0iOX8ueg7Yt5AN4p
+E4LwkJaqy8J9a/JytaY/PWN8oyLnUUQ8k/XNbav0raZsdsxqjlzXcRBnbNs4LMI0
+WG7ybza4R4VDjsZZV207lijzuiEIFngXEbHWj8WdlkK31f3NZkHgBGrudt4lyOix
+e0hXscp23hoayuD8R+80BjGgS7H2y0IVVGu4oXDEKDfhBQosNCL6I0qgiVy4lbKe
+nMGVFX4eVMtNXl1HoPoQomr4VAfabsEn9i7bFs0ihmWZYRvz3JKKhpsZZNJZYuDO
+iSRzs5owPal6JkRh/gmUBEuk3por1X8Dkv+lqLM8tI+jA+c0Y6z8CmEskiZsdscQ
+vCbgHj40qlXnbXL3fOeD0W8CUwS23mp1/q6b/pGhGk9349n0kfcLr2eNnjzQXlOG
+AfyQuWEKuz6lsu5MRjsDZTZP1wonPy+GDZZk0aZO7ZPZvS01OmmP/SyvOag+hlCE
+TbTuU/ACw7DyjZdk1prmuyCk8RJQLMBxY8QUsvKWRoJOZZfzOMRx4anEhWWgIXfv
+PwM9QWfHvcbXbSfnxAd7
+=e3I0
 -----END PGP SIGNATURE-----
 --=-=-=--
