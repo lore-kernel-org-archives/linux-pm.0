@@ -1,385 +1,510 @@
 From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH V1 1/7] clk: Loongson1: Update clocks of Loongson1B
-Date: Wed,  6 Apr 2016 20:34:49 +0800
-Message-ID: <1459946095-7637-2-git-send-email-keguang.zhang@gmail.com>
+Subject: [PATCH V1 2/7] cpufreq: Loongson1: Update cpufreq of Loongson1B
+Date: Wed,  6 Apr 2016 20:34:50 +0800
+Message-ID: <1459946095-7637-3-git-send-email-keguang.zhang@gmail.com>
 References: <1459946095-7637-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:36495 "EHLO
-	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932277AbcDFMfo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 08:35:44 -0400
+Return-path: <linux-clk-owner@vger.kernel.org>
 In-Reply-To: <1459946095-7637-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-clk-owner@vger.kernel.org
 To: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
 Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-- Rename the file to clk-loongson1.c
-- Add AC97, DMA and NAND clock
-- Update clock names
+- Rename the file to loongson1-cpufreq.c
+- Use kcalloc() instead of kzalloc()
+- Use devm_kzalloc() instead of global structure
+- Use dev_get_platdata() to access the platform_data field
+  instead of referencing it directly
 - Remove superfluous error messages
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 ---
- drivers/clk/Makefile        |   2 +-
- drivers/clk/clk-loongson1.c | 163 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/clk-ls1x.c      | 162 -------------------------------------------
- 3 files changed, 164 insertions(+), 163 deletions(-)
- create mode 100644 drivers/clk/clk-loongson1.c
- delete mode 100644 drivers/clk/clk-ls1x.c
+ drivers/cpufreq/Makefile            |   2 +-
+ drivers/cpufreq/loongson1-cpufreq.c | 230 ++++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/ls1x-cpufreq.c      | 222 ----------------------------------
+ 3 files changed, 231 insertions(+), 223 deletions(-)
+ create mode 100644 drivers/cpufreq/loongson1-cpufreq.c
+ delete mode 100644 drivers/cpufreq/ls1x-cpufreq.c
 
-diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
-index 46869d6..5845b2c 100644
---- a/drivers/clk/Makefile
-+++ b/drivers/clk/Makefile
-@@ -25,7 +25,7 @@ obj-$(CONFIG_COMMON_CLK_CS2000_CP)	+= clk-cs2000-cp.o
- obj-$(CONFIG_ARCH_CLPS711X)		+= clk-clps711x.o
- obj-$(CONFIG_ARCH_EFM32)		+= clk-efm32gg.o
- obj-$(CONFIG_ARCH_HIGHBANK)		+= clk-highbank.o
--obj-$(CONFIG_MACH_LOONGSON32)		+= clk-ls1x.o
-+obj-$(CONFIG_MACH_LOONGSON32)		+= clk-loongson1.o
- obj-$(CONFIG_COMMON_CLK_MAX_GEN)	+= clk-max-gen.o
- obj-$(CONFIG_COMMON_CLK_MAX77686)	+= clk-max77686.o
- obj-$(CONFIG_COMMON_CLK_MAX77802)	+= clk-max77802.o
-diff --git a/drivers/clk/clk-loongson1.c b/drivers/clk/clk-loongson1.c
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 9e63fb1..bebe9c8 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -100,7 +100,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
+ obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
+ obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
+ obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
+-obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
++obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= loongson1-cpufreq.o
+ obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
+ obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
+ obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
+diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
 new file mode 100644
-index 0000000..ce2135c
+index 0000000..d029211
 --- /dev/null
-+++ b/drivers/clk/clk-loongson1.c
-@@ -0,0 +1,163 @@
++++ b/drivers/cpufreq/loongson1-cpufreq.c
+@@ -0,0 +1,230 @@
 +/*
-+ * Copyright (c) 2012-2016 Zhang, Keguang <keguang.zhang@gmail.com>
++ * CPU Frequency Scaling for Loongson 1 SoC
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
 + */
 +
-+#include <linux/clkdev.h>
++#include <linux/clk.h>
 +#include <linux/clk-provider.h>
-+#include <linux/io.h>
++#include <linux/cpu.h>
++#include <linux/cpufreq.h>
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
 +#include <linux/slab.h>
-+#include <linux/err.h>
 +
++#include <cpufreq.h>
 +#include <loongson1.h>
 +
-+#define OSC		(33 * 1000000)
-+#define DIV_APB		2
++struct ls1x_cpufreq {
++	struct device *dev;
++	struct clk *clk;	/* CPU clk */
++	struct clk *mux_clk;	/* MUX of CPU clk */
++	struct clk *pll_clk;	/* PLL clk */
++	struct clk *osc_clk;	/* OSC clk */
++	unsigned int max_freq;
++	unsigned int min_freq;
++};
 +
-+static DEFINE_SPINLOCK(_lock);
++static struct ls1x_cpufreq *cpufreq;
 +
-+static int ls1x_pll_clk_enable(struct clk_hw *hw)
++static int ls1x_cpufreq_notifier(struct notifier_block *nb,
++				 unsigned long val, void *data)
 +{
++	if (val == CPUFREQ_POSTCHANGE)
++		current_cpu_data.udelay_val = loops_per_jiffy;
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block ls1x_cpufreq_notifier_block = {
++	.notifier_call = ls1x_cpufreq_notifier
++};
++
++static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
++			       unsigned int index)
++{
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
++	unsigned int old_freq, new_freq;
++
++	old_freq = policy->cur;
++	new_freq = policy->freq_table[index].frequency;
++
++	/*
++	 * The procedure of reconfiguring CPU clk is as below.
++	 *
++	 *  - Reparent CPU clk to OSC clk
++	 *  - Reset CPU clock (very important)
++	 *  - Reconfigure CPU DIV
++	 *  - Reparent CPU clk back to CPU DIV clk
++	 */
++
++	clk_set_parent(policy->clk, cpufreq->osc_clk);
++	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
++		     LS1X_CLK_PLL_DIV);
++	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
++		     LS1X_CLK_PLL_DIV);
++	clk_set_rate(cpufreq->mux_clk, new_freq * 1000);
++	clk_set_parent(policy->clk, cpufreq->mux_clk);
++	dev_dbg(cpu_dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
++
 +	return 0;
 +}
 +
-+static void ls1x_pll_clk_disable(struct clk_hw *hw)
++static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
 +{
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
++	struct cpufreq_frequency_table *freq_tbl;
++	unsigned int pll_freq, freq;
++	int steps, i, ret;
++
++	pll_freq = clk_get_rate(cpufreq->pll_clk) / 1000;
++
++	steps = 1 << DIV_CPU_WIDTH;
++	freq_tbl = kcalloc(steps, sizeof(*freq_tbl), GFP_KERNEL);
++	if (!freq_tbl)
++		return -ENOMEM;
++
++	for (i = 0; i < (steps - 1); i++) {
++		freq = pll_freq / (i + 1);
++		if ((freq < cpufreq->min_freq) || (freq > cpufreq->max_freq))
++			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
++		else
++			freq_tbl[i].frequency = freq;
++		dev_dbg(cpu_dev,
++			"cpufreq table: index %d: frequency %d\n", i,
++			freq_tbl[i].frequency);
++	}
++	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
++
++	policy->clk = cpufreq->clk;
++	ret = cpufreq_generic_init(policy, freq_tbl, 0);
++	if (ret)
++		kfree(freq_tbl);
++
++	return ret;
 +}
 +
-+static unsigned long ls1x_pll_recalc_rate(struct clk_hw *hw,
-+					  unsigned long parent_rate)
++static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
 +{
-+	u32 pll, rate;
-+
-+	pll = __raw_readl(LS1X_CLK_PLL_FREQ);
-+	rate = 12 + (pll & 0x3f) + (((pll >> 8) & 0x3ff) >> 10);
-+	rate *= OSC;
-+	rate >>= 1;
-+
-+	return rate;
++	kfree(policy->freq_table);
++	return 0;
 +}
 +
-+static const struct clk_ops ls1x_pll_clk_ops = {
-+	.enable = ls1x_pll_clk_enable,
-+	.disable = ls1x_pll_clk_disable,
-+	.recalc_rate = ls1x_pll_recalc_rate,
++static struct cpufreq_driver ls1x_cpufreq_driver = {
++	.name		= "cpufreq-ls1x",
++	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= ls1x_cpufreq_target,
++	.get		= cpufreq_generic_get,
++	.init		= ls1x_cpufreq_init,
++	.exit		= ls1x_cpufreq_exit,
++	.attr		= cpufreq_generic_attr,
 +};
 +
-+static struct clk *__init clk_register_pll(struct device *dev,
-+					   const char *name,
-+					   const char *parent_name,
-+					   unsigned long flags)
++static int ls1x_cpufreq_remove(struct platform_device *pdev)
 +{
-+	struct clk_hw *hw;
-+	struct clk *clk;
-+	struct clk_init_data init;
++	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
 +
-+	/* allocate the divider */
-+	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
-+	if (!hw)
-+		return ERR_PTR(-ENOMEM);
-+
-+	init.name = name;
-+	init.ops = &ls1x_pll_clk_ops;
-+	init.flags = flags | CLK_IS_BASIC;
-+	init.parent_names = (parent_name ? &parent_name : NULL);
-+	init.num_parents = (parent_name ? 1 : 0);
-+	hw->init = &init;
-+
-+	/* register the clock */
-+	clk = clk_register(dev, hw);
-+
-+	if (IS_ERR(clk))
-+		kfree(hw);
-+
-+	return clk;
++	return 0;
 +}
 +
-+static const char *const cpu_parents[] = { "cpu_clk_div", "osc_33m_clk", };
-+static const char *const ahb_parents[] = { "ahb_clk_div", "osc_33m_clk", };
-+static const char *const dc_parents[] = { "dc_clk_div", "osc_33m_clk", };
-+
-+void __init ls1x_clk_init(void)
++static int ls1x_cpufreq_probe(struct platform_device *pdev)
 +{
++	struct plat_ls1x_cpufreq *pdata = dev_get_platdata(&pdev->dev);
 +	struct clk *clk;
++	int ret;
 +
-+	clk = clk_register_fixed_rate(NULL, "osc_33m_clk", NULL, CLK_IS_ROOT,
-+				      OSC);
-+	clk_register_clkdev(clk, "osc_33m_clk", NULL);
++	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name) {
++		dev_err(&pdev->dev, "platform data missing\n");
++		ret = -EINVAL;
++		goto out;
++	}
 +
-+	/* clock derived from 33 MHz OSC clk */
-+	clk = clk_register_pll(NULL, "pll_clk", "osc_33m_clk", 0);
-+	clk_register_clkdev(clk, "pll_clk", NULL);
++	cpufreq =
++	    devm_kzalloc(&pdev->dev, sizeof(struct ls1x_cpufreq), GFP_KERNEL);
++	if (!cpufreq) {
++		ret = -ENOMEM;
++		goto out;
++	}
 +
-+	/* clock derived from PLL clk */
-+	/*                                 _____
-+	 *         _______________________|     |
-+	 * OSC ___/                       | MUX |___ CPU CLK
-+	 *        \___ PLL ___ CPU DIV ___|     |
-+	 *                                |_____|
-+	 */
-+	clk = clk_register_divider(NULL, "cpu_clk_div", "pll_clk",
-+				   CLK_GET_RATE_NOCACHE, LS1X_CLK_PLL_DIV,
-+				   DIV_CPU_SHIFT, DIV_CPU_WIDTH,
-+				   CLK_DIVIDER_ONE_BASED |
-+				   CLK_DIVIDER_ROUND_CLOSEST, &_lock);
-+	clk_register_clkdev(clk, "cpu_clk_div", NULL);
-+	clk = clk_register_mux(NULL, "cpu_clk", cpu_parents,
-+			       ARRAY_SIZE(cpu_parents),
-+			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
-+			       BYPASS_CPU_SHIFT, BYPASS_CPU_WIDTH, 0, &_lock);
-+	clk_register_clkdev(clk, "cpu_clk", NULL);
++	cpufreq->dev = &pdev->dev;
 +
-+	/*                                 _____
-+	 *         _______________________|     |
-+	 * OSC ___/                       | MUX |___ DC  CLK
-+	 *        \___ PLL ___ DC  DIV ___|     |
-+	 *                                |_____|
-+	 */
-+	clk = clk_register_divider(NULL, "dc_clk_div", "pll_clk",
-+				   0, LS1X_CLK_PLL_DIV, DIV_DC_SHIFT,
-+				   DIV_DC_WIDTH, CLK_DIVIDER_ONE_BASED, &_lock);
-+	clk_register_clkdev(clk, "dc_clk_div", NULL);
-+	clk = clk_register_mux(NULL, "dc_clk", dc_parents,
-+			       ARRAY_SIZE(dc_parents),
-+			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
-+			       BYPASS_DC_SHIFT, BYPASS_DC_WIDTH, 0, &_lock);
-+	clk_register_clkdev(clk, "dc_clk", NULL);
++	clk = devm_clk_get(&pdev->dev, pdata->clk_name);
++	if (IS_ERR(clk)) {
++		dev_err(&pdev->dev, "unable to get %s clock\n",
++			pdata->clk_name);
++		ret = PTR_ERR(clk);
++		goto out;
++	}
++	cpufreq->clk = clk;
 +
-+	/*                                 _____
-+	 *         _______________________|     |
-+	 * OSC ___/                       | MUX |___ DDR CLK
-+	 *        \___ PLL ___ DDR DIV ___|     |
-+	 *                                |_____|
-+	 */
-+	clk = clk_register_divider(NULL, "ahb_clk_div", "pll_clk",
-+				   0, LS1X_CLK_PLL_DIV, DIV_DDR_SHIFT,
-+				   DIV_DDR_WIDTH, CLK_DIVIDER_ONE_BASED,
-+				   &_lock);
-+	clk_register_clkdev(clk, "ahb_clk_div", NULL);
-+	clk = clk_register_mux(NULL, "ahb_clk", ahb_parents,
-+			       ARRAY_SIZE(ahb_parents),
-+			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
-+			       BYPASS_DDR_SHIFT, BYPASS_DDR_WIDTH, 0, &_lock);
-+	clk_register_clkdev(clk, "ahb_clk", NULL);
-+	clk_register_clkdev(clk, "ls1x-dma", NULL);
-+	clk_register_clkdev(clk, "stmmaceth", NULL);
++	clk = clk_get_parent(clk);
++	if (IS_ERR(clk)) {
++		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
++			__clk_get_name(cpufreq->clk));
++		ret = PTR_ERR(clk);
++		goto out;
++	}
++	cpufreq->mux_clk = clk;
 +
-+	/* clock derived from AHB clk */
-+	/* APB clk is always half of the AHB clk */
-+	clk = clk_register_fixed_factor(NULL, "apb_clk", "ahb_clk", 0, 1,
-+					DIV_APB);
-+	clk_register_clkdev(clk, "apb_clk", NULL);
-+	clk_register_clkdev(clk, "ls1x-ac97", NULL);
-+	clk_register_clkdev(clk, "ls1x-i2c", NULL);
-+	clk_register_clkdev(clk, "ls1x-nand", NULL);
-+	clk_register_clkdev(clk, "ls1x-pwmtimer", NULL);
-+	clk_register_clkdev(clk, "ls1x-spi", NULL);
-+	clk_register_clkdev(clk, "ls1x-wdt", NULL);
-+	clk_register_clkdev(clk, "serial8250", NULL);
++	clk = clk_get_parent(clk);
++	if (IS_ERR(clk)) {
++		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
++			__clk_get_name(cpufreq->mux_clk));
++		ret = PTR_ERR(clk);
++		goto out;
++	}
++	cpufreq->pll_clk = clk;
++
++	clk = devm_clk_get(&pdev->dev, pdata->osc_clk_name);
++	if (IS_ERR(clk)) {
++		dev_err(&pdev->dev, "unable to get %s clock\n",
++			pdata->osc_clk_name);
++		ret = PTR_ERR(clk);
++		goto out;
++	}
++	cpufreq->osc_clk = clk;
++
++	cpufreq->max_freq = pdata->max_freq;
++	cpufreq->min_freq = pdata->min_freq;
++
++	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
++	if (ret) {
++		dev_err(&pdev->dev,
++			"failed to register CPUFreq driver: %d\n", ret);
++		goto out;
++	}
++
++	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
++					CPUFREQ_TRANSITION_NOTIFIER);
++
++	if (!ret)
++		goto out;
++
++	dev_err(&pdev->dev, "failed to register CPUFreq notifier: %d\n", ret);
++
++	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
++out:
++	return ret;
 +}
-diff --git a/drivers/clk/clk-ls1x.c b/drivers/clk/clk-ls1x.c
++
++static struct platform_driver ls1x_cpufreq_platdrv = {
++	.probe	= ls1x_cpufreq_probe,
++	.remove	= ls1x_cpufreq_remove,
++	.driver	= {
++		.name	= "ls1x-cpufreq",
++	},
++};
++
++module_platform_driver(ls1x_cpufreq_platdrv);
++
++MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
++MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
 deleted file mode 100644
-index d4c6198..0000000
---- a/drivers/clk/clk-ls1x.c
+index 262581b..0000000
+--- a/drivers/cpufreq/ls1x-cpufreq.c
 +++ /dev/null
-@@ -1,162 +0,0 @@
+@@ -1,222 +0,0 @@
 -/*
-- * Copyright (c) 2012 Zhang, Keguang <keguang.zhang@gmail.com>
+- * CPU Frequency Scaling for Loongson 1 SoC
 - *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
+- * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
+- *
+- * This file is licensed under the terms of the GNU General Public
+- * License version 2. This program is licensed "as is" without any
+- * warranty of any kind, whether express or implied.
 - */
 -
--#include <linux/clkdev.h>
+-#include <linux/clk.h>
 -#include <linux/clk-provider.h>
--#include <linux/io.h>
+-#include <linux/cpu.h>
+-#include <linux/cpufreq.h>
+-#include <linux/delay.h>
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
 -#include <linux/slab.h>
--#include <linux/err.h>
 -
+-#include <cpufreq.h>
 -#include <loongson1.h>
 -
--#define OSC		(33 * 1000000)
--#define DIV_APB		2
+-static struct {
+-	struct device *dev;
+-	struct clk *clk;	/* CPU clk */
+-	struct clk *mux_clk;	/* MUX of CPU clk */
+-	struct clk *pll_clk;	/* PLL clk */
+-	struct clk *osc_clk;	/* OSC clk */
+-	unsigned int max_freq;
+-	unsigned int min_freq;
+-} ls1x_cpufreq;
 -
--static DEFINE_SPINLOCK(_lock);
--
--static int ls1x_pll_clk_enable(struct clk_hw *hw)
+-static int ls1x_cpufreq_notifier(struct notifier_block *nb,
+-				 unsigned long val, void *data)
 -{
+-	if (val == CPUFREQ_POSTCHANGE)
+-		current_cpu_data.udelay_val = loops_per_jiffy;
+-
+-	return NOTIFY_OK;
+-}
+-
+-static struct notifier_block ls1x_cpufreq_notifier_block = {
+-	.notifier_call = ls1x_cpufreq_notifier
+-};
+-
+-static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
+-			       unsigned int index)
+-{
+-	unsigned int old_freq, new_freq;
+-
+-	old_freq = policy->cur;
+-	new_freq = policy->freq_table[index].frequency;
+-
+-	/*
+-	 * The procedure of reconfiguring CPU clk is as below.
+-	 *
+-	 *  - Reparent CPU clk to OSC clk
+-	 *  - Reset CPU clock (very important)
+-	 *  - Reconfigure CPU DIV
+-	 *  - Reparent CPU clk back to CPU DIV clk
+-	 */
+-
+-	dev_dbg(ls1x_cpufreq.dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
+-	clk_set_parent(policy->clk, ls1x_cpufreq.osc_clk);
+-	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
+-		     LS1X_CLK_PLL_DIV);
+-	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
+-		     LS1X_CLK_PLL_DIV);
+-	clk_set_rate(ls1x_cpufreq.mux_clk, new_freq * 1000);
+-	clk_set_parent(policy->clk, ls1x_cpufreq.mux_clk);
+-
 -	return 0;
 -}
 -
--static void ls1x_pll_clk_disable(struct clk_hw *hw)
+-static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
 -{
--}
+-	struct cpufreq_frequency_table *freq_tbl;
+-	unsigned int pll_freq, freq;
+-	int steps, i, ret;
 -
--static unsigned long ls1x_pll_recalc_rate(struct clk_hw *hw,
--					  unsigned long parent_rate)
--{
--	u32 pll, rate;
+-	pll_freq = clk_get_rate(ls1x_cpufreq.pll_clk) / 1000;
 -
--	pll = __raw_readl(LS1X_CLK_PLL_FREQ);
--	rate = 12 + (pll & 0x3f) + (((pll >> 8) & 0x3ff) >> 10);
--	rate *= OSC;
--	rate >>= 1;
--
--	return rate;
--}
--
--static const struct clk_ops ls1x_pll_clk_ops = {
--	.enable = ls1x_pll_clk_enable,
--	.disable = ls1x_pll_clk_disable,
--	.recalc_rate = ls1x_pll_recalc_rate,
--};
--
--static struct clk *__init clk_register_pll(struct device *dev,
--					   const char *name,
--					   const char *parent_name,
--					   unsigned long flags)
--{
--	struct clk_hw *hw;
--	struct clk *clk;
--	struct clk_init_data init;
--
--	/* allocate the divider */
--	hw = kzalloc(sizeof(struct clk_hw), GFP_KERNEL);
--	if (!hw) {
--		pr_err("%s: could not allocate clk_hw\n", __func__);
--		return ERR_PTR(-ENOMEM);
+-	steps = 1 << DIV_CPU_WIDTH;
+-	freq_tbl = kzalloc(sizeof(*freq_tbl) * steps, GFP_KERNEL);
+-	if (!freq_tbl) {
+-		dev_err(ls1x_cpufreq.dev,
+-			"failed to alloc cpufreq_frequency_table\n");
+-		ret = -ENOMEM;
+-		goto out;
 -	}
 -
--	init.name = name;
--	init.ops = &ls1x_pll_clk_ops;
--	init.flags = flags | CLK_IS_BASIC;
--	init.parent_names = (parent_name ? &parent_name : NULL);
--	init.num_parents = (parent_name ? 1 : 0);
--	hw->init = &init;
+-	for (i = 0; i < (steps - 1); i++) {
+-		freq = pll_freq / (i + 1);
+-		if ((freq < ls1x_cpufreq.min_freq) ||
+-		    (freq > ls1x_cpufreq.max_freq))
+-			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
+-		else
+-			freq_tbl[i].frequency = freq;
+-		dev_dbg(ls1x_cpufreq.dev,
+-			"cpufreq table: index %d: frequency %d\n", i,
+-			freq_tbl[i].frequency);
+-	}
+-	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
 -
--	/* register the clock */
--	clk = clk_register(dev, hw);
--
--	if (IS_ERR(clk))
--		kfree(hw);
--
--	return clk;
+-	policy->clk = ls1x_cpufreq.clk;
+-	ret = cpufreq_generic_init(policy, freq_tbl, 0);
+-	if (ret)
+-		kfree(freq_tbl);
+-out:
+-	return ret;
 -}
 -
--static const char * const cpu_parents[] = { "cpu_clk_div", "osc_33m_clk", };
--static const char * const ahb_parents[] = { "ahb_clk_div", "osc_33m_clk", };
--static const char * const dc_parents[] = { "dc_clk_div", "osc_33m_clk", };
--
--void __init ls1x_clk_init(void)
+-static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
 -{
--	struct clk *clk;
--
--	clk = clk_register_fixed_rate(NULL, "osc_33m_clk", NULL, CLK_IS_ROOT,
--				      OSC);
--	clk_register_clkdev(clk, "osc_33m_clk", NULL);
--
--	/* clock derived from 33 MHz OSC clk */
--	clk = clk_register_pll(NULL, "pll_clk", "osc_33m_clk", 0);
--	clk_register_clkdev(clk, "pll_clk", NULL);
--
--	/* clock derived from PLL clk */
--	/*                                 _____
--	 *         _______________________|     |
--	 * OSC ___/                       | MUX |___ CPU CLK
--	 *        \___ PLL ___ CPU DIV ___|     |
--	 *                                |_____|
--	 */
--	clk = clk_register_divider(NULL, "cpu_clk_div", "pll_clk",
--				   CLK_GET_RATE_NOCACHE, LS1X_CLK_PLL_DIV,
--				   DIV_CPU_SHIFT, DIV_CPU_WIDTH,
--				   CLK_DIVIDER_ONE_BASED |
--				   CLK_DIVIDER_ROUND_CLOSEST, &_lock);
--	clk_register_clkdev(clk, "cpu_clk_div", NULL);
--	clk = clk_register_mux(NULL, "cpu_clk", cpu_parents,
--			       ARRAY_SIZE(cpu_parents),
--			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
--			       BYPASS_CPU_SHIFT, BYPASS_CPU_WIDTH, 0, &_lock);
--	clk_register_clkdev(clk, "cpu_clk", NULL);
--
--	/*                                 _____
--	 *         _______________________|     |
--	 * OSC ___/                       | MUX |___ DC  CLK
--	 *        \___ PLL ___ DC  DIV ___|     |
--	 *                                |_____|
--	 */
--	clk = clk_register_divider(NULL, "dc_clk_div", "pll_clk",
--				   0, LS1X_CLK_PLL_DIV, DIV_DC_SHIFT,
--				   DIV_DC_WIDTH, CLK_DIVIDER_ONE_BASED, &_lock);
--	clk_register_clkdev(clk, "dc_clk_div", NULL);
--	clk = clk_register_mux(NULL, "dc_clk", dc_parents,
--			       ARRAY_SIZE(dc_parents),
--			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
--			       BYPASS_DC_SHIFT, BYPASS_DC_WIDTH, 0, &_lock);
--	clk_register_clkdev(clk, "dc_clk", NULL);
--
--	/*                                 _____
--	 *         _______________________|     |
--	 * OSC ___/                       | MUX |___ DDR CLK
--	 *        \___ PLL ___ DDR DIV ___|     |
--	 *                                |_____|
--	 */
--	clk = clk_register_divider(NULL, "ahb_clk_div", "pll_clk",
--				   0, LS1X_CLK_PLL_DIV, DIV_DDR_SHIFT,
--				   DIV_DDR_WIDTH, CLK_DIVIDER_ONE_BASED,
--				   &_lock);
--	clk_register_clkdev(clk, "ahb_clk_div", NULL);
--	clk = clk_register_mux(NULL, "ahb_clk", ahb_parents,
--			       ARRAY_SIZE(ahb_parents),
--			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
--			       BYPASS_DDR_SHIFT, BYPASS_DDR_WIDTH, 0, &_lock);
--	clk_register_clkdev(clk, "ahb_clk", NULL);
--	clk_register_clkdev(clk, "stmmaceth", NULL);
--
--	/* clock derived from AHB clk */
--	/* APB clk is always half of the AHB clk */
--	clk = clk_register_fixed_factor(NULL, "apb_clk", "ahb_clk", 0, 1,
--					DIV_APB);
--	clk_register_clkdev(clk, "apb_clk", NULL);
--	clk_register_clkdev(clk, "ls1x_i2c", NULL);
--	clk_register_clkdev(clk, "ls1x_pwmtimer", NULL);
--	clk_register_clkdev(clk, "ls1x_spi", NULL);
--	clk_register_clkdev(clk, "ls1x_wdt", NULL);
--	clk_register_clkdev(clk, "serial8250", NULL);
+-	kfree(policy->freq_table);
+-	return 0;
 -}
+-
+-static struct cpufreq_driver ls1x_cpufreq_driver = {
+-	.name		= "cpufreq-ls1x",
+-	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+-	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_index	= ls1x_cpufreq_target,
+-	.get		= cpufreq_generic_get,
+-	.init		= ls1x_cpufreq_init,
+-	.exit		= ls1x_cpufreq_exit,
+-	.attr		= cpufreq_generic_attr,
+-};
+-
+-static int ls1x_cpufreq_remove(struct platform_device *pdev)
+-{
+-	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
+-				    CPUFREQ_TRANSITION_NOTIFIER);
+-	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
+-
+-	return 0;
+-}
+-
+-static int ls1x_cpufreq_probe(struct platform_device *pdev)
+-{
+-	struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
+-	struct clk *clk;
+-	int ret;
+-
+-	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
+-		return -EINVAL;
+-
+-	ls1x_cpufreq.dev = &pdev->dev;
+-
+-	clk = devm_clk_get(&pdev->dev, pdata->clk_name);
+-	if (IS_ERR(clk)) {
+-		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
+-			pdata->clk_name);
+-		ret = PTR_ERR(clk);
+-		goto out;
+-	}
+-	ls1x_cpufreq.clk = clk;
+-
+-	clk = clk_get_parent(clk);
+-	if (IS_ERR(clk)) {
+-		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
+-			__clk_get_name(ls1x_cpufreq.clk));
+-		ret = PTR_ERR(clk);
+-		goto out;
+-	}
+-	ls1x_cpufreq.mux_clk = clk;
+-
+-	clk = clk_get_parent(clk);
+-	if (IS_ERR(clk)) {
+-		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
+-			__clk_get_name(ls1x_cpufreq.mux_clk));
+-		ret = PTR_ERR(clk);
+-		goto out;
+-	}
+-	ls1x_cpufreq.pll_clk = clk;
+-
+-	clk = devm_clk_get(&pdev->dev, pdata->osc_clk_name);
+-	if (IS_ERR(clk)) {
+-		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
+-			pdata->osc_clk_name);
+-		ret = PTR_ERR(clk);
+-		goto out;
+-	}
+-	ls1x_cpufreq.osc_clk = clk;
+-
+-	ls1x_cpufreq.max_freq = pdata->max_freq;
+-	ls1x_cpufreq.min_freq = pdata->min_freq;
+-
+-	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
+-	if (ret) {
+-		dev_err(ls1x_cpufreq.dev,
+-			"failed to register cpufreq driver: %d\n", ret);
+-		goto out;
+-	}
+-
+-	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
+-					CPUFREQ_TRANSITION_NOTIFIER);
+-
+-	if (!ret)
+-		goto out;
+-
+-	dev_err(ls1x_cpufreq.dev, "failed to register cpufreq notifier: %d\n",
+-		ret);
+-
+-	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
+-out:
+-	return ret;
+-}
+-
+-static struct platform_driver ls1x_cpufreq_platdrv = {
+-	.driver = {
+-		.name	= "ls1x-cpufreq",
+-	},
+-	.probe		= ls1x_cpufreq_probe,
+-	.remove		= ls1x_cpufreq_remove,
+-};
+-
+-module_platform_driver(ls1x_cpufreq_platdrv);
+-
+-MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
+-MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
+-MODULE_LICENSE("GPL");
 -- 
 1.9.1
 
