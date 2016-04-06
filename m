@@ -1,90 +1,52 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 6 Apr 2016 19:31:11 +0800
-Message-ID: <CAMz4kuJmQTEXSjL55+fEm0-RO6N3isS60kPmD1XaXxGNumTpXg@mail.gmail.com>
-References: <cover.1459494743.git.baolin.wang@linaro.org>
-	<6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130AD03DCB2121336E95869899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [RFC PATCH] PM / wakeirq: fix wakeirq setting after wakup re-configuration from sysfs
+Date: Wed, 6 Apr 2016 14:45:53 +0300
+Message-ID: <1459943153-2553-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AM4PR04MB2130AD03DCB2121336E95869899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jun Li <jun.li@nxp.com>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:48189 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbcDFLqf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 07:46:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, tony@atomide.com
+Cc: nsekhar@ti.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-omap@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-On 6 April 2016 at 16:26, Jun Li <jun.li@nxp.com> wrote:
-> Hi
->
->> + */
->> +static enum usb_charger_type
->> +usb_charger_get_type_by_others(struct usb_charger *uchger) {
->> +     if (uchger->type != UNKNOWN_TYPE)
->> +             return uchger->type;
->> +
->> +     if (uchger->psy) {
->> +             union power_supply_propval val;
->> +
->> +             power_supply_get_property(uchger->psy,
->> +                                       POWER_SUPPLY_PROP_CHARGE_TYPE,
->> +                                       &val);
->> +             switch (val.intval) {
->> +             case POWER_SUPPLY_TYPE_USB:
->> +                     uchger->type = SDP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_DCP:
->> +                     uchger->type = DCP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_CDP:
->> +                     uchger->type = CDP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_ACA:
->> +                     uchger->type = ACA_TYPE;
->> +                     break;
->> +             default:
->> +                     uchger->type = UNKNOWN_TYPE;
->> +                     break;
->> +             }
->> +     } else if (uchger->get_charger_type) {
->> +             uchger->type = uchger->get_charger_type(uchger);
->> +     } else {
->> +             uchger->type = UNKNOWN_TYPE;
->> +     }
->> +
->> +     return uchger->type;
->> +}
->> +
->
-> I think we may don't need this usb_charger_get_type_by_others().
-> "uchger->type" is set in one place is enough, that is: by
-> uchger->charger_detect() in usb_charger_detect_type(), then
-> usb_charger_get_type_by_others() is replaced by usb_charger_get_type().
->
-> uchger->charger_detect() can have diff implementations no matter
-> what kind of mechanism is used, for your PMIC case, you can just
-> directly get the type value by power_supply_get_property();
-> with that, we can have one central place to set uchger->type.
-> After uchger->type is set, charger type detection is no need to be
-> involved until charger type changes.
->
-> Then next question is where is to call usb_charger_detect_type(),
-> We need make sure it finished before usb gadget connect.
+Now wakeirq stops working for device if wakeup option for
+this device will be reconfigured through sysfs, like:
 
-Yeah, that's the point: where? It is hard for usb charger framework to
-control, which will make it more complicated. The
-'usb_charger_detect_type()' is used for detecting the charger type
-manually on user's platform, and user should call it at the right time
-to avoid affecting gadget enumeration. Otherwise user can implement
-some callbacks showed in 'usb_charger_get_type_by_others()' function
-to get charger type. I think this is controllable and simple for the
-usb charger framework.
+echo disabled > /sys/devices/platform/extcon_usb1/power/wakeup
+echo enabled > /sys/devices/platform/extcon_usb1/power/wakeup
 
->
-> Ideal is with your framework, diff users only need implement
-> uchger->charger_detect(). :)
->
+Once above set of commands is executed the device's wakeup_source
+opject will be recreated and dev->power.wakeup->wakeirq field will
+contain NULL. As result, device_wakeup_arm_wake_irqs() will not arm
+wakeirq for the affected device.
 
+Hece, lets try to fix it in the following way:
+  check for dev->wakeirq field when device_wakeup_attach() is called
+  and if !NULL re-attach wakeirq to the device
+
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+---
+ drivers/base/power/wakeup.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index a2657f1..52a0c25 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -246,6 +246,8 @@ static int device_wakeup_attach(struct device *dev, struct wakeup_source *ws)
+ 		return -EEXIST;
+ 	}
+ 	dev->power.wakeup = ws;
++	if (dev->power.wakeirq)
++		device_wakeup_attach_irq(dev, dev->power.wakeirq);
+ 	spin_unlock_irq(&dev->power.lock);
+ 	return 0;
+ }
 -- 
-Baolin.wang
-Best Regards
+2.8.0
+
