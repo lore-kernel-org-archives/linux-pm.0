@@ -1,36 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] Prefer kASLR over Hibernation
-Date: Wed, 6 Apr 2016 23:49:36 +0200
-Message-ID: <CAJZ5v0ieAd3WSiytzcdtD=eueLPk_SM1KgrqZXHBa6+bwK=KnQ@mail.gmail.com>
-References: <20160406194404.GA11150@www.outflux.net>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE notifier
+ event
+Date: Wed, 06 Apr 2016 14:49:34 -0700
+Message-ID: <5705846E.9050006@codeaurora.org>
+References: <cover.1438571116.git.viresh.kumar@linaro.org> <406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org> <4897937.47p7WB7CoU@vostro.rjw.lan> <20150910003918.GL5266@linux> <CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com> <57057201.9030109@codeaurora.org> <CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com> <57057FB1.2050904@codeaurora.org> <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:33730 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbcDFVti (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 17:49:38 -0400
-In-Reply-To: <20160406194404.GA11150@www.outflux.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, "list@codeaurora.org:ACPI" <linux-acpi@vger.kernel.org>, "list@codeaurora.org:DOCUMENTATION" <linux-doc@vger.kernel.org>, "list@codeaurora.org:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On Wed, Apr 6, 2016 at 9:44 PM, Kees Cook <keescook@chromium.org> wrote:
-> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
-> one or the other must be chosen at boot-time. Until now, hibernation
-> was selected when no choice was made on the command line.
+On 04/06/2016 02:45 PM, Rafael J. Wysocki wrote:
+> On Wed, Apr 6, 2016 at 11:29 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> On 04/06/2016 02:21 PM, Rafael J. Wysocki wrote:
+>>>
+>>> On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org>
+>>> wrote:
+>>>>
+>>>> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
+>>>>>
 >
-> To make the security benefits of kASLR more widely available to end
-> users (since the use of hibernation is becoming more rare and kASLR,
-> already available on x86, will be available on arm64 and MIPS soon),
-> this changes the default to preferring kASLR over hibernation. Users
-> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
-> command line.
+> [cut]
 >
-> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+>>>
+>>> Well, nobody was using that event.
+>>>
+>>
+>> True, but that's more of a bug in drivers/thermal/cpu-cooling.c and
+>> drivers/acpi/processor_thermal.c. We should revert this patch and fix those
+>> drivers. Does that seem acceptable to you?
+>
+> I'd rather see a patch series adding the event back along with some
+> users.  One user at least.
+>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Ok, I'll make those two drivers use them and send it out. It's very 
+clearly a bug in those drivers.
 
-Or do you want me to apply it?
+-Saravana`
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
