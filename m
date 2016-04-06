@@ -1,188 +1,162 @@
-From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
-Subject: Re: Re: [PATCH 1/4] power: Add an axp20x-ac-power driver
-Date: Wed, 6 Apr 2016 08:26:20 +0200
-Message-ID: <5704AC0C.3040603@computerlinguist.org>
-References: <1459689307-8501-1-git-send-email-haas@computerlinguist.org>
- <20160404213851.GQ4227@lukather> <570348E6.5060107@computerlinguist.org>
- <CAGb2v66fsdSMCULLtuFC=YEkdOOQRLh2knjjFvatbJhaKu9KWg@mail.gmail.com>
-Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v9 2/4] gadget: Support for the usb charger framework
+Date: Wed, 6 Apr 2016 15:19:56 +0800
+Message-ID: <20160406071956.GA21101@shlinux2.ap.freescale.net>
+References: <cover.1459494743.git.baolin.wang@linaro.org>
+ <13c2f4fb71958bf9a5527acbed8b8b60dc569656.1459494744.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCD4V7EG6QFRBFGYSK4AKGQEPXH7GWI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <CAGb2v66fsdSMCULLtuFC=YEkdOOQRLh2knjjFvatbJhaKu9KWg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: wens-jdAy2FN1RRM@public.gmane.org
-Cc: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:36415 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754342AbcDFH0l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 03:26:41 -0400
+Content-Disposition: inline
+In-Reply-To: <13c2f4fb71958bf9a5527acbed8b8b60dc569656.1459494744.git.baolin.wang@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-On 04/05/2016 08:05 AM, Chen-Yu Tsai wrote:
-> Hi,
+On Fri, Apr 01, 2016 at 03:21:50PM +0800, Baolin Wang wrote:
+> For supporting the usb charger, it adds the usb_charger_init() and
+> usb_charger_exit() functions for usb charger initialization and exit.
 > 
-> On Mon, Apr 4, 2016 at 10:11 PM, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org> wrote:
->> Hi Maxime,
->>
->> thanks for taking the time to review this.
->>
->> On 04/04/2016 11:38 PM, Maxime Ripard wrote:
->>> Hi,
->>>>
->>>> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->>>> index a57d6e9..9351c0e 100644
->>>> --- a/drivers/mfd/axp20x.c
->>>> +++ b/drivers/mfd/axp20x.c
->>>> @@ -178,6 +178,12 @@ static struct resource axp288_power_button_resources[] = {
->>>>      },
->>>>  };
->>>>
->>>> +static struct resource axp20x_ac_power_supply_resources[] = {
->>>> +    DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_PLUGIN, "ACIN_PLUGIN"),
->>>> +    DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_REMOVAL, "ACIN_REMOVAL"),
->>>> +    DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_OVER_V, "ACIN_OVER_V"),
->>>> +};
->>>> +
->>>>  static struct resource axp288_fuel_gauge_resources[] = {
->>>>      {
->>>>              .start = AXP288_IRQ_QWBTU,
->>>> @@ -440,6 +446,11 @@ static struct mfd_cell axp20x_cells[] = {
->>>>              .of_compatible  = "x-powers,axp202-usb-power-supply",
->>>>              .num_resources  = ARRAY_SIZE(axp20x_usb_power_supply_resources),
->>>>              .resources      = axp20x_usb_power_supply_resources,
->>>> +    }, {
->>>> +            .name           = "axp20x-ac-power-supply",
->>>> +            .of_compatible  = "x-powers,axp202-ac-power-supply",
->>>> +            .num_resources  = ARRAY_SIZE(axp20x_ac_power_supply_resources),
->>>> +            .resources      = axp20x_ac_power_supply_resources,
->>>>      },
->>>>  };
->>>>
->>>
->>> These changes should be in a separate patch.
->>
->> Will do!
->>>
->>
->>>> +
->>>> +static irqreturn_t axp20x_irq_ac_removal(int irq, void *devid)
->>>> +{
->>>> +    struct axp20x_ac_power *power = devid;
->>>> +
->>>> +    dev_info(&power->supply->dev, "IRQ#%d AC disconnected\n", irq);
->>>> +    power_supply_changed(power->supply);
->>>> +
->>>> +    return IRQ_HANDLED;
->>>> +}
->>>
->>> Logging in the interrupt handler is usually a bad idea, for several
->>> reasons:
->>>    - If you have a console, it's going to be output on the console,
->>>      which might take quite some time. And you don't want to take
->>>      quite some time in the interrupt handler.
->>>    - printk might not even work in the interrupt context in some
->>>      scenarios.
->>>
->>> Removing that handler, you can register the same interrupt handler on
->>> all the interrupts.
->>>
->>
->> Oops. Yes, I will fix that!
->>
->>>> +static int axp20x_ac_power_probe(struct platform_device *pdev)
->>>> +{
->>>> +    struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
->>>> +    struct power_supply_config psy_cfg = {};
->>>> +    struct axp20x_ac_power *power;
->>>> +    static const char * const irq_names[] = { "ACIN_PLUGIN",
->>>> +            "ACIN_REMOVAL", "ACIN_OVER_V" };
->>>> +    irqreturn_t (*irq_funcs[])(int, void *) = { axp20x_irq_ac_plugin,
->>>> +            axp20x_irq_ac_removal, axp20x_irq_ac_over_v };
->>>> +    int i, irq, r, input;
->>>> +
->>>> +    if (!of_device_is_available(pdev->dev.of_node))
->>>> +            return -ENODEV;
->>>
->>> That's useless. If the device is not available, you're not going to be
->>> probed in the first place.
->>
->> Ok.
->>
->>>
->>>> +    power = devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
->>>> +    if (!power)
->>>> +            return -ENOMEM;
->>>> +
->>>> +    power->regmap = axp20x->regmap;
->>>> +
->>>> +    r = regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &input);
->>>> +    if (r < 0)
->>>> +            return r;
->>>> +
->>>> +    if (!!(input & AXP20X_PWR_STATUS_AC_VBUS_SHORT)) {
->>>> +            dev_err(&pdev->dev, "AC is connected to VBUS. Use axp20x_usb_power-supply driver instead!");
->>>> +            return -ENODEV;
->>>> +    }
->>>
->>> Can't that change over time? Can't we support both drivers at the same time?
->>
->> Both drivers are supported at the same time. I did even try with both
->> AC and USB connected and both return meaningful values, at least for
->> voltage. The AXP20x can drawn power from both sources at the same time.
->>
->> The check above fires in a specific scenario where ACIN and VBUS are
->> physically connected on the PCB. The Datasheet states for that
->> particular register:
->>
->> "Indicates whether ACIN/VBUS short circuits on PCB or not"
->>
->> So, assuming the chip detects the condition correctly, this does not
->> change over that. But you can switch from ACIN to VBUS and vice-versa
->> just fine if they are not short-circuited. If they are connected
->> together, I'd prefer the DTS to only enable the usb driver. The check
->> above is a last resort there.
->>
->> Then again, with the quality of those data sheets, one never knows.
+> It will report to the usb charger when the gadget state is changed,
+> then the usb charger can do the power things.
 > 
-> If they are short circuited, does that mean the PMIC will only
-> draw power from one source? If both are still used, then the
-> current and voltage readings still make sense. Then it makes
-> sense to have both drivers enabled, no?
+> Introduce a callback 'get_charger_type' which will implemented by
+> user for usb gadget operations to get the usb charger type.
 > 
-> Or would something bad happen?
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> ---
+>  drivers/usb/gadget/udc/udc-core.c |   11 +++++++++++
+>  include/linux/usb/gadget.h        |   15 +++++++++++++++
+>  2 files changed, 26 insertions(+)
 > 
-> ChenYu
+> diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
+> index b86a6f0..8d98c6b 100644
+> --- a/drivers/usb/gadget/udc/udc-core.c
+> +++ b/drivers/usb/gadget/udc/udc-core.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/usb/ch9.h>
+>  #include <linux/usb/gadget.h>
+>  #include <linux/usb.h>
+> +#include <linux/usb/charger.h>
+>  
+>  /**
+>   * struct usb_udc - describes one usb device controller
+> @@ -230,6 +231,9 @@ static void usb_gadget_state_work(struct work_struct *work)
+>  	struct usb_gadget *gadget = work_to_gadget(work);
+>  	struct usb_udc *udc = gadget->udc;
+>  
+> +	/* when the gadget state is changed, then report to USB charger */
+> +	usb_charger_plug_by_gadget(gadget, gadget->state);
+> +
+>  	if (udc)
+>  		sysfs_notify(&udc->dev.kobj, NULL, "state");
+>  }
+> @@ -423,8 +427,14 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
+>  
+>  	mutex_unlock(&udc_lock);
+>  
+> +	ret = usb_charger_init(gadget);
+> +	if (ret)
+> +		goto err5;
+> +
+>  	return 0;
+>  
+> +err5:
+> +	device_del(&udc->dev);
+>  err4:
+>  	list_del(&udc->list);
+>  	mutex_unlock(&udc_lock);
+> @@ -503,6 +513,7 @@ void usb_del_gadget_udc(struct usb_gadget *gadget)
+>  	kobject_uevent(&udc->dev.kobj, KOBJ_REMOVE);
+>  	flush_work(&gadget->work);
+>  	device_unregister(&udc->dev);
+> +	usb_charger_exit(gadget);
+>  	device_unregister(&gadget->dev);
+>  }
+>  EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
+> diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+> index d82d006..054488a 100644
+> --- a/include/linux/usb/gadget.h
+> +++ b/include/linux/usb/gadget.h
+> @@ -24,6 +24,7 @@
+>  #include <linux/types.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/usb/ch9.h>
+> +#include <linux/usb/charger.h>
+>  
+>  struct usb_ep;
+>  
+> @@ -563,6 +564,8 @@ struct usb_gadget_ops {
+>  	struct usb_ep *(*match_ep)(struct usb_gadget *,
+>  			struct usb_endpoint_descriptor *,
+>  			struct usb_ss_ep_comp_descriptor *);
+> +	/* get the charger type */
+> +	enum usb_charger_type (*get_charger_type)(struct usb_gadget *);
+>  };
+
+Since we already have get_charger_type callback at usb_charger
+structure, why we still need this API at usb_gadget_ops?
+
+>  
+>  /**
+> @@ -635,6 +638,8 @@ struct usb_gadget {
+>  	unsigned			out_epnum;
+>  	unsigned			in_epnum;
+>  	struct usb_otg_caps		*otg_caps;
+> +	/* negotiate the power with the usb charger */
+> +	struct usb_charger		*charger;
+>  
+>  	unsigned			sg_supported:1;
+>  	unsigned			is_otg:1;
+> @@ -839,10 +844,20 @@ static inline int usb_gadget_vbus_connect(struct usb_gadget *gadget)
+>   * reporting how much power the device may consume.  For example, this
+>   * could affect how quickly batteries are recharged.
+>   *
+> + * It will also notify the USB charger how much power the device may
+> + * consume if there is a USB charger linking with the gadget.
+> + *
+>   * Returns zero on success, else negative errno.
+>   */
+>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+>  {
+> +	enum usb_charger_type type;
+> +
+> +	if (gadget->charger) {
+> +		type = usb_charger_get_type(gadget->charger);
+> +		usb_charger_set_cur_limit_by_type(gadget->charger, type, mA);
+> +	}
+> +
+
+You may do something redundant.
+
+- Charger detection only occurs at connection period, at other periods,
+we only change the current limit, and notify charger IC. That is to
+say, we may only need to save charger type and current limit at
+usb_charger structure, we don't need to distinguish all chargers
+type from time to time.
+
+- The purpose of usb_gadget_vbus_draw design is notify charger IC too,
+so you can do set current limit and notify charger IC together at this
+API together, it has already covered all situations. We don't need to
+notify charger IC again when the gadget status has changed again.
+
+>  	if (!gadget->ops->vbus_draw)
+>  		return -EOPNOTSUPP;
+>  	return gadget->ops->vbus_draw(gadget, mA);
+> -- 
+> 1.7.9.5
 > 
->>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Hi ChenYu,
+-- 
 
-I can think of two possible cases here where ACIN/VBUS are
-short-circuited on the PCB.
-
-1) Only one of ACIN xor VBUS can be physically connected and the AXP209
-cannot distinguish between the two. Since there is only one input, it
-makes sense to only expose one power supply node. Here, we don't
-necessarily know which one.
-2) Both ACIN and VBUS are connected but the AXP209 cannot distinguish
-one from the other. The AXP209 may still choose to draw power over both
-its ACIN and VBUS pins so we may get two readings. The sum of both
-readings then yields the total power consumption of the system, even if
-we don't know the individual contribution of ACIN or VBUS.
-
-I just went over the data sheet again and I did not find a further
-clarification of the short-circuit register. But I get your point now:
-as I described above, we currently have no way of knowing if only one
-(which one?) or both inputs will be used on the chip even if the short
-circuit condition is detected.
-
-I guess I could take a look at the driver provided by Allwinner
-themselves in their old kernel drop. But for now, it may make sense to
-ignore the condition alltogether.
-
-Thanks for your input!
-
-Michael
+Best Regards,
+Peter Chen
