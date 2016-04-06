@@ -1,62 +1,54 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
-Date: Tue, 5 Apr 2016 18:27:12 -0500
-Message-ID: <20160405232712.GI15353@localhost>
-References: <cover.1458126755.git.lukas@wunner.de>
- <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
- <20160317150320.GA22769@localhost>
- <20160320131135.GA29174@wunner.de>
- <20160320171246.GB16658@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160320171246.GB16658@kroah.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+From: Nisha Aram <nisha.aram@intel.com>
+Subject: [PATCH] Added DPTF Policy UUID's
+Date: Tue,  5 Apr 2016 17:31:03 -0700
+Message-ID: <1459902663-7336-1-git-send-email-nisha.aram@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:61025 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760026AbcDFAbT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Apr 2016 20:31:19 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Nisha Aram <nisha.aram@intel.com>
 
-On Sun, Mar 20, 2016 at 10:12:46AM -0700, Greg Kroah-Hartman wrote:
-> On Sun, Mar 20, 2016 at 02:11:35PM +0100, Lukas Wunner wrote:
-> > Hi Bjorn,
-> > 
-> > On Thu, Mar 17, 2016 at 10:03:20AM -0500, Bjorn Helgaas wrote:
-> > > On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
-> > > > Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
-> > > > Gen 3 chips and onward use a distinct ID for the NHI.
-> > > 
-> > > I assume this is strictly using #defines instead of bare numbers and
-> > > hence "no functional change intended."
-> > > 
-> > > > Cc: Andreas Noever <andreas.noever@gmail.com>
-> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > > 
-> > > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> > 
-> > Thanks, I've just posted a 3 patch series to support the Light Ridge
-> > Thunderbolt controller and included your ack for this patch.
-> > 
-> > 
-> > > I assume somebody else will merge this with the rest of the series.
-> > 
-> > The maintainer of the thunderbolt driver is Andreas Noever, however
-> > I don't think Andreas sends pull requests to Linus. Everything in
-> > drivers/thunderbolt/ has so far been picked up by Greg KH.
-> > 
-> > I have more thunderbolt stuff in the pipeline, some of which needs
-> > changes to drivers/pci/. Therefore it would be ideal from my perspective
-> > if my thunderbolt patches could go in via your tree, if that is possible.
-> 
-> I have no objection if they go through the PCI tree, especially as
-> Thunderbolt really just is PCI express, it makes sense to take them that
-> way.
+Added AdaptivePerformance, EmergencyCallMode,
+PassivePolicy2, PowerBoss, VirtualSensor
+Policy UUID's
 
-Andreas, what's your preference?  If you want me to merge Thunderbolt
-stuff via my PCI tree, I can do that.  But I don't know anything about
-Thunderbolt and don't have specs or ability to test it, so I would
-rely on you to ack any changes.  If you'd like to merge Thunderbolt
-stuff yourself, that would be less work for me, so even better :)  But
-either way is fine.
+Signed-off-by: Nisha Aram <nisha.aram@intel.com>
+---
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Bjorn
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 5836e55..1b4b229 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -20,6 +20,11 @@ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+ 	INT3400_THERMAL_ACTIVE,
+ 	INT3400_THERMAL_CRITICAL,
++	INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
++	INT3400_THERMAL_EMERGENCY_CALL_MODE,
++	INT3400_THERMAL_PASSIVE_2,
++	INT3400_THERMAL_POWER_BOSS,
++	INT3400_THERMAL_VIRTUAL_SENSOR,
+ 	INT3400_THERMAL_MAXIMUM_UUID,
+ };
+ 
+@@ -27,6 +32,11 @@ static u8 *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+ 	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
+ 	"3A95C389-E4B8-4629-A526-C52C88626BAE",
+ 	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
++	"63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
++	"5349962F-71E6-431D-9AE8-0A635B710AEE",
++	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
++	"F5A35014-C209-46A4-993A-EB56DE7530A1",
++	"6ED722A7-9240-48A5-B479-31EEF723D7CF",
+ };
+ 
+ struct int3400_thermal_priv {
+-- 
+1.9.1
+
