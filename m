@@ -1,21 +1,94 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v7 08/20] PM / devfreq: exynos: Add the detailed
- correlation between sub-blocks and power line
-Date: Wed, 06 Apr 2016 10:14:35 +0000 (GMT)
-Message-ID: <933189207.169771459937669538.JavaMail.weblogic@ep2mlwas02a>
-Reply-To: myungjoo.ham@samsung.com
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
+Date: Wed, 06 Apr 2016 13:25:06 +0300
+Message-ID: <87k2kb2fwd.fsf@intel.com>
+References: <cover.1459494743.git.baolin.wang@linaro.org> <6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org> <20160406072513.GB21101@shlinux2.ap.freescale.net> <87vb3v2nm8.fsf@intel.com> <20160406074310.GC21101@shlinux2.ap.freescale.net> <87shyz2md5.fsf@intel.com> <20160406081006.GD21101@shlinux2.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
+In-Reply-To: <20160406081006.GD21101@shlinux2.ap.freescale.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, =?utf-8?Q?=ED=81=AC=EC=89=AC=EC=8B=9C=ED=86=A0=ED=94=84?= <k.kozlowski@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "m.reichl@fivetechno.de" <m.reichl@fivetechno.de>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, =?utf-8?Q?=EB=8C=80=EC=9D=B8=EA=B8=B0?= <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>"devicetree@vger.kernel.org" <devicetree@>
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBkZXRhaWxlZCBjb3JybGVhdGlvbiBiZXR3ZWVu
-IHN1Yi1ibG9ja3MgYW5kIHBvd2VyIGxpbmUNCj4gZm9yIEV4eW5vczMyNTAsIEV4eW5vczQyMTAg
-YW5kIEV4eW5vczR4MTIuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAu
-Y2hvaUBzYW1zdW5nLmNvbT4NCg0KQWNrZWQtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
-QHNhbXN1bmcuY29tPg0KDQoNCg==
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi,
+
+Peter Chen <hzpeterchen@gmail.com> writes:
+> On Wed, Apr 06, 2016 at 11:05:26AM +0300, Felipe Balbi wrote:
+>> Peter Chen <hzpeterchen@gmail.com> writes:
+>> > On Wed, Apr 06, 2016 at 10:38:23AM +0300, Felipe Balbi wrote:
+>> >> Peter Chen <hzpeterchen@gmail.com> writes:
+>> >> > On Fri, Apr 01, 2016 at 03:21:49PM +0800, Baolin Wang wrote:
+>> >> >  +
+>> >> >> +static struct attribute *usb_charger_attrs[] =3D {
+>> >> >> +	&dev_attr_sdp_current.attr,
+>> >> >> +	&dev_attr_dcp_current.attr,
+>> >> >> +	&dev_attr_cdp_current.attr,
+>> >> >> +	&dev_attr_aca_current.attr,
+>> >> >> +	&dev_attr_charger_type.attr,
+>> >> >> +	&dev_attr_charger_state.attr,
+>> >> >> +	NULL
+>> >> >> +};
+>> >> >
+>> >> > The user may only care about current limit, type and state, why they
+>> >> > need to care what type's current limit, it is the usb charger
+>> >> > framework handles, the framework judge the current according to
+>> >> > charger type and USB state (connect/configured/suspended).
+>> >>=20
+>> >> it might be useful if we want to know that $this charger doesn't real=
+ly
+>> >> give us as much current as it advertises.
+>> >>=20
+>> >
+>> > As my understanding, the current limit is dynamic value, it should
+>> > report the value the charger supports now, eg, it connects SDP, but
+>> > the host is suspended now, then the value should be 2mA.
+>>=20
+>> yes, and that's the limit. Now consider we connect to DCP or CDP and
+>> limit is 2000mA but we're charging at 1000mA ;-)
+>>=20
+>
+> Does the user need to know the $this charger limit? Don't they only
+> care about the current charging value? I have a USB cable which can
+
+Why not ? UI might want to change the color of the battery charging icon
+if we're charging @ 2000mA or @ 1000mA to give some visual feedback as
+to "how fast" battery is supposed to be charged.
+
+> show charging current value, it changes from time to time, when it
+> connects to host pc, it shows 430mA; when it connects to dedicated
+> charger, it shows 1000mA.
+
+good for you, now what does that have to do with $subject ?
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXBOQDAAoJEIaOsuA1yqREVj4P/j7dJPMSfQzinWl12/zTjPi6
+wTWMK/IXG97jd+QNSJdr+A7ZpaVjrrxbnA/w9K/Hm3Dsjs/6D7x8jj+7O9V5Dxji
+NrQroVwqiTBYrHVDUngtNGXRfBOLhv2UIvPPzJ18EURzHn9YRo08R/S3FchPRFoY
+1Z0pwmC0HA+npBk9BFgGHGE90tgs7yhCfDhY0v0SxAX5wxMhrTieGD6mGGgEwIHK
+55Sw2VEA4MazrDr9WHHaEvDfxa/Ro7H5JGopVVlkEHfq0UZALysTauqmI4Sei8ls
+kxzM0br0dZ5O2HHOxdn+RXsPNlmF37vcqNF+WmpAlAq+n0mgRmYh79YbBy+bidj1
+YZ5SVjXmmVBARUnparJdRFDJvRuABxoc7dM4Hn+zcMy62XHjfCjoW2FuGNWo22vZ
+LwD2wmxTH/wWEB2DVbMQc/qqUxqD8z4DnPR998cAs/guwig51nnKcd50ACFMvgNy
+1nEb5bfUovd2UzqHkDVIi7Z9OFgm/+ucCXob1oCVIwwspHfd8JXjLiWL92/7+FfK
+vzL4126olI8h/99u2y76pDNUW1IoaMlHjVV/UBUWLt4DoXIoaoDscJRWbGKnajzp
+UtTwqTAHt11ca2I0BBmOjtnaz28Eqtr+PpxG9ZWj15Un+cE/6FZ5wW0tElC2F5fy
+GEVwKzwut7B7jToBpuvw
+=zE9s
+-----END PGP SIGNATURE-----
+--=-=-=--
