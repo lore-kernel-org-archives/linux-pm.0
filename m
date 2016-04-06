@@ -1,84 +1,66 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE
- notifier event
-Date: Wed, 6 Apr 2016 23:21:03 +0200
-Message-ID: <CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com>
-References: <cover.1438571116.git.viresh.kumar@linaro.org>
-	<406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org>
-	<4897937.47p7WB7CoU@vostro.rjw.lan>
-	<20150910003918.GL5266@linux>
-	<CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com>
-	<57057201.9030109@codeaurora.org>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH] Prefer kASLR over Hibernation
+Date: Wed, 6 Apr 2016 14:25:12 -0700
+Message-ID: <CAGXu5jJ+8v_hMkV91jqNGwFdzbpoKL=gZv-92hGMF8d4o8DswQ@mail.gmail.com>
+References: <20160406194404.GA11150@www.outflux.net>
+	<20160406201716.GA14241@amd>
+	<CA+55aFw+JFfy+dfMbAdB3ueA1O-w--EBwMF4WKrGp754trHBDA@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f194.google.com ([209.85.217.194]:33810 "EHLO
-	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbcDFVVG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 17:21:06 -0400
-Received: by mail-lb0-f194.google.com with SMTP id vk4so4929937lbb.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 Apr 2016 14:21:04 -0700 (PDT)
-In-Reply-To: <57057201.9030109@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-hardening-return-2934-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: keescook@google.com
+In-Reply-To: <CA+55aFw+JFfy+dfMbAdB3ueA1O-w--EBwMF4WKrGp754trHBDA@mail.gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Pavel Machek <pavel@denx.de>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, =?UTF-8?Q?list=40codeaurora=2Eorg=3AACPI_=3Clinux=2Dacpi=40vger=2Ekernel=2Eorg=3E=2C_open=40?=
 
-On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
+On Wed, Apr 6, 2016 at 1:56 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Wed, Apr 6, 2016 at 1:17 PM, Pavel Machek <pavel@denx.de> wrote:
 >>
->> Hi,
->>
->> On Thu, Sep 10, 2015 at 2:39 AM, Viresh Kumar <viresh.kumar@linaro.org>
->> wrote:
->>>
->>> On 10-09-15, 01:26, Rafael J. Wysocki wrote:
->>>>
->>>> On Monday, August 03, 2015 08:36:14 AM Viresh Kumar wrote:
->>>>>
->>>>> What's being done from CPUFREQ_INCOMPATIBLE, can also be done with
->>>>> CPUFREQ_ADJUST. There is nothing special with CPUFREQ_INCOMPATIBLE
->>>>> notifier.
->>>>
->>>>
->>>> The above part of the changelog is a disaster to me. :-(
->>>>
->>>> It not only doesn't explain what really goes on, but it's actively
->>>> confusing.
->>>>
->>>> What really happens is that the core sends CPUFREQ_INCOMPATIBLE
->>>> notifications
->>>> unconditionally right after sending the CPUFREQ_ADJUST ones, so the
->>>> former is
->>>> just redundant and it's more efficient to merge the two into one.
->>>
->>>
->>> Undoubtedly this looks far better :)
->>>
->>> But, isn't this series already applied some time back ?
->>
->>
->> Right, never mind.  For some reason that patch was left in the "New"
->> state.
->>
->> The code is OK.
+>> Why is kASLR incompatible with hibernation? We can hibernate have
+>> 4.3 kernel resume hibernation image of 4.2 kernel (on x86-64, and I
+>> have patches for x86). Resuming kernel with different randomization
+>> does not look that much different...
 >
+> Oh, I'd absolutely prefer to just allow kaslr together with
+> hibernation if it actually works.
 >
+> Could the people who piped up to say that they actually use
+> hibernation just try passing in the "kaslr" command line option on
+> their machine, and see if it works for them? We could just remove the
+> "no kaslr with hibername" code - or at least limit it to 32-bit for
+> now..
 >
-> I guess I didn't notice this change when it was sent out.
->
-> The comment that was deleted in this patch clearly states why the
-> INCOMPATIBLE notifier is needed. Some client might want to boost the CPU min
-> freq for performance or other reasons, but thermal might want to limit it.
-> So, by having thermal register for INCOMPATIBLE notifiers to enforce the
-> limits, we provide a way to guarantee it gets the final say.
->
-> The real fix should have been to change drivers/thermal/cpu_cooling.c to use
-> CPUFREQ_INCOMPATIBLE instead of CPUFREQ_ADJUST.
->
-> Is there something I'm missing? If not, can we please revert this patch?
+> Because that would be lovely.
 
-Well, nobody was using that event.
+This is where our original investigation of having them coexist ended:
+https://lkml.org/lkml/2014/6/15/180
 
-Thanks,
-Rafael
+To quote Rafael Wysocki:
+> We're jumping from the boot kernel into the image kernel.  The virtual address
+> comes from the image kernel, but the boot kernel has to use it.  The only way
+> we can ensure that we'll jump to the right place is to pass the physical address
+> in the header (otherwise we de facto assume that the virtual address of the
+> target page frame will be the same in both the boot and the image kernels).
+>
+> The missing piece is that the code in swsusp_arch_resume() sets up temporary
+> page tables to ensure that they won't be overwritten while copying the last
+> remaining image kernel pages to the right page frames (those page tables
+> have to be stored in page frames that are free from the kernel image perspective).
+>
+> But if the kernel address space is randomized, set_up_temporary_mappings()
+> really should duplicate the existing layout instead of creating a new one from
+> scratch.  Otherwise, virtual addresses before set_up_temporary_mappings() may
+> be different from the ones after it.
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
