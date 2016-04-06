@@ -1,161 +1,59 @@
-From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH 5/7] gpio: Loongson1: add Loongson1 GPIO driver
-Date: Wed,  6 Apr 2016 20:09:35 +0800
-Message-ID: <1459944577-6423-6-git-send-email-keguang.zhang@gmail.com>
-References: <1459944577-6423-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1459944577-6423-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
-Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v9 2/4] gadget: Support for the usb charger framework
+Date: Wed, 6 Apr 2016 12:03:20 +0000
+Message-ID: <AM4PR04MB2130F58AA1018FFD367C89E0899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+References: <cover.1459494743.git.baolin.wang@linaro.org>
+	<13c2f4fb71958bf9a5527acbed8b8b60dc569656.1459494744.git.baolin.wang@linaro.org>
+	<20160406071956.GA21101@shlinux2.ap.freescale.net>
+ <CAMz4kuJkf0Q1JKdc5W8EcDBvr6MccTcdZa-Pse_Z4pFwySTSDA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db3on0066.outbound.protection.outlook.com ([157.55.234.66]:23232
+	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753312AbcDFMR5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Apr 2016 08:17:57 -0400
+In-Reply-To: <CAMz4kuJkf0Q1JKdc5W8EcDBvr6MccTcdZa-Pse_Z4pFwySTSDA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>, Peter Chen <hzpeterchen@gmail.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-From: Kelvin Cheung <keguang.zhang@gmail.com>
-
-This patch adds GPIO driver for Loongson1B.
-
-Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
----
- drivers/gpio/Kconfig          |   7 +++
- drivers/gpio/Makefile         |   1 +
- drivers/gpio/gpio-loongson1.c | 102 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 110 insertions(+)
- create mode 100644 drivers/gpio/gpio-loongson1.c
-
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 5f3429f..373b8a7 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -510,6 +510,13 @@ config GPIO_ZX
- 	help
- 	  Say yes here to support the GPIO device on ZTE ZX SoCs.
- 
-+config GPIO_LOONGSON1
-+	tristate "Loongson1 GPIO support"
-+	depends on MACH_LOONGSON32
-+	select GPIO_GENERIC
-+	help
-+	  Say Y or M here to support GPIO on Loongson1 SoCs.
-+
- endmenu
- 
- menu "Port-mapped I/O GPIO drivers"
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 1e0b74f..40ab913 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -127,3 +127,4 @@ obj-$(CONFIG_GPIO_XTENSA)	+= gpio-xtensa.o
- obj-$(CONFIG_GPIO_ZEVIO)	+= gpio-zevio.o
- obj-$(CONFIG_GPIO_ZYNQ)		+= gpio-zynq.o
- obj-$(CONFIG_GPIO_ZX)		+= gpio-zx.o
-+obj-$(CONFIG_GPIO_LOONGSON1)	+= gpio-loongson1.o
-diff --git a/drivers/gpio/gpio-loongson1.c b/drivers/gpio/gpio-loongson1.c
-new file mode 100644
-index 0000000..10c09bd
---- /dev/null
-+++ b/drivers/gpio/gpio-loongson1.c
-@@ -0,0 +1,102 @@
-+/*
-+ * GPIO Driver for Loongson 1 SoC
-+ *
-+ * Copyright (C) 2015-2016 Zhang, Keguang <keguang.zhang@gmail.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
-+
-+#include <linux/gpio/driver.h>
-+#include <linux/platform_device.h>
-+
-+/* Loongson 1 GPIO Register Definitions */
-+#define GPIO_CFG		0x0
-+#define GPIO_DIR		0x10
-+#define GPIO_DATA		0x20
-+#define GPIO_OUTPUT		0x30
-+
-+static void __iomem *gpio_reg_base;
-+
-+static int ls1x_gpio_request(struct gpio_chip *gc, unsigned int offset)
-+{
-+	unsigned long pinmask = gc->pin2mask(gc, offset);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gc->bgpio_lock, flags);
-+	__raw_writel(__raw_readl(gpio_reg_base + GPIO_CFG) | pinmask,
-+		     gpio_reg_base + GPIO_CFG);
-+	spin_unlock_irqrestore(&gc->bgpio_lock, flags);
-+
-+	return 0;
-+}
-+
-+static void ls1x_gpio_free(struct gpio_chip *gc, unsigned int offset)
-+{
-+	unsigned long pinmask = gc->pin2mask(gc, offset);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&gc->bgpio_lock, flags);
-+	__raw_writel(__raw_readl(gpio_reg_base + GPIO_CFG) & ~pinmask,
-+		     gpio_reg_base + GPIO_CFG);
-+	spin_unlock_irqrestore(&gc->bgpio_lock, flags);
-+}
-+
-+static int ls1x_gpio_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct gpio_chip *gc;
-+	struct resource *res;
-+	int ret;
-+
-+	gc = devm_kzalloc(dev, sizeof(*gc), GFP_KERNEL);
-+	if (!gc)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "failed to get I/O memory\n");
-+		return -EINVAL;
-+	}
-+
-+	gpio_reg_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(gpio_reg_base))
-+		return PTR_ERR(gpio_reg_base);
-+
-+	ret = bgpio_init(gc, dev, 4, gpio_reg_base + GPIO_DATA,
-+			 gpio_reg_base + GPIO_OUTPUT, NULL,
-+			 NULL, gpio_reg_base + GPIO_DIR, 0);
-+	if (ret)
-+		goto err;
-+
-+	gc->owner = THIS_MODULE;
-+	gc->request = ls1x_gpio_request;
-+	gc->free = ls1x_gpio_free;
-+	gc->base = pdev->id * 32;
-+
-+	ret = devm_gpiochip_add_data(dev, gc, NULL);
-+	if (ret)
-+		goto err;
-+
-+	platform_set_drvdata(pdev, gc);
-+	dev_info(dev, "Loongson1 GPIO driver registered\n");
-+
-+	return 0;
-+err:
-+	dev_err(dev, "failed to register GPIO device\n");
-+	return ret;
-+}
-+
-+static struct platform_driver ls1x_gpio_driver = {
-+	.probe	= ls1x_gpio_probe,
-+	.driver	= {
-+		.name	= "ls1x-gpio",
-+	},
-+};
-+
-+module_platform_driver(ls1x_gpio_driver);
-+
-+MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-+MODULE_DESCRIPTION("Loongson1 GPIO driver");
-+MODULE_LICENSE("GPL");
--- 
-1.9.1
+SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC11c2Itb3du
+ZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtdXNiLQ0KPiBvd25lckB2Z2VyLmtlcm5l
+bC5vcmddIE9uIEJlaGFsZiBPZiBCYW9saW4gV2FuZw0KPiBTZW50OiBXZWRuZXNkYXksIEFwcmls
+IDA2LCAyMDE2IDY6NDcgUE0NCj4gVG86IFBldGVyIENoZW4gPGh6cGV0ZXJjaGVuQGdtYWlsLmNv
+bT4NCj4gQ2M6IEZlbGlwZSBCYWxiaSA8YmFsYmlAa2VybmVsLm9yZz47IEdyZWcgS0ggPGdyZWdr
+aEBsaW51eGZvdW5kYXRpb24ub3JnPjsNCj4gU2ViYXN0aWFuIFJlaWNoZWwgPHNyZUBrZXJuZWwu
+b3JnPjsgRG1pdHJ5IEVyZW1pbi1Tb2xlbmlrb3YNCj4gPGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsg
+RGF2aWQgV29vZGhvdXNlIDxkd213MkBpbmZyYWRlYWQub3JnPjsgUGV0ZXIgQ2hlbg0KPiA8cGV0
+ZXIuY2hlbkBmcmVlc2NhbGUuY29tPjsgQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJk
+LmVkdT47DQo+IHIuYmFsZHlnYUBzYW1zdW5nLmNvbTsgWW9zaGloaXJvIFNoaW1vZGENCj4gPHlv
+c2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPjsgTGVlIEpvbmVzIDxsZWUuam9uZXNAbGlu
+YXJvLm9yZz47IE1hcmsNCj4gQnJvd24gPGJyb29uaWVAa2VybmVsLm9yZz47IENoYXJsZXMgS2Vl
+cGF4DQo+IDxja2VlcGF4QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbT47IHBhdGNoZXNAb3Bl
+bnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBMaW51eCBQTSBsaXN0IDxsaW51eC1wbUB2Z2Vy
+Lmtlcm5lbC5vcmc+OyBVU0IgPGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBkZXZpY2Ut
+bWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBMS01MIDxsaW51eC0NCj4ga2Vy
+bmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2OSAyLzRdIGdhZGdl
+dDogU3VwcG9ydCBmb3IgdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaw0KPiANCj4gT24gNiBBcHJp
+bCAyMDE2IGF0IDE1OjE5LCBQZXRlciBDaGVuIDxoenBldGVyY2hlbkBnbWFpbC5jb20+IHdyb3Rl
+Og0KPiA+IE9uIEZyaSwgQXByIDAxLCAyMDE2IGF0IDAzOjIxOjUwUE0gKzA4MDAsIEJhb2xpbiBX
+YW5nIHdyb3RlOg0KPiA+Pg0KPiA+PiBAQCAtNTYzLDYgKzU2NCw4IEBAIHN0cnVjdCB1c2JfZ2Fk
+Z2V0X29wcyB7DQo+ID4+ICAgICAgIHN0cnVjdCB1c2JfZXAgKigqbWF0Y2hfZXApKHN0cnVjdCB1
+c2JfZ2FkZ2V0ICosDQo+ID4+ICAgICAgICAgICAgICAgICAgICAgICBzdHJ1Y3QgdXNiX2VuZHBv
+aW50X2Rlc2NyaXB0b3IgKiwNCj4gPj4gICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCB1c2Jf
+c3NfZXBfY29tcF9kZXNjcmlwdG9yICopOw0KPiA+PiArICAgICAvKiBnZXQgdGhlIGNoYXJnZXIg
+dHlwZSAqLw0KPiA+PiArICAgICBlbnVtIHVzYl9jaGFyZ2VyX3R5cGUgKCpnZXRfY2hhcmdlcl90
+eXBlKShzdHJ1Y3QgdXNiX2dhZGdldCAqKTsNCj4gPj4gIH07DQo+ID4NCj4gPiBTaW5jZSB3ZSBh
+bHJlYWR5IGhhdmUgZ2V0X2NoYXJnZXJfdHlwZSBjYWxsYmFjayBhdCB1c2JfY2hhcmdlcg0KPiA+
+IHN0cnVjdHVyZSwgd2h5IHdlIHN0aWxsIG5lZWQgdGhpcyBBUEkgYXQgdXNiX2dhZGdldF9vcHM/
+DQo+IA0KPiBJbiBjYXNlIHNvbWUgdXNlcnMgd2FudCB0byBnZXQgY2hhcmdlciB0eXBlIGF0IGdh
+ZGdldCBsZXZlbC4NCj4gDQpXaHkgZ2FkZ2V0IG5lZWRzIHRvIGtub3cgY2hhcmdlciB0eXBlPyBJ
+IGFsc28gZG9uJ3QgY2F0Y2ggdGhlIGludGVudCBvZg0KVGhpcyBhcGksIGFzIG15IHVuZGVyc3Rh
+bmRpbmcsIGdhZGdldCBvbmx5IG5lZWQgcmVwb3J0IGdhZGdldCBzdGF0ZSBjaGFuZ2VzLg0KQWxs
+IGluZm9ybWF0aW9uIHJlcXVpcmVkIGZvciB1c2IgY2hhcmdlciBpcyBjaGFyZ2VyIHR5cGUgYW5k
+IGdhZGdldCBzdGF0ZS4NCg0KTGkgSnVuDQoNCg==
