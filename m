@@ -1,94 +1,76 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v9 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 6 Apr 2016 11:55:13 +0000
-Message-ID: <AM4PR04MB2130849E31BD77AAA487064B899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1459494743.git.baolin.wang@linaro.org>
-	<6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130AD03DCB2121336E95869899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
- <CAMz4kuJmQTEXSjL55+fEm0-RO6N3isS60kPmD1XaXxGNumTpXg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-am1on0098.outbound.protection.outlook.com ([157.56.112.98]:5152
-	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751010AbcDFLzT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 6 Apr 2016 07:55:19 -0400
-In-Reply-To: <CAMz4kuJmQTEXSjL55+fEm0-RO6N3isS60kPmD1XaXxGNumTpXg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Keguang Zhang <keguang.zhang@gmail.com>
+Subject: [PATCH 0/7] MIPS: Loongson1B: add NAND, DMA and GPIO support
+Date: Wed,  6 Apr 2016 20:09:30 +0800
+Message-ID: <1459944577-6423-1-git-send-email-keguang.zhang@gmail.com>
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Sender: linux-gpio-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
+Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 
-SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
-bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwg
-MDYsIDIwMTYgNzozMSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IGJh
-bGJpQGtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBzcmVAa2VybmVsLm9y
-ZzsNCj4gZGJhcnlzaGtvdkBnbWFpbC5jb207IGR3bXcyQGluZnJhZGVhZC5vcmc7IHBldGVyLmNo
-ZW5AZnJlZXNjYWxlLmNvbTsNCj4gc3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdTsgci5iYWxkeWdh
-QHNhbXN1bmcuY29tOw0KPiB5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbTsgbGVlLmpv
-bmVzQGxpbmFyby5vcmc7IGJyb29uaWVAa2VybmVsLm9yZzsNCj4gY2tlZXBheEBvcGVuc291cmNl
-LndvbGZzb25taWNyby5jb207IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0K
-PiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGRl
-dmljZS0NCj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJu
-ZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjkgMS80XSBnYWRnZXQ6
-IEludHJvZHVjZSB0aGUgdXNiIGNoYXJnZXIgZnJhbWV3b3JrDQo+IA0KPiBPbiA2IEFwcmlsIDIw
-MTYgYXQgMTY6MjYsIEp1biBMaSA8anVuLmxpQG54cC5jb20+IHdyb3RlOg0KPiA+IEhpDQo+ID4N
-Cj4gPj4gKyAqLw0KPiA+PiArc3RhdGljIGVudW0gdXNiX2NoYXJnZXJfdHlwZQ0KPiA+PiArdXNi
-X2NoYXJnZXJfZ2V0X3R5cGVfYnlfb3RoZXJzKHN0cnVjdCB1c2JfY2hhcmdlciAqdWNoZ2VyKSB7
-DQo+ID4+ICsgICAgIGlmICh1Y2hnZXItPnR5cGUgIT0gVU5LTk9XTl9UWVBFKQ0KPiA+PiArICAg
-ICAgICAgICAgIHJldHVybiB1Y2hnZXItPnR5cGU7DQo+ID4+ICsNCj4gPj4gKyAgICAgaWYgKHVj
-aGdlci0+cHN5KSB7DQo+ID4+ICsgICAgICAgICAgICAgdW5pb24gcG93ZXJfc3VwcGx5X3Byb3B2
-YWwgdmFsOw0KPiA+PiArDQo+ID4+ICsgICAgICAgICAgICAgcG93ZXJfc3VwcGx5X2dldF9wcm9w
-ZXJ0eSh1Y2hnZXItPnBzeSwNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIFBPV0VSX1NVUFBMWV9QUk9QX0NIQVJHRV9UWVBFLA0KPiA+PiArICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgJnZhbCk7DQo+ID4+ICsgICAgICAgICAgICAgc3dp
-dGNoICh2YWwuaW50dmFsKSB7DQo+ID4+ICsgICAgICAgICAgICAgY2FzZSBQT1dFUl9TVVBQTFlf
-VFlQRV9VU0I6DQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICB1Y2hnZXItPnR5cGUgPSBTRFBf
-VFlQRTsNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+PiArICAgICAgICAg
-ICAgIGNhc2UgUE9XRVJfU1VQUExZX1RZUEVfVVNCX0RDUDoNCj4gPj4gKyAgICAgICAgICAgICAg
-ICAgICAgIHVjaGdlci0+dHlwZSA9IERDUF9UWVBFOw0KPiA+PiArICAgICAgICAgICAgICAgICAg
-ICAgYnJlYWs7DQo+ID4+ICsgICAgICAgICAgICAgY2FzZSBQT1dFUl9TVVBQTFlfVFlQRV9VU0Jf
-Q0RQOg0KPiA+PiArICAgICAgICAgICAgICAgICAgICAgdWNoZ2VyLT50eXBlID0gQ0RQX1RZUEU7
-DQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICBicmVhazsNCj4gPj4gKyAgICAgICAgICAgICBj
-YXNlIFBPV0VSX1NVUFBMWV9UWVBFX1VTQl9BQ0E6DQo+ID4+ICsgICAgICAgICAgICAgICAgICAg
-ICB1Y2hnZXItPnR5cGUgPSBBQ0FfVFlQRTsNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIGJy
-ZWFrOw0KPiA+PiArICAgICAgICAgICAgIGRlZmF1bHQ6DQo+ID4+ICsgICAgICAgICAgICAgICAg
-ICAgICB1Y2hnZXItPnR5cGUgPSBVTktOT1dOX1RZUEU7DQo+ID4+ICsgICAgICAgICAgICAgICAg
-ICAgICBicmVhazsNCj4gPj4gKyAgICAgICAgICAgICB9DQo+ID4+ICsgICAgIH0gZWxzZSBpZiAo
-dWNoZ2VyLT5nZXRfY2hhcmdlcl90eXBlKSB7DQo+ID4+ICsgICAgICAgICAgICAgdWNoZ2VyLT50
-eXBlID0gdWNoZ2VyLT5nZXRfY2hhcmdlcl90eXBlKHVjaGdlcik7DQo+ID4+ICsgICAgIH0gZWxz
-ZSB7DQo+ID4+ICsgICAgICAgICAgICAgdWNoZ2VyLT50eXBlID0gVU5LTk9XTl9UWVBFOw0KPiA+
-PiArICAgICB9DQo+ID4+ICsNCj4gPj4gKyAgICAgcmV0dXJuIHVjaGdlci0+dHlwZTsNCj4gPj4g
-K30NCj4gPj4gKw0KPiA+DQo+ID4gSSB0aGluayB3ZSBtYXkgZG9uJ3QgbmVlZCB0aGlzIHVzYl9j
-aGFyZ2VyX2dldF90eXBlX2J5X290aGVycygpLg0KPiA+ICJ1Y2hnZXItPnR5cGUiIGlzIHNldCBp
-biBvbmUgcGxhY2UgaXMgZW5vdWdoLCB0aGF0IGlzOiBieQ0KPiA+IHVjaGdlci0+Y2hhcmdlcl9k
-ZXRlY3QoKSBpbiB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpLCB0aGVuDQo+ID4gdXNiX2NoYXJn
-ZXJfZ2V0X3R5cGVfYnlfb3RoZXJzKCkgaXMgcmVwbGFjZWQgYnkgdXNiX2NoYXJnZXJfZ2V0X3R5
-cGUoKS4NCj4gPg0KPiA+IHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QoKSBjYW4gaGF2ZSBkaWZmIGlt
-cGxlbWVudGF0aW9ucyBubyBtYXR0ZXINCj4gPiB3aGF0IGtpbmQgb2YgbWVjaGFuaXNtIGlzIHVz
-ZWQsIGZvciB5b3VyIFBNSUMgY2FzZSwgeW91IGNhbiBqdXN0DQo+ID4gZGlyZWN0bHkgZ2V0IHRo
-ZSB0eXBlIHZhbHVlIGJ5IHBvd2VyX3N1cHBseV9nZXRfcHJvcGVydHkoKTsgd2l0aCB0aGF0LA0K
-PiA+IHdlIGNhbiBoYXZlIG9uZSBjZW50cmFsIHBsYWNlIHRvIHNldCB1Y2hnZXItPnR5cGUuDQo+
-ID4gQWZ0ZXIgdWNoZ2VyLT50eXBlIGlzIHNldCwgY2hhcmdlciB0eXBlIGRldGVjdGlvbiBpcyBu
-byBuZWVkIHRvIGJlDQo+ID4gaW52b2x2ZWQgdW50aWwgY2hhcmdlciB0eXBlIGNoYW5nZXMuDQo+
-ID4NCj4gPiBUaGVuIG5leHQgcXVlc3Rpb24gaXMgd2hlcmUgaXMgdG8gY2FsbCB1c2JfY2hhcmdl
-cl9kZXRlY3RfdHlwZSgpLCBXZQ0KPiA+IG5lZWQgbWFrZSBzdXJlIGl0IGZpbmlzaGVkIGJlZm9y
-ZSB1c2IgZ2FkZ2V0IGNvbm5lY3QuDQo+IA0KPiBZZWFoLCB0aGF0J3MgdGhlIHBvaW50OiB3aGVy
-ZT8gSXQgaXMgaGFyZCBmb3IgdXNiIGNoYXJnZXIgZnJhbWV3b3JrIHRvDQo+IGNvbnRyb2wsIHdo
-aWNoIHdpbGwgbWFrZSBpdCBtb3JlIGNvbXBsaWNhdGVkLiBUaGUNCj4gJ3VzYl9jaGFyZ2VyX2Rl
-dGVjdF90eXBlKCknIGlzIHVzZWQgZm9yIGRldGVjdGluZyB0aGUgY2hhcmdlciB0eXBlDQo+IG1h
-bnVhbGx5IG9uIHVzZXIncyBwbGF0Zm9ybSwgYW5kIHVzZXIgc2hvdWxkIGNhbGwgaXQgYXQgdGhl
-IHJpZ2h0IHRpbWUgdG8NCj4gYXZvaWQgYWZmZWN0aW5nIGdhZGdldCBlbnVtZXJhdGlvbi4gT3Ro
-ZXJ3aXNlIHVzZXIgY2FuIGltcGxlbWVudCBzb21lDQo+IGNhbGxiYWNrcyBzaG93ZWQgaW4gJ3Vz
-Yl9jaGFyZ2VyX2dldF90eXBlX2J5X290aGVycygpJyBmdW5jdGlvbiB0byBnZXQNCj4gY2hhcmdl
-ciB0eXBlLiBJIHRoaW5rIHRoaXMgaXMgY29udHJvbGxhYmxlIGFuZCBzaW1wbGUgZm9yIHRoZSB1
-c2IgY2hhcmdlcg0KPiBmcmFtZXdvcmsuDQoNCkFzIG15IHN1Z2dlc3RlZCwgQ2FuIHRoaXMgZGV0
-ZWN0aW9uIGJlIGluIHVzYl91ZGNfdmJ1c19oYW5kbGVyKCksIGFuZA0KYmVmb3JlIHVzYl91ZGNf
-Y29ubmVjdF9jb250cm9sKCk/IFdlIHNob3VsZCBiZSBhYmxlIHRvIGZpbmQgc29tZSBjZW50cmFs
-DQpwbGFjZSB3aGVyZSBpdCBpcyBiZXR3ZWVuIHZidXMgZGV0ZWN0aW9uIGFuZCBnYWRnZXQgY29u
-bmVjdC4gDQoNCj4gDQo+ID4NCj4gPiBJZGVhbCBpcyB3aXRoIHlvdXIgZnJhbWV3b3JrLCBkaWZm
-IHVzZXJzIG9ubHkgbmVlZCBpbXBsZW1lbnQNCj4gPiB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KCku
-IDopDQo+ID4NCj4gDQo+IC0tDQo+IEJhb2xpbi53YW5nDQo+IEJlc3QgUmVnYXJkcw0K
+From: Kelvin Cheung <keguang.zhang@gmail.com>
+
+This patchset is to add NAND, DMA and GPIO support for Loongson1B,
+and moreover, include some updates/fixes.
+
+This applies on top of mips-for-linux-next.
+
+Thanks!
+
+Kelvin Cheung (7):
+  clk: Loongson1: Update clocks of Loongson1B
+  cpufreq: Loongson1: Update cpufreq of Loongson1B
+  dmaengine: Loongson1: add Loongson1 dmaengine driver
+  mtd: nand: add Loongson1 NAND driver
+  gpio: Loongson1: add Loongson1 GPIO driver
+  MIPS: Loongson1B: Some updates/fixes for LS1B
+  MAINTAINERS: add Loongson1 architecture entry
+
+ MAINTAINERS                                       |   9 +
+ arch/mips/Kconfig                                 |   2 +
+ arch/mips/configs/loongson1b_defconfig            | 125 +++++
+ arch/mips/configs/ls1b_defconfig                  | 110 -----
+ arch/mips/include/asm/mach-loongson32/cpufreq.h   |   1 -
+ arch/mips/include/asm/mach-loongson32/dma.h       |  25 +
+ arch/mips/include/asm/mach-loongson32/irq.h       |   1 -
+ arch/mips/include/asm/mach-loongson32/loongson1.h |   4 +-
+ arch/mips/include/asm/mach-loongson32/nand.h      |  30 ++
+ arch/mips/include/asm/mach-loongson32/platform.h  |  14 +-
+ arch/mips/include/asm/mach-loongson32/regs-clk.h  |  24 +-
+ arch/mips/include/asm/mach-loongson32/regs-mux.h  |  84 ++--
+ arch/mips/include/asm/mach-loongson32/regs-pwm.h  |  12 +-
+ arch/mips/loongson32/common/platform.c            | 105 ++++-
+ arch/mips/loongson32/common/reset.c               |  13 +-
+ arch/mips/loongson32/common/time.c                |  27 +-
+ arch/mips/loongson32/ls1b/board.c                 |  67 ++-
+ drivers/clk/Makefile                              |   2 +-
+ drivers/clk/clk-loongson1.c                       | 163 +++++++
+ drivers/clk/clk-ls1x.c                            | 162 -------
+ drivers/cpufreq/Makefile                          |   2 +-
+ drivers/cpufreq/loongson1-cpufreq.c               | 230 +++++++++
+ drivers/cpufreq/ls1x-cpufreq.c                    | 222 ---------
+ drivers/dma/Kconfig                               |   9 +
+ drivers/dma/Makefile                              |   1 +
+ drivers/dma/loongson1-dma.c                       | 546 ++++++++++++++++++++++
+ drivers/gpio/Kconfig                              |   7 +
+ drivers/gpio/Makefile                             |   1 +
+ drivers/gpio/gpio-loongson1.c                     | 102 ++++
+ drivers/mtd/nand/Kconfig                          |   8 +
+ drivers/mtd/nand/Makefile                         |   1 +
+ drivers/mtd/nand/loongson1_nand.c                 | 522 +++++++++++++++++++++
+ 32 files changed, 2041 insertions(+), 590 deletions(-)
+ create mode 100644 arch/mips/configs/loongson1b_defconfig
+ delete mode 100644 arch/mips/configs/ls1b_defconfig
+ create mode 100644 arch/mips/include/asm/mach-loongson32/dma.h
+ create mode 100644 arch/mips/include/asm/mach-loongson32/nand.h
+ create mode 100644 drivers/clk/clk-loongson1.c
+ delete mode 100644 drivers/clk/clk-ls1x.c
+ create mode 100644 drivers/cpufreq/loongson1-cpufreq.c
+ delete mode 100644 drivers/cpufreq/ls1x-cpufreq.c
+ create mode 100644 drivers/dma/loongson1-dma.c
+ create mode 100644 drivers/gpio/gpio-loongson1.c
+ create mode 100644 drivers/mtd/nand/loongson1_nand.c
+
+-- 
+1.9.1
+
