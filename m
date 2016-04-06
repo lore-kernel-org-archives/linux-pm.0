@@ -1,7 +1,7 @@
 From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH V1 2/7] cpufreq: Loongson1: Update cpufreq of Loongson1B
-Date: Wed,  6 Apr 2016 20:34:50 +0800
-Message-ID: <1459946095-7637-3-git-send-email-keguang.zhang@gmail.com>
+Subject: [PATCH V1 3/7] dmaengine: Loongson1: add Loongson1 dmaengine driver
+Date: Wed,  6 Apr 2016 20:34:51 +0800
+Message-ID: <1459946095-7637-4-git-send-email-keguang.zhang@gmail.com>
 References: <1459946095-7637-1-git-send-email-keguang.zhang@gmail.com>
 Return-path: <linux-clk-owner@vger.kernel.org>
 In-Reply-To: <1459946095-7637-1-git-send-email-keguang.zhang@gmail.com>
@@ -12,45 +12,58 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-- Rename the file to loongson1-cpufreq.c
-- Use kcalloc() instead of kzalloc()
-- Use devm_kzalloc() instead of global structure
-- Use dev_get_platdata() to access the platform_data field
-  instead of referencing it directly
-- Remove superfluous error messages
+This patch adds DMA Engine driver for Loongson1B.
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 ---
- drivers/cpufreq/Makefile            |   2 +-
- drivers/cpufreq/loongson1-cpufreq.c | 230 ++++++++++++++++++++++++++++++++++++
- drivers/cpufreq/ls1x-cpufreq.c      | 222 ----------------------------------
- 3 files changed, 231 insertions(+), 223 deletions(-)
- create mode 100644 drivers/cpufreq/loongson1-cpufreq.c
- delete mode 100644 drivers/cpufreq/ls1x-cpufreq.c
+ drivers/dma/Kconfig         |   9 +
+ drivers/dma/Makefile        |   1 +
+ drivers/dma/loongson1-dma.c | 546 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 556 insertions(+)
+ create mode 100644 drivers/dma/loongson1-dma.c
 
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 9e63fb1..bebe9c8 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -100,7 +100,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
- obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
--obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
-+obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= loongson1-cpufreq.o
- obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
- obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
- obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
-diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
+diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+index d96d87c..835d212 100644
+--- a/drivers/dma/Kconfig
++++ b/drivers/dma/Kconfig
+@@ -527,6 +527,15 @@ config ZX_DMA
+ 	help
+ 	  Support the DMA engine for ZTE ZX296702 platform devices.
+ 
++config DMA_LOONGSON1
++	tristate "Loongson1 DMA support"
++	depends on MACH_LOONGSON32
++	select DMA_ENGINE
++	select DMA_VIRTUAL_CHANNELS
++	help
++	  This selects support for the DMA controller in Loongson1 SoCs,
++	  and is required by Loongson1 NAND Flash and AC97 support.
++
+ 
+ # driver files
+ source "drivers/dma/bestcomm/Kconfig"
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index 6084127..b0eceb0 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_TI_DMA_CROSSBAR) += ti-dma-crossbar.o
+ obj-$(CONFIG_TI_EDMA) += edma.o
+ obj-$(CONFIG_XGENE_DMA) += xgene-dma.o
+ obj-$(CONFIG_ZX_DMA) += zx296702_dma.o
++obj-$(CONFIG_DMA_LOONGSON1) += loongson1-dma.o
+ 
+ obj-y += qcom/
+ obj-y += xilinx/
+diff --git a/drivers/dma/loongson1-dma.c b/drivers/dma/loongson1-dma.c
 new file mode 100644
-index 0000000..d029211
+index 0000000..687eed7
 --- /dev/null
-+++ b/drivers/cpufreq/loongson1-cpufreq.c
-@@ -0,0 +1,230 @@
++++ b/drivers/dma/loongson1-dma.c
+@@ -0,0 +1,546 @@
 +/*
-+ * CPU Frequency Scaling for Loongson 1 SoC
++ * DMA Driver for Loongson 1 SoC
 + *
-+ * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Copyright (C) 2015-2016 Zhang, Keguang <keguang.zhang@gmail.com>
 + *
 + * This file is licensed under the terms of the GNU General Public
 + * License version 2. This program is licensed "as is" without any
@@ -58,453 +71,541 @@ index 0000000..d029211
 + */
 +
 +#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
++#include <linux/dmapool.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
 +#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_dma.h>
 +#include <linux/platform_device.h>
 +#include <linux/slab.h>
 +
-+#include <cpufreq.h>
-+#include <loongson1.h>
++#include <dma.h>
 +
-+struct ls1x_cpufreq {
-+	struct device *dev;
-+	struct clk *clk;	/* CPU clk */
-+	struct clk *mux_clk;	/* MUX of CPU clk */
-+	struct clk *pll_clk;	/* PLL clk */
-+	struct clk *osc_clk;	/* OSC clk */
-+	unsigned int max_freq;
-+	unsigned int min_freq;
++#include "dmaengine.h"
++#include "virt-dma.h"
++
++/* Loongson 1 DMA Register Definitions */
++#define DMA_CTRL		0x0
++
++/* DMA Control Register Bits */
++#define DMA_STOP		BIT(4)
++#define DMA_START		BIT(3)
++#define ASK_VALID		BIT(2)
++
++#define DMA_ADDR_MASK		(0xffffffc0)
++
++/* DMA H/W Descriptor Bits */
++#define NEXT_EN			BIT(0)
++
++/* DMA Command Register Bits */
++#define DMA_RAM2DEV		BIT(12)
++#define DMA_TRANS_OVER		BIT(3)
++#define DMA_SINGLE_TRANS_OVER	BIT(2)
++#define DMA_INT			BIT(1)
++#define DMA_INT_MASK		BIT(0)
++
++struct ls1x_dma_hwdesc {
++	u32 next;		/* next descriptor address */
++	u32 saddr;		/* memory DMA address */
++	u32 daddr;		/* device DMA address */
++	u32 length;
++	u32 stride;
++	u32 cycles;
++	u32 cmd;
++	u32 phys;		/* used by driver */
++} __aligned(64);
++
++struct ls1x_dma_desc {
++	struct virt_dma_desc vdesc;
++	struct ls1x_dma_chan *chan;
++
++	enum dma_transfer_direction dir;
++	enum dma_transaction_type type;
++
++	unsigned int nr_descs;	/* number of descriptors */
++	unsigned int nr_done;	/* number of completed descriptors */
++	struct ls1x_dma_hwdesc *desc[0];	/* DMA coherent descriptors */
 +};
 +
-+static struct ls1x_cpufreq *cpufreq;
++struct ls1x_dma_chan {
++	struct virt_dma_chan vchan;
++	unsigned int id;
++	void __iomem *reg_base;
++	unsigned int irq;
++	struct dma_pool *desc_pool;
 +
-+static int ls1x_cpufreq_notifier(struct notifier_block *nb,
-+				 unsigned long val, void *data)
++	struct dma_slave_config config;
++
++	struct ls1x_dma_desc *dma_desc;
++	unsigned int curr_hwdesc;
++};
++
++struct ls1x_dma {
++	struct dma_device dma_dev;
++	struct clk *clk;
++	void __iomem *reg_base;
++
++	unsigned int nr_dma_chans;
++	struct ls1x_dma_chan dma_chan[0];
++};
++
++#define to_ls1x_dma_chan(chan)		\
++	container_of(chan, struct ls1x_dma_chan, vchan.chan)
++
++#define to_ls1x_dma_desc(vdesc)		\
++	container_of(vdesc, struct ls1x_dma_desc, vdesc)
++
++/* macros for registers read/write */
++#define chan_writel(chan, off, val)	\
++	__raw_writel((val), (chan)->reg_base + (off))
++
++#define chan_readl(chan, off)		\
++	__raw_readl((chan)->reg_base + (off))
++
++bool ls1x_dma_filter_fn(struct dma_chan *chan, void *param)
 +{
-+	if (val == CPUFREQ_POSTCHANGE)
-+		current_cpu_data.udelay_val = loops_per_jiffy;
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++	unsigned int chan_id = *(unsigned int *)param;
 +
-+	return NOTIFY_OK;
++	if (chan_id == dma_chan->id)
++		return true;
++	else
++		return false;
 +}
 +
-+static struct notifier_block ls1x_cpufreq_notifier_block = {
-+	.notifier_call = ls1x_cpufreq_notifier
-+};
-+
-+static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
-+			       unsigned int index)
++static void ls1x_dma_free_chan_resources(struct dma_chan *chan)
 +{
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	unsigned int old_freq, new_freq;
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
 +
-+	old_freq = policy->cur;
-+	new_freq = policy->freq_table[index].frequency;
++	vchan_free_chan_resources(&dma_chan->vchan);
++	dma_pool_destroy(dma_chan->desc_pool);
++	dma_chan->desc_pool = NULL;
++}
 +
-+	/*
-+	 * The procedure of reconfiguring CPU clk is as below.
-+	 *
-+	 *  - Reparent CPU clk to OSC clk
-+	 *  - Reset CPU clock (very important)
-+	 *  - Reconfigure CPU DIV
-+	 *  - Reparent CPU clk back to CPU DIV clk
-+	 */
++static int ls1x_dma_alloc_chan_resources(struct dma_chan *chan)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
 +
-+	clk_set_parent(policy->clk, cpufreq->osc_clk);
-+	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
-+		     LS1X_CLK_PLL_DIV);
-+	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
-+		     LS1X_CLK_PLL_DIV);
-+	clk_set_rate(cpufreq->mux_clk, new_freq * 1000);
-+	clk_set_parent(policy->clk, cpufreq->mux_clk);
-+	dev_dbg(cpu_dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
++	if (dma_chan->desc_pool)
++		return 0;
++
++	dma_chan->desc_pool = dma_pool_create(dma_chan_name(chan),
++					      chan->device->dev,
++					      sizeof(struct ls1x_dma_hwdesc),
++					      __alignof__(struct
++							  ls1x_dma_hwdesc), 0);
++	if (!dma_chan->desc_pool) {
++		dev_err(&chan->dev->device,
++			"failed to allocate descriptor pool\n");
++		return -ENOMEM;
++	}
 +
 +	return 0;
 +}
 +
-+static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
++static void ls1x_dma_free_desc(struct virt_dma_desc *vdesc)
 +{
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	struct cpufreq_frequency_table *freq_tbl;
-+	unsigned int pll_freq, freq;
-+	int steps, i, ret;
++	struct ls1x_dma_desc *dma_desc = to_ls1x_dma_desc(vdesc);
++	int i;
 +
-+	pll_freq = clk_get_rate(cpufreq->pll_clk) / 1000;
++	for (i = 0; i < dma_desc->nr_descs; i++)
++		dma_pool_free(dma_desc->chan->desc_pool, dma_desc->desc[i],
++			      dma_desc->desc[i]->phys);
++	kfree(dma_desc);
++}
 +
-+	steps = 1 << DIV_CPU_WIDTH;
-+	freq_tbl = kcalloc(steps, sizeof(*freq_tbl), GFP_KERNEL);
-+	if (!freq_tbl)
++static struct ls1x_dma_desc *ls1x_dma_alloc_desc(struct ls1x_dma_chan *dma_chan,
++						 int sg_len)
++{
++	struct ls1x_dma_desc *dma_desc;
++	struct dma_chan *chan = &dma_chan->vchan.chan;
++	dma_addr_t desc_phys;
++	int i;
++
++	dma_desc =
++	    kzalloc(sizeof(struct ls1x_dma_desc) +
++		    sg_len * sizeof(struct ls1x_dma_hwdesc *), GFP_NOWAIT);
++	if (!dma_desc) {
++		dev_err(&chan->dev->device,
++			"failed to allocate DMA descriptor\n");
++		return NULL;
++	}
++
++	for (i = 0; i < sg_len; i++) {
++		dma_desc->desc[i] = dma_pool_alloc(dma_chan->desc_pool,
++						   GFP_NOWAIT, &desc_phys);
++		if (!dma_desc->desc[i])
++			goto err;
++
++		/*memorize the physical address of descriptor */
++		dma_desc->desc[i]->phys = desc_phys;
++	}
++	dma_desc->chan = dma_chan;
++	dma_desc->nr_descs = sg_len;
++	dma_desc->nr_done = 0;
++
++	return dma_desc;
++err:
++	dev_err(&chan->dev->device, "failed to allocate H/W DMA descriptor\n");
++
++	while (--i >= 0)
++		dma_pool_free(dma_chan->desc_pool, dma_desc->desc[i],
++			      dma_desc->desc[i]->phys);
++	kfree(dma_desc);
++
++	return NULL;
++}
++
++static struct dma_async_tx_descriptor *
++ls1x_dma_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
++		       unsigned int sg_len,
++		       enum dma_transfer_direction direction,
++		       unsigned long flags, void *context)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++	struct dma_slave_config *config = &dma_chan->config;
++	struct ls1x_dma_desc *dma_desc;
++	struct scatterlist *sg;
++	unsigned int dev_addr, bus_width, cmd, i;
++
++	if (!is_slave_direction(direction)) {
++		dev_err(&chan->dev->device, "invalid DMA direction\n");
++		return NULL;
++	}
++
++	dev_dbg(&chan->dev->device, "sg_len=%d, dir=%s, flags=0x%lx\n", sg_len,
++		direction == DMA_MEM_TO_DEV ? "to device" : "from device",
++		flags);
++
++	switch (direction) {
++	case DMA_MEM_TO_DEV:
++		dev_addr = config->dst_addr;
++		bus_width = config->dst_addr_width;
++		cmd = DMA_RAM2DEV | DMA_INT;
++		break;
++	case DMA_DEV_TO_MEM:
++		dev_addr = config->src_addr;
++		bus_width = config->src_addr_width;
++		cmd = DMA_INT;
++		break;
++	default:
++		dev_err(&chan->dev->device,
++			"unsupported DMA transfer mode: %d\n", direction);
++		return NULL;
++	}
++
++	/*allocate DMA descriptors */
++	dma_desc = ls1x_dma_alloc_desc(dma_chan, sg_len);
++	if (!dma_desc)
++		return NULL;
++	dma_desc->dir = direction;
++	dma_desc->type = DMA_SLAVE;
++
++	/*config DMA descriptors */
++	for_each_sg(sgl, sg, sg_len, i) {
++		dma_addr_t buf_addr = sg_dma_address(sg);
++		size_t buf_len = sg_dma_len(sg);
++
++		if (!IS_ALIGNED(buf_addr, 4 * bus_width)) {
++			dev_err(&chan->dev->device,
++				"buf_addr is not aligned on %d-byte boundary\n",
++				4 * bus_width);
++			ls1x_dma_free_desc(&dma_desc->vdesc);
++			return NULL;
++		}
++
++		if (!IS_ALIGNED(buf_len, bus_width))
++			dev_warn(&chan->dev->device,
++				 "buf_len is not aligned on %d-byte boundary\n",
++				 bus_width);
++
++		dma_desc->desc[i]->saddr = buf_addr;
++		dma_desc->desc[i]->daddr = dev_addr;
++		dma_desc->desc[i]->length = buf_len / bus_width;
++		dma_desc->desc[i]->stride = 0;
++		dma_desc->desc[i]->cycles = 1;
++		dma_desc->desc[i]->cmd = cmd;
++		dma_desc->desc[i]->next =
++		    sg_is_last(sg) ? 0 : dma_desc->desc[i + 1]->phys;
++
++		dev_dbg(&chan->dev->device,
++			"desc=%p, saddr=%08x, daddr=%08x, length=%u\n",
++			&dma_desc->desc[i], buf_addr, dev_addr, buf_len);
++	}
++
++	return vchan_tx_prep(&dma_chan->vchan, &dma_desc->vdesc, flags);
++}
++
++static int ls1x_dma_slave_config(struct dma_chan *chan,
++				 struct dma_slave_config *config)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++
++	memcpy(&dma_chan->config, config, sizeof(struct dma_slave_config));
++
++	return 0;
++}
++
++static int ls1x_dma_terminate_all(struct dma_chan *chan)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++	unsigned long flags;
++	LIST_HEAD(head);
++
++	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
++
++	chan_writel(dma_chan, DMA_CTRL,
++		    chan_readl(dma_chan, DMA_CTRL) | DMA_STOP);
++	dma_chan->dma_desc = NULL;
++	vchan_get_all_descriptors(&dma_chan->vchan, &head);
++
++	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
++
++	vchan_dma_desc_free_list(&dma_chan->vchan, &head);
++
++	return 0;
++}
++
++static size_t ls1x_dma_desc_residue(struct ls1x_dma_desc *dma_desc,
++				    unsigned int next_sg)
++{
++	struct ls1x_dma_chan *dma_chan = dma_desc->chan;
++	struct dma_slave_config *config = &dma_chan->config;
++	unsigned int i, bus_width, bytes = 0;
++
++	if (dma_desc->dir == DMA_MEM_TO_DEV)
++		bus_width = config->dst_addr_width;
++	else
++		bus_width = config->src_addr_width;
++
++	for (i = next_sg; i < dma_desc->nr_descs; i++)
++		bytes += dma_desc->desc[i]->length * bus_width;
++
++	return bytes;
++}
++
++static enum dma_status ls1x_dma_tx_status(struct dma_chan *chan,
++					  dma_cookie_t cookie,
++					  struct dma_tx_state *txstate)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++	struct ls1x_dma_desc *dma_desc = dma_chan->dma_desc;
++	struct virt_dma_desc *vdesc;
++	enum dma_status status;
++	unsigned int residue = 0;
++	unsigned long flags;
++
++	status = dma_cookie_status(chan, cookie, txstate);
++	if ((status == DMA_COMPLETE) || !txstate)
++		return status;
++
++	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
++
++	vdesc = vchan_find_desc(&dma_chan->vchan, cookie);
++	if (vdesc)
++		/* not yet processed */
++		residue = ls1x_dma_desc_residue(to_ls1x_dma_desc(vdesc), 0);
++	else if (cookie == dma_chan->dma_desc->vdesc.tx.cookie)
++		/* in progress */
++		residue = ls1x_dma_desc_residue(dma_desc, dma_desc->nr_done);
++	else
++		residue = 0;
++
++	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
++
++	dma_set_residue(txstate, residue);
++
++	return status;
++}
++
++static void ls1x_trigger_dma(struct ls1x_dma_chan *dma_chan)
++{
++	struct dma_chan *chan = &dma_chan->vchan.chan;
++	struct ls1x_dma_desc *dma_desc;
++	struct virt_dma_desc *vdesc;
++	unsigned int val;
++
++	vdesc = vchan_next_desc(&dma_chan->vchan);
++	if (!vdesc) {
++		dev_warn(&chan->dev->device, "No pending descriptor\n");
++		return;
++	}
++	dma_chan->dma_desc = dma_desc = to_ls1x_dma_desc(vdesc);
++
++	dev_dbg(&chan->dev->device, "cookie=%d, %u descs, starting desc=%p\n",
++		chan->cookie, dma_desc->nr_descs, &dma_desc->desc[0]);
++
++	val = dma_desc->desc[0]->phys & DMA_ADDR_MASK;
++	val |= dma_chan->id;
++	val |= DMA_START;
++	chan_writel(dma_chan, DMA_CTRL, val);
++}
++
++static void ls1x_dma_issue_pending(struct dma_chan *chan)
++{
++	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
++	unsigned long flags;
++
++	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
++
++	if (vchan_issue_pending(&dma_chan->vchan) && !dma_chan->dma_desc)
++		ls1x_trigger_dma(dma_chan);
++
++	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
++}
++
++static irqreturn_t ls1x_dma_irq_handler(int irq, void *data)
++{
++	struct ls1x_dma_chan *dma_chan = data;
++	struct dma_chan *chan = &dma_chan->vchan.chan;
++
++	dev_dbg(&chan->dev->device, "DMA IRQ %d on channel %d\n", irq,
++		dma_chan->id);
++	if (!dma_chan->dma_desc) {
++		dev_warn(&chan->dev->device,
++			 "DMA IRQ with no active descriptor on channel %d\n",
++			 dma_chan->id);
++		return IRQ_NONE;
++	}
++
++	spin_lock(&dma_chan->vchan.lock);
++
++	if (dma_chan->dma_desc->type == DMA_CYCLIC) {
++		vchan_cyclic_callback(&dma_chan->dma_desc->vdesc);
++	} else {
++		list_del(&dma_chan->dma_desc->vdesc.node);
++		vchan_cookie_complete(&dma_chan->dma_desc->vdesc);
++		dma_chan->dma_desc = NULL;
++	}
++
++	spin_unlock(&dma_chan->vchan.lock);
++	return IRQ_HANDLED;
++}
++
++static int ls1x_dma_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct plat_ls1x_dma *pdata = dev_get_platdata(dev);
++	struct dma_device *dma_dev;
++	struct ls1x_dma *dma;
++	struct ls1x_dma_chan *dma_chan;
++	struct resource *res;
++	int i, ret;
++
++	/*initialize DMA device */
++	dma =
++	    devm_kzalloc(dev,
++			 sizeof(struct ls1x_dma) +
++			 pdata->nr_channels * sizeof(struct ls1x_dma_chan),
++			 GFP_KERNEL);
++	if (!dma)
 +		return -ENOMEM;
 +
-+	for (i = 0; i < (steps - 1); i++) {
-+		freq = pll_freq / (i + 1);
-+		if ((freq < cpufreq->min_freq) || (freq > cpufreq->max_freq))
-+			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
-+		else
-+			freq_tbl[i].frequency = freq;
-+		dev_dbg(cpu_dev,
-+			"cpufreq table: index %d: frequency %d\n", i,
-+			freq_tbl[i].frequency);
-+	}
-+	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
-+
-+	policy->clk = cpufreq->clk;
-+	ret = cpufreq_generic_init(policy, freq_tbl, 0);
-+	if (ret)
-+		kfree(freq_tbl);
-+
-+	return ret;
-+}
-+
-+static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	kfree(policy->freq_table);
-+	return 0;
-+}
-+
-+static struct cpufreq_driver ls1x_cpufreq_driver = {
-+	.name		= "cpufreq-ls1x",
-+	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= ls1x_cpufreq_target,
-+	.get		= cpufreq_generic_get,
-+	.init		= ls1x_cpufreq_init,
-+	.exit		= ls1x_cpufreq_exit,
-+	.attr		= cpufreq_generic_attr,
-+};
-+
-+static int ls1x_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-+
-+	return 0;
-+}
-+
-+static int ls1x_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct plat_ls1x_cpufreq *pdata = dev_get_platdata(&pdev->dev);
-+	struct clk *clk;
-+	int ret;
-+
-+	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name) {
-+		dev_err(&pdev->dev, "platform data missing\n");
-+		ret = -EINVAL;
-+		goto out;
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(dev, "failed to get I/O memory\n");
++		return -EINVAL;
 +	}
 +
-+	cpufreq =
-+	    devm_kzalloc(&pdev->dev, sizeof(struct ls1x_cpufreq), GFP_KERNEL);
-+	if (!cpufreq) {
-+		ret = -ENOMEM;
-+		goto out;
++	dma->reg_base = devm_ioremap_resource(dev, res);
++	if (IS_ERR(dma->reg_base))
++		return PTR_ERR(dma->reg_base);
++
++	dma_dev = &dma->dma_dev;
++
++	dma_cap_set(DMA_SLAVE, dma_dev->cap_mask);
++	dma_cap_set(DMA_PRIVATE, dma_dev->cap_mask);
++
++	dma_dev->dev = dev;
++	dma_dev->src_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_4_BYTES);
++	dma_dev->dst_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_4_BYTES);
++	dma_dev->directions = BIT(DMA_DEV_TO_MEM) | BIT(DMA_MEM_TO_DEV);
++	dma_dev->residue_granularity = DMA_RESIDUE_GRANULARITY_SEGMENT;
++	dma_dev->device_alloc_chan_resources = ls1x_dma_alloc_chan_resources;
++	dma_dev->device_free_chan_resources = ls1x_dma_free_chan_resources;
++	dma_dev->device_prep_slave_sg = ls1x_dma_prep_slave_sg;
++	dma_dev->device_config = ls1x_dma_slave_config;
++	dma_dev->device_terminate_all = ls1x_dma_terminate_all;
++	dma_dev->device_tx_status = ls1x_dma_tx_status;
++	dma_dev->device_issue_pending = ls1x_dma_issue_pending;
++
++	INIT_LIST_HEAD(&dma_dev->channels);
++
++	/*initialize DMA channels */
++	for (i = 0; i < pdata->nr_channels; i++) {
++		dma_chan = &dma->dma_chan[i];
++		dma_chan->id = i;
++		dma_chan->reg_base = dma->reg_base;
++
++		dma_chan->irq = platform_get_irq(pdev, i);
++		if (dma_chan->irq < 0) {
++			dev_err(dev, "failed to get IRQ: %d\n", dma_chan->irq);
++			return -EINVAL;
++		}
++
++		ret =
++		    devm_request_irq(dev, dma_chan->irq, ls1x_dma_irq_handler,
++				     IRQF_SHARED, dev_name(dev), dma_chan);
++		if (ret) {
++			dev_err(dev, "failed to request IRQ %u!\n",
++				dma_chan->irq);
++			return -EINVAL;
++		}
++
++		dma_chan->vchan.desc_free = ls1x_dma_free_desc;
++		vchan_init(&dma_chan->vchan, dma_dev);
 +	}
++	dma->nr_dma_chans = i;
 +
-+	cpufreq->dev = &pdev->dev;
-+
-+	clk = devm_clk_get(&pdev->dev, pdata->clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "unable to get %s clock\n",
-+			pdata->clk_name);
-+		ret = PTR_ERR(clk);
-+		goto out;
++	dma->clk = devm_clk_get(dev, pdev->name);
++	if (IS_ERR(dma->clk)) {
++		dev_err(dev, "failed to get %s clock\n", pdev->name);
++		return PTR_ERR(dma->clk);
 +	}
-+	cpufreq->clk = clk;
++	clk_prepare_enable(dma->clk);
 +
-+	clk = clk_get_parent(clk);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
-+			__clk_get_name(cpufreq->clk));
-+		ret = PTR_ERR(clk);
-+		goto out;
-+	}
-+	cpufreq->mux_clk = clk;
-+
-+	clk = clk_get_parent(clk);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
-+			__clk_get_name(cpufreq->mux_clk));
-+		ret = PTR_ERR(clk);
-+		goto out;
-+	}
-+	cpufreq->pll_clk = clk;
-+
-+	clk = devm_clk_get(&pdev->dev, pdata->osc_clk_name);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "unable to get %s clock\n",
-+			pdata->osc_clk_name);
-+		ret = PTR_ERR(clk);
-+		goto out;
-+	}
-+	cpufreq->osc_clk = clk;
-+
-+	cpufreq->max_freq = pdata->max_freq;
-+	cpufreq->min_freq = pdata->min_freq;
-+
-+	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
++	ret = dma_async_device_register(dma_dev);
 +	if (ret) {
-+		dev_err(&pdev->dev,
-+			"failed to register CPUFreq driver: %d\n", ret);
-+		goto out;
++		dev_err(dev, "failed to register DMA device\n");
++		clk_disable_unprepare(dma->clk);
++		return ret;
 +	}
 +
-+	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
-+					CPUFREQ_TRANSITION_NOTIFIER);
++	platform_set_drvdata(pdev, dma);
++	dev_info(dev, "Loongson1 DMA driver registered\n");
++	for (i = 0; i < pdata->nr_channels; i++) {
++		dma_chan = &dma->dma_chan[i];
++		dev = &dma_chan->vchan.chan.dev->device;
++		dev_info(dev, "channel %d at 0x%p (irq %d)\n", dma_chan->id,
++			 dma_chan->reg_base, dma_chan->irq);
++	}
 +
-+	if (!ret)
-+		goto out;
-+
-+	dev_err(&pdev->dev, "failed to register CPUFreq notifier: %d\n", ret);
-+
-+	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-+out:
-+	return ret;
++	return 0;
 +}
 +
-+static struct platform_driver ls1x_cpufreq_platdrv = {
-+	.probe	= ls1x_cpufreq_probe,
-+	.remove	= ls1x_cpufreq_remove,
++static int ls1x_dma_remove(struct platform_device *pdev)
++{
++	struct ls1x_dma *dma = platform_get_drvdata(pdev);
++
++	dma_async_device_unregister(&dma->dma_dev);
++	clk_disable_unprepare(dma->clk);
++	return 0;
++}
++
++static struct platform_driver ls1x_dma_driver = {
++	.probe	= ls1x_dma_probe,
++	.remove	= ls1x_dma_remove,
 +	.driver	= {
-+		.name	= "ls1x-cpufreq",
++		.name	= "ls1x-dma",
 +	},
 +};
 +
-+module_platform_driver(ls1x_cpufreq_platdrv);
++module_platform_driver(ls1x_dma_driver);
 +
 +MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-+MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
++MODULE_DESCRIPTION("Loongson1 DMA driver");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/ls1x-cpufreq.c
-deleted file mode 100644
-index 262581b..0000000
---- a/drivers/cpufreq/ls1x-cpufreq.c
-+++ /dev/null
-@@ -1,222 +0,0 @@
--/*
-- * CPU Frequency Scaling for Loongson 1 SoC
-- *
-- * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2. This program is licensed "as is" without any
-- * warranty of any kind, whether express or implied.
-- */
--
--#include <linux/clk.h>
--#include <linux/clk-provider.h>
--#include <linux/cpu.h>
--#include <linux/cpufreq.h>
--#include <linux/delay.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/slab.h>
--
--#include <cpufreq.h>
--#include <loongson1.h>
--
--static struct {
--	struct device *dev;
--	struct clk *clk;	/* CPU clk */
--	struct clk *mux_clk;	/* MUX of CPU clk */
--	struct clk *pll_clk;	/* PLL clk */
--	struct clk *osc_clk;	/* OSC clk */
--	unsigned int max_freq;
--	unsigned int min_freq;
--} ls1x_cpufreq;
--
--static int ls1x_cpufreq_notifier(struct notifier_block *nb,
--				 unsigned long val, void *data)
--{
--	if (val == CPUFREQ_POSTCHANGE)
--		current_cpu_data.udelay_val = loops_per_jiffy;
--
--	return NOTIFY_OK;
--}
--
--static struct notifier_block ls1x_cpufreq_notifier_block = {
--	.notifier_call = ls1x_cpufreq_notifier
--};
--
--static int ls1x_cpufreq_target(struct cpufreq_policy *policy,
--			       unsigned int index)
--{
--	unsigned int old_freq, new_freq;
--
--	old_freq = policy->cur;
--	new_freq = policy->freq_table[index].frequency;
--
--	/*
--	 * The procedure of reconfiguring CPU clk is as below.
--	 *
--	 *  - Reparent CPU clk to OSC clk
--	 *  - Reset CPU clock (very important)
--	 *  - Reconfigure CPU DIV
--	 *  - Reparent CPU clk back to CPU DIV clk
--	 */
--
--	dev_dbg(ls1x_cpufreq.dev, "%u KHz --> %u KHz\n", old_freq, new_freq);
--	clk_set_parent(policy->clk, ls1x_cpufreq.osc_clk);
--	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) | RST_CPU_EN | RST_CPU,
--		     LS1X_CLK_PLL_DIV);
--	__raw_writel(__raw_readl(LS1X_CLK_PLL_DIV) & ~(RST_CPU_EN | RST_CPU),
--		     LS1X_CLK_PLL_DIV);
--	clk_set_rate(ls1x_cpufreq.mux_clk, new_freq * 1000);
--	clk_set_parent(policy->clk, ls1x_cpufreq.mux_clk);
--
--	return 0;
--}
--
--static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
--{
--	struct cpufreq_frequency_table *freq_tbl;
--	unsigned int pll_freq, freq;
--	int steps, i, ret;
--
--	pll_freq = clk_get_rate(ls1x_cpufreq.pll_clk) / 1000;
--
--	steps = 1 << DIV_CPU_WIDTH;
--	freq_tbl = kzalloc(sizeof(*freq_tbl) * steps, GFP_KERNEL);
--	if (!freq_tbl) {
--		dev_err(ls1x_cpufreq.dev,
--			"failed to alloc cpufreq_frequency_table\n");
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	for (i = 0; i < (steps - 1); i++) {
--		freq = pll_freq / (i + 1);
--		if ((freq < ls1x_cpufreq.min_freq) ||
--		    (freq > ls1x_cpufreq.max_freq))
--			freq_tbl[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			freq_tbl[i].frequency = freq;
--		dev_dbg(ls1x_cpufreq.dev,
--			"cpufreq table: index %d: frequency %d\n", i,
--			freq_tbl[i].frequency);
--	}
--	freq_tbl[i].frequency = CPUFREQ_TABLE_END;
--
--	policy->clk = ls1x_cpufreq.clk;
--	ret = cpufreq_generic_init(policy, freq_tbl, 0);
--	if (ret)
--		kfree(freq_tbl);
--out:
--	return ret;
--}
--
--static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
--{
--	kfree(policy->freq_table);
--	return 0;
--}
--
--static struct cpufreq_driver ls1x_cpufreq_driver = {
--	.name		= "cpufreq-ls1x",
--	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
--	.verify		= cpufreq_generic_frequency_table_verify,
--	.target_index	= ls1x_cpufreq_target,
--	.get		= cpufreq_generic_get,
--	.init		= ls1x_cpufreq_init,
--	.exit		= ls1x_cpufreq_exit,
--	.attr		= cpufreq_generic_attr,
--};
--
--static int ls1x_cpufreq_remove(struct platform_device *pdev)
--{
--	cpufreq_unregister_notifier(&ls1x_cpufreq_notifier_block,
--				    CPUFREQ_TRANSITION_NOTIFIER);
--	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
--
--	return 0;
--}
--
--static int ls1x_cpufreq_probe(struct platform_device *pdev)
--{
--	struct plat_ls1x_cpufreq *pdata = pdev->dev.platform_data;
--	struct clk *clk;
--	int ret;
--
--	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
--		return -EINVAL;
--
--	ls1x_cpufreq.dev = &pdev->dev;
--
--	clk = devm_clk_get(&pdev->dev, pdata->clk_name);
--	if (IS_ERR(clk)) {
--		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
--			pdata->clk_name);
--		ret = PTR_ERR(clk);
--		goto out;
--	}
--	ls1x_cpufreq.clk = clk;
--
--	clk = clk_get_parent(clk);
--	if (IS_ERR(clk)) {
--		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
--			__clk_get_name(ls1x_cpufreq.clk));
--		ret = PTR_ERR(clk);
--		goto out;
--	}
--	ls1x_cpufreq.mux_clk = clk;
--
--	clk = clk_get_parent(clk);
--	if (IS_ERR(clk)) {
--		dev_err(ls1x_cpufreq.dev, "unable to get parent of %s clock\n",
--			__clk_get_name(ls1x_cpufreq.mux_clk));
--		ret = PTR_ERR(clk);
--		goto out;
--	}
--	ls1x_cpufreq.pll_clk = clk;
--
--	clk = devm_clk_get(&pdev->dev, pdata->osc_clk_name);
--	if (IS_ERR(clk)) {
--		dev_err(ls1x_cpufreq.dev, "unable to get %s clock\n",
--			pdata->osc_clk_name);
--		ret = PTR_ERR(clk);
--		goto out;
--	}
--	ls1x_cpufreq.osc_clk = clk;
--
--	ls1x_cpufreq.max_freq = pdata->max_freq;
--	ls1x_cpufreq.min_freq = pdata->min_freq;
--
--	ret = cpufreq_register_driver(&ls1x_cpufreq_driver);
--	if (ret) {
--		dev_err(ls1x_cpufreq.dev,
--			"failed to register cpufreq driver: %d\n", ret);
--		goto out;
--	}
--
--	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
--					CPUFREQ_TRANSITION_NOTIFIER);
--
--	if (!ret)
--		goto out;
--
--	dev_err(ls1x_cpufreq.dev, "failed to register cpufreq notifier: %d\n",
--		ret);
--
--	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
--out:
--	return ret;
--}
--
--static struct platform_driver ls1x_cpufreq_platdrv = {
--	.driver = {
--		.name	= "ls1x-cpufreq",
--	},
--	.probe		= ls1x_cpufreq_probe,
--	.remove		= ls1x_cpufreq_remove,
--};
--
--module_platform_driver(ls1x_cpufreq_platdrv);
--
--MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
--MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
--MODULE_LICENSE("GPL");
 -- 
 1.9.1
 
