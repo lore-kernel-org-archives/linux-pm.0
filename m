@@ -1,43 +1,88 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE
- notifier event
-Date: Wed, 6 Apr 2016 23:45:07 +0200
-Message-ID: <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
-References: <cover.1438571116.git.viresh.kumar@linaro.org>
-	<406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org>
-	<4897937.47p7WB7CoU@vostro.rjw.lan>
-	<20150910003918.GL5266@linux>
-	<CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com>
-	<57057201.9030109@codeaurora.org>
-	<CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com>
-	<57057FB1.2050904@codeaurora.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] Prefer kASLR over Hibernation
+Date: Wed, 6 Apr 2016 23:48:35 +0200
+Message-ID: <20160406214835.GA23620@gmail.com>
+References: <20160406194404.GA11150@www.outflux.net>
+ <20160406201716.GA14241@amd>
+ <CA+55aFw+JFfy+dfMbAdB3ueA1O-w--EBwMF4WKrGp754trHBDA@mail.gmail.com>
+ <CAGXu5jJ+8v_hMkV91jqNGwFdzbpoKL=gZv-92hGMF8d4o8DswQ@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <57057FB1.2050904@codeaurora.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, "list@codeaurora.org:ACPI" <linux-acpi@vger.kernel.org>, "list@codeaurora.org:DOCUMENTATION" <linux-doc@vger.kernel.org>, "list@codeaurora.org:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-hardening-return-2938-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAGXu5jJ+8v_hMkV91jqNGwFdzbpoKL=gZv-92hGMF8d4o8DswQ@mail.gmail.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@denx.de>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 6, 2016 at 11:29 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 04/06/2016 02:21 PM, Rafael J. Wysocki wrote:
->>
->> On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org>
->> wrote:
->>>
->>> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
->>>>
 
-[cut]
+* Kees Cook <keescook@chromium.org> wrote:
 
->>
->> Well, nobody was using that event.
->>
->
-> True, but that's more of a bug in drivers/thermal/cpu-cooling.c and
-> drivers/acpi/processor_thermal.c. We should revert this patch and fix those
-> drivers. Does that seem acceptable to you?
+> On Wed, Apr 6, 2016 at 1:56 PM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> > On Wed, Apr 6, 2016 at 1:17 PM, Pavel Machek <pavel@denx.de> wrote:
+> >>
+> >> Why is kASLR incompatible with hibernation? We can hibernate have
+> >> 4.3 kernel resume hibernation image of 4.2 kernel (on x86-64, and I
+> >> have patches for x86). Resuming kernel with different randomization
+> >> does not look that much different...
+> >
+> > Oh, I'd absolutely prefer to just allow kaslr together with
+> > hibernation if it actually works.
+> >
+> > Could the people who piped up to say that they actually use
+> > hibernation just try passing in the "kaslr" command line option on
+> > their machine, and see if it works for them? We could just remove the
+> > "no kaslr with hibername" code - or at least limit it to 32-bit for
+> > now..
+> >
+> > Because that would be lovely.
+> 
+> This is where our original investigation of having them coexist ended:
+> https://lkml.org/lkml/2014/6/15/180
+> 
+> To quote Rafael Wysocki:
+> > We're jumping from the boot kernel into the image kernel.  The virtual address
+> > comes from the image kernel, but the boot kernel has to use it.  The only way
+> > we can ensure that we'll jump to the right place is to pass the physical address
+> > in the header (otherwise we de facto assume that the virtual address of the
+> > target page frame will be the same in both the boot and the image kernels).
+> >
+> > The missing piece is that the code in swsusp_arch_resume() sets up temporary
+> > page tables to ensure that they won't be overwritten while copying the last
+> > remaining image kernel pages to the right page frames (those page tables
+> > have to be stored in page frames that are free from the kernel image perspective).
+> >
+> > But if the kernel address space is randomized, set_up_temporary_mappings()
+> > really should duplicate the existing layout instead of creating a new one from
+> > scratch.  Otherwise, virtual addresses before set_up_temporary_mappings() may
+> > be different from the ones after it.
 
-I'd rather see a patch series adding the event back along with some
-users.  One user at least.
+So as I suggested it in the previous mail, the right solution would be to pass in 
+the randomization seed via a new kasl_seed=xyz boot option, and thus have the same 
+addresses as prior hibernation.
+
+That should make hibernation work as-is, with very little effort.
+
+Two details I can think of:
+
+1) the new option has to be hidden from /proc/cmdline, due to:
+
+  triton:~/tip> ll /proc/cmdline
+  -r--r--r-- 1 root root 0 Apr  6 23:45 /proc/cmdline
+
+2)
+
+another detail is that the new boot option has to be checked in 
+choose_kernel_location(), to make sure it's done at the right point during bootup. 
+That's a good place to remove it from the boot options string as well.
+
+Thanks,
+
+	Ingo
