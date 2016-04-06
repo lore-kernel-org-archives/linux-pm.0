@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 04/13] intel_idle: Remove redundant initialization calls.
-Date: Wed,  6 Apr 2016 17:00:50 -0400
-Message-ID: <9a82e7196c346cb0428f37d652048ac577322c39.1459975717.git.len.brown@intel.com>
+Subject: [PATCH 07/13] intel_idle: Avoid a double free of the per-CPU data.
+Date: Wed,  6 Apr 2016 17:00:53 -0400
+Message-ID: <6c03f13a6f0a7af13deb27fd268a18946cca1ede.1459975717.git.len.brown@intel.com>
 References: <1459976459-2532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,40 +15,64 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Richard Cochran <rcochran@linutronix.de>
 
-The function, intel_idle_cpuidle_driver_init, makes calls on each CPU
-to auto_demotion_disable() and c1e_promotion_disable().  These calls
-are redundant, as intel_idle_cpu_init() does the same calls just a bit
-later on.  They are also premature, as the driver registration may yet
-fail.
+The helper function, intel_idle_cpuidle_devices_uninit, frees the
+globally allocated per-CPU data.  However, this function is invoked
+from the hot plug notifier callback at a time when freeing that data
+is not safe.
 
-This patch removes the redundant code.
+If the call to cpuidle_register_driver() should fail (say, due to lack
+of memory), then the driver will free its per-CPU region.  On the
+*next* CPU_ONLINE event, the driver will happily use the region again
+and even free it again if the failure repeats.
+
+This patch fixes the issue by moving the call to free_percpu() outside
+of the helper function at the two call sites that actually need to
+free the per-CPU data.
 
 Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/idle/intel_idle.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index d2e7baf..c50859d 100644
+index 085538a..04fe4df 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1300,16 +1300,10 @@ static void __init intel_idle_cpuidle_driver_init(void)
- 		drv->state_count += 1;
- 	}
+@@ -1069,7 +1069,7 @@ static int __init intel_idle_probe(void)
  
--	if (icpu->auto_demotion_disable_flags)
--		on_each_cpu(auto_demotion_disable, NULL, 1);
--
- 	if (icpu->byt_auto_demotion_disable_flag) {
- 		wrmsrl(MSR_CC6_DEMOTION_POLICY_CONFIG, 0);
- 		wrmsrl(MSR_MC6_DEMOTION_POLICY_CONFIG, 0);
+ /*
+  * intel_idle_cpuidle_devices_uninit()
+- * unregister, free cpuidle_devices
++ * Unregisters the cpuidle devices.
+  */
+ static void intel_idle_cpuidle_devices_uninit(void)
+ {
+@@ -1080,9 +1080,6 @@ static void intel_idle_cpuidle_devices_uninit(void)
+ 		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
+ 		cpuidle_unregister_device(dev);
  	}
 -
--	if (icpu->disable_promotion_to_c1e)	/* each-cpu is redundant */
--		on_each_cpu(c1e_promotion_disable, NULL, 1);
+-	free_percpu(intel_idle_cpuidle_devices);
+-	return;
  }
  
+ /*
+@@ -1368,6 +1365,7 @@ static int __init intel_idle_init(void)
+ 		if (retval) {
+ 			cpu_notifier_register_done();
+ 			cpuidle_unregister_driver(&intel_idle_driver);
++			free_percpu(intel_idle_cpuidle_devices);
+ 			return retval;
+ 		}
+ 	}
+@@ -1390,6 +1388,7 @@ static void __exit intel_idle_exit(void)
+ 	cpu_notifier_register_done();
  
+ 	cpuidle_unregister_driver(&intel_idle_driver);
++	free_percpu(intel_idle_cpuidle_devices);
+ }
+ 
+ module_init(intel_idle_init);
 -- 
 2.8.0.rc4.16.g56331f8
