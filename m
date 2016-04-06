@@ -1,64 +1,48 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH V1 3/7] dmaengine: Loongson1: add Loongson1 dmaengine
- driver
-Date: Wed, 6 Apr 2016 07:26:53 -0700
-Message-ID: <20160406142652.GC27292@vkoul-mobl.iind.intel.com>
-References: <1459946095-7637-1-git-send-email-keguang.zhang@gmail.com>
- <1459946095-7637-4-git-send-email-keguang.zhang@gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 1/3] intel_pstate: Use pr_fmt
+Date: Wed, 6 Apr 2016 07:51:06 -0700
+Message-ID: <002601d19013$c129de60$437d9b20$@net>
+References: <cover.1459887986.git.joe@perches.com>	 <710e23a9e0846d1aaa660849321e433b5f5dd4e7.1459887986.git.joe@perches.com> <1459892619.7030.2.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-gpio-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1459946095-7637-4-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Keguang Zhang <keguang.zhang@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org, Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta6.telus.net ([209.171.16.79]:48343 "EHLO cmta6.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753359AbcDFOvO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Apr 2016 10:51:14 -0400
+In-Reply-To: <1459892619.7030.2.camel@linux.intel.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Joe Perches' <joe@perches.com>, 'Len Brown' <lenb@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Apr 06, 2016 at 08:34:51PM +0800, Keguang Zhang wrote:
-> @@ -527,6 +527,15 @@ config ZX_DMA
->  	help
->  	  Support the DMA engine for ZTE ZX296702 platform devices.
->  
-> +config DMA_LOONGSON1
+On 2016.04.05 02:44 Srinivas Pandruvada wrote:
+> On Tue, 2016-04-05 at 13:28 -0700, Joe Perches wrote:
+>> Prefix the output using the more common kernel style.
+>> 
+>> Signed-off-by: Joe Perches <joe@perches.com>
+> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>> ---
+>>  drivers/cpufreq/intel_pstate.c | 18 ++++++++++--------
+>>  1 file changed, 10 insertions(+), 8 deletions(-)
 
-The kconfig and makefile is sorted alphabetically, pls arrage these entries
-accordingly
+...[cut, example left]...
 
-> +
-> +		/*memorize the physical address of descriptor */
+> -		pr_warn("intel_pstate: Turbo disabled by BIOS or
+> unavailable on processor\n");
+> +		pr_warn("Turbo disabled by BIOS or unavailable on
+> processor\n");
 
-bad comment style
+I do  not understand.
+The common and unique string "intel_pstate" was added on purpose
+so as to provide a way to easily extract the related message from
+an otherwise huge log file.
+
+Reference:
+commit f16255eb930173f386db0ce78ed41401aa8a94a6
 
 
-> +	/*allocate DMA descriptors */
 
-here and other places too :(
-
-> +static enum dma_status ls1x_dma_tx_status(struct dma_chan *chan,
-> +					  dma_cookie_t cookie,
-> +					  struct dma_tx_state *txstate)
-> +{
-> +	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-> +	struct ls1x_dma_desc *dma_desc = dma_chan->dma_desc;
-> +	struct virt_dma_desc *vdesc;
-> +	enum dma_status status;
-> +	unsigned int residue = 0;
-> +	unsigned long flags;
-> +
-> +	status = dma_cookie_status(chan, cookie, txstate);
-> +	if ((status == DMA_COMPLETE) || !txstate)
-> +		return status;
-> +
-> +	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
-> +
-> +	vdesc = vchan_find_desc(&dma_chan->vchan, cookie);
-> +	if (vdesc)
-> +		/* not yet processed */
-> +		residue = ls1x_dma_desc_residue(to_ls1x_dma_desc(vdesc), 0);
-
-If your usage queries reside repeatedly, then it might make sense to store
-the size which is residue here
-
--- 
-~Vinod
