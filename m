@@ -1,7 +1,7 @@
 From: Peter Chen <hzpeterchen@gmail.com>
 Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 6 Apr 2016 16:10:06 +0800
-Message-ID: <20160406081006.GD21101@shlinux2.ap.freescale.net>
+Date: Wed, 6 Apr 2016 16:11:24 +0800
+Message-ID: <20160406081124.GE21101@shlinux2.ap.freescale.net>
 References: <cover.1459494743.git.baolin.wang@linaro.org>
  <6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
  <20160406072513.GB21101@shlinux2.ap.freescale.net>
@@ -11,10 +11,10 @@ References: <cover.1459494743.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:34790 "EHLO
-	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbcDFIQv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 04:16:51 -0400
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35963 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754721AbcDFISJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 04:18:09 -0400
 Content-Disposition: inline
 In-Reply-To: <87shyz2md5.fsf@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -55,11 +55,7 @@ On Wed, Apr 06, 2016 at 11:05:26AM +0300, Felipe Balbi wrote:
 > limit is 2000mA but we're charging at 1000mA ;-)
 > 
 
-Does the user need to know the $this charger limit? Don't they only
-care about the current charging value? I have a USB cable which can
-show charging current value, it changes from time to time, when it
-connects to host pc, it shows 430mA; when it connects to dedicated
-charger, it shows 1000mA.
+The user doesn't need to know the value which spec designs.
 
 -- 
 
