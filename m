@@ -1,122 +1,89 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v9 2/4] gadget: Support for the usb charger framework
-Date: Wed, 6 Apr 2016 18:46:36 +0800
-Message-ID: <CAMz4kuJkf0Q1JKdc5W8EcDBvr6MccTcdZa-Pse_Z4pFwySTSDA@mail.gmail.com>
+Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
+Date: Wed, 6 Apr 2016 19:31:11 +0800
+Message-ID: <CAMz4kuJmQTEXSjL55+fEm0-RO6N3isS60kPmD1XaXxGNumTpXg@mail.gmail.com>
 References: <cover.1459494743.git.baolin.wang@linaro.org>
-	<13c2f4fb71958bf9a5527acbed8b8b60dc569656.1459494744.git.baolin.wang@linaro.org>
-	<20160406071956.GA21101@shlinux2.ap.freescale.net>
+	<6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
+	<AM4PR04MB2130AD03DCB2121336E95869899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f177.google.com ([209.85.161.177]:32888 "EHLO
-	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbcDFKqi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 06:46:38 -0400
-Received: by mail-yw0-f177.google.com with SMTP id t10so50847304ywa.0
-        for <linux-pm@vger.kernel.org>; Wed, 06 Apr 2016 03:46:37 -0700 (PDT)
-In-Reply-To: <20160406071956.GA21101@shlinux2.ap.freescale.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AM4PR04MB2130AD03DCB2121336E95869899F0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jun Li <jun.li@nxp.com>
+Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 6 April 2016 at 15:19, Peter Chen <hzpeterchen@gmail.com> wrote:
-> On Fri, Apr 01, 2016 at 03:21:50PM +0800, Baolin Wang wrote:
->>
->> @@ -563,6 +564,8 @@ struct usb_gadget_ops {
->>       struct usb_ep *(*match_ep)(struct usb_gadget *,
->>                       struct usb_endpoint_descriptor *,
->>                       struct usb_ss_ep_comp_descriptor *);
->> +     /* get the charger type */
->> +     enum usb_charger_type (*get_charger_type)(struct usb_gadget *);
->>  };
+On 6 April 2016 at 16:26, Jun Li <jun.li@nxp.com> wrote:
+> Hi
 >
-> Since we already have get_charger_type callback at usb_charger
-> structure, why we still need this API at usb_gadget_ops?
-
-In case some users want to get charger type at gadget level.
-
->
->>
->>  /**
->> @@ -635,6 +638,8 @@ struct usb_gadget {
->>       unsigned                        out_epnum;
->>       unsigned                        in_epnum;
->>       struct usb_otg_caps             *otg_caps;
->> +     /* negotiate the power with the usb charger */
->> +     struct usb_charger              *charger;
->>
->>       unsigned                        sg_supported:1;
->>       unsigned                        is_otg:1;
->> @@ -839,10 +844,20 @@ static inline int usb_gadget_vbus_connect(struct usb_gadget *gadget)
->>   * reporting how much power the device may consume.  For example, this
->>   * could affect how quickly batteries are recharged.
->>   *
->> + * It will also notify the USB charger how much power the device may
->> + * consume if there is a USB charger linking with the gadget.
->> + *
->>   * Returns zero on success, else negative errno.
->>   */
->>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
->>  {
->> +     enum usb_charger_type type;
+>> + */
+>> +static enum usb_charger_type
+>> +usb_charger_get_type_by_others(struct usb_charger *uchger) {
+>> +     if (uchger->type != UNKNOWN_TYPE)
+>> +             return uchger->type;
 >> +
->> +     if (gadget->charger) {
->> +             type = usb_charger_get_type(gadget->charger);
->> +             usb_charger_set_cur_limit_by_type(gadget->charger, type, mA);
+>> +     if (uchger->psy) {
+>> +             union power_supply_propval val;
+>> +
+>> +             power_supply_get_property(uchger->psy,
+>> +                                       POWER_SUPPLY_PROP_CHARGE_TYPE,
+>> +                                       &val);
+>> +             switch (val.intval) {
+>> +             case POWER_SUPPLY_TYPE_USB:
+>> +                     uchger->type = SDP_TYPE;
+>> +                     break;
+>> +             case POWER_SUPPLY_TYPE_USB_DCP:
+>> +                     uchger->type = DCP_TYPE;
+>> +                     break;
+>> +             case POWER_SUPPLY_TYPE_USB_CDP:
+>> +                     uchger->type = CDP_TYPE;
+>> +                     break;
+>> +             case POWER_SUPPLY_TYPE_USB_ACA:
+>> +                     uchger->type = ACA_TYPE;
+>> +                     break;
+>> +             default:
+>> +                     uchger->type = UNKNOWN_TYPE;
+>> +                     break;
+>> +             }
+>> +     } else if (uchger->get_charger_type) {
+>> +             uchger->type = uchger->get_charger_type(uchger);
+>> +     } else {
+>> +             uchger->type = UNKNOWN_TYPE;
 >> +     }
 >> +
+>> +     return uchger->type;
+>> +}
+>> +
 >
-> You may do something redundant.
+> I think we may don't need this usb_charger_get_type_by_others().
+> "uchger->type" is set in one place is enough, that is: by
+> uchger->charger_detect() in usb_charger_detect_type(), then
+> usb_charger_get_type_by_others() is replaced by usb_charger_get_type().
 >
-> - Charger detection only occurs at connection period, at other periods,
-> we only change the current limit, and notify charger IC. That is to
-> say, we may only need to save charger type and current limit at
-> usb_charger structure, we don't need to distinguish all chargers
-> type from time to time.
-
-That's right. I just want to get the charger type as one parameter to
-set current. The function is implemented as below:
-
-enum usb_charger_type usb_charger_get_type(struct usb_charger *uchger)
-{
-        enum usb_charger_type type;
-
-        mutex_lock(&uchger->lock);
-        type = uchger->type;
-        mutex_unlock(&uchger->lock);
-
-        return type;
-}
-
+> uchger->charger_detect() can have diff implementations no matter
+> what kind of mechanism is used, for your PMIC case, you can just
+> directly get the type value by power_supply_get_property();
+> with that, we can have one central place to set uchger->type.
+> After uchger->type is set, charger type detection is no need to be
+> involved until charger type changes.
 >
-> - The purpose of usb_gadget_vbus_draw design is notify charger IC too,
-> so you can do set current limit and notify charger IC together at this
-> API together, it has already covered all situations. We don't need to
-> notify charger IC again when the gadget status has changed again.
+> Then next question is where is to call usb_charger_detect_type(),
+> We need make sure it finished before usb gadget connect.
 
-It did not notify charger IC again. You are right,
-usb_gadget_vbus_draw design will notify charger IC, so we want to
-record the current in usb charger framework at the same time.
+Yeah, that's the point: where? It is hard for usb charger framework to
+control, which will make it more complicated. The
+'usb_charger_detect_type()' is used for detecting the charger type
+manually on user's platform, and user should call it at the right time
+to avoid affecting gadget enumeration. Otherwise user can implement
+some callbacks showed in 'usb_charger_get_type_by_others()' function
+to get charger type. I think this is controllable and simple for the
+usb charger framework.
 
 >
->>       if (!gadget->ops->vbus_draw)
->>               return -EOPNOTSUPP;
->>       return gadget->ops->vbus_draw(gadget, mA);
->> --
->> 1.7.9.5
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Ideal is with your framework, diff users only need implement
+> uchger->charger_detect(). :)
 >
-> --
->
-> Best Regards,
-> Peter Chen
-
-
 
 -- 
 Baolin.wang
