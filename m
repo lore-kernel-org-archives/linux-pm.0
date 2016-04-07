@@ -1,153 +1,105 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 00/12] ARM/arm64: dts: rcar: Add SYSC PM domains
+Subject: [PATCH v4 06/11] soc: renesas: rcar-sysc: Add support for R-Car H1 power areas
 Date: Thu,  7 Apr 2016 14:20:23 +0200
-Message-ID: <1460031635-13452-1-git-send-email-geert+renesas@glider.be>
+Message-ID: <1460031628-13336-7-git-send-email-geert+renesas@glider.be>
+References: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:39137 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755949AbcDGMU3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 08:20:29 -0400
+Received: from xavier.telenet-ops.be ([195.130.132.52]:37034 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755971AbcDGMUY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 08:20:24 -0400
+In-Reply-To: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-	Hi Simon, Magnus,
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v4:
+  - Drop R8A7779_PD_SH, as it's not documented in the datasheet,
+  - Reformat table,
 
-This patch series adds the R-Car System Controller to the DTS files for
-the various Renesas R-Car SoCs, and hooks up devices to their respective
-PM domains.
+v3:
+  - New (converted from DT to C).
+---
+ drivers/soc/renesas/Makefile       |  2 +-
+ drivers/soc/renesas/r8a7779-sysc.c | 30 ++++++++++++++++++++++++++++++
+ drivers/soc/renesas/rcar-sysc.c    |  3 +++
+ drivers/soc/renesas/rcar-sysc.h    |  1 +
+ 4 files changed, 35 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/soc/renesas/r8a7779-sysc.c
 
-This is a dependency for the enablement of DU and VSP on R-Car H3, as
-on this SoC the VSPs are located in a PM Domain.
-
-This series contains 2 parts:
-  1. Patches 1-6 add device node for the System Controllers, and hook
-     up CPU cores and L2 caches/SCUs to their respective PM Domains,
-  2. Patches 7-12 hook up devices to the SYSC "always-on" PM Domain, for
-     a more consistent device-power-area description in DT.
-
-While part 1 is safe to apply, part 2 causes more deferred probing,
-which exposes a few deficiencies in subsystems and drivers:
-
-  1. The PHY subsystem doesn't support deferred probe, so Micrel
-     KSZ8041RNLI (R-Car Gen2) or KSZ9031 (R-Car Gen3) falls back to
-     polling:
-
-	irq: no irq domain found for /interrupt-controller@e61c0000 !
-	Micrel KSZ8041RNLI ee700000.etherne:01: attached PHY driver [Micrel KSZ8041RNLI] (mii_bus:phy_addr=ee700000.etherne:01, irq=-1)
-
-	irq: no irq domain found for /soc/gpio@e6052000 !
-	Micrel KSZ9031 Gigabit PHY e6800000.etherne:00: attached PHY driver [Micrel KSZ9031 Gigabit PHY] (mii_bus:phy_addr=e6800000.etherne:00, irq=-1)
-
-  2. The Audio DMAC is now initialized after rcar_sound on R-Car Gen2
-     and Gen3, so rcar_sound falls back to PIO:
-
-	rcar_sound ec500000.sound: can't get dma channel
-	rcar_sound ec500000.sound: ssi[0] fallback to PIO mode
-	rcar_sound ec500000.sound: can't get dma channel
-	rcar_sound ec500000.sound: ssi[1] fallback to PIO mode
-
-  3. The System DMAC is now initialized after the SPI drivers on R-Car
-     Gen2, hence they fall back to PIO:
-
-	renesas_spi e6b10000.spi: dma_request_slave_channel_compat failed
-	renesas_spi e6b10000.spi: DMA not available, using PIO
-
-	spi_sh_msiof e6e20000.spi: dma_request_slave_channel_compat failed
-	spi_sh_msiof e6e20000.spi: DMA not available, using PIO
-
-  4. On r8a7790/lager, I see various i2c failures:
-
-	adv7180 6-0020: chip found @ 0x20 (e6520000.i2c)
-	adv7180: probe of 6-0020 failed with error -110
-
-	i2c 7-0058: Masking da9063 interrupt sources
-	i2c 7-0058: i2c error -110
-	da9063 7-0058: Cannot read FAULT_LOG.
-	da9063 7-0058: Cannot clear fault log
-	da9063 7-0058: Cannot read chip model id.
-	da9063: probe of 7-0058 failed with error -5
-	i2c 7-0068: Masking da9210 interrupt sources
-	i2c 7-0068: i2c error -110
-	da9210 7-0068: Failed to write to mask reg: -110
-	da9210: probe of 7-0068 failed with error -110
-
-Hence for now I think it's best to just apply the first part, to allow
-progress on R-Car H3, and postpone the second part until the issues are
-sorted out.
-
-Changes compared to v3:
-  - Add power-domains properties to the sysc nodes, to refer to the
-    SoC's Clock Domains,
-  - Extract using the SYSC "always-on" PM Domain on R-Car H3 into its
-    own patch,
-  - Add patches to use the SYSC "always-on" PM Domain on R-Car H1 and
-    R-Car Gen2,
-  - Update for recently added can0, can1, pciec0, and pciec1 device
-    nodes on R-Car H3.
-
-Changes compared to v2:
-  - Move power area hierarchy from DT to C (cfr. DT bindings for Renesas
-    CPG/MSSR), and switch to "#power-domain-cells = <1>",
-  - Drop fallback compatibility strings, as the bindings are
-    SoC-specific,
-  - Add an "always-on" power area on R-Car H3.
-
-Changes compared to v1:
-  - Add R-Car H3 (r8a7795) support,
-  - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
-  - Add fallback compatibility strings for R-Car Gen2 and Gen3.
-
-Dependencies:
-  - renesas-devel-20160406-v4.6-rc2,
-  - "[PATCH v4 0/7] PM / Domains: Add DT bindings for the R-Car System
-    Controller",
-  - "[PATCH v4 00/11] soc: renesas: Add R-Car SYSC PM Domain Support".
-Note that these are hard dependencies: adding SYSC PM Domains to DTS
-files without driver support may cause breakage!
-
-For your convenience, I've pushed this, incl. all dependencies, to the
-topic/rcar-sysc-pd-v4 branch of
-https://git.kernel.org/cgit/linux/kernel/git/geert/renesas-drivers.git
-
-This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
-r8a7794/alt, and r8a7795/salvator-x.
-
-Thanks for applying part 1 (patches 1-6)!
-
-Geert Uytterhoeven (12):
-  ARM: dts: r8a7779: Add SYSC PM Domains
-  ARM: dts: r8a7790: Add SYSC PM Domains
-  ARM: dts: r8a7791: Add SYSC PM Domains
-  ARM: dts: r8a7793: Add SYSC PM Domains
-  ARM: dts: r8a7794: Add SYSC PM Domains
-  arm64: dts: r8a7795: Add SYSC PM Domains
-  ARM: dts: r8a7779: Use SYSC "always-on" PM Domain
-  ARM: dts: r8a7790: Use SYSC "always-on" PM Domain
-  ARM: dts: r8a7791: Use SYSC "always-on" PM Domain
-  ARM: dts: r8a7793: Use SYSC "always-on" PM Domain
-  ARM: dts: r8a7794: Use SYSC "always-on" PM Domain
-  arm64: dts: r8a7795: Use SYSC "always-on" PM Domain
-
- arch/arm/boot/dts/r8a7779.dtsi           |  55 ++++++-----
- arch/arm/boot/dts/r8a7790.dtsi           | 156 ++++++++++++++++--------------
- arch/arm/boot/dts/r8a7791.dtsi           | 157 +++++++++++++++++--------------
- arch/arm/boot/dts/r8a7793.dtsi           | 106 +++++++++++----------
- arch/arm/boot/dts/r8a7794.dtsi           | 117 ++++++++++++-----------
- arch/arm64/boot/dts/renesas/r8a7795.dtsi | 124 +++++++++++++-----------
- 6 files changed, 395 insertions(+), 320 deletions(-)
-
+diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
+index 2b64f6c9468136f9..b8aa9db4fdd95eb8 100644
+--- a/drivers/soc/renesas/Makefile
++++ b/drivers/soc/renesas/Makefile
+@@ -1,4 +1,4 @@
+-obj-$(CONFIG_ARCH_R8A7779)	+= rcar-sysc.o
++obj-$(CONFIG_ARCH_R8A7779)	+= rcar-sysc.o r8a7779-sysc.o
+ obj-$(CONFIG_ARCH_R8A7790)	+= rcar-sysc.o
+ obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o
+ obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o
+diff --git a/drivers/soc/renesas/r8a7779-sysc.c b/drivers/soc/renesas/r8a7779-sysc.c
+new file mode 100644
+index 0000000000000000..389d6c7120be4c54
+--- /dev/null
++++ b/drivers/soc/renesas/r8a7779-sysc.c
+@@ -0,0 +1,30 @@
++/*
++ * Renesas R-Car H1 System Controller
++ *
++ * Copyright (C) 2016 Glider bvba
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ */
++
++#include <linux/bug.h>
++#include <linux/kernel.h>
++
++#include <dt-bindings/power/r8a7779-sysc.h>
++
++#include "rcar-sysc.h"
++
++static const struct rcar_sysc_area r8a7779_areas[] __initconst = {
++	{ "arm1",	 0x40, 1, R8A7779_PD_ARM1,	-1, PD_CPU_CR },
++	{ "arm2",	 0x40, 2, R8A7779_PD_ARM2,	-1, PD_CPU_CR },
++	{ "arm3",	 0x40, 3, R8A7779_PD_ARM3,	-1, PD_CPU_CR },
++	{ "sgx",	 0xc0, 0, R8A7779_PD_SGX,	-1 },
++	{ "vdp",	0x100, 0, R8A7779_PD_VDP,	-1 },
++	{ "imp",	0x140, 0, R8A7779_PD_IMP,	-1 },
++};
++
++const struct rcar_sysc_info r8a7779_sysc_info __initconst = {
++	.areas = r8a7779_areas,
++	.num_areas = ARRAY_SIZE(r8a7779_areas),
++};
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 6fad1311133a3ac7..89505e3dae9be4bd 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -308,6 +308,9 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ }
+ 
+ static const struct of_device_id rcar_sysc_matches[] = {
++#ifdef CONFIG_ARCH_R8A7779
++	{ .compatible = "renesas,r8a7779-sysc", .data = &r8a7779_sysc_info },
++#endif
+ 	{ /* sentinel */ }
+ };
+ 
+diff --git a/drivers/soc/renesas/rcar-sysc.h b/drivers/soc/renesas/rcar-sysc.h
+index 4aeb3541227a5456..d1ec6fad38b35681 100644
+--- a/drivers/soc/renesas/rcar-sysc.h
++++ b/drivers/soc/renesas/rcar-sysc.h
+@@ -49,4 +49,5 @@ struct rcar_sysc_info {
+ 	unsigned int num_areas;
+ };
+ 
++extern const struct rcar_sysc_info r8a7779_sysc_info;
+ #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 1.9.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
