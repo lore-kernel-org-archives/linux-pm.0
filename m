@@ -1,125 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for cpufreq_suspended set
-Date: Fri, 08 Apr 2016 00:05:08 +0200
-Message-ID: <2346918.2NTGrKGAVB@vostro.rjw.lan>
-References: <2044559.GVlD7a2JcO@vostro.rjw.lan> <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com> <20160407120503.GG3201@vireshk-i7>
+From: Andreas Noever <andreas.noever@gmail.com>
+Subject: Re: [RFC 1/4] PCI: Add Thunderbolt device IDs
+Date: Fri, 8 Apr 2016 00:42:21 +0200
+Message-ID: <CAMxnaaW5hFw_wb-tAYofyj-+tP--Ehz1Rw6MNVzXrYKwAxCeEA@mail.gmail.com>
+References: <cover.1458126755.git.lukas@wunner.de> <d30491f2c4c1c6d28c78c5883820f9dc28c010d9.1458126755.git.lukas@wunner.de>
+ <20160317150320.GA22769@localhost> <20160320131135.GA29174@wunner.de>
+ <20160320171246.GB16658@kroah.com> <20160405232712.GI15353@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57248 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752898AbcDGWCg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 18:02:36 -0400
-In-Reply-To: <20160407120503.GG3201@vireshk-i7>
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:33978 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbcDGWml (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 18:42:41 -0400
+In-Reply-To: <20160405232712.GI15353@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
 
-On Thursday, April 07, 2016 05:35:03 PM Viresh Kumar wrote:
-> On 07-04-16, 13:44, Rafael J. Wysocki wrote:
-> > I'm not sure I'm following.
-> > 
-> > Without this patch fast switch is disabled when we offline the nonboot
-> > CPUs during suspend, because cpufreq_exit_governor() runs then, but
-> > the cpufreq_governor() called by it does nothing.  Also
-> > cpufreq_governor() during nonboot CPUs online does nothing.
-> > 
-> > That has to be made consistent somehow.  This patch is one way.
-> > Another way would be to disable fast switch from the governor ->exit
-> > callback, but the net result would be the same.
-> 
-> Actually things are working fine today by chance IMO, because we don't
-> free the policy structures anymore while we offline CPUs.
+Hi Bjorn,
 
-Yes, that's why they work.  And that's because the code has been written
-that way.  Whether that happened by chance or by design, or because of
-a favorable concentration of the Force, I don't care.
+I think merging thunderbolt through your tree makes sense, so that is
+fine with me!
 
-> Otherwise, policy->governor_data would have been lost together with
-> the policy, and governor wouldn't have worked properly after resume.
-> 
-> What we are doing today is something like this:
-> 
-> Suspend
-> -------
-> 
-> -> cpufreq_suspend()
->  -> STOP governor
->  -> cpufreq_suspended = true
-> 
-> -> Offline non-boot CPUs
->   -> cpufreq_offline()
->     -> SKIP calling EXIT governor (governor had allocated few
->     resources earlier)
-> 
-> Resume
-> ------
-> 
-> -> Bring back non-boot CPUs
->   -> cpufreq_online()
->     -> SKIP calling INIT governor (policy->governor_data doesn't get
->     reset, luckily)
+Best,
+Andreas
 
-policy->governor_data is not reset.  Period.
-
-> 
-> -> cpufreq_resume()
->  -> cpufreq_suspended = false
->  -> START governor
-
-Yes, that's what the code flow is.
-
-> 
-> That's *ugly* and it works by chance, unless I am misreading it
-> completely.
-
-I'm assuming that what you mean by "ugly" here is "not really straightforward",
-which I agree with, but then it is really disappointing to see comments like
-that from you about the code that you helped to write.
-
-But instead of going for a rant about how disappointed I am, let me focus on
-the technical side of things.
-
-As per the code today, the only legitimate role of cpufreq_suspended is to prevent
-governor operations from being carried out when disabling nonboot CPUs during
-system suspend.  My *interpretation* of that is that this is to avoid accessing
-hardware resources that may not be available at that point, which is fair enough.
-It also has a nice side effect that the disabling/enabling nonboot CPUs doesn't
-run code that it doesn't have to run (like remmoving/creating governor tunables
-directory in sysfs in the tunables-per-policy case).  That is good.
-
-The bad thing is how that is different from the runtime CPU offline.
-
-> One of the solutions to get this cleaned is to stop checking for
-> cpufreq_suspended flag in cpufreq_governor() and put that *only* in
-> places where we are trying to interact with the hardware. And that
-> essentially is the callbacks provided by the cpufreq drivers. So,
-> ignore calling cpufreq-driver callbacks if cpufreq_suspended is true.
-
-No, cpufreq_suspended is not sufficient for that, because the setting/clearing
-of it is generally racy with respect to pretty much anything except for the
-suspend process itself.  Checking it outside of the suspend process would be
-a bug.
-
-Moreover, runtime CPU offline *also* doesn't have to run the governor exit/init
-for the same reason why the policy directory doesn't have to be removed on
-CPU offline: it is just pointless to do that.  The governor has been stopped
-already and it won't do anything more.  The only problem here is to prevent
-governor tunable sysfs attributes from triggering actions in that state,
-but that shouldn't be too difficult to arrange for.  If that's done,
-cpufreq_suspended can be dropped, modulo changing cpufreq_start_governor()
-to return immediately if the governor has been started already.
-
-And if something else is needed to protect driver callbacks from being invoked
-outside of the suspend-resume path, a more robust mechanism has to be added
-for that.
-
-But in the meantime, I'd like to address the fast switch problem first and
-then you're free to clean up things on top of that.  Or I will clean them up
-if I have the time.
-
-Thanks,
-Rafael
-
+On Wed, Apr 6, 2016 at 1:27 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Sun, Mar 20, 2016 at 10:12:46AM -0700, Greg Kroah-Hartman wrote:
+>> On Sun, Mar 20, 2016 at 02:11:35PM +0100, Lukas Wunner wrote:
+>> > Hi Bjorn,
+>> >
+>> > On Thu, Mar 17, 2016 at 10:03:20AM -0500, Bjorn Helgaas wrote:
+>> > > On Wed, Mar 16, 2016 at 03:50:35PM +0100, Lukas Wunner wrote:
+>> > > > Gen 1 and 2 chips use the same ID for NHI, bridges and switch.
+>> > > > Gen 3 chips and onward use a distinct ID for the NHI.
+>> > >
+>> > > I assume this is strictly using #defines instead of bare numbers and
+>> > > hence "no functional change intended."
+>> > >
+>> > > > Cc: Andreas Noever <andreas.noever@gmail.com>
+>> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+>> > >
+>> > > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>> >
+>> > Thanks, I've just posted a 3 patch series to support the Light Ridge
+>> > Thunderbolt controller and included your ack for this patch.
+>> >
+>> >
+>> > > I assume somebody else will merge this with the rest of the series.
+>> >
+>> > The maintainer of the thunderbolt driver is Andreas Noever, however
+>> > I don't think Andreas sends pull requests to Linus. Everything in
+>> > drivers/thunderbolt/ has so far been picked up by Greg KH.
+>> >
+>> > I have more thunderbolt stuff in the pipeline, some of which needs
+>> > changes to drivers/pci/. Therefore it would be ideal from my perspective
+>> > if my thunderbolt patches could go in via your tree, if that is possible.
+>>
+>> I have no objection if they go through the PCI tree, especially as
+>> Thunderbolt really just is PCI express, it makes sense to take them that
+>> way.
+>
+> Andreas, what's your preference?  If you want me to merge Thunderbolt
+> stuff via my PCI tree, I can do that.  But I don't know anything about
+> Thunderbolt and don't have specs or ability to test it, so I would
+> rely on you to ack any changes.  If you'd like to merge Thunderbolt
+> stuff yourself, that would be less work for me, so even better :)  But
+> either way is fine.
+>
+> Bjorn
