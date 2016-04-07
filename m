@@ -1,63 +1,93 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: tegra124: No need of setting platform-data
-Date: Thu, 7 Apr 2016 13:41:05 +0200
-Message-ID: <20160407114105.GB10231@ulmo.ba.sec>
-References: <60bdca9a8f31714d733ace7e7c25c46cd366082f.1459260280.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
+ cpufreq_suspended set
+Date: Thu, 7 Apr 2016 13:44:14 +0200
+Message-ID: <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com>
+References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+	<20160407042820.GA14903@vireshk-i7>
+	<CAJZ5v0gfadfuSdkoitFJAZfYXLJhed+1w2wiq1O3VnVK+fGYzA@mail.gmail.com>
+	<20160407113226.GE3201@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="8GpibOaaTibBMecb"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <60bdca9a8f31714d733ace7e7c25c46cd366082f.1459260280.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:34044 "EHLO
+	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755952AbcDGLoQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 07:44:16 -0400
+In-Reply-To: <20160407113226.GE3201@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+On Thu, Apr 7, 2016 at 1:32 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 07-04-16, 13:22, Rafael J. Wysocki wrote:
+>> On Thu, Apr 7, 2016 at 6:28 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 07-04-16, 03:29, Rafael J. Wysocki wrote:
+>> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >>
+>> >> Since governor operations are generally skipped if cpufreq_suspended
+>> >> is set, do nothing at all in cpufreq_start_governor() and
+>> >> cpufreq_exit_governor() in that case.
+>> >>
+>> >> In particular, this prevents fast frequency switching from being
+>> >> disabled after a suspend-to-RAM cycle on all CPUs except for the
+>> >> boot one.
+>> >
+>> > static int cpufreq_governor(struct cpufreq_policy *policy, unsigned int event)
+>> > {
+>> >         int ret;
+>> >
+>> >         /* Don't start any governor operations if we are entering suspend */
+>> >         if (cpufreq_suspended)
+>> >                 return 0;
+>> >
+>> >         ...
+>> >
+>> > }
+>> >
+>> > Above already guarantees that we would start/stop governors. Why do we
+>> > need this change then ?
+>>
+>> Because we do extra stuff in cpufreq_start_governor() and
+>> cpufreq_exit_governor() that *also* shouldn't be done if
+>> cpufreq_suspended is set.
+>
+> The only extra thing done by cpufreq_exit_governor() is
+> cpufreq_disable_fast_switch(), which just plays with
+> cpufreq_fast_switch_count and policy->fast_switch_enabled.
+>
+> That should be done even if we have started to suspend.
 
---8GpibOaaTibBMecb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well, no.
 
-On Tue, Mar 29, 2016 at 07:35:12PM +0530, Viresh Kumar wrote:
-> All CPUs on Tegra platform share clock/voltage lines and there is
-> absolutely no need of setting platform data for 'cpufreq-dt' platform
-> device, as that's the default case.
->=20
-> Stop setting platform data for cpufreq-dt device.
->=20
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
-> Only compile tested.
->=20
->  drivers/cpufreq/tegra124-cpufreq.c | 7 -------
->  1 file changed, 7 deletions(-)
+The problem here is that fast switch is enabled by the governor init
+and that's not called if cpufreq_suspend is set.
 
-Everything seems to be working fine after this:
+> The exit-governor path is be called while we hot-unplug all non-boot
+> CPUs during suspend. Which would eventually mean that at least
+> cpufreq_fast_switch_count will stay positive for ever now, and we just
+> can't recover from this situation.
 
-Tested-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+I'm not sure I'm following.
 
---8GpibOaaTibBMecb
-Content-Type: application/pgp-signature; name="signature.asc"
+Without this patch fast switch is disabled when we offline the nonboot
+CPUs during suspend, because cpufreq_exit_governor() runs then, but
+the cpufreq_governor() called by it does nothing.  Also
+cpufreq_governor() during nonboot CPUs online does nothing.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+That has to be made consistent somehow.  This patch is one way.
+Another way would be to disable fast switch from the governor ->exit
+callback, but the net result would be the same.
 
-iQIcBAABCAAGBQJXBkdOAAoJEN0jrNd/PrOhVmkQAIP1JXkU1FR7JWCPJdIi0wBK
-YoegQl4Kmp+7GmyJPOr96wdmMKKYRluaFHp4LWA7mmKH7omO+kEEZrBM6Ph09LZg
-g9h9Y9A+sOhH0oyyhR85vhzVpl7CJJo8YaTucb3sM2F4EZYnV2mKbK+U7HG7NGSu
-HNOELLDNEXevZmLQhPjhQyD0iyuO6DV2A9etYKc1uEUqTNvOohBaMLGmNs31uM7j
-hI0lp6vSmnWoZ9H/9FfcTvG5ay1Uz4Zddzxy+c/SwmF7mbfr14nQhe9OM7bWxMBi
-kfdbX41pXtGWFymeggin/0JmjD1Mn78iOJwZd3GVLRh0fS26hM2eM+l9FUBnQIpd
-5mOVuuTHCx+5UsucUMjgE7yoQvnEIvqdF3iVNtvzll1nDQwcLBy/KZMN36SRR+f9
-LPYVpRf8SjS8ayrJRWOzGwuA7Ai2PCSGEuRWKFKDdHREF7cdX39NlVyBLG+1vsgx
-zPmidCj2Beo8tVIYsiI2ojdvlajrrltlYvMGB4URacMUEjF9xmfSOEdcssASOeHj
-Gt9z96ZJ3IxuLYry2/dwcR1oWuI1LfFtbZz21s+dwFvUsad/fvrD2MIvFHXPYoSA
-+OXB1qE6R5T+o6xTql0fnHTdt7GSHS2wYwGqxl6xAUYQD18cjb0pAIfAsUafhzrz
-xUtAIYIZEVVlp4OSGarf
-=ocUn
------END PGP SIGNATURE-----
+> Similarly for cpufreq_start_governor(), we call
+> cpufreq_update_current_freq(). I think we should move the check to
+> this routine instead.
+>
+> IOW, we are using this cpufreq_suspended flag to return early in cases
+> where its not safe to try to access the hardware registers, as they
+> might be accessible via a device that has suspended now, like I2C or
+> SPI.
 
---8GpibOaaTibBMecb--
+Right.  So checking cpufreq_suspended upfront in
+cpufreq_start_governor() and cpufreq_exit_governor() addresses that.
