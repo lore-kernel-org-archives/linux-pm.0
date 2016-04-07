@@ -1,115 +1,76 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v10 2/4] gadget: Support for the usb charger framework
-Date: Thu,  7 Apr 2016 19:48:44 +0800
-Message-ID: <a87d5309c4deae2c3b6779568342f83ee0157eba.1460029375.git.baolin.wang@linaro.org>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
+ cpufreq_suspended set
+Date: Thu, 7 Apr 2016 17:35:03 +0530
+Message-ID: <20160407120503.GG3201@vireshk-i7>
+References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+ <20160407042820.GA14903@vireshk-i7>
+ <CAJZ5v0gfadfuSdkoitFJAZfYXLJhed+1w2wiq1O3VnVK+fGYzA@mail.gmail.com>
+ <20160407113226.GE3201@vireshk-i7>
+ <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1460029375.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1460029375.git.baolin.wang@linaro.org>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-For supporting the usb charger, it adds the usb_charger_init() and
-usb_charger_exit() functions for usb charger initialization and exit.
+On 07-04-16, 13:44, Rafael J. Wysocki wrote:
+> I'm not sure I'm following.
+> 
+> Without this patch fast switch is disabled when we offline the nonboot
+> CPUs during suspend, because cpufreq_exit_governor() runs then, but
+> the cpufreq_governor() called by it does nothing.  Also
+> cpufreq_governor() during nonboot CPUs online does nothing.
+> 
+> That has to be made consistent somehow.  This patch is one way.
+> Another way would be to disable fast switch from the governor ->exit
+> callback, but the net result would be the same.
 
-It will report to the usb charger when the gadget state is changed,
-then the usb charger can do the power things.
+Actually things are working fine today by chance IMO, because we don't
+free the policy structures anymore while we offline CPUs.
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/usb/gadget/udc/udc-core.c |   11 +++++++++++
- include/linux/usb/gadget.h        |   13 +++++++++++++
- 2 files changed, 24 insertions(+)
+Otherwise, policy->governor_data would have been lost together with
+the policy, and governor wouldn't have worked properly after resume.
 
-diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
-index b86a6f0..8d98c6b 100644
---- a/drivers/usb/gadget/udc/udc-core.c
-+++ b/drivers/usb/gadget/udc/udc-core.c
-@@ -28,6 +28,7 @@
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
- #include <linux/usb.h>
-+#include <linux/usb/charger.h>
- 
- /**
-  * struct usb_udc - describes one usb device controller
-@@ -230,6 +231,9 @@ static void usb_gadget_state_work(struct work_struct *work)
- 	struct usb_gadget *gadget = work_to_gadget(work);
- 	struct usb_udc *udc = gadget->udc;
- 
-+	/* when the gadget state is changed, then report to USB charger */
-+	usb_charger_plug_by_gadget(gadget, gadget->state);
-+
- 	if (udc)
- 		sysfs_notify(&udc->dev.kobj, NULL, "state");
- }
-@@ -423,8 +427,14 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
- 
- 	mutex_unlock(&udc_lock);
- 
-+	ret = usb_charger_init(gadget);
-+	if (ret)
-+		goto err5;
-+
- 	return 0;
- 
-+err5:
-+	device_del(&udc->dev);
- err4:
- 	list_del(&udc->list);
- 	mutex_unlock(&udc_lock);
-@@ -503,6 +513,7 @@ void usb_del_gadget_udc(struct usb_gadget *gadget)
- 	kobject_uevent(&udc->dev.kobj, KOBJ_REMOVE);
- 	flush_work(&gadget->work);
- 	device_unregister(&udc->dev);
-+	usb_charger_exit(gadget);
- 	device_unregister(&gadget->dev);
- }
- EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index d82d006..8b36a4e 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -24,6 +24,7 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- #include <linux/usb/ch9.h>
-+#include <linux/usb/charger.h>
- 
- struct usb_ep;
- 
-@@ -635,6 +636,8 @@ struct usb_gadget {
- 	unsigned			out_epnum;
- 	unsigned			in_epnum;
- 	struct usb_otg_caps		*otg_caps;
-+	/* negotiate the power with the usb charger */
-+	struct usb_charger		*charger;
- 
- 	unsigned			sg_supported:1;
- 	unsigned			is_otg:1;
-@@ -839,10 +842,20 @@ static inline int usb_gadget_vbus_connect(struct usb_gadget *gadget)
-  * reporting how much power the device may consume.  For example, this
-  * could affect how quickly batteries are recharged.
-  *
-+ * It will also notify the USB charger how much power the device may
-+ * consume if there is a USB charger linking with the gadget.
-+ *
-  * Returns zero on success, else negative errno.
-  */
- static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
- {
-+	enum usb_charger_type type;
-+
-+	if (gadget->charger) {
-+		type = usb_charger_get_type(gadget->charger);
-+		usb_charger_set_cur_limit_by_type(gadget->charger, type, mA);
-+	}
-+
- 	if (!gadget->ops->vbus_draw)
- 		return -EOPNOTSUPP;
- 	return gadget->ops->vbus_draw(gadget, mA);
+What we are doing today is something like this:
+
+Suspend
+-------
+
+-> cpufreq_suspend()
+ -> STOP governor
+ -> cpufreq_suspended = true
+
+-> Offline non-boot CPUs
+  -> cpufreq_offline()
+    -> SKIP calling EXIT governor (governor had allocated few
+    resources earlier)
+
+Resume
+------
+
+-> Bring back non-boot CPUs
+  -> cpufreq_online()
+    -> SKIP calling INIT governor (policy->governor_data doesn't get
+    reset, luckily)
+
+-> cpufreq_resume()
+ -> cpufreq_suspended = false
+ -> START governor
+
+
+That's *ugly* and it works by chance, unless I am misreading it
+completely.
+
+One of the solutions to get this cleaned is to stop checking for
+cpufreq_suspended flag in cpufreq_governor() and put that *only* in
+places where we are trying to interact with the hardware. And that
+essentially is the callbacks provided by the cpufreq drivers. So,
+ignore calling cpufreq-driver callbacks if cpufreq_suspended is true.
+
 -- 
-1.7.9.5
+viresh
