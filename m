@@ -1,93 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
- cpufreq_suspended set
-Date: Thu, 7 Apr 2016 13:44:14 +0200
-Message-ID: <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com>
-References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
-	<20160407042820.GA14903@vireshk-i7>
-	<CAJZ5v0gfadfuSdkoitFJAZfYXLJhed+1w2wiq1O3VnVK+fGYzA@mail.gmail.com>
-	<20160407113226.GE3201@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v10 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Thu,  7 Apr 2016 19:48:42 +0800
+Message-ID: <cover.1460029375.git.baolin.wang@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:34044 "EHLO
-	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755952AbcDGLoQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 07:44:16 -0400
-In-Reply-To: <20160407113226.GE3201@vireshk-i7>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:34747 "EHLO
+	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754745AbcDGLtv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 07:49:51 -0400
+Received: by mail-pf0-f169.google.com with SMTP id c20so54617561pfc.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 04:49:51 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-On Thu, Apr 7, 2016 at 1:32 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 07-04-16, 13:22, Rafael J. Wysocki wrote:
->> On Thu, Apr 7, 2016 at 6:28 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > On 07-04-16, 03:29, Rafael J. Wysocki wrote:
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> Since governor operations are generally skipped if cpufreq_suspended
->> >> is set, do nothing at all in cpufreq_start_governor() and
->> >> cpufreq_exit_governor() in that case.
->> >>
->> >> In particular, this prevents fast frequency switching from being
->> >> disabled after a suspend-to-RAM cycle on all CPUs except for the
->> >> boot one.
->> >
->> > static int cpufreq_governor(struct cpufreq_policy *policy, unsigned int event)
->> > {
->> >         int ret;
->> >
->> >         /* Don't start any governor operations if we are entering suspend */
->> >         if (cpufreq_suspended)
->> >                 return 0;
->> >
->> >         ...
->> >
->> > }
->> >
->> > Above already guarantees that we would start/stop governors. Why do we
->> > need this change then ?
->>
->> Because we do extra stuff in cpufreq_start_governor() and
->> cpufreq_exit_governor() that *also* shouldn't be done if
->> cpufreq_suspended is set.
->
-> The only extra thing done by cpufreq_exit_governor() is
-> cpufreq_disable_fast_switch(), which just plays with
-> cpufreq_fast_switch_count and policy->fast_switch_enabled.
->
-> That should be done even if we have started to suspend.
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard framework for doing this in kernel.
 
-Well, no.
+Now introduce one user with wm831x_power to support and test the usb charger,
+which is pending testing. Moreover there may be other potential users will use
+it in future.
 
-The problem here is that fast switch is enabled by the governor init
-and that's not called if cpufreq_suspend is set.
+Changes since v9:
+ - Remove some redundant sysfs attributes.
+ - Change the SDP charger default current if gadget is SS.
+ - Remove the 'get_charger_type' callback in gadget->ops.
 
-> The exit-governor path is be called while we hot-unplug all non-boot
-> CPUs during suspend. Which would eventually mean that at least
-> cpufreq_fast_switch_count will stay positive for ever now, and we just
-> can't recover from this situation.
+Baolin Wang (4):
+  gadget: Introduce the usb charger framework
+  gadget: Support for the usb charger framework
+  gadget: Integrate with the usb gadget supporting for usb charger
+  power: wm831x_power: Support USB charger current limit management
 
-I'm not sure I'm following.
+ drivers/power/wm831x_power.c      |   69 ++++
+ drivers/usb/gadget/Kconfig        |    7 +
+ drivers/usb/gadget/udc/Makefile   |    1 +
+ drivers/usb/gadget/udc/charger.c  |  766 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/udc/udc-core.c |   11 +
+ include/linux/mfd/wm831x/pdata.h  |    3 +
+ include/linux/usb/charger.h       |  173 +++++++++
+ include/linux/usb/gadget.h        |   13 +
+ include/uapi/linux/usb/charger.h  |   31 ++
+ 9 files changed, 1074 insertions(+)
+ create mode 100644 drivers/usb/gadget/udc/charger.c
+ create mode 100644 include/linux/usb/charger.h
+ create mode 100644 include/uapi/linux/usb/charger.h
 
-Without this patch fast switch is disabled when we offline the nonboot
-CPUs during suspend, because cpufreq_exit_governor() runs then, but
-the cpufreq_governor() called by it does nothing.  Also
-cpufreq_governor() during nonboot CPUs online does nothing.
+-- 
+1.7.9.5
 
-That has to be made consistent somehow.  This patch is one way.
-Another way would be to disable fast switch from the governor ->exit
-callback, but the net result would be the same.
-
-> Similarly for cpufreq_start_governor(), we call
-> cpufreq_update_current_freq(). I think we should move the check to
-> this routine instead.
->
-> IOW, we are using this cpufreq_suspended flag to return early in cases
-> where its not safe to try to access the hardware registers, as they
-> might be accessible via a device that has suspended now, like I2C or
-> SPI.
-
-Right.  So checking cpufreq_suspended upfront in
-cpufreq_start_governor() and cpufreq_exit_governor() addresses that.
