@@ -1,40 +1,53 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] Prefer kASLR over Hibernation
-Date: Thu, 7 Apr 2016 02:49:58 +0200
-Message-ID: <20160407004958.GA27130@gmail.com>
-References: <20160406194404.GA11150@www.outflux.net>
- <20160406201716.GA14241@amd>
- <CA+55aFw+JFfy+dfMbAdB3ueA1O-w--EBwMF4WKrGp754trHBDA@mail.gmail.com>
- <CAGXu5jJ+8v_hMkV91jqNGwFdzbpoKL=gZv-92hGMF8d4o8DswQ@mail.gmail.com>
- <20160406214835.GA23620@gmail.com>
- <20160406215240.GA25339@gmail.com>
- <CAJZ5v0h4uShH_r6=osGYZ_ZH_qjL7KufnEiZ8auHQhKRzRyC1Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: Skip all governor-related actions for cpufreq_suspended set
+Date: Thu, 07 Apr 2016 03:29:14 +0200
+Message-ID: <2044559.GVlD7a2JcO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0h4uShH_r6=osGYZ_ZH_qjL7KufnEiZ8auHQhKRzRyC1Q@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Kees Cook <keescook@chromium.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@denx.de>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-* Rafael J. Wysocki <rafael@kernel.org> wrote:
+Since governor operations are generally skipped if cpufreq_suspended
+is set, do nothing at all in cpufreq_start_governor() and
+cpufreq_exit_governor() in that case.
 
-> [...]
-> 
-> One of the weak points is the final jump, because it has to be done to the 
-> physical location of the image kernel's entry point even though the virtual 
-> addresses of it may differ between the boot and the image kernels.  The seed is 
-> not needed for that, only the physical address of the entry point.  The boot 
-> kernel doesn't have it today, though, because the virtual address of that is 
-> passed in the image header. That should not be too difficult to change, however.
+In particular, this prevents fast frequency switching from being
+disabled after a suspend-to-RAM cycle on all CPUs except for the
+boot one.
 
-I didn't realize we jumped to the image kernel as well - I (wrongly) assumed we 
-kept the bootup kernel. That should indeed make hibernation mostly 
-kASLR-invariant.
+Fixes: b7898fda5bc7 (cpufreq: Support for fast frequency switching)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Thanks,
-
-	Ingo
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -2053,6 +2053,9 @@ static int cpufreq_start_governor(struct
+ {
+ 	int ret;
+ 
++	if (cpufreq_suspended)
++		return 0;
++
+ 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy)
+ 		cpufreq_update_current_freq(policy);
+ 
+@@ -2062,6 +2065,9 @@ static int cpufreq_start_governor(struct
+ 
+ static int cpufreq_exit_governor(struct cpufreq_policy *policy)
+ {
++	if (cpufreq_suspended)
++		return 0;
++
+ 	cpufreq_disable_fast_switch(policy);
+ 	return cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+ }
