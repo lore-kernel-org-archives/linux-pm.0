@@ -1,96 +1,128 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v9 2/4] gadget: Support for the usb charger framework
-Date: Thu, 07 Apr 2016 07:58:46 +0300
-Message-ID: <878u0q10c9.fsf@intel.com>
-References: <cover.1459494743.git.baolin.wang@linaro.org> <13c2f4fb71958bf9a5527acbed8b8b60dc569656.1459494744.git.baolin.wang@linaro.org> <20160406071956.GA21101@shlinux2.ap.freescale.net> <CAMz4kuJkf0Q1JKdc5W8EcDBvr6MccTcdZa-Pse_Z4pFwySTSDA@mail.gmail.com> <AM4PR04MB2130F58AA1018FFD367C89E0899F0@AM4PR04MB2130.eurprd04.prod.outlook.com> <871t6j2ai2.fsf@intel.com> <AM4PR04MB213054CF3F597CE2E6FE976F899F0@AM4PR04MB2130.eurprd04.prod.outlook.com> <87oa9m28x0.fsf@intel.com> <AM4PR04MB2130E03385128C1CD22553E7899F0@AM4PR04MB2130.eurprd04.prod.outlook.com> <87egai261g.fsf@intel.com> <20160407030350.GB10672@shlinux2.ap.freescale.net>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v9 1/4] gadget: Introduce the usb charger framework
+Date: Thu, 7 Apr 2016 14:11:19 +0800
+Message-ID: <CAMz4ku+_H6HXdAv2gRFfNHz7qrmSwyfO6ir44rDt-tCsEyiVEA@mail.gmail.com>
+References: <cover.1459494743.git.baolin.wang@linaro.org>
+	<6c594cc66fd06b575b04cc8bb0fe0374d0501d4d.1459494744.git.baolin.wang@linaro.org>
+	<20160406072513.GB21101@shlinux2.ap.freescale.net>
+	<87vb3v2nm8.fsf@intel.com>
+	<20160406074310.GC21101@shlinux2.ap.freescale.net>
+	<87shyz2md5.fsf@intel.com>
+	<20160406081006.GD21101@shlinux2.ap.freescale.net>
+	<87k2kb2fwd.fsf@intel.com>
+	<20160407023925.GA10672@shlinux2.ap.freescale.net>
+	<87bn5m10fh.fsf@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:56790 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750817AbcDGFAp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Apr 2016 01:00:45 -0400
-In-Reply-To: <20160407030350.GB10672@shlinux2.ap.freescale.net>
+Received: from mail-yw0-f182.google.com ([209.85.161.182]:36460 "EHLO
+	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754389AbcDGGLU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 02:11:20 -0400
+Received: by mail-yw0-f182.google.com with SMTP id g3so84806229ywa.3
+        for <linux-pm@vger.kernel.org>; Wed, 06 Apr 2016 23:11:20 -0700 (PDT)
+In-Reply-To: <87bn5m10fh.fsf@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Jun Li <jun.li@nxp.com>, Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Peter Chen <hzpeterchen@gmail.com>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-Hi,
-
-Peter Chen <hzpeterchen@gmail.com> writes:
->> >> > In below change of usb_gadget_vbus_draw(), already can get charger
->> >> > type via usb_charger_get_type().
->> >> >
->> >> > static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget,
->> >> > unsigned mA)  {
->> >> > +       enum usb_charger_type type;
->> >> > +
->> >> > +       if (gadget->charger) {
->> >> > +               type =3D usb_charger_get_type(gadget->charger);
->> >> > +               usb_charger_set_cur_limit_by_type(gadget->charger, =
-type,
->> >> mA);
->> >> > +       }
->> >> > +
->> >> >         if (!gadget->ops->vbus_draw)
->> >> >                 return -EOPNOTSUPP;
->> >> >         return gadget->ops->vbus_draw(gadget, mA);
->> >> >
->> >> > Could you detail in what situation gadget->ops-> get_charger_type()=
- is
->> >> used?
->> >>=20
->> >> isn't it right there in the code ? Isn't usb_gadget_vbus_draw() calli=
-ng
->> >> it ? What did I miss here ?
->> >
->> > Well, that's true, so my real meaning is why gadget need get charger t=
-ype
->> > via another new api gadget->ops->get_charger_type().
->>=20
->> because of semantics. usb_gadget_vbus_draw() is *only* supposed to
->> connect a load across vbus and gnd so some battery can be charged. Also,
->> we need to abstract away this ->get_charger_type() operation because it
->> might be different for each UDC.
+On 7 April 2016 at 12:56, Felipe Balbi <balbi@kernel.org> wrote:
 >
-> In this patch set, there are two ->get_charger_type in below two
-> structures, as my understanding, get_charger_type at struct usb_charger
-> can be implemented at UDC drivers; But I don't see necessary we
-> need to implement get_charger_type for usb_gadget_ops at UDC drivers
-> again. What do you think?
+> Hi,
+>
+> Peter Chen <hzpeterchen@gmail.com> writes:
+>> On Wed, Apr 06, 2016 at 01:25:06PM +0300, Felipe Balbi wrote:
+>>>
+>>> Hi,
+>>>
+>>> Peter Chen <hzpeterchen@gmail.com> writes:
+>>> > On Wed, Apr 06, 2016 at 11:05:26AM +0300, Felipe Balbi wrote:
+>>> >> Peter Chen <hzpeterchen@gmail.com> writes:
+>>> >> > On Wed, Apr 06, 2016 at 10:38:23AM +0300, Felipe Balbi wrote:
+>>> >> >> Peter Chen <hzpeterchen@gmail.com> writes:
+>>> >> >> > On Fri, Apr 01, 2016 at 03:21:49PM +0800, Baolin Wang wrote:
+>>> >> >> >  +
+>>> >> >> >> +static struct attribute *usb_charger_attrs[] = {
+>>> >> >> >> +   &dev_attr_sdp_current.attr,
+>>> >> >> >> +   &dev_attr_dcp_current.attr,
+>>> >> >> >> +   &dev_attr_cdp_current.attr,
+>>> >> >> >> +   &dev_attr_aca_current.attr,
+>>> >> >> >> +   &dev_attr_charger_type.attr,
+>>> >> >> >> +   &dev_attr_charger_state.attr,
+>>> >> >> >> +   NULL
+>>> >> >> >> +};
+>>> >> >> >
+>>> >> >> > The user may only care about current limit, type and state, why they
+>>> >> >> > need to care what type's current limit, it is the usb charger
+>>> >> >> > framework handles, the framework judge the current according to
+>>> >> >> > charger type and USB state (connect/configured/suspended).
+>>> >> >>
+>>> >> >> it might be useful if we want to know that $this charger doesn't really
+>>> >> >> give us as much current as it advertises.
+>>> >> >>
+>>> >> >
+>>> >> > As my understanding, the current limit is dynamic value, it should
+>>> >> > report the value the charger supports now, eg, it connects SDP, but
+>>> >> > the host is suspended now, then the value should be 2mA.
+>>> >>
+>>> >> yes, and that's the limit. Now consider we connect to DCP or CDP and
+>>> >> limit is 2000mA but we're charging at 1000mA ;-)
+>>> >>
+>>> >
+>>> > Does the user need to know the $this charger limit? Don't they only
+>>> > care about the current charging value? I have a USB cable which can
+>>>
+>>> Why not ? UI might want to change the color of the battery charging icon
+>>> if we're charging @ 2000mA or @ 1000mA to give some visual feedback as
+>>> to "how fast" battery is supposed to be charged.
+>>>
+>>> > show charging current value, it changes from time to time, when it
+>>> > connects to host pc, it shows 430mA; when it connects to dedicated
+>>> > charger, it shows 1000mA.
+>>>
+>>> good for you, now what does that have to do with $subject ?
+>>>
+>>
+>> +static struct attribute *usb_charger_attrs[] = {
+>> +     &dev_attr_sdp_current.attr,
+>> +     &dev_attr_dcp_current.attr,
+>> +     &dev_attr_cdp_current.attr,
+>> +     &dev_attr_aca_current.attr,
+>> +     &dev_attr_charger_type.attr,
+>> +     &dev_attr_charger_state.attr,
+>> +     NULL
+>> +};
+>>
+>> Ok, even the users are interesting in current limit, we still have no
+>> necessary to know all kinds of chargers limit and current value, since
+>> we already have charger type user interface, the framework can show
+>> limit according to charger type.
+>
+> Oh, now I get your comment and I totally agree. We already *know* the
+> detected charger type, there's no point in showing them all.
+>
+>> I think below user interfaces are enough, who do you think?
+>>
+>> +static struct attribute *usb_charger_attrs[] = {
+>> +     &dev_attr_current.attr,
+>> +     &dev_attr_current_limit.attr,
+>> +     &dev_attr_charger_type.attr,
+>> +     &dev_attr_charger_state.attr,
+>> +     NULL
+>> +};
+>
+> agreed, const though.
 
-I had missed that completely, nice catch. I agree with you, there should
-be one place where this is implemented and struct usb_charger sounds
-like it is that place.
+OK. Thanks for Felipe, Peter and Jun's suggestion. I'll modify it in
+next version.
 
-=2D-=20
-balbi
+>
+> --
+> balbi
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIcBAEBAgAGBQJXBekHAAoJEIaOsuA1yqREhTcP/0Xk/dMd66DA8k9VrhBo9uNV
-sD/o/RaW10oYi7zvnVVDY3NJC4eNSJdPckmdQ+EobqKJvjir4xO9nUrRJnlp7CuJ
-NvKUUXcVGnhT5yfD4Y+nFy8IEgLVzYYYLNBKI7e9lBRG/7IFlvaSz18J2yWeOLiM
-ytLO/Wu8qOGWjUtMSVEKbR8DVLqyQsEn/ZPbbKshdvcI0BDdN7b4b/u5ztGDCrhM
-d0SxwuNoH1OgOOP+3Ds83dX10f12jv+G2ZqDsmOAzAONyyGO1EVnKpVy4MOt8Fpd
-l2Y0M/y+8SvtUZR+uFWUKOGaQao1SQY7poq0G0s1km9bWf/Sbaux3QfIiePjkyU/
-YhQSuUZs5xRvIubEpha2aPijjvM6s2tWEX9qUHvBuNzbySMSf0FtYcfX2Mpi1fto
-wHRcdqAoBperMhgNY3slmTuZbqCfSY/hNT5PuQ4UBZbXxGHPp8n/VvqARwTTm3AH
-+WfRoM6CGQzQdUQd4pna7eQ11PXW0Fyot+9WsQ3+2zvytUIZAcIbRdprv6CUpnax
-Nt9X5EpKYr04JpFT3KsIfJHi1ljGA4jsagfIcfM960gpVDpfgvbSWrjO8PGGn6Bb
-YXkve7AbMaPYK6lOMqiUe9lM9fWhkuGOfr3gaMBJxfD1y5utnC4B2OiCfdb581ZT
-3UmShVSCLxrmctxj5qh+
-=aSUB
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+Baolin.wang
+Best Regards
