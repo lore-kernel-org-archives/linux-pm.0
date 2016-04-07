@@ -1,53 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: Skip all governor-related actions for cpufreq_suspended set
-Date: Thu, 07 Apr 2016 03:29:14 +0200
-Message-ID: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+Subject: [PATCH] cpufreq: Simplify switch () in cpufreq_cpu_callback()
+Date: Thu, 07 Apr 2016 03:30:40 +0200
+Message-ID: <4473117.ktOSeKFDYJ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62606 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752024AbcDGB2J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 21:28:09 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since governor operations are generally skipped if cpufreq_suspended
-is set, do nothing at all in cpufreq_start_governor() and
-cpufreq_exit_governor() in that case.
+Merge two switch entries that do the same thing in
+cpufreq_cpu_callback().
 
-In particular, this prevents fast frequency switching from being
-disabled after a suspend-to-RAM cycle on all CPUs except for the
-boot one.
+No functional changes.
 
-Fixes: b7898fda5bc7 (cpufreq: Support for fast frequency switching)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/cpufreq/cpufreq.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2053,6 +2053,9 @@ static int cpufreq_start_governor(struct
- {
- 	int ret;
+@@ -2312,16 +2312,13 @@ static int cpufreq_cpu_callback(struct n
  
-+	if (cpufreq_suspended)
-+		return 0;
-+
- 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy)
- 		cpufreq_update_current_freq(policy);
+ 	switch (action & ~CPU_TASKS_FROZEN) {
+ 	case CPU_ONLINE:
++	case CPU_DOWN_FAILED:
+ 		cpufreq_online(cpu);
+ 		break;
  
-@@ -2062,6 +2065,9 @@ static int cpufreq_start_governor(struct
- 
- static int cpufreq_exit_governor(struct cpufreq_policy *policy)
- {
-+	if (cpufreq_suspended)
-+		return 0;
-+
- 	cpufreq_disable_fast_switch(policy);
- 	return cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+ 	case CPU_DOWN_PREPARE:
+ 		cpufreq_offline(cpu);
+ 		break;
+-
+-	case CPU_DOWN_FAILED:
+-		cpufreq_online(cpu);
+-		break;
+ 	}
+ 	return NOTIFY_OK;
  }
+
