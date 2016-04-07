@@ -1,54 +1,58 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] drivers/idle: make intel_idle.c driver more explicitly
- non-modular
-Date: Thu, 7 Apr 2016 17:53:55 +0100
-Message-ID: <20160407165355.GA9188@linaro.org>
-References: <1459099777-4962-1-git-send-email-paul.gortmaker@windriver.com>
- <20160404195535.GQ1778@windriver.com>
- <20160405031152.GA22836@linutronix.de>
- <1A7043D5F58CCB44A599DFD55ED4C94846A1C854@fmsmsx115.amr.corp.intel.com>
- <20160405043017.GA24357@linutronix.de>
- <1A7043D5F58CCB44A599DFD55ED4C94846A1CD40@fmsmsx115.amr.corp.intel.com>
- <20160405073312.GA30124@linutronix.de>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 3/3] RFC: spi: let SPI masters inherit suspend child
+ ignorance
+Date: Thu, 7 Apr 2016 10:06:11 -0700
+Message-ID: <20160407170611.GW1924@sirena.org.uk>
+References: <1460035237-12037-1-git-send-email-linus.walleij@linaro.org>
+ <1460035237-12037-4-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="buDNgeHiu+HCsDEc"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51104 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756553AbcDGRGT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 13:06:19 -0400
 Content-Disposition: inline
-In-Reply-To: <20160405073312.GA30124@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rcochran@linutronix.de
-Cc: "Brown, Len" <len.brown@intel.com>, "Gortmaker, Paul (Wind River)" <paul.gortmaker@windriver.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+In-Reply-To: <1460035237-12037-4-git-send-email-linus.walleij@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
 
-On Tue, Apr 05, 2016 at 09:33:12AM +0200, rcochran@linutronix.de wrote:
-> On Tue, Apr 05, 2016 at 05:53:47AM +0000, Brown, Len wrote:
-> > > On Tue, Apr 05, 2016 at 04:20:47AM +0000, Brown, Len wrote:
-> > > > No, I do not believe that cpuidle should bother
-> > > > supporting changing idle drivers at run-time.
-> > > 
-> > > Huh?  But you just said, "it would be good to be able to unload it
-> > > when it doesn't probe."
-> > 
-> > being able to switch the registered driver at run-time
-> > does not require the driver to be modular.
-> 
-> Uh, right, but you don't think that the cpuidle core should allow
-> changing drivers.  If it doesn't allowing changing drivers, then there
-> would be just one choice, compiled in, and thus none of the drivers
-> should be modular.
 
-Actually, the modular support has been removed from almost all the cpuidle
-drivers and the cpuidle framework is no longer assuming driver could
-be unloaded.
+--buDNgeHiu+HCsDEc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The cpuidle drivers are very arch/platform specific and the acpi vs
-something is an exception and could be handled differently than
-converting to modular again.
+On Thu, Apr 07, 2016 at 03:20:37PM +0200, Linus Walleij wrote:
+> This patch is analogous to the I2C patch preceding it
 
-I don't see the point on removing a cpuidle driver at runtime to
-something else.
+Please write standalone changelogs so people can understand what the
+patch is supposed to do from reading the changlog.  They'll have to
+follow the change later on when looking at it in git.
 
-Removing the modular dead code in the driver makes sense as this
-what have been done in the others drivers.
+> and the reasoning is the same for all slow busses
+> where the master device should only wake up when
+> messages get transferred rather than constantly
+> babysitting its children.
 
-  -- Daniel
+This isn't really about the bus being slow, it's about the bus being
+able to usefully pause itself.
+
+--buDNgeHiu+HCsDEc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXBpOCAAoJECTWi3JdVIfQFR0H/0gi9iv/5ADqXf5d3BNDgYiO
+bZDRFB/B9rpIIBQhCzipx+5lBrxhZKX7lgB+r81QLRDGhZbKW5CPcIpNNPXVWOpo
+KiUu5umXmD8mXrRUQEPZw+1M7/ZCjKxJl79qRxdSyNw4WL2Vwl76SxnPnTq8/CB3
+BCXEraPdYzm6qgjpgYRKc/JKTFk26xJSqSFk79PRJOLkG+EGnQpSw65cKyGAg+DX
+GT0MJgQ2NVB1w50kH4vlqtZ9lp4NR4ZoQnDuOGTIPrIYvvkDUANJWUHgeHvry9GR
+jPnCkmi1Aw1OdjUR9OPlj8Fv8btkN8KfhlmcSSHlALMXJ3haxgaMeNLLpq9A/ww=
+=f4k3
+-----END PGP SIGNATURE-----
+
+--buDNgeHiu+HCsDEc--
