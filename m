@@ -1,67 +1,61 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 09/11] soc: renesas: rcar-sysc: Add support for R-Car M2-N power areas
-Date: Thu,  7 Apr 2016 14:20:26 +0200
-Message-ID: <1460031628-13336-10-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v4 04/11] soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
+Date: Thu,  7 Apr 2016 14:20:21 +0200
+Message-ID: <1460031628-13336-5-git-send-email-geert+renesas@glider.be>
 References: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:36277 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756100AbcDGMUX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 08:20:23 -0400
 In-Reply-To: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-R-Car M2-N is identical to R-Car M2-W w.r.t. power domains, so reuse the
-definitions from the latter.
+As of commit b12ff41658171f53 ("ARM: shmobile: r8a7779: Remove legacy PM
+Domain remainings"), rcar_sysc_power_is_off() is no longer used from
+SoC-specific code.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
 v4:
-  - No changes,
+  - Add Reviewed-by,
 
 v3:
-  - New (converted from DT to C).
+  - New.
 ---
- drivers/soc/renesas/Makefile    | 3 ++-
- drivers/soc/renesas/rcar-sysc.c | 3 +++
- drivers/soc/renesas/rcar-sysc.h | 2 ++
- 3 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/soc/renesas/rcar-sysc.c       | 2 +-
+ include/linux/soc/renesas/rcar-sysc.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
-index 96463c05ee594335..c6c4ce7ef8a145ea 100644
---- a/drivers/soc/renesas/Makefile
-+++ b/drivers/soc/renesas/Makefile
-@@ -1,5 +1,6 @@
- obj-$(CONFIG_ARCH_R8A7779)	+= rcar-sysc.o r8a7779-sysc.o
- obj-$(CONFIG_ARCH_R8A7790)	+= rcar-sysc.o r8a7790-sysc.o
- obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o r8a7791-sysc.o
--obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o
-+# R-Car M2-N is identical to R-Car M2-W w.r.t. power domains.
-+obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o r8a7791-sysc.o
- obj-$(CONFIG_ARCH_R8A7794)	+= rcar-sysc.o
 diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index eb382769ffcdbf6f..4bedf38dc6fbba90 100644
+index 3cb19b599cee4ee5..bdab8ac6803300e7 100644
 --- a/drivers/soc/renesas/rcar-sysc.c
 +++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -317,6 +317,9 @@ static const struct of_device_id rcar_sysc_matches[] = {
- #ifdef CONFIG_ARCH_R8A7791
- 	{ .compatible = "renesas,r8a7791-sysc", .data = &r8a7791_sysc_info },
- #endif
-+#ifdef CONFIG_ARCH_R8A7793
-+	{ .compatible = "renesas,r8a7793-sysc", .data = &r8a7793_sysc_info },
-+#endif
- 	{ /* sentinel */ }
- };
+@@ -154,7 +154,7 @@ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch)
+ 	return rcar_sysc_power(sysc_ch, true);
+ }
  
-diff --git a/drivers/soc/renesas/rcar-sysc.h b/drivers/soc/renesas/rcar-sysc.h
-index e4c22e0516d1bf44..513a2beef1b0eb12 100644
---- a/drivers/soc/renesas/rcar-sysc.h
-+++ b/drivers/soc/renesas/rcar-sysc.h
-@@ -52,4 +52,6 @@ struct rcar_sysc_info {
- extern const struct rcar_sysc_info r8a7779_sysc_info;
- extern const struct rcar_sysc_info r8a7790_sysc_info;
- extern const struct rcar_sysc_info r8a7791_sysc_info;
-+/* R-Car M2-N is identical to R-Car M2-W w.r.t. power domains. */
-+#define r8a7793_sysc_info r8a7791_sysc_info
- #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
++static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+ {
+ 	unsigned int st;
+ 
+diff --git a/include/linux/soc/renesas/rcar-sysc.h b/include/linux/soc/renesas/rcar-sysc.h
+index 96f30c2883881d97..92fc613ab23db091 100644
+--- a/include/linux/soc/renesas/rcar-sysc.h
++++ b/include/linux/soc/renesas/rcar-sysc.h
+@@ -11,7 +11,6 @@ struct rcar_sysc_ch {
+ 
+ int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
+ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch);
+ void __iomem *rcar_sysc_init(phys_addr_t base);
+ 
+ #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 1.9.1
+
