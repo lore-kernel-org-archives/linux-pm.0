@@ -1,97 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V1 Resend 2/3] cpufreq: dt: Add generic platform-device
- creation support
-Date: Thu, 7 Apr 2016 14:00:36 +0530
-Message-ID: <20160407083036.GB3201@vireshk-i7>
-References: <cover.1459233524.git.viresh.kumar@linaro.org>
- <12972545.Mi9sHiNJpR@wuerfel>
- <20160330032240.GB8773@vireshk-i7>
- <7250220.227umpmTug@wuerfel>
- <20160401102350.GA5532@vireshk-i7>
- <CAL_JsqK2oAX2jw6GjT7RUWkhL2zPB9=QUQ--S2u-1t852GG7VQ@mail.gmail.com>
+Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic
+ code
+Date: Thu, 7 Apr 2016 14:01:46 +0530
+Message-ID: <20160407083146.GC3201@vireshk-i7>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34335 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbcDGIak (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 04:30:40 -0400
-Received: by mail-pf0-f180.google.com with SMTP id c20so51597260pfc.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 01:30:40 -0700 (PDT)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:33438 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbcDGIbu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 04:31:50 -0400
+Received: by mail-pa0-f50.google.com with SMTP id zm5so50809021pac.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 01:31:50 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqK2oAX2jw6GjT7RUWkhL2zPB9=QUQ--S2u-1t852GG7VQ@mail.gmail.com>
+In-Reply-To: <cover.1459325515.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Matthew McClintock <mmcclint@codeaurora.org>, xf@rock-chips.com, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Mason <slash.tmp@free.fr>
+To: Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, mmcclint@codeaurora.org, k.kozlowski@samsung.com
 
-On 01-04-16, 09:15, Rob Herring wrote:
-> On Fri, Apr 1, 2016 at 5:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > So you mean for future DT files we can have something like this:
-> >
-> >         cpus {
-> >                 compatible = "operation-points-v2";
-> >                 #address-cells = <1>;
-> >                 #size-cells = <0>;
-> >
-> >                 cpu@0 {
-> >                         compatible = "arm,cortex-a9";
-> >                         reg = <0>;
-> >                         next-level-cache = <&L2>;
-> >                         operating-points-v2 = <&cpu0_opp_table>;
-> >                 };
-> >         };
-> >
-> >         cpu0_opp_table: opp_table0 {
-> >                 opp@1000000000 {
-> >                         opp-hz = /bits/ 64 <1000000000>;
-> >                         opp-microvolt = <970000 975000 985000>;
-> >                         opp-microamp = <70000>;
-> >                         clock-latency-ns = <300000>;
-> >                         opp-suspend;
-> >                 };
-> >                 opp@1100000000 {
-> >                         opp-hz = /bits/ 64 <1100000000>;
-> >                         opp-microvolt = <980000 1000000 1010000>;
-> >                         opp-microamp = <80000>;
-> >                         clock-latency-ns = <310000>;
-> >                 };
-> >         };
-> > };
-> >
-> >
-> > And the cpufreq-dt driver can match /cpus node's compatible string against
-> > "operating-points-v2" and create a device at runtime ?
-> >
-> > @Rob: Will that be acceptable to you? We are discussing (again) about how to
-> > probe cpufreq-dt driver automatically for platforms :)
+On 30-03-16, 13:45, Viresh Kumar wrote:
+> Multiple platforms are using the generic cpufreq-dt driver now, and all
+> of them are required to create a platform device with name "cpufreq-dt",
+> in order to get the cpufreq-dt probed.
 > 
-> No, I don't think that belongs in /cpus.
+> Many of them do it from platform code, others have special drivers just
+> to do that.
 > 
-> Part of the problem is this requires a DT change if you switch between
-> a platform-specific driver and generic driver.
+> It would be more sensible to do this at a generic place, where all such
+> platform can mark their entries.
+> 
+> The first patch fixes an issue that came up with an earlier version of
+> patch 2/4, but its still worth fixing it.  The second one creates a new
+> driver to create platform-device based on current platform and the last
+> two converts exynos platform to use this common infrastructure.
+> 
+> I will migrate rest of the platforms after this is accepted as the right
+> way ahead.
+> 
+> V2->V3:
+> - 2/3 is very lightweight now and doesn't support cpufreq-dt
+>   platform-data and an extra depends_on from Kconfig is dropped as well.
+> - 3/3 is separated into two patches.
 
-Right.
-
-> I don't understand the issue having a little bit of code to parse the
-> DT and create the device.
-
-I am fine with that, we were just re-evaluating our options :)
-
-> If you are worried about having a long list
-> of platforms,
-
-At least I am not.
-
-> you could instead check the tree for operating-points-v2
-> property in the cpu node and create the device unless the platform is
-> black-listed.
-
-I don't really like the black-list idea much. It forces a Non
-cpufreq-dt platform to edit cpufreq-dt related file, just to make its
-own cpufreq driver work.
-
-I find that ugly somehow :)
+@Rafael: Can you please apply this series now, that will enable me
+with converting rest of the users to use this.
 
 -- 
 viresh
