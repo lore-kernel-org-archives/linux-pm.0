@@ -1,80 +1,50 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] sdhci: wakeup from runtime PM
-Date: Thu, 7 Apr 2016 11:11:08 +0200
-Message-ID: <CAPDyKFpvE2N+B3-S+tOKJ7+ViWddpxWxCWRGs2LBjWS9CmMxwA@mail.gmail.com>
-References: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
-	<5703B241.6030007@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
+ cpufreq_suspended set
+Date: Thu, 7 Apr 2016 13:22:39 +0200
+Message-ID: <CAJZ5v0gfadfuSdkoitFJAZfYXLJhed+1w2wiq1O3VnVK+fGYzA@mail.gmail.com>
+References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+	<20160407042820.GA14903@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f46.google.com ([74.125.82.46]:38663 "EHLO
-	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbcDGJLJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 05:11:09 -0400
-Received: by mail-wm0-f46.google.com with SMTP id u206so78094438wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 02:11:09 -0700 (PDT)
-In-Reply-To: <5703B241.6030007@intel.com>
+Received: from mail-lf0-f67.google.com ([209.85.215.67]:36112 "EHLO
+	mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755425AbcDGLWm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 07:22:42 -0400
+In-Reply-To: <20160407042820.GA14903@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ludovic Desroches <ludovic.desroches@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 5 April 2016 at 14:40, Adrian Hunter <adrian.hunter@intel.com> wrote:
-> On 25/03/16 18:05, Ludovic Desroches wrote:
->> Hi,
+On Thu, Apr 7, 2016 at 6:28 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 07-04-16, 03:29, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> When not using the SDHCI controller, it is logical to save power by suspending
->> it. The issue is that SDHCI assumes that the controller is completely disabled.
->> It means the only way to wake up on a card event is to have a gpio for the card
->> detection (so two pins for the same signal). A possible workaround is to use
->> polling but the controller will be resumed/suspended between each attempts.
+>> Since governor operations are generally skipped if cpufreq_suspended
+>> is set, do nothing at all in cpufreq_start_governor() and
+>> cpufreq_exit_governor() in that case.
 >>
->> We have already discussed a long time about this and it seems we don't agree.
->> In my opinion, even if I can't disable all clocks, I should use runtime PM
->> to save some power.
->>
->> I propose two patches, one which is a draft to try to solve it at sdhci level
->> and one at sdhci-of-at91 level.
->>
->> Concerning the first one, I don't understand why we need to reject irqs if
->> runtime_suspended is true.
+>> In particular, this prevents fast frequency switching from being
+>> disabled after a suspend-to-RAM cycle on all CPUs except for the
+>> boot one.
 >
-> The interrupt handler might be called because the interrupt is shared i.e.
-> the interrupt is for a different device.  In that case the host controller
-> might be off and the registers inaccessible.  In that case we cannot even
-> look at the interrupt register to determine if we were expecting the interrupt.
+> static int cpufreq_governor(struct cpufreq_policy *policy, unsigned int event)
+> {
+>         int ret;
 >
->>                            Only SDHCI_INT_CARD_INT irq is enabled so why we
->> should have other IRQs than this one?
+>         /* Don't start any governor operations if we are entering suspend */
+>         if (cpufreq_suspended)
+>                 return 0;
 >
-> In the case of SDIO Card interrupt, it is delivered via the host controller,
-> so we have to assume the registers are accessible if we are
-> runtime-suspended with the SDIO IRQ enabled.
+>         ...
 >
->>
->> Since you were not in favour of allowing to wakeup on SDHCI_INT_CARD_INSERT or
->> SDHCI_INT_CARD_REMOVE, I assume you won't take it so I
->> solved my issue only by modifying my driver.
+> }
 >
-> I don't mind allowing card detect interrupts while runtime suspended, but we
-> need a flag so that:
-> - runtime suspend leaves the insert/remove interrupts enabled
-> - irq handler knows it can access registers
+> Above already guarantees that we would start/stop governors. Why do we
+> need this change then ?
 
-To me, this seem like the wrong way of how to configure wake-ups for
-these kind of devices.
-
-I don't think the regular IRQs shall be enabled and the driver
-shouldn't assume the registers are accessible without first runtime
-resuming the device.
-
-> - irq thread handler knows to runtime resume before doing anything else
->
-> But it seems like you need to persuade Ulf first.
-
-For a more thorough explanation to why I don't like, please have a
-look at my comment for another related thread on the mmc list.
-http://www.spinics.net/lists/linux-mmc/msg36132.html
-
-Kind regards
-Uffe
+Because we do extra stuff in cpufreq_start_governor() and
+cpufreq_exit_governor() that *also* shouldn't be done if
+cpufreq_suspended is set.
