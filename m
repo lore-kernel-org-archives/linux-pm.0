@@ -1,49 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V1 Resend 2/2] cpufreq: acpi: policy->driver_data can't be NULL in ->exit()
-Date: Thu,  7 Apr 2016 14:06:58 +0530
-Message-ID: <a03d2da898006ac21e6ba25b9cc583cc98538e56.1460018171.git.viresh.kumar@linaro.org>
-References: <31560235fc686a26bb5d975059d480fd9e645b17.1460018171.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <31560235fc686a26bb5d975059d480fd9e645b17.1460018171.git.viresh.kumar@linaro.org>
-In-Reply-To: <31560235fc686a26bb5d975059d480fd9e645b17.1460018171.git.viresh.kumar@linaro.org>
-References: <31560235fc686a26bb5d975059d480fd9e645b17.1460018171.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] sdhci: wakeup from runtime PM
+Date: Thu, 7 Apr 2016 11:11:08 +0200
+Message-ID: <CAPDyKFpvE2N+B3-S+tOKJ7+ViWddpxWxCWRGs2LBjWS9CmMxwA@mail.gmail.com>
+References: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
+	<5703B241.6030007@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:38663 "EHLO
+	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750785AbcDGJLJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Apr 2016 05:11:09 -0400
+Received: by mail-wm0-f46.google.com with SMTP id u206so78094438wme.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 02:11:09 -0700 (PDT)
+In-Reply-To: <5703B241.6030007@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ludovic Desroches <ludovic.desroches@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Its always set by ->init() and so it will always be there in ->exit().
-There is no need to have a special check for just that.
+On 5 April 2016 at 14:40, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> On 25/03/16 18:05, Ludovic Desroches wrote:
+>> Hi,
+>>
+>> When not using the SDHCI controller, it is logical to save power by suspending
+>> it. The issue is that SDHCI assumes that the controller is completely disabled.
+>> It means the only way to wake up on a card event is to have a gpio for the card
+>> detection (so two pins for the same signal). A possible workaround is to use
+>> polling but the controller will be resumed/suspended between each attempts.
+>>
+>> We have already discussed a long time about this and it seems we don't agree.
+>> In my opinion, even if I can't disable all clocks, I should use runtime PM
+>> to save some power.
+>>
+>> I propose two patches, one which is a draft to try to solve it at sdhci level
+>> and one at sdhci-of-at91 level.
+>>
+>> Concerning the first one, I don't understand why we need to reject irqs if
+>> runtime_suspended is true.
+>
+> The interrupt handler might be called because the interrupt is shared i.e.
+> the interrupt is for a different device.  In that case the host controller
+> might be off and the registers inaccessible.  In that case we cannot even
+> look at the interrupt register to determine if we were expecting the interrupt.
+>
+>>                            Only SDHCI_INT_CARD_INT irq is enabled so why we
+>> should have other IRQs than this one?
+>
+> In the case of SDIO Card interrupt, it is delivered via the host controller,
+> so we have to assume the registers are accessible if we are
+> runtime-suspended with the SDIO IRQ enabled.
+>
+>>
+>> Since you were not in favour of allowing to wakeup on SDHCI_INT_CARD_INSERT or
+>> SDHCI_INT_CARD_REMOVE, I assume you won't take it so I
+>> solved my issue only by modifying my driver.
+>
+> I don't mind allowing card detect interrupts while runtime suspended, but we
+> need a flag so that:
+> - runtime suspend leaves the insert/remove interrupts enabled
+> - irq handler knows it can access registers
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/acpi-cpufreq.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+To me, this seem like the wrong way of how to configure wake-ups for
+these kind of devices.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 4fe67775555a..74182209bab7 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -887,14 +887,12 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 
- 	pr_debug("acpi_cpufreq_cpu_exit\n");
- 
--	if (data) {
--		policy->fast_switch_possible = false;
--		policy->driver_data = NULL;
--		acpi_processor_unregister_performance(data->acpi_perf_cpu);
--		free_cpumask_var(data->freqdomain_cpus);
--		kfree(policy->freq_table);
--		kfree(data);
--	}
-+	policy->fast_switch_possible = false;
-+	policy->driver_data = NULL;
-+	acpi_processor_unregister_performance(data->acpi_perf_cpu);
-+	free_cpumask_var(data->freqdomain_cpus);
-+	kfree(policy->freq_table);
-+	kfree(data);
- 
- 	return 0;
- }
--- 
-2.7.1.410.g6faf27b
+I don't think the regular IRQs shall be enabled and the driver
+shouldn't assume the registers are accessible without first runtime
+resuming the device.
+
+> - irq thread handler knows to runtime resume before doing anything else
+>
+> But it seems like you need to persuade Ulf first.
+
+For a more thorough explanation to why I don't like, please have a
+look at my comment for another related thread on the mmc list.
+http://www.spinics.net/lists/linux-mmc/msg36132.html
+
+Kind regards
+Uffe
