@@ -1,39 +1,35 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC PATCH] PM / wakeirq: fix wakeirq setting after wakup
- re-configuration from sysfs
-Date: Thu, 7 Apr 2016 10:56:01 -0700
-Message-ID: <20160407175600.GN16484@atomide.com>
-References: <1459943153-2553-1-git-send-email-grygorii.strashko@ti.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 3/4] ARM: dts: Add binding documentation for
+ AXP20x pmic ac power supply
+Date: Thu, 7 Apr 2016 12:57:15 -0500
+Message-ID: <20160407175715.GD32257@rob-hp-laptop>
+References: <1459689307-8501-1-git-send-email-haas@computerlinguist.org>
+ <1459689307-8501-3-git-send-email-haas@computerlinguist.org>
+Reply-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:50065 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756645AbcDGR4G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Apr 2016 13:56:06 -0400
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBDJIP47K7MERBAF7TK4AKGQEQWIGYWA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <1459943153-2553-1-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1459689307-8501-3-git-send-email-haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Cc: pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, nsekhar@ti.com, nm@ti.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-omap@vger.kernel.org
 
-* Grygorii Strashko <grygorii.strashko@ti.com> [160406 04:47]:
-> Now wakeirq stops working for device if wakeup option for
-> this device will be reconfigured through sysfs, like:
+On Sun, Apr 03, 2016 at 03:15:06PM +0200, Michael Haas wrote:
+> Add binding documentation for the ac power supply part of the AXP20x
+> pmic.
 > 
-> echo disabled > /sys/devices/platform/extcon_usb1/power/wakeup
-> echo enabled > /sys/devices/platform/extcon_usb1/power/wakeup
-> 
-> Once above set of commands is executed the device's wakeup_source
-> opject will be recreated and dev->power.wakeup->wakeirq field will
-> contain NULL. As result, device_wakeup_arm_wake_irqs() will not arm
-> wakeirq for the affected device.
-> 
-> Hece, lets try to fix it in the following way:
->   check for dev->wakeirq field when device_wakeup_attach() is called
->   and if !NULL re-attach wakeirq to the device
+> Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+> ---
+>  .../bindings/power_supply/axp20x_ac_power.txt      | 34 ++++++++++++++++++++++
+>  1 file changed, 34 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power_supply/axp20x_ac_power.txt
 
-Yeah I think that's all there is to it, thanks for fixing it:
-
-Acked-by: Tony Lindgren <tony@atomide.com>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
