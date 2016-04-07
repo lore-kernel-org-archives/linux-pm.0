@@ -1,26 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Documenation for structures
-Date: Thu, 07 Apr 2016 01:35:56 +0200
-Message-ID: <3974483.OxFNVUe937@vostro.rjw.lan>
-References: <1459714006-5826-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] Prefer kASLR over Hibernation
+Date: Thu, 7 Apr 2016 02:05:43 +0200
+Message-ID: <20160407000543.GA26824@gmail.com>
+References: <20160406194404.GA11150@www.outflux.net>
+ <CAJZ5v0ieAd3WSiytzcdtD=eueLPk_SM1KgrqZXHBa6+bwK=KnQ@mail.gmail.com>
+ <20160406215638.GA25539@gmail.com>
+ <CAJZ5v0ir8PwyC2b1R0DaE+O5dH0cZUtrzTHxM4OAPxMY9hmNXA@mail.gmail.com>
+ <CAGXu5jJQBEivvcGnK4jB+5sbUpx9Sn+RieChXEgU-4ch9=1chA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55432 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752024AbcDFXd0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Apr 2016 19:33:26 -0400
-In-Reply-To: <1459714006-5826-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAGXu5jJQBEivvcGnK4jB+5sbUpx9Sn+RieChXEgU-4ch9=1chA@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, April 03, 2016 01:06:46 PM Srinivas Pandruvada wrote:
-> No code change. Only added kernel doc style comments for structures.
+
+* Kees Cook <keescook@chromium.org> wrote:
+
+> >> I don't think this is a good idea, as it turns off emergency hibernation of 
+> >> laptops - many desktop distros support it by default.
+> >
+> > Right, I forgot about this one.
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> When I last checked Ubuntu doesn't enable hibernation by default any more: 
+> https://help.ubuntu.com/16.04/ubuntu-help/power-hibernate.html
+> 
+> And it seems like Fedora either doesn't either, or has a lot of people
+> for whom it doesn't work:
+> https://bugzilla.redhat.com/show_bug.cgi?id=1206936
+> https://bugzilla.redhat.com/show_bug.cgi?id=1224151
+> http://blog.kriptonium.com/2015/12/fedora-23-hibernate.html
 
-Applied, thanks!
+Ok, that's a relatively recent development, I distinctly remember my laptop being 
+hibernated in such a fashion fairly recently.
 
+That makes it easier to hack around the kASLR incompatibility by making 
+hibernation less useful. Personally I think that conceptually user space 
+persistency (CRIU et al) is superior to kernel level hibernation - but
+user-space save/restore is nowhere near as complete as kernel hibernation,
+so it's still somewhat sad that it doesn't work ...
+
+Thanks,
+
+	Ingo
