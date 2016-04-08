@@ -1,151 +1,67 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 7/7] ARM: dts: Add support of Bus frequency using VDD_INT for
- exynos5422-odroidxu3
-Date: Fri, 08 Apr 2016 14:00:46 +0900
-Message-ID: <1460091646-28701-8-git-send-email-cw00.choi@samsung.com>
-References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
+ cpufreq_suspended set
+Date: Fri, 8 Apr 2016 11:14:14 +0530
+Message-ID: <20160408054414.GE9674@vireshk-i7>
+References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+ <CAJZ5v0g6zHT8yq-s+FkSb+ZE9K5vw_y0GX1nHaSLjOQXfsUquw@mail.gmail.com>
+ <20160407120503.GG3201@vireshk-i7>
+ <2346918.2NTGrKGAVB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35260 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbcDHFoa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 01:44:30 -0400
+Received: by mail-pa0-f48.google.com with SMTP id td3so68675906pab.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 Apr 2016 22:44:30 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2346918.2NTGrKGAVB@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-This patch adds the bus device tree nodes for INT (Internal) block
-to enable the AMBA bus frequency scaling and add the NoC (Network on Chip)
-Probe Device Tree node to measure the bandwidht for AMBA AXI bus.
+On 08-04-16, 00:05, Rafael J. Wysocki wrote:
+> On Thursday, April 07, 2016 05:35:03 PM Viresh Kumar wrote:
 
-The WCORE bus bus is parent device in INT block using VDD_INT.
+> > That's *ugly* and it works by chance, unless I am misreading it
+> > completely.
+> 
+> I'm assuming that what you mean by "ugly" here is "not really straightforward",
+> which I agree with,
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi | 99 ++++++++++++++++++++++
- 1 file changed, 99 insertions(+)
+Yeah.
 
-diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-index 1bd507bfa750..2a74abe6fc5d 100644
---- a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-@@ -361,6 +361,22 @@
- 	cap-sd-highspeed;
- };
- 
-+&nocp_mem0_0 {
-+	status = "okay";
-+};
-+
-+&nocp_mem0_1 {
-+	status = "okay";
-+};
-+
-+&nocp_mem0_2 {
-+	status = "okay";
-+};
-+
-+&nocp_mem0_3 {
-+	status = "okay";
-+};
-+
- &pinctrl_0 {
- 	hdmi_hpd_irq: hdmi-hpd-irq {
- 		samsung,pins = "gpx3-7";
-@@ -432,3 +448,86 @@
- 	vdd33-supply = <&ldo9_reg>;
- 	vdd10-supply = <&ldo11_reg>;
- };
-+
-+&bus_wcore {
-+	devfreq-events = <&nocp_mem0_0>, <&nocp_mem0_1>,
-+			<&nocp_mem0_2>, <&nocp_mem0_3>;
-+	vdd-supply = <&buck3_reg>;
-+	exynos,saturation-ratio = <100>;
-+	status = "okay";
-+};
-+
-+&bus_noc {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_fsys_apb {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_fsys {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_fsys2 {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_mfc {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_gen {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_peri {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_g2d {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_g2d_acp {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_jpeg {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_jpeg_apb {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_disp1_fimd {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_disp1 {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_gscl_scaler {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
-+
-+&bus_mscl {
-+	devfreq = <&bus_wcore>;
-+	status = "okay";
-+};
+> but then it is really disappointing to see comments like
+> that from you about the code that you helped to write.
+
+I was just trying to say that this isn't how I feel it should be done.
+:(
+
+> Moreover, runtime CPU offline *also* doesn't have to run the governor exit/init
+> for the same reason why the policy directory doesn't have to be removed on
+> CPU offline: it is just pointless to do that.  The governor has been stopped
+> already and it won't do anything more.  The only problem here is to prevent
+> governor tunable sysfs attributes from triggering actions in that state,
+> but that shouldn't be too difficult to arrange for.  If that's done,
+
+Isn't that already guaranteed as userspace should have been frozen by
+by the time we reach cpufreq_suspend()?
+
+> cpufreq_suspended can be dropped, modulo changing cpufreq_start_governor()
+> to return immediately if the governor has been started already.
+> 
+> And if something else is needed to protect driver callbacks from being invoked
+> outside of the suspend-resume path, a more robust mechanism has to be added
+> for that.
+> 
+> But in the meantime, I'd like to address the fast switch problem first and
+> then you're free to clean up things on top of that.  Or I will clean them up
+> if I have the time.
+
+Okay..
+
 -- 
-1.9.1
+viresh
