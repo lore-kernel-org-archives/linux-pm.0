@@ -1,160 +1,141 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Fri, 8 Apr 2016 08:04:20 +0000
-Message-ID: <AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
- <6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] sdhci: wakeup from runtime PM
+Date: Fri, 8 Apr 2016 10:35:00 +0200
+Message-ID: <CAPDyKFqJ4Q9hdsv427GaT_2qFpvv=Nn3rZQUS+P8O7FF-gKgyw@mail.gmail.com>
+References: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
+	<5703B241.6030007@intel.com>
+	<CAPDyKFpvE2N+B3-S+tOKJ7+ViWddpxWxCWRGs2LBjWS9CmMxwA@mail.gmail.com>
+	<20160407151208.GA13961@odux.rfo.atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>, "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>
-Cc: "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:34930 "EHLO
+	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757295AbcDHIfC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 04:35:02 -0400
+Received: by mail-wm0-f52.google.com with SMTP id 191so10716643wmq.0
+        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 01:35:01 -0700 (PDT)
+In-Reply-To: <20160407151208.GA13961@odux.rfo.atmel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ludovic Desroches <ludovic.desroches@atmel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
 
-Hi, Baolin
+- linux-kernel list
 
-> -----Original Message-----
-> From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
-> owner@vger.kernel.org] On Behalf Of Baolin Wang
-> Sent: Thursday, April 07, 2016 7:49 PM
-> To: balbi@kernel.org; gregkh@linuxfoundation.org; sre@kernel.org;
-> dbaryshkov@gmail.com; dwmw2@infradead.org
-> Cc: peter.chen@freescale.com; stern@rowland.harvard.edu;
-> r.baldyga@samsung.com; yoshihiro.shimoda.uh@renesas.com;
-> lee.jones@linaro.org; broonie@kernel.org;
-> ckeepax@opensource.wolfsonmicro.com; patches@opensource.wolfsonmicro.com;
-> baolin.wang@linaro.org; linux-pm@vger.kernel.org; linux-
-> usb@vger.kernel.org; device-mainlining@lists.linuxfoundation.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-> 
-> This patch introduces the usb charger driver based on usb gadget that
-> makes an enhancement to a power driver. It works well in practice but that
-> requires a system with suitable hardware.
-> 
-> The basic conception of the usb charger is that, when one usb charger is
-> added or removed by reporting from the usb gadget state change or the
-> extcon device state change, the usb charger will report to power user to
-> set the current limitation.
-> 
-> The usb charger will register notifiees on the usb gadget or the extcon
-> device to get notified the usb charger state. It also supplies the
-> notification mechanism to userspace When the usb charger state is changed.
-> 
-> Power user will register a notifiee on the usb charger to get notified by
-> status changes from the usb charger. It will report to power user to set
-> the current limitation when detecting the usb charger is added or removed
-> from extcon device state or usb gadget state.
-> 
-> This patch doesn't yet integrate with the gadget code, so some functions
-> which rely on the 'gadget' are not completed, that will be implemented in
-> the following patches.
-> 
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
->  drivers/usb/gadget/Kconfig       |    7 +
->  drivers/usb/gadget/udc/Makefile  |    1 +
->  drivers/usb/gadget/udc/charger.c |  729
-> ++++++++++++++++++++++++++++++++++++++
->  include/linux/usb/charger.h      |  173 +++++++++
->  include/uapi/linux/usb/charger.h |   31 ++
->  5 files changed, 941 insertions(+)
->  create mode 100644 drivers/usb/gadget/udc/charger.c  create mode 100644
-> include/linux/usb/charger.h  create mode 100644
-> include/uapi/linux/usb/charger.h
-> 
+On 7 April 2016 at 17:12, Ludovic Desroches <ludovic.desroches@atmel.com> wrote:
+> On Thu, Apr 07, 2016 at 11:11:08AM +0200, Ulf Hansson wrote:
+>> On 5 April 2016 at 14:40, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>> > On 25/03/16 18:05, Ludovic Desroches wrote:
+>> >> Hi,
+>> >>
+>> >> When not using the SDHCI controller, it is logical to save power by suspending
+>> >> it. The issue is that SDHCI assumes that the controller is completely disabled.
+>> >> It means the only way to wake up on a card event is to have a gpio for the card
+>> >> detection (so two pins for the same signal). A possible workaround is to use
+>> >> polling but the controller will be resumed/suspended between each attempts.
+>> >>
 
-...
+>From power consumption point if view we already discussed this
+particular case in an earlier thread, but let me elaborate what I
+think one more time:
 
-> +
-> +/*
-> + * usb_charger_detect_type() - detect the charger type manually.
-> + * @uchger - usb charger device
-> + *
-> + * Note: You should ensure you need to detect the charger type manually
-> +on your
-> + * platform.
-> + * You should call it at the right gadget state to avoid affecting
-> +gadget
-> + * enumeration.
-> + */
-> +int usb_charger_detect_type(struct usb_charger *uchger) {
-> +	enum usb_charger_type type;
-> +
-> +	if (WARN(!uchger->charger_detect,
-> +		 "charger detection method should not be NULL"))
-> +		return -EINVAL;
-> +
-> +	type = uchger->charger_detect(uchger);
-> +
-> +	mutex_lock(&uchger->lock);
-> +	uchger->type = type;
-> +	mutex_unlock(&uchger->lock);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(usb_charger_detect_type);
+Now, this is relevant for removable cards lacking GPIO card detect, as
+for other cases and non-removable cards I think we are in agreement
+that their is no issue from power consumption point of view, right!?
 
-I still recommend have a central place to call usb_charger_detect_type()
-to cover real charger detection instead of leaving this question open to
-diff users. This can be done after vbus-on is detected and before do gadget
-connect. I don't think this will make your framework complicated.
+1. The current solution:
+- Use MMC_CAP_NEEDS_POLL which makes the mmc core to re-schedule a
+work once every second to poll for a card (Why is it one second? Could
+we perhaps have that configurable?).
 
-Hi Felipe, what do you think of this?
+In case of no card inserted, the polling consists of runtime resuming
+the SDHCI controller and then reading a couple of registers to find
+out if there is a new card. I assume this will be a fast operation. In
+the below calculation I have neglected its impact which of course is a
+simplification.
 
-Li Jun
+This solution allows the driver in runtime suspend to *gate all three
+clocks* used by the SDHCI controller. In-between polling attempts it
+will thus save power.
 
-> +
-> +/*
-> + * usb_charger_get_type_by_others() - Get the usb charger type by the
-> +callback
-> + * which is implemented by users.
-> + * @uchger - the usb charger device.
-> + *
-> + * Note: This function is just used for getting the charger type, not
-> +for
-> + * detecting charger type which might affect the DP/DM line when gadget
-> +is on
-> + * enumeration state.
-> + */
-> +static enum usb_charger_type
-> +usb_charger_get_type_by_others(struct usb_charger *uchger) {
-> +	if (uchger->type != UNKNOWN_TYPE)
-> +		return uchger->type;
-> +
-> +	if (uchger->psy) {
-> +		union power_supply_propval val;
-> +
-> +		power_supply_get_property(uchger->psy,
-> +					  POWER_SUPPLY_PROP_CHARGE_TYPE,
-> +					  &val);
-> +		switch (val.intval) {
-> +		case POWER_SUPPLY_TYPE_USB:
-> +			uchger->type = SDP_TYPE;
-> +			break;
-> +		case POWER_SUPPLY_TYPE_USB_DCP:
-> +			uchger->type = DCP_TYPE;
-> +			break;
-> +		case POWER_SUPPLY_TYPE_USB_CDP:
-> +			uchger->type = CDP_TYPE;
-> +			break;
-> +		case POWER_SUPPLY_TYPE_USB_ACA:
-> +			uchger->type = ACA_TYPE;
-> +			break;
-> +		default:
-> +			uchger->type = UNKNOWN_TYPE;
-> +			break;
-> +		}
-> +	} else if (uchger->get_charger_type) {
-> +		uchger->type = uchger->get_charger_type(uchger);
-> +	} else {
-> +		uchger->type = UNKNOWN_TYPE;
-> +	}
-> +
-> +	return uchger->type;
-> +}
-> +
+Currently the mmc core *always* respects runtime PM autosuspend when
+putting the controller device back to runtime suspend. I suggest we
+change this in cases when the polling operation doesn't detect any
+changes.
+
+For the sdhci-of-at91 driver case, the autosuspend timeout is set to
+50 ms (which is a common value among mmc host drivers).
+
+In the current code this means for a period over ~10 s, *all three
+clocks* will be ungated for 50 ms x 10 times = ~500 ms.
+
+If we adopt to what I propose above, this time will become significant
+lesser as the autosuspend timer will not be respected.
+
+2. What you propose (I think):
+* Don't use MMC_CAP_NEEDS_POLL, but instead rely on the SDHCI
+controller to pick up card detect IRQs in runtime suspended state.
+
+In case of no card inserted, the controller would then stay runtime
+suspended but with IRQs enabled to deal with card detect IRQs.
+According to what you told me earlier, this means that the controller
+requires one of the three clocks to be ungated in the runtime suspend
+state. So, only two clocks can be managed by runtime PM.
+
+Assuming that no cards get inserted over a period of ~10 s, *one clock
+will be ungated* for ~10 s.
+
+
+Can you show that option 2) is better in saving power than option 1) ?
+
+[...]
+
+>> >
+>> > I don't mind allowing card detect interrupts while runtime suspended, but we
+>> > need a flag so that:
+>> > - runtime suspend leaves the insert/remove interrupts enabled
+>> > - irq handler knows it can access registers
+>>
+>> To me, this seem like the wrong way of how to configure wake-ups for
+>> these kind of devices.
+>
+> We are definitely not in agreement on this point. It means I have to
+> rely on polling for card detection. I did it but I had in mind it would
+> be a temporary workaround while waiting to find a better one.
+>
+>>
+>> I don't think the regular IRQs shall be enabled and the driver
+>> shouldn't assume the registers are accessible without first runtime
+>> resuming the device.
+>>
+>> > - irq thread handler knows to runtime resume before doing anything else
+>> >
+>> > But it seems like you need to persuade Ulf first.
+>>
+>
+> It will be a difficult task :)
+
+Yes, but I have changed my mind earlier... :-)
+
+[...]
+
+>
+> I am not arguing for SD card detection wake-up itself but for saving power
+> when I don't use my SDHCI controller. I boot Linux without a SD card,
+> the controller is runtime suspended, it seems obvious that the controller
+> should be resumed when I insert a card. I really want to use runtime PM
+> because the controller should be most of the time suspended excepting if the
+> rootfs is on the SD card.
+
+I am not sure I understand what you states here, but I assume my upper
+elaboration on your proposal is correct!? If not, please try to be a
+bit more specific.
+
+Moreover, let's not involve "rootfs" to this discussion, but stay to
+discussing removable cards as those are the interesting ones, right!?
+
+[...]
+
+Kind regards
+Uffe
