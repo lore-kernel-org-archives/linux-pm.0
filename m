@@ -1,113 +1,87 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH V2] PM / Runtime: Move ignore_children flag under CONFIG_PM
-Date: Fri,  8 Apr 2016 13:40:53 +0200
-Message-ID: <1460115653-32421-1-git-send-email-ulf.hansson@linaro.org>
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
+Date: Fri, 8 Apr 2016 11:27:01 +0000
+Message-ID: <AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+References: <cover.1460029375.git.baolin.wang@linaro.org>
+	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
+	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
+	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+ <CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f51.google.com ([209.85.215.51]:33083 "EHLO
-	mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbcDHLlR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 07:41:17 -0400
-Received: by mail-lf0-f51.google.com with SMTP id e190so75438674lfe.0
-        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 04:41:16 -0700 (PDT)
+Received: from mail-am1on0068.outbound.protection.outlook.com ([157.56.112.68]:63666
+	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752633AbcDHLmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Apr 2016 07:42:04 -0400
+In-Reply-To: <CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 
-The ignore_children flag is used only when CONFIG_PM is set, so let's move
-it into that section within the struct dev_pm_info.
-
-Move also the corresponding pm_suspend_ignore_children() API out of
-device.h into pm_runtime.h, to be consistent with similar APIs.
-
-Unfortunate this causes the Toshiba PCI SD mmc host driver to fail to
-compile as it needs pm_runtime.h, so let's fix this here as well.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v2:
-	- Fix compiler error for toshsd mmc host driver.
-
----
- drivers/mmc/host/toshsd.c  | 1 +
- include/linux/device.h     | 5 -----
- include/linux/pm.h         | 2 +-
- include/linux/pm_runtime.h | 6 ++++++
- 4 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/mmc/host/toshsd.c b/drivers/mmc/host/toshsd.c
-index e2cdd5f..553ef41 100644
---- a/drivers/mmc/host/toshsd.c
-+++ b/drivers/mmc/host/toshsd.c
-@@ -21,6 +21,7 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/pm.h>
-+#include <linux/pm_runtime.h>
- #include <linux/mmc/host.h>
- #include <linux/mmc/mmc.h>
- 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 002c597..b130304 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -956,11 +956,6 @@ static inline bool device_async_suspend_enabled(struct device *dev)
- 	return !!dev->power.async_suspend;
- }
- 
--static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
--{
--	dev->power.ignore_children = enable;
--}
--
- static inline void dev_pm_syscore_device(struct device *dev, bool val)
- {
- #ifdef CONFIG_PM_SLEEP
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6a5d654..06eb353 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -563,7 +563,6 @@ struct dev_pm_info {
- 	bool			is_suspended:1;	/* Ditto */
- 	bool			is_noirq_suspended:1;
- 	bool			is_late_suspended:1;
--	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	bool			direct_complete:1;	/* Owned by the PM core */
- 	spinlock_t		lock;
-@@ -591,6 +590,7 @@ struct dev_pm_info {
- 	unsigned int		deferred_resume:1;
- 	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
-+	bool			ignore_children:1;
- 	unsigned int		no_callbacks:1;
- 	unsigned int		irq_safe:1;
- 	unsigned int		use_autosuspend:1;
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 7af093d..2e14d26 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -56,6 +56,11 @@ extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
- 
-+static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
-+{
-+	dev->power.ignore_children = enable;
-+}
-+
- static inline bool pm_children_suspended(struct device *dev)
- {
- 	return dev->power.ignore_children
-@@ -156,6 +161,7 @@ static inline void __pm_runtime_disable(struct device *dev, bool c) {}
- static inline void pm_runtime_allow(struct device *dev) {}
- static inline void pm_runtime_forbid(struct device *dev) {}
- 
-+static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
- static inline bool pm_children_suspended(struct device *dev) { return false; }
- static inline void pm_runtime_get_noresume(struct device *dev) {}
- static inline void pm_runtime_put_noidle(struct device *dev) {}
--- 
-1.9.1
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcgW21h
+aWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBGcmlkYXksIEFwcmlsIDA4LCAy
+MDE2IDc6MDAgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBiYWxiaUBr
+ZXJuZWwub3JnOyBncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgc3JlQGtlcm5lbC5vcmc7DQo+
+IGRiYXJ5c2hrb3ZAZ21haWwuY29tOyBkd213MkBpbmZyYWRlYWQub3JnOyBwZXRlci5jaGVuQGZy
+ZWVzY2FsZS5jb207DQo+IHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU7IHIuYmFsZHlnYUBzYW1z
+dW5nLmNvbTsNCj4geW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb207IGxlZS5qb25lc0Bs
+aW5hcm8ub3JnOyBicm9vbmllQGtlcm5lbC5vcmc7DQo+IGNrZWVwYXhAb3BlbnNvdXJjZS53b2xm
+c29ubWljcm8uY29tOyBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gbGlu
+dXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC11c2JAdmdlci5rZXJuZWwub3JnOyBkZXZpY2Ut
+DQo+IG1haW5saW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZzsgbGludXgta2VybmVsQHZn
+ZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMCAxLzRdIGdhZGdldDogSW50
+cm9kdWNlIHRoZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsNCj4gDQo+IEhpIEp1biwNCj4gDQo+ID4+
+ID4+ICsvKg0KPiA+PiA+PiArICogdXNiX2NoYXJnZXJfZGV0ZWN0X3R5cGUoKSAtIGRldGVjdCB0
+aGUgY2hhcmdlciB0eXBlIG1hbnVhbGx5Lg0KPiA+PiA+PiArICogQHVjaGdlciAtIHVzYiBjaGFy
+Z2VyIGRldmljZQ0KPiA+PiA+PiArICoNCj4gPj4gPj4gKyAqIE5vdGU6IFlvdSBzaG91bGQgZW5z
+dXJlIHlvdSBuZWVkIHRvIGRldGVjdCB0aGUgY2hhcmdlciB0eXBlDQo+ID4+ID4+ICttYW51YWxs
+eSBvbiB5b3VyDQo+ID4+ID4+ICsgKiBwbGF0Zm9ybS4NCj4gPj4gPj4gKyAqIFlvdSBzaG91bGQg
+Y2FsbCBpdCBhdCB0aGUgcmlnaHQgZ2FkZ2V0IHN0YXRlIHRvIGF2b2lkDQo+ID4+ID4+ICthZmZl
+Y3RpbmcgZ2FkZ2V0DQo+ID4+ID4+ICsgKiBlbnVtZXJhdGlvbi4NCj4gPj4gPj4gKyAqLw0KPiA+
+PiA+PiAraW50IHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKHN0cnVjdCB1c2JfY2hhcmdlciAqdWNo
+Z2VyKSB7DQo+ID4+ID4+ICsgICAgIGVudW0gdXNiX2NoYXJnZXJfdHlwZSB0eXBlOw0KPiA+PiA+
+PiArDQo+ID4+ID4+ICsgICAgIGlmIChXQVJOKCF1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0LA0KPiA+
+PiA+PiArICAgICAgICAgICAgICAiY2hhcmdlciBkZXRlY3Rpb24gbWV0aG9kIHNob3VsZCBub3Qg
+YmUgTlVMTCIpKQ0KPiA+PiA+PiArICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiA+PiA+
+PiArDQo+ID4+ID4+ICsgICAgIHR5cGUgPSB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KHVjaGdlcik7
+DQo+ID4+ID4+ICsNCj4gPj4gPj4gKyAgICAgbXV0ZXhfbG9jaygmdWNoZ2VyLT5sb2NrKTsNCj4g
+Pj4gPj4gKyAgICAgdWNoZ2VyLT50eXBlID0gdHlwZTsNCj4gPj4gPj4gKyAgICAgbXV0ZXhfdW5s
+b2NrKCZ1Y2hnZXItPmxvY2spOw0KPiA+PiA+PiArDQo+ID4+ID4+ICsgICAgIHJldHVybiAwOw0K
+PiA+PiA+PiArfQ0KPiA+PiA+PiArRVhQT1JUX1NZTUJPTF9HUEwodXNiX2NoYXJnZXJfZGV0ZWN0
+X3R5cGUpOw0KPiA+PiA+DQo+ID4+ID4gSSBzdGlsbCByZWNvbW1lbmQgaGF2ZSBhIGNlbnRyYWwg
+cGxhY2UgdG8gY2FsbA0KPiA+PiA+IHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgdG8gY292ZXIg
+cmVhbCBjaGFyZ2VyIGRldGVjdGlvbiBpbnN0ZWFkDQo+ID4+ID4gb2YgbGVhdmluZyB0aGlzIHF1
+ZXN0aW9uIG9wZW4gdG8gZGlmZiB1c2Vycy4gVGhpcyBjYW4gYmUgZG9uZSBhZnRlcg0KPiA+PiA+
+IHZidXMtb24gaXMgZGV0ZWN0ZWQgYW5kIGJlZm9yZSBkbyBnYWRnZXQgY29ubmVjdC4gSSBkb24n
+dCB0aGluaw0KPiA+PiA+IHRoaXMNCj4gPj4gd2lsbCBtYWtlIHlvdXIgZnJhbWV3b3JrIGNvbXBs
+aWNhdGVkLg0KPiA+Pg0KPiA+PiBUaGlzIEFQSSBpcyB1c2VkIGZvciBkZXRlY3RpbmcgdGhlIGNo
+YXJnZXIgdHlwZSBtYW51YWxseSAoc29mdHdhcmUNCj4gPj4gY2hhcmdlciBkZXRlY3Rpb24pLCBz
+byBpZiB1c2VyJ3MgdWRjIGRyaXZlciBpcyBuZWVkZWQgdG8gZG8gdGhpcywNCj4gPj4gdGhlbiB0
+aGV5IGNhbiBpc3N1ZSBpdCBhdCB0aGVpciByaWdodCBwbGFjZSB0byBtYWtlIGl0IG1vcmUgZmxl
+eGlibGUuDQo+ID4+IEJ1dCBsZXQgdXMgc2VlIG90aGVyIHBlb3BsZSdzIHN1Z2dlc3Rpb24uIFRo
+YW5rcy4NCj4gPg0KPiA+IE9rLCBhY3R1YWxseSB0aGlzIEFQSSBjYW4gYmUgdXNlZCBmb3Igd2hh
+dCBldmVyIGNoYXJnZXIgZGV0ZWN0aW9uDQo+ID4gdHlwZSwgdXNlciBjYW4gaW1wbGVtZW50IGFu
+eSBtZXRob2QobWFudWFsIGRldGVjdGlvbiwgZGlyZWN0bHkgcmVhZA0KPiA+IHJlc3VsdCBmcm9t
+IHNvbWUgSFcuLi53aGF0IGV2ZXIpIGluIHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QoKSwgdGFyZ2V0
+DQo+ID4gaXMNCj4gDQo+IEJ1dCByZWFkaW5nIHJlc3VsdCBmcm9tIHNvbWUgSFcgZG9zZSBub3Qg
+bWVhbnMgKmRldGVjdCosIGFjdHVhbGx5IGlzICpnZXQqLg0KPiBXZSBjYW4gbm90IG1peCB0aGVt
+IHRvZ2V0aGVyIHdpdGggdGhlIGRpZmZlcmVudCBzZW1hbnRpY3MuDQoNCkl0IGRvZXNu4oCZdCBt
+YXR0ZXIgaGVyZSwgeW91IGFscmVhZHkgZGVmaW5lIHRoZSBfZ2V0XyBBUEkgZm9yIGp1c3QgcmVh
+ZA0KdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHRoZSBzYXZlZCB2YWx1ZSh1Y2hnZXItPnR5cGUpLCBz
+byB3ZSBjYW4gdGhpbmsNCnRoZSBBUEkgdG8gbWFrZSB1Y2hnZXItPnR5cGUgZnJvbSBVTktOT1cg
+dG8gT05FIEtOT1dOIHR5cGUgaXMgKmRldGVjdCosDQpiZWNhdXNlIHdlIGRvbid0IG5lZWQgMiBz
+ZXBhcmF0ZSBBUEkgb25lIGZvciAqZ2V0KiB0eXBlIGZyb20gSFcgYW5kIGFub3RoZXINCm9uZSBm
+b3IgKmRldGVjdCogZnJvbSBIVywgb25seSBvbmUgQVBJIGludm9sdmUgSFcgYWNjZXNzIGlzIGVu
+b3VnaC4NCg0KLSBEZXRlY3Q6ICh3cml0ZSB0byBhbmQpIHJlYWQgZnJvbSBIVyB0byBnZXQgdGhl
+IGNoYXJnZXIgdHlwZSwNCiAgc2F2ZSB0byB1Y2hnZXItPnR5cGU7DQotIEdldDogcmVhZCB0aGUg
+Y2hhcmdlciB0eXBlIGZyb20gdWNoZ2VyLT50eXBlLg0KIA0KPiANCj4gPiB0byBoYXZlIHRoZSBj
+aGFyZ2VyIHR5cGUgYW5kIHNldCB1Y2hnZXItPnR5cGUsIHRoZW4geW91IG5vIG5lZWQgdG8gYWRk
+DQo+ID4gdGhlIGNvbW1lbnRzL2Rlc2NyaXB0aW9uIHRvIGxpbWl0IGl0IHVzYWdlLiBBbHNvIEkg
+ZG8gc2VlIHRoZXJlIGlzDQo+IHBvc3NpYmxlIGNlbnRyYWwgcGxhY2UgdG8gZG8gdGhpcy4NCj4g
+Pg0KPiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
