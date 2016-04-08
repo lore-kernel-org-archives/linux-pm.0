@@ -1,349 +1,404 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 05/20] PM / devfreq: Add new passive governor
-Date: Fri, 08 Apr 2016 13:24:54 +0900
-Message-ID: <1460089509-16260-6-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v8 06/20] PM / devfreq: exynos: Add support of bus frequency of
+ sub-blocks using passive governor
+Date: Fri, 08 Apr 2016 13:24:55 +0900
+Message-ID: <1460089509-16260-7-git-send-email-cw00.choi@samsung.com>
 References: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1460089509-16260-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the new passive governor for DEVFREQ framework. The following
-governors are already present and used for DVFS (Dynamic Voltage and Frequency
-Scaling) drivers. The following governors are independently used for one device
-driver which don't give the influence to other device drviers and also don't
-receive the effect from other device drivers.
-- ondemand / performance / powersave / userspace
+This patch adds the support of bus frequency feature for sub-blocks which share
+the one power line. If each bus depends on the power line, each bus is not able
+to change the voltage by oneself. To optimize the power-consumption on runtime,
+some buses using the same power line should change the source clock and
+regulator at the same time. So, this patch uses the passive governor to support
+the bus frequency for all buses which sharing the one power line.
 
-The passive governor depends on operation of parent driver with specific
-governos extremely and is not able to decide the new frequency by oneself.
-According to the decided new frequency of parent driver with governor,
-the passive governor uses it to decide the appropriate frequency for own
-device driver. The passive governor must need the following information
-from device tree:
-- the source clock and OPP tables
-- the instance of parent device
+For example,
 
-For exameple,
-there are one more devfreq device drivers which need to change their source
-clock according to their utilization on runtime. But, they share the same
-power line (e.g., regulator). So, specific device driver is operated as parent
-with ondemand governor and then the rest device driver with passive governor
-is influenced by parent device.
+Exynos3250 include the two power line for AXI buses as following:
+: VDD_MIF : MIF (Memory Interface) provide the DMC (Dynamic Memory Controller)
+  with the power (regulator).
+: VDD_INT : INT (Internal) provide the various sub-blocks with the power
+  (regulator).
 
-Suggested-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-[tjakobi: Reported RCU locking issue and cw00.choi fix it.]
-Reported-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Each bus is included in as follwoing block. In the case of VDD_MIF, only DMC bus
+use the power line. So, there is no any depencency between buese. But, in the
+case of VDD_INT, various buses share the one power line of VDD_INT. We need to
+make the depenency between buses. When using passive governor, there is no
+problem to support the bus frequency as DVFS for all buses. One bus should be
+operated as the parent bus device which gathering the current load of INT block
+and then decides the new frequency with some governors except of passive
+governor. After deciding the new frequency by the parent bus device, the rest
+bus devices will change the each source clock according to new frequency of the
+parent bus device.
+
+- MIF (Memory Interface) block
+: VDD_MIF |--- DMC
+
+- INT (Internal) block
+: VDD_INT |--- LEFTBUS (parent)
+          |--- PERIL
+          |--- MFC
+          |--- G3D
+          |--- RIGHTBUS
+          |--- FSYS
+          |--- LCD0
+          |--- PERIR
+          |--- ISP
+          |--- CAM
+
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+[tjakobi: Reported debugfs error during booting and cw00.choi fix it.]
+Reported-by: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
+Signed-off-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/devfreq/Kconfig            |   8 ++
- drivers/devfreq/Makefile           |   1 +
- drivers/devfreq/governor_passive.c | 207 +++++++++++++++++++++++++++++++++++++
- include/linux/devfreq.h            |  33 ++++++
- 4 files changed, 249 insertions(+)
- create mode 100644 drivers/devfreq/governor_passive.c
+ drivers/devfreq/Kconfig      |   1 +
+ drivers/devfreq/exynos-bus.c | 219 ++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 174 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index cedda8f1e5eb..d260cd0219f6 100644
+index d260cd0219f6..30e1daf1c827 100644
 --- a/drivers/devfreq/Kconfig
 +++ b/drivers/devfreq/Kconfig
-@@ -64,6 +64,14 @@ config DEVFREQ_GOV_USERSPACE
- 	  Otherwise, the governor does not change the frequency
- 	  given at the initialization.
+@@ -78,6 +78,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ 	bool "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
+ 	depends on ARCH_EXYNOS
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
++	select DEVFREQ_GOV_PASSIVE
+ 	select DEVFREQ_EVENT_EXYNOS_PPMU
+ 	select PM_DEVFREQ_EVENT
+ 	select PM_OPP
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 137de6196af3..50fe1a16c574 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -1,7 +1,7 @@
+ /*
+  * Generic Exynos Bus frequency driver with DEVFREQ Framework
+  *
+- * Copyright (c) 2015 Samsung Electronics Co., Ltd.
++ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+  * Author : Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+  *
+  * This driver support Exynos Bus frequency feature by using
+@@ -93,7 +93,7 @@ static int exynos_bus_get_event(struct exynos_bus *bus,
+ }
  
-+config DEVFREQ_GOV_PASSIVE
-+	tristate "Passive"
-+	help
-+	  Sets the frequency based on the frequency of its parent devfreq
-+	  device. This governor does not change the frequency by itself
-+	  through sysfs entries. The passive governor recommends that
-+	  devfreq device uses the OPP table to get the frequency/voltage.
-+
- comment "DEVFREQ Drivers"
+ /*
+- * Must necessary function for devfreq governor
++ * Must necessary function for devfreq simple-ondemand governor
+  */
+ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
+ {
+@@ -202,59 +202,81 @@ static void exynos_bus_exit(struct device *dev)
+ 		regulator_disable(bus->regulator);
  
- config ARM_EXYNOS_BUS_DEVFREQ
-diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-index 8af8aaf922a8..2633087d5c63 100644
---- a/drivers/devfreq/Makefile
-+++ b/drivers/devfreq/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
- obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
- obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
- obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
-+obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ 	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
+ }
  
- # DEVFREQ Drivers
- obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-new file mode 100644
-index 000000000000..28a9ae32d330
---- /dev/null
-+++ b/drivers/devfreq/governor_passive.c
-@@ -0,0 +1,207 @@
+-static int exynos_bus_parse_of(struct device_node *np,
+-			      struct exynos_bus *bus)
 +/*
-+ * linux/drivers/devfreq/governor_passive.c
-+ *
-+ * Copyright (C) 2016 Samsung Electronics
-+ * Author: Chanwoo Choi <cw00.choi@samsung.com>
-+ * Author: MyungJoo Ham <myungjoo.ham@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Must necessary function for devfreq passive governor
 + */
-+
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/devfreq.h>
-+#include "governor.h"
-+
-+static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
-+					unsigned long *freq)
-+{
-+	struct devfreq_passive_data *p_data
-+			= (struct devfreq_passive_data *)devfreq->data;
-+	struct devfreq *parent_devfreq = (struct devfreq *)p_data->parent;
-+	unsigned long child_freq = ULONG_MAX;
-+	struct dev_pm_opp *opp;
-+	int i, count, ret = 0;
-+
-+	/*
-+	 * If the devfreq device with passive governor has the specific method
-+	 * to determine the next frequency, should use the get_target_freq()
-+	 * of struct devfreq_passive_data.
-+	 */
-+	if (p_data->get_target_freq) {
-+		ret = p_data->get_target_freq(devfreq, freq);
-+		goto out;
-+	}
-+
-+	/*
-+	 * If the parent and passive devfreq device uses the OPP table,
-+	 * get the next frequency by using the OPP table.
-+	 */
-+
-+	/*
-+	 * - parent devfreq device uses the governors except for passive.
-+	 * - passive devfreq device uses the passive governor.
-+	 *
-+	 * Each devfreq has the OPP table. After deciding the new frequency
-+	 * from the governor of parent devfreq device, the passive governor
-+	 * need to get the index of new frequency on OPP table of parent
-+	 * device. And then the index is used for getting the suitable
-+	 * new frequency for passive devfreq device.
-+	 */
-+	if (!devfreq->profile || !devfreq->profile->freq_table
-+		|| devfreq->profile->max_state <= 0)
-+		return -EINVAL;
-+
-+	/*
-+	 * The passive governor have to get the correct frequency from OPP
-+	 * list of parent device. Because in this case, *freq is temporary
-+	 * value which is decided by ondemand governor.
-+	 */
++static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
++					u32 flags)
+ {
+-	struct device *dev = bus->dev;
+-	unsigned long rate;
+-	int i, ret, count, size;
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	struct dev_pm_opp *new_opp;
++	unsigned long old_freq, new_freq;
++	int ret = 0;
+ 
+-	/* Get the clock to provide each bus with source clock */
+-	bus->clk = devm_clk_get(dev, "bus");
+-	if (IS_ERR(bus->clk)) {
+-		dev_err(dev, "failed to get bus clock\n");
+-		return PTR_ERR(bus->clk);
++	/* Get new opp-bus instance according to new bus clock */
 +	rcu_read_lock();
-+	opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
++	new_opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(new_opp)) {
++		dev_err(dev, "failed to get recommended opp instance\n");
++		rcu_read_unlock();
++		return PTR_ERR(new_opp);
+ 	}
+ 
+-	ret = clk_prepare_enable(bus->clk);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to get enable clock\n");
+-		return ret;
+-	}
++	new_freq = dev_pm_opp_get_freq(new_opp);
++	old_freq = dev_pm_opp_get_freq(bus->curr_opp);
 +	rcu_read_unlock();
-+	if (IS_ERR(opp)) {
-+		ret = PTR_ERR(opp);
+ 
+-	/* Get the freq/voltage OPP table to scale the bus frequency */
+-	rcu_read_lock();
+-	ret = dev_pm_opp_of_add_table(dev);
++	if (old_freq == new_freq)
++		return 0;
++
++	/* Change the frequency according to new OPP level */
++	mutex_lock(&bus->lock);
++
++	ret = clk_set_rate(bus->clk, new_freq);
+ 	if (ret < 0) {
+-		dev_err(dev, "failed to get OPP table\n");
+-		rcu_read_unlock();
+-		goto err_clk;
++		dev_err(dev, "failed to set the clock of bus\n");
 +		goto out;
-+	}
+ 	}
+ 
+-	rate = clk_get_rate(bus->clk);
+-	bus->curr_opp = dev_pm_opp_find_freq_ceil(dev, &rate);
+-	if (IS_ERR(bus->curr_opp)) {
+-		dev_err(dev, "failed to find dev_pm_opp\n");
+-		rcu_read_unlock();
+-		ret = PTR_ERR(bus->curr_opp);
+-		goto err_opp;
+-	}
+-	rcu_read_unlock();
++	*freq = new_freq;
++	bus->curr_opp = new_opp;
 +
-+	/*
-+	 * Get the OPP table's index of decided freqeuncy by governor
-+	 * of parent device.
-+	 */
-+	for (i = 0; i < parent_devfreq->profile->max_state; i++)
-+		if (parent_devfreq->profile->freq_table[i] == *freq)
-+			break;
-+
-+	if (i == parent_devfreq->profile->max_state) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* Get the suitable frequency by using index of parent device. */
-+	if (i < devfreq->profile->max_state) {
-+		child_freq = devfreq->profile->freq_table[i];
-+	} else {
-+		count = devfreq->profile->max_state;
-+		child_freq = devfreq->profile->freq_table[count - 1];
-+	}
-+
-+	/* Return the suitable frequency for passive device. */
-+	*freq = child_freq;
-+
++	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
++			old_freq/1000, new_freq/1000);
 +out:
++	mutex_unlock(&bus->lock);
++
 +	return ret;
 +}
 +
-+static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
++static void exynos_bus_passive_exit(struct device *dev)
 +{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++
++	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
++}
++
++static int exynos_bus_parent_parse_of(struct device_node *np,
++					struct exynos_bus *bus)
++{
++	struct device *dev = bus->dev;
++	int i, ret, count, size;
+ 
+ 	/* Get the regulator to provide each bus with the power */
+ 	bus->regulator = devm_regulator_get(dev, "vdd");
+ 	if (IS_ERR(bus->regulator)) {
+ 		dev_err(dev, "failed to get VDD regulator\n");
+-		ret = PTR_ERR(bus->regulator);
+-		goto err_opp;
++		return PTR_ERR(bus->regulator);
+ 	}
+ 
+ 	ret = regulator_enable(bus->regulator);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to enable VDD regulator\n");
+-		goto err_opp;
++		return ret;
+ 	}
+ 
+ 	/*
+@@ -305,6 +327,51 @@ static int exynos_bus_parse_of(struct device_node *np,
+ 
+ err_regulator:
+ 	regulator_disable(bus->regulator);
++
++	return ret;
++}
++
++static int exynos_bus_parse_of(struct device_node *np,
++			      struct exynos_bus *bus)
++{
++	struct device *dev = bus->dev;
++	unsigned long rate;
 +	int ret;
 +
-+	if (!devfreq->governor)
-+		return -EINVAL;
++	/* Get the clock to provide each bus with source clock */
++	bus->clk = devm_clk_get(dev, "bus");
++	if (IS_ERR(bus->clk)) {
++		dev_err(dev, "failed to get bus clock\n");
++		return PTR_ERR(bus->clk);
++	}
 +
-+	mutex_lock(&devfreq->lock);
++	ret = clk_prepare_enable(bus->clk);
++	if (ret < 0) {
++		dev_err(dev, "failed to get enable clock\n");
++		return ret;
++	}
 +
-+	ret = devfreq->governor->get_target_freq(devfreq, &freq);
-+	if (ret < 0)
-+		goto out;
++	/* Get the freq and voltage from OPP table to scale the bus freq */
++	rcu_read_lock();
++	ret = dev_pm_opp_of_add_table(dev);
++	if (ret < 0) {
++		dev_err(dev, "failed to get OPP table\n");
++		rcu_read_unlock();
++		goto err_clk;
++	}
 +
-+	ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
-+	if (ret < 0)
-+		goto out;
-+
-+	devfreq->previous_freq = freq;
-+
-+out:
-+	mutex_unlock(&devfreq->lock);
++	rate = clk_get_rate(bus->clk);
++	bus->curr_opp = devfreq_recommended_opp(dev, &rate, 0);
++	if (IS_ERR(bus->curr_opp)) {
++		dev_err(dev, "failed to find dev_pm_opp\n");
++		rcu_read_unlock();
++		ret = PTR_ERR(bus->curr_opp);
++		goto err_opp;
++	}
++	rcu_read_unlock();
 +
 +	return 0;
-+}
 +
-+static int devfreq_passive_notifier_call(struct notifier_block *nb,
-+				unsigned long event, void *ptr)
-+{
-+	struct devfreq_passive_data *data
-+			= container_of(nb, struct devfreq_passive_data, nb);
-+	struct devfreq *devfreq = (struct devfreq *)data->this;
-+	struct devfreq *parent = (struct devfreq *)data->parent;
-+	struct devfreq_freqs *freqs = (struct devfreq_freqs *)ptr;
-+	unsigned long freq = freqs->new;
-+
-+	switch (event) {
-+	case DEVFREQ_PRECHANGE:
-+		if (parent->previous_freq > freq)
-+			update_devfreq_passive(devfreq, freq);
-+		break;
-+	case DEVFREQ_POSTCHANGE:
-+		if (parent->previous_freq < freq)
-+			update_devfreq_passive(devfreq, freq);
-+		break;
+ err_opp:
+ 	dev_pm_opp_of_remove_table(dev);
+ err_clk:
+@@ -319,8 +386,11 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct devfreq_dev_profile *profile;
+ 	struct devfreq_simple_ondemand_data *ondemand_data;
++	struct devfreq_passive_data *passive_data;
++	struct devfreq *parent_devfreq;
+ 	struct exynos_bus *bus;
+-	int ret;
++	int ret, max_state;
++	unsigned long min_freq, max_freq;
+ 
+ 	if (!np) {
+ 		dev_err(dev, "failed to find devicetree node\n");
+@@ -337,20 +407,33 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	/* Parse the device-tree to get the resource information */
+ 	ret = exynos_bus_parse_of(np, bus);
+ 	if (ret < 0)
+-		return ret;
++		goto err;
+ 
+-	/* Initalize the struct profile and governor data */
+ 	profile = devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
+-	if (!profile)
+-		return -ENOMEM;
++	if (!profile) {
++		ret = -ENOMEM;
++		goto err;
 +	}
 +
-+	return NOTIFY_DONE;
-+}
++	if (of_parse_phandle(dev->of_node, "devfreq", 0))
++		goto passive;
++	else
++		ret = exynos_bus_parent_parse_of(np, bus);
 +
-+static int devfreq_passive_event_handler(struct devfreq *devfreq,
-+				unsigned int event, void *data)
-+{
-+	struct device *dev = devfreq->dev.parent;
-+	struct devfreq_passive_data *p_data
-+			= (struct devfreq_passive_data *)devfreq->data;
-+	struct devfreq *parent = (struct devfreq *)p_data->parent;
-+	struct notifier_block *nb = &p_data->nb;
-+	int ret = 0;
++	if (ret < 0)
++		goto err;
 +
-+	if (!parent)
-+		return -EPROBE_DEFER;
-+
-+	switch (event) {
-+	case DEVFREQ_GOV_START:
-+		if (!p_data->this)
-+			p_data->this = devfreq;
-+
-+		nb->notifier_call = devfreq_passive_notifier_call;
-+		ret = devm_devfreq_register_notifier(dev, parent, nb,
-+					DEVFREQ_TRANSITION_NOTIFIER);
-+		break;
-+	case DEVFREQ_GOV_STOP:
-+		devm_devfreq_unregister_notifier(dev, parent, nb,
-+					DEVFREQ_TRANSITION_NOTIFIER);
-+		break;
-+	default:
-+		break;
++	/* Initalize the struct profile and governor data for parent device */
+ 	profile->polling_ms = 50;
+ 	profile->target = exynos_bus_target;
+ 	profile->get_dev_status = exynos_bus_get_dev_status;
+ 	profile->exit = exynos_bus_exit;
+ 
+ 	ondemand_data = devm_kzalloc(dev, sizeof(*ondemand_data), GFP_KERNEL);
+-	if (!ondemand_data)
+-		return -ENOMEM;
++	if (!ondemand_data) {
++		ret = -ENOMEM;
++		goto err;
 +	}
+ 	ondemand_data->upthreshold = 40;
+ 	ondemand_data->downdifferential = 5;
+ 
+@@ -359,14 +442,15 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 						ondemand_data);
+ 	if (IS_ERR(bus->devfreq)) {
+ 		dev_err(dev, "failed to add devfreq device\n");
+-		return  PTR_ERR(bus->devfreq);
++		ret = PTR_ERR(bus->devfreq);
++		goto err;
+ 	}
+ 
+ 	/* Register opp_notifier to catch the change of OPP  */
+ 	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to register opp notifier\n");
+-		return ret;
++		goto err;
+ 	}
+ 
+ 	/*
+@@ -376,16 +460,59 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	ret = exynos_bus_enable_edev(bus);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to enable devfreq-event devices\n");
+-		return ret;
++		goto err;
+ 	}
+ 
+ 	ret = exynos_bus_set_event(bus);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to set event to devfreq-event devices\n");
+-		return ret;
++		goto err;
+ 	}
+ 
++	goto out;
++passive:
++	/* Initalize the struct profile and governor data for passive device */
++	profile->target = exynos_bus_passive_target;
++	profile->exit = exynos_bus_passive_exit;
++
++	/* Get the instance of parent devfreq device */
++	parent_devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
++	if (IS_ERR(parent_devfreq)) {
++		ret = -EPROBE_DEFER;
++		goto err;
++	}
++
++	passive_data = devm_kzalloc(dev, sizeof(*passive_data), GFP_KERNEL);
++	if (!passive_data) {
++		ret = -ENOMEM;
++		goto err;
++	}
++	passive_data->parent = parent_devfreq;
++
++	/* Add devfreq device for exynos bus with passive governor */
++	bus->devfreq = devm_devfreq_add_device(dev, profile, "passive",
++						passive_data);
++	if (IS_ERR(bus->devfreq)) {
++		dev_err(dev,
++			"failed to add devfreq dev with passive governor\n");
++		ret = -EPROBE_DEFER;
++		goto err;
++	}
++
++out:
++	max_state = bus->devfreq->profile->max_state;
++	min_freq = (bus->devfreq->profile->freq_table[0] / 1000);
++	max_freq = (bus->devfreq->profile->freq_table[max_state - 1] / 1000);
++	pr_info("exynos-bus: new bus device registered: %s (%6ld KHz ~ %6ld KHz)\n",
++			dev_name(dev), min_freq, max_freq);
++
+ 	return 0;
++
++err:
++	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
 +
 +	return ret;
-+}
-+
-+static struct devfreq_governor devfreq_passive = {
-+	.name = "passive",
-+	.get_target_freq = devfreq_passive_get_target_freq,
-+	.event_handler = devfreq_passive_event_handler,
-+};
-+
-+static int __init devfreq_passive_init(void)
-+{
-+	return devfreq_add_governor(&devfreq_passive);
-+}
-+subsys_initcall(devfreq_passive_init);
-+
-+static void __exit devfreq_passive_exit(void)
-+{
-+	int ret;
-+
-+	ret = devfreq_remove_governor(&devfreq_passive);
-+	if (ret)
-+		pr_err("%s: failed remove governor %d\n", __func__, ret);
-+
-+	return;
-+}
-+module_exit(devfreq_passive_exit);
-+
-+MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
-+MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
-+MODULE_DESCRIPTION("DEVFREQ Passive governor");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 98c699304e12..2de4e2eea180 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -272,6 +272,39 @@ struct devfreq_simple_ondemand_data {
- };
- #endif
+ }
  
-+#if IS_ENABLED(CONFIG_DEVFREQ_GOV_PASSIVE)
-+/**
-+ * struct devfreq_passive_data - void *data fed to struct devfreq
-+ *	and devfreq_add_device
-+ * @parent:	the devfreq instance of parent device.
-+ * @get_target_freq:	Optional callback, Returns desired operating frequency
-+ *			for the device using passive governor. That is called
-+ *			when passive governor should decide the next frequency
-+ *			by using the new frequency of parent devfreq device
-+ *			using governors except for passive governor.
-+ *			If the devfreq device has the specific method to decide
-+ *			the next frequency, should use this callback.
-+ * @this:	the devfreq instance of own device.
-+ * @nb:		the notifier block for DEVFREQ_TRANSITION_NOTIFIER list
-+ *
-+ * The devfreq_passive_data have to set the devfreq instance of parent
-+ * device with governors except for the passive governor. But, don't need to
-+ * initialize the 'this' and 'nb' field because the devfreq core will handle
-+ * them.
-+ */
-+struct devfreq_passive_data {
-+	/* Should set the devfreq instance of parent device */
-+	struct devfreq *parent;
-+
-+	/* Optional callback to decide the next frequency of passvice device */
-+	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
-+
-+	/* For passive governor's internal use. Don't need to set them */
-+	struct devfreq *this;
-+	struct notifier_block nb;
-+};
-+#endif
-+
- #else /* !CONFIG_PM_DEVFREQ */
- static inline struct devfreq *devfreq_add_device(struct device *dev,
- 					  struct devfreq_dev_profile *profile,
+ #ifdef CONFIG_PM_SLEEP
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
