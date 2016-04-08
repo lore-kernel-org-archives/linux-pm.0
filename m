@@ -1,87 +1,109 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Fri, 8 Apr 2016 11:27:01 +0000
-Message-ID: <AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
-	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
-	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
- <CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-am1on0068.outbound.protection.outlook.com ([157.56.112.68]:63666
-	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752633AbcDHLmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Apr 2016 07:42:04 -0400
-In-Reply-To: <CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Keguang Zhang <keguang.zhang@gmail.com>
+Subject: [PATCH V2 1/7] clk: Loongson1: Update clocks of Loongson1B
+Date: Fri,  8 Apr 2016 19:42:55 +0800
+Message-ID: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
+Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcgW21h
-aWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBGcmlkYXksIEFwcmlsIDA4LCAy
-MDE2IDc6MDAgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBiYWxiaUBr
-ZXJuZWwub3JnOyBncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgc3JlQGtlcm5lbC5vcmc7DQo+
-IGRiYXJ5c2hrb3ZAZ21haWwuY29tOyBkd213MkBpbmZyYWRlYWQub3JnOyBwZXRlci5jaGVuQGZy
-ZWVzY2FsZS5jb207DQo+IHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU7IHIuYmFsZHlnYUBzYW1z
-dW5nLmNvbTsNCj4geW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb207IGxlZS5qb25lc0Bs
-aW5hcm8ub3JnOyBicm9vbmllQGtlcm5lbC5vcmc7DQo+IGNrZWVwYXhAb3BlbnNvdXJjZS53b2xm
-c29ubWljcm8uY29tOyBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gbGlu
-dXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC11c2JAdmdlci5rZXJuZWwub3JnOyBkZXZpY2Ut
-DQo+IG1haW5saW5pbmdAbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZzsgbGludXgta2VybmVsQHZn
-ZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMCAxLzRdIGdhZGdldDogSW50
-cm9kdWNlIHRoZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsNCj4gDQo+IEhpIEp1biwNCj4gDQo+ID4+
-ID4+ICsvKg0KPiA+PiA+PiArICogdXNiX2NoYXJnZXJfZGV0ZWN0X3R5cGUoKSAtIGRldGVjdCB0
-aGUgY2hhcmdlciB0eXBlIG1hbnVhbGx5Lg0KPiA+PiA+PiArICogQHVjaGdlciAtIHVzYiBjaGFy
-Z2VyIGRldmljZQ0KPiA+PiA+PiArICoNCj4gPj4gPj4gKyAqIE5vdGU6IFlvdSBzaG91bGQgZW5z
-dXJlIHlvdSBuZWVkIHRvIGRldGVjdCB0aGUgY2hhcmdlciB0eXBlDQo+ID4+ID4+ICttYW51YWxs
-eSBvbiB5b3VyDQo+ID4+ID4+ICsgKiBwbGF0Zm9ybS4NCj4gPj4gPj4gKyAqIFlvdSBzaG91bGQg
-Y2FsbCBpdCBhdCB0aGUgcmlnaHQgZ2FkZ2V0IHN0YXRlIHRvIGF2b2lkDQo+ID4+ID4+ICthZmZl
-Y3RpbmcgZ2FkZ2V0DQo+ID4+ID4+ICsgKiBlbnVtZXJhdGlvbi4NCj4gPj4gPj4gKyAqLw0KPiA+
-PiA+PiAraW50IHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKHN0cnVjdCB1c2JfY2hhcmdlciAqdWNo
-Z2VyKSB7DQo+ID4+ID4+ICsgICAgIGVudW0gdXNiX2NoYXJnZXJfdHlwZSB0eXBlOw0KPiA+PiA+
-PiArDQo+ID4+ID4+ICsgICAgIGlmIChXQVJOKCF1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0LA0KPiA+
-PiA+PiArICAgICAgICAgICAgICAiY2hhcmdlciBkZXRlY3Rpb24gbWV0aG9kIHNob3VsZCBub3Qg
-YmUgTlVMTCIpKQ0KPiA+PiA+PiArICAgICAgICAgICAgIHJldHVybiAtRUlOVkFMOw0KPiA+PiA+
-PiArDQo+ID4+ID4+ICsgICAgIHR5cGUgPSB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KHVjaGdlcik7
-DQo+ID4+ID4+ICsNCj4gPj4gPj4gKyAgICAgbXV0ZXhfbG9jaygmdWNoZ2VyLT5sb2NrKTsNCj4g
-Pj4gPj4gKyAgICAgdWNoZ2VyLT50eXBlID0gdHlwZTsNCj4gPj4gPj4gKyAgICAgbXV0ZXhfdW5s
-b2NrKCZ1Y2hnZXItPmxvY2spOw0KPiA+PiA+PiArDQo+ID4+ID4+ICsgICAgIHJldHVybiAwOw0K
-PiA+PiA+PiArfQ0KPiA+PiA+PiArRVhQT1JUX1NZTUJPTF9HUEwodXNiX2NoYXJnZXJfZGV0ZWN0
-X3R5cGUpOw0KPiA+PiA+DQo+ID4+ID4gSSBzdGlsbCByZWNvbW1lbmQgaGF2ZSBhIGNlbnRyYWwg
-cGxhY2UgdG8gY2FsbA0KPiA+PiA+IHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgdG8gY292ZXIg
-cmVhbCBjaGFyZ2VyIGRldGVjdGlvbiBpbnN0ZWFkDQo+ID4+ID4gb2YgbGVhdmluZyB0aGlzIHF1
-ZXN0aW9uIG9wZW4gdG8gZGlmZiB1c2Vycy4gVGhpcyBjYW4gYmUgZG9uZSBhZnRlcg0KPiA+PiA+
-IHZidXMtb24gaXMgZGV0ZWN0ZWQgYW5kIGJlZm9yZSBkbyBnYWRnZXQgY29ubmVjdC4gSSBkb24n
-dCB0aGluaw0KPiA+PiA+IHRoaXMNCj4gPj4gd2lsbCBtYWtlIHlvdXIgZnJhbWV3b3JrIGNvbXBs
-aWNhdGVkLg0KPiA+Pg0KPiA+PiBUaGlzIEFQSSBpcyB1c2VkIGZvciBkZXRlY3RpbmcgdGhlIGNo
-YXJnZXIgdHlwZSBtYW51YWxseSAoc29mdHdhcmUNCj4gPj4gY2hhcmdlciBkZXRlY3Rpb24pLCBz
-byBpZiB1c2VyJ3MgdWRjIGRyaXZlciBpcyBuZWVkZWQgdG8gZG8gdGhpcywNCj4gPj4gdGhlbiB0
-aGV5IGNhbiBpc3N1ZSBpdCBhdCB0aGVpciByaWdodCBwbGFjZSB0byBtYWtlIGl0IG1vcmUgZmxl
-eGlibGUuDQo+ID4+IEJ1dCBsZXQgdXMgc2VlIG90aGVyIHBlb3BsZSdzIHN1Z2dlc3Rpb24uIFRo
-YW5rcy4NCj4gPg0KPiA+IE9rLCBhY3R1YWxseSB0aGlzIEFQSSBjYW4gYmUgdXNlZCBmb3Igd2hh
-dCBldmVyIGNoYXJnZXIgZGV0ZWN0aW9uDQo+ID4gdHlwZSwgdXNlciBjYW4gaW1wbGVtZW50IGFu
-eSBtZXRob2QobWFudWFsIGRldGVjdGlvbiwgZGlyZWN0bHkgcmVhZA0KPiA+IHJlc3VsdCBmcm9t
-IHNvbWUgSFcuLi53aGF0IGV2ZXIpIGluIHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QoKSwgdGFyZ2V0
-DQo+ID4gaXMNCj4gDQo+IEJ1dCByZWFkaW5nIHJlc3VsdCBmcm9tIHNvbWUgSFcgZG9zZSBub3Qg
-bWVhbnMgKmRldGVjdCosIGFjdHVhbGx5IGlzICpnZXQqLg0KPiBXZSBjYW4gbm90IG1peCB0aGVt
-IHRvZ2V0aGVyIHdpdGggdGhlIGRpZmZlcmVudCBzZW1hbnRpY3MuDQoNCkl0IGRvZXNu4oCZdCBt
-YXR0ZXIgaGVyZSwgeW91IGFscmVhZHkgZGVmaW5lIHRoZSBfZ2V0XyBBUEkgZm9yIGp1c3QgcmVh
-ZA0KdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHRoZSBzYXZlZCB2YWx1ZSh1Y2hnZXItPnR5cGUpLCBz
-byB3ZSBjYW4gdGhpbmsNCnRoZSBBUEkgdG8gbWFrZSB1Y2hnZXItPnR5cGUgZnJvbSBVTktOT1cg
-dG8gT05FIEtOT1dOIHR5cGUgaXMgKmRldGVjdCosDQpiZWNhdXNlIHdlIGRvbid0IG5lZWQgMiBz
-ZXBhcmF0ZSBBUEkgb25lIGZvciAqZ2V0KiB0eXBlIGZyb20gSFcgYW5kIGFub3RoZXINCm9uZSBm
-b3IgKmRldGVjdCogZnJvbSBIVywgb25seSBvbmUgQVBJIGludm9sdmUgSFcgYWNjZXNzIGlzIGVu
-b3VnaC4NCg0KLSBEZXRlY3Q6ICh3cml0ZSB0byBhbmQpIHJlYWQgZnJvbSBIVyB0byBnZXQgdGhl
-IGNoYXJnZXIgdHlwZSwNCiAgc2F2ZSB0byB1Y2hnZXItPnR5cGU7DQotIEdldDogcmVhZCB0aGUg
-Y2hhcmdlciB0eXBlIGZyb20gdWNoZ2VyLT50eXBlLg0KIA0KPiANCj4gPiB0byBoYXZlIHRoZSBj
-aGFyZ2VyIHR5cGUgYW5kIHNldCB1Y2hnZXItPnR5cGUsIHRoZW4geW91IG5vIG5lZWQgdG8gYWRk
-DQo+ID4gdGhlIGNvbW1lbnRzL2Rlc2NyaXB0aW9uIHRvIGxpbWl0IGl0IHVzYWdlLiBBbHNvIEkg
-ZG8gc2VlIHRoZXJlIGlzDQo+IHBvc3NpYmxlIGNlbnRyYWwgcGxhY2UgdG8gZG8gdGhpcy4NCj4g
-Pg0KPiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
+From: Kelvin Cheung <keguang.zhang@gmail.com>
+
+- Rename the file to clk-loongson1.c
+- Add AC97, DMA and NAND clock
+- Update clock names
+- Remove superfluous error messages
+
+Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
+
+---
+V2:
+   Regenerate the patch to make it review-able.
+---
+ drivers/clk/Makefile                        |  2 +-
+ drivers/clk/{clk-ls1x.c => clk-loongson1.c} | 25 +++++++++++++------------
+ 2 files changed, 14 insertions(+), 13 deletions(-)
+ rename drivers/clk/{clk-ls1x.c => clk-loongson1.c} (86%)
+
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 46869d6..5845b2c 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -25,7 +25,7 @@ obj-$(CONFIG_COMMON_CLK_CS2000_CP)	+= clk-cs2000-cp.o
+ obj-$(CONFIG_ARCH_CLPS711X)		+= clk-clps711x.o
+ obj-$(CONFIG_ARCH_EFM32)		+= clk-efm32gg.o
+ obj-$(CONFIG_ARCH_HIGHBANK)		+= clk-highbank.o
+-obj-$(CONFIG_MACH_LOONGSON32)		+= clk-ls1x.o
++obj-$(CONFIG_MACH_LOONGSON32)		+= clk-loongson1.o
+ obj-$(CONFIG_COMMON_CLK_MAX_GEN)	+= clk-max-gen.o
+ obj-$(CONFIG_COMMON_CLK_MAX77686)	+= clk-max77686.o
+ obj-$(CONFIG_COMMON_CLK_MAX77802)	+= clk-max77802.o
+diff --git a/drivers/clk/clk-ls1x.c b/drivers/clk/clk-loongson1.c
+similarity index 86%
+rename from drivers/clk/clk-ls1x.c
+rename to drivers/clk/clk-loongson1.c
+index d4c6198..ce2135c 100644
+--- a/drivers/clk/clk-ls1x.c
++++ b/drivers/clk/clk-loongson1.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2012 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Copyright (c) 2012-2016 Zhang, Keguang <keguang.zhang@gmail.com>
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -58,11 +58,9 @@ static struct clk *__init clk_register_pll(struct device *dev,
+ 	struct clk_init_data init;
+ 
+ 	/* allocate the divider */
+-	hw = kzalloc(sizeof(struct clk_hw), GFP_KERNEL);
+-	if (!hw) {
+-		pr_err("%s: could not allocate clk_hw\n", __func__);
++	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
++	if (!hw)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 
+ 	init.name = name;
+ 	init.ops = &ls1x_pll_clk_ops;
+@@ -80,9 +78,9 @@ static struct clk *__init clk_register_pll(struct device *dev,
+ 	return clk;
+ }
+ 
+-static const char * const cpu_parents[] = { "cpu_clk_div", "osc_33m_clk", };
+-static const char * const ahb_parents[] = { "ahb_clk_div", "osc_33m_clk", };
+-static const char * const dc_parents[] = { "dc_clk_div", "osc_33m_clk", };
++static const char *const cpu_parents[] = { "cpu_clk_div", "osc_33m_clk", };
++static const char *const ahb_parents[] = { "ahb_clk_div", "osc_33m_clk", };
++static const char *const dc_parents[] = { "dc_clk_div", "osc_33m_clk", };
+ 
+ void __init ls1x_clk_init(void)
+ {
+@@ -147,6 +145,7 @@ void __init ls1x_clk_init(void)
+ 			       CLK_SET_RATE_NO_REPARENT, LS1X_CLK_PLL_DIV,
+ 			       BYPASS_DDR_SHIFT, BYPASS_DDR_WIDTH, 0, &_lock);
+ 	clk_register_clkdev(clk, "ahb_clk", NULL);
++	clk_register_clkdev(clk, "ls1x-dma", NULL);
+ 	clk_register_clkdev(clk, "stmmaceth", NULL);
+ 
+ 	/* clock derived from AHB clk */
+@@ -154,9 +153,11 @@ void __init ls1x_clk_init(void)
+ 	clk = clk_register_fixed_factor(NULL, "apb_clk", "ahb_clk", 0, 1,
+ 					DIV_APB);
+ 	clk_register_clkdev(clk, "apb_clk", NULL);
+-	clk_register_clkdev(clk, "ls1x_i2c", NULL);
+-	clk_register_clkdev(clk, "ls1x_pwmtimer", NULL);
+-	clk_register_clkdev(clk, "ls1x_spi", NULL);
+-	clk_register_clkdev(clk, "ls1x_wdt", NULL);
++	clk_register_clkdev(clk, "ls1x-ac97", NULL);
++	clk_register_clkdev(clk, "ls1x-i2c", NULL);
++	clk_register_clkdev(clk, "ls1x-nand", NULL);
++	clk_register_clkdev(clk, "ls1x-pwmtimer", NULL);
++	clk_register_clkdev(clk, "ls1x-spi", NULL);
++	clk_register_clkdev(clk, "ls1x-wdt", NULL);
+ 	clk_register_clkdev(clk, "serial8250", NULL);
+ }
+-- 
+1.9.1
+
