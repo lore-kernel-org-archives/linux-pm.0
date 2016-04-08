@@ -1,53 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for cpufreq_suspended set
-Date: Fri, 08 Apr 2016 23:56:25 +0200
-Message-ID: <8218019.txzPhLMNil@vostro.rjw.lan>
-References: <2044559.GVlD7a2JcO@vostro.rjw.lan> <2346918.2NTGrKGAVB@vostro.rjw.lan> <20160408054414.GE9674@vireshk-i7>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [regression] cross core scheduling frequency drop bisected to 0c313cb20732
+Date: Fri, 8 Apr 2016 15:19:14 -0700
+Message-ID: <001101d191e4$b00602d0$10120870$@net>
+References: <1460092854.4051.1.camel@gmail.com> <20160408064510.GK3448@twins.programming.kicks-ass.net> <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160408054414.GE9674@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta2.telus.net ([209.171.16.75]:58066 "EHLO cmta2.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753484AbcDHWTS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Apr 2016 18:19:18 -0400
+In-Reply-To: <2428384.mEkP3EOpsR@vostro.rjw.lan>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Mike Galbraith' <umgwanakikbuti@gmail.com>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Rik van Riel' <riel@redhat.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 
-On Friday, April 08, 2016 11:14:14 AM Viresh Kumar wrote:
-> On 08-04-16, 00:05, Rafael J. Wysocki wrote:
-> > On Thursday, April 07, 2016 05:35:03 PM Viresh Kumar wrote:
-> 
-> > > That's *ugly* and it works by chance, unless I am misreading it
-> > > completely.
-> > 
-> > I'm assuming that what you mean by "ugly" here is "not really straightforward",
-> > which I agree with,
-> 
-> Yeah.
-> 
-> > but then it is really disappointing to see comments like
-> > that from you about the code that you helped to write.
-> 
-> I was just trying to say that this isn't how I feel it should be done.
-> :(
+On 2016.04.08 14:00 Rafael J. Wysocki wrote:
+> On Friday, April 08, 2016 08:50:54 AM Mike Galbraith wrote:
+>> On Fri, 2016-04-08 at 08:45 +0200, Peter Zijlstra wrote:
+>> 
+>>> Cute, I thought you used governor=performance for your runs?
+>> 
+>> I do, and those numbers are with it thus set.
 
-Fair enough.
+> Well, this is a trade-off.
+>
+> 4.5 introduced a power regression here so this one goes back to the previous
+> state of things.
 
-> > Moreover, runtime CPU offline *also* doesn't have to run the governor exit/init
-> > for the same reason why the policy directory doesn't have to be removed on
-> > CPU offline: it is just pointless to do that.  The governor has been stopped
-> > already and it won't do anything more.  The only problem here is to prevent
-> > governor tunable sysfs attributes from triggering actions in that state,
-> > but that shouldn't be too difficult to arrange for.  If that's done,
-> 
-> Isn't that already guaranteed as userspace should have been frozen by
-> by the time we reach cpufreq_suspend()?
+Mike:
 
-For the "offline/online during suspend/resume" case it is guaranteed, but for
-the "runtime offline/online" case it isn't.
+Could you send me, or point me to, the program "pipe-test"?
+So far, I have only found one, but it is both old and not
+the same program you are running (based on print statements).
 
-I essentially would like those two cases to be as similar as reasonably
-possible, if not identical.
+I realize I might not be to recreate your problem scenario anyhow,
+I just want to try.
 
-Thanks,
-Rafael
+... Doug
+
+
