@@ -1,102 +1,69 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Fri, 8 Apr 2016 10:18:58 +0000
-Message-ID: <AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
-	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
- <CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
+From: Markus Reichl <m.reichl@fivetechno.de>
+Subject: Re: [PATCH 0/7] PM / devfreq: Add NoCP devfreq-event and support
+ busfreq on exyno5422-odroidxu3
+Date: Fri, 8 Apr 2016 14:55:35 +0200
+Message-ID: <5707AA47.7090506@fivetechno.de>
+References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
-bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IEZyaWRheSwgQXByaWwgMDgs
-IDIwMTYgNTo1NiBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IGJhbGJp
-QGtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBzcmVAa2VybmVsLm9yZzsN
-Cj4gZGJhcnlzaGtvdkBnbWFpbC5jb207IGR3bXcyQGluZnJhZGVhZC5vcmc7IHBldGVyLmNoZW5A
-ZnJlZXNjYWxlLmNvbTsNCj4gc3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdTsgci5iYWxkeWdhQHNh
-bXN1bmcuY29tOw0KPiB5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbTsgbGVlLmpvbmVz
-QGxpbmFyby5vcmc7IGJyb29uaWVAa2VybmVsLm9yZzsNCj4gY2tlZXBheEBvcGVuc291cmNlLndv
-bGZzb25taWNyby5jb207IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBs
-aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGRldmlj
-ZS0NCj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDEvNF0gZ2FkZ2V0OiBJ
-bnRyb2R1Y2UgdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaw0KPiANCj4gSGkgSnVuLA0KPiANCj4g
-T24gOCBBcHJpbCAyMDE2IGF0IDE2OjA0LCBKdW4gTGkgPGp1bi5saUBueHAuY29tPiB3cm90ZToN
-Cj4gPiBIaSwgQmFvbGluDQo+ID4NCj4gPj4gKy8qDQo+ID4+ICsgKiB1c2JfY2hhcmdlcl9kZXRl
-Y3RfdHlwZSgpIC0gZGV0ZWN0IHRoZSBjaGFyZ2VyIHR5cGUgbWFudWFsbHkuDQo+ID4+ICsgKiBA
-dWNoZ2VyIC0gdXNiIGNoYXJnZXIgZGV2aWNlDQo+ID4+ICsgKg0KPiA+PiArICogTm90ZTogWW91
-IHNob3VsZCBlbnN1cmUgeW91IG5lZWQgdG8gZGV0ZWN0IHRoZSBjaGFyZ2VyIHR5cGUNCj4gPj4g
-K21hbnVhbGx5IG9uIHlvdXINCj4gPj4gKyAqIHBsYXRmb3JtLg0KPiA+PiArICogWW91IHNob3Vs
-ZCBjYWxsIGl0IGF0IHRoZSByaWdodCBnYWRnZXQgc3RhdGUgdG8gYXZvaWQgYWZmZWN0aW5nDQo+
-ID4+ICtnYWRnZXQNCj4gPj4gKyAqIGVudW1lcmF0aW9uLg0KPiA+PiArICovDQo+ID4+ICtpbnQg
-dXNiX2NoYXJnZXJfZGV0ZWN0X3R5cGUoc3RydWN0IHVzYl9jaGFyZ2VyICp1Y2hnZXIpIHsNCj4g
-Pj4gKyAgICAgZW51bSB1c2JfY2hhcmdlcl90eXBlIHR5cGU7DQo+ID4+ICsNCj4gPj4gKyAgICAg
-aWYgKFdBUk4oIXVjaGdlci0+Y2hhcmdlcl9kZXRlY3QsDQo+ID4+ICsgICAgICAgICAgICAgICJj
-aGFyZ2VyIGRldGVjdGlvbiBtZXRob2Qgc2hvdWxkIG5vdCBiZSBOVUxMIikpDQo+ID4+ICsgICAg
-ICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+ID4+ICsNCj4gPj4gKyAgICAgdHlwZSA9IHVjaGdl
-ci0+Y2hhcmdlcl9kZXRlY3QodWNoZ2VyKTsNCj4gPj4gKw0KPiA+PiArICAgICBtdXRleF9sb2Nr
-KCZ1Y2hnZXItPmxvY2spOw0KPiA+PiArICAgICB1Y2hnZXItPnR5cGUgPSB0eXBlOw0KPiA+PiAr
-ICAgICBtdXRleF91bmxvY2soJnVjaGdlci0+bG9jayk7DQo+ID4+ICsNCj4gPj4gKyAgICAgcmV0
-dXJuIDA7DQo+ID4+ICt9DQo+ID4+ICtFWFBPUlRfU1lNQk9MX0dQTCh1c2JfY2hhcmdlcl9kZXRl
-Y3RfdHlwZSk7DQo+ID4NCj4gPiBJIHN0aWxsIHJlY29tbWVuZCBoYXZlIGEgY2VudHJhbCBwbGFj
-ZSB0byBjYWxsDQo+ID4gdXNiX2NoYXJnZXJfZGV0ZWN0X3R5cGUoKSB0byBjb3ZlciByZWFsIGNo
-YXJnZXIgZGV0ZWN0aW9uIGluc3RlYWQgb2YNCj4gPiBsZWF2aW5nIHRoaXMgcXVlc3Rpb24gb3Bl
-biB0byBkaWZmIHVzZXJzLiBUaGlzIGNhbiBiZSBkb25lIGFmdGVyDQo+ID4gdmJ1cy1vbiBpcyBk
-ZXRlY3RlZCBhbmQgYmVmb3JlIGRvIGdhZGdldCBjb25uZWN0LiBJIGRvbid0IHRoaW5rIHRoaXMN
-Cj4gd2lsbCBtYWtlIHlvdXIgZnJhbWV3b3JrIGNvbXBsaWNhdGVkLg0KPiANCj4gVGhpcyBBUEkg
-aXMgdXNlZCBmb3IgZGV0ZWN0aW5nIHRoZSBjaGFyZ2VyIHR5cGUgbWFudWFsbHkgKHNvZnR3YXJl
-IGNoYXJnZXINCj4gZGV0ZWN0aW9uKSwgc28gaWYgdXNlcidzIHVkYyBkcml2ZXIgaXMgbmVlZGVk
-IHRvIGRvIHRoaXMsIHRoZW4gdGhleSBjYW4NCj4gaXNzdWUgaXQgYXQgdGhlaXIgcmlnaHQgcGxh
-Y2UgdG8gbWFrZSBpdCBtb3JlIGZsZXhpYmxlLiBCdXQgbGV0IHVzIHNlZQ0KPiBvdGhlciBwZW9w
-bGUncyBzdWdnZXN0aW9uLiBUaGFua3MuDQoNCk9rLCBhY3R1YWxseSB0aGlzIEFQSSBjYW4gYmUg
-dXNlZCBmb3Igd2hhdCBldmVyIGNoYXJnZXIgZGV0ZWN0aW9uDQp0eXBlLCB1c2VyIGNhbiBpbXBs
-ZW1lbnQgYW55IG1ldGhvZChtYW51YWwgZGV0ZWN0aW9uLCBkaXJlY3RseSByZWFkDQpyZXN1bHQg
-ZnJvbSBzb21lIEhXLi4ud2hhdCBldmVyKSBpbiB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KCksIHRh
-cmdldCBpcw0KdG8gaGF2ZSB0aGUgY2hhcmdlciB0eXBlIGFuZCBzZXQgdWNoZ2VyLT50eXBlLCB0
-aGVuIHlvdSBubyBuZWVkIHRvIGFkZCB0aGUgY29tbWVudHMvZGVzY3JpcHRpb24gdG8gbGltaXQg
-aXQgdXNhZ2UuIEFsc28gSSBkbyBzZWUgdGhlcmUgaXMgcG9zc2libGUNCmNlbnRyYWwgcGxhY2Ug
-dG8gZG8gdGhpcy4NCg0KPiANCj4gPg0KPiA+IEhpIEZlbGlwZSwgd2hhdCBkbyB5b3UgdGhpbmsg
-b2YgdGhpcz8NCj4gPg0KPiA+IExpIEp1bg0KPiA+DQo+ID4+ICsNCj4gPj4gKy8qDQo+ID4+ICsg
-KiB1c2JfY2hhcmdlcl9nZXRfdHlwZV9ieV9vdGhlcnMoKSAtIEdldCB0aGUgdXNiIGNoYXJnZXIg
-dHlwZSBieQ0KPiA+PiArdGhlIGNhbGxiYWNrDQo+ID4+ICsgKiB3aGljaCBpcyBpbXBsZW1lbnRl
-ZCBieSB1c2Vycy4NCj4gPj4gKyAqIEB1Y2hnZXIgLSB0aGUgdXNiIGNoYXJnZXIgZGV2aWNlLg0K
-PiA+PiArICoNCj4gPj4gKyAqIE5vdGU6IFRoaXMgZnVuY3Rpb24gaXMganVzdCB1c2VkIGZvciBn
-ZXR0aW5nIHRoZSBjaGFyZ2VyIHR5cGUsDQo+ID4+ICtub3QgZm9yDQo+ID4+ICsgKiBkZXRlY3Rp
-bmcgY2hhcmdlciB0eXBlIHdoaWNoIG1pZ2h0IGFmZmVjdCB0aGUgRFAvRE0gbGluZSB3aGVuDQo+
-ID4+ICtnYWRnZXQgaXMgb24NCj4gPj4gKyAqIGVudW1lcmF0aW9uIHN0YXRlLg0KPiA+PiArICov
-DQo+ID4+ICtzdGF0aWMgZW51bSB1c2JfY2hhcmdlcl90eXBlDQo+ID4+ICt1c2JfY2hhcmdlcl9n
-ZXRfdHlwZV9ieV9vdGhlcnMoc3RydWN0IHVzYl9jaGFyZ2VyICp1Y2hnZXIpIHsNCj4gPj4gKyAg
-ICAgaWYgKHVjaGdlci0+dHlwZSAhPSBVTktOT1dOX1RZUEUpDQo+ID4+ICsgICAgICAgICAgICAg
-cmV0dXJuIHVjaGdlci0+dHlwZTsNCj4gPj4gKw0KPiA+PiArICAgICBpZiAodWNoZ2VyLT5wc3kp
-IHsNCj4gPj4gKyAgICAgICAgICAgICB1bmlvbiBwb3dlcl9zdXBwbHlfcHJvcHZhbCB2YWw7DQo+
-ID4+ICsNCj4gPj4gKyAgICAgICAgICAgICBwb3dlcl9zdXBwbHlfZ2V0X3Byb3BlcnR5KHVjaGdl
-ci0+cHN5LA0KPiA+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUE9X
-RVJfU1VQUExZX1BST1BfQ0hBUkdFX1RZUEUsDQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAmdmFsKTsNCj4gPj4gKyAgICAgICAgICAgICBzd2l0Y2ggKHZhbC5p
-bnR2YWwpIHsNCj4gPj4gKyAgICAgICAgICAgICBjYXNlIFBPV0VSX1NVUFBMWV9UWVBFX1VTQjoN
-Cj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIHVjaGdlci0+dHlwZSA9IFNEUF9UWVBFOw0KPiA+
-PiArICAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4+ICsgICAgICAgICAgICAgY2FzZSBQ
-T1dFUl9TVVBQTFlfVFlQRV9VU0JfRENQOg0KPiA+PiArICAgICAgICAgICAgICAgICAgICAgdWNo
-Z2VyLT50eXBlID0gRENQX1RZUEU7DQo+ID4+ICsgICAgICAgICAgICAgICAgICAgICBicmVhazsN
-Cj4gPj4gKyAgICAgICAgICAgICBjYXNlIFBPV0VSX1NVUFBMWV9UWVBFX1VTQl9DRFA6DQo+ID4+
-ICsgICAgICAgICAgICAgICAgICAgICB1Y2hnZXItPnR5cGUgPSBDRFBfVFlQRTsNCj4gPj4gKyAg
-ICAgICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+PiArICAgICAgICAgICAgIGNhc2UgUE9XRVJf
-U1VQUExZX1RZUEVfVVNCX0FDQToNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIHVjaGdlci0+
-dHlwZSA9IEFDQV9UWVBFOw0KPiA+PiArICAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4+
-ICsgICAgICAgICAgICAgZGVmYXVsdDoNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIHVjaGdl
-ci0+dHlwZSA9IFVOS05PV05fVFlQRTsNCj4gPj4gKyAgICAgICAgICAgICAgICAgICAgIGJyZWFr
-Ow0KPiA+PiArICAgICAgICAgICAgIH0NCj4gPj4gKyAgICAgfSBlbHNlIGlmICh1Y2hnZXItPmdl
-dF9jaGFyZ2VyX3R5cGUpIHsNCj4gPj4gKyAgICAgICAgICAgICB1Y2hnZXItPnR5cGUgPSB1Y2hn
-ZXItPmdldF9jaGFyZ2VyX3R5cGUodWNoZ2VyKTsNCj4gPj4gKyAgICAgfSBlbHNlIHsNCj4gPj4g
-KyAgICAgICAgICAgICB1Y2hnZXItPnR5cGUgPSBVTktOT1dOX1RZUEU7DQo+ID4+ICsgICAgIH0N
-Cj4gPj4gKw0KPiA+PiArICAgICByZXR1cm4gdWNoZ2VyLT50eXBlOw0KPiA+PiArfQ0KPiA+PiAr
-DQo+IA0KPiANCj4gDQo+IC0tDQo+IEJhb2xpbi53YW5nDQo+IEJlc3QgUmVnYXJkcw0K
+Hi Chanwoo,
+
+I tested both sets on odroid XU4 and U3.
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+
+Am 08.04.2016 um 07:00 schrieb Chanwoo Choi:
+> This patchset support the AMBA bus frequency scaling on Exynos5422-based
+> Odroid-XU3 board. But, this series only support the bus frequency scaling
+> for INT (Internal) block using VDD_INT power line.
+> 
+> Also, to support the bus frequency scaling for Exynos542x SoC,
+> Exynos542x SoC has the specific 'NoC (Network on Chip) Probe' device
+> to measure the transfered data traffic on NoC (Network on Chip)
+> instead of PPMU (Platform Performance Monitoring Unit). NoC Probe device
+> provide the utilization for INT block of Exynos542x SoC.
+> 
+> The generic exynos-bus frequency driver uses the 'NoC Probe' devfreq-event
+> device (drivers/devfreq/event/exynos-nocp.c) without any modification.
+> Just add the phandle of 'NoC Probe' dt node to bus dt node.
+> 
+> Depend on:
+> This patchset depends on patch[1] which support the generic exynos-bus
+> frequency driver.
+> 
+> [1] https://lkml.org/lkml/2016/4/8/14
+> - [PATCH v8 00/20] PM / devferq: Add generic exynos bus frequency driver and new passive governor
+> 
+> Chanwoo Choi (7):
+>   PM / devfreq: event: Add new Exynos NoC probe driver
+>   PM / devfreq: exynos: Add the detailed correlation for Exynos5422 bus
+>   ARM: dts: Add NoC Probe dt node for Exynos542x SoC
+>   dt-bindings: clock: Add the clock id for ACLK clock of Exynos542x SoC
+>   clk: samsung: exynos542x: Add the clock id for ACLK
+>   ARM: dts: Add bus nodes using VDD_INT for Exynos542x SoC
+>   ARM: dts: Add support of Bus frequency using VDD_INT for exynos5422-odroidxu3
+> 
+>  .../bindings/devfreq/event/exynos-nocp.txt         |  86 +++++
+>  .../devicetree/bindings/devfreq/exynos-bus.txt     |  19 +
+>  arch/arm/boot/dts/exynos5420.dtsi                  | 407 +++++++++++++++++++++
+>  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  99 +++++
+>  drivers/clk/samsung/clk-exynos5420.c               |  85 +++--
+>  drivers/devfreq/event/Kconfig                      |   8 +
+>  drivers/devfreq/event/Makefile                     |   2 +
+>  drivers/devfreq/event/exynos-nocp.c                | 247 +++++++++++++
+>  drivers/devfreq/event/exynos-nocp.h                |  78 ++++
+>  include/dt-bindings/clock/exynos5420.h             |  24 +-
+>  10 files changed, 1024 insertions(+), 31 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-nocp.txt
+>  create mode 100644 drivers/devfreq/event/exynos-nocp.c
+>  create mode 100644 drivers/devfreq/event/exynos-nocp.h
+> 
+
+Thanks,
