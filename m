@@ -1,73 +1,71 @@
 From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH V2 3/7] dmaengine: Loongson1: add Loongson1 dmaengine driver
-Date: Fri,  8 Apr 2016 19:42:57 +0800
-Message-ID: <1460115779-13141-3-git-send-email-keguang.zhang@gmail.com>
+Subject: [PATCH V2 4/7] mtd: nand: add Loongson1 NAND driver
+Date: Fri,  8 Apr 2016 19:42:58 +0800
+Message-ID: <1460115779-13141-4-git-send-email-keguang.zhang@gmail.com>
 References: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-gpio-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:36304 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758162AbcDHLnm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 07:43:42 -0400
 In-Reply-To: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
 Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-This patch adds DMA Engine driver for Loongson1B.
+This patch adds NAND driver for Loongson1B.
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 
 ---
 V2:
-   Change the config from 'DMA_LOONGSON1' to 'LOONGSON1_DMA',
-   and rearrange it in alphabetical order in Kconfig and Makefile.
-   Fix comment style.
+   Modify the dependency in Kconfig due to the changes of DMA module.
 ---
- drivers/dma/Kconfig         |   9 +
- drivers/dma/Makefile        |   1 +
- drivers/dma/loongson1-dma.c | 546 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 556 insertions(+)
- create mode 100644 drivers/dma/loongson1-dma.c
+ drivers/mtd/nand/Kconfig          |   8 +
+ drivers/mtd/nand/Makefile         |   1 +
+ drivers/mtd/nand/loongson1_nand.c | 519 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 528 insertions(+)
+ create mode 100644 drivers/mtd/nand/loongson1_nand.c
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index d96d87c..250a650 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -286,6 +286,15 @@ config K3_DMA
- 	  Support the DMA engine for Hisilicon K3 platform
- 	  devices.
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index f05e0e9..be20fb8 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -563,4 +563,12 @@ config MTD_NAND_QCOM
+ 	  Enables support for NAND flash chips on SoCs containing the EBI2 NAND
+ 	  controller. This controller is found on IPQ806x SoC.
  
-+config LOONGSON1_DMA
-+	tristate "Loongson1 DMA support"
++config MTD_NAND_LOONGSON1
++	tristate "Support for Loongson1 SoC NAND controller"
 +	depends on MACH_LOONGSON32
-+	select DMA_ENGINE
-+	select DMA_VIRTUAL_CHANNELS
++	select DMADEVICES
++	select LOONGSON1_DMA
 +	help
-+	  This selects support for the DMA controller in Loongson1 SoCs,
-+	  and is required by Loongson1 NAND Flash and AC97 support.
++		Enables support for NAND Flash on Loongson1 SoC based boards.
 +
- config LPC18XX_DMAMUX
- 	bool "NXP LPC18xx/43xx DMA MUX for PL080"
- 	depends on ARCH_LPC18XX || COMPILE_TEST
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 6084127..f9f97bb 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -39,6 +39,7 @@ obj-$(CONFIG_INTEL_IOATDMA) += ioat/
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_INTEL_MIC_X100_DMA) += mic_x100_dma.o
- obj-$(CONFIG_K3_DMA) += k3dma.o
-+obj-$(CONFIG_LOONGSON1_DMA) += loongson1-dma.o
- obj-$(CONFIG_LPC18XX_DMAMUX) += lpc18xx-dmamux.o
- obj-$(CONFIG_MMP_PDMA) += mmp_pdma.o
- obj-$(CONFIG_MMP_TDMA) += mmp_tdma.o
-diff --git a/drivers/dma/loongson1-dma.c b/drivers/dma/loongson1-dma.c
+ endif # MTD_NAND
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+index f553353..0310c0b 100644
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -57,5 +57,6 @@ obj-$(CONFIG_MTD_NAND_SUNXI)		+= sunxi_nand.o
+ obj-$(CONFIG_MTD_NAND_HISI504)	        += hisi504_nand.o
+ obj-$(CONFIG_MTD_NAND_BRCMNAND)		+= brcmnand/
+ obj-$(CONFIG_MTD_NAND_QCOM)		+= qcom_nandc.o
++obj-$(CONFIG_MTD_NAND_LOONGSON1)	+= loongson1_nand.o
+ 
+ nand-objs := nand_base.o nand_bbt.o nand_timings.o
+diff --git a/drivers/mtd/nand/loongson1_nand.c b/drivers/mtd/nand/loongson1_nand.c
 new file mode 100644
-index 0000000..93e58e0
+index 0000000..28f7ca7
 --- /dev/null
-+++ b/drivers/dma/loongson1-dma.c
-@@ -0,0 +1,546 @@
++++ b/drivers/mtd/nand/loongson1_nand.c
+@@ -0,0 +1,519 @@
 +/*
-+ * DMA Driver for Loongson 1 SoC
++ * NAND Flash Driver for Loongson 1 SoC
 + *
 + * Copyright (C) 2015-2016 Zhang, Keguang <keguang.zhang@gmail.com>
 + *
@@ -76,541 +74,514 @@ index 0000000..93e58e0
 + * warranty of any kind, whether express or implied.
 + */
 +
-+#include <linux/clk.h>
-+#include <linux/dmapool.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_dma.h>
 +#include <linux/platform_device.h>
-+#include <linux/slab.h>
++#include <linux/clk.h>
++#include <linux/dmaengine.h>
++#include <linux/dma-mapping.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/sizes.h>
 +
-+#include <dma.h>
++#include <nand.h>
 +
-+#include "dmaengine.h"
-+#include "virt-dma.h"
++/* Loongson 1 NAND Register Definitions */
++#define NAND_CMD		0x0
++#define NAND_ADDRL		0x4
++#define NAND_ADDRH		0x8
++#define NAND_TIMING		0xc
++#define NAND_IDL		0x10
++#define NAND_IDH		0x14
++#define NAND_STATUS		0x14
++#define NAND_PARAM		0x18
++#define NAND_OP_NUM		0x1c
++#define NAND_CS_RDY		0x20
 +
-+/* Loongson 1 DMA Register Definitions */
-+#define DMA_CTRL		0x0
++#define NAND_DMA_ADDR		0x40
 +
-+/* DMA Control Register Bits */
-+#define DMA_STOP		BIT(4)
-+#define DMA_START		BIT(3)
-+#define ASK_VALID		BIT(2)
++/* NAND Command Register Bits */
++#define OP_DONE			BIT(10)
++#define OP_SPARE		BIT(9)
++#define OP_MAIN			BIT(8)
++#define CMD_STATUS		BIT(7)
++#define CMD_RESET		BIT(6)
++#define CMD_READID		BIT(5)
++#define BLOCKS_ERASE		BIT(4)
++#define CMD_ERASE		BIT(3)
++#define CMD_WRITE		BIT(2)
++#define CMD_READ		BIT(1)
++#define CMD_VALID		BIT(0)
 +
-+#define DMA_ADDR_MASK		(0xffffffc0)
++#define	LS1X_NAND_TIMEOUT	20
 +
-+/* DMA H/W Descriptor Bits */
-+#define NEXT_EN			BIT(0)
++/* macros for registers read/write */
++#define nand_readl(nand, off)		\
++	__raw_readl((nand)->reg_base + (off))
 +
-+/* DMA Command Register Bits */
-+#define DMA_RAM2DEV		BIT(12)
-+#define DMA_TRANS_OVER		BIT(3)
-+#define DMA_SINGLE_TRANS_OVER	BIT(2)
-+#define DMA_INT			BIT(1)
-+#define DMA_INT_MASK		BIT(0)
++#define nand_writel(nand, off, val)	\
++	__raw_writel((val), (nand)->reg_base + (off))
 +
-+struct ls1x_dma_hwdesc {
-+	u32 next;		/* next descriptor address */
-+	u32 saddr;		/* memory DMA address */
-+	u32 daddr;		/* device DMA address */
-+	u32 length;
-+	u32 stride;
-+	u32 cycles;
-+	u32 cmd;
-+	u32 phys;		/* used by driver */
-+} __aligned(64);
++#define set_cmd(nand, ctrl)		\
++	nand_writel(nand, NAND_CMD, ctrl)
 +
-+struct ls1x_dma_desc {
-+	struct virt_dma_desc vdesc;
-+	struct ls1x_dma_chan *chan;
++#define start_nand(nand)		\
++	nand_writel(nand, NAND_CMD, nand_readl(nand, NAND_CMD) | CMD_VALID)
 +
-+	enum dma_transfer_direction dir;
-+	enum dma_transaction_type type;
++struct ls1x_nand {
++	struct platform_device *pdev;
++	struct nand_chip chip;
 +
-+	unsigned int nr_descs;	/* number of descriptors */
-+	unsigned int nr_done;	/* number of completed descriptors */
-+	struct ls1x_dma_hwdesc *desc[0];	/* DMA coherent descriptors */
-+};
-+
-+struct ls1x_dma_chan {
-+	struct virt_dma_chan vchan;
-+	unsigned int id;
-+	void __iomem *reg_base;
-+	unsigned int irq;
-+	struct dma_pool *desc_pool;
-+
-+	struct dma_slave_config config;
-+
-+	struct ls1x_dma_desc *dma_desc;
-+	unsigned int curr_hwdesc;
-+};
-+
-+struct ls1x_dma {
-+	struct dma_device dma_dev;
 +	struct clk *clk;
 +	void __iomem *reg_base;
 +
-+	unsigned int nr_dma_chans;
-+	struct ls1x_dma_chan dma_chan[0];
++	int cmd_val;
++
++	char datareg[8];
++	char *data_ptr;
++
++	/* DMA stuff */
++	unsigned char *dma_buf;
++	unsigned int buf_off;
++	unsigned int buf_len;
++
++	/* DMA Engine stuff */
++	unsigned int dma_chan_id;
++	struct dma_chan *dma_chan;
++	dma_cookie_t dma_cookie;
++	struct completion dma_complete;
++	void __iomem *dma_desc;
 +};
 +
-+#define to_ls1x_dma_chan(chan)		\
-+	container_of(chan, struct ls1x_dma_chan, vchan.chan)
-+
-+#define to_ls1x_dma_desc(vdesc)		\
-+	container_of(vdesc, struct ls1x_dma_desc, vdesc)
-+
-+/* macros for registers read/write */
-+#define chan_writel(chan, off, val)	\
-+	__raw_writel((val), (chan)->reg_base + (off))
-+
-+#define chan_readl(chan, off)		\
-+	__raw_readl((chan)->reg_base + (off))
-+
-+bool ls1x_dma_filter_fn(struct dma_chan *chan, void *param)
++static void dma_callback(void *data)
 +{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+	unsigned int chan_id = *(unsigned int *)param;
-+
-+	if (chan_id == dma_chan->id)
-+		return true;
-+	else
-+		return false;
-+}
-+
-+static void ls1x_dma_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+
-+	vchan_free_chan_resources(&dma_chan->vchan);
-+	dma_pool_destroy(dma_chan->desc_pool);
-+	dma_chan->desc_pool = NULL;
-+}
-+
-+static int ls1x_dma_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+
-+	if (dma_chan->desc_pool)
-+		return 0;
-+
-+	dma_chan->desc_pool = dma_pool_create(dma_chan_name(chan),
-+					      chan->device->dev,
-+					      sizeof(struct ls1x_dma_hwdesc),
-+					      __alignof__(struct
-+							  ls1x_dma_hwdesc), 0);
-+	if (!dma_chan->desc_pool) {
-+		dev_err(&chan->dev->device,
-+			"failed to allocate descriptor pool\n");
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static void ls1x_dma_free_desc(struct virt_dma_desc *vdesc)
-+{
-+	struct ls1x_dma_desc *dma_desc = to_ls1x_dma_desc(vdesc);
-+	int i;
-+
-+	for (i = 0; i < dma_desc->nr_descs; i++)
-+		dma_pool_free(dma_desc->chan->desc_pool, dma_desc->desc[i],
-+			      dma_desc->desc[i]->phys);
-+	kfree(dma_desc);
-+}
-+
-+static struct ls1x_dma_desc *ls1x_dma_alloc_desc(struct ls1x_dma_chan *dma_chan,
-+						 int sg_len)
-+{
-+	struct ls1x_dma_desc *dma_desc;
-+	struct dma_chan *chan = &dma_chan->vchan.chan;
-+	dma_addr_t desc_phys;
-+	int i;
-+
-+	dma_desc =
-+	    kzalloc(sizeof(struct ls1x_dma_desc) +
-+		    sg_len * sizeof(struct ls1x_dma_hwdesc *), GFP_NOWAIT);
-+	if (!dma_desc) {
-+		dev_err(&chan->dev->device,
-+			"failed to allocate DMA descriptor\n");
-+		return NULL;
-+	}
-+
-+	for (i = 0; i < sg_len; i++) {
-+		dma_desc->desc[i] = dma_pool_alloc(dma_chan->desc_pool,
-+						   GFP_NOWAIT, &desc_phys);
-+		if (!dma_desc->desc[i])
-+			goto err;
-+
-+		/* memorize the physical address of descriptor */
-+		dma_desc->desc[i]->phys = desc_phys;
-+	}
-+	dma_desc->chan = dma_chan;
-+	dma_desc->nr_descs = sg_len;
-+	dma_desc->nr_done = 0;
-+
-+	return dma_desc;
-+err:
-+	dev_err(&chan->dev->device, "failed to allocate H/W DMA descriptor\n");
-+
-+	while (--i >= 0)
-+		dma_pool_free(dma_chan->desc_pool, dma_desc->desc[i],
-+			      dma_desc->desc[i]->phys);
-+	kfree(dma_desc);
-+
-+	return NULL;
-+}
-+
-+static struct dma_async_tx_descriptor *
-+ls1x_dma_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
-+		       unsigned int sg_len,
-+		       enum dma_transfer_direction direction,
-+		       unsigned long flags, void *context)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+	struct dma_slave_config *config = &dma_chan->config;
-+	struct ls1x_dma_desc *dma_desc;
-+	struct scatterlist *sg;
-+	unsigned int dev_addr, bus_width, cmd, i;
-+
-+	if (!is_slave_direction(direction)) {
-+		dev_err(&chan->dev->device, "invalid DMA direction\n");
-+		return NULL;
-+	}
-+
-+	dev_dbg(&chan->dev->device, "sg_len=%d, dir=%s, flags=0x%lx\n", sg_len,
-+		direction == DMA_MEM_TO_DEV ? "to device" : "from device",
-+		flags);
-+
-+	switch (direction) {
-+	case DMA_MEM_TO_DEV:
-+		dev_addr = config->dst_addr;
-+		bus_width = config->dst_addr_width;
-+		cmd = DMA_RAM2DEV | DMA_INT;
-+		break;
-+	case DMA_DEV_TO_MEM:
-+		dev_addr = config->src_addr;
-+		bus_width = config->src_addr_width;
-+		cmd = DMA_INT;
-+		break;
-+	default:
-+		dev_err(&chan->dev->device,
-+			"unsupported DMA transfer mode: %d\n", direction);
-+		return NULL;
-+	}
-+
-+	/* allocate DMA descriptors */
-+	dma_desc = ls1x_dma_alloc_desc(dma_chan, sg_len);
-+	if (!dma_desc)
-+		return NULL;
-+	dma_desc->dir = direction;
-+	dma_desc->type = DMA_SLAVE;
-+
-+	/* config DMA descriptors */
-+	for_each_sg(sgl, sg, sg_len, i) {
-+		dma_addr_t buf_addr = sg_dma_address(sg);
-+		size_t buf_len = sg_dma_len(sg);
-+
-+		if (!IS_ALIGNED(buf_addr, 4 * bus_width)) {
-+			dev_err(&chan->dev->device,
-+				"buf_addr is not aligned on %d-byte boundary\n",
-+				4 * bus_width);
-+			ls1x_dma_free_desc(&dma_desc->vdesc);
-+			return NULL;
-+		}
-+
-+		if (!IS_ALIGNED(buf_len, bus_width))
-+			dev_warn(&chan->dev->device,
-+				 "buf_len is not aligned on %d-byte boundary\n",
-+				 bus_width);
-+
-+		dma_desc->desc[i]->saddr = buf_addr;
-+		dma_desc->desc[i]->daddr = dev_addr;
-+		dma_desc->desc[i]->length = buf_len / bus_width;
-+		dma_desc->desc[i]->stride = 0;
-+		dma_desc->desc[i]->cycles = 1;
-+		dma_desc->desc[i]->cmd = cmd;
-+		dma_desc->desc[i]->next =
-+		    sg_is_last(sg) ? 0 : dma_desc->desc[i + 1]->phys;
-+
-+		dev_dbg(&chan->dev->device,
-+			"desc=%p, saddr=%08x, daddr=%08x, length=%u\n",
-+			&dma_desc->desc[i], buf_addr, dev_addr, buf_len);
-+	}
-+
-+	return vchan_tx_prep(&dma_chan->vchan, &dma_desc->vdesc, flags);
-+}
-+
-+static int ls1x_dma_slave_config(struct dma_chan *chan,
-+				 struct dma_slave_config *config)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+
-+	memcpy(&dma_chan->config, config, sizeof(struct dma_slave_config));
-+
-+	return 0;
-+}
-+
-+static int ls1x_dma_terminate_all(struct dma_chan *chan)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+	unsigned long flags;
-+	LIST_HEAD(head);
-+
-+	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
-+
-+	chan_writel(dma_chan, DMA_CTRL,
-+		    chan_readl(dma_chan, DMA_CTRL) | DMA_STOP);
-+	dma_chan->dma_desc = NULL;
-+	vchan_get_all_descriptors(&dma_chan->vchan, &head);
-+
-+	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
-+
-+	vchan_dma_desc_free_list(&dma_chan->vchan, &head);
-+
-+	return 0;
-+}
-+
-+static size_t ls1x_dma_desc_residue(struct ls1x_dma_desc *dma_desc,
-+				    unsigned int next_sg)
-+{
-+	struct ls1x_dma_chan *dma_chan = dma_desc->chan;
-+	struct dma_slave_config *config = &dma_chan->config;
-+	unsigned int i, bus_width, bytes = 0;
-+
-+	if (dma_desc->dir == DMA_MEM_TO_DEV)
-+		bus_width = config->dst_addr_width;
-+	else
-+		bus_width = config->src_addr_width;
-+
-+	for (i = next_sg; i < dma_desc->nr_descs; i++)
-+		bytes += dma_desc->desc[i]->length * bus_width;
-+
-+	return bytes;
-+}
-+
-+static enum dma_status ls1x_dma_tx_status(struct dma_chan *chan,
-+					  dma_cookie_t cookie,
-+					  struct dma_tx_state *txstate)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+	struct ls1x_dma_desc *dma_desc = dma_chan->dma_desc;
-+	struct virt_dma_desc *vdesc;
++	struct ls1x_nand *nand = (struct ls1x_nand *)data;
++	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
++	struct dma_tx_state state;
 +	enum dma_status status;
-+	unsigned int residue = 0;
-+	unsigned long flags;
 +
-+	status = dma_cookie_status(chan, cookie, txstate);
-+	if ((status == DMA_COMPLETE) || !txstate)
-+		return status;
-+
-+	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
-+
-+	vdesc = vchan_find_desc(&dma_chan->vchan, cookie);
-+	if (vdesc)
-+		/* not yet processed */
-+		residue = ls1x_dma_desc_residue(to_ls1x_dma_desc(vdesc), 0);
-+	else if (cookie == dma_chan->dma_desc->vdesc.tx.cookie)
-+		/* in progress */
-+		residue = ls1x_dma_desc_residue(dma_desc, dma_desc->nr_done);
++	status = dmaengine_tx_status(nand->dma_chan, nand->dma_cookie, &state);
++	if (likely(status == DMA_COMPLETE))
++		dev_dbg(mtd->dev.parent, "DMA complete with cookie=%d\n",
++			nand->dma_cookie);
 +	else
-+		residue = 0;
++		dev_err(mtd->dev.parent, "DMA error with cookie=%d\n",
++			nand->dma_cookie);
 +
-+	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
-+
-+	dma_set_residue(txstate, residue);
-+
-+	return status;
++	complete(&nand->dma_complete);
 +}
 +
-+static void ls1x_trigger_dma(struct ls1x_dma_chan *dma_chan)
++static int setup_dma(struct ls1x_nand *nand)
 +{
-+	struct dma_chan *chan = &dma_chan->vchan.chan;
-+	struct ls1x_dma_desc *dma_desc;
-+	struct virt_dma_desc *vdesc;
-+	unsigned int val;
++	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
++	struct dma_slave_config cfg;
++	dma_cap_mask_t mask;
++	int ret;
 +
-+	vdesc = vchan_next_desc(&dma_chan->vchan);
-+	if (!vdesc) {
-+		dev_warn(&chan->dev->device, "No pending descriptor\n");
++	/* allocate DMA buffer */
++	nand->dma_buf = devm_kzalloc(mtd->dev.parent,
++				     mtd->writesize + mtd->oobsize, GFP_KERNEL);
++	if (!nand->dma_buf)
++		return -ENOMEM;
++
++	dma_cap_zero(mask);
++	dma_cap_set(DMA_SLAVE, mask);
++	nand->dma_chan = dma_request_channel(mask, ls1x_dma_filter_fn,
++					     &nand->dma_chan_id);
++	if (!nand->dma_chan) {
++		dev_err(mtd->dev.parent, "failed to request DMA channel\n");
++		return -EBUSY;
++	}
++	dev_info(mtd->dev.parent, "got %s for %s access\n",
++		 dma_chan_name(nand->dma_chan), dev_name(mtd->dev.parent));
++
++	cfg.src_addr = CPHYSADDR(nand->reg_base + NAND_DMA_ADDR);
++	cfg.dst_addr = CPHYSADDR(nand->reg_base + NAND_DMA_ADDR);
++	cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
++	cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
++	ret = dmaengine_slave_config(nand->dma_chan, &cfg);
++	if (ret) {
++		dev_err(mtd->dev.parent, "failed to config DMA channel\n");
++		dma_release_channel(nand->dma_chan);
++		return ret;
++	}
++
++	init_completion(&nand->dma_complete);
++
++	return 0;
++}
++
++static int start_dma(struct ls1x_nand *nand, unsigned int len, bool is_write)
++{
++	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
++	struct dma_chan *chan = nand->dma_chan;
++	struct dma_async_tx_descriptor *desc;
++	enum dma_data_direction data_dir =
++	    is_write ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
++	enum dma_transfer_direction xfer_dir =
++	    is_write ? DMA_MEM_TO_DEV : DMA_DEV_TO_MEM;
++	dma_addr_t dma_addr;
++	int ret;
++
++	dma_addr =
++	    dma_map_single(chan->device->dev, nand->dma_buf, len, data_dir);
++	if (dma_mapping_error(chan->device->dev, dma_addr)) {
++		dev_err(mtd->dev.parent, "failed to map DMA buffer\n");
++		return -ENXIO;
++	}
++
++	desc = dmaengine_prep_slave_single(chan, dma_addr, len, xfer_dir,
++					   DMA_PREP_INTERRUPT);
++	if (!desc) {
++		dev_err(mtd->dev.parent,
++			"failed to prepare DMA descriptor\n");
++		ret = PTR_ERR(desc);
++		goto err;
++	}
++	desc->callback = dma_callback;
++	desc->callback_param = nand;
++
++	nand->dma_cookie = dmaengine_submit(desc);
++	ret = dma_submit_error(nand->dma_cookie);
++	if (ret) {
++		dev_err(mtd->dev.parent,
++			"failed to submit DMA descriptor\n");
++		goto err;
++	}
++
++	dev_dbg(mtd->dev.parent, "issue DMA with cookie=%d\n",
++		nand->dma_cookie);
++	dma_async_issue_pending(chan);
++
++	ret = wait_for_completion_timeout(&nand->dma_complete,
++					  msecs_to_jiffies(LS1X_NAND_TIMEOUT));
++	if (ret <= 0) {
++		dev_err(mtd->dev.parent, "DMA timeout\n");
++		dmaengine_terminate_all(chan);
++		ret = -EIO;
++	}
++	ret = 0;
++err:
++	dma_unmap_single(chan->device->dev, dma_addr, len, data_dir);
++
++	return ret;
++}
++
++static void ls1x_nand_select_chip(struct mtd_info *mtd, int chip)
++{
++}
++
++static int ls1x_nand_dev_ready(struct mtd_info *mtd)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++
++	if (nand_readl(nand, NAND_CMD) & OP_DONE)
++		return 1;
++
++	return 0;
++}
++
++static uint8_t ls1x_nand_read_byte(struct mtd_info *mtd)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++
++	return *(nand->data_ptr++);
++}
++
++static void ls1x_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++
++	int real_len = min_t(size_t, len, nand->buf_len - nand->buf_off);
++
++	memcpy(buf, nand->dma_buf + nand->buf_off, real_len);
++	nand->buf_off += real_len;
++}
++
++static void ls1x_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
++				int len)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++
++	int real_len = min_t(size_t, len, nand->buf_len - nand->buf_off);
++
++	memcpy(nand->dma_buf + nand->buf_off, buf, real_len);
++	nand->buf_off += real_len;
++}
++
++static inline void set_addr_len(struct mtd_info *mtd, unsigned int command,
++				int column, int page_addr)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++	int page_shift, addr_low, addr_high;
++
++	if (command == NAND_CMD_ERASE1)
++		page_shift = chip->page_shift;
++	else
++		page_shift = chip->page_shift + 1;
++
++	addr_low = page_addr << page_shift;
++
++	if (column != -1) {
++		if (command == NAND_CMD_READOOB)
++			column += mtd->writesize;
++		addr_low += column;
++		nand->buf_off = 0;
++	}
++
++	addr_high =
++	    page_addr >> (sizeof(page_addr) * BITS_PER_BYTE - page_shift);
++
++	if (command == NAND_CMD_ERASE1)
++		nand->buf_len = 1;
++	else
++		nand->buf_len = mtd->writesize + mtd->oobsize - column;
++
++	nand_writel(nand, NAND_ADDRL, addr_low);
++	nand_writel(nand, NAND_ADDRH, addr_high);
++	nand_writel(nand, NAND_OP_NUM, nand->buf_len);
++}
++
++static void ls1x_nand_cmdfunc(struct mtd_info *mtd, unsigned int command,
++			      int column, int page_addr)
++{
++	struct nand_chip *chip = mtd_to_nand(mtd);
++	struct ls1x_nand *nand = nand_get_controller_data(chip);
++
++	dev_dbg(mtd->dev.parent, "cmd = 0x%02x, col = 0x%08x, page = 0x%08x\n",
++		command, column, page_addr);
++
++	if (command == NAND_CMD_RNDOUT) {
++		nand->buf_off = column;
 +		return;
 +	}
-+	dma_chan->dma_desc = dma_desc = to_ls1x_dma_desc(vdesc);
 +
-+	dev_dbg(&chan->dev->device, "cookie=%d, %u descs, starting desc=%p\n",
-+		chan->cookie, dma_desc->nr_descs, &dma_desc->desc[0]);
++	/*set address, buffer length and buffer offset */
++	if (column != -1 || page_addr != -1)
++		set_addr_len(mtd, command, column, page_addr);
 +
-+	val = dma_desc->desc[0]->phys & DMA_ADDR_MASK;
-+	val |= dma_chan->id;
-+	val |= DMA_START;
-+	chan_writel(dma_chan, DMA_CTRL, val);
-+}
-+
-+static void ls1x_dma_issue_pending(struct dma_chan *chan)
-+{
-+	struct ls1x_dma_chan *dma_chan = to_ls1x_dma_chan(chan);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&dma_chan->vchan.lock, flags);
-+
-+	if (vchan_issue_pending(&dma_chan->vchan) && !dma_chan->dma_desc)
-+		ls1x_trigger_dma(dma_chan);
-+
-+	spin_unlock_irqrestore(&dma_chan->vchan.lock, flags);
-+}
-+
-+static irqreturn_t ls1x_dma_irq_handler(int irq, void *data)
-+{
-+	struct ls1x_dma_chan *dma_chan = data;
-+	struct dma_chan *chan = &dma_chan->vchan.chan;
-+
-+	dev_dbg(&chan->dev->device, "DMA IRQ %d on channel %d\n", irq,
-+		dma_chan->id);
-+	if (!dma_chan->dma_desc) {
-+		dev_warn(&chan->dev->device,
-+			 "DMA IRQ with no active descriptor on channel %d\n",
-+			 dma_chan->id);
-+		return IRQ_NONE;
++	/*prepare NAND command */
++	switch (command) {
++	case NAND_CMD_RESET:
++		nand->cmd_val = CMD_RESET;
++		break;
++	case NAND_CMD_STATUS:
++		nand->cmd_val = CMD_STATUS;
++		break;
++	case NAND_CMD_READID:
++		nand->cmd_val = CMD_READID;
++		break;
++	case NAND_CMD_READ0:
++		nand->cmd_val = OP_SPARE | OP_MAIN | CMD_READ;
++		break;
++	case NAND_CMD_READOOB:
++		nand->cmd_val = OP_SPARE | CMD_READ;
++		break;
++	case NAND_CMD_ERASE1:
++		nand->cmd_val = CMD_ERASE;
++		break;
++	case NAND_CMD_PAGEPROG:
++		break;
++	case NAND_CMD_SEQIN:
++		if (column < mtd->writesize)
++			nand->cmd_val = OP_SPARE | OP_MAIN | CMD_WRITE;
++		else
++			nand->cmd_val = OP_SPARE | CMD_WRITE;
++	default:
++		return;
 +	}
 +
-+	spin_lock(&dma_chan->vchan.lock);
++	/*set NAND command */
++	set_cmd(nand, nand->cmd_val);
++	/*trigger NAND operation */
++	start_nand(nand);
++	/*trigger DMA for R/W operation */
++	if (command == NAND_CMD_READ0 || command == NAND_CMD_READOOB)
++		start_dma(nand, nand->buf_len, false);
++	else if (command == NAND_CMD_PAGEPROG)
++		start_dma(nand, nand->buf_len, true);
++	nand_wait_ready(mtd);
 +
-+	if (dma_chan->dma_desc->type == DMA_CYCLIC) {
-+		vchan_cyclic_callback(&dma_chan->dma_desc->vdesc);
-+	} else {
-+		list_del(&dma_chan->dma_desc->vdesc.node);
-+		vchan_cookie_complete(&dma_chan->dma_desc->vdesc);
-+		dma_chan->dma_desc = NULL;
++	if (command == NAND_CMD_STATUS) {
++		nand->datareg[0] = (char)(nand_readl(nand, NAND_STATUS) >> 8);
++		/*work around hardware bug for invalid STATUS */
++		nand->datareg[0] |= 0xc0;
++		nand->data_ptr = nand->datareg;
++	} else if (command == NAND_CMD_READID) {
++		nand->datareg[0] = (char)(nand_readl(nand, NAND_IDH));
++		nand->datareg[1] = (char)(nand_readl(nand, NAND_IDL) >> 24);
++		nand->datareg[2] = (char)(nand_readl(nand, NAND_IDL) >> 16);
++		nand->datareg[3] = (char)(nand_readl(nand, NAND_IDL) >> 8);
++		nand->datareg[4] = (char)(nand_readl(nand, NAND_IDL));
++		nand->data_ptr = nand->datareg;
 +	}
 +
-+	spin_unlock(&dma_chan->vchan.lock);
-+	return IRQ_HANDLED;
++	nand->cmd_val = 0;
 +}
 +
-+static int ls1x_dma_probe(struct platform_device *pdev)
++static void nand_hw_init(struct ls1x_nand *nand, int hold_cycle, int wait_cycle)
++{
++	struct nand_chip *chip = &nand->chip;
++	struct mtd_info *mtd = nand_to_mtd(chip);
++	int chipsize = (int)(chip->chipsize >> 20);
++	int cell_size = 0x0;
++
++	switch (chipsize) {
++	case SZ_128:		/*128M */
++		cell_size = 0x0;
++		break;
++	case SZ_256:		/*256M */
++		cell_size = 0x1;
++		break;
++	case SZ_512:		/*512M */
++		cell_size = 0x2;
++		break;
++	case SZ_1K:		/*1G */
++		cell_size = 0x3;
++		break;
++	case SZ_2K:		/*2G */
++		cell_size = 0x4;
++		break;
++	case SZ_4K:		/*4G */
++		cell_size = 0x5;
++		break;
++	case SZ_8K:		/*8G */
++		cell_size = 0x6;
++		break;
++	case SZ_16K:		/*16G */
++		cell_size = 0x7;
++		break;
++	default:
++		dev_warn(mtd->dev.parent, "unsupported chip size: %d MB\n",
++			 chipsize);
++	}
++
++	nand_writel(nand, NAND_TIMING, (hold_cycle << 8) | wait_cycle);
++	nand_writel(nand, NAND_PARAM,
++		    (nand_readl(nand, NAND_PARAM) & 0xfffff0ff) | (cell_size <<
++								   8));
++}
++
++static int ls1x_nand_probe(struct platform_device *pdev)
 +{
 +	struct device *dev = &pdev->dev;
-+	struct plat_ls1x_dma *pdata = dev_get_platdata(dev);
-+	struct dma_device *dma_dev;
-+	struct ls1x_dma *dma;
-+	struct ls1x_dma_chan *dma_chan;
++	struct plat_ls1x_nand *pdata = dev_get_platdata(dev);
++	struct ls1x_nand *nand;
++	struct mtd_info *mtd;
++	struct nand_chip *chip;
 +	struct resource *res;
-+	int i, ret;
++	int ret = 0;
 +
-+	/* initialize DMA device */
-+	dma =
-+	    devm_kzalloc(dev,
-+			 sizeof(struct ls1x_dma) +
-+			 pdata->nr_channels * sizeof(struct ls1x_dma_chan),
-+			 GFP_KERNEL);
-+	if (!dma)
++	if (!pdata) {
++		dev_err(dev, "platform data missing\n");
++		return -EINVAL;
++	}
++
++	nand = devm_kzalloc(dev, sizeof(struct ls1x_nand), GFP_KERNEL);
++	if (!nand)
 +		return -ENOMEM;
++	nand->pdev = pdev;
 +
 +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +	if (!res) {
 +		dev_err(dev, "failed to get I/O memory\n");
-+		return -EINVAL;
++		return -ENXIO;
 +	}
 +
-+	dma->reg_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(dma->reg_base))
-+		return PTR_ERR(dma->reg_base);
++	nand->reg_base = devm_ioremap_resource(dev, res);
++	if (IS_ERR(nand->reg_base))
++		return PTR_ERR(nand->reg_base);
 +
-+	dma_dev = &dma->dma_dev;
-+
-+	dma_cap_set(DMA_SLAVE, dma_dev->cap_mask);
-+	dma_cap_set(DMA_PRIVATE, dma_dev->cap_mask);
-+
-+	dma_dev->dev = dev;
-+	dma_dev->src_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_4_BYTES);
-+	dma_dev->dst_addr_widths = BIT(DMA_SLAVE_BUSWIDTH_4_BYTES);
-+	dma_dev->directions = BIT(DMA_DEV_TO_MEM) | BIT(DMA_MEM_TO_DEV);
-+	dma_dev->residue_granularity = DMA_RESIDUE_GRANULARITY_SEGMENT;
-+	dma_dev->device_alloc_chan_resources = ls1x_dma_alloc_chan_resources;
-+	dma_dev->device_free_chan_resources = ls1x_dma_free_chan_resources;
-+	dma_dev->device_prep_slave_sg = ls1x_dma_prep_slave_sg;
-+	dma_dev->device_config = ls1x_dma_slave_config;
-+	dma_dev->device_terminate_all = ls1x_dma_terminate_all;
-+	dma_dev->device_tx_status = ls1x_dma_tx_status;
-+	dma_dev->device_issue_pending = ls1x_dma_issue_pending;
-+
-+	INIT_LIST_HEAD(&dma_dev->channels);
-+
-+	/* initialize DMA channels */
-+	for (i = 0; i < pdata->nr_channels; i++) {
-+		dma_chan = &dma->dma_chan[i];
-+		dma_chan->id = i;
-+		dma_chan->reg_base = dma->reg_base;
-+
-+		dma_chan->irq = platform_get_irq(pdev, i);
-+		if (dma_chan->irq < 0) {
-+			dev_err(dev, "failed to get IRQ: %d\n", dma_chan->irq);
-+			return -EINVAL;
-+		}
-+
-+		ret =
-+		    devm_request_irq(dev, dma_chan->irq, ls1x_dma_irq_handler,
-+				     IRQF_SHARED, dev_name(dev), dma_chan);
-+		if (ret) {
-+			dev_err(dev, "failed to request IRQ %u!\n",
-+				dma_chan->irq);
-+			return -EINVAL;
-+		}
-+
-+		dma_chan->vchan.desc_free = ls1x_dma_free_desc;
-+		vchan_init(&dma_chan->vchan, dma_dev);
++	res = platform_get_resource(pdev, IORESOURCE_DMA, 0);
++	if (!res) {
++		dev_err(dev, "failed to get DMA information\n");
++		return -ENXIO;
 +	}
-+	dma->nr_dma_chans = i;
++	nand->dma_chan_id = res->start;
 +
-+	dma->clk = devm_clk_get(dev, pdev->name);
-+	if (IS_ERR(dma->clk)) {
++	nand->clk = devm_clk_get(dev, pdev->name);
++	if (IS_ERR(nand->clk)) {
 +		dev_err(dev, "failed to get %s clock\n", pdev->name);
-+		return PTR_ERR(dma->clk);
++		return PTR_ERR(nand->clk);
 +	}
-+	clk_prepare_enable(dma->clk);
++	clk_prepare_enable(nand->clk);
 +
-+	ret = dma_async_device_register(dma_dev);
++	chip = &nand->chip;
++	chip->read_byte		= ls1x_nand_read_byte;
++	chip->read_buf		= ls1x_nand_read_buf;
++	chip->write_buf		= ls1x_nand_write_buf;
++	chip->select_chip	= ls1x_nand_select_chip;
++	chip->dev_ready		= ls1x_nand_dev_ready;
++	chip->cmdfunc		= ls1x_nand_cmdfunc;
++	chip->options		= NAND_NO_SUBPAGE_WRITE;
++	chip->ecc.mode		= NAND_ECC_SOFT;
++	nand_set_controller_data(chip, nand);
++
++	mtd = nand_to_mtd(chip);
++	mtd->name = "ls1x-nand";
++	mtd->owner = THIS_MODULE;
++	mtd->dev.parent = dev;
++
++	ret = nand_scan_ident(mtd, 1, NULL);
++	if (ret)
++		goto err;
++
++	nand_hw_init(nand, pdata->hold_cycle, pdata->wait_cycle);
++
++	ret = setup_dma(nand);
++	if (ret)
++		goto err;
++
++	ret = nand_scan_tail(mtd);
++	if (ret)
++		goto err;
++
++	ret = mtd_device_register(mtd, pdata->parts, pdata->nr_parts);
 +	if (ret) {
-+		dev_err(dev, "failed to register DMA device\n");
-+		clk_disable_unprepare(dma->clk);
-+		return ret;
++		dev_err(dev, "failed to register MTD device: %d\n", ret);
++		goto err;
 +	}
 +
-+	platform_set_drvdata(pdev, dma);
-+	dev_info(dev, "Loongson1 DMA driver registered\n");
-+	for (i = 0; i < pdata->nr_channels; i++) {
-+		dma_chan = &dma->dma_chan[i];
-+		dev = &dma_chan->vchan.chan.dev->device;
-+		dev_info(dev, "channel %d at 0x%p (irq %d)\n", dma_chan->id,
-+			 dma_chan->reg_base, dma_chan->irq);
-+	}
++	platform_set_drvdata(pdev, nand);
++	dev_info(dev, "Loongson1 NAND driver registered\n");
 +
 +	return 0;
++err:
++	clk_disable_unprepare(nand->clk);
++
++	return ret;
 +}
 +
-+static int ls1x_dma_remove(struct platform_device *pdev)
++static int ls1x_nand_remove(struct platform_device *pdev)
 +{
-+	struct ls1x_dma *dma = platform_get_drvdata(pdev);
++	struct ls1x_nand *nand = platform_get_drvdata(pdev);
 +
-+	dma_async_device_unregister(&dma->dma_dev);
-+	clk_disable_unprepare(dma->clk);
++	if (nand->dma_chan)
++		dma_release_channel(nand->dma_chan);
++	nand_release(nand_to_mtd(&nand->chip));
++	clk_disable_unprepare(nand->clk);
++
 +	return 0;
 +}
 +
-+static struct platform_driver ls1x_dma_driver = {
-+	.probe	= ls1x_dma_probe,
-+	.remove	= ls1x_dma_remove,
++static struct platform_driver ls1x_nand_driver = {
++	.probe	= ls1x_nand_probe,
++	.remove	= ls1x_nand_remove,
 +	.driver	= {
-+		.name	= "ls1x-dma",
++		.name	= "ls1x-nand",
++		.owner	= THIS_MODULE,
 +	},
 +};
 +
-+module_platform_driver(ls1x_dma_driver);
++module_platform_driver(ls1x_nand_driver);
 +
 +MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-+MODULE_DESCRIPTION("Loongson1 DMA driver");
++MODULE_DESCRIPTION("Loongson1 NAND Flash driver");
 +MODULE_LICENSE("GPL");
 -- 
 1.9.1
