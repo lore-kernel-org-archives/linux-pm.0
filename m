@@ -1,59 +1,97 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 19/20] ARM: dts: Expand the voltage range of buck1/3
- regulator for exynos4412-odroidu3
-Date: Fri, 08 Apr 2016 13:25:08 +0900
-Message-ID: <1460089509-16260-20-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v8 08/20] PM / devfreq: exynos: Add the detailed correlation
+ between sub-blocks and power line
+Date: Fri, 08 Apr 2016 13:24:57 +0900
+Message-ID: <1460089509-16260-9-git-send-email-cw00.choi@samsung.com>
 References: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:33906 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932249AbcDHEZe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 00:25:34 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch expands the voltage range of buck1/3 regulator due to as following:
-- MIF (Memory Interface) bus frequency needs the range of '900 - 1100 mV'.
-- INT (Internal) bus frequency needs the range of '900 - 1050 mV'.
+This patch adds the detailed corrleation between sub-blocks and power line
+for Exynos3250, Exynos4210 and Exynos4x12.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-[m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/devfreq/exynos-bus.txt     | 51 ++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index cba37c974703..b4983cbc4f8c 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -356,8 +356,8 @@
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+index 03f13d38f1a1..b098fa2ba5d4 100644
+--- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
++++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+@@ -53,6 +53,57 @@ Optional properties only for parent bus device:
+ - exynos,voltage-tolerance: the percentage value for bus voltage tolerance
+ 			which is used to calculate the max voltage.
  
- 			buck1_reg: BUCK1 {
- 				regulator-name = "vdd_mif";
--				regulator-min-microvolt = <1000000>;
--				regulator-max-microvolt = <1000000>;
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1100000>;
- 				regulator-always-on;
- 				regulator-boot-on;
- 			};
-@@ -372,8 +372,8 @@
- 
- 			buck3_reg: BUCK3 {
- 				regulator-name = "vdd_int";
--				regulator-min-microvolt = <1000000>;
--				regulator-max-microvolt = <1000000>;
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1050000>;
- 				regulator-always-on;
- 				regulator-boot-on;
- 			};
++Detailed correlation between sub-blocks and power line according to Exynos SoC:
++- In case of Exynos3250, there are two power line as following:
++	VDD_MIF |--- DMC
++
++	VDD_INT |--- LEFTBUS (parent device)
++		|--- PERIL
++		|--- MFC
++		|--- G3D
++		|--- RIGHTBUS
++		|--- PERIR
++		|--- FSYS
++		|--- LCD0
++		|--- PERIR
++		|--- ISP
++		|--- CAM
++
++- In case of Exynos4210, there is one power line as following:
++	VDD_INT |--- DMC (parent device)
++		|--- LEFTBUS
++		|--- PERIL
++		|--- MFC(L)
++		|--- G3D
++		|--- TV
++		|--- LCD0
++		|--- RIGHTBUS
++		|--- PERIR
++		|--- MFC(R)
++		|--- CAM
++		|--- FSYS
++		|--- GPS
++		|--- LCD0
++		|--- LCD1
++
++- In case of Exynos4x12, there are two power line as following:
++	VDD_MIF |--- DMC
++
++	VDD_INT |--- LEFTBUS (parent device)
++		|--- PERIL
++		|--- MFC(L)
++		|--- G3D
++		|--- TV
++		|--- IMAGE
++		|--- RIGHTBUS
++		|--- PERIR
++		|--- MFC(R)
++		|--- CAM
++		|--- FSYS
++		|--- GPS
++		|--- LCD0
++		|--- ISP
++
+ Example1:
+ 	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
+ 	power line (regulator). The MIF (Memory Interface) AXI bus is used to
 -- 
 1.9.1
-
