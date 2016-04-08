@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v8 02/20] PM / devfreq: exynos: Add documentation for generic
- exynos bus frequency driver
-Date: Fri, 08 Apr 2016 13:24:51 +0900
-Message-ID: <1460089509-16260-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v8 01/20] PM / devfreq: exynos: Add generic exynos bus
+ frequency driver
+Date: Fri, 08 Apr 2016 13:24:50 +0900
+Message-ID: <1460089509-16260-2-git-send-email-cw00.choi@samsung.com>
 References: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1460089509-16260-1-git-send-email-cw00.choi@samsung.com>
@@ -11,117 +11,512 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the documentation for generic exynos bus frequency
-driver.
+This patch adds the generic exynos bus frequency driver for AMBA AXI bus
+of sub-blocks in exynos SoC with DEVFREQ framework. The Samsung Exynos SoC
+have the common architecture for bus between DRAM and sub-blocks in SoC.
+This driver can support the generic bus frequency driver for Exynos SoCs.
+
+In devicetree, Each bus block has a bus clock, regulator, operation-point
+and devfreq-event devices which measure the utilization of each bus block.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+[m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 95 ++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+ drivers/devfreq/Kconfig      |  15 ++
+ drivers/devfreq/Makefile     |   1 +
+ drivers/devfreq/exynos-bus.c | 443 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 459 insertions(+)
+ create mode 100644 drivers/devfreq/exynos-bus.c
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 4de78c552251..cedda8f1e5eb 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -66,6 +66,21 @@ config DEVFREQ_GOV_USERSPACE
+ 
+ comment "DEVFREQ Drivers"
+ 
++config ARM_EXYNOS_BUS_DEVFREQ
++	bool "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
++	depends on ARCH_EXYNOS
++	select DEVFREQ_GOV_SIMPLE_ONDEMAND
++	select DEVFREQ_EVENT_EXYNOS_PPMU
++	select PM_DEVFREQ_EVENT
++	select PM_OPP
++	help
++	  This adds the common DEVFREQ driver for Exynos Memory bus. Exynos
++	  Memory bus has one more group of memory bus (e.g, MIF and INT block).
++	  Each memory bus group could contain many memoby bus block. It reads
++	  PPMU counters of memory controllers by using DEVFREQ-event device
++	  and adjusts the operating frequencies and voltages with OPP support.
++	  This does not yet operate with optimal voltages.
++
+ config ARM_EXYNOS4_BUS_DEVFREQ
+ 	bool "ARM Exynos4210/4212/4412 Memory Bus DEVFREQ Driver"
+ 	depends on (CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 5134f9ee983d..8af8aaf922a8 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -6,6 +6,7 @@ obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
+ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
+ 
+ # DEVFREQ Drivers
++obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+ obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos/
+ obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)	+= exynos/
+ obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
 new file mode 100644
-index 000000000000..78171b918e3f
+index 000000000000..137de6196af3
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -0,0 +1,95 @@
-+* Generic Exynos Bus frequency device
++++ b/drivers/devfreq/exynos-bus.c
+@@ -0,0 +1,443 @@
++/*
++ * Generic Exynos Bus frequency driver with DEVFREQ Framework
++ *
++ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
++ * Author : Chanwoo Choi <cw00.choi@samsung.com>
++ *
++ * This driver support Exynos Bus frequency feature by using
++ * DEVFREQ framework and is based on drivers/devfreq/exynos/exynos4_bus.c.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+The Samsung Exynos SoC has many buses for data transfer between DRAM
-+and sub-blocks in SoC. Most Exynos SoCs share the common architecture
-+for buses. Generally, each bus of Exynos SoC includes a source clock
-+and a power line, which are able to change the clock frequency
-+of the bus in runtime. To monitor the usage of each bus in runtime,
-+the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of sub-blocks.
++#include <linux/clk.h>
++#include <linux/devfreq.h>
++#include <linux/devfreq-event.h>
++#include <linux/device.h>
++#include <linux/export.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/pm_opp.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
++#include <linux/slab.h>
 +
-+There are a little different composition among Exynos SoC because each Exynos
-+SoC has different sub-blocks. Therefore, shch difference should be specified
-+in devicetree file instead of each device driver. In result, this driver
-+is able to support the bus frequency for all Exynos SoCs.
++#define DEFAULT_SATURATION_RATIO	40
++#define DEFAULT_VOLTAGE_TOLERANCE	2
 +
-+Required properties for bus device:
-+- compatible: Should be "samsung,exynos-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- operating-points-v2: the OPP table including frequency/voltage information
-+  to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-+- vdd-supply: the regulator to provide the buses with the voltage.
-+- devfreq-events: the devfreq-event device to monitor the current utilization
-+  of buses.
++struct exynos_bus {
++	struct device *dev;
 +
-+Optional properties for bus device:
-+- exynos,saturation-ratio: the percentage value which is used to calibrate
-+			the performance count against total cycle count.
-+- exynos,voltage-tolerance: the percentage value for bus voltage tolerance
-+			which is used to calculate the max voltage.
++	struct devfreq *devfreq;
++	struct devfreq_event_dev **edev;
++	unsigned int edev_count;
++	struct mutex lock;
 +
-+Example1:
-+	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
-+	power line (regulator). The MIF (Memory Interface) AXI bus is used to
-+	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
++	struct dev_pm_opp *curr_opp;
 +
-+	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
++	struct regulator *regulator;
++	struct clk *clk;
++	unsigned int voltage_tolerance;
++	unsigned int ratio;
++};
 +
-+	- MIF bus's frequency/voltage table
-+	-----------------------
-+	|Lv| Freq   | Voltage |
-+	-----------------------
-+	|L1| 50000  |800000   |
-+	|L2| 100000 |800000   |
-+	|L3| 134000 |800000   |
-+	|L4| 200000 |825000   |
-+	|L5| 400000 |875000   |
-+	-----------------------
++/*
++ * Control the devfreq-event device to get the current state of bus
++ */
++#define exynos_bus_ops_edev(ops)				\
++static int exynos_bus_##ops(struct exynos_bus *bus)		\
++{								\
++	int i, ret;						\
++								\
++	for (i = 0; i < bus->edev_count; i++) {			\
++		if (!bus->edev[i])				\
++			continue;				\
++		ret = devfreq_event_##ops(bus->edev[i]);	\
++		if (ret < 0)					\
++			return ret;				\
++	}							\
++								\
++	return 0;						\
++}
++exynos_bus_ops_edev(enable_edev);
++exynos_bus_ops_edev(disable_edev);
++exynos_bus_ops_edev(set_event);
 +
-+Example2 :
-+	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dtsi
-+	is listed below:
++static int exynos_bus_get_event(struct exynos_bus *bus,
++				struct devfreq_event_data *edata)
++{
++	struct devfreq_event_data event_data;
++	unsigned long load_count = 0, total_count = 0;
++	int i, ret = 0;
 +
-+	bus_dmc: bus_dmc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&cmu_dmc CLK_DIV_DMC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_dmc_opp_table>;
-+		status = "disabled";
-+	};
++	for (i = 0; i < bus->edev_count; i++) {
++		if (!bus->edev[i])
++			continue;
 +
-+	bus_dmc_opp_table: opp_table1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
++		ret = devfreq_event_get_event(bus->edev[i], &event_data);
++		if (ret < 0)
++			return ret;
 +
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <825000>;
-+		};
-+		opp@400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <875000>;
-+		};
-+	};
++		if (i == 0 || event_data.load_count > load_count) {
++			load_count = event_data.load_count;
++			total_count = event_data.total_count;
++		}
++	}
 +
-+	Usage case to handle the frequency and voltage of bus on runtime
-+	in exynos3250-rinato.dts is listed below:
++	edata->load_count = load_count;
++	edata->total_count = total_count;
 +
-+	&bus_dmc {
-+		devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
-+		vdd-supply = <&buck1_reg>;	/* VDD_MIF */
-+		status = "okay";
-+	};
++	return ret;
++}
++
++/*
++ * Must necessary function for devfreq governor
++ */
++static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	struct dev_pm_opp *new_opp;
++	unsigned long old_freq, new_freq, old_volt, new_volt, tol;
++	int ret = 0;
++
++	/* Get new opp-bus instance according to new bus clock */
++	rcu_read_lock();
++	new_opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(new_opp)) {
++		dev_err(dev, "failed to get recommended opp instance\n");
++		rcu_read_unlock();
++		return PTR_ERR(new_opp);
++	}
++
++	new_freq = dev_pm_opp_get_freq(new_opp);
++	new_volt = dev_pm_opp_get_voltage(new_opp);
++	old_freq = dev_pm_opp_get_freq(bus->curr_opp);
++	old_volt = dev_pm_opp_get_voltage(bus->curr_opp);
++	rcu_read_unlock();
++
++	if (old_freq == new_freq)
++		return 0;
++	tol = new_volt * bus->voltage_tolerance / 100;
++
++	/* Change voltage and frequency according to new OPP level */
++	mutex_lock(&bus->lock);
++
++	if (old_freq < new_freq) {
++		ret = regulator_set_voltage_tol(bus->regulator, new_volt, tol);
++		if (ret < 0) {
++			dev_err(bus->dev, "failed to set voltage\n");
++			goto out;
++		}
++	}
++
++	ret = clk_set_rate(bus->clk, new_freq);
++	if (ret < 0) {
++		dev_err(dev, "failed to change clock of bus\n");
++		clk_set_rate(bus->clk, old_freq);
++		goto out;
++	}
++
++	if (old_freq > new_freq) {
++		ret = regulator_set_voltage_tol(bus->regulator, new_volt, tol);
++		if (ret < 0) {
++			dev_err(bus->dev, "failed to set voltage\n");
++			goto out;
++		}
++	}
++	bus->curr_opp = new_opp;
++
++	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
++			old_freq/1000, new_freq/1000);
++out:
++	mutex_unlock(&bus->lock);
++
++	return ret;
++}
++
++static int exynos_bus_get_dev_status(struct device *dev,
++				     struct devfreq_dev_status *stat)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	struct devfreq_event_data edata;
++	int ret;
++
++	rcu_read_lock();
++	stat->current_frequency = dev_pm_opp_get_freq(bus->curr_opp);
++	rcu_read_unlock();
++
++	ret = exynos_bus_get_event(bus, &edata);
++	if (ret < 0) {
++		stat->total_time = stat->busy_time = 0;
++		goto err;
++	}
++
++	stat->busy_time = (edata.load_count * 100) / bus->ratio;
++	stat->total_time = edata.total_count;
++
++	dev_dbg(dev, "Usage of devfreq-event : %lu/%lu\n", stat->busy_time,
++							stat->total_time);
++
++err:
++	ret = exynos_bus_set_event(bus);
++	if (ret < 0) {
++		dev_err(dev, "failed to set event to devfreq-event devices\n");
++		return ret;
++	}
++
++	return ret;
++}
++
++static void exynos_bus_exit(struct device *dev)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	int ret;
++
++	ret = exynos_bus_disable_edev(bus);
++	if (ret < 0)
++		dev_warn(dev, "failed to disable the devfreq-event devices\n");
++
++	if (bus->regulator)
++		regulator_disable(bus->regulator);
++
++	dev_pm_opp_of_remove_table(dev);
++}
++
++static int exynos_bus_parse_of(struct device_node *np,
++			      struct exynos_bus *bus)
++{
++	struct device *dev = bus->dev;
++	unsigned long rate;
++	int i, ret, count, size;
++
++	/* Get the clock to provide each bus with source clock */
++	bus->clk = devm_clk_get(dev, "bus");
++	if (IS_ERR(bus->clk)) {
++		dev_err(dev, "failed to get bus clock\n");
++		return PTR_ERR(bus->clk);
++	}
++
++	ret = clk_prepare_enable(bus->clk);
++	if (ret < 0) {
++		dev_err(dev, "failed to get enable clock\n");
++		return ret;
++	}
++
++	/* Get the freq/voltage OPP table to scale the bus frequency */
++	rcu_read_lock();
++	ret = dev_pm_opp_of_add_table(dev);
++	if (ret < 0) {
++		dev_err(dev, "failed to get OPP table\n");
++		rcu_read_unlock();
++		goto err_clk;
++	}
++
++	rate = clk_get_rate(bus->clk);
++	bus->curr_opp = dev_pm_opp_find_freq_ceil(dev, &rate);
++	if (IS_ERR(bus->curr_opp)) {
++		dev_err(dev, "failed to find dev_pm_opp\n");
++		rcu_read_unlock();
++		ret = PTR_ERR(bus->curr_opp);
++		goto err_opp;
++	}
++	rcu_read_unlock();
++
++	/* Get the regulator to provide each bus with the power */
++	bus->regulator = devm_regulator_get(dev, "vdd");
++	if (IS_ERR(bus->regulator)) {
++		dev_err(dev, "failed to get VDD regulator\n");
++		ret = PTR_ERR(bus->regulator);
++		goto err_opp;
++	}
++
++	ret = regulator_enable(bus->regulator);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable VDD regulator\n");
++		goto err_opp;
++	}
++
++	/*
++	 * Get the devfreq-event devices to get the current utilization of
++	 * buses. This raw data will be used in devfreq ondemand governor.
++	 */
++	count = devfreq_event_get_edev_count(dev);
++	if (count < 0) {
++		dev_err(dev, "failed to get the count of devfreq-event dev\n");
++		ret = count;
++		goto err_regulator;
++	}
++	bus->edev_count = count;
++
++	size = sizeof(*bus->edev) * count;
++	bus->edev = devm_kzalloc(dev, size, GFP_KERNEL);
++	if (!bus->edev) {
++		ret = -ENOMEM;
++		goto err_regulator;
++	}
++
++	for (i = 0; i < count; i++) {
++		bus->edev[i] = devfreq_event_get_edev_by_phandle(dev, i);
++		if (IS_ERR(bus->edev[i])) {
++			ret = -EPROBE_DEFER;
++			goto err_regulator;
++		}
++	}
++
++	/*
++	 * Optionally, Get the saturation ratio according to Exynos SoC
++	 * When measuring the utilization of each AXI bus with devfreq-event
++	 * devices, the measured real cycle might be much lower than the
++	 * total cycle of bus during sampling rate. In result, the devfreq
++	 * simple-ondemand governor might not decide to change the current
++	 * frequency due to too utilization (= real cycle/total cycle).
++	 * So, this property is used to adjust the utilization when calculating
++	 * the busy_time in exynos_bus_get_dev_status().
++	 */
++	if (of_property_read_u32(np, "exynos,saturation-ratio", &bus->ratio))
++		bus->ratio = DEFAULT_SATURATION_RATIO;
++
++	if (of_property_read_u32(np, "exynos,voltage-tolerance",
++					&bus->voltage_tolerance))
++		bus->voltage_tolerance = DEFAULT_VOLTAGE_TOLERANCE;
++
++	return 0;
++
++err_regulator:
++	regulator_disable(bus->regulator);
++err_opp:
++	dev_pm_opp_of_remove_table(dev);
++err_clk:
++	clk_disable_unprepare(bus->clk);
++
++	return ret;
++}
++
++static int exynos_bus_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	struct devfreq_dev_profile *profile;
++	struct devfreq_simple_ondemand_data *ondemand_data;
++	struct exynos_bus *bus;
++	int ret;
++
++	if (!np) {
++		dev_err(dev, "failed to find devicetree node\n");
++		return -EINVAL;
++	}
++
++	bus = devm_kzalloc(&pdev->dev, sizeof(*bus), GFP_KERNEL);
++	if (!bus)
++		return -ENOMEM;
++	mutex_init(&bus->lock);
++	bus->dev = &pdev->dev;
++	platform_set_drvdata(pdev, bus);
++
++	/* Parse the device-tree to get the resource information */
++	ret = exynos_bus_parse_of(np, bus);
++	if (ret < 0)
++		return ret;
++
++	/* Initalize the struct profile and governor data */
++	profile = devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
++	if (!profile)
++		return -ENOMEM;
++	profile->polling_ms = 50;
++	profile->target = exynos_bus_target;
++	profile->get_dev_status = exynos_bus_get_dev_status;
++	profile->exit = exynos_bus_exit;
++
++	ondemand_data = devm_kzalloc(dev, sizeof(*ondemand_data), GFP_KERNEL);
++	if (!ondemand_data)
++		return -ENOMEM;
++	ondemand_data->upthreshold = 40;
++	ondemand_data->downdifferential = 5;
++
++	/* Add devfreq device to monitor and handle the exynos bus */
++	bus->devfreq = devm_devfreq_add_device(dev, profile, "simple_ondemand",
++						ondemand_data);
++	if (IS_ERR(bus->devfreq)) {
++		dev_err(dev, "failed to add devfreq device\n");
++		return  PTR_ERR(bus->devfreq);
++	}
++
++	/* Register opp_notifier to catch the change of OPP  */
++	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
++	if (ret < 0) {
++		dev_err(dev, "failed to register opp notifier\n");
++		return ret;
++	}
++
++	/*
++	 * Enable devfreq-event to get raw data which is used to determine
++	 * current bus load.
++	 */
++	ret = exynos_bus_enable_edev(bus);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable devfreq-event devices\n");
++		return ret;
++	}
++
++	ret = exynos_bus_set_event(bus);
++	if (ret < 0) {
++		dev_err(dev, "failed to set event to devfreq-event devices\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int exynos_bus_resume(struct device *dev)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	int ret;
++
++	ret = exynos_bus_enable_edev(bus);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable the devfreq-event devices\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static int exynos_bus_suspend(struct device *dev)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	int ret;
++
++	ret = exynos_bus_disable_edev(bus);
++	if (ret < 0) {
++		dev_err(dev, "failed to disable the devfreq-event devices\n");
++		return ret;
++	}
++
++	return 0;
++}
++#endif
++
++static const struct dev_pm_ops exynos_bus_pm = {
++	SET_SYSTEM_SLEEP_PM_OPS(exynos_bus_suspend, exynos_bus_resume)
++};
++
++static const struct of_device_id exynos_bus_of_match[] = {
++	{ .compatible = "samsung,exynos-bus", },
++	{ /* sentinel */ },
++};
++MODULE_DEVICE_TABLE(of, exynos_bus_of_match);
++
++static struct platform_driver exynos_bus_platdrv = {
++	.probe		= exynos_bus_probe,
++	.driver = {
++		.name	= "exynos-bus",
++		.pm	= &exynos_bus_pm,
++		.of_match_table = of_match_ptr(exynos_bus_of_match),
++	},
++};
++module_platform_driver(exynos_bus_platdrv);
++
++MODULE_DESCRIPTION("Generic Exynos Bus frequency driver");
++MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
++MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
