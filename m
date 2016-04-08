@@ -1,126 +1,76 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Fri, 8 Apr 2016 17:56:13 +0800
-Message-ID: <CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
-	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f179.google.com ([209.85.161.179]:36862 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753459AbcDHJ4P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 05:56:15 -0400
-Received: by mail-yw0-f179.google.com with SMTP id o66so37496296ywc.3
-        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 02:56:14 -0700 (PDT)
-In-Reply-To: <AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v2 0/4] PCI: Add support for suspending (including runtime) of PCIe ports
+Date: Fri,  8 Apr 2016 13:36:26 +0300
+Message-ID: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jun Li <jun.li@nxp.com>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 
-Hi Jun,
+Current Linux PCI core does not do any kind of power management to PCIe
+ports. This means that we waste energy and consume laptop battery even if
+the port has nothing connected to. These patches aim to change that to the
+right direction.
 
-On 8 April 2016 at 16:04, Jun Li <jun.li@nxp.com> wrote:
-> Hi, Baolin
->
->> +/*
->> + * usb_charger_detect_type() - detect the charger type manually.
->> + * @uchger - usb charger device
->> + *
->> + * Note: You should ensure you need to detect the charger type manually
->> +on your
->> + * platform.
->> + * You should call it at the right gadget state to avoid affecting
->> +gadget
->> + * enumeration.
->> + */
->> +int usb_charger_detect_type(struct usb_charger *uchger) {
->> +     enum usb_charger_type type;
->> +
->> +     if (WARN(!uchger->charger_detect,
->> +              "charger detection method should not be NULL"))
->> +             return -EINVAL;
->> +
->> +     type = uchger->charger_detect(uchger);
->> +
->> +     mutex_lock(&uchger->lock);
->> +     uchger->type = type;
->> +     mutex_unlock(&uchger->lock);
->> +
->> +     return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(usb_charger_detect_type);
->
-> I still recommend have a central place to call usb_charger_detect_type()
-> to cover real charger detection instead of leaving this question open to
-> diff users. This can be done after vbus-on is detected and before do gadget
-> connect. I don't think this will make your framework complicated.
+The first version of the patches can be found here:
 
-This API is used for detecting the charger type manually (software
-charger detection), so if user's udc driver is needed to do this, then
-they can issue it at their right place to make it more flexible. But
-let us see other people's suggestion. Thanks.
+  http://www.spinics.net/lists/linux-pci/msg49313.html
 
->
-> Hi Felipe, what do you think of this?
->
-> Li Jun
->
->> +
->> +/*
->> + * usb_charger_get_type_by_others() - Get the usb charger type by the
->> +callback
->> + * which is implemented by users.
->> + * @uchger - the usb charger device.
->> + *
->> + * Note: This function is just used for getting the charger type, not
->> +for
->> + * detecting charger type which might affect the DP/DM line when gadget
->> +is on
->> + * enumeration state.
->> + */
->> +static enum usb_charger_type
->> +usb_charger_get_type_by_others(struct usb_charger *uchger) {
->> +     if (uchger->type != UNKNOWN_TYPE)
->> +             return uchger->type;
->> +
->> +     if (uchger->psy) {
->> +             union power_supply_propval val;
->> +
->> +             power_supply_get_property(uchger->psy,
->> +                                       POWER_SUPPLY_PROP_CHARGE_TYPE,
->> +                                       &val);
->> +             switch (val.intval) {
->> +             case POWER_SUPPLY_TYPE_USB:
->> +                     uchger->type = SDP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_DCP:
->> +                     uchger->type = DCP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_CDP:
->> +                     uchger->type = CDP_TYPE;
->> +                     break;
->> +             case POWER_SUPPLY_TYPE_USB_ACA:
->> +                     uchger->type = ACA_TYPE;
->> +                     break;
->> +             default:
->> +                     uchger->type = UNKNOWN_TYPE;
->> +                     break;
->> +             }
->> +     } else if (uchger->get_charger_type) {
->> +             uchger->type = uchger->get_charger_type(uchger);
->> +     } else {
->> +             uchger->type = UNKNOWN_TYPE;
->> +     }
->> +
->> +     return uchger->type;
->> +}
->> +
+This assumes that recent (starting from 2015) PCIe ports are capable of
+transition to D3hot/D3cold. We add a new flag to struct pci_dev 'bridge_d3'
+that is set whenever the PCI core thinks the port can be put to D3. The
+check in pci_pm_suspend_noirq() is then extended to cover devices where
+'bridge_d3' is set.
 
+We then add pci_bridge_pm_update() that tries to set/clear 'bridge_d3'
+whenever power management status of a device is changed. For example when
+userspace writes to 'd3cold_allowed' sysfs file.
 
+For all PCI ports where 'bridge_d3' is set we also enable and unblock
+runtime PM automatically. Only exception is when the PCIe port claims to
+support hotplug. More information about that is in the changelog of patch
+[4/4].
+
+Since this also touches xhci, I'm adding Mathias and Greg to check if the
+change looks reasonable.
+
+Changes to the previous version:
+
+  - Dropped patch [2/6] as there is no need to use that function from other
+    files anymore.
+
+  - Dropped patches [5-6/6] in favor of using cut-off date.
+
+  - Updated changelog of [1/4] to mention where in the PCI core PCI bridge
+    and PCIe ports are skipped from being power managed.
+
+  - Instead of checking at suspend time if it is possible to transition the
+    port to D3, do it whenever power management status of a device (below a
+    port) is changed or when it is added or removed to the bus.
+
+  - Added patch [3/4] to runtime resume a bridge when ACPI hotplug event is
+    received.
+
+Please review.
+
+Mika Westerberg (4):
+  PCI: No need to set d3cold_allowed to PCIe ports
+  PCI: Move PCIe ports to D3 during suspend
+  ACPI / hotplug / PCI: Runtime resume bridge before rescan
+  PCI: Add runtime PM support for PCIe ports
+
+ drivers/pci/bus.c                  |   1 +
+ drivers/pci/hotplug/acpiphp_glue.c |   8 ++-
+ drivers/pci/pci-driver.c           |  15 +++++-
+ drivers/pci/pci-sysfs.c            |   1 +
+ drivers/pci/pci.c                  | 103 +++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h                  |   1 +
+ drivers/pci/pcie/portdrv_pci.c     |  90 ++++++++++++++++++++++++++++++--
+ drivers/pci/remove.c               |   2 +
+ drivers/usb/host/xhci-pci.c        |   2 +-
+ include/linux/pci.h                |   2 +
+ 10 files changed, 216 insertions(+), 9 deletions(-)
 
 -- 
-Baolin.wang
-Best Regards
+2.8.0.rc3
