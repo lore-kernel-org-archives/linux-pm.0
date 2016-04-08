@@ -1,588 +1,858 @@
 From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH V2 4/7] mtd: nand: add Loongson1 NAND driver
-Date: Fri,  8 Apr 2016 19:42:58 +0800
-Message-ID: <1460115779-13141-4-git-send-email-keguang.zhang@gmail.com>
+Subject: [PATCH V2 6/7] MIPS: Loongson1B: Some updates/fixes for LS1B
+Date: Fri,  8 Apr 2016 19:42:59 +0800
+Message-ID: <1460115779-13141-5-git-send-email-keguang.zhang@gmail.com>
 References: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:36304 "EHLO
-	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758162AbcDHLnm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 07:43:42 -0400
+Return-path: <linux-gpio-owner@vger.kernel.org>
 In-Reply-To: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-gpio-owner@vger.kernel.org
 To: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org
 Cc: Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Kelvin Cheung <keguang.zhang@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-This patch adds NAND driver for Loongson1B.
+- Add DMA device
+- Add NAND device
+- Add GPIO device
+- Add LED device
+- Update the defconfig and rename it to loongson1b_defconfig
+- Fix ioremap size
+- Other minor fixes
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 
 ---
 V2:
-   Modify the dependency in Kconfig due to the changes of DMA module.
+   Regenerate the patch to make it review-able.
 ---
- drivers/mtd/nand/Kconfig          |   8 +
- drivers/mtd/nand/Makefile         |   1 +
- drivers/mtd/nand/loongson1_nand.c | 519 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 528 insertions(+)
- create mode 100644 drivers/mtd/nand/loongson1_nand.c
+ arch/mips/Kconfig                                  |   2 +
+ .../{ls1b_defconfig => loongson1b_defconfig}       |  35 +++++--
+ arch/mips/include/asm/mach-loongson32/cpufreq.h    |   1 -
+ arch/mips/include/asm/mach-loongson32/dma.h        |  25 +++++
+ arch/mips/include/asm/mach-loongson32/irq.h        |   1 -
+ arch/mips/include/asm/mach-loongson32/loongson1.h  |   4 +-
+ arch/mips/include/asm/mach-loongson32/nand.h       |  30 ++++++
+ arch/mips/include/asm/mach-loongson32/platform.h   |  14 ++-
+ arch/mips/include/asm/mach-loongson32/regs-clk.h   |  24 ++---
+ arch/mips/include/asm/mach-loongson32/regs-mux.h   |  84 ++++++++---------
+ arch/mips/include/asm/mach-loongson32/regs-pwm.h   |  12 +--
+ arch/mips/loongson32/common/platform.c             | 105 ++++++++++++++++++++-
+ arch/mips/loongson32/common/reset.c                |  13 +--
+ arch/mips/loongson32/common/time.c                 |  27 +++---
+ arch/mips/loongson32/ls1b/board.c                  |  67 ++++++++++++-
+ 15 files changed, 340 insertions(+), 104 deletions(-)
+ rename arch/mips/configs/{ls1b_defconfig => loongson1b_defconfig} (84%)
+ create mode 100644 arch/mips/include/asm/mach-loongson32/dma.h
+ create mode 100644 arch/mips/include/asm/mach-loongson32/nand.h
 
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index f05e0e9..be20fb8 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -563,4 +563,12 @@ config MTD_NAND_QCOM
- 	  Enables support for NAND flash chips on SoCs containing the EBI2 NAND
- 	  controller. This controller is found on IPQ806x SoC.
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 35d92a1..53b16e8 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -1387,6 +1387,8 @@ config CPU_LOONGSON1B
+ 	bool "Loongson 1B"
+ 	depends on SYS_HAS_CPU_LOONGSON1B
+ 	select CPU_LOONGSON1
++	select ARCH_WANT_OPTIONAL_GPIOLIB
++	select LEDS_GPIO_REGISTER
+ 	help
+ 	  The Loongson 1B is a 32-bit SoC, which implements the MIPS32
+ 	  release 2 instruction set.
+diff --git a/arch/mips/configs/ls1b_defconfig b/arch/mips/configs/loongson1b_defconfig
+similarity index 84%
+rename from arch/mips/configs/ls1b_defconfig
+rename to arch/mips/configs/loongson1b_defconfig
+index 1b2cc1f..c442f27 100644
+--- a/arch/mips/configs/ls1b_defconfig
++++ b/arch/mips/configs/loongson1b_defconfig
+@@ -1,19 +1,17 @@
+ CONFIG_MACH_LOONGSON32=y
+ CONFIG_PREEMPT=y
+ # CONFIG_SECCOMP is not set
+-CONFIG_EXPERIMENTAL=y
+ # CONFIG_LOCALVERSION_AUTO is not set
++CONFIG_KERNEL_XZ=y
+ CONFIG_SYSVIPC=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_BSD_PROCESS_ACCT_V3=y
+-CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=16
+ CONFIG_NAMESPACES=y
+-CONFIG_BLK_DEV_INITRD=y
+-CONFIG_RD_BZIP2=y
+-CONFIG_RD_LZMA=y
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+ CONFIG_EXPERT=y
+ CONFIG_PERF_EVENTS=y
+ # CONFIG_COMPAT_BRK is not set
+@@ -41,6 +39,12 @@ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ # CONFIG_STANDALONE is not set
++CONFIG_MTD=y
++CONFIG_MTD_CMDLINE_PARTS=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_NAND=y
++CONFIG_MTD_NAND_LOONGSON1=y
++CONFIG_MTD_UBI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_SCSI=m
+ # CONFIG_SCSI_PROC_FS is not set
+@@ -48,7 +52,6 @@ CONFIG_BLK_DEV_SD=m
+ # CONFIG_SCSI_LOWLEVEL is not set
+ CONFIG_NETDEVICES=y
+ # CONFIG_NET_VENDOR_BROADCOM is not set
+-# CONFIG_NET_VENDOR_CHELSIO is not set
+ # CONFIG_NET_VENDOR_INTEL is not set
+ # CONFIG_NET_VENDOR_MARVELL is not set
+ # CONFIG_NET_VENDOR_MICREL is not set
+@@ -56,7 +59,6 @@ CONFIG_NETDEVICES=y
+ # CONFIG_NET_VENDOR_SEEQ is not set
+ # CONFIG_NET_VENDOR_SMSC is not set
+ CONFIG_STMMAC_ETH=y
+-CONFIG_STMMAC_DA=y
+ # CONFIG_NET_VENDOR_WIZNET is not set
+ # CONFIG_WLAN is not set
+ CONFIG_INPUT_EVDEV=y
+@@ -69,18 +71,25 @@ CONFIG_LEGACY_PTY_COUNT=8
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ # CONFIG_HW_RANDOM is not set
++CONFIG_GPIOLIB=y
++CONFIG_GPIO_LOONGSON1=y
+ # CONFIG_HWMON is not set
+ # CONFIG_VGA_CONSOLE is not set
+-CONFIG_USB_HID=m
+ CONFIG_HID_GENERIC=m
++CONFIG_USB_HID=m
+ CONFIG_USB=y
+ CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+ CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_HCD_PLATFORM=y
+ # CONFIG_USB_EHCI_TT_NEWSCHED is not set
++CONFIG_USB_EHCI_HCD_PLATFORM=y
+ CONFIG_USB_STORAGE=m
+ CONFIG_USB_SERIAL=m
+ CONFIG_USB_SERIAL_PL2303=m
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_LOONGSON1=y
+ # CONFIG_IOMMU_SUPPORT is not set
+@@ -96,15 +105,21 @@ CONFIG_VFAT_FS=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_TMPFS_POSIX_ACL=y
+-# CONFIG_MISC_FILESYSTEMS is not set
++CONFIG_UBIFS_FS=y
++CONFIG_UBIFS_FS_ADVANCED_COMPR=y
++CONFIG_UBIFS_ATIME_SUPPORT=y
+ CONFIG_NFS_FS=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NLS_CODEPAGE_437=m
+ CONFIG_NLS_ISO8859_1=m
++CONFIG_DYNAMIC_DEBUG=y
+ # CONFIG_ENABLE_WARN_DEPRECATED is not set
+ # CONFIG_ENABLE_MUST_CHECK is not set
++CONFIG_DEBUG_FS=y
+ CONFIG_MAGIC_SYSRQ=y
+ # CONFIG_SCHED_DEBUG is not set
+ # CONFIG_DEBUG_PREEMPT is not set
+ # CONFIG_FTRACE is not set
+ # CONFIG_EARLY_PRINTK is not set
++# CONFIG_CRYPTO_ECHAINIV is not set
++# CONFIG_CRYPTO_HW is not set
+diff --git a/arch/mips/include/asm/mach-loongson32/cpufreq.h b/arch/mips/include/asm/mach-loongson32/cpufreq.h
+index 6843fa1..2f1ecb0 100644
+--- a/arch/mips/include/asm/mach-loongson32/cpufreq.h
++++ b/arch/mips/include/asm/mach-loongson32/cpufreq.h
+@@ -9,7 +9,6 @@
+  * option) any later version.
+  */
  
-+config MTD_NAND_LOONGSON1
-+	tristate "Support for Loongson1 SoC NAND controller"
-+	depends on MACH_LOONGSON32
-+	select DMADEVICES
-+	select LOONGSON1_DMA
-+	help
-+		Enables support for NAND Flash on Loongson1 SoC based boards.
-+
- endif # MTD_NAND
-diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
-index f553353..0310c0b 100644
---- a/drivers/mtd/nand/Makefile
-+++ b/drivers/mtd/nand/Makefile
-@@ -57,5 +57,6 @@ obj-$(CONFIG_MTD_NAND_SUNXI)		+= sunxi_nand.o
- obj-$(CONFIG_MTD_NAND_HISI504)	        += hisi504_nand.o
- obj-$(CONFIG_MTD_NAND_BRCMNAND)		+= brcmnand/
- obj-$(CONFIG_MTD_NAND_QCOM)		+= qcom_nandc.o
-+obj-$(CONFIG_MTD_NAND_LOONGSON1)	+= loongson1_nand.o
+-
+ #ifndef __ASM_MACH_LOONGSON32_CPUFREQ_H
+ #define __ASM_MACH_LOONGSON32_CPUFREQ_H
  
- nand-objs := nand_base.o nand_bbt.o nand_timings.o
-diff --git a/drivers/mtd/nand/loongson1_nand.c b/drivers/mtd/nand/loongson1_nand.c
+diff --git a/arch/mips/include/asm/mach-loongson32/dma.h b/arch/mips/include/asm/mach-loongson32/dma.h
 new file mode 100644
-index 0000000..28f7ca7
+index 0000000..ad1dec7
 --- /dev/null
-+++ b/drivers/mtd/nand/loongson1_nand.c
-@@ -0,0 +1,519 @@
++++ b/arch/mips/include/asm/mach-loongson32/dma.h
+@@ -0,0 +1,25 @@
 +/*
-+ * NAND Flash Driver for Loongson 1 SoC
++ * Copyright (c) 2015 Zhang, Keguang <keguang.zhang@gmail.com>
 + *
-+ * Copyright (C) 2015-2016 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Loongson 1 NAND platform support.
 + *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/clk.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/sizes.h>
++#ifndef __ASM_MACH_LOONGSON32_DMA_H
++#define __ASM_MACH_LOONGSON32_DMA_H
 +
-+#include <nand.h>
++#define LS1X_DMA_CHANNEL0	0
++#define LS1X_DMA_CHANNEL1	1
++#define LS1X_DMA_CHANNEL2	2
 +
-+/* Loongson 1 NAND Register Definitions */
-+#define NAND_CMD		0x0
-+#define NAND_ADDRL		0x4
-+#define NAND_ADDRH		0x8
-+#define NAND_TIMING		0xc
-+#define NAND_IDL		0x10
-+#define NAND_IDH		0x14
-+#define NAND_STATUS		0x14
-+#define NAND_PARAM		0x18
-+#define NAND_OP_NUM		0x1c
-+#define NAND_CS_RDY		0x20
-+
-+#define NAND_DMA_ADDR		0x40
-+
-+/* NAND Command Register Bits */
-+#define OP_DONE			BIT(10)
-+#define OP_SPARE		BIT(9)
-+#define OP_MAIN			BIT(8)
-+#define CMD_STATUS		BIT(7)
-+#define CMD_RESET		BIT(6)
-+#define CMD_READID		BIT(5)
-+#define BLOCKS_ERASE		BIT(4)
-+#define CMD_ERASE		BIT(3)
-+#define CMD_WRITE		BIT(2)
-+#define CMD_READ		BIT(1)
-+#define CMD_VALID		BIT(0)
-+
-+#define	LS1X_NAND_TIMEOUT	20
-+
-+/* macros for registers read/write */
-+#define nand_readl(nand, off)		\
-+	__raw_readl((nand)->reg_base + (off))
-+
-+#define nand_writel(nand, off, val)	\
-+	__raw_writel((val), (nand)->reg_base + (off))
-+
-+#define set_cmd(nand, ctrl)		\
-+	nand_writel(nand, NAND_CMD, ctrl)
-+
-+#define start_nand(nand)		\
-+	nand_writel(nand, NAND_CMD, nand_readl(nand, NAND_CMD) | CMD_VALID)
-+
-+struct ls1x_nand {
-+	struct platform_device *pdev;
-+	struct nand_chip chip;
-+
-+	struct clk *clk;
-+	void __iomem *reg_base;
-+
-+	int cmd_val;
-+
-+	char datareg[8];
-+	char *data_ptr;
-+
-+	/* DMA stuff */
-+	unsigned char *dma_buf;
-+	unsigned int buf_off;
-+	unsigned int buf_len;
-+
-+	/* DMA Engine stuff */
-+	unsigned int dma_chan_id;
-+	struct dma_chan *dma_chan;
-+	dma_cookie_t dma_cookie;
-+	struct completion dma_complete;
-+	void __iomem *dma_desc;
++struct plat_ls1x_dma {
++	int nr_channels;
 +};
 +
-+static void dma_callback(void *data)
-+{
-+	struct ls1x_nand *nand = (struct ls1x_nand *)data;
-+	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
-+	struct dma_tx_state state;
-+	enum dma_status status;
-+
-+	status = dmaengine_tx_status(nand->dma_chan, nand->dma_cookie, &state);
-+	if (likely(status == DMA_COMPLETE))
-+		dev_dbg(mtd->dev.parent, "DMA complete with cookie=%d\n",
-+			nand->dma_cookie);
-+	else
-+		dev_err(mtd->dev.parent, "DMA error with cookie=%d\n",
-+			nand->dma_cookie);
-+
-+	complete(&nand->dma_complete);
-+}
-+
-+static int setup_dma(struct ls1x_nand *nand)
-+{
-+	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
-+	struct dma_slave_config cfg;
-+	dma_cap_mask_t mask;
-+	int ret;
-+
-+	/* allocate DMA buffer */
-+	nand->dma_buf = devm_kzalloc(mtd->dev.parent,
-+				     mtd->writesize + mtd->oobsize, GFP_KERNEL);
-+	if (!nand->dma_buf)
-+		return -ENOMEM;
-+
-+	dma_cap_zero(mask);
-+	dma_cap_set(DMA_SLAVE, mask);
-+	nand->dma_chan = dma_request_channel(mask, ls1x_dma_filter_fn,
-+					     &nand->dma_chan_id);
-+	if (!nand->dma_chan) {
-+		dev_err(mtd->dev.parent, "failed to request DMA channel\n");
-+		return -EBUSY;
-+	}
-+	dev_info(mtd->dev.parent, "got %s for %s access\n",
-+		 dma_chan_name(nand->dma_chan), dev_name(mtd->dev.parent));
-+
-+	cfg.src_addr = CPHYSADDR(nand->reg_base + NAND_DMA_ADDR);
-+	cfg.dst_addr = CPHYSADDR(nand->reg_base + NAND_DMA_ADDR);
-+	cfg.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
-+	cfg.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
-+	ret = dmaengine_slave_config(nand->dma_chan, &cfg);
-+	if (ret) {
-+		dev_err(mtd->dev.parent, "failed to config DMA channel\n");
-+		dma_release_channel(nand->dma_chan);
-+		return ret;
-+	}
-+
-+	init_completion(&nand->dma_complete);
-+
-+	return 0;
-+}
-+
-+static int start_dma(struct ls1x_nand *nand, unsigned int len, bool is_write)
-+{
-+	struct mtd_info *mtd = nand_to_mtd(&nand->chip);
-+	struct dma_chan *chan = nand->dma_chan;
-+	struct dma_async_tx_descriptor *desc;
-+	enum dma_data_direction data_dir =
-+	    is_write ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
-+	enum dma_transfer_direction xfer_dir =
-+	    is_write ? DMA_MEM_TO_DEV : DMA_DEV_TO_MEM;
-+	dma_addr_t dma_addr;
-+	int ret;
-+
-+	dma_addr =
-+	    dma_map_single(chan->device->dev, nand->dma_buf, len, data_dir);
-+	if (dma_mapping_error(chan->device->dev, dma_addr)) {
-+		dev_err(mtd->dev.parent, "failed to map DMA buffer\n");
-+		return -ENXIO;
-+	}
-+
-+	desc = dmaengine_prep_slave_single(chan, dma_addr, len, xfer_dir,
-+					   DMA_PREP_INTERRUPT);
-+	if (!desc) {
-+		dev_err(mtd->dev.parent,
-+			"failed to prepare DMA descriptor\n");
-+		ret = PTR_ERR(desc);
-+		goto err;
-+	}
-+	desc->callback = dma_callback;
-+	desc->callback_param = nand;
-+
-+	nand->dma_cookie = dmaengine_submit(desc);
-+	ret = dma_submit_error(nand->dma_cookie);
-+	if (ret) {
-+		dev_err(mtd->dev.parent,
-+			"failed to submit DMA descriptor\n");
-+		goto err;
-+	}
-+
-+	dev_dbg(mtd->dev.parent, "issue DMA with cookie=%d\n",
-+		nand->dma_cookie);
-+	dma_async_issue_pending(chan);
-+
-+	ret = wait_for_completion_timeout(&nand->dma_complete,
-+					  msecs_to_jiffies(LS1X_NAND_TIMEOUT));
-+	if (ret <= 0) {
-+		dev_err(mtd->dev.parent, "DMA timeout\n");
-+		dmaengine_terminate_all(chan);
-+		ret = -EIO;
-+	}
-+	ret = 0;
-+err:
-+	dma_unmap_single(chan->device->dev, dma_addr, len, data_dir);
-+
-+	return ret;
-+}
-+
-+static void ls1x_nand_select_chip(struct mtd_info *mtd, int chip)
-+{
-+}
-+
-+static int ls1x_nand_dev_ready(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+
-+	if (nand_readl(nand, NAND_CMD) & OP_DONE)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static uint8_t ls1x_nand_read_byte(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+
-+	return *(nand->data_ptr++);
-+}
-+
-+static void ls1x_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+
-+	int real_len = min_t(size_t, len, nand->buf_len - nand->buf_off);
-+
-+	memcpy(buf, nand->dma_buf + nand->buf_off, real_len);
-+	nand->buf_off += real_len;
-+}
-+
-+static void ls1x_nand_write_buf(struct mtd_info *mtd, const uint8_t *buf,
-+				int len)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+
-+	int real_len = min_t(size_t, len, nand->buf_len - nand->buf_off);
-+
-+	memcpy(nand->dma_buf + nand->buf_off, buf, real_len);
-+	nand->buf_off += real_len;
-+}
-+
-+static inline void set_addr_len(struct mtd_info *mtd, unsigned int command,
-+				int column, int page_addr)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+	int page_shift, addr_low, addr_high;
-+
-+	if (command == NAND_CMD_ERASE1)
-+		page_shift = chip->page_shift;
-+	else
-+		page_shift = chip->page_shift + 1;
-+
-+	addr_low = page_addr << page_shift;
-+
-+	if (column != -1) {
-+		if (command == NAND_CMD_READOOB)
-+			column += mtd->writesize;
-+		addr_low += column;
-+		nand->buf_off = 0;
-+	}
-+
-+	addr_high =
-+	    page_addr >> (sizeof(page_addr) * BITS_PER_BYTE - page_shift);
-+
-+	if (command == NAND_CMD_ERASE1)
-+		nand->buf_len = 1;
-+	else
-+		nand->buf_len = mtd->writesize + mtd->oobsize - column;
-+
-+	nand_writel(nand, NAND_ADDRL, addr_low);
-+	nand_writel(nand, NAND_ADDRH, addr_high);
-+	nand_writel(nand, NAND_OP_NUM, nand->buf_len);
-+}
-+
-+static void ls1x_nand_cmdfunc(struct mtd_info *mtd, unsigned int command,
-+			      int column, int page_addr)
-+{
-+	struct nand_chip *chip = mtd_to_nand(mtd);
-+	struct ls1x_nand *nand = nand_get_controller_data(chip);
-+
-+	dev_dbg(mtd->dev.parent, "cmd = 0x%02x, col = 0x%08x, page = 0x%08x\n",
-+		command, column, page_addr);
-+
-+	if (command == NAND_CMD_RNDOUT) {
-+		nand->buf_off = column;
-+		return;
-+	}
-+
-+	/*set address, buffer length and buffer offset */
-+	if (column != -1 || page_addr != -1)
-+		set_addr_len(mtd, command, column, page_addr);
-+
-+	/*prepare NAND command */
-+	switch (command) {
-+	case NAND_CMD_RESET:
-+		nand->cmd_val = CMD_RESET;
-+		break;
-+	case NAND_CMD_STATUS:
-+		nand->cmd_val = CMD_STATUS;
-+		break;
-+	case NAND_CMD_READID:
-+		nand->cmd_val = CMD_READID;
-+		break;
-+	case NAND_CMD_READ0:
-+		nand->cmd_val = OP_SPARE | OP_MAIN | CMD_READ;
-+		break;
-+	case NAND_CMD_READOOB:
-+		nand->cmd_val = OP_SPARE | CMD_READ;
-+		break;
-+	case NAND_CMD_ERASE1:
-+		nand->cmd_val = CMD_ERASE;
-+		break;
-+	case NAND_CMD_PAGEPROG:
-+		break;
-+	case NAND_CMD_SEQIN:
-+		if (column < mtd->writesize)
-+			nand->cmd_val = OP_SPARE | OP_MAIN | CMD_WRITE;
-+		else
-+			nand->cmd_val = OP_SPARE | CMD_WRITE;
-+	default:
-+		return;
-+	}
-+
-+	/*set NAND command */
-+	set_cmd(nand, nand->cmd_val);
-+	/*trigger NAND operation */
-+	start_nand(nand);
-+	/*trigger DMA for R/W operation */
-+	if (command == NAND_CMD_READ0 || command == NAND_CMD_READOOB)
-+		start_dma(nand, nand->buf_len, false);
-+	else if (command == NAND_CMD_PAGEPROG)
-+		start_dma(nand, nand->buf_len, true);
-+	nand_wait_ready(mtd);
-+
-+	if (command == NAND_CMD_STATUS) {
-+		nand->datareg[0] = (char)(nand_readl(nand, NAND_STATUS) >> 8);
-+		/*work around hardware bug for invalid STATUS */
-+		nand->datareg[0] |= 0xc0;
-+		nand->data_ptr = nand->datareg;
-+	} else if (command == NAND_CMD_READID) {
-+		nand->datareg[0] = (char)(nand_readl(nand, NAND_IDH));
-+		nand->datareg[1] = (char)(nand_readl(nand, NAND_IDL) >> 24);
-+		nand->datareg[2] = (char)(nand_readl(nand, NAND_IDL) >> 16);
-+		nand->datareg[3] = (char)(nand_readl(nand, NAND_IDL) >> 8);
-+		nand->datareg[4] = (char)(nand_readl(nand, NAND_IDL));
-+		nand->data_ptr = nand->datareg;
-+	}
-+
-+	nand->cmd_val = 0;
-+}
-+
-+static void nand_hw_init(struct ls1x_nand *nand, int hold_cycle, int wait_cycle)
-+{
-+	struct nand_chip *chip = &nand->chip;
-+	struct mtd_info *mtd = nand_to_mtd(chip);
-+	int chipsize = (int)(chip->chipsize >> 20);
-+	int cell_size = 0x0;
-+
-+	switch (chipsize) {
-+	case SZ_128:		/*128M */
-+		cell_size = 0x0;
-+		break;
-+	case SZ_256:		/*256M */
-+		cell_size = 0x1;
-+		break;
-+	case SZ_512:		/*512M */
-+		cell_size = 0x2;
-+		break;
-+	case SZ_1K:		/*1G */
-+		cell_size = 0x3;
-+		break;
-+	case SZ_2K:		/*2G */
-+		cell_size = 0x4;
-+		break;
-+	case SZ_4K:		/*4G */
-+		cell_size = 0x5;
-+		break;
-+	case SZ_8K:		/*8G */
-+		cell_size = 0x6;
-+		break;
-+	case SZ_16K:		/*16G */
-+		cell_size = 0x7;
-+		break;
-+	default:
-+		dev_warn(mtd->dev.parent, "unsupported chip size: %d MB\n",
-+			 chipsize);
-+	}
-+
-+	nand_writel(nand, NAND_TIMING, (hold_cycle << 8) | wait_cycle);
-+	nand_writel(nand, NAND_PARAM,
-+		    (nand_readl(nand, NAND_PARAM) & 0xfffff0ff) | (cell_size <<
-+								   8));
-+}
-+
-+static int ls1x_nand_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct plat_ls1x_nand *pdata = dev_get_platdata(dev);
-+	struct ls1x_nand *nand;
-+	struct mtd_info *mtd;
-+	struct nand_chip *chip;
-+	struct resource *res;
-+	int ret = 0;
-+
-+	if (!pdata) {
-+		dev_err(dev, "platform data missing\n");
-+		return -EINVAL;
-+	}
-+
-+	nand = devm_kzalloc(dev, sizeof(struct ls1x_nand), GFP_KERNEL);
-+	if (!nand)
-+		return -ENOMEM;
-+	nand->pdev = pdev;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(dev, "failed to get I/O memory\n");
-+		return -ENXIO;
-+	}
-+
-+	nand->reg_base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(nand->reg_base))
-+		return PTR_ERR(nand->reg_base);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_DMA, 0);
-+	if (!res) {
-+		dev_err(dev, "failed to get DMA information\n");
-+		return -ENXIO;
-+	}
-+	nand->dma_chan_id = res->start;
-+
-+	nand->clk = devm_clk_get(dev, pdev->name);
-+	if (IS_ERR(nand->clk)) {
-+		dev_err(dev, "failed to get %s clock\n", pdev->name);
-+		return PTR_ERR(nand->clk);
-+	}
-+	clk_prepare_enable(nand->clk);
-+
-+	chip = &nand->chip;
-+	chip->read_byte		= ls1x_nand_read_byte;
-+	chip->read_buf		= ls1x_nand_read_buf;
-+	chip->write_buf		= ls1x_nand_write_buf;
-+	chip->select_chip	= ls1x_nand_select_chip;
-+	chip->dev_ready		= ls1x_nand_dev_ready;
-+	chip->cmdfunc		= ls1x_nand_cmdfunc;
-+	chip->options		= NAND_NO_SUBPAGE_WRITE;
-+	chip->ecc.mode		= NAND_ECC_SOFT;
-+	nand_set_controller_data(chip, nand);
-+
-+	mtd = nand_to_mtd(chip);
-+	mtd->name = "ls1x-nand";
-+	mtd->owner = THIS_MODULE;
-+	mtd->dev.parent = dev;
-+
-+	ret = nand_scan_ident(mtd, 1, NULL);
-+	if (ret)
-+		goto err;
-+
-+	nand_hw_init(nand, pdata->hold_cycle, pdata->wait_cycle);
-+
-+	ret = setup_dma(nand);
-+	if (ret)
-+		goto err;
-+
-+	ret = nand_scan_tail(mtd);
-+	if (ret)
-+		goto err;
-+
-+	ret = mtd_device_register(mtd, pdata->parts, pdata->nr_parts);
-+	if (ret) {
-+		dev_err(dev, "failed to register MTD device: %d\n", ret);
-+		goto err;
-+	}
-+
-+	platform_set_drvdata(pdev, nand);
-+	dev_info(dev, "Loongson1 NAND driver registered\n");
-+
-+	return 0;
-+err:
-+	clk_disable_unprepare(nand->clk);
-+
-+	return ret;
-+}
-+
-+static int ls1x_nand_remove(struct platform_device *pdev)
-+{
-+	struct ls1x_nand *nand = platform_get_drvdata(pdev);
-+
-+	if (nand->dma_chan)
-+		dma_release_channel(nand->dma_chan);
-+	nand_release(nand_to_mtd(&nand->chip));
-+	clk_disable_unprepare(nand->clk);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver ls1x_nand_driver = {
-+	.probe	= ls1x_nand_probe,
-+	.remove	= ls1x_nand_remove,
-+	.driver	= {
-+		.name	= "ls1x-nand",
-+		.owner	= THIS_MODULE,
++extern struct plat_ls1x_dma ls1b_dma_pdata;
++
++#endif /* __ASM_MACH_LOONGSON32_DMA_H */
+diff --git a/arch/mips/include/asm/mach-loongson32/irq.h b/arch/mips/include/asm/mach-loongson32/irq.h
+index 0d35b99..c1c7441 100644
+--- a/arch/mips/include/asm/mach-loongson32/irq.h
++++ b/arch/mips/include/asm/mach-loongson32/irq.h
+@@ -9,7 +9,6 @@
+  * option) any later version.
+  */
+ 
+-
+ #ifndef __ASM_MACH_LOONGSON32_IRQ_H
+ #define __ASM_MACH_LOONGSON32_IRQ_H
+ 
+diff --git a/arch/mips/include/asm/mach-loongson32/loongson1.h b/arch/mips/include/asm/mach-loongson32/loongson1.h
+index 12aa129..978f6df 100644
+--- a/arch/mips/include/asm/mach-loongson32/loongson1.h
++++ b/arch/mips/include/asm/mach-loongson32/loongson1.h
+@@ -9,7 +9,6 @@
+  * option) any later version.
+  */
+ 
+-
+ #ifndef __ASM_MACH_LOONGSON32_LOONGSON1_H
+ #define __ASM_MACH_LOONGSON32_LOONGSON1_H
+ 
+@@ -18,6 +17,9 @@
+ /* Loongson 1 Register Bases */
+ #define LS1X_MUX_BASE			0x1fd00420
+ #define LS1X_INTC_BASE			0x1fd01040
++#define LS1X_GPIO0_BASE			0x1fd010c0
++#define LS1X_GPIO1_BASE			0x1fd010c4
++#define LS1X_DMAC_BASE			0x1fd01160
+ #define LS1X_EHCI_BASE			0x1fe00000
+ #define LS1X_OHCI_BASE			0x1fe08000
+ #define LS1X_GMAC0_BASE			0x1fe10000
+diff --git a/arch/mips/include/asm/mach-loongson32/nand.h b/arch/mips/include/asm/mach-loongson32/nand.h
+new file mode 100644
+index 0000000..e274912
+--- /dev/null
++++ b/arch/mips/include/asm/mach-loongson32/nand.h
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (c) 2015 Zhang, Keguang <keguang.zhang@gmail.com>
++ *
++ * Loongson 1 NAND platform support.
++ *
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __ASM_MACH_LOONGSON32_NAND_H
++#define __ASM_MACH_LOONGSON32_NAND_H
++
++#include <linux/dmaengine.h>
++#include <linux/mtd/partitions.h>
++
++struct plat_ls1x_nand {
++	struct mtd_partition *parts;
++	unsigned int nr_parts;
++
++	int hold_cycle;
++	int wait_cycle;
++};
++
++extern struct plat_ls1x_nand ls1b_nand_pdata;
++
++bool ls1x_dma_filter_fn(struct dma_chan *chan, void *param);
++
++#endif /* __ASM_MACH_LOONGSON32_NAND_H */
+diff --git a/arch/mips/include/asm/mach-loongson32/platform.h b/arch/mips/include/asm/mach-loongson32/platform.h
+index c32f03f..672531a 100644
+--- a/arch/mips/include/asm/mach-loongson32/platform.h
++++ b/arch/mips/include/asm/mach-loongson32/platform.h
+@@ -7,20 +7,28 @@
+  * option) any later version.
+  */
+ 
+-
+ #ifndef __ASM_MACH_LOONGSON32_PLATFORM_H
+ #define __ASM_MACH_LOONGSON32_PLATFORM_H
+ 
+ #include <linux/platform_device.h>
+ 
++#include <dma.h>
++#include <nand.h>
++
+ extern struct platform_device ls1x_uart_pdev;
+ extern struct platform_device ls1x_cpufreq_pdev;
++extern struct platform_device ls1x_dma_pdev;
+ extern struct platform_device ls1x_eth0_pdev;
+ extern struct platform_device ls1x_eth1_pdev;
+ extern struct platform_device ls1x_ehci_pdev;
++extern struct platform_device ls1x_gpio0_pdev;
++extern struct platform_device ls1x_gpio1_pdev;
++extern struct platform_device ls1x_nand_pdev;
+ extern struct platform_device ls1x_rtc_pdev;
+ 
+-extern void __init ls1x_clk_init(void);
+-extern void __init ls1x_serial_setup(struct platform_device *pdev);
++void __init ls1x_clk_init(void);
++void __init ls1x_dma_set_platdata(struct plat_ls1x_dma *pdata);
++void __init ls1x_nand_set_platdata(struct plat_ls1x_nand *pdata);
++void __init ls1x_serial_set_uartclk(struct platform_device *pdev);
+ 
+ #endif /* __ASM_MACH_LOONGSON32_PLATFORM_H */
+diff --git a/arch/mips/include/asm/mach-loongson32/regs-clk.h b/arch/mips/include/asm/mach-loongson32/regs-clk.h
+index 1f5a715..4d56fc3 100644
+--- a/arch/mips/include/asm/mach-loongson32/regs-clk.h
++++ b/arch/mips/include/asm/mach-loongson32/regs-clk.h
+@@ -19,18 +19,18 @@
+ #define LS1X_CLK_PLL_DIV		LS1X_CLK_REG(0x4)
+ 
+ /* Clock PLL Divisor Register Bits */
+-#define DIV_DC_EN			(0x1 << 31)
+-#define DIV_DC_RST			(0x1 << 30)
+-#define DIV_CPU_EN			(0x1 << 25)
+-#define DIV_CPU_RST			(0x1 << 24)
+-#define DIV_DDR_EN			(0x1 << 19)
+-#define DIV_DDR_RST			(0x1 << 18)
+-#define RST_DC_EN			(0x1 << 5)
+-#define RST_DC				(0x1 << 4)
+-#define RST_DDR_EN			(0x1 << 3)
+-#define RST_DDR				(0x1 << 2)
+-#define RST_CPU_EN			(0x1 << 1)
+-#define RST_CPU				0x1
++#define DIV_DC_EN			BIT(31)
++#define DIV_DC_RST			BIT(30)
++#define DIV_CPU_EN			BIT(25)
++#define DIV_CPU_RST			BIT(24)
++#define DIV_DDR_EN			BIT(19)
++#define DIV_DDR_RST			BIT(18)
++#define RST_DC_EN			BIT(5)
++#define RST_DC				BIT(4)
++#define RST_DDR_EN			BIT(3)
++#define RST_DDR				BIT(2)
++#define RST_CPU_EN			BIT(1)
++#define RST_CPU				BIT(0)
+ 
+ #define DIV_DC_SHIFT			26
+ #define DIV_CPU_SHIFT			20
+diff --git a/arch/mips/include/asm/mach-loongson32/regs-mux.h b/arch/mips/include/asm/mach-loongson32/regs-mux.h
+index 8302d92..7c394f9 100644
+--- a/arch/mips/include/asm/mach-loongson32/regs-mux.h
++++ b/arch/mips/include/asm/mach-loongson32/regs-mux.h
+@@ -19,49 +19,49 @@
+ #define LS1X_MUX_CTRL1			LS1X_MUX_REG(0x4)
+ 
+ /* MUX CTRL0 Register Bits */
+-#define UART0_USE_PWM23			(0x1 << 28)
+-#define UART0_USE_PWM01			(0x1 << 27)
+-#define UART1_USE_LCD0_5_6_11		(0x1 << 26)
+-#define I2C2_USE_CAN1			(0x1 << 25)
+-#define I2C1_USE_CAN0			(0x1 << 24)
+-#define NAND3_USE_UART5			(0x1 << 23)
+-#define NAND3_USE_UART4			(0x1 << 22)
+-#define NAND3_USE_UART1_DAT		(0x1 << 21)
+-#define NAND3_USE_UART1_CTS		(0x1 << 20)
+-#define NAND3_USE_PWM23			(0x1 << 19)
+-#define NAND3_USE_PWM01			(0x1 << 18)
+-#define NAND2_USE_UART5			(0x1 << 17)
+-#define NAND2_USE_UART4			(0x1 << 16)
+-#define NAND2_USE_UART1_DAT		(0x1 << 15)
+-#define NAND2_USE_UART1_CTS		(0x1 << 14)
+-#define NAND2_USE_PWM23			(0x1 << 13)
+-#define NAND2_USE_PWM01			(0x1 << 12)
+-#define NAND1_USE_UART5			(0x1 << 11)
+-#define NAND1_USE_UART4			(0x1 << 10)
+-#define NAND1_USE_UART1_DAT		(0x1 << 9)
+-#define NAND1_USE_UART1_CTS		(0x1 << 8)
+-#define NAND1_USE_PWM23			(0x1 << 7)
+-#define NAND1_USE_PWM01			(0x1 << 6)
+-#define GMAC1_USE_UART1			(0x1 << 4)
+-#define GMAC1_USE_UART0			(0x1 << 3)
+-#define LCD_USE_UART0_DAT		(0x1 << 2)
+-#define LCD_USE_UART15			(0x1 << 1)
+-#define LCD_USE_UART0			0x1
++#define UART0_USE_PWM23			BIT(28)
++#define UART0_USE_PWM01			BIT(27)
++#define UART1_USE_LCD0_5_6_11		BIT(26)
++#define I2C2_USE_CAN1			BIT(25)
++#define I2C1_USE_CAN0			BIT(24)
++#define NAND3_USE_UART5			BIT(23)
++#define NAND3_USE_UART4			BIT(22)
++#define NAND3_USE_UART1_DAT		BIT(21)
++#define NAND3_USE_UART1_CTS		BIT(20)
++#define NAND3_USE_PWM23			BIT(19)
++#define NAND3_USE_PWM01			BIT(18)
++#define NAND2_USE_UART5			BIT(17)
++#define NAND2_USE_UART4			BIT(16)
++#define NAND2_USE_UART1_DAT		BIT(15)
++#define NAND2_USE_UART1_CTS		BIT(14)
++#define NAND2_USE_PWM23			BIT(13)
++#define NAND2_USE_PWM01			BIT(12)
++#define NAND1_USE_UART5			BIT(11)
++#define NAND1_USE_UART4			BIT(10)
++#define NAND1_USE_UART1_DAT		BIT(9)
++#define NAND1_USE_UART1_CTS		BIT(8)
++#define NAND1_USE_PWM23			BIT(7)
++#define NAND1_USE_PWM01			BIT(6)
++#define GMAC1_USE_UART1			BIT(4)
++#define GMAC1_USE_UART0			BIT(3)
++#define LCD_USE_UART0_DAT		BIT(2)
++#define LCD_USE_UART15			BIT(1)
++#define LCD_USE_UART0			BIT(0)
+ 
+ /* MUX CTRL1 Register Bits */
+-#define USB_RESET			(0x1 << 31)
+-#define SPI1_CS_USE_PWM01		(0x1 << 24)
+-#define SPI1_USE_CAN			(0x1 << 23)
+-#define DISABLE_DDR_CONFSPACE		(0x1 << 20)
+-#define DDR32TO16EN			(0x1 << 16)
+-#define GMAC1_SHUT			(0x1 << 13)
+-#define GMAC0_SHUT			(0x1 << 12)
+-#define USB_SHUT			(0x1 << 11)
+-#define UART1_3_USE_CAN1		(0x1 << 5)
+-#define UART1_2_USE_CAN0		(0x1 << 4)
+-#define GMAC1_USE_TXCLK			(0x1 << 3)
+-#define GMAC0_USE_TXCLK			(0x1 << 2)
+-#define GMAC1_USE_PWM23			(0x1 << 1)
+-#define GMAC0_USE_PWM01			0x1
++#define USB_RESET			BIT(31)
++#define SPI1_CS_USE_PWM01		BIT(24)
++#define SPI1_USE_CAN			BIT(23)
++#define DISABLE_DDR_CONFSPACE		BIT(20)
++#define DDR32TO16EN			BIT(16)
++#define GMAC1_SHUT			BIT(13)
++#define GMAC0_SHUT			BIT(12)
++#define USB_SHUT			BIT(11)
++#define UART1_3_USE_CAN1		BIT(5)
++#define UART1_2_USE_CAN0		BIT(4)
++#define GMAC1_USE_TXCLK			BIT(3)
++#define GMAC0_USE_TXCLK			BIT(2)
++#define GMAC1_USE_PWM23			BIT(1)
++#define GMAC0_USE_PWM01			BIT(0)
+ 
+ #endif /* __ASM_MACH_LOONGSON32_REGS_MUX_H */
+diff --git a/arch/mips/include/asm/mach-loongson32/regs-pwm.h b/arch/mips/include/asm/mach-loongson32/regs-pwm.h
+index 69f174e..4119600 100644
+--- a/arch/mips/include/asm/mach-loongson32/regs-pwm.h
++++ b/arch/mips/include/asm/mach-loongson32/regs-pwm.h
+@@ -19,11 +19,11 @@
+ #define PWM_CTRL		0xc
+ 
+ /* PWM Control Register Bits */
+-#define CNT_RST			(0x1 << 7)
+-#define INT_SR			(0x1 << 6)
+-#define INT_EN			(0x1 << 5)
+-#define PWM_SINGLE		(0x1 << 4)
+-#define PWM_OE			(0x1 << 3)
+-#define CNT_EN			0x1
++#define CNT_RST			BIT(7)
++#define INT_SR			BIT(6)
++#define INT_EN			BIT(5)
++#define PWM_SINGLE		BIT(4)
++#define PWM_OE			BIT(3)
++#define CNT_EN			BIT(0)
+ 
+ #endif /* __ASM_MACH_LOONGSON32_REGS_PWM_H */
+diff --git a/arch/mips/loongson32/common/platform.c b/arch/mips/loongson32/common/platform.c
+index ddf1d4c..f2c714d 100644
+--- a/arch/mips/loongson32/common/platform.c
++++ b/arch/mips/loongson32/common/platform.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Copyright (c) 2011-2016 Zhang, Keguang <keguang.zhang@gmail.com>
+  *
+  * This program is free software; you can redistribute	it and/or modify it
+  * under  the terms of	the GNU General	 Public License as published by the
+@@ -10,14 +10,17 @@
+ #include <linux/clk.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/err.h>
++#include <linux/mtd/partitions.h>
++#include <linux/sizes.h>
+ #include <linux/phy.h>
+ #include <linux/serial_8250.h>
+ #include <linux/stmmac.h>
+ #include <linux/usb/ehci_pdriver.h>
+-#include <asm-generic/sizes.h>
+ 
+-#include <cpufreq.h>
+ #include <loongson1.h>
++#include <cpufreq.h>
++#include <dma.h>
++#include <nand.h>
+ 
+ /* 8250/16550 compatible UART */
+ #define LS1X_UART(_id)						\
+@@ -45,7 +48,7 @@ struct platform_device ls1x_uart_pdev = {
+ 	},
+ };
+ 
+-void __init ls1x_serial_setup(struct platform_device *pdev)
++void __init ls1x_serial_set_uartclk(struct platform_device *pdev)
+ {
+ 	struct clk *clk;
+ 	struct plat_serial8250_port *p;
+@@ -77,6 +80,42 @@ struct platform_device ls1x_cpufreq_pdev = {
+ 	},
+ };
+ 
++/* DMA */
++static struct resource ls1x_dma_resources[] = {
++	[0] = {
++		.start = LS1X_DMAC_BASE,
++		.end = LS1X_DMAC_BASE + SZ_4 - 1,
++		.flags = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start = LS1X_DMA0_IRQ,
++		.end = LS1X_DMA0_IRQ,
++		.flags = IORESOURCE_IRQ,
++	},
++	[2] = {
++		.start = LS1X_DMA1_IRQ,
++		.end = LS1X_DMA1_IRQ,
++		.flags = IORESOURCE_IRQ,
++	},
++	[3] = {
++		.start = LS1X_DMA2_IRQ,
++		.end = LS1X_DMA2_IRQ,
++		.flags = IORESOURCE_IRQ,
 +	},
 +};
 +
-+module_platform_driver(ls1x_nand_driver);
++struct platform_device ls1x_dma_pdev = {
++	.name		= "ls1x-dma",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(ls1x_dma_resources),
++	.resource	= ls1x_dma_resources,
++};
 +
-+MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-+MODULE_DESCRIPTION("Loongson1 NAND Flash driver");
-+MODULE_LICENSE("GPL");
++void __init ls1x_dma_set_platdata(struct plat_ls1x_dma *pdata)
++{
++	ls1x_dma_pdev.dev.platform_data = pdata;
++}
++
+ /* Synopsys Ethernet GMAC */
+ static struct stmmac_mdio_bus_data ls1x_mdio_bus_data = {
+ 	.phy_mask	= 0,
+@@ -198,6 +237,64 @@ struct platform_device ls1x_eth1_pdev = {
+ 	},
+ };
+ 
++/* GPIO */
++static struct resource ls1x_gpio0_resources[] = {
++	[0] = {
++		.start	= LS1X_GPIO0_BASE,
++		.end	= LS1X_GPIO0_BASE + SZ_4 - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++};
++
++struct platform_device ls1x_gpio0_pdev = {
++	.name		= "ls1x-gpio",
++	.id		= 0,
++	.num_resources	= ARRAY_SIZE(ls1x_gpio0_resources),
++	.resource	= ls1x_gpio0_resources,
++};
++
++static struct resource ls1x_gpio1_resources[] = {
++	[0] = {
++		.start	= LS1X_GPIO1_BASE,
++		.end	= LS1X_GPIO1_BASE + SZ_4 - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++};
++
++struct platform_device ls1x_gpio1_pdev = {
++	.name		= "ls1x-gpio",
++	.id		= 1,
++	.num_resources	= ARRAY_SIZE(ls1x_gpio1_resources),
++	.resource	= ls1x_gpio1_resources,
++};
++
++/* NAND Flash */
++static struct resource ls1x_nand_resources[] = {
++	[0] = {
++		.start	= LS1X_NAND_BASE,
++		.end	= LS1X_NAND_BASE + SZ_32 - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		/* DMA channel 0 is dedicated to NAND */
++		.start	= LS1X_DMA_CHANNEL0,
++		.end	= LS1X_DMA_CHANNEL0,
++		.flags	= IORESOURCE_DMA,
++	},
++};
++
++struct platform_device ls1x_nand_pdev = {
++	.name		= "ls1x-nand",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(ls1x_nand_resources),
++	.resource	= ls1x_nand_resources,
++};
++
++void __init ls1x_nand_set_platdata(struct plat_ls1x_nand *pdata)
++{
++	ls1x_nand_pdev.dev.platform_data = pdata;
++}
++
+ /* USB EHCI */
+ static u64 ls1x_ehci_dmamask = DMA_BIT_MASK(32);
+ 
+diff --git a/arch/mips/loongson32/common/reset.c b/arch/mips/loongson32/common/reset.c
+index c41e4ca..8a1d9cc 100644
+--- a/arch/mips/loongson32/common/reset.c
++++ b/arch/mips/loongson32/common/reset.c
+@@ -9,12 +9,13 @@
+ 
+ #include <linux/io.h>
+ #include <linux/pm.h>
++#include <linux/sizes.h>
+ #include <asm/idle.h>
+ #include <asm/reboot.h>
+ 
+ #include <loongson1.h>
+ 
+-static void __iomem *wdt_base;
++static void __iomem *wdt_reg_base;
+ 
+ static void ls1x_halt(void)
+ {
+@@ -26,9 +27,9 @@ static void ls1x_halt(void)
+ 
+ static void ls1x_restart(char *command)
+ {
+-	__raw_writel(0x1, wdt_base + WDT_EN);
+-	__raw_writel(0x1, wdt_base + WDT_TIMER);
+-	__raw_writel(0x1, wdt_base + WDT_SET);
++	__raw_writel(0x1, wdt_reg_base + WDT_EN);
++	__raw_writel(0x1, wdt_reg_base + WDT_TIMER);
++	__raw_writel(0x1, wdt_reg_base + WDT_SET);
+ 
+ 	ls1x_halt();
+ }
+@@ -40,8 +41,8 @@ static void ls1x_power_off(void)
+ 
+ static int __init ls1x_reboot_setup(void)
+ {
+-	wdt_base = ioremap_nocache(LS1X_WDT_BASE, 0x0f);
+-	if (!wdt_base)
++	wdt_reg_base = ioremap_nocache(LS1X_WDT_BASE, (SZ_4 + SZ_8));
++	if (!wdt_reg_base)
+ 		panic("Failed to remap watchdog registers");
+ 
+ 	_machine_restart = ls1x_restart;
+diff --git a/arch/mips/loongson32/common/time.c b/arch/mips/loongson32/common/time.c
+index 0996b02..ff224f0 100644
+--- a/arch/mips/loongson32/common/time.c
++++ b/arch/mips/loongson32/common/time.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/interrupt.h>
++#include <linux/sizes.h>
+ #include <asm/time.h>
+ 
+ #include <loongson1.h>
+@@ -35,25 +36,25 @@
+ 
+ DEFINE_RAW_SPINLOCK(ls1x_timer_lock);
+ 
+-static void __iomem *timer_base;
++static void __iomem *timer_reg_base;
+ static uint32_t ls1x_jiffies_per_tick;
+ 
+ static inline void ls1x_pwmtimer_set_period(uint32_t period)
+ {
+-	__raw_writel(period, timer_base + PWM_HRC);
+-	__raw_writel(period, timer_base + PWM_LRC);
++	__raw_writel(period, timer_reg_base + PWM_HRC);
++	__raw_writel(period, timer_reg_base + PWM_LRC);
+ }
+ 
+ static inline void ls1x_pwmtimer_restart(void)
+ {
+-	__raw_writel(0x0, timer_base + PWM_CNT);
+-	__raw_writel(INT_EN | CNT_EN, timer_base + PWM_CTRL);
++	__raw_writel(0x0, timer_reg_base + PWM_CNT);
++	__raw_writel(INT_EN | CNT_EN, timer_reg_base + PWM_CTRL);
+ }
+ 
+ void __init ls1x_pwmtimer_init(void)
+ {
+-	timer_base = ioremap(LS1X_TIMER_BASE, 0xf);
+-	if (!timer_base)
++	timer_reg_base = ioremap_nocache(LS1X_TIMER_BASE, SZ_16);
++	if (!timer_reg_base)
+ 		panic("Failed to remap timer registers");
+ 
+ 	ls1x_jiffies_per_tick = DIV_ROUND_CLOSEST(mips_hpt_frequency, HZ);
+@@ -86,7 +87,7 @@ static cycle_t ls1x_clocksource_read(struct clocksource *cs)
+ 	 */
+ 	jifs = jiffies;
+ 	/* read the count */
+-	count = __raw_readl(timer_base + PWM_CNT);
++	count = __raw_readl(timer_reg_base + PWM_CNT);
+ 
+ 	/*
+ 	 * It's possible for count to appear to go the wrong way for this
+@@ -131,7 +132,7 @@ static int ls1x_clockevent_set_state_periodic(struct clock_event_device *cd)
+ 	raw_spin_lock(&ls1x_timer_lock);
+ 	ls1x_pwmtimer_set_period(ls1x_jiffies_per_tick);
+ 	ls1x_pwmtimer_restart();
+-	__raw_writel(INT_EN | CNT_EN, timer_base + PWM_CTRL);
++	__raw_writel(INT_EN | CNT_EN, timer_reg_base + PWM_CTRL);
+ 	raw_spin_unlock(&ls1x_timer_lock);
+ 
+ 	return 0;
+@@ -140,7 +141,7 @@ static int ls1x_clockevent_set_state_periodic(struct clock_event_device *cd)
+ static int ls1x_clockevent_tick_resume(struct clock_event_device *cd)
+ {
+ 	raw_spin_lock(&ls1x_timer_lock);
+-	__raw_writel(INT_EN | CNT_EN, timer_base + PWM_CTRL);
++	__raw_writel(INT_EN | CNT_EN, timer_reg_base + PWM_CTRL);
+ 	raw_spin_unlock(&ls1x_timer_lock);
+ 
+ 	return 0;
+@@ -149,8 +150,8 @@ static int ls1x_clockevent_tick_resume(struct clock_event_device *cd)
+ static int ls1x_clockevent_set_state_shutdown(struct clock_event_device *cd)
+ {
+ 	raw_spin_lock(&ls1x_timer_lock);
+-	__raw_writel(__raw_readl(timer_base + PWM_CTRL) & ~CNT_EN,
+-		     timer_base + PWM_CTRL);
++	__raw_writel(__raw_readl(timer_reg_base + PWM_CTRL) & ~CNT_EN,
++		     timer_reg_base + PWM_CTRL);
+ 	raw_spin_unlock(&ls1x_timer_lock);
+ 
+ 	return 0;
+@@ -220,7 +221,7 @@ void __init plat_time_init(void)
+ 
+ #ifdef CONFIG_CEVT_CSRC_LS1X
+ 	/* setup LS1X PWM timer */
+-	clk = clk_get(NULL, "ls1x_pwmtimer");
++	clk = clk_get(NULL, "ls1x-pwmtimer");
+ 	if (IS_ERR(clk))
+ 		panic("unable to get timer clock, err=%ld", PTR_ERR(clk));
+ 
+diff --git a/arch/mips/loongson32/ls1b/board.c b/arch/mips/loongson32/ls1b/board.c
+index 58daeea..38a1d40 100644
+--- a/arch/mips/loongson32/ls1b/board.c
++++ b/arch/mips/loongson32/ls1b/board.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Copyright (c) 2011-2016 Zhang, Keguang <keguang.zhang@gmail.com>
+  *
+  * This program is free software; you can redistribute	it and/or modify it
+  * under  the terms of	the GNU General	 Public License as published by the
+@@ -7,26 +7,83 @@
+  * option) any later version.
+  */
+ 
++#include <linux/leds.h>
++#include <linux/mtd/partitions.h>
++#include <linux/sizes.h>
++
++#include <loongson1.h>
++#include <dma.h>
++#include <nand.h>
+ #include <platform.h>
+ 
++struct plat_ls1x_dma ls1x_dma_pdata = {
++	.nr_channels	= 3,
++};
++
++static struct mtd_partition ls1x_nand_parts[] = {
++	{
++		.name        = "kernel",
++		.offset      = 0,
++		.size        = SZ_16M,
++	},
++	{
++		.name        = "rootfs",
++		.offset      = MTDPART_OFS_APPEND,
++		.size        = MTDPART_SIZ_FULL,
++	},
++};
++
++struct plat_ls1x_nand ls1x_nand_pdata = {
++	.parts		= ls1x_nand_parts,
++	.nr_parts	= ARRAY_SIZE(ls1x_nand_parts),
++	.hold_cycle	= 0x2,
++	.wait_cycle	= 0xc,
++};
++
++static const struct gpio_led ls1x_gpio_leds[] __initconst = {
++	{
++		.name			= "LED9",
++		.default_trigger	= "heartbeat",
++		.gpio			= 38,
++		.active_low		= 1,
++		.default_state		= LEDS_GPIO_DEFSTATE_OFF,
++	}, {
++		.name			= "LED6",
++		.default_trigger	= "nand-disk",
++		.gpio			= 39,
++		.active_low		= 1,
++		.default_state		= LEDS_GPIO_DEFSTATE_OFF,
++	},
++};
++
++static const struct gpio_led_platform_data ls1x_led_pdata __initconst = {
++	.num_leds	= ARRAY_SIZE(ls1x_gpio_leds),
++	.leds		= ls1x_gpio_leds,
++};
++
+ static struct platform_device *ls1b_platform_devices[] __initdata = {
+ 	&ls1x_uart_pdev,
+ 	&ls1x_cpufreq_pdev,
++	&ls1x_dma_pdev,
+ 	&ls1x_eth0_pdev,
+ 	&ls1x_eth1_pdev,
+ 	&ls1x_ehci_pdev,
++	&ls1x_gpio0_pdev,
++	&ls1x_gpio1_pdev,
++	&ls1x_nand_pdev,
+ 	&ls1x_rtc_pdev,
+ };
+ 
+ static int __init ls1b_platform_init(void)
+ {
+-	int err;
++	ls1x_serial_set_uartclk(&ls1x_uart_pdev);
++	ls1x_dma_set_platdata(&ls1x_dma_pdata);
++	ls1x_nand_set_platdata(&ls1x_nand_pdata);
+ 
+-	ls1x_serial_setup(&ls1x_uart_pdev);
++	gpio_led_register_device(-1, &ls1x_led_pdata);
+ 
+-	err = platform_add_devices(ls1b_platform_devices,
++	return platform_add_devices(ls1b_platform_devices,
+ 				   ARRAY_SIZE(ls1b_platform_devices));
+-	return err;
+ }
+ 
+ arch_initcall(ls1b_platform_init);
 -- 
 1.9.1
 
