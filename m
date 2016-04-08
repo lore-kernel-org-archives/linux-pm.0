@@ -1,51 +1,34 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] sdhci: wakeup from runtime PM
-Date: Fri, 8 Apr 2016 22:51:51 +0200
-Message-ID: <CAPDyKFqMOmNhXfJGVyvBvc5dD=wTR3Wvz64CuL8iq4dQJSHk3g@mail.gmail.com>
-References: <CAPDyKFqJ4Q9hdsv427GaT_2qFpvv=Nn3rZQUS+P8O7FF-gKgyw@mail.gmail.com>
-	<Pine.LNX.4.44L0.1604081114480.2069-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [regression] cross core scheduling frequency drop bisected to 0c313cb20732
+Date: Fri, 08 Apr 2016 22:59:59 +0200
+Message-ID: <2428384.mEkP3EOpsR@vostro.rjw.lan>
+References: <1460092854.4051.1.camel@gmail.com> <20160408064510.GK3448@twins.programming.kicks-ass.net> <1460098254.5582.17.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:34958 "EHLO
-	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751890AbcDHUvx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 16:51:53 -0400
-Received: by mail-wm0-f44.google.com with SMTP id 191so29264862wmq.0
-        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 13:51:52 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.44L0.1604081114480.2069-100000@iolanthe.rowland.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41125 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752864AbcDHU51 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 16:57:27 -0400
+In-Reply-To: <1460098254.5582.17.camel@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ludovic Desroches <ludovic.desroches@atmel.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
+To: Mike Galbraith <umgwanakikbuti@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@redhat.com>
 
-On 8 April 2016 at 17:19, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Fri, 8 Apr 2016, Ulf Hansson wrote:
->
->> From power consumption point if view we already discussed this
->> particular case in an earlier thread, but let me elaborate what I
->> think one more time:
->>
->> Now, this is relevant for removable cards lacking GPIO card detect, as
->> for other cases and non-removable cards I think we are in agreement
->> that their is no issue from power consumption point of view, right!?
->>
->> 1. The current solution:
->> - Use MMC_CAP_NEEDS_POLL which makes the mmc core to re-schedule a
->> work once every second to poll for a card (Why is it one second? Could
->> we perhaps have that configurable?).
->
-> The block layer handles media polling for removable block devices, and
-> it is configurable.  For example, /sys/block/sr0/events_poll_msecs can
-> be set to control how often the system polls for a disc in my DVD
-> drive.
->
-> Does MMC do its own polling separate from the block layer?  If so, why?
+On Friday, April 08, 2016 08:50:54 AM Mike Galbraith wrote:
+> On Fri, 2016-04-08 at 08:45 +0200, Peter Zijlstra wrote:
+> 
+> > Cute, I thought you used governor=performance for your runs?
+> 
+> I do, and those numbers are with it thus set.
 
-Good question. Probably because of legacy or perhaps to deal with corner cases.
+Well, this is a trade-off.
 
-When I get some spare bandwidth I will check to see if it makes sense
-to convert MMC polling to the block layer polling.
+4.5 introduced a power regression here so this one goes back to the previous
+state of things.
 
-Kind regards
-Uffe
+Thanks,
+Rafael
+
