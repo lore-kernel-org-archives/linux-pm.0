@@ -1,32 +1,51 @@
-From: AKINWUMI <urr@adminnfo3.website.tk>
-Subject: FROM: MR. OLIVER SENO!!
-Date: Fri, 8 Apr 2016 11:53:29 -0700
-Message-ID: <BLUPR17MB04846E4F30CE240630F40730D0910@BLUPR17MB0484.namprd17.prod.outlook.com>
-Reply-To: <officeosenol@yahoo.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] sdhci: wakeup from runtime PM
+Date: Fri, 8 Apr 2016 22:51:51 +0200
+Message-ID: <CAPDyKFqMOmNhXfJGVyvBvc5dD=wTR3Wvz64CuL8iq4dQJSHk3g@mail.gmail.com>
+References: <CAPDyKFqJ4Q9hdsv427GaT_2qFpvv=Nn3rZQUS+P8O7FF-gKgyw@mail.gmail.com>
+	<Pine.LNX.4.44L0.1604081114480.2069-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bhn0245.outbound.protection.outlook.com ([157.56.111.245]:22608
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752365AbcDHTI4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 15:08:56 -0400
-Content-Description: Mail message body
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:34958 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbcDHUvx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 16:51:53 -0400
+Received: by mail-wm0-f44.google.com with SMTP id 191so29264862wmq.0
+        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 13:51:52 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.44L0.1604081114480.2069-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Recipients <urr@adminnfo3.website.tk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ludovic Desroches <ludovic.desroches@atmel.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
 
-Dear Sir.
+On 8 April 2016 at 17:19, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Fri, 8 Apr 2016, Ulf Hansson wrote:
+>
+>> From power consumption point if view we already discussed this
+>> particular case in an earlier thread, but let me elaborate what I
+>> think one more time:
+>>
+>> Now, this is relevant for removable cards lacking GPIO card detect, as
+>> for other cases and non-removable cards I think we are in agreement
+>> that their is no issue from power consumption point of view, right!?
+>>
+>> 1. The current solution:
+>> - Use MMC_CAP_NEEDS_POLL which makes the mmc core to re-schedule a
+>> work once every second to poll for a card (Why is it one second? Could
+>> we perhaps have that configurable?).
+>
+> The block layer handles media polling for removable block devices, and
+> it is configurable.  For example, /sys/block/sr0/events_poll_msecs can
+> be set to control how often the system polls for a disc in my DVD
+> drive.
+>
+> Does MMC do its own polling separate from the block layer?  If so, why?
 
-I bring you greetings. My name is Mr.Oliver Seno Lim, I am a staff of Abbey National Plc. London and heading our regional office in West Africa. Our late customer named Engr.Ben W.westland, made a fixed deposit amount of US$7Million.He did not declare any next of kin in any of his paper work, I want you as a foreigner to stand as the beneficiary to transfer this funds out of my bank into your account, after the successful transfer, we shall share in the ratio of 30% for you, 70%for me. Should you be interested please send me your information:
+Good question. Probably because of legacy or perhaps to deal with corner cases.
 
-1,Full names.
-2,current residential address.
-3,Tele/Fax numbers./your work.
- 
-   
-All I need from you is your readiness, trustworthiness and edication. Please email me directly on my private email address: officeosenol@yahoo.com) so we can begin arrangements and I would give you more information on how we would handle this venture and once i hear from you i will give you information of the bank for the transferring funds on your name.
+When I get some spare bandwidth I will check to see if it makes sense
+to convert MMC polling to the block layer polling.
 
-Regards,
-Mr.Oliver Seno Lim 
+Kind regards
+Uffe
