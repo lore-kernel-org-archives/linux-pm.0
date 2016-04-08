@@ -1,92 +1,79 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Runtime: Move ignore_children flag under CONFIG_PM
-Date: Fri,  8 Apr 2016 12:44:36 +0200
-Message-ID: <1460112276-5897-1-git-send-email-ulf.hansson@linaro.org>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v10 1/4] gadget: Introduce the usb charger framework
+Date: Fri, 8 Apr 2016 19:00:25 +0800
+Message-ID: <CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
+References: <cover.1460029375.git.baolin.wang@linaro.org>
+	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
+	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
+	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f169.google.com ([209.85.217.169]:33351 "EHLO
-	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758110AbcDHKqF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 06:46:05 -0400
-Received: by mail-lb0-f169.google.com with SMTP id u8so66900078lbk.0
-        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 03:46:04 -0700 (PDT)
+Received: from mail-yw0-f175.google.com ([209.85.161.175]:34868 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbcDHLA0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Apr 2016 07:00:26 -0400
+Received: by mail-yw0-f175.google.com with SMTP id i84so124012030ywc.2
+        for <linux-pm@vger.kernel.org>; Fri, 08 Apr 2016 04:00:26 -0700 (PDT)
+In-Reply-To: <AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Jun Li <jun.li@nxp.com>
+Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 
-The ignore_children flag is used only when CONFIG_PM is set, so let's move
-it into that section within the struct dev_pm_info.
+Hi Jun,
 
-Move also the corresponding pm_suspend_ignore_children() API out of
-device.h into pm_runtime.h, to be consistent with similar APIs.
+>> >> +/*
+>> >> + * usb_charger_detect_type() - detect the charger type manually.
+>> >> + * @uchger - usb charger device
+>> >> + *
+>> >> + * Note: You should ensure you need to detect the charger type
+>> >> +manually on your
+>> >> + * platform.
+>> >> + * You should call it at the right gadget state to avoid affecting
+>> >> +gadget
+>> >> + * enumeration.
+>> >> + */
+>> >> +int usb_charger_detect_type(struct usb_charger *uchger) {
+>> >> +     enum usb_charger_type type;
+>> >> +
+>> >> +     if (WARN(!uchger->charger_detect,
+>> >> +              "charger detection method should not be NULL"))
+>> >> +             return -EINVAL;
+>> >> +
+>> >> +     type = uchger->charger_detect(uchger);
+>> >> +
+>> >> +     mutex_lock(&uchger->lock);
+>> >> +     uchger->type = type;
+>> >> +     mutex_unlock(&uchger->lock);
+>> >> +
+>> >> +     return 0;
+>> >> +}
+>> >> +EXPORT_SYMBOL_GPL(usb_charger_detect_type);
+>> >
+>> > I still recommend have a central place to call
+>> > usb_charger_detect_type() to cover real charger detection instead of
+>> > leaving this question open to diff users. This can be done after
+>> > vbus-on is detected and before do gadget connect. I don't think this
+>> will make your framework complicated.
+>>
+>> This API is used for detecting the charger type manually (software charger
+>> detection), so if user's udc driver is needed to do this, then they can
+>> issue it at their right place to make it more flexible. But let us see
+>> other people's suggestion. Thanks.
+>
+> Ok, actually this API can be used for what ever charger detection
+> type, user can implement any method(manual detection, directly read
+> result from some HW...what ever) in uchger->charger_detect(), target is
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/device.h     | 5 -----
- include/linux/pm.h         | 2 +-
- include/linux/pm_runtime.h | 6 ++++++
- 3 files changed, 7 insertions(+), 6 deletions(-)
+But reading result from some HW dose not means *detect*, actually is
+*get*. We can not mix them together with the different semantics.
 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 002c597..b130304 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -956,11 +956,6 @@ static inline bool device_async_suspend_enabled(struct device *dev)
- 	return !!dev->power.async_suspend;
- }
- 
--static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
--{
--	dev->power.ignore_children = enable;
--}
--
- static inline void dev_pm_syscore_device(struct device *dev, bool val)
- {
- #ifdef CONFIG_PM_SLEEP
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6a5d654..06eb353 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -563,7 +563,6 @@ struct dev_pm_info {
- 	bool			is_suspended:1;	/* Ditto */
- 	bool			is_noirq_suspended:1;
- 	bool			is_late_suspended:1;
--	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	bool			direct_complete:1;	/* Owned by the PM core */
- 	spinlock_t		lock;
-@@ -591,6 +590,7 @@ struct dev_pm_info {
- 	unsigned int		deferred_resume:1;
- 	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
-+	bool			ignore_children:1;
- 	unsigned int		no_callbacks:1;
- 	unsigned int		irq_safe:1;
- 	unsigned int		use_autosuspend:1;
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 7af093d..2e14d26 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -56,6 +56,11 @@ extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
- 
-+static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
-+{
-+	dev->power.ignore_children = enable;
-+}
-+
- static inline bool pm_children_suspended(struct device *dev)
- {
- 	return dev->power.ignore_children
-@@ -156,6 +161,7 @@ static inline void __pm_runtime_disable(struct device *dev, bool c) {}
- static inline void pm_runtime_allow(struct device *dev) {}
- static inline void pm_runtime_forbid(struct device *dev) {}
- 
-+static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
- static inline bool pm_children_suspended(struct device *dev) { return false; }
- static inline void pm_runtime_get_noresume(struct device *dev) {}
- static inline void pm_runtime_put_noidle(struct device *dev) {}
+> to have the charger type and set uchger->type, then you no need to add the comments/description to limit it usage. Also I do see there is possible
+> central place to do this.
+>
+
 -- 
-1.9.1
-
+Baolin.wang
+Best Regards
