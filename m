@@ -1,55 +1,38 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
-Date: Sat, 9 Apr 2016 18:01:56 +0200
-Message-ID: <20160409160156.GF19362@xo-6d-61-c0.localdomain>
-References: <cover.1443057229.git.baolin.wang@linaro.org>
- <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
- <20151001172932.GG4469@saruman.tx.rr.com>
- <20151008155052.GH11776@xo-6d-61-c0.localdomain>
- <87oag7u4go.fsf@saruman.tx.rr.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] PM / Runtime: Fix error path in pm_runtime_force_resume()
+Date: Sat, 9 Apr 2016 18:18:35 +0200
+Message-ID: <CACRpkdYGb2g-trk9KXK2r2tndv7H64fqvU6EBQvt+XujXzeLXg@mail.gmail.com>
+References: <1460113823-32290-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <87oag7u4go.fsf-HgARHv6XitJaoMGHk7MhZQC/G2K4zDHf@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
-Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:35130 "EHLO
+	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753908AbcDIQSh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Apr 2016 12:18:37 -0400
+Received: by mail-oi0-f46.google.com with SMTP id p188so166555763oih.2
+        for <linux-pm@vger.kernel.org>; Sat, 09 Apr 2016 09:18:36 -0700 (PDT)
+In-Reply-To: <1460113823-32290-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 
-Hi!
+On Fri, Apr 8, 2016 at 1:10 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-> >> Also, because soon enough we will have to support USB Power Delivery
-> >> with Type C connector, this is bound to change in the coming months.
-> >> 
-> >> Frankly, I wanted all of this to be decided in userland with the
-> >> kernel just providing notification and basic safety checks (we don't
-> >> want to allow a bogus userspace daemon frying anybody's devices).
-> >> 
-> >> How would you feel about that ?
-> >
-> > So init=/bin/bash boot no longer provides machine that charges itself?
-> >
-> > That would be bad. Traditionally, hardware controls battery charging,
-> > and if hardware needs some help, we should do it in kernel, to mask
-> > the difference from userspace.
-> 
-> this is a very valid point which I hadn't considered :-)
-> 
-> Seems like kernel it is, no matter how easy or how difficult it gets.
+> As pm_runtime_set_active() may fail because the device's parent isn't
+> active, we can end up executing the ->runtime_resume() callback for the
+> device when it isn't allowed.
+>
+> Fix this by invoking pm_runtime_set_active() before running the callback
+> and let's also deal with the error code.
+>
+> Fixes: 37f204164dfb ("PM: Add pm_runtime_suspend|resume_force functions")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Basically yes. Note that for some bells & whistles, you can require userland help.
+Oh I recognize that. I saw that behaviour. This should fix it.
 
-For example it would probably be ok if it charged slower than usual... but I guess
-that does not really help in this case.
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Best regards,
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yours,
+Linus Walleij
