@@ -1,39 +1,63 @@
-From: Mike Galbraith <umgwanakikbuti@gmail.com>
-Subject: Re: [regression] cross core scheduling frequency drop bisected to
- 0c313cb20732
-Date: Sat, 09 Apr 2016 09:27:26 +0200
-Message-ID: <1460186846.3765.168.camel@gmail.com>
-References: <1460092854.4051.1.camel@gmail.com>
-	 <20160408064510.GK3448@twins.programming.kicks-ass.net>
-	 <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
-	 <001101d191e4$b00602d0$10120870$@net> <001e01d1922f$ef219a10$cd64ce30$@net>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH] sbs-battery: fix power status when battery charging near dry
+Date: Sat, 9 Apr 2016 20:38:30 +1000
+Message-ID: <CAGS+omA7YgCvEJNTU2VB2xOu52nkowTuhBpykk=wOnjDAYFQWA@mail.gmail.com>
+References: <1459909945-36541-1-git-send-email-yh.huang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:37633 "EHLO
-	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbcDIH1b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Apr 2016 03:27:31 -0400
-In-Reply-To: <001e01d1922f$ef219a10$cd64ce30$@net>
+Received: from mail-vk0-f46.google.com ([209.85.213.46]:35929 "EHLO
+	mail-vk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbcDIKiv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Apr 2016 06:38:51 -0400
+Received: by mail-vk0-f46.google.com with SMTP id c4so164657575vkb.3
+        for <linux-pm@vger.kernel.org>; Sat, 09 Apr 2016 03:38:50 -0700 (PDT)
+In-Reply-To: <1459909945-36541-1-git-send-email-yh.huang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Rik van Riel' <riel@redhat.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+To: YH Huang <yh.huang@mediatek.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>
 
-On Sat, 2016-04-09 at 00:17 -0700, Doug Smythies wrote:
+On Wed, Apr 6, 2016 at 12:32 PM, YH Huang <yh.huang@mediatek.com> wrote:
+> POWER_SUPPLY_STATUS_NOT_CHARGING is used for AC connected, but
+> battery not charging (e.g. because battery temperature is out
+> of acceptable range).
+>
+> When battery is charging near dry and BATTERY_FULL_DISCHARGED is set,
+> it is wrong to set as POWER_SUPPLY_STATUS_NOT_CHARGING.
+> Just use BATTERY_DISCHARGING to decide the power supply status is
+> discharging or charging.
+>
+> Signed-off-by: YH Huang <yh.huang@mediatek.com>
 
-> I still didn't find the exact same program, but I think I found some
-> earlier version of the correct test.
-> 
-> I get (long term average):
-> Kernel 4.4.0-17: Powersave 3.93 usecs/loop ; Performance 3.93 usecs/loop 0.89
-> Kernel 4.5-rc7: Powersave 3.47 usecs/loop ; Performance 3.51 usecs/loop  1.00
-> Kernel 4.6-rc1: Powersave 3.84 usecs/loop ; Performance 3.88 usecs/loop  0.90
-> 
-> So, similar results (so far, I didn't try reverted yet).
+Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
 
-I likely see a bit more go missing because I throttle no_hz when idle
-is being hammered at high frequency.
-
-	-Mike
+> ---
+>  drivers/power/sbs-battery.c |    4 ----
+>  1 file changed, 4 deletions(-)
+>
+> diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs-battery.c
+> index d6226d6..768b9fc 100644
+> --- a/drivers/power/sbs-battery.c
+> +++ b/drivers/power/sbs-battery.c
+> @@ -382,8 +382,6 @@ static int sbs_get_battery_property(struct i2c_client *client,
+>
+>                 if (ret & BATTERY_FULL_CHARGED)
+>                         val->intval = POWER_SUPPLY_STATUS_FULL;
+> -               else if (ret & BATTERY_FULL_DISCHARGED)
+> -                       val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+>                 else if (ret & BATTERY_DISCHARGING)
+>                         val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
+>                 else
+> @@ -702,8 +700,6 @@ static void sbs_delayed_work(struct work_struct *work)
+>
+>         if (ret & BATTERY_FULL_CHARGED)
+>                 ret = POWER_SUPPLY_STATUS_FULL;
+> -       else if (ret & BATTERY_FULL_DISCHARGED)
+> -               ret = POWER_SUPPLY_STATUS_NOT_CHARGING;
+>         else if (ret & BATTERY_DISCHARGING)
+>                 ret = POWER_SUPPLY_STATUS_DISCHARGING;
+>         else
+> --
+> 1.7.9.5
+>
