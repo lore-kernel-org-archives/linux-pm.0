@@ -1,64 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Abort cpufreq_update_current_freq() for
- cpufreq_suspended set
-Date: Sun, 10 Apr 2016 09:40:08 +0530
-Message-ID: <CAKohpo=20y48xqRhAbewigcX45iyb9ik1DK1SJTD+x83weYkRg@mail.gmail.com>
-References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
-	<20160410031646.GI9674@vireshk-i7>
-	<CAJZ5v0iDTTL5U5Btw7ioetgmiqoTB3m7F9C_BanEBxazLshBZA@mail.gmail.com>
-	<1745622.RpCLJxTa46@vostro.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [regression] cross core scheduling frequency drop bisected to 0c313cb20732
+Date: Sun, 10 Apr 2016 00:16:49 -0700
+Message-ID: <000d01d192f8$f3f8d250$dbea76f0$@net>
+References: <1460092854.4051.1.camel@gmail.com>	<20160408064510.GK3448@twins.programming.kicks-ass.net>	<1460098254.5582.17.camel@gmail.com>	<2428384.mEkP3EOpsR@vostro.rjw.lan>	<1460184056.3765.160.camel@gmail.com>	<CAJZ5v0ig1qTTMw5GHO_-vuyETD46tin8bS2deyvtw0OvuDSCng@mail.gmail.com>	<1460214622.3714.8.camel@gmail.com>	<1460219974.3700.39.camel@gmail.com> <CAJZ5v0hDe=pNmWFC6fYADi=vP+WFN+7yvwOZvq_pRMARzUnoiw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f175.google.com ([209.85.223.175]:35628 "EHLO
-	mail-io0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbcDJEKJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 00:10:09 -0400
-Received: by mail-io0-f175.google.com with SMTP id g185so173313004ioa.2
-        for <linux-pm@vger.kernel.org>; Sat, 09 Apr 2016 21:10:08 -0700 (PDT)
-In-Reply-To: <1745622.RpCLJxTa46@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hDe=pNmWFC6fYADi=vP+WFN+7yvwOZvq_pRMARzUnoiw@mail.gmail.com>
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Mike Galbraith' <umgwanakikbuti@gmail.com>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Rik van Riel' <riel@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 10 April 2016 at 09:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2106.04.09 20:45 Rafael J. Wysocki wrote:
+>On Sat, Apr 9, 2016 at 6:39 PM, Mike Galbraith wrote:
+>>
+>> Hm, setting gov=performance, and taking the average of 3 30 second
+>> interval PkgWatt samples as pipe-test runs..
+>>
+>> 714KHz/28.03Ws = 25.46
+>> 877KHz/30.28Ws = 28.96
+>>
+>> ..for pipe-test, the tradeoff look a bit more like red than green.
 >
-> Since governor operations are generally skipped if cpufreq_suspended
-> is set, cpufreq_start_governor() should do nothing in that case.
->
-> That function is called in the cpufreq_online() path, and may also
-> be called from cpufreq_offline() in some cases, which are invoked
-> by the nonboot CPUs disabing/enabling code during system suspend
-> to RAM and resume.  That happens when all devices have been
-> suspended, so if the cpufreq driver relies on things like I2C to
-> get the current frequency, it may not be ready to do that then.
->
-> To prevent problems from happening for this reason, make
-> cpufreq_update_current_freq(), which is the only function invoked
-> by cpufreq_start_governor() that doesn't check cpufreq_suspended
-> already, return 0 upfront if cpufreq_suspended is set.
->
-> Fixes: 3bbf8fe3ae08 (cpufreq: Always update current frequency before startig governor)
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |    3 +++
->  1 file changed, 3 insertions(+)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1565,6 +1565,9 @@ static unsigned int cpufreq_update_curre
->  {
->         unsigned int new_freq;
->
-> +       if (cpufreq_suspended)
-> +               return 0;
-> +
->         new_freq = cpufreq_driver->get(policy->cpu);
->         if (!new_freq)
->                 return 0;
+> Well, fair enough, but that's just pipe-test, and what about the
+> people who don't see the performance gain and see the energy loss,
+> like Doug?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Some numbers from my computer:
+
+Pipe-test (100 seconds):
+
+Kernel 4.6-rc2 gov=powersave:
+Stock: 3.86 uSecs/loop and 3148.05 Joules
+Reverted: 3.34 uSecs/loop and 3567.43 Joules
+
+Reverted is 13% faster at a cost of 13% more energy.
+
+Idle stats (done separately and for 20e6 loops)
+
+State	k46rc2-ps (sec)	k46rc2-rev-ps(sec)
+0.00	0.01			4.09
+1.00	38.68			0.00
+2.00	0.46			0.27
+3.00	0.01			0.00
+4.00	464.23		380.23
+		
+total	503.38		384.60
+
+Kernel 4.6-rc2 gov=performance:
+Stock: 3.89 uSecs/loop and 3154.72 Joules
+Reverted: 3.25 uSecs/loop and 3445.90 Joules
+
+Reverted is 16% faster at a cost of 9% more energy.
+
+Idle stats (done separately and for 20e6 loops)
+
+State	k46rc2-pf (sec)	k46rc2-rev-pf (sec)
+0.00	0.00			1.43
+1.00	38.89			0.04
+2.00	2.08			0.03
+3.00	0.01			0.01
+4.00	463.05		381.54
+		
+total	504.03		383.05
+
+9 incremental kernel compiles, with no changes:
+(the reference test from last cycle):
+(2000 seconds turbostat package energy sample time):
+There is no detectable consistent change in compile times:
+
+Kernel 4.6-rc2 gov=powersave:
+Stock: 48557 Joules
+Reverted: 65439 Joules
+
+Reverted costs 34% more energy.
+(note: this result is unusually high. There are variations test to test)
+
+Kernel 4.6-rc2 gov=performance:
+Stock: 49965 Joules
+Reverted: 59232 Joules
+
+Reverted costs 19% more energy.
+(note: never tested gov=performance before)
+
+Idle stats not re-done (we had several samples last cycle).
+
+> Essentially, this trades performance gains in somewhat special
+> workloads for increased energy consumption in idle.  Those workloads
+> need not be run by everybody, but idle is.
+>
+> That said I applied the patch you're complaining about mostly because
+> the commit that introduced the change in question in 4.5 claimed that
+> it wouldn't affect idle power on systems with reasonably fast C1, but
+> that didn't pass the reality test.  I'm not totally against restoring
+> that change, but it would need to be based on very solid evidence.
+
+... Doug
