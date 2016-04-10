@@ -1,69 +1,91 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Tue, 22 Mar 2016 12:30:12 +0100
-Message-ID: <20160322113012.GC26924@xo-6d-61-c0.localdomain>
-References: <cover.1458128215.git.baolin.wang@linaro.org>
- <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
- <87h9foqnur.fsf@intel.com>
- <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
- <87poubgnbh.fsf@intel.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [regression] cross core scheduling frequency drop bisected to
+ 0c313cb20732
+Date: Sun, 10 Apr 2016 16:24:50 -0400
+Message-ID: <1460319890.25336.2.camel@redhat.com>
+References: <1460092854.4051.1.camel@gmail.com>
+	 <20160408064510.GK3448@twins.programming.kicks-ass.net>
+	 <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
+	 <20160409110729.GS3448@twins.programming.kicks-ass.net>
+	 <CAJZ5v0j-5Eva2QReG4LHvyZR-iL5rrrWp-3erdfz-u+5xbwRKA@mail.gmail.com>
+	 <1460302797.4383.44.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51028 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbcDJSbr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 14:31:47 -0400
-Content-Disposition: inline
-In-Reply-To: <87poubgnbh.fsf@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha256";
+	protocol="application/pgp-signature"; boundary="=-gvuGWzP62NibU80pxy57"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1460302797.4383.44.camel@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mike Galbraith <umgwanakikbuti@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-Hi!
 
-> >>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
-> >>
-> >> According to the spec we should always be talking about unit loads (1
-> >> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
-> >> work for SS capable ports and SS gadgets (we have quite a few of them,
-> >> actually). You're missing the opportunity of charging at 900mA.
-> >
-> > I follow the DCP/SDP/CDP/ACA type's default current limitation and
-> > user can set them what they want.
-> 
-> no, the user CANNOT set it to what they want. If you get enumerated
-> @100mA and the user just decides to set it to 2000mA, s/he could even
-> melt the USB connector. The kernel _must_ prevent such cases.
+--=-gvuGWzP62NibU80pxy57
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-root should be allowed to do that.
+On Sun, 2016-04-10 at 17:39 +0200, Mike Galbraith wrote:
+> On Sat, 2016-04-09 at 14:31 +0200, Rafael J. Wysocki wrote:
+> >=20
+> > On Sat, Apr 9, 2016 at 1:07 PM, Peter Zijlstra <peterz@infradead.or
+> > g>
+> > wrote:
+> > >=20
+> > > On Fri, Apr 08, 2016 at 10:59:59PM +0200, Rafael J. Wysocki
+> > > wrote:
+> > > >=20
+> > > > On Friday, April 08, 2016 08:50:54 AM Mike Galbraith wrote:
+> > > > >=20
+> > > > > On Fri, 2016-04-08 at 08:45 +0200, Peter Zijlstra wrote:
+> > > > >=20
+> > > > > >=20
+> > > > > > Cute, I thought you used governor=3Dperformance for your
+> > > > > > runs?
+> > > > > I do, and those numbers are with it thus set.
+> > > > Well, this is a trade-off.
+> > > >=20
+> > > > 4.5 introduced a power regression here so this one goes back to
+> > > > the previous
+> > > > state of things.
+> > > Just for my elucidation; how can gov=3Dperformance have a 'power'
+> > > regression?
+> > Because of what is used as the "default" idle state most of the
+> > time.
+> >=20
+> > C1 was used before 4.5 and that changed to polling in 4.5.
+> Should the default idle state not then be governor dependent?=C2=A0=C2=A0=
+When I
+> set gov=3Dperformance, I'm expecting box to go just as fast as it can
+> go
+> without melting.=C2=A0=C2=A0Does polling risk CPU -> lava conversion?
 
-Very often, you want to charge using 1.8A from an old desktop PC.
+Current CPUs can only have some cores run at full speed
+(turbo mode) if other cores are idling and/or running at
+lower speeds.
 
-N900 will simply not charge from .5A.
+It may be time to stop pretending that gov=3Dperformance
+actually results in better performance on current CPUs,
+since it may inhibit entire levels of turbo mode.
 
-> a) you are connected to a dedicated charger
-> 
-> 	In this case, you can get up to 2000mA depending on the charger.
-> 
-> 	If $this charger can give you or not 2000mA is not detectable,
-> 	so what do charging ICs do ? They slowly increase the attached
-> 	load accross VBUS/GND and measure VBUS value. When IC notices
-> 	VBUS dropping bit, step back to previous load.
-> 
-> 	This means you will always charger with maximum rating of DCP.
-> 
-> 	Why would user change this ? More is unsafe, less is just
-> 	stupid.
+--=20
+All Rights Reversed.
 
-Actually, less is not stupid. Charging li-ion battery from li-ion battery might
-be stupid. Imagine I'm on train, with device like N900 (50% battery) and power bank
-(3Ah). I'm actively using the device. If I let it charge at full current, I'll waste
-energy. If I limit current to approximately the power consumption, it will run the
-powerbank empty, first, then empty the internal battery, maximizing total time I
-can use the device.
 
-Best regards,
-										Pavel
+--=-gvuGWzP62NibU80pxy57
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXCraTAAoJEM553pKExN6DxagIAJQBthceCqIpGjtaZjCINSft
+TB8HaHautTi7fE0xsLyU1znsvdBn8lar+OvY/xMl0y7O3hGZZzIuPZB1bghd8B+Q
+MwTReARBb76vFHSwMN6xXqpUNY9vBVJemNWiMUecPSIMndq+blQWRC5C9Rs2YboV
+wSTeWF4uKbvwq67KGLXjaqR/CKJAjuTYBD3IrYwHylDCwxvCPWcl8zGaLse3rax4
+Bv4mP4YOiDcZDAuzkzOp2MJ7P5TO6no8p+tnezkm7ddF6Fqia07g5Ky/C24njFho
+oy+PfWcZ1upW4dHFsoc2PJVkkp3Evsp1rOV7Fi2+wWFaiN6/T/OkxSErgKCLarc=
+=yPcK
+-----END PGP SIGNATURE-----
+
+--=-gvuGWzP62NibU80pxy57--
