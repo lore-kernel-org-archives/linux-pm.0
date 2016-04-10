@@ -1,48 +1,66 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [regression] cross core scheduling frequency drop bisected to 0c313cb20732
-Date: Sun, 10 Apr 2016 05:44:47 +0200
-Message-ID: <CAJZ5v0hDe=pNmWFC6fYADi=vP+WFN+7yvwOZvq_pRMARzUnoiw@mail.gmail.com>
-References: <1460092854.4051.1.camel@gmail.com>
-	<20160408064510.GK3448@twins.programming.kicks-ass.net>
-	<1460098254.5582.17.camel@gmail.com>
-	<2428384.mEkP3EOpsR@vostro.rjw.lan>
-	<1460184056.3765.160.camel@gmail.com>
-	<CAJZ5v0ig1qTTMw5GHO_-vuyETD46tin8bS2deyvtw0OvuDSCng@mail.gmail.com>
-	<1460214622.3714.8.camel@gmail.com>
-	<1460219974.3700.39.camel@gmail.com>
+Subject: Re: [PATCH] cpufreq: Skip all governor-related actions for
+ cpufreq_suspended set
+Date: Sun, 10 Apr 2016 05:46:16 +0200
+Message-ID: <CAJZ5v0iDTTL5U5Btw7ioetgmiqoTB3m7F9C_BanEBxazLshBZA@mail.gmail.com>
+References: <2044559.GVlD7a2JcO@vostro.rjw.lan>
+	<20160408054513.GF9674@vireshk-i7>
+	<1865551.sGARmvFdEr@vostro.rjw.lan>
+	<20160410031646.GI9674@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:34268 "EHLO
-	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbcDJDot (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Apr 2016 23:44:49 -0400
-In-Reply-To: <1460219974.3700.39.camel@gmail.com>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:34505 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbcDJDqS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Apr 2016 23:46:18 -0400
+In-Reply-To: <20160410031646.GI9674@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Rik van Riel <riel@redhat.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Sat, Apr 9, 2016 at 6:39 PM, Mike Galbraith <umgwanakikbuti@gmail.com> wrote:
+On Sun, Apr 10, 2016 at 5:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 08-04-16, 23:54, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Subject: [PATCH] cpufreq: Skip all governor-related actions for cpufreq_suspended set
+>>
+>> Since governor operations are generally skipped if cpufreq_suspended
+>> is set, do nothing at all in cpufreq_start_governor() in that case.
+>>
+>> That function is called in the cpufreq_online() path, and may also
+>> be called from cpufreq_offline() in some cases, which are invoked
+>> by the nonboot CPUs disabing/enabling code during system suspend
+>> to RAM and resume.  That happens when all devices have been
+>> suspended, so if the cpufreq driver relies on things like I2C to
+>> get the current frequency, it may not be ready to do that then.
+>>
+>> The change here prevents problems from happening for this reason.
+>>
+>> Fixes: 3bbf8fe3ae08 (cpufreq: Always update current frequency before startig governor)
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/cpufreq.c |    6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> Index: linux-pm/drivers/cpufreq/cpufreq.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+>> +++ linux-pm/drivers/cpufreq/cpufreq.c
+>> @@ -2053,6 +2053,9 @@ static int cpufreq_start_governor(struct
+>>  {
+>>       int ret;
+>>
+>> +     if (cpufreq_suspended)
+>> +             return 0;
+>> +
+>>       if (cpufreq_driver->get && !cpufreq_driver->setpolicy)
+>>               cpufreq_update_current_freq(policy);
 >
-> Hm, setting gov=performance, and taking the average of 3 30 second
-> interval PkgWatt samples as pipe-test runs..
->
-> 714KHz/28.03Ws = 25.46
-> 877KHz/30.28Ws = 28.96
->
-> ..for pipe-test, the tradeoff look a bit more like red than green.
+> Since we no longer have the same check in cpufreq_exit_governor(),
+> what about moving it to cpufreq_update_current_freq() instead? That's
+> all we are trying to protect here anyway, as cpufreq_governor() is
+> already protected.
 
-Well, fair enough, but that's just pipe-test, and what about the
-people who don't see the performance gain and see the energy loss,
-like Doug?
-
-Essentially, this trades performance gains in somewhat special
-workloads for increased energy consumption in idle.  Those workloads
-need not be run by everybody, but idle is.
-
-That said I applied the patch you're complaining about mostly because
-the commit that introduced the change in question in 4.5 claimed that
-it wouldn't affect idle power on systems with reasonably fast C1, but
-that didn't pass the reality test.  I'm not totally against restoring
-that change, but it would need to be based on very solid evidence.
+That can be done too.
