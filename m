@@ -1,8 +1,7 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v9 02/20] PM / devfreq: exynos: Add documentation for generic
- exynos bus frequency driver
-Date: Mon, 11 Apr 2016 12:57:40 +0900
-Message-ID: <1460347078-15175-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v9 16/20] ARM: dts: Add bus nodes using VDD_MIF for Exynos4210
+Date: Mon, 11 Apr 2016 12:57:54 +0900
+Message-ID: <1460347078-15175-17-git-send-email-cw00.choi@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,81 +21,102 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the documentation for generic exynos bus frequency
-driver.
+This patch adds the bus nodes for Exynos4210 SoC. Exynos4210 SoC has
+one power line for all buses to translate data between DRAM and sub-blocks.
+
+Following list specifies the detailed relation between DRAM and sub-blocks:
+- DMC/ACP clock for DMC (Dynamic Memory Controller)
+- ACLK200 clock for LCD0
+- ACLK100 clock for PERIL/PERIR/MFC(PCLK)
+- ACLK160 clock for CAM/TV/LCD0/LCD1
+- ACLK133 clock for FSYS/GPS
+- GDL/GDR clock for LEFTBUS/RIGHTBUS
+- SCLK_MFC clock for MFC
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 95 ++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+ arch/arm/boot/dts/exynos4210.dtsi | 159 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 159 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-new file mode 100644
-index 000000000000..78171b918e3f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -0,0 +1,95 @@
-+* Generic Exynos Bus frequency device
-+
-+The Samsung Exynos SoC has many buses for data transfer between DRAM
-+and sub-blocks in SoC. Most Exynos SoCs share the common architecture
-+for buses. Generally, each bus of Exynos SoC includes a source clock
-+and a power line, which are able to change the clock frequency
-+of the bus in runtime. To monitor the usage of each bus in runtime,
-+the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of sub-blocks.
-+
-+There are a little different composition among Exynos SoC because each Exynos
-+SoC has different sub-blocks. Therefore, shch difference should be specified
-+in devicetree file instead of each device driver. In result, this driver
-+is able to support the bus frequency for all Exynos SoCs.
-+
-+Required properties for bus device:
-+- compatible: Should be "samsung,exynos-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- operating-points-v2: the OPP table including frequency/voltage information
-+  to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-+- vdd-supply: the regulator to provide the buses with the voltage.
-+- devfreq-events: the devfreq-event device to monitor the current utilization
-+  of buses.
-+
-+Optional properties for bus device:
-+- exynos,saturation-ratio: the percentage value which is used to calibrate
-+			the performance count against total cycle count.
-+- exynos,voltage-tolerance: the percentage value for bus voltage tolerance
-+			which is used to calculate the max voltage.
-+
-+Example1:
-+	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
-+	power line (regulator). The MIF (Memory Interface) AXI bus is used to
-+	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
-+
-+	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
-+
-+	- MIF bus's frequency/voltage table
-+	-----------------------
-+	|Lv| Freq   | Voltage |
-+	-----------------------
-+	|L1| 50000  |800000   |
-+	|L2| 100000 |800000   |
-+	|L3| 134000 |800000   |
-+	|L4| 200000 |825000   |
-+	|L5| 400000 |875000   |
-+	-----------------------
-+
-+Example2 :
-+	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dtsi
-+	is listed below:
+diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+index c1cb8df6da07..2d9b02967105 100644
+--- a/arch/arm/boot/dts/exynos4210.dtsi
++++ b/arch/arm/boot/dts/exynos4210.dtsi
+@@ -257,6 +257,165 @@
+ 		power-domains = <&pd_lcd1>;
+ 		#iommu-cells = <0>;
+ 	};
 +
 +	bus_dmc: bus_dmc {
 +		compatible = "samsung,exynos-bus";
-+		clocks = <&cmu_dmc CLK_DIV_DMC>;
++		clocks = <&clock CLK_DIV_DMC>;
 +		clock-names = "bus";
 +		operating-points-v2 = <&bus_dmc_opp_table>;
++		status = "disabled";
++	};
++
++	bus_acp: bus_acp {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_ACP>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_acp_opp_table>;
++		status = "disabled";
++	};
++
++	bus_peri: bus_peri {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_ACLK100>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_peri_opp_table>;
++		status = "disabled";
++	};
++
++	bus_fsys: bus_fsys {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_ACLK133>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_fsys_opp_table>;
++		status = "disabled";
++	};
++
++	bus_display: bus_display {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_ACLK160>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_display_opp_table>;
++		status = "disabled";
++	};
++
++	bus_lcd0: bus_lcd0 {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_ACLK200>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_leftbus: bus_leftbus {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_GDL>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_rightbus: bus_rightbus {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_GDR>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
++		status = "disabled";
++	};
++
++	bus_mfc: bus_mfc {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_SCLK_MFC>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_leftbus_opp_table>;
 +		status = "disabled";
 +	};
 +
@@ -104,35 +124,90 @@ index 000000000000..78171b918e3f
 +		compatible = "operating-points-v2";
 +		opp-shared;
 +
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+			opp-microvolt = <800000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <800000>;
-+		};
 +		opp@134000000 {
 +			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <800000>;
++			opp-microvolt = <1025000>;
 +		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <825000>;
++		opp@267000000 {
++			opp-hz = /bits/ 64 <267000000>;
++			opp-microvolt = <1050000>;
 +		};
 +		opp@400000000 {
 +			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <875000>;
++			opp-microvolt = <1150000>;
 +		};
 +	};
 +
-+	Usage case to handle the frequency and voltage of bus on runtime
-+	in exynos3250-rinato.dts is listed below:
++	bus_acp_opp_table: opp_table2 {
++		compatible = "operating-points-v2";
++		opp-shared;
 +
-+	&bus_dmc {
-+		devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
-+		vdd-supply = <&buck1_reg>;	/* VDD_MIF */
-+		status = "okay";
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++		};
++		opp@160000000 {
++			opp-hz = /bits/ 64 <160000000>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
 +	};
++
++	bus_peri_opp_table: opp_table3 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@5000000 {
++			opp-hz = /bits/ 64 <5000000>;
++		};
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++	};
++
++	bus_fsys_opp_table: opp_table4 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@10000000 {
++			opp-hz = /bits/ 64 <10000000>;
++		};
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++		};
++	};
++
++	bus_display_opp_table: opp_table5 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++		};
++		opp@160000000 {
++			opp-hz = /bits/ 64 <160000000>;
++		};
++	};
++
++	bus_leftbus_opp_table: opp_table6 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp@160000000 {
++			opp-hz = /bits/ 64 <160000000>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++	};
+ };
+ 
+ &gic {
 -- 
 1.9.1
