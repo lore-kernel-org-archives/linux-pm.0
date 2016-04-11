@@ -1,83 +1,64 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCH 0/7] PM / devfreq: Add NoCP devfreq-event and support
  busfreq on exyno5422-odroidxu3
-Date: Mon, 11 Apr 2016 13:03:59 +0900
-Message-ID: <570B222F.4030503@samsung.com>
+Date: Mon, 11 Apr 2016 13:15:37 +0900
+Message-ID: <570B24E9.5020708@samsung.com>
 References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
- <CANAwSgQuWBRiRhjd-E-WaSdhe2njE262CEG8uVH83jJDGFJVKA@mail.gmail.com>
- <CAGTfZH2gd5zhr4_JioSXTcpf8Fgu6r_Y9gPOJo-mYGTjAJsFyg@mail.gmail.com>
- <570B08F2.50302@samsung.com>
- <CANAwSgRuw9ieoyu5AYFSSAcK3wgjy1-So0TA_y8bVHBa_BF7ig@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CANAwSgRuw9ieoyu5AYFSSAcK3wgjy1-So0TA_y8bVHBa_BF7ig@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@li>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:36694 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbcDKEPy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 00:15:54 -0400
+In-reply-to: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-Hi Anand,
+Dear all,
 
-On 2016=EB=85=84 04=EC=9B=94 11=EC=9D=BC 13:01, Anand Moon wrote:
-> Hi Chanwoo,
+On 2016=EB=85=84 04=EC=9B=94 08=EC=9D=BC 14:00, Chanwoo Choi wrote:
+> This patchset support the AMBA bus frequency scaling on Exynos5422-ba=
+sed
+> Odroid-XU3 board. But, this series only support the bus frequency sca=
+ling
+> for INT (Internal) block using VDD_INT power line.
 >=20
-> On 11 April 2016 at 07:46, Chanwoo Choi <cw00.choi@samsung.com> wrote=
-:
->> Hi Anand,
->>
->> On 2016=EB=85=84 04=EC=9B=94 09=EC=9D=BC 03:24, Chanwoo Choi wrote:
->>> Hi Anand,
->>>
->>> On Sat, Apr 9, 2016 at 3:11 AM, Anand Moon <linux.amoon@gmail.com> =
-wrote:
->>>> Hi Chanwoo,
->>>>
->>
->> [snip]
->>
->>>>>
->>>>
->>>> I am observing following deadlock. Both on Odroid U3 and Odroid XU=
-4.
->>>
->>> Thanks for your test. I'll test it again and fix it.
->>
->> This possible recursive locking is fixed with following diff:
->>
->> Thanks for your report. I'll fix it on next patchset[1] (v9).
->> [1] https://lkml.org/lkml/2016/4/8/14
->>
->>
->> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/go=
-vernor_passive.c
->> index 28a9ae32d330..a4b0b02ee797 100644
->> --- a/drivers/devfreq/governor_passive.c
->> +++ b/drivers/devfreq/governor_passive.c
->> @@ -102,7 +102,7 @@ static int update_devfreq_passive(struct devfreq=
- *devfreq, unsigned long freq)
->>         if (!devfreq->governor)
->>                 return -EINVAL;
->>
->> -       mutex_lock(&devfreq->lock);
->> +       mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
->>
->>         ret =3D devfreq->governor->get_target_freq(devfreq, &freq);
->>         if (ret < 0)
->>
->> Best Regards,
->> Chanwoo Choi
->>
+> Also, to support the bus frequency scaling for Exynos542x SoC,
+> Exynos542x SoC has the specific 'NoC (Network on Chip) Probe' device
+> to measure the transfered data traffic on NoC (Network on Chip)
+> instead of PPMU (Platform Performance Monitoring Unit). NoC Probe dev=
+ice
+> provide the utilization for INT block of Exynos542x SoC.
 >=20
-> Thanks you for these patches on devfreq.
-> These changes fix the warning.
+> The generic exynos-bus frequency driver uses the 'NoC Probe' devfreq-=
+event
+> device (drivers/devfreq/event/exynos-nocp.c) without any modification=
+=2E
+> Just add the phandle of 'NoC Probe' dt node to bus dt node.
 >=20
-> Tested-by: Anand Moon <linux.amoon@gmail.com>
+> Depend on:
+> This patchset depends on patch[1] which support the generic exynos-bu=
+s
+> frequency driver.
 >=20
-> Tested on Odroid XU4 and Odroid U3.
+> [1] https://lkml.org/lkml/2016/4/8/14
+> - [PATCH v8 00/20] PM / devferq: Add generic exynos bus frequency dri=
+ver and new passive governor
 
-Thanks for your test and report.
+The dependency of these patch-set is changed from patches[1] to patches=
+[2].
+Because patches[1] has the possible recursive locking issue. Patches[2]=
+ fix this issue.
+
+[2] http://www.spinics.net/lists/arm-kernel/msg495976.html
+- [PATCH v9 00/20] PM / devferq: Add generic exynos bus frequency drive=
+r and new passive governor
+
+[snip]
 
 Best Regards,
 Chanwoo Choi
