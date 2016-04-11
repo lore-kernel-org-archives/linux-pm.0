@@ -1,77 +1,86 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC v2] gpio: rcar: Add Runtime PM handling for interrupts
-Date: Mon, 11 Apr 2016 19:18:43 +0200
-Message-ID: <CAMuHMdXym9YXaDP+-xEU7o+NcKPUz5mgXnVkpk_QnQQppuab-A@mail.gmail.com>
-References: <1455811590-15836-1-git-send-email-geert+renesas@glider.be>
-	<CACRpkdZ2zzP5u4uJDzsnks7ywrp3ddBt+YfxthJ+5mT-ECYLpg@mail.gmail.com>
-	<56C703AC.4040803@arm.com>
-	<8178382.Z7YODHSRMC@avalon>
-	<570BD6F1.90709@arm.com>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH] Prefer kASLR over Hibernation
+Date: Mon, 11 Apr 2016 11:03:01 -0700
+Message-ID: <CAGXu5jKU=+ZokCcMHwGT0GxHZ5G4RaLhdFrADxw2BxEHyfNF7g@mail.gmail.com>
+References: <20160406194404.GA11150@www.outflux.net>
+	<570B59A5.3090904@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:35957 "EHLO
-	mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbcDKRSp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 13:18:45 -0400
-In-Reply-To: <570BD6F1.90709@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <570B59A5.3090904@arm.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: James Morse <james.morse@arm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linus Walleij <linus.walleij@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Wolfram Sang <wsa@the-dreams.de>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 
-Hi Marc,
-
-On Mon, Apr 11, 2016 at 6:55 PM, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> On 11/04/16 17:26, Laurent Pinchart wrote:
->> On Friday 19 Feb 2016 11:59:40 Marc Zyngier wrote:
->>> On 19/02/16 09:18, Linus Walleij wrote:
->>>> Top-quoting so everyone on the new To:-line gets the context.
->>>>
->>>> I definately need an indication from an irqchip maintainer like tglx or
->>>> Marc Z before I merge this. Also, as in reply to the previous letter,
->>>> coordinate efforts with Jon Hunters similar problem space.
->>>
->>> Seems pretty straightforward to me.
->>>
->>> Acked-by: Marc Zyngier <marc.zyngier@arm.com>
+On Mon, Apr 11, 2016 at 1:00 AM, James Morse <james.morse@arm.com> wrote:
+> Hi Kees,
+>
+> On 06/04/16 20:44, Kees Cook wrote:
+>> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
+>> one or the other must be chosen at boot-time. Until now, hibernation
+>> was selected when no choice was made on the command line.
 >>
->> Too straightforward to be correct :-/
+>> To make the security benefits of kASLR more widely available to end
+>> users (since the use of hibernation is becoming more rare and kASLR,
+>> already available on x86, will be available on arm64 and MIPS soon),
+>> this changes the default to preferring kASLR over hibernation. Users
+>> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
+>> command line.
+>
+> While hibernate isn't yet merged for arm64, it does work with kASLR in v4.6-rc*,
+> it would be a shame to have to choose at boot time, (but that's my problem to
+> fix if/when its merged).
+
+Ah, interesting, so they work together on arm64? (i.e. you've actually
+tested a boot loader that provides the seed for kASLR to operate?)
+
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index fca9254280ee..be5041354b1e 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -1159,6 +1164,13 @@ static int __init kaslr_nohibernate_setup(char *str)
+>>       return nohibernate_setup(str);
+>>  }
 >>
->> [    6.232681] BUG: sleeping function called from invalid context at /home/laurent/src/iob/renesas/linux/drivers/base/power/runtime.c:955
->> [    6.244795] in_atomic(): 1, irqs_disabled(): 128, pid: 658, name: udevd
->> [    6.251429] CPU: 3 PID: 658 Comm: udevd Tainted: P                4.6.0-rc3 #756
->> [    6.258844] Hardware name: Generic R8A7790 (Flattened Device Tree)
+>> +static int __init nokaslr_hibernate_setup(char *str)
+>> +{
+>> +     noresume = 0;
+>> +     nohibernate = 0;
+>> +     return 1;
+>> +}
+>> +
+>>  static int __init page_poison_nohibernate_setup(char *str)
+>>  {
+>>  #ifdef CONFIG_PAGE_POISONING_ZERO
+>> @@ -1183,4 +1195,5 @@ __setup("resumewait", resumewait_setup);
+>>  __setup("resumedelay=", resumedelay_setup);
+>>  __setup("nohibernate", nohibernate_setup);
+>>  __setup("kaslr", kaslr_nohibernate_setup);
+>> +__setup("nokaslr", nokaslr_hibernate_setup);
 >
-> [...]
->
-> Ah! That will teach me a lesson.
->
->> The .irq_request_resources() handler is called with a spinlock held, it thus
->> can't call the synchronous version of the PM runtime functions.
->
-> OK, so we're back to square one. Is that just a matter of calling the
-> non-synchronous version? My hunch is that it is not that simple...
->
-> Geert?
+> So one or the other option has to be specified at boot?
 
-Unfortunately it's not that simple.
-The irqchip must be runtime-resumed before we can access its registers.
+No, this patch was just flipping the default from hibernate to kASLR
+if "kaslr" wasn't on the command line.
 
-I'm afraid we'll have to keep gpio-rcar runtime-resumed all the time,
-i.e. revert both of
-b26a719bdb ("gpio: rcar: Add Runtime PM handling for interrupts")
-65194cb174 ("gpio: rcar: Fine-grained Runtime PM support")
-until Jon Hunter's "genirq: Add runtime power management support for IRQ chips"
-(and perhaps a few more patches from his series) is applied.
+> The kASLR patches for arm64 in v4.6-rc1 enable kASLR at boot if you chose to
+> select it at compile time. I guess this patch is preparation for doing the same
+> on x86?
 
-Gr{oetje,eeting}s,
+That was the goal, yes. A better approach would be to have hibernate
+on x86 work with kASLR, but I likely won't have time to learn the
+details on hibernation and debug it for a while.
 
-                        Geert
+> I didn't hit this kaslr_nohibernate_setup() call during testing because of the
+> on by default behaviour. Is it worth exposing this via Kconfig? Something like:
+> ARCH_RANDOMIZE_BASE_DEFAULT_ON ?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Maybe RANDOMIZE_BASE_DEFAULT (default to y) and if x86 && hibernation,
+select =n. and use that for selecting it?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
