@@ -1,123 +1,163 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 11 Apr 2016 01:38:39 +0000
-Message-ID: <AM4PR04MB2130B1F3D1C9B4DE5CD6B92989940@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
-	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
-	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
-	<AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
- <CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 0/7] PM / devfreq: Add NoCP devfreq-event and support
+ busfreq on exyno5422-odroidxu3
+Date: Mon, 11 Apr 2016 11:16:18 +0900
+Message-ID: <570B08F2.50302@samsung.com>
+References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+ <CANAwSgQuWBRiRhjd-E-WaSdhe2njE262CEG8uVH83jJDGFJVKA@mail.gmail.com>
+ <CAGTfZH2gd5zhr4_JioSXTcpf8Fgu6r_Y9gPOJo-mYGTjAJsFyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:55644 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbcDKCQo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 22:16:44 -0400
+In-reply-to: <CAGTfZH2gd5zhr4_JioSXTcpf8Fgu6r_Y9gPOJo-mYGTjAJsFyg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@li>
 
-SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
-bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IEZyaWRheSwgQXByaWwgMDgs
-IDIwMTYgNzo1MSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IGJhbGJp
-QGtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBzcmVAa2VybmVsLm9yZzsN
-Cj4gZGJhcnlzaGtvdkBnbWFpbC5jb207IGR3bXcyQGluZnJhZGVhZC5vcmc7IHBldGVyLmNoZW5A
-ZnJlZXNjYWxlLmNvbTsNCj4gc3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdTsgci5iYWxkeWdhQHNh
-bXN1bmcuY29tOw0KPiB5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbTsgbGVlLmpvbmVz
-QGxpbmFyby5vcmc7IGJyb29uaWVAa2VybmVsLm9yZzsNCj4gY2tlZXBheEBvcGVuc291cmNlLndv
-bGZzb25taWNyby5jb207IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBs
-aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGRldmlj
-ZS0NCj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDEvNF0gZ2FkZ2V0OiBJ
-bnRyb2R1Y2UgdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaw0KPiANCj4gT24gOCBBcHJpbCAyMDE2
-IGF0IDE5OjI3LCBKdW4gTGkgPGp1bi5saUBueHAuY29tPiB3cm90ZToNCj4gPg0KPiA+DQo+ID4+
-IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IEJhb2xpbiBXYW5nIFttYWls
-dG86YmFvbGluLndhbmdAbGluYXJvLm9yZ10NCj4gPj4gU2VudDogRnJpZGF5LCBBcHJpbCAwOCwg
-MjAxNiA3OjAwIFBNDQo+ID4+IFRvOiBKdW4gTGkgPGp1bi5saUBueHAuY29tPg0KPiA+PiBDYzog
-YmFsYmlAa2VybmVsLm9yZzsgZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IHNyZUBrZXJuZWwu
-b3JnOw0KPiA+PiBkYmFyeXNoa292QGdtYWlsLmNvbTsgZHdtdzJAaW5mcmFkZWFkLm9yZzsgcGV0
-ZXIuY2hlbkBmcmVlc2NhbGUuY29tOw0KPiA+PiBzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1OyBy
-LmJhbGR5Z2FAc2Ftc3VuZy5jb207DQo+ID4+IHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMu
-Y29tOyBsZWUuam9uZXNAbGluYXJvLm9yZzsNCj4gPj4gYnJvb25pZUBrZXJuZWwub3JnOyBja2Vl
-cGF4QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gPj4gcGF0Y2hlc0BvcGVuc291cmNl
-LndvbGZzb25taWNyby5jb207DQo+ID4+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgt
-dXNiQHZnZXIua2VybmVsLm9yZzsgZGV2aWNlLQ0KPiA+PiBtYWlubGluaW5nQGxpc3RzLmxpbnV4
-Zm91bmRhdGlvbi5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVj
-dDogUmU6IFtQQVRDSCB2MTAgMS80XSBnYWRnZXQ6IEludHJvZHVjZSB0aGUgdXNiIGNoYXJnZXIN
-Cj4gPj4gZnJhbWV3b3JrDQo+ID4+DQo+ID4+IEhpIEp1biwNCj4gPj4NCj4gPj4gPj4gPj4gKy8q
-DQo+ID4+ID4+ID4+ICsgKiB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpIC0gZGV0ZWN0IHRoZSBj
-aGFyZ2VyIHR5cGUgbWFudWFsbHkuDQo+ID4+ID4+ID4+ICsgKiBAdWNoZ2VyIC0gdXNiIGNoYXJn
-ZXIgZGV2aWNlDQo+ID4+ID4+ID4+ICsgKg0KPiA+PiA+PiA+PiArICogTm90ZTogWW91IHNob3Vs
-ZCBlbnN1cmUgeW91IG5lZWQgdG8gZGV0ZWN0IHRoZSBjaGFyZ2VyIHR5cGUNCj4gPj4gPj4gPj4g
-K21hbnVhbGx5IG9uIHlvdXINCj4gPj4gPj4gPj4gKyAqIHBsYXRmb3JtLg0KPiA+PiA+PiA+PiAr
-ICogWW91IHNob3VsZCBjYWxsIGl0IGF0IHRoZSByaWdodCBnYWRnZXQgc3RhdGUgdG8gYXZvaWQN
-Cj4gPj4gPj4gPj4gK2FmZmVjdGluZyBnYWRnZXQNCj4gPj4gPj4gPj4gKyAqIGVudW1lcmF0aW9u
-Lg0KPiA+PiA+PiA+PiArICovDQo+ID4+ID4+ID4+ICtpbnQgdXNiX2NoYXJnZXJfZGV0ZWN0X3R5
-cGUoc3RydWN0IHVzYl9jaGFyZ2VyICp1Y2hnZXIpIHsNCj4gPj4gPj4gPj4gKyAgICAgZW51bSB1
-c2JfY2hhcmdlcl90eXBlIHR5cGU7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4gPj4gKyAgICAgaWYg
-KFdBUk4oIXVjaGdlci0+Y2hhcmdlcl9kZXRlY3QsDQo+ID4+ID4+ID4+ICsgICAgICAgICAgICAg
-ICJjaGFyZ2VyIGRldGVjdGlvbiBtZXRob2Qgc2hvdWxkIG5vdCBiZSBOVUxMIikpDQo+ID4+ID4+
-ID4+ICsgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4g
-Pj4gKyAgICAgdHlwZSA9IHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QodWNoZ2VyKTsNCj4gPj4gPj4g
-Pj4gKw0KPiA+PiA+PiA+PiArICAgICBtdXRleF9sb2NrKCZ1Y2hnZXItPmxvY2spOw0KPiA+PiA+
-PiA+PiArICAgICB1Y2hnZXItPnR5cGUgPSB0eXBlOw0KPiA+PiA+PiA+PiArICAgICBtdXRleF91
-bmxvY2soJnVjaGdlci0+bG9jayk7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4gPj4gKyAgICAgcmV0
-dXJuIDA7DQo+ID4+ID4+ID4+ICt9DQo+ID4+ID4+ID4+ICtFWFBPUlRfU1lNQk9MX0dQTCh1c2Jf
-Y2hhcmdlcl9kZXRlY3RfdHlwZSk7DQo+ID4+ID4+ID4NCj4gPj4gPj4gPiBJIHN0aWxsIHJlY29t
-bWVuZCBoYXZlIGEgY2VudHJhbCBwbGFjZSB0byBjYWxsDQo+ID4+ID4+ID4gdXNiX2NoYXJnZXJf
-ZGV0ZWN0X3R5cGUoKSB0byBjb3ZlciByZWFsIGNoYXJnZXIgZGV0ZWN0aW9uDQo+ID4+ID4+ID4g
-aW5zdGVhZCBvZiBsZWF2aW5nIHRoaXMgcXVlc3Rpb24gb3BlbiB0byBkaWZmIHVzZXJzLiBUaGlz
-IGNhbiBiZQ0KPiA+PiA+PiA+IGRvbmUgYWZ0ZXIgdmJ1cy1vbiBpcyBkZXRlY3RlZCBhbmQgYmVm
-b3JlIGRvIGdhZGdldCBjb25uZWN0LiBJDQo+ID4+ID4+ID4gZG9uJ3QgdGhpbmsgdGhpcw0KPiA+
-PiA+PiB3aWxsIG1ha2UgeW91ciBmcmFtZXdvcmsgY29tcGxpY2F0ZWQuDQo+ID4+ID4+DQo+ID4+
-ID4+IFRoaXMgQVBJIGlzIHVzZWQgZm9yIGRldGVjdGluZyB0aGUgY2hhcmdlciB0eXBlIG1hbnVh
-bGx5IChzb2Z0d2FyZQ0KPiA+PiA+PiBjaGFyZ2VyIGRldGVjdGlvbiksIHNvIGlmIHVzZXIncyB1
-ZGMgZHJpdmVyIGlzIG5lZWRlZCB0byBkbyB0aGlzLA0KPiA+PiA+PiB0aGVuIHRoZXkgY2FuIGlz
-c3VlIGl0IGF0IHRoZWlyIHJpZ2h0IHBsYWNlIHRvIG1ha2UgaXQgbW9yZSBmbGV4aWJsZS4NCj4g
-Pj4gPj4gQnV0IGxldCB1cyBzZWUgb3RoZXIgcGVvcGxlJ3Mgc3VnZ2VzdGlvbi4gVGhhbmtzLg0K
-PiA+PiA+DQo+ID4+ID4gT2ssIGFjdHVhbGx5IHRoaXMgQVBJIGNhbiBiZSB1c2VkIGZvciB3aGF0
-IGV2ZXIgY2hhcmdlciBkZXRlY3Rpb24NCj4gPj4gPiB0eXBlLCB1c2VyIGNhbiBpbXBsZW1lbnQg
-YW55IG1ldGhvZChtYW51YWwgZGV0ZWN0aW9uLCBkaXJlY3RseSByZWFkDQo+ID4+ID4gcmVzdWx0
-IGZyb20gc29tZSBIVy4uLndoYXQgZXZlcikgaW4gdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdCgpLA0K
-PiA+PiA+IHRhcmdldCBpcw0KPiA+Pg0KPiA+PiBCdXQgcmVhZGluZyByZXN1bHQgZnJvbSBzb21l
-IEhXIGRvc2Ugbm90IG1lYW5zICpkZXRlY3QqLCBhY3R1YWxseSBpcw0KPiAqZ2V0Ki4NCj4gPj4g
-V2UgY2FuIG5vdCBtaXggdGhlbSB0b2dldGhlciB3aXRoIHRoZSBkaWZmZXJlbnQgc2VtYW50aWNz
-Lg0KPiA+DQo+ID4gSXQgZG9lc27igJl0IG1hdHRlciBoZXJlLCB5b3UgYWxyZWFkeSBkZWZpbmUg
-dGhlIF9nZXRfIEFQSSBmb3IganVzdCByZWFkDQo+ID4gdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHRo
-ZSBzYXZlZCB2YWx1ZSh1Y2hnZXItPnR5cGUpLCBzbyB3ZSBjYW4gdGhpbmsNCj4gPiB0aGUgQVBJ
-IHRvIG1ha2UgdWNoZ2VyLT50eXBlIGZyb20gVU5LTk9XIHRvIE9ORSBLTk9XTiB0eXBlIGlzDQo+
-ID4gKmRldGVjdCosIGJlY2F1c2Ugd2UgZG9uJ3QgbmVlZCAyIHNlcGFyYXRlIEFQSSBvbmUgZm9y
-ICpnZXQqIHR5cGUgZnJvbQ0KPiA+IEhXIGFuZCBhbm90aGVyIG9uZSBmb3IgKmRldGVjdCogZnJv
-bSBIVywgb25seSBvbmUgQVBJIGludm9sdmUgSFcgYWNjZXNzDQo+IGlzIGVub3VnaC4NCj4gDQo+
-IEJ1dCBhbm90aGVyIGlzc3VlIGlzIHNvbWUgdXNlcnMgbWF5IG5lZWQgdG8gZ2V0IHRoZSBjaGFy
-Z2VyIHR5cGUgZnJvbQ0KPiBwb3dlciBzdXBwbHkgYnkgInBvd2VyX3N1cHBseV9nZXRfcHJvcGVy
-dHkoKSIgZnVuY3Rpb24sIHdlIG5lZWQgdG8NCj4gaW50ZWdyYXRlIHdpdGggdGhlIHBvd2VyIHN1
-cHBseSB0aGluZ3MgaW4gdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaywgbm90DQo+IHVzZXIgdG8g
-aW1wbGVtZW50IHRoYXQuDQoNCldoeSB0aGlzIHVzZXIoeW91ciBjYXNlKSBjYW4ndCBwdXQgdGhl
-IGNoYXJnZXIgdHlwZSBnZXQgYnkNCiJwb3dlcl9zdXBwbHlfZ2V0X3Byb3BlcnR5KCkiIGluIGl0
-cyB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KCksDQphbnkgc3BlY2lhbCByZWFzb24gcHJldmVudCB5
-b3UgZG9pbmcgaXQ/IEkgYW0gbm90IHN1cmUgaWYgdGhpcw0KY2FzZSBpcyB2ZXJ5IGNvbW1vbiwg
-ZXZlbiBpZiBpdCBpcywgeW91IGFsc28gY2FuIHB1dCBpdCBpbg0KdXNiX2NoYXJnZXJfZGV0ZWN0
-X3R5cGUoKQ0KDQp1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpDQp7DQoJSWYgY2FuIGdldCBmcm9t
-IHBvd2VyX3N1cHBseV9nZXRfcHJvcGVydHkoKQ0KCQkuLi4NCgllbHNlIGlmIHVjaGdlci0+Y2hh
-cmdlcl9kZXRlY3QNCgkJdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdCgpOw0KCS4uLg0KfQ0KDQpJIGRv
-bid0IGtub3cgaWYgbW9zdCBkZXNpZ24gb2YgdXNiIGNoYXJnZXIgZGV0ZWN0aW9uIG5vdyBkYXlz
-DQppcyBhcyBlYXN5IGFzIHlvdXIgUE1JQyBmb3Igc29mdHdhcmUoSFcgZG9lcyB0aGUgd2hvbGUg
-ZGV0ZWN0aW9uDQpwcm9jZXNzIGFuZCBwcmV2ZW50IHRoZSB2YnVzIGdlbmVyYXRpb24gdW50aWwg
-ZGV0ZWN0aW9uIGhhcyBjb21wbGV0ZWQpLA0KYW55d2F5IGlmIHlvdXIgZnJhbWV3b3JrIGNhbiBn
-dWFyYW50ZWUgdGhlIGRldGVjdGlvbiBwcm9jZXNzIGZpbmlzaGVkDQpiZWZvcmUgZ2FkZ2V0IGNv
-bm5lY3QsIHRoZW4gZWFjaCB1c2VyIGRvbid0IGhhdmUgdG8gd29ycnkgYWJvdXQgdGhlDQpIVyBk
-ZXRlY3Rpb24gcHJvY2VzcyBkZXRhaWxzIGFuZCBzZWVrIGEgcHJvcGVyIHBsYWNlIHRvIGRvIGl0
-Lg0KIA0KTGkgSnVuDQo+IA0KPiA+DQo+ID4gLSBEZXRlY3Q6ICh3cml0ZSB0byBhbmQpIHJlYWQg
-ZnJvbSBIVyB0byBnZXQgdGhlIGNoYXJnZXIgdHlwZSwNCj4gPiAgIHNhdmUgdG8gdWNoZ2VyLT50
-eXBlOw0KPiA+IC0gR2V0OiByZWFkIHRoZSBjaGFyZ2VyIHR5cGUgZnJvbSB1Y2hnZXItPnR5cGUu
-DQo+ID4NCj4gPj4NCj4gPj4gPiB0byBoYXZlIHRoZSBjaGFyZ2VyIHR5cGUgYW5kIHNldCB1Y2hn
-ZXItPnR5cGUsIHRoZW4geW91IG5vIG5lZWQgdG8NCj4gPj4gPiBhZGQgdGhlIGNvbW1lbnRzL2Rl
-c2NyaXB0aW9uIHRvIGxpbWl0IGl0IHVzYWdlLiBBbHNvIEkgZG8gc2VlIHRoZXJlDQo+ID4+ID4g
-aXMNCj4gPj4gcG9zc2libGUgY2VudHJhbCBwbGFjZSB0byBkbyB0aGlzLg0KPiA+PiA+DQo+ID4+
-DQo+ID4+IC0tDQo+ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0KPiANCj4gDQo+
-IA0KPiAtLQ0KPiBCYW9saW4ud2FuZw0KPiBCZXN0IFJlZ2FyZHMNCg==
+Hi Anand,
+
+On 2016=EB=85=84 04=EC=9B=94 09=EC=9D=BC 03:24, Chanwoo Choi wrote:
+> Hi Anand,
+>=20
+> On Sat, Apr 9, 2016 at 3:11 AM, Anand Moon <linux.amoon@gmail.com> wr=
+ote:
+>> Hi Chanwoo,
+>>
+
+[snip]
+
+>>>
+>>
+>> I am observing following deadlock. Both on Odroid U3 and Odroid XU4.
+>=20
+> Thanks for your test. I'll test it again and fix it.
+
+This possible recursive locking is fixed with following diff:
+
+Thanks for your report. I'll fix it on next patchset[1] (v9).
+[1] https://lkml.org/lkml/2016/4/8/14
+
+
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/gover=
+nor_passive.c
+index 28a9ae32d330..a4b0b02ee797 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -102,7 +102,7 @@ static int update_devfreq_passive(struct devfreq *d=
+evfreq, unsigned long freq)
+        if (!devfreq->governor)
+                return -EINVAL;
+=20
+-       mutex_lock(&devfreq->lock);
++       mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
+=20
+        ret =3D devfreq->governor->get_target_freq(devfreq, &freq);
+        if (ret < 0)
+
+Best Regards,
+Chanwoo Choi
+
+>=20
+>>
+>> [    7.718372] [ INFO: possible recursive locking detected ]
+>> [    7.723747] 4.6.0-rc2-xu4ml #4 Not tainted
+>> [    7.727817] ---------------------------------------------
+>> [    7.733190] kworker/u16:1/136 is trying to acquire lock:
+>> [    7.738476]  (&devfreq->lock){+.+.+.}, at: [<c05be41c>]
+>> update_devfreq_passive+0x2c/0x88
+>> [    7.746534]
+>> [    7.746534] but task is already holding lock:
+>> [    7.752339]  (&devfreq->lock){+.+.+.}, at: [<c05bd838>]
+>> devfreq_monitor+0x1c/0x78
+>> [    7.759791]
+>> [    7.759791] other info that might help us debug this:
+>> [    7.766291]  Possible unsafe locking scenario:
+>> [    7.766291]
+>> [    7.766307] usb 5-1: new high-speed USB device number 2 using xhc=
+i-hcd
+>> [    7.778682]        CPU0
+>> [    7.781107]        ----
+>> [    7.783533]   lock(&devfreq->lock);
+>> [    7.786999]   lock(&devfreq->lock);
+>> [    7.790467]
+>> [    7.790467]  *** DEADLOCK ***
+>> [    7.790467]
+>> [    7.796359]  May be due to missing lock nesting notation
+>> [    7.796359]
+>> [    7.803120] 4 locks held by kworker/u16:1/136:
+>> [    7.807537]  #0:  ("%s"("devfreq_wq")){.+.+..}, at: [<c013b41c>]
+>> process_one_work+0x13c/0x454
+>> [    7.816029]  #1:  ((&(&devfreq->work)->work)){+.+...}, at:
+>> [<c013b41c>] process_one_work+0x13c/0x454
+>> [    7.825128]  #2:  (&devfreq->lock){+.+.+.}, at: [<c05bd838>]
+>> devfreq_monitor+0x1c/0x78
+>> [    7.833013]  #3:  (&nh->srcu){......}, at: [<c014309c>]
+>> __srcu_notifier_call_chain+0x54/0xe0
+>> [    7.841419]
+>> [    7.841419] stack backtrace:
+>> [    7.845758] CPU: 1 PID: 136 Comm: kworker/u16:1 Not tainted
+>> 4.6.0-rc2-xu4ml #4
+>> [    7.852946] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+>> [    7.859017] Workqueue: devfreq_wq devfreq_monitor
+>> [    7.863717] [<c010eb48>] (unwind_backtrace) from [<c010b884>]
+>> (show_stack+0x10/0x14)
+>> [    7.871417] [<c010b884>] (show_stack) from [<c037715c>]
+>> (dump_stack+0xa4/0xd0)
+>> [    7.878613] [<c037715c>] (dump_stack) from [<c017112c>]
+>> (__lock_acquire+0x1ce8/0x207c)
+>> [    7.886492] [<c017112c>] (__lock_acquire) from [<c0172010>]
+>> (lock_acquire+0x90/0xd4)
+>> [    7.892726] usb 5-1: New USB device found, idVendor=3D0bda, idPro=
+duct=3D8153
+>> [    7.892737] usb 5-1: New USB device strings: Mfr=3D1, Product=3D2=
+, SerialNumber=3D6
+>> [    7.892745] usb 5-1: Product: USB 10/100/1000 LAN
+>> [    7.892753] usb 5-1: Manufacturer: Realtek
+>> [    7.892761] usb 5-1: SerialNumber: 000001000000
+>> [    7.921248] [<c0172010>] (lock_acquire) from [<c075d298>]
+>> (mutex_lock_nested+0x78/0x4ec)
+>> [    7.929301] [<c075d298>] (mutex_lock_nested) from [<c05be41c>]
+>> (update_devfreq_passive+0x2c/0x88)
+>> [    7.938138] [<c05be41c>] (update_devfreq_passive) from [<c05be4c0=
+>]
+>> (devfreq_passive_notifier_call+0x48/0x50)
+>> [    7.948016] [<c05be4c0>] (devfreq_passive_notifier_call) from
+>> [<c0142d84>] (notifier_call_chain+0x54/0xa4)
+>> [    7.957633] [<c0142d84>] (notifier_call_chain) from [<c01430e0>]
+>> (__srcu_notifier_call_chain+0x98/0xe0)
+>> [    7.966991] [<c01430e0>] (__srcu_notifier_call_chain) from
+>> [<c0143140>] (srcu_notifier_call_chain+0x18/0x20)
+>> [    7.976783] [<c0143140>] (srcu_notifier_call_chain) from
+>> [<c05bd774>] (update_devfreq+0xe4/0x18c)
+>> [    7.985622] [<c05bd774>] (update_devfreq) from [<c05bd840>]
+>> (devfreq_monitor+0x24/0x78)
+>> [    7.993595] [<c05bd840>] (devfreq_monitor) from [<c013b48c>]
+>> (process_one_work+0x1ac/0x454)
+>> [    8.001913] [<c013b48c>] (process_one_work) from [<c013b784>]
+>> (worker_thread+0x50/0x508)
+>> [    8.009976] [<c013b784>] (worker_thread) from [<c0141cf4>]
+>> (kthread+0xf8/0x110)
+>> [    8.017254] [<c0141cf4>] (kthread) from [<c0107750>]
+>> (ret_from_fork+0x14/0x24)
+>>
+>> Best Regards
+>> -Anand Moon
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-sams=
+ung-soc" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsu=
+ng-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
+>=20
+
