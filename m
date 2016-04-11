@@ -1,92 +1,92 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 4/5] mfd: tps65217: Add power button as subdevice
-Date: Mon, 11 Apr 2016 13:35:51 +0100
-Message-ID: <20160411123551.GW8094@x1>
-References: <1459789865-3704-1-git-send-email-m.niestroj@grinn-global.com>
- <1459789865-3704-6-git-send-email-m.niestroj@grinn-global.com>
- <20160411094452.GC8094@x1>
- <570B7BFE.6000501@ti.com>
- <20160411103724.GD8094@x1>
- <570B84DD.6040003@ti.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [regression] cross core scheduling frequency drop bisected to
+ 0c313cb20732
+Date: Mon, 11 Apr 2016 08:38:15 -0400
+Message-ID: <1460378295.25336.5.camel@redhat.com>
+References: <1460092854.4051.1.camel@gmail.com>
+	 <20160408064510.GK3448@twins.programming.kicks-ass.net>
+	 <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
+	 <20160409110729.GS3448@twins.programming.kicks-ass.net>
+	 <CAJZ5v0j-5Eva2QReG4LHvyZR-iL5rrrWp-3erdfz-u+5xbwRKA@mail.gmail.com>
+	 <1460302797.4383.44.camel@gmail.com> <1460319890.25336.2.camel@redhat.com>
+	 <1460343894.3682.11.camel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg="pgp-sha256";
+	protocol="application/pgp-signature"; boundary="=-2yhfBHSLyspRvLXXLps0"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:38064 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbcDKMfz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 08:35:55 -0400
-Received: by mail-wm0-f48.google.com with SMTP id u206so102303517wme.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 05:35:55 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <570B84DD.6040003@ti.com>
+Received: from mx1.redhat.com ([209.132.183.28]:41884 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbcDKMiT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Apr 2016 08:38:19 -0400
+In-Reply-To: <1460343894.3682.11.camel@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Marcin Niestroj <m.niestroj@grinn-global.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
+To: Mike Galbraith <umgwanakikbuti@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On Mon, 11 Apr 2016, Grygorii Strashko wrote:
 
-> On 04/11/2016 01:37 PM, Lee Jones wrote:
-> >On Mon, 11 Apr 2016, Grygorii Strashko wrote:
-> >
-> >>On 04/11/2016 12:44 PM, Lee Jones wrote:
-> >>>On Mon, 04 Apr 2016, Marcin Niestroj wrote:
-> >>>
-> >>>>Add tps65217 power buttor subdevice with assigned IRQ resources.
-> >>>>
-> >>>>Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> >>>>---
-> >>>>  drivers/mfd/tps65217.c | 10 ++++++++++
-> >>>>  1 file changed, 10 insertions(+)
-> >>>
-> >>>Applied, thanks.
-> >>
-> >>Seems there is dependency from patch 1 :(
-> >
-> >What is the dependency?
->=20
-> TPS65217_IRQ_PB definition added in patch 1.
+--=-2yhfBHSLyspRvLXXLps0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Very well.  Unappiled.
-> >>>>diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-> >>>>index a20980f..fd3b5d8 100644
-> >>>>--- a/drivers/mfd/tps65217.c
-> >>>>+++ b/drivers/mfd/tps65217.c
-> >>>>@@ -38,6 +38,10 @@ static struct resource charger_resources[] =3D=
- {
-> >>>>  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
-> >>>>  };
-> >>>>
-> >>>>+static struct resource pb_resources[] =3D {
-> >>>>+	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
-> >>>>+};
-> >>>>+
-> >>>>  struct tps65217_irq {
-> >>>>  	int mask;
-> >>>>  	int interrupt;
-> >>>>@@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] =3D {
-> >>>>  		.resources =3D charger_resources,
-> >>>>  		.of_compatible =3D "ti,tps65217-charger",
-> >>>>  	},
-> >>>>+	{
-> >>>>+		.name =3D "tps65217-pwrbutton",
-> >>>>+		.num_resources =3D ARRAY_SIZE(pb_resources),
-> >>>>+		.resources =3D pb_resources,
-> >>>>+		.of_compatible =3D "ti,tps65217-pwrbutton",
-> >>>>+	},
-> >>>>  };
-> >>>>
-> >>>>  static irqreturn_t tps65217_irq_thread(int irq, void *data)
-> >>>
-> >>
-> >>
-> >
->=20
->=20
+On Mon, 2016-04-11 at 05:04 +0200, Mike Galbraith wrote:
+> On Sun, 2016-04-10 at 16:24 -0400, Rik van Riel wrote:
+> >=20
+> > On Sun, 2016-04-10 at 17:39 +0200, Mike Galbraith wrote:
+> >=20
+> > >=20
+> > > Should the default idle state not then be governor
+> > > dependent?=C2=A0=C2=A0When I
+> > > set gov=3Dperformance, I'm expecting box to go just as fast as it
+> > > can
+> > > go
+> > > without melting.=C2=A0=C2=A0Does polling risk CPU -> lava conversion?
+> > Current CPUs can only have some cores run at full speed
+> > (turbo mode) if other cores are idling and/or running at
+> > lower speeds.
+> The real world is very unlikely to miss the prettier numbers I'm
+> grieving over one tiny bit.=C2=A0=C2=A0Knowing that doesn't make giving t=
+hem up
+> any easier though.. byebye cycles (sniff) ;-)
+
+I suspect your pipe benchmark could be very relevant to
+network performance numbers, too.
+
+I would like to go into polling a little bit more aggressively
+in a future kernel, and I think we can get away with it if we
+teach the polling loop to exit after we have spent enough time
+there that the menu governor will pick HLT after a few timed
+out poll loops.
+
+That way while we run a workload that actually benefits from
+polling, we will get polling, but once we run a workload that
+actually sleeps longer than the HLT threshold, we will quickly
+fall back to HLT.
+
+With 10Gbps network traffic, it could make a real difference
+whether or not the CPU can wake up immediately, or takes a
+microsecond to wake up...
 
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+All Rights Reversed.
+
+
+--=-2yhfBHSLyspRvLXXLps0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXC5q3AAoJEM553pKExN6DMdUIAJv8ddCouEs6FDFNHR3cxjbK
+bLmJHupjLFylhSmLIKbIWQkyobgpUje0048kW9LlCQ4S8Mp31x0Z0NJHJ+mvm+go
+4p//nFPlgTIjDhG7/u6/Rl0XZ6b+nNEs/U5eUfT2l3CD1/+1nm7kkq8emIpB+rfh
+A2c+zrlvJDMzdXsr2rpP0Hm46qck/YRZ0h4UxQtNkHbG2u0Vs0Vp1oyxnmgqCnc1
+gVQjthfFUCxiAezs5JLPMDsC2pYu9muBWyMYJErLa/Sm33HlA+pQcyeE/se8bqV2
+rLq+ligPk7WTSI/Ki43g6X4JY8tv/RO1cPPGDU1S0RlQdF5r8lXKVZdHB3b+GX4=
+=wuqi
+-----END PGP SIGNATURE-----
+
+--=-2yhfBHSLyspRvLXXLps0--
+
