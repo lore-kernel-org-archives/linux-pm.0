@@ -1,60 +1,55 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH] Prefer kASLR over Hibernation
-Date: Mon, 11 Apr 2016 11:47:14 -0700
-Message-ID: <CAGXu5jLYA2tOEEk0ov6nU8d3k2pFZ8cY2jiB_pZthhzkagcz=A@mail.gmail.com>
-References: <20160406194404.GA11150@www.outflux.net>
-	<570B59A5.3090904@arm.com>
-	<CAGXu5jKU=+ZokCcMHwGT0GxHZ5G4RaLhdFrADxw2BxEHyfNF7g@mail.gmail.com>
-	<CAMuHMdWVGaetgcc4yxNjodkUNPaDxq2Q2JMLr_AUkb0f65YB5w@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
+ update_cfs_rq_load_avg()
+Date: Mon, 11 Apr 2016 12:28:34 -0700
+Message-ID: <570BFAE2.4080301@linaro.org>
+References: <1458606068-7476-1-git-send-email-smuckle@linaro.org>
+ <56F91D56.4020007@arm.com> <56F95D10.4070400@linaro.org>
+ <56F97856.4040804@arm.com> <56F98832.3030207@linaro.org>
+ <20160330193544.GD407@worktop> <56FC807C.80204@linaro.org>
+ <20160331073743.GF3408@twins.programming.kicks-ass.net>
+ <56FD95EE.6090007@linaro.org>
+ <20160401092019.GN3430@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:37104 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbcDKSrQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 14:47:16 -0400
-Received: by mail-wm0-f47.google.com with SMTP id n3so116946429wmn.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 11:47:16 -0700 (PDT)
-In-Reply-To: <CAMuHMdWVGaetgcc4yxNjodkUNPaDxq2Q2JMLr_AUkb0f65YB5w@mail.gmail.com>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:36642 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbcDKT2h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 15:28:37 -0400
+Received: by mail-pa0-f42.google.com with SMTP id bx7so110828535pad.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 12:28:36 -0700 (PDT)
+In-Reply-To: <20160401092019.GN3430@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Morse <james.morse@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Mon, Apr 11, 2016 at 11:21 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Mon, Apr 11, 2016 at 8:03 PM, Kees Cook <keescook@chromium.org> wrote:
->> On Mon, Apr 11, 2016 at 1:00 AM, James Morse <james.morse@arm.com> wrote:
->>> On 06/04/16 20:44, Kees Cook wrote:
->>>> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
->>>> one or the other must be chosen at boot-time. Until now, hibernation
->>>> was selected when no choice was made on the command line.
->>>>
->>>> To make the security benefits of kASLR more widely available to end
->>>> users (since the use of hibernation is becoming more rare and kASLR,
->>>> already available on x86, will be available on arm64 and MIPS soon),
->>>> this changes the default to preferring kASLR over hibernation. Users
->>>> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
->>>> command line.
->>>
->>> While hibernate isn't yet merged for arm64, it does work with kASLR in v4.6-rc*,
->>> it would be a shame to have to choose at boot time, (but that's my problem to
->>> fix if/when its merged).
->>
->> Ah, interesting, so they work together on arm64? (i.e. you've actually
->> tested a boot loader that provides the seed for kASLR to operate?)
+Hi Rafael,
+
+On 04/01/2016 02:20 AM, Peter Zijlstra wrote:
+>> > My thinking was in CFS we get rid of the (cpu == smp_processor_id())
+>> > condition for calling the cpufreq hook.
+>> > 
+>> > The sched governor can then calculate utilization and frequency required
+>> > for cpu. If (cpu == smp_processor_id()), the update is processed
+>> > normally. If (cpu != smp_processor_id()) and the new frequency is higher
+>> > than cpu's Fcur, the sched gov IPIs cpu to continue running the update
+>> > operation. Otherwise, the update is dropped.
+>> >
+>> > Does that sound plausible?
 >
-> Probably the PS3 people can provide us with a good tool to generate a
-> seed that makes hibernation work all the time ;-)
->
-> https://xkcd.com/221/
+> Can be done I suppose..
 
-:)
+Currently we drop schedutil updates for a target CPU which do not occur
+on that CPU.
 
-http://assets.amuniversal.com/321a39e06d6401301d80001dd8b71c47
+Is this solely due to platforms which must run the cpufreq driver on the
+target CPU?
 
--Kees
+Are there also shared cpufreq policies where the driver needs to run on
+any CPU in the affected policy/freq domain?
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+thanks,
+Steve
