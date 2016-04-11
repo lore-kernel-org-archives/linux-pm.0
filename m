@@ -1,126 +1,115 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
-Date: Mon, 11 Apr 2016 07:37:34 -0400
-Message-ID: <570B8C7E.2030504@redhat.com>
-References: <1458564569-19672-1-git-send-email-prarit@redhat.com>	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>	<56F32BDB.1010107@redhat.com>	<CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>	<56F94439.3000908@redhat.com> <CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH] i2c: let I2C masters ignore their children for PM
+Date: Mon, 11 Apr 2016 13:38:20 +0200
+Message-ID: <1460374700-23269-1-git-send-email-linus.walleij@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f44.google.com ([209.85.215.44]:35248 "EHLO
+	mail-lf0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754090AbcDKLif (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 07:38:35 -0400
+Received: by mail-lf0-f44.google.com with SMTP id c126so152570239lfb.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 04:38:34 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
+Cc: Linus Walleij <linus.walleij@linaro.org>, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
+When using a certain I2C device with runtime PM enabled on
+a certain I2C bus adaper the following happens:
 
+struct amba_device *foo
+   \
+   struct i2c_adapter *bar
+      \
+      struct i2c_client *baz
 
-On 03/31/2016 12:59 AM, Len Brown wrote:
->> Len,
->>
->> Your patch does
->>
->> +       skl_cstates[5].disabled = 1;    /* C8-SKL */
->> +       skl_cstates[6].disabled = 1;    /* C9-SKL */
->>
->> and I don't think that is correct for SKY-H.
->
-> For https://bugzilla.kernel.org/show_bug.cgi?id=109081
-> it is correct.
->
->> Your patch does not take into account that the states are explicitly disabled
->> in MSR_NHM_SNB_PKG_CST_CFG_CTL.  That is the problem here and what you've done
->> is simply hammered a disable into those states.
->
-> ENOPARSE.
-> Are we talking about the failure in
-> https://bugzilla.kernel.org/show_bug.cgi?id=109081
-> or a different problem?
->
+The AMBA device foo has its device PM struct set to ignore
+children with pm_suspend_ignore_children(&foo->dev, true).
+This makes runtime PM work just fine locally in the driver:
+the fact that devices on the bus are suspended or resumed
+individually does not affect its operation, and the hardware
+does not power up unless transferring messages.
 
-I see now.  There are two bugs.  The first is your case where the deep c-states
-should be disabled but are not disabled, and the my case where the states *are*
-disabled but not indicated as such in sysfs.
+However this child ignorance property is not inherited into
+the struct i2c_adapter *bar.
 
->>
->> Additionally, your patch does not show the user the correct state information:
->>
->>     [root@dhcp40-125 ~]# egrep ^
-/sys/devices/system/cpu/cpu0/cpuidle/state?/disable
->>     /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state5/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state6/disable:1:0
->>     /sys/devices/system/cpu/cpu0/cpuidle/state7/disable:1:0 << should be 1
->>     /sys/devices/system/cpu/cpu0/cpuidle/state8/disable:1:0 << should be 1
->
-> the 'disabled' attribute you see in sysfs is not
-> struct cpuidle_state.disabled
-> it is
-> struct cpuidle_state_usage.disabled
+On system suspend things will work fine.
 
-Yes.  I know that.  But the problem is that your patch should take that
-into account.
+On system resume the following annoying phenomenon occurs:
 
->
->> The fix is to honour the settings in MSR_NHM_SNB_PKG_CST_CFG_CTL.  I cannot say
->> for certain that ALL SKY-H are impacted (you are admittedly in better position
->> to say so or not).  I can say that on the 2 systems tested here the
->> MSR_NHM_SNB_PKG_CST_CFG_CTL do have the appropriate disable value set.
->>
->> /me could be missing some important info  -- again, perhaps there are some
->> SKY-H's out there that do not have states disabled in
->> MSR_NHM_SNB_PKG_CST_CFG_CTL, and that's why I've proposed rebasing on top of
->> your change.
->
-> Do you see this debug message when you run current upstream on this hardware?
->
->                 /* if state marked as disabled, skip it */
->                 if (cpuidle_state_table[cstate].disabled != 0) {
->                         pr_debug(PREFIX "state %s is disabled",
->                                 cpuidle_state_table[cstate].name);
->                         continue;
->                 }
->
->
-> If no, then my patch is not disabling C8/C9 on your system.
->
-> Also, if it were, the code above causes the states to not appear
-> at all in sysfs, because they are not registered.
->
-> Re: MSR_NHM_SNB_PKG_CST_CFG_CTL
->
-> if PC10 is disabled there, then functionally, it doesn't matter what we do,
-> which is why my patch does nothing when PC10 is disabled.
->
-> In such a scenario, pc10 presence in sysfs (and cpufreq)
-> is cosmetic.  The hardware knows what to do.
->
-> Do you think that cosmetic issue is worth dealing with?
+- In the pm_runtime_force_resume() path of
+  struct i2c_client *baz, pm_runtime_set_active(&baz->dev); is
+  eventually called.
 
-The bug reported is that the system will not go into the deep
-c-states.  This is because the c-states are disabled by hardware.  This
-means that turbostat shows only transitions to C7, while sysfs (and the
-monitoring software) indicates deeper c-states are available.
+- This becomes __pm_runtime_set_status(&baz->dev, RPM_ACTIVE);
 
-So yes, I do think that it is worth dealing with.
+- __pm_runtime_set_status() detects that RPM state is changed,
+  and checks whether the parent is:
+  not active (RPM_ACTIVE) and not ignoring its children
+  If this happens it concludes something is wrong, because
+  a parent that is not ignoring its children must be active
+  before any children activate.
 
-> Note that the decoding of that MSR changes with every CPU,
+- Since the struct i2c_adapter *bar does not ignore
+  its children, the PM core thinks that it must indeed go
+  online before its children, the check bails out with
+  -EBUSY, i.e. the i2c_client *baz thinks it can't work
+  because it's parent is not online, and it respects its
+  parent.
 
-:( Ugh ... I know :(.  I just decoded it.
+- In the driver the .resume() callback returns -EBUSY from
+  the runtime_force_resume() call as per above. This leaves
+  the device in a suspended state, leading to bad behaviour
+  later when the device is used. The following debug
+  print is made with an extra printg patch but illustrates
+  the problem:
 
-> so to get it right (like turbostat does), we'd need a table.
-> Also, it would be useful only for states which are  PC states only.
-> ie. we can't disable CC7 just because PC7 is disabled. etc.
-> So you could remove PC8, PC9, PC10 from sysfs on SKL
-> when they are disabled, but that is all.
->
+[   17.040832] bh1780 2-0029: parent (i2c-2) is not active
+               parent->power.ignore_children = 0
+[   17.040832] bh1780 2-0029: pm_runtime_force_resume:
+               pm_runtime_set_active() failed (-16)
+[   17.040863] dpm_run_callback():
+               pm_runtime_force_resume+0x0/0x88 returns -16
+[   17.040863] PM: Device 2-0029 failed to resume: error -16
 
-P.
+Fix this by letting all struct i2c_adapter:s ignore their
+children: i2c children have no business doing keeping
+their parents awake: they are completely autonomous
+devices that just use their parent to talk, a usecase
+which must be power managed in the host on a per-message
+basis.
 
-> thanks,
-> Len Brown, Intel Open Source Technology Center
->
+Cc: Wolfram Sang <wsa@the-dreams.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ChangeLog v1->v2:
+- Change subject from
+  "let I2C masters inherit suspend child ignorance"
+  to
+  "let I2C masters ignore their children for PM"
+- Use the big hammer and do the sensible thing:
+  mark all i2c adapters as ignoring their children
+  when it comes to power management.
+---
+ drivers/i2c/i2c-core.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 0f2f8484e8ec..5e114342dcbc 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1566,6 +1566,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+ 
+ 	pm_runtime_no_callbacks(&adap->dev);
+ 	pm_runtime_enable(&adap->dev);
++	pm_suspend_ignore_children(&adap->dev, true);
+ 
+ #ifdef CONFIG_I2C_COMPAT
+ 	res = class_compat_create_link(i2c_adapter_compat_class, &adap->dev,
+-- 
+2.4.3
+
