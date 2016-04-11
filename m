@@ -1,154 +1,59 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v9 15/20] ARM: dts: Add bus nodes using VDD_INT for Exynos4x12
-Date: Mon, 11 Apr 2016 12:57:53 +0900
-Message-ID: <1460347078-15175-16-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v9 19/20] ARM: dts: Expand the voltage range of buck1/3
+ regulator for exynos4412-odroidu3
+Date: Mon, 11 Apr 2016 12:57:57 +0900
+Message-ID: <1460347078-15175-20-git-send-email-cw00.choi@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus nodes using VDD_INT for Exynos4x12 SoC.
-Exynos4x12 has the following AXI buses to translate data between
-DRAM and sub-blocks.
+This patch expands the voltage range of buck1/3 regulator due to as following:
+- MIF (Memory Interface) bus frequency needs the range of '900 - 1100 mV'.
+- INT (Internal) bus frequency needs the range of '900 - 1050 mV'.
 
-Following list specifies the detailed relation between DRAM and sub-blocks:
-- ACLK100 clock for PERIL/PERIR/MFC(PCLK)
-- ACLK160 clock for CAM/TV/LCD
-: The minimum clock of ACLK160 should be over 160MHz.
-  When drop the clock under 160MHz, show the broken image.
-- ACLK133 clock for FSYS
-- GDL clock for LEFTBUS
-- GDR clock for RIGHTBUS
-- SCLK_MFC clock for MFC
-
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+Tested-by: Markus Reichl <m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org>
+Tested-by: Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- arch/arm/boot/dts/exynos4x12.dtsi | 106 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 106 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
-index 99a0f4ca3d47..e5173107ed44 100644
---- a/arch/arm/boot/dts/exynos4x12.dtsi
-+++ b/arch/arm/boot/dts/exynos4x12.dtsi
-@@ -349,6 +349,112 @@
- 			opp-hz = /bits/ 64 <267000000>;
- 		};
- 	};
-+
-+	bus_leftbus: bus_leftbus {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_GDL>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_rightbus: bus_rightbus {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_GDR>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_display: bus_display {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK160>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_display_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_fsys: bus_fsys {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK133>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_fsys_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_peri: bus_peri {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK100>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_peri_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_mfc: bus_mfc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_SCLK_MFC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_leftbus_opp_table: opp_table3 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <925000>;
-+		};
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+			opp-microvolt = <950000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+	};
-+
-+	bus_display_opp_table: opp_table4 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+		};
-+	};
-+
-+	bus_fsys_opp_table: opp_table5 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+		};
-+	};
-+
-+	bus_peri_opp_table: opp_table6 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+	};
- };
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index cba37c974703..b4983cbc4f8c 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -356,8 +356,8 @@
  
- &combiner {
+ 			buck1_reg: BUCK1 {
+ 				regulator-name = "vdd_mif";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1100000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
+@@ -372,8 +372,8 @@
+ 
+ 			buck3_reg: BUCK3 {
+ 				regulator-name = "vdd_int";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1050000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
