@@ -1,55 +1,42 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
- update_cfs_rq_load_avg()
-Date: Mon, 11 Apr 2016 12:28:34 -0700
-Message-ID: <570BFAE2.4080301@linaro.org>
-References: <1458606068-7476-1-git-send-email-smuckle@linaro.org>
- <56F91D56.4020007@arm.com> <56F95D10.4070400@linaro.org>
- <56F97856.4040804@arm.com> <56F98832.3030207@linaro.org>
- <20160330193544.GD407@worktop> <56FC807C.80204@linaro.org>
- <20160331073743.GF3408@twins.programming.kicks-ass.net>
- <56FD95EE.6090007@linaro.org>
- <20160401092019.GN3430@twins.programming.kicks-ass.net>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v9 00/20] PM / devferq: Add generic exynos bus frequency
+ driver and new passive governor
+Date: Mon, 11 Apr 2016 21:55:57 +0200
+Message-ID: <20160411195557.GA6426@kozik-lap>
+References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
+ <570B218E.5000908@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:36642 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbcDKT2h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 15:28:37 -0400
-Received: by mail-pa0-f42.google.com with SMTP id bx7so110828535pad.3
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 12:28:36 -0700 (PDT)
-In-Reply-To: <20160401092019.GN3430@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <570B218E.5000908@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, s.nawrocki@samsung.com, tomasz.figa@gmail.com, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-Hi Rafael,
+On Mon, Apr 11, 2016 at 01:01:18PM +0900, Chanwoo Choi wrote:
+> Dear Myungjoo and Krzysztof,
+> 
+> This patch-set already get the acked-by or signed-off-by tag
+> from Exynos SoC and DEVFREQ maintainer except for patch10.
+> 
+> If there is no comment, could you pick this patch-set?
 
-On 04/01/2016 02:20 AM, Peter Zijlstra wrote:
->> > My thinking was in CFS we get rid of the (cpu == smp_processor_id())
->> > condition for calling the cpufreq hook.
->> > 
->> > The sched governor can then calculate utilization and frequency required
->> > for cpu. If (cpu == smp_processor_id()), the update is processed
->> > normally. If (cpu != smp_processor_id()) and the new frequency is higher
->> > than cpu's Fcur, the sched gov IPIs cpu to continue running the update
->> > operation. Otherwise, the update is dropped.
->> >
->> > Does that sound plausible?
->
-> Can be done I suppose..
+I cannot find any description of dependencies between the patches so I
+assume the obvious one: DTS patches do not depend on anything. This
+means that:
+1. driver/devfreq related changes (including dt-bindings documentation)
+   go to Myungjoo,
+2. I can pick DTS changes.
 
-Currently we drop schedutil updates for a target CPU which do not occur
-on that CPU.
+But first I would like to see the bindings documentation beeing applied
+by someone as a proof that there won't be more development in DTS in
+these series. There is no sense of picking DTS if after comments from
+Rob, you will rework them, right?
 
-Is this solely due to platforms which must run the cpufreq driver on the
-target CPU?
+Anyway I see Rob's questions. For these bindings I think you should get
+DT-guys ack first.
 
-Are there also shared cpufreq policies where the driver needs to run on
-any CPU in the affected policy/freq domain?
-
-thanks,
-Steve
+Best regards,
+Krzysztof
