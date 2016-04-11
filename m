@@ -1,75 +1,71 @@
-From: Anand Moon <linux.amoon@gmail.com>
-Subject: Re: [PATCH 0/7] PM / devfreq: Add NoCP devfreq-event and support
- busfreq on exyno5422-odroidxu3
-Date: Mon, 11 Apr 2016 09:31:38 +0530
-Message-ID: <CANAwSgRuw9ieoyu5AYFSSAcK3wgjy1-So0TA_y8bVHBa_BF7ig@mail.gmail.com>
-References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
- <CANAwSgQuWBRiRhjd-E-WaSdhe2njE262CEG8uVH83jJDGFJVKA@mail.gmail.com>
- <CAGTfZH2gd5zhr4_JioSXTcpf8Fgu6r_Y9gPOJo-mYGTjAJsFyg@mail.gmail.com> <570B08F2.50302@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <570B08F2.50302@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v9 12/20] ARM: dts: Add DMC bus frequency for
+ exynos3250-rinato/monk
+Date: Mon, 11 Apr 2016 12:57:50 +0900
+Message-ID: <1460347078-15175-13-git-send-email-cw00.choi@samsung.com>
+References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+This patch adds the DMC (Dynamic Memory Controller) bus frequency node
+which includes the devfreq-events and regulator properties. The bus
+frequency support the DVFS (Dynamic Voltage Frequency Scaling) feature
+with ondemand governor.
 
-On 11 April 2016 at 07:46, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> Hi Anand,
->
-> On 2016=EB=85=84 04=EC=9B=94 09=EC=9D=BC 03:24, Chanwoo Choi wrote:
->> Hi Anand,
->>
->> On Sat, Apr 9, 2016 at 3:11 AM, Anand Moon <linux.amoon@gmail.com> w=
-rote:
->>> Hi Chanwoo,
->>>
->
-> [snip]
->
->>>>
->>>
->>> I am observing following deadlock. Both on Odroid U3 and Odroid XU4=
-=2E
->>
->> Thanks for your test. I'll test it again and fix it.
->
-> This possible recursive locking is fixed with following diff:
->
-> Thanks for your report. I'll fix it on next patchset[1] (v9).
-> [1] https://lkml.org/lkml/2016/4/8/14
->
->
-> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/gov=
-ernor_passive.c
-> index 28a9ae32d330..a4b0b02ee797 100644
-> --- a/drivers/devfreq/governor_passive.c
-> +++ b/drivers/devfreq/governor_passive.c
-> @@ -102,7 +102,7 @@ static int update_devfreq_passive(struct devfreq =
-*devfreq, unsigned long freq)
->         if (!devfreq->governor)
->                 return -EINVAL;
->
-> -       mutex_lock(&devfreq->lock);
-> +       mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
->
->         ret =3D devfreq->governor->get_target_freq(devfreq, &freq);
->         if (ret < 0)
->
-> Best Regards,
-> Chanwoo Choi
->
+The devfreq-events (ppmu_dmc0*) can monitor the utilization of DMC bus
+on runtime and the buck1_reg (VDD_MIF power line) supplies the power to
+the DMC block.
 
-Thanks you for these patches on devfreq.
-These changes fix the warning.
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Acked-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ arch/arm/boot/dts/exynos3250-monk.dts   | 6 ++++++
+ arch/arm/boot/dts/exynos3250-rinato.dts | 6 ++++++
+ 2 files changed, 12 insertions(+)
 
-Tested-by: Anand Moon <linux.amoon@gmail.com>
+diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
+index 9e2840b59ae8..1fd7ecb5c415 100644
+--- a/arch/arm/boot/dts/exynos3250-monk.dts
++++ b/arch/arm/boot/dts/exynos3250-monk.dts
+@@ -156,6 +156,12 @@
+ 	};
+ };
+ 
++&bus_dmc {
++	devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
++	vdd-supply = <&buck1_reg>;
++	status = "okay";
++};
++
+ &cpu0 {
+ 	cpu0-supply = <&buck2_reg>;
+ };
+diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
+index 1f102f3a1ab1..5175bd7e015f 100644
+--- a/arch/arm/boot/dts/exynos3250-rinato.dts
++++ b/arch/arm/boot/dts/exynos3250-rinato.dts
+@@ -147,6 +147,12 @@
+ 	};
+ };
+ 
++&bus_dmc {
++	devfreq-events = <&ppmu_dmc0_3>, <&ppmu_dmc1_3>;
++	vdd-supply = <&buck1_reg>;
++	status = "okay";
++};
++
+ &cpu0 {
+ 	cpu0-supply = <&buck2_reg>;
+ };
+-- 
+1.9.1
 
-Tested on Odroid XU4 and Odroid U3.
-
-Best Regards
--Anand Moon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
