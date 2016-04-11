@@ -1,66 +1,63 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] i2c: let I2C masters ignore their children for PM
-Date: Mon, 11 Apr 2016 15:02:17 +0200
-Message-ID: <20160411130217.GB4719@katana>
-References: <1460374700-23269-1-git-send-email-linus.walleij@linaro.org>
- <CAPDyKFqXjsrm13kRopVor_5_m_gTfunqfac4ozFL=w1w9k3QEw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [regression] cross core scheduling frequency drop bisected to 0c313cb20732
+Date: Mon, 11 Apr 2016 15:21:45 +0200
+Message-ID: <CAJZ5v0i8saPhJ_WsyitJWi3BR4m5f94KV-UnHMmvAWUoLDWfPA@mail.gmail.com>
+References: <1460092854.4051.1.camel@gmail.com>
+	<20160408064510.GK3448@twins.programming.kicks-ass.net>
+	<1460098254.5582.17.camel@gmail.com>
+	<2428384.mEkP3EOpsR@vostro.rjw.lan>
+	<20160409110729.GS3448@twins.programming.kicks-ass.net>
+	<CAJZ5v0j-5Eva2QReG4LHvyZR-iL5rrrWp-3erdfz-u+5xbwRKA@mail.gmail.com>
+	<1460302797.4383.44.camel@gmail.com>
+	<1460319890.25336.2.camel@redhat.com>
+	<1460343894.3682.11.camel@gmail.com>
+	<1460378295.25336.5.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="98e8jtXdkpgskNou"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([89.238.76.85]:57872 "EHLO pokefinder.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754559AbcDKNCW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Apr 2016 09:02:22 -0400
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFqXjsrm13kRopVor_5_m_gTfunqfac4ozFL=w1w9k3QEw@mail.gmail.com>
+Received: from mail-lf0-f67.google.com ([209.85.215.67]:34900 "EHLO
+	mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754784AbcDKNVr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 09:21:47 -0400
+In-Reply-To: <1460378295.25336.5.camel@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Mike Galbraith <umgwanakikbuti@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
+On Mon, Apr 11, 2016 at 2:38 PM, Rik van Riel <riel@redhat.com> wrote:
+> On Mon, 2016-04-11 at 05:04 +0200, Mike Galbraith wrote:
+>> On Sun, 2016-04-10 at 16:24 -0400, Rik van Riel wrote:
+>> >
+>> > On Sun, 2016-04-10 at 17:39 +0200, Mike Galbraith wrote:
+>> >
+>> > >
+>> > > Should the default idle state not then be governor
+>> > > dependent?  When I
+>> > > set gov=performance, I'm expecting box to go just as fast as it
+>> > > can
+>> > > go
+>> > > without melting.  Does polling risk CPU -> lava conversion?
+>> > Current CPUs can only have some cores run at full speed
+>> > (turbo mode) if other cores are idling and/or running at
+>> > lower speeds.
+>> The real world is very unlikely to miss the prettier numbers I'm
+>> grieving over one tiny bit.  Knowing that doesn't make giving them up
+>> any easier though.. byebye cycles (sniff) ;-)
+>
+> I suspect your pipe benchmark could be very relevant to
+> network performance numbers, too.
+>
+> I would like to go into polling a little bit more aggressively
+> in a future kernel,
 
---98e8jtXdkpgskNou
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Agreed, but ->
 
-> > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> > index 0f2f8484e8ec..5e114342dcbc 100644
-> > --- a/drivers/i2c/i2c-core.c
-> > +++ b/drivers/i2c/i2c-core.c
-> > @@ -1566,6 +1566,7 @@ static int i2c_register_adapter(struct i2c_adapte=
-r *adap)
-> >
-> >         pm_runtime_no_callbacks(&adap->dev);
-> >         pm_runtime_enable(&adap->dev);
-> > +       pm_suspend_ignore_children(&adap->dev, true);
->=20
-> I guess it doesn't matter much, but I would set this before calling
-> pm_runtime_enable().
+> and I think we can get away with it if we
+> teach the polling loop to exit after we have spent enough time
+> there that the menu governor will pick HLT after a few timed
+> out poll loops.
 
-I was wondering about that, too.
-
-
---98e8jtXdkpgskNou
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXC6BZAAoJEBQN5MwUoCm23ssQAIHhGQsNZjTRv6ZQaRRz7+Cd
-whdYgxCDOa4ohqxL6DidoKQsCR456ZT/eomqvPytaR2KV+QwWr1ImAnNF49DKHXs
-04Zd8yQy4Qsnep3occQVa0IzHIdjINuyKMNtgT6LLzp5eAHvzae/7Irucx3z6sqf
-l1p2bYy2j+lRf9AnXyy/ClTrg/hl/daqye42iPROrqIXd56J5mNwzddo/3ERGxW1
-nHPSC5ywduiDDWf0N05Sb0akYo49h3B540ImNE77+MtBshq4jx/QgozSwxvz3SDU
-gR+bkGULn+y6VZl5r4oqQlm9en48XZOiQy+JtY5k8JUs5QSiZ+CT1EOxEbz0rQVd
-Bogh0b40muEewZSe+YW8nVKVYP5E26tUsuWn59fKGUiRuhPk92A/12SnZW6OE5Yh
-qk236/vfy9FrvNPUGm5AO0cQmRtNno5w2YfTomA3CkKbA8IvCW6vgsiUboz9lhVO
-J1z/yBn+R6jkwRJ8orI6WhS4UyJi4IKM++udMjacqtmA4eugJWVSAFFy6MulSw8i
-HkySGlz15EfCmgkRNZLTOj+Q/mqc+scLT9+Mk+q13SDmophfzFGTh7+/vnLKYcle
-5lRNc/jpKqUL0NNfMRej/9xiw2TTxpVwwIma5uOeM7qUG1rOo5qYqV5Aj1ecV206
-C6bfTaInaQYrVdTHAtmy
-=iVlU
------END PGP SIGNATURE-----
-
---98e8jtXdkpgskNou--
+-> my concern about this approach is that it would add an artificial
+point to the menu governor statistics at whatever the timeout is
+chosen to be.
