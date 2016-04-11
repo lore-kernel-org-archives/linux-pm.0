@@ -1,91 +1,123 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: [regression] cross core scheduling frequency drop bisected to
- 0c313cb20732
-Date: Sun, 10 Apr 2016 16:24:50 -0400
-Message-ID: <1460319890.25336.2.camel@redhat.com>
-References: <1460092854.4051.1.camel@gmail.com>
-	 <20160408064510.GK3448@twins.programming.kicks-ass.net>
-	 <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
-	 <20160409110729.GS3448@twins.programming.kicks-ass.net>
-	 <CAJZ5v0j-5Eva2QReG4LHvyZR-iL5rrrWp-3erdfz-u+5xbwRKA@mail.gmail.com>
-	 <1460302797.4383.44.camel@gmail.com>
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
+Date: Mon, 11 Apr 2016 01:38:39 +0000
+Message-ID: <AM4PR04MB2130B1F3D1C9B4DE5CD6B92989940@AM4PR04MB2130.eurprd04.prod.outlook.com>
+References: <cover.1460029375.git.baolin.wang@linaro.org>
+	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
+	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
+	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+	<CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
+	<AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
+ <CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-	protocol="application/pgp-signature"; boundary="=-gvuGWzP62NibU80pxy57"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1460302797.4383.44.camel@gmail.com>
+In-Reply-To: <CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
 List-Id: linux-pm@vger.kernel.org
 
-
---=-gvuGWzP62NibU80pxy57
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, 2016-04-10 at 17:39 +0200, Mike Galbraith wrote:
-> On Sat, 2016-04-09 at 14:31 +0200, Rafael J. Wysocki wrote:
-> >=20
-> > On Sat, Apr 9, 2016 at 1:07 PM, Peter Zijlstra <peterz@infradead.or
-> > g>
-> > wrote:
-> > >=20
-> > > On Fri, Apr 08, 2016 at 10:59:59PM +0200, Rafael J. Wysocki
-> > > wrote:
-> > > >=20
-> > > > On Friday, April 08, 2016 08:50:54 AM Mike Galbraith wrote:
-> > > > >=20
-> > > > > On Fri, 2016-04-08 at 08:45 +0200, Peter Zijlstra wrote:
-> > > > >=20
-> > > > > >=20
-> > > > > > Cute, I thought you used governor=3Dperformance for your
-> > > > > > runs?
-> > > > > I do, and those numbers are with it thus set.
-> > > > Well, this is a trade-off.
-> > > >=20
-> > > > 4.5 introduced a power regression here so this one goes back to
-> > > > the previous
-> > > > state of things.
-> > > Just for my elucidation; how can gov=3Dperformance have a 'power'
-> > > regression?
-> > Because of what is used as the "default" idle state most of the
-> > time.
-> >=20
-> > C1 was used before 4.5 and that changed to polling in 4.5.
-> Should the default idle state not then be governor dependent?=C2=A0=C2=A0=
-When I
-> set gov=3Dperformance, I'm expecting box to go just as fast as it can
-> go
-> without melting.=C2=A0=C2=A0Does polling risk CPU -> lava conversion?
-
-Current CPUs can only have some cores run at full speed
-(turbo mode) if other cores are idling and/or running at
-lower speeds.
-
-It may be time to stop pretending that gov=3Dperformance
-actually results in better performance on current CPUs,
-since it may inhibit entire levels of turbo mode.
-
---=20
-All Rights Reversed.
-
-
---=-gvuGWzP62NibU80pxy57
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXCraTAAoJEM553pKExN6DxagIAJQBthceCqIpGjtaZjCINSft
-TB8HaHautTi7fE0xsLyU1znsvdBn8lar+OvY/xMl0y7O3hGZZzIuPZB1bghd8B+Q
-MwTReARBb76vFHSwMN6xXqpUNY9vBVJemNWiMUecPSIMndq+blQWRC5C9Rs2YboV
-wSTeWF4uKbvwq67KGLXjaqR/CKJAjuTYBD3IrYwHylDCwxvCPWcl8zGaLse3rax4
-Bv4mP4YOiDcZDAuzkzOp2MJ7P5TO6no8p+tnezkm7ddF6Fqia07g5Ky/C24njFho
-oy+PfWcZ1upW4dHFsoc2PJVkkp3Evsp1rOV7Fi2+wWFaiN6/T/OkxSErgKCLarc=
-=yPcK
------END PGP SIGNATURE-----
-
---=-gvuGWzP62NibU80pxy57--
+SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
+bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IEZyaWRheSwgQXByaWwgMDgs
+IDIwMTYgNzo1MSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IGJhbGJp
+QGtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBzcmVAa2VybmVsLm9yZzsN
+Cj4gZGJhcnlzaGtvdkBnbWFpbC5jb207IGR3bXcyQGluZnJhZGVhZC5vcmc7IHBldGVyLmNoZW5A
+ZnJlZXNjYWxlLmNvbTsNCj4gc3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdTsgci5iYWxkeWdhQHNh
+bXN1bmcuY29tOw0KPiB5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbTsgbGVlLmpvbmVz
+QGxpbmFyby5vcmc7IGJyb29uaWVAa2VybmVsLm9yZzsNCj4gY2tlZXBheEBvcGVuc291cmNlLndv
+bGZzb25taWNyby5jb207IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBs
+aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGRldmlj
+ZS0NCj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxA
+dmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDEvNF0gZ2FkZ2V0OiBJ
+bnRyb2R1Y2UgdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaw0KPiANCj4gT24gOCBBcHJpbCAyMDE2
+IGF0IDE5OjI3LCBKdW4gTGkgPGp1bi5saUBueHAuY29tPiB3cm90ZToNCj4gPg0KPiA+DQo+ID4+
+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IEJhb2xpbiBXYW5nIFttYWls
+dG86YmFvbGluLndhbmdAbGluYXJvLm9yZ10NCj4gPj4gU2VudDogRnJpZGF5LCBBcHJpbCAwOCwg
+MjAxNiA3OjAwIFBNDQo+ID4+IFRvOiBKdW4gTGkgPGp1bi5saUBueHAuY29tPg0KPiA+PiBDYzog
+YmFsYmlAa2VybmVsLm9yZzsgZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IHNyZUBrZXJuZWwu
+b3JnOw0KPiA+PiBkYmFyeXNoa292QGdtYWlsLmNvbTsgZHdtdzJAaW5mcmFkZWFkLm9yZzsgcGV0
+ZXIuY2hlbkBmcmVlc2NhbGUuY29tOw0KPiA+PiBzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1OyBy
+LmJhbGR5Z2FAc2Ftc3VuZy5jb207DQo+ID4+IHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMu
+Y29tOyBsZWUuam9uZXNAbGluYXJvLm9yZzsNCj4gPj4gYnJvb25pZUBrZXJuZWwub3JnOyBja2Vl
+cGF4QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsNCj4gPj4gcGF0Y2hlc0BvcGVuc291cmNl
+LndvbGZzb25taWNyby5jb207DQo+ID4+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgt
+dXNiQHZnZXIua2VybmVsLm9yZzsgZGV2aWNlLQ0KPiA+PiBtYWlubGluaW5nQGxpc3RzLmxpbnV4
+Zm91bmRhdGlvbi5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVj
+dDogUmU6IFtQQVRDSCB2MTAgMS80XSBnYWRnZXQ6IEludHJvZHVjZSB0aGUgdXNiIGNoYXJnZXIN
+Cj4gPj4gZnJhbWV3b3JrDQo+ID4+DQo+ID4+IEhpIEp1biwNCj4gPj4NCj4gPj4gPj4gPj4gKy8q
+DQo+ID4+ID4+ID4+ICsgKiB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpIC0gZGV0ZWN0IHRoZSBj
+aGFyZ2VyIHR5cGUgbWFudWFsbHkuDQo+ID4+ID4+ID4+ICsgKiBAdWNoZ2VyIC0gdXNiIGNoYXJn
+ZXIgZGV2aWNlDQo+ID4+ID4+ID4+ICsgKg0KPiA+PiA+PiA+PiArICogTm90ZTogWW91IHNob3Vs
+ZCBlbnN1cmUgeW91IG5lZWQgdG8gZGV0ZWN0IHRoZSBjaGFyZ2VyIHR5cGUNCj4gPj4gPj4gPj4g
+K21hbnVhbGx5IG9uIHlvdXINCj4gPj4gPj4gPj4gKyAqIHBsYXRmb3JtLg0KPiA+PiA+PiA+PiAr
+ICogWW91IHNob3VsZCBjYWxsIGl0IGF0IHRoZSByaWdodCBnYWRnZXQgc3RhdGUgdG8gYXZvaWQN
+Cj4gPj4gPj4gPj4gK2FmZmVjdGluZyBnYWRnZXQNCj4gPj4gPj4gPj4gKyAqIGVudW1lcmF0aW9u
+Lg0KPiA+PiA+PiA+PiArICovDQo+ID4+ID4+ID4+ICtpbnQgdXNiX2NoYXJnZXJfZGV0ZWN0X3R5
+cGUoc3RydWN0IHVzYl9jaGFyZ2VyICp1Y2hnZXIpIHsNCj4gPj4gPj4gPj4gKyAgICAgZW51bSB1
+c2JfY2hhcmdlcl90eXBlIHR5cGU7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4gPj4gKyAgICAgaWYg
+KFdBUk4oIXVjaGdlci0+Y2hhcmdlcl9kZXRlY3QsDQo+ID4+ID4+ID4+ICsgICAgICAgICAgICAg
+ICJjaGFyZ2VyIGRldGVjdGlvbiBtZXRob2Qgc2hvdWxkIG5vdCBiZSBOVUxMIikpDQo+ID4+ID4+
+ID4+ICsgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4g
+Pj4gKyAgICAgdHlwZSA9IHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QodWNoZ2VyKTsNCj4gPj4gPj4g
+Pj4gKw0KPiA+PiA+PiA+PiArICAgICBtdXRleF9sb2NrKCZ1Y2hnZXItPmxvY2spOw0KPiA+PiA+
+PiA+PiArICAgICB1Y2hnZXItPnR5cGUgPSB0eXBlOw0KPiA+PiA+PiA+PiArICAgICBtdXRleF91
+bmxvY2soJnVjaGdlci0+bG9jayk7DQo+ID4+ID4+ID4+ICsNCj4gPj4gPj4gPj4gKyAgICAgcmV0
+dXJuIDA7DQo+ID4+ID4+ID4+ICt9DQo+ID4+ID4+ID4+ICtFWFBPUlRfU1lNQk9MX0dQTCh1c2Jf
+Y2hhcmdlcl9kZXRlY3RfdHlwZSk7DQo+ID4+ID4+ID4NCj4gPj4gPj4gPiBJIHN0aWxsIHJlY29t
+bWVuZCBoYXZlIGEgY2VudHJhbCBwbGFjZSB0byBjYWxsDQo+ID4+ID4+ID4gdXNiX2NoYXJnZXJf
+ZGV0ZWN0X3R5cGUoKSB0byBjb3ZlciByZWFsIGNoYXJnZXIgZGV0ZWN0aW9uDQo+ID4+ID4+ID4g
+aW5zdGVhZCBvZiBsZWF2aW5nIHRoaXMgcXVlc3Rpb24gb3BlbiB0byBkaWZmIHVzZXJzLiBUaGlz
+IGNhbiBiZQ0KPiA+PiA+PiA+IGRvbmUgYWZ0ZXIgdmJ1cy1vbiBpcyBkZXRlY3RlZCBhbmQgYmVm
+b3JlIGRvIGdhZGdldCBjb25uZWN0LiBJDQo+ID4+ID4+ID4gZG9uJ3QgdGhpbmsgdGhpcw0KPiA+
+PiA+PiB3aWxsIG1ha2UgeW91ciBmcmFtZXdvcmsgY29tcGxpY2F0ZWQuDQo+ID4+ID4+DQo+ID4+
+ID4+IFRoaXMgQVBJIGlzIHVzZWQgZm9yIGRldGVjdGluZyB0aGUgY2hhcmdlciB0eXBlIG1hbnVh
+bGx5IChzb2Z0d2FyZQ0KPiA+PiA+PiBjaGFyZ2VyIGRldGVjdGlvbiksIHNvIGlmIHVzZXIncyB1
+ZGMgZHJpdmVyIGlzIG5lZWRlZCB0byBkbyB0aGlzLA0KPiA+PiA+PiB0aGVuIHRoZXkgY2FuIGlz
+c3VlIGl0IGF0IHRoZWlyIHJpZ2h0IHBsYWNlIHRvIG1ha2UgaXQgbW9yZSBmbGV4aWJsZS4NCj4g
+Pj4gPj4gQnV0IGxldCB1cyBzZWUgb3RoZXIgcGVvcGxlJ3Mgc3VnZ2VzdGlvbi4gVGhhbmtzLg0K
+PiA+PiA+DQo+ID4+ID4gT2ssIGFjdHVhbGx5IHRoaXMgQVBJIGNhbiBiZSB1c2VkIGZvciB3aGF0
+IGV2ZXIgY2hhcmdlciBkZXRlY3Rpb24NCj4gPj4gPiB0eXBlLCB1c2VyIGNhbiBpbXBsZW1lbnQg
+YW55IG1ldGhvZChtYW51YWwgZGV0ZWN0aW9uLCBkaXJlY3RseSByZWFkDQo+ID4+ID4gcmVzdWx0
+IGZyb20gc29tZSBIVy4uLndoYXQgZXZlcikgaW4gdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdCgpLA0K
+PiA+PiA+IHRhcmdldCBpcw0KPiA+Pg0KPiA+PiBCdXQgcmVhZGluZyByZXN1bHQgZnJvbSBzb21l
+IEhXIGRvc2Ugbm90IG1lYW5zICpkZXRlY3QqLCBhY3R1YWxseSBpcw0KPiAqZ2V0Ki4NCj4gPj4g
+V2UgY2FuIG5vdCBtaXggdGhlbSB0b2dldGhlciB3aXRoIHRoZSBkaWZmZXJlbnQgc2VtYW50aWNz
+Lg0KPiA+DQo+ID4gSXQgZG9lc27igJl0IG1hdHRlciBoZXJlLCB5b3UgYWxyZWFkeSBkZWZpbmUg
+dGhlIF9nZXRfIEFQSSBmb3IganVzdCByZWFkDQo+ID4gdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHRo
+ZSBzYXZlZCB2YWx1ZSh1Y2hnZXItPnR5cGUpLCBzbyB3ZSBjYW4gdGhpbmsNCj4gPiB0aGUgQVBJ
+IHRvIG1ha2UgdWNoZ2VyLT50eXBlIGZyb20gVU5LTk9XIHRvIE9ORSBLTk9XTiB0eXBlIGlzDQo+
+ID4gKmRldGVjdCosIGJlY2F1c2Ugd2UgZG9uJ3QgbmVlZCAyIHNlcGFyYXRlIEFQSSBvbmUgZm9y
+ICpnZXQqIHR5cGUgZnJvbQ0KPiA+IEhXIGFuZCBhbm90aGVyIG9uZSBmb3IgKmRldGVjdCogZnJv
+bSBIVywgb25seSBvbmUgQVBJIGludm9sdmUgSFcgYWNjZXNzDQo+IGlzIGVub3VnaC4NCj4gDQo+
+IEJ1dCBhbm90aGVyIGlzc3VlIGlzIHNvbWUgdXNlcnMgbWF5IG5lZWQgdG8gZ2V0IHRoZSBjaGFy
+Z2VyIHR5cGUgZnJvbQ0KPiBwb3dlciBzdXBwbHkgYnkgInBvd2VyX3N1cHBseV9nZXRfcHJvcGVy
+dHkoKSIgZnVuY3Rpb24sIHdlIG5lZWQgdG8NCj4gaW50ZWdyYXRlIHdpdGggdGhlIHBvd2VyIHN1
+cHBseSB0aGluZ3MgaW4gdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaywgbm90DQo+IHVzZXIgdG8g
+aW1wbGVtZW50IHRoYXQuDQoNCldoeSB0aGlzIHVzZXIoeW91ciBjYXNlKSBjYW4ndCBwdXQgdGhl
+IGNoYXJnZXIgdHlwZSBnZXQgYnkNCiJwb3dlcl9zdXBwbHlfZ2V0X3Byb3BlcnR5KCkiIGluIGl0
+cyB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KCksDQphbnkgc3BlY2lhbCByZWFzb24gcHJldmVudCB5
+b3UgZG9pbmcgaXQ/IEkgYW0gbm90IHN1cmUgaWYgdGhpcw0KY2FzZSBpcyB2ZXJ5IGNvbW1vbiwg
+ZXZlbiBpZiBpdCBpcywgeW91IGFsc28gY2FuIHB1dCBpdCBpbg0KdXNiX2NoYXJnZXJfZGV0ZWN0
+X3R5cGUoKQ0KDQp1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpDQp7DQoJSWYgY2FuIGdldCBmcm9t
+IHBvd2VyX3N1cHBseV9nZXRfcHJvcGVydHkoKQ0KCQkuLi4NCgllbHNlIGlmIHVjaGdlci0+Y2hh
+cmdlcl9kZXRlY3QNCgkJdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdCgpOw0KCS4uLg0KfQ0KDQpJIGRv
+bid0IGtub3cgaWYgbW9zdCBkZXNpZ24gb2YgdXNiIGNoYXJnZXIgZGV0ZWN0aW9uIG5vdyBkYXlz
+DQppcyBhcyBlYXN5IGFzIHlvdXIgUE1JQyBmb3Igc29mdHdhcmUoSFcgZG9lcyB0aGUgd2hvbGUg
+ZGV0ZWN0aW9uDQpwcm9jZXNzIGFuZCBwcmV2ZW50IHRoZSB2YnVzIGdlbmVyYXRpb24gdW50aWwg
+ZGV0ZWN0aW9uIGhhcyBjb21wbGV0ZWQpLA0KYW55d2F5IGlmIHlvdXIgZnJhbWV3b3JrIGNhbiBn
+dWFyYW50ZWUgdGhlIGRldGVjdGlvbiBwcm9jZXNzIGZpbmlzaGVkDQpiZWZvcmUgZ2FkZ2V0IGNv
+bm5lY3QsIHRoZW4gZWFjaCB1c2VyIGRvbid0IGhhdmUgdG8gd29ycnkgYWJvdXQgdGhlDQpIVyBk
+ZXRlY3Rpb24gcHJvY2VzcyBkZXRhaWxzIGFuZCBzZWVrIGEgcHJvcGVyIHBsYWNlIHRvIGRvIGl0
+Lg0KIA0KTGkgSnVuDQo+IA0KPiA+DQo+ID4gLSBEZXRlY3Q6ICh3cml0ZSB0byBhbmQpIHJlYWQg
+ZnJvbSBIVyB0byBnZXQgdGhlIGNoYXJnZXIgdHlwZSwNCj4gPiAgIHNhdmUgdG8gdWNoZ2VyLT50
+eXBlOw0KPiA+IC0gR2V0OiByZWFkIHRoZSBjaGFyZ2VyIHR5cGUgZnJvbSB1Y2hnZXItPnR5cGUu
+DQo+ID4NCj4gPj4NCj4gPj4gPiB0byBoYXZlIHRoZSBjaGFyZ2VyIHR5cGUgYW5kIHNldCB1Y2hn
+ZXItPnR5cGUsIHRoZW4geW91IG5vIG5lZWQgdG8NCj4gPj4gPiBhZGQgdGhlIGNvbW1lbnRzL2Rl
+c2NyaXB0aW9uIHRvIGxpbWl0IGl0IHVzYWdlLiBBbHNvIEkgZG8gc2VlIHRoZXJlDQo+ID4+ID4g
+aXMNCj4gPj4gcG9zc2libGUgY2VudHJhbCBwbGFjZSB0byBkbyB0aGlzLg0KPiA+PiA+DQo+ID4+
+DQo+ID4+IC0tDQo+ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0KPiANCj4gDQo+
+IA0KPiAtLQ0KPiBCYW9saW4ud2FuZw0KPiBCZXN0IFJlZ2FyZHMNCg==
