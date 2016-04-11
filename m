@@ -1,57 +1,51 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 2/3] i2c: let I2C masters inherit suspend child ignorance
-Date: Mon, 11 Apr 2016 07:58:13 +0100
-Message-ID: <20160411065813.GF18319@sirena.org.uk>
-References: <1460035237-12037-1-git-send-email-linus.walleij@linaro.org>
- <1460035237-12037-3-git-send-email-linus.walleij@linaro.org>
- <CACRpkdb7r02E990LJEPwLWuZgPeK2w_jg054kFk12wxSUPY02Q@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v4 11/11] soc: renesas: rcar-sysc: Add support for R-Car
+ H3 power areas
+Date: Mon, 11 Apr 2016 09:24:54 +0200
+Message-ID: <CAMuHMdU7pEkbMBmFmJ_X7iqrk-mjXFsXSYSRZJQgBYR_KS5Hhg@mail.gmail.com>
+References: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
+	<1460031628-13336-12-git-send-email-geert+renesas@glider.be>
+	<1469037.GP7ci3FqN3@avalon>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="H4SyuGOnfnj3aJqJ"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:59158 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbcDKG6Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 02:58:24 -0400
-Content-Disposition: inline
-In-Reply-To: <CACRpkdb7r02E990LJEPwLWuZgPeK2w_jg054kFk12wxSUPY02Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1469037.GP7ci3FqN3@avalon>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On Sat, Apr 9, 2016 at 9:22 PM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+>> --- /dev/null
+>> +++ b/drivers/soc/renesas/r8a7795-sysc.c
+>> @@ -0,0 +1,53 @@
+>> +/*
+>> + * Renesas R-Car H3 System Controller
+>> + *
+>> + * Copyright (C) 2016 Glider bvba
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License as published by
+>> + * the Free Software Foundation; version 2 of the License.
+>> + */
+>> +
+>> +#include <linux/bug.h>
+>
+> Why do you need this header ? ARRAY_SIZE is defined in linux/kernel.h and
+> __initconst in linux/init.h. Am I missing something ?
 
---H4SyuGOnfnj3aJqJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+ARRAY_SIZE() uses __must_be_array() uses BUILD_BUG_ON_ZERO().
 
-On Mon, Apr 11, 2016 at 08:53:40AM +0200, Linus Walleij wrote:
+IIRC, I sent a patch to include bug.h a while ago, but it was rejected.
 
-> If everyone agrees that i2c devices should never require the bus
-> to be resumed, we can of course use the big hammer and
-> just:
+Gr{oetje,eeting}s,
 
-> pm_suspend_ignore_children(&adap->dev, true);
+                        Geert
 
-> Same for SPI. (And w1, ...)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Thoughts?
-
-That seems better.
-
---H4SyuGOnfnj3aJqJ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXC0sEAAoJECTWi3JdVIfQvroH/1wW6MjGgasd7tkwAQSzPNV3
-rjzSKhxeDLfUximkq2FlC2Bq9nemVzyC1f5tjl36pmZOl0ga6ceJ8VEhQn0W92/m
-tm9x6ZIFZZWqvfAv5SX3vtwbMyxwaVHCMl1nHiXA7n5Y/9xZ9KJlUOIGNLcvibpJ
-tn7bT68FE07ZOBcUX3lpigYcskvMEVCIc4QMumvHvCuuae79o8hwb/pyHTCI6TIp
-LChT3+DQXepwokRfjmUg56sHw1DJTanX2MPdfHLki4XSQV15SxKHCqrtaVbO+6GI
-yGYS/Uso4gxtCek6hQnuo10bLJmuJgNrUXgSSZJnykXd3KwlxYOiVNRKYGtlWDw=
-=Vvsp
------END PGP SIGNATURE-----
-
---H4SyuGOnfnj3aJqJ--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
