@@ -1,129 +1,102 @@
-From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH 5/5] cpufreq: Loongson1: Replace goto out with return in ls1x_cpufreq_probe()
-Date: Mon, 11 Apr 2016 19:55:59 +0800
-Message-ID: <1460375759-20705-5-git-send-email-keguang.zhang@gmail.com>
-References: <1460375759-20705-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1460375759-20705-1-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kelvin Cheung <keguang.zhang@gmail.com>
+From: Ludovic Desroches <ludovic.desroches@atmel.com>
+Subject: Re: [PATCH] sdhci: wakeup from runtime PM
+Date: Mon, 11 Apr 2016 14:09:05 +0200
+Message-ID: <20160411120905.GA7269@odux.rfo.atmel.com>
+References: <1458921903-11133-1-git-send-email-ludovic.desroches@atmel.com>
+ <5703B241.6030007@intel.com>
+ <CAPDyKFpvE2N+B3-S+tOKJ7+ViWddpxWxCWRGs2LBjWS9CmMxwA@mail.gmail.com>
+ <20160407151208.GA13961@odux.rfo.atmel.com>
+ <CAPDyKFqJ4Q9hdsv427GaT_2qFpvv=Nn3rZQUS+P8O7FF-gKgyw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-mmc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFqJ4Q9hdsv427GaT_2qFpvv=Nn3rZQUS+P8O7FF-gKgyw@mail.gmail.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Ludovic Desroches <ludovic.desroches@atmel.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Adrian Hunter <adrian.hunter@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kelvin Cheung <keguang.zhang@gmail.com>
+On Fri, Apr 08, 2016 at 10:35:00AM +0200, Ulf Hansson wrote:
+> - linux-kernel list
+> 
+> On 7 April 2016 at 17:12, Ludovic Desroches <ludovic.desroches@atmel.com> wrote:
+> > On Thu, Apr 07, 2016 at 11:11:08AM +0200, Ulf Hansson wrote:
+> >> On 5 April 2016 at 14:40, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> >> > On 25/03/16 18:05, Ludovic Desroches wrote:
+> >> >> Hi,
+> >> >>
+> >> >> When not using the SDHCI controller, it is logical to save power by suspending
+> >> >> it. The issue is that SDHCI assumes that the controller is completely disabled.
+> >> >> It means the only way to wake up on a card event is to have a gpio for the card
+> >> >> detection (so two pins for the same signal). A possible workaround is to use
+> >> >> polling but the controller will be resumed/suspended between each attempts.
+> >> >>
+> 
+> From power consumption point if view we already discussed this
+> particular case in an earlier thread, but let me elaborate what I
+> think one more time:
+> 
+> Now, this is relevant for removable cards lacking GPIO card detect, as
+> for other cases and non-removable cards I think we are in agreement
+> that their is no issue from power consumption point of view, right!?
+> 
+> 1. The current solution:
+> - Use MMC_CAP_NEEDS_POLL which makes the mmc core to re-schedule a
+> work once every second to poll for a card (Why is it one second? Could
+> we perhaps have that configurable?).
+> 
+> In case of no card inserted, the polling consists of runtime resuming
+> the SDHCI controller and then reading a couple of registers to find
+> out if there is a new card. I assume this will be a fast operation. In
+> the below calculation I have neglected its impact which of course is a
+> simplification.
+> 
+> This solution allows the driver in runtime suspend to *gate all three
+> clocks* used by the SDHCI controller. In-between polling attempts it
+> will thus save power.
+> 
+> Currently the mmc core *always* respects runtime PM autosuspend when
+> putting the controller device back to runtime suspend. I suggest we
+> change this in cases when the polling operation doesn't detect any
+> changes.
+> 
+> For the sdhci-of-at91 driver case, the autosuspend timeout is set to
+> 50 ms (which is a common value among mmc host drivers).
+> 
+> In the current code this means for a period over ~10 s, *all three
+> clocks* will be ungated for 50 ms x 10 times = ~500 ms.
+> 
+> If we adopt to what I propose above, this time will become significant
+> lesser as the autosuspend timer will not be respected.
+> 
+> 2. What you propose (I think):
+> * Don't use MMC_CAP_NEEDS_POLL, but instead rely on the SDHCI
+> controller to pick up card detect IRQs in runtime suspended state.
+> 
+> In case of no card inserted, the controller would then stay runtime
+> suspended but with IRQs enabled to deal with card detect IRQs.
+> According to what you told me earlier, this means that the controller
+> requires one of the three clocks to be ungated in the runtime suspend
+> state. So, only two clocks can be managed by runtime PM.
+> 
+> Assuming that no cards get inserted over a period of ~10 s, *one clock
+> will be ungated* for ~10 s.
+> 
+> 
+> Can you show that option 2) is better in saving power than option 1) ?
 
-This patch replaces goto out with return in ls1x_cpufreq_probe(),
-and also includes some minor fixes.
+Unfortunately not. I have discussed with hardware guys. They confirmed me
+that the power consumption to keep the interface enabled is very low but it
+will be difficult to measure the consumption difference between the two
+options because it would be minimal.
 
-Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
----
- drivers/cpufreq/loongson1-cpufreq.c | 37 ++++++++++++++++---------------------
- 1 file changed, 16 insertions(+), 21 deletions(-)
+If in practice the result was almost the same, it is not useful to
+continue this debate. I'll keep the polling workaround and I'll update system
+PM callbacks.
 
-diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
-index 5074f5e..1bc90af 100644
---- a/drivers/cpufreq/loongson1-cpufreq.c
-+++ b/drivers/cpufreq/loongson1-cpufreq.c
-@@ -1,7 +1,7 @@
- /*
-  * CPU Frequency Scaling for Loongson 1 SoC
-  *
-- * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
-+ * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
-  *
-  * This file is licensed under the terms of the GNU General Public
-  * License version 2. This program is licensed "as is" without any
-@@ -141,7 +141,8 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	struct clk *clk;
- 	int ret;
- 
--	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
-+	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name) {
-+		dev_err(&pdev->dev, "platform data missing\n");
- 		return -EINVAL;
- 
- 	cpufreq =
-@@ -155,8 +156,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "unable to get %s clock\n",
- 			pdata->clk_name);
--		ret = PTR_ERR(clk);
--		goto out;
-+		return PTR_ERR(clk);
- 	}
- 	cpufreq->clk = clk;
- 
-@@ -164,8 +164,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
- 			__clk_get_name(cpufreq->clk));
--		ret = PTR_ERR(clk);
--		goto out;
-+		return PTR_ERR(clk);
- 	}
- 	cpufreq->mux_clk = clk;
- 
-@@ -173,8 +172,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
- 			__clk_get_name(cpufreq->mux_clk));
--		ret = PTR_ERR(clk);
--		goto out;
-+		return PTR_ERR(clk);
- 	}
- 	cpufreq->pll_clk = clk;
- 
-@@ -182,8 +180,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "unable to get %s clock\n",
- 			pdata->osc_clk_name);
--		ret = PTR_ERR(clk);
--		goto out;
-+		return PTR_ERR(clk);
- 	}
- 	cpufreq->osc_clk = clk;
- 
-@@ -194,32 +191,30 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
- 	if (ret) {
- 		dev_err(&pdev->dev,
- 			"failed to register CPUFreq driver: %d\n", ret);
--		goto out;
-+		return ret;
- 	}
- 
- 	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
- 					CPUFREQ_TRANSITION_NOTIFIER);
- 
--	if (!ret)
--		goto out;
--
--	dev_err(&pdev->dev, "failed to register cpufreq notifier: %d\n", ret);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register CPUFreq notifier: %d\n", ret);
-+		cpufreq_unregister_driver(&ls1x_cpufreq_driver);
-+	}
- 
--	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
--out:
- 	return ret;
- }
- 
- static struct platform_driver ls1x_cpufreq_platdrv = {
--	.driver = {
-+	.probe	= ls1x_cpufreq_probe,
-+	.remove	= ls1x_cpufreq_remove,
-+	.driver	= {
- 		.name	= "ls1x-cpufreq",
- 	},
--	.probe		= ls1x_cpufreq_probe,
--	.remove		= ls1x_cpufreq_remove,
- };
- 
- module_platform_driver(ls1x_cpufreq_platdrv);
- 
- MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
--MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
-+MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
- MODULE_LICENSE("GPL");
--- 
-1.9.1
+[...]
+
+Regards
+
+Ludovic
