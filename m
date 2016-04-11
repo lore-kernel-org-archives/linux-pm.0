@@ -1,174 +1,203 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 11 Apr 2016 19:15:02 +0800
-Message-ID: <CAMz4kuKGLor6t74TuwuS7ZCXH=Mu+UuC_6s5MUCVQB+8RPFafQ@mail.gmail.com>
-References: <cover.1460029375.git.baolin.wang@linaro.org>
-	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
-	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4ku+kriz1biMx6dK3fWfDymJ12FXe+p_Fx+mvLJVQiMz7_g@mail.gmail.com>
-	<AM4PR04MB21300E3BA9D6DAC2836C9BE689910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4kuJvCSHpDtRqsO9OcPHbmwH_2iABfeshbs-94aUEo3sKXg@mail.gmail.com>
-	<AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
-	<CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
-	<AM4PR04MB2130B1F3D1C9B4DE5CD6B92989940@AM4PR04MB2130.eurprd04.prod.outlook.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 1/3 v4] powercap, intel_rapl, implement get_max_time_window
+Date: Mon, 11 Apr 2016 07:33:06 -0400
+Message-ID: <570B8B72.6020807@redhat.com>
+References: <1458563236-19269-1-git-send-email-prarit@redhat.com>	 <1458563236-19269-2-git-send-email-prarit@redhat.com> <1459448760.4569.87.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f169.google.com ([209.85.161.169]:35465 "EHLO
-	mail-yw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbcDKLPD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 07:15:03 -0400
-Received: by mail-yw0-f169.google.com with SMTP id i84so197738262ywc.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 04:15:03 -0700 (PDT)
-In-Reply-To: <AM4PR04MB2130B1F3D1C9B4DE5CD6B92989940@AM4PR04MB2130.eurprd04.prod.outlook.com>
+Received: from mx1.redhat.com ([209.132.183.28]:39027 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750940AbcDKLdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Apr 2016 07:33:08 -0400
+In-Reply-To: <1459448760.4569.87.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jun Li <jun.li@nxp.com>
-Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Jovanovic, Radivoje" <radivoje.jovanovic@intel.com>, "s.ikarashi@jp.fujitsu.com" <s.ikarashi@jp.fujitsu.com>, "David Rajamanickam, Ajay Thomas" <ajay.thomas.david.rajamanickam@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "minipli@googlemail.com" <minipli@googlemail.com>
 
-Hi Jun,
 
-Sorry for late reply.
 
->> >> >> >> +/*
->> >> >> >> + * usb_charger_detect_type() - detect the charger type man=
-ually.
->> >> >> >> + * @uchger - usb charger device
->> >> >> >> + *
->> >> >> >> + * Note: You should ensure you need to detect the charger =
-type
->> >> >> >> +manually on your
->> >> >> >> + * platform.
->> >> >> >> + * You should call it at the right gadget state to avoid
->> >> >> >> +affecting gadget
->> >> >> >> + * enumeration.
->> >> >> >> + */
->> >> >> >> +int usb_charger_detect_type(struct usb_charger *uchger) {
->> >> >> >> +     enum usb_charger_type type;
->> >> >> >> +
->> >> >> >> +     if (WARN(!uchger->charger_detect,
->> >> >> >> +              "charger detection method should not be NULL=
-"))
->> >> >> >> +             return -EINVAL;
->> >> >> >> +
->> >> >> >> +     type =3D uchger->charger_detect(uchger);
->> >> >> >> +
->> >> >> >> +     mutex_lock(&uchger->lock);
->> >> >> >> +     uchger->type =3D type;
->> >> >> >> +     mutex_unlock(&uchger->lock);
->> >> >> >> +
->> >> >> >> +     return 0;
->> >> >> >> +}
->> >> >> >> +EXPORT_SYMBOL_GPL(usb_charger_detect_type);
->> >> >> >
->> >> >> > I still recommend have a central place to call
->> >> >> > usb_charger_detect_type() to cover real charger detection
->> >> >> > instead of leaving this question open to diff users. This ca=
-n be
->> >> >> > done after vbus-on is detected and before do gadget connect.=
- I
->> >> >> > don't think this
->> >> >> will make your framework complicated.
->> >> >>
->> >> >> This API is used for detecting the charger type manually (soft=
-ware
->> >> >> charger detection), so if user's udc driver is needed to do th=
-is,
->> >> >> then they can issue it at their right place to make it more fl=
-exible.
->> >> >> But let us see other people's suggestion. Thanks.
->> >> >
->> >> > Ok, actually this API can be used for what ever charger detecti=
-on
->> >> > type, user can implement any method(manual detection, directly =
-read
->> >> > result from some HW...what ever) in uchger->charger_detect(),
->> >> > target is
->> >>
->> >> But reading result from some HW dose not means *detect*, actually=
- is
->> *get*.
->> >> We can not mix them together with the different semantics.
->> >
->> > It doesn=E2=80=99t matter here, you already define the _get_ API f=
-or just read
->> > the charger type from the saved value(uchger->type), so we can thi=
-nk
->> > the API to make uchger->type from UNKNOW to ONE KNOWN type is
->> > *detect*, because we don't need 2 separate API one for *get* type =
-from
->> > HW and another one for *detect* from HW, only one API involve HW a=
-ccess
->> is enough.
+On 03/31/2016 02:28 PM, Pandruvada, Srinivas wrote:
+> On Mon, 2016-03-21 at 08:27 -0400, Prarit Bhargava wrote:
+>> The MSR_PKG_POWER_INFO register (Intel ASDM, section 14.9.3
+>> "Package RAPL Domain") provides a maximum time window which the
+>> system can support.  This window is read-only and is currently
+>> not examined when setting the time windows for the package.
 >>
->> But another issue is some users may need to get the charger type fro=
-m
->> power supply by "power_supply_get_property()" function, we need to
->> integrate with the power supply things in the usb charger framework,=
- not
->> user to implement that.
->
-> Why this user(your case) can't put the charger type get by
-> "power_supply_get_property()" in its uchger->charger_detect(),
-> any special reason prevent you doing it? I am not sure if this
-> case is very common, even if it is, you also can put it in
-> usb_charger_detect_type()
->
-> usb_charger_detect_type()
-> {
->         If can get from power_supply_get_property()
->                 ...
->         else if uchger->charger_detect
->                 uchger->charger_detect();
->         ...
-> }
+> Usually this field has lot of junk. It is not supported uniformly.
+> The system provides this value from another ACPI element called PPCC.
+> If supported this will be in 
+> 
+> $ /sys/bus/pci/devices/0000:00:04.0/power_limits
+> $ grep . *
+> power_limit_0_max_uw:15000000
+> power_limit_0_min_uw:125000
+> power_limit_0_step_uw:1000000
+> power_limit_0_tmax_us:32000000
+> power_limit_0_tmin_us:28000000
+> power_limit_1_max_uw:25000000
+> power_limit_1_min_uw:25000000
+> power_limit_1_step_uw:1000000
+> power_limit_1_tmax_us:0
+> power_limit_1_tmin_us:0
+> 
 
-If user want to implement above method, they need to get the
-'power_supply' structure to do this action, which maybe can not get in
-some contexts. So we need to integrate with the power supply things to
-avoid this situation. IIRC, Felipe suggested me to flesh out the
-charger getting method.
+Thanks Srinivas.  Does this mean I should check for PPCC?
 
-Hi Felipe, what do you think of Jun's suggestion? Thanks.
+P.
 
->
-> I don't know if most design of usb charger detection now days
-> is as easy as your PMIC for software(HW does the whole detection
-> process and prevent the vbus generation until detection has completed=
-),
-> anyway if your framework can guarantee the detection process finished
-> before gadget connect, then each user don't have to worry about the
-> HW detection process details and seek a proper place to do it.
->
-> Li Jun
+> Thanks,
+> Srinivas
+>> This patch implements get_max_time_window_us() and checks the window
+>> when
+>> a user attempts to set power capping for the package.
 >>
->> >
->> > - Detect: (write to and) read from HW to get the charger type,
->> >   save to uchger->type;
->> > - Get: read the charger type from uchger->type.
->> >
->> >>
->> >> > to have the charger type and set uchger->type, then you no need=
- to
->> >> > add the comments/description to limit it usage. Also I do see t=
-here
->> >> > is
->> >> possible central place to do this.
->> >> >
->> >>
->> >> --
->> >> Baolin.wang
->> >> Best Regards
+>> Before the patch it was possible to set the window to, for example,
+>> 10000
+>> micro seconds:
 >>
+>> [root@intel-chiefriver-03 rhel7]# echo 10000 >
+>> /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl\:0/constraint_0_time_window_us;
+>> egrep ^ /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl\:0/constraint_0_time_window_us
 >>
+>> /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl:0/constraint_0_time_window_us:1:9765
 >>
->> --
->> Baolin.wang
->> Best Regards
-
-
-
---=20
-Baolin.wang
-Best Regards
+>> but from 'turbostat -d', the package is limited to 976us:
+>>
+>> cpu0: MSR_PKG_POWER_INFO: 0x01200168 (45 W TDP, RAPL 36 - 0 W,
+>> 0.000977 sec.)
+>>
+>> (Note, there appears to be a rounding issue in turbostat which needs
+>> to
+>> also be fixed.  Looking at the values in the register it is clear the
+>> value is 1/1024 = 976us.)
+>>
+>> After the patch we are limited by the maximum time window:
+>>
+>> [root@intel-chiefriver-03 rhel7]# echo 10000 >
+>> /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl\:0/constraint_0_time_window_us;
+>> egrep ^ /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl\:0/constraint_0_time_window_us
+>>
+>> -bash: echo: write error: Invalid argument
+>> /sys/devices/virtual/powercap/intel-rapl/intel-
+>> rapl:0/constraint_0_time_window_us:1:976
+>>
+>> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+>> Cc: Prarit Bhargava <prarit@redhat.com>
+>> Cc: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+>> Cc: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+>> Cc: Mathias Krause <minipli@googlemail.com>
+>> Cc: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>
+>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>> ---
+>>  drivers/powercap/intel_rapl.c   |   31
+>> +++++++++++++++++++++++++++++++
+>>  drivers/powercap/powercap_sys.c |    6 ++++--
+>>  2 files changed, 35 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/powercap/intel_rapl.c
+>> b/drivers/powercap/intel_rapl.c
+>> index 6c592dc..feb063d 100644
+>> --- a/drivers/powercap/intel_rapl.c
+>> +++ b/drivers/powercap/intel_rapl.c
+>> @@ -493,13 +493,42 @@ static int get_current_power_limit(struct
+>> powercap_zone *power_zone, int id,
+>>  	return ret;
+>>  }
+>>  
+>> +static int get_max_time_window(struct powercap_zone *power_zone, int
+>> id,
+>> +			       u64 *data)
+>> +{
+>> +	struct rapl_domain *rd;
+>> +	int ret = 0;
+>> +	u64 val;
+>> +
+>> +	get_online_cpus();
+>> +	rd = power_zone_to_rapl_domain(power_zone);
+>> +
+>> +	if (rapl_read_data_raw(rd, MAX_TIME_WINDOW, true, &val))
+>> +		ret = -EIO;
+>> +	else
+>> +		*data = val;
+>> +
+>> +	put_online_cpus();
+>> +	return ret;
+>> +}
+>> +
+>>  static int set_time_window(struct powercap_zone *power_zone, int id,
+>>  								u64
+>> window)
+>>  {
+>>  	struct rapl_domain *rd;
+>>  	int ret = 0;
+>> +	u64 max_window;
+>>  
+>>  	get_online_cpus();
+>> +	ret = get_max_time_window(power_zone, id, &max_window);
+>> +	if (ret < 0)
+>> +		goto out;
+>> +
+>> +	if (window > max_window) {
+>> +		ret = -EINVAL;
+>> +		goto out;
+>> +	}
+>> +
+>>  	rd = power_zone_to_rapl_domain(power_zone);
+>>  	switch (rd->rpl[id].prim_id) {
+>>  	case PL1_ENABLE:
+>> @@ -511,6 +540,7 @@ static int set_time_window(struct powercap_zone
+>> *power_zone, int id,
+>>  	default:
+>>  		ret = -EINVAL;
+>>  	}
+>> +out:
+>>  	put_online_cpus();
+>>  	return ret;
+>>  }
+>> @@ -590,6 +620,7 @@ static const struct powercap_zone_constraint_ops
+>> constraint_ops = {
+>>  	.set_time_window_us = set_time_window,
+>>  	.get_time_window_us = get_time_window,
+>>  	.get_max_power_uw = get_max_power,
+>> +	.get_max_time_window_us = get_max_time_window,
+>>  	.get_name = get_constraint_name,
+>>  };
+>>  
+>> diff --git a/drivers/powercap/powercap_sys.c
+>> b/drivers/powercap/powercap_sys.c
+>> index 14bde0d..53fad0f 100644
+>> --- a/drivers/powercap/powercap_sys.c
+>> +++ b/drivers/powercap/powercap_sys.c
+>> @@ -101,7 +101,7 @@ static ssize_t store_constraint_##_attr(struct
+>> device *dev,\
+>>  	int err; \
+>>  	u64 value; \
+>>  	struct powercap_zone *power_zone = to_powercap_zone(dev); \
+>> -	int id; \
+>> +	int id, ret; \
+>>  	struct powercap_zone_constraint *pconst;\
+>>  	\
+>>  	if (!sscanf(dev_attr->attr.name, "constraint_%d_", &id)) \
+>> @@ -113,8 +113,10 @@ static ssize_t store_constraint_##_attr(struct
+>> device *dev,\
+>>  	if (err) \
+>>  		return -EINVAL; \
+>>  	if (pconst && pconst->ops && pconst->ops->set_##_attr) { \
+>> -		if (!pconst->ops->set_##_attr(power_zone, id,
+>> value)) \
+>> +		ret = pconst->ops->set_##_attr(power_zone, id,
+>> value); \
+>> +		if (!ret) \
+>>  			return count; \
+>> +		return ret; \
+>>  	} \
+>>  	\
+>>  	return -ENODATA; \
