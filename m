@@ -1,85 +1,75 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v9 11/20] ARM: dts: Add DMC bus node for Exynos3250
-Date: Mon, 11 Apr 2016 12:57:49 +0900
-Message-ID: <1460347078-15175-12-git-send-email-cw00.choi@samsung.com>
-References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [PATCH 0/7] PM / devfreq: Add NoCP devfreq-event and support
+ busfreq on exyno5422-odroidxu3
+Date: Mon, 11 Apr 2016 09:31:38 +0530
+Message-ID: <CANAwSgRuw9ieoyu5AYFSSAcK3wgjy1-So0TA_y8bVHBa_BF7ig@mail.gmail.com>
+References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+ <CANAwSgQuWBRiRhjd-E-WaSdhe2njE262CEG8uVH83jJDGFJVKA@mail.gmail.com>
+ <CAGTfZH2gd5zhr4_JioSXTcpf8Fgu6r_Y9gPOJo-mYGTjAJsFyg@mail.gmail.com> <570B08F2.50302@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <570B08F2.50302@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Markus Reichl <m.reichl@fivetechno.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, "inki.dae@samsung.com" <inki.dae@samsung.com>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the DMC (Dynamic Memory Controller) bus node for Exynos3250 SoC.
-The DMC is an AMBA AXI-compliant slave to interface external JEDEC standard
-SDRAM devices. The bus includes the OPP tables and the source clock for DMC
-block.
+Hi Chanwoo,
 
-Following list specifies the detailed relation between the clock and DMC block:
-- The source clock of DMC block : div_dmc
+On 11 April 2016 at 07:46, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> Hi Anand,
+>
+> On 2016=EB=85=84 04=EC=9B=94 09=EC=9D=BC 03:24, Chanwoo Choi wrote:
+>> Hi Anand,
+>>
+>> On Sat, Apr 9, 2016 at 3:11 AM, Anand Moon <linux.amoon@gmail.com> w=
+rote:
+>>> Hi Chanwoo,
+>>>
+>
+> [snip]
+>
+>>>>
+>>>
+>>> I am observing following deadlock. Both on Odroid U3 and Odroid XU4=
+=2E
+>>
+>> Thanks for your test. I'll test it again and fix it.
+>
+> This possible recursive locking is fixed with following diff:
+>
+> Thanks for your report. I'll fix it on next patchset[1] (v9).
+> [1] https://lkml.org/lkml/2016/4/8/14
+>
+>
+> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/gov=
+ernor_passive.c
+> index 28a9ae32d330..a4b0b02ee797 100644
+> --- a/drivers/devfreq/governor_passive.c
+> +++ b/drivers/devfreq/governor_passive.c
+> @@ -102,7 +102,7 @@ static int update_devfreq_passive(struct devfreq =
+*devfreq, unsigned long freq)
+>         if (!devfreq->governor)
+>                 return -EINVAL;
+>
+> -       mutex_lock(&devfreq->lock);
+> +       mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
+>
+>         ret =3D devfreq->governor->get_target_freq(devfreq, &freq);
+>         if (ret < 0)
+>
+> Best Regards,
+> Chanwoo Choi
+>
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
- arch/arm/boot/dts/exynos3250.dtsi | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+Thanks you for these patches on devfreq.
+These changes fix the warning.
 
-diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
-index 137f9015d4e8..1ae72c4fa55e 100644
---- a/arch/arm/boot/dts/exynos3250.dtsi
-+++ b/arch/arm/boot/dts/exynos3250.dtsi
-@@ -688,6 +688,40 @@
- 			clock-names = "ppmu";
- 			status = "disabled";
- 		};
-+
-+		bus_dmc: bus_dmc {
-+			compatible = "samsung,exynos-bus";
-+			clocks = <&cmu_dmc CLK_DIV_DMC>;
-+			clock-names = "bus";
-+			operating-points-v2 = <&bus_dmc_opp_table>;
-+			status = "disabled";
-+		};
-+
-+		bus_dmc_opp_table: opp_table1 {
-+			compatible = "operating-points-v2";
-+			opp-shared;
-+
-+			opp@50000000 {
-+				opp-hz = /bits/ 64 <50000000>;
-+				opp-microvolt = <800000>;
-+			};
-+			opp@100000000 {
-+				opp-hz = /bits/ 64 <100000000>;
-+				opp-microvolt = <800000>;
-+			};
-+			opp@134000000 {
-+				opp-hz = /bits/ 64 <134000000>;
-+				opp-microvolt = <800000>;
-+			};
-+			opp@200000000 {
-+				opp-hz = /bits/ 64 <200000000>;
-+				opp-microvolt = <825000>;
-+			};
-+			opp@400000000 {
-+				opp-hz = /bits/ 64 <400000000>;
-+				opp-microvolt = <875000>;
-+			};
-+		};
- 	};
- };
- 
--- 
-1.9.1
+Tested-by: Anand Moon <linux.amoon@gmail.com>
+
+Tested on Odroid XU4 and Odroid U3.
+
+Best Regards
+-Anand Moon
