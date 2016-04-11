@@ -1,1923 +1,404 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v9 09/20] PM / devfreq: exynos: Remove unused exynos4/5 busfreq
- driver
-Date: Mon, 11 Apr 2016 12:57:47 +0900
-Message-ID: <1460347078-15175-10-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v9 06/20] PM / devfreq: exynos: Add support of bus frequency of
+ sub-blocks using passive governor
+Date: Mon, 11 Apr 2016 12:57:44 +0900
+Message-ID: <1460347078-15175-7-git-send-email-cw00.choi@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:40232 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbcDKD6O (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 23:58:14 -0400
 In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-This patch removes the unused exynos4/5 busfreq driver. Instead,
-generic exynos-bus frequency driver support the all Exynos SoCs.
+This patch adds the support of bus frequency feature for sub-blocks which share
+the one power line. If each bus depends on the power line, each bus is not able
+to change the voltage by oneself. To optimize the power-consumption on runtime,
+some buses using the same power line should change the source clock and
+regulator at the same time. So, this patch uses the passive governor to support
+the bus frequency for all buses which sharing the one power line.
+
+For example,
+
+Exynos3250 include the two power line for AXI buses as following:
+: VDD_MIF : MIF (Memory Interface) provide the DMC (Dynamic Memory Controller)
+  with the power (regulator).
+: VDD_INT : INT (Internal) provide the various sub-blocks with the power
+  (regulator).
+
+Each bus is included in as follwoing block. In the case of VDD_MIF, only DMC bus
+use the power line. So, there is no any depencency between buese. But, in the
+case of VDD_INT, various buses share the one power line of VDD_INT. We need to
+make the depenency between buses. When using passive governor, there is no
+problem to support the bus frequency as DVFS for all buses. One bus should be
+operated as the parent bus device which gathering the current load of INT block
+and then decides the new frequency with some governors except of passive
+governor. After deciding the new frequency by the parent bus device, the rest
+bus devices will change the each source clock according to new frequency of the
+parent bus device.
+
+- MIF (Memory Interface) block
+: VDD_MIF |--- DMC
+
+- INT (Internal) block
+: VDD_INT |--- LEFTBUS (parent)
+          |--- PERIL
+          |--- MFC
+          |--- G3D
+          |--- RIGHTBUS
+          |--- FSYS
+          |--- LCD0
+          |--- PERIR
+          |--- ISP
+          |--- CAM
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+[tjakobi: Reported debugfs error during booting and cw00.choi fix it.]
+Reported-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/Kconfig              |   22 -
- drivers/devfreq/Makefile             |    2 -
- drivers/devfreq/exynos/Makefile      |    3 -
- drivers/devfreq/exynos/exynos4_bus.c | 1055 ----------------------------------
- drivers/devfreq/exynos/exynos4_bus.h |  110 ----
- drivers/devfreq/exynos/exynos5_bus.c |  431 --------------
- drivers/devfreq/exynos/exynos_ppmu.c |  119 ----
- drivers/devfreq/exynos/exynos_ppmu.h |   86 ---
- 8 files changed, 1828 deletions(-)
- delete mode 100644 drivers/devfreq/exynos/Makefile
- delete mode 100644 drivers/devfreq/exynos/exynos4_bus.c
- delete mode 100644 drivers/devfreq/exynos/exynos4_bus.h
- delete mode 100644 drivers/devfreq/exynos/exynos5_bus.c
- delete mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
- delete mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
+ drivers/devfreq/Kconfig      |   1 +
+ drivers/devfreq/exynos-bus.c | 219 ++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 174 insertions(+), 46 deletions(-)
 
 diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 30e1daf1c827..78dac0e9da11 100644
+index d260cd0219f6..30e1daf1c827 100644
 --- a/drivers/devfreq/Kconfig
 +++ b/drivers/devfreq/Kconfig
-@@ -90,28 +90,6 @@ config ARM_EXYNOS_BUS_DEVFREQ
- 	  and adjusts the operating frequencies and voltages with OPP support.
- 	  This does not yet operate with optimal voltages.
+@@ -78,6 +78,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ 	bool "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
+ 	depends on ARCH_EXYNOS
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
++	select DEVFREQ_GOV_PASSIVE
+ 	select DEVFREQ_EVENT_EXYNOS_PPMU
+ 	select PM_DEVFREQ_EVENT
+ 	select PM_OPP
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 137de6196af3..50fe1a16c574 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -1,7 +1,7 @@
+ /*
+  * Generic Exynos Bus frequency driver with DEVFREQ Framework
+  *
+- * Copyright (c) 2015 Samsung Electronics Co., Ltd.
++ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+  * Author : Chanwoo Choi <cw00.choi@samsung.com>
+  *
+  * This driver support Exynos Bus frequency feature by using
+@@ -93,7 +93,7 @@ static int exynos_bus_get_event(struct exynos_bus *bus,
+ }
  
--config ARM_EXYNOS4_BUS_DEVFREQ
--	bool "ARM Exynos4210/4212/4412 Memory Bus DEVFREQ Driver"
--	depends on (CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412) && !ARCH_MULTIPLATFORM
--	select DEVFREQ_GOV_SIMPLE_ONDEMAND
--	select PM_OPP
--	help
--	  This adds the DEVFREQ driver for Exynos4210 memory bus (vdd_int)
--	  and Exynos4212/4412 memory interface and bus (vdd_mif + vdd_int).
--	  It reads PPMU counters of memory controllers and adjusts
--	  the operating frequencies and voltages with OPP support.
--	  This does not yet operate with optimal voltages.
--
--config ARM_EXYNOS5_BUS_DEVFREQ
--	tristate "ARM Exynos5250 Bus DEVFREQ Driver"
--	depends on SOC_EXYNOS5250
--	select DEVFREQ_GOV_SIMPLE_ONDEMAND
--	select PM_OPP
--	help
--	  This adds the DEVFREQ driver for Exynos5250 bus interface (vdd_int).
--	  It reads PPMU counters of memory controllers and adjusts the
--	  operating frequencies and voltages with OPP support.
--
- config ARM_TEGRA_DEVFREQ
-        tristate "Tegra DEVFREQ Driver"
-        depends on ARCH_TEGRA_124_SOC
-diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-index 2633087d5c63..09f11d9d40d5 100644
---- a/drivers/devfreq/Makefile
-+++ b/drivers/devfreq/Makefile
-@@ -8,8 +8,6 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ /*
+- * Must necessary function for devfreq governor
++ * Must necessary function for devfreq simple-ondemand governor
+  */
+ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
+ {
+@@ -202,59 +202,81 @@ static void exynos_bus_exit(struct device *dev)
+ 		regulator_disable(bus->regulator);
  
- # DEVFREQ Drivers
- obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
--obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos/
--obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)	+= exynos/
- obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+ 	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
+ }
  
- # DEVFREQ Event Drivers
-diff --git a/drivers/devfreq/exynos/Makefile b/drivers/devfreq/exynos/Makefile
-deleted file mode 100644
-index 49bc9175f923..000000000000
---- a/drivers/devfreq/exynos/Makefile
-+++ /dev/null
-@@ -1,3 +0,0 @@
--# Exynos DEVFREQ Drivers
--obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)	+= exynos_ppmu.o exynos4_bus.o
--obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)	+= exynos_ppmu.o exynos5_bus.o
-diff --git a/drivers/devfreq/exynos/exynos4_bus.c b/drivers/devfreq/exynos/exynos4_bus.c
-deleted file mode 100644
-index da9509205169..000000000000
---- a/drivers/devfreq/exynos/exynos4_bus.c
-+++ /dev/null
-@@ -1,1055 +0,0 @@
--/* drivers/devfreq/exynos4210_memorybus.c
-- *
-- * Copyright (c) 2011 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com/
-- *	MyungJoo Ham <myungjoo.ham@samsung.com>
-- *
-- * EXYNOS4 - Memory/Bus clock frequency scaling support in DEVFREQ framework
-- *	This version supports EXYNOS4210 only. This changes bus frequencies
-- *	and vddint voltages. Exynos4412/4212 should be able to be supported
-- *	with minor modifications.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- */
--
--#include <linux/io.h>
--#include <linux/slab.h>
--#include <linux/mutex.h>
--#include <linux/suspend.h>
--#include <linux/pm_opp.h>
--#include <linux/devfreq.h>
--#include <linux/platform_device.h>
--#include <linux/regulator/consumer.h>
--#include <linux/module.h>
--
--#include <mach/map.h>
--
--#include "exynos_ppmu.h"
--#include "exynos4_bus.h"
--
--#define MAX_SAFEVOLT	1200000 /* 1.2V */
--
--enum exynos4_busf_type {
--	TYPE_BUSF_EXYNOS4210,
--	TYPE_BUSF_EXYNOS4x12,
--};
--
--/* Assume that the bus is saturated if the utilization is 40% */
--#define BUS_SATURATION_RATIO	40
--
--enum busclk_level_idx {
--	LV_0 = 0,
--	LV_1,
--	LV_2,
--	LV_3,
--	LV_4,
--	_LV_END
--};
--
--enum exynos_ppmu_idx {
--	PPMU_DMC0,
--	PPMU_DMC1,
--	PPMU_END,
--};
--
--#define EX4210_LV_MAX	LV_2
--#define EX4x12_LV_MAX	LV_4
--#define EX4210_LV_NUM	(LV_2 + 1)
--#define EX4x12_LV_NUM	(LV_4 + 1)
--
--/**
-- * struct busfreq_opp_info - opp information for bus
-- * @rate:	Frequency in hertz
-- * @volt:	Voltage in microvolts corresponding to this OPP
-- */
--struct busfreq_opp_info {
+-static int exynos_bus_parse_of(struct device_node *np,
+-			      struct exynos_bus *bus)
++/*
++ * Must necessary function for devfreq passive governor
++ */
++static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
++					u32 flags)
+ {
+-	struct device *dev = bus->dev;
 -	unsigned long rate;
--	unsigned long volt;
--};
--
--struct busfreq_data {
--	enum exynos4_busf_type type;
--	struct device *dev;
--	struct devfreq *devfreq;
--	bool disabled;
--	struct regulator *vdd_int;
--	struct regulator *vdd_mif; /* Exynos4412/4212 only */
--	struct busfreq_opp_info curr_oppinfo;
--	struct busfreq_ppmu_data ppmu_data;
--
--	struct notifier_block pm_notifier;
--	struct mutex lock;
--
--	/* Dividers calculated at boot/probe-time */
--	unsigned int dmc_divtable[_LV_END]; /* DMC0 */
--	unsigned int top_divtable[_LV_END];
--};
--
--/* 4210 controls clock of mif and voltage of int */
--static struct bus_opp_table exynos4210_busclk_table[] = {
--	{LV_0, 400000, 1150000},
--	{LV_1, 267000, 1050000},
--	{LV_2, 133000, 1025000},
--	{0, 0, 0},
--};
--
--/*
-- * MIF is the main control knob clock for Exynos4x12 MIF/INT
-- * clock and voltage of both mif/int are controlled.
-- */
--static struct bus_opp_table exynos4x12_mifclk_table[] = {
--	{LV_0, 400000, 1100000},
--	{LV_1, 267000, 1000000},
--	{LV_2, 160000, 950000},
--	{LV_3, 133000, 950000},
--	{LV_4, 100000, 950000},
--	{0, 0, 0},
--};
--
--/*
-- * INT is not the control knob of 4x12. LV_x is not meant to represent
-- * the current performance. (MIF does)
-- */
--static struct bus_opp_table exynos4x12_intclk_table[] = {
--	{LV_0, 200000, 1000000},
--	{LV_1, 160000, 950000},
--	{LV_2, 133000, 925000},
--	{LV_3, 100000, 900000},
--	{0, 0, 0},
--};
--
--/* TODO: asv volt definitions are "__initdata"? */
--/* Some chips have different operating voltages */
--static unsigned int exynos4210_asv_volt[][EX4210_LV_NUM] = {
--	{1150000, 1050000, 1050000},
--	{1125000, 1025000, 1025000},
--	{1100000, 1000000, 1000000},
--	{1075000, 975000, 975000},
--	{1050000, 950000, 950000},
--};
--
--static unsigned int exynos4x12_mif_step_50[][EX4x12_LV_NUM] = {
--	/* 400      267     160     133     100 */
--	{1050000, 950000, 900000, 900000, 900000}, /* ASV0 */
--	{1050000, 950000, 900000, 900000, 900000}, /* ASV1 */
--	{1050000, 950000, 900000, 900000, 900000}, /* ASV2 */
--	{1050000, 900000, 900000, 900000, 900000}, /* ASV3 */
--	{1050000, 900000, 900000, 900000, 850000}, /* ASV4 */
--	{1050000, 900000, 900000, 850000, 850000}, /* ASV5 */
--	{1050000, 900000, 850000, 850000, 850000}, /* ASV6 */
--	{1050000, 900000, 850000, 850000, 850000}, /* ASV7 */
--	{1050000, 900000, 850000, 850000, 850000}, /* ASV8 */
--};
--
--static unsigned int exynos4x12_int_volt[][EX4x12_LV_NUM] = {
--	/* 200    160      133     100 */
--	{1000000, 950000, 925000, 900000}, /* ASV0 */
--	{975000,  925000, 925000, 900000}, /* ASV1 */
--	{950000,  925000, 900000, 875000}, /* ASV2 */
--	{950000,  900000, 900000, 875000}, /* ASV3 */
--	{925000,  875000, 875000, 875000}, /* ASV4 */
--	{900000,  850000, 850000, 850000}, /* ASV5 */
--	{900000,  850000, 850000, 850000}, /* ASV6 */
--	{900000,  850000, 850000, 850000}, /* ASV7 */
--	{900000,  850000, 850000, 850000}, /* ASV8 */
--};
--
--/*** Clock Divider Data for Exynos4210 ***/
--static unsigned int exynos4210_clkdiv_dmc0[][8] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVACP, DIVACP_PCLK, DIVDPHY, DIVDMC, DIVDMCD
--	 *		DIVDMCP, DIVCOPY2, DIVCORE_TIMERS }
--	 */
--
--	/* DMC L0: 400MHz */
--	{ 3, 1, 1, 1, 1, 1, 3, 1 },
--	/* DMC L1: 266.7MHz */
--	{ 4, 1, 1, 2, 1, 1, 3, 1 },
--	/* DMC L2: 133MHz */
--	{ 5, 1, 1, 5, 1, 1, 3, 1 },
--};
--static unsigned int exynos4210_clkdiv_top[][5] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVACLK200, DIVACLK100, DIVACLK160, DIVACLK133, DIVONENAND }
--	 */
--	/* ACLK200 L0: 200MHz */
--	{ 3, 7, 4, 5, 1 },
--	/* ACLK200 L1: 160MHz */
--	{ 4, 7, 5, 6, 1 },
--	/* ACLK200 L2: 133MHz */
--	{ 5, 7, 7, 7, 1 },
--};
--static unsigned int exynos4210_clkdiv_lr_bus[][2] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVGDL/R, DIVGPL/R }
--	 */
--	/* ACLK_GDL/R L1: 200MHz */
--	{ 3, 1 },
--	/* ACLK_GDL/R L2: 160MHz */
--	{ 4, 1 },
--	/* ACLK_GDL/R L3: 133MHz */
--	{ 5, 1 },
--};
--
--/*** Clock Divider Data for Exynos4212/4412 ***/
--static unsigned int exynos4x12_clkdiv_dmc0[][6] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVACP, DIVACP_PCLK, DIVDPHY, DIVDMC, DIVDMCD
--	 *              DIVDMCP}
--	 */
--
--	/* DMC L0: 400MHz */
--	{3, 1, 1, 1, 1, 1},
--	/* DMC L1: 266.7MHz */
--	{4, 1, 1, 2, 1, 1},
--	/* DMC L2: 160MHz */
--	{5, 1, 1, 4, 1, 1},
--	/* DMC L3: 133MHz */
--	{5, 1, 1, 5, 1, 1},
--	/* DMC L4: 100MHz */
--	{7, 1, 1, 7, 1, 1},
--};
--static unsigned int exynos4x12_clkdiv_dmc1[][6] = {
--	/*
--	 * Clock divider value for following
--	 * { G2DACP, DIVC2C, DIVC2C_ACLK }
--	 */
--
--	/* DMC L0: 400MHz */
--	{3, 1, 1},
--	/* DMC L1: 266.7MHz */
--	{4, 2, 1},
--	/* DMC L2: 160MHz */
--	{5, 4, 1},
--	/* DMC L3: 133MHz */
--	{5, 5, 1},
--	/* DMC L4: 100MHz */
--	{7, 7, 1},
--};
--static unsigned int exynos4x12_clkdiv_top[][5] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVACLK266_GPS, DIVACLK100, DIVACLK160,
--		DIVACLK133, DIVONENAND }
--	 */
--
--	/* ACLK_GDL/R L0: 200MHz */
--	{2, 7, 4, 5, 1},
--	/* ACLK_GDL/R L1: 200MHz */
--	{2, 7, 4, 5, 1},
--	/* ACLK_GDL/R L2: 160MHz */
--	{4, 7, 5, 7, 1},
--	/* ACLK_GDL/R L3: 133MHz */
--	{4, 7, 5, 7, 1},
--	/* ACLK_GDL/R L4: 100MHz */
--	{7, 7, 7, 7, 1},
--};
--static unsigned int exynos4x12_clkdiv_lr_bus[][2] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVGDL/R, DIVGPL/R }
--	 */
--
--	/* ACLK_GDL/R L0: 200MHz */
--	{3, 1},
--	/* ACLK_GDL/R L1: 200MHz */
--	{3, 1},
--	/* ACLK_GDL/R L2: 160MHz */
--	{4, 1},
--	/* ACLK_GDL/R L3: 133MHz */
--	{5, 1},
--	/* ACLK_GDL/R L4: 100MHz */
--	{7, 1},
--};
--static unsigned int exynos4x12_clkdiv_sclkip[][3] = {
--	/*
--	 * Clock divider value for following
--	 * { DIVMFC, DIVJPEG, DIVFIMC0~3}
--	 */
--
--	/* SCLK_MFC: 200MHz */
--	{3, 3, 4},
--	/* SCLK_MFC: 200MHz */
--	{3, 3, 4},
--	/* SCLK_MFC: 160MHz */
--	{4, 4, 5},
--	/* SCLK_MFC: 133MHz */
--	{5, 5, 5},
--	/* SCLK_MFC: 100MHz */
--	{7, 7, 7},
--};
--
--
--static int exynos4210_set_busclk(struct busfreq_data *data,
--				 struct busfreq_opp_info *oppi)
--{
--	unsigned int index;
--	unsigned int tmp;
--
--	for (index = LV_0; index < EX4210_LV_NUM; index++)
--		if (oppi->rate == exynos4210_busclk_table[index].clk)
--			break;
--
--	if (index == EX4210_LV_NUM)
--		return -EINVAL;
--
--	/* Change Divider - DMC0 */
--	tmp = data->dmc_divtable[index];
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_DMC0);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_DMC0);
--	} while (tmp & 0x11111111);
--
--	/* Change Divider - TOP */
--	tmp = data->top_divtable[index];
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_TOP);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_TOP);
--	} while (tmp & 0x11111);
--
--	/* Change Divider - LEFTBUS */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_LEFTBUS);
--
--	tmp &= ~(EXYNOS4_CLKDIV_BUS_GDLR_MASK | EXYNOS4_CLKDIV_BUS_GPLR_MASK);
--
--	tmp |= ((exynos4210_clkdiv_lr_bus[index][0] <<
--				EXYNOS4_CLKDIV_BUS_GDLR_SHIFT) |
--		(exynos4210_clkdiv_lr_bus[index][1] <<
--				EXYNOS4_CLKDIV_BUS_GPLR_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_LEFTBUS);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_LEFTBUS);
--	} while (tmp & 0x11);
--
--	/* Change Divider - RIGHTBUS */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_RIGHTBUS);
--
--	tmp &= ~(EXYNOS4_CLKDIV_BUS_GDLR_MASK | EXYNOS4_CLKDIV_BUS_GPLR_MASK);
--
--	tmp |= ((exynos4210_clkdiv_lr_bus[index][0] <<
--				EXYNOS4_CLKDIV_BUS_GDLR_SHIFT) |
--		(exynos4210_clkdiv_lr_bus[index][1] <<
--				EXYNOS4_CLKDIV_BUS_GPLR_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_RIGHTBUS);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_RIGHTBUS);
--	} while (tmp & 0x11);
--
--	return 0;
--}
--
--static int exynos4x12_set_busclk(struct busfreq_data *data,
--				 struct busfreq_opp_info *oppi)
--{
--	unsigned int index;
--	unsigned int tmp;
--
--	for (index = LV_0; index < EX4x12_LV_NUM; index++)
--		if (oppi->rate == exynos4x12_mifclk_table[index].clk)
--			break;
--
--	if (index == EX4x12_LV_NUM)
--		return -EINVAL;
--
--	/* Change Divider - DMC0 */
--	tmp = data->dmc_divtable[index];
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_DMC0);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_DMC0);
--	} while (tmp & 0x11111111);
--
--	/* Change Divider - DMC1 */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_DMC1);
--
--	tmp &= ~(EXYNOS4_CLKDIV_DMC1_G2D_ACP_MASK |
--		EXYNOS4_CLKDIV_DMC1_C2C_MASK |
--		EXYNOS4_CLKDIV_DMC1_C2CACLK_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_dmc1[index][0] <<
--				EXYNOS4_CLKDIV_DMC1_G2D_ACP_SHIFT) |
--		(exynos4x12_clkdiv_dmc1[index][1] <<
--				EXYNOS4_CLKDIV_DMC1_C2C_SHIFT) |
--		(exynos4x12_clkdiv_dmc1[index][2] <<
--				EXYNOS4_CLKDIV_DMC1_C2CACLK_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_DMC1);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_DMC1);
--	} while (tmp & 0x111111);
--
--	/* Change Divider - TOP */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_TOP);
--
--	tmp &= ~(EXYNOS4_CLKDIV_TOP_ACLK266_GPS_MASK |
--		EXYNOS4_CLKDIV_TOP_ACLK100_MASK |
--		EXYNOS4_CLKDIV_TOP_ACLK160_MASK |
--		EXYNOS4_CLKDIV_TOP_ACLK133_MASK |
--		EXYNOS4_CLKDIV_TOP_ONENAND_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_top[index][0] <<
--				EXYNOS4_CLKDIV_TOP_ACLK266_GPS_SHIFT) |
--		(exynos4x12_clkdiv_top[index][1] <<
--				EXYNOS4_CLKDIV_TOP_ACLK100_SHIFT) |
--		(exynos4x12_clkdiv_top[index][2] <<
--				EXYNOS4_CLKDIV_TOP_ACLK160_SHIFT) |
--		(exynos4x12_clkdiv_top[index][3] <<
--				EXYNOS4_CLKDIV_TOP_ACLK133_SHIFT) |
--		(exynos4x12_clkdiv_top[index][4] <<
--				EXYNOS4_CLKDIV_TOP_ONENAND_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_TOP);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_TOP);
--	} while (tmp & 0x11111);
--
--	/* Change Divider - LEFTBUS */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_LEFTBUS);
--
--	tmp &= ~(EXYNOS4_CLKDIV_BUS_GDLR_MASK | EXYNOS4_CLKDIV_BUS_GPLR_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_lr_bus[index][0] <<
--				EXYNOS4_CLKDIV_BUS_GDLR_SHIFT) |
--		(exynos4x12_clkdiv_lr_bus[index][1] <<
--				EXYNOS4_CLKDIV_BUS_GPLR_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_LEFTBUS);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_LEFTBUS);
--	} while (tmp & 0x11);
--
--	/* Change Divider - RIGHTBUS */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_RIGHTBUS);
--
--	tmp &= ~(EXYNOS4_CLKDIV_BUS_GDLR_MASK | EXYNOS4_CLKDIV_BUS_GPLR_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_lr_bus[index][0] <<
--				EXYNOS4_CLKDIV_BUS_GDLR_SHIFT) |
--		(exynos4x12_clkdiv_lr_bus[index][1] <<
--				EXYNOS4_CLKDIV_BUS_GPLR_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_RIGHTBUS);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_RIGHTBUS);
--	} while (tmp & 0x11);
--
--	/* Change Divider - MFC */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_MFC);
--
--	tmp &= ~(EXYNOS4_CLKDIV_MFC_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_sclkip[index][0] <<
--				EXYNOS4_CLKDIV_MFC_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_MFC);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_MFC);
--	} while (tmp & 0x1);
--
--	/* Change Divider - JPEG */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_CAM1);
--
--	tmp &= ~(EXYNOS4_CLKDIV_CAM1_JPEG_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_sclkip[index][1] <<
--				EXYNOS4_CLKDIV_CAM1_JPEG_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_CAM1);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_CAM1);
--	} while (tmp & 0x1);
--
--	/* Change Divider - FIMC0~3 */
--	tmp = __raw_readl(EXYNOS4_CLKDIV_CAM);
--
--	tmp &= ~(EXYNOS4_CLKDIV_CAM_FIMC0_MASK | EXYNOS4_CLKDIV_CAM_FIMC1_MASK |
--		EXYNOS4_CLKDIV_CAM_FIMC2_MASK | EXYNOS4_CLKDIV_CAM_FIMC3_MASK);
--
--	tmp |= ((exynos4x12_clkdiv_sclkip[index][2] <<
--				EXYNOS4_CLKDIV_CAM_FIMC0_SHIFT) |
--		(exynos4x12_clkdiv_sclkip[index][2] <<
--				EXYNOS4_CLKDIV_CAM_FIMC1_SHIFT) |
--		(exynos4x12_clkdiv_sclkip[index][2] <<
--				EXYNOS4_CLKDIV_CAM_FIMC2_SHIFT) |
--		(exynos4x12_clkdiv_sclkip[index][2] <<
--				EXYNOS4_CLKDIV_CAM_FIMC3_SHIFT));
--
--	__raw_writel(tmp, EXYNOS4_CLKDIV_CAM);
--
--	do {
--		tmp = __raw_readl(EXYNOS4_CLKDIV_STAT_CAM1);
--	} while (tmp & 0x1111);
--
--	return 0;
--}
--
--static int exynos4x12_get_intspec(unsigned long mifclk)
--{
--	int i = 0;
--
--	while (exynos4x12_intclk_table[i].clk) {
--		if (exynos4x12_intclk_table[i].clk <= mifclk)
--			return i;
--		i++;
+-	int i, ret, count, size;
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++	struct dev_pm_opp *new_opp;
++	unsigned long old_freq, new_freq;
++	int ret = 0;
+ 
+-	/* Get the clock to provide each bus with source clock */
+-	bus->clk = devm_clk_get(dev, "bus");
+-	if (IS_ERR(bus->clk)) {
+-		dev_err(dev, "failed to get bus clock\n");
+-		return PTR_ERR(bus->clk);
++	/* Get new opp-bus instance according to new bus clock */
++	rcu_read_lock();
++	new_opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(new_opp)) {
++		dev_err(dev, "failed to get recommended opp instance\n");
++		rcu_read_unlock();
++		return PTR_ERR(new_opp);
+ 	}
+ 
+-	ret = clk_prepare_enable(bus->clk);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to get enable clock\n");
+-		return ret;
 -	}
--
--	return -EINVAL;
--}
--
--static int exynos4_bus_setvolt(struct busfreq_data *data,
--			       struct busfreq_opp_info *oppi,
--			       struct busfreq_opp_info *oldoppi)
--{
--	int err = 0, tmp;
--	unsigned long volt = oppi->volt;
--
--	switch (data->type) {
--	case TYPE_BUSF_EXYNOS4210:
--		/* OPP represents DMC clock + INT voltage */
--		err = regulator_set_voltage(data->vdd_int, volt,
--					    MAX_SAFEVOLT);
--		break;
--	case TYPE_BUSF_EXYNOS4x12:
--		/* OPP represents MIF clock + MIF voltage */
--		err = regulator_set_voltage(data->vdd_mif, volt,
--					    MAX_SAFEVOLT);
--		if (err)
--			break;
--
--		tmp = exynos4x12_get_intspec(oppi->rate);
--		if (tmp < 0) {
--			err = tmp;
--			regulator_set_voltage(data->vdd_mif,
--					      oldoppi->volt,
--					      MAX_SAFEVOLT);
--			break;
--		}
--		err = regulator_set_voltage(data->vdd_int,
--					    exynos4x12_intclk_table[tmp].volt,
--					    MAX_SAFEVOLT);
--		/*  Try to recover */
--		if (err)
--			regulator_set_voltage(data->vdd_mif,
--					      oldoppi->volt,
--					      MAX_SAFEVOLT);
--		break;
--	default:
--		err = -EINVAL;
--	}
--
--	return err;
--}
--
--static int exynos4_bus_target(struct device *dev, unsigned long *_freq,
--			      u32 flags)
--{
--	int err = 0;
--	struct platform_device *pdev = container_of(dev, struct platform_device,
--						    dev);
--	struct busfreq_data *data = platform_get_drvdata(pdev);
--	struct dev_pm_opp *opp;
--	unsigned long freq;
--	unsigned long old_freq = data->curr_oppinfo.rate;
--	struct busfreq_opp_info	new_oppinfo;
--
++	new_freq = dev_pm_opp_get_freq(new_opp);
++	old_freq = dev_pm_opp_get_freq(bus->curr_opp);
++	rcu_read_unlock();
+ 
+-	/* Get the freq/voltage OPP table to scale the bus frequency */
 -	rcu_read_lock();
--	opp = devfreq_recommended_opp(dev, _freq, flags);
--	if (IS_ERR(opp)) {
+-	ret = dev_pm_opp_of_add_table(dev);
++	if (old_freq == new_freq)
++		return 0;
++
++	/* Change the frequency according to new OPP level */
++	mutex_lock(&bus->lock);
++
++	ret = clk_set_rate(bus->clk, new_freq);
+ 	if (ret < 0) {
+-		dev_err(dev, "failed to get OPP table\n");
 -		rcu_read_unlock();
--		return PTR_ERR(opp);
+-		goto err_clk;
++		dev_err(dev, "failed to set the clock of bus\n");
++		goto out;
+ 	}
+ 
+-	rate = clk_get_rate(bus->clk);
+-	bus->curr_opp = dev_pm_opp_find_freq_ceil(dev, &rate);
+-	if (IS_ERR(bus->curr_opp)) {
+-		dev_err(dev, "failed to find dev_pm_opp\n");
+-		rcu_read_unlock();
+-		ret = PTR_ERR(bus->curr_opp);
+-		goto err_opp;
 -	}
--	new_oppinfo.rate = dev_pm_opp_get_freq(opp);
--	new_oppinfo.volt = dev_pm_opp_get_voltage(opp);
 -	rcu_read_unlock();
--	freq = new_oppinfo.rate;
--
--	if (old_freq == freq)
--		return 0;
--
--	dev_dbg(dev, "targeting %lukHz %luuV\n", freq, new_oppinfo.volt);
--
--	mutex_lock(&data->lock);
--
--	if (data->disabled)
--		goto out;
--
--	if (old_freq < freq)
--		err = exynos4_bus_setvolt(data, &new_oppinfo,
--					  &data->curr_oppinfo);
--	if (err)
--		goto out;
--
--	if (old_freq != freq) {
--		switch (data->type) {
--		case TYPE_BUSF_EXYNOS4210:
--			err = exynos4210_set_busclk(data, &new_oppinfo);
--			break;
--		case TYPE_BUSF_EXYNOS4x12:
--			err = exynos4x12_set_busclk(data, &new_oppinfo);
--			break;
--		default:
--			err = -EINVAL;
--		}
--	}
--	if (err)
--		goto out;
--
--	if (old_freq > freq)
--		err = exynos4_bus_setvolt(data, &new_oppinfo,
--					  &data->curr_oppinfo);
--	if (err)
--		goto out;
--
--	data->curr_oppinfo = new_oppinfo;
--out:
--	mutex_unlock(&data->lock);
--	return err;
--}
--
--static int exynos4_bus_get_dev_status(struct device *dev,
--				      struct devfreq_dev_status *stat)
--{
--	struct busfreq_data *data = dev_get_drvdata(dev);
--	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
--	int busier;
--
--	exynos_read_ppmu(ppmu_data);
--	busier = exynos_get_busier_ppmu(ppmu_data);
--	stat->current_frequency = data->curr_oppinfo.rate;
--
--	/* Number of cycles spent on memory access */
--	stat->busy_time = ppmu_data->ppmu[busier].count[PPMU_PMNCNT3];
--	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
--	stat->total_time = ppmu_data->ppmu[busier].ccnt;
--
--	/* If the counters have overflown, retry */
--	if (ppmu_data->ppmu[busier].ccnt_overflow ||
--	    ppmu_data->ppmu[busier].count_overflow[0])
--		return -EAGAIN;
--
--	return 0;
--}
--
--static struct devfreq_dev_profile exynos4_devfreq_profile = {
--	.initial_freq	= 400000,
--	.polling_ms	= 50,
--	.target		= exynos4_bus_target,
--	.get_dev_status	= exynos4_bus_get_dev_status,
--};
--
--static int exynos4210_init_tables(struct busfreq_data *data)
--{
--	u32 tmp;
--	int mgrp;
--	int i, err = 0;
--
--	tmp = __raw_readl(EXYNOS4_CLKDIV_DMC0);
--	for (i = LV_0; i < EX4210_LV_NUM; i++) {
--		tmp &= ~(EXYNOS4_CLKDIV_DMC0_ACP_MASK |
--			EXYNOS4_CLKDIV_DMC0_ACPPCLK_MASK |
--			EXYNOS4_CLKDIV_DMC0_DPHY_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMC_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMCD_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMCP_MASK |
--			EXYNOS4_CLKDIV_DMC0_COPY2_MASK |
--			EXYNOS4_CLKDIV_DMC0_CORETI_MASK);
--
--		tmp |= ((exynos4210_clkdiv_dmc0[i][0] <<
--					EXYNOS4_CLKDIV_DMC0_ACP_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][1] <<
--					EXYNOS4_CLKDIV_DMC0_ACPPCLK_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][2] <<
--					EXYNOS4_CLKDIV_DMC0_DPHY_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][3] <<
--					EXYNOS4_CLKDIV_DMC0_DMC_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][4] <<
--					EXYNOS4_CLKDIV_DMC0_DMCD_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][5] <<
--					EXYNOS4_CLKDIV_DMC0_DMCP_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][6] <<
--					EXYNOS4_CLKDIV_DMC0_COPY2_SHIFT) |
--			(exynos4210_clkdiv_dmc0[i][7] <<
--					EXYNOS4_CLKDIV_DMC0_CORETI_SHIFT));
--
--		data->dmc_divtable[i] = tmp;
--	}
--
--	tmp = __raw_readl(EXYNOS4_CLKDIV_TOP);
--	for (i = LV_0; i <  EX4210_LV_NUM; i++) {
--		tmp &= ~(EXYNOS4_CLKDIV_TOP_ACLK200_MASK |
--			EXYNOS4_CLKDIV_TOP_ACLK100_MASK |
--			EXYNOS4_CLKDIV_TOP_ACLK160_MASK |
--			EXYNOS4_CLKDIV_TOP_ACLK133_MASK |
--			EXYNOS4_CLKDIV_TOP_ONENAND_MASK);
--
--		tmp |= ((exynos4210_clkdiv_top[i][0] <<
--					EXYNOS4_CLKDIV_TOP_ACLK200_SHIFT) |
--			(exynos4210_clkdiv_top[i][1] <<
--					EXYNOS4_CLKDIV_TOP_ACLK100_SHIFT) |
--			(exynos4210_clkdiv_top[i][2] <<
--					EXYNOS4_CLKDIV_TOP_ACLK160_SHIFT) |
--			(exynos4210_clkdiv_top[i][3] <<
--					EXYNOS4_CLKDIV_TOP_ACLK133_SHIFT) |
--			(exynos4210_clkdiv_top[i][4] <<
--					EXYNOS4_CLKDIV_TOP_ONENAND_SHIFT));
--
--		data->top_divtable[i] = tmp;
--	}
--
--	/*
--	 * TODO: init tmp based on busfreq_data
--	 * (device-tree or platform-data)
--	 */
--	tmp = 0; /* Max voltages for the reliability of the unknown */
--
--	pr_debug("ASV Group of Exynos4 is %d\n", tmp);
--	/* Use merged grouping for voltage */
--	switch (tmp) {
--	case 0:
--		mgrp = 0;
--		break;
--	case 1:
--	case 2:
--		mgrp = 1;
--		break;
--	case 3:
--	case 4:
--		mgrp = 2;
--		break;
--	case 5:
--	case 6:
--		mgrp = 3;
--		break;
--	case 7:
--		mgrp = 4;
--		break;
--	default:
--		pr_warn("Unknown ASV Group. Use max voltage.\n");
--		mgrp = 0;
--	}
--
--	for (i = LV_0; i < EX4210_LV_NUM; i++)
--		exynos4210_busclk_table[i].volt = exynos4210_asv_volt[mgrp][i];
--
--	for (i = LV_0; i < EX4210_LV_NUM; i++) {
--		err = dev_pm_opp_add(data->dev, exynos4210_busclk_table[i].clk,
--			      exynos4210_busclk_table[i].volt);
--		if (err) {
--			dev_err(data->dev, "Cannot add opp entries.\n");
--			return err;
--		}
--	}
--
--
--	return 0;
--}
--
--static int exynos4x12_init_tables(struct busfreq_data *data)
--{
--	unsigned int i;
--	unsigned int tmp;
++	*freq = new_freq;
++	bus->curr_opp = new_opp;
++
++	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
++			old_freq/1000, new_freq/1000);
++out:
++	mutex_unlock(&bus->lock);
++
++	return ret;
++}
++
++static void exynos_bus_passive_exit(struct device *dev)
++{
++	struct exynos_bus *bus = dev_get_drvdata(dev);
++
++	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
++}
++
++static int exynos_bus_parent_parse_of(struct device_node *np,
++					struct exynos_bus *bus)
++{
++	struct device *dev = bus->dev;
++	int i, ret, count, size;
+ 
+ 	/* Get the regulator to provide each bus with the power */
+ 	bus->regulator = devm_regulator_get(dev, "vdd");
+ 	if (IS_ERR(bus->regulator)) {
+ 		dev_err(dev, "failed to get VDD regulator\n");
+-		ret = PTR_ERR(bus->regulator);
+-		goto err_opp;
++		return PTR_ERR(bus->regulator);
+ 	}
+ 
+ 	ret = regulator_enable(bus->regulator);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to enable VDD regulator\n");
+-		goto err_opp;
++		return ret;
+ 	}
+ 
+ 	/*
+@@ -305,6 +327,51 @@ static int exynos_bus_parse_of(struct device_node *np,
+ 
+ err_regulator:
+ 	regulator_disable(bus->regulator);
++
++	return ret;
++}
++
++static int exynos_bus_parse_of(struct device_node *np,
++			      struct exynos_bus *bus)
++{
++	struct device *dev = bus->dev;
++	unsigned long rate;
++	int ret;
++
++	/* Get the clock to provide each bus with source clock */
++	bus->clk = devm_clk_get(dev, "bus");
++	if (IS_ERR(bus->clk)) {
++		dev_err(dev, "failed to get bus clock\n");
++		return PTR_ERR(bus->clk);
++	}
++
++	ret = clk_prepare_enable(bus->clk);
++	if (ret < 0) {
++		dev_err(dev, "failed to get enable clock\n");
++		return ret;
++	}
++
++	/* Get the freq and voltage from OPP table to scale the bus freq */
++	rcu_read_lock();
++	ret = dev_pm_opp_of_add_table(dev);
++	if (ret < 0) {
++		dev_err(dev, "failed to get OPP table\n");
++		rcu_read_unlock();
++		goto err_clk;
++	}
++
++	rate = clk_get_rate(bus->clk);
++	bus->curr_opp = devfreq_recommended_opp(dev, &rate, 0);
++	if (IS_ERR(bus->curr_opp)) {
++		dev_err(dev, "failed to find dev_pm_opp\n");
++		rcu_read_unlock();
++		ret = PTR_ERR(bus->curr_opp);
++		goto err_opp;
++	}
++	rcu_read_unlock();
++
++	return 0;
++
+ err_opp:
+ 	dev_pm_opp_of_remove_table(dev);
+ err_clk:
+@@ -319,8 +386,11 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct devfreq_dev_profile *profile;
+ 	struct devfreq_simple_ondemand_data *ondemand_data;
++	struct devfreq_passive_data *passive_data;
++	struct devfreq *parent_devfreq;
+ 	struct exynos_bus *bus;
 -	int ret;
--
--	/* Enable pause function for DREX2 DVFS */
--	tmp = __raw_readl(EXYNOS4_DMC_PAUSE_CTRL);
--	tmp |= EXYNOS4_DMC_PAUSE_ENABLE;
--	__raw_writel(tmp, EXYNOS4_DMC_PAUSE_CTRL);
--
--	tmp = __raw_readl(EXYNOS4_CLKDIV_DMC0);
--
--	for (i = 0; i <  EX4x12_LV_NUM; i++) {
--		tmp &= ~(EXYNOS4_CLKDIV_DMC0_ACP_MASK |
--			EXYNOS4_CLKDIV_DMC0_ACPPCLK_MASK |
--			EXYNOS4_CLKDIV_DMC0_DPHY_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMC_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMCD_MASK |
--			EXYNOS4_CLKDIV_DMC0_DMCP_MASK);
--
--		tmp |= ((exynos4x12_clkdiv_dmc0[i][0] <<
--					EXYNOS4_CLKDIV_DMC0_ACP_SHIFT) |
--			(exynos4x12_clkdiv_dmc0[i][1] <<
--					EXYNOS4_CLKDIV_DMC0_ACPPCLK_SHIFT) |
--			(exynos4x12_clkdiv_dmc0[i][2] <<
--					EXYNOS4_CLKDIV_DMC0_DPHY_SHIFT) |
--			(exynos4x12_clkdiv_dmc0[i][3] <<
--					EXYNOS4_CLKDIV_DMC0_DMC_SHIFT) |
--			(exynos4x12_clkdiv_dmc0[i][4] <<
--					EXYNOS4_CLKDIV_DMC0_DMCD_SHIFT) |
--			(exynos4x12_clkdiv_dmc0[i][5] <<
--					EXYNOS4_CLKDIV_DMC0_DMCP_SHIFT));
--
--		data->dmc_divtable[i] = tmp;
--	}
--
--	tmp = 0; /* Max voltages for the reliability of the unknown */
--
--	if (tmp > 8)
--		tmp = 0;
--	pr_debug("ASV Group of Exynos4x12 is %d\n", tmp);
--
--	for (i = 0; i < EX4x12_LV_NUM; i++) {
--		exynos4x12_mifclk_table[i].volt =
--			exynos4x12_mif_step_50[tmp][i];
--		exynos4x12_intclk_table[i].volt =
--			exynos4x12_int_volt[tmp][i];
--	}
--
--	for (i = 0; i < EX4x12_LV_NUM; i++) {
--		ret = dev_pm_opp_add(data->dev, exynos4x12_mifclk_table[i].clk,
--			      exynos4x12_mifclk_table[i].volt);
--		if (ret) {
--			dev_err(data->dev, "Fail to add opp entries.\n");
--			return ret;
--		}
--	}
--
--	return 0;
--}
--
--static int exynos4_busfreq_pm_notifier_event(struct notifier_block *this,
--		unsigned long event, void *ptr)
--{
--	struct busfreq_data *data = container_of(this, struct busfreq_data,
--						 pm_notifier);
--	struct dev_pm_opp *opp;
--	struct busfreq_opp_info	new_oppinfo;
--	unsigned long maxfreq = ULONG_MAX;
--	int err = 0;
--
--	switch (event) {
--	case PM_SUSPEND_PREPARE:
--		/* Set Fastest and Deactivate DVFS */
--		mutex_lock(&data->lock);
--
--		data->disabled = true;
--
--		rcu_read_lock();
--		opp = dev_pm_opp_find_freq_floor(data->dev, &maxfreq);
--		if (IS_ERR(opp)) {
--			rcu_read_unlock();
--			dev_err(data->dev, "%s: unable to find a min freq\n",
--				__func__);
--			mutex_unlock(&data->lock);
--			return PTR_ERR(opp);
--		}
--		new_oppinfo.rate = dev_pm_opp_get_freq(opp);
--		new_oppinfo.volt = dev_pm_opp_get_voltage(opp);
--		rcu_read_unlock();
--
--		err = exynos4_bus_setvolt(data, &new_oppinfo,
--					  &data->curr_oppinfo);
--		if (err)
--			goto unlock;
--
--		switch (data->type) {
--		case TYPE_BUSF_EXYNOS4210:
--			err = exynos4210_set_busclk(data, &new_oppinfo);
--			break;
--		case TYPE_BUSF_EXYNOS4x12:
--			err = exynos4x12_set_busclk(data, &new_oppinfo);
--			break;
--		default:
--			err = -EINVAL;
--		}
--		if (err)
--			goto unlock;
--
--		data->curr_oppinfo = new_oppinfo;
--unlock:
--		mutex_unlock(&data->lock);
--		if (err)
--			return err;
--		return NOTIFY_OK;
--	case PM_POST_RESTORE:
--	case PM_POST_SUSPEND:
--		/* Reactivate */
--		mutex_lock(&data->lock);
--		data->disabled = false;
--		mutex_unlock(&data->lock);
--		return NOTIFY_OK;
--	}
--
--	return NOTIFY_DONE;
--}
--
--static int exynos4_busfreq_probe(struct platform_device *pdev)
--{
--	struct busfreq_data *data;
--	struct busfreq_ppmu_data *ppmu_data;
--	struct dev_pm_opp *opp;
--	struct device *dev = &pdev->dev;
--	int err = 0;
--
--	data = devm_kzalloc(&pdev->dev, sizeof(struct busfreq_data), GFP_KERNEL);
--	if (data == NULL) {
--		dev_err(dev, "Cannot allocate memory.\n");
++	int ret, max_state;
++	unsigned long min_freq, max_freq;
+ 
+ 	if (!np) {
+ 		dev_err(dev, "failed to find devicetree node\n");
+@@ -337,20 +407,33 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	/* Parse the device-tree to get the resource information */
+ 	ret = exynos_bus_parse_of(np, bus);
+ 	if (ret < 0)
+-		return ret;
++		goto err;
+ 
+-	/* Initalize the struct profile and governor data */
+ 	profile = devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
+-	if (!profile)
 -		return -ENOMEM;
--	}
--
--	ppmu_data = &data->ppmu_data;
--	ppmu_data->ppmu_end = PPMU_END;
--	ppmu_data->ppmu = devm_kzalloc(dev,
--				       sizeof(struct exynos_ppmu) * PPMU_END,
--				       GFP_KERNEL);
--	if (!ppmu_data->ppmu) {
--		dev_err(dev, "Failed to allocate memory for exynos_ppmu\n");
++	if (!profile) {
++		ret = -ENOMEM;
++		goto err;
++	}
++
++	if (of_parse_phandle(dev->of_node, "devfreq", 0))
++		goto passive;
++	else
++		ret = exynos_bus_parent_parse_of(np, bus);
++
++	if (ret < 0)
++		goto err;
++
++	/* Initalize the struct profile and governor data for parent device */
+ 	profile->polling_ms = 50;
+ 	profile->target = exynos_bus_target;
+ 	profile->get_dev_status = exynos_bus_get_dev_status;
+ 	profile->exit = exynos_bus_exit;
+ 
+ 	ondemand_data = devm_kzalloc(dev, sizeof(*ondemand_data), GFP_KERNEL);
+-	if (!ondemand_data)
 -		return -ENOMEM;
--	}
--
--	data->type = pdev->id_entry->driver_data;
--	ppmu_data->ppmu[PPMU_DMC0].hw_base = S5P_VA_DMC0;
--	ppmu_data->ppmu[PPMU_DMC1].hw_base = S5P_VA_DMC1;
--	data->pm_notifier.notifier_call = exynos4_busfreq_pm_notifier_event;
--	data->dev = dev;
--	mutex_init(&data->lock);
--
--	switch (data->type) {
--	case TYPE_BUSF_EXYNOS4210:
--		err = exynos4210_init_tables(data);
--		break;
--	case TYPE_BUSF_EXYNOS4x12:
--		err = exynos4x12_init_tables(data);
--		break;
--	default:
--		dev_err(dev, "Cannot determine the device id %d\n", data->type);
--		err = -EINVAL;
--	}
--	if (err) {
--		dev_err(dev, "Cannot initialize busfreq table %d\n",
--			     data->type);
--		return err;
--	}
--
--	data->vdd_int = devm_regulator_get(dev, "vdd_int");
--	if (IS_ERR(data->vdd_int)) {
--		dev_err(dev, "Cannot get the regulator \"vdd_int\"\n");
--		return PTR_ERR(data->vdd_int);
--	}
--	if (data->type == TYPE_BUSF_EXYNOS4x12) {
--		data->vdd_mif = devm_regulator_get(dev, "vdd_mif");
--		if (IS_ERR(data->vdd_mif)) {
--			dev_err(dev, "Cannot get the regulator \"vdd_mif\"\n");
--			return PTR_ERR(data->vdd_mif);
--		}
--	}
--
--	rcu_read_lock();
--	opp = dev_pm_opp_find_freq_floor(dev,
--					 &exynos4_devfreq_profile.initial_freq);
--	if (IS_ERR(opp)) {
--		rcu_read_unlock();
--		dev_err(dev, "Invalid initial frequency %lu kHz.\n",
--			exynos4_devfreq_profile.initial_freq);
--		return PTR_ERR(opp);
--	}
--	data->curr_oppinfo.rate = dev_pm_opp_get_freq(opp);
--	data->curr_oppinfo.volt = dev_pm_opp_get_voltage(opp);
--	rcu_read_unlock();
--
--	platform_set_drvdata(pdev, data);
--
--	data->devfreq = devm_devfreq_add_device(dev, &exynos4_devfreq_profile,
--					   "simple_ondemand", NULL);
--	if (IS_ERR(data->devfreq))
--		return PTR_ERR(data->devfreq);
--
--	/*
--	 * Start PPMU (Performance Profiling Monitoring Unit) to check
--	 * utilization of each IP in the Exynos4 SoC.
--	 */
--	busfreq_mon_reset(ppmu_data);
--
--	/* Register opp_notifier for Exynos4 busfreq */
--	err = devm_devfreq_register_opp_notifier(dev, data->devfreq);
--	if (err < 0) {
--		dev_err(dev, "Failed to register opp notifier\n");
--		return err;
--	}
--
--	/* Register pm_notifier for Exynos4 busfreq */
--	err = register_pm_notifier(&data->pm_notifier);
--	if (err) {
--		dev_err(dev, "Failed to setup pm notifier\n");
--		return err;
--	}
--
--	return 0;
--}
--
--static int exynos4_busfreq_remove(struct platform_device *pdev)
--{
--	struct busfreq_data *data = platform_get_drvdata(pdev);
--
--	/* Unregister all of notifier chain */
--	unregister_pm_notifier(&data->pm_notifier);
--
--	return 0;
--}
--
--#ifdef CONFIG_PM_SLEEP
--static int exynos4_busfreq_resume(struct device *dev)
--{
--	struct busfreq_data *data = dev_get_drvdata(dev);
--	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
--
--	busfreq_mon_reset(ppmu_data);
--	return 0;
--}
--#endif
--
--static SIMPLE_DEV_PM_OPS(exynos4_busfreq_pm_ops, NULL, exynos4_busfreq_resume);
--
--static const struct platform_device_id exynos4_busfreq_id[] = {
--	{ "exynos4210-busfreq", TYPE_BUSF_EXYNOS4210 },
--	{ "exynos4412-busfreq", TYPE_BUSF_EXYNOS4x12 },
--	{ "exynos4212-busfreq", TYPE_BUSF_EXYNOS4x12 },
--	{ },
--};
--
--static struct platform_driver exynos4_busfreq_driver = {
--	.probe	= exynos4_busfreq_probe,
--	.remove	= exynos4_busfreq_remove,
--	.id_table = exynos4_busfreq_id,
--	.driver = {
--		.name	= "exynos4-busfreq",
--		.pm	= &exynos4_busfreq_pm_ops,
--	},
--};
--
--static int __init exynos4_busfreq_init(void)
--{
--	return platform_driver_register(&exynos4_busfreq_driver);
--}
--late_initcall(exynos4_busfreq_init);
--
--static void __exit exynos4_busfreq_exit(void)
--{
--	platform_driver_unregister(&exynos4_busfreq_driver);
--}
--module_exit(exynos4_busfreq_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("EXYNOS4 busfreq driver with devfreq framework");
--MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
-diff --git a/drivers/devfreq/exynos/exynos4_bus.h b/drivers/devfreq/exynos/exynos4_bus.h
-deleted file mode 100644
-index 94c73c18d28c..000000000000
---- a/drivers/devfreq/exynos/exynos4_bus.h
-+++ /dev/null
-@@ -1,110 +0,0 @@
--/*
-- * Copyright (c) 2013 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com/
-- *
-- * EXYNOS4 BUS header
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
--*/
--
--#ifndef __DEVFREQ_EXYNOS4_BUS_H
--#define __DEVFREQ_EXYNOS4_BUS_H __FILE__
--
--#include <mach/map.h>
--
--#define EXYNOS4_CLKDIV_LEFTBUS			(S5P_VA_CMU + 0x04500)
--#define EXYNOS4_CLKDIV_STAT_LEFTBUS		(S5P_VA_CMU + 0x04600)
--
--#define EXYNOS4_CLKDIV_RIGHTBUS			(S5P_VA_CMU + 0x08500)
--#define EXYNOS4_CLKDIV_STAT_RIGHTBUS		(S5P_VA_CMU + 0x08600)
--
--#define EXYNOS4_CLKDIV_TOP			(S5P_VA_CMU + 0x0C510)
--#define EXYNOS4_CLKDIV_CAM			(S5P_VA_CMU + 0x0C520)
--#define EXYNOS4_CLKDIV_MFC			(S5P_VA_CMU + 0x0C528)
--
--#define EXYNOS4_CLKDIV_STAT_TOP			(S5P_VA_CMU + 0x0C610)
--#define EXYNOS4_CLKDIV_STAT_MFC			(S5P_VA_CMU + 0x0C628)
--
--#define EXYNOS4210_CLKGATE_IP_IMAGE		(S5P_VA_CMU + 0x0C930)
--#define EXYNOS4212_CLKGATE_IP_IMAGE		(S5P_VA_CMU + 0x04930)
--
--#define EXYNOS4_CLKDIV_DMC0			(S5P_VA_CMU + 0x10500)
--#define EXYNOS4_CLKDIV_DMC1			(S5P_VA_CMU + 0x10504)
--#define EXYNOS4_CLKDIV_STAT_DMC0		(S5P_VA_CMU + 0x10600)
--#define EXYNOS4_CLKDIV_STAT_DMC1		(S5P_VA_CMU + 0x10604)
--
--#define EXYNOS4_DMC_PAUSE_CTRL			(S5P_VA_CMU + 0x11094)
--#define EXYNOS4_DMC_PAUSE_ENABLE		(1 << 0)
--
--#define EXYNOS4_CLKDIV_DMC0_ACP_SHIFT		(0)
--#define EXYNOS4_CLKDIV_DMC0_ACP_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_ACP_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_ACPPCLK_SHIFT	(4)
--#define EXYNOS4_CLKDIV_DMC0_ACPPCLK_MASK	(0x7 << EXYNOS4_CLKDIV_DMC0_ACPPCLK_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_DPHY_SHIFT		(8)
--#define EXYNOS4_CLKDIV_DMC0_DPHY_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_DPHY_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_DMC_SHIFT		(12)
--#define EXYNOS4_CLKDIV_DMC0_DMC_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_DMC_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_DMCD_SHIFT		(16)
--#define EXYNOS4_CLKDIV_DMC0_DMCD_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_DMCD_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_DMCP_SHIFT		(20)
--#define EXYNOS4_CLKDIV_DMC0_DMCP_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_DMCP_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_COPY2_SHIFT		(24)
--#define EXYNOS4_CLKDIV_DMC0_COPY2_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_COPY2_SHIFT)
--#define EXYNOS4_CLKDIV_DMC0_CORETI_SHIFT	(28)
--#define EXYNOS4_CLKDIV_DMC0_CORETI_MASK		(0x7 << EXYNOS4_CLKDIV_DMC0_CORETI_SHIFT)
--
--#define EXYNOS4_CLKDIV_DMC1_G2D_ACP_SHIFT	(0)
--#define EXYNOS4_CLKDIV_DMC1_G2D_ACP_MASK	(0xf << EXYNOS4_CLKDIV_DMC1_G2D_ACP_SHIFT)
--#define EXYNOS4_CLKDIV_DMC1_C2C_SHIFT		(4)
--#define EXYNOS4_CLKDIV_DMC1_C2C_MASK		(0x7 << EXYNOS4_CLKDIV_DMC1_C2C_SHIFT)
--#define EXYNOS4_CLKDIV_DMC1_PWI_SHIFT		(8)
--#define EXYNOS4_CLKDIV_DMC1_PWI_MASK		(0xf << EXYNOS4_CLKDIV_DMC1_PWI_SHIFT)
--#define EXYNOS4_CLKDIV_DMC1_C2CACLK_SHIFT	(12)
--#define EXYNOS4_CLKDIV_DMC1_C2CACLK_MASK	(0x7 << EXYNOS4_CLKDIV_DMC1_C2CACLK_SHIFT)
--#define EXYNOS4_CLKDIV_DMC1_DVSEM_SHIFT		(16)
--#define EXYNOS4_CLKDIV_DMC1_DVSEM_MASK		(0x7f << EXYNOS4_CLKDIV_DMC1_DVSEM_SHIFT)
--#define EXYNOS4_CLKDIV_DMC1_DPM_SHIFT		(24)
--#define EXYNOS4_CLKDIV_DMC1_DPM_MASK		(0x7f << EXYNOS4_CLKDIV_DMC1_DPM_SHIFT)
--
--#define EXYNOS4_CLKDIV_MFC_SHIFT		(0)
--#define EXYNOS4_CLKDIV_MFC_MASK			(0x7 << EXYNOS4_CLKDIV_MFC_SHIFT)
--
--#define EXYNOS4_CLKDIV_TOP_ACLK200_SHIFT	(0)
--#define EXYNOS4_CLKDIV_TOP_ACLK200_MASK		(0x7 << EXYNOS4_CLKDIV_TOP_ACLK200_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ACLK100_SHIFT	(4)
--#define EXYNOS4_CLKDIV_TOP_ACLK100_MASK		(0xF << EXYNOS4_CLKDIV_TOP_ACLK100_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ACLK160_SHIFT	(8)
--#define EXYNOS4_CLKDIV_TOP_ACLK160_MASK		(0x7 << EXYNOS4_CLKDIV_TOP_ACLK160_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ACLK133_SHIFT	(12)
--#define EXYNOS4_CLKDIV_TOP_ACLK133_MASK		(0x7 << EXYNOS4_CLKDIV_TOP_ACLK133_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ONENAND_SHIFT	(16)
--#define EXYNOS4_CLKDIV_TOP_ONENAND_MASK		(0x7 << EXYNOS4_CLKDIV_TOP_ONENAND_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ACLK266_GPS_SHIFT	(20)
--#define EXYNOS4_CLKDIV_TOP_ACLK266_GPS_MASK	(0x7 << EXYNOS4_CLKDIV_TOP_ACLK266_GPS_SHIFT)
--#define EXYNOS4_CLKDIV_TOP_ACLK400_MCUISP_SHIFT	(24)
--#define EXYNOS4_CLKDIV_TOP_ACLK400_MCUISP_MASK	(0x7 << EXYNOS4_CLKDIV_TOP_ACLK400_MCUISP_SHIFT)
--
--#define EXYNOS4_CLKDIV_BUS_GDLR_SHIFT		(0)
--#define EXYNOS4_CLKDIV_BUS_GDLR_MASK		(0x7 << EXYNOS4_CLKDIV_BUS_GDLR_SHIFT)
--#define EXYNOS4_CLKDIV_BUS_GPLR_SHIFT		(4)
--#define EXYNOS4_CLKDIV_BUS_GPLR_MASK		(0x7 << EXYNOS4_CLKDIV_BUS_GPLR_SHIFT)
--
--#define EXYNOS4_CLKDIV_CAM_FIMC0_SHIFT		(0)
--#define EXYNOS4_CLKDIV_CAM_FIMC0_MASK		(0xf << EXYNOS4_CLKDIV_CAM_FIMC0_SHIFT)
--#define EXYNOS4_CLKDIV_CAM_FIMC1_SHIFT		(4)
--#define EXYNOS4_CLKDIV_CAM_FIMC1_MASK		(0xf << EXYNOS4_CLKDIV_CAM_FIMC1_SHIFT)
--#define EXYNOS4_CLKDIV_CAM_FIMC2_SHIFT		(8)
--#define EXYNOS4_CLKDIV_CAM_FIMC2_MASK		(0xf << EXYNOS4_CLKDIV_CAM_FIMC2_SHIFT)
--#define EXYNOS4_CLKDIV_CAM_FIMC3_SHIFT		(12)
--#define EXYNOS4_CLKDIV_CAM_FIMC3_MASK		(0xf << EXYNOS4_CLKDIV_CAM_FIMC3_SHIFT)
--
--#define EXYNOS4_CLKDIV_CAM1			(S5P_VA_CMU + 0x0C568)
--
--#define EXYNOS4_CLKDIV_STAT_CAM1		(S5P_VA_CMU + 0x0C668)
--
--#define EXYNOS4_CLKDIV_CAM1_JPEG_SHIFT		(0)
--#define EXYNOS4_CLKDIV_CAM1_JPEG_MASK		(0xf << EXYNOS4_CLKDIV_CAM1_JPEG_SHIFT)
--
--#endif /* __DEVFREQ_EXYNOS4_BUS_H */
-diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
-deleted file mode 100644
-index 297ea30d4159..000000000000
---- a/drivers/devfreq/exynos/exynos5_bus.c
-+++ /dev/null
-@@ -1,431 +0,0 @@
--/*
-- * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com/
-- *
-- * EXYNOS5 INT clock frequency scaling support using DEVFREQ framework
-- * Based on work done by Jonghwan Choi <jhbird.choi@samsung.com>
-- * Support for only EXYNOS5250 is present.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- */
--
--#include <linux/module.h>
--#include <linux/devfreq.h>
--#include <linux/io.h>
--#include <linux/pm_opp.h>
--#include <linux/slab.h>
--#include <linux/suspend.h>
--#include <linux/clk.h>
--#include <linux/delay.h>
--#include <linux/platform_device.h>
--#include <linux/pm_qos.h>
--#include <linux/regulator/consumer.h>
--#include <linux/of_address.h>
--#include <linux/of_platform.h>
--
--#include "exynos_ppmu.h"
--
--#define MAX_SAFEVOLT			1100000 /* 1.10V */
--/* Assume that the bus is saturated if the utilization is 25% */
--#define INT_BUS_SATURATION_RATIO	25
--
--enum int_level_idx {
--	LV_0,
--	LV_1,
--	LV_2,
--	LV_3,
--	LV_4,
--	_LV_END
--};
--
--enum exynos_ppmu_list {
--	PPMU_RIGHT,
--	PPMU_END,
--};
--
--struct busfreq_data_int {
--	struct device *dev;
--	struct devfreq *devfreq;
--	struct regulator *vdd_int;
--	struct busfreq_ppmu_data ppmu_data;
--	unsigned long curr_freq;
--	bool disabled;
--
--	struct notifier_block pm_notifier;
--	struct mutex lock;
--	struct pm_qos_request int_req;
--	struct clk *int_clk;
--};
--
--struct int_bus_opp_table {
--	unsigned int idx;
--	unsigned long clk;
--	unsigned long volt;
--};
--
--static struct int_bus_opp_table exynos5_int_opp_table[] = {
--	{LV_0, 266000, 1025000},
--	{LV_1, 200000, 1025000},
--	{LV_2, 160000, 1025000},
--	{LV_3, 133000, 1025000},
--	{LV_4, 100000, 1025000},
--	{0, 0, 0},
--};
--
--static int exynos5_int_setvolt(struct busfreq_data_int *data,
--				unsigned long volt)
--{
--	return regulator_set_voltage(data->vdd_int, volt, MAX_SAFEVOLT);
--}
--
--static int exynos5_busfreq_int_target(struct device *dev, unsigned long *_freq,
--			      u32 flags)
--{
--	int err = 0;
--	struct platform_device *pdev = container_of(dev, struct platform_device,
--						    dev);
--	struct busfreq_data_int *data = platform_get_drvdata(pdev);
--	struct dev_pm_opp *opp;
--	unsigned long old_freq, freq;
--	unsigned long volt;
--
--	rcu_read_lock();
--	opp = devfreq_recommended_opp(dev, _freq, flags);
--	if (IS_ERR(opp)) {
--		rcu_read_unlock();
--		dev_err(dev, "%s: Invalid OPP.\n", __func__);
--		return PTR_ERR(opp);
--	}
--
--	freq = dev_pm_opp_get_freq(opp);
--	volt = dev_pm_opp_get_voltage(opp);
--	rcu_read_unlock();
--
--	old_freq = data->curr_freq;
--
--	if (old_freq == freq)
--		return 0;
--
--	dev_dbg(dev, "targeting %lukHz %luuV\n", freq, volt);
--
--	mutex_lock(&data->lock);
--
--	if (data->disabled)
--		goto out;
--
--	if (freq > exynos5_int_opp_table[0].clk)
--		pm_qos_update_request(&data->int_req, freq * 16 / 1000);
--	else
--		pm_qos_update_request(&data->int_req, -1);
--
--	if (old_freq < freq)
--		err = exynos5_int_setvolt(data, volt);
--	if (err)
--		goto out;
--
--	err = clk_set_rate(data->int_clk, freq * 1000);
--
--	if (err)
--		goto out;
--
--	if (old_freq > freq)
--		err = exynos5_int_setvolt(data, volt);
--	if (err)
--		goto out;
--
--	data->curr_freq = freq;
--out:
--	mutex_unlock(&data->lock);
--	return err;
--}
--
--static int exynos5_int_get_dev_status(struct device *dev,
--				      struct devfreq_dev_status *stat)
--{
--	struct platform_device *pdev = container_of(dev, struct platform_device,
--						    dev);
--	struct busfreq_data_int *data = platform_get_drvdata(pdev);
--	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
--	int busier_dmc;
--
--	exynos_read_ppmu(ppmu_data);
--	busier_dmc = exynos_get_busier_ppmu(ppmu_data);
--
--	stat->current_frequency = data->curr_freq;
--
--	/* Number of cycles spent on memory access */
--	stat->busy_time = ppmu_data->ppmu[busier_dmc].count[PPMU_PMNCNT3];
--	stat->busy_time *= 100 / INT_BUS_SATURATION_RATIO;
--	stat->total_time = ppmu_data->ppmu[busier_dmc].ccnt;
--
--	return 0;
--}
--
--static struct devfreq_dev_profile exynos5_devfreq_int_profile = {
--	.initial_freq		= 160000,
--	.polling_ms		= 100,
--	.target			= exynos5_busfreq_int_target,
--	.get_dev_status		= exynos5_int_get_dev_status,
--};
--
--static int exynos5250_init_int_tables(struct busfreq_data_int *data)
--{
--	int i, err = 0;
--
--	for (i = LV_0; i < _LV_END; i++) {
--		err = dev_pm_opp_add(data->dev, exynos5_int_opp_table[i].clk,
--				exynos5_int_opp_table[i].volt);
--		if (err) {
--			dev_err(data->dev, "Cannot add opp entries.\n");
--			return err;
--		}
--	}
--
--	return 0;
--}
--
--static int exynos5_busfreq_int_pm_notifier_event(struct notifier_block *this,
--		unsigned long event, void *ptr)
--{
--	struct busfreq_data_int *data = container_of(this,
--					struct busfreq_data_int, pm_notifier);
--	struct dev_pm_opp *opp;
--	unsigned long maxfreq = ULONG_MAX;
--	unsigned long freq;
--	unsigned long volt;
--	int err = 0;
--
--	switch (event) {
--	case PM_SUSPEND_PREPARE:
--		/* Set Fastest and Deactivate DVFS */
--		mutex_lock(&data->lock);
--
--		data->disabled = true;
--
--		rcu_read_lock();
--		opp = dev_pm_opp_find_freq_floor(data->dev, &maxfreq);
--		if (IS_ERR(opp)) {
--			rcu_read_unlock();
--			err = PTR_ERR(opp);
--			goto unlock;
--		}
--		freq = dev_pm_opp_get_freq(opp);
--		volt = dev_pm_opp_get_voltage(opp);
--		rcu_read_unlock();
--
--		err = exynos5_int_setvolt(data, volt);
--		if (err)
--			goto unlock;
--
--		err = clk_set_rate(data->int_clk, freq * 1000);
--
--		if (err)
--			goto unlock;
--
--		data->curr_freq = freq;
--unlock:
--		mutex_unlock(&data->lock);
--		if (err)
--			return NOTIFY_BAD;
--		return NOTIFY_OK;
--	case PM_POST_RESTORE:
--	case PM_POST_SUSPEND:
--		/* Reactivate */
--		mutex_lock(&data->lock);
--		data->disabled = false;
--		mutex_unlock(&data->lock);
--		return NOTIFY_OK;
--	}
--
--	return NOTIFY_DONE;
--}
--
--static int exynos5_busfreq_int_probe(struct platform_device *pdev)
--{
--	struct busfreq_data_int *data;
--	struct busfreq_ppmu_data *ppmu_data;
--	struct dev_pm_opp *opp;
--	struct device *dev = &pdev->dev;
--	struct device_node *np;
--	unsigned long initial_freq;
--	unsigned long initial_volt;
--	int err = 0;
--	int i;
--
--	data = devm_kzalloc(&pdev->dev, sizeof(struct busfreq_data_int),
--				GFP_KERNEL);
--	if (data == NULL) {
--		dev_err(dev, "Cannot allocate memory.\n");
--		return -ENOMEM;
--	}
--
--	ppmu_data = &data->ppmu_data;
--	ppmu_data->ppmu_end = PPMU_END;
--	ppmu_data->ppmu = devm_kzalloc(dev,
--				       sizeof(struct exynos_ppmu) * PPMU_END,
--				       GFP_KERNEL);
--	if (!ppmu_data->ppmu) {
--		dev_err(dev, "Failed to allocate memory for exynos_ppmu\n");
--		return -ENOMEM;
--	}
--
--	np = of_find_compatible_node(NULL, NULL, "samsung,exynos5250-ppmu");
--	if (np == NULL) {
--		pr_err("Unable to find PPMU node\n");
--		return -ENOENT;
--	}
--
--	for (i = 0; i < ppmu_data->ppmu_end; i++) {
--		/* map PPMU memory region */
--		ppmu_data->ppmu[i].hw_base = of_iomap(np, i);
--		if (ppmu_data->ppmu[i].hw_base == NULL) {
--			dev_err(&pdev->dev, "failed to map memory region\n");
--			return -ENOMEM;
--		}
--	}
--	data->pm_notifier.notifier_call = exynos5_busfreq_int_pm_notifier_event;
--	data->dev = dev;
--	mutex_init(&data->lock);
--
--	err = exynos5250_init_int_tables(data);
--	if (err)
--		return err;
--
--	data->vdd_int = devm_regulator_get(dev, "vdd_int");
--	if (IS_ERR(data->vdd_int)) {
--		dev_err(dev, "Cannot get the regulator \"vdd_int\"\n");
--		return PTR_ERR(data->vdd_int);
--	}
--
--	data->int_clk = devm_clk_get(dev, "int_clk");
--	if (IS_ERR(data->int_clk)) {
--		dev_err(dev, "Cannot get clock \"int_clk\"\n");
--		return PTR_ERR(data->int_clk);
--	}
--
--	rcu_read_lock();
--	opp = dev_pm_opp_find_freq_floor(dev,
--			&exynos5_devfreq_int_profile.initial_freq);
--	if (IS_ERR(opp)) {
--		rcu_read_unlock();
--		dev_err(dev, "Invalid initial frequency %lu kHz.\n",
--		       exynos5_devfreq_int_profile.initial_freq);
--		return PTR_ERR(opp);
--	}
--	initial_freq = dev_pm_opp_get_freq(opp);
--	initial_volt = dev_pm_opp_get_voltage(opp);
--	rcu_read_unlock();
--	data->curr_freq = initial_freq;
--
--	err = clk_set_rate(data->int_clk, initial_freq * 1000);
--	if (err) {
--		dev_err(dev, "Failed to set initial frequency\n");
--		return err;
--	}
--
--	err = exynos5_int_setvolt(data, initial_volt);
--	if (err)
--		return err;
--
--	platform_set_drvdata(pdev, data);
--
--	busfreq_mon_reset(ppmu_data);
--
--	data->devfreq = devm_devfreq_add_device(dev, &exynos5_devfreq_int_profile,
--					   "simple_ondemand", NULL);
--	if (IS_ERR(data->devfreq))
--		return PTR_ERR(data->devfreq);
--
--	err = devm_devfreq_register_opp_notifier(dev, data->devfreq);
--	if (err < 0) {
--		dev_err(dev, "Failed to register opp notifier\n");
--		return err;
--	}
--
--	err = register_pm_notifier(&data->pm_notifier);
--	if (err) {
--		dev_err(dev, "Failed to setup pm notifier\n");
--		return err;
--	}
--
--	/* TODO: Add a new QOS class for int/mif bus */
--	pm_qos_add_request(&data->int_req, PM_QOS_NETWORK_THROUGHPUT, -1);
--
--	return 0;
--}
--
--static int exynos5_busfreq_int_remove(struct platform_device *pdev)
--{
--	struct busfreq_data_int *data = platform_get_drvdata(pdev);
--
--	pm_qos_remove_request(&data->int_req);
--	unregister_pm_notifier(&data->pm_notifier);
--
--	return 0;
--}
--
--#ifdef CONFIG_PM_SLEEP
--static int exynos5_busfreq_int_resume(struct device *dev)
--{
--	struct platform_device *pdev = container_of(dev, struct platform_device,
--						    dev);
--	struct busfreq_data_int *data = platform_get_drvdata(pdev);
--	struct busfreq_ppmu_data *ppmu_data = &data->ppmu_data;
--
--	busfreq_mon_reset(ppmu_data);
--	return 0;
--}
--static const struct dev_pm_ops exynos5_busfreq_int_pm = {
--	.resume	= exynos5_busfreq_int_resume,
--};
--#endif
--static SIMPLE_DEV_PM_OPS(exynos5_busfreq_int_pm_ops, NULL,
--			 exynos5_busfreq_int_resume);
--
--/* platform device pointer for exynos5 devfreq device. */
--static struct platform_device *exynos5_devfreq_pdev;
--
--static struct platform_driver exynos5_busfreq_int_driver = {
--	.probe		= exynos5_busfreq_int_probe,
--	.remove		= exynos5_busfreq_int_remove,
--	.driver		= {
--		.name		= "exynos5-bus-int",
--		.pm		= &exynos5_busfreq_int_pm_ops,
--	},
--};
--
--static int __init exynos5_busfreq_int_init(void)
--{
--	int ret;
--
--	ret = platform_driver_register(&exynos5_busfreq_int_driver);
--	if (ret < 0)
--		goto out;
--
--	exynos5_devfreq_pdev =
--		platform_device_register_simple("exynos5-bus-int", -1, NULL, 0);
--	if (IS_ERR(exynos5_devfreq_pdev)) {
--		ret = PTR_ERR(exynos5_devfreq_pdev);
--		goto out1;
--	}
--
--	return 0;
--out1:
--	platform_driver_unregister(&exynos5_busfreq_int_driver);
--out:
--	return ret;
--}
--late_initcall(exynos5_busfreq_int_init);
--
--static void __exit exynos5_busfreq_int_exit(void)
--{
--	platform_device_unregister(exynos5_devfreq_pdev);
--	platform_driver_unregister(&exynos5_busfreq_int_driver);
--}
--module_exit(exynos5_busfreq_int_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("EXYNOS5 busfreq driver with devfreq framework");
-diff --git a/drivers/devfreq/exynos/exynos_ppmu.c b/drivers/devfreq/exynos/exynos_ppmu.c
-deleted file mode 100644
-index 97b75e513d29..000000000000
---- a/drivers/devfreq/exynos/exynos_ppmu.c
-+++ /dev/null
-@@ -1,119 +0,0 @@
--/*
-- * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com/
-- *
-- * EXYNOS - PPMU support
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--#include <linux/kernel.h>
--#include <linux/types.h>
--#include <linux/io.h>
--
--#include "exynos_ppmu.h"
--
--void exynos_ppmu_reset(void __iomem *ppmu_base)
--{
--	__raw_writel(PPMU_CYCLE_RESET | PPMU_COUNTER_RESET, ppmu_base);
--	__raw_writel(PPMU_ENABLE_CYCLE  |
--		     PPMU_ENABLE_COUNT0 |
--		     PPMU_ENABLE_COUNT1 |
--		     PPMU_ENABLE_COUNT2 |
--		     PPMU_ENABLE_COUNT3,
--		     ppmu_base + PPMU_CNTENS);
--}
--
--void exynos_ppmu_setevent(void __iomem *ppmu_base, unsigned int ch,
--			unsigned int evt)
--{
--	__raw_writel(evt, ppmu_base + PPMU_BEVTSEL(ch));
--}
--
--void exynos_ppmu_start(void __iomem *ppmu_base)
--{
--	__raw_writel(PPMU_ENABLE, ppmu_base);
--}
--
--void exynos_ppmu_stop(void __iomem *ppmu_base)
--{
--	__raw_writel(PPMU_DISABLE, ppmu_base);
--}
--
--unsigned int exynos_ppmu_read(void __iomem *ppmu_base, unsigned int ch)
--{
--	unsigned int total;
--
--	if (ch == PPMU_PMNCNT3)
--		total = ((__raw_readl(ppmu_base + PMCNT_OFFSET(ch)) << 8) |
--			  __raw_readl(ppmu_base + PMCNT_OFFSET(ch + 1)));
--	else
--		total = __raw_readl(ppmu_base + PMCNT_OFFSET(ch));
--
--	return total;
--}
--
--void busfreq_mon_reset(struct busfreq_ppmu_data *ppmu_data)
--{
--	unsigned int i;
--
--	for (i = 0; i < ppmu_data->ppmu_end; i++) {
--		void __iomem *ppmu_base = ppmu_data->ppmu[i].hw_base;
--
--		/* Reset the performance and cycle counters */
--		exynos_ppmu_reset(ppmu_base);
--
--		/* Setup count registers to monitor read/write transactions */
--		ppmu_data->ppmu[i].event[PPMU_PMNCNT3] = RDWR_DATA_COUNT;
--		exynos_ppmu_setevent(ppmu_base, PPMU_PMNCNT3,
--					ppmu_data->ppmu[i].event[PPMU_PMNCNT3]);
--
--		exynos_ppmu_start(ppmu_base);
--	}
--}
--EXPORT_SYMBOL(busfreq_mon_reset);
--
--void exynos_read_ppmu(struct busfreq_ppmu_data *ppmu_data)
--{
--	int i, j;
--
--	for (i = 0; i < ppmu_data->ppmu_end; i++) {
--		void __iomem *ppmu_base = ppmu_data->ppmu[i].hw_base;
--
--		exynos_ppmu_stop(ppmu_base);
--
--		/* Update local data from PPMU */
--		ppmu_data->ppmu[i].ccnt = __raw_readl(ppmu_base + PPMU_CCNT);
--
--		for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
--			if (ppmu_data->ppmu[i].event[j] == 0)
--				ppmu_data->ppmu[i].count[j] = 0;
--			else
--				ppmu_data->ppmu[i].count[j] =
--					exynos_ppmu_read(ppmu_base, j);
--		}
--	}
--
--	busfreq_mon_reset(ppmu_data);
--}
--EXPORT_SYMBOL(exynos_read_ppmu);
--
--int exynos_get_busier_ppmu(struct busfreq_ppmu_data *ppmu_data)
--{
--	unsigned int count = 0;
--	int i, j, busy = 0;
--
--	for (i = 0; i < ppmu_data->ppmu_end; i++) {
--		for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
--			if (ppmu_data->ppmu[i].count[j] > count) {
--				count = ppmu_data->ppmu[i].count[j];
--				busy = i;
--			}
--		}
--	}
--
--	return busy;
--}
--EXPORT_SYMBOL(exynos_get_busier_ppmu);
-diff --git a/drivers/devfreq/exynos/exynos_ppmu.h b/drivers/devfreq/exynos/exynos_ppmu.h
-deleted file mode 100644
-index 71f17ba3563c..000000000000
---- a/drivers/devfreq/exynos/exynos_ppmu.h
-+++ /dev/null
-@@ -1,86 +0,0 @@
--/*
-- * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com/
-- *
-- * EXYNOS PPMU header
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
--*/
--
--#ifndef __DEVFREQ_EXYNOS_PPMU_H
--#define __DEVFREQ_EXYNOS_PPMU_H __FILE__
--
--#include <linux/ktime.h>
--
--/* For PPMU Control */
--#define PPMU_ENABLE             BIT(0)
--#define PPMU_DISABLE            0x0
--#define PPMU_CYCLE_RESET        BIT(1)
--#define PPMU_COUNTER_RESET      BIT(2)
--
--#define PPMU_ENABLE_COUNT0      BIT(0)
--#define PPMU_ENABLE_COUNT1      BIT(1)
--#define PPMU_ENABLE_COUNT2      BIT(2)
--#define PPMU_ENABLE_COUNT3      BIT(3)
--#define PPMU_ENABLE_CYCLE       BIT(31)
--
--#define PPMU_CNTENS		0x10
--#define PPMU_FLAG		0x50
--#define PPMU_CCNT_OVERFLOW	BIT(31)
--#define PPMU_CCNT		0x100
--
--#define PPMU_PMCNT0		0x110
--#define PPMU_PMCNT_OFFSET	0x10
--#define PMCNT_OFFSET(x)		(PPMU_PMCNT0 + (PPMU_PMCNT_OFFSET * x))
--
--#define PPMU_BEVT0SEL		0x1000
--#define PPMU_BEVTSEL_OFFSET	0x100
--#define PPMU_BEVTSEL(x)		(PPMU_BEVT0SEL + (ch * PPMU_BEVTSEL_OFFSET))
--
--/* For Event Selection */
--#define RD_DATA_COUNT		0x5
--#define WR_DATA_COUNT		0x6
--#define RDWR_DATA_COUNT		0x7
--
--enum ppmu_counter {
--	PPMU_PMNCNT0,
--	PPMU_PMCCNT1,
--	PPMU_PMNCNT2,
--	PPMU_PMNCNT3,
--	PPMU_PMNCNT_MAX,
--};
--
--struct bus_opp_table {
--	unsigned int idx;
--	unsigned long clk;
--	unsigned long volt;
--};
--
--struct exynos_ppmu {
--	void __iomem *hw_base;
--	unsigned int ccnt;
--	unsigned int event[PPMU_PMNCNT_MAX];
--	unsigned int count[PPMU_PMNCNT_MAX];
--	unsigned long long ns;
--	ktime_t reset_time;
--	bool ccnt_overflow;
--	bool count_overflow[PPMU_PMNCNT_MAX];
--};
--
--struct busfreq_ppmu_data {
--	struct exynos_ppmu *ppmu;
--	int ppmu_end;
--};
--
--void exynos_ppmu_reset(void __iomem *ppmu_base);
--void exynos_ppmu_setevent(void __iomem *ppmu_base, unsigned int ch,
--			unsigned int evt);
--void exynos_ppmu_start(void __iomem *ppmu_base);
--void exynos_ppmu_stop(void __iomem *ppmu_base);
--unsigned int exynos_ppmu_read(void __iomem *ppmu_base, unsigned int ch);
--void busfreq_mon_reset(struct busfreq_ppmu_data *ppmu_data);
--void exynos_read_ppmu(struct busfreq_ppmu_data *ppmu_data);
--int exynos_get_busier_ppmu(struct busfreq_ppmu_data *ppmu_data);
--#endif /* __DEVFREQ_EXYNOS_PPMU_H */
++	if (!ondemand_data) {
++		ret = -ENOMEM;
++		goto err;
++	}
+ 	ondemand_data->upthreshold = 40;
+ 	ondemand_data->downdifferential = 5;
+ 
+@@ -359,14 +442,15 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 						ondemand_data);
+ 	if (IS_ERR(bus->devfreq)) {
+ 		dev_err(dev, "failed to add devfreq device\n");
+-		return  PTR_ERR(bus->devfreq);
++		ret = PTR_ERR(bus->devfreq);
++		goto err;
+ 	}
+ 
+ 	/* Register opp_notifier to catch the change of OPP  */
+ 	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to register opp notifier\n");
+-		return ret;
++		goto err;
+ 	}
+ 
+ 	/*
+@@ -376,16 +460,59 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	ret = exynos_bus_enable_edev(bus);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to enable devfreq-event devices\n");
+-		return ret;
++		goto err;
+ 	}
+ 
+ 	ret = exynos_bus_set_event(bus);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to set event to devfreq-event devices\n");
+-		return ret;
++		goto err;
+ 	}
+ 
++	goto out;
++passive:
++	/* Initalize the struct profile and governor data for passive device */
++	profile->target = exynos_bus_passive_target;
++	profile->exit = exynos_bus_passive_exit;
++
++	/* Get the instance of parent devfreq device */
++	parent_devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
++	if (IS_ERR(parent_devfreq)) {
++		ret = -EPROBE_DEFER;
++		goto err;
++	}
++
++	passive_data = devm_kzalloc(dev, sizeof(*passive_data), GFP_KERNEL);
++	if (!passive_data) {
++		ret = -ENOMEM;
++		goto err;
++	}
++	passive_data->parent = parent_devfreq;
++
++	/* Add devfreq device for exynos bus with passive governor */
++	bus->devfreq = devm_devfreq_add_device(dev, profile, "passive",
++						passive_data);
++	if (IS_ERR(bus->devfreq)) {
++		dev_err(dev,
++			"failed to add devfreq dev with passive governor\n");
++		ret = -EPROBE_DEFER;
++		goto err;
++	}
++
++out:
++	max_state = bus->devfreq->profile->max_state;
++	min_freq = (bus->devfreq->profile->freq_table[0] / 1000);
++	max_freq = (bus->devfreq->profile->freq_table[max_state - 1] / 1000);
++	pr_info("exynos-bus: new bus device registered: %s (%6ld KHz ~ %6ld KHz)\n",
++			dev_name(dev), min_freq, max_freq);
++
+ 	return 0;
++
++err:
++	dev_pm_opp_of_remove_table(dev);
++	clk_disable_unprepare(bus->clk);
++
++	return ret;
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
 -- 
 1.9.1
+
