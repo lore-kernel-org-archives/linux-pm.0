@@ -1,42 +1,66 @@
-From: Mike Galbraith <umgwanakikbuti@gmail.com>
-Subject: Re: [regression] cross core scheduling frequency drop bisected to
- 0c313cb20732
-Date: Mon, 11 Apr 2016 05:04:54 +0200
-Message-ID: <1460343894.3682.11.camel@gmail.com>
-References: <1460092854.4051.1.camel@gmail.com>
-	 <20160408064510.GK3448@twins.programming.kicks-ass.net>
-	 <1460098254.5582.17.camel@gmail.com> <2428384.mEkP3EOpsR@vostro.rjw.lan>
-	 <20160409110729.GS3448@twins.programming.kicks-ass.net>
-	 <CAJZ5v0j-5Eva2QReG4LHvyZR-iL5rrrWp-3erdfz-u+5xbwRKA@mail.gmail.com>
-	 <1460302797.4383.44.camel@gmail.com> <1460319890.25336.2.camel@redhat.com>
+From: "Zheng, Qi" <qi.zheng@intel.com>
+Subject: RE: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
+Date: Mon, 11 Apr 2016 03:36:41 +0000
+Message-ID: <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:33505 "EHLO
-	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbcDKDE6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 23:04:58 -0400
-In-Reply-To: <1460319890.25336.2.camel@redhat.com>
+Received: from mga02.intel.com ([134.134.136.20]:64179 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbcDKDgq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 23:36:46 -0400
+In-Reply-To: <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Zha, Qipeng" <qipeng.zha@intel.com>, Dave Airlie <airlied@gmail.com>, "Nyman, Mathias" <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Sun, 2016-04-10 at 16:24 -0400, Rik van Riel wrote:
-> On Sun, 2016-04-10 at 17:39 +0200, Mike Galbraith wrote:
+> +static int pci_dev_check_d3cold(struct pci_dev *pdev, void *data) {
+> +	bool *d3cold_ok = data;
+> +
+> +	/*
+> +	 * The device needs to be allowed to go D3cold and if it is wake
+> +	 * capable to do so from D3cold.
+> +	 */
+> +	if (pdev->no_d3cold || !pdev->d3cold_allowed)
+> +		*d3cold_ok = false;
+> +	if (device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold))
+> +		*d3cold_ok = false;
+> +
+> +	return !*d3cold_ok;
+>+}
 
-> > Should the default idle state not then be governor dependent?  When I
-> > set gov=performance, I'm expecting box to go just as fast as it can
-> > go
-> > without melting.  Does polling risk CPU -> lava conversion?
-> 
-> Current CPUs can only have some cores run at full speed
-> (turbo mode) if other cores are idling and/or running at
-> lower speeds.
+How about the pme_poll?
+IMHO, if the pme_poll is set for some device, the PCIe port couldn't go to sleep as well.
 
-The real world is very unlikely to miss the prettier numbers I'm
-grieving over one tiny bit.  Knowing that doesn't make giving them up
-any easier though.. byebye cycles (sniff) ;-)
+> +void pci_bridge_pm_update(struct pci_dev *pdev, bool remove) {
+> +	struct pci_dev *bridge;
+> +	bool d3cold_ok = true;
+> +
+> +	bridge = pci_upstream_bridge(pdev);
+> +	if (!bridge || !pci_bridge_d3_possible(bridge))
+> +		return;
+> +
+> +	pci_dev_get(bridge);
+> +	if (!remove)
+> +		pci_dev_check_d3cold(pdev, &d3cold_ok);
+> +
+> +	if (d3cold_ok) {
+> +		/*
+> +		 * We need to go through all children to find out if all of
+> +		 * them can still go to D3cold.
+> +		 */
+> +		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
+> +			     &d3cold_ok);
+> +	}
+> +	bridge->bridge_d3 = d3cold_ok;
+> +	pci_dev_put(bridge);
+> +}
 
-	-Mike
+IMHO, the PCIe port can go to sleep if all the devices behind it are already in D3, not they have the capability to enter D3.
+Besides, why the devices should in D3cold? Why D3hot can't?
+Thanks.
