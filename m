@@ -1,19 +1,22 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v9 17/20] ARM: dts: Add exynos4412-ppmu-common dtsi to delete
- duplicate PPMU nodes
-Date: Mon, 11 Apr 2016 12:57:55 +0900
-Message-ID: <1460347078-15175-18-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v9 14/20] ARM: dts: Add bus nodes using VDD_MIF for Exynos4x12
+Date: Mon, 11 Apr 2016 12:57:52 +0900
+Message-ID: <1460347078-15175-15-git-send-email-cw00.choi@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:40232 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbcDKD6T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 23:58:19 -0400
 In-reply-to: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds the exynos4412-ppmu-common.dtsi to remove duplicate PPMU nodes
-because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
-PPMU device tree node.
+This patch adds the bus nodes using VDD_MIF for Exynos4x12 SoC.
+Exynos4x12 has the following AXI buses to translate data
+between DRAM and DMC/ACP/C2C.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
@@ -21,258 +24,88 @@ Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Tested-by: Markus Reichl <m.reichl@fivetechno.de>
 Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- arch/arm/boot/dts/exynos3250-monk.dts           | 41 +-------------------
- arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +-------------------
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
- arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 50 +++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +-------------------
- 5 files changed, 54 insertions(+), 120 deletions(-)
- create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+ arch/arm/boot/dts/exynos4x12.dtsi | 68 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos3250-monk.dts b/arch/arm/boot/dts/exynos3250-monk.dts
-index 1fd7ecb5c415..fbe09d640c9a 100644
---- a/arch/arm/boot/dts/exynos3250-monk.dts
-+++ b/arch/arm/boot/dts/exynos3250-monk.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -464,46 +465,6 @@
- 	status = "okay";
+diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+index 84a23f962946..99a0f4ca3d47 100644
+--- a/arch/arm/boot/dts/exynos4x12.dtsi
++++ b/arch/arm/boot/dts/exynos4x12.dtsi
+@@ -281,6 +281,74 @@
+ 		clocks = <&clock CLK_SMMU_LITE1>, <&clock CLK_FIMC_LITE1>;
+ 		#iommu-cells = <0>;
+ 	};
++
++	bus_dmc: bus_dmc {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_DMC>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_dmc_opp_table>;
++		status = "disabled";
++	};
++
++	bus_acp: bus_acp {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_ACP>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_acp_opp_table>;
++		status = "disabled";
++	};
++
++	bus_c2c: bus_c2c {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DIV_C2C>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_dmc_opp_table>;
++		status = "disabled";
++	};
++
++	bus_dmc_opp_table: opp_table1 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++			opp-microvolt = <900000>;
++		};
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++			opp-microvolt = <900000>;
++		};
++		opp@160000000 {
++			opp-hz = /bits/ 64 <160000000>;
++			opp-microvolt = <900000>;
++		};
++		opp@267000000 {
++			opp-hz = /bits/ 64 <267000000>;
++			opp-microvolt = <950000>;
++		};
++		opp@400000000 {
++			opp-hz = /bits/ 64 <400000000>;
++			opp-microvolt = <1050000>;
++		};
++	};
++
++	bus_acp_opp_table: opp_table2 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp@134000000 {
++			opp-hz = /bits/ 64 <134000000>;
++		};
++		opp@160000000 {
++			opp-hz = /bits/ 64 <160000000>;
++		};
++		opp@267000000 {
++			opp-hz = /bits/ 64 <267000000>;
++		};
++	};
  };
  
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 5175bd7e015f..9710e79e10a0 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include "exynos3250.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/clock/samsung,s2mps11.h>
-@@ -641,46 +642,6 @@
- 	status = "okay";
- };
- 
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &xusbxti {
- 	clock-frequency = <24000000>;
- };
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index 5e5d3fecb04c..cba37c974703 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -11,6 +11,7 @@
- #include <dt-bindings/input/input.h>
- #include <dt-bindings/clock/maxim,max77686.h>
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
- 
- / {
-diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-new file mode 100644
-index 000000000000..16e4b77d8cb1
---- /dev/null
-+++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-@@ -0,0 +1,50 @@
-+/*
-+ * Device tree sources for Exynos4412 PPMU common device tree
-+ *
-+ * Copyright (C) 2015 Samsung Electronics
-+ * Author: Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+&ppmu_dmc0 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc0_3: ppmu-event3-dmc0 {
-+		       event-name = "ppmu-event3-dmc0";
-+	       };
-+       };
-+};
-+
-+&ppmu_dmc1 {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_dmc1_3: ppmu-event3-dmc1 {
-+		       event-name = "ppmu-event3-dmc1";
-+	       };
-+       };
-+};
-+
-+&ppmu_leftbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_leftbus_3: ppmu-event3-leftbus {
-+		       event-name = "ppmu-event3-leftbus";
-+	       };
-+       };
-+};
-+
-+&ppmu_rightbus {
-+       status = "okay";
-+
-+       events {
-+	       ppmu_rightbus_3: ppmu-event3-rightbus {
-+		       event-name = "ppmu-event3-rightbus";
-+	       };
-+       };
-+};
-diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
-index ed017cc7b14f..dce3cebe0606 100644
---- a/arch/arm/boot/dts/exynos4412-trats2.dts
-+++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include "exynos4412.dtsi"
-+#include "exynos4412-ppmu-common.dtsi"
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/clock/maxim,max77686.h>
-@@ -871,46 +872,6 @@
- 	assigned-clock-parents =  <&clock CLK_XUSBXTI>;
- };
- 
--&ppmu_dmc0 {
--	status = "okay";
--
--	events {
--		ppmu_dmc0_3: ppmu-event3-dmc0 {
--			event-name = "ppmu-event3-dmc0";
--		};
--	};
--};
--
--&ppmu_dmc1 {
--	status = "okay";
--
--	events {
--		ppmu_dmc1_3: ppmu-event3-dmc1 {
--			event-name = "ppmu-event3-dmc1";
--		};
--	};
--};
--
--&ppmu_leftbus {
--	status = "okay";
--
--	events {
--		ppmu_leftbus_3: ppmu-event3-leftbus {
--			event-name = "ppmu-event3-leftbus";
--		};
--	};
--};
--
--&ppmu_rightbus {
--	status = "okay";
--
--	events {
--		ppmu_rightbus_3: ppmu-event3-rightbus {
--			event-name = "ppmu-event3-rightbus";
--		};
--	};
--};
--
- &pinctrl_0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&sleep0>;
+ &combiner {
 -- 
 1.9.1
+
