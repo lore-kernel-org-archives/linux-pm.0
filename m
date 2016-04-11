@@ -1,51 +1,72 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v4 11/11] soc: renesas: rcar-sysc: Add support for R-Car
- H3 power areas
-Date: Mon, 11 Apr 2016 09:24:54 +0200
-Message-ID: <CAMuHMdU7pEkbMBmFmJ_X7iqrk-mjXFsXSYSRZJQgBYR_KS5Hhg@mail.gmail.com>
-References: <1460031628-13336-1-git-send-email-geert+renesas@glider.be>
-	<1460031628-13336-12-git-send-email-geert+renesas@glider.be>
-	<1469037.GP7ci3FqN3@avalon>
+From: James Morse <james.morse@arm.com>
+Subject: Re: [PATCH] Prefer kASLR over Hibernation
+Date: Mon, 11 Apr 2016 09:00:37 +0100
+Message-ID: <570B59A5.3090904@arm.com>
+References: <20160406194404.GA11150@www.outflux.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1469037.GP7ci3FqN3@avalon>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20160406194404.GA11150@www.outflux.net>
+Sender: linux-doc-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 9, 2016 at 9:22 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
->> --- /dev/null
->> +++ b/drivers/soc/renesas/r8a7795-sysc.c
->> @@ -0,0 +1,53 @@
->> +/*
->> + * Renesas R-Car H3 System Controller
->> + *
->> + * Copyright (C) 2016 Glider bvba
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; version 2 of the License.
->> + */
->> +
->> +#include <linux/bug.h>
->
-> Why do you need this header ? ARRAY_SIZE is defined in linux/kernel.h and
-> __initconst in linux/init.h. Am I missing something ?
+Hi Kees,
 
-ARRAY_SIZE() uses __must_be_array() uses BUILD_BUG_ON_ZERO().
+On 06/04/16 20:44, Kees Cook wrote:
+> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
+> one or the other must be chosen at boot-time. Until now, hibernation
+> was selected when no choice was made on the command line.
+> 
+> To make the security benefits of kASLR more widely available to end
+> users (since the use of hibernation is becoming more rare and kASLR,
+> already available on x86, will be available on arm64 and MIPS soon),
+> this changes the default to preferring kASLR over hibernation. Users
+> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
+> command line.
 
-IIRC, I sent a patch to include bug.h a while ago, but it was rejected.
+While hibernate isn't yet merged for arm64, it does work with kASLR in v4.6-rc*,
+it would be a shame to have to choose at boot time, (but that's my problem to
+fix if/when its merged).
 
-Gr{oetje,eeting}s,
 
-                        Geert
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index fca9254280ee..be5041354b1e 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -1159,6 +1164,13 @@ static int __init kaslr_nohibernate_setup(char *str)
+>  	return nohibernate_setup(str);
+>  }
+>  
+> +static int __init nokaslr_hibernate_setup(char *str)
+> +{
+> +	noresume = 0;
+> +	nohibernate = 0;
+> +	return 1;
+> +}
+> +
+>  static int __init page_poison_nohibernate_setup(char *str)
+>  {
+>  #ifdef CONFIG_PAGE_POISONING_ZERO
+> @@ -1183,4 +1195,5 @@ __setup("resumewait", resumewait_setup);
+>  __setup("resumedelay=", resumedelay_setup);
+>  __setup("nohibernate", nohibernate_setup);
+>  __setup("kaslr", kaslr_nohibernate_setup);
+> +__setup("nokaslr", nokaslr_hibernate_setup);
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+So one or the other option has to be specified at boot?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+The kASLR patches for arm64 in v4.6-rc1 enable kASLR at boot if you chose to
+select it at compile time. I guess this patch is preparation for doing the same
+on x86?
+
+I didn't hit this kaslr_nohibernate_setup() call during testing because of the
+on by default behaviour. Is it worth exposing this via Kconfig? Something like:
+ARCH_RANDOMIZE_BASE_DEFAULT_ON ?
+
+
+Thanks,
+
+James
