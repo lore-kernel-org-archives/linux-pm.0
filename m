@@ -1,51 +1,80 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH 1/5] mfd: tps65217: Add support for IRQs
-Date: Mon, 11 Apr 2016 11:48:12 +0300
-Message-ID: <570B64CC.9040105@ti.com>
-References: <1459789865-3704-1-git-send-email-m.niestroj@grinn-global.com>
- <1459789865-3704-3-git-send-email-m.niestroj@grinn-global.com>
- <57038E46.9070204@ti.com> <57039E74.7030704@grinn-global.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
+Date: Mon, 11 Apr 2016 11:56:05 +0300
+Message-ID: <20160411085605.GB1727@lahna.fi.intel.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
+ <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:37656 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbcDKItD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 04:49:03 -0400
-In-Reply-To: <57039E74.7030704@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Zheng, Qi" <qi.zheng@intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Zha, Qipeng" <qipeng.zha@intel.com>, Dave Airlie <airlied@gmail.com>, "Nyman, Mathias" <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
-On 04/05/2016 02:16 PM, Marcin Niestroj wrote:
->
->
-> On 05.04.2016 12:07, Grygorii Strashko wrote:
->> On 04/04/2016 08:11 PM, Marcin Niestroj wrote:
->>> Add support for handling IRQs: power button, AC and USB power state
->>> changes. Mask and interrupt bits are shared within one register, which
->>> prevents us to use regmap_irq implementation. New irq_domain is
->>> created in
->>> order to add interrupt handling for each tps65217's subsystem. IRQ
->>> resources have been added for charger subsystem to be able to notify
->>> about
->>> AC and USB state changes.
->>>
->>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->>> ---
->>
->> Just curious Why not use a regmap_irq?
->>
->
-> tps65217 has IRQ mask and status bits in a single register. regmap_irq
-> works in case of two different registers (one mask, one status), but
-> with the same layout of mask and status bits in both.
->
+On Mon, Apr 11, 2016 at 03:36:41AM +0000, Zheng, Qi wrote:
+> > +static int pci_dev_check_d3cold(struct pci_dev *pdev, void *data) {
+> > +	bool *d3cold_ok = data;
+> > +
+> > +	/*
+> > +	 * The device needs to be allowed to go D3cold and if it is wake
+> > +	 * capable to do so from D3cold.
+> > +	 */
+> > +	if (pdev->no_d3cold || !pdev->d3cold_allowed)
+> > +		*d3cold_ok = false;
+> > +	if (device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold))
+> > +		*d3cold_ok = false;
+> > +
+> > +	return !*d3cold_ok;
+> >+}
+> 
+> How about the pme_poll?
+> IMHO, if the pme_poll is set for some device, the PCIe port couldn't
+> go to sleep as well.
 
-Thanks for the info.
+I wasn't sure about that. If the device has pme_poll set, and the bridge
+is in D3 (or anything else than D0) the it will not be scanned for PME
+(this is done in pci_pme_list_scan()).
 
--- 
-regards,
--grygorii
+My understanding is that pme_poll is a workaround for bridges which do not
+forward PME messages upstream properly. Since this whole thing is only
+enabled for recent PCIe hardware, I would expect that this works also :)
+
+> > +void pci_bridge_pm_update(struct pci_dev *pdev, bool remove) {
+> > +	struct pci_dev *bridge;
+> > +	bool d3cold_ok = true;
+> > +
+> > +	bridge = pci_upstream_bridge(pdev);
+> > +	if (!bridge || !pci_bridge_d3_possible(bridge))
+> > +		return;
+> > +
+> > +	pci_dev_get(bridge);
+> > +	if (!remove)
+> > +		pci_dev_check_d3cold(pdev, &d3cold_ok);
+> > +
+> > +	if (d3cold_ok) {
+> > +		/*
+> > +		 * We need to go through all children to find out if all of
+> > +		 * them can still go to D3cold.
+> > +		 */
+> > +		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
+> > +			     &d3cold_ok);
+> > +	}
+> > +	bridge->bridge_d3 = d3cold_ok;
+> > +	pci_dev_put(bridge);
+> > +}
+> 
+> IMHO, the PCIe port can go to sleep if all the devices behind it are
+> already in D3, not they have the capability to enter D3.
+
+The capability check in pci_pme_capable() means that we expect the
+device to be capable of triggering PME from D3cold.
+
+> Besides, why the devices should in D3cold? Why D3hot can't?
+
+Because when you power down a bridge you cannot access config space of
+the devices below that bridge anymore. It may also trigger the PCIe link
+to go to L2 or L3.
