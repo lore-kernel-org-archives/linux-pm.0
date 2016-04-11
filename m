@@ -1,140 +1,61 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH 1/3 v4] powercap, intel_rapl, implement
- get_max_time_window
-Date: Mon, 11 Apr 2016 14:11:29 +0000
-Message-ID: <1460383697.4391.5.camel@intel.com>
-References: <1458563236-19269-1-git-send-email-prarit@redhat.com>
-		 <1458563236-19269-2-git-send-email-prarit@redhat.com>
-	 <1459448760.4569.87.camel@intel.com> <570B8B72.6020807@redhat.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: cppc_cpufreq
+Date: Mon, 11 Apr 2016 10:53:20 -0400
+Message-ID: <CAJ5Y-eb9M7A7q+R9MtVn4wXFAJbW-jHCBTSC+Lbm76vd3P8HtQ@mail.gmail.com>
+References: <1460072821.5409.5.camel@intel.com> <CAJ5Y-eaenct_KmZqGQsMdCeabdQqZBbzi9VCmOZHJ=snLy8XsA@mail.gmail.com>
+ <1460237329.4491.12.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <570B8B72.6020807@redhat.com>
-Content-Language: en-US
-Content-ID: <AC9ED5302F282F4E9EFE7F1582600341@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "prarit@redhat.com" <prarit@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "Jovanovic, Radivoje" <radivoje.jovanovic@intel.com>, "s.ikarashi@jp.fujitsu.com" <s.ikarashi@jp.fujitsu.com>, "David Rajamanickam, Ajay Thomas" <ajay.thomas.david.rajamanickam@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "minipli@googlemail.com" <minipli@googlemail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f53.google.com ([209.85.215.53]:36035 "EHLO
+	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754448AbcDKOxm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 10:53:42 -0400
+Received: by mail-lf0-f53.google.com with SMTP id g184so160736331lfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 07:53:41 -0700 (PDT)
+In-Reply-To: <1460237329.4491.12.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 
-T24gTW9uLCAyMDE2LTA0LTExIGF0IDA3OjMzIC0wNDAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
-DQo+IA0KPiBPbiAwMy8zMS8yMDE2IDAyOjI4IFBNLCBQYW5kcnV2YWRhLCBTcmluaXZhcyB3cm90
-ZToNCj4gPiBPbiBNb24sIDIwMTYtMDMtMjEgYXQgMDg6MjcgLTA0MDAsIFByYXJpdCBCaGFyZ2F2
-YSB3cm90ZToNCj4gPiA+IFRoZSBNU1JfUEtHX1BPV0VSX0lORk8gcmVnaXN0ZXIgKEludGVsIEFT
-RE0sIHNlY3Rpb24gMTQuOS4zDQo+ID4gPiAiUGFja2FnZSBSQVBMIERvbWFpbiIpIHByb3ZpZGVz
-IGEgbWF4aW11bSB0aW1lIHdpbmRvdyB3aGljaCB0aGUNCj4gPiA+IHN5c3RlbSBjYW4gc3VwcG9y
-dC7CoMKgVGhpcyB3aW5kb3cgaXMgcmVhZC1vbmx5IGFuZCBpcyBjdXJyZW50bHkNCj4gPiA+IG5v
-dCBleGFtaW5lZCB3aGVuIHNldHRpbmcgdGhlIHRpbWUgd2luZG93cyBmb3IgdGhlIHBhY2thZ2Uu
-DQo+ID4gPiANCj4gPiBVc3VhbGx5IHRoaXMgZmllbGQgaGFzIGxvdCBvZiBqdW5rLiBJdCBpcyBu
-b3Qgc3VwcG9ydGVkIHVuaWZvcm1seS4NCj4gPiBUaGUgc3lzdGVtIHByb3ZpZGVzIHRoaXMgdmFs
-dWUgZnJvbSBhbm90aGVyIEFDUEkgZWxlbWVudCBjYWxsZWQNCj4gPiBQUENDLg0KPiA+IElmIHN1
-cHBvcnRlZCB0aGlzIHdpbGwgYmUgaW7CoA0KPiA+IA0KPiA+ICQgL3N5cy9idXMvcGNpL2Rldmlj
-ZXMvMDAwMDowMDowNC4wL3Bvd2VyX2xpbWl0cw0KPiA+ICQgZ3JlcCAuICoNCj4gPiBwb3dlcl9s
-aW1pdF8wX21heF91dzoxNTAwMDAwMA0KPiA+IHBvd2VyX2xpbWl0XzBfbWluX3V3OjEyNTAwMA0K
-PiA+IHBvd2VyX2xpbWl0XzBfc3RlcF91dzoxMDAwMDAwDQo+ID4gcG93ZXJfbGltaXRfMF90bWF4
-X3VzOjMyMDAwMDAwDQo+ID4gcG93ZXJfbGltaXRfMF90bWluX3VzOjI4MDAwMDAwDQo+ID4gcG93
-ZXJfbGltaXRfMV9tYXhfdXc6MjUwMDAwMDANCj4gPiBwb3dlcl9saW1pdF8xX21pbl91dzoyNTAw
-MDAwMA0KPiA+IHBvd2VyX2xpbWl0XzFfc3RlcF91dzoxMDAwMDAwDQo+ID4gcG93ZXJfbGltaXRf
-MV90bWF4X3VzOjANCj4gPiBwb3dlcl9saW1pdF8xX3RtaW5fdXM6MA0KPiA+IA0KPiANCj4gVGhh
-bmtzIFNyaW5pdmFzLsKgwqBEb2VzIHRoaXMgbWVhbiBJIHNob3VsZCBjaGVjayBmb3IgUFBDQz8N
-CklmIHlvdXIgcGxhdGZvcm0gaGFzIHN1cHBvcnQgZm9yIHRoaXMgZWxlbWVudC4NCkFyZSB5b3Ug
-dHJ5aW5nIHRvIHNvbHZlIHNwZWNpZmljIHByb2JsZW0gb3IgaW1wbGVtZW50IHNvbWUgZmVhdHVy
-ZQ0KdXNpbmcgUkFQTD8gTWF5IGJlIHdlIGNhbiBoZWxwLCB3aGF0IHRpbWUgd2luZG93IHRvIHNl
-dC4NCg0KVGhhbmtzLA0KU3Jpbml2YXMNCg0KPiANCj4gUC4NCj4gDQo+ID4gVGhhbmtzLA0KPiA+
-IFNyaW5pdmFzDQo+ID4gPiBUaGlzIHBhdGNoIGltcGxlbWVudHMgZ2V0X21heF90aW1lX3dpbmRv
-d191cygpIGFuZCBjaGVja3MgdGhlDQo+ID4gPiB3aW5kb3cNCj4gPiA+IHdoZW4NCj4gPiA+IGEg
-dXNlciBhdHRlbXB0cyB0byBzZXQgcG93ZXIgY2FwcGluZyBmb3IgdGhlIHBhY2thZ2UuDQo+ID4g
-PiANCj4gPiA+IEJlZm9yZSB0aGUgcGF0Y2ggaXQgd2FzIHBvc3NpYmxlIHRvIHNldCB0aGUgd2lu
-ZG93IHRvLCBmb3INCj4gPiA+IGV4YW1wbGUsDQo+ID4gPiAxMDAwMA0KPiA+ID4gbWljcm8gc2Vj
-b25kczoNCj4gPiA+IA0KPiA+ID4gW3Jvb3RAaW50ZWwtY2hpZWZyaXZlci0wMyByaGVsN10jIGVj
-aG8gMTAwMDAgPg0KPiA+ID4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFw
-bC9pbnRlbC0NCj4gPiA+IHJhcGxcOjAvY29uc3RyYWludF8wX3RpbWVfd2luZG93X3VzOw0KPiA+
-ID4gZWdyZXAgXiAvc3lzL2RldmljZXMvdmlydHVhbC9wb3dlcmNhcC9pbnRlbC1yYXBsL2ludGVs
-LQ0KPiA+ID4gcmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5kb3dfdXMNCj4gPiA+IA0KPiA+
-ID4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0NCj4gPiA+
-IHJhcGw6MC9jb25zdHJhaW50XzBfdGltZV93aW5kb3dfdXM6MTo5NzY1DQo+ID4gPiANCj4gPiA+
-IGJ1dCBmcm9tICd0dXJib3N0YXQgLWQnLCB0aGUgcGFja2FnZSBpcyBsaW1pdGVkIHRvIDk3NnVz
-Og0KPiA+ID4gDQo+ID4gPiBjcHUwOiBNU1JfUEtHX1BPV0VSX0lORk86IDB4MDEyMDAxNjggKDQ1
-IFcgVERQLCBSQVBMIDM2IC0gMCBXLA0KPiA+ID4gMC4wMDA5Nzcgc2VjLikNCj4gPiA+IA0KPiA+
-ID4gKE5vdGUsIHRoZXJlIGFwcGVhcnMgdG8gYmUgYSByb3VuZGluZyBpc3N1ZSBpbiB0dXJib3N0
-YXQgd2hpY2gNCj4gPiA+IG5lZWRzDQo+ID4gPiB0bw0KPiA+ID4gYWxzbyBiZSBmaXhlZC7CoMKg
-TG9va2luZyBhdCB0aGUgdmFsdWVzIGluIHRoZSByZWdpc3RlciBpdCBpcyBjbGVhcg0KPiA+ID4g
-dGhlDQo+ID4gPiB2YWx1ZSBpcyAxLzEwMjQgPSA5NzZ1cy4pDQo+ID4gPiANCj4gPiA+IEFmdGVy
-IHRoZSBwYXRjaCB3ZSBhcmUgbGltaXRlZCBieSB0aGUgbWF4aW11bSB0aW1lIHdpbmRvdzoNCj4g
-PiA+IA0KPiA+ID4gW3Jvb3RAaW50ZWwtY2hpZWZyaXZlci0wMyByaGVsN10jIGVjaG8gMTAwMDAg
-Pg0KPiA+ID4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvcG93ZXJjYXAvaW50ZWwtcmFwbC9pbnRlbC0N
-Cj4gPiA+IHJhcGxcOjAvY29uc3RyYWludF8wX3RpbWVfd2luZG93X3VzOw0KPiA+ID4gZWdyZXAg
-XiAvc3lzL2RldmljZXMvdmlydHVhbC9wb3dlcmNhcC9pbnRlbC1yYXBsL2ludGVsLQ0KPiA+ID4g
-cmFwbFw6MC9jb25zdHJhaW50XzBfdGltZV93aW5kb3dfdXMNCj4gPiA+IA0KPiA+ID4gLWJhc2g6
-IGVjaG86IHdyaXRlIGVycm9yOiBJbnZhbGlkIGFyZ3VtZW50DQo+ID4gPiAvc3lzL2RldmljZXMv
-dmlydHVhbC9wb3dlcmNhcC9pbnRlbC1yYXBsL2ludGVsLQ0KPiA+ID4gcmFwbDowL2NvbnN0cmFp
-bnRfMF90aW1lX3dpbmRvd191czoxOjk3Ng0KPiA+ID4gDQo+ID4gPiBDYzogIlJhZmFlbCBKLiBX
-eXNvY2tpIiA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+ID4gPiBDYzogUHJhcml0IEJo
-YXJnYXZhIDxwcmFyaXRAcmVkaGF0LmNvbT4NCj4gPiA+IENjOiBSYWRpdm9qZSBKb3Zhbm92aWMg
-PHJhZGl2b2plLmpvdmFub3ZpY0BpbnRlbC5jb20+DQo+ID4gPiBDYzogU2VpaWNoaSBJa2FyYXNo
-aSA8cy5pa2FyYXNoaUBqcC5mdWppdHN1LmNvbT4NCj4gPiA+IENjOiBNYXRoaWFzIEtyYXVzZSA8
-bWluaXBsaUBnb29nbGVtYWlsLmNvbT4NCj4gPiA+IENjOiBBamF5IFRob21hcyA8YWpheS50aG9t
-YXMuZGF2aWQucmFqYW1hbmlja2FtQGludGVsLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFBy
-YXJpdCBCaGFyZ2F2YSA8cHJhcml0QHJlZGhhdC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+IMKgZHJp
-dmVycy9wb3dlcmNhcC9pbnRlbF9yYXBsLmPCoMKgwqB8wqDCoMKgMzENCj4gPiA+ICsrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysNCj4gPiA+IMKgZHJpdmVycy9wb3dlcmNhcC9wb3dlcmNh
-cF9zeXMuYyB8wqDCoMKgwqA2ICsrKystLQ0KPiA+ID4gwqAyIGZpbGVzIGNoYW5nZWQsIDM1IGlu
-c2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4gPiANCj4gPiA+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYw0KPiA+ID4gYi9kcml2ZXJzL3Bvd2VyY2FwL2lu
-dGVsX3JhcGwuYw0KPiA+ID4gaW5kZXggNmM1OTJkYy4uZmViMDYzZCAxMDA2NDQNCj4gPiA+IC0t
-LSBhL2RyaXZlcnMvcG93ZXJjYXAvaW50ZWxfcmFwbC5jDQo+ID4gPiArKysgYi9kcml2ZXJzL3Bv
-d2VyY2FwL2ludGVsX3JhcGwuYw0KPiA+ID4gQEAgLTQ5MywxMyArNDkzLDQyIEBAIHN0YXRpYyBp
-bnQgZ2V0X2N1cnJlbnRfcG93ZXJfbGltaXQoc3RydWN0DQo+ID4gPiBwb3dlcmNhcF96b25lICpw
-b3dlcl96b25lLCBpbnQgaWQsDQo+ID4gPiDCoAlyZXR1cm4gcmV0Ow0KPiA+ID4gwqB9DQo+ID4g
-PiDCoA0KPiA+ID4gK3N0YXRpYyBpbnQgZ2V0X21heF90aW1lX3dpbmRvdyhzdHJ1Y3QgcG93ZXJj
-YXBfem9uZSAqcG93ZXJfem9uZSwNCj4gPiA+IGludA0KPiA+ID4gaWQsDQo+ID4gPiArCQkJwqDC
-oMKgwqDCoMKgwqB1NjQgKmRhdGEpDQo+ID4gPiArew0KPiA+ID4gKwlzdHJ1Y3QgcmFwbF9kb21h
-aW4gKnJkOw0KPiA+ID4gKwlpbnQgcmV0ID0gMDsNCj4gPiA+ICsJdTY0IHZhbDsNCj4gPiA+ICsN
-Cj4gPiA+ICsJZ2V0X29ubGluZV9jcHVzKCk7DQo+ID4gPiArCXJkID0gcG93ZXJfem9uZV90b19y
-YXBsX2RvbWFpbihwb3dlcl96b25lKTsNCj4gPiA+ICsNCj4gPiA+ICsJaWYgKHJhcGxfcmVhZF9k
-YXRhX3JhdyhyZCwgTUFYX1RJTUVfV0lORE9XLCB0cnVlLCAmdmFsKSkNCj4gPiA+ICsJCXJldCA9
-IC1FSU87DQo+ID4gPiArCWVsc2UNCj4gPiA+ICsJCSpkYXRhID0gdmFsOw0KPiA+ID4gKw0KPiA+
-ID4gKwlwdXRfb25saW5lX2NwdXMoKTsNCj4gPiA+ICsJcmV0dXJuIHJldDsNCj4gPiA+ICt9DQo+
-ID4gPiArDQo+ID4gPiDCoHN0YXRpYyBpbnQgc2V0X3RpbWVfd2luZG93KHN0cnVjdCBwb3dlcmNh
-cF96b25lICpwb3dlcl96b25lLCBpbnQNCj4gPiA+IGlkLA0KPiA+ID4gwqAJCQkJCQkJCQ0KPiA+
-ID4gdTY0DQo+ID4gPiB3aW5kb3cpDQo+ID4gPiDCoHsNCj4gPiA+IMKgCXN0cnVjdCByYXBsX2Rv
-bWFpbiAqcmQ7DQo+ID4gPiDCoAlpbnQgcmV0ID0gMDsNCj4gPiA+ICsJdTY0IG1heF93aW5kb3c7
-DQo+ID4gPiDCoA0KPiA+ID4gwqAJZ2V0X29ubGluZV9jcHVzKCk7DQo+ID4gPiArCXJldCA9IGdl
-dF9tYXhfdGltZV93aW5kb3cocG93ZXJfem9uZSwgaWQsICZtYXhfd2luZG93KTsNCj4gPiA+ICsJ
-aWYgKHJldCA8IDApDQo+ID4gPiArCQlnb3RvIG91dDsNCj4gPiA+ICsNCj4gPiA+ICsJaWYgKHdp
-bmRvdyA+IG1heF93aW5kb3cpIHsNCj4gPiA+ICsJCXJldCA9IC1FSU5WQUw7DQo+ID4gPiArCQln
-b3RvIG91dDsNCj4gPiA+ICsJfQ0KPiA+ID4gKw0KPiA+ID4gwqAJcmQgPSBwb3dlcl96b25lX3Rv
-X3JhcGxfZG9tYWluKHBvd2VyX3pvbmUpOw0KPiA+ID4gwqAJc3dpdGNoIChyZC0+cnBsW2lkXS5w
-cmltX2lkKSB7DQo+ID4gPiDCoAljYXNlIFBMMV9FTkFCTEU6DQo+ID4gPiBAQCAtNTExLDYgKzU0
-MCw3IEBAIHN0YXRpYyBpbnQgc2V0X3RpbWVfd2luZG93KHN0cnVjdA0KPiA+ID4gcG93ZXJjYXBf
-em9uZQ0KPiA+ID4gKnBvd2VyX3pvbmUsIGludCBpZCwNCj4gPiA+IMKgCWRlZmF1bHQ6DQo+ID4g
-PiDCoAkJcmV0ID0gLUVJTlZBTDsNCj4gPiA+IMKgCX0NCj4gPiA+ICtvdXQ6DQo+ID4gPiDCoAlw
-dXRfb25saW5lX2NwdXMoKTsNCj4gPiA+IMKgCXJldHVybiByZXQ7DQo+ID4gPiDCoH0NCj4gPiA+
-IEBAIC01OTAsNiArNjIwLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdA0KPiA+ID4gcG93ZXJjYXBf
-em9uZV9jb25zdHJhaW50X29wcw0KPiA+ID4gY29uc3RyYWludF9vcHMgPSB7DQo+ID4gPiDCoAku
-c2V0X3RpbWVfd2luZG93X3VzID0gc2V0X3RpbWVfd2luZG93LA0KPiA+ID4gwqAJLmdldF90aW1l
-X3dpbmRvd191cyA9IGdldF90aW1lX3dpbmRvdywNCj4gPiA+IMKgCS5nZXRfbWF4X3Bvd2VyX3V3
-ID0gZ2V0X21heF9wb3dlciwNCj4gPiA+ICsJLmdldF9tYXhfdGltZV93aW5kb3dfdXMgPSBnZXRf
-bWF4X3RpbWVfd2luZG93LA0KPiA+ID4gwqAJLmdldF9uYW1lID0gZ2V0X2NvbnN0cmFpbnRfbmFt
-ZSwNCj4gPiA+IMKgfTsNCj4gPiA+IMKgDQo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dl
-cmNhcC9wb3dlcmNhcF9zeXMuYw0KPiA+ID4gYi9kcml2ZXJzL3Bvd2VyY2FwL3Bvd2VyY2FwX3N5
-cy5jDQo+ID4gPiBpbmRleCAxNGJkZTBkLi41M2ZhZDBmIDEwMDY0NA0KPiA+ID4gLS0tIGEvZHJp
-dmVycy9wb3dlcmNhcC9wb3dlcmNhcF9zeXMuYw0KPiA+ID4gKysrIGIvZHJpdmVycy9wb3dlcmNh
-cC9wb3dlcmNhcF9zeXMuYw0KPiA+ID4gQEAgLTEwMSw3ICsxMDEsNyBAQCBzdGF0aWMgc3NpemVf
-dA0KPiA+ID4gc3RvcmVfY29uc3RyYWludF8jI19hdHRyKHN0cnVjdA0KPiA+ID4gZGV2aWNlICpk
-ZXYsXA0KPiA+ID4gwqAJaW50IGVycjsgXA0KPiA+ID4gwqAJdTY0IHZhbHVlOyBcDQo+ID4gPiDC
-oAlzdHJ1Y3QgcG93ZXJjYXBfem9uZSAqcG93ZXJfem9uZSA9DQo+ID4gPiB0b19wb3dlcmNhcF96
-b25lKGRldik7IFwNCj4gPiA+IC0JaW50IGlkOyBcDQo+ID4gPiArCWludCBpZCwgcmV0OyBcDQo+
-ID4gPiDCoAlzdHJ1Y3QgcG93ZXJjYXBfem9uZV9jb25zdHJhaW50ICpwY29uc3Q7XA0KPiA+ID4g
-wqAJXA0KPiA+ID4gwqAJaWYgKCFzc2NhbmYoZGV2X2F0dHItPmF0dHIubmFtZSwgImNvbnN0cmFp
-bnRfJWRfIiwgJmlkKSkNCj4gPiA+IFwNCj4gPiA+IEBAIC0xMTMsOCArMTEzLDEwIEBAIHN0YXRp
-YyBzc2l6ZV90DQo+ID4gPiBzdG9yZV9jb25zdHJhaW50XyMjX2F0dHIoc3RydWN0DQo+ID4gPiBk
-ZXZpY2UgKmRldixcDQo+ID4gPiDCoAlpZiAoZXJyKSBcDQo+ID4gPiDCoAkJcmV0dXJuIC1FSU5W
-QUw7IFwNCj4gPiA+IMKgCWlmIChwY29uc3QgJiYgcGNvbnN0LT5vcHMgJiYgcGNvbnN0LT5vcHMt
-PnNldF8jI19hdHRyKSB7DQo+ID4gPiBcDQo+ID4gPiAtCQlpZiAoIXBjb25zdC0+b3BzLT5zZXRf
-IyNfYXR0cihwb3dlcl96b25lLCBpZCwNCj4gPiA+IHZhbHVlKSkgXA0KPiA+ID4gKwkJcmV0ID0g
-cGNvbnN0LT5vcHMtPnNldF8jI19hdHRyKHBvd2VyX3pvbmUsIGlkLA0KPiA+ID4gdmFsdWUpOyBc
-DQo+ID4gPiArCQlpZiAoIXJldCkgXA0KPiA+ID4gwqAJCQlyZXR1cm4gY291bnQ7IFwNCj4gPiA+
-ICsJCXJldHVybiByZXQ7IFwNCj4gPiA+IMKgCX0gXA0KPiA+ID4gwqAJXA0KPiA+ID4gwqAJcmV0
-dXJuIC1FTk9EQVRBOyBc
+On 9 April 2016 at 17:28, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Fri, 2016-04-08 at 11:08 -0400, Ashwin Chaugule wrote:
+>> On 7 April 2016 at 19:50, Pandruvada, Srinivas
+>> <srinivas.pandruvada@intel.com> wrote:
+>> > Hi Ashwin,
+>> >
+>> > I didn't see in the cppc_cpufreq.c
+>> >
+>> > MODULE_LICENSE()
+>> >
+>> > Is it intentional?
+>>
+>> Not intentional. Doesn't the absence of this default to GPLv2? or is
+>> it required that the license be explicitly stated?
+>>
+> You are using symbols exported using EXPORT_SYMBOL_GPL
+>
+> I get following error during insmod:
+>
+> [   33.400861] cppc_cpufreq: module verification failed: signature
+> and/or required key missing - tainting kernel
+> [   33.400890] cppc_cpufreq: Unknown symbol cpufreq_register_driver
+> (err 0)
+> [   33.400901] cppc_cpufreq: Unknown symbol cppc_get_perf_ctrs (err 0)
+> [   33.400914] cppc_cpufreq: Unknown symbol acpi_get_psd_map (err 0)
+> [   33.400924] cppc_cpufreq: Unknown symbol cpufreq_freq_transition_end
+> (err 0)
+> [   33.400935] cppc_cpufreq: Unknown symbol cppc_get_perf_caps (err 0)
+> [   33.400945] cppc_cpufreq: Unknown symbol
+> cpufreq_freq_transition_begin (err 0)
+> [   33.400954] cppc_cpufreq: Unknown symbol cppc_set_perf (err 0)
+>
+> I had to add MODULE_LICENSE(GPL).
+
+Ok. Thanks for the heads up. Will post a patch soon, unless you want
+to go ahead and send yours out.
+
+Thanks,
+Ashwin.
