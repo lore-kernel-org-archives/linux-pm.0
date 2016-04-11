@@ -1,72 +1,72 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH] Prefer kASLR over Hibernation
-Date: Mon, 11 Apr 2016 09:00:37 +0100
-Message-ID: <570B59A5.3090904@arm.com>
-References: <20160406194404.GA11150@www.outflux.net>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
+Date: Mon, 11 Apr 2016 11:47:50 +0300
+Message-ID: <20160411084750.GA1727@lahna.fi.intel.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
+ <20160408150723.GA29919@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20160406194404.GA11150@www.outflux.net>
-Sender: linux-doc-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:51067 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750916AbcDKIrz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Apr 2016 04:47:55 -0400
+Content-Disposition: inline
+In-Reply-To: <20160408150723.GA29919@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Kees,
-
-On 06/04/16 20:44, Kees Cook wrote:
-> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
-> one or the other must be chosen at boot-time. Until now, hibernation
-> was selected when no choice was made on the command line.
+On Fri, Apr 08, 2016 at 08:07:23AM -0700, Greg Kroah-Hartman wrote:
+> On Fri, Apr 08, 2016 at 01:36:28PM +0300, Mika Westerberg wrote:
+> > diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
+> > index f0640b7a1c42..aafc1b093bc8 100644
+> > --- a/drivers/usb/host/xhci-pci.c
+> > +++ b/drivers/usb/host/xhci-pci.c
+> > @@ -379,7 +379,7 @@ static int xhci_pci_suspend(struct usb_hcd *hcd, bool do_wakeup)
+> >  	 * need to have the registers polled during D3, so avoid D3cold.
+> >  	 */
+> >  	if (xhci->quirks & XHCI_COMP_MODE_QUIRK)
+> > -		pdev->no_d3cold = true;
+> > +		pci_enable_d3cold(pdev, false);
+> >  
+> >  	if (xhci->quirks & XHCI_PME_STUCK_QUIRK)
+> >  		xhci_pme_quirk(hcd);
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > index 004b8133417d..d8801587b4ca 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -296,6 +296,7 @@ struct pci_dev {
+> >  	unsigned int	d2_support:1;	/* Low power state D2 is supported */
+> >  	unsigned int	no_d1d2:1;	/* D1 and D2 are forbidden */
+> >  	unsigned int	no_d3cold:1;	/* D3cold is forbidden */
+> > +	unsigned int	bridge_d3:1;	/* Allow D3 for bridge */
+> >  	unsigned int	d3cold_allowed:1;	/* D3cold is allowed by user */
+> >  	unsigned int	mmio_always_on:1;	/* disallow turning off io/mem
+> >  						   decoding during bar sizing */
+> > @@ -1085,6 +1086,7 @@ int pci_back_from_sleep(struct pci_dev *dev);
+> >  bool pci_dev_run_wake(struct pci_dev *dev);
+> >  bool pci_check_pme_status(struct pci_dev *dev);
+> >  void pci_pme_wakeup_bus(struct pci_bus *bus);
+> > +void pci_enable_d3cold(struct pci_dev *dev, bool enable);
 > 
-> To make the security benefits of kASLR more widely available to end
-> users (since the use of hibernation is becoming more rare and kASLR,
-> already available on x86, will be available on arm64 and MIPS soon),
-> this changes the default to preferring kASLR over hibernation. Users
-> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
-> command line.
+> That's an ackward api, as is seen in the above use in the xhci driver
+> (enable false?)
+> 
+> Why not just make 2 functions:
+> 	pci_dc3cold_enable(struct pci_dev *dev)
+> 	pci_dc3cold_disable(struct pci_dev *dev)
+> which makes it obvious what is going on.
+> 
+> Whenever you add a bool to a function, it requires the developer to go
+> look up the implementation to see what it means and how to use it, to
+> check if the usage is correct.  Just make it obvious in the name itself
+> so everyone knows exactly what is going on.
+> 
+> Same thing goes for pci_bridge_pm_update(), even with the documentation
+> I'm not quite sure what the bool flag is for.  Please split this into
+> two calls as well.
 
-While hibernate isn't yet merged for arm64, it does work with kASLR in v4.6-rc*,
-it would be a shame to have to choose at boot time, (but that's my problem to
-fix if/when its merged).
-
-
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fca9254280ee..be5041354b1e 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -1159,6 +1164,13 @@ static int __init kaslr_nohibernate_setup(char *str)
->  	return nohibernate_setup(str);
->  }
->  
-> +static int __init nokaslr_hibernate_setup(char *str)
-> +{
-> +	noresume = 0;
-> +	nohibernate = 0;
-> +	return 1;
-> +}
-> +
->  static int __init page_poison_nohibernate_setup(char *str)
->  {
->  #ifdef CONFIG_PAGE_POISONING_ZERO
-> @@ -1183,4 +1195,5 @@ __setup("resumewait", resumewait_setup);
->  __setup("resumedelay=", resumedelay_setup);
->  __setup("nohibernate", nohibernate_setup);
->  __setup("kaslr", kaslr_nohibernate_setup);
-> +__setup("nokaslr", nokaslr_hibernate_setup);
-
-So one or the other option has to be specified at boot?
-
-The kASLR patches for arm64 in v4.6-rc1 enable kASLR at boot if you chose to
-select it at compile time. I guess this patch is preparation for doing the same
-on x86?
-
-I didn't hit this kaslr_nohibernate_setup() call during testing because of the
-on by default behaviour. Is it worth exposing this via Kconfig? Something like:
-ARCH_RANDOMIZE_BASE_DEFAULT_ON ?
-
-
-Thanks,
-
-James
+Will, do. Thanks for the excellent explanation :)
