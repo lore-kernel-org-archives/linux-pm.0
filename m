@@ -1,66 +1,42 @@
-From: "Zheng, Qi" <qi.zheng@intel.com>
-Subject: RE: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
-Date: Mon, 11 Apr 2016 03:36:41 +0000
-Message-ID: <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
- <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 2/7] cpufreq: Loongson1: Update cpufreq of Loongson1B
+Date: Mon, 11 Apr 2016 09:22:11 +0530
+Message-ID: <20160411035211.GA16238@vireshk-i7>
+References: <1460115779-13141-1-git-send-email-keguang.zhang@gmail.com>
+ <1460115779-13141-2-git-send-email-keguang.zhang@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:64179 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbcDKDgq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Apr 2016 23:36:46 -0400
-In-Reply-To: <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1460115779-13141-2-git-send-email-keguang.zhang@gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Keguang Zhang <keguang.zhang@gmail.com>
+Cc: linux-mips@linux-mips.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dmaengine@vger.kernel.org, linux-gpio@vger.kernel.org, linux-mtd@lists.infradead.org, Ralf Baechle <ralf@linux-mips.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Zha, Qipeng" <qipeng.zha@intel.com>, Dave Airlie <airlied@gmail.com>, "Nyman, Mathias" <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-> +static int pci_dev_check_d3cold(struct pci_dev *pdev, void *data) {
-> +	bool *d3cold_ok = data;
-> +
-> +	/*
-> +	 * The device needs to be allowed to go D3cold and if it is wake
-> +	 * capable to do so from D3cold.
-> +	 */
-> +	if (pdev->no_d3cold || !pdev->d3cold_allowed)
-> +		*d3cold_ok = false;
-> +	if (device_may_wakeup(&pdev->dev) && !pci_pme_capable(pdev, PCI_D3cold))
-> +		*d3cold_ok = false;
-> +
-> +	return !*d3cold_ok;
->+}
+On 08-04-16, 19:42, Keguang Zhang wrote:
+> From: Kelvin Cheung <keguang.zhang@gmail.com>
+> 
+> - Rename the file to loongson1-cpufreq.c
+> - Use kcalloc() instead of kzalloc()
+> - Use devm_kzalloc() instead of global structure
+> - Use dev_get_platdata() to access the platform_data field
+>   instead of referencing it directly
+> - Remove superfluous error messages
 
-How about the pme_poll?
-IMHO, if the pme_poll is set for some device, the PCIe port couldn't go to sleep as well.
+Its much better now, in the sense that I can see what you have done.
+And see you have done a lot.
 
-> +void pci_bridge_pm_update(struct pci_dev *pdev, bool remove) {
-> +	struct pci_dev *bridge;
-> +	bool d3cold_ok = true;
-> +
-> +	bridge = pci_upstream_bridge(pdev);
-> +	if (!bridge || !pci_bridge_d3_possible(bridge))
-> +		return;
-> +
-> +	pci_dev_get(bridge);
-> +	if (!remove)
-> +		pci_dev_check_d3cold(pdev, &d3cold_ok);
-> +
-> +	if (d3cold_ok) {
-> +		/*
-> +		 * We need to go through all children to find out if all of
-> +		 * them can still go to D3cold.
-> +		 */
-> +		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
-> +			     &d3cold_ok);
-> +	}
-> +	bridge->bridge_d3 = d3cold_ok;
-> +	pci_dev_put(bridge);
-> +}
+That's not how you are supposed to send the patches, sorry.
 
-IMHO, the PCIe port can go to sleep if all the devices behind it are already in D3, not they have the capability to enter D3.
-Besides, why the devices should in D3cold? Why D3hot can't?
-Thanks.
+You need to break this patch into multiple patches, each targeting a
+particular fix.
+
+And I have no idea now, what change you have done to make it work for
+Loongson1B. Which of the above changes does that?
+
+And please, just send out a separate cpufreq series and don't send
+everything in a single patchset that covers DMA, cpufreq, clk, etc..
+
+-- 
+viresh
