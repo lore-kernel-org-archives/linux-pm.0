@@ -1,61 +1,96 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: cppc_cpufreq
-Date: Mon, 11 Apr 2016 10:53:20 -0400
-Message-ID: <CAJ5Y-eb9M7A7q+R9MtVn4wXFAJbW-jHCBTSC+Lbm76vd3P8HtQ@mail.gmail.com>
-References: <1460072821.5409.5.camel@intel.com> <CAJ5Y-eaenct_KmZqGQsMdCeabdQqZBbzi9VCmOZHJ=snLy8XsA@mail.gmail.com>
- <1460237329.4491.12.camel@linux.intel.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] thermal/intel_powerclamp: convert to smpboot thread
+Date: Mon, 11 Apr 2016 08:19:15 -0700
+Message-ID: <20160411081915.585de6c2@icelake>
+References: <1457710701-3014-1-git-send-email-bigeasy@linutronix.de>
+	<20160406094735.1bbb3c0c@icelake>
+	<570B9CD0.5060904@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f53.google.com ([209.85.215.53]:36035 "EHLO
-	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754448AbcDKOxm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Apr 2016 10:53:42 -0400
-Received: by mail-lf0-f53.google.com with SMTP id g184so160736331lfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 07:53:41 -0700 (PDT)
-In-Reply-To: <1460237329.4491.12.camel@linux.intel.com>
+Received: from mga09.intel.com ([134.134.136.24]:26032 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750971AbcDKPUq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Apr 2016 11:20:46 -0400
+In-Reply-To: <570B9CD0.5060904@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, rt@linutronix.de, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>, jacob.jun.pan@linux.intel.com, Petr Mladek <pmladek@suse.com>
 
-On 9 April 2016 at 17:28, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Fri, 2016-04-08 at 11:08 -0400, Ashwin Chaugule wrote:
->> On 7 April 2016 at 19:50, Pandruvada, Srinivas
->> <srinivas.pandruvada@intel.com> wrote:
->> > Hi Ashwin,
->> >
->> > I didn't see in the cppc_cpufreq.c
->> >
->> > MODULE_LICENSE()
->> >
->> > Is it intentional?
->>
->> Not intentional. Doesn't the absence of this default to GPLv2? or is
->> it required that the license be explicitly stated?
->>
-> You are using symbols exported using EXPORT_SYMBOL_GPL
->
-> I get following error during insmod:
->
-> [   33.400861] cppc_cpufreq: module verification failed: signature
-> and/or required key missing - tainting kernel
-> [   33.400890] cppc_cpufreq: Unknown symbol cpufreq_register_driver
-> (err 0)
-> [   33.400901] cppc_cpufreq: Unknown symbol cppc_get_perf_ctrs (err 0)
-> [   33.400914] cppc_cpufreq: Unknown symbol acpi_get_psd_map (err 0)
-> [   33.400924] cppc_cpufreq: Unknown symbol cpufreq_freq_transition_end
-> (err 0)
-> [   33.400935] cppc_cpufreq: Unknown symbol cppc_get_perf_caps (err 0)
-> [   33.400945] cppc_cpufreq: Unknown symbol
-> cpufreq_freq_transition_begin (err 0)
-> [   33.400954] cppc_cpufreq: Unknown symbol cppc_set_perf (err 0)
->
-> I had to add MODULE_LICENSE(GPL).
+On Mon, 11 Apr 2016 14:47:12 +0200
+Sebastian Andrzej Siewior <bigeasy@linutronix.de> wrote:
 
-Ok. Thanks for the heads up. Will post a patch soon, unless you want
-to go ahead and send yours out.
+> On 04/06/2016 06:47 PM, Jacob Pan wrote:
+> > On Fri, 11 Mar 2016 16:38:21 +0100
+> > Sebastian Andrzej Siewior <bigeasy@linutronix.de> wrote:
+> > Apologize for the delay, I missed it until Rui reminded me.
+> >> Oh boy oh boy. This thing runs at SCHED_FIFO MAX_USER_RT_PRIO/2 and
+> >> stops at mwait_idle_with_hints(). Why bother with /2?
+> >> There are a few things I haven't fully decoded. For instance why
+> >> is it looking at local_softirq_pending()?
+> > the idea is to instrument some kind of quality of service. Idle
+> > injection is a best effort based mechanism. So we don't want to
+> > affect high priority realtime tasks nor softirq.
+> 
+> But you disturb RT tasks with prio 1. Also I am not sure if you see
+> the sofirq bits. The softirq runs before any (RT) task so the
+> `pending ' should be 0. Unless the work is delegated to ksoftirqd.
+> 
+I agree softirq runs before RT but there could be a gap between
+raise_softirq() (set pending) and run softirq(). So it is possible
+(thus unlikely()) our RT task runs after pending bits set but before
+softirq runs. correct?
+> >> The timer is probably here if mwait would let it sleep too long.
+> >>
+> > not sure i understand. could you explain?
+> 
+> The timer invokes noop_timer() which does nothing so the only thing
+> you want is the interrupt. Your mwait_idle_with_hints() could let you
+> sleep say for one second. But the timer ensures that you wake up no
+> later than 100us.
+> 
+yeah, that is the idea to make sure we don't oversleep. You mean we can
+optimize this but avoid extra wake ups? e.g. cancel timer if we already
+sleep enough time?
+> >> I tried to convert it over to smpboot thread so we don't have that
+> >> CPU notifier stuff to fire the cpu threads during hotplug events.
+> >>
+> > there is another patchset to convert it to kthread worker. any
+> > advantage of smpboot thread?
+> > http://comments.gmane.org/gmane.linux.kernel.mm/144964
+> 
+> It partly does the same thing except you still have your hotplug
+> notifier which I wanted to get rid off. However it looks better than
+> before.
+> If you do prefer the kworker thingy then please switch from CPU_DEAD
+> to CPU_DOWN_PREPARE (and add CPU_DOWN_FAILED to CPU_ONLINE).
+> With those changes I should have no further problem with it :)
+> Any ETA for (either of those patches) upstream?
+> 
++Petr
+I do prefer not to keep track of CPU hotplug events. Let me do some
+testing.
+> >> The code / logic itself could be a little more inteligent and only
+> >> wake up the threads for the CPUs that are about to idle but it
+> >> seems it is done on all of the at once unless I missed something.
+> >>
+> > you mean only force idle when there is no natural idle? i thought
+> > about that but hard to coordinate and enforce the duration of each
+> > idle period. Any specific pointers?
+> 
+> Implement it as an idle driver. So it would be invoked once the system
+> goes idle as an alternative to (the default) mwait. However the fact
+> that you (seem to) go idle even if there is work to do seems that you
+> aim a different goal than idle if there is nothing left.
+> 
+Right, we use the same idle inner loop as the idle task but powerclamp
+driver aims at aligned, forced, and controlled idle time to manage
+power/thermal envelop.
+I also had an attempt to do this in CFS sched class.
+https://lkml.org/lkml/2015/11/2/756
+As it was suggested to be able to stop scheduler tick during force idle
+time (which cannot do in  the current powerclamp code).
 
-Thanks,
-Ashwin.
+Jacob
