@@ -1,47 +1,111 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH V1 1/5] cpufreq: Loongson1: Rename the file to
- loongson1-cpufreq.c
-Date: Tue, 12 Apr 2016 14:32:32 +0200
-Message-ID: <20160412123232.GA17598@linux-mips.org>
-References: <1460457619-14786-1-git-send-email-keguang.zhang@gmail.com>
- <20160412104319.GA17650@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:59288 "EHLO
-	cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932392AbcDLMcm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 08:32:42 -0400
-Content-Disposition: inline
-In-Reply-To: <20160412104319.GA17650@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v8 0/7] EC-based USB Power Delivery support for Chrome machines
+Date: Tue, 12 Apr 2016 14:32:23 +0200
+Message-ID: <1460464350-30414-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, =?UTF-8?q?Enric=20Balletb=C3=B2?= <enric.balletbo@collabora.co.uk>, Vic Yang <victoryang@chromium.org>, Stephen Boyd <sboyd@codeaurora.org>, Vincent Palatin <vpalatin@chromium.org>, Randall Spangler <rspangler@chromium.org>, Todd Broch <tbroch@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-input@vger.kernel.org, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Keguang Zhang <keguang.zhang@gmail.com>, linux-pm@vger.kernel.org, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Tue, Apr 12, 2016 at 04:13:19PM +0530, Viresh Kumar wrote:
+Hi,
 
-> On 12-04-16, 18:40, Keguang Zhang wrote:
-> > From: Kelvin Cheung <keguang.zhang@gmail.com>
-> > 
-> > This patch renames the file to loongson1-cpufreq.c,
-> > and also includes some minor updates.
-> > 
-> > Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
-> > 
-> > ---
-> > V1:
-> >    Merge the minor updates into this patch.
-> > ---
-> >  drivers/cpufreq/Makefile                                |  2 +-
-> >  drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} | 10 +++++-----
-> >  2 files changed, 6 insertions(+), 6 deletions(-)
-> >  rename drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} (96%)
-> 
-> For the entire series.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+this series contains a driver that exposes a power_supply to userspace
+representing a port that support USB PD charging.
 
-Thanks!  Whole series queued for 4.7.
+Allows userspace to display to the user if the machine is charging and
+on which port, and if another device is being charged by a port.
 
-  Ralf
+This series may be best integrated through the MFD tree, for which we'll
+need ACKs from Olof (for the changes to platform/chrome), from Dmitry
+(for changes to cros_ec_keyb.c) and from Sebastian Reichel for the
+new driver.
+
+Patches 1 and 2 need to be taken together because in the first the MFD
+driver handles the EC interrupt and only in the second patch the
+keyboard driver stops handling it and using the notifier instead.
+
+Thanks,
+
+Tomeu
+
+Changes in v8:
+- Split out changes to drivers/input/keyboard
+- Improved error messages
+- Fixed kerneldoc comments
+- Don't call cros_ec_cmd_xfer from declaration block
+- Remove unnecessary variable host_event
+- Don't add stuff to cros_ec_commands.h not needed in this series
+
+Changes in v7:
+- Rebased onto 4.6-rc1, with no conflicts.
+
+Changes in v6:
+- Return 0 if the EC doesn't support MKBP, as expected by callers.
+
+Changes in v5:
+- Check explicitly for !EC_RES_SUCCESS as suggested by Benson Leung.
+- Fix type of variable passed to do_div.
+
+Changes in v4:
+- Calculate correctly the size of the payloads in
+  cros_ec_get_host_command_version_mask.
+- Declare size parameters in ec_command as size_t
+
+Changes in v3:
+- Remove duplicated prototype of cros_ec_get_host_event.
+- Use do_div so it builds on 32bit (suggested by 0-day kbuild bot).
+- Remove sysfs attributes ext_current_lim and ext_voltage_lim because
+  I don't know yet where they should be placed (and don't have HW to
+  test them).
+- Remove superfluous pre-allocated buffers ec_inbuf and ec_outbuf.
+- Lots of misc comments from Stephen Boyd were addressed.
+- Unregister notification listener in .remove callback.
+- Only register the PD charger device if there are any PD ports in this
+  EC.
+- Dropped patch using EC_CMD_GET_FEATURES to decide whether to create a
+  charger device because we are now only creating one if a EC has any PD
+  ports.
+- Dropped patch adding power_supply types because it has been merged
+  already.
+
+Changes in v2:
+- Allocate enough for the structs in
+  cros_ec_get_host_command_version_mask,
+  not their pointers.
+- Allocate msg in the stack in get_next_event and
+  get_keyboard_state_event, as suggested by Gwendal.
+- Split out changes to cros_ec_commands.h and the helpers added to
+  mfd/cros_ec.h from the patch that adds the charger driver, as
+  suggested by Lee.
+- Actually call get_ec_num_ports.
+- Move cros_ec_usb_pd_charger_register into cros_ec_dev.c.
+
+Sameer Nanda (1):
+  power: cros_usbpd-charger: Add EC-based USB PD charger driver
+
+Tomeu Vizoso (4):
+  mfd: cros_ec: Add cros_ec_cmd_xfer_status helper
+  mfd: cros_ec: Add cros_ec_get_host_event
+  mfd: cros_ec: Add more definitions for PD commands
+  platform/chrome: Register USB PD charger device
+
+Vic Yang (2):
+  mfd: cros_ec: Add MKBP event support
+  Input: cros_ec_keyb - Stop handling interrupts directly
+
+ drivers/input/keyboard/cros_ec_keyb.c   | 135 ++----
+ drivers/mfd/cros_ec.c                   |  58 ++-
+ drivers/platform/chrome/cros_ec_dev.c   |  44 ++
+ drivers/platform/chrome/cros_ec_proto.c | 127 ++++++
+ drivers/power/Kconfig                   |  10 +
+ drivers/power/Makefile                  |   1 +
+ drivers/power/cros_usbpd-charger.c      | 780 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/cros_ec.h             |  45 ++
+ include/linux/mfd/cros_ec_commands.h    | 216 +++++++++
+ 9 files changed, 1309 insertions(+), 107 deletions(-)
+ create mode 100644 drivers/power/cros_usbpd-charger.c
+
+-- 
+2.5.5
+
