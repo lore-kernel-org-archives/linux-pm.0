@@ -1,50 +1,32 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v7 2/4] power: reset: add reboot mode driver
-Date: Tue, 12 Apr 2016 13:18:27 +0200
-Message-ID: <570CD983.9090202@samsung.com>
-References: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
- <1459304443-9811-1-git-send-email-andy.yan@rock-chips.com>
- <56FB49B3.2040505@samsung.com> <57045D6B.2080907@rock-chips.com>
- <57045F9D.1000502@samsung.com> <570CBF7F.9090300@rock-chips.com>
+Subject: Re: [PATCH 5/7] clk: samsung: exynos542x: Add the clock id for ACLK
+Date: Tue, 12 Apr 2016 13:25:10 +0200
+Message-ID: <570CDB16.2050001@samsung.com>
+References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+ <1460091646-28701-6-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:40777 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756611AbcDLLSd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 07:18:33 -0400
-In-reply-to: <570CBF7F.9090300@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1460091646-28701-6-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>, robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
-Cc: mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, alexandre.belloni@free-electrons.com, f.fainelli@gmail.com, linux@arm.linux.org.uk, dbaryshkov@gmail.com, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, lorenzo.pieralisi@arm.com, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, moritz.fischer@ettus.com, mbrugger@suse.com, linux-kernel@vger.kernel.org, galak@codeaurora.org, olof@lixom.net, jun.nie@linaro.org, dwmw2@infradead.org
 
-On 04/12/2016 11:27 AM, Andy Yan wrote:
->>>>> +
->>>>> +static const struct of_device_id syscon_reboot_mode_of_match[] = {
->>>>> +    { .compatible = "syscon-reboot-mode" },
->>>>> +    {}
->>>>> +};
->>>>> +
->>>>> +static struct platform_driver syscon_reboot_mode_driver = {
->>>>> +    .probe = syscon_reboot_mode_probe,
->>>> Cleanup needed. What will happen after device unbind? Memory will be
->>>> released (devm-*()) but reboot notifier won't thus leading to OOPS on
->>>> reboot.
->>>      From the kernel_restart_prepare function, the reboot notifier will
->>> be called before device_shutdown. Is there any other case the device
->>> unbind before reboot notifier
->>> called?
->> This is a regular module platform driver so unbind can happen any time
->> initiated by user, either by unbind command or by module removal. User
->> can then re-bind device or not - probably does not matter. Anyway after
->> such first unbind, the restart will kaboom instead of do a restart.
+On 04/08/2016 07:00 AM, Chanwoo Choi wrote:
+> This patch adds the clock id for ACLK clock which is source clock of AMBA AXI
+> Bus. This clock should be handled in Bus frequency scaling driver.
 > 
->     I just need to do clean up in remove?
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  drivers/clk/samsung/clk-exynos5420.c | 85 +++++++++++++++++++++++-------------
+>  1 file changed, 55 insertions(+), 30 deletions(-)
 
-Yes, you need to clean up everything in remove() callback (in a reversed
-order).
+The IDs itself look good but you are not adding only clock ID. You are
+changing all of them from NULL-flags to CLK_SET_RATE_PARENT. This should
+be explained in the commit message why you need it. Probably it should
+be also in separate commit.
 
 Best regards,
 Krzysztof
