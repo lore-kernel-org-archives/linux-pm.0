@@ -1,90 +1,120 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
- update_cfs_rq_load_avg()
-Date: Tue, 12 Apr 2016 12:38:57 -0700
-Message-ID: <20160412193857.GA22643@graphite.smuckle.net>
-References: <56F97856.4040804@arm.com>
- <56F98832.3030207@linaro.org>
- <20160330193544.GD407@worktop>
- <56FC807C.80204@linaro.org>
- <20160331073743.GF3408@twins.programming.kicks-ass.net>
- <56FD95EE.6090007@linaro.org>
- <20160401092019.GN3430@twins.programming.kicks-ass.net>
- <570BFAE2.4080301@linaro.org>
- <CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
- <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v3] i2c: let I2C masters ignore their children for PM
+Date: Tue, 12 Apr 2016 23:18:25 +0200
+Message-ID: <20160412211825.GB1526@katana>
+References: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:33367 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756989AbcDLTjC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 15:39:02 -0400
-Received: by mail-pa0-f48.google.com with SMTP id zm5so18964042pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 12:39:02 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-i2c@vger.kernel.org, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Tue, Apr 12, 2016 at 04:29:06PM +0200, Rafael J. Wysocki wrote:
-> On Mon, Apr 11, 2016 at 11:20 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Mon, Apr 11, 2016 at 9:28 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> >> Hi Rafael,
-> >>
-> >> On 04/01/2016 02:20 AM, Peter Zijlstra wrote:
-> >>>> > My thinking was in CFS we get rid of the (cpu == smp_processor_id())
-> >>>> > condition for calling the cpufreq hook.
-> >>>> >
-> >>>> > The sched governor can then calculate utilization and frequency required
-> >>>> > for cpu. If (cpu == smp_processor_id()), the update is processed
-> >>>> > normally. If (cpu != smp_processor_id()) and the new frequency is higher
-> >>>> > than cpu's Fcur, the sched gov IPIs cpu to continue running the update
-> >>>> > operation. Otherwise, the update is dropped.
-> >>>> >
-> >>>> > Does that sound plausible?
-> >>>
-> >>> Can be done I suppose..
-> >>
-> >> Currently we drop schedutil updates for a target CPU which do not occur
-> >> on that CPU.
-> >>
-> >> Is this solely due to platforms which must run the cpufreq driver on the
-> >> target CPU?
-> >
-> > The current code assumes that the CPU running the update will always
-> > be the one that gets updated.  Anything else would require extra
-> > synchronization.
-> 
-> This is rather fundamental.
-> 
-> For example, if you look at cpufreq_update_util(), it does this:
-> 
-> data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
-> 
-> meaning that it will run the current CPU's utilization update
-> callback.  Of course, that won't work cross-CPU, because in principle
-> different CPUs may use different governors and therefore different
-> util update callbacks.
-> 
-> If you want to do remote updates, I guess that will require an
-> irq_work to run the update on the target CPU, but then you'll probably
-> want to neglect the rate limit on it as well, so it looks like a
-> "need_update" flag in struct update_util_data will be useful for that.
-> 
-> I think I can prototype something along these lines, but can you
-> please tell me more about the case you have in mind?
 
-I'm concerned generally with the latency to react to changes in
-required capacity due to remote wakeups, which are quite common on SMP
-platforms with shared cache. Unless the hook is called it could take
-up to a tick to react AFAICS if the target CPU is running some other
-task that does not get preempted by the wakeup. That's a potentially
-long time for say UI-critical applications and seems like a lost
-opportunity for us to leverage closer scheduler-cpufreq communication
-to get better performance.
+--PmA2V3Z32TCmWXqI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-Steve
+On Tue, Apr 12, 2016 at 09:57:35AM +0200, Linus Walleij wrote:
+> When using a certain I2C device with runtime PM enabled on
+> a certain I2C bus adaper the following happens:
+>=20
+> struct amba_device *foo
+>    \
+>    struct i2c_adapter *bar
+>       \
+>       struct i2c_client *baz
+>=20
+> The AMBA device foo has its device PM struct set to ignore
+> children with pm_suspend_ignore_children(&foo->dev, true).
+> This makes runtime PM work just fine locally in the driver:
+> the fact that devices on the bus are suspended or resumed
+> individually does not affect its operation, and the hardware
+> does not power up unless transferring messages.
+>=20
+> However this child ignorance property is not inherited into
+> the struct i2c_adapter *bar.
+>=20
+> On system suspend things will work fine.
+>=20
+> On system resume the following annoying phenomenon occurs:
+>=20
+> - In the pm_runtime_force_resume() path of
+>   struct i2c_client *baz, pm_runtime_set_active(&baz->dev); is
+>   eventually called.
+>=20
+> - This becomes __pm_runtime_set_status(&baz->dev, RPM_ACTIVE);
+>=20
+> - __pm_runtime_set_status() detects that RPM state is changed,
+>   and checks whether the parent is:
+>   not active (RPM_ACTIVE) and not ignoring its children
+>   If this happens it concludes something is wrong, because
+>   a parent that is not ignoring its children must be active
+>   before any children activate.
+>=20
+> - Since the struct i2c_adapter *bar does not ignore
+>   its children, the PM core thinks that it must indeed go
+>   online before its children, the check bails out with
+>   -EBUSY, i.e. the i2c_client *baz thinks it can't work
+>   because it's parent is not online, and it respects its
+>   parent.
+>=20
+> - In the driver the .resume() callback returns -EBUSY from
+>   the runtime_force_resume() call as per above. This leaves
+>   the device in a suspended state, leading to bad behaviour
+>   later when the device is used. The following debug
+>   print is made with an extra printg patch but illustrates
+>   the problem:
+>=20
+> [   17.040832] bh1780 2-0029: parent (i2c-2) is not active
+>                parent->power.ignore_children =3D 0
+> [   17.040832] bh1780 2-0029: pm_runtime_force_resume:
+>                pm_runtime_set_active() failed (-16)
+> [   17.040863] dpm_run_callback():
+>                pm_runtime_force_resume+0x0/0x88 returns -16
+> [   17.040863] PM: Device 2-0029 failed to resume: error -16
+>=20
+> Fix this by letting all struct i2c_adapter:s ignore their
+> children: i2c children have no business doing keeping
+> their parents awake: they are completely autonomous
+> devices that just use their parent to talk, a usecase
+> which must be power managed in the host on a per-message
+> basis.
+>=20
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+
+Applied to for-next, thanks!
+
+
+--PmA2V3Z32TCmWXqI
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXDWYhAAoJEBQN5MwUoCm2ylsP/2NABR7+m7Ax0aDAxCGazyDf
+kBn3cLr1EBL/1Zu+Gz5ugwax1qYNycTiIy6e363rSEyj4r+nKI106IFRlWn1XE3C
+KuRPvciXLinLOosmaI6x7NZI/drMD+ZiBVxJpOQekrRXU1WviJsgdwt3GoNrN5bx
+GizALWcBRRvJcOXMtIN1erlss/NOExB2zYhogXAEuMZXGTf9NtWMu42ZQcVN8fhW
+VeEzGIvylVJ7DDZlbSphrVjc7yVfZFH/MaPOnfMJ0Z7xyJuxwtyLVu7aQNS9X8id
+TpCf/GkgLz8DwgnL5JQhTH153Sls9bpNY2WBdBubDSYAhZcqyfMTEXlhBf1+GBd6
+Sr9MJR8VubzQ/90w4wo4uPf5z1yxhPjAMqtvjAa9J5yELDqiTIrRZtd5hhrGvjAK
+g992aAHstM6mkyr8u/+nEmOEvhwwaovQZ9ohir3B9xc3Mr4IpdpCU99Gl2vZdh6x
+CAI6ihHKWDA2g35FjvIC1fRR5iGNrKdXVWL19uSXTOLJxT2OYOW6AfK9fuxM5khp
+TjtF/gwLMREP4Dy2hVUykOR+uTvF9fKCJO50CS5UpTNm68Nk3nAkysHUxLJd3fuR
+Se6AMXE55Cu9F33iOun37lXbnLX6hg5/LEahpd0TlAc4U37SYxjW2rtKKEl2TL++
+9nzrHxejVbmG2dm0x38d
+=8GG5
+-----END PGP SIGNATURE-----
+
+--PmA2V3Z32TCmWXqI--
