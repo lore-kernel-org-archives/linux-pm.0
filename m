@@ -1,103 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 5/5] cpufreq: Loongson1: Replace goto out with return in
- ls1x_cpufreq_probe()
-Date: Tue, 12 Apr 2016 10:54:17 +0530
-Message-ID: <20160412052417.GS16238@vireshk-i7>
-References: <1460375759-20705-1-git-send-email-keguang.zhang@gmail.com>
- <1460375759-20705-5-git-send-email-keguang.zhang@gmail.com>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Tue, 12 Apr 2016 13:24:45 +0800
+Message-ID: <1460438685.14875.3.camel@mtksdaap41>
+References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
+	 <20151217015231.GC3496@ubuntu> <1458017620.30412.3.camel@mtksdaap41>
+	 <20160315061709.GC13831@vireshk-mac-ubuntu>
+	 <1458623586.674.2.camel@mtksdaap41> <1460428370.25776.6.camel@mtksdaap41>
+	 <20160412051103.GN16238@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:32864 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbcDLFYY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 01:24:24 -0400
-Received: by mail-pf0-f177.google.com with SMTP id 184so6814847pff.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 22:24:24 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1460375759-20705-5-git-send-email-keguang.zhang@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160412051103.GN16238@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, srv_heupstream <srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Keguang Zhang <keguang.zhang@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 11-04-16, 19:55, Keguang Zhang wrote:
-> From: Kelvin Cheung <keguang.zhang@gmail.com>
+On Tue, 2016-04-12 at 10:41 +0530, Viresh Kumar wrote:
+> On 12-04-16, 10:32, dawei chien wrote:
+> > On Tue, 2016-03-22 at 13:13 +0800, dawei chien wrote:
+> > > On Tue, 2016-03-15 at 13:17 +0700, Viresh Kumar wrote:
+> > > > Its Rafael, who is going to apply this one.
+> > > > 
+> > > > Can you please resend it as he may not have it in patchworks?
+> > > > 
+> > > 
+> > > Hi Rafael,
+> > > Would you merge this patch to your tree, thank you.
+> > > 
+> > > BR,
+> > > Dawei
+> > 
+> > Hi Rafael,
+> > Would you please merge this patch, or please kindly let me know for any
+> > problem, thank you.
 > 
-> This patch replaces goto out with return in ls1x_cpufreq_probe(),
-> and also includes some minor fixes.
+> Didn't I ask you earlier to resend this patch as Rafael wouldn't have
+> it in his queue now ?
 > 
-> Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
-> ---
->  drivers/cpufreq/loongson1-cpufreq.c | 37 ++++++++++++++++---------------------
->  1 file changed, 16 insertions(+), 21 deletions(-)
+> Please resend it and that will make it earlier for Rafael to get it
+> applied.
 > 
-> diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
-> index 5074f5e..1bc90af 100644
-> --- a/drivers/cpufreq/loongson1-cpufreq.c
-> +++ b/drivers/cpufreq/loongson1-cpufreq.c
-> @@ -1,7 +1,7 @@
->  /*
->   * CPU Frequency Scaling for Loongson 1 SoC
->   *
-> - * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
-> + * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
+Hi Viresh,
+Please refer to following for my resending, thank you.
 
-Actually you should fold above into the first patch of the series,
-that renames this file. It makes much sense that way.
+https://lkml.org/lkml/2016/3/15/101
+https://patchwork.kernel.org/patch/8586131/
+https://patchwork.kernel.org/patch/8586111/
+https://patchwork.kernel.org/patch/8586081/
 
->   *
->   * This file is licensed under the terms of the GNU General Public
->   * License version 2. This program is licensed "as is" without any
-> @@ -141,7 +141,8 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
->  	struct clk *clk;
->  	int ret;
->  
-> -	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
-> +	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name) {
+BR,
+Dawei
 
-You added a '{' here, but the closing '}' is added way down..
-Something is wrong here I feel..
-
-> +		dev_err(&pdev->dev, "platform data missing\n");
->  		return -EINVAL;
->  
->  	cpufreq =
-> @@ -155,8 +156,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
->  	if (IS_ERR(clk)) {
->  		dev_err(&pdev->dev, "unable to get %s clock\n",
->  			pdata->clk_name);
-> -		ret = PTR_ERR(clk);
-> -		goto out;
-> +		return PTR_ERR(clk);
->  	}
-
->  static struct platform_driver ls1x_cpufreq_platdrv = {
-> -	.driver = {
-> +	.probe	= ls1x_cpufreq_probe,
-> +	.remove	= ls1x_cpufreq_remove,
-> +	.driver	= {
->  		.name	= "ls1x-cpufreq",
->  	},
-> -	.probe		= ls1x_cpufreq_probe,
-> -	.remove		= ls1x_cpufreq_remove,
-
-Why do this change at all? Do it in the first patch if you really want
-to.
-
->  };
->  
->  module_platform_driver(ls1x_cpufreq_platdrv);
->  
->  MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
-> -MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
-> +MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
-
-This one as well, move it to the first patch.
-
->  MODULE_LICENSE("GPL");
-> -- 
-> 1.9.1
-
--- 
-viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
