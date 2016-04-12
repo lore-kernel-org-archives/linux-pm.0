@@ -1,34 +1,44 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
- cooling model.
-Date: Tue, 12 Apr 2016 11:08:07 +0530
-Message-ID: <20160412053807.GT16238@vireshk-i7>
-References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
- <1458029437-12846-2-git-send-email-dawei.chien@mediatek.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Tue, 12 Apr 2016 11:09:34 +0530
+Message-ID: <20160412053934.GU16238@vireshk-i7>
+References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
+ <20151217015231.GC3496@ubuntu>
+ <1458017620.30412.3.camel@mtksdaap41>
+ <20160315061709.GC13831@vireshk-mac-ubuntu>
+ <1458623586.674.2.camel@mtksdaap41>
+ <1460428370.25776.6.camel@mtksdaap41>
+ <20160412051103.GN16238@vireshk-i7>
+ <1460438685.14875.3.camel@mtksdaap41>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34851 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbcDLFji (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 01:39:38 -0400
+Received: by mail-pa0-f42.google.com with SMTP id td3so6828222pab.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 22:39:38 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1458029437-12846-2-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+In-Reply-To: <1460438685.14875.3.camel@mtksdaap41>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dawei chien <dawei.chien@mediatek.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-Hi Rafael,
-
-On 15-03-16, 16:10, Dawei Chien wrote:
-> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
-> cooling devices with dynamic power coefficient.
+On 12-04-16, 13:24, dawei chien wrote:
+> Please refer to following for my resending, thank you.
 > 
-> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> https://lkml.org/lkml/2016/3/15/101
+> https://patchwork.kernel.org/patch/8586131/
+> https://patchwork.kernel.org/patch/8586111/
+> https://patchwork.kernel.org/patch/8586081/
 
-Can you please apply this patch from Dawei ?
+Oh, you were continuously sending new ping requests on the old thread.
+You should have used the new thread instead :)
+
+Anyway, I have pinged Rafael over the new thread now.
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
