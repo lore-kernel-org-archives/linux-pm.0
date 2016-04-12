@@ -1,149 +1,50 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 7/7] ARM: dts: Add support of Bus frequency using VDD_INT
- for exynos5422-odroidxu3
-Date: Tue, 12 Apr 2016 12:59:03 +0200
-Message-ID: <570CD4F7.6000700@samsung.com>
-References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
- <1460091646-28701-8-git-send-email-cw00.choi@samsung.com>
+Subject: Re: [PATCH v7 2/4] power: reset: add reboot mode driver
+Date: Tue, 12 Apr 2016 13:18:27 +0200
+Message-ID: <570CD983.9090202@samsung.com>
+References: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
+ <1459304443-9811-1-git-send-email-andy.yan@rock-chips.com>
+ <56FB49B3.2040505@samsung.com> <57045D6B.2080907@rock-chips.com>
+ <57045F9D.1000502@samsung.com> <570CBF7F.9090300@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1460091646-28701-8-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:40777 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756611AbcDLLSd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 07:18:33 -0400
+In-reply-to: <570CBF7F.9090300@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>, robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
+Cc: mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, alexandre.belloni@free-electrons.com, f.fainelli@gmail.com, linux@arm.linux.org.uk, dbaryshkov@gmail.com, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, lorenzo.pieralisi@arm.com, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, moritz.fischer@ettus.com, mbrugger@suse.com, linux-kernel@vger.kernel.org, galak@codeaurora.org, olof@lixom.net, jun.nie@linaro.org, dwmw2@infradead.org
 
-On 04/08/2016 07:00 AM, Chanwoo Choi wrote:
-> This patch adds the bus device tree nodes for INT (Internal) block
-> to enable the AMBA bus frequency scaling and add the NoC (Network on Chip)
-> Probe Device Tree node to measure the bandwidht for AMBA AXI bus.
+On 04/12/2016 11:27 AM, Andy Yan wrote:
+>>>>> +
+>>>>> +static const struct of_device_id syscon_reboot_mode_of_match[] = {
+>>>>> +    { .compatible = "syscon-reboot-mode" },
+>>>>> +    {}
+>>>>> +};
+>>>>> +
+>>>>> +static struct platform_driver syscon_reboot_mode_driver = {
+>>>>> +    .probe = syscon_reboot_mode_probe,
+>>>> Cleanup needed. What will happen after device unbind? Memory will be
+>>>> released (devm-*()) but reboot notifier won't thus leading to OOPS on
+>>>> reboot.
+>>>      From the kernel_restart_prepare function, the reboot notifier will
+>>> be called before device_shutdown. Is there any other case the device
+>>> unbind before reboot notifier
+>>> called?
+>> This is a regular module platform driver so unbind can happen any time
+>> initiated by user, either by unbind command or by module removal. User
+>> can then re-bind device or not - probably does not matter. Anyway after
+>> such first unbind, the restart will kaboom instead of do a restart.
 > 
-> The WCORE bus bus is parent device in INT block using VDD_INT.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi | 99 ++++++++++++++++++++++
->  1 file changed, 99 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-> index 1bd507bfa750..2a74abe6fc5d 100644
-> --- a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-> +++ b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-> @@ -361,6 +361,22 @@
->  	cap-sd-highspeed;
->  };
->  
-> +&nocp_mem0_0 {
-> +	status = "okay";
-> +};
-> +
-> +&nocp_mem0_1 {
-> +	status = "okay";
-> +};
-> +
-> +&nocp_mem0_2 {
-> +	status = "okay";
-> +};
-> +
-> +&nocp_mem0_3 {
-> +	status = "okay";
-> +};
-> +
->  &pinctrl_0 {
->  	hdmi_hpd_irq: hdmi-hpd-irq {
->  		samsung,pins = "gpx3-7";
-> @@ -432,3 +448,86 @@
->  	vdd33-supply = <&ldo9_reg>;
->  	vdd10-supply = <&ldo11_reg>;
->  };
-> +
-> +&bus_wcore {
-> +	devfreq-events = <&nocp_mem0_0>, <&nocp_mem0_1>,
-> +			<&nocp_mem0_2>, <&nocp_mem0_3>;
-> +	vdd-supply = <&buck3_reg>;
-> +	exynos,saturation-ratio = <100>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_noc {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_fsys_apb {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_fsys {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_fsys2 {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_mfc {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_gen {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_peri {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_g2d {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_g2d_acp {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_jpeg {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_jpeg_apb {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_disp1_fimd {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_disp1 {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_gscl_scaler {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
-> +
-> +&bus_mscl {
-> +	devfreq = <&bus_wcore>;
-> +	status = "okay";
-> +};
+>     I just need to do clean up in remove?
 
-Could you put the bus nodes in alphabetical order, both between them and
-in relation to others (so before &clock_audss)? Let's keep the file ordered.
+Yes, you need to clean up everything in remove() callback (in a reversed
+order).
 
 Best regards,
 Krzysztof
