@@ -1,82 +1,110 @@
 From: Keguang Zhang <keguang.zhang@gmail.com>
-Subject: [PATCH V1 1/5] cpufreq: Loongson1: Rename the file to loongson1-cpufreq.c
-Date: Tue, 12 Apr 2016 18:40:15 +0800
-Message-ID: <1460457619-14786-1-git-send-email-keguang.zhang@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f68.google.com ([209.85.220.68]:34976 "EHLO
-	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756409AbcDLKki (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 06:40:38 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V1 5/5] cpufreq: Loongson1: Replace goto out with return in ls1x_cpufreq_probe()
+Date: Tue, 12 Apr 2016 18:40:19 +0800
+Message-ID: <1460457619-14786-5-git-send-email-keguang.zhang@gmail.com>
+References: <1460457619-14786-1-git-send-email-keguang.zhang@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1460457619-14786-1-git-send-email-keguang.zhang@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kelvin Cheung <keguang.zhang@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-This patch renames the file to loongson1-cpufreq.c,
-and also includes some minor updates.
+This patch replaces goto out with return in ls1x_cpufreq_probe().
 
 Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 
 ---
 V1:
-   Merge the minor updates into this patch.
+   Move the minor updates into patch#1.
+   Fix the brace problem in ls1x_cpufreq_probe().
 ---
- drivers/cpufreq/Makefile                                |  2 +-
- drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} | 10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
- rename drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} (96%)
+ drivers/cpufreq/loongson1-cpufreq.c | 29 +++++++++++++----------------
+ 1 file changed, 13 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 9e63fb1..bebe9c8 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -100,7 +100,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
- obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
--obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
-+obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= loongson1-cpufreq.o
- obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
- obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
- obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
-diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
-similarity index 96%
-rename from drivers/cpufreq/ls1x-cpufreq.c
-rename to drivers/cpufreq/loongson1-cpufreq.c
-index 262581b..57fae9b 100644
---- a/drivers/cpufreq/ls1x-cpufreq.c
+diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
+index f0d0156..be89416 100644
+--- a/drivers/cpufreq/loongson1-cpufreq.c
 +++ b/drivers/cpufreq/loongson1-cpufreq.c
-@@ -1,7 +1,7 @@
- /*
-  * CPU Frequency Scaling for Loongson 1 SoC
-  *
-- * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
-+ * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
-  *
-  * This file is licensed under the terms of the GNU General Public
-  * License version 2. This program is licensed "as is" without any
-@@ -208,15 +208,15 @@ out:
+@@ -141,8 +141,10 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	struct clk *clk;
+ 	int ret;
+ 
+-	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name)
++	if (!pdata || !pdata->clk_name || !pdata->osc_clk_name) {
++		dev_err(&pdev->dev, "platform data missing\n");
+ 		return -EINVAL;
++	}
+ 
+ 	cpufreq =
+ 	    devm_kzalloc(&pdev->dev, sizeof(struct ls1x_cpufreq), GFP_KERNEL);
+@@ -155,8 +157,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "unable to get %s clock\n",
+ 			pdata->clk_name);
+-		ret = PTR_ERR(clk);
+-		goto out;
++		return PTR_ERR(clk);
+ 	}
+ 	cpufreq->clk = clk;
+ 
+@@ -164,8 +165,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
+ 			__clk_get_name(cpufreq->clk));
+-		ret = PTR_ERR(clk);
+-		goto out;
++		return PTR_ERR(clk);
+ 	}
+ 	cpufreq->mux_clk = clk;
+ 
+@@ -173,8 +173,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "unable to get parent of %s clock\n",
+ 			__clk_get_name(cpufreq->mux_clk));
+-		ret = PTR_ERR(clk);
+-		goto out;
++		return PTR_ERR(clk);
+ 	}
+ 	cpufreq->pll_clk = clk;
+ 
+@@ -182,8 +181,7 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "unable to get %s clock\n",
+ 			pdata->osc_clk_name);
+-		ret = PTR_ERR(clk);
+-		goto out;
++		return PTR_ERR(clk);
+ 	}
+ 	cpufreq->osc_clk = clk;
+ 
+@@ -194,19 +192,18 @@ static int ls1x_cpufreq_probe(struct platform_device *pdev)
+ 	if (ret) {
+ 		dev_err(&pdev->dev,
+ 			"failed to register CPUFreq driver: %d\n", ret);
+-		goto out;
++		return ret;
+ 	}
+ 
+ 	ret = cpufreq_register_notifier(&ls1x_cpufreq_notifier_block,
+ 					CPUFREQ_TRANSITION_NOTIFIER);
+ 
+-	if (!ret)
+-		goto out;
+-
+-	dev_err(&pdev->dev, "failed to register cpufreq notifier: %d\n", ret);
++	if (ret) {
++		dev_err(&pdev->dev,
++			"failed to register CPUFreq notifier: %d\n",ret);
++		cpufreq_unregister_driver(&ls1x_cpufreq_driver);
++	}
+ 
+-	cpufreq_unregister_driver(&ls1x_cpufreq_driver);
+-out:
+ 	return ret;
  }
  
- static struct platform_driver ls1x_cpufreq_platdrv = {
--	.driver = {
-+	.probe	= ls1x_cpufreq_probe,
-+	.remove	= ls1x_cpufreq_remove,
-+	.driver	= {
- 		.name	= "ls1x-cpufreq",
- 	},
--	.probe		= ls1x_cpufreq_probe,
--	.remove		= ls1x_cpufreq_remove,
- };
- 
- module_platform_driver(ls1x_cpufreq_platdrv);
- 
- MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
--MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
-+MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
- MODULE_LICENSE("GPL");
 -- 
 1.9.1
-
