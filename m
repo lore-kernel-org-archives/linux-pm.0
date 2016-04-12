@@ -1,50 +1,106 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V9 RESEND 14/14] arm: tegra: set critical trips for Tegra124
-Date: Tue, 12 Apr 2016 16:53:52 +0800
-Message-ID: <570CB7A0.2080908@nvidia.com>
-References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-15-git-send-email-wni@nvidia.com> <20160329151705.GC1855@localhost.localdomain> <56FE1D82.7090908@nvidia.com>
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: Re: [PATCH v7 2/4] power: reset: add reboot mode driver
+Date: Tue, 12 Apr 2016 17:27:27 +0800
+Message-ID: <570CBF7F.9090300@rock-chips.com>
+References: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
+ <1459304443-9811-1-git-send-email-andy.yan@rock-chips.com>
+ <56FB49B3.2040505@samsung.com> <57045D6B.2080907@rock-chips.com>
+ <57045F9D.1000502@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nat-hk.nvidia.com ([203.18.50.4]:26631 "EHLO
-	hkmmgate102.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756421AbcDLIxE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 04:53:04 -0400
-In-Reply-To: <56FE1D82.7090908@nvidia.com>
+Received: from regular1.263xmail.com ([211.150.99.131]:57414 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753915AbcDLJ2M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 05:28:12 -0400
+In-Reply-To: <57045F9D.1000502@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, thierry.reding@gmail.com, swarren@wwwdotorg.org
-Cc: rui.zhang@intel.com, MLongnecker@nvidia.com, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
+Cc: mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, alexandre.belloni@free-electrons.com, f.fainelli@gmail.com, linux@arm.linux.org.uk, dbaryshkov@gmail.com, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, lorenzo.pieralisi@arm.com, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, moritz.fischer@ettus.com, mbrugger@suse.com, linux-kernel@vger.kernel.org, galak@codeaurora.org, olof@lixom.net, jun.nie@linaro.org, dwmw2@infradead.org
 
-Could anyone take a look at this patch?
+Hi Krzysztof:
 
-On 2016=E5=B9=B404=E6=9C=8801=E6=97=A5 15:04, Wei Ni wrote:
-> To:
-> Rob Herring <robh+dt@kernel.org>
-> Pawel Moll <pawel.moll@arm.com>
-> Mark Rutland <mark.rutland@arm.com>
-> Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Kumar Gala <galak@codeaurora.org>
->=20
-> Cc:
-> devicetree@vger.kernel.org
->=20
-> On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 23:17, Eduardo Valentin wrote:
->> On Tue, Mar 29, 2016 at 06:29:24PM +0800, Wei Ni wrote:
->>> Set general "critical" trip temperatures for cpu, gpu, mem and pllx
->>> thermal zones for all Tegra124 platform, these trips can trigger
->>> shut down or reset.
->>> Tegra124 Jetson TK1 was already set "critical" trips before, so it
->>> can overwrite the general values.
+On 2016=E5=B9=B404=E6=9C=8806=E6=97=A5 09:00, Krzysztof Kozlowski wrote=
+:
+> On 06.04.2016 09:50, Andy Yan wrote:
+>
+> (...)
+>
+>>>> +            return -ENOMEM;
+>>>> +
+>>>> +        info->mode =3D kstrdup_const(prop->name + len, GFP_KERNEL=
+);
+>>>> +        if (of_property_read_u32(np, prop->name, &info->magic)) {
+>>>> +            dev_err(dev, "reboot mode %s without magic number\n",
+>>>> +                info->mode);
+>>>> +            devm_kfree(dev, info);
+>>>> +            continue;
+>>>> +        }
+>>>> +        list_add_tail(&info->list, &reboot->head);
+>>>> +    }
+>>>> +    of_node_put(np);
+>>> If you of_node_put() here, there is no sense in getting it before. =
+I
+>>> mentioned of_node_get() only because I am not sure about life-cycle=
+ of
+>>> nodes in case of DT overlays and you are storing the pointer to str=
+ing
+>>> from DT.
 >>>
->>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>> The doubts I have are concerning only the case of freeing nodes fro=
+m
+>>> overlay.
+>>>
+>>> I don't know if of_node_get() is needed but of_node_get()+of_node_p=
+ut()
+>>> seems useless.
 >>
->> Acked-by: Eduardo Valentin <edubezval@gmail.com>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+>>   I am also not sure about it. Maybe just drop of_node_get/put ?
+> OK, let's drop both get() and put().
+>
+> (...)
+>
+>>>> +
+>>>> +static const struct of_device_id syscon_reboot_mode_of_match[] =3D=
+ {
+>>>> +    { .compatible =3D "syscon-reboot-mode" },
+>>>> +    {}
+>>>> +};
+>>>> +
+>>>> +static struct platform_driver syscon_reboot_mode_driver =3D {
+>>>> +    .probe =3D syscon_reboot_mode_probe,
+>>> Cleanup needed. What will happen after device unbind? Memory will b=
+e
+>>> released (devm-*()) but reboot notifier won't thus leading to OOPS =
+on
+>>> reboot.
+>>      From the kernel_restart_prepare function, the reboot notifier w=
+ill
+>> be called before device_shutdown. Is there any other case the device
+>> unbind before reboot notifier
+>> called?
+> This is a regular module platform driver so unbind can happen any tim=
+e
+> initiated by user, either by unbind command or by module removal. Use=
+r
+> can then re-bind device or not - probably does not matter. Anyway aft=
+er
+> such first unbind, the restart will kaboom instead of do a restart.
+
+     I just need to do clean up in remove?
+> Beside that, you always should clean up, regardless of restart or not=
+=2E
+> If you do not want unbind (thus no need of cleanup) then forbid it by
+> making it a non-module with suppressed bind.
+>
+> Best regards,
+> Krzysztof
+>
+>
+>
+>
+
+
