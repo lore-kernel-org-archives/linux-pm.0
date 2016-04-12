@@ -1,30 +1,42 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
-Date: Tue, 12 Apr 2016 09:51:08 +0300
-Message-ID: <20160412065108.GG1714@lahna.fi.intel.com>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
- <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
- <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
- <20160411085605.GB1727@lahna.fi.intel.com>
- <CAJZ5v0he594EgJqoT4MMvhsKBSRLk7d4jFBVAfR+hGHs4oRfsA@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v9 01/20] PM / devfreq: exynos: Add generic exynos bus
+ frequency driver
+Date: Tue, 12 Apr 2016 09:23:33 +0200
+Message-ID: <570CA275.6000903@samsung.com>
+References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
+ <1460347078-15175-2-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:48298 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbcDLGvO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Apr 2016 02:51:14 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0he594EgJqoT4MMvhsKBSRLk7d4jFBVAfR+hGHs4oRfsA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1460347078-15175-2-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Zheng, Qi" <qi.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Zha, Qipeng" <qipeng.zha@intel.com>, Dave Airlie <airlied@gmail.com>, "Nyman, Mathias" <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Apr 11, 2016 at 03:38:07PM +0200, Rafael J. Wysocki wrote:
-> Fair enough, but we may need to do something about that in the future
-> if things turn out to not work properly.
+On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
+> This patch adds the generic exynos bus frequency driver for AMBA AXI bus
+> of sub-blocks in exynos SoC with DEVFREQ framework. The Samsung Exynos SoC
+> have the common architecture for bus between DRAM and sub-blocks in SoC.
+> This driver can support the generic bus frequency driver for Exynos SoCs.
+> 
+> In devicetree, Each bus block has a bus clock, regulator, operation-point
+> and devfreq-event devices which measure the utilization of each bus block.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
+> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+> Tested-by: Anand Moon <linux.amoon@gmail.com>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> ---
+>  drivers/devfreq/Kconfig      |  15 ++
+>  drivers/devfreq/Makefile     |   1 +
+>  drivers/devfreq/exynos-bus.c | 443 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 459 insertions(+)
+>  create mode 100644 drivers/devfreq/exynos-bus.c
 
-Yeah, I think we can then add an exception table (blacklist) that
-includes those devices which do not work properly. Hopefully it is not
-needed at all :)
+Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+Best regards,
+Krzysztof
