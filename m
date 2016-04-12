@@ -1,46 +1,54 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v9 10/20] MAINTAINERS: Add samsung bus frequency driver
- entry
-Date: Tue, 12 Apr 2016 17:20:54 +0900
-Message-ID: <570CAFE6.8090601@samsung.com>
-References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
- <1460347078-15175-11-git-send-email-cw00.choi@samsung.com>
- <570CA7DF.6080808@samsung.com>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH] thermal/intel_powerclamp: convert to smpboot thread
+Date: Tue, 12 Apr 2016 10:21:42 +0200
+Message-ID: <20160412082141.GB16146@pathway.suse.cz>
+References: <1457710701-3014-1-git-send-email-bigeasy@linutronix.de>
+ <20160406094735.1bbb3c0c@icelake>
+ <570B9CD0.5060904@linutronix.de>
+ <20160411081915.585de6c2@icelake>
+ <570BCB15.1010702@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:50951 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932735AbcDLIVC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 04:21:02 -0400
-In-reply-to: <570CA7DF.6080808@samsung.com>
+Received: from mx2.suse.de ([195.135.220.15]:37292 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932311AbcDLIVo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Apr 2016 04:21:44 -0400
+Content-Disposition: inline
+In-Reply-To: <570BCB15.1010702@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-kernel@vger.kernel.org, rt@linutronix.de, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
 
-On 2016=EB=85=84 04=EC=9B=94 12=EC=9D=BC 16:46, Krzysztof Kozlowski wro=
-te:
-> On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
->> This patch adds the 'BUS FREQUENCY DRIVER FOR SAMSUNG EXYNOS' entry =
-to review the
->> patches as maintainer. I can access the all datasheet of Exynos SoC =
-and test it
->> on some Exynos-based board. Patches will be picked up by DEVFREQ mai=
-ntainer
->> on devfreq git repository.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  MAINTAINERS | 9 +++++++++
->>  1 file changed, 9 insertions(+)
->=20
->=20
-> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+On Mon 2016-04-11 18:04:37, Sebastian Andrzej Siewior wrote:
+> On 04/11/2016 05:19 PM, Jacob Pan wrote:
+> >>>> I tried to convert it over to smpboot thread so we don't have that
+> >>>> CPU notifier stuff to fire the cpu threads during hotplug events.
+> >>>>
+> >>> there is another patchset to convert it to kthread worker. any
+> >>> advantage of smpboot thread?
+> >>> http://comments.gmane.org/gmane.linux.kernel.mm/144964
+> >>
+> >> It partly does the same thing except you still have your hotplug
+> >> notifier which I wanted to get rid off. However it looks better than
+> >> before.
+> >> If you do prefer the kworker thingy then please switch from CPU_DEAD
+> >> to CPU_DOWN_PREPARE (and add CPU_DOWN_FAILED to CPU_ONLINE).
+> >> With those changes I should have no further problem with it :)
+> >> Any ETA for (either of those patches) upstream?
 
-Thanks for your review.
+It depends on some improvements of the kthread worker API. I hope
+that we are getting close. I would like to send another iteration
+later this week.
 
 Best Regards,
-Chanwoo Choi
+Petr
 
+> > +Petr
+> > I do prefer not to keep track of CPU hotplug events. Let me do some
+> > testing.
+> Okay. Please keep me posted where you stand on this. If you go for the
+> kwork series then I will try to make a patch which replaces CPU_DEAD to
+> CPU_DOWN_PREPARE in order to make it symmetrical (and from what it
+> looks, there is no need to run at CPU_DEAD time).
