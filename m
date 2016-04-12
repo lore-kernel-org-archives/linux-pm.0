@@ -1,178 +1,63 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
-Date: Tue, 12 Apr 2016 15:16:59 -0700
-Message-ID: <20160412221659.GA18102@www.outflux.net>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Wed, 13 Apr 2016 00:32:55 +0200
+Message-ID: <20160412223254.GK1526@katana>
+References: <56B204CB.60602@osg.samsung.com>
+ <20160208105417.GD2220@tetsubishi>
+ <56BE57FC.3020407@osg.samsung.com>
+ <20160212221352.GY3500@atomide.com>
+ <56BE5C97.9070607@osg.samsung.com>
+ <20160212224018.GZ3500@atomide.com>
+ <56BE65F0.8040600@osg.samsung.com>
+ <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:35913 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbcDLWRC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 18:17:02 -0400
-Received: by mail-pa0-f54.google.com with SMTP id bx7so20952888pad.3
-        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 15:17:01 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vbzKE9fGfpHIBC6T"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <56BE993B.3010804@osg.samsung.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
-
-Since kASLR and Hibernation can not currently coexist at runtime
-on x86, the default behavior was to disable kASLR by default when
-CONFIG_HIBERNATION was present (to retain original behavior).
-
-The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
-default when selected at build time. Since arm64 Hibernation does not
-conflict with kASLR, this fixes the hibernation argument parsing to be
-x86-specific. Additionally, since end users want to be able to select
-kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
-that is present only on x86.
-
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
-v2:
-- make this x86-specific selectable, rather than global default
----
- Documentation/kernel-parameters.txt |  9 +++------
- arch/x86/Kconfig                    | 16 +++++++++++++++-
- arch/x86/boot/compressed/aslr.c     |  2 +-
- kernel/power/hibernate.c            | 31 +++++++++++++++++++++++++------
- 4 files changed, 44 insertions(+), 14 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index ecc74fa4bfde..282e5c826c32 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1770,12 +1770,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	js=		[HW,JOY] Analog joystick
- 			See Documentation/input/joystick.txt.
- 
--	kaslr/nokaslr	[X86]
--			Enable/disable kernel and module base offset ASLR
--			(Address Space Layout Randomization) if built into
--			the kernel. When CONFIG_HIBERNATION is selected,
--			kASLR is disabled by default. When kASLR is enabled,
--			hibernation will be disabled.
-+	kaslr/nokaslr	[KNL] When CONFIG_RANDOMIZE_BASE is set, this
-+			enables/disables kernel and module base offset ASLR
-+			(Address Space Layout Randomization).
- 
- 	keepinitrd	[HW,ARM]
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 2dc18605831f..e0fb1717fe3c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1932,7 +1932,7 @@ config RELOCATABLE
- 	  (CONFIG_PHYSICAL_START) is used as the minimum location.
- 
- config RANDOMIZE_BASE
--	bool "Randomize the address of the kernel image"
-+	bool "Randomize the address of the kernel image (kASLR)"
- 	depends on RELOCATABLE
- 	default n
- 	---help---
-@@ -1955,6 +1955,20 @@ config RANDOMIZE_BASE
- 
- 	   If unsure, say N.
- 
-+config RANDOMIZE_BASE_ON
-+	bool "Prefer kASLR over Hibernation"
-+	depends on RANDOMIZE_BASE
-+	depends on HIBERNATION
-+	default n
-+	---help---
-+	  Currently Hibernation and kASLR are not compatible at runtime
-+	  on x86. To enable kASLR by default (and disable Hibernation),
-+	  enable this option. To enable Hibernation by default (and
-+	  disable kASLR), disable this option. Regardless of this
-+	  setting, the availability of kASLR (and therefore Hibernation)
-+	  can be chosen at boot time with the "kaslr" or "nokaslr"
-+	  kernel argument.
-+
- config RANDOMIZE_BASE_MAX_OFFSET
- 	hex "Maximum kASLR offset allowed" if EXPERT
- 	depends on RANDOMIZE_BASE
-diff --git a/arch/x86/boot/compressed/aslr.c b/arch/x86/boot/compressed/aslr.c
-index 6a9b96b4624d..8214b174b9bd 100644
---- a/arch/x86/boot/compressed/aslr.c
-+++ b/arch/x86/boot/compressed/aslr.c
-@@ -304,7 +304,7 @@ unsigned char *choose_kernel_location(struct boot_params *boot_params,
- 	unsigned long choice = (unsigned long)output;
- 	unsigned long random;
- 
--#ifdef CONFIG_HIBERNATION
-+#ifndef CONFIG_RANDOMIZE_BASE_ON
- 	if (!cmdline_find_option_bool("kaslr")) {
- 		debug_putstr("KASLR disabled by default...\n");
- 		goto out;
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..526a6403fb2e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -35,8 +35,13 @@
- 
- 
- static int nocompress;
-+#ifndef CONFIG_RANDOMIZE_BASE_ON
- static int noresume;
- static int nohibernate;
-+#else
-+static int noresume = 1;
-+static int nohibernate = 1;
-+#endif
- static int resume_wait;
- static unsigned int resume_delay;
- static char resume_file[256] = CONFIG_PM_STD_PARTITION;
-@@ -1154,11 +1159,6 @@ static int __init nohibernate_setup(char *str)
- 	return 1;
- }
- 
--static int __init kaslr_nohibernate_setup(char *str)
--{
--	return nohibernate_setup(str);
--}
--
- static int __init page_poison_nohibernate_setup(char *str)
- {
- #ifdef CONFIG_PAGE_POISONING_ZERO
-@@ -1175,6 +1175,26 @@ static int __init page_poison_nohibernate_setup(char *str)
- 	return 1;
- }
- 
-+/*
-+ * Hibernation on x86 currently conflicts with kASLR, so only change
-+ * hibernation boot defaults when seeing kaslr arguments on x86.
-+ */
-+#if defined(CONFIG_X86) && defined(CONFIG_RANDOMIZE_BASE)
-+static int __init kaslr_nohibernate_setup(char *str)
-+{
-+	return nohibernate_setup(str);
-+}
-+
-+static int __init nokaslr_hibernate_setup(char *str)
-+{
-+	noresume = 0;
-+	nohibernate = 0;
-+	return 1;
-+}
-+__setup("kaslr", kaslr_nohibernate_setup);
-+__setup("nokaslr", nokaslr_hibernate_setup);
-+#endif
-+
- __setup("noresume", noresume_setup);
- __setup("resume_offset=", resume_offset_setup);
- __setup("resume=", resume_setup);
-@@ -1182,5 +1202,4 @@ __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
- __setup("nohibernate", nohibernate_setup);
--__setup("kaslr", kaslr_nohibernate_setup);
- __setup("page_poison=", page_poison_nohibernate_setup);
--- 
-2.6.3
 
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+--vbzKE9fGfpHIBC6T
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+> I'll try to find some time next week to dig deeper on this. Just
+> thought that may be related to the issue you found but it seems
+> that's not the case.
+
+Any updates on this?
+
+Thanks,
+
+   Wolfram
+
+
+--vbzKE9fGfpHIBC6T
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXDXeWAAoJEBQN5MwUoCm2S6gP/0H6KskZC5CDKD/Bpgd+3ldi
+eKlqS0d2/wRakdsBxEgbVWiTvpXvBr44Ti8Bv3y6chFCLTKQcidd8C/BVV4X2NjK
+d+V7ULuxEOOTjaudDJUalfbA0YpN0/KzJbytihTqUDJBaViG04/Gn6k+ILdkv4y2
+QwJEkBWlC6lqIGkC8IHcOJyhZ/EuxX6z+UajZ2WVm69Wq3PnxNrz/d+jYojfQdK1
+mo3KWQxKaMJoyMvh0ARHgf+sxRqkHk0SB4rS/oTtC1EKj/4VBgKISOk6loqN3/ye
+GCiqfnVKbVyFp9aeDryPxNOEu4WHyD5BHlFnLyreiXagUICEPJr6NoANBoc/+zCB
+UlbLKBnn2jKP/8R5ERP+JxSitv8u6sJkkSU7YE6d1EIjgN74IO2DyG2lYmwRkLP3
+17hIj5bCWqFA8E0eQZWj3DRSiWrGO50xEhg2VJQyaGNtdlZ+KZ7dAgbP7xf2t1Cy
+4mFb4u2P642BGyqKuEDVSEII6fi+KIzUb7tXbfYfWKGWf8npXYCKDC4XJFG+han7
+sGpPFc9/BW5AqGJffJAyUToEkWTsNoQdMOZ0/HVKVf43N28VE+4v6sLB8x1khSDR
+qO4ItqtbzLQROwkj/yhkQggQjmgMUbvmGsyOOBWJbMXJEKsZuwNTwu/CoOqG7jzo
+LkF0xolR++1gaTy1Grya
+=TIdh
+-----END PGP SIGNATURE-----
+
+--vbzKE9fGfpHIBC6T--
