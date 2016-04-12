@@ -1,50 +1,45 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v9 04/20] PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER
- notifier
-Date: Tue, 12 Apr 2016 09:29:34 +0200
-Message-ID: <570CA3DE.2030702@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v9 08/20] PM / devfreq: exynos: Add the detailed
+ correlation between sub-blocks and power line
+Date: Tue, 12 Apr 2016 17:20:34 +0900
+Message-ID: <570CAFD2.3040605@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
- <1460347078-15175-5-git-send-email-cw00.choi@samsung.com>
+ <1460347078-15175-9-git-send-email-cw00.choi@samsung.com>
+ <570CA555.7020202@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1460347078-15175-5-git-send-email-cw00.choi@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <570CA555.7020202@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
-> This patch adds the new DEVFREQ_TRANSITION_NOTIFIER notifier to send
-> the notification when the frequency of device is changed.
-> This notifier has two state as following:
-> - DEVFREQ_PRECHANGE  : Notify it before chaning the frequency of device
-> - DEVFREQ_POSTCHANGE : Notify it after changed the frequency of device
-> 
-> And this patch adds the resourced-managed function to release the resource
-> automatically when error happen.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> [m.reichl and linux.amoon: Tested it on exynos4412-odroidu3 board]
-> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-> Tested-by: Anand Moon <linux.amoon@gmail.com>
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 163 +++++++++++++++++++++++++++++++++++++++++++++-
->  include/linux/devfreq.h   |  59 ++++++++++++++++-
->  2 files changed, 220 insertions(+), 2 deletions(-)
+On 2016=EB=85=84 04=EC=9B=94 12=EC=9D=BC 16:35, Krzysztof Kozlowski wro=
+te:
+> On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
+>> This patch adds the detailed corrleation between sub-blocks and powe=
+r line
+>=20
+> s/corrleation/correlation/
 
+OK. I'll fix it.
 
-Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>=20
+>=20
+>> for Exynos3250, Exynos4210 and Exynos4x12.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>> ---
+>>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 51 +++++++++++=
++++++++++++
+>>  1 file changed, 51 insertions(+)
+>=20
+>=20
+> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>=20
 
-Best regards,
-Krzysztof
+Best Regards,
+Chanwoo Choi
