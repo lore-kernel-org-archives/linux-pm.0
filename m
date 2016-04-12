@@ -1,45 +1,52 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v9 08/20] PM / devfreq: exynos: Add the detailed
- correlation between sub-blocks and power line
-Date: Tue, 12 Apr 2016 17:20:34 +0900
-Message-ID: <570CAFD2.3040605@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v9 09/20] PM / devfreq: exynos: Remove unused exynos4/5
+ busfreq driver
+Date: Tue, 12 Apr 2016 09:40:30 +0200
+Message-ID: <570CA66E.5090409@samsung.com>
 References: <1460347078-15175-1-git-send-email-cw00.choi@samsung.com>
- <1460347078-15175-9-git-send-email-cw00.choi@samsung.com>
- <570CA555.7020202@samsung.com>
+ <1460347078-15175-10-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <570CA555.7020202@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <1460347078-15175-10-git-send-email-cw00.choi@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: mark.rutland@arm.com, inki.dae@samsung.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2016=EB=85=84 04=EC=9B=94 12=EC=9D=BC 16:35, Krzysztof Kozlowski wro=
-te:
-> On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
->> This patch adds the detailed corrleation between sub-blocks and powe=
-r line
->=20
-> s/corrleation/correlation/
+On 04/11/2016 05:57 AM, Chanwoo Choi wrote:
+> This patch removes the unused exynos4/5 busfreq driver. Instead,
+> generic exynos-bus frequency driver support the all Exynos SoCs.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> ---
+>  drivers/devfreq/Kconfig              |   22 -
+>  drivers/devfreq/Makefile             |    2 -
+>  drivers/devfreq/exynos/Makefile      |    3 -
+>  drivers/devfreq/exynos/exynos4_bus.c | 1055 ----------------------------------
+>  drivers/devfreq/exynos/exynos4_bus.h |  110 ----
+>  drivers/devfreq/exynos/exynos5_bus.c |  431 --------------
+>  drivers/devfreq/exynos/exynos_ppmu.c |  119 ----
+>  drivers/devfreq/exynos/exynos_ppmu.h |   86 ---
+>  8 files changed, 1828 deletions(-)
+>  delete mode 100644 drivers/devfreq/exynos/Makefile
+>  delete mode 100644 drivers/devfreq/exynos/exynos4_bus.c
+>  delete mode 100644 drivers/devfreq/exynos/exynos4_bus.h
+>  delete mode 100644 drivers/devfreq/exynos/exynos5_bus.c
+>  delete mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
+>  delete mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
 
-OK. I'll fix it.
+Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
->=20
->=20
->> for Exynos3250, Exynos4210 and Exynos4x12.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->> ---
->>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 51 +++++++++++=
-+++++++++++
->>  1 file changed, 51 insertions(+)
->=20
->=20
-> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->=20
-
-Best Regards,
-Chanwoo Choi
+Best regards,
+Krzysztof
