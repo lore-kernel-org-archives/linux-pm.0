@@ -1,79 +1,90 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] cpufreq: powernv: Remove flag use-case of policy->driver_data
-Date: Tue, 12 Apr 2016 23:36:25 +0530
-Message-ID: <1460484386-28389-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1460484386-28389-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
+ update_cfs_rq_load_avg()
+Date: Tue, 12 Apr 2016 12:38:57 -0700
+Message-ID: <20160412193857.GA22643@graphite.smuckle.net>
+References: <56F97856.4040804@arm.com>
+ <56F98832.3030207@linaro.org>
+ <20160330193544.GD407@worktop>
+ <56FC807C.80204@linaro.org>
+ <20160331073743.GF3408@twins.programming.kicks-ass.net>
+ <56FD95EE.6090007@linaro.org>
+ <20160401092019.GN3430@twins.programming.kicks-ass.net>
+ <570BFAE2.4080301@linaro.org>
+ <CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
+ <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp04.in.ibm.com ([125.16.236.4]:55122 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965625AbcDLSHx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 14:07:53 -0400
-Received: from localhost
-	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-	Tue, 12 Apr 2016 23:37:49 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-	by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u3CI85XD12386690
-	for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 23:38:05 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
-	by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u3CI7f6O025896
-	for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 23:37:44 +0530
-In-Reply-To: <1460484386-28389-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:33367 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756989AbcDLTjC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 15:39:02 -0400
+Received: by mail-pa0-f48.google.com with SMTP id zm5so18964042pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 12:39:02 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: ego@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+On Tue, Apr 12, 2016 at 04:29:06PM +0200, Rafael J. Wysocki wrote:
+> On Mon, Apr 11, 2016 at 11:20 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Mon, Apr 11, 2016 at 9:28 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> >> Hi Rafael,
+> >>
+> >> On 04/01/2016 02:20 AM, Peter Zijlstra wrote:
+> >>>> > My thinking was in CFS we get rid of the (cpu == smp_processor_id())
+> >>>> > condition for calling the cpufreq hook.
+> >>>> >
+> >>>> > The sched governor can then calculate utilization and frequency required
+> >>>> > for cpu. If (cpu == smp_processor_id()), the update is processed
+> >>>> > normally. If (cpu != smp_processor_id()) and the new frequency is higher
+> >>>> > than cpu's Fcur, the sched gov IPIs cpu to continue running the update
+> >>>> > operation. Otherwise, the update is dropped.
+> >>>> >
+> >>>> > Does that sound plausible?
+> >>>
+> >>> Can be done I suppose..
+> >>
+> >> Currently we drop schedutil updates for a target CPU which do not occur
+> >> on that CPU.
+> >>
+> >> Is this solely due to platforms which must run the cpufreq driver on the
+> >> target CPU?
+> >
+> > The current code assumes that the CPU running the update will always
+> > be the one that gets updated.  Anything else would require extra
+> > synchronization.
+> 
+> This is rather fundamental.
+> 
+> For example, if you look at cpufreq_update_util(), it does this:
+> 
+> data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
+> 
+> meaning that it will run the current CPU's utilization update
+> callback.  Of course, that won't work cross-CPU, because in principle
+> different CPUs may use different governors and therefore different
+> util update callbacks.
+> 
+> If you want to do remote updates, I guess that will require an
+> irq_work to run the update on the target CPU, but then you'll probably
+> want to neglect the rate limit on it as well, so it looks like a
+> "need_update" flag in struct update_util_data will be useful for that.
+> 
+> I think I can prototype something along these lines, but can you
+> please tell me more about the case you have in mind?
 
-'commit 1b0289848d5d ("cpufreq: powernv: Add sysfs attributes to show throttle
-stats")' used policy->driver_data as a flag for one-time creation
-of throttle sysfs files. Instead of this use 'kernfs_find_and_get()'
-to check if the attribute already exists. This is required as
-policy->driver_data is used for other purposes in the later patch.
+I'm concerned generally with the latency to react to changes in
+required capacity due to remote wakeups, which are quite common on SMP
+platforms with shared cache. Unless the hook is called it could take
+up to a tick to react AFAICS if the target CPU is running some other
+task that does not get preempted by the wakeup. That's a potentially
+long time for say UI-critical applications and seems like a lost
+opportunity for us to leverage closer scheduler-cpufreq communication
+to get better performance.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Reviewed-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 39ac78c..e2e2219 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -455,13 +455,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	int base, i;
-+	struct kernfs_node *kn;
- 
- 	base = cpu_first_thread_sibling(policy->cpu);
- 
- 	for (i = 0; i < threads_per_core; i++)
- 		cpumask_set_cpu(base + i, policy->cpus);
- 
--	if (!policy->driver_data) {
-+	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
-+	if (!kn) {
- 		int ret;
- 
- 		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
-@@ -470,11 +472,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 				policy->cpu);
- 			return ret;
- 		}
--		/*
--		 * policy->driver_data is used as a flag for one-time
--		 * creation of throttle sysfs files.
--		 */
--		policy->driver_data = policy;
-+	} else {
-+		kernfs_put(kn);
- 	}
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
--- 
-2.5.5
-
+thanks,
+Steve
