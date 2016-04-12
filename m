@@ -1,64 +1,54 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH] Prefer kASLR over Hibernation
-Date: Tue, 12 Apr 2016 18:51:06 +0100
-Message-ID: <570D358A.2080109@arm.com>
-References: <20160406194404.GA11150@www.outflux.net>	<570B59A5.3090904@arm.com> <CAGXu5jKU=+ZokCcMHwGT0GxHZ5G4RaLhdFrADxw2BxEHyfNF7g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] cpufreq: powernv: Ramp-down global pstate slower than local-pstate
+Date: Tue, 12 Apr 2016 23:36:24 +0530
+Message-ID: <1460484386-28389-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57410 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932894AbcDLRwq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Apr 2016 13:52:46 -0400
-In-Reply-To: <CAGXu5jKU=+ZokCcMHwGT0GxHZ5G4RaLhdFrADxw2BxEHyfNF7g@mail.gmail.com>
+Received: from e28smtp02.in.ibm.com ([125.16.236.2]:46980 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964907AbcDLSHt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 14:07:49 -0400
+Received: from localhost
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
+	Tue, 12 Apr 2016 23:37:46 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+	by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u3CI839S15925620
+	for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 23:38:04 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+	by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u3CI7eLX025813
+	for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 23:37:42 +0530
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-On 11/04/16 19:03, Kees Cook wrote:
-> On Mon, Apr 11, 2016 at 1:00 AM, James Morse <james.morse@arm.com> wrote:
->> On 06/04/16 20:44, Kees Cook wrote:
->>> When building with both CONFIG_HIBERNATION and CONFIG_RANDOMIZE_BASE,
->>> one or the other must be chosen at boot-time. Until now, hibernation
->>> was selected when no choice was made on the command line.
->>>
->>> To make the security benefits of kASLR more widely available to end
->>> users (since the use of hibernation is becoming more rare and kASLR,
->>> already available on x86, will be available on arm64 and MIPS soon),
->>> this changes the default to preferring kASLR over hibernation. Users
->>> wanting hibernation can turn off kASLR by adding "nokaslr" to the kernel
->>> command line.
->>
->> While hibernate isn't yet merged for arm64, it does work with kASLR in v4.6-rc*,
->> it would be a shame to have to choose at boot time, (but that's my problem to
->> fix if/when its merged).
-> 
-> Ah, interesting, so they work together on arm64? (i.e. you've actually
-> tested a boot loader that provides the seed for kASLR to operate?)
+The frequency transition latency from pmin to pmax is observed to be in few 
+millisecond granurality. And it usually happens to take a performance penalty
+during sudden frequency rampup requests. 
 
-Almost: due to a lack of firmware support I hacked the efi stub to read a 'seed'
-from a system counter.
+This patch set solves this problem by using a chip-level entity called "global
+ pstates". Global pstate manages elements across other dependent core chiplets.
+Typically, the element that needs to be managed is the voltage setting.
+So by holding global pstates higher than local pstate for some amount of time 
+( ~5 seconds) the subsequent rampups could be made faster.
 
-To check it works I printed the address of 'panic' out during boot:
-> [    0.353712] DEBUG: &panic == ffffff960819a4e8
+(1/2) patch removes the flag from cpufreq_policy->driver_data, so that it can
+be used for tracking global pstates.
 
-Then hibernated, and powered the board back on, the resume kernel gives:
-> [    0.353528] DEBUG: &panic == ffffff840819a4e8
+(2/2) patch adds code for global pstate management. 
+- The iozone results with this patchset, shows improvements in almost all cases.
+- YCSB workload on redis with various  target operations per second shows 
+better MaxLatency with this patch.
 
-But after it has restored the hibernate image, I can dig in /proc/kallsyms to
-see the original value:
-> root@localhost:~# cat /proc/kallsyms  | grep "T panic"
-> ffffff960819a4e8 T panic
+Akshay Adiga (1):
+  powernv: Ramp-down global pstate slower than local-pstate
 
+Shilpasri G Bhat (1):
+  cpufreq: powernv: Remove flag use-case of policy->driver_data
 
-> Maybe RANDOMIZE_BASE_DEFAULT (default to y) and if x86 && hibernation,
-> select =n. and use that for selecting it?
+ drivers/cpufreq/powernv-cpufreq.c | 250 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 242 insertions(+), 8 deletions(-)
 
-Looks good to me.
+-- 
+2.5.5
 
-
-Thanks,
-
-James
