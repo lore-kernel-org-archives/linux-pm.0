@@ -1,120 +1,178 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v3] i2c: let I2C masters ignore their children for PM
-Date: Tue, 12 Apr 2016 23:18:25 +0200
-Message-ID: <20160412211825.GB1526@katana>
-References: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
+From: Kees Cook <keescook@chromium.org>
+Subject: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
+Date: Tue, 12 Apr 2016 15:16:59 -0700
+Message-ID: <20160412221659.GA18102@www.outflux.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-i2c@vger.kernel.org, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
-
---PmA2V3Z32TCmWXqI
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35913 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756171AbcDLWRC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 18:17:02 -0400
+Received: by mail-pa0-f54.google.com with SMTP id bx7so20952888pad.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 15:17:01 -0700 (PDT)
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@denx.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-On Tue, Apr 12, 2016 at 09:57:35AM +0200, Linus Walleij wrote:
-> When using a certain I2C device with runtime PM enabled on
-> a certain I2C bus adaper the following happens:
->=20
-> struct amba_device *foo
->    \
->    struct i2c_adapter *bar
->       \
->       struct i2c_client *baz
->=20
-> The AMBA device foo has its device PM struct set to ignore
-> children with pm_suspend_ignore_children(&foo->dev, true).
-> This makes runtime PM work just fine locally in the driver:
-> the fact that devices on the bus are suspended or resumed
-> individually does not affect its operation, and the hardware
-> does not power up unless transferring messages.
->=20
-> However this child ignorance property is not inherited into
-> the struct i2c_adapter *bar.
->=20
-> On system suspend things will work fine.
->=20
-> On system resume the following annoying phenomenon occurs:
->=20
-> - In the pm_runtime_force_resume() path of
->   struct i2c_client *baz, pm_runtime_set_active(&baz->dev); is
->   eventually called.
->=20
-> - This becomes __pm_runtime_set_status(&baz->dev, RPM_ACTIVE);
->=20
-> - __pm_runtime_set_status() detects that RPM state is changed,
->   and checks whether the parent is:
->   not active (RPM_ACTIVE) and not ignoring its children
->   If this happens it concludes something is wrong, because
->   a parent that is not ignoring its children must be active
->   before any children activate.
->=20
-> - Since the struct i2c_adapter *bar does not ignore
->   its children, the PM core thinks that it must indeed go
->   online before its children, the check bails out with
->   -EBUSY, i.e. the i2c_client *baz thinks it can't work
->   because it's parent is not online, and it respects its
->   parent.
->=20
-> - In the driver the .resume() callback returns -EBUSY from
->   the runtime_force_resume() call as per above. This leaves
->   the device in a suspended state, leading to bad behaviour
->   later when the device is used. The following debug
->   print is made with an extra printg patch but illustrates
->   the problem:
->=20
-> [   17.040832] bh1780 2-0029: parent (i2c-2) is not active
->                parent->power.ignore_children =3D 0
-> [   17.040832] bh1780 2-0029: pm_runtime_force_resume:
->                pm_runtime_set_active() failed (-16)
-> [   17.040863] dpm_run_callback():
->                pm_runtime_force_resume+0x0/0x88 returns -16
-> [   17.040863] PM: Device 2-0029 failed to resume: error -16
->=20
-> Fix this by letting all struct i2c_adapter:s ignore their
-> children: i2c children have no business doing keeping
-> their parents awake: they are completely autonomous
-> devices that just use their parent to talk, a usecase
-> which must be power managed in the host on a per-message
-> basis.
->=20
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Since kASLR and Hibernation can not currently coexist at runtime
+on x86, the default behavior was to disable kASLR by default when
+CONFIG_HIBERNATION was present (to retain original behavior).
 
-Applied to for-next, thanks!
+The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
+default when selected at build time. Since arm64 Hibernation does not
+conflict with kASLR, this fixes the hibernation argument parsing to be
+x86-specific. Additionally, since end users want to be able to select
+kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
+that is present only on x86.
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+v2:
+- make this x86-specific selectable, rather than global default
+---
+ Documentation/kernel-parameters.txt |  9 +++------
+ arch/x86/Kconfig                    | 16 +++++++++++++++-
+ arch/x86/boot/compressed/aslr.c     |  2 +-
+ kernel/power/hibernate.c            | 31 +++++++++++++++++++++++++------
+ 4 files changed, 44 insertions(+), 14 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index ecc74fa4bfde..282e5c826c32 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1770,12 +1770,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 	js=		[HW,JOY] Analog joystick
+ 			See Documentation/input/joystick.txt.
+ 
+-	kaslr/nokaslr	[X86]
+-			Enable/disable kernel and module base offset ASLR
+-			(Address Space Layout Randomization) if built into
+-			the kernel. When CONFIG_HIBERNATION is selected,
+-			kASLR is disabled by default. When kASLR is enabled,
+-			hibernation will be disabled.
++	kaslr/nokaslr	[KNL] When CONFIG_RANDOMIZE_BASE is set, this
++			enables/disables kernel and module base offset ASLR
++			(Address Space Layout Randomization).
+ 
+ 	keepinitrd	[HW,ARM]
+ 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 2dc18605831f..e0fb1717fe3c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1932,7 +1932,7 @@ config RELOCATABLE
+ 	  (CONFIG_PHYSICAL_START) is used as the minimum location.
+ 
+ config RANDOMIZE_BASE
+-	bool "Randomize the address of the kernel image"
++	bool "Randomize the address of the kernel image (kASLR)"
+ 	depends on RELOCATABLE
+ 	default n
+ 	---help---
+@@ -1955,6 +1955,20 @@ config RANDOMIZE_BASE
+ 
+ 	   If unsure, say N.
+ 
++config RANDOMIZE_BASE_ON
++	bool "Prefer kASLR over Hibernation"
++	depends on RANDOMIZE_BASE
++	depends on HIBERNATION
++	default n
++	---help---
++	  Currently Hibernation and kASLR are not compatible at runtime
++	  on x86. To enable kASLR by default (and disable Hibernation),
++	  enable this option. To enable Hibernation by default (and
++	  disable kASLR), disable this option. Regardless of this
++	  setting, the availability of kASLR (and therefore Hibernation)
++	  can be chosen at boot time with the "kaslr" or "nokaslr"
++	  kernel argument.
++
+ config RANDOMIZE_BASE_MAX_OFFSET
+ 	hex "Maximum kASLR offset allowed" if EXPERT
+ 	depends on RANDOMIZE_BASE
+diff --git a/arch/x86/boot/compressed/aslr.c b/arch/x86/boot/compressed/aslr.c
+index 6a9b96b4624d..8214b174b9bd 100644
+--- a/arch/x86/boot/compressed/aslr.c
++++ b/arch/x86/boot/compressed/aslr.c
+@@ -304,7 +304,7 @@ unsigned char *choose_kernel_location(struct boot_params *boot_params,
+ 	unsigned long choice = (unsigned long)output;
+ 	unsigned long random;
+ 
+-#ifdef CONFIG_HIBERNATION
++#ifndef CONFIG_RANDOMIZE_BASE_ON
+ 	if (!cmdline_find_option_bool("kaslr")) {
+ 		debug_putstr("KASLR disabled by default...\n");
+ 		goto out;
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index fca9254280ee..526a6403fb2e 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -35,8 +35,13 @@
+ 
+ 
+ static int nocompress;
++#ifndef CONFIG_RANDOMIZE_BASE_ON
+ static int noresume;
+ static int nohibernate;
++#else
++static int noresume = 1;
++static int nohibernate = 1;
++#endif
+ static int resume_wait;
+ static unsigned int resume_delay;
+ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+@@ -1154,11 +1159,6 @@ static int __init nohibernate_setup(char *str)
+ 	return 1;
+ }
+ 
+-static int __init kaslr_nohibernate_setup(char *str)
+-{
+-	return nohibernate_setup(str);
+-}
+-
+ static int __init page_poison_nohibernate_setup(char *str)
+ {
+ #ifdef CONFIG_PAGE_POISONING_ZERO
+@@ -1175,6 +1175,26 @@ static int __init page_poison_nohibernate_setup(char *str)
+ 	return 1;
+ }
+ 
++/*
++ * Hibernation on x86 currently conflicts with kASLR, so only change
++ * hibernation boot defaults when seeing kaslr arguments on x86.
++ */
++#if defined(CONFIG_X86) && defined(CONFIG_RANDOMIZE_BASE)
++static int __init kaslr_nohibernate_setup(char *str)
++{
++	return nohibernate_setup(str);
++}
++
++static int __init nokaslr_hibernate_setup(char *str)
++{
++	noresume = 0;
++	nohibernate = 0;
++	return 1;
++}
++__setup("kaslr", kaslr_nohibernate_setup);
++__setup("nokaslr", nokaslr_hibernate_setup);
++#endif
++
+ __setup("noresume", noresume_setup);
+ __setup("resume_offset=", resume_offset_setup);
+ __setup("resume=", resume_setup);
+@@ -1182,5 +1202,4 @@ __setup("hibernate=", hibernate_setup);
+ __setup("resumewait", resumewait_setup);
+ __setup("resumedelay=", resumedelay_setup);
+ __setup("nohibernate", nohibernate_setup);
+-__setup("kaslr", kaslr_nohibernate_setup);
+ __setup("page_poison=", page_poison_nohibernate_setup);
+-- 
+2.6.3
 
 
---PmA2V3Z32TCmWXqI
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXDWYhAAoJEBQN5MwUoCm2ylsP/2NABR7+m7Ax0aDAxCGazyDf
-kBn3cLr1EBL/1Zu+Gz5ugwax1qYNycTiIy6e363rSEyj4r+nKI106IFRlWn1XE3C
-KuRPvciXLinLOosmaI6x7NZI/drMD+ZiBVxJpOQekrRXU1WviJsgdwt3GoNrN5bx
-GizALWcBRRvJcOXMtIN1erlss/NOExB2zYhogXAEuMZXGTf9NtWMu42ZQcVN8fhW
-VeEzGIvylVJ7DDZlbSphrVjc7yVfZFH/MaPOnfMJ0Z7xyJuxwtyLVu7aQNS9X8id
-TpCf/GkgLz8DwgnL5JQhTH153Sls9bpNY2WBdBubDSYAhZcqyfMTEXlhBf1+GBd6
-Sr9MJR8VubzQ/90w4wo4uPf5z1yxhPjAMqtvjAa9J5yELDqiTIrRZtd5hhrGvjAK
-g992aAHstM6mkyr8u/+nEmOEvhwwaovQZ9ohir3B9xc3Mr4IpdpCU99Gl2vZdh6x
-CAI6ihHKWDA2g35FjvIC1fRR5iGNrKdXVWL19uSXTOLJxT2OYOW6AfK9fuxM5khp
-TjtF/gwLMREP4Dy2hVUykOR+uTvF9fKCJO50CS5UpTNm68Nk3nAkysHUxLJd3fuR
-Se6AMXE55Cu9F33iOun37lXbnLX6hg5/LEahpd0TlAc4U37SYxjW2rtKKEl2TL++
-9nzrHxejVbmG2dm0x38d
-=8GG5
------END PGP SIGNATURE-----
-
---PmA2V3Z32TCmWXqI--
+-- 
+Kees Cook
+Chrome OS & Brillo Security
