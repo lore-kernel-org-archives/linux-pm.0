@@ -1,106 +1,93 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: Re: [PATCH v7 2/4] power: reset: add reboot mode driver
-Date: Tue, 12 Apr 2016 17:27:27 +0800
-Message-ID: <570CBF7F.9090300@rock-chips.com>
-References: <1459304304-9713-1-git-send-email-andy.yan@rock-chips.com>
- <1459304443-9811-1-git-send-email-andy.yan@rock-chips.com>
- <56FB49B3.2040505@samsung.com> <57045D6B.2080907@rock-chips.com>
- <57045F9D.1000502@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3] i2c: let I2C masters ignore their children for PM
+Date: Tue, 12 Apr 2016 12:04:52 +0200
+Message-ID: <CAPDyKFpDHZTgjyK2N3k26u1k_RHxm11=6UGuczPguhkZKh+iFg@mail.gmail.com>
+References: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.131]:57414 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753915AbcDLJ2M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 05:28:12 -0400
-In-Reply-To: <57045F9D.1000502@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
-Cc: mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, alexandre.belloni@free-electrons.com, f.fainelli@gmail.com, linux@arm.linux.org.uk, dbaryshkov@gmail.com, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, wxt@rock-chips.com, devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, lorenzo.pieralisi@arm.com, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, moritz.fischer@ettus.com, mbrugger@suse.com, linux-kernel@vger.kernel.org, galak@codeaurora.org, olof@lixom.net, jun.nie@linaro.org, dwmw2@infradead.org
 
-Hi Krzysztof:
+On 12 April 2016 at 09:57, Linus Walleij <linus.walleij@linaro.org> wrote:
+> When using a certain I2C device with runtime PM enabled on
+> a certain I2C bus adaper the following happens:
+>
+> struct amba_device *foo
+>    \
+>    struct i2c_adapter *bar
+>       \
+>       struct i2c_client *baz
+>
+> The AMBA device foo has its device PM struct set to ignore
+> children with pm_suspend_ignore_children(&foo->dev, true).
+> This makes runtime PM work just fine locally in the driver:
+> the fact that devices on the bus are suspended or resumed
+> individually does not affect its operation, and the hardware
+> does not power up unless transferring messages.
+>
+> However this child ignorance property is not inherited into
+> the struct i2c_adapter *bar.
+>
+> On system suspend things will work fine.
+>
+> On system resume the following annoying phenomenon occurs:
+>
+> - In the pm_runtime_force_resume() path of
+>   struct i2c_client *baz, pm_runtime_set_active(&baz->dev); is
+>   eventually called.
+>
+> - This becomes __pm_runtime_set_status(&baz->dev, RPM_ACTIVE);
+>
+> - __pm_runtime_set_status() detects that RPM state is changed,
+>   and checks whether the parent is:
+>   not active (RPM_ACTIVE) and not ignoring its children
+>   If this happens it concludes something is wrong, because
+>   a parent that is not ignoring its children must be active
+>   before any children activate.
+>
+> - Since the struct i2c_adapter *bar does not ignore
+>   its children, the PM core thinks that it must indeed go
+>   online before its children, the check bails out with
+>   -EBUSY, i.e. the i2c_client *baz thinks it can't work
+>   because it's parent is not online, and it respects its
+>   parent.
+>
+> - In the driver the .resume() callback returns -EBUSY from
+>   the runtime_force_resume() call as per above. This leaves
+>   the device in a suspended state, leading to bad behaviour
+>   later when the device is used. The following debug
+>   print is made with an extra printg patch but illustrates
+>   the problem:
+>
+> [   17.040832] bh1780 2-0029: parent (i2c-2) is not active
+>                parent->power.ignore_children = 0
+> [   17.040832] bh1780 2-0029: pm_runtime_force_resume:
+>                pm_runtime_set_active() failed (-16)
+> [   17.040863] dpm_run_callback():
+>                pm_runtime_force_resume+0x0/0x88 returns -16
+> [   17.040863] PM: Device 2-0029 failed to resume: error -16
+>
+> Fix this by letting all struct i2c_adapter:s ignore their
+> children: i2c children have no business doing keeping
+> their parents awake: they are completely autonomous
+> devices that just use their parent to talk, a usecase
+> which must be power managed in the host on a per-message
+> basis.
+>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-On 2016=E5=B9=B404=E6=9C=8806=E6=97=A5 09:00, Krzysztof Kozlowski wrote=
-:
-> On 06.04.2016 09:50, Andy Yan wrote:
->
-> (...)
->
->>>> +            return -ENOMEM;
->>>> +
->>>> +        info->mode =3D kstrdup_const(prop->name + len, GFP_KERNEL=
-);
->>>> +        if (of_property_read_u32(np, prop->name, &info->magic)) {
->>>> +            dev_err(dev, "reboot mode %s without magic number\n",
->>>> +                info->mode);
->>>> +            devm_kfree(dev, info);
->>>> +            continue;
->>>> +        }
->>>> +        list_add_tail(&info->list, &reboot->head);
->>>> +    }
->>>> +    of_node_put(np);
->>> If you of_node_put() here, there is no sense in getting it before. =
-I
->>> mentioned of_node_get() only because I am not sure about life-cycle=
- of
->>> nodes in case of DT overlays and you are storing the pointer to str=
-ing
->>> from DT.
->>>
->>> The doubts I have are concerning only the case of freeing nodes fro=
-m
->>> overlay.
->>>
->>> I don't know if of_node_get() is needed but of_node_get()+of_node_p=
-ut()
->>> seems useless.
->>
->>   I am also not sure about it. Maybe just drop of_node_get/put ?
-> OK, let's drop both get() and put().
->
-> (...)
->
->>>> +
->>>> +static const struct of_device_id syscon_reboot_mode_of_match[] =3D=
- {
->>>> +    { .compatible =3D "syscon-reboot-mode" },
->>>> +    {}
->>>> +};
->>>> +
->>>> +static struct platform_driver syscon_reboot_mode_driver =3D {
->>>> +    .probe =3D syscon_reboot_mode_probe,
->>> Cleanup needed. What will happen after device unbind? Memory will b=
-e
->>> released (devm-*()) but reboot notifier won't thus leading to OOPS =
-on
->>> reboot.
->>      From the kernel_restart_prepare function, the reboot notifier w=
-ill
->> be called before device_shutdown. Is there any other case the device
->> unbind before reboot notifier
->> called?
-> This is a regular module platform driver so unbind can happen any tim=
-e
-> initiated by user, either by unbind command or by module removal. Use=
-r
-> can then re-bind device or not - probably does not matter. Anyway aft=
-er
-> such first unbind, the restart will kaboom instead of do a restart.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-     I just need to do clean up in remove?
-> Beside that, you always should clean up, regardless of restart or not=
-=2E
-> If you do not want unbind (thus no need of cleanup) then forbid it by
-> making it a non-module with suppressed bind.
->
-> Best regards,
-> Krzysztof
->
->
->
->
+[...]
 
-
+Kind regards
+Uffe
