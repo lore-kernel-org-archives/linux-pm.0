@@ -1,93 +1,82 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3] i2c: let I2C masters ignore their children for PM
-Date: Tue, 12 Apr 2016 12:04:52 +0200
-Message-ID: <CAPDyKFpDHZTgjyK2N3k26u1k_RHxm11=6UGuczPguhkZKh+iFg@mail.gmail.com>
-References: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1460447855-18050-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Keguang Zhang <keguang.zhang@gmail.com>
+Subject: [PATCH V1 1/5] cpufreq: Loongson1: Rename the file to loongson1-cpufreq.c
+Date: Tue, 12 Apr 2016 18:40:15 +0800
+Message-ID: <1460457619-14786-1-git-send-email-keguang.zhang@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f68.google.com ([209.85.220.68]:34976 "EHLO
+	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756409AbcDLKki (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 06:40:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kelvin Cheung <keguang.zhang@gmail.com>
 
-On 12 April 2016 at 09:57, Linus Walleij <linus.walleij@linaro.org> wrote:
-> When using a certain I2C device with runtime PM enabled on
-> a certain I2C bus adaper the following happens:
->
-> struct amba_device *foo
->    \
->    struct i2c_adapter *bar
->       \
->       struct i2c_client *baz
->
-> The AMBA device foo has its device PM struct set to ignore
-> children with pm_suspend_ignore_children(&foo->dev, true).
-> This makes runtime PM work just fine locally in the driver:
-> the fact that devices on the bus are suspended or resumed
-> individually does not affect its operation, and the hardware
-> does not power up unless transferring messages.
->
-> However this child ignorance property is not inherited into
-> the struct i2c_adapter *bar.
->
-> On system suspend things will work fine.
->
-> On system resume the following annoying phenomenon occurs:
->
-> - In the pm_runtime_force_resume() path of
->   struct i2c_client *baz, pm_runtime_set_active(&baz->dev); is
->   eventually called.
->
-> - This becomes __pm_runtime_set_status(&baz->dev, RPM_ACTIVE);
->
-> - __pm_runtime_set_status() detects that RPM state is changed,
->   and checks whether the parent is:
->   not active (RPM_ACTIVE) and not ignoring its children
->   If this happens it concludes something is wrong, because
->   a parent that is not ignoring its children must be active
->   before any children activate.
->
-> - Since the struct i2c_adapter *bar does not ignore
->   its children, the PM core thinks that it must indeed go
->   online before its children, the check bails out with
->   -EBUSY, i.e. the i2c_client *baz thinks it can't work
->   because it's parent is not online, and it respects its
->   parent.
->
-> - In the driver the .resume() callback returns -EBUSY from
->   the runtime_force_resume() call as per above. This leaves
->   the device in a suspended state, leading to bad behaviour
->   later when the device is used. The following debug
->   print is made with an extra printg patch but illustrates
->   the problem:
->
-> [   17.040832] bh1780 2-0029: parent (i2c-2) is not active
->                parent->power.ignore_children = 0
-> [   17.040832] bh1780 2-0029: pm_runtime_force_resume:
->                pm_runtime_set_active() failed (-16)
-> [   17.040863] dpm_run_callback():
->                pm_runtime_force_resume+0x0/0x88 returns -16
-> [   17.040863] PM: Device 2-0029 failed to resume: error -16
->
-> Fix this by letting all struct i2c_adapter:s ignore their
-> children: i2c children have no business doing keeping
-> their parents awake: they are completely autonomous
-> devices that just use their parent to talk, a usecase
-> which must be power managed in the host on a per-message
-> basis.
->
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+From: Kelvin Cheung <keguang.zhang@gmail.com>
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+This patch renames the file to loongson1-cpufreq.c,
+and also includes some minor updates.
 
-[...]
+Signed-off-by: Kelvin Cheung <keguang.zhang@gmail.com>
 
-Kind regards
-Uffe
+---
+V1:
+   Merge the minor updates into this patch.
+---
+ drivers/cpufreq/Makefile                                |  2 +-
+ drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} | 10 +++++-----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+ rename drivers/cpufreq/{ls1x-cpufreq.c => loongson1-cpufreq.c} (96%)
+
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 9e63fb1..bebe9c8 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -100,7 +100,7 @@ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
+ obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
+ obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
+ obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
+-obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= ls1x-cpufreq.o
++obj-$(CONFIG_LOONGSON1_CPUFREQ)		+= loongson1-cpufreq.o
+ obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
+ obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
+ obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
+diff --git a/drivers/cpufreq/ls1x-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
+similarity index 96%
+rename from drivers/cpufreq/ls1x-cpufreq.c
+rename to drivers/cpufreq/loongson1-cpufreq.c
+index 262581b..57fae9b 100644
+--- a/drivers/cpufreq/ls1x-cpufreq.c
++++ b/drivers/cpufreq/loongson1-cpufreq.c
+@@ -1,7 +1,7 @@
+ /*
+  * CPU Frequency Scaling for Loongson 1 SoC
+  *
+- * Copyright (C) 2014 Zhang, Keguang <keguang.zhang@gmail.com>
++ * Copyright (C) 2014-2016 Zhang, Keguang <keguang.zhang@gmail.com>
+  *
+  * This file is licensed under the terms of the GNU General Public
+  * License version 2. This program is licensed "as is" without any
+@@ -208,15 +208,15 @@ out:
+ }
+ 
+ static struct platform_driver ls1x_cpufreq_platdrv = {
+-	.driver = {
++	.probe	= ls1x_cpufreq_probe,
++	.remove	= ls1x_cpufreq_remove,
++	.driver	= {
+ 		.name	= "ls1x-cpufreq",
+ 	},
+-	.probe		= ls1x_cpufreq_probe,
+-	.remove		= ls1x_cpufreq_remove,
+ };
+ 
+ module_platform_driver(ls1x_cpufreq_platdrv);
+ 
+ MODULE_AUTHOR("Kelvin Cheung <keguang.zhang@gmail.com>");
+-MODULE_DESCRIPTION("Loongson 1 CPUFreq driver");
++MODULE_DESCRIPTION("Loongson1 CPUFreq driver");
+ MODULE_LICENSE("GPL");
+-- 
+1.9.1
+
