@@ -1,44 +1,30 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling
- model.
-Date: Tue, 12 Apr 2016 11:09:34 +0530
-Message-ID: <20160412053934.GU16238@vireshk-i7>
-References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
- <20151217015231.GC3496@ubuntu>
- <1458017620.30412.3.camel@mtksdaap41>
- <20160315061709.GC13831@vireshk-mac-ubuntu>
- <1458623586.674.2.camel@mtksdaap41>
- <1460428370.25776.6.camel@mtksdaap41>
- <20160412051103.GN16238@vireshk-i7>
- <1460438685.14875.3.camel@mtksdaap41>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2 2/4] PCI: Move PCIe ports to D3 during suspend
+Date: Tue, 12 Apr 2016 09:51:08 +0300
+Message-ID: <20160412065108.GG1714@lahna.fi.intel.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-3-git-send-email-mika.westerberg@linux.intel.com>
+ <0DD381DBF8F68D419C32ACFCEB28EB2521D2B374@SHSMSX101.ccr.corp.intel.com>
+ <20160411085605.GB1727@lahna.fi.intel.com>
+ <CAJZ5v0he594EgJqoT4MMvhsKBSRLk7d4jFBVAfR+hGHs4oRfsA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34851 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbcDLFji (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 01:39:38 -0400
-Received: by mail-pa0-f42.google.com with SMTP id td3so6828222pab.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 Apr 2016 22:39:38 -0700 (PDT)
+Received: from mga11.intel.com ([192.55.52.93]:48298 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbcDLGvO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 Apr 2016 02:51:14 -0400
 Content-Disposition: inline
-In-Reply-To: <1460438685.14875.3.camel@mtksdaap41>
+In-Reply-To: <CAJZ5v0he594EgJqoT4MMvhsKBSRLk7d4jFBVAfR+hGHs4oRfsA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dawei chien <dawei.chien@mediatek.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Zheng, Qi" <qi.zheng@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Zha, Qipeng" <qipeng.zha@intel.com>, Dave Airlie <airlied@gmail.com>, "Nyman, Mathias" <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12-04-16, 13:24, dawei chien wrote:
-> Please refer to following for my resending, thank you.
-> 
-> https://lkml.org/lkml/2016/3/15/101
-> https://patchwork.kernel.org/patch/8586131/
-> https://patchwork.kernel.org/patch/8586111/
-> https://patchwork.kernel.org/patch/8586081/
+On Mon, Apr 11, 2016 at 03:38:07PM +0200, Rafael J. Wysocki wrote:
+> Fair enough, but we may need to do something about that in the future
+> if things turn out to not work properly.
 
-Oh, you were continuously sending new ping requests on the old thread.
-You should have used the new thread instead :)
-
-Anyway, I have pinged Rafael over the new thread now.
-
--- 
-viresh
+Yeah, I think we can then add an exception table (blacklist) that
+includes those devices which do not work properly. Hopefully it is not
+needed at all :)
