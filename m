@@ -1,18 +1,18 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 7/7] soc: renesas: Add r8a7795 SYSC PM Domain Binding Definitions
-Date: Wed, 13 Apr 2016 16:44:23 +0200
-Message-ID: <1460558663-10197-8-git-send-email-geert+renesas@glider.be>
-References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:46503 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758201AbcDMOoX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:23 -0400
-In-Reply-To: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v5 04/11] soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
+Date: Wed, 13 Apr 2016 16:44:25 +0200
+Message-ID: <1460558672-10290-5-git-send-email-geert+renesas@glider.be>
+References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
+
+As of commit b12ff41658171f53 ("ARM: shmobile: r8a7779: Remove legacy PM
+Domain remainings"), rcar_sysc_power_is_off() is no longer used from
+SoC-specific code.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
@@ -26,58 +26,34 @@ v4:
 v3:
   - New.
 ---
- include/dt-bindings/power/r8a7795-sysc.h | 42 ++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 include/dt-bindings/power/r8a7795-sysc.h
+ drivers/soc/renesas/rcar-sysc.c       | 2 +-
+ include/linux/soc/renesas/rcar-sysc.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/include/dt-bindings/power/r8a7795-sysc.h b/include/dt-bindings/power/r8a7795-sysc.h
-new file mode 100644
-index 0000000000000000..ee2e26ba605ef9a3
---- /dev/null
-+++ b/include/dt-bindings/power/r8a7795-sysc.h
-@@ -0,0 +1,42 @@
-+/*
-+ * Copyright (C) 2016 Glider bvba
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ */
-+#ifndef __DT_BINDINGS_POWER_R8A7795_SYSC_H__
-+#define __DT_BINDINGS_POWER_R8A7795_SYSC_H__
-+
-+/*
-+ * These power domain indices match the numbers of the interrupt bits
-+ * representing the power areas in the various Interrupt Registers
-+ * (e.g. SYSCISR, Interrupt Status Register)
-+ */
-+
-+#define R8A7795_PD_CA57_CPU0		 0
-+#define R8A7795_PD_CA57_CPU1		 1
-+#define R8A7795_PD_CA57_CPU2		 2
-+#define R8A7795_PD_CA57_CPU3		 3
-+#define R8A7795_PD_CA53_CPU0		 5
-+#define R8A7795_PD_CA53_CPU1		 6
-+#define R8A7795_PD_CA53_CPU2		 7
-+#define R8A7795_PD_CA53_CPU3		 8
-+#define R8A7795_PD_A3VP			 9
-+#define R8A7795_PD_CA57_SCU		12
-+#define R8A7795_PD_CR7			13
-+#define R8A7795_PD_A3VC			14
-+#define R8A7795_PD_3DG_A		17
-+#define R8A7795_PD_3DG_B		18
-+#define R8A7795_PD_3DG_C		19
-+#define R8A7795_PD_3DG_D		20
-+#define R8A7795_PD_CA53_SCU		21
-+#define R8A7795_PD_3DG_E		22
-+#define R8A7795_PD_A3IR			24
-+#define R8A7795_PD_A2VC0		25
-+#define R8A7795_PD_A2VC1		26
-+
-+/* Always-on power area */
-+#define R8A7795_PD_ALWAYS_ON		32
-+
-+#endif /* __DT_BINDINGS_POWER_R8A7795_SYSC_H__ */
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 674a46ce46aac04d..a333ef4152428440 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -152,7 +152,7 @@ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch)
+ 	return rcar_sysc_power(sysc_ch, true);
+ }
+ 
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
++static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+ {
+ 	unsigned int st;
+ 
+diff --git a/include/linux/soc/renesas/rcar-sysc.h b/include/linux/soc/renesas/rcar-sysc.h
+index 96f30c2883881d97..92fc613ab23db091 100644
+--- a/include/linux/soc/renesas/rcar-sysc.h
++++ b/include/linux/soc/renesas/rcar-sysc.h
+@@ -11,7 +11,6 @@ struct rcar_sysc_ch {
+ 
+ int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
+ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch);
+ void __iomem *rcar_sysc_init(phys_addr_t base);
+ 
+ #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 1.9.1
-
