@@ -1,88 +1,163 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Wed, 13 Apr 2016 18:39:44 -0400
-Message-ID: <570ECAB0.4050107@osg.samsung.com>
-References: <56B204CB.60602@osg.samsung.com>
- <20160208105417.GD2220@tetsubishi> <56BE57FC.3020407@osg.samsung.com>
- <20160212221352.GY3500@atomide.com> <56BE5C97.9070607@osg.samsung.com>
- <20160212224018.GZ3500@atomide.com> <56BE65F0.8040600@osg.samsung.com>
- <20160212234623.GB3500@atomide.com> <56BE993B.3010804@osg.samsung.com>
- <20160412223254.GK1526@katana>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 7/7] ARM: dts: Add support of Bus frequency using VDD_INT
+ for exynos5422-odroidxu3
+Date: Thu, 14 Apr 2016 08:14:57 +0900
+Message-ID: <570ED2F1.1080006@samsung.com>
+References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
+ <1460091646-28701-8-git-send-email-cw00.choi@samsung.com>
+ <570CD4F7.6000700@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lists.s-osg.org ([54.187.51.154]:55751 "EHLO lists.s-osg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbcDMWjz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Apr 2016 18:39:55 -0400
-In-Reply-To: <20160412223254.GK1526@katana>
+Received: from mailout4.samsung.com ([203.254.224.34]:56264 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbcDMXPC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 19:15:02 -0400
+In-reply-to: <570CD4F7.6000700@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, s.nawrocki@samsung.com, tomasz.figa@gmail.com
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-Hello Wolfram,
+On 2016=EB=85=84 04=EC=9B=94 12=EC=9D=BC 19:59, Krzysztof Kozlowski wro=
+te:
+> On 04/08/2016 07:00 AM, Chanwoo Choi wrote:
+>> This patch adds the bus device tree nodes for INT (Internal) block
+>> to enable the AMBA bus frequency scaling and add the NoC (Network on=
+ Chip)
+>> Probe Device Tree node to measure the bandwidht for AMBA AXI bus.
+>>
+>> The WCORE bus bus is parent device in INT block using VDD_INT.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi | 99 +++++++++++=
++++++++++++
+>>  1 file changed, 99 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi b/ar=
+ch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
+>> index 1bd507bfa750..2a74abe6fc5d 100644
+>> --- a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
+>> @@ -361,6 +361,22 @@
+>>  	cap-sd-highspeed;
+>>  };
+>> =20
+>> +&nocp_mem0_0 {
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&nocp_mem0_1 {
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&nocp_mem0_2 {
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&nocp_mem0_3 {
+>> +	status =3D "okay";
+>> +};
+>> +
+>>  &pinctrl_0 {
+>>  	hdmi_hpd_irq: hdmi-hpd-irq {
+>>  		samsung,pins =3D "gpx3-7";
+>> @@ -432,3 +448,86 @@
+>>  	vdd33-supply =3D <&ldo9_reg>;
+>>  	vdd10-supply =3D <&ldo11_reg>;
+>>  };
+>> +
+>> +&bus_wcore {
+>> +	devfreq-events =3D <&nocp_mem0_0>, <&nocp_mem0_1>,
+>> +			<&nocp_mem0_2>, <&nocp_mem0_3>;
+>> +	vdd-supply =3D <&buck3_reg>;
+>> +	exynos,saturation-ratio =3D <100>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_noc {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_fsys_apb {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_fsys {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_fsys2 {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_mfc {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_gen {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_peri {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_g2d {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_g2d_acp {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_jpeg {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_jpeg_apb {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_disp1_fimd {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_disp1 {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_gscl_scaler {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>> +
+>> +&bus_mscl {
+>> +	devfreq =3D <&bus_wcore>;
+>> +	status =3D "okay";
+>> +};
+>=20
+> Could you put the bus nodes in alphabetical order, both between them =
+and
+> in relation to others (so before &clock_audss)? Let's keep the file o=
+rdered.
 
-On 04/12/2016 06:32 PM, Wolfram Sang wrote:
-> 
->> I'll try to find some time next week to dig deeper on this. Just
->> thought that may be related to the issue you found but it seems
->> that's not the case.
-> 
-> Any updates on this?
->
+OK. I'll reorder them.
 
-Sorry, I've been sick and then busy with other stuff so I didn't have time
-to dig deeper on this.
- 
-> Thanks,
-> 
->    Wolfram
-> 
-
-I'll write what I found so far in case someone with better knowledge about
-the runtime PM API and the OMAP I2C controller driver can have an idea of
-what could be causing this.
-
-The problem is that after commit 9f924169c035 ("i2c: always enable RuntimePM
-for the adapter device"), i2c_smbus_read_byte_data() fails and returns -110
-(ETIMEDOUT) error in the tvp5150 I2C driver.
-
-The call trace is the following:
-
-i2c_device_probe
-  tvp5150_probe
-    tvp5150_read
-      i2c_smbus_read_byte_data
-        i2c_smbus_xfer
-	  i2c_transfer
-	    omap_i2c_xfer
-              omap_i2c_xfer_msg
-
-The fail in omap_i2c_xfer_msg() is due the wait_for_completion_timeout()
-timeout, so it seems the omap_i2c_isr_thread() is not calling complete()
-for the cmd_complete completion when runtime PM is enabled (no idea why).
-
-If I revert commit 9f924169c035 then things works again or if I use the
-following patch that basically disables runtime PM for the OMAP adapter
-after it has been enabled by the I2C core due commit 9f924169c035: 
-
-diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-index 37a88f0ae179..0b72b21b379d 100644
---- a/drivers/i2c/busses/i2c-omap.c
-+++ b/drivers/i2c/busses/i2c-omap.c
-@@ -1445,6 +1445,8 @@ omap_i2c_probe(struct platform_device *pdev)
- 		goto err_unuse_clocks;
- 	}
- 
-+	pm_runtime_disable(&adap->dev);
-+
- 	dev_info(omap->dev, "bus %d rev%d.%d at %d kHz\n", adap->nr,
- 		 major, minor, omap->speed);
-
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+Best Regards,
+Chanwoo Choi
