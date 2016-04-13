@@ -1,56 +1,88 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH v7] thermal: add temperature sensor support for tango SoC
-Date: Wed, 13 Apr 2016 22:28:18 +0200
-Message-ID: <570EABE2.7010609@free.fr>
-References: <20160308214846.GA10950@localhost.localdomain>
- <56F84427.1000507@free.fr> <56F91A47.9060901@free.fr>
- <20160329020050.GA15721@localhost.localdomain> <56FACE0B.9060606@free.fr>
- <20160330000503.GA2625@localhost.localdomain> <56FBEE4F.3060106@free.fr>
- <56FD8582.80002@free.fr> <20160401015240.GB19409@localhost.localdomain>
- <570254D8.3090406@free.fr> <20160406155155.GB326@localhost.localdomain>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Wed, 13 Apr 2016 18:39:44 -0400
+Message-ID: <570ECAB0.4050107@osg.samsung.com>
+References: <56B204CB.60602@osg.samsung.com>
+ <20160208105417.GD2220@tetsubishi> <56BE57FC.3020407@osg.samsung.com>
+ <20160212221352.GY3500@atomide.com> <56BE5C97.9070607@osg.samsung.com>
+ <20160212224018.GZ3500@atomide.com> <56BE65F0.8040600@osg.samsung.com>
+ <20160212234623.GB3500@atomide.com> <56BE993B.3010804@osg.samsung.com>
+ <20160412223254.GK1526@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:51623 "EHLO smtp4-g21.free.fr"
+Received: from lists.s-osg.org ([54.187.51.154]:55751 "EHLO lists.s-osg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbcDMU2p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Apr 2016 16:28:45 -0400
-In-Reply-To: <20160406155155.GB326@localhost.localdomain>
+	id S1752391AbcDMWjz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Apr 2016 18:39:55 -0400
+In-Reply-To: <20160412223254.GK1526@katana>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, arm-soc <arm@kernel.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 
-On 06/04/2016 17:51, Eduardo Valentin wrote:
+Hello Wolfram,
 
-> On Mon, Apr 04, 2016 at 01:49:44PM +0200, Mason wrote:
+On 04/12/2016 06:32 PM, Wolfram Sang wrote:
 > 
->> +	priv->zone = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
+>> I'll try to find some time next week to dig deeper on this. Just
+>> thought that may be related to the issue you found but it seems
+>> that's not the case.
 > 
-> I would still prefer you use the devm_ version.
+> Any updates on this?
+>
 
-In the .remove callback, I call thermal_zone_of_sensor_unregister()
-and then the sensor is powered down.
+Sorry, I've been sick and then busy with other stuff so I didn't have time
+to dig deeper on this.
+ 
+> Thanks,
+> 
+>    Wolfram
+> 
 
-I don't know when the devm garbage collector kicks in.
-Is it before or after calling .remove?
-(I suspect it is *after*, when the driver is detached.)
+I'll write what I found so far in case someone with better knowledge about
+the runtime PM API and the OMAP I2C controller driver can have an idea of
+what could be causing this.
 
-I can't power the sensor down until it has been "unregistered".
-If .get_temp is called with the sensor powered down, the HW
-will return garbage, which might have weird consequences.
+The problem is that after commit 9f924169c035 ("i2c: always enable RuntimePM
+for the adapter device"), i2c_smbus_read_byte_data() fails and returns -110
+(ETIMEDOUT) error in the tvp5150 I2C driver.
 
-The documentation states
-https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
+The call trace is the following:
 
-devm_thermal_zone_of_sensor_register()
-"The benefit of using this interface to register sensor is that it
-is not require to explicitly call thermal_zone_of_sensor_unregister()"
+i2c_device_probe
+  tvp5150_probe
+    tvp5150_read
+      i2c_smbus_read_byte_data
+        i2c_smbus_xfer
+	  i2c_transfer
+	    omap_i2c_xfer
+              omap_i2c_xfer_msg
 
-So I can still explicitly call thermal_zone_of_sensor_unregister?
+The fail in omap_i2c_xfer_msg() is due the wait_for_completion_timeout()
+timeout, so it seems the omap_i2c_isr_thread() is not calling complete()
+for the cmd_complete completion when runtime PM is enabled (no idea why).
 
-What is the point of devm_thermal_zone_of_sensor_unregister?
+If I revert commit 9f924169c035 then things works again or if I use the
+following patch that basically disables runtime PM for the OMAP adapter
+after it has been enabled by the I2C core due commit 9f924169c035: 
 
-Regards.
+diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+index 37a88f0ae179..0b72b21b379d 100644
+--- a/drivers/i2c/busses/i2c-omap.c
++++ b/drivers/i2c/busses/i2c-omap.c
+@@ -1445,6 +1445,8 @@ omap_i2c_probe(struct platform_device *pdev)
+ 		goto err_unuse_clocks;
+ 	}
+ 
++	pm_runtime_disable(&adap->dev);
++
+ 	dev_info(omap->dev, "bus %d rev%d.%d at %d kHz\n", adap->nr,
+ 		 major, minor, omap->speed);
 
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
