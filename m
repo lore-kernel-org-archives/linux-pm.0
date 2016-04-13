@@ -1,105 +1,52 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for I/O devices
-Date: Wed, 13 Apr 2016 16:44:26 +0200
-Message-ID: <1460558672-10290-6-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v5 02/11] soc: renesas: rcar-sysc: Improve rcar_sysc_power() debug info
+Date: Wed, 13 Apr 2016 16:44:23 +0200
+Message-ID: <1460558672-10290-3-git-send-email-geert+renesas@glider.be>
 References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:55121 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758545AbcDMOoa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:30 -0400
+Received: from andre.telenet-ops.be ([195.130.132.53]:43671 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758121AbcDMOoe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:34 -0400
 In-Reply-To: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
-also part of the CPG/MSSR Clock Domain.
-On all R-Car SoCs, devices in the "always-on" PM Domain are part of the
-Clock Domain served by the CPG/MSSR or CPG/MSTP driver.
-
-Hook up the CPG/MSTP or CPG/MSSR Clock Domain attach/detach callbacks to
-enable power management using module clocks. Which callback to hook up
-depends on the presence of device nodes compatible with
-"renesas,cpg-mstp-clocks". This clears the path for a future migration
-from the CPG/MSTP to the CPG/MSSR driver on R-Car H1 and
-Gen2.
+Print requested power domain state.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
 v5:
-  - Revert v4 changes,
-  - Use either the cpg_mssr_*() or cpg_mstp_*() callbacks,
-  - Drop dependency on r8a7795, as this is used for the "always-on" PM
-    Domain on R-Car H1 and Gen2, too,
+  - No changes,
 
 v4:
-  - Remove the explicit dependency on the CPG/MSSR driver by forwarding
-    the attach/detach callbacks to the parent PM Domain.
-    If deemed reusable, rcar_sysc_{at,de}tach_dev() can be moved to
-    common genpd code later.
+  - No changes,
 
 v3:
-  - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
-    using our own copies,
+  - Add Reviewed-by,
 
 v2:
   - New.
 ---
- drivers/soc/renesas/rcar-sysc.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/soc/renesas/rcar-sysc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index a333ef4152428440..be83636ef2647947 100644
+index d59bcdf78f0b56ba..9ba5fd15c53bf9b9 100644
 --- a/drivers/soc/renesas/rcar-sysc.c
 +++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -9,6 +9,7 @@
-  * for more details.
-  */
+@@ -128,7 +128,7 @@ static int rcar_sysc_power(const struct rcar_sysc_ch *sysc_ch, bool on)
+  out:
+ 	spin_unlock_irqrestore(&rcar_sysc_lock, flags);
  
-+#include <linux/clk/renesas.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/mm.h>
-@@ -222,6 +223,8 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
- 	return rcar_sysc_power_up(&pd->ch);
+-	pr_debug("sysc power domain %d: %08x -> %d\n",
++	pr_debug("sysc power %s domain %d: %08x -> %d\n", on ? "on" : "off",
+ 		 sysc_ch->isr_bit, ioread32(rcar_sysc_base + SYSCISR), ret);
+ 	return ret;
  }
- 
-+static bool has_cpg_mstp;
-+
- static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
- {
- 	struct generic_pm_domain *genpd = &pd->genpd;
-@@ -253,6 +256,18 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
- 		gov = &pm_domain_always_on_gov;
- 	}
- 
-+	if (!(pd->flags & (PD_CPU | PD_SCU))) {
-+		/* Enable Clock Domain for I/O devices */
-+		genpd->flags = GENPD_FLAG_PM_CLK;
-+		if (has_cpg_mstp) {
-+			genpd->attach_dev = cpg_mstp_attach_dev;
-+			genpd->detach_dev = cpg_mstp_detach_dev;
-+		} else {
-+			genpd->attach_dev = cpg_mssr_attach_dev;
-+			genpd->detach_dev = cpg_mssr_detach_dev;
-+		}
-+	}
-+
- 	pm_genpd_init(genpd, gov, false);
- 	genpd->dev_ops.active_wakeup = rcar_sysc_active_wakeup;
- 	genpd->power_off = rcar_sysc_pd_power_off;
-@@ -298,6 +313,9 @@ static int __init rcar_sysc_pd_init(void)
- 
- 	info = match->data;
- 
-+	has_cpg_mstp = of_find_compatible_node(NULL, NULL,
-+					       "renesas,cpg-mstp-clocks");
-+
- 	base = of_iomap(np, 0);
- 	if (!base) {
- 		pr_warn("%s: Cannot map regs\n", np->full_name);
 -- 
 1.9.1
 
