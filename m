@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 4/7] soc: renesas: Add r8a7791 SYSC PM Domain Binding Definitions
-Date: Wed, 13 Apr 2016 16:44:20 +0200
-Message-ID: <1460558663-10197-5-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v5 6/7] soc: renesas: Add r8a7794 SYSC PM Domain Binding Definitions
+Date: Wed, 13 Apr 2016 16:44:22 +0200
+Message-ID: <1460558663-10197-7-git-send-email-geert+renesas@glider.be>
 References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
@@ -18,21 +18,21 @@ v5:
 
 v4:
   - Add Reviewed-by,
-  - Rename R8A7791_PD_SH to R8A7791_PD_SH_4A,
+  - Rename R8A7794_PD_SH to R8A7794_PD_SH_4A,
   - Add always-on power area,
 
 v3:
   - New.
 ---
- include/dt-bindings/power/r8a7791-sysc.h | 26 ++++++++++++++++++++++++++
+ include/dt-bindings/power/r8a7794-sysc.h | 26 ++++++++++++++++++++++++++
  1 file changed, 26 insertions(+)
- create mode 100644 include/dt-bindings/power/r8a7791-sysc.h
+ create mode 100644 include/dt-bindings/power/r8a7794-sysc.h
 
-diff --git a/include/dt-bindings/power/r8a7791-sysc.h b/include/dt-bindings/power/r8a7791-sysc.h
+diff --git a/include/dt-bindings/power/r8a7794-sysc.h b/include/dt-bindings/power/r8a7794-sysc.h
 new file mode 100644
-index 0000000000000000..1403baa0514fb0fc
+index 0000000000000000..862241c2d27b2fa3
 --- /dev/null
-+++ b/include/dt-bindings/power/r8a7791-sysc.h
++++ b/include/dt-bindings/power/r8a7794-sysc.h
 @@ -0,0 +1,26 @@
 +/*
 + * Copyright (C) 2016 Glider bvba
@@ -41,8 +41,8 @@ index 0000000000000000..1403baa0514fb0fc
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; version 2 of the License.
 + */
-+#ifndef __DT_BINDINGS_POWER_R8A7791_SYSC_H__
-+#define __DT_BINDINGS_POWER_R8A7791_SYSC_H__
++#ifndef __DT_BINDINGS_POWER_R8A7794_SYSC_H__
++#define __DT_BINDINGS_POWER_R8A7794_SYSC_H__
 +
 +/*
 + * These power domain indices match the numbers of the interrupt bits
@@ -50,15 +50,15 @@ index 0000000000000000..1403baa0514fb0fc
 + * (e.g. SYSCISR, Interrupt Status Register)
 + */
 +
-+#define R8A7791_PD_CA15_CPU0		 0
-+#define R8A7791_PD_CA15_CPU1		 1
-+#define R8A7791_PD_CA15_SCU		12
-+#define R8A7791_PD_SH_4A		16
-+#define R8A7791_PD_SGX			20
++#define R8A7794_PD_CA7_CPU0		 5
++#define R8A7794_PD_CA7_CPU1		 6
++#define R8A7794_PD_SH_4A		16
++#define R8A7794_PD_SGX			20
++#define R8A7794_PD_CA7_SCU		21
 +
 +/* Always-on power area */
-+#define R8A7791_PD_ALWAYS_ON		32
++#define R8A7794_PD_ALWAYS_ON		32
 +
-+#endif /* __DT_BINDINGS_POWER_R8A7791_SYSC_H__ */
++#endif /* __DT_BINDINGS_POWER_R8A7794_SYSC_H__ */
 -- 
 1.9.1
