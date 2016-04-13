@@ -1,41 +1,126 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 5/7] clk: samsung: exynos542x: Add the clock id for ACLK
-Date: Wed, 13 Apr 2016 09:20:41 +0300
-Message-ID: <CA+Ln22EFdspBdHwWar65UZ-uFxq4c9+RPhNCJjgKp9idvDvM5A@mail.gmail.com>
-References: <1460091646-28701-1-git-send-email-cw00.choi@samsung.com>
-	<1460091646-28701-6-git-send-email-cw00.choi@samsung.com>
-	<570CDB16.2050001@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH 1/3] video / backlight: add two APIs for drivers to use
+Date: Wed, 13 Apr 2016 15:32:49 +0800
+Message-ID: <1460532771-22779-2-git-send-email-aaron.lu@intel.com>
+References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f65.google.com ([209.85.192.65]:35404 "EHLO
-	mail-qg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933834AbcDMGUn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 02:20:43 -0400
-In-Reply-To: <570CDB16.2050001@samsung.com>
+Received: from mga02.intel.com ([134.134.136.20]:2058 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757911AbcDMHcz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Apr 2016 03:32:55 -0400
+In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, linux.amoon@gmail.com, m.reichl@fivetechno.de, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, InKi Dae <inki.dae@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>
+To: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
 
-2016-04-12 14:25 GMT+03:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
-> On 04/08/2016 07:00 AM, Chanwoo Choi wrote:
->> This patch adds the clock id for ACLK clock which is source clock of AMBA AXI
->> Bus. This clock should be handled in Bus frequency scaling driver.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/clk/samsung/clk-exynos5420.c | 85 +++++++++++++++++++++++-------------
->>  1 file changed, 55 insertions(+), 30 deletions(-)
->
-> The IDs itself look good but you are not adding only clock ID. You are
-> changing all of them from NULL-flags to CLK_SET_RATE_PARENT. This should
-> be explained in the commit message why you need it. Probably it should
-> be also in separate commit.
+It is useful to get the backlight device's pointer and use it to set
+backlight in some cases(the following patch will make use of it) so add
+the two APIs and export them.
 
-+1. And CLK_SET_RATE_PARENT for a clock which has a mux as its parent
-is a bit suspicious, so I'd like to know the rationale for each single
-clock with CLK_SET_RATE_PARENT being added.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/backlight/backlight.c | 43 +++++++++++++++++++++++++------------
+ include/linux/backlight.h           |  2 ++
+ 2 files changed, 31 insertions(+), 14 deletions(-)
 
-Best regards,
-Tomasz
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bddc8b17a4d8..18901b9b1eb4 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -164,18 +164,10 @@ static ssize_t brightness_show(struct device *dev,
+ 	return sprintf(buf, "%d\n", bd->props.brightness);
+ }
+ 
+-static ssize_t brightness_store(struct device *dev,
+-		struct device_attribute *attr, const char *buf, size_t count)
++int backlight_device_set_brightness(struct backlight_device *bd,
++				    unsigned long brightness)
+ {
+-	int rc;
+-	struct backlight_device *bd = to_backlight_device(dev);
+-	unsigned long brightness;
+-
+-	rc = kstrtoul(buf, 0, &brightness);
+-	if (rc)
+-		return rc;
+-
+-	rc = -ENXIO;
++	int rc = -ENXIO;
+ 
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops) {
+@@ -185,7 +177,7 @@ static ssize_t brightness_store(struct device *dev,
+ 			pr_debug("set brightness to %lu\n", brightness);
+ 			bd->props.brightness = brightness;
+ 			backlight_update_status(bd);
+-			rc = count;
++			rc = 0;
+ 		}
+ 	}
+ 	mutex_unlock(&bd->ops_lock);
+@@ -194,6 +186,23 @@ static ssize_t brightness_store(struct device *dev,
+ 
+ 	return rc;
+ }
++EXPORT_SYMBOL(backlight_device_set_brightness);
++
++static ssize_t brightness_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	int rc;
++	struct backlight_device *bd = to_backlight_device(dev);
++	unsigned long brightness;
++
++	rc = kstrtoul(buf, 0, &brightness);
++	if (rc)
++		return rc;
++
++	rc = backlight_device_set_brightness(bd, brightness);
++
++	return rc ? rc : count;
++}
+ static DEVICE_ATTR_RW(brightness);
+ 
+ static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+@@ -380,7 +389,7 @@ struct backlight_device *backlight_device_register(const char *name,
+ }
+ EXPORT_SYMBOL(backlight_device_register);
+ 
+-bool backlight_device_registered(enum backlight_type type)
++struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+ {
+ 	bool found = false;
+ 	struct backlight_device *bd;
+@@ -394,7 +403,13 @@ bool backlight_device_registered(enum backlight_type type)
+ 	}
+ 	mutex_unlock(&backlight_dev_list_mutex);
+ 
+-	return found;
++	return found ? bd : NULL;
++}
++EXPORT_SYMBOL(backlight_device_get_by_type);
++
++bool backlight_device_registered(enum backlight_type type)
++{
++	return backlight_device_get_by_type(type) ? true : false;
+ }
+ EXPORT_SYMBOL(backlight_device_registered);
+ 
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 1e7a69adbe6f..f46b88fa4a09 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -144,6 +144,8 @@ extern void backlight_force_update(struct backlight_device *bd,
+ extern bool backlight_device_registered(enum backlight_type type);
+ extern int backlight_register_notifier(struct notifier_block *nb);
+ extern int backlight_unregister_notifier(struct notifier_block *nb);
++extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
++extern int backlight_device_set_brightness(struct backlight_device *bd, unsigned long brightness);
+ 
+ #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
+ 
+-- 
+2.5.5
+
