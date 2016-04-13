@@ -1,60 +1,113 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
- update_cfs_rq_load_avg()
-Date: Wed, 13 Apr 2016 10:53:30 -0700
-Message-ID: <570E879A.90008@linaro.org>
-References: <56F97856.4040804@arm.com> <56F98832.3030207@linaro.org>
- <20160330193544.GD407@worktop> <56FC807C.80204@linaro.org>
- <20160331073743.GF3408@twins.programming.kicks-ass.net>
- <56FD95EE.6090007@linaro.org>
- <20160401092019.GN3430@twins.programming.kicks-ass.net>
- <570BFAE2.4080301@linaro.org>
- <CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
- <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
- <20160412193857.GA22643@graphite.smuckle.net>
- <CAJZ5v0gRaP9s_B6ttEpBSqBcGRX-j+kNetyaKo07C2XpY81EEQ@mail.gmail.com>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] cpufreq: powernv: Ramp-down global pstate slower than
+ local-pstate
+Date: Wed, 13 Apr 2016 23:27:51 +0530
+Message-ID: <570E889F.2010401@linux.vnet.ibm.com>
+References: <1460484386-28389-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1460484386-28389-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <20160413050310.GE19433@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:34743 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbcDMRxd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 13:53:33 -0400
-Received: by mail-pf0-f178.google.com with SMTP id c20so37227106pfc.1
-        for <linux-pm@vger.kernel.org>; Wed, 13 Apr 2016 10:53:33 -0700 (PDT)
-In-Reply-To: <CAJZ5v0gRaP9s_B6ttEpBSqBcGRX-j+kNetyaKo07C2XpY81EEQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20160413050310.GE19433@vireshk-i7>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On 04/13/2016 07:45 AM, Rafael J. Wysocki wrote:
->> I'm concerned generally with the latency to react to changes in
->> > required capacity due to remote wakeups, which are quite common on SMP
->> > platforms with shared cache. Unless the hook is called it could take
->> > up to a tick to react AFAICS if the target CPU is running some other
->> > task that does not get preempted by the wakeup.
->
-> So the scenario seems to be that CPU A is running task X and CPU B
-> wakes up task Y on it remotely, but that task has to wait for CPU A to
-> get to it, so you want to increase the frequency of CPU A at the
-> wakeup time so as to reduce the time the woken up task has to wait.
-> 
-> In that case task X would not be giving the CPU away (ie. no
-> invocations of schedule()) for the whole tick, so it would be
-> CPU/memory bound.  In that case I would expect CPU A to be running at
-> full capacity already unless this is the first tick period in which
-> task X behaves this way which looks like a corner case to me.
-
-This situation is fairly common in bursty workloads (such as UI driven
-ones).
-
-> Moreover, sending an IPI to CPU A in that case looks like the right
-> thing to do to me anyway.
-
-Sorry I didn't follow - sending an IPI to do what exactly? Perform the
-wakeup operation on the target CPU?
-
-thanks,
-Steve
+SGkgVmlyZXNoICwKClRoYW5rcyBmb3IgcmV2aWV3aW5nIGluIGRldGFpbC4KSSB3aWxsIGNvcnJl
+Y3QgYWxsIGNvbW1lbnRzIHJlbGF0ZWQgdG8gY29kaW5nIHN0YW5kYXJkcyBpbiBteSBuZXh0IHBh
+dGNoLgoKT24gMDQvMTMvMjAxNiAxMDozMyBBTSwgVmlyZXNoIEt1bWFyIHdyb3RlOgoKPiBDb21t
+ZW50cyBtb3N0bHkgb24gdGhlIGNvZGluZyBzdGFuZGFyZHMgd2hpY2ggeW91IGhhdmUgKm5vdCog
+Zm9sbG93ZWQuCj4KPiBBbHNvLCBwbGVhc2UgcnVuIGNoZWNrcGF0Y2ggLS1zdHJpY3QgbmV4dCB0
+aW1lIHlvdSBzZW5kIHBhdGNoZXMKPiB1cHN0cmVhbS4KClRoYW5rcyBmb3IgcG9pbnRpbmcgb3V0
+IHRoZSAtLXN0cmljdCBvcHRpb24sIHdhcyBub3QgYXdhcmUgb2YgdGhhdC4gSSB3aWxsCnJ1biBj
+aGVja3BhdGNoIC0tc3RyaWN0IG9uIHRoZSBuZXh0IHZlcnNpb25zLgoKPiBPbiAxMi0wNC0xNiwg
+MjM6MzYsIEFrc2hheSBBZGlnYSB3cm90ZToKPiArCj4gKy8qCj4gKyAqIFdoaWxlIHJlc2V0dGlu
+ZyB3ZSBkb24ndCB3YW50ICJ0aW1lciIgZmllbGRzIHRvIGJlIHNldCB0byB6ZXJvIGFzIHdlCj4g
+KyAqIG1heSBsb3NlIHRyYWNrIG9mIHRpbWVyIGFuZCB3aWxsIG5vdCBiZSBhYmxlIHRvIGNsZWFu
+bHkgcmVtb3ZlIGl0Cj4gKyAqLwo+ICsjZGVmaW5lIHJlc2V0X2dwc3RhdGVzKHBvbGljeSkgICBt
+ZW1zZXQocG9saWN5LT5kcml2ZXJfZGF0YSwgMCxcCj4gKwkJCQkJc2l6ZW9mKHN0cnVjdCBnbG9i
+YWxfcHN0YXRlX2luZm8pLVwKPiArCQkJCQlzaXplb2Yoc3RydWN0IHRpbWVyX2xpc3QpLVwKPiAr
+CQkJCQlzaXplb2Yoc3BpbmxvY2tfdCkpCj4gVGhhdCdzIHN1cGVyICp1Z2x5Ki4gV2h5IGRvbid0
+IHlvdSBjcmVhdGUgYSBzaW1wbGUgcm91dGluZSB3aGljaCB3aWxsCj4gc2V0IHRoZSA1IGludGVn
+ZXIgdmFyaWFibGVzIHRvIDAgaW4gYSBzdHJhaWdodCBmb3J3YXJkIHdheSA/CgpZZWgsIHdpbGwg
+Y3JlYXRlIGEgcm91dGluZS4KCj4+IEBAIC0zNDgsMTQgKzM5NSwxNyBAQCBzdGF0aWMgdm9pZCBz
+ZXRfcHN0YXRlKHZvaWQgKmZyZXFfZGF0YSkKPj4gICAJdW5zaWduZWQgbG9uZyB2YWw7Cj4+ICAg
+CXVuc2lnbmVkIGxvbmcgcHN0YXRlX3VsID0KPj4gICAJCSgoc3RydWN0IHBvd2VybnZfc21wX2Nh
+bGxfZGF0YSAqKSBmcmVxX2RhdGEpLT5wc3RhdGVfaWQ7Cj4+ICsJdW5zaWduZWQgbG9uZyBncHN0
+YXRlX3VsID0KPj4gKwkJKChzdHJ1Y3QgcG93ZXJudl9zbXBfY2FsbF9kYXRhICopIGZyZXFfZGF0
+YSktPmdwc3RhdGVfaWQ7Cj4gUmVtb3ZlIHRoZXNlIHVubmVjZXNzYXJ5IGNhc3RzIGFuZCBkbzoK
+Pgo+IHN0cnVjdCBwb3dlcm52X3NtcF9jYWxsX2RhdGEgKmZyZXFfZGF0YSA9IGRhdGE7IC8vTmFt
+ZSBmdW5jIGFyZyBhcyBkYXRhCj4KPiBBbmQgdGhlbiB1c2UgZnJlcV9kYXRhLT4qLgoKT2suIFdp
+bGwgZG8gdGhhdC4KCj4+ICsvKgo+PiArICogZ3BzdGF0ZV90aW1lcl9oYW5kbGVyCj4+ICsgKgo+
+PiArICogQGRhdGE6IHBvaW50ZXIgdG8gY3B1ZnJlcV9wb2xpY3kgb24gd2hpY2ggdGltZXIgd2Fz
+IHF1ZXVlZAo+PiArICoKPj4gKyAqIFRoaXMgaGFuZGxlciBicmluZ3MgZG93biB0aGUgZ2xvYmFs
+IHBzdGF0ZSBjbG9zZXIgdG8gdGhlIGxvY2FsIHBzdGF0ZQo+PiArICogYWNjb3JkaW5nIHF1YWRy
+YXRpYyBlcXVhdGlvbi4gUXVldWVzIGEgbmV3IHRpbWVyIGlmIGl0IGlzIHN0aWxsIG5vdCBlcXVh
+bAo+PiArICogdG8gbG9jYWwgcHN0YXRlCj4+ICsgKi8KPj4gK3ZvaWQgZ3BzdGF0ZV90aW1lcl9o
+YW5kbGVyKHVuc2lnbmVkIGxvbmcgZGF0YSkKPj4gK3sKPj4gKwlzdHJ1Y3QgY3B1ZnJlcV9wb2xp
+Y3kgKnBvbGljeSA9IChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKikgZGF0YTsKPiBubyBuZWVkIHRv
+IGNhc3QuCgpNYXkgYmUgaSBuZWVkIGEgY2FzdCBoZXJlLCAgYmVjYXVzZSBkYXRhIGlzIHVuc2ln
+bmVkIGxvbmcgKCB1bmxpa2Ugb3RoZXIgcGxhY2VzIHdoZXJlIGl0cyB2b2lkICopLgpPbiBidWls
+ZGluZyB3aXRob3V0IGNhc3QsIGl0IHRocm93cyBtZSBhIHdhcm5pbmcuCgo+PiArCXN0cnVjdCBn
+bG9iYWxfcHN0YXRlX2luZm8gKmdwc3RhdGVzID0gKHN0cnVjdCBnbG9iYWxfcHN0YXRlX2luZm8g
+KikKPj4gKwlzdHJ1Y3QgcG93ZXJudl9zbXBfY2FsbF9kYXRhIGZyZXFfZGF0YTsKPj4gKwlpbnQg
+cmV0Owo+PiArCj4+ICsJcmV0ID0gc3Bpbl90cnlsb2NrKCZncHN0YXRlcy0+Z3BzdGF0ZV9sb2Nr
+KTsKPiBubyBuZWVkIG9mICdyZXQnIGZvciBqdXN0IHRoaXMsIHNpbXBseSBkbzogaWYgKCFzcGlu
+X3RyeWxvY2soKSkuLi4KClN1cmUgd2lsbCBkbyB0aGF0LgoKPiBhCj4+ICsJaWYgKCFyZXQpCj4+
+ICsJCXJldHVybjsKPj4gKwo+PiArCWdwc3RhdGVzLT5sYXN0X3NhbXBsZWRfdGltZSArPSB0aW1l
+X2RpZmY7Cj4+ICsJZ3BzdGF0ZXMtPmVsYXBzZWRfdGltZSArPSB0aW1lX2RpZmY7Cj4+ICsJZnJl
+cV9kYXRhLnBzdGF0ZV9pZCA9IGdwc3RhdGVzLT5sYXN0X2xwc3RhdGU7Cj4+ICsJaWYgKChncHN0
+YXRlcy0+bGFzdF9ncHN0YXRlID09IGZyZXFfZGF0YS5wc3RhdGVfaWQpIHx8Cj4+ICsJCQkoZ3Bz
+dGF0ZXMtPmVsYXBzZWRfdGltZSA+IE1BWF9SQU1QX0RPV05fVElNRSkpIHsKPj4gKwkJZnJlcV9k
+YXRhLmdwc3RhdGVfaWQgPSBmcmVxX2RhdGEucHN0YXRlX2lkOwo+PiArCQlyZXNldF9ncHN0YXRl
+cyhwb2xpY3kpOwo+PiArCQlncHN0YXRlcy0+aGlnaGVzdF9scHN0YXRlID0gZnJlcV9kYXRhLnBz
+dGF0ZV9pZDsKPj4gKwl9IGVsc2Ugewo+PiArCQlmcmVxX2RhdGEuZ3BzdGF0ZV9pZCA9IGNhbGN1
+bGF0ZV9nbG9iYWxfcHN0YXRlKAo+IFlvdSBjYW4ndCBicmVhayBhIGxpbmUgYWZ0ZXIgKCBvZiBh
+IGZ1bmN0aW9uIGNhbGwgOikKPgo+IExldCBpdCBnbyBiZXlvbmQgODAgY29sdW1ucyBpZiBpdCBo
+YXMgdG8uCgpNYXkgYmUgaSB3aWxsIHRyeSB0byBnZXQgaXQgaW5zaWRlIDgwIGNvbHVtbnMgd2l0
+aCBhIHRlbXBvcmFyeSB2YXJpYWJsZSBpbnN0ZWFkIG9mCmZyZXFfZGF0YS5ncHN0YXRlX2lkLgoK
+Pj4gKwkJCWdwc3RhdGVzLT5lbGFwc2VkX3RpbWUsIGdwc3RhdGVzLT5oaWdoZXN0X2xwc3RhdGUs
+Cj4+ICsJCQlmcmVxX2RhdGEucHN0YXRlX2lkKTsKPj4gKwl9Cj4+ICsKPj4gKwkvKiBJZiBsb2Nh
+bCBwc3RhdGUgaXMgZXF1YWwgdG8gZ2xvYmFsIHBzdGF0ZSwgcmFtcGRvd24gaXMgb3Zlcgo+IEJh
+ZCBzdHlsZSBhZ2Fpbi4KPgo+PiArCSAqIFNvIHRpbWVyIGlzIG5vdCByZXF1aXJlZCB0byBiZSBx
+dWV1ZWQuCj4+ICsJICovCj4+ICsJaWYgKGZyZXFfZGF0YS5ncHN0YXRlX2lkICE9IGZyZXFfZGF0
+YS5wc3RhdGVfaWQpCj4+ICsJCXJldCA9IHF1ZXVlX2dwc3RhdGVfdGltZXIoZ3BzdGF0ZXMpOwo+
+IHJldCBub3QgdXNlZC4KClNob3VsZCBpIG1ha2UgaXQgdm9pZCBpbnN0ZWFkIG9mIHJldHVybmlu
+ZyBpbnQ/LCBhcyBpIGNhbm5vdCBkbyBtdWNoIGV2ZW4gaWYgaXQgZmFpbHMsIGV4Y2VwdCBmb3Ig
+bm90aWZ5aW5nLgoKPj4gK2dwc3RhdGVzX2RvbmU6Cj4+ICsJZ3BzdGF0ZXMtPmxhc3Rfc2FtcGxl
+ZF90aW1lID0gY3VyX21zZWM7Cj4+ICsJZ3BzdGF0ZXMtPmxhc3RfZ3BzdGF0ZSA9IGZyZXFfZGF0
+YS5ncHN0YXRlX2lkOwo+PiArCWdwc3RhdGVzLT5sYXN0X2xwc3RhdGUgPSBmcmVxX2RhdGEucHN0
+YXRlX2lkOwo+PiArCj4+ICAgCS8qCj4+ICAgCSAqIFVzZSBzbXBfY2FsbF9mdW5jdGlvbiB0byBz
+ZW5kIElQSSBhbmQgZXhlY3V0ZSB0aGUKPj4gICAJICogbXRzcHIgb24gdGFyZ2V0IENQVS4gIFdl
+IGNvdWxkIGRvIHRoYXQgd2l0aG91dCBJUEkKPj4gICAJICogaWYgY3VycmVudCBDUFUgaXMgd2l0
+aGluIHBvbGljeS0+Y3B1cyAoY29yZSkKPj4gICAJICovCj4+ICAgCXNtcF9jYWxsX2Z1bmN0aW9u
+X2FueShwb2xpY3ktPmNwdXMsIHNldF9wc3RhdGUsICZmcmVxX2RhdGEsIDEpOwo+PiArCXNwaW5f
+dW5sb2NrX2lycXJlc3RvcmUoJmdwc3RhdGVzLT5ncHN0YXRlX2xvY2ssIGZsYWdzKTsKPj4gKwly
+ZXR1cm4gMDsKPj4gK30KPj4gICAKPj4gK3N0YXRpYyBpbnQgcG93ZXJudl9jcHVmcmVxX2NwdV9l
+eGl0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQo+IEFkZCB0aGlzIGFmdGVyIHRoZSBp
+bml0KCkgcm91dGluZS4KCk9rIHdpbGwgZG8gaXQuCgo+PiArCXBvbGljeS0+ZHJpdmVyX2RhdGEg
+PSBncHN0YXRlczsKPj4gKwo+PiArCS8qIGluaXRpYWxpemUgdGltZXIgKi8KPj4gKwlpbml0X3Rp
+bWVyX2RlZmVycmFibGUoJmdwc3RhdGVzLT50aW1lcik7Cj4+ICsJZ3BzdGF0ZXMtPnRpbWVyLmRh
+dGEgPSAodW5zaWduZWQgbG9uZykgcG9saWN5Owo+PiArCWdwc3RhdGVzLT50aW1lci5mdW5jdGlv
+biA9IGdwc3RhdGVfdGltZXJfaGFuZGxlcjsKPj4gKwlncHN0YXRlcy0+dGltZXIuZXhwaXJlcyA9
+IGppZmZpZXMgKwo+PiArCQkJCW1zZWNzX3RvX2ppZmZpZXMoR1BTVEFURV9USU1FUl9JTlRFUlZB
+TCk7Cj4+ICsKPj4gKwlwcl9pbmZvKCJBZGRlZCBnbG9iYWxfcHN0YXRlX2luZm8gJiB0aW1lciBm
+b3IgJWQgY3B1XG4iLCBiYXNlKTsKPj4gICAJcmV0dXJuIGNwdWZyZXFfdGFibGVfdmFsaWRhdGVf
+YW5kX3Nob3cocG9saWN5LCBwb3dlcm52X2ZyZXFzKTsKPiBXaG8gd2lsbCBmcmVlIGdwc3RhdGVz
+IGlmIHRoaXMgZmFpbHMgPwoKVGhhbmtzIGZvciBwb2ludGluZyBvdXQuIFdpbGwgZml4IGluIHYy
+LgoKUmVnYXJkcwpBa3NoYXkgQWRpZ2EKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBj
+LWRldg==
