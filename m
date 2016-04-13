@@ -1,78 +1,37 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to update_cfs_rq_load_avg()
-Date: Wed, 13 Apr 2016 06:48:21 +0200
-Message-ID: <CAJZ5v0hx6mG5EzU4q-OFxcKQP3CZcY+H_+PqYVfL4aAPkxmoDA@mail.gmail.com>
-References: <56F97856.4040804@arm.com>
-	<56F98832.3030207@linaro.org>
-	<20160330193544.GD407@worktop>
-	<56FC807C.80204@linaro.org>
-	<20160331073743.GF3408@twins.programming.kicks-ass.net>
-	<56FD95EE.6090007@linaro.org>
-	<20160401092019.GN3430@twins.programming.kicks-ass.net>
-	<570BFAE2.4080301@linaro.org>
-	<CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
-	<CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
-	<20160413000824.GB22643@graphite.smuckle.net>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
+ cooling model.
+Date: Wed, 13 Apr 2016 06:52:51 +0200
+Message-ID: <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
+References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
+	<1458029437-12846-2-git-send-email-dawei.chien@mediatek.com>
+	<20160412053807.GT16238@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:35352 "EHLO
-	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757537AbcDMEsX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 00:48:23 -0400
-In-Reply-To: <20160413000824.GB22643@graphite.smuckle.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160412053807.GT16238@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Wed, Apr 13, 2016 at 2:08 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> On Tue, Apr 12, 2016 at 04:29:06PM +0200, Rafael J. Wysocki wrote:
->> This is rather fundamental.
->>
->> For example, if you look at cpufreq_update_util(), it does this:
->>
->> data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
->>
->> meaning that it will run the current CPU's utilization update
->> callback.  Of course, that won't work cross-CPU, because in principle
->> different CPUs may use different governors and therefore different
->> util update callbacks.
+On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> Hi Rafael,
 >
-> Will something like the attached (unfinished patches) work? It seems
-> to for me, but I haven't tested it much beyond confirming the hook is
-> working on remote wakeups.
-
-No, they are not sufficient.
-
-First of all, you need to take all of the governors into account and
-they all make assumptions about updates being run on the CPU being
-updated.
-
-That should be easy to take into account for ondemand/conservative,
-but intel_pstate is a different story.
-
-> I'm relying on the previous comment that it's up to cpufreq drivers to
-> run stuff on the target policy's CPUs if the driver needs that.
-
-That's not the case for the fast frequency switching though, which has
-to happen on the CPU running the code.
-
-> There's still some more work, fixing up some more smp_processor_id()
-> usage in schedutil, but it should be easy (trace, slow path irq_work
-> target).
+> On 15-03-16, 16:10, Dawei Chien wrote:
+>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
+>> cooling devices with dynamic power coefficient.
+>>
+>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 >
->> If you want to do remote updates, I guess that will require an
->> irq_work to run the update on the target CPU, but then you'll probably
->> want to neglect the rate limit on it as well, so it looks like a
->> "need_update" flag in struct update_util_data will be useful for that.
->
-> Why is it required to run the update on the target CPU?
+> Can you please apply this patch from Dawei ?
 
-The fast switching and intel_pstate are the main reason.
-
-They both have to write to registers of the target CPU and the code to
-do that needs to run on that CPU.
+I can, but I'm traveling this week, so that's rather going to happen next week.
 
 Thanks,
 Rafael
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
