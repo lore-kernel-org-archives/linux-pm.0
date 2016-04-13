@@ -1,63 +1,213 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Wed, 13 Apr 2016 00:32:55 +0200
-Message-ID: <20160412223254.GK1526@katana>
-References: <56B204CB.60602@osg.samsung.com>
- <20160208105417.GD2220@tetsubishi>
- <56BE57FC.3020407@osg.samsung.com>
- <20160212221352.GY3500@atomide.com>
- <56BE5C97.9070607@osg.samsung.com>
- <20160212224018.GZ3500@atomide.com>
- <56BE65F0.8040600@osg.samsung.com>
- <20160212234623.GB3500@atomide.com>
- <56BE993B.3010804@osg.samsung.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to
+ update_cfs_rq_load_avg()
+Date: Tue, 12 Apr 2016 17:08:24 -0700
+Message-ID: <20160413000824.GB22643@graphite.smuckle.net>
+References: <56F97856.4040804@arm.com>
+ <56F98832.3030207@linaro.org>
+ <20160330193544.GD407@worktop>
+ <56FC807C.80204@linaro.org>
+ <20160331073743.GF3408@twins.programming.kicks-ass.net>
+ <56FD95EE.6090007@linaro.org>
+ <20160401092019.GN3430@twins.programming.kicks-ass.net>
+ <570BFAE2.4080301@linaro.org>
+ <CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
+ <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vbzKE9fGfpHIBC6T"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="VS++wcV0S1rZb1Fb"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:35532 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbcDMAIa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Apr 2016 20:08:30 -0400
+Received: by mail-pf0-f170.google.com with SMTP id n1so23023815pfn.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 Apr 2016 17:08:29 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <56BE993B.3010804@osg.samsung.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
 
---vbzKE9fGfpHIBC6T
-Content-Type: text/plain; charset=us-ascii
+--VS++wcV0S1rZb1Fb
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 
+On Tue, Apr 12, 2016 at 04:29:06PM +0200, Rafael J. Wysocki wrote:
+> This is rather fundamental.
+> 
+> For example, if you look at cpufreq_update_util(), it does this:
+> 
+> data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
+> 
+> meaning that it will run the current CPU's utilization update
+> callback.  Of course, that won't work cross-CPU, because in principle
+> different CPUs may use different governors and therefore different
+> util update callbacks.
 
-> I'll try to find some time next week to dig deeper on this. Just
-> thought that may be related to the issue you found but it seems
-> that's not the case.
+Will something like the attached (unfinished patches) work? It seems
+to for me, but I haven't tested it much beyond confirming the hook is
+working on remote wakeups.
 
-Any updates on this?
+I'm relying on the previous comment that it's up to cpufreq drivers to
+run stuff on the target policy's CPUs if the driver needs that.
 
-Thanks,
+There's still some more work, fixing up some more smp_processor_id()
+usage in schedutil, but it should be easy (trace, slow path irq_work
+target).
 
-   Wolfram
+> If you want to do remote updates, I guess that will require an
+> irq_work to run the update on the target CPU, but then you'll probably
+> want to neglect the rate limit on it as well, so it looks like a
+> "need_update" flag in struct update_util_data will be useful for that.
+
+Why is it required to run the update on the target CPU?
+
+thanks,
+Steve
+
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-diff; charset=utf-8
+Content-Disposition: attachment; filename="0001-sched-cpufreq_sched-remove-smp_processor_id-usage.patch"
+
+>From 925cdc4a72334e7ed8551d5ba41138ea7a3aede9 Mon Sep 17 00:00:00 2001
+From: Steve Muckle <smuckle@linaro.org>
+Date: Tue, 12 Apr 2016 16:08:20 -0700
+Subject: [PATCH 1/2] sched/cpufreq_sched: remove smp_processor_id() usage
+
+To prepare for supporting cpufreq hook callbacks during remote
+wakeups, remove the usage of smp_processor_id() in
+sugov_next_freq_shared(), since that function may now not be called on
+the CPU being updated.
+
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index b283b7554486..43ae972eb55a 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -145,9 +145,10 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	sugov_update_commit(sg_policy, time, next_f);
+ }
+ 
+-static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
++static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
+ 					   unsigned long util, unsigned long max)
+ {
++	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 	unsigned int max_f = policy->cpuinfo.max_freq;
+ 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
+@@ -161,10 +162,10 @@ static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
+ 		unsigned long j_util, j_max;
+ 		u64 delta_ns;
+ 
+-		if (j == smp_processor_id())
++		j_sg_cpu = &per_cpu(sugov_cpu, j);
++		if (j_sg_cpu == sg_cpu)
+ 			continue;
+ 
+-		j_sg_cpu = &per_cpu(sugov_cpu, j);
+ 		/*
+ 		 * If the CPU utilization was last updated before the previous
+ 		 * frequency update and the time elapsed between the last update
+@@ -204,7 +205,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ 	sg_cpu->last_update = time;
+ 
+ 	if (sugov_should_update_freq(sg_policy, time)) {
+-		next_f = sugov_next_freq_shared(sg_policy, util, max);
++		next_f = sugov_next_freq_shared(sg_cpu, util, max);
+ 		sugov_update_commit(sg_policy, time, next_f);
+ 	}
+ 
+-- 
+2.4.10
 
 
---vbzKE9fGfpHIBC6T
-Content-Type: application/pgp-signature; name="signature.asc"
+--VS++wcV0S1rZb1Fb
+Content-Type: text/x-diff; charset=utf-8
+Content-Disposition: attachment; filename="0002-sched-fair-call-cpufreq-hook-for-remote-wakeups.patch"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+>From ae6eb75162f11674cbdc569466e3def4e0eed077 Mon Sep 17 00:00:00 2001
+From: Steve Muckle <smuckle@linaro.org>
+Date: Tue, 12 Apr 2016 15:19:34 -0700
+Subject: [PATCH 2/2] sched/fair: call cpufreq hook for remote wakeups
 
-iQIcBAEBAgAGBQJXDXeWAAoJEBQN5MwUoCm2S6gP/0H6KskZC5CDKD/Bpgd+3ldi
-eKlqS0d2/wRakdsBxEgbVWiTvpXvBr44Ti8Bv3y6chFCLTKQcidd8C/BVV4X2NjK
-d+V7ULuxEOOTjaudDJUalfbA0YpN0/KzJbytihTqUDJBaViG04/Gn6k+ILdkv4y2
-QwJEkBWlC6lqIGkC8IHcOJyhZ/EuxX6z+UajZ2WVm69Wq3PnxNrz/d+jYojfQdK1
-mo3KWQxKaMJoyMvh0ARHgf+sxRqkHk0SB4rS/oTtC1EKj/4VBgKISOk6loqN3/ye
-GCiqfnVKbVyFp9aeDryPxNOEu4WHyD5BHlFnLyreiXagUICEPJr6NoANBoc/+zCB
-UlbLKBnn2jKP/8R5ERP+JxSitv8u6sJkkSU7YE6d1EIjgN74IO2DyG2lYmwRkLP3
-17hIj5bCWqFA8E0eQZWj3DRSiWrGO50xEhg2VJQyaGNtdlZ+KZ7dAgbP7xf2t1Cy
-4mFb4u2P642BGyqKuEDVSEII6fi+KIzUb7tXbfYfWKGWf8npXYCKDC4XJFG+han7
-sGpPFc9/BW5AqGJffJAyUToEkWTsNoQdMOZ0/HVKVf43N28VE+4v6sLB8x1khSDR
-qO4ItqtbzLQROwkj/yhkQggQjmgMUbvmGsyOOBWJbMXJEKsZuwNTwu/CoOqG7jzo
-LkF0xolR++1gaTy1Grya
-=TIdh
------END PGP SIGNATURE-----
+Without calling the cpufreq hook for a remote wakeup it is possible
+for such a wakeup to go unnoticed by cpufreq on the target CPU for up
+to a full tick.
 
---vbzKE9fGfpHIBC6T--
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
+---
+ kernel/sched/fair.c  | 8 +++-----
+ kernel/sched/sched.h | 7 ++++---
+ 2 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index b06c1e938cb9..d21a80a44b6e 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2826,15 +2826,13 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
+ 	struct rq *rq = rq_of(cfs_rq);
+ 	int cpu = cpu_of(rq);
+ 
+-	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
++	if (&rq->cfs == cfs_rq) {
+ 		unsigned long max = rq->cpu_capacity_orig;
+ 
+ 		/*
+ 		 * There are a few boundary cases this might miss but it should
+ 		 * get called often enough that that should (hopefully) not be
+-		 * a real problem -- added to that it only calls on the local
+-		 * CPU, so if we enqueue remotely we'll miss an update, but
+-		 * the next tick/schedule should update.
++		 * a real problem.
+ 		 *
+ 		 * It will not get called when we go idle, because the idle
+ 		 * thread is a different class (!fair), nor will the utilization
+@@ -2845,7 +2843,7 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
+ 		 *
+ 		 * See cpu_util().
+ 		 */
+-		cpufreq_update_util(rq_clock(rq),
++		cpufreq_update_util(cpu, rq_clock(rq),
+ 				    min(cfs_rq->avg.util_avg, max), max);
+ 	}
+ }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 921d6e5d33b7..01faa0781099 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1808,11 +1808,12 @@ DECLARE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
+  *
+  * It can only be called from RCU-sched read-side critical sections.
+  */
+-static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
++static inline void cpufreq_update_util(int cpu, u64 time, unsigned long util,
++				       unsigned long max)
+ {
+        struct update_util_data *data;
+ 
+-       data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
++       data = rcu_dereference_sched(per_cpu(cpufreq_update_util_data, cpu));
+        if (data)
+                data->func(data, time, util, max);
+ }
+@@ -1835,7 +1836,7 @@ static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned lo
+  */
+ static inline void cpufreq_trigger_update(u64 time)
+ {
+-	cpufreq_update_util(time, ULONG_MAX, 0);
++	cpufreq_update_util(smp_processor_id(), time, ULONG_MAX, 0);
+ }
+ #else
+ static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max) {}
+-- 
+2.4.10
+
+
+--VS++wcV0S1rZb1Fb--
