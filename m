@@ -1,87 +1,81 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V2 1/2] thermal: generic-adc: Add DT binding for ADC
- based thermal sensor
-Date: Wed, 13 Apr 2016 10:06:35 -0500
-Message-ID: <20160413150635.GA15596@rob-hp-laptop>
-References: <1460382102-27755-1-git-send-email-ldewangan@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] sched/fair: move cpufreq hook to update_cfs_rq_load_avg()
+Date: Wed, 13 Apr 2016 18:05:46 +0200
+Message-ID: <CAJZ5v0jKkKrSWhtbcWcFbLrOT8kUKCfJV05W4vQwUHbD5omGpA@mail.gmail.com>
+References: <56F97856.4040804@arm.com>
+	<56F98832.3030207@linaro.org>
+	<20160330193544.GD407@worktop>
+	<56FC807C.80204@linaro.org>
+	<20160331073743.GF3408@twins.programming.kicks-ass.net>
+	<56FD95EE.6090007@linaro.org>
+	<20160401092019.GN3430@twins.programming.kicks-ass.net>
+	<570BFAE2.4080301@linaro.org>
+	<CAJZ5v0imtij-smQBds1aTNMuFsNbbzvoyAJ5-=Pp8Ae1GSNWvQ@mail.gmail.com>
+	<CAJZ5v0gNt5kMV8jjQuASTxUBE=FZ45x2Go0RNsyaZMLk+dAsKQ@mail.gmail.com>
+	<20160413000824.GB22643@graphite.smuckle.net>
+	<CAJZ5v0hx6mG5EzU4q-OFxcKQP3CZcY+H_+PqYVfL4aAPkxmoDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55094 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757693AbcDMPGl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Apr 2016 11:06:41 -0400
-Content-Disposition: inline
-In-Reply-To: <1460382102-27755-1-git-send-email-ldewangan@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hx6mG5EzU4q-OFxcKQP3CZcY+H_+PqYVfL4aAPkxmoDA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, jic23@kernel.org
 
-On Mon, Apr 11, 2016 at 07:11:41PM +0530, Laxman Dewangan wrote:
-> Sometimes, thermal sensors like NCT thermistors are connected to
-> the ADC channel. The temperature is read by reading the voltage
-> across the sensor resistance via ADC and referring the lookup
-> table for ADC value to temperature.
-> 
-> Add DT binding doc for the ADC based thermal sensor driver to
-> detail the DT property and provide the example for how to use it.
-> 
-> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
-> 
-> ---
-> Changes from V1:
-> - Make the lookup table to two dimensional instead of single array of linear
->   step of temperature.
-> - Remove detailing of IIO frameowrk and drivers.
-> - Added proper braces, indenting and labels.
-> 
->  .../bindings/thermal/thermal-generic-adc.txt       | 86 ++++++++++++++++++++++
->  1 file changed, 86 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-> new file mode 100644
-> index 0000000..c5c2e5b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-> @@ -0,0 +1,86 @@
-> +General Purpose Analog To Digital Converter (ADC) based thermal sensor.
-> +
-> +On some of platforms, thermal sensor like thermistors are connected to
-> +one of ADC channel and sensor resistance is read via voltage across the
-> +sensor resistor. The voltage read across the sensor is mapped to
-> +temperature using voltage-temperature lookup table.
-> +
-> +Required properties:
-> +===================
-> +- compatible:		     Must be "generic-adc-thermal".
-> +- temperature-lookup-table:  Two dimensional array of Integer; lookup table
-> +			     to map the relation between ADC value and
-> +			     temperature. When ADC is read, the value is
-> +			     looked up on the table to get the equivalent
-> +			     temperature.
+On Wed, Apr 13, 2016 at 6:48 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Apr 13, 2016 at 2:08 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+>> On Tue, Apr 12, 2016 at 04:29:06PM +0200, Rafael J. Wysocki wrote:
+>>> This is rather fundamental.
+>>>
+>>> For example, if you look at cpufreq_update_util(), it does this:
+>>>
+>>> data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
+>>>
+>>> meaning that it will run the current CPU's utilization update
+>>> callback.  Of course, that won't work cross-CPU, because in principle
+>>> different CPUs may use different governors and therefore different
+>>> util update callbacks.
+>>
+>> Will something like the attached (unfinished patches) work? It seems
+>> to for me, but I haven't tested it much beyond confirming the hook is
+>> working on remote wakeups.
+>
+> No, they are not sufficient.
+>
+> First of all, you need to take all of the governors into account and
+> they all make assumptions about updates being run on the CPU being
+> updated.
+>
+> That should be easy to take into account for ondemand/conservative,
+> but intel_pstate is a different story.
+>
+>> I'm relying on the previous comment that it's up to cpufreq drivers to
+>> run stuff on the target policy's CPUs if the driver needs that.
+>
+> That's not the case for the fast frequency switching though, which has
+> to happen on the CPU running the code.
+>
+>> There's still some more work, fixing up some more smp_processor_id()
+>> usage in schedutil, but it should be easy (trace, slow path irq_work
+>> target).
+>>
+>>> If you want to do remote updates, I guess that will require an
+>>> irq_work to run the update on the target CPU, but then you'll probably
+>>> want to neglect the rate limit on it as well, so it looks like a
+>>> "need_update" flag in struct update_util_data will be useful for that.
+>>
+>> Why is it required to run the update on the target CPU?
+>
+> The fast switching and intel_pstate are the main reason.
+>
+> They both have to write to registers of the target CPU and the code to
+> do that needs to run on that CPU.
 
-First value is ?, 2nd value is ? The units are milliCelsius?
+And these two seem to be the only interesting cases for you, because
+if you need to work for the worker thread to schedule to eventually
+change the CPU frequency for you, that will defeat the whole purpose
+here.
 
-> +- #thermal-sensor-cells:     Should be 1. See ./thermal.txt for a description
-> +			     of this property.
-> +
-> +Example :
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +i2c@7000c400 {
-> +	ads1015: ads1015@4a {
-> +		reg = <0x4a>;
-> +		compatible = "ads1015";
-> +		sampling-frequency = <3300>;
-> +		#io-channel-cells = <1>;
-> +	};
-> +};
-> +
-> +tboard_thermistor: thermal-sensor@1 {
-
-Drop the unit address.
-
-> +	compatible = "generic-adc-thermal";
-
+Thanks,
+Rafael
