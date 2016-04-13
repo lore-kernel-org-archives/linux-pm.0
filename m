@@ -1,237 +1,113 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 07/12] ARM: dts: r8a7779: Use SYSC "always-on" PM Domain
-Date: Wed, 13 Apr 2016 16:44:47 +0200
-Message-ID: <1460558692-10414-8-git-send-email-geert+renesas@glider.be>
-References: <1460558692-10414-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:46923 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934052AbcDMOow (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:52 -0400
-In-Reply-To: <1460558692-10414-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v5 00/12] ARM/arm64: dts: rcar: Add SYSC PM domains
+Date: Wed, 13 Apr 2016 16:44:40 +0200
+Message-ID: <1460558692-10414-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-Hook up all devices that are part of the CPG/MSTP Clock Domain to the
-SYSC "always-on" PM Domain, for a more consistent device-power-area
-description in DT.
+	Hi Simon, Magnus,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
-v5:
+This patch series adds the R-Car System Controller to the DTS files for
+the various Renesas R-Car SoCs, and hooks up devices to their respective
+PM domains.
+
+This is a dependency for the enablement of DU and VSP on R-Car H3, as
+on this SoC the VSPs are located in a PM Domain.
+
+This series contains 2 parts:
+  1. Patches 1-6 add device node for the System Controllers, and hook
+     up CPU cores and L2 caches/SCUs to their respective PM Domains,
+  2. Patches 7-12 hook up devices to the SYSC "always-on" PM Domain, for
+     a more consistent device-power-area description in DT.
+
+As "[PATCH v5 00/11] soc: renesas: Add R-Car SYSC PM Domain Support"
+merged the two initialization phases again, the issues in v4 caused by
+excessive deferred probing are gone, and both parts are now safe to
+apply.
+
+Changes compared to v4:
   - Add Acked-by,
+  - Remove "power-domains" property again from the sysc nodes, as the
+    System Controller theirselves are not part of the Clock Domains.
 
-v4:
-  - New.
----
- arch/arm/boot/dts/r8a7779.dtsi | 44 +++++++++++++++++++++---------------------
- 1 file changed, 22 insertions(+), 22 deletions(-)
+Changes compared to v3:
+  - Add power-domains properties to the sysc nodes, to refer to the
+    SoC's Clock Domains,
+  - Extract using the SYSC "always-on" PM Domain on R-Car H3 into its
+    own patch,
+  - Add patches to use the SYSC "always-on" PM Domain on R-Car H1 and
+    R-Car Gen2,
+  - Update for recently added can0, can1, pciec0, and pciec1 device
+    nodes on R-Car H3.
 
-diff --git a/arch/arm/boot/dts/r8a7779.dtsi b/arch/arm/boot/dts/r8a7779.dtsi
-index e02875a8c040f304..d43e3b2105aef7dc 100644
---- a/arch/arm/boot/dts/r8a7779.dtsi
-+++ b/arch/arm/boot/dts/r8a7779.dtsi
-@@ -177,7 +177,7 @@
- 		reg = <0xffc70000 0x1000>;
- 		interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_I2C0>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -188,7 +188,7 @@
- 		reg = <0xffc71000 0x1000>;
- 		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_I2C1>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -199,7 +199,7 @@
- 		reg = <0xffc72000 0x1000>;
- 		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_I2C2>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -210,7 +210,7 @@
- 		reg = <0xffc73000 0x1000>;
- 		interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_I2C3>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -222,7 +222,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF0>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -234,7 +234,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF1>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -246,7 +246,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF2>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -258,7 +258,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF3>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -270,7 +270,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF4>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -282,7 +282,7 @@
- 		clocks = <&mstp0_clks R8A7779_CLK_SCIF5>,
- 			 <&cpg_clocks R8A7779_CLK_S1>, <&scif_clk>;
- 		clock-names = "fck", "brg_int", "scif_clk";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -304,7 +304,7 @@
- 			     <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_TMU0>;
- 		clock-names = "fck";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -319,7 +319,7 @@
- 			     <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_TMU1>;
- 		clock-names = "fck";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -334,7 +334,7 @@
- 			     <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7779_CLK_TMU2>;
- 		clock-names = "fck";
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -346,7 +346,7 @@
- 		reg = <0xfc600000 0x2000>;
- 		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp1_clks R8A7779_CLK_SATA>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 	};
- 
- 	sdhi0: sd@ffe4c000 {
-@@ -354,7 +354,7 @@
- 		reg = <0xffe4c000 0x100>;
- 		interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7779_CLK_SDHI0>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -363,7 +363,7 @@
- 		reg = <0xffe4d000 0x100>;
- 		interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7779_CLK_SDHI1>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -372,7 +372,7 @@
- 		reg = <0xffe4e000 0x100>;
- 		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7779_CLK_SDHI2>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -381,7 +381,7 @@
- 		reg = <0xffe4f000 0x100>;
- 		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7779_CLK_SDHI3>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -392,7 +392,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		clocks = <&mstp0_clks R8A7779_CLK_HSPI>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -403,7 +403,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		clocks = <&mstp0_clks R8A7779_CLK_HSPI>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -414,7 +414,7 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		clocks = <&mstp0_clks R8A7779_CLK_HSPI>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 	};
- 
-@@ -423,7 +423,7 @@
- 		reg = <0 0xfff80000 0 0x40000>;
- 		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp1_clks R8A7779_CLK_DU>;
--		power-domains = <&cpg_clocks>;
-+		power-domains = <&sysc R8A7779_PD_ALWAYS_ON>;
- 		status = "disabled";
- 
- 		ports {
+Changes compared to v2:
+  - Move power area hierarchy from DT to C (cfr. DT bindings for Renesas
+    CPG/MSSR), and switch to "#power-domain-cells = <1>",
+  - Drop fallback compatibility strings, as the bindings are
+    SoC-specific,
+  - Add an "always-on" power area on R-Car H3.
+
+Changes compared to v1:
+  - Add R-Car H3 (r8a7795) support,
+  - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
+  - Add fallback compatibility strings for R-Car Gen2 and Gen3.
+
+Dependencies:
+  - renesas-devel-20160411-v4.6-rc3
+  - clk-renesas-for-v4.7
+  - "[PATCH v2 0/4] clk: renesas: R-Car SYSC PM Domain Preparation",
+  - "[PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System
+    Controller",
+  - "[PATCH v5 00/11] soc: renesas: Add R-Car SYSC PM Domain Support".
+Note that these are hard dependencies: adding SYSC PM Domains to DTS
+files without driver support will cause breakage!
+
+For your convenience, I've pushed this, incl. all dependencies, to the
+topic/rcar-sysc-pd-v5 branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+Integration with renesas-drivers-2016-04-12-v4.6-rc3 is available in the
+topic/gen3-latest branch.
+
+This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
+r8a7794/alt, and r8a7795/salvator-x.
+
+Thanks for applying!
+
+Geert Uytterhoeven (12):
+  ARM: dts: r8a7779: Add SYSC PM Domains
+  ARM: dts: r8a7790: Add SYSC PM Domains
+  ARM: dts: r8a7791: Add SYSC PM Domains
+  ARM: dts: r8a7793: Add SYSC PM Domains
+  ARM: dts: r8a7794: Add SYSC PM Domains
+  arm64: dts: r8a7795: Add SYSC PM Domains
+  ARM: dts: r8a7779: Use SYSC "always-on" PM Domain
+  ARM: dts: r8a7790: Use SYSC "always-on" PM Domain
+  ARM: dts: r8a7791: Use SYSC "always-on" PM Domain
+  ARM: dts: r8a7793: Use SYSC "always-on" PM Domain
+  ARM: dts: r8a7794: Use SYSC "always-on" PM Domain
+  arm64: dts: r8a7795: Use SYSC "always-on" PM Domain
+
+ arch/arm/boot/dts/r8a7779.dtsi           |  54 ++++++-----
+ arch/arm/boot/dts/r8a7790.dtsi           | 155 ++++++++++++++++--------------
+ arch/arm/boot/dts/r8a7791.dtsi           | 156 ++++++++++++++++---------------
+ arch/arm/boot/dts/r8a7793.dtsi           | 105 +++++++++++----------
+ arch/arm/boot/dts/r8a7794.dtsi           | 116 ++++++++++++-----------
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi | 123 +++++++++++++-----------
+ 6 files changed, 389 insertions(+), 320 deletions(-)
+
 -- 
 1.9.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
