@@ -1,52 +1,69 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 02/11] soc: renesas: rcar-sysc: Improve rcar_sysc_power() debug info
-Date: Wed, 13 Apr 2016 16:44:23 +0200
-Message-ID: <1460558672-10290-3-git-send-email-geert+renesas@glider.be>
-References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from andre.telenet-ops.be ([195.130.132.53]:43671 "EHLO
-	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758121AbcDMOoe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:34 -0400
-In-Reply-To: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v5 5/7] soc: renesas: Add r8a7793 SYSC PM Domain Binding Definitions
+Date: Wed, 13 Apr 2016 16:44:21 +0200
+Message-ID: <1460558663-10197-6-git-send-email-geert+renesas@glider.be>
+References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-Print requested power domain state.
+R-Car M2-N is identical to R-Car M2-W w.r.t. power domains, so reuse the
+definitions from the latter.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
 v5:
-  - No changes,
-
-v4:
-  - No changes,
-
-v3:
   - Add Reviewed-by,
 
-v2:
+v4:
+  - Rename R8A7793_PD_SH to R8A7793_PD_SH_4A,
+  - Use the numbers directly, to make the header file self-contained,
+  - Add always-on power area,
+
+v3:
   - New.
 ---
- drivers/soc/renesas/rcar-sysc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/dt-bindings/power/r8a7793-sysc.h | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 include/dt-bindings/power/r8a7793-sysc.h
 
-diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index d59bcdf78f0b56ba..9ba5fd15c53bf9b9 100644
---- a/drivers/soc/renesas/rcar-sysc.c
-+++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -128,7 +128,7 @@ static int rcar_sysc_power(const struct rcar_sysc_ch *sysc_ch, bool on)
-  out:
- 	spin_unlock_irqrestore(&rcar_sysc_lock, flags);
- 
--	pr_debug("sysc power domain %d: %08x -> %d\n",
-+	pr_debug("sysc power %s domain %d: %08x -> %d\n", on ? "on" : "off",
- 		 sysc_ch->isr_bit, ioread32(rcar_sysc_base + SYSCISR), ret);
- 	return ret;
- }
+diff --git a/include/dt-bindings/power/r8a7793-sysc.h b/include/dt-bindings/power/r8a7793-sysc.h
+new file mode 100644
+index 0000000000000000..b5693df3d830ed42
+--- /dev/null
++++ b/include/dt-bindings/power/r8a7793-sysc.h
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (C) 2016 Glider bvba
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ */
++#ifndef __DT_BINDINGS_POWER_R8A7793_SYSC_H__
++#define __DT_BINDINGS_POWER_R8A7793_SYSC_H__
++
++/*
++ * These power domain indices match the numbers of the interrupt bits
++ * representing the power areas in the various Interrupt Registers
++ * (e.g. SYSCISR, Interrupt Status Register)
++ *
++ * Note that R-Car M2-N is identical to R-Car M2-W w.r.t. power domains.
++ */
++
++#define R8A7793_PD_CA15_CPU0		 0
++#define R8A7793_PD_CA15_CPU1		 1
++#define R8A7793_PD_CA15_SCU		12
++#define R8A7793_PD_SH_4A		16
++#define R8A7793_PD_SGX			20
++
++/* Always-on power area */
++#define R8A7793_PD_ALWAYS_ON		32
++
++#endif /* __DT_BINDINGS_POWER_R8A7793_SYSC_H__ */
 -- 
 1.9.1
-
