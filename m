@@ -1,104 +1,105 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 1/7] PM / Domains: Add DT bindings for the R-Car System Controller
-Date: Wed, 13 Apr 2016 16:44:17 +0200
-Message-ID: <1460558663-10197-2-git-send-email-geert+renesas@glider.be>
-References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v5 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for I/O devices
+Date: Wed, 13 Apr 2016 16:44:26 +0200
+Message-ID: <1460558672-10290-6-git-send-email-geert+renesas@glider.be>
+References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from michel.telenet-ops.be ([195.130.137.88]:55121 "EHLO
+	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758545AbcDMOoa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Apr 2016 10:44:30 -0400
+In-Reply-To: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-The Renesas R-Car System Controller provides power management for the
-CPU cores and various coprocessors, following the generic PM domain
-bindings in Documentation/devicetree/bindings/power/power_domain.txt.
+On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
+also part of the CPG/MSSR Clock Domain.
+On all R-Car SoCs, devices in the "always-on" PM Domain are part of the
+Clock Domain served by the CPG/MSSR or CPG/MSTP driver.
 
-This supports R-Car Gen1 (H1), Gen2, and Gen3.
+Hook up the CPG/MSTP or CPG/MSSR Clock Domain attach/detach callbacks to
+enable power management using module clocks. Which callback to hook up
+depends on the presence of device nodes compatible with
+"renesas,cpg-mstp-clocks". This clears the path for a future migration
+from the CPG/MSTP to the CPG/MSSR driver on R-Car H1 and
+Gen2.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Rob Herring <robh@kernel.org>
 ---
 v5:
-  - Remove power-domains property from the sysc node again, as the
-    System Controller itself is not part of the Clock Domain,
+  - Revert v4 changes,
+  - Use either the cpg_mssr_*() or cpg_mstp_*() callbacks,
+  - Drop dependency on r8a7795, as this is used for the "always-on" PM
+    Domain on R-Car H1 and Gen2, too,
 
 v4:
-  - Add Reviewed-by, Acked-by,
-  - Compatible value must contain "exactly one" instead of "one or
-    more",
-  - Add power-domains property to refer to the SoC's Clock Domain,
+  - Remove the explicit dependency on the CPG/MSSR driver by forwarding
+    the attach/detach callbacks to the parent PM Domain.
+    If deemed reusable, rcar_sysc_{at,de}tach_dev() can be moved to
+    common genpd code later.
 
 v3:
-  - Move power area hierarchy from DT to C (cfr. DT bindings for Renesas
-    CPG/MSSR), and switch to "#power-domain-cells = <1>",
-  - Drop fallback compatibility strings, as the bindings are
-    SoC-specific,
-  - Rename from renesas,sysc-rcar.txt to renesas,rcar-sysc.txt,
+  - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
+    using our own copies,
 
 v2:
-  - Add R-Car H3 (r8a7795) support,
-  - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
-  - Add fallback compatibility strings for R-Car Gen2 and Gen3.
+  - New.
 ---
- .../bindings/power/renesas,rcar-sysc.txt           | 48 ++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
+ drivers/soc/renesas/rcar-sysc.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
-new file mode 100644
-index 0000000000000000..b74e4d4785ab2d60
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/renesas,rcar-sysc.txt
-@@ -0,0 +1,48 @@
-+DT bindings for the Renesas R-Car System Controller
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index a333ef4152428440..be83636ef2647947 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -9,6 +9,7 @@
+  * for more details.
+  */
+ 
++#include <linux/clk/renesas.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/mm.h>
+@@ -222,6 +223,8 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
+ 	return rcar_sysc_power_up(&pd->ch);
+ }
+ 
++static bool has_cpg_mstp;
 +
-+== System Controller Node ==
+ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ {
+ 	struct generic_pm_domain *genpd = &pd->genpd;
+@@ -253,6 +256,18 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ 		gov = &pm_domain_always_on_gov;
+ 	}
+ 
++	if (!(pd->flags & (PD_CPU | PD_SCU))) {
++		/* Enable Clock Domain for I/O devices */
++		genpd->flags = GENPD_FLAG_PM_CLK;
++		if (has_cpg_mstp) {
++			genpd->attach_dev = cpg_mstp_attach_dev;
++			genpd->detach_dev = cpg_mstp_detach_dev;
++		} else {
++			genpd->attach_dev = cpg_mssr_attach_dev;
++			genpd->detach_dev = cpg_mssr_detach_dev;
++		}
++	}
 +
-+The R-Car System Controller provides power management for the CPU cores and
-+various coprocessors.
+ 	pm_genpd_init(genpd, gov, false);
+ 	genpd->dev_ops.active_wakeup = rcar_sysc_active_wakeup;
+ 	genpd->power_off = rcar_sysc_pd_power_off;
+@@ -298,6 +313,9 @@ static int __init rcar_sysc_pd_init(void)
+ 
+ 	info = match->data;
+ 
++	has_cpg_mstp = of_find_compatible_node(NULL, NULL,
++					       "renesas,cpg-mstp-clocks");
 +
-+Required properties:
-+  - compatible: Must contain exactly one of the following:
-+      - "renesas,r8a7779-sysc" (R-Car H1)
-+      - "renesas,r8a7790-sysc" (R-Car H2)
-+      - "renesas,r8a7791-sysc" (R-Car M2-W)
-+      - "renesas,r8a7792-sysc" (R-Car V2H)
-+      - "renesas,r8a7793-sysc" (R-Car M2-N)
-+      - "renesas,r8a7794-sysc" (R-Car E2)
-+      - "renesas,r8a7795-sysc" (R-Car H3)
-+  - reg: Address start and address range for the device.
-+  - #power-domain-cells: Must be 1.
-+
-+
-+Example:
-+
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,r8a7791-sysc";
-+		reg = <0 0xe6180000 0 0x0200>;
-+		#power-domain-cells = <1>;
-+	};
-+
-+
-+== PM Domain Consumers ==
-+
-+Devices residing in a power area must refer to that power area, as documented
-+by the generic PM domain bindings in
-+Documentation/devicetree/bindings/power/power_domain.txt.
-+
-+Required properties:
-+  - power-domains: A phandle and symbolic PM domain specifier, as defined in
-+		   <dt-bindings/power/r8a77*-sysc.h>.
-+
-+
-+Example:
-+
-+	L2_CA15: cache-controller@0 {
-+		compatible = "cache";
-+		power-domains = <&sysc R8A7791_PD_CA15_SCU>;
-+		cache-unified;
-+		cache-level = <2>;
-+	};
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+ 		pr_warn("%s: Cannot map regs\n", np->full_name);
 -- 
 1.9.1
+
