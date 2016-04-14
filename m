@@ -1,101 +1,41 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] cpuidle: Change ktime_get() with local_clock()
-Date: Thu, 14 Apr 2016 21:23:54 +0200
-Message-ID: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
+From: Pavel Machek <pavel@denx.de>
+Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
+Date: Thu, 14 Apr 2016 22:01:02 +0200
+Message-ID: <20160414200102.GB3856@amd>
+References: <20160412221659.GA18102@www.outflux.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f45.google.com ([74.125.82.45]:37449 "EHLO
-	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbcDNTYM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 15:24:12 -0400
-Received: by mail-wm0-f45.google.com with SMTP id n3so2558856wmn.0
-        for <linux-pm@vger.kernel.org>; Thu, 14 Apr 2016 12:24:11 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60425 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbcDNUBH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 16:01:07 -0400
+Content-Disposition: inline
+In-Reply-To: <20160412221659.GA18102@www.outflux.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: peterz@infradead.org, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-The ktime_get() can have a non negligeable overhead, use local_clock()
-instead.
+Hi!
 
-In order to test the difference between ktime_get() and local_clock(),
-a quick hack has been added to trigger, via debugfs, 10000 times a
-call to ktime_get() and local_clock() and measure the elapsed time.
+> Since kASLR and Hibernation can not currently coexist at runtime
+> on x86, the default behavior was to disable kASLR by default when
+> CONFIG_HIBERNATION was present (to retain original behavior).
+> 
+> The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
+> default when selected at build time. Since arm64 Hibernation does not
+> conflict with kASLR, this fixes the hibernation argument parsing to be
+> x86-specific. Additionally, since end users want to be able to select
+> kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
+> that is present only on x86.
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-Then the average value, the min and max is computed for each call.
+I believe this is bad idea. arm64 shows that kaslr and hibernation can
+coexist, and hibernation is still useful when your battery runs out.
 
->From userspace, the test above was called 100 times every 2 seconds.
-
-So, ktime_get() and local_clock() have been called 1000000 times in
-total.
-
-The results are:
-
-ktime_get():
-============
- * average: 101 ns (stddev: 27.4)
- * maximum: 38313 ns
- * minimum: 65 ns
-
-local_clock():
-==============
- * average: 60 ns (stddev: 9.8)
- * maximum: 13487 ns
- * minimum: 46 ns
-
-The local_clock() is faster and more stable.
-
-Even if it is a drop in the ocean, changing the ktime_get() by the
-local_clock() allows to save 80ns at idle time (entry + exit). And
-in some circumstances, especially when there are several CPUs racing
-for the clock access, we save tens of microseconds.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index f996efc..78447bc 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -173,7 +173,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 
- 	struct cpuidle_state *target_state = &drv->states[index];
- 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
--	ktime_t time_start, time_end;
-+	u64 time_start, time_end;
- 	s64 diff;
- 
- 	/*
-@@ -195,13 +195,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	sched_idle_set_state(target_state);
- 
- 	trace_cpu_idle_rcuidle(index, dev->cpu);
--	time_start = ktime_get();
-+	time_start = local_clock();
- 
- 	stop_critical_timings();
- 	entered_state = target_state->enter(dev, drv, index);
- 	start_critical_timings();
- 
--	time_end = ktime_get();
-+	time_end = local_clock();
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
- 	/* The cpu is no longer idle or about to enter idle. */
-@@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	if (!cpuidle_state_is_coupled(drv, entered_state))
- 		local_irq_enable();
- 
--	diff = ktime_to_us(ktime_sub(time_end, time_start));
-+	/*
-+	 * local_clock() returns the time in nanosecond, let's shift
-+	 * by 10 (divide by 1024) to have microsecond based time.
-+	 */
-+	diff = (time_end - time_start) >> 10;
- 	if (diff > INT_MAX)
- 		diff = INT_MAX;
- 
+									Pavel
 -- 
-1.9.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
