@@ -1,42 +1,50 @@
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] thermal: fix Mediatek thermal controller build
-Date: Thu, 14 Apr 2016 15:15:20 +0200
-Message-ID: <1460639720-28180-1-git-send-email-johannes@sipsolutions.net>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Thu, 14 Apr 2016 09:41:05 -0400
+Message-ID: <570F9DF1.3070700@osg.samsung.com>
+References: <20160208105417.GD2220@tetsubishi>
+ <56BE57FC.3020407@osg.samsung.com> <20160212221352.GY3500@atomide.com>
+ <56BE5C97.9070607@osg.samsung.com> <20160212224018.GZ3500@atomide.com>
+ <56BE65F0.8040600@osg.samsung.com> <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com> <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com> <20160414111257.GG1533@katana>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from s3.sipsolutions.net ([5.9.151.49]:44218 "EHLO sipsolutions.net"
+Received: from lists.s-osg.org ([54.187.51.154]:56924 "EHLO lists.s-osg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753394AbcDNNPc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Apr 2016 09:15:32 -0400
+	id S1755729AbcDNNl0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Apr 2016 09:41:26 -0400
+In-Reply-To: <20160414111257.GG1533@katana>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Berg <johannes.berg@intel.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 
-From: Johannes Berg <johannes.berg@intel.com>
+Hello Wolfram,
 
-At least with CONFIG_COMPILE_TEST, there's no reason to assume
-that CONFIG_RESET_CONTROLLER is set, but the code for this
-controller requires it since it calls device_reset().
+On 04/14/2016 07:12 AM, Wolfram Sang wrote:
+> 
+>> I'll write what I found so far in case someone with better knowledge about
+>> the runtime PM API and the OMAP I2C controller driver can have an idea of
+>> what could be causing this.
+> 
+> Thanks for the summary. I got no other reports like this, I wonder about
 
-Make CONFIG_MTK_THERMAL properly depend on CONFIG_RESET_CONTROLLER.
+Yes, I also wonder why I'm the only one facing this issue... maybe no one
+else is using the tvp5150 driver on an OMAP board with mainline?
 
-Signed-off-by: Johannes Berg <johannes.berg@intel.com>
----
- drivers/thermal/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+> that. That being said, can you try this patch if it makes a change?
+> 
+> http://patchwork.ozlabs.org/patch/609280/
+> 
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c37eedc35a24..30079ef8b15c 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -376,6 +376,7 @@ config MTK_THERMAL
- 	tristate "Temperature sensor driver for mediatek SoCs"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
- 	depends on HAS_IOMEM
-+	depends on RESET_CONTROLLER
- 	default y
- 	help
- 	  Enable this option if you want to have support for thermal management
+Unfortunately it doesn't help, I just tried today's -next (next-20160414)
+that already has the mentioned patch but the issue is still present.
+
+Best regards,
 -- 
-2.7.0
-
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
