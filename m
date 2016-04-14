@@ -1,105 +1,110 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
-Date: Thu, 14 Apr 2016 15:42:48 -0700
-Message-ID: <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
-References: <20160412221659.GA18102@www.outflux.net>
-	<20160414200102.GB3856@amd>
-	<CAGXu5jKNKV2RaPCw+m3R-e7irmmP0eRBBq9RKY0mcH5A1Nsx6g@mail.gmail.com>
-	<20160414203444.GC3856@amd>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Thu, 14 Apr 2016 19:59:31 -0400
+Message-ID: <57102EE3.3020707@osg.samsung.com>
+References: <20160212224018.GZ3500@atomide.com>
+ <56BE65F0.8040600@osg.samsung.com> <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com> <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com> <20160414111257.GG1533@katana>
+ <570F9DF1.3070700@osg.samsung.com> <20160414141945.GA1539@katana>
+ <570FA8D6.5070308@osg.samsung.com> <20160414151244.GM5973@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f45.google.com ([74.125.82.45]:37062 "EHLO
-	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbcDNWmu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 18:42:50 -0400
-Received: by mail-wm0-f45.google.com with SMTP id n3so8317674wmn.0
-        for <linux-pm@vger.kernel.org>; Thu, 14 Apr 2016 15:42:49 -0700 (PDT)
-In-Reply-To: <20160414203444.GC3856@amd>
+Received: from lists.s-osg.org ([54.187.51.154]:33695 "EHLO lists.s-osg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbcDNX7m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Apr 2016 19:59:42 -0400
+In-Reply-To: <20160414151244.GM5973@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@denx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Enric Balletbo i Serra <eballetbo@gmail.com>, =?UTF-8?Q?Agust=c3=ad_Fontquerni?= <af@iseebcn.com>
 
-On Thu, Apr 14, 2016 at 1:34 PM, Pavel Machek <pavel@denx.de> wrote:
-> On Thu 2016-04-14 13:14:07, Kees Cook wrote:
->> On Thu, Apr 14, 2016 at 1:01 PM, Pavel Machek <pavel@denx.de> wrote:
->> > Hi!
->> >
->> >> Since kASLR and Hibernation can not currently coexist at runtime
->> >> on x86, the default behavior was to disable kASLR by default when
->> >> CONFIG_HIBERNATION was present (to retain original behavior).
->> >>
->> >> The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
->> >> default when selected at build time. Since arm64 Hibernation does not
->> >> conflict with kASLR, this fixes the hibernation argument parsing to be
->> >> x86-specific. Additionally, since end users want to be able to select
->> >> kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
->> >> that is present only on x86.
->> >>
->> >> Signed-off-by: Kees Cook <keescook@chromium.org>
->> >
->> > I believe this is bad idea. arm64 shows that kaslr and hibernation can
->> > coexist, and hibernation is still useful when your battery runs out.
+Hello Tony,
+
+On 04/14/2016 11:12 AM, Tony Lindgren wrote:
+> Hi,
+> 
+> * Javier Martinez Canillas <javier@osg.samsung.com> [160414 07:28]:
+>> Hello Wofram,
 >>
->> What? I'm confused -- this patch leaves the x86 behavior as-is by
->> default but allows hibernation to work with arm64. (For example, right
->> now, if you boot arm64 with "kaslr" kernel argument, hibernation will
->> get needlessly disabled.)
+>> On 04/14/2016 10:19 AM, Wolfram Sang wrote:
+>>>
+>>>> Yes, I also wonder why I'm the only one facing this issue... maybe no one
+>>>> else is using the tvp5150 driver on an OMAP board with mainline?
+>>>
+>>> I wonder why it only affects tvp5150. I don't see the connection yet.
+>>>
+>>
+>> Yes, me neither. All other I2C devices are working properly on this board.
+>>
+>> The only thing I can think, is that the tvp5150 needs a reset sequence in
+>> order to be operative. It basically toggles two pins in the chip, this is
+>> done in tvp5150_init() [0] and is needed before accessing I2C registers.
+>>
+>> Maybe runtime pm has an effect on this and the chip is not reset correctly?
+> 
+> Is this with omap3 and does tvp5150 have a reset GPIO pin?
 >
-> So it is very different from the PATCH v1, still it shares the
-> subject?
 
-It was similar, but not the same:
-
-v1: Prefer kASLR over Hibernation
-v2: kaslr: allow kASLR to be default over Hibernation
-
-I'm happy to call it whatever you like, though! :)
-
-> This is the part I don't like:
+Yes, it's a DM3730 (OMAP3) and yes the tvp5150 (actually it's a tvp5151) has
+a reset pin that has to be toggled, along with a power-down pin for the chip
+to be in an operative state before accessing the I2C registers. That is the
+power/reset sequence I mentioned before.
+ 
+> If so, you could be hitting the GPIO errata where a glitch can happen
+> when restoring the GPIO state coming back from off mode in idle. This
+> happes for GPIO pins that are not in GPIO bank1 and have an external
+> pull down resistor on the line.
 >
->> >> Since kASLR and Hibernation can not currently coexist at runtime
->> >> on x86, the default behavior was to disable kASLR by default when
->> >> CONFIG_HIBERNATION was present (to retain original behavior).
+
+The GPIO lines connected to these pins are:
+
+GPIO126 (bank4 pin 30) -> tvp5150 power-down pin
+GPIO167 (bank6 pin 7)  -> tvp5150 reset pin
+
+Neither are in GPIO bank1 so they could be affected by the errata you
+mention but there isn't external pull down (or up) resistors on these
+lines AFAICT by looking at the board schematics. I've added to the cc
+list to other people that are familiar with the board in case I missed
+something.
+
+> The short term workaround is to mux the reset pin to use the internal
+> pulls by using PIN_INPUT_PULLUP | MUX_MODE7, or depending on the direction,
+> PIN_INPUT_PULLDOWN | MUX_MODE7.
 >
-> Now I notice that it is quite unclear if it actually changes
-> anything...
 
-Okay, right. So, there are a few problems that this patch is solving,
-and maybe it needs to be broken up into separate patches, but it
-didn't seem like it to me at the time. Specifically:
+I guess you meant MUX_MODE4 here since the pin has to be in GPIO mode?
 
-1) The x86 hibernation and KASLR code don't play well together currently.
+Also, I wonder how the issue could be related to the GPIO controller
+since is when enabling runtime PM for the I2C controller that things
+fail. IOW, disabling runtime PM for the I2C adapter shouldn't make
+things to work if the problem was caused by the mentioned GPIO errata.
 
-"1" was worked around so that both could be built in, but only one
-would be active at a time. This lead to:
+In any case, I've tried to use the internal pulls as you suggested but
+that didn't solve the issue.
 
-2) The general hibernation code contains kernel arguments that should
-only affect x86.
+> The long term workaround is tho have gpio-omap.c do this dynamically
+> with pinctrl-single.c using gpio-ranges, but that's going to take a
+> while.. You can search for erratum 1.158 for more info.
+> 
+> Regards,
+> 
+> Tony
+> 
+>> [0]: https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tree/drivers/media/i2c/tvp5150.c#n1311
 
-And we have the desire by folks to have KASLR enabled by default on
-x86, giving us:
+I'm really out of ideas on this, I don't think that Wolfram change has
+to be reverted since it seems I'm the only one facing this issue and
+also the DTS for the board I'm using is not even in mainline yet.
 
-3) There is no build-time way on x86 to switch the preference of KASLR
-vs hibernation.
+I'm waiting for some discussions about the Media Controller input
+connectors DT bindings to settle before posting the board DTS patches.
 
-I think "2" should be solved for this release, since arm64 KASLR is
-landing, and mistakenly booting an arm64 system with "kaslr" on the
-command line will needlessly disable hibernation.
-
-3 and 2 are a result of 1, and IIUC, you're saying you want to solve 1
-to make everything else go away? My only concern with that idea is
-that I don't (yet) have the knowledge of x86 hibernation internals to
-fix this, and it'll take a while to get to having KASLR on by default
-if we have to wait on me to fix hibernation. (I'm not saying I
-won't/can't, it's just that it'll take me time to come up to speed on
-it.)
-
-That do you think?
-
--Kees
-
+Best regards,
 -- 
-Kees Cook
-Chrome OS & Brillo Security
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
