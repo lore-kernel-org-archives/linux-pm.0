@@ -1,63 +1,133 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Thu, 14 Apr 2016 13:12:58 +0200
-Message-ID: <20160414111257.GG1533@katana>
-References: <20160208105417.GD2220@tetsubishi>
- <56BE57FC.3020407@osg.samsung.com>
- <20160212221352.GY3500@atomide.com>
- <56BE5C97.9070607@osg.samsung.com>
- <20160212224018.GZ3500@atomide.com>
- <56BE65F0.8040600@osg.samsung.com>
- <20160212234623.GB3500@atomide.com>
- <56BE993B.3010804@osg.samsung.com>
- <20160412223254.GK1526@katana>
- <570ECAB0.4050107@osg.samsung.com>
+From: Ming Lei <tom.leiming-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v1 00/27] block: cleanup direct access to
+	.bi_vcnt & .bi_io_vec
+Date: Thu, 14 Apr 2016 20:02:18 +0800
+Message-ID: <1460635375-28282-1-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="z9ECzHErBrwFF8sy"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <570ECAB0.4050107@osg.samsung.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <lustre-devel-bounces-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org>
+List-Unsubscribe: <http://lists.lustre.org/options.cgi/lustre-devel-lustre.org>,
+	<mailto:lustre-devel-request-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.lustre.org/pipermail/lustre-devel-lustre.org/>
+List-Post: <mailto:lustre-devel-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org>
+List-Help: <mailto:lustre-devel-request-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.lustre.org/listinfo.cgi/lustre-devel-lustre.org>,
+	<mailto:lustre-devel-request-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org?subject=subscribe>
+Errors-To: lustre-devel-bounces-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org
+Sender: "lustre-devel" <lustre-devel-bounces-aLEFhgZF4x6X6Mz3xDxJMA@public.gmane.org>
+To: Jens Axboe <axboe-b10kYP2dOMg@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jan Kara <jack-AlSwsSmVLrQ@public.gmane.org>, Mike Snitzer <snitzer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>, Ming Lei <tom.leiming-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, Oleg Drokin <green-SOTZviwpzew/JUsKyNonYw@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "open list:MEMORY MANAGEMENT" <linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org>, "open list:DEVICE-MAPPER  LVM" <dm-devel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "open list:TARGET SUBSYSTEM" <target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Miklos Szeredi <mszeredi-AlSwsSmVLrQ@public.gmane.org>, "open list:DRBD DRIVER" <drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org>, "open list:STAGING SUBSYSTEM" <devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org>, "open list:TARGET SUBSYSTEM" <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Minchan Kim <minchan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jarod Wilson <jarod-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Christoph Hellwig <hch-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Swee Hua Law <sweehua81-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kent Overstreet <kent.overstreet-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "open list:HIBERNATION aka Software Suspend,
+	aka swsusp" <linux-pm-u79uwXL29TaqPxH82wqD4g@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Guys,
 
---z9ECzHErBrwFF8sy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It is always not a good practice to access bio->bi_vcnt and
+bio->bi_io_vec from drivers directly. Also this kind of direct
+access will cause trouble when converting to multipage bvecs
+because currently drivers may suppose one bvec always include
+one page, and use the two fields to figure out how to handle
+pages.
 
+Even the actual meaning of the two fields arn't change from
+block subsystem's view, but it may change from driver or fs's
+view, so this patchset takes a conservative approach to cleanup
+direct access to the two fields for avoiding regressions.
 
-> I'll write what I found so far in case someone with better knowledge about
-> the runtime PM API and the OMAP I2C controller driver can have an idea of
-> what could be causing this.
+The 1st patch introduces the following 3 bio helpers which can be
+used inside drivers for avoiding direct access to .bi_vcnt and .bi_io_vec.
 
-Thanks for the summary. I got no other reports like this, I wonder about
-that. That being said, can you try this patch if it makes a change?
+        bio_pages()
+        bio_get_base_vec()
+        bio_set_vec_table()
 
-http://patchwork.ozlabs.org/patch/609280/
+bio_pages() can be easy to convert to multipage bvecs.
 
+For bio_get_base_vec() and bio_set_vec_table(), they are often used
+during initializing a new bio or in case of single bvec bio. With the
+two new helpers, it becomes quite easy to audit access to .bi_io_vec
+and .bi_vcnt.
 
---z9ECzHErBrwFF8sy
-Content-Type: application/pgp-signature; name="signature.asc"
+Most of the other patches use the 3 helpers to clean up most of direct
+access to .bi_vcnt and .bi_io_vec from drivers, except for MD and btrfs,
+which two subsystems will be handled with different way in future.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+For btrfs, its direct access to .bi_vcnt & .bi_io_vec need to be cleanuped
+and audited that there isn't issue once converting to multipage bvecs.
 
-iQIcBAEBAgAGBQJXD3s5AAoJEBQN5MwUoCm2SuEP/AjB3bOpk/EH93O6Hux6eC4E
-yUX5v5hGS8k7twi1pqt6BqkdWpQ0hYlZBWs7pJ3Ge7LurGteRFA9EZHHZFJaqOuU
-UX3F6Y0WcX8m2hSdIOWpLzLXhJT6zV14Gi46yxjHXPdyxqtgl7/RX5NNHPFkbTn+
-S0CIXNEEIvjhTG/6/kmaSBpvfc96NmgPYWyw9BkIRpZuUrAvOIkGbyGtQDRYTaqa
-3790dbT5der6C3CmSkzMQgmbi6Mu5bPiI8cUwdCiD0a0WwzXBdIJGRc/CFDN4hQR
-d+QYn4C36H57j8f7v3+/E3emQ4yHGF8ydDgGdgakVKxog70xmMMcIAYAsDsoQtFq
-F9+6rOFQWcgjyZMhaRESAcGJO0JLHMw4udw8kv4LSbdiXUN/wYzNTIeDLfrwMzsn
-XaEidWP8qII6QcHbp1M91b4J+dFbBFKVG4qSB47LBaoBN7PUPe9ZgdIRkSkjIwjZ
-73F+2dlA27EH8Hjr2YNnfNkuVkPiTJz1YdGXKFCWnr3x/y8qLZpwEFXeDq9igx2x
-tG/UBb2wQCv/Hv5IYhI+1QrQAnKMXuR38qQqIbR10BMJ8SzUdtFjFQ5HrK+diZQL
-jM6fvPDAlI5RRHT0sMeKMmvra16nReVNXkwnYvYh00m12QRP+hYW4Wuhd5xgkT/O
-oX5gL/0QqV3KtOe1Rbfk
-=Nwro
------END PGP SIGNATURE-----
+For raid(md), given its usage is quite complicated, we can just
+not enable multipage bvecs for raid queue until all its usage
+are cleaned up and audited. So it won't be a blocker for multipage
+bvecs.
 
---z9ECzHErBrwFF8sy--
+Also bio_add_page() is used in floppy, dm-crypt and fs/logfs to
+avoiding direct access to .bi_vcnt & .bi_io_vec.
+
+The patchset can be found in the following tree:
+
+https://github.com/ming1/linux/tree/v4.6-rc-block-next-mpbvecs-cleanup.v1
+
+V1:
+	- add Reviewed-by
+	- remove bio_is_full() helper because target can find it
+	via the return value of bio_add_pc_page() (9/27)
+	- add comment on another two uses of bio_get_base_vec() (16/27)
+	- rebased on latest for-next branch of block tree
+
+Ming Lei (27):
+  block: bio: introduce 3 helpers for cleanup
+  block: drbd: use bio_get_base_vec() to retrieve the 1st bvec
+  block: drbd: remove impossible failure handling
+  block: loop: use bio_get_base_vec() to retrive bvec table
+  block: pktcdvd: use bio_get_base_vec() to retrive bvec table
+  block: floppy: use bio_set_vec_table()
+  block: floppy: use bio_add_page()
+  staging: lustre: avoid to use bio->bi_vcnt directly
+  target: avoid to access .bi_vcnt directly
+  bcache: debug: avoid to access .bi_io_vec directly
+  bcache: io.c: use bio_set_vec_table
+  bcache: journal.c: use bio_set_vec_table()
+  bcache: movinggc: use bio_set_vec_table()
+  bcache: writeback: use bio_set_vec_table()
+  bcache: super: use bio_set_vec_table()
+  bcache: super: use bio_get_base_vec
+  dm: crypt: use bio_add_page()
+  dm: dm-io.c: use bio_get_base_vec()
+  dm: dm.c: replace 'bio->bi_vcnt == 1' with !bio_multiple_segments
+  dm: dm-bufio.c: use bio_set_vec_table()
+  fs: logfs: use bio_set_vec_table()
+  fs: logfs: convert to bio_add_page() in sync_request()
+  fs: logfs: use bio_add_page() in __bdev_writeseg()
+  fs: logfs: use bio_add_page() in do_erase()
+  fs: logfs: remove unnecesary check
+  kernel/power/swap.c: use bio_get_base_vec()
+  mm: page_io.c: use bio_get_base_vec()
+
+ drivers/block/drbd/drbd_bitmap.c            |   4 +-
+ drivers/block/drbd/drbd_receiver.c          |  14 +---
+ drivers/block/floppy.c                      |   9 +--
+ drivers/block/loop.c                        |   5 +-
+ drivers/block/pktcdvd.c                     |   3 +-
+ drivers/md/bcache/debug.c                   |  11 ++-
+ drivers/md/bcache/io.c                      |   3 +-
+ drivers/md/bcache/journal.c                 |   3 +-
+ drivers/md/bcache/movinggc.c                |   6 +-
+ drivers/md/bcache/super.c                   |  33 ++++++---
+ drivers/md/bcache/writeback.c               |   4 +-
+ drivers/md/dm-bufio.c                       |   3 +-
+ drivers/md/dm-crypt.c                       |   8 +--
+ drivers/md/dm-io.c                          |   7 +-
+ drivers/md/dm.c                             |   3 +-
+ drivers/staging/lustre/lustre/llite/lloop.c |   9 +--
+ drivers/target/target_core_pscsi.c          |   8 +--
+ fs/logfs/dev_bdev.c                         | 107 +++++++++++-----------------
+ include/linux/bio.h                         |  21 ++++++
+ kernel/power/swap.c                         |  10 ++-
+ mm/page_io.c                                |  18 ++++-
+ 21 files changed, 155 insertions(+), 134 deletions(-)
+
+Thanks,
+Ming
+-- 
+1.9.1
