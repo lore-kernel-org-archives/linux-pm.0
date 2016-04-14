@@ -1,115 +1,105 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v5 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for I/O devices
-Date: Fri, 15 Apr 2016 00:43:54 +0300
-Message-ID: <1482821.iPLreCG4pH@avalon>
-References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be> <1460558672-10290-6-git-send-email-geert+renesas@glider.be>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
+Date: Thu, 14 Apr 2016 15:42:48 -0700
+Message-ID: <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
+References: <20160412221659.GA18102@www.outflux.net>
+	<20160414200102.GB3856@amd>
+	<CAGXu5jKNKV2RaPCw+m3R-e7irmmP0eRBBq9RKY0mcH5A1Nsx6g@mail.gmail.com>
+	<20160414203444.GC3856@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1460558672-10290-6-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:37062 "EHLO
+	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbcDNWmu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 18:42:50 -0400
+Received: by mail-wm0-f45.google.com with SMTP id n3so8317674wmn.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 Apr 2016 15:42:49 -0700 (PDT)
+In-Reply-To: <20160414203444.GC3856@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@denx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 
-Hi Geert,
+On Thu, Apr 14, 2016 at 1:34 PM, Pavel Machek <pavel@denx.de> wrote:
+> On Thu 2016-04-14 13:14:07, Kees Cook wrote:
+>> On Thu, Apr 14, 2016 at 1:01 PM, Pavel Machek <pavel@denx.de> wrote:
+>> > Hi!
+>> >
+>> >> Since kASLR and Hibernation can not currently coexist at runtime
+>> >> on x86, the default behavior was to disable kASLR by default when
+>> >> CONFIG_HIBERNATION was present (to retain original behavior).
+>> >>
+>> >> The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
+>> >> default when selected at build time. Since arm64 Hibernation does not
+>> >> conflict with kASLR, this fixes the hibernation argument parsing to be
+>> >> x86-specific. Additionally, since end users want to be able to select
+>> >> kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
+>> >> that is present only on x86.
+>> >>
+>> >> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> >
+>> > I believe this is bad idea. arm64 shows that kaslr and hibernation can
+>> > coexist, and hibernation is still useful when your battery runs out.
+>>
+>> What? I'm confused -- this patch leaves the x86 behavior as-is by
+>> default but allows hibernation to work with arm64. (For example, right
+>> now, if you boot arm64 with "kaslr" kernel argument, hibernation will
+>> get needlessly disabled.)
+>
+> So it is very different from the PATCH v1, still it shares the
+> subject?
 
-Thank you for the patch.
+It was similar, but not the same:
 
-On Wednesday 13 Apr 2016 16:44:26 Geert Uytterhoeven wrote:
-> On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
-> also part of the CPG/MSSR Clock Domain.
-> On all R-Car SoCs, devices in the "always-on" PM Domain are part of the
-> Clock Domain served by the CPG/MSSR or CPG/MSTP driver.
-> 
-> Hook up the CPG/MSTP or CPG/MSSR Clock Domain attach/detach callbacks to
-> enable power management using module clocks. Which callback to hook up
-> depends on the presence of device nodes compatible with
-> "renesas,cpg-mstp-clocks". This clears the path for a future migration
-> from the CPG/MSTP to the CPG/MSSR driver on R-Car H1 and
-> Gen2.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+v1: Prefer kASLR over Hibernation
+v2: kaslr: allow kASLR to be default over Hibernation
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+I'm happy to call it whatever you like, though! :)
 
-> ---
-> v5:
->   - Revert v4 changes,
->   - Use either the cpg_mssr_*() or cpg_mstp_*() callbacks,
->   - Drop dependency on r8a7795, as this is used for the "always-on" PM
->     Domain on R-Car H1 and Gen2, too,
-> 
-> v4:
->   - Remove the explicit dependency on the CPG/MSSR driver by forwarding
->     the attach/detach callbacks to the parent PM Domain.
->     If deemed reusable, rcar_sysc_{at,de}tach_dev() can be moved to
->     common genpd code later.
-> 
-> v3:
->   - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
->     using our own copies,
-> 
-> v2:
->   - New.
-> ---
->  drivers/soc/renesas/rcar-sysc.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff --git a/drivers/soc/renesas/rcar-sysc.c
-> b/drivers/soc/renesas/rcar-sysc.c index a333ef4152428440..be83636ef2647947
-> 100644
-> --- a/drivers/soc/renesas/rcar-sysc.c
-> +++ b/drivers/soc/renesas/rcar-sysc.c
-> @@ -9,6 +9,7 @@
->   * for more details.
->   */
-> 
-> +#include <linux/clk/renesas.h>
->  #include <linux/delay.h>
->  #include <linux/err.h>
->  #include <linux/mm.h>
-> @@ -222,6 +223,8 @@ static int rcar_sysc_pd_power_on(struct
-> generic_pm_domain *genpd) return rcar_sysc_power_up(&pd->ch);
->  }
-> 
-> +static bool has_cpg_mstp;
-> +
->  static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
->  {
->  	struct generic_pm_domain *genpd = &pd->genpd;
-> @@ -253,6 +256,18 @@ static void __init rcar_sysc_pd_setup(struct
-> rcar_sysc_pd *pd) gov = &pm_domain_always_on_gov;
->  	}
-> 
-> +	if (!(pd->flags & (PD_CPU | PD_SCU))) {
-> +		/* Enable Clock Domain for I/O devices */
-> +		genpd->flags = GENPD_FLAG_PM_CLK;
-> +		if (has_cpg_mstp) {
-> +			genpd->attach_dev = cpg_mstp_attach_dev;
-> +			genpd->detach_dev = cpg_mstp_detach_dev;
-> +		} else {
-> +			genpd->attach_dev = cpg_mssr_attach_dev;
-> +			genpd->detach_dev = cpg_mssr_detach_dev;
-> +		}
-> +	}
-> +
->  	pm_genpd_init(genpd, gov, false);
->  	genpd->dev_ops.active_wakeup = rcar_sysc_active_wakeup;
->  	genpd->power_off = rcar_sysc_pd_power_off;
-> @@ -298,6 +313,9 @@ static int __init rcar_sysc_pd_init(void)
-> 
->  	info = match->data;
-> 
-> +	has_cpg_mstp = of_find_compatible_node(NULL, NULL,
-> +					       "renesas,cpg-mstp-clocks");
-> +
->  	base = of_iomap(np, 0);
->  	if (!base) {
->  		pr_warn("%s: Cannot map regs\n", np->full_name);
+> This is the part I don't like:
+>
+>> >> Since kASLR and Hibernation can not currently coexist at runtime
+>> >> on x86, the default behavior was to disable kASLR by default when
+>> >> CONFIG_HIBERNATION was present (to retain original behavior).
+>
+> Now I notice that it is quite unclear if it actually changes
+> anything...
+
+Okay, right. So, there are a few problems that this patch is solving,
+and maybe it needs to be broken up into separate patches, but it
+didn't seem like it to me at the time. Specifically:
+
+1) The x86 hibernation and KASLR code don't play well together currently.
+
+"1" was worked around so that both could be built in, but only one
+would be active at a time. This lead to:
+
+2) The general hibernation code contains kernel arguments that should
+only affect x86.
+
+And we have the desire by folks to have KASLR enabled by default on
+x86, giving us:
+
+3) There is no build-time way on x86 to switch the preference of KASLR
+vs hibernation.
+
+I think "2" should be solved for this release, since arm64 KASLR is
+landing, and mistakenly booting an arm64 system with "kaslr" on the
+command line will needlessly disable hibernation.
+
+3 and 2 are a result of 1, and IIUC, you're saying you want to solve 1
+to make everything else go away? My only concern with that idea is
+that I don't (yet) have the knowledge of x86 hibernation internals to
+fix this, and it'll take a while to get to having KASLR on by default
+if we have to wait on me to fix hibernation. (I'm not saying I
+won't/can't, it's just that it'll take me time to come up to speed on
+it.)
+
+That do you think?
+
+-Kees
 
 -- 
-Regards,
-
-Laurent Pinchart
+Kees Cook
+Chrome OS & Brillo Security
