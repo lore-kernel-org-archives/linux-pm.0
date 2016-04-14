@@ -1,40 +1,42 @@
-From: Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH v1 26/27] kernel/power/swap.c: use bio_get_base_vec()
-Date: Thu, 14 Apr 2016 20:02:44 +0800
-Message-ID: <1460635375-28282-27-git-send-email-tom.leiming@gmail.com>
-References: <1460635375-28282-1-git-send-email-tom.leiming@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1460635375-28282-1-git-send-email-tom.leiming@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org
-Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
+From: Johannes Berg <johannes@sipsolutions.net>
+Subject: [PATCH] thermal: fix Mediatek thermal controller build
+Date: Thu, 14 Apr 2016 15:15:20 +0200
+Message-ID: <1460639720-28180-1-git-send-email-johannes@sipsolutions.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from s3.sipsolutions.net ([5.9.151.49]:44218 "EHLO sipsolutions.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbcDNNPc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Apr 2016 09:15:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Berg <johannes.berg@intel.com>
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+From: Johannes Berg <johannes.berg@intel.com>
+
+At least with CONFIG_COMPILE_TEST, there's no reason to assume
+that CONFIG_RESET_CONTROLLER is set, but the code for this
+controller requires it since it calls device_reset().
+
+Make CONFIG_MTK_THERMAL properly depend on CONFIG_RESET_CONTROLLER.
+
+Signed-off-by: Johannes Berg <johannes.berg@intel.com>
 ---
- kernel/power/swap.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/thermal/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 12cd989..cedf752 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -230,7 +230,15 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- static void hib_end_io(struct bio *bio)
- {
- 	struct hib_bio_batch *hb = bio->bi_private;
--	struct page *page = bio->bi_io_vec[0].bv_page;
-+
-+	/*
-+	 * Single bvec bio.
-+	 *
-+	 * For accessing page pointed to by the 1st bvec, it
-+	 * works too after multipage bvecs.
-+	 */
-+	struct bio_vec *bvec = bio_get_base_vec(bio);
-+	struct page *page = bvec->bv_page;
- 
- 	if (bio->bi_error) {
- 		printk(KERN_ALERT "Read-error on swap-device (%u:%u:%Lu)\n",
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index c37eedc35a24..30079ef8b15c 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -376,6 +376,7 @@ config MTK_THERMAL
+ 	tristate "Temperature sensor driver for mediatek SoCs"
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
+ 	depends on HAS_IOMEM
++	depends on RESET_CONTROLLER
+ 	default y
+ 	help
+ 	  Enable this option if you want to have support for thermal management
 -- 
-1.9.1
+2.7.0
+
