@@ -1,52 +1,63 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: re: cpufreq: AMD "frequency sensitivity feedback" powersave bias for
- ondemand governor
-Date: Thu, 14 Apr 2016 14:03:27 +0300
-Message-ID: <20160414110327.GA24237@mwanda>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Thu, 14 Apr 2016 13:12:58 +0200
+Message-ID: <20160414111257.GG1533@katana>
+References: <20160208105417.GD2220@tetsubishi>
+ <56BE57FC.3020407@osg.samsung.com>
+ <20160212221352.GY3500@atomide.com>
+ <56BE5C97.9070607@osg.samsung.com>
+ <20160212224018.GZ3500@atomide.com>
+ <56BE65F0.8040600@osg.samsung.com>
+ <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com>
+ <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:19823 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbcDNLDi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 07:03:38 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="z9ECzHErBrwFF8sy"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <570ECAB0.4050107@osg.samsung.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: jacob.shin@amd.com
-Cc: linux-pm@vger.kernel.org
-
-Hello Jacob Shin,
-
-The patch 9c5320c8ea8b: "cpufreq: AMD "frequency sensitivity
-feedback" powersave bias for ondemand governor" from Apr 4, 2013,
-leads to the following static checker warning:
-
-	drivers/cpufreq/amd_freq_sensitivity.c:98 amd_powersave_bias_target()
-	error: uninitialized symbol 'index'.
-
-drivers/cpufreq/amd_freq_sensitivity.c
-    83          /* this workload is not CPU bound, so choose a lower freq */
-    84          if (sensitivity < od_tuners->powersave_bias) {
-    85                  if (data->freq_prev == policy->cur)
-    86                          freq_next = policy->cur;
-    87  
-    88                  if (freq_next > policy->cur)
-    89                          freq_next = policy->cur;
-    90                  else if (freq_next < policy->cur)
-    91                          freq_next = policy->min;
-    92                  else {
-    93                          unsigned int index;
-    94  
-    95                          cpufreq_frequency_table_target(policy,
-    96                                  od_info->freq_table, policy->cur - 1,
-    97                                  CPUFREQ_RELATION_H, &index);
-
-If cpufreq_frequency_table_target() return -EINVAL the index isn't set.
-
-    98                          freq_next = od_info->freq_table[index].frequency;
-    99                  }
 
 
-regards,
-dan carpenter
+--z9ECzHErBrwFF8sy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+> I'll write what I found so far in case someone with better knowledge about
+> the runtime PM API and the OMAP I2C controller driver can have an idea of
+> what could be causing this.
+
+Thanks for the summary. I got no other reports like this, I wonder about
+that. That being said, can you try this patch if it makes a change?
+
+http://patchwork.ozlabs.org/patch/609280/
+
+
+--z9ECzHErBrwFF8sy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXD3s5AAoJEBQN5MwUoCm2SuEP/AjB3bOpk/EH93O6Hux6eC4E
+yUX5v5hGS8k7twi1pqt6BqkdWpQ0hYlZBWs7pJ3Ge7LurGteRFA9EZHHZFJaqOuU
+UX3F6Y0WcX8m2hSdIOWpLzLXhJT6zV14Gi46yxjHXPdyxqtgl7/RX5NNHPFkbTn+
+S0CIXNEEIvjhTG/6/kmaSBpvfc96NmgPYWyw9BkIRpZuUrAvOIkGbyGtQDRYTaqa
+3790dbT5der6C3CmSkzMQgmbi6Mu5bPiI8cUwdCiD0a0WwzXBdIJGRc/CFDN4hQR
+d+QYn4C36H57j8f7v3+/E3emQ4yHGF8ydDgGdgakVKxog70xmMMcIAYAsDsoQtFq
+F9+6rOFQWcgjyZMhaRESAcGJO0JLHMw4udw8kv4LSbdiXUN/wYzNTIeDLfrwMzsn
+XaEidWP8qII6QcHbp1M91b4J+dFbBFKVG4qSB47LBaoBN7PUPe9ZgdIRkSkjIwjZ
+73F+2dlA27EH8Hjr2YNnfNkuVkPiTJz1YdGXKFCWnr3x/y8qLZpwEFXeDq9igx2x
+tG/UBb2wQCv/Hv5IYhI+1QrQAnKMXuR38qQqIbR10BMJ8SzUdtFjFQ5HrK+diZQL
+jM6fvPDAlI5RRHT0sMeKMmvra16nReVNXkwnYvYh00m12QRP+hYW4Wuhd5xgkT/O
+oX5gL/0QqV3KtOe1Rbfk
+=Nwro
+-----END PGP SIGNATURE-----
+
+--z9ECzHErBrwFF8sy--
