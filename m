@@ -1,124 +1,179 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v5 00/12] ARM/arm64: dts: rcar: Add SYSC PM domains
-Date: Thu, 14 Apr 2016 19:39:11 +0300
-Message-ID: <69568188.pxFZj2OQEq@avalon>
-References: <1460558692-10414-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:57029 "EHLO
-	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755366AbcDNQjD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 12:39:03 -0400
-In-Reply-To: <1460558692-10414-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+From: fu.wei@linaro.org
+Subject: [PATCH v10] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Fri, 15 Apr 2016 01:19:43 +0800
+Message-ID: <1460654383-19536-1-git-send-email-fu.wei@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>, Fu Wei <fu.wei@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Geert,
+From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 
-Thank you for the patches.
+This commit provides APEI arch-specific bits for aarch64
 
-For the whole series,
+Meanwhile,
+(1)add a new subfunction "hest_ia32_init" for
+"acpi_disable_cmcff" which is used by IA-32 Architecture
+Corrected Machine Check (CMC).
+(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+a generic place.
+(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+[Fu Wei: improve && upstream]
 
-On Wednesday 13 Apr 2016 16:44:40 Geert Uytterhoeven wrote:
-> 	Hi Simon, Magnus,
-> 
-> This patch series adds the R-Car System Controller to the DTS files for
-> the various Renesas R-Car SoCs, and hooks up devices to their respective
-> PM domains.
-> 
-> This is a dependency for the enablement of DU and VSP on R-Car H3, as
-> on this SoC the VSPs are located in a PM Domain.
-> 
-> This series contains 2 parts:
->   1. Patches 1-6 add device node for the System Controllers, and hook
->      up CPU cores and L2 caches/SCUs to their respective PM Domains,
->   2. Patches 7-12 hook up devices to the SYSC "always-on" PM Domain, for
->      a more consistent device-power-area description in DT.
-> 
-> As "[PATCH v5 00/11] soc: renesas: Add R-Car SYSC PM Domain Support"
-> merged the two initialization phases again, the issues in v4 caused by
-> excessive deferred probing are gone, and both parts are now safe to
-> apply.
-> 
-> Changes compared to v4:
->   - Add Acked-by,
->   - Remove "power-domains" property again from the sysc nodes, as the
->     System Controller theirselves are not part of the Clock Domains.
-> 
-> Changes compared to v3:
->   - Add power-domains properties to the sysc nodes, to refer to the
->     SoC's Clock Domains,
->   - Extract using the SYSC "always-on" PM Domain on R-Car H3 into its
->     own patch,
->   - Add patches to use the SYSC "always-on" PM Domain on R-Car H1 and
->     R-Car Gen2,
->   - Update for recently added can0, can1, pciec0, and pciec1 device
->     nodes on R-Car H3.
-> 
-> Changes compared to v2:
->   - Move power area hierarchy from DT to C (cfr. DT bindings for Renesas
->     CPG/MSSR), and switch to "#power-domain-cells = <1>",
->   - Drop fallback compatibility strings, as the bindings are
->     SoC-specific,
->   - Add an "always-on" power area on R-Car H3.
-> 
-> Changes compared to v1:
->   - Add R-Car H3 (r8a7795) support,
->   - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
->   - Add fallback compatibility strings for R-Car Gen2 and Gen3.
-> 
-> Dependencies:
->   - renesas-devel-20160411-v4.6-rc3
->   - clk-renesas-for-v4.7
->   - "[PATCH v2 0/4] clk: renesas: R-Car SYSC PM Domain Preparation",
->   - "[PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System
->     Controller",
->   - "[PATCH v5 00/11] soc: renesas: Add R-Car SYSC PM Domain Support".
-> Note that these are hard dependencies: adding SYSC PM Domains to DTS
-> files without driver support will cause breakage!
-> 
-> For your convenience, I've pushed this, incl. all dependencies, to the
-> topic/rcar-sysc-pd-v5 branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
-> Integration with renesas-drivers-2016-04-12-v4.6-rc3 is available in the
-> topic/gen3-latest branch.
-> 
-> This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
-> r8a7794/alt, and r8a7795/salvator-x.
-> 
-> Thanks for applying!
-> 
-> Geert Uytterhoeven (12):
->   ARM: dts: r8a7779: Add SYSC PM Domains
->   ARM: dts: r8a7790: Add SYSC PM Domains
->   ARM: dts: r8a7791: Add SYSC PM Domains
->   ARM: dts: r8a7793: Add SYSC PM Domains
->   ARM: dts: r8a7794: Add SYSC PM Domains
->   arm64: dts: r8a7795: Add SYSC PM Domains
->   ARM: dts: r8a7779: Use SYSC "always-on" PM Domain
->   ARM: dts: r8a7790: Use SYSC "always-on" PM Domain
->   ARM: dts: r8a7791: Use SYSC "always-on" PM Domain
->   ARM: dts: r8a7793: Use SYSC "always-on" PM Domain
->   ARM: dts: r8a7794: Use SYSC "always-on" PM Domain
->   arm64: dts: r8a7795: Use SYSC "always-on" PM Domain
-> 
->  arch/arm/boot/dts/r8a7779.dtsi           |  54 ++++++-----
->  arch/arm/boot/dts/r8a7790.dtsi           | 155
-> ++++++++++++++++-------------- arch/arm/boot/dts/r8a7791.dtsi           |
-> 156 ++++++++++++++++--------------- arch/arm/boot/dts/r8a7793.dtsi         
->  | 105 +++++++++++---------- arch/arm/boot/dts/r8a7794.dtsi           | 116
-> ++++++++++++----------- arch/arm64/boot/dts/renesas/r8a7795.dtsi | 123
-> +++++++++++++----------- 6 files changed, 389 insertions(+), 320
-> deletions(-)
+Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+Signed-off-by: Fu Wei <fu.wei@linaro.org>
+Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+Acked-by: Will Deacon <will.deacon@arm.com>
+---
+Changelog:
+v10:https://lkml.org/lkml/2016/4/
+    Fix the Alphabetical order problem in arch/arm64/Kconfig
 
+v9: https://lkml.org/lkml/2016/4/5/522
+    Improve the comment for arch_apei_flush_tlb_one.
+    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+    problem.
+
+v8: https://lkml.org/lkml/2016/3/29/132
+    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+    on ARM64.
+
+v7: https://lkml.org/lkml/2016/3/17/183
+    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
+
+v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+    a generic place.
+    Delete HAVE_ACPI_APEI_HEST_IA32.
+
+v5: https://lkml.org/lkml/2015/12/10/131
+    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+    "#if defined(__i386__) || defined(__x86_64__)".
+
+v4: https://lkml.org/lkml/2015/12/8/188
+    Rebase to latest kernel version(4.4-rc4).
+    Move arch_apei_flush_tlb_one into header file as a inline function
+    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+
+v3: https://lkml.org/lkml/2015/12/3/521
+    Remove "acpi_disable_cmcff" from arm64 code,
+    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+
+v2: https://lkml.org/lkml/2015/12/2/432
+    Rebase to latest kernel version(4.4-rc3).
+    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+
+v1: https://lkml.org/lkml/2015/8/14/199
+    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+    Delete arch/arm64/kernel/apei.c.
+    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+
+ arch/arm64/Kconfig            |  1 +
+ arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
+ arch/x86/kernel/acpi/apei.c   |  3 ---
+ drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+ 4 files changed, 30 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 4f43622..da16716 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -47,6 +47,7 @@ config ARM64
+ 	select GENERIC_TIME_VSYSCALL
+ 	select HANDLE_DOMAIN_IRQ
+ 	select HARDIRQS_SW_RESEND
++	select HAVE_ACPI_APEI if (ACPI && EFI)
+ 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_BITREVERSE
+diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+index aee323b..8db8379 100644
+--- a/arch/arm64/include/asm/acpi.h
++++ b/arch/arm64/include/asm/acpi.h
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/cputype.h>
+ #include <asm/smp_plat.h>
++#include <asm/tlbflush.h>
+ 
+ /* Macros for consistency checks of the GICC subtable of MADT */
+ #define ACPI_MADT_GICC_LENGTH	\
+@@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
+ }
+ 
+ #ifdef	CONFIG_ACPI_APEI
++#define acpi_disable_cmcff 1
+ pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+-#endif
+ 
++/*
++ * Despite its name, this function must still broadcast the TLB
++ * invalidation in order to ensure other CPUs don't up with with junk
++ * entries as a result of speculation. Unusually, its also called in
++ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
++ * TLB broadcasting, then we're in trouble here.
++ */
++static inline void arch_apei_flush_tlb_one(unsigned long addr)
++{
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
++}
++#endif /* CONFIG_ACPI_APEI */
+ #endif /*_ASM_ACPI_H*/
+diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+index c280df6..ea3046e 100644
+--- a/arch/x86/kernel/acpi/apei.c
++++ b/arch/x86/kernel/acpi/apei.c
+@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+ 	struct acpi_hest_ia_corrected *cmc;
+ 	struct acpi_hest_ia_error_bank *mc_bank;
+ 
+-	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+-		return 0;
+-
+ 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+ 	if (!cmc->enabled)
+ 		return 0;
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index 20b3fcf..792a0d9 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+  */
+ static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+ {
+-	return arch_apei_enable_cmcff(hest_hdr, data);
++	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
++		return 0;
++
++	if (!acpi_disable_cmcff)
++		return !arch_apei_enable_cmcff(hest_hdr, data);
++
++	return 0;
++}
++
++static inline int __init hest_ia32_init(void)
++{
++	return apei_hest_parse(hest_parse_cmc, NULL);
+ }
+ 
+ struct ghes_arr {
+@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+ 		goto err;
+ 	}
+ 
+-	if (!acpi_disable_cmcff)
+-		apei_hest_parse(hest_parse_cmc, NULL);
++	rc = hest_ia32_init();
++	if (rc)
++		goto err;
+ 
+ 	if (!ghes_disable) {
+ 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
 -- 
-Regards,
-
-Laurent Pinchart
+2.5.5
 
