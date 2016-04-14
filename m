@@ -1,182 +1,82 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v5 02/11] thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
-Date: Thu, 14 Apr 2016 15:01:50 +0530
-Message-ID: <1460626319-14516-3-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v5 04/11] thermal: core: export apis to get slope and offset
+Date: Thu, 14 Apr 2016 15:01:52 +0530
+Message-ID: <1460626319-14516-5-git-send-email-rnayak@codeaurora.org>
 References: <1460626319-14516-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:35122 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753992AbcDNJcd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 05:32:33 -0400
 In-Reply-To: <1460626319-14516-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com
 Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-Add support to calibrate sensors on 8916 family and also add common
-functions to read temperature from sensors (This can be reused on
-other SoCs having similar TSENS device)
-The calibration data is read from eeprom using the generic nvmem
-framework apis.
-
-Based on the original code by Siddartha Mohanadoss and Stephen Boyd.
+Add apis for platform thermal drivers to query for slope and offset
+attributes, which might be needed for temperature calculations.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/thermal/qcom/Makefile     |   2 +-
- drivers/thermal/qcom/tsens-8916.c | 113 ++++++++++++++++++++++++++++++++++++++
- drivers/thermal/qcom/tsens.c      |   1 +
- drivers/thermal/qcom/tsens.h      |   2 +
- 4 files changed, 117 insertions(+), 1 deletion(-)
- create mode 100644 drivers/thermal/qcom/tsens-8916.c
+ drivers/thermal/thermal_core.c | 16 ++++++++++++++++
+ include/linux/thermal.h        |  8 ++++++++
+ 2 files changed, 24 insertions(+)
 
-diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-index 2e800c5..05c98e4 100644
---- a/drivers/thermal/qcom/Makefile
-+++ b/drivers/thermal/qcom/Makefile
-@@ -1,2 +1,2 @@
- obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
--qcom_tsens-y			+= tsens.o tsens-common.o
-+qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o
-diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
-new file mode 100644
-index 0000000..beb3afa
---- /dev/null
-+++ b/drivers/thermal/qcom/tsens-8916.c
-@@ -0,0 +1,113 @@
-+/*
-+ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/platform_device.h>
-+#include "tsens.h"
-+
-+/* eeprom layout data for 8916 */
-+#define BASE0_MASK	0x0000007f
-+#define BASE1_MASK	0xfe000000
-+#define BASE0_SHIFT	0
-+#define BASE1_SHIFT	25
-+
-+#define S0_P1_MASK	0x00000f80
-+#define S1_P1_MASK	0x003e0000
-+#define S2_P1_MASK	0xf8000000
-+#define S3_P1_MASK	0x000003e0
-+#define S4_P1_MASK	0x000f8000
-+
-+#define S0_P2_MASK	0x0001f000
-+#define S1_P2_MASK	0x07c00000
-+#define S2_P2_MASK	0x0000001f
-+#define S3_P2_MASK	0x00007c00
-+#define S4_P2_MASK	0x01f00000
-+
-+#define S0_P1_SHIFT	7
-+#define S1_P1_SHIFT	17
-+#define S2_P1_SHIFT	27
-+#define S3_P1_SHIFT	5
-+#define S4_P1_SHIFT	15
-+
-+#define S0_P2_SHIFT	12
-+#define S1_P2_SHIFT	22
-+#define S2_P2_SHIFT	0
-+#define S3_P2_SHIFT	10
-+#define S4_P2_SHIFT	20
-+
-+#define CAL_SEL_MASK	0xe0000000
-+#define CAL_SEL_SHIFT	29
-+
-+static int calibrate_8916(struct tsens_device *tmdev)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d4b5465..7d72aad 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -2065,6 +2065,22 @@ exit:
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
+ 
++int thermal_zone_get_slope(struct thermal_zone_device *tz)
 +{
-+	int base0 = 0, base1 = 0, i;
-+	u32 p1[5], p2[5];
-+	int mode = 0;
-+	u32 *qfprom_cdata, *qfprom_csel;
++	if (tz && tz->tzp)
++		return tz->tzp->slope;
++	return 1;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_get_slope);
 +
-+	qfprom_cdata = (u32 *)qfprom_read(tmdev->dev, "calib");
-+	if (IS_ERR(qfprom_cdata))
-+		return PTR_ERR(qfprom_cdata);
-+
-+	qfprom_csel = (u32 *)qfprom_read(tmdev->dev, "calib_sel");
-+	if (IS_ERR(qfprom_csel))
-+		return PTR_ERR(qfprom_csel);
-+
-+	mode = (qfprom_csel[0] & CAL_SEL_MASK) >> CAL_SEL_SHIFT;
-+	dev_dbg(tmdev->dev, "calibration mode is %d\n", mode);
-+
-+	switch (mode) {
-+	case TWO_PT_CALIB:
-+		base1 = (qfprom_cdata[1] & BASE1_MASK) >> BASE1_SHIFT;
-+		p2[0] = (qfprom_cdata[0] & S0_P2_MASK) >> S0_P2_SHIFT;
-+		p2[1] = (qfprom_cdata[0] & S1_P2_MASK) >> S1_P2_SHIFT;
-+		p2[2] = (qfprom_cdata[1] & S2_P2_MASK) >> S2_P2_SHIFT;
-+		p2[3] = (qfprom_cdata[1] & S3_P2_MASK) >> S3_P2_SHIFT;
-+		p2[4] = (qfprom_cdata[1] & S4_P2_MASK) >> S4_P2_SHIFT;
-+		for (i = 0; i < tmdev->num_sensors; i++)
-+			p2[i] = ((base1 + p2[i]) << 3);
-+		/* Fall through */
-+	case ONE_PT_CALIB2:
-+		base0 = (qfprom_cdata[0] & BASE0_MASK);
-+		p1[0] = (qfprom_cdata[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-+		p1[1] = (qfprom_cdata[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-+		p1[2] = (qfprom_cdata[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-+		p1[3] = (qfprom_cdata[1] & S3_P1_MASK) >> S3_P1_SHIFT;
-+		p1[4] = (qfprom_cdata[1] & S4_P1_MASK) >> S4_P1_SHIFT;
-+		for (i = 0; i < tmdev->num_sensors; i++)
-+			p1[i] = (((base0) + p1[i]) << 3);
-+		break;
-+	default:
-+		for (i = 0; i < tmdev->num_sensors; i++) {
-+			p1[i] = 500;
-+			p2[i] = 780;
-+		}
-+		break;
-+	}
-+
-+	compute_intercept_slope(tmdev, p1, p2, mode);
-+
++int thermal_zone_get_offset(struct thermal_zone_device *tz)
++{
++	if (tz && tz->tzp)
++		return tz->tzp->offset;
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(thermal_zone_get_offset);
 +
-+const struct tsens_ops ops_8916 = {
-+	.init		= init_common,
-+	.calibrate	= calibrate_8916,
-+	.get_temp	= get_temp_common,
-+};
-+
-+const struct tsens_data data_8916 = {
-+	.num_sensors	= 5,
-+	.ops		= &ops_8916,
-+	.hw_ids		= (unsigned int []){0, 1, 2, 4, 5 },
-+};
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index e799182..c11d2e4 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -65,6 +65,7 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
- static const struct of_device_id tsens_table[] = {
- 	{
- 		.compatible = "qcom,msm8916-tsens",
-+		.data = &data_8916,
- 	}, {
- 		.compatible = "qcom,msm8974-tsens",
- 	},
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 6f652ed..0ecf979 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -87,4 +87,6 @@ void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
- int init_common(struct tsens_device *);
- int get_temp_common(struct tsens_device *, int, int *);
+ #ifdef CONFIG_NET
+ static const struct genl_multicast_group thermal_event_mcgrps[] = {
+ 	{ .name = THERMAL_GENL_MCAST_GROUP_NAME, },
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index a55d052..84be6a9 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -432,6 +432,8 @@ thermal_of_cooling_device_register(struct device_node *np, char *, void *,
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+ struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
+ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
++int thermal_zone_get_slope(struct thermal_zone_device *tz);
++int thermal_zone_get_offset(struct thermal_zone_device *tz);
  
-+extern const struct tsens_data data_8916;
-+
- #endif /* __QCOM_TSENS_H__ */
+ int get_tz_trend(struct thermal_zone_device *, int);
+ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+@@ -489,6 +491,12 @@ static inline struct thermal_zone_device *thermal_zone_get_zone_by_name(
+ static inline int thermal_zone_get_temp(
+ 		struct thermal_zone_device *tz, int *temp)
+ { return -ENODEV; }
++static inline int thermal_zone_get_slope(
++		struct thermal_zone_device *tz)
++{ return -ENODEV; }
++static inline int thermal_zone_get_offset(
++		struct thermal_zone_device *tz)
++{ return -ENODEV; }
+ static inline int get_tz_trend(struct thermal_zone_device *tz, int trip)
+ { return -ENODEV; }
+ static inline struct thermal_instance *
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
