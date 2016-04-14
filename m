@@ -1,179 +1,43 @@
-From: fu.wei@linaro.org
-Subject: [PATCH v10] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Fri, 15 Apr 2016 01:19:43 +0800
-Message-ID: <1460654383-19536-1-git-send-email-fu.wei@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>, Fu Wei <fu.wei@linaro.org>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3 1/2] thermal: generic-adc: Add DT binding for ADC
+ based thermal sensor
+Date: Thu, 14 Apr 2016 12:35:40 -0500
+Message-ID: <20160414173540.GA23807@rob-hp-laptop>
+References: <1460644878-19943-1-git-send-email-ldewangan@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1460644878-19943-1-git-send-email-ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+On Thu, Apr 14, 2016 at 08:11:17PM +0530, Laxman Dewangan wrote:
+> Sometimes, thermal sensors like NCT thermistors are connected to
+> the ADC channel. The temperature is read by reading the voltage
+> across the sensor resistance via ADC and referring the lookup
+> table for ADC value to temperature.
+> 
+> Add DT binding doc for the ADC based thermal sensor driver to
+> detail the DT property and provide the example for how to use it.
+> 
+> Signed-off-by: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> 
+> ---
+> Changes from V1:
+> - Make the lookup table to two dimensional instead of single array of linear
+>   step of temperature.
+> - Remove detailing of IIO frameowrk and drivers.
+> - Added proper braces, indenting and labels.
+> 
+> Changes from V2:
+> - Handle comment from Rob for detailing the first and second value of the array
+>   and remove @ in the node name.
+> 
+>  .../bindings/thermal/thermal-generic-adc.txt       | 89 ++++++++++++++++++++++
+>  1 file changed, 89 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
 
-This commit provides APEI arch-specific bits for aarch64
-
-Meanwhile,
-(1)add a new subfunction "hest_ia32_init" for
-"acpi_disable_cmcff" which is used by IA-32 Architecture
-Corrected Machine Check (CMC).
-(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-a generic place.
-(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
-because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
-
-[Fu Wei: improve && upstream]
-
-Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
-Signed-off-by: Fu Wei <fu.wei@linaro.org>
-Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
-Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
-Acked-by: Will Deacon <will.deacon@arm.com>
----
-Changelog:
-v10:https://lkml.org/lkml/2016/4/
-    Fix the Alphabetical order problem in arch/arm64/Kconfig
-
-v9: https://lkml.org/lkml/2016/4/5/522
-    Improve the comment for arch_apei_flush_tlb_one.
-    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
-    problem.
-
-v8: https://lkml.org/lkml/2016/3/29/132
-    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
-    on ARM64.
-
-v7: https://lkml.org/lkml/2016/3/17/183
-    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
-
-v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
-    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-    a generic place.
-    Delete HAVE_ACPI_APEI_HEST_IA32.
-
-v5: https://lkml.org/lkml/2015/12/10/131
-    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
-    "#if defined(__i386__) || defined(__x86_64__)".
-
-v4: https://lkml.org/lkml/2015/12/8/188
-    Rebase to latest kernel version(4.4-rc4).
-    Move arch_apei_flush_tlb_one into header file as a inline function
-    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
-
-v3: https://lkml.org/lkml/2015/12/3/521
-    Remove "acpi_disable_cmcff" from arm64 code,
-    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
-
-v2: https://lkml.org/lkml/2015/12/2/432
-    Rebase to latest kernel version(4.4-rc3).
-    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
-
-v1: https://lkml.org/lkml/2015/8/14/199
-    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
-    Delete arch/arm64/kernel/apei.c.
-    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
-
- arch/arm64/Kconfig            |  1 +
- arch/arm64/include/asm/acpi.h | 15 ++++++++++++++-
- arch/x86/kernel/acpi/apei.c   |  3 ---
- drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
- 4 files changed, 30 insertions(+), 7 deletions(-)
-
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 4f43622..da16716 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -47,6 +47,7 @@ config ARM64
- 	select GENERIC_TIME_VSYSCALL
- 	select HANDLE_DOMAIN_IRQ
- 	select HARDIRQS_SW_RESEND
-+	select HAVE_ACPI_APEI if (ACPI && EFI)
- 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_BITREVERSE
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index aee323b..8db8379 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -17,6 +17,7 @@
- 
- #include <asm/cputype.h>
- #include <asm/smp_plat.h>
-+#include <asm/tlbflush.h>
- 
- /* Macros for consistency checks of the GICC subtable of MADT */
- #define ACPI_MADT_GICC_LENGTH	\
-@@ -110,7 +111,19 @@ static inline const char *acpi_get_enable_method(int cpu)
- }
- 
- #ifdef	CONFIG_ACPI_APEI
-+#define acpi_disable_cmcff 1
- pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
--#endif
- 
-+/*
-+ * Despite its name, this function must still broadcast the TLB
-+ * invalidation in order to ensure other CPUs don't up with with junk
-+ * entries as a result of speculation. Unusually, its also called in
-+ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
-+ * TLB broadcasting, then we're in trouble here.
-+ */
-+static inline void arch_apei_flush_tlb_one(unsigned long addr)
-+{
-+	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+}
-+#endif /* CONFIG_ACPI_APEI */
- #endif /*_ASM_ACPI_H*/
-diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
-index c280df6..ea3046e 100644
---- a/arch/x86/kernel/acpi/apei.c
-+++ b/arch/x86/kernel/acpi/apei.c
-@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
- 	struct acpi_hest_ia_corrected *cmc;
- 	struct acpi_hest_ia_error_bank *mc_bank;
- 
--	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
--		return 0;
--
- 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
- 	if (!cmc->enabled)
- 		return 0;
-diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
-index 20b3fcf..792a0d9 100644
---- a/drivers/acpi/apei/hest.c
-+++ b/drivers/acpi/apei/hest.c
-@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
-  */
- static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
- {
--	return arch_apei_enable_cmcff(hest_hdr, data);
-+	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
-+		return 0;
-+
-+	if (!acpi_disable_cmcff)
-+		return !arch_apei_enable_cmcff(hest_hdr, data);
-+
-+	return 0;
-+}
-+
-+static inline int __init hest_ia32_init(void)
-+{
-+	return apei_hest_parse(hest_parse_cmc, NULL);
- }
- 
- struct ghes_arr {
-@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
- 		goto err;
- 	}
- 
--	if (!acpi_disable_cmcff)
--		apei_hest_parse(hest_parse_cmc, NULL);
-+	rc = hest_ia32_init();
-+	if (rc)
-+		goto err;
- 
- 	if (!ghes_disable) {
- 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
--- 
-2.5.5
-
+Acked-by: Rob Herring <rob-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
