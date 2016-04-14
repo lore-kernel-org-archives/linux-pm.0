@@ -1,50 +1,63 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
+From: Wolfram Sang <wsa@the-dreams.de>
 Subject: Re: tvp5150 regression after commit 9f924169c035
-Date: Thu, 14 Apr 2016 09:41:05 -0400
-Message-ID: <570F9DF1.3070700@osg.samsung.com>
-References: <20160208105417.GD2220@tetsubishi>
- <56BE57FC.3020407@osg.samsung.com> <20160212221352.GY3500@atomide.com>
- <56BE5C97.9070607@osg.samsung.com> <20160212224018.GZ3500@atomide.com>
- <56BE65F0.8040600@osg.samsung.com> <20160212234623.GB3500@atomide.com>
- <56BE993B.3010804@osg.samsung.com> <20160412223254.GK1526@katana>
- <570ECAB0.4050107@osg.samsung.com> <20160414111257.GG1533@katana>
+Date: Thu, 14 Apr 2016 16:19:45 +0200
+Message-ID: <20160414141945.GA1539@katana>
+References: <20160212221352.GY3500@atomide.com>
+ <56BE5C97.9070607@osg.samsung.com>
+ <20160212224018.GZ3500@atomide.com>
+ <56BE65F0.8040600@osg.samsung.com>
+ <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com>
+ <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com>
+ <20160414111257.GG1533@katana>
+ <570F9DF1.3070700@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lists.s-osg.org ([54.187.51.154]:56924 "EHLO lists.s-osg.org"
+Received: from sauhun.de ([89.238.76.85]:42788 "EHLO pokefinder.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755729AbcDNNl0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Apr 2016 09:41:26 -0400
-In-Reply-To: <20160414111257.GG1533@katana>
+	id S1754013AbcDNOT6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Apr 2016 10:19:58 -0400
+Content-Disposition: inline
+In-Reply-To: <570F9DF1.3070700@osg.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
+To: Javier Martinez Canillas <javier@osg.samsung.com>
 Cc: Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
 
-Hello Wolfram,
 
-On 04/14/2016 07:12 AM, Wolfram Sang wrote:
-> 
->> I'll write what I found so far in case someone with better knowledge about
->> the runtime PM API and the OMAP I2C controller driver can have an idea of
->> what could be causing this.
-> 
-> Thanks for the summary. I got no other reports like this, I wonder about
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Yes, I also wonder why I'm the only one facing this issue... maybe no one
-else is using the tvp5150 driver on an OMAP board with mainline?
 
-> that. That being said, can you try this patch if it makes a change?
-> 
-> http://patchwork.ozlabs.org/patch/609280/
-> 
+> Yes, I also wonder why I'm the only one facing this issue... maybe no one
+> else is using the tvp5150 driver on an OMAP board with mainline?
 
-Unfortunately it doesn't help, I just tried today's -next (next-20160414)
-that already has the mentioned patch but the issue is still present.
+I wonder why it only affects tvp5150. I don't see the connection yet.
 
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXD6cBAAoJEBQN5MwUoCm2CSsP/RXl+PdNZZNw0sjGApuDq0Pa
+kclrMtdovb8Jx0zKVERo/SErRbUZwYW8A2TR7ayRZ+lDvPkpueHrcchqh9hr14R7
+Dnw23tOwhAcIVZuxRZQ6dQpjkdEu30ZsnFKJD4zjjUBkitLRw8l2/LVTlmH6i0VQ
+aUztPJyarwXARuLi/nB30jVFMdnT5OnW8D8k8m0utCG4C3h5ZW/zZWtMuVF+TSnQ
+zI7u2WmM8FLrMyk1CiSLniyGgmUEv2CRRu4oWxC4CR4ezOkFGP0TQxqzv0mM2hOY
+C3pS6OIJXUgkX/HtyCyIZ7Y5HAbR53CqfQehGKehlb0k90UockAPzlp0BC/1Myja
+OgmhPVHHJ9m82jYTblNqROzDsIhgTIJUBWp6KWMmVNV+KMN5J/ga2b8z8HPljIUv
+L4mjRe3MbzyWPTXxFDnxhaYW8tSbkml8mEWOZr/NzjO4lfbDAE0JGDDHq8icTCrH
+SkhJNs5Hyh7OsTQHY1I0uSAZsnOqQ+cb1PuXA1IyAo3OTigC1nlBbyhAHdryeCZ3
+QPR8yqM8SScdnmsYsd0VA1KqxvwS+Wd++liKmTkMAfpCk0ObD/xwHrrOBA/sU3Fo
+1+OG47s5n7xJRDSCvOdFZFkRgFSPAa+GPHrYaDsyHm06ombb10Ux6a6Av4ePOxwS
+6GeYBY2es/bit5Cy1q+Q
+=C6zT
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
