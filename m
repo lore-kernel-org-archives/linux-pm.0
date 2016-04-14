@@ -1,230 +1,52 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v3 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Thu, 14 Apr 2016 13:04:28 +0300
-Message-ID: <1460628268-16204-5-git-send-email-mika.westerberg@linux.intel.com>
-References: <1460628268-16204-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1460628268-16204-1-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: re: cpufreq: AMD "frequency sensitivity feedback" powersave bias for
+ ondemand governor
+Date: Thu, 14 Apr 2016 14:03:27 +0300
+Message-ID: <20160414110327.GA24237@mwanda>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from userp1040.oracle.com ([156.151.31.81]:19823 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751737AbcDNLDi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 07:03:38 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: jacob.shin@amd.com
+Cc: linux-pm@vger.kernel.org
 
-Add back runtime PM support for PCIe ports that was removed in
-commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for
-PCIe ports").
+Hello Jacob Shin,
 
-First of all we cannot enable it automatically for all ports since there
-has been problems previously as can be seen in [1]. In summary suspended
-PCIe ports were not able to deal with ACPI based hotplug reliably. One
-reason why this might happen is the fact that when a PCIe port is powered
-down, config space access to the devices behind the port is not possible.
-If the BIOS hotplug SMI handler assumes the port is always in D0 it will
-not be able to find the hotplugged devices. To be on the safe side only
-enable runtime PM if the port does not claim to use ACPI based hotplug.
-Ports using native PCIe hotplug are not restricted by this.
+The patch 9c5320c8ea8b: "cpufreq: AMD "frequency sensitivity
+feedback" powersave bias for ondemand governor" from Apr 4, 2013,
+leads to the following static checker warning:
 
-Furthermore we need to check that the PCI core thinks the port can go to D3
-in the first place. The PCI core sets 'bridge_d3' in that case. If both
-conditions are met we enable and allow runtime PM for the PCIe port. Since
-'bridge_d3' can be changed anytime we check this in driver ->runtime_idle()
-and ->runtime_suspend() and only allow runtime suspend if the flag is still
-set. The actual power transition to D3 and back is handled in the PCI core.
+	drivers/cpufreq/amd_freq_sensitivity.c:98 amd_powersave_bias_target()
+	error: uninitialized symbol 'index'.
 
-Idea to automatically unblock (allow) runtime PM for PCIe ports came from
-Dave Airlie.
+drivers/cpufreq/amd_freq_sensitivity.c
+    83          /* this workload is not CPU bound, so choose a lower freq */
+    84          if (sensitivity < od_tuners->powersave_bias) {
+    85                  if (data->freq_prev == policy->cur)
+    86                          freq_next = policy->cur;
+    87  
+    88                  if (freq_next > policy->cur)
+    89                          freq_next = policy->cur;
+    90                  else if (freq_next < policy->cur)
+    91                          freq_next = policy->min;
+    92                  else {
+    93                          unsigned int index;
+    94  
+    95                          cpufreq_frequency_table_target(policy,
+    96                                  od_info->freq_table, policy->cur - 1,
+    97                                  CPUFREQ_RELATION_H, &index);
 
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=53811
+If cpufreq_frequency_table_target() return -EINVAL the index isn't set.
 
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
----
- drivers/pci/pcie/portdrv_core.c |   2 +
- drivers/pci/pcie/portdrv_pci.c  | 107 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 109 insertions(+)
+    98                          freq_next = od_info->freq_table[index].frequency;
+    99                  }
 
-diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index 88122dc2e1b1..65b1a624826b 100644
---- a/drivers/pci/pcie/portdrv_core.c
-+++ b/drivers/pci/pcie/portdrv_core.c
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/pm.h>
-+#include <linux/pm_runtime.h>
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/pcieport_if.h>
-@@ -343,6 +344,7 @@ static int pcie_device_init(struct pci_dev *pdev, int service, int irq)
- 		     get_descriptor_id(pci_pcie_type(pdev), service));
- 	device->parent = &pdev->dev;
- 	device_enable_async_suspend(device);
-+	pm_runtime_no_callbacks(device);
- 
- 	retval = device_register(device);
- 	if (retval) {
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 6c6bb03392ea..83150650570e 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -17,6 +17,8 @@
- #include <linux/aer.h>
- #include <linux/dmi.h>
- #include <linux/pci-aspm.h>
-+#include <linux/pci-acpi.h>
-+#include <linux/acpi.h>
- 
- #include "portdrv.h"
- #include "aer/aerdrv.h"
-@@ -58,6 +60,10 @@ __setup("pcie_ports=", pcie_port_setup);
- 
- /* global data */
- 
-+struct pcie_port_data {
-+	bool runtime_pm_enabled;
-+};
-+
- /**
-  * pcie_clear_root_pme_status - Clear root port PME interrupt status.
-  * @dev: PCIe root port or event collector.
-@@ -93,6 +99,78 @@ static int pcie_port_resume_noirq(struct device *dev)
- 	return 0;
- }
- 
-+static int pcie_port_runtime_suspend(struct device *dev)
-+{
-+	return to_pci_dev(dev)->bridge_d3 ? 0 : -EBUSY;
-+}
-+
-+static int pcie_port_runtime_resume(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static int pcie_port_runtime_idle(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+
-+	/*
-+	 * Rely the PCI core has set bridge_d3 whenever it thinks the port
-+	 * should be good to go to D3. Everything else, including moving
-+	 * the port to D3, is handled by the PCI core.
-+	 */
-+	if (pdev->bridge_d3) {
-+		pm_schedule_suspend(dev, 10);
-+		return 0;
-+	}
-+	return -EBUSY;
-+}
-+
-+#ifdef CONFIG_ACPI
-+static bool pcie_port_uses_acpi_hotplug(struct pci_dev *pdev)
-+{
-+	const struct acpi_pci_root *root;
-+	acpi_handle handle;
-+
-+	if (!pdev->is_hotplug_bridge)
-+		return false;
-+
-+	handle = acpi_find_root_bridge_handle(pdev);
-+	if (!handle)
-+		return false;
-+
-+	root = acpi_pci_find_root(handle);
-+	if (!root)
-+		return false;
-+
-+	return !(root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL);
-+}
-+#else
-+static inline bool pcie_port_uses_acpi_hotplug(struct pci_dev *pdev)
-+{
-+	return false;
-+}
-+#endif
-+
-+static bool pcie_port_runtime_pm_possible(struct pci_dev *pdev)
-+{
-+	/*
-+	 * Only enable runtime PM if the PCI core agrees that this port can
-+	 * even go to D3.
-+	 */
-+	if (!pdev->bridge_d3)
-+		return false;
-+
-+	/*
-+	 * Prevent runtime PM if the port is using ACPI based hotplug.
-+	 * Otherwise the BIOS hotplug SMI code might not be able to
-+	 * enumerate devices behind this port properly (the port is powered
-+	 * down preventing all config space accesses to the subordinate
-+	 * devices). Native hotplug is expected to work with runtime PM
-+	 * enabled.
-+	 */
-+	return !pcie_port_uses_acpi_hotplug(pdev);
-+}
-+
- static const struct dev_pm_ops pcie_portdrv_pm_ops = {
- 	.suspend	= pcie_port_device_suspend,
- 	.resume		= pcie_port_device_resume,
-@@ -101,12 +179,20 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
- 	.poweroff	= pcie_port_device_suspend,
- 	.restore	= pcie_port_device_resume,
- 	.resume_noirq	= pcie_port_resume_noirq,
-+	.runtime_suspend = pcie_port_runtime_suspend,
-+	.runtime_resume	= pcie_port_runtime_resume,
-+	.runtime_idle	= pcie_port_runtime_idle,
- };
- 
- #define PCIE_PORTDRV_PM_OPS	(&pcie_portdrv_pm_ops)
- 
- #else /* !PM */
- 
-+static inline bool pcie_port_runtime_pm_possible(struct pci_dev *pdev)
-+{
-+	return false;
-+}
-+
- #define PCIE_PORTDRV_PM_OPS	NULL
- #endif /* !PM */
- 
-@@ -121,6 +207,7 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
- static int pcie_portdrv_probe(struct pci_dev *dev,
- 					const struct pci_device_id *id)
- {
-+	struct pcie_port_data *pdata;
- 	int status;
- 
- 	if (!pci_is_pcie(dev) ||
-@@ -134,11 +221,31 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
- 		return status;
- 
- 	pci_save_state(dev);
-+
-+	pdata = devm_kzalloc(&dev->dev, sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return -ENOMEM;
-+
-+	pci_set_drvdata(dev, pdata);
-+	if (pcie_port_runtime_pm_possible(dev)) {
-+		pm_runtime_put_noidle(&dev->dev);
-+		pm_runtime_allow(&dev->dev);
-+
-+		pdata->runtime_pm_enabled = true;
-+	}
-+
- 	return 0;
- }
- 
- static void pcie_portdrv_remove(struct pci_dev *dev)
- {
-+	const struct pcie_port_data *pdata = pci_get_drvdata(dev);
-+
-+	if (pdata->runtime_pm_enabled) {
-+		pm_runtime_forbid(&dev->dev);
-+		pm_runtime_get_noresume(&dev->dev);
-+	}
-+
- 	pcie_port_device_remove(dev);
- }
- 
--- 
-2.8.0.rc3
+
+regards,
+dan carpenter
