@@ -1,59 +1,31 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [PATCH] ACPI / CPPC: Add module support for cppc_cpufreq driver
-Date: Thu, 14 Apr 2016 20:45:53 -0400
-Message-ID: <1460681153-14671-1-git-send-email-ashwin.chaugule@linaro.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car
+ System Controller
+Date: Fri, 15 Apr 2016 11:04:17 +1000
+Message-ID: <20160415010416.GC31938@verge.net.au>
+References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f172.google.com ([209.85.161.172]:34098 "EHLO
-	mail-yw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752802AbcDOAp7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 20:45:59 -0400
-Received: by mail-yw0-f172.google.com with SMTP id d68so121885882ywe.1
-        for <linux-pm@vger.kernel.org>; Thu, 14 Apr 2016 17:45:59 -0700 (PDT)
+Received: from kirsty.vergenet.net ([202.4.237.240]:40851 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbcDOBEU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Apr 2016 21:04:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 
-Add a function to cleanup at module exit and export
-appropriate GPL string to enable moduler support
-for the cppc_cpufreq driver.
+On Wed, Apr 13, 2016 at 04:44:16PM +0200, Geert Uytterhoeven wrote:
+> 	Hi Simon, Magnus,
+> 
+> This patch series introduces DT bindings for the R-Car System
+> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
+> SoCs.
 
-Reported-by: Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Thanks Geert,
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7c0bdfb..8882b8e 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -173,4 +173,25 @@ out:
- 	return -ENODEV;
- }
- 
-+static void __exit cppc_cpufreq_exit(void)
-+{
-+	struct cpudata *cpu;
-+	int i;
-+
-+	cpufreq_unregister_driver(&cppc_cpufreq_driver);
-+
-+	for_each_possible_cpu(i) {
-+		cpu = all_cpu_data[i];
-+		free_cpumask_var(cpu->shared_cpu_map);
-+		kfree(cpu);
-+	}
-+
-+	kfree(all_cpu_data);
-+}
-+
-+module_exit(cppc_cpufreq_exit);
-+MODULE_AUTHOR("Ashwin Chaugule");
-+MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
-+MODULE_LICENSE("GPL");
-+
- late_initcall(cppc_cpufreq_init);
--- 
-1.9.1
-
+I have queued this up for v4.7.
+Please let me know if that was not your intention.
