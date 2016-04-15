@@ -1,8 +1,7 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 2/8] PM / devfreq: event: Find the instance of devfreq-event
- device by using phandle
-Date: Fri, 15 Apr 2016 15:32:49 +0900
-Message-ID: <1460701975-24178-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 4/8] ARM: dts: Add NoC Probe dt node for Exynos542x SoC
+Date: Fri, 15 Apr 2016 15:32:51 +0900
+Message-ID: <1460701975-24178-5-git-send-email-cw00.choi@samsung.com>
 References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,38 +21,62 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: mark.rutland@arm.com, linux-samsung-soc@vger.kernel.org, linux@arm.linux.org.uk, cw00.choi@samsung.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, linux.amoon@gmail.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, devicetree@vger.kernel.org, robh+dt@kernel.org, galak@codeaurora.org, inki.dae@samsung.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch use the phandle to find the instance of devfreq-event device in
-Device Tree when calling the devfreq_event_get_edev_by_phandle() because there
-is two type devfreq-event devices as following:
-
-First case, exynos-ppmu.c driver provides the maximum four event of each PPMU.
-So, when getting the instance of devfreq-event device, using the unique name of
-struct devfreq_event_desc.
-
-Second case, exynos-nocp.c driver provide the only one event of each NoC Probe
-device. So, when getting the instance of devfreq-event device, using the
-phandle of each NoC probe device.
+This patch adds the NoCP (Network on Chip Probe) Device Tree node
+to measure the bandwidth of memory and g3d in Exynos542x SoC.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/devfreq/devfreq-event.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/exynos5420.dtsi | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index 38bf144ca147..39b048eda2ce 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -235,6 +235,11 @@ struct devfreq_event_dev *devfreq_event_get_edev_by_phandle(struct device *dev,
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index 7b99cb58d82d..63f84df73c53 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -294,6 +294,42 @@
+ 		};
+ 	};
  
- 	mutex_lock(&devfreq_event_list_lock);
- 	list_for_each_entry(edev, &devfreq_event_list, node) {
-+		if (edev->dev.parent && edev->dev.parent->of_node == node)
-+			goto out;
-+	}
++	nocp_mem0_0: nocp@10CA1000 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x10CA1000 0x200>;
++		status = "disabled";
++	};
 +
-+	list_for_each_entry(edev, &devfreq_event_list, node) {
- 		if (!strcmp(edev->desc->name, node->name))
- 			goto out;
- 	}
++	nocp_mem0_1: nocp@10CA1400 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x10CA1400 0x200>;
++		status = "disabled";
++	};
++
++	nocp_mem1_0: nocp@10CA1800 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x10CA1800 0x200>;
++		status = "disabled";
++	};
++
++	nocp_mem1_1: nocp@10CA1C00 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x10CA1C00 0x200>;
++		status = "disabled";
++	};
++
++	nocp_g3d_0: nocp@11A51000 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x11A51000 0x200>;
++		status = "disabled";
++	};
++
++	nocp_g3d_1: nocp@11A51400 {
++		compatible = "samsung,exynos5420-nocp";
++		reg = <0x11A51400 0x200>;
++		status = "disabled";
++	};
++
+ 	gsc_pd: power-domain@10044000 {
+ 		compatible = "samsung,exynos4210-pd";
+ 		reg = <0x10044000 0x20>;
 -- 
 1.9.1
