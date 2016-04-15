@@ -1,72 +1,140 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH v2 1/2] cpufreq: powernv: Remove flag use-case of policy->driver_data
-Date: Fri, 15 Apr 2016 11:58:58 +0530
-Message-ID: <1460701739-31549-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2 6/8] clk: samsung: exynos542x: Add the clock id for ACLK
+Date: Fri, 15 Apr 2016 15:32:53 +0900
+Message-ID: <1460701975-24178-7-git-send-email-cw00.choi@samsung.com>
+References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:48490 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbcDOGbg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2016 02:31:36 -0400
-Received: from localhost
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-	Fri, 15 Apr 2016 16:31:33 +1000
-In-Reply-To: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:40235 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbcDOGdC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2016 02:33:02 -0400
+In-reply-to: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: ego@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com, tomasz.figa@gmail.com, s.nawrocki@samsung.com, kgene@kernel.org
+Cc: robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+This patch adds the clock id for ACLK clock which is source clock of AMBA AXI
+Bus. This clock should be handled in Bus frequency scaling driver.
 
-commit 1b0289848d5d ("cpufreq: powernv: Add sysfs attributes to show
-throttle stats") used policy->driver_data as a flag for one-time creation
-of throttle sysfs files. Instead of this use 'kernfs_find_and_get()' to
-check if the attribute already exists. This is required as
-policy->driver_data is used for other purposes in the later patch.
-
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/clk/samsung/clk-exynos5420.c | 77 ++++++++++++++++++++++--------------
+ 1 file changed, 47 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 39ac78c..e2e2219 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -455,13 +455,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	int base, i;
-+	struct kernfs_node *kn;
+diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+index be03ed0fcb6b..92382cef9f90 100644
+--- a/drivers/clk/samsung/clk-exynos5420.c
++++ b/drivers/clk/samsung/clk-exynos5420.c
+@@ -554,8 +554,8 @@ static struct samsung_mux_clock exynos5800_mux_clks[] __initdata = {
+ };
  
- 	base = cpu_first_thread_sibling(policy->cpu);
+ static struct samsung_div_clock exynos5800_div_clks[] __initdata = {
+-	DIV(0, "dout_aclk400_wcore", "mout_aclk400_wcore", DIV_TOP0, 16, 3),
+-
++	DIV(CLK_DOUT_ACLK400_WCORE, "dout_aclk400_wcore",
++			"mout_aclk400_wcore", DIV_TOP0, 16, 3),
+ 	DIV(0, "dout_aclk550_cam", "mout_aclk550_cam",
+ 				DIV_TOP8, 16, 3),
+ 	DIV(0, "dout_aclkfl1_550_cam", "mout_aclkfl1_550_cam",
+@@ -607,8 +607,8 @@ static struct samsung_mux_clock exynos5420_mux_clks[] __initdata = {
+ };
  
- 	for (i = 0; i < threads_per_core; i++)
- 		cpumask_set_cpu(base + i, policy->cpus);
+ static struct samsung_div_clock exynos5420_div_clks[] __initdata = {
+-	DIV(0, "dout_aclk400_wcore", "mout_aclk400_wcore_bpll",
+-			DIV_TOP0, 16, 3),
++	DIV(CLK_DOUT_ACLK400_WCORE, "dout_aclk400_wcore",
++			"mout_aclk400_wcore_bpll", DIV_TOP0, 16, 3),
+ };
  
--	if (!policy->driver_data) {
-+	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
-+	if (!kn) {
- 		int ret;
+ static struct samsung_mux_clock exynos5x_mux_clks[] __initdata = {
+@@ -785,31 +785,47 @@ static struct samsung_div_clock exynos5x_div_clks[] __initdata = {
+ 	DIV(0, "div_kfc", "mout_kfc", DIV_KFC0, 0, 3),
+ 	DIV(0, "sclk_kpll", "mout_kpll", DIV_KFC0, 24, 3),
  
- 		ret = sysfs_create_group(&policy->kobj, &throttle_attr_grp);
-@@ -470,11 +472,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 				policy->cpu);
- 			return ret;
- 		}
--		/*
--		 * policy->driver_data is used as a flag for one-time
--		 * creation of throttle sysfs files.
--		 */
--		policy->driver_data = policy;
-+	} else {
-+		kernfs_put(kn);
- 	}
- 	return cpufreq_table_validate_and_show(policy, powernv_freqs);
- }
+-	DIV(0, "dout_aclk400_isp", "mout_aclk400_isp", DIV_TOP0, 0, 3),
+-	DIV(0, "dout_aclk400_mscl", "mout_aclk400_mscl", DIV_TOP0, 4, 3),
+-	DIV(0, "dout_aclk200", "mout_aclk200", DIV_TOP0, 8, 3),
+-	DIV(0, "dout_aclk200_fsys2", "mout_aclk200_fsys2", DIV_TOP0, 12, 3),
+-	DIV(0, "dout_aclk100_noc", "mout_aclk100_noc", DIV_TOP0, 20, 3),
+-	DIV(0, "dout_pclk200_fsys", "mout_pclk200_fsys", DIV_TOP0, 24, 3),
+-	DIV(0, "dout_aclk200_fsys", "mout_aclk200_fsys", DIV_TOP0, 28, 3),
+-
+-	DIV(0, "dout_aclk333_432_gscl", "mout_aclk333_432_gscl",
+-			DIV_TOP1, 0, 3),
+-	DIV(0, "dout_aclk333_432_isp", "mout_aclk333_432_isp",
+-			DIV_TOP1, 4, 3),
+-	DIV(0, "dout_aclk66", "mout_aclk66", DIV_TOP1, 8, 6),
+-	DIV(0, "dout_aclk333_432_isp0", "mout_aclk333_432_isp0",
+-			DIV_TOP1, 16, 3),
+-	DIV(0, "dout_aclk266", "mout_aclk266", DIV_TOP1, 20, 3),
+-	DIV(0, "dout_aclk166", "mout_aclk166", DIV_TOP1, 24, 3),
+-	DIV(0, "dout_aclk333", "mout_aclk333", DIV_TOP1, 28, 3),
+-
+-	DIV(0, "dout_aclk333_g2d", "mout_aclk333_g2d", DIV_TOP2, 8, 3),
+-	DIV(0, "dout_aclk266_g2d", "mout_aclk266_g2d", DIV_TOP2, 12, 3),
+-	DIV(0, "dout_aclk_g3d", "mout_aclk_g3d", DIV_TOP2, 16, 3),
+-	DIV(0, "dout_aclk300_jpeg", "mout_aclk300_jpeg", DIV_TOP2, 20, 3),
+-	DIV(0, "dout_aclk300_disp1", "mout_aclk300_disp1", DIV_TOP2, 24, 3),
+-	DIV(0, "dout_aclk300_gscl", "mout_aclk300_gscl", DIV_TOP2, 28, 3),
++	DIV(CLK_DOUT_ACLK400_ISP, "dout_aclk400_isp", "mout_aclk400_isp",
++			DIV_TOP0, 0, 3),
++	DIV(CLK_DOUT_ACLK400_MSCL, "dout_aclk400_mscl", "mout_aclk400_mscl",
++			DIV_TOP0, 4, 3),
++	DIV(CLK_DOUT_ACLK200, "dout_aclk200", "mout_aclk200",
++			DIV_TOP0, 8, 3),
++	DIV(CLK_DOUT_ACLK200_FSYS2, "dout_aclk200_fsys2", "mout_aclk200_fsys2",
++			DIV_TOP0, 12, 3),
++	DIV(CLK_DOUT_ACLK100_NOC, "dout_aclk100_noc", "mout_aclk100_noc",
++			DIV_TOP0, 20, 3),
++	DIV(CLK_DOUT_PCLK200_FSYS, "dout_pclk200_fsys", "mout_pclk200_fsys",
++			DIV_TOP0, 24, 3),
++	DIV(CLK_DOUT_ACLK200_FSYS, "dout_aclk200_fsys", "mout_aclk200_fsys",
++			DIV_TOP0, 28, 3),
++	DIV(CLK_DOUT_ACLK333_432_GSCL, "dout_aclk333_432_gscl",
++			"mout_aclk333_432_gscl", DIV_TOP1, 0, 3),
++	DIV(CLK_DOUT_ACLK333_432_ISP, "dout_aclk333_432_isp",
++			"mout_aclk333_432_isp", DIV_TOP1, 4, 3),
++	DIV(CLK_DOUT_ACLK66, "dout_aclk66", "mout_aclk66",
++			DIV_TOP1, 8, 6),
++	DIV(CLK_DOUT_ACLK333_432_ISP0, "dout_aclk333_432_isp0",
++			"mout_aclk333_432_isp0", DIV_TOP1, 16, 3),
++	DIV(CLK_DOUT_ACLK266, "dout_aclk266", "mout_aclk266",
++			DIV_TOP1, 20, 3),
++	DIV(CLK_DOUT_ACLK166, "dout_aclk166", "mout_aclk166",
++			DIV_TOP1, 24, 3),
++	DIV(CLK_DOUT_ACLK333, "dout_aclk333", "mout_aclk333",
++			DIV_TOP1, 28, 3),
++
++	DIV(CLK_DOUT_ACLK333_G2D, "dout_aclk333_g2d", "mout_aclk333_g2d",
++			DIV_TOP2, 8, 3),
++	DIV(CLK_DOUT_ACLK266_G2D, "dout_aclk266_g2d", "mout_aclk266_g2d",
++			DIV_TOP2, 12, 3),
++	DIV(CLK_DOUT_ACLK_G3D, "dout_aclk_g3d", "mout_aclk_g3d", DIV_TOP2,
++			16, 3),
++	DIV(CLK_DOUT_ACLK300_JPEG, "dout_aclk300_jpeg", "mout_aclk300_jpeg",
++			DIV_TOP2, 20, 3),
++	DIV(CLK_DOUT_ACLK300_DISP1, "dout_aclk300_disp1",
++			"mout_aclk300_disp1", DIV_TOP2, 24, 3),
++	DIV(CLK_DOUT_ACLK300_GSCL, "dout_aclk300_gscl", "mout_aclk300_gscl",
++			DIV_TOP2, 28, 3),
+ 
+ 	/* DISP1 Block */
+ 	DIV(0, "dout_fimd1", "mout_fimd1_final", DIV_DISP10, 0, 4),
+@@ -817,7 +833,8 @@ static struct samsung_div_clock exynos5x_div_clks[] __initdata = {
+ 	DIV(0, "dout_dp1", "mout_dp1", DIV_DISP10, 24, 4),
+ 	DIV(CLK_DOUT_PIXEL, "dout_hdmi_pixel", "mout_pixel", DIV_DISP10, 28, 4),
+ 	DIV(0, "dout_disp1_blk", "aclk200_disp1", DIV2_RATIO0, 16, 2),
+-	DIV(0, "dout_aclk400_disp1", "mout_aclk400_disp1", DIV_TOP2, 4, 3),
++	DIV(CLK_DOUT_ACLK400_DISP1, "dout_aclk400_disp1",
++			"mout_aclk400_disp1", DIV_TOP2, 4, 3),
+ 
+ 	/* Audio Block */
+ 	DIV(0, "dout_maudio0", "mout_maudio0", DIV_MAU, 20, 4),
 -- 
-2.5.5
+1.9.1
 
