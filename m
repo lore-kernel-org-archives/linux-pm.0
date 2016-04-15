@@ -1,34 +1,59 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] Documentation: power: reset: move gpio-{poweroff|restart}
- to proper place
-Date: Fri, 15 Apr 2016 11:53:46 -0500
-Message-ID: <CAL_JsqKK1QmGdyae-P9SoP2-7JiLK1XCyskxbd-wrn+7CidMJw@mail.gmail.com>
-References: <1460476853-3306-1-git-send-email-wsa@the-dreams.de> <CACRpkdaUj5w3zkjWVf1GML3reeDnRpT8avOPkRB6_qFXB6EGjw@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Fri, 15 Apr 2016 10:08:04 -0700
+Message-ID: <20160415170804.GW5973@atomide.com>
+References: <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com>
+ <20160414111257.GG1533@katana>
+ <570F9DF1.3070700@osg.samsung.com>
+ <20160414141945.GA1539@katana>
+ <570FA8D6.5070308@osg.samsung.com>
+ <20160414151244.GM5973@atomide.com>
+ <57102EE3.3020707@osg.samsung.com>
+ <20160415145828.GT5973@atomide.com>
+ <57111B76.8020106@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdaUj5w3zkjWVf1GML3reeDnRpT8avOPkRB6_qFXB6EGjw@mail.gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:51080 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbcDORIJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 Apr 2016 13:08:09 -0400
+Content-Disposition: inline
+In-Reply-To: <57111B76.8020106@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Enric Balletbo i Serra <eballetbo@gmail.com>, =?utf-8?Q?Agust=C3=AD?= Fontquerni <af@iseebcn.com>
 
-On Fri, Apr 15, 2016 at 2:48 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Tue, Apr 12, 2016 at 6:00 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
->
->> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
->>
->> I did only find them after a fuzzy search, so let them be where one
->> would expect them.
->>
->> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
->
-> I saw this the other day too I agree.
-> Sebastian: are you OK that I move this by committing the patch to the GPIO tree?
-> DT maintainers: OK?
+* Javier Martinez Canillas <javier@osg.samsung.com> [160415 09:50]:
+> On 04/15/2016 10:58 AM, Tony Lindgren wrote:
+> > If you block PM runtime for I2C, then it blocks deeper idle states
+> > for the whole device. Note that you can disable off mode during idle
+> 
+> Thanks again for this clarification.
+> 
+> > and suspend with:
+> > 
+> > # echo 0 > /sys/kernel/debug/pm_debug/enable_off_mode
+> >
+> 
+> I see thought that enable_off_mode is 0 by default when booting the board:
+> 
+> # cat /sys/kernel/debug/pm_debug/enable_off_mode 
+> 0
 
-Acked-by: Rob Herring <robh@kernel.org>
+OK so you're not hitting off mode then.
 
-Seems like this should go thru my tree though, but I don't have the patch.
+> So if I understood your explanation correctly, that means that the glitch
+> should not happen for the GPIO pins since the machine doesn't enter into
+> deeper idle states that could cause the glitch from erratum 1.158?
 
-Rob
+Correct. But you could still have a dependency to some other
+device driver that stays active if I2C keeps the whole system
+from hitting retention mode during idle.
+
+Regards,
+
+Tony
+
