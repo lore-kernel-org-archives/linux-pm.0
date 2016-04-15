@@ -1,36 +1,34 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2 8/8] ARM: dts: Add support of Bus frequency using
- VDD_INT for exynos5422-odroidxu3
-Date: Fri, 15 Apr 2016 11:07:27 +0200
-Message-ID: <5710AF4F.9030300@samsung.com>
-References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
- <1460701975-24178-9-git-send-email-cw00.choi@samsung.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
+Date: Fri, 15 Apr 2016 11:20:10 +0200
+Message-ID: <20160415092010.GB10167@gmail.com>
+References: <20160412221659.GA18102@www.outflux.net>
+ <20160414200102.GB3856@amd>
+ <CAGXu5jKNKV2RaPCw+m3R-e7irmmP0eRBBq9RKY0mcH5A1Nsx6g@mail.gmail.com>
+ <20160414203444.GC3856@amd>
+ <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1460701975-24178-9-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, tomasz.figa@gmail.com, s.nawrocki@samsung.com, kgene@kernel.org
-Cc: robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-hardening-return-3032-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Pavel Machek <pavel@denx.de>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/15/2016 08:32 AM, Chanwoo Choi wrote:
-> This patch adds the bus device tree nodes for INT (Internal) block
-> to enable the AMBA bus frequency scaling and add the NoC (Network on Chip)
-> Probe Device Tree node to measure the bandwidht for AMBA AXI bus.
-> 
-> The WCORE bus bus is parent device in INT block using VDD_INT.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
-> Tested-by: Anand Moon <linux.amoon@gmail.com>
-> ---
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi | 99 ++++++++++++++++++++++
->  1 file changed, 99 insertions(+)
-> 
 
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+* Kees Cook <keescook@chromium.org> wrote:
 
-Best regards,
-Krzysztof
+> 1) The x86 hibernation and KASLR code don't play well together currently.
+
+Please fix it, don't just work it around ...
+
+Thanks,
+
+	Ingo
