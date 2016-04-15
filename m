@@ -1,71 +1,65 @@
-From: Emrah Demir <ed@abdsec.com>
-Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
-Date: Fri, 15 Apr 2016 12:25:19 -0400
-Message-ID: <fd9b0950f40aaffbdaa30e9cf75a9e5b@abdsec.com>
-References: <20160412221659.GA18102@www.outflux.net>
- <20160414200102.GB3856@amd>
- <CAGXu5jKNKV2RaPCw+m3R-e7irmmP0eRBBq9RKY0mcH5A1Nsx6g@mail.gmail.com>
- <20160414203444.GC3856@amd>
- <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v2 6/8] clk: samsung: exynos542x: Add the clock id for ACLK
+Date: Fri, 15 Apr 2016 18:34:30 +0200
+Message-ID: <57111816.8080808@samsung.com>
+References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
+ <1460701975-24178-7-git-send-email-cw00.choi@samsung.com>
+ <5710AEF2.3040800@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <kernel-hardening-return-3035-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: Pavel Machek <pavel@denx.de>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com, keescook@google.com
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <5710AEF2.3040800@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, tomasz.figa@gmail.com, kgene@kernel.org, robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2016-04-14 18:42, Kees Cook wrote:
-> On Thu, Apr 14, 2016 at 1:34 PM, Pavel Machek <pavel@denx.de> wrote:
->> On Thu 2016-04-14 13:14:07, Kees Cook wrote:
->>> On Thu, Apr 14, 2016 at 1:01 PM, Pavel Machek <pavel@denx.de> wrote:
->>> > Hi!
->>> >
->>> >> Since kASLR and Hibernation can not currently coexist at runtime
->>> >> on x86, the default behavior was to disable kASLR by default when
->>> >> CONFIG_HIBERNATION was present (to retain original behavior).
->>> >>
->>> >> The behavior of kASLR on arm64 (and soon MIPS) is to be enabled by
->>> >> default when selected at build time. Since arm64 Hibernation does not
->>> >> conflict with kASLR, this fixes the hibernation argument parsing to be
->>> >> x86-specific. Additionally, since end users want to be able to select
->>> >> kASLR on x86 by default at build time, create CONFIG_RANDOMIZE_BASE_ON
->>> >> that is present only on x86.
+On 04/15/2016 11:05 AM, Krzysztof Kozlowski wrote:
+> On 04/15/2016 08:32 AM, Chanwoo Choi wrote:
+>> This patch adds the clock id for ACLK clock which is source clock of AMBA AXI
+>> Bus. This clock should be handled in Bus frequency scaling driver.
+>>
+>> Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
+>> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
+>> Tested-by: Anand Moon <linux.amoon@gmail.com>
+>> ---
+>>  drivers/clk/samsung/clk-exynos5420.c | 77 ++++++++++++++++++++++--------------
+>>  1 file changed, 47 insertions(+), 30 deletions(-)
+> 
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
->>> >
->>> > I believe this is bad idea. arm64 shows that kaslr and hibernation can
->>> > coexist, and hibernation is still useful when your battery runs out.
->>> 
->>> What? I'm confused -- this patch leaves the x86 behavior as-is by
->>> default but allows hibernation to work with arm64. (For example, 
->>> right
->>> now, if you boot arm64 with "kaslr" kernel argument, hibernation will
->>> get needlessly disabled.)
->> 
-
-So what about making new kernel parameters. "hibernate" and 
-"nohibernate"
-
-This way before decompression it will look at the parameters and depend 
-on parameters it will act differently
-
-"kaslr" "nohibernate"  -->  kASLR will enable, no hibernate
-
-"nokaslr" "nohibernate" --> Neither of them will work
-
-"kaslr" "hiberante"   ---> Owner has to face consequences(ARM has 
-advantages)
-
-"nokaslr" "hibernate"  ---> kASLR disabled and hibernate will works.
-
-Before writing something I want to know your ideas.
+I applied patches 5/8 and 6/8 onto a stable topic branch. Below are
+details if they need to be pulled into any other subsystem tree.
 
 
--Emrah
+The following changes since commit f55532a0c0b8bb6148f4e07853b876ef73bc69ca:
+
+  Linux 4.6-rc1 (2016-03-26 16:03:24 -0700)
+
+are available in the git repository at:
+
+  git://linuxtv.org/snawrocki/samsung.git tags/clk-v4.7-exynos542x
+
+for you to fetch changes up to 81fed6e342c04a4ecb0650c914d24bd57c6c168f:
+
+  clk: samsung: exynos542x: Add the clock id for ACLK (2016-04-15 18:13:45 +0200)
+
+----------------------------------------------------------------
+Addition of IDs for Exynos542x SoC AMBA AXI bus clocks.
+
+----------------------------------------------------------------
+Chanwoo Choi (2):
+      dt-bindings: clock: Add the clock id for ACLK clock of Exynos542x SoC
+      clk: samsung: exynos542x: Add the clock id for ACLK
+
+ drivers/clk/samsung/clk-exynos5420.c   | 77
++++++++++++++++++++++++++++++++++++++++++++++++------------------------------
+ include/dt-bindings/clock/exynos5420.h | 24 +++++++++++++++++++++++-
+ 2 files changed, 70 insertions(+), 31 deletions(-)
+
+-- 
+Regards,
+Sylwester
