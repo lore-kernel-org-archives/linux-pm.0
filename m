@@ -1,74 +1,68 @@
-From: Pavel Machek <pavel@denx.de>
-Subject: Re: [PATCH v2] kaslr: allow kASLR to be default over Hibernation
-Date: Fri, 15 Apr 2016 15:06:26 +0200
-Message-ID: <20160415130626.GA21457@amd>
-References: <20160412221659.GA18102@www.outflux.net>
- <20160414200102.GB3856@amd>
- <CAGXu5jKNKV2RaPCw+m3R-e7irmmP0eRBBq9RKY0mcH5A1Nsx6g@mail.gmail.com>
- <20160414203444.GC3856@amd>
- <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] Documentation: power: reset: move
+ gpio-{poweroff|restart} to proper place
+Date: Fri, 15 Apr 2016 15:27:12 +0200
+Message-ID: <20160415132712.GA15986@earth>
+References: <1460476853-3306-1-git-send-email-wsa@the-dreams.de>
+ <CACRpkdaUj5w3zkjWVf1GML3reeDnRpT8avOPkRB6_qFXB6EGjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59238 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbcDONGa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Apr 2016 09:06:30 -0400
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAGXu5j+cTYF_OGG=u4BKU5X3f6TF0FdAcES9e_8S0ajMyjhn6Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CACRpkdaUj5w3zkjWVf1GML3reeDnRpT8avOPkRB6_qFXB6EGjw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, James Morse <james.morse@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Matt Redfearn <matt.redfearn@imgtec.com>, Yves-Alexis Perez <corsac@debian.org>, Emrah Demir <ed@abdsec.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 
-Hi!
 
-> > Now I notice that it is quite unclear if it actually changes
-> > anything...
-> 
-> Okay, right. So, there are a few problems that this patch is solving,
-> and maybe it needs to be broken up into separate patches, but it
-> didn't seem like it to me at the time. Specifically:
-> 
-> 1) The x86 hibernation and KASLR code don't play well together currently.
-> 
-> "1" was worked around so that both could be built in, but only one
-> would be active at a time. This lead to:
+--r5Pyd7+fXNt84Ff3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 2) The general hibernation code contains kernel arguments that should
-> only affect x86.
-> 
-> And we have the desire by folks to have KASLR enabled by default on
-> x86, giving us:
-> 
-> 3) There is no build-time way on x86 to switch the preference of KASLR
-> vs hibernation.
-> 
-> I think "2" should be solved for this release, since arm64 KASLR is
-> landing, and mistakenly booting an arm64 system with "kaslr" on the
-> command line will needlessly disable hibernation.
+Hi,
 
-Yes, I have no problem with "2".
+On Fri, Apr 15, 2016 at 09:48:17AM +0200, Linus Walleij wrote:
+> On Tue, Apr 12, 2016 at 6:00 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+> > From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> >
+> > I did only find them after a fuzzy search, so let them be where one
+> > would expect them.
+> >
+> > Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>=20
+> I saw this the other day too I agree.
 
-> 3 and 2 are a result of 1, and IIUC, you're saying you want to solve 1
-> to make everything else go away? My only concern with that idea is
-> that I don't (yet) have the knowledge of x86 hibernation internals to
-> fix this, and it'll take a while to get to having KASLR on by default
-> if we have to wait on me to fix hibernation. (I'm not saying I
-> won't/can't, it's just that it'll take me time to come up to speed on
-> it.)
-> 
-> That do you think?
+> Sebastian: are you OK that I move this by committing the patch to
+> the GPIO tree?
 
-I believe it is more important to get it right than to have a solution
-right now. x86-64 should be best architecture to start...
+Yes.
 
-I don't understand kaslr, but it looks to me like you need to store
-the kaslr seed in the hibernation image, then use thet in
-set_up_temporary_mappings(). It should not be that bad.
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- Sebastian
+
+--r5Pyd7+fXNt84Ff3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXEOwtAAoJENju1/PIO/qaQ7kP/3wMKdLY+J2WaUftByGm5+Jm
+i8OXjtfLP6vCbcmq5NNINkOgqmvvlkR0WZg9+DG2b0+KiSYTXmhtPdDmBq5WpAec
+Z/z4gtv0P/rsFzWc/eCoyauVsRyfgs3akexIAxluvWnmtpY9Ed5a+JP6JAkoX3z4
+6xVTnJ0nvSKBk2/bcx5lH8frqkDt+jjY/MpV4wIX7oKKG06Ayg00/jx7iIjL6N6z
+iIuWgSmo6a0Qj6otl9e+64Y54MRdsCxFVWSb5TrwSQr8YWXE26uHBqeoVrY3bNxH
+MNLjH5qdGCOT0ncR+MGR8+5ruxZSVswue6uV3QeAXRsLgELv7K//nGJmJahZzFdB
+GBzCG2NnFHzS5AYDquNStMh3Xh5OhOh87vQesZ7tq4Weg3vFIzvtKKBUkzyGN/UT
+9tqV2Sy93/pZL0kG6iJmuN7k5oRvhZXSKmppznsacdRYyiVfwkeZ2MUhqzutGVxa
+8l0MJAkO3OU/bYoVlYKdwB4ccPkL0WVe3TzX2GvxO7EPGSp0AL3atjAWIg05cNuS
+G4DmaVlFhDQwXYCYHEGSPEfx6ZkNaI34fCL/vMDFcsjG/XXWNWz+1Gj2l9W5cJyA
+lrPpX1c0BWpsp46DXjgNooDfbPjPnY/K4KXAXXWwTCs/1BLNmbT+WuEpavYcbLY0
++AQn7HZ4HkzFJYskFAVb
+=q+cu
+-----END PGP SIGNATURE-----
+
+--r5Pyd7+fXNt84Ff3--
