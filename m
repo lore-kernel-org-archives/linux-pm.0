@@ -1,7 +1,7 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 1/8] PM / devfreq: event: Add new Exynos NoC probe driver
-Date: Fri, 15 Apr 2016 15:32:48 +0900
-Message-ID: <1460701975-24178-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 7/8] ARM: dts: Add bus nodes using VDD_INT for Exynos542x SoC
+Date: Fri, 15 Apr 2016 15:32:54 +0900
+Message-ID: <1460701975-24178-8-git-send-email-cw00.choi@samsung.com>
 References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
@@ -10,479 +10,417 @@ To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds NoC (Network on Chip) Probe driver which provides
-the primitive values to get the performance data. The packets that the Network
-on Chip (NoC) probes detects are transported over the network infrastructure.
-Exynos542x bus has multiple NoC probes to provide bandwidth information about
-behavior of the SoC that you can use while analyzing system performance.
+This patch adds the AMBA bus nodes using VDD_INT for Exynos542x SoC.
+Exynos542x has the following AMBA buses to translate data between
+DRAM and sub-blocks.
+
+Following list specifies the detailed correlation between sub-block and clock:
+- CLK_DOUT_ACLK400_WCORE clock for WCORE's AXI
+- CLK_DOUT_ACLK100_NOC for NoC (Network on Chip)'s AXI
+- CLK_DOUT_PCLK200_FSYS for FSYS's APB
+- CLK_DOUT_ACLK200_FSYS for FSYS's AXI
+- CLK_DOUT_ACLK200_FSYS2 for FSYS2's AXI
+- CLK_DOUT_ACLK333 for MFC's AXI
+- CLK_DOUT_ACLK266 for GEN's AXI
+- CLK_DOUT_ACLK66 for PERIC/PERIR's AXI
+- CLK_DOUT_ACLK333_G2D for G2D's AXI
+- CLK_DOUT_ACLK266_G2D for ACP's AXI
+- CLK_DOUT_ACLK300_JPEG for JPEG's AXI
+- CLK_DOUT_ACLK166 for JPEG's APB
+- CLK_DOUT_ACLK300_DISP1 for FIMD's AXI
+- CLK_DOUT_ACLK400_DISP1 for DISP1's AXI
+- CLK_DOUT_ACLK300_GSCL for GSCL Scaler's AXI
+- CLK_DOUT_ACLK400_MSCL for MSCL's AXI
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Tested-by: Markus Reichl <m.reichl@fivetechno.de>
 Tested-by: Anand Moon <linux.amoon@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- .../bindings/devfreq/event/exynos-nocp.txt         |  26 ++
- drivers/devfreq/event/Kconfig                      |   8 +
- drivers/devfreq/event/Makefile                     |   2 +
- drivers/devfreq/event/exynos-nocp.c                | 304 +++++++++++++++++++++
- drivers/devfreq/event/exynos-nocp.h                |  78 ++++++
- 5 files changed, 418 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/exynos-nocp.txt
- create mode 100644 drivers/devfreq/event/exynos-nocp.c
- create mode 100644 drivers/devfreq/event/exynos-nocp.h
+ arch/arm/boot/dts/exynos5420.dtsi | 371 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 371 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-nocp.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-nocp.txt
-new file mode 100644
-index 000000000000..fd459f00aa5a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/event/exynos-nocp.txt
-@@ -0,0 +1,26 @@
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index 63f84df73c53..18888b5d2f8c 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -1224,6 +1224,377 @@
+ 		power-domains = <&disp_pd>;
+ 		#iommu-cells = <0>;
+ 	};
 +
-+* Samsung Exynos NoC (Network on Chip) Probe device
-+
-+The Samsung Exynos542x SoC has NoC (Network on Chip) Probe for NoC bus.
-+NoC provides the primitive values to get the performance data. The packets
-+that the Network on Chip (NoC) probes detects are transported over
-+the network infrastructure to observer units. You can configure probes to
-+capture packets with header or data on the data request response network,
-+or as traffic debug or statistic collectors. Exynos542x bus has multiple
-+NoC probes to provide bandwidth information about behavior of the SoC
-+that you can use while analyzing system performance.
-+
-+Required properties:
-+- compatible: Should be "samsung,exynos5420-nocp"
-+- reg: physical base address of each NoC Probe and length of memory mapped region.
-+
-+Optional properties:
-+- clock-names : the name of clock used by the NoC Probe, "nocp"
-+- clocks : phandles for clock specified in "clock-names" property
-+
-+Example : NoC Probe nodes in Device Tree are listed below.
-+
-+	nocp_mem0_0: nocp@10CA1000 {
-+		compatible = "samsung,exynos5420-nocp";
-+		reg = <0x10CA1000 0x200>;
++	bus_wcore: bus_wcore {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK400_WCORE>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_wcore_opp_table>;
++		status = "disabled";
 +	};
-diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-index a11720affc31..1e8b4f469f38 100644
---- a/drivers/devfreq/event/Kconfig
-+++ b/drivers/devfreq/event/Kconfig
-@@ -13,6 +13,14 @@ menuconfig PM_DEVFREQ_EVENT
++
++	bus_noc: bus_noc {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK100_NOC>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_noc_opp_table>;
++		status = "disabled";
++	};
++
++	bus_fsys_apb: bus_fsys_apb {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_PCLK200_FSYS>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_fsys_apb_opp_table>;
++		status = "disabled";
++	};
++
++	bus_fsys: bus_fsys {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK200_FSYS>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_fsys_apb_opp_table>;
++		status = "disabled";
++	};
++
++	bus_fsys2: bus_fsys2 {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK200_FSYS2>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_fsys2_opp_table>;
++		status = "disabled";
++	};
++
++	bus_mfc: bus_mfc {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK333>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_mfc_opp_table>;
++		status = "disabled";
++	};
++
++	bus_gen: bus_gen {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK266>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_gen_opp_table>;
++		status = "disabled";
++	};
++
++	bus_peri: bus_peri {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK66>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_peri_opp_table>;
++		status = "disabled";
++	};
++
++	bus_g2d: bus_g2d {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK333_G2D>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_g2d_opp_table>;
++		status = "disabled";
++	};
++
++	bus_g2d_acp: bus_g2d_acp {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK266_G2D>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_g2d_acp_opp_table>;
++		status = "disabled";
++	};
++
++	bus_jpeg: bus_jpeg {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK300_JPEG>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_jpeg_opp_table>;
++		status = "disabled";
++	};
++
++	bus_jpeg_apb: bus_jpeg_apb {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK166>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_jpeg_apb_opp_table>;
++		status = "disabled";
++	};
++
++	bus_disp1_fimd: bus_disp1_fimd {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK300_DISP1>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_disp1_fimd_opp_table>;
++		status = "disabled";
++	};
++
++	bus_disp1: bus_disp1 {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK400_DISP1>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_disp1_opp_table>;
++		status = "disabled";
++	};
++
++	bus_gscl_scaler: bus_gscl_scaler {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK300_GSCL>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_gscl_opp_table>;
++		status = "disabled";
++	};
++
++	bus_mscl: bus_mscl {
++		compatible = "samsung,exynos-bus";
++		clocks = <&clock CLK_DOUT_ACLK400_MSCL>;
++		clock-names = "bus";
++		operating-points-v2 = <&bus_mscl_opp_table>;
++		status = "disabled";
++	};
++
++	bus_wcore_opp_table: opp_table2 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <84000000>;
++			opp-microvolt = <925000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <111000000>;
++			opp-microvolt = <950000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <222000000>;
++			opp-microvolt = <950000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <333000000>;
++			opp-microvolt = <950000>;
++		};
++		opp04 {
++			opp-hz = /bits/ 64 <400000000>;
++			opp-microvolt = <987500>;
++		};
++	};
++
++	bus_noc_opp_table: opp_table3 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <67000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <75000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <86000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++	};
++
++	bus_fsys_apb_opp_table: opp_table4 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp00 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++	};
++
++	bus_fsys2_opp_table: opp_table5 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <75000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <150000000>;
++		};
++	};
++
++	bus_mfc_opp_table: opp_table6 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <96000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <111000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <167000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <222000000>;
++		};
++		opp04 {
++			opp-hz = /bits/ 64 <333000000>;
++		};
++	};
++
++	bus_gen_opp_table: opp_table7 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <89000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <133000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <178000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <267000000>;
++		};
++	};
++
++	bus_peri_opp_table: opp_table8 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <67000000>;
++		};
++	};
++
++	bus_g2d_opp_table: opp_table9 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <84000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <167000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <222000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <300000000>;
++		};
++		opp04 {
++			opp-hz = /bits/ 64 <333000000>;
++		};
++	};
++
++	bus_g2d_acp_opp_table: opp_table10 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <67000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <133000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <178000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <267000000>;
++		};
++	};
++
++	bus_jpeg_opp_table: opp_table11 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <75000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <150000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <300000000>;
++		};
++	};
++
++	bus_jpeg_apb_opp_table: opp_table12 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <84000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <111000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <134000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <167000000>;
++		};
++	};
++
++	bus_disp1_fimd_opp_table: opp_table13 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <120000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++	};
++
++	bus_disp1_opp_table: opp_table14 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <120000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <300000000>;
++		};
++	};
++
++	bus_gscl_opp_table: opp_table15 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <150000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <200000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <300000000>;
++		};
++	};
++
++	bus_mscl_opp_table: opp_table16 {
++		compatible = "operating-points-v2";
++
++		opp00 {
++			opp-hz = /bits/ 64 <84000000>;
++		};
++		opp01 {
++			opp-hz = /bits/ 64 <167000000>;
++		};
++		opp02 {
++			opp-hz = /bits/ 64 <222000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <333000000>;
++		};
++		opp04 {
++			opp-hz = /bits/ 64 <400000000>;
++		};
++	};
+ };
  
- if PM_DEVFREQ_EVENT
- 
-+config DEVFREQ_EVENT_EXYNOS_NOCP
-+	bool "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
-+	depends on ARCH_EXYNOS
-+	select PM_OPP
-+	help
-+	  This add the devfreq-event driver for Exynos SoC. It provides NoC
-+	  (Network on Chip) Probe counters to measure the bandwidth of AXI bus.
-+
- config DEVFREQ_EVENT_EXYNOS_PPMU
- 	bool "EXYNOS PPMU (Platform Performance Monitoring Unit) DEVFREQ event Driver"
- 	depends on ARCH_EXYNOS
-diff --git a/drivers/devfreq/event/Makefile b/drivers/devfreq/event/Makefile
-index be146ead79cf..3d6afd352253 100644
---- a/drivers/devfreq/event/Makefile
-+++ b/drivers/devfreq/event/Makefile
-@@ -1,2 +1,4 @@
- # Exynos DEVFREQ Event Drivers
-+
-+obj-$(CONFIG_DEVFREQ_EVENT_EXYNOS_NOCP) += exynos-nocp.o
- obj-$(CONFIG_DEVFREQ_EVENT_EXYNOS_PPMU) += exynos-ppmu.o
-diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
-new file mode 100644
-index 000000000000..6b6a5f310486
---- /dev/null
-+++ b/drivers/devfreq/event/exynos-nocp.c
-@@ -0,0 +1,304 @@
-+/*
-+ * exynos-nocp.c - EXYNOS NoC (Network On Chip) Probe support
-+ *
-+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
-+ * Author : Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/module.h>
-+#include <linux/devfreq-event.h>
-+#include <linux/kernel.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#include "exynos-nocp.h"
-+
-+struct exynos_nocp {
-+	struct devfreq_event_dev *edev;
-+	struct devfreq_event_desc desc;
-+
-+	struct device *dev;
-+
-+	struct regmap *regmap;
-+	struct clk *clk;
-+};
-+
-+/*
-+ * The devfreq-event ops structure for nocp probe.
-+ */
-+static int exynos_nocp_set_event(struct devfreq_event_dev *edev)
-+{
-+	struct exynos_nocp *nocp = devfreq_event_get_drvdata(edev);
-+	int ret;
-+
-+	/* Disable NoC probe */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_MAIN_CTL,
-+				NOCP_MAIN_CTL_STATEN_MASK, 0);
-+	if (ret < 0) {
-+		dev_err(nocp->dev, "failed to disable the NoC probe device\n");
-+		return ret;
-+	}
-+
-+	/* Set a statistics dump period to 0 */
-+	ret = regmap_write(nocp->regmap, NOCP_STAT_PERIOD, 0x0);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* Set the IntEvent fields of *_SRC */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_0_SRC,
-+				NOCP_CNT_SRC_INTEVENT_MASK,
-+				NOCP_CNT_SRC_INTEVENT_BYTE_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_1_SRC,
-+				NOCP_CNT_SRC_INTEVENT_MASK,
-+				NOCP_CNT_SRC_INTEVENT_CHAIN_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_2_SRC,
-+				NOCP_CNT_SRC_INTEVENT_MASK,
-+				NOCP_CNT_SRC_INTEVENT_CYCLE_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_3_SRC,
-+				NOCP_CNT_SRC_INTEVENT_MASK,
-+				NOCP_CNT_SRC_INTEVENT_CHAIN_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+
-+	/* Set an alarm with a max/min value of 0 to generate StatALARM */
-+	ret = regmap_write(nocp->regmap, NOCP_STAT_ALARM_MIN, 0x0);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_write(nocp->regmap, NOCP_STAT_ALARM_MAX, 0x0);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* Set AlarmMode */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_0_ALARM_MODE,
-+				NOCP_CNT_ALARM_MODE_MASK,
-+				NOCP_CNT_ALARM_MODE_MIN_MAX_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_1_ALARM_MODE,
-+				NOCP_CNT_ALARM_MODE_MASK,
-+				NOCP_CNT_ALARM_MODE_MIN_MAX_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_2_ALARM_MODE,
-+				NOCP_CNT_ALARM_MODE_MASK,
-+				NOCP_CNT_ALARM_MODE_MIN_MAX_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_update_bits(nocp->regmap, NOCP_COUNTERS_3_ALARM_MODE,
-+				NOCP_CNT_ALARM_MODE_MASK,
-+				NOCP_CNT_ALARM_MODE_MIN_MAX_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* Enable the measurements by setting AlarmEn and StatEn */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_MAIN_CTL,
-+			NOCP_MAIN_CTL_STATEN_MASK | NOCP_MAIN_CTL_ALARMEN_MASK,
-+			NOCP_MAIN_CTL_STATEN_MASK | NOCP_MAIN_CTL_ALARMEN_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* Set GlobalEN */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_CFG_CTL,
-+				NOCP_CFG_CTL_GLOBALEN_MASK,
-+				NOCP_CFG_CTL_GLOBALEN_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* Enable NoC probe */
-+	ret = regmap_update_bits(nocp->regmap, NOCP_MAIN_CTL,
-+				NOCP_MAIN_CTL_STATEN_MASK,
-+				NOCP_MAIN_CTL_STATEN_MASK);
-+	if (ret < 0)
-+		goto out;
-+
-+	return 0;
-+
-+out:
-+	/* Reset NoC probe */
-+	if (regmap_update_bits(nocp->regmap, NOCP_MAIN_CTL,
-+				NOCP_MAIN_CTL_STATEN_MASK, 0)) {
-+		dev_err(nocp->dev, "Failed to reset NoC probe device\n");
-+	}
-+
-+	return ret;
-+}
-+
-+static int exynos_nocp_get_event(struct devfreq_event_dev *edev,
-+				struct devfreq_event_data *edata)
-+{
-+	struct exynos_nocp *nocp = devfreq_event_get_drvdata(edev);
-+	unsigned int counter[4];
-+	int ret;
-+
-+	/* Read cycle count */
-+	ret = regmap_read(nocp->regmap, NOCP_COUNTERS_0_VAL, &counter[0]);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_read(nocp->regmap, NOCP_COUNTERS_1_VAL, &counter[1]);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_read(nocp->regmap, NOCP_COUNTERS_2_VAL, &counter[2]);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = regmap_read(nocp->regmap, NOCP_COUNTERS_3_VAL, &counter[3]);
-+	if (ret < 0)
-+		goto out;
-+
-+	edata->load_count = ((counter[1] << 16) | counter[0]);
-+	edata->total_count = ((counter[3] << 16) | counter[2]);
-+
-+	dev_dbg(&edev->dev, "%s (event: %ld/%ld)\n", edev->desc->name,
-+					edata->load_count, edata->total_count);
-+
-+	return 0;
-+
-+out:
-+	edata->load_count = 0;
-+	edata->total_count = 0;
-+
-+	dev_err(nocp->dev, "Failed to read the counter of NoC probe device\n");
-+
-+	return ret;
-+}
-+
-+static const struct devfreq_event_ops exynos_nocp_ops = {
-+	.set_event = exynos_nocp_set_event,
-+	.get_event = exynos_nocp_get_event,
-+};
-+
-+static const struct of_device_id exynos_nocp_id_match[] = {
-+	{ .compatible = "samsung,exynos5420-nocp", },
-+	{ /* sentinel */ },
-+};
-+
-+static struct regmap_config exynos_nocp_regmap_config = {
-+	.reg_bits = 32,
-+	.val_bits = 32,
-+	.reg_stride = 4,
-+	.max_register = NOCP_COUNTERS_3_VAL,
-+};
-+
-+static int exynos_nocp_parse_dt(struct platform_device *pdev,
-+				struct exynos_nocp *nocp)
-+{
-+	struct device *dev = nocp->dev;
-+	struct device_node *np = dev->of_node;
-+	struct resource *res;
-+	void __iomem *base;
-+
-+	if (!np) {
-+		dev_err(dev, "failed to find devicetree node\n");
-+		return -EINVAL;
-+	}
-+
-+	nocp->clk = devm_clk_get(dev, "nocp");
-+	if (IS_ERR(nocp->clk))
-+		nocp->clk = NULL;
-+
-+	/* Maps the memory mapped IO to control nocp register */
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (IS_ERR(res))
-+		return PTR_ERR(res);
-+
-+	base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	exynos_nocp_regmap_config.max_register = resource_size(res) - 4;
-+
-+	nocp->regmap = devm_regmap_init_mmio(dev, base,
-+					&exynos_nocp_regmap_config);
-+	if (IS_ERR(nocp->regmap)) {
-+		dev_err(dev, "failed to initialize regmap\n");
-+		return PTR_ERR(nocp->regmap);
-+	}
-+
-+	return 0;
-+}
-+
-+static int exynos_nocp_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
-+	struct exynos_nocp *nocp;
-+	int ret;
-+
-+	nocp = devm_kzalloc(&pdev->dev, sizeof(*nocp), GFP_KERNEL);
-+	if (!nocp)
-+		return -ENOMEM;
-+
-+	nocp->dev = &pdev->dev;
-+
-+	/* Parse dt data to get resource */
-+	ret = exynos_nocp_parse_dt(pdev, nocp);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev,
-+			"failed to parse devicetree for resource\n");
-+		return ret;
-+	}
-+
-+	/* Add devfreq-event device to measure the bandwidth of NoC */
-+	nocp->desc.ops = &exynos_nocp_ops;
-+	nocp->desc.driver_data = nocp;
-+	nocp->desc.name = np->full_name;
-+	nocp->edev = devm_devfreq_event_add_edev(&pdev->dev, &nocp->desc);
-+	if (IS_ERR(nocp->edev)) {
-+		dev_err(&pdev->dev,
-+			"failed to add devfreq-event device\n");
-+		return PTR_ERR(nocp->edev);
-+	}
-+	platform_set_drvdata(pdev, nocp);
-+
-+	clk_prepare_enable(nocp->clk);
-+
-+	pr_info("exynos-nocp: new NoC Probe device registered: %s\n",
-+			dev_name(dev));
-+
-+	return 0;
-+}
-+
-+static int exynos_nocp_remove(struct platform_device *pdev)
-+{
-+	struct exynos_nocp *nocp = platform_get_drvdata(pdev);
-+
-+	clk_disable_unprepare(nocp->clk);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver exynos_nocp_driver = {
-+	.probe	= exynos_nocp_probe,
-+	.remove	= exynos_nocp_remove,
-+	.driver = {
-+		.name	= "exynos-nocp",
-+		.of_match_table = exynos_nocp_id_match,
-+	},
-+};
-+module_platform_driver(exynos_nocp_driver);
-+
-+MODULE_DESCRIPTION("Exynos NoC (Network on Chip) Probe driver");
-+MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/devfreq/event/exynos-nocp.h b/drivers/devfreq/event/exynos-nocp.h
-new file mode 100644
-index 000000000000..28564db0edb8
---- /dev/null
-+++ b/drivers/devfreq/event/exynos-nocp.h
-@@ -0,0 +1,78 @@
-+/*
-+ * exynos-nocp.h - EXYNOS NoC (Network on Chip) Probe header file
-+ *
-+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
-+ * Author : Chanwoo Choi <cw00.choi@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __EXYNOS_NOCP_H__
-+#define __EXYNOS_NOCP_H__
-+
-+enum nocp_reg {
-+	NOCP_ID_REVISION_ID		= 0x04,
-+	NOCP_MAIN_CTL			= 0x08,
-+	NOCP_CFG_CTL			= 0x0C,
-+
-+	NOCP_STAT_PERIOD		= 0x24,
-+	NOCP_STAT_GO			= 0x28,
-+	NOCP_STAT_ALARM_MIN		= 0x2C,
-+	NOCP_STAT_ALARM_MAX		= 0x30,
-+	NOCP_STAT_ALARM_STATUS		= 0x34,
-+	NOCP_STAT_ALARM_CLR		= 0x38,
-+
-+	NOCP_COUNTERS_0_SRC		= 0x138,
-+	NOCP_COUNTERS_0_ALARM_MODE	= 0x13C,
-+	NOCP_COUNTERS_0_VAL		= 0x140,
-+
-+	NOCP_COUNTERS_1_SRC		= 0x14C,
-+	NOCP_COUNTERS_1_ALARM_MODE	= 0x150,
-+	NOCP_COUNTERS_1_VAL		= 0x154,
-+
-+	NOCP_COUNTERS_2_SRC		= 0x160,
-+	NOCP_COUNTERS_2_ALARM_MODE	= 0x164,
-+	NOCP_COUNTERS_2_VAL		= 0x168,
-+
-+	NOCP_COUNTERS_3_SRC		= 0x174,
-+	NOCP_COUNTERS_3_ALARM_MODE	= 0x178,
-+	NOCP_COUNTERS_3_VAL		= 0x17C,
-+};
-+
-+/* NOCP_MAIN_CTL register */
-+#define NOCP_MAIN_CTL_ERREN_MASK		BIT(0)
-+#define NOCP_MAIN_CTL_TRACEEN_MASK		BIT(1)
-+#define NOCP_MAIN_CTL_PAYLOADEN_MASK		BIT(2)
-+#define NOCP_MAIN_CTL_STATEN_MASK		BIT(3)
-+#define NOCP_MAIN_CTL_ALARMEN_MASK		BIT(4)
-+#define NOCP_MAIN_CTL_STATCONDDUMP_MASK	BIT(5)
-+#define NOCP_MAIN_CTL_INTRUSIVEMODE_MASK	BIT(6)
-+
-+/* NOCP_CFG_CTL register */
-+#define NOCP_CFG_CTL_GLOBALEN_MASK		BIT(0)
-+#define NOCP_CFG_CTL_ACTIVE_MASK		BIT(1)
-+
-+/* NOCP_COUNTERS_x_SRC register */
-+#define NOCP_CNT_SRC_INTEVENT_SHIFT		0
-+#define NOCP_CNT_SRC_INTEVENT_MASK		(0x1F << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_OFF_MASK		(0x0 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_CYCLE_MASK	(0x1 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_IDLE_MASK		(0x2 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_XFER_MASK		(0x3 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_BUSY_MASK		(0x4 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_WAIT_MASK		(0x5 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_PKT_MASK		(0x6 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_BYTE_MASK		(0x8 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+#define NOCP_CNT_SRC_INTEVENT_CHAIN_MASK	(0x10 << NOCP_CNT_SRC_INTEVENT_SHIFT)
-+
-+/* NOCP_COUNTERS_x_ALARM_MODE register */
-+#define NOCP_CNT_ALARM_MODE_SHIFT		0
-+#define NOCP_CNT_ALARM_MODE_MASK		(0x3 << NOCP_CNT_ALARM_MODE_SHIFT)
-+#define NOCP_CNT_ALARM_MODE_OFF_MASK		(0x0 << NOCP_CNT_ALARM_MODE_SHIFT)
-+#define NOCP_CNT_ALARM_MODE_MIN_MASK		(0x1 << NOCP_CNT_ALARM_MODE_SHIFT)
-+#define NOCP_CNT_ALARM_MODE_MAX_MASK		(0x2 << NOCP_CNT_ALARM_MODE_SHIFT)
-+#define NOCP_CNT_ALARM_MODE_MIN_MAX_MASK	(0x3 << NOCP_CNT_ALARM_MODE_SHIFT)
-+
-+#endif /* __EXYNOS_NOCP_H__ */
+ &dp {
 -- 
 1.9.1
