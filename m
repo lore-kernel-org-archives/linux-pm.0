@@ -1,46 +1,35 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System Controller
-Date: Fri, 15 Apr 2016 08:37:12 +0200
-Message-ID: <CAMuHMdXm-enyrJSs66R73tCADZomEZD0eAL3HftWPoS26hZHjQ@mail.gmail.com>
-References: <1460558663-10197-1-git-send-email-geert+renesas@glider.be>
-	<20160415010416.GC31938@verge.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [RESEND PATCH v4 0/2] Add UCS1002 USB Port Power Controller
+Date: Fri, 15 Apr 2016 09:26:19 +0200
+Message-ID: <1460705181-10493-1-git-send-email-enric.balletbo@collabora.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160415010416.GC31938-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Sjoerd Simons <sjoerd.simons-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>, Martyn Welch <martyn.welch-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
+Dear all,
 
-On Fri, Apr 15, 2016 at 3:04 AM, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org> wrote:
-> On Wed, Apr 13, 2016 at 04:44:16PM +0200, Geert Uytterhoeven wrote:
->> This patch series introduces DT bindings for the R-Car System
->> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
->> SoCs.
->
-> Thanks Geert,
->
-> I have queued this up for v4.7
+This is the fourth version of the UCS1002 driver, a Programmable USB Port
+Power Controller with Charger Emulation.
 
-Thanks a lot!
+Any comments are welcome. Thanks in advance.
 
-> Please let me know if that was not your intention.
+Enric Balletbo i Serra (2):
+  devicetree: Add UCS1002 USB Port Power Controller binding
+  power: ucs1002: Add support for Programmable USB Port Power Controller
 
-The bindings don't have any dependencies.
+ .../devicetree/bindings/power/ucs1002.txt          |   41 +
+ drivers/power/Kconfig                              |    9 +
+ drivers/power/Makefile                             |    1 +
+ drivers/power/ucs1002_power.c                      | 1004 ++++++++++++++++++++
+ 4 files changed, 1055 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/ucs1002.txt
+ create mode 100644 drivers/power/ucs1002_power.c
 
-Gr{oetje,eeting}s,
+-- 
+2.1.0
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
