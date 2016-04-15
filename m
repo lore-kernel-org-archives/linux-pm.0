@@ -1,65 +1,92 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v2 6/8] clk: samsung: exynos542x: Add the clock id for ACLK
-Date: Fri, 15 Apr 2016 18:34:30 +0200
-Message-ID: <57111816.8080808@samsung.com>
-References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
- <1460701975-24178-7-git-send-email-cw00.choi@samsung.com>
- <5710AEF2.3040800@samsung.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Fri, 15 Apr 2016 12:48:54 -0400
+Message-ID: <57111B76.8020106@osg.samsung.com>
+References: <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com> <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com> <20160414111257.GG1533@katana>
+ <570F9DF1.3070700@osg.samsung.com> <20160414141945.GA1539@katana>
+ <570FA8D6.5070308@osg.samsung.com> <20160414151244.GM5973@atomide.com>
+ <57102EE3.3020707@osg.samsung.com> <20160415145828.GT5973@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <5710AEF2.3040800@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, tomasz.figa@gmail.com, kgene@kernel.org, robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lists.s-osg.org ([54.187.51.154]:38958 "EHLO lists.s-osg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751285AbcDOQtF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 Apr 2016 12:49:05 -0400
+In-Reply-To: <20160415145828.GT5973@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Enric Balletbo i Serra <eballetbo@gmail.com>, =?UTF-8?Q?Agust=c3=ad_Fontquerni?= <af@iseebcn.com>
 
-On 04/15/2016 11:05 AM, Krzysztof Kozlowski wrote:
-> On 04/15/2016 08:32 AM, Chanwoo Choi wrote:
->> This patch adds the clock id for ACLK clock which is source clock of AMBA AXI
->> Bus. This clock should be handled in Bus frequency scaling driver.
+Hello Tony,
+
+On 04/15/2016 10:58 AM, Tony Lindgren wrote:
 >>
->> Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>
->> Cc: Tomasz Figa <tomasz.figa@gmail.com>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Tested-by: Markus Reichl <m.reichl@fivetechno.de>
->> Tested-by: Anand Moon <linux.amoon@gmail.com>
->> ---
->>  drivers/clk/samsung/clk-exynos5420.c | 77 ++++++++++++++++++++++--------------
->>  1 file changed, 47 insertions(+), 30 deletions(-)
+>>> The short term workaround is to mux the reset pin to use the internal
+>>> pulls by using PIN_INPUT_PULLUP | MUX_MODE7, or depending on the direction,
+>>> PIN_INPUT_PULLDOWN | MUX_MODE7.
+>>
+>> I guess you meant MUX_MODE4 here since the pin has to be in GPIO mode?
 > 
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> No, the glitch affects the GPIO mode, so that's why direction + pull +
+> safe mode is needed.
+>
 
-I applied patches 5/8 and 6/8 onto a stable topic branch. Below are
-details if they need to be pulled into any other subsystem tree.
+Ah ok, thanks for the explanation and sorry for the confusion.
+ 
+>> Also, I wonder how the issue could be related to the GPIO controller
+>> since is when enabling runtime PM for the I2C controller that things
+>> fail. IOW, disabling runtime PM for the I2C adapter shouldn't make
+>> things to work if the problem was caused by the mentioned GPIO errata.
+> 
+> If you block PM runtime for I2C, then it blocks deeper idle states
+> for the whole device. Note that you can disable off mode during idle
 
+Thanks again for this clarification.
 
-The following changes since commit f55532a0c0b8bb6148f4e07853b876ef73bc69ca:
+> and suspend with:
+> 
+> # echo 0 > /sys/kernel/debug/pm_debug/enable_off_mode
+>
 
-  Linux 4.6-rc1 (2016-03-26 16:03:24 -0700)
+I see thought that enable_off_mode is 0 by default when booting the board:
 
-are available in the git repository at:
+# cat /sys/kernel/debug/pm_debug/enable_off_mode 
+0
 
-  git://linuxtv.org/snawrocki/samsung.git tags/clk-v4.7-exynos542x
+So if I understood your explanation correctly, that means that the glitch
+should not happen for the GPIO pins since the machine doesn't enter into
+deeper idle states that could cause the glitch from erratum 1.158?
+ 
+>> In any case, I've tried to use the internal pulls as you suggested but
+>> that didn't solve the issue.
+> 
+> OK. Just to be sure.. Did you use the safe mode mux option instead
+> of the GPIO mux option?
+>
 
-for you to fetch changes up to 81fed6e342c04a4ecb0650c914d24bd57c6c168f:
+No sorry, I tested with the GPIO mux mode before since I misunderstood
+your previous email. But now I've tested with safe mode mux and didn't
+make a difference (which was expected since off mode is disabled AFAIU). 
+ 
+> Note that in some cases the internal pull is not strong enough to
+> keep the reset line up if there's an external pull down resistor.
+>
 
-  clk: samsung: exynos542x: Add the clock id for ACLK (2016-04-15 18:13:45 +0200)
+Yes, I got that from your previous email but as I mentioned, the lines
+in the board don't have external pull resistors.
+ 
+> Regards,
+> 
+> Tony
+> 
 
-----------------------------------------------------------------
-Addition of IDs for Exynos542x SoC AMBA AXI bus clocks.
-
-----------------------------------------------------------------
-Chanwoo Choi (2):
-      dt-bindings: clock: Add the clock id for ACLK clock of Exynos542x SoC
-      clk: samsung: exynos542x: Add the clock id for ACLK
-
- drivers/clk/samsung/clk-exynos5420.c   | 77
-+++++++++++++++++++++++++++++++++++++++++++++++------------------------------
- include/dt-bindings/clock/exynos5420.h | 24 +++++++++++++++++++++++-
- 2 files changed, 70 insertions(+), 31 deletions(-)
-
+Best regards,
 -- 
-Regards,
-Sylwester
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
