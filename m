@@ -1,56 +1,82 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RESEND v2] power: reset: keystone: Enable COMPILE_TEST
-Date: Fri, 15 Apr 2016 16:27:52 +0200
-Message-ID: <20160415142752.GC24087@earth>
-References: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: tvp5150 regression after commit 9f924169c035
+Date: Fri, 15 Apr 2016 07:58:29 -0700
+Message-ID: <20160415145828.GT5973@atomide.com>
+References: <20160212234623.GB3500@atomide.com>
+ <56BE993B.3010804@osg.samsung.com>
+ <20160412223254.GK1526@katana>
+ <570ECAB0.4050107@osg.samsung.com>
+ <20160414111257.GG1533@katana>
+ <570F9DF1.3070700@osg.samsung.com>
+ <20160414141945.GA1539@katana>
+ <570FA8D6.5070308@osg.samsung.com>
+ <20160414151244.GM5973@atomide.com>
+ <57102EE3.3020707@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="WfZ7S8PLGjBY9Voh"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <57102EE3.3020707@osg.samsung.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Enric Balletbo i Serra <eballetbo@gmail.com>, =?utf-8?Q?Agust=C3=AD?= Fontquerni <af@iseebcn.com>
 List-Id: linux-pm@vger.kernel.org
 
+* Javier Martinez Canillas <javier@osg.samsung.com> [160414 17:00]:
+> On 04/14/2016 11:12 AM, Tony Lindgren wrote:
+> > Is this with omap3 and does tvp5150 have a reset GPIO pin?
+> 
+> Yes, it's a DM3730 (OMAP3) and yes the tvp5150 (actually it's a tvp5151) has
+> a reset pin that has to be toggled, along with a power-down pin for the chip
+> to be in an operative state before accessing the I2C registers. That is the
+> power/reset sequence I mentioned before.
+>  
+> > If so, you could be hitting the GPIO errata where a glitch can happen
+> > when restoring the GPIO state coming back from off mode in idle. This
+> > happes for GPIO pins that are not in GPIO bank1 and have an external
+> > pull down resistor on the line.
+> >
+> 
+> The GPIO lines connected to these pins are:
+> 
+> GPIO126 (bank4 pin 30) -> tvp5150 power-down pin
+> GPIO167 (bank6 pin 7)  -> tvp5150 reset pin
+> 
+> Neither are in GPIO bank1 so they could be affected by the errata you
+> mention but there isn't external pull down (or up) resistors on these
+> lines AFAICT by looking at the board schematics. I've added to the cc
+> list to other people that are familiar with the board in case I missed
+> something.
+> 
+> > The short term workaround is to mux the reset pin to use the internal
+> > pulls by using PIN_INPUT_PULLUP | MUX_MODE7, or depending on the direction,
+> > PIN_INPUT_PULLDOWN | MUX_MODE7.
+> 
+> I guess you meant MUX_MODE4 here since the pin has to be in GPIO mode?
 
---WfZ7S8PLGjBY9Voh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No, the glitch affects the GPIO mode, so that's why direction + pull +
+safe mode is needed.
 
-Hi,
+> Also, I wonder how the issue could be related to the GPIO controller
+> since is when enabling runtime PM for the I2C controller that things
+> fail. IOW, disabling runtime PM for the I2C adapter shouldn't make
+> things to work if the problem was caused by the mentioned GPIO errata.
 
-On Wed, Mar 30, 2016 at 09:49:48AM +0900, Krzysztof Kozlowski wrote:
-> Enable the COMPILE_TEST to get build coverage, except on platforms
-> !HAS_IOMEM (required by selected MFD_SYSCON).
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+If you block PM runtime for I2C, then it blocks deeper idle states
+for the whole device. Note that you can disable off mode during idle
+and suspend with:
 
-Thanks, queued.
+# echo 0 > /sys/kernel/debug/pm_debug/enable_off_mode
 
--- Sebastian
+> In any case, I've tried to use the internal pulls as you suggested but
+> that didn't solve the issue.
 
---WfZ7S8PLGjBY9Voh
-Content-Type: application/pgp-signature; name="signature.asc"
+OK. Just to be sure.. Did you use the safe mode mux option instead
+of the GPIO mux option?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Note that in some cases the internal pull is not strong enough to
+keep the reset line up if there's an external pull down resistor.
 
-iQIcBAEBCgAGBQJXEPpoAAoJENju1/PIO/qaVJAP/A8595OGtmHyve252cFs5oXf
-U9yj2iyfNpB0PRYglXZRuul6VU4FWH7TNIe35IrXbV9uy6R7P9yrpo9sym4uBFlm
-gRAAilZ43hJazPnUiOyDkS5UR3mW2m2xIN5493nqybvWBRzJ45PuYS9Wo5YkiVVy
-mMRZy/TW4O98O3+kOiptR0+iasojIngTEVGS1EH58TyBe3SRtMHdXiaVgYb6sEQX
-JIi13uMjDN27hNdSjheiL1pMILTetfsPxeXHhQxD98N3WSKMz2tRh+lBT69x6g45
-bvVroc+yPncSDyjtmfaP5ixiNwWwxubL9pEz5gpZC1ZM4NPi5/4LUTg/nF57C6/d
-pTmjZ93ciwxDZsDcRZq/j6V4FaX43Zl6mGdA31P1fCMDGamgY2IJBG3Lk8aaCjSg
-5J+MBXUHlTPpUmTekfv5dH5XH0Mgxp9XwtXL1eOS86uFj+9Z++psrRk9Qr9XoCs9
-UKLDN6z9SM7vpyzUcBwHulT+dwDYutn6MIOV+2SYYWOlXLyXdiChMpJ6qR14hmRV
-fEnoPYif/KZv7h5JBP71AWbGBdZ9UhXuwDEC6dO5aBBcPwsGbAI8PhkE4D3ZghtC
-fx3sjvf+VU1l5ZzqZeNfu8aAPcuso3DnRkNvqn8TgBiiD6w/lhurEfo/ScfvNvYI
-FBRP2ZfMGNZ1j5ofA+L0
-=+AYC
------END PGP SIGNATURE-----
+Regards,
 
---WfZ7S8PLGjBY9Voh--
+Tony
