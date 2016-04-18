@@ -1,100 +1,94 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 18 Apr 2016 12:33:50 +0200
-Message-ID: <20160418103350.GB27936@amd>
+Date: Mon, 18 Apr 2016 12:39:45 +0200
+Message-ID: <20160418103945.GA29123@amd>
 References: <cover.1458128215.git.baolin.wang@linaro.org>
  <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
  <87h9foqnur.fsf@intel.com>
  <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
  <87poubgnbh.fsf@intel.com>
- <CAMz4kuJwfWPEndmVMoDBQQFZ2X8BAzDgej_9qMKQq0xU3tC=5w@mail.gmail.com>
- <20160322112940.GB26924@xo-6d-61-c0.localdomain>
- <87d1pngwjb.fsf@intel.com>
+ <20160322113012.GC26924@xo-6d-61-c0.localdomain>
+ <87fuujgwsm.fsf@intel.com>
+ <20160418102316.GA27936@amd>
+ <877ffvgqe9.fsf@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <87d1pngwjb.fsf@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <877ffvgqe9.fsf-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> >> > a) you are connected to a dedicated charger
-> >> >
-> >> >         In this case, you can get up to 2000mA depending on the charger.
-> >> >
-> >> >         If $this charger can give you or not 2000mA is not detectable,
-> >> >         so what do charging ICs do ? They slowly increase the attached
-> >> >         load accross VBUS/GND and measure VBUS value. When IC notices
-> >> >         VBUS dropping bit, step back to previous load.
-> >> >
-> >> >         This means you will always charger with maximum rating of DCP.
-> >> >
-> >> >         Why would user change this ? More is unsafe, less is just
-> >> >         stupid.
-> >
-> > Less is not neccessarily stupid. First, it is useful for debugging, second, you
-> > don't know how much this charger can give you. You measured you can get 1.8A,
-> > but the note on the charger says 1.5A. You may want to go with 1.5A.
-> >
-> > Also, there are several incompatible standards for detecting
-> > "dedicated charger". IIRC iPhone has different one from iPad. So it is
-> > quite important to be able to control this manually.
+On Mon 2016-04-18 13:30:54, Felipe Balbi wrote:
 > 
-> manually ??? Hell no! Charger IC should be able to do this no
-> problem. I would be surprised if there's any charger IC out there which
-> blindly connects a 1.8A load from the start. What these ICs do is that
-> they slowly increment the load and check voltage level. They'll continue
-> to do that up to the maximum you listed (1.8A, let's say). As soon as
-> voltage drops a bit, charger IC knows that it use previous load.
-
-As I explained, if the note on the wall charger says 1.5A, you want to
-do 1.5A, not 1.8A. You can measure voltage on the charger, but you
-don't know its temperature.
-
-> >> > d) you are connected to a standard port and get enumerated with your
-> >> > 100mA configuration.
-> >> >
-> >> >         you *know* 100mA is okay. So you connect a 100mA load and get it
-> >> >         over with.
-> >> >
-> >> >         This means you will always charger with maximum rating for this
-> >> >         SDP.
-> >> >
-> >> >         Why would user change this ? More is unsafe, less is just
-> >> >         stupid.
+> Hi,
+> 
+> Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org> writes:
+> >> > Very often, you want to charge using 1.8A from an old desktop PC.
+> >> 
+> >> if that old desktop's port is not a charging port, you shouldn't be
+> >> allowed to do that. Not ever.
 > >
-> > I've needed to override 100mA default many times. Maybe it is unsafe,
-> > but it is useful.
+> > Yes, Felipe just decided that I should not be able to charge my N900
+> > in useful way.
 > 
-> still unsafe. If you really wanna do that, you're welcome to removing
-> safety margins from your own kernel, but we're definitely not going to
-> ship this to millions of users.
+> you can do whatever you want with *your* kernel binary, but we're not
+> gonna ship something potentially dangerous. If that PC port is telling
+> you it can only allow 100mA, you should *not* be allowed to overcome
+> that limitation from the device side, sorry.
 
-Not more unsafe than loading wall chargers with "lets see how much we
-can get out of it" algorithm. Plus actually required to charge your
-machines in useful way. So it is important that common API
-exists. Whether it gets enalbed at production is different question.
+Yes, and if your cpu tells you it can only run on 2GHz, you should not
+be able to run it on 2.1GHz. And you should not be able to use
+non-VESA VGA modes, because you could overheat coils in the monitor.
 
-Unfortunately, there's more than one standard for detecting charger,
-so manual control will probably be required.
+You are shipping something potentially dangerous already, because you
+know, USB-A-to-micro-B cables with D+/D- connected to simulate charger
+are actually very common. The world did not end, yet, so it is clearly
+not as bad as you make it be.
 
-> > (And with USB 5V connected directly to pretty beefy PC power supply...
-> > it is sometimes safer than it looks).
+> >> >> a) you are connected to a dedicated charger
+> >> >> 
+> >> >> 	In this case, you can get up to 2000mA depending on the charger.
+> >> >> 
+> >> >> 	If $this charger can give you or not 2000mA is not detectable,
+> >> >> 	so what do charging ICs do ? They slowly increase the attached
+> >> >> 	load accross VBUS/GND and measure VBUS value. When IC notices
+> >> >> 	VBUS dropping bit, step back to previous load.
+> >> >> 
+> >> >> 	This means you will always charger with maximum rating of DCP.
+> >> >> 
+> >> >> 	Why would user change this ? More is unsafe, less is just
+> >> >> 	stupid.
+> >> >
+> >> > Actually, less is not stupid. Charging li-ion battery from li-ion battery might
+> >> > be stupid. Imagine I'm on train, with device like N900 (50% battery) and power bank
+> >> > (3Ah). I'm actively using the device. If I let it charge at full current, I'll waste
+> >> > energy. If I limit current to approximately the power consumption, it will run the
+> >> > powerbank empty, first, then empty the internal battery, maximizing total time I
+> >> > can use the device.
+> >> 
+> >> why would you waste energy ? What the charger chip would do is charge
+> >> battery to maximum then just to maintenance charge from that point
+> >> on. Where is energy being wasted other than normal heat dissipation ?
+> >
+> > Physics 101, of course wasted energy goes to heat. Lets not waste
+> > energy by charging li-ion from li-ion when it is not required.
 > 
-> you're not considering the thermal dissipation on the USB connector
-> itself. Many of them might not use good metals because they assume the
-> maximum power dissipated is 500mA * 5V = 2.5W. If you try to draw more,
-> you could, literally, melt the connector.
+> your cellphone has no means to know that it's connected to a Li-Ion
+> battery. We don't have visibility on what we're connected to, just how
+> much it can source.
 
-If you are dissipating 2.5W at the connector, you are doing something
-very wrong. You should not be short-circuiting your USB... even when
-the ports are usually designed to survive that.
-
+But cellphone user knows what he connected his charger to, and that's
+why it is useful to be able to lower the current. Even when you said
+"less is just stupid" I demonstrated it is not, at least in case when
+your power source is a battery.
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
