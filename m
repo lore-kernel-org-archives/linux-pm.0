@@ -1,155 +1,143 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 8/9] thermal: rockchip: add the set_trips function
-Date: Mon, 18 Apr 2016 11:36:00 +0800
-Message-ID: <1460950562-20652-9-git-send-email-wxt@rock-chips.com>
-References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [RESEND PATCH 2/3] power: axp288_charger: Replace deprecatd API of
+ extcon
+Date: Mon, 18 Apr 2016 14:31:41 +0900
+Message-ID: <5714713D.7000903@samsung.com>
+References: <1460681016-2770-1-git-send-email-cw00.choi@samsung.com>
+ <1460681016-2770-3-git-send-email-cw00.choi@samsung.com>
+ <20160415142053.GB24087@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:35606 "EHLO
-	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbcDRDi0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Apr 2016 23:38:26 -0400
-In-Reply-To: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:37844 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbcDRFbu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 01:31:50 -0400
+In-reply-to: <20160415142053.GB24087@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Whenever the current temperature is updated, the trip points immediately
-below and above the current temperature are found. A sensor driver
-callback `set_trips' is then called with the temperatures.
-Lastly, The sensor will trigger the hardware high temperature interrupts
-to increase the sampleing rate and throttle frequency to limit the
-temperature rising When performing passive cooling.
+Hi Sebastian,
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>
----
+On 2016=EB=85=84 04=EC=9B=94 15=EC=9D=BC 23:20, Sebastian Reichel wrote=
+:
+> Hi,
+>=20
+> On Fri, Apr 15, 2016 at 09:43:35AM +0900, Chanwoo Choi wrote:
+>> This patch removes the deprecated notifier API of extcon framework a=
+nd then use
+>> the new extcon API[2] with the unique id[1] to indicate the each ext=
+ernal
+>> connector. Alter deprecated API as following:
+>> - extcon_register_interest() -> extcon_register_notifier()
+>> - extcon_unregister_interest() -> extcon_unregister_notifier()
+>> - extcon_get_cable_state() -> extcon_get_cable_state_()
+>>
+>> And, extcon alters the name of USB charger connector in patch[3] as =
+following:
+>> - EXTCON_CHG_USB_SDP /* Standard Downstream Port */
+>> - EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
+>> - EXTCON_CHG_USB_CDP /* Charging Downstream Port */
+>> - EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
+>>
+>> [1] Commit 2a9de9c0f08d61
+>> - ("extcon: Use the unique id for external connector instead of stri=
+ng)
+>> [2] Commit 046050f6e623e4
+>> - ("extcon: Update the prototype of extcon_register_notifier() with =
+enum extcon
+>> [3] Commit 11eecf910bd81d
+>> - ("extcon: Modify the id and name of external connector")
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/power/axp288_charger.c | 77 +++++++++++++++++++++++++++++--=
+-----------
+>>  1 file changed, 53 insertions(+), 24 deletions(-)
+>>
+>> diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_c=
+harger.c
+>> index e4d569f57acc..e5c2569befa6 100644
+>> --- a/drivers/power/axp288_charger.c
+>> +++ b/drivers/power/axp288_charger.c
+>> @@ -129,10 +129,6 @@
+>> =20
 
- drivers/thermal/rockchip_thermal.c | 39 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+[snip]
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 86a1ab0..39e2eec 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -96,6 +96,7 @@ struct chip_tsadc_table {
-  * @initialize: SoC special initialize tsadc controller method
-  * @irq_ack: clear the interrupt
-  * @get_temp: get the temperature
-+ * @set_alarm_temp: set the high temperature interrupt
-  * @set_tshut_temp: set the hardware-controlled shutdown temperature
-  * @set_tshut_mode: set the hardware-controlled shutdown mode
-  * @table: the chip-specific conversion table
-@@ -119,6 +120,8 @@ struct rockchip_tsadc_chip {
- 	/* Per-sensor methods */
- 	int (*get_temp)(struct chip_tsadc_table table,
- 			int chn, void __iomem *reg, int *temp);
-+	void (*set_alarm_temp)(struct chip_tsadc_table table,
-+			       int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_temp)(struct chip_tsadc_table table,
- 			       int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
-@@ -183,6 +186,7 @@ struct rockchip_thermal_data {
- #define TSADCV2_INT_EN				0x08
- #define TSADCV2_INT_PD				0x0c
- #define TSADCV2_DATA(chn)			(0x20 + (chn) * 0x04)
-+#define TSADCV2_COMP_INT(chn)		        (0x30 + (chn) * 0x04)
- #define TSADCV2_COMP_SHUT(chn)		        (0x40 + (chn) * 0x04)
- #define TSADCV2_HIGHT_INT_DEBOUNCE		0x60
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE		0x64
-@@ -628,6 +632,20 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
- 	return rk_tsadcv2_code_to_temp(table, val, temp);
- }
- 
-+static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
-+				  int chn, void __iomem *regs, int temp)
-+{
-+	u32 alarm_value, int_en;
-+
-+	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
-+	writel_relaxed(alarm_value & table.data_mask,
-+		       regs + TSADCV2_COMP_INT(chn));
-+
-+	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
-+	int_en |= TSADCV2_INT_SRC_EN(chn);
-+	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
-+}
-+
- static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
- 				  int chn, void __iomem *regs, int temp)
- {
-@@ -670,6 +688,7 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -694,6 +713,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	.irq_ack = rk_tsadcv2_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -718,6 +738,7 @@ static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -742,6 +763,7 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 	.irq_ack = rk_tsadcv2_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -766,6 +788,7 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -826,6 +849,21 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
- 	return IRQ_HANDLED;
- }
- 
-+static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
-+{
-+	struct rockchip_thermal_sensor *sensor = _sensor;
-+	struct rockchip_thermal_data *thermal = sensor->thermal;
-+	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-+
-+	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
-+		__func__, sensor->id, low, high);
-+
-+	tsadc->set_alarm_temp(tsadc->table,
-+			      sensor->id, thermal->regs, high);
-+
-+	return 0;
-+}
-+
- static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
- {
- 	struct rockchip_thermal_sensor *sensor = _sensor;
-@@ -843,6 +881,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
- 
- static const struct thermal_zone_of_device_ops rockchip_of_thermal_ops = {
- 	.get_temp = rockchip_thermal_get_temp,
-+	.set_trips = rockchip_thermal_set_trips,
- };
- 
- static int rockchip_configure_from_dt(struct device *dev,
--- 
-1.9.1
+>>  	/* Register charger interrupts */
+>>  	for (i =3D 0; i < CHRG_INTR_END; i++) {
+>> @@ -905,11 +922,17 @@ static int axp288_charger_probe(struct platfor=
+m_device *pdev)
+>>  	return 0;
+>> =20
+>>  intr_reg_failed:
+>> -	if (info->otg.cable.edev)
+>> -		extcon_unregister_interest(&info->otg.cable);
+>> +	if (info->otg.cable)
+>> +		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
+>> +					&info->otg.id_nb);
+>>  	power_supply_unregister(info->psy_usb);
+>>  psy_reg_failed:
+>> -	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->c=
+able.nb);
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
+>> +					&info->cable.nb);
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
+>> +					&info->cable.nb);
+>=20
+> EXTCON_CHG_USB_SDP -> EXTCON_CHG_USB_CDP?
+
+I was mistaken. I'll fix it.
+
+>=20
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
+>> +					&info->cable.nb);
+>>  	return ret;
+>>  }
+>> =20
+>> @@ -917,10 +940,16 @@ static int axp288_charger_remove(struct platfo=
+rm_device *pdev)
+>>  {
+>>  	struct axp288_chrg_info *info =3D  dev_get_drvdata(&pdev->dev);
+>> =20
+>> -	if (info->otg.cable.edev)
+>> -		extcon_unregister_interest(&info->otg.cable);
+>> +	if (info->otg.cable)
+>> +		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
+>> +					&info->otg.id_nb);
+>> =20
+>> -	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->c=
+able.nb);
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
+>> +					&info->cable.nb);
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
+>> +					&info->cable.nb);
+>=20
+> EXTCON_CHG_USB_SDP -> EXTCON_CHG_USB_CDP?
+
+ditto.
+
+>=20
+>> +	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
+>> +					&info->cable.nb);
+>>  	power_supply_unregister(info->psy_usb);
+>> =20
+>>  	return 0;
+>=20
+> Has this dependencies to your tree or are all dependencies already
+> in torvalds tree?
+
+This patch-set have the dependency on Linus torvalds tree[1].
+[1] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/
+
+So, when picking this patch-set, someone make the immutable branch for =
+this patchset
+to prevent the merge conflict between power_supply and extcon tree.
+
+Thanks,
+Chanwoo Choi
 
