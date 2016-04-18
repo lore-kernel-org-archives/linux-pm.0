@@ -1,169 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Mon, 18 Apr 2016 15:58:10 +0530
-Message-ID: <20160418102810.GC2322@vireshk-i7>
-References: <1460758594-1596-1-git-send-email-ahs3@redhat.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Mon, 18 Apr 2016 13:30:54 +0300
+Message-ID: <877ffvgqe9.fsf@intel.com>
+References: <cover.1458128215.git.baolin.wang@linaro.org> <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org> <87h9foqnur.fsf@intel.com> <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com> <87poubgnbh.fsf@intel.com> <20160322113012.GC26924@xo-6d-61-c0.localdomain> <87fuujgwsm.fsf@intel.com> <20160418102316.GA27936@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1460758594-1596-1-git-send-email-ahs3@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>, ashwin.chaugule@linaro.org
-Cc: rjw@rjwysocki.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:10245 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752165AbcDRKc6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Apr 2016 06:32:58 -0400
+In-Reply-To: <20160418102316.GA27936@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-Cc'ing Ashwin.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-viresh
 
-On 15-04-16, 16:16, Al Stone wrote:
-> When CPPC is being used by ACPI on arm64, user space tools such as
-> cpupower report CPU frequency values from sysfs that are incorrect.
-> 
-> What the driver was doing was reporting the values given by ACPI tables
-> in whatever scale was used to provide them.  However, the ACPI spec
-> defines the CPPC values as unitless abstract numbers.  Internal kernel
-> structures such as struct perf_cap, in contrast, expect these values
-> to be in KHz.  When these struct values get reported via sysfs, the
-> user space tools also assume they are in KHz, causing them to report
-> incorrect values (for example, reporting a CPU frequency of 1MHz when
-> it should be 1.8GHz).
-> 
-> While the investigation for a long term fix proceeds (several options
-> are being explored, some of which may require spec changes or other
-> much more invasive fixes), this patch forces the values read by CPPC
-> to be read in KHz, regardless of what they actually represent.
-> 
-> The downside is that this approach has some assumptions:
-> 
->    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->    value for a processor is set to a non-zero value.
-> 
->    (2) It assumes that all processors run at the same speed.  This
->    patch retrieves the first CPU Max Frequency from a type 4 DMI
->    record that it can find.  This may not be an issue, however, as a
->    sampling of DMI data on x86 and arm64 indicates there is often only
->    one such record regardless.
-> 
-> For arm64 servers, this may be sufficient, but it does rely on
-> firmware values being set correctly.  Hence, other approaches are
-> also being considered.
-> 
-> This has been tested on three arm64 servers, with and without DMI, with
-> and without CPPC support.
-> 
-> Signed-off-by: Al Stone <ahs3@redhat.com>
-> ---
->  drivers/acpi/cppc_acpi.c    | 61 +++++++++++++++++++++++++++++++++++++++++----
->  drivers/cpufreq/Kconfig.arm |  1 +
->  2 files changed, 57 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 8adac69..049dced 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -40,6 +40,9 @@
->  #include <linux/cpufreq.h>
->  #include <linux/delay.h>
->  #include <linux/ktime.h>
-> +#include <linux/dmi.h>
-> +
-> +#include <asm/unaligned.h>
->  
->  #include <acpi/cppc_acpi.h>
->  /*
-> @@ -709,6 +712,47 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
->  	return ret_val;
->  }
->  
-> +static u64 cppc_dmi_khz;
-> +
-> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
-> +{
-> +	u16 *mhz = (u16 *)private;
-> +	const u8 *dmi_data = (const u8 *)dm;
-> +
-> +	if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
-> +		*mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
-> +}
-> +
-> +
-> +static u64 cppc_get_dmi_khz(void)
-> +{
-> +	u16 mhz;
-> +
-> +	dmi_walk(cppc_find_dmi_mhz, &mhz);
-> +
-> +	/*
-> +	 * Real stupid fallback value, just in case there is no
-> +	 * actual value set.
-> +	 */
-> +	mhz = mhz ? mhz : 1;
-> +
-> +	return (1000 * mhz);
-> +}
-> +
-> +static u64 cppc_unitless_to_khz(u64 min, u64 max, u64 val)
-> +{
-> +	/*
-> +	 * The incoming val should be min <= val <= max.  Our
-> +	 * job is to convert that to KHz so it can be properly
-> +	 * reported to user space via cpufreq_policy.
-> +	 */
-> +
-> +	if (!cppc_dmi_khz)
-> +		cppc_dmi_khz = cppc_get_dmi_khz();
-> +
-> +	return ((val - min) * cppc_dmi_khz) / (max - min);
-> +}
-> +
->  /**
->   * cppc_get_perf_caps - Get a CPUs performance capabilities.
->   * @cpunum: CPU from which to get capabilities info.
-> @@ -748,17 +792,24 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
->  		}
->  	}
->  
-> +	/*
-> +	 * Since these values in perf_caps will be used in setting
-> +	 * up the cpufreq policy, they must always be stored in units
-> +	 * of KHz.  If they are not, user space tools will become very
-> +	 * confused since they assume these are in KHz when reading
-> +	 * sysfs.
-> +	 */
->  	cpc_read(&highest_reg->cpc_entry.reg, &high);
-> -	perf_caps->highest_perf = high;
-> -
->  	cpc_read(&lowest_reg->cpc_entry.reg, &low);
-> -	perf_caps->lowest_perf = low;
-> +
-> +	perf_caps->highest_perf = cppc_unitless_to_khz(low, high, high);
-> +	perf_caps->lowest_perf = cppc_unitless_to_khz(low, high, low);
->  
->  	cpc_read(&ref_perf->cpc_entry.reg, &ref);
-> -	perf_caps->reference_perf = ref;
-> +	perf_caps->reference_perf = cppc_unitless_to_khz(low, high, ref);
->  
->  	cpc_read(&nom_perf->cpc_entry.reg, &nom);
-> -	perf_caps->nominal_perf = nom;
-> +	perf_caps->nominal_perf = cppc_unitless_to_khz(low, high, nom);
->  
->  	if (!ref)
->  		perf_caps->reference_perf = perf_caps->nominal_perf;
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 14b1f93..0573982 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -255,6 +255,7 @@ config ACPI_CPPC_CPUFREQ
->  	tristate "CPUFreq driver based on the ACPI CPPC spec"
->  	depends on ACPI
->  	select ACPI_CPPC_LIB
-> +	select DMI
->  	default n
->  	help
->  	  This adds a CPUFreq driver which uses CPPC methods
-> -- 
-> 2.5.5
+Hi,
+
+Pavel Machek <pavel@ucw.cz> writes:
+>> > Very often, you want to charge using 1.8A from an old desktop PC.
+>>=20
+>> if that old desktop's port is not a charging port, you shouldn't be
+>> allowed to do that. Not ever.
+>
+> Yes, Felipe just decided that I should not be able to charge my N900
+> in useful way.
+
+you can do whatever you want with *your* kernel binary, but we're not
+gonna ship something potentially dangerous. If that PC port is telling
+you it can only allow 100mA, you should *not* be allowed to overcome
+that limitation from the device side, sorry.
+
+>> >> a) you are connected to a dedicated charger
+>> >>=20
+>> >> 	In this case, you can get up to 2000mA depending on the charger.
+>> >>=20
+>> >> 	If $this charger can give you or not 2000mA is not detectable,
+>> >> 	so what do charging ICs do ? They slowly increase the attached
+>> >> 	load accross VBUS/GND and measure VBUS value. When IC notices
+>> >> 	VBUS dropping bit, step back to previous load.
+>> >>=20
+>> >> 	This means you will always charger with maximum rating of DCP.
+>> >>=20
+>> >> 	Why would user change this ? More is unsafe, less is just
+>> >> 	stupid.
+>> >
+>> > Actually, less is not stupid. Charging li-ion battery from li-ion batt=
+ery might
+>> > be stupid. Imagine I'm on train, with device like N900 (50% battery) a=
+nd power bank
+>> > (3Ah). I'm actively using the device. If I let it charge at full curre=
+nt, I'll waste
+>> > energy. If I limit current to approximately the power consumption, it =
+will run the
+>> > powerbank empty, first, then empty the internal battery, maximizing to=
+tal time I
+>> > can use the device.
+>>=20
+>> why would you waste energy ? What the charger chip would do is charge
+>> battery to maximum then just to maintenance charge from that point
+>> on. Where is energy being wasted other than normal heat dissipation ?
+>
+> Physics 101, of course wasted energy goes to heat. Lets not waste
+> energy by charging li-ion from li-ion when it is not required.
+
+your cellphone has no means to know that it's connected to a Li-Ion
+battery. We don't have visibility on what we're connected to, just how
+much it can source.
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXFLdfAAoJEIaOsuA1yqRE0YwQAKscgrZjgyb/0F/jD7kM0I0D
+Au1fJYsBl3Xhy0eWI6OwGsJefCGEAd0RqqAb5f5TX2tFesDW3xInw/IvizqsNoku
+J4NyVeQOrGtS1SS3R5dHw9pNAUFMKAcQC7RDhkPrdJRM7GdFgTw5qRXMi3ob/aW/
+Rjxa11dW0ZguJGtYk7zfG95hUM0xJe6Kd94ZMk/fW75EGHvItTIUuGqMJ0Svg18j
+Z9JmP7/VcHDeb0wXOivndMRmbK298hq9/EPG1cpvT2hOAEYQ66vi0DpCLShUKfiw
+XRLdDC7jJdSyRY+bzvAKtdWEPzFy/aIxOAgPHpRN3+ey/Xb6r+VrAV8rvzsW/k6H
+HKLNA1BgGEAgXll3xNOMBBH9U3lRvBuZV93aqkTV58Gy3/pIkUjaIK6nitKtHV6F
+Z2gSC2CCE55u9XsyB8UO6qyyBH0PozJe6+co56fNsII7SmfQhXkAG6oRQoYRU5OI
+yKSrG6ULBG8V9mYIYW1nIy0mwXgAw1zR7UspXKmx/BsrFY+S0KUDXOhFAb/QegZs
+OlzafethS8DCPtYwl/+ZYtwdWofi6VT8rvDDqqIJkwXHZTcJQSeZr78XKLacoDHF
+bBXsNM+HgvAj0B8N0YJJId4B++4/UMP0u/1K4nMl+PrEqNJxon426AN8OOWlhLP2
+SfuLW3/X/wjd6wLNx3fU
+=RQ+R
+-----END PGP SIGNATURE-----
+--=-=-=--
