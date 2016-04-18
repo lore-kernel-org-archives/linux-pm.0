@@ -1,74 +1,80 @@
-From: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 2/2] thermal: generic-adc: Add ADC based thermal sensor
- driver
-Date: Mon, 18 Apr 2016 23:04:48 +0530
-Message-ID: <57151AB8.7040405@nvidia.com>
-References: <1460644878-19943-1-git-send-email-ldewangan@nvidia.com> <1460644878-19943-2-git-send-email-ldewangan@nvidia.com> <57136B7C.6030204@kernel.org> <57151023.8010505@nvidia.com> <D84D2ED7-81D4-4635-8244-4017D66C6A3B@jic23.retrosnub.co.uk>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: Driver directory selection for Power Supply Status chip
+Date: Mon, 18 Apr 2016 21:06:02 +0100
+Message-ID: <57153E2A.7030207@kernel.org>
+References: <571507DE.3080408@opensource.altera.com>
+ <57150E47.4020503@metafoo.de> <571538D5.5020209@opensource.altera.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <D84D2ED7-81D4-4635-8244-4017D66C6A3B-tko9wxEg+fIOOJlXag/Snyp2UmYkHbXO@public.gmane.org>
+In-Reply-To: <571538D5.5020209-yzvPICuk2ABMcg4IHK0kFoH6Mc4MB0Vx@public.gmane.org>
 Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jonathan Cameron <jic23-tko9wxEg+fIOOJlXag/Snyp2UmYkHbXO@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: tthayer-yzvPICuk2ABMcg4IHK0kFoH6Mc4MB0Vx@public.gmane.org, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-On Monday 18 April 2016 11:01 PM, Jonathan Cameron wrote:
->
-> On 18 April 2016 17:49:39 BST, Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->> On Sunday 17 April 2016 04:24 PM, Jonathan Cameron wrote:
->>> On 14/04/16 15:41, Laxman Dewangan wrote:
->>> +static int gadc_thermal_read_channel(struct gadc_thermal_info *gti,
->> int *val)
->>> +{
->>> +	int ret;
->>> +
->>> +	ret = iio_read_channel_processed(gti->channel, val);
->>> +	if (ret < 0)
->>> +		ret = iio_read_channel_raw(gti->channel, val);
->>> Is this case actually useful given it means the scaling of the adc
->>> isn't known?
+On 18/04/16 20:43, Thor Thayer wrote:
+> 
+> 
+> On 04/18/2016 11:41 AM, Lars-Peter Clausen wrote:
+>> On 04/18/2016 06:14 PM, Thor Thayer wrote:
+>>> Hi,
 >>>
->>> I suppose you might have defined the table in terms of raw readings,
->>> but then when someone comes along and 'fixes' the ADC driver to
->> output
->>> it's scale your table will be wrong.
+>>> The Arria10 System Resource chip (A10SR) is a SPI based MFD implementing a
+>>> GPIO expander, reset controller, and power supply monitoring. I'm not sure
+>>> where the driver for the A10SR power monitoring driver should reside and I'm
+>>> hoping someone can offer some advice.
 >>>
->> Yes, that may be possible if someone just move the implementation of
->> processed read to raw read.
->> I assumed that some of adc driver implemented as raw and some of
->> implemented as processed and so fallback.
+>>> I'd originally submitted the RFC to the HWMON list but the maintainer
+>>> pointed out that it wasn't a good fit because the A10SR only indicates
+>>> boolean power supply status - not the voltage level as required by HWMON.
+>>>
+>>> I read that IIO acts as a bridge between IO and HWMON but I'm also not sure
+>>> this fits those drivers (although I did find some power supply supervistors
+>>> there). It isn't quite a power supply supervisor - the A10SR is a comparator
+>>> instead of an Analog-to-Digital Converter.
+>>>
+>>> One additional thing, the A10SR also had a number of enable bits for
+>>> enabling devices external to Altera's SoC (but still on the development
+>>> board). These don't quite fit into the reset controller framework but would
+>>> seem to fit a MISC directory driver better.
+>>>
+>>> If neither IIO or MISC is a good fit, can someone suggest a more appropriate
+>>> place?
 >>
->> However, if adc driver has processed implementation then it should not
->> move to raw and deprecate the processed.
+>> How does the device work, does it generate an interrupt when the voltage
+>> level goes below the threshold? I'd like to pass the ball back and say that
+>> this sounds like something that should go into hwmon.
 >>
->> It seems raw as default should be better option. We can have two option
->> now:
->>
->> - Support raw only, not to processed.
->>
->> - Or support the raw as default and processed as the optional from DT.
->> if (!processed)
->>      read_raw()
->> else
->>    read_processed()
->>
->>
->> Your opinion?
-> Processed only. It will compute the right value if raw and scale are provided by the
->   device (which they should be for an ADC). The read_processed function does
->   the maths if needed.
->
->   The only time devices should
->   supply raw without scale is if their is no direct transform ( e.g. an infrared
->   intensity measure where only known transform involves combining it with
->   another signal) or their is an external unknown (e.g. proximity sensors where
->   you have to know what they were close to in order to know the scaling!)
->
-> If there is a conventional ADC driver not providing either processed directly or
->   both raw and scale let us know and we will fix it!
->
+> 
+> Good question but no, there is no interrupt.
+> 
+> The chip is actually a power supply sequencer for bringing up the
+> power supplies in the correct order. Since the sequence, timings, and
+> thresholds are hard coded in the chip and can't be changed
+> programatically, I assume it was decided that a power fail interrupt
+> was not needed. However, the status of the power (OK/Fail) can be
+> read from the chip.
+> 
+> I was directed to look at Documentation/hwmon/sysfs-interface which
+> states the units are in millivolts and I didn't see any references to
+> a boolean output so I'm leaning away from hwmon.
+That's one impressively uninformative output...  Hmm.
+Not obvious where to put it - it doesn't fit in IIO really either.
 
-Thanks, I will recycle this patch to use processed only.
+Could report as a power supply?  There is 'health' support in there.
+See Documentation/power/power_supply_class.txt
+and include/linux/power_supply.h
+though I'm not sure which type a fail on this would count as...
+perhaps UNSPEC_FAILURE.
+
+It's intended for batteries really - not sure how far you can stretch
+that.
+
+Cc'd linux-pm and maintainers.  Perhaps they will have a better idea!
+> 
+> Thank you for your reply!
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
