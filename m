@@ -1,7 +1,7 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v10 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 18 Apr 2016 08:27:52 +0000
-Message-ID: <AM4PR04MB21301A33C5EC5D57D122E189896B0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v10 1/4] gadget: Introduce the usb charger framework
+Date: Mon, 18 Apr 2016 16:57:24 +0800
+Message-ID: <CAMz4ku+cJ85wn71sf==2UkaaLK_U_GXZGBZy34m0hVuVaKojdg@mail.gmail.com>
 References: <cover.1460029375.git.baolin.wang@linaro.org>
 	<6b323d5168c10ccb47882687b1251c31b6cad587.1460029375.git.baolin.wang@linaro.org>
 	<AM4PR04MB2130F2C3DA7EA7140578A46289910@AM4PR04MB2130.eurprd04.prod.outlook.com>
@@ -11,124 +11,54 @@ References: <cover.1460029375.git.baolin.wang@linaro.org>
 	<AM4PR04MB2130BB1F1E1FEA35B86DAE7B89910@AM4PR04MB2130.eurprd04.prod.outlook.com>
 	<CAMz4kuJVtfxyXuSeq9kEZF-fhvcK9hYhNoj9g-vBD9GF5XVRgA@mail.gmail.com>
 	<AM4PR04MB2130B1F3D1C9B4DE5CD6B92989940@AM4PR04MB2130.eurprd04.prod.outlook.com>
- <CAMz4kuKGLor6t74TuwuS7ZCXH=Mu+UuC_6s5MUCVQB+8RPFafQ@mail.gmail.com>
+	<CAMz4kuKGLor6t74TuwuS7ZCXH=Mu+UuC_6s5MUCVQB+8RPFafQ@mail.gmail.com>
+	<AM4PR04MB21301A33C5EC5D57D122E189896B0@AM4PR04MB2130.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db3on0055.outbound.protection.outlook.com ([157.55.234.55]:50560
-	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750727AbcDRI15 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Apr 2016 04:27:57 -0400
-In-Reply-To: <CAMz4kuKGLor6t74TuwuS7ZCXH=Mu+UuC_6s5MUCVQB+8RPFafQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AM4PR04MB21301A33C5EC5D57D122E189896B0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jun Li <jun.li@nxp.com>
 Cc: "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlini>
+List-Id: linux-pm@vger.kernel.org
 
-SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
-bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IE1vbmRheSwgQXByaWwgMTEs
-IDIwMTYgNzoxNSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IGJhbGJp
-QGtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBzcmVAa2VybmVsLm9yZzsN
-Cj4gZGJhcnlzaGtvdkBnbWFpbC5jb207IGR3bXcyQGluZnJhZGVhZC5vcmc7IHBldGVyLmNoZW5A
-ZnJlZXNjYWxlLmNvbTsNCj4gc3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdTsgci5iYWxkeWdhQHNh
-bXN1bmcuY29tOw0KPiB5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbTsgbGVlLmpvbmVz
-QGxpbmFyby5vcmc7IGJyb29uaWVAa2VybmVsLm9yZzsNCj4gY2tlZXBheEBvcGVuc291cmNlLndv
-bGZzb25taWNyby5jb207IHBhdGNoZXNAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tOw0KPiBs
-aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXVzYkB2Z2VyLmtlcm5lbC5vcmc7IGRldmlj
-ZS0NCj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDEvNF0gZ2FkZ2V0OiBJ
-bnRyb2R1Y2UgdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaw0KPiANCj4gSGkgSnVuLA0KPiANCj4g
-U29ycnkgZm9yIGxhdGUgcmVwbHkuDQo+IA0KPiA+PiA+PiA+PiA+PiArLyoNCj4gPj4gPj4gPj4g
-Pj4gKyAqIHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKCkgLSBkZXRlY3QgdGhlIGNoYXJnZXIgdHlw
-ZQ0KPiBtYW51YWxseS4NCj4gPj4gPj4gPj4gPj4gKyAqIEB1Y2hnZXIgLSB1c2IgY2hhcmdlciBk
-ZXZpY2UNCj4gPj4gPj4gPj4gPj4gKyAqDQo+ID4+ID4+ID4+ID4+ICsgKiBOb3RlOiBZb3Ugc2hv
-dWxkIGVuc3VyZSB5b3UgbmVlZCB0byBkZXRlY3QgdGhlIGNoYXJnZXINCj4gPj4gPj4gPj4gPj4g
-K3R5cGUgbWFudWFsbHkgb24geW91cg0KPiA+PiA+PiA+PiA+PiArICogcGxhdGZvcm0uDQo+ID4+
-ID4+ID4+ID4+ICsgKiBZb3Ugc2hvdWxkIGNhbGwgaXQgYXQgdGhlIHJpZ2h0IGdhZGdldCBzdGF0
-ZSB0byBhdm9pZA0KPiA+PiA+PiA+PiA+PiArYWZmZWN0aW5nIGdhZGdldA0KPiA+PiA+PiA+PiA+
-PiArICogZW51bWVyYXRpb24uDQo+ID4+ID4+ID4+ID4+ICsgKi8NCj4gPj4gPj4gPj4gPj4gK2lu
-dCB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZShzdHJ1Y3QgdXNiX2NoYXJnZXIgKnVjaGdlcikgew0K
-PiA+PiA+PiA+PiA+PiArICAgICBlbnVtIHVzYl9jaGFyZ2VyX3R5cGUgdHlwZTsNCj4gPj4gPj4g
-Pj4gPj4gKw0KPiA+PiA+PiA+PiA+PiArICAgICBpZiAoV0FSTighdWNoZ2VyLT5jaGFyZ2VyX2Rl
-dGVjdCwNCj4gPj4gPj4gPj4gPj4gKyAgICAgICAgICAgICAgImNoYXJnZXIgZGV0ZWN0aW9uIG1l
-dGhvZCBzaG91bGQgbm90IGJlIE5VTEwiKSkNCj4gPj4gPj4gPj4gPj4gKyAgICAgICAgICAgICBy
-ZXR1cm4gLUVJTlZBTDsNCj4gPj4gPj4gPj4gPj4gKw0KPiA+PiA+PiA+PiA+PiArICAgICB0eXBl
-ID0gdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdCh1Y2hnZXIpOw0KPiA+PiA+PiA+PiA+PiArDQo+ID4+
-ID4+ID4+ID4+ICsgICAgIG11dGV4X2xvY2soJnVjaGdlci0+bG9jayk7DQo+ID4+ID4+ID4+ID4+
-ICsgICAgIHVjaGdlci0+dHlwZSA9IHR5cGU7DQo+ID4+ID4+ID4+ID4+ICsgICAgIG11dGV4X3Vu
-bG9jaygmdWNoZ2VyLT5sb2NrKTsNCj4gPj4gPj4gPj4gPj4gKw0KPiA+PiA+PiA+PiA+PiArICAg
-ICByZXR1cm4gMDsNCj4gPj4gPj4gPj4gPj4gK30NCj4gPj4gPj4gPj4gPj4gK0VYUE9SVF9TWU1C
-T0xfR1BMKHVzYl9jaGFyZ2VyX2RldGVjdF90eXBlKTsNCj4gPj4gPj4gPj4gPg0KPiA+PiA+PiA+
-PiA+IEkgc3RpbGwgcmVjb21tZW5kIGhhdmUgYSBjZW50cmFsIHBsYWNlIHRvIGNhbGwNCj4gPj4g
-Pj4gPj4gPiB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpIHRvIGNvdmVyIHJlYWwgY2hhcmdlciBk
-ZXRlY3Rpb24NCj4gPj4gPj4gPj4gPiBpbnN0ZWFkIG9mIGxlYXZpbmcgdGhpcyBxdWVzdGlvbiBv
-cGVuIHRvIGRpZmYgdXNlcnMuIFRoaXMgY2FuDQo+ID4+ID4+ID4+ID4gYmUgZG9uZSBhZnRlciB2
-YnVzLW9uIGlzIGRldGVjdGVkIGFuZCBiZWZvcmUgZG8gZ2FkZ2V0DQo+ID4+ID4+ID4+ID4gY29u
-bmVjdC4gSSBkb24ndCB0aGluayB0aGlzDQo+ID4+ID4+ID4+IHdpbGwgbWFrZSB5b3VyIGZyYW1l
-d29yayBjb21wbGljYXRlZC4NCj4gPj4gPj4gPj4NCj4gPj4gPj4gPj4gVGhpcyBBUEkgaXMgdXNl
-ZCBmb3IgZGV0ZWN0aW5nIHRoZSBjaGFyZ2VyIHR5cGUgbWFudWFsbHkNCj4gPj4gPj4gPj4gKHNv
-ZnR3YXJlIGNoYXJnZXIgZGV0ZWN0aW9uKSwgc28gaWYgdXNlcidzIHVkYyBkcml2ZXIgaXMgbmVl
-ZGVkDQo+ID4+ID4+ID4+IHRvIGRvIHRoaXMsIHRoZW4gdGhleSBjYW4gaXNzdWUgaXQgYXQgdGhl
-aXIgcmlnaHQgcGxhY2UgdG8gbWFrZQ0KPiBpdCBtb3JlIGZsZXhpYmxlLg0KPiA+PiA+PiA+PiBC
-dXQgbGV0IHVzIHNlZSBvdGhlciBwZW9wbGUncyBzdWdnZXN0aW9uLiBUaGFua3MuDQo+ID4+ID4+
-ID4NCj4gPj4gPj4gPiBPaywgYWN0dWFsbHkgdGhpcyBBUEkgY2FuIGJlIHVzZWQgZm9yIHdoYXQg
-ZXZlciBjaGFyZ2VyDQo+ID4+ID4+ID4gZGV0ZWN0aW9uIHR5cGUsIHVzZXIgY2FuIGltcGxlbWVu
-dCBhbnkgbWV0aG9kKG1hbnVhbCBkZXRlY3Rpb24sDQo+ID4+ID4+ID4gZGlyZWN0bHkgcmVhZCBy
-ZXN1bHQgZnJvbSBzb21lIEhXLi4ud2hhdCBldmVyKSBpbg0KPiA+PiA+PiA+IHVjaGdlci0+Y2hh
-cmdlcl9kZXRlY3QoKSwgdGFyZ2V0IGlzDQo+ID4+ID4+DQo+ID4+ID4+IEJ1dCByZWFkaW5nIHJl
-c3VsdCBmcm9tIHNvbWUgSFcgZG9zZSBub3QgbWVhbnMgKmRldGVjdCosIGFjdHVhbGx5DQo+ID4+
-ID4+IGlzDQo+ID4+ICpnZXQqLg0KPiA+PiA+PiBXZSBjYW4gbm90IG1peCB0aGVtIHRvZ2V0aGVy
-IHdpdGggdGhlIGRpZmZlcmVudCBzZW1hbnRpY3MuDQo+ID4+ID4NCj4gPj4gPiBJdCBkb2VzbuKA
-mXQgbWF0dGVyIGhlcmUsIHlvdSBhbHJlYWR5IGRlZmluZSB0aGUgX2dldF8gQVBJIGZvciBqdXN0
-DQo+ID4+ID4gcmVhZCB0aGUgY2hhcmdlciB0eXBlIGZyb20gdGhlIHNhdmVkIHZhbHVlKHVjaGdl
-ci0+dHlwZSksIHNvIHdlIGNhbg0KPiA+PiA+IHRoaW5rIHRoZSBBUEkgdG8gbWFrZSB1Y2hnZXIt
-PnR5cGUgZnJvbSBVTktOT1cgdG8gT05FIEtOT1dOIHR5cGUgaXMNCj4gPj4gPiAqZGV0ZWN0Kiwg
-YmVjYXVzZSB3ZSBkb24ndCBuZWVkIDIgc2VwYXJhdGUgQVBJIG9uZSBmb3IgKmdldCogdHlwZQ0K
-PiA+PiA+IGZyb20gSFcgYW5kIGFub3RoZXIgb25lIGZvciAqZGV0ZWN0KiBmcm9tIEhXLCBvbmx5
-IG9uZSBBUEkgaW52b2x2ZQ0KPiA+PiA+IEhXIGFjY2Vzcw0KPiA+PiBpcyBlbm91Z2guDQo+ID4+
-DQo+ID4+IEJ1dCBhbm90aGVyIGlzc3VlIGlzIHNvbWUgdXNlcnMgbWF5IG5lZWQgdG8gZ2V0IHRo
-ZSBjaGFyZ2VyIHR5cGUgZnJvbQ0KPiA+PiBwb3dlciBzdXBwbHkgYnkgInBvd2VyX3N1cHBseV9n
-ZXRfcHJvcGVydHkoKSIgZnVuY3Rpb24sIHdlIG5lZWQgdG8NCj4gPj4gaW50ZWdyYXRlIHdpdGgg
-dGhlIHBvd2VyIHN1cHBseSB0aGluZ3MgaW4gdGhlIHVzYiBjaGFyZ2VyIGZyYW1ld29yaywNCj4g
-Pj4gbm90IHVzZXIgdG8gaW1wbGVtZW50IHRoYXQuDQo+ID4NCj4gPiBXaHkgdGhpcyB1c2VyKHlv
-dXIgY2FzZSkgY2FuJ3QgcHV0IHRoZSBjaGFyZ2VyIHR5cGUgZ2V0IGJ5DQo+ID4gInBvd2VyX3N1
-cHBseV9nZXRfcHJvcGVydHkoKSIgaW4gaXRzIHVjaGdlci0+Y2hhcmdlcl9kZXRlY3QoKSwgYW55
-DQo+ID4gc3BlY2lhbCByZWFzb24gcHJldmVudCB5b3UgZG9pbmcgaXQ/IEkgYW0gbm90IHN1cmUg
-aWYgdGhpcyBjYXNlIGlzDQo+ID4gdmVyeSBjb21tb24sIGV2ZW4gaWYgaXQgaXMsIHlvdSBhbHNv
-IGNhbiBwdXQgaXQgaW4NCj4gPiB1c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpDQo+ID4NCj4gPiB1
-c2JfY2hhcmdlcl9kZXRlY3RfdHlwZSgpDQo+ID4gew0KPiA+ICAgICAgICAgSWYgY2FuIGdldCBm
-cm9tIHBvd2VyX3N1cHBseV9nZXRfcHJvcGVydHkoKQ0KPiA+ICAgICAgICAgICAgICAgICAuLi4N
-Cj4gPiAgICAgICAgIGVsc2UgaWYgdWNoZ2VyLT5jaGFyZ2VyX2RldGVjdA0KPiA+ICAgICAgICAg
-ICAgICAgICB1Y2hnZXItPmNoYXJnZXJfZGV0ZWN0KCk7DQo+ID4gICAgICAgICAuLi4NCj4gPiB9
-DQo+IA0KPiBJZiB1c2VyIHdhbnQgdG8gaW1wbGVtZW50IGFib3ZlIG1ldGhvZCwgdGhleSBuZWVk
-IHRvIGdldCB0aGUNCj4gJ3Bvd2VyX3N1cHBseScgc3RydWN0dXJlIHRvIGRvIHRoaXMgYWN0aW9u
-LCB3aGljaCBtYXliZSBjYW4gbm90IGdldCBpbg0KPiBzb21lIGNvbnRleHRzLiBTbyB3ZSBuZWVk
-IHRvIGludGVncmF0ZSB3aXRoIHRoZSBwb3dlciBzdXBwbHkgdGhpbmdzIHRvDQo+IGF2b2lkIHRo
-aXMgc2l0dWF0aW9uLiBJSVJDLCBGZWxpcGUgc3VnZ2VzdGVkIG1lIHRvIGZsZXNoIG91dCB0aGUg
-Y2hhcmdlcg0KPiBnZXR0aW5nIG1ldGhvZC4NCj4gDQoNCk9rYXksIHRoZW4gSSBhZ3JlZSB3aXRo
-IHlvdSB0byBsZXQgdXNlciBkbyB0aGF0IHdpdGggbW9yZSBmbGV4aWJpbGl0eSwNCkkgdHJpZWQg
-dG8gZW5hYmxlIHVzYiBjaGFyZ2VyIGRldGVjdGlvbiBvbiBvbmUgTlhQIGkubXggcGxhdGZvcm0g
-YmFzZWQgb24NCnRoaXMgZnJhbWV3b3JrLCB3b3JrcyBmaW5lLCB0aGFua3MhDQogDQpMaSBKdW4N
-Cj4gSGkgRmVsaXBlLCB3aGF0IGRvIHlvdSB0aGluayBvZiBKdW4ncyBzdWdnZXN0aW9uPyBUaGFu
-a3MuDQo+IA0KPiA+DQo+ID4gSSBkb24ndCBrbm93IGlmIG1vc3QgZGVzaWduIG9mIHVzYiBjaGFy
-Z2VyIGRldGVjdGlvbiBub3cgZGF5cyBpcyBhcw0KPiA+IGVhc3kgYXMgeW91ciBQTUlDIGZvciBz
-b2Z0d2FyZShIVyBkb2VzIHRoZSB3aG9sZSBkZXRlY3Rpb24gcHJvY2VzcyBhbmQNCj4gPiBwcmV2
-ZW50IHRoZSB2YnVzIGdlbmVyYXRpb24gdW50aWwgZGV0ZWN0aW9uIGhhcyBjb21wbGV0ZWQpLCBh
-bnl3YXkgaWYNCj4gPiB5b3VyIGZyYW1ld29yayBjYW4gZ3VhcmFudGVlIHRoZSBkZXRlY3Rpb24g
-cHJvY2VzcyBmaW5pc2hlZCBiZWZvcmUNCj4gPiBnYWRnZXQgY29ubmVjdCwgdGhlbiBlYWNoIHVz
-ZXIgZG9uJ3QgaGF2ZSB0byB3b3JyeSBhYm91dCB0aGUgSFcNCj4gPiBkZXRlY3Rpb24gcHJvY2Vz
-cyBkZXRhaWxzIGFuZCBzZWVrIGEgcHJvcGVyIHBsYWNlIHRvIGRvIGl0Lg0KPiA+DQo+ID4gTGkg
-SnVuDQo+ID4+DQo+ID4+ID4NCj4gPj4gPiAtIERldGVjdDogKHdyaXRlIHRvIGFuZCkgcmVhZCBm
-cm9tIEhXIHRvIGdldCB0aGUgY2hhcmdlciB0eXBlLA0KPiA+PiA+ICAgc2F2ZSB0byB1Y2hnZXIt
-PnR5cGU7DQo+ID4+ID4gLSBHZXQ6IHJlYWQgdGhlIGNoYXJnZXIgdHlwZSBmcm9tIHVjaGdlci0+
-dHlwZS4NCj4gPj4gPg0KPiA+PiA+Pg0KPiA+PiA+PiA+IHRvIGhhdmUgdGhlIGNoYXJnZXIgdHlw
-ZSBhbmQgc2V0IHVjaGdlci0+dHlwZSwgdGhlbiB5b3Ugbm8gbmVlZA0KPiA+PiA+PiA+IHRvIGFk
-ZCB0aGUgY29tbWVudHMvZGVzY3JpcHRpb24gdG8gbGltaXQgaXQgdXNhZ2UuIEFsc28gSSBkbyBz
-ZWUNCj4gPj4gPj4gPiB0aGVyZSBpcw0KPiA+PiA+PiBwb3NzaWJsZSBjZW50cmFsIHBsYWNlIHRv
-IGRvIHRoaXMuDQo+ID4+ID4+ID4NCj4gPj4gPj4NCj4gPj4gPj4gLS0NCj4gPj4gPj4gQmFvbGlu
-LndhbmcNCj4gPj4gPj4gQmVzdCBSZWdhcmRzDQo+ID4+DQo+ID4+DQo+ID4+DQo+ID4+IC0tDQo+
-ID4+IEJhb2xpbi53YW5nDQo+ID4+IEJlc3QgUmVnYXJkcw0KPiANCj4gDQo+IA0KPiAtLQ0KPiBC
-YW9saW4ud2FuZw0KPiBCZXN0IFJlZ2FyZHMNCg==
+Hi Jun,
+
+On 18 April 2016 at 16:27, Jun Li <jun.li@nxp.com> wrote:
+>> >>
+>> >> But another issue is some users may need to get the charger type from
+>> >> power supply by "power_supply_get_property()" function, we need to
+>> >> integrate with the power supply things in the usb charger framework,
+>> >> not user to implement that.
+>> >
+>> > Why this user(your case) can't put the charger type get by
+>> > "power_supply_get_property()" in its uchger->charger_detect(), any
+>> > special reason prevent you doing it? I am not sure if this case is
+>> > very common, even if it is, you also can put it in
+>> > usb_charger_detect_type()
+>> >
+>> > usb_charger_detect_type()
+>> > {
+>> >         If can get from power_supply_get_property()
+>> >                 ...
+>> >         else if uchger->charger_detect
+>> >                 uchger->charger_detect();
+>> >         ...
+>> > }
+>>
+>> If user want to implement above method, they need to get the
+>> 'power_supply' structure to do this action, which maybe can not get in
+>> some contexts. So we need to integrate with the power supply things to
+>> avoid this situation. IIRC, Felipe suggested me to flesh out the charger
+>> getting method.
+>>
+>
+> Okay, then I agree with you to let user do that with more flexibility,
+> I tried to enable usb charger detection on one NXP i.mx platform based on
+> this framework, works fine, thanks!
+
+That's great. Thanks.
+
+-- 
+Baolin.wang
+Best Regards
