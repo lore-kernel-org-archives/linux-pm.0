@@ -1,64 +1,157 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 03/11] soc: renesas: rcar-sysc: Add DT support for SYSC
- PM domains
-Date: Mon, 18 Apr 2016 16:02:32 +0200
-Message-ID: <CAPDyKFoNQ1VrheQ4Ak_fu85OswCdV4nmPNky98X7d_FoyMdAzA@mail.gmail.com>
-References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
-	<1460558672-10290-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFrQtX3-7GodrXV2zp4wHBgbWBOVKyE0XoeWaaxhZ2kUuw@mail.gmail.com>
-	<CAMuHMdW+PboSz-u2dV=rmNFkd4qsEhm-O_4Ewdn_-H62gwq7Ng@mail.gmail.com>
-	<CAMuHMdUHPLRrOLO_qio80YHPye1tmrr=Fq9kpDg+Q0aVDycFiA@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Mon, 18 Apr 2016 16:38:23 +0200
+Message-ID: <20160418143823.GA15165@wunner.de>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-5-git-send-email-mika.westerberg@linux.intel.com>
+ <20160412175203.GB13637@wunner.de>
+ <20160413083352.GI1714@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUHPLRrOLO_qio80YHPye1tmrr=Fq9kpDg+Q0aVDycFiA@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:47760 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751930AbcDROgF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 10:36:05 -0400
+Content-Disposition: inline
+In-Reply-To: <20160413083352.GI1714@lahna.fi.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 
-On 18 April 2016 at 15:39, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Mon, Apr 18, 2016 at 2:59 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Mon, Apr 18, 2016 at 2:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> [...]
->>>
->>>> +
->>>> +static bool rcar_sysc_active_wakeup(struct device *dev)
->>>> +{
->>>> +       return true;
->>>
->>> I am interested to know why this is always returning true. Perhaps you
->>> can elaborate a bit on that?
->>
->> Too many copying from old shmobile PM Domain code?
->> Honestly, I don't know...
->>
->> Perhaps Rafael still remembers the original rationale, as git history for
->> commit e3e0109138376bb2 ("ARM / shmobile: Support for I/O power domains for
->> SH7372 (v9)") doesn't have it.
->>
->> Google did find: https://lkml.org/lkml/2011/6/30/471
->>
->> Do we still need this at all? I.e. aren't PM Domains containing wake-up
->> devices kept powered automatically during system suspend?
->
-> No they aren't. So for pm-rmobile we do need it.
+Hi Mika,
 
-I don't quite understand why genpd should need to treat all devices
-within the same domain exactly the same, it seems suboptimal.
+thanks for enabling runtime pm on native pciehp ports in v3 of your
+series. I've ditched my own runtime pm code now, rebased on top of
+your v3 and got everything working again:
+https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
 
-I guess it would be more clever to allow this to be controlled on per
-device basis instead, so let's say from each driver.
 
->
-> For rcar-sysc it's different: as no PM Domain contains wake-up devices
-> (all I/O devices are in the always-on power area), we don't need the callback.
-> Will drop it in v6.
+There's one thing I had to change in your patches: Patch [4/4] only
+allows runtime pm if pci_dev->bridge_d3 is set when portdrv loads.
+However bridge_d3 can change over time. Let's say the bridge is a
+Thunderbolt port which has a device attached on boot which is PME
+capable but not from D3cold. Then runtime pm will not be allowed.
+Once that device is unplugged, bridge_d3 will be set to true,
+but the port won't go to D3 because runtime pm wasn't allowed.
 
-Okay, great!
+The solution is to allow runtime pm regardless of bridge_d3, and to rely
+solely on the bridge_d3 checks in ->runtime_idle and ->runtime_suspend.
+Since the only remaining check in pcie_port_runtime_pm_possible()
+(whether it's an ACPI hotplug port) doesn't change over time, we can
+just call that function again in ->remove and therefore struct
+pcie_port_data is no longer necessary.
 
-Kind regards
-Uffe
+In case you agree with this, I've prepared a fixup patch which you
+can apply with "git rebase --autosquash":
+https://github.com/l1k/linux/commit/24fc9d7b34ffc88f562fa67be248f95dd488da1e
+
+
+Another thing I've spotted but that wasn't needed to get my patches
+working: When the bridge_d3 attribute changes to true, you need to
+notify the PM core thereof by calling pm_request_idle() for the
+bridge device, otherwise the bridge needlessly stays awake. This
+needs to be added near the end of pci_bridge_d3_update() I guess.
+
+
+I've spun out the changes necessary for pciehp to support runtime pm
+into a separate commit now. You could either include that in your
+series or I could post it as part of my series later on:
+https://github.com/l1k/linux/commit/0800e6851264960a3148a5d81076ad079e80caff
+
+One detail I'm not sure about: If you've got a hotplug downstream port
+behind an upstream port and the upstream port goes to D3hot, is it
+still possible for the downstream port to signal hotplug interrupts?
+In other words, can INTx or MSI interrupts generated by the downstream
+bridge still be routed via the upstream bridge if the upstream bridge
+is in D3hot? I cannot easily test this, I'd have to hack the tg3 driver
+for my Thunderbolt Ethernet adapter to use runtime suspend.
+
+My guess is that the interrupts are *not* routed if the upstream bridge
+is in D3. If that is true then the algorithm in pci_bridge_d3_update()
+and pci_dev_check_d3cold() needs to be amended so that the hotplug bridge
+may suspend but anything above it may not.
+
+
+On Wed, Apr 13, 2016 at 11:33:52AM +0300, Mika Westerberg wrote:
+> I did not change the cut-off date from 2015 yet to be on the safe side,
+> even if older Macs seem to work just fine. Maybe it can be lowered to 2013
+> or so but I would like to hear from Bjorn and Rafael what they think about
+> that.
+
+My opinion is that we should strive for maximum power saving, thus try
+(at least) 2010 and blacklist individual devices as needed.
+
+
+> On Tue, Apr 12, 2016 at 07:52:03PM +0200, Lukas Wunner wrote:
+> > It's unclear why the pm_schedule_suspend() is needed here and what the
+> > 10 ms delay is for. I don't have that delay in my runtime pm code and
+> > haven't seen any issues. If the delay is needed then I'm wondering why
+> > this isn't implemented using autosuspend?
+> 
+> This part is from the original runtime PM patch. I did not want to
+> change 10ms delay here. Not sure if it is needed.
+
+Found it, the delay is explained in the commit message of 3d8387efe1ad
+("PCI/PM: Fix config reg access for D3cold and bridge suspending").
+It's supposed to prevent repeatedly suspending and resuming for every
+configuration register read/write.
+
+That makes sense but I'd suggest changing this to autosuspend,
+thereby allowing users to change it to their heart's content.
+
+The delay should also be re-explained in the commit message of
+patch [4/4].
+
+
+> However, we need to have pcie_port_runtime_idle() callback because here we
+> actually check if we are allowed to suspend the port. Using autosuspend
+> does not work because of that. Documentation/power/runtime_pm.txt says
+> this regarding ->runtime_idle() callback:
+> 
+>   The action performed by the idle callback is totally dependent on the
+>   subsystem (or driver) in question, but the expected and recommended
+>   action is to check if the device can be suspended (i.e. if all of the
+>   conditions necessary for suspending the device are satisfied) and to
+>   queue up a suspend request for the device in that case.
+> 
+> So delay probably is not necessary but we need the callback to check if
+> the port can be suspended.
+
+If ->runtime_idle returns 0, the PM core automatically calls
+->runtime_suspend. So there's no need for pm_schedule_suspend().
+
+
+One more thing, when reviewing patch [2/4], it took me a while to
+grasp that you've chosen to determine *in advance* whether a bridge
+is allowed to go to D3. The previous attempt at D3 support for PCIe
+ports, 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support"),
+took the opposite approach and determined this *on demand* in
+pcie_port_runtime_suspend(). It may be worth making that explicit
+in the commit message so that it's easier for an uninitiated reader
+to comprehend what's going on.
+
+I also found it difficult to understand the precise meaning of the
+various d3 attributes that we now have in struct pci_dev. That isn't
+your fault, it's caused by how things have evolved over time, but it
+may be worth to pay back this technical debt while we're at it.
+The comment for no_d3cold says "D3cold is forbidden". The actual
+meaning is that drivers may set this to true in their ->runtime_suspend
+callback to prevent the platform from putting the device into D3cold.
+So perhaps a more appropriate comment would be "Runtime d3cold forbidden
+by driver".
+
+Likewise the comment for d3cold_allowed is "D3cold is allowed by user".
+In reality this attribute is set to true by default, so there's nothing
+for the user to allow. Rather, the user may set it to *false* to prevent
+the platform from runtime suspending the device to D3cold. A more
+appropriate comment would be "Runtime d3cold not forbidden by user".
+Alternatively the variable name could be changed to d3cold_forbidden,
+or d3cold_usr_forbidden. (Then no_d3cold could be renamed to
+d3cold_drv_forbidden.)
+
+
+Best regards,
+
+Lukas
