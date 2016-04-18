@@ -1,169 +1,75 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 1/2] perf/x86/intel/rapl: support Skylake RAPL domains
-Date: Sun, 17 Apr 2016 15:03:00 -0700
-Message-ID: <1460930581-29748-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1460930581-29748-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1460930581-29748-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rjw@rjwysocki.net
-Cc: x86@kernel.org, peterz@infradead.org, bp@alien8.de, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH 0/9] thermal: rockchip: Support rk3366/rk3399 SoCS and fixes
+ the driver
+Date: Mon, 18 Apr 2016 11:35:52 +0800
+Message-ID: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <mbrugger-IBi9RG/b67k@public.gmane.org>, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Added Skylake client support for RAPL domains. In addition to RAPL domains
-in Broadwell clients, it has support for platform domain (aka PSys). The
-PSys domain controls entire SoC instead of just CPU package. Unlike
-package domain, PSys support requires more than just processor level
-implementation. The other parts in the system need additional HW level
-signaling, which OEMs needs to support. When not supported, the energy
-counter register in PSys domain returns 0.
+Hello Eduardo, Heiko
+This series pacthes to support the rk3366/rk3399 SoCs thermal, and fixes the driver.
 
-Also corrected error in comment for gpu counter, which previously was
-dram counter.
+65ae684 thermal: rockchip: disable thermal->clk in err case
+31e6d69 thermal: rockchip: fixes the code_to_temp for tsadc driver
+6e2d6fb thermal: rockchip: update the tsadc table for rk3399
+49f6ccf thermal: rockchip: handle the power sequence for tsadc controller
+9f8bd52 thermal: rockchip: Support RK3366 SoCs in the thermal driver
+a959e42 thermal: rockchip: add the notes for better reading
+e5cbc6a thermal: of: Add support for hardware-tracked trip points
+7f613e4 thermal: rockchip: add the set_trips function
+94cc571 arm64: dts: rockchip: move the rk3368 thermal data into rk3368.dtsi
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com
+Verified on url =
+https://github.com/Caesar-github/rockchip/commits/wip/fixes-rockchip-thermal-20160418
+Based on linux-next kernel for 20160415
+
+Verified on rk3288/rk3366/rk3399 SoCs with rockchip inside kernel(develop4.4).
+
+The rk3399 dtsi has benn sent on https://patchwork.kernel.org/patch/8462441/.
+The dts thermal will be updated in later.
+
 ---
- arch/x86/events/intel/rapl.c     | 51 ++++++++++++++++++++++++++++++++++++++--
- arch/x86/include/asm/msr-index.h |  2 ++
- 2 files changed, 51 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/events/intel/rapl.c b/arch/x86/events/intel/rapl.c
-index c83c141..3748fbd 100644
---- a/arch/x86/events/intel/rapl.c
-+++ b/arch/x86/events/intel/rapl.c
-@@ -27,10 +27,14 @@
-  *	  event: rapl_energy_dram
-  *    perf code: 0x3
-  *
-- * dram counter: consumption of the builtin-gpu domain (client only)
-+ * gpu counter: consumption of the builtin-gpu domain (client only)
-  *	  event: rapl_energy_gpu
-  *    perf code: 0x4
-  *
-+ *  psys counter: consumption of the builtin-psys domain (client only)
-+ *	  event: rapl_energy_psys
-+ *    perf code: 0x5
-+ *
-  * We manage those counters as free running (read-only). They may be
-  * use simultaneously by other tools, such as turbostat.
-  *
-@@ -64,13 +68,16 @@
- #define INTEL_RAPL_RAM		0x3	/* pseudo-encoding */
- #define RAPL_IDX_PP1_NRG_STAT	3	/* gpu */
- #define INTEL_RAPL_PP1		0x4	/* pseudo-encoding */
-+#define RAPL_IDX_PSYS_NRG_STAT	4	/* psys */
-+#define INTEL_RAPL_PSYS		0x5	/* pseudo-encoding */
- 
--#define NR_RAPL_DOMAINS         0x4
-+#define NR_RAPL_DOMAINS         0x5
- static const char *const rapl_domain_names[NR_RAPL_DOMAINS] __initconst = {
- 	"pp0-core",
- 	"package",
- 	"dram",
- 	"pp1-gpu",
-+	"psys",
- };
- 
- /* Clients have PP0, PKG */
-@@ -89,6 +96,13 @@ static const char *const rapl_domain_names[NR_RAPL_DOMAINS] __initconst = {
- 			 1<<RAPL_IDX_RAM_NRG_STAT|\
- 			 1<<RAPL_IDX_PP1_NRG_STAT)
- 
-+/* SKL clients have PP0, PKG, RAM, PP1, PSYS */
-+#define RAPL_IDX_SKL_CLN (1<<RAPL_IDX_PP0_NRG_STAT|\
-+			  1<<RAPL_IDX_PKG_NRG_STAT|\
-+			  1<<RAPL_IDX_RAM_NRG_STAT|\
-+			  1<<RAPL_IDX_PP1_NRG_STAT|\
-+			  1<<RAPL_IDX_PSYS_NRG_STAT)
-+
- /* Knights Landing has PKG, RAM */
- #define RAPL_IDX_KNL	(1<<RAPL_IDX_PKG_NRG_STAT|\
- 			 1<<RAPL_IDX_RAM_NRG_STAT)
-@@ -360,6 +374,10 @@ static int rapl_pmu_event_init(struct perf_event *event)
- 		bit = RAPL_IDX_PP1_NRG_STAT;
- 		msr = MSR_PP1_ENERGY_STATUS;
- 		break;
-+	case INTEL_RAPL_PSYS:
-+		bit = RAPL_IDX_PSYS_NRG_STAT;
-+		msr = MSR_PLATFORM_ENERGY_STATUS;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -414,11 +432,13 @@ RAPL_EVENT_ATTR_STR(energy-cores, rapl_cores, "event=0x01");
- RAPL_EVENT_ATTR_STR(energy-pkg  ,   rapl_pkg, "event=0x02");
- RAPL_EVENT_ATTR_STR(energy-ram  ,   rapl_ram, "event=0x03");
- RAPL_EVENT_ATTR_STR(energy-gpu  ,   rapl_gpu, "event=0x04");
-+RAPL_EVENT_ATTR_STR(energy-psys,   rapl_psys, "event=0x05");
- 
- RAPL_EVENT_ATTR_STR(energy-cores.unit, rapl_cores_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-pkg.unit  ,   rapl_pkg_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-ram.unit  ,   rapl_ram_unit, "Joules");
- RAPL_EVENT_ATTR_STR(energy-gpu.unit  ,   rapl_gpu_unit, "Joules");
-+RAPL_EVENT_ATTR_STR(energy-psys.unit,   rapl_psys_unit, "Joules");
- 
- /*
-  * we compute in 0.23 nJ increments regardless of MSR
-@@ -427,6 +447,7 @@ RAPL_EVENT_ATTR_STR(energy-cores.scale, rapl_cores_scale, "2.3283064365386962890
- RAPL_EVENT_ATTR_STR(energy-pkg.scale,     rapl_pkg_scale, "2.3283064365386962890625e-10");
- RAPL_EVENT_ATTR_STR(energy-ram.scale,     rapl_ram_scale, "2.3283064365386962890625e-10");
- RAPL_EVENT_ATTR_STR(energy-gpu.scale,     rapl_gpu_scale, "2.3283064365386962890625e-10");
-+RAPL_EVENT_ATTR_STR(energy-psys.scale,   rapl_psys_scale, "2.3283064365386962890625e-10");
- 
- static struct attribute *rapl_events_srv_attr[] = {
- 	EVENT_PTR(rapl_cores),
-@@ -476,6 +497,27 @@ static struct attribute *rapl_events_hsw_attr[] = {
- 	NULL,
- };
- 
-+static struct attribute *rapl_events_skl_attr[] = {
-+	EVENT_PTR(rapl_cores),
-+	EVENT_PTR(rapl_pkg),
-+	EVENT_PTR(rapl_gpu),
-+	EVENT_PTR(rapl_ram),
-+	EVENT_PTR(rapl_psys),
-+
-+	EVENT_PTR(rapl_cores_unit),
-+	EVENT_PTR(rapl_pkg_unit),
-+	EVENT_PTR(rapl_gpu_unit),
-+	EVENT_PTR(rapl_ram_unit),
-+	EVENT_PTR(rapl_psys_unit),
-+
-+	EVENT_PTR(rapl_cores_scale),
-+	EVENT_PTR(rapl_pkg_scale),
-+	EVENT_PTR(rapl_gpu_scale),
-+	EVENT_PTR(rapl_ram_scale),
-+	EVENT_PTR(rapl_psys_scale),
-+	NULL,
-+};
-+
- static struct attribute *rapl_events_knl_attr[] = {
- 	EVENT_PTR(rapl_pkg),
- 	EVENT_PTR(rapl_ram),
-@@ -729,6 +771,11 @@ static int __init rapl_pmu_init(void)
- 		rapl_cntr_mask = RAPL_IDX_SRV;
- 		rapl_pmu_events_group.attrs = rapl_events_srv_attr;
- 		break;
-+	case 78: /* Skylake client */
-+	case 94: /* Skylake H/S */
-+		rapl_cntr_mask = RAPL_IDX_SKL_CLN;
-+		rapl_pmu_events_group.attrs = rapl_events_skl_attr;
-+		break;
- 	case 87: /* Knights Landing */
- 		apply_quirk = true;
- 		rapl_cntr_mask = RAPL_IDX_KNL;
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 5b3c9a5..0755d1c 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -205,6 +205,8 @@
- #define MSR_CONFIG_TDP_CONTROL		0x0000064B
- #define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
- 
-+#define MSR_PLATFORM_ENERGY_STATUS	0x0000064D
-+
- #define MSR_PKG_WEIGHTED_CORE_C0_RES	0x00000658
- #define MSR_PKG_ANY_CORE_C0_RES		0x00000659
- #define MSR_PKG_ANY_GFXE_C0_RES		0x0000065A
+
+
+Caesar Wang (6):
+  thermal: rockchip: fixes the code_to_temp for tsadc driver
+  thermal: rockchip: update the tsadc table for rk3399
+  thermal: rockchip: handle the power sequence for tsadc controller
+  thermal: rockchip: add the notes for better reading
+  thermal: rockchip: add the set_trips function
+  arm64: dts: rockchip: move the rk3368 thermal data into rk3368.dtsi
+
+Elaine Zhang (1):
+  thermal: rockchip: Support RK3366 SoCs in the thermal driver
+
+Mikko Perttunen (1):
+  thermal: of: Add support for hardware-tracked trip points
+
+Shawn Lin (1):
+  thermal: rockchip: disable thermal->clk in err case
+
+ arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi | 112 ---------
+ arch/arm64/boot/dts/rockchip/rk3368.dtsi         |  66 ++++-
+ drivers/thermal/of-thermal.c                     |  82 +++++-
+ drivers/thermal/rockchip_thermal.c               | 302 ++++++++++++++++++-----
+ include/linux/thermal.h                          |   2 +
+ 5 files changed, 388 insertions(+), 176 deletions(-)
+ delete mode 100644 arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi
+
 -- 
 1.9.1
