@@ -1,64 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Ramp-down global pstate slower
- than local-pstate
-Date: Mon, 18 Apr 2016 15:48:46 +0530
-Message-ID: <20160418101846.GB2322@vireshk-i7>
-References: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
+Date: Mon, 18 Apr 2016 12:23:16 +0200
+Message-ID: <20160418102316.GA27936@amd>
+References: <cover.1458128215.git.baolin.wang@linaro.org>
+ <11ce6df3eb8a95cfed26f3321f15c98a934db642.1458128215.git.baolin.wang@linaro.org>
+ <87h9foqnur.fsf@intel.com>
+ <CAMz4kuJ=StEMsdHgX6n6wi13bs3CZ+9GYXBvdZ5mu+giSmnWdg@mail.gmail.com>
+ <87poubgnbh.fsf@intel.com>
+ <20160322113012.GC26924@xo-6d-61-c0.localdomain>
+ <87fuujgwsm.fsf@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36303 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbcDRKSt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 06:18:49 -0400
-Received: by mail-pf0-f179.google.com with SMTP id e128so79379449pfe.3
-        for <linux-pm@vger.kernel.org>; Mon, 18 Apr 2016 03:18:49 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34904 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbcDRKXU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 06:23:20 -0400
 Content-Disposition: inline
-In-Reply-To: <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <87fuujgwsm.fsf@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 15-04-16, 11:58, Akshay Adiga wrote:
->  static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-> -				unsigned long action, void *unused)
-> +					   unsigned long action, void *unused)
+Hi!
 
-Unrelated change.. better don't add such changes..
+> >> >>> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
+> >> >>
+> >> >> According to the spec we should always be talking about unit loads (1
+> >> >> unit load is 100mA for HS/FS/LS and 150mA for SS). Also, this will not
+> >> >> work for SS capable ports and SS gadgets (we have quite a few of them,
+> >> >> actually). You're missing the opportunity of charging at 900mA.
+> >> >
+> >> > I follow the DCP/SDP/CDP/ACA type's default current limitation and
+> >> > user can set them what they want.
+> >> 
+> >> no, the user CANNOT set it to what they want. If you get enumerated
+> >> @100mA and the user just decides to set it to 2000mA, s/he could even
+> >> melt the USB connector. The kernel _must_ prevent such cases.
+> >
+> > root should be allowed to do that.
+> 
+> root should not be allowed to put user at risk. The usb connector is a
+> path to earth ground in most (all?) desktop computers. Allowing root to
+> put that connector in a situation where it could melt the connector and
+> short mains should never be allowed.
 
->  {
->  	int cpu;
->  	struct cpufreq_policy cpu_policy;
-> @@ -603,15 +843,18 @@ static struct notifier_block powernv_cpufreq_opal_nb = {
->  static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
->  {
->  	struct powernv_smp_call_data freq_data;
-> -
-> +	struct global_pstate_info *gpstates = policy->driver_data;
+Be sure that hardware people put reasonable precautions...
 
-You removed a blank line here and I feel the code looks better with
-that.
+> > Very often, you want to charge using 1.8A from an old desktop PC.
+> 
+> if that old desktop's port is not a charging port, you shouldn't be
+> allowed to do that. Not ever.
 
->  	freq_data.pstate_id = powernv_pstate_info.min;
-> +	freq_data.gpstate_id = powernv_pstate_info.min;
->  	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
-> +	del_timer_sync(&gpstates->timer);
->  }
->  
->  static struct cpufreq_driver powernv_cpufreq_driver = {
->  	.name		= "powernv-cpufreq",
->  	.flags		= CPUFREQ_CONST_LOOPS,
->  	.init		= powernv_cpufreq_cpu_init,
-> +	.exit		= powernv_cpufreq_cpu_exit,
->  	.verify		= cpufreq_generic_frequency_table_verify,
->  	.target_index	= powernv_cpufreq_target_index,
->  	.get		= powernv_cpufreq_get,
+Yes, Felipe just decided that I should not be able to charge my N900
+in useful way.
 
-None of the above comments are mandatory for you to fix..
+> > N900 will simply not charge from .5A.
+> 
+> it used to with original maemo userspace/kernel.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yeah, at about 10% per night.
 
+> >> a) you are connected to a dedicated charger
+> >> 
+> >> 	In this case, you can get up to 2000mA depending on the charger.
+> >> 
+> >> 	If $this charger can give you or not 2000mA is not detectable,
+> >> 	so what do charging ICs do ? They slowly increase the attached
+> >> 	load accross VBUS/GND and measure VBUS value. When IC notices
+> >> 	VBUS dropping bit, step back to previous load.
+> >> 
+> >> 	This means you will always charger with maximum rating of DCP.
+> >> 
+> >> 	Why would user change this ? More is unsafe, less is just
+> >> 	stupid.
+> >
+> > Actually, less is not stupid. Charging li-ion battery from li-ion battery might
+> > be stupid. Imagine I'm on train, with device like N900 (50% battery) and power bank
+> > (3Ah). I'm actively using the device. If I let it charge at full current, I'll waste
+> > energy. If I limit current to approximately the power consumption, it will run the
+> > powerbank empty, first, then empty the internal battery, maximizing total time I
+> > can use the device.
+> 
+> why would you waste energy ? What the charger chip would do is charge
+> battery to maximum then just to maintenance charge from that point
+> on. Where is energy being wasted other than normal heat dissipation ?
+
+Physics 101, of course wasted energy goes to heat. Lets not waste
+energy by charging li-ion from li-ion when it is not required.
+
+								Pavel
 -- 
-viresh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
