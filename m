@@ -1,7 +1,7 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 4/9] thermal: rockchip: handle the power sequence for tsadc controller
-Date: Mon, 18 Apr 2016 11:35:56 +0800
-Message-ID: <1460950562-20652-5-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 6/9] thermal: rockchip: add the notes for better reading
+Date: Mon, 18 Apr 2016 11:35:58 +0800
+Message-ID: <1460950562-20652-7-git-send-email-wxt@rock-chips.com>
 References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
@@ -10,24 +10,8 @@ To: edubezval@gmail.com
 Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the grf property to handle the tsadc power sequence on
-rockchip some SoCs.
-
-Verified on rk3399 can work with this patch on now.
-
-while true; do grep "" /sys/class/thermal/thermal_zone[0-1]/temp
-sleep .5; done
-/sys/class/thermal/thermal_zone0/temp:40555
-/sys/class/thermal/thermal_zone1/temp:41111
-/sys/class/thermal/thermal_zone0/temp:40555
-/sys/class/thermal/thermal_zone1/temp:41111
-/sys/class/thermal/thermal_zone0/temp:40555
-/sys/class/thermal/thermal_zone1/temp:41666
-/sys/class/thermal/thermal_zone0/temp:40555
-/sys/class/thermal/thermal_zone1/temp:41111
-/sys/class/thermal/thermal_zone0/temp:40555
-/sys/class/thermal/thermal_zone1/temp:41111
-/sys/class/thermal/thermal_zone0/temp:40555
+To update the notes for keeping in mind that quickly in case
+someone re-read this driver in the future.
 
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 Cc: Zhang Rui <rui.zhang@intel.com>
@@ -35,178 +19,151 @@ Cc: Eduardo Valentin <edubezval@gmail.com>
 Cc: Heiko Stuebner <heiko@sntech.de>
 ---
 
- drivers/thermal/rockchip_thermal.c | 87 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 82 insertions(+), 5 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 74 +++++++++++++++++++++++++++-----------
+ 1 file changed, 53 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index e5064d7..3cb2e94 100644
+index 00c12c0..86a1ab0 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -23,8 +23,10 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
-+#include <linux/regmap.h>
- #include <linux/reset.h>
- #include <linux/thermal.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/pinctrl/consumer.h>
+@@ -1,7 +1,5 @@
+ /*
+- * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
+- *
+- * Copyright (c) 2015, Fuzhou Rockchip Electronics Co., Ltd
++ * Copyright (c) 2014-2016, Fuzhou Rockchip Electronics Co., Ltd
+  * Caesar Wang <wxt@rock-chips.com>
+  *
+  * This program is free software; you can redistribute it and/or modify it
+@@ -75,7 +73,7 @@ enum adc_sort_mode {
+ #define SOC_MAX_SENSORS	2
  
  /**
-@@ -97,7 +99,8 @@ struct rockchip_tsadc_chip {
- 	enum tshut_polarity tshut_polarity;
+- * struct chip_tsadc_table: hold information about chip-specific differences
++ * struct chip_tsadc_table - hold information about chip-specific differences
+  * @id: conversion table
+  * @length: size of conversion table
+  * @data_mask: mask to apply on data inputs
+@@ -88,6 +86,20 @@ struct chip_tsadc_table {
+ 	enum adc_sort_mode mode;
+ };
  
- 	/* Chip-wide methods */
--	void (*initialize)(void __iomem *reg, enum tshut_polarity p);
-+	void (*initialize)(struct regmap *grf,
-+			   void __iomem *reg, enum tshut_polarity p);
- 	void (*irq_ack)(void __iomem *reg);
- 	void (*control)(void __iomem *reg, bool on);
- 
-@@ -128,6 +131,7 @@ struct rockchip_thermal_data {
- 	struct clk *clk;
- 	struct clk *pclk;
- 
-+	struct regmap *grf;
- 	void __iomem *regs;
- 
- 	int tshut_temp;
-@@ -142,6 +146,7 @@ struct rockchip_thermal_data {
-  * TSADCV3_* are used for newer SoCs than RK3288. (e.g: RK3228, RK3399)
-  *
-  */
-+#define TSADCV2_USER_CON			0x00
- #define TSADCV2_AUTO_CON			0x04
- #define TSADCV2_INT_EN				0x08
- #define TSADCV2_INT_PD				0x0c
-@@ -177,6 +182,16 @@ struct rockchip_thermal_data {
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT	4
- #define TSADCV2_AUTO_PERIOD_TIME		250 /* msec */
- #define TSADCV2_AUTO_PERIOD_HT_TIME		50  /* msec */
-+#define TSADCV2_USER_INTER_PD_SOC		0x340 /* 13 clocks */
-+
-+#define GRF_SARADC_TESTBIT			0x0e644
-+#define GRF_TSADC_TESTBIT_L			0x0e648
-+#define GRF_TSADC_TESTBIT_H			0x0e64c
-+
-+#define GRF_TSADC_TSEN_PD_ON			(0x30003 << 0)
-+#define GRF_TSADC_TSEN_PD_OFF			(0x30000 << 0)
-+#define GRF_SARADC_TESTBIT_ON			(0x10001 << 2)
-+#define GRF_TSADC_TESTBIT_H_ON			(0x10001 << 2)
- 
- struct tsadc_table {
- 	u32 code;
-@@ -449,7 +464,7 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
-  *     If the temperature is higher than COMP_INT or COMP_SHUT for
-  *     "debounce" times, TSADC controller will generate interrupt or TSHUT.
-  */
--static void rk_tsadcv2_initialize(void __iomem *regs,
-+static void rk_tsadcv2_initialize(struct regmap *grf, void __iomem *regs,
- 				  enum tshut_polarity tshut_polarity)
- {
- 	if (tshut_polarity == TSHUT_HIGH_ACTIVE)
-@@ -466,6 +481,61 @@ static void rk_tsadcv2_initialize(void __iomem *regs,
- 		       regs + TSADCV2_AUTO_PERIOD_HT);
- 	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
- 		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
-+
-+	if (IS_ERR(grf)) {
-+		pr_warn("%s: Missing rockchip,grf property\n", __func__);
-+		return;
-+	}
-+}
-+
 +/**
-+ * rk_tsadcv3_initialize - initialize TASDC Controller.
-+ * (1) The tsadc control power sequence.
-+ *
-+ * (2) Set TSADC_V2_AUTO_PERIOD:
-+ *     Configure the interleave between every two accessing of
-+ *     TSADC in normal operation.
-+ *
-+ * (2) Set TSADCV2_AUTO_PERIOD_HT:
-+ *     Configure the interleave between every two accessing of
-+ *     TSADC after the temperature is higher than COM_SHUT or COM_INT.
-+ *
-+ * (3) Set TSADCV2_HIGH_INT_DEBOUNCE and TSADC_HIGHT_TSHUT_DEBOUNCE:
-+ *     If the temperature is higher than COMP_INT or COMP_SHUT for
-+ *     "debounce" times, TSADC controller will generate interrupt or TSHUT.
++ * struct rockchip_tsadc_chip - hold the private data of tsadc chip
++ * @chn_id[SOC_MAX_SENSORS]: the sensor id of chip correspond to the channel
++ * @chn_num: the channel number of tsadc chip
++ * @tshut_temp: the hardware-controlled shutdown temperature value
++ * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
++ * @tshut_polarity: the hardware-controlled active polarity (0:LOW 1:HIGH)
++ * @initialize: SoC special initialize tsadc controller method
++ * @irq_ack: clear the interrupt
++ * @get_temp: get the temperature
++ * @set_tshut_temp: set the hardware-controlled shutdown temperature
++ * @set_tshut_mode: set the hardware-controlled shutdown mode
++ * @table: the chip-specific conversion table
 + */
-+static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
-+				  enum tshut_polarity tshut_polarity)
-+{
-+	/* The tsadc control power sequence */
-+	if (IS_ERR(grf)) {
-+		/* Set interleave value to workround ic time sync issue */
-+		writel_relaxed(TSADCV2_USER_INTER_PD_SOC, regs +
-+			       TSADCV2_USER_CON);
-+	} else {
-+		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_ON);
-+		mdelay(10);
-+		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_OFF);
-+		udelay(100); /* The spec note says at least 15 us */
-+		regmap_write(grf, GRF_SARADC_TESTBIT, GRF_SARADC_TESTBIT_ON);
-+		regmap_write(grf, GRF_TSADC_TESTBIT_H, GRF_TSADC_TESTBIT_H_ON);
-+		udelay(200); /* The spec note says at least 90 us */
-+	}
+ struct rockchip_tsadc_chip {
+ 	/* The sensor id of chip correspond to the ADC channel */
+ 	int chn_id[SOC_MAX_SENSORS];
+@@ -115,12 +127,32 @@ struct rockchip_tsadc_chip {
+ 	struct chip_tsadc_table table;
+ };
+ 
++/**
++ * struct rockchip_thermal_sensor - hold the information of thermal sensor
++ * @thermal:  pointer to the platform/configuration data
++ * @tzd: pointer to a thermal zone
++ * @id: identifier of the thermal sensor
++ */
+ struct rockchip_thermal_sensor {
+ 	struct rockchip_thermal_data *thermal;
+ 	struct thermal_zone_device *tzd;
+ 	int id;
+ };
+ 
++/**
++ * struct rockchip_thermal_data - hold the private data of thermal driver
++ * @chip: pointer to the platform/configuration data
++ * @pdev: platform device of thermal
++ * @reset: the reset controller of tsadc
++ * @sensors[SOC_MAX_SENSORS]: the thermal sensor
++ * @clk: the controller clock is divided by the exteral 24MHz
++ * @pclk: the advanced peripherals bus clock
++ * @grf: the general register file will be used to do static set by software
++ * @regs: the base address of tsadc controller
++ * @tshut_temp: the hardware-controlled shutdown temperature value
++ * @tshut_mode: the hardware-controlled shutdown mode (0:CRU 1:GPIO)
++ * @tshut_polarity: the hardware-controlled active polarity (0:LOW 1:HIGH)
++ */
+ struct rockchip_thermal_data {
+ 	const struct rockchip_tsadc_chip *chip;
+ 	struct platform_device *pdev;
+@@ -160,12 +192,7 @@ struct rockchip_thermal_data {
+ #define TSADCV2_AUTO_EN				BIT(0)
+ #define TSADCV2_AUTO_SRC_EN(chn)		BIT(4 + (chn))
+ #define TSADCV2_AUTO_TSHUT_POLARITY_HIGH	BIT(8)
+-/**
+- * TSADCV1_AUTO_Q_SEL_EN:
+- * whether select (1024 - tsadc_q) as output
+- * 1'b0:use tsadc_q as output(temperature-code is rising sequence)
+- * 1'b1:use(1024 - tsadc_q) as output (temperature-code is falling sequence)
+- */
 +
-+	if (tshut_polarity == TSHUT_HIGH_ACTIVE)
-+		writel_relaxed(0U | TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
-+			       regs + TSADCV2_AUTO_CON);
-+	else
-+		writel_relaxed(0U & ~TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
-+			       regs + TSADCV2_AUTO_CON);
+ #define TSADCV3_AUTO_Q_SEL_EN			BIT(1)
+ 
+ #define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
+@@ -193,18 +220,21 @@ struct rockchip_thermal_data {
+ #define GRF_SARADC_TESTBIT_ON			(0x10001 << 2)
+ #define GRF_TSADC_TESTBIT_H_ON			(0x10001 << 2)
+ 
+-struct tsadc_table {
+-	u32 code;
+-	int temp;
+-};
+-
+ /**
++ * struct tsadc_table - code to temperature conversion table
++ * @code: the value of adc channel
++ * @temp: the temperature
+  * Note:
+- * Code to Temperature mapping of the Temperature sensor is a piece wise linear
++ * code to temperature mapping of the temperature sensor is a piece wise linear
+  * curve.Any temperature, code faling between to 2 give temperatures can be
+  * linearly interpolated.
+- * Code to Temperature mapping should be updated based on sillcon results.
++ * Code to Temperature mapping should be updated based on manufacturer results.
+  */
++struct tsadc_table {
++	u32 code;
++	int temp;
++};
 +
-+	writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs + TSADCV2_AUTO_PERIOD);
-+	writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_COUNT,
-+		       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
-+	writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME,
-+		       regs + TSADCV2_AUTO_PERIOD_HT);
-+	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
-+		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
+ static const struct tsadc_table rk3228_code_table[] = {
+ 	{0, -40000},
+ 	{588, -40000},
+@@ -490,6 +520,7 @@ static void rk_tsadcv2_initialize(struct regmap *grf, void __iomem *regs,
+ 
+ /**
+  * rk_tsadcv3_initialize - initialize TASDC Controller.
++ *
+  * (1) The tsadc control power sequence.
+  *
+  * (2) Set TSADC_V2_AUTO_PERIOD:
+@@ -568,10 +599,11 @@ static void rk_tsadcv2_control(void __iomem *regs, bool enable)
  }
  
- static void rk_tsadcv2_irq_ack(void __iomem *regs)
-@@ -636,7 +706,7 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
- 	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
- 	.tshut_temp = 95000,
- 
--	.initialize = rk_tsadcv2_initialize,
-+	.initialize = rk_tsadcv3_initialize,
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-@@ -768,6 +838,11 @@ static int rockchip_configure_from_dt(struct device *dev,
- 		return -EINVAL;
- 	}
- 
-+	/* The tsadc wont to handle the error in here since some SoCs didn't
-+	 * need this property.
-+	 */
-+	thermal->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
-+
- 	return 0;
- }
- 
-@@ -888,7 +963,8 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 		goto err_disable_pclk;
- 	}
- 
--	thermal->chip->initialize(thermal->regs, thermal->tshut_polarity);
-+	thermal->chip->initialize(thermal->grf, thermal->regs,
-+				  thermal->tshut_polarity);
- 
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		error = rockchip_thermal_register_sensor(pdev, thermal,
-@@ -986,7 +1062,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 
- 	rockchip_thermal_reset_controller(thermal->reset);
- 
--	thermal->chip->initialize(thermal->regs, thermal->tshut_polarity);
-+	thermal->chip->initialize(thermal->grf, thermal->regs,
-+				  thermal->tshut_polarity);
- 
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		int id = thermal->sensors[i].id;
+ /**
+- * @rk_tsadcv3_control:
+- * TSADC controller works at auto mode, and some SoCs need set the tsadc_q_sel
+- * bit on TSADCV2_AUTO_CON[1]. The (1024 - tsadc_q) as output adc value if
+- * setting this bit to enable.
++ * rk_tsadcv3_control - the tsadc controller is enabled or disabled.
++ *
++ * NOTE: TSADC controller works at auto mode, and some SoCs need set the
++ * tsadc_q_sel bit on TSADCV2_AUTO_CON[1]. The (1024 - tsadc_q) as output
++ * adc value if setting this bit to enable.
+  */
+ static void rk_tsadcv3_control(void __iomem *regs, bool enable)
+ {
 -- 
 1.9.1
