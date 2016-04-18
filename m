@@ -1,243 +1,155 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 7/9] thermal: of: Add support for hardware-tracked trip points
-Date: Mon, 18 Apr 2016 11:35:59 +0800
-Message-ID: <1460950562-20652-8-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 8/9] thermal: rockchip: add the set_trips function
+Date: Mon, 18 Apr 2016 11:36:00 +0800
+Message-ID: <1460950562-20652-9-git-send-email-wxt@rock-chips.com>
 References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:35606 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbcDRDi0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Apr 2016 23:38:26 -0400
 In-Reply-To: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>, Paul Walmsley <pwalmsley@nvidia.com>, Wei Ni <wni@nvidia.com>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-From: Mikko Perttunen <mperttunen@nvidia.com>
-
-This adds support for hardware-tracked trip points to the device tree
-thermal sensor framework.
-
-The framework supports an arbitrary number of trip points. Whenever
-the current temperature is updated, the trip points immediately
+Whenever the current temperature is updated, the trip points immediately
 below and above the current temperature are found. A sensor driver
 callback `set_trips' is then called with the temperatures.
-If there is no trip point above or below the current temperature,
-the passed trip temperature will be LONG_MAX or LONG_MIN respectively.
-In this callback, the driver should program the hardware such that
-it is notified when either of these trip points are triggered.
-When a trip point is triggered, the driver should call
-`thermal_zone_device_update' for the respective thermal zone. This
-will cause the trip points to be updated again.
+Lastly, The sensor will trigger the hardware high temperature interrupts
+to increase the sampleing rate and throttle frequency to limit the
+temperature rising When performing passive cooling.
 
-If the `set_trips' callback is not implemented (is NULL), the framework
-behaves as before.
-
-CQ-DEPEND=CL:*210768
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-Signed-off-by: Paul Walmsley <pwalmsley@nvidia.com>
-Signed-off-by: Wei Ni <wni@nvidia.com>
- https://chromium-review.googlesource.com/212425
-Reviewed-by: Olof Johansson <olofj@chromium.org>
-Tested-by: Olof Johansson <olofj@chromium.org>
-Reviewed-by: Dylan Reid <dgreid@chromium.org>
-Tested-by: Dylan Reid <dgreid@chromium.org>
-Tested-by: David Riley <davidriley@chromium.org>
-Reviewed-by: David Riley <davidriley@chromium.org>
-(cherry-picked from https://chromium.googlesource.com/chromiumos/
- third_party/kernel/+/v3.18 commit 397befabb2a52fc16586509a970f8c98268b8040)
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
 Cc: Heiko Stuebner <heiko@sntech.de>
-
 ---
 
- drivers/thermal/of-thermal.c | 82 +++++++++++++++++++++++++++++++++++++++++++-
- include/linux/thermal.h      |  2 ++
- 2 files changed, 83 insertions(+), 1 deletion(-)
+ drivers/thermal/rockchip_thermal.c | 39 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 8528802..cffa2a2 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -60,6 +60,8 @@ struct __thermal_bind_params {
-  * @polling_delay: zone polling interval
-  * @slope: slope of the temperature adjustment curve
-  * @offset: offset of the temperature adjustment curve
-+ * @prev_low_trip: previous low trip point temperature
-+ * @prev_high_trip: previous high trip point temperature
-  * @ntrips: number of trip points
-  * @trips: an array of trip points (0..ntrips - 1)
-  * @num_tbps: number of thermal bind params
-@@ -74,6 +76,7 @@ struct __thermal_zone {
- 	int polling_delay;
- 	int slope;
- 	int offset;
-+	int prev_low_trip, prev_high_trip;
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 86a1ab0..39e2eec 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -96,6 +96,7 @@ struct chip_tsadc_table {
+  * @initialize: SoC special initialize tsadc controller method
+  * @irq_ack: clear the interrupt
+  * @get_temp: get the temperature
++ * @set_alarm_temp: set the high temperature interrupt
+  * @set_tshut_temp: set the hardware-controlled shutdown temperature
+  * @set_tshut_mode: set the hardware-controlled shutdown mode
+  * @table: the chip-specific conversion table
+@@ -119,6 +120,8 @@ struct rockchip_tsadc_chip {
+ 	/* Per-sensor methods */
+ 	int (*get_temp)(struct chip_tsadc_table table,
+ 			int chn, void __iomem *reg, int *temp);
++	void (*set_alarm_temp)(struct chip_tsadc_table table,
++			       int chn, void __iomem *reg, int temp);
+ 	void (*set_tshut_temp)(struct chip_tsadc_table table,
+ 			       int chn, void __iomem *reg, int temp);
+ 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
+@@ -183,6 +186,7 @@ struct rockchip_thermal_data {
+ #define TSADCV2_INT_EN				0x08
+ #define TSADCV2_INT_PD				0x0c
+ #define TSADCV2_DATA(chn)			(0x20 + (chn) * 0x04)
++#define TSADCV2_COMP_INT(chn)		        (0x30 + (chn) * 0x04)
+ #define TSADCV2_COMP_SHUT(chn)		        (0x40 + (chn) * 0x04)
+ #define TSADCV2_HIGHT_INT_DEBOUNCE		0x60
+ #define TSADCV2_HIGHT_TSHUT_DEBOUNCE		0x64
+@@ -628,6 +632,20 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
+ 	return rk_tsadcv2_code_to_temp(table, val, temp);
+ }
  
- 	/* trip data */
- 	int ntrips;
-@@ -88,17 +91,63 @@ struct __thermal_zone {
- 	const struct thermal_zone_of_device_ops *ops;
- };
- 
-+/***   Automatic trip handling   ***/
-+
-+static int of_thermal_set_trips(struct thermal_zone_device *tz, int temp)
++static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
++				  int chn, void __iomem *regs, int temp)
 +{
-+	struct __thermal_zone *data = tz->devdata;
-+	int low = INT_MIN, high = INT_MAX;
-+	int i;
++	u32 alarm_value, int_en;
 +
-+	/* Hardware trip points not supported */
-+	if (!data->ops->set_trips)
-+		return 0;
++	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
++	writel_relaxed(alarm_value & table.data_mask,
++		       regs + TSADCV2_COMP_INT(chn));
 +
-+	/* No need to change trip points */
-+	if (temp > data->prev_low_trip && temp < data->prev_high_trip)
-+		return 0;
-+
-+	for (i = 0; i < data->ntrips; ++i) {
-+		struct thermal_trip *trip = data->trips + i;
-+		int trip_low = trip->temperature - trip->hysteresis;
-+
-+		if (trip_low < temp && trip_low > low)
-+			low = trip_low;
-+
-+		if (trip->temperature > temp && trip->temperature < high)
-+			high = trip->temperature;
-+	}
-+
-+	dev_dbg(&tz->device,
-+		"temperature %d, updating trip points to %d, %d\n",
-+		temp, low, high);
-+
-+	data->prev_low_trip = low;
-+	data->prev_high_trip = high;
-+
-+	return data->ops->set_trips(data->sensor_data, low, high);
++	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
++	int_en |= TSADCV2_INT_SRC_EN(chn);
++	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
 +}
 +
- /***   DT thermal zone device callbacks   ***/
- 
- static int of_thermal_get_temp(struct thermal_zone_device *tz,
- 			       int *temp)
+ static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
+ 				  int chn, void __iomem *regs, int temp)
  {
- 	struct __thermal_zone *data = tz->devdata;
-+	int err;
+@@ -670,6 +688,7 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
+ 	.irq_ack = rk_tsadcv3_irq_ack,
+ 	.control = rk_tsadcv3_control,
+ 	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+ 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
  
- 	if (!data->ops->get_temp)
- 		return -EINVAL;
+@@ -694,6 +713,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+ 	.irq_ack = rk_tsadcv2_irq_ack,
+ 	.control = rk_tsadcv2_control,
+ 	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+ 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
  
--	return data->ops->get_temp(data->sensor_data, temp);
-+	err = data->ops->get_temp(data->sensor_data, temp);
-+	if (err)
-+		return err;
-+
-+	err = of_thermal_set_trips(tz, *temp);
-+	if (err)
-+		return err;
-+
-+	return 0;
+@@ -718,6 +738,7 @@ static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
+ 	.irq_ack = rk_tsadcv3_irq_ack,
+ 	.control = rk_tsadcv3_control,
+ 	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+ 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
+ 
+@@ -742,6 +763,7 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
+ 	.irq_ack = rk_tsadcv2_irq_ack,
+ 	.control = rk_tsadcv2_control,
+ 	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+ 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
+ 
+@@ -766,6 +788,7 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
+ 	.irq_ack = rk_tsadcv3_irq_ack,
+ 	.control = rk_tsadcv3_control,
+ 	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+ 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+ 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
+ 
+@@ -826,6 +849,21 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+ 	return IRQ_HANDLED;
  }
  
- /**
-@@ -297,6 +346,22 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
- 	return 0;
- }
- 
-+static int of_thermal_update_trips(struct thermal_zone_device *tz)
++static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
 +{
-+	int temp;
-+	int err;
++	struct rockchip_thermal_sensor *sensor = _sensor;
++	struct rockchip_thermal_data *thermal = sensor->thermal;
++	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
 +
-+	err = of_thermal_get_temp(tz, &temp);
-+	if (err)
-+		return err;
++	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
++		__func__, sensor->id, low, high);
 +
-+	err = of_thermal_set_trips(tz, temp);
-+	if (err)
-+		return err;
++	tsadc->set_alarm_temp(tsadc->table,
++			      sensor->id, thermal->regs, high);
 +
 +	return 0;
 +}
 +
- static int of_thermal_get_trip_type(struct thermal_zone_device *tz, int trip,
- 				    enum thermal_trip_type *type)
+ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
  {
-@@ -327,6 +392,7 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
- 				    int temp)
- {
- 	struct __thermal_zone *data = tz->devdata;
-+	int err;
+ 	struct rockchip_thermal_sensor *sensor = _sensor;
+@@ -843,6 +881,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
  
- 	if (trip >= data->ntrips || trip < 0)
- 		return -EDOM;
-@@ -342,6 +408,10 @@ static int of_thermal_set_trip_temp(struct thermal_zone_device *tz, int trip,
- 	/* thermal framework should take care of data->mask & (1 << trip) */
- 	data->trips[trip].temperature = temp;
- 
-+	err = of_thermal_update_trips(tz);
-+	if (err)
-+		return err;
-+
- 	return 0;
- }
- 
-@@ -362,6 +432,7 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
- 				    int hyst)
- {
- 	struct __thermal_zone *data = tz->devdata;
-+	int err;
- 
- 	if (trip >= data->ntrips || trip < 0)
- 		return -EDOM;
-@@ -369,6 +440,10 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
- 	/* thermal framework should take care of data->mask & (1 << trip) */
- 	data->trips[trip].hysteresis = hyst;
- 
-+	err = of_thermal_update_trips(tz);
-+	if (err)
-+		return err;
-+
- 	return 0;
- }
- 
-@@ -425,6 +500,8 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 	tz->ops = ops;
- 	tz->sensor_data = data;
- 
-+	of_thermal_update_trips(tzd);
-+
- 	tzd->ops->get_temp = of_thermal_get_temp;
- 	tzd->ops->get_trend = of_thermal_get_trend;
- 	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-@@ -859,6 +936,9 @@ thermal_of_build_thermal_zone(struct device_node *np)
- 	/* trips */
- 	child = of_get_child_by_name(np, "trips");
- 
-+	tz->prev_high_trip = INT_MIN;
-+	tz->prev_low_trip = INT_MAX;
-+
- 	/* No trips provided */
- 	if (!child)
- 		goto finish;
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 97b86c5..6ef932a 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -335,12 +335,14 @@ struct thermal_genl_event {
-  * @get_trend: a pointer to a function that reads the sensor temperature trend.
-  * @set_emul_temp: a pointer to a function that sets sensor emulated
-  *		   temperature.
-+ * @set_trips: a pointer to a function that set low/high trip temperature.
-  */
- struct thermal_zone_of_device_ops {
- 	int (*get_temp)(void *, int *);
- 	int (*get_trend)(void *, long *);
- 	int (*set_emul_temp)(void *, int);
- 	int (*set_trip_temp)(void *, int, int);
-+	int (*set_trips)(void *, int, int);
+ static const struct thermal_zone_of_device_ops rockchip_of_thermal_ops = {
+ 	.get_temp = rockchip_thermal_get_temp,
++	.set_trips = rockchip_thermal_set_trips,
  };
  
- /**
+ static int rockchip_configure_from_dt(struct device *dev,
 -- 
 1.9.1
+
