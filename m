@@ -1,108 +1,77 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 3/9] thermal: rockchip: update the tsadc table for rk3399
-Date: Mon, 18 Apr 2016 11:35:55 +0800
-Message-ID: <1460950562-20652-4-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 5/9] thermal: rockchip: Support RK3366 SoCs in the thermal driver
+Date: Mon, 18 Apr 2016 11:35:57 +0800
+Message-ID: <1460950562-20652-6-git-send-email-wxt@rock-chips.com>
 References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:36574 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbcDRDhz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Apr 2016 23:37:55 -0400
 In-Reply-To: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Elaine Zhang <zhangqing@rock-chips.com>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-This patch fixes the incorrect conversion table.
-The Code to Temperature mapping is updated based on sillcon results.
+From: Elaine Zhang <zhangqing@rock-chips.com>
 
-Fixes commit b0d70338bca22cb14
-("thermal: rockchip: Support the RK3399 SoCs in thermal driver").
+The RK3366 SoCs have two Temperature Sensors, channel 0 is for CPU
+channel 1 is for GPU.
 
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>
 ---
 
- drivers/thermal/rockchip_thermal.c | 68 +++++++++++++++++++-------------------
- 1 file changed, 34 insertions(+), 34 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 658772f..e5064d7 100644
+index 3cb2e94..00c12c0 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -308,40 +308,40 @@ static const struct tsadc_table rk3368_code_table[] = {
- 
- static const struct tsadc_table rk3399_code_table[] = {
- 	{0, -40000},
--	{593, -40000},
--	{598, -35000},
--	{603, -30000},
--	{609, -25000},
--	{614, -20000},
--	{619, -15000},
--	{625, -10000},
--	{630, -5000},
--	{635, 0},
--	{641, 5000},
--	{646, 10000},
--	{651, 15000},
--	{657, 20000},
--	{662, 25000},
--	{667, 30000},
--	{673, 35000},
--	{678, 40000},
--	{684, 45000},
--	{689, 50000},
--	{694, 55000},
--	{700, 60000},
--	{705, 65000},
--	{711, 70000},
--	{716, 75000},
--	{722, 80000},
--	{727, 85000},
--	{733, 90000},
--	{738, 95000},
--	{743, 100000},
--	{749, 105000},
--	{754, 110000},
--	{760, 115000},
--	{765, 120000},
--	{771, 125000},
-+	{402, -40000},
-+	{410, -35000},
-+	{419, -30000},
-+	{427, -25000},
-+	{436, -20000},
-+	{444, -15000},
-+	{453, -10000},
-+	{461, -5000},
-+	{470, 0},
-+	{478, 5000},
-+	{487, 10000},
-+	{496, 15000},
-+	{504, 20000},
-+	{513, 25000},
-+	{521, 30000},
-+	{530, 35000},
-+	{538, 40000},
-+	{547, 45000},
-+	{555, 50000},
-+	{564, 55000},
-+	{573, 60000},
-+	{581, 65000},
-+	{590, 70000},
-+	{599, 75000},
-+	{607, 80000},
-+	{616, 85000},
-+	{624, 90000},
-+	{633, 95000},
-+	{642, 100000},
-+	{650, 105000},
-+	{659, 110000},
-+	{668, 115000},
-+	{677, 120000},
-+	{685, 125000},
- 	{TSADCV3_DATA_MASK, 125000},
+@@ -673,6 +673,30 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+ 	},
  };
  
++static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
++	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
++	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
++	.chn_num = 2, /* two channels for tsadc */
++
++	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
++	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
++	.tshut_temp = 95000,
++
++	.initialize = rk_tsadcv3_initialize,
++	.irq_ack = rk_tsadcv3_irq_ack,
++	.control = rk_tsadcv3_control,
++	.get_temp = rk_tsadcv2_get_temp,
++	.set_tshut_temp = rk_tsadcv2_tshut_temp,
++	.set_tshut_mode = rk_tsadcv2_tshut_mode,
++
++	.table = {
++		.id = rk3228_code_table,
++		.length = ARRAY_SIZE(rk3228_code_table),
++		.data_mask = TSADCV3_DATA_MASK,
++		.mode = ADC_INCREMENT,
++	},
++};
++
+ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
+ 	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+ 	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
+@@ -731,6 +755,10 @@ static const struct of_device_id of_rockchip_thermal_match[] = {
+ 		.data = (void *)&rk3288_tsadc_data,
+ 	},
+ 	{
++		.compatible = "rockchip,rk3366-tsadc",
++		.data = (void *)&rk3366_tsadc_data,
++	},
++	{
+ 		.compatible = "rockchip,rk3368-tsadc",
+ 		.data = (void *)&rk3368_tsadc_data,
+ 	},
 -- 
 1.9.1
+
