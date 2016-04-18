@@ -1,88 +1,65 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v7 1/4] gadget: Introduce the usb charger framework
-Date: Mon, 18 Apr 2016 16:34:02 +0300
-Message-ID: <87ega3f3cl.fsf@intel.com>
-References: <87poubgnbh.fsf@intel.com> <20160322113012.GC26924@xo-6d-61-c0.localdomain> <87fuujgwsm.fsf@intel.com> <20160418102316.GA27936@amd> <877ffvgqe9.fsf@intel.com> <20160418103945.GA29123@amd> <87y48bfaye.fsf@intel.com> <87vb3ffap6.fsf@intel.com> <20160418111342.GA30694@amd> <87shyjf8hp.fsf@intel.com> <20160418125853.GB3769@amd>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v5 03/11] soc: renesas: rcar-sysc: Add DT support for SYSC
+ PM domains
+Date: Mon, 18 Apr 2016 15:39:25 +0200
+Message-ID: <CAMuHMdUHPLRrOLO_qio80YHPye1tmrr=Fq9kpDg+Q0aVDycFiA@mail.gmail.com>
+References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
+	<1460558672-10290-4-git-send-email-geert+renesas@glider.be>
+	<CAPDyKFrQtX3-7GodrXV2zp4wHBgbWBOVKyE0XoeWaaxhZ2kUuw@mail.gmail.com>
+	<CAMuHMdW+PboSz-u2dV=rmNFkd4qsEhm-O_4Ewdn_-H62gwq7Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160418125853.GB3769@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33788 "EHLO
+	mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbcDRNj0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 09:39:26 -0400
+In-Reply-To: <CAMuHMdW+PboSz-u2dV=rmNFkd4qsEhm-O_4Ewdn_-H62gwq7Ng@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi Ulf,
 
-
-Hi,
-
-Pavel Machek <pavel@ucw.cz> writes:
->> Pavel Machek <pavel@ucw.cz> writes:
->> > On Mon 2016-04-18 13:55:17, Felipe Balbi wrote:
->> >>=20
->> >> Hi,
->> >>=20
->> >> Felipe Balbi <balbi@kernel.org> writes:
->> >> >> But cellphone user knows what he connected his charger to, and tha=
-t's
->> >> >> why it is useful to be able to lower the current. Even when you sa=
-id
->> >> >> "less is just stupid" I demonstrated it is not, at least in case w=
-hen
->> >>=20
->> >> and btw, you haven't demonstrated anything. You merely stated that it
->> >> isn't without references or numbers, or any source of trustworthy
->> >> information. I'm not really into 'believing'.
->> >
->> > You are not really into reading, either, it seems. Or into the
->> > electronics. Or into physics.
->> >
->> > You seem to understand that charging li-ion from li-ion produces too
->> > much heat. (And yes, it does, DC-DC convertors are not 100%
->> > effective). Converting energy into heat is not a good idea.
->> >
->> > If you need numbers or references to understand basic physics, you'll
->> > need to google it yourself, I'm afraid.=20
->>=20
->> still doesn't change the fact that you haven't demonstrated anything. If
->> you can't be helpful and/or constructive, you may also go away and use
->> whatever unsafe setup you want to use.
+On Mon, Apr 18, 2016 at 2:59 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Mon, Apr 18, 2016 at 2:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> [...]
+>>
+>>> +
+>>> +static bool rcar_sysc_active_wakeup(struct device *dev)
+>>> +{
+>>> +       return true;
+>>
+>> I am interested to know why this is always returning true. Perhaps you
+>> can elaborate a bit on that?
 >
-> So you still claim that it is "stupid" to charge at anything lower
-> than maximum allowed current?
+> Too many copying from old shmobile PM Domain code?
+> Honestly, I don't know...
 >
-> Even after I described the example with device running off power bank
-> on a train? Would you explain your reasoning?
+> Perhaps Rafael still remembers the original rationale, as git history for
+> commit e3e0109138376bb2 ("ARM / shmobile: Support for I/O power domains for
+> SH7372 (v9)") doesn't have it.
+>
+> Google did find: https://lkml.org/lkml/2011/6/30/471
+>
+> Do we still need this at all? I.e. aren't PM Domains containing wake-up
+> devices kept powered automatically during system suspend?
 
-you still haven't produced evidence of your claim. Claiming without
-evidence has virtually no meaning. Anyway, I'll just google a bit later
-seen as if you're just unwilling to produce evidence of your claims.
+No they aren't. So for pm-rmobile we do need it.
 
-=2D-=20
-balbi
+For rcar-sysc it's different: as no PM Domain contains wake-up devices
+(all I/O devices are in the always-on power area), we don't need the callback.
+Will drop it in v6.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+Gr{oetje,eeting}s,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+                        Geert
 
-iQIcBAEBAgAGBQJXFOJKAAoJEIaOsuA1yqREFsMQAJTPwvXcCWnTPjU6Z+16/0Hc
-pLOo0xGGRCr3G046K1oN77f/1y4L8lEQZPKecgN6hmOe3kB+FHCqrS4GUqJHJHOi
-Su6kXd1zaNp5ZkTNG0Ai126+fSow+fi3smawpt4dYOfG9vBvlr/R4pSu9CLGq453
-gk/WP3kVAP7cbcbL8ma4TKKW4BTr8tifDbV9DWqHRTiGOlB/UDomPMH7fN/0r2s3
-IWt8or2QsfXaR1be43xvumuTbap82MFAfKVQgGA01CXWNKaq80ogvncmhWQTZY+3
-iyz0dkhmE5MY8yDLEHlyYETe/0DzvrEUTLE93HNCvvGWGiUMl644lIqLAcEhuXQY
-aeOlRnFWAAK0gQLFclOb8A/6T0uZBiZw9ELf4SE9/m+Z9v5Xw3GNhFYRerDkLTCx
-zx3z92LgiNGKhJlEmyd2xGc91OHGH2fTuYy7lUWLr8ujpfNQuufNj6LFb6O6s9b/
-dn7pV0Inv4dc9xrRPvs+2PwVbyRdJly3e3CbLAD9AzPlmVrApnuiYt/wBSawFXJ4
-aQpvuJqwaYohW41T8kr4ROiMq6gSRPeLldsUpqhlU54EPC723L07CUOygFlVu1/u
-WaV85OoQiNkesT4s1jB4cil0DhYv1kgl0zYxv+LSnxpD2m2Hsm4NuBufhErCVIbd
-1sCFhHtCq7dHvRv3ROaH
-=TMq+
------END PGP SIGNATURE-----
---=-=-=--
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
