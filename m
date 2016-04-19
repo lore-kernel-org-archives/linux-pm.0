@@ -1,503 +1,192 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH v3 2/2] cpufreq: powernv: Ramp-down global pstate slower than local-pstate
-Date: Tue, 19 Apr 2016 15:28:01 +0530
-Message-ID: <1461059881-14434-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Tue, 19 Apr 2016 15:31:31 +0300
+Message-ID: <20160419123131.GE1725@lahna.fi.intel.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1460111790-92836-5-git-send-email-mika.westerberg@linux.intel.com>
+ <20160412175203.GB13637@wunner.de>
+ <20160413083352.GI1714@lahna.fi.intel.com>
+ <20160418143823.GA15165@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([125.16.236.3]:50133 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbcDSJ6X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 05:58:23 -0400
-Received: from localhost
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-	Tue, 19 Apr 2016 15:28:20 +0530
-In-Reply-To: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Received: from mga14.intel.com ([192.55.52.115]:13634 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752417AbcDSMbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Apr 2016 08:31:37 -0400
+Content-Disposition: inline
+In-Reply-To: <20160418143823.GA15165@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 
-The frequency transition latency from pmin to pmax is observed to be in
-few millisecond granurality. And it usually happens to take a performance
-penalty during sudden frequency rampup requests.
+On Mon, Apr 18, 2016 at 04:38:23PM +0200, Lukas Wunner wrote:
+> Hi Mika,
+> 
+> thanks for enabling runtime pm on native pciehp ports in v3 of your
+> series. I've ditched my own runtime pm code now, rebased on top of
+> your v3 and got everything working again:
+> https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
 
-This patch set solves this problem by using an entity called "global
-pstates". The global pstate is a Chip-level entity, so the global entitiy
-(Voltage) is managed across the cores. The local pstate is a Core-level
-entity, so the local entity (frequency) is managed across threads.
+Cool, thanks for testing :)
 
-This patch brings down global pstate at a slower rate than the local
-pstate. Hence by holding global pstates higher than local pstate makes
-the subsequent rampups faster.
+> There's one thing I had to change in your patches: Patch [4/4] only
+> allows runtime pm if pci_dev->bridge_d3 is set when portdrv loads.
+> However bridge_d3 can change over time. Let's say the bridge is a
+> Thunderbolt port which has a device attached on boot which is PME
+> capable but not from D3cold. Then runtime pm will not be allowed.
+> Once that device is unplugged, bridge_d3 will be set to true,
+> but the port won't go to D3 because runtime pm wasn't allowed.
+> 
+> The solution is to allow runtime pm regardless of bridge_d3, and to rely
+> solely on the bridge_d3 checks in ->runtime_idle and ->runtime_suspend.
+> Since the only remaining check in pcie_port_runtime_pm_possible()
+> (whether it's an ACPI hotplug port) doesn't change over time, we can
+> just call that function again in ->remove and therefore struct
+> pcie_port_data is no longer necessary.
 
-A per policy structure is maintained to keep track of the global and
-local pstate changes. The global pstate is brought down using a parabolic
-equation. The ramp down time to pmin is set to ~5 seconds. To make sure
-that the global pstates are dropped at regular interval , a timer is
-queued for every 2 seconds during ramp-down phase, which eventually brings
-the pstate down to local pstate.
+I thought about that also but then decided to add the check because it
+could mislead the user to think their PCIe port has runtime PM enabled
+even when it actually is not (because we always return -EBUSY from the
+callbacks).
 
-Iozone results show fairly consistent performance boost.
-YCSB on redis shows improved Max latencies in most cases.
+But then again they can enable runtime PM without these patches and the
+port is never suspended anyway.
 
-Iozone write/rewite test were made with filesizes 200704Kb and 401408Kb
-with different record sizes . The following table shows IOoperations/sec
-with and without patch.
+> In case you agree with this, I've prepared a fixup patch which you
+> can apply with "git rebase --autosquash":
+> https://github.com/l1k/linux/commit/24fc9d7b34ffc88f562fa67be248f95dd488da1e
 
-Iozone Results ( in op/sec) ( mean over 3 iterations )
----------------------------------------------------------------------
-file size-                      with            without		  %
-recordsize-IOtype               patch           patch		change
-----------------------------------------------------------------------
-200704-1-SeqWrite               1616532         1615425         0.06
-200704-1-Rewrite                2423195         2303130         5.21
-200704-2-SeqWrite               1628577         1602620         1.61
-200704-2-Rewrite                2428264         2312154         5.02
-200704-4-SeqWrite               1617605         1617182         0.02
-200704-4-Rewrite                2430524         2351238         3.37
-200704-8-SeqWrite               1629478         1600436         1.81
-200704-8-Rewrite                2415308         2298136         5.09
-200704-16-SeqWrite              1619632         1618250         0.08
-200704-16-Rewrite               2396650         2352591         1.87
-200704-32-SeqWrite              1632544         1598083         2.15
-200704-32-Rewrite               2425119         2329743         4.09
-200704-64-SeqWrite              1617812         1617235         0.03
-200704-64-Rewrite               2402021         2321080         3.48
-200704-128-SeqWrite             1631998         1600256         1.98
-200704-128-Rewrite              2422389         2304954         5.09
-200704-256 SeqWrite             1617065         1616962         0.00
-200704-256-Rewrite              2432539         2301980         5.67
-200704-512-SeqWrite             1632599         1598656         2.12
-200704-512-Rewrite              2429270         2323676         4.54
-200704-1024-SeqWrite            1618758         1616156         0.16
-200704-1024-Rewrite             2431631         2315889         4.99
-401408-1-SeqWrite               1631479         1608132         1.45
-401408-1-Rewrite                2501550         2459409         1.71
-401408-2-SeqWrite               1617095         1626069         -0.55
-401408-2-Rewrite                2507557         2443621         2.61
-401408-4-SeqWrite               1629601         1611869         1.10
-401408-4-Rewrite                2505909         2462098         1.77
-401408-8-SeqWrite               1617110         1626968         -0.60
-401408-8-Rewrite                2512244         2456827         2.25
-401408-16-SeqWrite              1632609         1609603         1.42
-401408-16-Rewrite               2500792         2451405         2.01
-401408-32-SeqWrite              1619294         1628167         -0.54
-401408-32-Rewrite               2510115         2451292         2.39
-401408-64-SeqWrite              1632709         1603746         1.80
-401408-64-Rewrite               2506692         2433186         3.02
-401408-128-SeqWrite             1619284         1627461         -0.50
-401408-128-Rewrite              2518698         2453361         2.66
-401408-256-SeqWrite             1634022         1610681         1.44
-401408-256-Rewrite              2509987         2446328         2.60
-401408-512-SeqWrite             1617524         1628016         -0.64
-401408-512-Rewrite              2504409         2442899         2.51
-401408-1024-SeqWrite            1629812         1611566         1.13
-401408-1024-Rewrite             2507620          2442968        2.64
+Based on the above, I'm going to fold your commit to [4/4]. Are you OK
+if I add your Signed-off-by to that patch?
 
-Tested with YCSB workload (50% update + 50% read) over redis for 1 million
-records and 1 million operation. Each test was carried out with target
-operations per second and persistence disabled.
+> Another thing I've spotted but that wasn't needed to get my patches
+> working: When the bridge_d3 attribute changes to true, you need to
+> notify the PM core thereof by calling pm_request_idle() for the
+> bridge device, otherwise the bridge needlessly stays awake. This
+> needs to be added near the end of pci_bridge_d3_update() I guess.
 
-Max-latency (in us)( mean over 5 iterations )
----------------------------------------------------------------
-op/s    Operation       with patch      without patch   %change
----------------------------------------------------------------
-15000   Read            61480.6         50261.4         22.32
-15000   cleanup         215.2           293.6           -26.70
-15000   update          25666.2         25163.8         2.00
+I've been testing this by writing to 'd3cold_allowed' sysfs file and it
+suspends just fine when it is 1. How do you reproduce this?
 
-25000   Read            32626.2         89525.4         -63.56
-25000   cleanup         292.2           263.0           11.10
-25000   update          32293.4         90255.0         -64.22
+> I've spun out the changes necessary for pciehp to support runtime pm
+> into a separate commit now. You could either include that in your
+> series or I could post it as part of my series later on:
+> https://github.com/l1k/linux/commit/0800e6851264960a3148a5d81076ad079e80caff
 
-35000   Read            34783.0         33119.0         5.02
-35000   cleanup         321.2           395.8           -18.8
-35000   update          36047.0         38747.8         -6.97
+I think it may be better if you submit that as part of your series. I
+have no means to test it properly here.
 
-40000   Read            38562.2         42357.4         -8.96
-40000   cleanup         371.8           384.6           -3.33
-40000   update          27861.4         41547.8         -32.94
+> One detail I'm not sure about: If you've got a hotplug downstream port
+> behind an upstream port and the upstream port goes to D3hot, is it
+> still possible for the downstream port to signal hotplug interrupts?
+> In other words, can INTx or MSI interrupts generated by the downstream
+> bridge still be routed via the upstream bridge if the upstream bridge
+> is in D3hot? I cannot easily test this, I'd have to hack the tg3 driver
+> for my Thunderbolt Ethernet adapter to use runtime suspend.
 
-45000   Read            42271.0         88120.6         -52.03
-45000   cleanup         263.6           383.0           -31.17
-45000   update          29755.8         81359.0         -63.43
+If the downstream port is able to trigger wake (PME) from D3cold, I
+think it should work but I'm not 100% sure.
 
-(test without target op/s)
-47659   Read            83061.4         136440.6        -39.12
-47659   cleanup         195.8           193.8           1.03
-47659   update          73429.4         124971.8        -41.24
+> My guess is that the interrupts are *not* routed if the upstream bridge
+> is in D3. If that is true then the algorithm in pci_bridge_d3_update()
+> and pci_dev_check_d3cold() needs to be amended so that the hotplug bridge
+> may suspend but anything above it may not.
 
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/powernv-cpufreq.c | 258 ++++++++++++++++++++++++++++++++++++--
- 1 file changed, 251 insertions(+), 7 deletions(-)
+PMEs should be forwarded upstream even if the upstream bridge is in
+D3hot.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index e2e2219..144c732 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -36,12 +36,56 @@
- #include <asm/reg.h>
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
- #include <asm/opal.h>
-+#include <linux/timer.h>
- 
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
- #define PMSR_MAX(x)		((x >> 32) & 0xFF)
- 
-+#define MAX_RAMP_DOWN_TIME				5120
-+/*
-+ * On an idle system we want the global pstate to ramp-down from max value to
-+ * min over a span of ~5 secs. Also we want it to initially ramp-down slowly and
-+ * then ramp-down rapidly later on.
-+ *
-+ * This gives a percentage rampdown for time elapsed in milliseconds.
-+ * ramp_down_percentage = ((ms * ms) >> 18)
-+ *			~= 3.8 * (sec * sec)
-+ *
-+ * At 0 ms	ramp_down_percent = 0
-+ * At 5120 ms	ramp_down_percent = 100
-+ */
-+#define ramp_down_percent(time)		((time * time) >> 18)
-+
-+/* Interval after which the timer is queued to bring down global pstate */
-+#define GPSTATE_TIMER_INTERVAL				2000
-+
-+/**
-+ * struct global_pstate_info -	Per policy data structure to maintain history of
-+ *				global pstates
-+ * @highest_lpstate:		The local pstate from which we are ramping down
-+ * @elapsed_time:		Time in ms spent in ramping down from
-+ *				highest_lpstate
-+ * @last_sampled_time:		Time from boot in ms when global pstates were
-+ *				last set
-+ * @last_lpstate,last_gpstate:	Last set values for local and global pstates
-+ * @timer:			Is used for ramping down if cpu goes idle for
-+ *				a long time with global pstate held high
-+ * @gpstate_lock:		A spinlock to maintain synchronization between
-+ *				routines called by the timer handler and
-+ *				governer's target_index calls
-+ */
-+struct global_pstate_info {
-+	int highest_lpstate;
-+	unsigned int elapsed_time;
-+	unsigned int last_sampled_time;
-+	int last_lpstate;
-+	int last_gpstate;
-+	spinlock_t gpstate_lock;
-+	struct timer_list timer;
-+};
-+
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
- 
-@@ -94,6 +138,17 @@ static struct powernv_pstate_info {
- 	int nr_pstates;
- } powernv_pstate_info;
- 
-+static inline void reset_gpstates(struct cpufreq_policy *policy)
-+{
-+	struct global_pstate_info *gpstates = policy->driver_data;
-+
-+	gpstates->highest_lpstate = 0;
-+	gpstates->elapsed_time = 0;
-+	gpstates->last_sampled_time = 0;
-+	gpstates->last_lpstate = 0;
-+	gpstates->last_gpstate = 0;
-+}
-+
- /*
-  * Initialize the freq table based on data obtained
-  * from the firmware passed via device-tree
-@@ -285,6 +340,7 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
- struct powernv_smp_call_data {
- 	unsigned int freq;
- 	int pstate_id;
-+	int gpstate_id;
- };
- 
- /*
-@@ -343,19 +399,21 @@ static unsigned int powernv_cpufreq_get(unsigned int cpu)
-  * (struct powernv_smp_call_data *) and the pstate_id which needs to be set
-  * on this CPU should be present in freq_data->pstate_id.
-  */
--static void set_pstate(void *freq_data)
-+static void set_pstate(void *data)
- {
- 	unsigned long val;
--	unsigned long pstate_ul =
--		((struct powernv_smp_call_data *) freq_data)->pstate_id;
-+	struct powernv_smp_call_data *freq_data = data;
-+	unsigned long pstate_ul = freq_data->pstate_id;
-+	unsigned long gpstate_ul = freq_data->gpstate_id;
- 
- 	val = get_pmspr(SPRN_PMCR);
- 	val = val & 0x0000FFFFFFFFFFFFULL;
- 
- 	pstate_ul = pstate_ul & 0xFF;
-+	gpstate_ul = gpstate_ul & 0xFF;
- 
- 	/* Set both global(bits 56..63) and local(bits 48..55) PStates */
--	val = val | (pstate_ul << 56) | (pstate_ul << 48);
-+	val = val | (gpstate_ul << 56) | (pstate_ul << 48);
- 
- 	pr_debug("Setting cpu %d pmcr to %016lX\n",
- 			raw_smp_processor_id(), val);
-@@ -424,6 +482,110 @@ next:
- 	}
- }
- 
-+/**
-+ * calc_global_pstate - Calculate global pstate
-+ * @elapsed_time:	Elapsed time in milliseconds
-+ * @local_pstate:	New local pstate
-+ * @highest_lpstate:	pstate from which its ramping down
-+ *
-+ * Finds the appropriate global pstate based on the pstate from which its
-+ * ramping down and the time elapsed in ramping down. It follows a quadratic
-+ * equation which ensures that it reaches ramping down to pmin in 5sec.
-+ */
-+static inline int calc_global_pstate(unsigned int elapsed_time,
-+				     int highest_lpstate, int local_pstate)
-+{
-+	int pstate_diff;
-+
-+	/*
-+	 * Using ramp_down_percent we get the percentage of rampdown
-+	 * that we are expecting to be dropping. Difference between
-+	 * highest_lpstate and powernv_pstate_info.min will give a absolute
-+	 * number of how many pstates we will drop eventually by the end of
-+	 * 5 seconds, then just scale it get the number pstates to be dropped.
-+	 */
-+	pstate_diff =  ((int)ramp_down_percent(elapsed_time) *
-+			(highest_lpstate - powernv_pstate_info.min)) / 100;
-+
-+	/* Ensure that global pstate is >= to local pstate */
-+	if (highest_lpstate - pstate_diff < local_pstate)
-+		return local_pstate;
-+	else
-+		return highest_lpstate - pstate_diff;
-+}
-+
-+static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
-+{
-+	unsigned int timer_interval;
-+
-+	/*
-+	 * Setting up timer to fire after GPSTATE_TIMER_INTERVAL ms, But
-+	 * if it exceeds MAX_RAMP_DOWN_TIME ms for ramp down time.
-+	 * Set timer such that it fires exactly at MAX_RAMP_DOWN_TIME
-+	 * seconds of ramp down time.
-+	 */
-+	if ((gpstates->elapsed_time + GPSTATE_TIMER_INTERVAL)
-+	     > MAX_RAMP_DOWN_TIME)
-+		timer_interval = MAX_RAMP_DOWN_TIME - gpstates->elapsed_time;
-+	else
-+		timer_interval = GPSTATE_TIMER_INTERVAL;
-+
-+	mod_timer_pinned(&gpstates->timer, jiffies +
-+			msecs_to_jiffies(timer_interval));
-+}
-+
-+/**
-+ * gpstate_timer_handler
-+ *
-+ * @data: pointer to cpufreq_policy on which timer was queued
-+ *
-+ * This handler brings down the global pstate closer to the local pstate
-+ * according quadratic equation. Queues a new timer if it is still not equal
-+ * to local pstate
-+ */
-+void gpstate_timer_handler(unsigned long data)
-+{
-+	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
-+	struct global_pstate_info *gpstates = policy->driver_data;
-+	int gpstate_id;
-+	unsigned int time_diff = jiffies_to_msecs(jiffies)
-+					- gpstates->last_sampled_time;
-+	struct powernv_smp_call_data freq_data;
-+
-+	if (!spin_trylock(&gpstates->gpstate_lock))
-+		return;
-+
-+	gpstates->last_sampled_time += time_diff;
-+	gpstates->elapsed_time += time_diff;
-+	freq_data.pstate_id = gpstates->last_lpstate;
-+
-+	if ((gpstates->last_gpstate == freq_data.pstate_id) ||
-+	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
-+		gpstate_id = freq_data.pstate_id;
-+		reset_gpstates(policy);
-+		gpstates->highest_lpstate = freq_data.pstate_id;
-+	} else {
-+		gpstate_id = calc_global_pstate(gpstates->elapsed_time,
-+						gpstates->highest_lpstate,
-+						freq_data.pstate_id);
-+	}
-+
-+	/*
-+	 * If local pstate is equal to global pstate, rampdown is over
-+	 * So timer is not required to be queued.
-+	 */
-+	if (gpstate_id != freq_data.pstate_id)
-+		queue_gpstate_timer(gpstates);
-+
-+	freq_data.gpstate_id = gpstate_id;
-+	gpstates->last_gpstate = freq_data.gpstate_id;
-+	gpstates->last_lpstate = freq_data.pstate_id;
-+
-+	/* Timer may get migrated to a different cpu on cpu hot unplug */
-+	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-+	spin_unlock(&gpstates->gpstate_lock);
-+}
-+
- /*
-  * powernv_cpufreq_target_index: Sets the frequency corresponding to
-  * the cpufreq table entry indexed by new_index on the cpus in the
-@@ -433,6 +595,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 					unsigned int new_index)
- {
- 	struct powernv_smp_call_data freq_data;
-+	unsigned int cur_msec, gpstate_id;
-+	unsigned long flags;
-+	struct global_pstate_info *gpstates = policy->driver_data;
- 
- 	if (unlikely(rebooting) && new_index != get_nominal_index())
- 		return 0;
-@@ -440,22 +605,70 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 	if (!throttled)
- 		powernv_cpufreq_throttle_check(NULL);
- 
-+	cur_msec = jiffies_to_msecs(get_jiffies_64());
-+
-+	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
- 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
-+	if (!gpstates->last_sampled_time) {
-+		gpstate_id = freq_data.pstate_id;
-+		gpstates->highest_lpstate = freq_data.pstate_id;
-+		goto gpstates_done;
-+	}
-+
-+	if (gpstates->last_gpstate > freq_data.pstate_id) {
-+		gpstates->elapsed_time += cur_msec -
-+						 gpstates->last_sampled_time;
-+
-+		/*
-+		 * If its has been ramping down for more than MAX_RAMP_DOWN_TIME
-+		 * we should be resetting all global pstate related data. Set it
-+		 * equal to local pstate to start fresh.
-+		 */
-+		if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
-+			reset_gpstates(policy);
-+			gpstates->highest_lpstate = freq_data.pstate_id;
-+			gpstate_id = freq_data.pstate_id;
-+		} else {
-+		/* Elaspsed_time is less than 5 seconds, continue to rampdown */
-+			gpstate_id = calc_global_pstate(gpstates->elapsed_time,
-+							gpstates->highest_lpstate,
-+							freq_data.pstate_id);
-+		}
-+	} else {
-+		reset_gpstates(policy);
-+		gpstates->highest_lpstate = freq_data.pstate_id;
-+		gpstate_id = freq_data.pstate_id;
-+	}
-+
-+	/*
-+	 * If local pstate is equal to global pstate, rampdown is over
-+	 * So timer is not required to be queued.
-+	 */
-+	if (gpstate_id != freq_data.pstate_id)
-+		queue_gpstate_timer(gpstates);
-+
-+gpstates_done:
-+	freq_data.gpstate_id = gpstate_id;
-+	gpstates->last_sampled_time = cur_msec;
-+	gpstates->last_gpstate = freq_data.gpstate_id;
-+	gpstates->last_lpstate = freq_data.pstate_id;
-+
- 	/*
- 	 * Use smp_call_function to send IPI and execute the
- 	 * mtspr on target CPU.  We could do that without IPI
- 	 * if current CPU is within policy->cpus (core)
- 	 */
- 	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
--
-+	spin_unlock_irqrestore(&gpstates->gpstate_lock, flags);
- 	return 0;
- }
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i;
-+	int base, i, ret;
- 	struct kernfs_node *kn;
-+	struct global_pstate_info *gpstates;
- 
- 	base = cpu_first_thread_sibling(policy->cpu);
- 
-@@ -475,7 +688,34 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	} else {
- 		kernfs_put(kn);
- 	}
--	return cpufreq_table_validate_and_show(policy, powernv_freqs);
-+
-+	gpstates =  kzalloc(sizeof(*gpstates), GFP_KERNEL);
-+	if (!gpstates)
-+		return -ENOMEM;
-+
-+	policy->driver_data = gpstates;
-+
-+	/* initialize timer */
-+	init_timer_deferrable(&gpstates->timer);
-+	gpstates->timer.data = (unsigned long)policy;
-+	gpstates->timer.function = gpstate_timer_handler;
-+	gpstates->timer.expires = jiffies +
-+				msecs_to_jiffies(GPSTATE_TIMER_INTERVAL);
-+	spin_lock_init(&gpstates->gpstate_lock);
-+	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
-+
-+	if (ret < 0)
-+		kfree(policy->driver_data);
-+
-+	return ret;
-+}
-+
-+static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	/* timer is deleted in cpufreq_cpu_stop() */
-+	kfree(policy->driver_data);
-+
-+	return 0;
- }
- 
- static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
-@@ -603,15 +843,19 @@ static struct notifier_block powernv_cpufreq_opal_nb = {
- static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	struct powernv_smp_call_data freq_data;
-+	struct global_pstate_info *gpstates = policy->driver_data;
- 
- 	freq_data.pstate_id = powernv_pstate_info.min;
-+	freq_data.gpstate_id = powernv_pstate_info.min;
- 	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
-+	del_timer_sync(&gpstates->timer);
- }
- 
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= powernv_cpufreq_cpu_init,
-+	.exit		= powernv_cpufreq_cpu_exit,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= powernv_cpufreq_target_index,
- 	.get		= powernv_cpufreq_get,
--- 
-2.5.5
+> On Wed, Apr 13, 2016 at 11:33:52AM +0300, Mika Westerberg wrote:
+> > I did not change the cut-off date from 2015 yet to be on the safe side,
+> > even if older Macs seem to work just fine. Maybe it can be lowered to 2013
+> > or so but I would like to hear from Bjorn and Rafael what they think about
+> > that.
+> 
+> My opinion is that we should strive for maximum power saving, thus try
+> (at least) 2010 and blacklist individual devices as needed.
 
+IMHO we should strive for working systems and not maximum power saving
+but I'm OK to change that if Bjorn or Rafael are fine with it.
+
+> > On Tue, Apr 12, 2016 at 07:52:03PM +0200, Lukas Wunner wrote:
+> > > It's unclear why the pm_schedule_suspend() is needed here and what the
+> > > 10 ms delay is for. I don't have that delay in my runtime pm code and
+> > > haven't seen any issues. If the delay is needed then I'm wondering why
+> > > this isn't implemented using autosuspend?
+> > 
+> > This part is from the original runtime PM patch. I did not want to
+> > change 10ms delay here. Not sure if it is needed.
+> 
+> Found it, the delay is explained in the commit message of 3d8387efe1ad
+> ("PCI/PM: Fix config reg access for D3cold and bridge suspending").
+> It's supposed to prevent repeatedly suspending and resuming for every
+> configuration register read/write.
+
+Indeed, thanks for looking it up.
+
+> That makes sense but I'd suggest changing this to autosuspend,
+> thereby allowing users to change it to their heart's content.
+
+OK, I'll change it to use autosuspend.
+
+> The delay should also be re-explained in the commit message of
+> patch [4/4].
+
+Sure, I'll explain it in the commit message.
+
+> > However, we need to have pcie_port_runtime_idle() callback because here we
+> > actually check if we are allowed to suspend the port. Using autosuspend
+> > does not work because of that. Documentation/power/runtime_pm.txt says
+> > this regarding ->runtime_idle() callback:
+> > 
+> >   The action performed by the idle callback is totally dependent on the
+> >   subsystem (or driver) in question, but the expected and recommended
+> >   action is to check if the device can be suspended (i.e. if all of the
+> >   conditions necessary for suspending the device are satisfied) and to
+> >   queue up a suspend request for the device in that case.
+> > 
+> > So delay probably is not necessary but we need the callback to check if
+> > the port can be suspended.
+> 
+> If ->runtime_idle returns 0, the PM core automatically calls
+> ->runtime_suspend. So there's no need for pm_schedule_suspend().
+
+I see, thanks.
+
+> One more thing, when reviewing patch [2/4], it took me a while to
+> grasp that you've chosen to determine *in advance* whether a bridge
+> is allowed to go to D3. The previous attempt at D3 support for PCIe
+> ports, 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support"),
+> took the opposite approach and determined this *on demand* in
+> pcie_port_runtime_suspend(). It may be worth making that explicit
+> in the commit message so that it's easier for an uninitiated reader
+> to comprehend what's going on.
+
+OK, I'll mention that in the commit message then.
+
+> I also found it difficult to understand the precise meaning of the
+> various d3 attributes that we now have in struct pci_dev. That isn't
+> your fault, it's caused by how things have evolved over time, but it
+> may be worth to pay back this technical debt while we're at it.
+> The comment for no_d3cold says "D3cold is forbidden". The actual
+> meaning is that drivers may set this to true in their ->runtime_suspend
+> callback to prevent the platform from putting the device into D3cold.
+> So perhaps a more appropriate comment would be "Runtime d3cold forbidden
+> by driver".
+
+I also got confused by it first so I think adding "by driver" makes it
+more understandable. I can cook a separate patch changing this.
+
+> Likewise the comment for d3cold_allowed is "D3cold is allowed by user".
+> In reality this attribute is set to true by default, so there's nothing
+> for the user to allow. Rather, the user may set it to *false* to prevent
+> the platform from runtime suspending the device to D3cold. A more
+> appropriate comment would be "Runtime d3cold not forbidden by user".
+> Alternatively the variable name could be changed to d3cold_forbidden,
+> or d3cold_usr_forbidden. (Then no_d3cold could be renamed to
+> d3cold_drv_forbidden.)
+
+Here, I think the comment is fine (explains meaning of that field), at
+least I was able to understand what it means :) Also it is not only
+about runtime PM but it concerns system sleep as well.
