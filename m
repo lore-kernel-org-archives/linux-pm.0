@@ -1,71 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: qoriq: Fix cooling device registration issue
- during suspend
-Date: Tue, 19 Apr 2016 13:24:00 +0530
-Message-ID: <20160419075400.GB2715@vireshk-i7>
-References: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] Documentation: power: reset: move gpio-{poweroff|restart}
+ to proper place
+Date: Tue, 19 Apr 2016 10:19:38 +0200
+Message-ID: <CACRpkdZKS77CQpf5xQ4aA++jg6SH32BptoSbDCg0yugF4O0Jtw@mail.gmail.com>
+References: <1460476853-3306-1-git-send-email-wsa@the-dreams.de>
+	<CACRpkdaUj5w3zkjWVf1GML3reeDnRpT8avOPkRB6_qFXB6EGjw@mail.gmail.com>
+	<CAL_JsqKK1QmGdyae-P9SoP2-7JiLK1XCyskxbd-wrn+7CidMJw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:33609 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbcDSHyE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 03:54:04 -0400
-Received: by mail-pf0-f175.google.com with SMTP id 184so4350533pff.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 Apr 2016 00:54:03 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqKK1QmGdyae-P9SoP2-7JiLK1XCyskxbd-wrn+7CidMJw@mail.gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jia Hongtao <hongtao.jia@nxp.com>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, scott.wood@nxp.com, yuantian.tang@nxp.com
 
-On 19-04-16, 14:43, Jia Hongtao wrote:
-> Cooling device is registered by ready callback. It's also invoked while
-> system resuming from sleep (Enabling non-boot cpus). Thus cooling device
-> may be multiple registered. Matchable unregistration is added to exit
-> callback to fix this issue.
-> 
-> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
-> ---
-> Changes for V2:
-> * Using qoriq_cpufreq_cpu_exit() callback instead of adding stop_cpu().
-> 
->  drivers/cpufreq/qoriq-cpufreq.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> index b23e525..0b85f90 100644
-> --- a/drivers/cpufreq/qoriq-cpufreq.c
-> +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> @@ -301,10 +301,11 @@ err_np:
->  	return -ENODEV;
->  }
->  
-> -static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-> +static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+On Fri, Apr 15, 2016 at 6:53 PM, Rob Herring <robh@kernel.org> wrote:
+> On Fri, Apr 15, 2016 at 2:48 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+>> On Tue, Apr 12, 2016 at 6:00 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+>>
+>>> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>>>
+>>> I did only find them after a fuzzy search, so let them be where one
+>>> would expect them.
+>>>
+>>> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>>
+>> I saw this the other day too I agree.
+>> Sebastian: are you OK that I move this by committing the patch to the GPIO tree?
+>> DT maintainers: OK?
+>
+> Acked-by: Rob Herring <robh@kernel.org>
+>
+> Seems like this should go thru my tree though, but I don't have the patch.
 
-Yes, __exit should have been removed, but not in this patch to create confusion.
-You should have submitted two separate patches for these changes.
+I have it merged in my tree, is is OK or shall I extract it and send
+it to you?
 
->  {
->  	struct cpu_data *data = policy->driver_data;
->  
-> +	cpufreq_cooling_unregister(data->cdev);
->  	kfree(data->pclk);
->  	kfree(data->table);
->  	kfree(data);
-> @@ -348,7 +349,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
->  	.name		= "qoriq_cpufreq",
->  	.flags		= CPUFREQ_CONST_LOOPS,
->  	.init		= qoriq_cpufreq_cpu_init,
-> -	.exit		= __exit_p(qoriq_cpufreq_cpu_exit),
-> +	.exit		= qoriq_cpufreq_cpu_exit,
->  	.verify		= cpufreq_generic_frequency_table_verify,
->  	.target_index	= qoriq_cpufreq_target,
->  	.get		= cpufreq_generic_get,
-> -- 
-> 2.1.0.27.g96db324
-
--- 
-viresh
+Yours,
+Linus Walleij
