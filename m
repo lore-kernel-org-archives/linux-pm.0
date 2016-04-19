@@ -1,71 +1,50 @@
-From: Hongtao Jia <hongtao.jia@nxp.com>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIFYyXSBjcHVmcmVxOiBxb3JpcTogRml4IGNvb2xpbmcg?=
- =?gb2312?Q?device_registration_issue_during_suspend?=
-Date: Tue, 19 Apr 2016 08:51:14 +0000
-Message-ID: <AM4PR0401MB1843E717C77063455160AD51EB6C0@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-References: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
- <20160419075400.GB2715@vireshk-i7>
+From: Jia Hongtao <hongtao.jia@nxp.com>
+Subject: [PATCH V3 1/2] cpufreq: qoriq: Remove __exit macro from .exit callback
+Date: Tue, 19 Apr 2016 17:00:06 +0800
+Message-ID: <1461056407-22542-1-git-send-email-hongtao.jia@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <20160419075400.GB2715@vireshk-i7>
-Content-Language: zh-CN
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Yuantian Tang <yuantian.tang@nxp.com>, Scott Wood <scott.wood@nxp.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bon0079.outbound.protection.outlook.com ([157.56.111.79]:37920
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752387AbcDSJJZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Apr 2016 05:09:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, scott.wood@nxp.com, yuantian.tang@nxp.com, hongtao.jia@nxp.com
 
-DQoNCj4gLS0tLS3pgq7ku7bljp/ku7YtLS0tLQ0KPiDlj5Hku7bkuro6IFZpcmVzaCBLdW1hciBb
-bWFpbHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnXQ0KPiDlj5HpgIHml7bpl7Q6IFR1ZXNkYXks
-IEFwcmlsIDE5LCAyMDE2IDM6NTQgUE0NCj4g5pS25Lu25Lq6OiBIb25ndGFvIEppYSA8aG9uZ3Rh
-by5qaWFAbnhwLmNvbT4NCj4g5oqE6YCBOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBTY290dCBXb29kDQo+IDxzY290dC53b29kQG54cC5j
-b20+OyBZdWFudGlhbiBUYW5nIDx5dWFudGlhbi50YW5nQG54cC5jb20+DQo+IOS4u+mimDogUmU6
-IFtQQVRDSCBWMl0gY3B1ZnJlcTogcW9yaXE6IEZpeCBjb29saW5nIGRldmljZSByZWdpc3RyYXRp
-b24gaXNzdWUgZHVyaW5nDQo+IHN1c3BlbmQNCj4gDQo+IE9uIDE5LTA0LTE2LCAxNDo0MywgSmlh
-IEhvbmd0YW8gd3JvdGU6DQo+ID4gQ29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCBieSByZWFk
-eSBjYWxsYmFjay4gSXQncyBhbHNvIGludm9rZWQNCj4gPiB3aGlsZSBzeXN0ZW0gcmVzdW1pbmcg
-ZnJvbSBzbGVlcCAoRW5hYmxpbmcgbm9uLWJvb3QgY3B1cykuIFRodXMNCj4gPiBjb29saW5nIGRl
-dmljZSBtYXkgYmUgbXVsdGlwbGUgcmVnaXN0ZXJlZC4gTWF0Y2hhYmxlIHVucmVnaXN0cmF0aW9u
-IGlzDQo+ID4gYWRkZWQgdG8gZXhpdCBjYWxsYmFjayB0byBmaXggdGhpcyBpc3N1ZS4NCj4gPg0K
-PiA+IFNpZ25lZC1vZmYtYnk6IEppYSBIb25ndGFvIDxob25ndGFvLmppYUBueHAuY29tPg0KPiA+
-IC0tLQ0KPiA+IENoYW5nZXMgZm9yIFYyOg0KPiA+ICogVXNpbmcgcW9yaXFfY3B1ZnJlcV9jcHVf
-ZXhpdCgpIGNhbGxiYWNrIGluc3RlYWQgb2YgYWRkaW5nIHN0b3BfY3B1KCkuDQo+ID4NCj4gPiAg
-ZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyB8IDUgKysrLS0NCj4gPiAgMSBmaWxlIGNo
-YW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQo+ID4gYi9kcml2ZXJzL2NwdWZy
-ZXEvcW9yaXEtY3B1ZnJlcS5jIGluZGV4IGIyM2U1MjUuLjBiODVmOTAgMTAwNjQ0DQo+ID4gLS0t
-IGEvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1
-ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCj4gPiBAQCAtMzAxLDEwICszMDEsMTEgQEAgZXJyX25wOg0K
-PiA+ICAJcmV0dXJuIC1FTk9ERVY7DQo+ID4gIH0NCj4gPg0KPiA+IC1zdGF0aWMgaW50IF9fZXhp
-dCBxb3JpcV9jcHVmcmVxX2NwdV9leGl0KHN0cnVjdCBjcHVmcmVxX3BvbGljeQ0KPiA+ICpwb2xp
-Y3kpDQo+ID4gK3N0YXRpYyBpbnQgcW9yaXFfY3B1ZnJlcV9jcHVfZXhpdChzdHJ1Y3QgY3B1ZnJl
-cV9wb2xpY3kgKnBvbGljeSkNCj4gDQo+IFllcywgX19leGl0IHNob3VsZCBoYXZlIGJlZW4gcmVt
-b3ZlZCwgYnV0IG5vdCBpbiB0aGlzIHBhdGNoIHRvIGNyZWF0ZQ0KPiBjb25mdXNpb24uDQo+IFlv
-dSBzaG91bGQgaGF2ZSBzdWJtaXR0ZWQgdHdvIHNlcGFyYXRlIHBhdGNoZXMgZm9yIHRoZXNlIGNo
-YW5nZXMuDQoNClRoYW5rcy4gSSB3aWxsIHNlbmQgYSBuZXcgcGF0Y2ggc2V0IHNvb24uDQoNCj4g
-DQo+ID4gIHsNCj4gPiAgCXN0cnVjdCBjcHVfZGF0YSAqZGF0YSA9IHBvbGljeS0+ZHJpdmVyX2Rh
-dGE7DQo+ID4NCj4gPiArCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0K
-PiA+ICAJa2ZyZWUoZGF0YS0+cGNsayk7DQo+ID4gIAlrZnJlZShkYXRhLT50YWJsZSk7DQo+ID4g
-IAlrZnJlZShkYXRhKTsNCj4gPiBAQCAtMzQ4LDcgKzM0OSw3IEBAIHN0YXRpYyBzdHJ1Y3QgY3B1
-ZnJlcV9kcml2ZXIgcW9yaXFfY3B1ZnJlcV9kcml2ZXIgPSB7DQo+ID4gIAkubmFtZQkJPSAicW9y
-aXFfY3B1ZnJlcSIsDQo+ID4gIAkuZmxhZ3MJCT0gQ1BVRlJFUV9DT05TVF9MT09QUywNCj4gPiAg
-CS5pbml0CQk9IHFvcmlxX2NwdWZyZXFfY3B1X2luaXQsDQo+ID4gLQkuZXhpdAkJPSBfX2V4aXRf
-cChxb3JpcV9jcHVmcmVxX2NwdV9leGl0KSwNCj4gPiArCS5leGl0CQk9IHFvcmlxX2NwdWZyZXFf
-Y3B1X2V4aXQsDQo+ID4gIAkudmVyaWZ5CQk9IGNwdWZyZXFfZ2VuZXJpY19mcmVxdWVuY3lfdGFi
-bGVfdmVyaWZ5LA0KPiA+ICAJLnRhcmdldF9pbmRleAk9IHFvcmlxX2NwdWZyZXFfdGFyZ2V0LA0K
-PiA+ICAJLmdldAkJPSBjcHVmcmVxX2dlbmVyaWNfZ2V0LA0KPiA+IC0tDQo+ID4gMi4xLjAuMjcu
-Zzk2ZGIzMjQNCj4gDQo+IC0tDQo+IHZpcmVzaA0KX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGlu
-dXhwcGMtZGV2
+.exit callback (qoriq_cpufreq_cpu_exit()) is also used during suspend.
+So __exit macro should be removed or the function will be discarded.
+
+Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+---
+ drivers/cpufreq/qoriq-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index b23e525..3a3fe39 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -301,7 +301,7 @@ err_np:
+ 	return -ENODEV;
+ }
+ 
+-static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	struct cpu_data *data = policy->driver_data;
+ 
+@@ -348,7 +348,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.name		= "qoriq_cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.init		= qoriq_cpufreq_cpu_init,
+-	.exit		= __exit_p(qoriq_cpufreq_cpu_exit),
++	.exit		= qoriq_cpufreq_cpu_exit,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qoriq_cpufreq_target,
+ 	.get		= cpufreq_generic_get,
+-- 
+2.1.0.27.g96db324
+
