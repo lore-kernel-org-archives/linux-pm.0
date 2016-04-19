@@ -1,91 +1,189 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] thermal: tegra: mark PM functions __maybe_unused
-Date: Tue, 19 Apr 2016 14:43:19 +0200
-Message-ID: <20160419124319.GG8284@ulmo.ba.sec>
-References: <1460838026-1242452-1-git-send-email-arnd@arndb.de>
- <20160418071513.GA13078@ulmo.ba.sec>
- <5715998B.6080607@nvidia.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="yZnyZsPjQYjG7xG7"
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 0/4] add __init attribute
+Date: Tue, 19 Apr 2016 14:33:31 +0200
+Message-ID: <1461069215-22795-1-git-send-email-Julia.Lawall@lip6.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:35777 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbcDSMnZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 08:43:25 -0400
-Content-Disposition: inline
-In-Reply-To: <5715998B.6080607@nvidia.com>
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:7110 "EHLO
+	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752699AbcDSMso (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 08:48:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
 
+Add __init attribute on a function that is only called from other __init
+functions and that is not inlined.
 
---yZnyZsPjQYjG7xG7
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The complete semantic patch used to detect the need for this change is
+below.  This semantic patch checks for local static non-init functions that
+are called from an __init function and are not called from any other
+function.
 
-On Tue, Apr 19, 2016 at 10:35:55AM +0800, Wei Ni wrote:
->=20
->=20
-> On 2016=E5=B9=B404=E6=9C=8818=E6=97=A5 15:15, Thierry Reding wrote:
-> > * PGP Signed by an unknown key
-> >=20
-> > On Sat, Apr 16, 2016 at 10:19:33PM +0200, Arnd Bergmann wrote:
-> >> After the PM support has been added to this driver, we get
-> >> a harmless warning when that support is disabled at compile
-> >> time:
-> >>
-> >> drivers/thermal/tegra/soctherm.c:641:12: error: 'soctherm_resume' defi=
-ned but not used [-Werror=3Dunused-function]
-> >>  static int soctherm_resume(struct device *dev)
-> >>
-> >> This marks the two PM functions as __maybe_unused to shut up
-> >> the warning. This is preferred over adding an #ifdef around
-> >> them, as it is harder to get wrong, and provides better
-> >> compile-time coverage.
-> >>
-> >> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> >> Fixes: a134b4143b65 ("thermal: tegra: add PM support")
-> >> ---
-> >>  drivers/thermal/tegra/soctherm.c | 4 ++--
-> >>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >=20
-> > The need for this should go away when Jon's generic power domain series
->=20
-> Hi Thierry,
-> Could you please show me the Jon's generic power domain series, so that I=
- can
-> verify it.
+<smpl>
+@initialize:ocaml@
+@@
 
-Here are the remaining patches from Jon's series:
+let itbl = Hashtbl.create 101
+let ltbl = Hashtbl.create 101
+let thefile = ref ""
 
-	https://patchwork.ozlabs.org/patch/603285/
-	https://patchwork.ozlabs.org/patch/603287/
-	https://patchwork.ozlabs.org/patch/603284/
+let hashadd t k =
+  let cell =
+    try Hashtbl.find t k
+    with Not_found ->
+      let cell = ref 0 in
+      Hashtbl.add t k cell;
+      cell in
+  cell := !cell + 1
 
-Thierry
+let hashget t k = try !(Hashtbl.find t k) with Not_found -> 0
 
---yZnyZsPjQYjG7xG7
-Content-Type: application/pgp-signature; name="signature.asc"
+let seen  = ref []
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+@script:ocaml@
+@@
 
-iQIcBAABCAAGBQJXFifnAAoJEN0jrNd/PrOhuZAQALvCpZ/+wYwjTvwmi8mdzo/N
-P3COQO/s3uCdXRAglavgD5CQDOuomEyjwYdRjmVySHzjaR4pJhca3og2OCOwWOjG
-IToID+J8epq0Z3lv5ZoX1jhTj/LQDglxQlUkfpHlZCAyvERZiFQYmPANvix8e9ME
-WHw+0ReFB6JBXJUzd8cxHWNknYiVRxaJT3QqTdKEjQprRf2/Aoh1Ockkk6kpTYdR
-GAKB0JoiM8rpG2v23LEQvdTd4YWqKf6BRunJA9r/khDgkHN4O+XUVlViMiWI4Rt8
-vtYGfz101SHpLF82Hix9syb1JqDXGubCEmD2ZZE4x7+AwmHCwcVmIo5wevxokON+
-79s5wpbMkKiSVmc+KU5KYaJDH+T8mMhObdtr7MQWpXro2SEBeXEbTl5E+S38H0nW
-uDmKMC5vA/wc86IHL76rnKe5bHpvmaVXoFP7gOlEQu6La3hJMJZdsOO0xgCT8d4L
-WFgzrnzTMjXwByDNpJh2XIRagFCKrYWm1JItd3IkMh0C6cIEZMzIi+I4LkKa/Qvo
-ED49D3CQU9zRZdNh6B0pynOEmIlFpzxz8wndXW1AZcq22hLZoMmfZ2aVlx1+Bn/b
-9jFfh2E4D0mCX8FQJ90KeishnWQWDsyx6c5RvzGMuLwLVTPWqBzVewPkrJsyv8z4
-E2imF/BUSFM38BwhVQbZ
-=krCg
------END PGP SIGNATURE-----
+(let file = List.hd (Coccilib.files()) in
+thefile := file;
+let file =
+    try List.hd(List.tl (Str.split (Str.regexp "/linux-next/") file))
+    with _ -> file in
+let ofile = "/var/julia/linux-next/" ^
+      (Filename.chop_extension file) ^ ".o" in
+if not(Sys.file_exists ofile)
+then Coccilib.exit());
 
---yZnyZsPjQYjG7xG7--
+Hashtbl.clear itbl;
+Hashtbl.clear ltbl;
+seen := []
+
+@r@
+identifier f;
+@@
+
+__init f(...) { ... }
+
+@script:ocaml@
+f << r.f;
+@@
+
+Hashtbl.add itbl f ()
+
+@s disable optional_attributes@
+identifier f;
+@@
+
+static f(...) { ... }
+
+@script:ocaml@
+f << s.f;
+@@
+
+Hashtbl.add ltbl f ()
+
+@t exists@
+identifier f,g;
+position p;
+@@
+
+__init f(...) { ... when any
+   g@p(...)
+   ... when any
+ }
+
+@script:ocaml@
+g << t.g;
+_p << t.p;
+@@
+
+if not (Hashtbl.mem ltbl g) || Hashtbl.mem itbl g
+then Coccilib.include_match false
+
+@ok1 disable optional_attributes exists@
+identifier f,t.g;
+@@
+
+f(...) { ... when any
+   g
+   ... when any
+ }
+
+@ok2 disable optional_attributes exists@
+identifier i,j,fld,t.g;
+@@
+
+struct i j = { .fld = g, };
+
+@ok3 disable optional_attributes exists@
+identifier t.g;
+declarer d;
+@@
+
+d(...,g,...);
+
+@ok4 disable optional_attributes exists@
+identifier t.g;
+expression e;
+@@
+
+(
+e(...,g,...)
+|
+e(...,&g,...)
+|
+e = &g
+|
+e = g
+)
+
+@script:ocaml depends on !ok1 && !ok2 && !ok3 && !ok4@
+g << t.g;
+@@
+
+let file = !thefile in
+let file =
+    try List.hd(List.tl (Str.split (Str.regexp "/linux-next/") file))
+    with _ -> file in
+if not(List.mem (g,file) !seen)
+then
+  begin
+    seen := (g,file) :: !seen;
+    let ofile = "/var/julia/linux-next/" ^
+      (Filename.chop_extension file) ^ ".o" in
+    if Sys.file_exists ofile
+    then
+      let l =
+	Common.cmd_to_list
+	  (Printf.sprintf
+	     "objdump -x %s | grep -w %s | grep -w F | grep .text.unlikely"
+	     ofile g) in
+      match l with
+	[] -> Coccilib.include_match false
+      | _ ->
+	  Printf.printf "Info for %s %s\n" file g;
+	  List.iter
+	    (function l -> Printf.printf "%s\n" l)
+	    l;
+	  Printf.printf "\n"; flush stdout
+    else Coccilib.include_match false
+  end
+else Coccilib.include_match false
+
+@depends on !ok1 && !ok2 && !ok3 && !ok4@
+identifier t.g;
+@@
+
+- g
++__init g
+ (...) { ... }
+</smpl>
+
+---
+
+ drivers/mtd/maps/ck804xrom.c |    4 ++--
+ drivers/mtd/maps/esb2rom.c   |    4 ++--
+ drivers/mtd/maps/ichxrom.c   |    4 ++--
+ drivers/thermal/of-thermal.c |    4 ++--
+ drivers/mtd/devices/pmc551.c |    2 +-
+ drivers/mtd/nand/nandsim.c |    6 +++---
