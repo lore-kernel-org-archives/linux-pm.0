@@ -1,192 +1,91 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Tue, 19 Apr 2016 15:31:31 +0300
-Message-ID: <20160419123131.GE1725@lahna.fi.intel.com>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
- <1460111790-92836-5-git-send-email-mika.westerberg@linux.intel.com>
- <20160412175203.GB13637@wunner.de>
- <20160413083352.GI1714@lahna.fi.intel.com>
- <20160418143823.GA15165@wunner.de>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH] thermal: tegra: mark PM functions __maybe_unused
+Date: Tue, 19 Apr 2016 14:43:19 +0200
+Message-ID: <20160419124319.GG8284@ulmo.ba.sec>
+References: <1460838026-1242452-1-git-send-email-arnd@arndb.de>
+ <20160418071513.GA13078@ulmo.ba.sec>
+ <5715998B.6080607@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="yZnyZsPjQYjG7xG7"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:13634 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417AbcDSMbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Apr 2016 08:31:37 -0400
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:35777 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbcDSMnZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 08:43:25 -0400
 Content-Disposition: inline
-In-Reply-To: <20160418143823.GA15165@wunner.de>
+In-Reply-To: <5715998B.6080607@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
+To: Wei Ni <wni@nvidia.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Apr 18, 2016 at 04:38:23PM +0200, Lukas Wunner wrote:
-> Hi Mika,
-> 
-> thanks for enabling runtime pm on native pciehp ports in v3 of your
-> series. I've ditched my own runtime pm code now, rebased on top of
-> your v3 and got everything working again:
-> https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
 
-Cool, thanks for testing :)
+--yZnyZsPjQYjG7xG7
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> There's one thing I had to change in your patches: Patch [4/4] only
-> allows runtime pm if pci_dev->bridge_d3 is set when portdrv loads.
-> However bridge_d3 can change over time. Let's say the bridge is a
-> Thunderbolt port which has a device attached on boot which is PME
-> capable but not from D3cold. Then runtime pm will not be allowed.
-> Once that device is unplugged, bridge_d3 will be set to true,
-> but the port won't go to D3 because runtime pm wasn't allowed.
-> 
-> The solution is to allow runtime pm regardless of bridge_d3, and to rely
-> solely on the bridge_d3 checks in ->runtime_idle and ->runtime_suspend.
-> Since the only remaining check in pcie_port_runtime_pm_possible()
-> (whether it's an ACPI hotplug port) doesn't change over time, we can
-> just call that function again in ->remove and therefore struct
-> pcie_port_data is no longer necessary.
+On Tue, Apr 19, 2016 at 10:35:55AM +0800, Wei Ni wrote:
+>=20
+>=20
+> On 2016=E5=B9=B404=E6=9C=8818=E6=97=A5 15:15, Thierry Reding wrote:
+> > * PGP Signed by an unknown key
+> >=20
+> > On Sat, Apr 16, 2016 at 10:19:33PM +0200, Arnd Bergmann wrote:
+> >> After the PM support has been added to this driver, we get
+> >> a harmless warning when that support is disabled at compile
+> >> time:
+> >>
+> >> drivers/thermal/tegra/soctherm.c:641:12: error: 'soctherm_resume' defi=
+ned but not used [-Werror=3Dunused-function]
+> >>  static int soctherm_resume(struct device *dev)
+> >>
+> >> This marks the two PM functions as __maybe_unused to shut up
+> >> the warning. This is preferred over adding an #ifdef around
+> >> them, as it is harder to get wrong, and provides better
+> >> compile-time coverage.
+> >>
+> >> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> >> Fixes: a134b4143b65 ("thermal: tegra: add PM support")
+> >> ---
+> >>  drivers/thermal/tegra/soctherm.c | 4 ++--
+> >>  1 file changed, 2 insertions(+), 2 deletions(-)
+> >=20
+> > The need for this should go away when Jon's generic power domain series
+>=20
+> Hi Thierry,
+> Could you please show me the Jon's generic power domain series, so that I=
+ can
+> verify it.
 
-I thought about that also but then decided to add the check because it
-could mislead the user to think their PCIe port has runtime PM enabled
-even when it actually is not (because we always return -EBUSY from the
-callbacks).
+Here are the remaining patches from Jon's series:
 
-But then again they can enable runtime PM without these patches and the
-port is never suspended anyway.
+	https://patchwork.ozlabs.org/patch/603285/
+	https://patchwork.ozlabs.org/patch/603287/
+	https://patchwork.ozlabs.org/patch/603284/
 
-> In case you agree with this, I've prepared a fixup patch which you
-> can apply with "git rebase --autosquash":
-> https://github.com/l1k/linux/commit/24fc9d7b34ffc88f562fa67be248f95dd488da1e
+Thierry
 
-Based on the above, I'm going to fold your commit to [4/4]. Are you OK
-if I add your Signed-off-by to that patch?
+--yZnyZsPjQYjG7xG7
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> Another thing I've spotted but that wasn't needed to get my patches
-> working: When the bridge_d3 attribute changes to true, you need to
-> notify the PM core thereof by calling pm_request_idle() for the
-> bridge device, otherwise the bridge needlessly stays awake. This
-> needs to be added near the end of pci_bridge_d3_update() I guess.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-I've been testing this by writing to 'd3cold_allowed' sysfs file and it
-suspends just fine when it is 1. How do you reproduce this?
+iQIcBAABCAAGBQJXFifnAAoJEN0jrNd/PrOhuZAQALvCpZ/+wYwjTvwmi8mdzo/N
+P3COQO/s3uCdXRAglavgD5CQDOuomEyjwYdRjmVySHzjaR4pJhca3og2OCOwWOjG
+IToID+J8epq0Z3lv5ZoX1jhTj/LQDglxQlUkfpHlZCAyvERZiFQYmPANvix8e9ME
+WHw+0ReFB6JBXJUzd8cxHWNknYiVRxaJT3QqTdKEjQprRf2/Aoh1Ockkk6kpTYdR
+GAKB0JoiM8rpG2v23LEQvdTd4YWqKf6BRunJA9r/khDgkHN4O+XUVlViMiWI4Rt8
+vtYGfz101SHpLF82Hix9syb1JqDXGubCEmD2ZZE4x7+AwmHCwcVmIo5wevxokON+
+79s5wpbMkKiSVmc+KU5KYaJDH+T8mMhObdtr7MQWpXro2SEBeXEbTl5E+S38H0nW
+uDmKMC5vA/wc86IHL76rnKe5bHpvmaVXoFP7gOlEQu6La3hJMJZdsOO0xgCT8d4L
+WFgzrnzTMjXwByDNpJh2XIRagFCKrYWm1JItd3IkMh0C6cIEZMzIi+I4LkKa/Qvo
+ED49D3CQU9zRZdNh6B0pynOEmIlFpzxz8wndXW1AZcq22hLZoMmfZ2aVlx1+Bn/b
+9jFfh2E4D0mCX8FQJ90KeishnWQWDsyx6c5RvzGMuLwLVTPWqBzVewPkrJsyv8z4
+E2imF/BUSFM38BwhVQbZ
+=krCg
+-----END PGP SIGNATURE-----
 
-> I've spun out the changes necessary for pciehp to support runtime pm
-> into a separate commit now. You could either include that in your
-> series or I could post it as part of my series later on:
-> https://github.com/l1k/linux/commit/0800e6851264960a3148a5d81076ad079e80caff
-
-I think it may be better if you submit that as part of your series. I
-have no means to test it properly here.
-
-> One detail I'm not sure about: If you've got a hotplug downstream port
-> behind an upstream port and the upstream port goes to D3hot, is it
-> still possible for the downstream port to signal hotplug interrupts?
-> In other words, can INTx or MSI interrupts generated by the downstream
-> bridge still be routed via the upstream bridge if the upstream bridge
-> is in D3hot? I cannot easily test this, I'd have to hack the tg3 driver
-> for my Thunderbolt Ethernet adapter to use runtime suspend.
-
-If the downstream port is able to trigger wake (PME) from D3cold, I
-think it should work but I'm not 100% sure.
-
-> My guess is that the interrupts are *not* routed if the upstream bridge
-> is in D3. If that is true then the algorithm in pci_bridge_d3_update()
-> and pci_dev_check_d3cold() needs to be amended so that the hotplug bridge
-> may suspend but anything above it may not.
-
-PMEs should be forwarded upstream even if the upstream bridge is in
-D3hot.
-
-> On Wed, Apr 13, 2016 at 11:33:52AM +0300, Mika Westerberg wrote:
-> > I did not change the cut-off date from 2015 yet to be on the safe side,
-> > even if older Macs seem to work just fine. Maybe it can be lowered to 2013
-> > or so but I would like to hear from Bjorn and Rafael what they think about
-> > that.
-> 
-> My opinion is that we should strive for maximum power saving, thus try
-> (at least) 2010 and blacklist individual devices as needed.
-
-IMHO we should strive for working systems and not maximum power saving
-but I'm OK to change that if Bjorn or Rafael are fine with it.
-
-> > On Tue, Apr 12, 2016 at 07:52:03PM +0200, Lukas Wunner wrote:
-> > > It's unclear why the pm_schedule_suspend() is needed here and what the
-> > > 10 ms delay is for. I don't have that delay in my runtime pm code and
-> > > haven't seen any issues. If the delay is needed then I'm wondering why
-> > > this isn't implemented using autosuspend?
-> > 
-> > This part is from the original runtime PM patch. I did not want to
-> > change 10ms delay here. Not sure if it is needed.
-> 
-> Found it, the delay is explained in the commit message of 3d8387efe1ad
-> ("PCI/PM: Fix config reg access for D3cold and bridge suspending").
-> It's supposed to prevent repeatedly suspending and resuming for every
-> configuration register read/write.
-
-Indeed, thanks for looking it up.
-
-> That makes sense but I'd suggest changing this to autosuspend,
-> thereby allowing users to change it to their heart's content.
-
-OK, I'll change it to use autosuspend.
-
-> The delay should also be re-explained in the commit message of
-> patch [4/4].
-
-Sure, I'll explain it in the commit message.
-
-> > However, we need to have pcie_port_runtime_idle() callback because here we
-> > actually check if we are allowed to suspend the port. Using autosuspend
-> > does not work because of that. Documentation/power/runtime_pm.txt says
-> > this regarding ->runtime_idle() callback:
-> > 
-> >   The action performed by the idle callback is totally dependent on the
-> >   subsystem (or driver) in question, but the expected and recommended
-> >   action is to check if the device can be suspended (i.e. if all of the
-> >   conditions necessary for suspending the device are satisfied) and to
-> >   queue up a suspend request for the device in that case.
-> > 
-> > So delay probably is not necessary but we need the callback to check if
-> > the port can be suspended.
-> 
-> If ->runtime_idle returns 0, the PM core automatically calls
-> ->runtime_suspend. So there's no need for pm_schedule_suspend().
-
-I see, thanks.
-
-> One more thing, when reviewing patch [2/4], it took me a while to
-> grasp that you've chosen to determine *in advance* whether a bridge
-> is allowed to go to D3. The previous attempt at D3 support for PCIe
-> ports, 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support"),
-> took the opposite approach and determined this *on demand* in
-> pcie_port_runtime_suspend(). It may be worth making that explicit
-> in the commit message so that it's easier for an uninitiated reader
-> to comprehend what's going on.
-
-OK, I'll mention that in the commit message then.
-
-> I also found it difficult to understand the precise meaning of the
-> various d3 attributes that we now have in struct pci_dev. That isn't
-> your fault, it's caused by how things have evolved over time, but it
-> may be worth to pay back this technical debt while we're at it.
-> The comment for no_d3cold says "D3cold is forbidden". The actual
-> meaning is that drivers may set this to true in their ->runtime_suspend
-> callback to prevent the platform from putting the device into D3cold.
-> So perhaps a more appropriate comment would be "Runtime d3cold forbidden
-> by driver".
-
-I also got confused by it first so I think adding "by driver" makes it
-more understandable. I can cook a separate patch changing this.
-
-> Likewise the comment for d3cold_allowed is "D3cold is allowed by user".
-> In reality this attribute is set to true by default, so there's nothing
-> for the user to allow. Rather, the user may set it to *false* to prevent
-> the platform from runtime suspending the device to D3cold. A more
-> appropriate comment would be "Runtime d3cold not forbidden by user".
-> Alternatively the variable name could be changed to d3cold_forbidden,
-> or d3cold_usr_forbidden. (Then no_d3cold could be renamed to
-> d3cold_drv_forbidden.)
-
-Here, I think the comment is fine (explains meaning of that field), at
-least I was able to understand what it means :) Also it is not only
-about runtime PM but it concerns system sleep as well.
+--yZnyZsPjQYjG7xG7--
