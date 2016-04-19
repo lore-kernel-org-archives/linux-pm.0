@@ -1,139 +1,71 @@
-From: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V4 1/2] thermal: generic-adc: Add DT binding for ADC based thermal sensor
-Date: Tue, 19 Apr 2016 12:52:00 +0530
-Message-ID: <1461050521-6080-1-git-send-email-ldewangan@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: qoriq: Fix cooling device registration issue
+ during suspend
+Date: Tue, 19 Apr 2016 13:24:00 +0530
+Message-ID: <20160419075400.GB2715@vireshk-i7>
+References: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33609 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbcDSHyE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 03:54:04 -0400
+Received: by mail-pf0-f175.google.com with SMTP id 184so4350533pff.0
+        for <linux-pm@vger.kernel.org>; Tue, 19 Apr 2016 00:54:03 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jia Hongtao <hongtao.jia@nxp.com>
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, scott.wood@nxp.com, yuantian.tang@nxp.com
 
-Sometimes, thermal sensors like NCT thermistors are connected to
-the ADC channel. The temperature is read by reading the voltage
-across the sensor resistance via ADC and referring the lookup
-table for ADC value to temperature.
+On 19-04-16, 14:43, Jia Hongtao wrote:
+> Cooling device is registered by ready callback. It's also invoked while
+> system resuming from sleep (Enabling non-boot cpus). Thus cooling device
+> may be multiple registered. Matchable unregistration is added to exit
+> callback to fix this issue.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+> ---
+> Changes for V2:
+> * Using qoriq_cpufreq_cpu_exit() callback instead of adding stop_cpu().
+> 
+>  drivers/cpufreq/qoriq-cpufreq.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> index b23e525..0b85f90 100644
+> --- a/drivers/cpufreq/qoriq-cpufreq.c
+> +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> @@ -301,10 +301,11 @@ err_np:
+>  	return -ENODEV;
+>  }
+>  
+> -static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+> +static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 
-Add DT binding doc for the ADC based thermal sensor driver to
-detail the DT property and provide the example for how to use it.
+Yes, __exit should have been removed, but not in this patch to create confusion.
+You should have submitted two separate patches for these changes.
 
-Signed-off-by: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Acked-by: Rob Herring <rob-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>  {
+>  	struct cpu_data *data = policy->driver_data;
+>  
+> +	cpufreq_cooling_unregister(data->cdev);
+>  	kfree(data->pclk);
+>  	kfree(data->table);
+>  	kfree(data);
+> @@ -348,7 +349,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+>  	.name		= "qoriq_cpufreq",
+>  	.flags		= CPUFREQ_CONST_LOOPS,
+>  	.init		= qoriq_cpufreq_cpu_init,
+> -	.exit		= __exit_p(qoriq_cpufreq_cpu_exit),
+> +	.exit		= qoriq_cpufreq_cpu_exit,
+>  	.verify		= cpufreq_generic_frequency_table_verify,
+>  	.target_index	= qoriq_cpufreq_target,
+>  	.get		= cpufreq_generic_get,
+> -- 
+> 2.1.0.27.g96db324
 
----
-Changes from V1:
-- Make the lookup table to two dimensional instead of single array of linear
-  step of temperature.
-- Remove detailing of IIO frameowrk and drivers.
-- Added proper braces, indenting and labels.
-
-Changes from V2:
-- Handle comment from Rob for detailing the first and second value of the array
-  and remove @ in the node name.
-
-Changes from V3:
-- Collected acks from Rob.
-- No change from V2 in content.
----
- .../bindings/thermal/thermal-generic-adc.txt       | 89 ++++++++++++++++++++++
- 1 file changed, 89 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-new file mode 100644
-index 0000000..d7235550
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
-@@ -0,0 +1,89 @@
-+General Purpose Analog To Digital Converter (ADC) based thermal sensor.
-+
-+On some of platforms, thermal sensor like thermistors are connected to
-+one of ADC channel and sensor resistance is read via voltage across the
-+sensor resistor. The voltage read across the sensor is mapped to
-+temperature using voltage-temperature lookup table.
-+
-+Required properties:
-+===================
-+- compatible:		     Must be "generic-adc-thermal".
-+- temperature-lookup-table:  Two dimensional array of Integer; lookup table
-+			     to map the relation between ADC value and
-+			     temperature. When ADC is read, the value is
-+			     looked up on the table to get the equivalent
-+			     temperature.
-+			     The first value of the each row of array is the
-+			     temperature in milliCelsius and second value of
-+			     the each row of array is the ADC read value.
-+- #thermal-sensor-cells:     Should be 1. See ./thermal.txt for a description
-+			     of this property.
-+
-+Example :
-+#include <dt-bindings/thermal/thermal.h>
-+
-+i2c@7000c400 {
-+	ads1015: ads1015@4a {
-+		reg = <0x4a>;
-+		compatible = "ads1015";
-+		sampling-frequency = <3300>;
-+		#io-channel-cells = <1>;
-+	};
-+};
-+
-+tboard_thermistor: thermal-sensor {
-+	compatible = "generic-adc-thermal";
-+	#thermal-sensor-cells = <0>;
-+	io-channels = <&ads1015 1>;
-+	io-channel-names = "sensor-channel";
-+	temperature-lookup-table = <    (-40000) 2578
-+					(-39000) 2577
-+					(-38000) 2576
-+					(-37000) 2575
-+					(-36000) 2574
-+					(-35000) 2573
-+					(-34000) 2572
-+					(-33000) 2571
-+					(-32000) 2569
-+					(-31000) 2568
-+					(-30000) 2567
-+					::::::::::
-+					118000 254
-+					119000 247
-+					120000 240
-+					121000 233
-+					122000 226
-+					123000 220
-+					124000 214
-+					125000 208>;
-+};
-+
-+dummy_cool_dev: dummy-cool-dev {
-+	compatible = "dummy-cooling-dev";
-+	#cooling-cells = <2>; /* min followed by max */
-+};
-+
-+thermal-zones {
-+	Tboard {
-+		polling-delay = <15000>; /* milliseconds */
-+		polling-delay-passive = <0>; /* milliseconds */
-+		thermal-sensors = <&tboard_thermistor>;
-+
-+		trips {
-+			therm_est_trip: therm_est_trip {
-+				temperature = <40000>;
-+				type = "active";
-+				hysteresis = <1000>;
-+			};
-+		};
-+
-+		cooling-maps {
-+			map0 {
-+				trip = <&therm_est_trip>;
-+				cooling-device = <&dummy_cool_dev THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				contribution = <100>;
-+			};
-+
-+		};
-+	};
-+};
 -- 
-2.1.4
+viresh
