@@ -1,166 +1,59 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user space reporting
-Date: Mon, 18 Apr 2016 18:11:39 -0600
-Message-ID: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:35650 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbcDSALo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Apr 2016 20:11:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH] thermal: tegra: mark PM functions __maybe_unused
+Date: Tue, 19 Apr 2016 10:35:55 +0800
+Message-ID: <5715998B.6080607@nvidia.com>
+References: <1460838026-1242452-1-git-send-email-arnd@arndb.de> <20160418071513.GA13078@ulmo.ba.sec>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160418071513.GA13078-EkSeR96xj6Pcmrwk2tT4+A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com
 
-When CPPC is being used by ACPI on arm64, user space tools such as
-cpupower report CPU frequency values from sysfs that are incorrect.
 
-What the driver was doing was reporting the values given by ACPI tables
-in whatever scale was used to provide them.  However, the ACPI spec
-defines the CPPC values as unitless abstract numbers.  Internal kernel
-structures such as struct perf_cap, in contrast, expect these values
-to be in KHz.  When these struct values get reported via sysfs, the
-user space tools also assume they are in KHz, causing them to report
-incorrect values (for example, reporting a CPU frequency of 1MHz when
-it should be 1.8GHz).
 
-While the investigation for a long term fix proceeds (several options
-are being explored, some of which may require spec changes or other
-much more invasive fixes), this patch forces the values read by CPPC
-to be read in KHz, regardless of what they actually represent.
+On 2016=E5=B9=B404=E6=9C=8818=E6=97=A5 15:15, Thierry Reding wrote:
+> * PGP Signed by an unknown key
+>=20
+> On Sat, Apr 16, 2016 at 10:19:33PM +0200, Arnd Bergmann wrote:
+>> After the PM support has been added to this driver, we get
+>> a harmless warning when that support is disabled at compile
+>> time:
+>>
+>> drivers/thermal/tegra/soctherm.c:641:12: error: 'soctherm_resume' de=
+fined but not used [-Werror=3Dunused-function]
+>>  static int soctherm_resume(struct device *dev)
+>>
+>> This marks the two PM functions as __maybe_unused to shut up
+>> the warning. This is preferred over adding an #ifdef around
+>> them, as it is harder to get wrong, and provides better
+>> compile-time coverage.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+>> Fixes: a134b4143b65 ("thermal: tegra: add PM support")
+>> ---
+>>  drivers/thermal/tegra/soctherm.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> The need for this should go away when Jon's generic power domain seri=
+es
 
-The downside is that this approach has some assumptions:
+Hi Thierry,
+Could you please show me the Jon's generic power domain series, so that=
+ I can
+verify it.
 
-   (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
-   value for a processor is set to a non-zero value.
+Thanks.
 
-   (2) It assumes that all processors run at the same speed.  This
-   patch retrieves the first CPU Max Frequency from a type 4 DMI
-   record that it can find.  This may not be an issue, however, as a
-   sampling of DMI data on x86 and arm64 indicates there is often only
-   one such record regardless.
-
-For arm64 servers, this may be sufficient, but it does rely on
-firmware values being set correctly.  Hence, other approaches are
-also being considered.
-
-This has been tested on three arm64 servers, with and without DMI, with
-and without CPPC support.
-
-Changes for v2:
-    -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
-       not SELECT DMI (found by build daemon)
-
-Signed-off-by: Al Stone <ahs3@redhat.com>
----
- drivers/acpi/cppc_acpi.c    | 61 +++++++++++++++++++++++++++++++++++++++++----
- drivers/cpufreq/Kconfig.arm |  1 +
- 2 files changed, 57 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 8adac69..d61ced6 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -40,6 +40,9 @@
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
- #include <linux/ktime.h>
-+#include <linux/dmi.h>
-+
-+#include <asm/unaligned.h>
- 
- #include <acpi/cppc_acpi.h>
- /*
-@@ -709,6 +712,47 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
- 	return ret_val;
- }
- 
-+static u64 cppc_dmi_khz;
-+
-+static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
-+{
-+	u16 *mhz = (u16 *)private;
-+	const u8 *dmi_data = (const u8 *)dm;
-+
-+	if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
-+		*mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
-+}
-+
-+
-+static u64 cppc_get_dmi_khz(void)
-+{
-+	u16 mhz;
-+
-+	dmi_walk(cppc_find_dmi_mhz, &mhz);
-+
-+	/*
-+	 * Real stupid fallback value, just in case there is no
-+	 * actual value set.
-+	 */
-+	mhz = mhz ? mhz : 1;
-+
-+	return (1000 * mhz);
-+}
-+
-+static u64 cppc_unitless_to_khz(u64 min, u64 max, u64 val)
-+{
-+	/*
-+	 * The incoming val should be min <= val <= max.  Our
-+	 * job is to convert that to KHz so it can be properly
-+	 * reported to user space via cpufreq_policy.
-+	 */
-+
-+	if (!cppc_dmi_khz)
-+		cppc_dmi_khz = cppc_get_dmi_khz();
-+
-+	return ((val - min) * cppc_dmi_khz) / (max - min);
-+}
-+
- /**
-  * cppc_get_perf_caps - Get a CPUs performance capabilities.
-  * @cpunum: CPU from which to get capabilities info.
-@@ -748,17 +792,24 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 		}
- 	}
- 
-+	/*
-+	 * Since these values in perf_caps will be used in setting
-+	 * up the cpufreq policy, they must always be stored in units
-+	 * of KHz.  If they are not, user space tools will become very
-+	 * confused since they assume these are in KHz when reading
-+	 * sysfs.
-+	 */
- 	cpc_read(&highest_reg->cpc_entry.reg, &high);
--	perf_caps->highest_perf = high;
--
- 	cpc_read(&lowest_reg->cpc_entry.reg, &low);
--	perf_caps->lowest_perf = low;
-+
-+	perf_caps->highest_perf = cppc_unitless_to_khz(low, high, high);
-+	perf_caps->lowest_perf = cppc_unitless_to_khz(low, high, low);
- 
- 	cpc_read(&ref_perf->cpc_entry.reg, &ref);
--	perf_caps->reference_perf = ref;
-+	perf_caps->reference_perf = cppc_unitless_to_khz(low, high, ref);
- 
- 	cpc_read(&nom_perf->cpc_entry.reg, &nom);
--	perf_caps->nominal_perf = nom;
-+	perf_caps->nominal_perf = cppc_unitless_to_khz(low, high, nom);
- 
- 	if (!ref)
- 		perf_caps->reference_perf = perf_caps->nominal_perf;
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 14b1f93..5555d79 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -254,6 +254,7 @@ config ARM_PXA2xx_CPUFREQ
- config ACPI_CPPC_CPUFREQ
- 	tristate "CPUFreq driver based on the ACPI CPPC spec"
- 	depends on ACPI
-+	depends on DMI
- 	select ACPI_CPPC_LIB
- 	default n
- 	help
--- 
-2.5.5
-
+> gets merged (hopefully very soon now) and enabled on 32-bit ARM. In t=
+he
+> meantime:
+>=20
+> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>=20
+> * Unknown Key
+> * 0x7F3EB3A1
+>=20
