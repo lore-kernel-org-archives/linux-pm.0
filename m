@@ -1,59 +1,96 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH] thermal: tegra: mark PM functions __maybe_unused
-Date: Tue, 19 Apr 2016 10:35:55 +0800
-Message-ID: <5715998B.6080607@nvidia.com>
-References: <1460838026-1242452-1-git-send-email-arnd@arndb.de> <20160418071513.GA13078@ulmo.ba.sec>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160418071513.GA13078-EkSeR96xj6Pcmrwk2tT4+A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v3] cpufreq: governor: Fix overflow when calculating idle time
+Date: Tue, 19 Apr 2016 11:57:32 +0800
+Message-ID: <1461038252-8687-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:50567 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752410AbcDSDuu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Apr 2016 23:50:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <lenb@kernel.org>, Chen Yu <yu.c.chen@intel.com>
 
+It was reported that after Commit 0df35026c6a5 ("cpufreq: governor:
+Fix negative idle_time when configured with CONFIG_HZ_PERIODIC"),
+cpufreq ondemand governor started to act oddly. Without any load,
+with freshly booted system, it pumped cpu frequency up to maximum
+at some point of time and stayed there. The problem is caused by
+jiffies overflow in get_cpu_idle_time:
 
+After booting up 5 minutes, the jiffies will round up to zero.
+As a result, the following condition in cpu governor will always be
+true:
+	if (cur_idle_time <= j_cdbs->prev_cpu_idle)
+		idle_time = 0;
 
-On 2016=E5=B9=B404=E6=9C=8818=E6=97=A5 15:15, Thierry Reding wrote:
-> * PGP Signed by an unknown key
->=20
-> On Sat, Apr 16, 2016 at 10:19:33PM +0200, Arnd Bergmann wrote:
->> After the PM support has been added to this driver, we get
->> a harmless warning when that support is disabled at compile
->> time:
->>
->> drivers/thermal/tegra/soctherm.c:641:12: error: 'soctherm_resume' de=
-fined but not used [-Werror=3Dunused-function]
->>  static int soctherm_resume(struct device *dev)
->>
->> This marks the two PM functions as __maybe_unused to shut up
->> the warning. This is preferred over adding an #ifdef around
->> them, as it is harder to get wrong, and provides better
->> compile-time coverage.
->>
->> Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
->> Fixes: a134b4143b65 ("thermal: tegra: add PM support")
->> ---
->>  drivers/thermal/tegra/soctherm.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> The need for this should go away when Jon's generic power domain seri=
-es
+which caused problems.
 
-Hi Thierry,
-Could you please show me the Jon's generic power domain series, so that=
- I can
-verify it.
+For example, once cur_idle_time has rounded up to zero, meanwhile
+prev_cpu_idle still remains negative(because of jiffies initial value
+of -300HZ, which is very big after converted to unsigned), thus above
+condition is met, thus we get a zero of idle running time during
+this sample, which causes a high busy time, thus governor always
+requests for the highest freq.
 
-Thanks.
+This patch fixes this problem by updating prev_cpu_idle for
+each sample period, even if prev_cpu_idle is bigger than
+cur_idle_time, thus to prevent the scenario of 'prev_cpu_idle always
+bigger than cur_idle_time' from happening.
 
-> gets merged (hopefully very soon now) and enabled on 32-bit ARM. In t=
-he
-> meantime:
->=20
-> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->=20
-> * Unknown Key
-> * 0x7F3EB3A1
->=20
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=115261
+Reported-by: Timo Valtoaho <timo.valtoaho@gmail.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v3:
+ - Do not use INITIAL_JIFFIES because it should be transparent
+   to user, meanwhile keep original semanteme to use delta
+   of time slice.
+---
+v2:
+ - Send this patch to a wider scope, including timing-system maintainers,
+   as well as some modifications in the commit message to make it more clear.
+---
+ drivers/cpufreq/cpufreq.c          | 4 ++++
+ drivers/cpufreq/cpufreq_governor.c | 8 +++++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b87596b..b0479b3 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -132,6 +132,10 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
+ 
++/**
++ * The wall time and idle time are both possible to round up,
++ * people should use delta rather than the value itself.
++ */
+ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ {
+ 	u64 idle_time;
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 10a5cfe..8de3fba 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -197,8 +197,14 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			idle_time = 0;
+ 		} else {
+ 			idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
+-			j_cdbs->prev_cpu_idle = cur_idle_time;
+ 		}
++		/*
++		 * It is possible prev_cpu_idle being bigger than cur_idle_time,
++		 * when 32bit rounds up if !CONFIG_VIRT_CPU_ACCOUNTING,
++		 * thus get a 0% idle estimation. So update prev_cpu_idle during
++		 * each sample period to avoid this situation lasting too long.
++		 */
++		j_cdbs->prev_cpu_idle = cur_idle_time;
+ 
+ 		if (ignore_nice) {
+ 			u64 cur_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+-- 
+1.8.4.2
+
