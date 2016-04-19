@@ -1,125 +1,110 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Tue, 19 Apr 2016 16:53:58 -0600
-Message-ID: <5716B706.2050700@redhat.com>
-References: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
- <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
-Reply-To: ahs3@redhat.com
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI: Fix device attach failure handling
+Date: Tue, 19 Apr 2016 18:23:29 -0500
+Message-ID: <20160419232329.GE17863@localhost>
+References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f175.google.com ([209.85.223.175]:33162 "EHLO
-	mail-io0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbcDSWyB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 18:54:01 -0400
-Received: by mail-io0-f175.google.com with SMTP id f89so23113857ioi.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 Apr 2016 15:54:00 -0700 (PDT)
-In-Reply-To: <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rwells@codeaurora.org" <rwells@codeaurora.org>
 
-On 04/19/2016 02:12 PM, Ashwin Chaugule wrote:
-> + Ryan
-> 
-> Hi Al,
-> 
-> On 18 April 2016 at 20:11, Al Stone <ahs3@redhat.com> wrote:
->> When CPPC is being used by ACPI on arm64, user space tools such as
->> cpupower report CPU frequency values from sysfs that are incorrect.
->>
->> What the driver was doing was reporting the values given by ACPI tables
->> in whatever scale was used to provide them.  However, the ACPI spec
->> defines the CPPC values as unitless abstract numbers.  Internal kernel
->> structures such as struct perf_cap, in contrast, expect these values
->> to be in KHz.  When these struct values get reported via sysfs, the
->> user space tools also assume they are in KHz, causing them to report
->> incorrect values (for example, reporting a CPU frequency of 1MHz when
->> it should be 1.8GHz).
->>
->> While the investigation for a long term fix proceeds (several options
->> are being explored, some of which may require spec changes or other
->> much more invasive fixes), this patch forces the values read by CPPC
->> to be read in KHz, regardless of what they actually represent.
->>
->> The downside is that this approach has some assumptions:
->>
->>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->>    value for a processor is set to a non-zero value.
->>
->>    (2) It assumes that all processors run at the same speed.  This
->>    patch retrieves the first CPU Max Frequency from a type 4 DMI
->>    record that it can find.  This may not be an issue, however, as a
->>    sampling of DMI data on x86 and arm64 indicates there is often only
->>    one such record regardless.
->>
->> For arm64 servers, this may be sufficient, but it does rely on
->> firmware values being set correctly.  Hence, other approaches are
->> also being considered.
->>
->> This has been tested on three arm64 servers, with and without DMI, with
->> and without CPPC support.
->>
->> Changes for v2:
->>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
->>        not SELECT DMI (found by build daemon)
->>
->> Signed-off-by: Al Stone <ahs3@redhat.com>
-> 
-> This looks like a good short term solution. Does it make more sense to
-> move this to the cppc_cpufreq driver though? Since that ties more
-> closely into the cpufreq framework which requires the kHz values in
-> sysfs. That way we can keep the cppc_acpi.c shim compliant with the
-> ACPI spec. (i.e. values read in cppc structures remain abstract and
-> unitless).
+Hi Lukas,
 
-Perhaps.  Doing it that way made the patch a bit messier since
-cppc_acpi.c would set values that then had to be replaced in
-cppc_cpufreq.c, so initialization looked odd to me; that's how
-I ended up here.  You do raise a good point, however; I'll look
-at that approach again since I could have missed an easier way
-to do it.
+On Thu, Mar 31, 2016 at 02:57:48PM +0200, Lukas Wunner wrote:
+> Linux 4.5 introduced a behavioral change in device probing during the
+> suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
+> probing during suspend/hibernation"): It defers device probing during
+> the entire suspend process, starting from the prepare phase and ending
+> with the complete phase. A rule existed before that "we rely on sub-
+> systems not to do any probing once a device is suspended" but it is
+> enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
+> 
+> This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
+> plugged in while the system is asleep: Upon waking up, pciehp_resume()
+> discovers new devices in the resume phase and immediately tries to bind
+> them to a driver. Since probing is now deferred, device_attach() returns
+> -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
+> 
+> Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
+> Check device_attach() return value always"): pci_bus_add_device() no
+> longer sets dev->is_added = 1 if device_attach() returned a negative
+> value. This results in a BUG lockup in pci_bus_add_devices().
 
-> Rafael, Viresh, others,
-> 
-> Any other ideas how to handle this better in the long term?
-> 
->  - Decouple the cpufreq sysfs from the cppc driver and introduce its
-> own entries. Is it possibly to do this cleanly while still allowing
-> usage of cpufreq registration with existing governors?
-> 
->  - Come up with a scaling factor using the PMU cycle counter at boot
-> before the CPPC drivers are initialized. This would use the current
-> freq set by some UEFI var. This would possibly require some messy
-> perfevents plumbing and added bootup time though.
-> 
-> - .. ?
-> 
-> 
-> Cheers,
-> Ashwin.
-> 
+If this fixes a BUG() that we introduced in v4.6-rc1, it sounds like we
+should fix it before v4.6-final.  Please confirm.
 
-The other thought that occurs to me is to go back through the
-perf_cap and cpufreq structs and make them more general -- perhaps
-store the units being used and pointers to functions to convert them
-to KHz.  This may require separating sysfs data for perf_cap from the
-cpufreq sysfs data from the cppc sysfs data.  But, if units are then
-reported out to sysfs, user space tools can do whatever conversions
-they want, or at least know what they're reporting instead of there
-being an implicit ABI between the kernel and the tools.  This would
-be a far more invasive patch set, I think, but it still may be the
-right thing to do for the long term.
+> Fix the latter by not recursing to a child bus if device_attach() failed
+> for the bridge leading to it.
+> 
+> Fix the former by not interpreting -EPROBE_DEFER as failure. The device
+> will be probed eventually and there is proper locking in place to avoid
+> races (e.g. if devices are unplugged again und thus deleted from the
+> system before deferred probing happens, I have tested this). Also, those
+> functions which dereference dev->driver (e.g. pci_pm_*()) do contain
+> proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+This looks like two different bug fixes.  Can you split them into
+separate patches, or is there a reason to combine them?
+
+> Note that even postponing the code in pciehp_resume() until the
+> complete phase wouldn't avoid these troubles because dpm_complete()
+> calls device_unblock_probing() only after ->complete has been
+> executed for all devices. We lack a pm hook from which it would
+> be safe to check a hotplug port and call device_attach() without
+> risking -EPROBE_DEFER.
+> 
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Rafael J. Wysocki <rafael@kernel.org>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/bus.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index 6c9f546..dd7cdbe 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+>  
+>  	dev->match_driver = true;
+>  	retval = device_attach(&dev->dev);
+> -	if (retval < 0) {
+> +	if (retval < 0 && retval != -EPROBE_DEFER) {
+>  		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
+
+I would prefer if the dev_warn() made a distinction between
+-EPROBE_DEFER and other failures.  It sounds like the -EPROBE_DEFER
+case will happen in normal operation, and we probably shouldn't treat
+it as a warning.
+
+>  		pci_proc_detach_device(dev);
+>  		pci_remove_sysfs_dev_files(dev);
+> @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+>  	}
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> -		BUG_ON(!dev->is_added);
+> +		/* Skip if device attach failed */
+> +		if (!dev->is_added)
+> +			continue;
+
+I assume the "pci_bus_add_devices(child)" will happen *eventually*?
+Can you add a comment about when that is?
+
+>  		child = dev->subordinate;
+>  		if (child)
+>  			pci_bus_add_devices(child);
+> -- 
+> 2.8.0.rc3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
