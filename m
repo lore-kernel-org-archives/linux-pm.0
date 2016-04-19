@@ -1,97 +1,166 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: Driver directory selection for Power Supply Status chip
-Date: Mon, 18 Apr 2016 16:50:15 -0700
-Message-ID: <20160418235015.GA20720@roeck-us.net>
-References: <571507DE.3080408@opensource.altera.com>
- <57150E47.4020503@metafoo.de>
- <571538D5.5020209@opensource.altera.com>
- <57153E2A.7030207@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Al Stone <ahs3@redhat.com>
+Subject: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user space reporting
+Date: Mon, 18 Apr 2016 18:11:39 -0600
+Message-ID: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:35512 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbcDRXuM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Apr 2016 19:50:12 -0400
-Content-Disposition: inline
-In-Reply-To: <57153E2A.7030207@kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35650 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbcDSALo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Apr 2016 20:11:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: tthayer@opensource.altera.com, Lars-Peter Clausen <lars@metafoo.de>, linux-iio@vger.kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, linux-pm <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+To: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com
 
-On Mon, Apr 18, 2016 at 09:06:02PM +0100, Jonathan Cameron wrote:
-> On 18/04/16 20:43, Thor Thayer wrote:
-> > 
-> > 
-> > On 04/18/2016 11:41 AM, Lars-Peter Clausen wrote:
-> >> On 04/18/2016 06:14 PM, Thor Thayer wrote:
-> >>> Hi,
-> >>>
-> >>> The Arria10 System Resource chip (A10SR) is a SPI based MFD implementing a
-> >>> GPIO expander, reset controller, and power supply monitoring. I'm not sure
-> >>> where the driver for the A10SR power monitoring driver should reside and I'm
-> >>> hoping someone can offer some advice.
-> >>>
-> >>> I'd originally submitted the RFC to the HWMON list but the maintainer
-> >>> pointed out that it wasn't a good fit because the A10SR only indicates
-> >>> boolean power supply status - not the voltage level as required by HWMON.
-> >>>
-> >>> I read that IIO acts as a bridge between IO and HWMON but I'm also not sure
-> >>> this fits those drivers (although I did find some power supply supervistors
-> >>> there). It isn't quite a power supply supervisor - the A10SR is a comparator
-> >>> instead of an Analog-to-Digital Converter.
-> >>>
-> >>> One additional thing, the A10SR also had a number of enable bits for
-> >>> enabling devices external to Altera's SoC (but still on the development
-> >>> board). These don't quite fit into the reset controller framework but would
-> >>> seem to fit a MISC directory driver better.
-> >>>
-> >>> If neither IIO or MISC is a good fit, can someone suggest a more appropriate
-> >>> place?
-> >>
-> >> How does the device work, does it generate an interrupt when the voltage
-> >> level goes below the threshold? I'd like to pass the ball back and say that
-> >> this sounds like something that should go into hwmon.
-> >>
-> > 
-> > Good question but no, there is no interrupt.
-> > 
-> > The chip is actually a power supply sequencer for bringing up the
-> > power supplies in the correct order. Since the sequence, timings, and
-> > thresholds are hard coded in the chip and can't be changed
-> > programatically, I assume it was decided that a power fail interrupt
-> > was not needed. However, the status of the power (OK/Fail) can be
-> > read from the chip.
-> > 
-> > I was directed to look at Documentation/hwmon/sysfs-interface which
-> > states the units are in millivolts and I didn't see any references to
-> > a boolean output so I'm leaning away from hwmon.
-> That's one impressively uninformative output...  Hmm.
+When CPPC is being used by ACPI on arm64, user space tools such as
+cpupower report CPU frequency values from sysfs that are incorrect.
 
-Please clarify what you mean with "impressively uninformative output".
+What the driver was doing was reporting the values given by ACPI tables
+in whatever scale was used to provide them.  However, the ACPI spec
+defines the CPPC values as unitless abstract numbers.  Internal kernel
+structures such as struct perf_cap, in contrast, expect these values
+to be in KHz.  When these struct values get reported via sysfs, the
+user space tools also assume they are in KHz, causing them to report
+incorrect values (for example, reporting a CPU frequency of 1MHz when
+it should be 1.8GHz).
 
-FWIW, hwmon alarm attributes are boolean.
+While the investigation for a long term fix proceeds (several options
+are being explored, some of which may require spec changes or other
+much more invasive fixes), this patch forces the values read by CPPC
+to be read in KHz, regardless of what they actually represent.
 
-Thanks,
-Guenter
+The downside is that this approach has some assumptions:
 
-> Not obvious where to put it - it doesn't fit in IIO really either.
-> 
-> Could report as a power supply?  There is 'health' support in there.
-> See Documentation/power/power_supply_class.txt
-> and include/linux/power_supply.h
-> though I'm not sure which type a fail on this would count as...
-> perhaps UNSPEC_FAILURE.
-> 
-> It's intended for batteries really - not sure how far you can stretch
-> that.
-> 
-> Cc'd linux-pm and maintainers.  Perhaps they will have a better idea!
-> > 
-> > Thank you for your reply!
-> > -- 
-> > To unsubscribe from this list: send the line "unsubscribe linux-iio" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+   (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+   value for a processor is set to a non-zero value.
+
+   (2) It assumes that all processors run at the same speed.  This
+   patch retrieves the first CPU Max Frequency from a type 4 DMI
+   record that it can find.  This may not be an issue, however, as a
+   sampling of DMI data on x86 and arm64 indicates there is often only
+   one such record regardless.
+
+For arm64 servers, this may be sufficient, but it does rely on
+firmware values being set correctly.  Hence, other approaches are
+also being considered.
+
+This has been tested on three arm64 servers, with and without DMI, with
+and without CPPC support.
+
+Changes for v2:
+    -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+       not SELECT DMI (found by build daemon)
+
+Signed-off-by: Al Stone <ahs3@redhat.com>
+---
+ drivers/acpi/cppc_acpi.c    | 61 +++++++++++++++++++++++++++++++++++++++++----
+ drivers/cpufreq/Kconfig.arm |  1 +
+ 2 files changed, 57 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 8adac69..d61ced6 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -40,6 +40,9 @@
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+ #include <linux/ktime.h>
++#include <linux/dmi.h>
++
++#include <asm/unaligned.h>
+ 
+ #include <acpi/cppc_acpi.h>
+ /*
+@@ -709,6 +712,47 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+ 	return ret_val;
+ }
+ 
++static u64 cppc_dmi_khz;
++
++static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
++{
++	u16 *mhz = (u16 *)private;
++	const u8 *dmi_data = (const u8 *)dm;
++
++	if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
++		*mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
++}
++
++
++static u64 cppc_get_dmi_khz(void)
++{
++	u16 mhz;
++
++	dmi_walk(cppc_find_dmi_mhz, &mhz);
++
++	/*
++	 * Real stupid fallback value, just in case there is no
++	 * actual value set.
++	 */
++	mhz = mhz ? mhz : 1;
++
++	return (1000 * mhz);
++}
++
++static u64 cppc_unitless_to_khz(u64 min, u64 max, u64 val)
++{
++	/*
++	 * The incoming val should be min <= val <= max.  Our
++	 * job is to convert that to KHz so it can be properly
++	 * reported to user space via cpufreq_policy.
++	 */
++
++	if (!cppc_dmi_khz)
++		cppc_dmi_khz = cppc_get_dmi_khz();
++
++	return ((val - min) * cppc_dmi_khz) / (max - min);
++}
++
+ /**
+  * cppc_get_perf_caps - Get a CPUs performance capabilities.
+  * @cpunum: CPU from which to get capabilities info.
+@@ -748,17 +792,24 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
+ 	}
+ 
++	/*
++	 * Since these values in perf_caps will be used in setting
++	 * up the cpufreq policy, they must always be stored in units
++	 * of KHz.  If they are not, user space tools will become very
++	 * confused since they assume these are in KHz when reading
++	 * sysfs.
++	 */
+ 	cpc_read(&highest_reg->cpc_entry.reg, &high);
+-	perf_caps->highest_perf = high;
+-
+ 	cpc_read(&lowest_reg->cpc_entry.reg, &low);
+-	perf_caps->lowest_perf = low;
++
++	perf_caps->highest_perf = cppc_unitless_to_khz(low, high, high);
++	perf_caps->lowest_perf = cppc_unitless_to_khz(low, high, low);
+ 
+ 	cpc_read(&ref_perf->cpc_entry.reg, &ref);
+-	perf_caps->reference_perf = ref;
++	perf_caps->reference_perf = cppc_unitless_to_khz(low, high, ref);
+ 
+ 	cpc_read(&nom_perf->cpc_entry.reg, &nom);
+-	perf_caps->nominal_perf = nom;
++	perf_caps->nominal_perf = cppc_unitless_to_khz(low, high, nom);
+ 
+ 	if (!ref)
+ 		perf_caps->reference_perf = perf_caps->nominal_perf;
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 14b1f93..5555d79 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -254,6 +254,7 @@ config ARM_PXA2xx_CPUFREQ
+ config ACPI_CPPC_CPUFREQ
+ 	tristate "CPUFreq driver based on the ACPI CPPC spec"
+ 	depends on ACPI
++	depends on DMI
+ 	select ACPI_CPPC_LIB
+ 	default n
+ 	help
+-- 
+2.5.5
+
