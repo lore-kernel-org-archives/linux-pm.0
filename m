@@ -1,60 +1,72 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Build regressions/improvements in v4.6-rc4
-Date: Tue, 19 Apr 2016 08:57:37 +0200
-Message-ID: <CAMuHMdUqJ0dj25oXhC4MgqSk0SaOHvT262ew+sBs7eV2SCwyUA@mail.gmail.com>
-References: <1461048813-28712-1-git-send-email-geert@linux-m68k.org>
+From: Hongtao Jia <hongtao.jia@nxp.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIDEvMl0gY3B1ZnJlcTogcW9yaXE6IEZpeCBjb29saW5n?=
+ =?gb2312?Q?_device_registration_issue_during_suspend?=
+Date: Tue, 19 Apr 2016 06:52:17 +0000
+Message-ID: <HE1PR0401MB18512E402535DE12512A1991EB6C0@HE1PR0401MB1851.eurprd04.prod.outlook.com>
+References: <1460966372-4877-1-git-send-email-hongtao.jia@nxp.com>
+ <20160418103254.GD2322@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-parisc-owner@vger.kernel.org>
-In-Reply-To: <1461048813-28712-1-git-send-email-geert@linux-m68k.org>
-Sender: linux-parisc-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Parisc List <linux-parisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20160418103254.GD2322@vireshk-i7>
+Content-Language: zh-CN
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Yuantian Tang <yuantian.tang@nxp.com>, Scott Wood <scott.wood@nxp.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 19, 2016 at 8:53 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v4.6-rc4[1] compared to v4.5[2].
->
-> Summarized:
->   - build errors: +11/-7
->   - build warnings: +16376/-165
-
-Sorry for the delay, initially I didn't realize why my first report didn't make
-it to the list. It was too big, due to 16211 warnings in parisc-allmodconfig
-about "-ffunction-sections disabled; it makes profiling impossible [enabled by
-default]".
-
-> JFYI, when comparing v4.6-rc4[1] to v4.6-rc3[3], the summaries are:
->   - build errors: +9/-9
-
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-'struct pci_dn' has no member named 'edev':  => 272:8
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-dereferencing pointer to incomplete type:  => 215:7
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-implicit declaration of function 'eeh_dev_init'
-[-Werror=implicit-function-declaration]:  => 212:3
-
-powerpc-randconfig
-
-  + /home/kisskb/slave/src/drivers/thermal/mtk_thermal.c: error:
-implicit declaration of function 'device_reset'
-[-Werror=implicit-function-declaration]:  => 560:2
-
-x86_64-randconfig (patch available)
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/10194/ (all 262 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/10162/ (all 262 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+DQoNCj4gLS0tLS3pgq7ku7bljp/ku7YtLS0tLQ0KPiDlj5Hku7bkuro6IFZpcmVzaCBLdW1hciBb
+bWFpbHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnXQ0KPiDlj5HpgIHml7bpl7Q6IE1vbmRheSwg
+QXByaWwgMTgsIDIwMTYgNjozMyBQTQ0KPiDmlLbku7bkuro6IEhvbmd0YW8gSmlhIDxob25ndGFv
+LmppYUBueHAuY29tPg0KPiDmioTpgIE6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFNjb3R0IFdvb2QNCj4gPHNjb3R0Lndvb2RAbnhwLmNv
+bT47IFl1YW50aWFuIFRhbmcgPHl1YW50aWFuLnRhbmdAbnhwLmNvbT4NCj4g5Li76aKYOiBSZTog
+W1BBVENIIDEvMl0gY3B1ZnJlcTogcW9yaXE6IEZpeCBjb29saW5nIGRldmljZSByZWdpc3RyYXRp
+b24gaXNzdWUNCj4gZHVyaW5nIHN1c3BlbmQNCj4gDQo+IE9uIDE4LTA0LTE2LCAxNTo1OSwgSmlh
+IEhvbmd0YW8gd3JvdGU6DQo+ID4gQ29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCBieSByZWFk
+eSBjYWxsYmFjay4gSXQncyBhbHNvIGludm9rZWQNCj4gPiB3aGlsZSBzeXN0ZW0gcmVzdW1pbmcg
+ZnJvbSBzbGVlcCAoRW5hYmxpbmcgbm9uLWJvb3QgY3B1cykuIFRodXMNCj4gPiBjb29saW5nIGRl
+dmljZSBtYXkgYmUgbXVsdGlwbGUgcmVnaXN0ZXJlZC4gU3RvcF9jcHUgY2FsbGJhY2sgaXMNCj4g
+PiBpbnZva2VkIGR1cmluZyBzdXNwZW5kIChEaXNhYmxpbmcgbm9uLWJvb3QgY3B1cykuIFNvIG1h
+dGNoYWJsZQ0KPiA+IHVucmVnaXN0cmF0aW9uIGlzIGFkZGVkIHRvIGZpeCB0aGlzIGlzc3VlLg0K
+PiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+
+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgfCA4ICsrKysr
+KysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQo+ID4gYi9kcml2ZXJzL2Nw
+dWZyZXEvcW9yaXEtY3B1ZnJlcS5jIGluZGV4IGIyM2U1MjUuLjFjMmZkYzEgMTAwNjQ0DQo+ID4g
+LS0tIGEvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYw0KPiA+ICsrKyBiL2RyaXZlcnMv
+Y3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCj4gPiBAQCAtMzA1LDYgKzMwNSw3IEBAIHN0YXRpYyBp
+bnQgX19leGl0IHFvcmlxX2NwdWZyZXFfY3B1X2V4aXQoc3RydWN0DQo+ID4gY3B1ZnJlcV9wb2xp
+Y3kgKnBvbGljeSkgIHsNCj4gPiAgCXN0cnVjdCBjcHVfZGF0YSAqZGF0YSA9IHBvbGljeS0+ZHJp
+dmVyX2RhdGE7DQo+ID4NCj4gPiArCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNk
+ZXYpOw0KPiA+ICAJa2ZyZWUoZGF0YS0+cGNsayk7DQo+ID4gIAlrZnJlZShkYXRhLT50YWJsZSk7
+DQo+ID4gIAlrZnJlZShkYXRhKTsNCj4gPiBAQCAtMzIzLDYgKzMyNCwxMiBAQCBzdGF0aWMgaW50
+IHFvcmlxX2NwdWZyZXFfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeQ0KPiAqcG9saWN5LA0K
+PiA+ICAJcmV0dXJuIGNsa19zZXRfcGFyZW50KHBvbGljeS0+Y2xrLCBwYXJlbnQpOyAgfQ0KPiA+
+DQo+ID4gK3N0YXRpYyB2b2lkIHFvcmlxX2NwdWZyZXFfc3RvcF9jcHUoc3RydWN0IGNwdWZyZXFf
+cG9saWN5ICpwb2xpY3kpIHsNCj4gPiArCXN0cnVjdCBjcHVfZGF0YSAqY3B1ZCA9IHBvbGljeS0+
+ZHJpdmVyX2RhdGE7DQo+ID4gKw0KPiA+ICsJY3B1ZnJlcV9jb29saW5nX3VucmVnaXN0ZXIoY3B1
+ZC0+Y2Rldik7DQo+ID4gK30NCj4gPg0KPiA+ICBzdGF0aWMgdm9pZCBxb3JpcV9jcHVmcmVxX3Jl
+YWR5KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KSAgeyBAQA0KPiA+IC0zNTIsNiArMzU5
+LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2RyaXZlciBxb3JpcV9jcHVmcmVxX2RyaXZlciA9
+IHsNCj4gPiAgCS52ZXJpZnkJCT0gY3B1ZnJlcV9nZW5lcmljX2ZyZXF1ZW5jeV90YWJsZV92ZXJp
+ZnksDQo+ID4gIAkudGFyZ2V0X2luZGV4CT0gcW9yaXFfY3B1ZnJlcV90YXJnZXQsDQo+ID4gIAku
+Z2V0CQk9IGNwdWZyZXFfZ2VuZXJpY19nZXQsDQo+ID4gKwkuc3RvcF9jcHUJPSBxb3JpcV9jcHVm
+cmVxX3N0b3BfY3B1LA0KPiA+ICAJLnJlYWR5CQk9IHFvcmlxX2NwdWZyZXFfcmVhZHksDQo+ID4g
+IAkuYXR0cgkJPSBjcHVmcmVxX2dlbmVyaWNfYXR0ciwNCj4gPiAgfTsNCj4gDQo+IFlvdSBkb24n
+dCBuZWVkIHRvIGRvIGl0IGZyb20gc3RvcF9jcHUoKSwgcGxlYXNlIHVzZQ0KPiBxb3JpcV9jcHVm
+cmVxX2NwdV9leGl0KCkgZm9yIHRoaXMuDQoNClRoYW5rcy4gVGhlIG5ldyBwYXRjaCB3aWxsIGJl
+IHN1Ym1pdHRlZCBzb29uLg0KDQotSG9uZ3Rhby4NCg0KPiANCj4gLS0NCj4gdmlyZXNoDQpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYg
+bWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMu
+b3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
