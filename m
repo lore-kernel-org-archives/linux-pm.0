@@ -1,7 +1,7 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFC PATCH 2/4] cpufreq: schedutil: support scheduler cpufreq callbacks on remote CPUs
-Date: Tue, 19 Apr 2016 19:39:27 -0700
-Message-ID: <1461119969-10371-2-git-send-email-smuckle@linaro.org>
+Subject: [RFC PATCH 3/4] intel_pstate: support scheduler cpufreq callbacks on remote CPUs
+Date: Tue, 19 Apr 2016 19:39:28 -0700
+Message-ID: <1461119969-10371-3-git-send-email-smuckle@linaro.org>
 References: <1461119969-10371-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1461119969-10371-1-git-send-email-smuckle@linaro.org>
@@ -11,179 +11,149 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Zijlstra <pete
 List-Id: linux-pm@vger.kernel.org
 
 In preparation for the scheduler cpufreq callback happening on remote
-CPUs, add support for this in schedutil. Schedutil requires the
-callback occur on the CPU being updated in order to support fast
-frequency switches.
+CPUs, add support for this in intel_pstate, which requires the
+callback run on the local CPU to be able to change the CPU frequency.
 
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/cpufreq_schedutil.c | 90 ++++++++++++++++++++++++++++++----------
- 1 file changed, 68 insertions(+), 22 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 88 +++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 83 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 154ae3a51e86..6e7cf90d4ea7 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -49,6 +49,8 @@ struct sugov_cpu {
- 	unsigned long util;
- 	unsigned long max;
- 	u64 last_update;
-+
-+	int cpu;
- };
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 6c7cff13f0ed..fa49d3944aa5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -162,6 +162,9 @@ struct _pid {
+  * struct cpudata -	Per CPU instance data storage
+  * @cpu:		CPU number for this instance data
+  * @update_util:	CPUFreq utility callback information
++ * @irq_work:		Data for passing remote callbacks to the target CPU
++ * @time:		Timestamp of CPUFreq callback
++ * @ipi_in_progress:	Whether a remote callback IPI is outstanding
+  * @pstate:		Stores P state limits for this CPU
+  * @vid:		Stores VID limits for this CPU
+  * @pid:		Stores PID parameters for this CPU
+@@ -179,6 +182,9 @@ struct cpudata {
+ 	int cpu;
  
- static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
-@@ -76,27 +78,59 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 	return delta_ns >= sg_policy->freq_update_delay_ns;
+ 	struct update_util_data update_util;
++	struct irq_work irq_work;
++	u64	time;
++	bool	ipi_in_progress;
+ 
+ 	struct pstate_data pstate;
+ 	struct vid_data vid;
+@@ -1173,20 +1179,88 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 		get_avg_frequency(cpu));
  }
  
--static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-+static void sugov_fast_switch(struct sugov_policy *sg_policy,
-+			      unsigned int next_freq)
++static void _intel_pstate_update_util(struct cpudata *cpu, u64 time)
 +{
-+	struct cpufreq_policy *policy = sg_policy->policy;
++	bool sample_taken = intel_pstate_sample(cpu, time);
 +
-+	next_freq = cpufreq_driver_fast_switch(policy, next_freq);
-+	if (next_freq == CPUFREQ_ENTRY_INVALID)
-+		return;
-+
-+	policy->cur = next_freq;
-+	trace_cpu_frequency(next_freq, smp_processor_id());
++	if (sample_taken && !hwp_active)
++		intel_pstate_adjust_busy_pstate(cpu);
 +}
 +
 +#ifdef CONFIG_SMP
-+static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
-+					 int cpu)
++static void intel_pstate_update_util_remote(struct irq_work *irq_work)
 +{
-+	if (cpu != smp_processor_id()) {
-+		sg_policy->work_in_progress = true;
-+		irq_work_queue_on(&sg_policy->irq_work, cpu);
-+		return true;
-+	}
++	struct cpudata *cpu = container_of(irq_work, struct cpudata, irq_work);
++	s64 delta_ns = cpu->time - cpu->sample.time;
 +
-+	return false;
++	/*
++	 * A local update may have happened while the ipi
++	 * was in progress so re-check the time.
++	 */
++	if (delta_ns < pid_params.sample_rate_ns)
++		return;
++
++	_intel_pstate_update_util(cpu, cpu->time);
++
++	cpu->ipi_in_progress = false;
 +}
-+#else
-+static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
-+					 int cpu)
++
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 				     unsigned long util, unsigned long max)
+ {
+ 	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+-	u64 delta_ns = time - cpu->sample.time;
++	s64 delta_ns = time - cpu->sample.time;
+ 
+-	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
+-		bool sample_taken = intel_pstate_sample(cpu, time);
++	if (delta_ns < pid_params.sample_rate_ns)
++		return;
+ 
+-		if (sample_taken && !hwp_active)
+-			intel_pstate_adjust_busy_pstate(cpu);
++	if (cpu->cpu == smp_processor_id()) {
++		_intel_pstate_update_util(cpu, time);
++	} else {
++		/* The target CPU's rq lock is held. */
++		if (cpu->ipi_in_progress)
++			return;
++
++		/* Re-check sample_time which may have advanced. */
++		smp_rmb();
++		delta_ns = time - READ_ONCE(cpu->sample.time);
++		if (delta_ns < pid_params.sample_rate_ns)
++			return;
++
++		cpu->ipi_in_progress = true;
++		cpu->time = time;
++		irq_work_queue_on(&cpu->irq_work, cpu->cpu);
+ 	}
+ }
+ 
++static inline void intel_pstate_irq_work_sync(unsigned int cpu)
 +{
-+	return false;
++	irq_work_sync(&all_cpu_data[cpu]->irq_work);
++}
++
++static inline void intel_pstate_init_irq_work(struct cpudata *cpu)
++{
++	init_irq_work(&cpu->irq_work, intel_pstate_update_util_remote);
++}
++#else /* !CONFIG_SMP */
++static inline void intel_pstate_irq_work_sync(unsigned int cpu) {}
++static inline void intel_pstate_init_irq_work(struct cpudata *cpu) {}
++
++static void intel_pstate_update_util(struct update_util_data *data, u64 time,
++				     unsigned long util, unsigned long max)
++{
++	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
++	s64 delta_ns = time - cpu->sample.time;
++
++	if (delta_ns < pid_params.sample_rate_ns)
++		return;
++
++	_intel_pstate_update_util(cpu, time);
 +}
 +#endif
 +
-+static void sugov_update_commit(struct sugov_cpu *sg_cpu, u64 time,
- 				unsigned int next_freq)
++
++
+ #define ICPU(model, policy) \
+ 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
+ 			(unsigned long)&policy }
+@@ -1273,6 +1347,7 @@ static void intel_pstate_clear_update_util_hook(unsigned int cpu)
  {
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 
- 	sg_policy->last_freq_update_time = time;
- 
-+	if (sg_policy->next_freq == next_freq) {
-+		trace_cpu_frequency(policy->cur, sg_cpu->cpu);
-+		return;
-+	}
-+	sg_policy->next_freq = next_freq;
-+
-+	if (sugov_queue_remote_callback(sg_policy, sg_cpu->cpu))
-+		return;
-+
- 	if (policy->fast_switch_enabled) {
--		if (sg_policy->next_freq == next_freq) {
--			trace_cpu_frequency(policy->cur, smp_processor_id());
--			return;
--		}
--		sg_policy->next_freq = next_freq;
--		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
--		if (next_freq == CPUFREQ_ENTRY_INVALID)
--			return;
--
--		policy->cur = next_freq;
--		trace_cpu_frequency(next_freq, smp_processor_id());
--	} else if (sg_policy->next_freq != next_freq) {
--		sg_policy->next_freq = next_freq;
-+		sugov_fast_switch(sg_policy, next_freq);
-+	} else {
- 		sg_policy->work_in_progress = true;
- 		irq_work_queue(&sg_policy->irq_work);
- 	}
-@@ -142,12 +176,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 
- 	next_f = util == ULONG_MAX ? policy->cpuinfo.max_freq :
- 			get_next_freq(policy, util, max);
--	sugov_update_commit(sg_policy, time, next_f);
-+	sugov_update_commit(sg_cpu, time, next_f);
+ 	cpufreq_remove_update_util_hook(cpu);
+ 	synchronize_sched();
++	intel_pstate_irq_work_sync(cpu);
  }
  
--static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
-+static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 					   unsigned long util, unsigned long max)
- {
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned int max_f = policy->cpuinfo.max_freq;
- 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
-@@ -161,10 +196,10 @@ static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
- 		unsigned long j_util, j_max;
- 		s64 delta_ns;
+ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+@@ -1379,6 +1454,9 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
  
--		if (j == smp_processor_id())
-+		j_sg_cpu = &per_cpu(sugov_cpu, j);
-+		if (j_sg_cpu == sg_cpu)
- 			continue;
+ 	cpu = all_cpu_data[policy->cpu];
  
--		j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		/*
- 		 * If the CPU utilization was last updated before the previous
- 		 * frequency update and the time elapsed between the last update
-@@ -204,8 +239,8 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	sg_cpu->last_update = time;
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
--		next_f = sugov_next_freq_shared(sg_policy, util, max);
--		sugov_update_commit(sg_policy, time, next_f);
-+		next_f = sugov_next_freq_shared(sg_cpu, util, max);
-+		sugov_update_commit(sg_cpu, time, next_f);
- 	}
- 
- 	raw_spin_unlock(&sg_policy->update_lock);
-@@ -226,9 +261,17 @@ static void sugov_work(struct work_struct *work)
- static void sugov_irq_work(struct irq_work *irq_work)
- {
- 	struct sugov_policy *sg_policy;
-+	struct cpufreq_policy *policy;
- 
- 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
--	schedule_work_on(smp_processor_id(), &sg_policy->work);
-+	policy = sg_policy->policy;
++	intel_pstate_init_irq_work(cpu);
 +
-+	if (policy->fast_switch_enabled) {
-+		sugov_fast_switch(sg_policy, sg_policy->next_freq);
-+		sg_policy->work_in_progress = false;
-+	} else {
-+		schedule_work_on(smp_processor_id(), &sg_policy->work);
-+	}
- }
- 
- /************************** sysfs interface ************************/
-@@ -330,7 +373,7 @@ static int sugov_init(struct cpufreq_policy *policy)
- 	struct sugov_policy *sg_policy;
- 	struct sugov_tunables *tunables;
- 	unsigned int lat;
--	int ret = 0;
-+	int cpu, ret = 0;
- 
- 	/* State should be equivalent to EXIT */
- 	if (policy->governor_data)
-@@ -340,6 +383,9 @@ static int sugov_init(struct cpufreq_policy *policy)
- 	if (!sg_policy)
- 		return -ENOMEM;
- 
-+	for_each_cpu(cpu, policy->cpus)
-+		per_cpu(sugov_cpu, cpu).cpu = cpu;
 +
- 	mutex_lock(&global_tunables_lock);
- 
- 	if (global_tunables) {
+ 	if (limits->min_perf_pct == 100 && limits->max_perf_pct == 100)
+ 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+ 	else
 -- 
 2.4.10
