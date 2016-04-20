@@ -1,352 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Enforce _PPC limits
-Date: Wed, 20 Apr 2016 03:20:02 +0200
-Message-ID: <1586030.5a1IISzElq@vostro.rjw.lan>
-References: <1459812150-9111-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: =?utf-8?B?SGFueWkgV3UgKOWQtOWQq+i0uyk=?= <hanyi.wu@mediatek.com>
+Subject: =?utf-8?B?562U5aSNOiBbUEFUQ0ggLW5leHRdIHRoZXJtYWw6IGZpeCBtdGtfdGhlcm1h?=
+ =?utf-8?Q?l_build_dependency?=
+Date: Wed, 20 Apr 2016 01:18:19 +0000
+Message-ID: <BC64F1837C46CA46A229B74D63EE1D37C4B102C6@mtkmbs31n1>
+References: <57166067.4090009@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45935 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752096AbcDTBRM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Apr 2016 21:17:12 -0400
-In-Reply-To: <1459812150-9111-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <57166067.4090009@infradead.org>
+Content-Language: zh-CN
+Sender: linux-kernel-owner@vger.kernel.org
+To: Randy Dunlap <rdunlap@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, =?utf-8?B?RGF3ZWkgQ2hpZW4gKOmMouWkp+ihmyk=?= <Dawei.Chien@mediatek.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, =?utf-8?B?RmFuIENoZW4gKOmZs+WHoSk=?= <fan.chen@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org
 
-On Monday, April 04, 2016 04:22:30 PM Srinivas Pandruvada wrote:
-> Use ACPI _PPC notification to limit max P state driver will request.
-> ACPI _PPC change notification is sent by BIOS to limit max P state
-> in several cases:
-> - Reduce impact of platform thermal condition
-> - When Config TDP feature is used, a changed _PPC is sent to
-> follow TDP change
-> - Remote node managers in server want to control platform power
-> via baseboard management controller (BMC)
-> 
-> This change registers with ACPI processor performance lib so that
-> _PPC changes are notified to cpufreq core, which in turns will
-> result in call to .setpolicy() callback. Also the way _PSS
-> table identifies a turbo frequency is not compatible to max turbo
-> frequency in intel_pstate, so the very first entry in _PSS needs
-> to be adjusted.
-> 
-> When config TDP feature is on the turbo activation ratio can be less than
-> max physical non turbo P state. In this case _PPC is set to turbo
-> activation ratio + 1. In this case we don't need to treat this as the
-> reduced frequency in set_policy callback, as this is still in the turbo
-> range. So we set the policy->max to actual policy->cpuinfo.max_freq.
-> It avoid showing reduced P States max_perf_pct in intel P state sysfs,
-> when the _PPC is still in turbo range.
-> 
-> This feature can be turned on by using kernel parameters:
-> intel_pstate=acpi_ppc
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-Some minor nits below, overall looks reasonable.
-
-> ---
->  Documentation/kernel-parameters.txt |   2 +
->  drivers/cpufreq/Kconfig.x86         |   1 +
->  drivers/cpufreq/intel_pstate.c      | 161 +++++++++++++++++++++++++++++++++++-
->  3 files changed, 162 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index ecc74fa..b7714bf 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1661,6 +1661,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  		hwp_only
->  			Only load intel_pstate on systems which support
->  			hardware P state control (HWP) if available.
-> +		acpi_ppc
-> +			Enforce ACPI _PPC performance limits.
-
-I'd call it support_acpi_ppc or similar.
-
->  
->  	intremap=	[X86-64, Intel-IOMMU]
->  			on	enable Interrupt Remapping (default)
-> diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-> index c59bdcb..adbd1de 100644
-> --- a/drivers/cpufreq/Kconfig.x86
-> +++ b/drivers/cpufreq/Kconfig.x86
-> @@ -5,6 +5,7 @@
->  config X86_INTEL_PSTATE
->         bool "Intel P state control"
->         depends on X86
-> +       select ACPI_PROCESSOR if ACPI
->         help
->            This driver provides a P state for Intel core processors.
->  	  The driver implements an internal governor and will become
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 8b5a415..b10ea73 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -39,6 +39,10 @@
->  #define ATOM_TURBO_RATIOS	0x66c
->  #define ATOM_TURBO_VIDS		0x66d
->  
-> +#if IS_ENABLED(CONFIG_ACPI)
-> +#include <acpi/processor.h>
-> +#endif
-
-I'd prefer #ifdef (and below).
-
-> +
->  #define FRAC_BITS 8
->  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->  #define fp_toint(X) ((X) >> FRAC_BITS)
-> @@ -190,6 +194,10 @@ struct cpudata {
->  	u64	prev_tsc;
->  	u64	prev_cummulative_iowait;
->  	struct sample sample;
-> +#if IS_ENABLED(CONFIG_ACPI)
-> +	struct acpi_processor_performance acpi_perf_data;
-> +	bool valid_pss_table;
-> +#endif
->  };
->  
->  static struct cpudata **all_cpu_data;
-> @@ -257,7 +265,7 @@ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
->  static struct pstate_adjust_policy pid_params;
->  static struct pstate_funcs pstate_funcs;
->  static int hwp_active;
-> -
-> +static int acpi_ppc;
-
-Is this needed for !CONFIG_ACPI?
-
->  
->  /**
->   * struct perf_limits - Store user and policy limits
-> @@ -331,6 +339,117 @@ static struct perf_limits *limits = &performance_limits;
->  static struct perf_limits *limits = &powersave_limits;
->  #endif
->  
-> +#if IS_ENABLED(CONFIG_ACPI)
-> +/*
-> + * The max target pstate ratio is a 8 bit value in both PLATFORM_INFO MSR and
-> + * in TURBO_RATIO_LIMIT MSR, which pstate driver stores in max_pstate and
-> + * max_turbo_pstate fields. The PERF_CTL MSR contains 16 bit value for P state
-> + * ratio, out of it only high 8 bits are used. For example 0x1700 is setting
-> + * target ratio 0x17. The _PSS control value stores in a format which can be
-> + * directly written to PERF_CTL MSR. But in intel_pstate driver this shift
-> + * occurs during write to PERF_CTL (E.g. for cores core_set_pstate()).
-> + * This function converts the _PSS control value to intel pstate driver format
-> + * for comparison and assignment.
-> + */
-> +static int convert_to_native_pstate_format(struct cpudata *cpu, int index)
-> +{
-> +	return cpu->acpi_perf_data.states[index].control >> 8;
-> +}
-> +
-> +static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
-> +{
-> +	struct cpudata *cpu;
-> +	int turbo_pss_ctl;
-> +	int ret;
-> +	int i;
-> +
-> +	cpu = all_cpu_data[policy->cpu];
-> +
-> +	if (!cpu->acpi_perf_data.shared_cpu_map &&
-> +	    zalloc_cpumask_var_node(&cpu->acpi_perf_data.shared_cpu_map,
-> +				    GFP_KERNEL, cpu_to_node(policy->cpu))) {
-> +		return -ENOMEM;
-> +	}
-
-Why exactly is the thing above needed?
-
-> +
-> +	ret = acpi_processor_register_performance(&cpu->acpi_perf_data,
-> +						  policy->cpu);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/*
-> +	 * Check if the control value in _PSS is for PERF_CTL MSR, which should
-> +	 * guarantee that the states returned by it map to the states in our
-> +	 * list directly.
-> +	 */
-> +	if (cpu->acpi_perf_data.control_register.space_id !=
-> +						ACPI_ADR_SPACE_FIXED_HARDWARE)
-> +		goto unreg_perf;
-> +
-> +	/*
-> +	 * If there is only one entry _PSS, simply ignore _PSS and continue as
-> +	 * usual without taking _PSS into account
-> +	 */
-> +	if (cpu->acpi_perf_data.state_count < 2)
-> +		goto unreg_perf;
-
-I'd call the label err or similar.
-
-> +
-> +	pr_debug("intel_pstate: CPU%u - ACPI _PSS perf data\n", policy->cpu);
-
-Don't we have a pr_fmt() there now?
-
-> +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
-> +		pr_debug("     %cP%d: %u MHz, %u mW, 0x%x\n",
-> +			 (i == cpu->acpi_perf_data.state ? '*' : ' '), i,
-> +			 (u32) cpu->acpi_perf_data.states[i].core_frequency,
-> +			 (u32) cpu->acpi_perf_data.states[i].power,
-> +			 (u32) cpu->acpi_perf_data.states[i].control);
-> +	}
-> +
-> +	/*
-> +	 * The _PSS table doesn't contain whole turbo frequency range.
-> +	 * This just contains +1 MHZ above the max non turbo frequency,
-> +	 * with control value corresponding to max turbo ratio. But
-> +	 * when cpufreq set policy is called, it will call with this
-> +	 * max frequency, which will cause a reduced performance as
-> +	 * this driver uses real max turbo frequency as the max
-> +	 * frequeny. So correct this frequency in _PSS table to
-
-frequency
-
-> +	 * correct max turbo frequency based on the turbo ratio.
-> +	 * Also need to convert to MHz as _PSS freq is in MHz.
-> +	 */
-> +	turbo_pss_ctl = convert_to_native_pstate_format(cpu, 0);
-> +	if (turbo_pss_ctl > cpu->pstate.max_pstate)
-> +		cpu->acpi_perf_data.states[0].core_frequency =
-> +					policy->cpuinfo.max_freq / 1000;
-> +	cpu->valid_pss_table = true;
-> +	pr_info("intel_pstate: _PPC limits will be enforced\n");
-> +
-> +	return 0;
-> +unreg_perf:
-> +	cpu->valid_pss_table = false;
-> +	acpi_processor_unregister_performance(policy->cpu);
-> +	return -EINVAL;
-> +}
-> +
-> +static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
-> +{
-> +	struct cpudata *cpu;
-> +
-> +	cpu = all_cpu_data[policy->cpu];
-> +	if (!acpi_ppc || !cpu->valid_pss_table)
-> +		return 0;
-
-It should not be necessary to check acpi_ppc here as cpu->valid_pss_table
-should never be set if acpi_ppc is unset.
-
-> +
-> +	acpi_processor_unregister_performance(policy->cpu);
-> +	return 0;
-> +}
-> +
-> +#else
-> +static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
-> +{
-> +	return 0;
-> +}
-> +
-> +static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
->  static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
->  			     int deadband, int integral) {
->  	pid->setpoint = int_tofp(setpoint);
-> @@ -1297,6 +1416,30 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  
->  	intel_pstate_clear_update_util_hook(policy->cpu);
->  
-> +	if (acpi_ppc) {
-> +		struct cpudata *cpu;
-> +
-> +		/*
-> +		 * If the platform has config TDP feature, then to indicate
-> +		 * start of turbo range _PPC is set to one more than the turbo
-> +		 * activation ratio, which is cpu->pstate.max_pstate. Here the
-> +		 * updated frequency corresponding to _PPC is reflected in
-> +		 * policy->max. This  means that this _PPC setting still
-
-But ->set_policy may be called on updates of policy->max from sysfs which
-then may not reflect the _PPC value if I'm not mistaken, may it not?
-
-> +		 * allowing system to reach policy->cpuinfo.max_freq anyway as
-> +		 * this is turbo range.
-> +		 * In this case showing restricted limits in intel_pstate
-> +		 * sysfs or setting limits->max_perf to a lower value has
-> +		 * no meaning.
-> +		 */
-> +		cpu = all_cpu_data[0];
-> +		if (policy->max < policy->cpuinfo.max_freq &&
-> +		    policy->max > (cpu->pstate.max_pstate *
-> +					cpu->pstate.scaling)) {
-> +			pr_info("intel_pstate: _PPC > Max non Turbo P_state\n");
-> +			policy->max = policy->cpuinfo.max_freq;
-> +		}
-> +	}
-> +
->  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
->  		limits = &performance_limits;
->  		if (policy->max >= policy->cpuinfo.max_freq) {
-> @@ -1392,18 +1535,30 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
->  	policy->cpuinfo.max_freq =
->  		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
-> +	if (acpi_ppc)
-> +		intel_pstate_init_perf_limits(policy);
-
-Why don't you check acpi_ppc in intel_pstate_init_perf_limits()?
-
-> +	/*
-> +	 * If there is no acpi perf data or error, we ignore and use Intel P
-> +	 * state calculated limits, So this is not fatal error.
-> +	 */
->  	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
->  	cpumask_set_cpu(policy->cpu, policy->cpus);
->  
->  	return 0;
->  }
->  
-> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-> +{
-> +	return intel_pstate_exit_perf_limits(policy);
-> +}
-> +
->  static struct cpufreq_driver intel_pstate_driver = {
->  	.flags		= CPUFREQ_CONST_LOOPS,
->  	.verify		= intel_pstate_verify_policy,
->  	.setpolicy	= intel_pstate_set_policy,
->  	.get		= intel_pstate_get,
->  	.init		= intel_pstate_cpu_init,
-> +	.exit		= intel_pstate_cpu_exit,
->  	.stop_cpu	= intel_pstate_stop_cpu,
->  	.name		= "intel_pstate",
->  };
-> @@ -1448,7 +1603,6 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
->  }
->  
->  #if IS_ENABLED(CONFIG_ACPI)
-> -#include <acpi/processor.h>
->  
->  static bool intel_pstate_no_acpi_pss(void)
->  {
-> @@ -1654,6 +1808,9 @@ static int __init intel_pstate_setup(char *str)
->  		force_load = 1;
->  	if (!strcmp(str, "hwp_only"))
->  		hwp_only = 1;
-> +	if (!strcmp(str, "acpi_ppc"))
-> +		acpi_ppc = 1;
-> +
->  	return 0;
->  }
->  early_param("intel_pstate", intel_pstate_setup);
-> 
-
-Thanks,
-Rafael
-
+SEkgRGF3ZWksDQoNClBsZWFzZSBoZWxwIHRvIGNoZWNrIGl0LCBUaGFua3MNCg0KQmVzdCBSZWdh
+cmRzDQpIYW55aQ0KDQotLS0tLemCruS7tuWOn+S7ti0tLS0tDQrlj5Hku7bkuro6IFJhbmR5IER1
+bmxhcCBbbWFpbHRvOnJkdW5sYXBAaW5mcmFkZWFkLm9yZ10gDQrlj5HpgIHml7bpl7Q6IFdlZG5l
+c2RheSwgQXByaWwgMjAsIDIwMTYgMTI6NDQgQU0NCuaUtuS7tuS6ujogTEtNTCA8bGludXgta2Vy
+bmVsQHZnZXIua2VybmVsLm9yZz47IExpbnV4IFBNIGxpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVs
+Lm9yZz4NCuaKhOmAgTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPjsgRWR1YXJkbyBW
+YWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNvbT47IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5n
+dXRyb25peC5kZT47IEhhbnlpIFd1ICjlkLTlkKvotLspIDxoYW55aS53dUBtZWRpYXRlay5jb20+
+DQrkuLvpopg6IFtQQVRDSCAtbmV4dF0gdGhlcm1hbDogZml4IG10a190aGVybWFsIGJ1aWxkIGRl
+cGVuZGVuY3kNCg0KRnJvbTogUmFuZHkgRHVubGFwIDxyZHVubGFwQGluZnJhZGVhZC5vcmc+DQoN
+CkZpeCBidWlsZCBlcnJvcnMgd2hlbiBNVEtfVEhFUk1BTD15IGFuZCBOVk1FTT1tIGJ5IHByZXZl
+bnRpbmcgdGhhdCBLY29uZmlnIGNvbWJpbmF0aW9uLg0KDQpkcml2ZXJzL2J1aWx0LWluLm86IElu
+IGZ1bmN0aW9uIGBtdGtfdGhlcm1hbF9wcm9iZSc6DQptdGtfdGhlcm1hbC5jOigudGV4dCsweGZm
+YThmKTogdW5kZWZpbmVkIHJlZmVyZW5jZSB0byBgbnZtZW1fY2VsbF9nZXQnDQptdGtfdGhlcm1h
+bC5jOigudGV4dCsweGZmYWJlKTogdW5kZWZpbmVkIHJlZmVyZW5jZSB0byBgbnZtZW1fY2VsbF9y
+ZWFkJw0KbXRrX3RoZXJtYWwuYzooLnRleHQrMHhmZmFjOSk6IHVuZGVmaW5lZCByZWZlcmVuY2Ug
+dG8gYG52bWVtX2NlbGxfcHV0Jw0KDQpTaWduZWQtb2ZmLWJ5OiBSYW5keSBEdW5sYXAgPHJkdW5s
+YXBAaW5mcmFkZWFkLm9yZz4NCkNjOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQpD
+YzogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNvbT4NCkNjOiA8bGludXgtcG1A
+dmdlci5rZXJuZWwub3JnPg0KQ2M6IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5ndXRyb25peC5k
+ZT4NCkNjOiBIYW55aSBXdSA8aGFueWkud3VAbWVkaWF0ZWsuY29tPg0KLS0tDQogZHJpdmVycy90
+aGVybWFsL0tjb25maWcgfCAgICAxICsNCiAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykN
+Cg0KLS0tIGxpbnV4LW5leHQtMjAxNjA0MTkub3JpZy9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZw0K
+KysrIGxpbnV4LW5leHQtMjAxNjA0MTkvZHJpdmVycy90aGVybWFsL0tjb25maWcNCkBAIC0zNjYs
+NiArMzY2LDcgQEAgY29uZmlnIE1US19USEVSTUFMDQogCXRyaXN0YXRlICJUZW1wZXJhdHVyZSBz
+ZW5zb3IgZHJpdmVyIGZvciBtZWRpYXRlayBTb0NzIg0KIAlkZXBlbmRzIG9uIEFSQ0hfTUVESUFU
+RUsgfHwgQ09NUElMRV9URVNUDQogCWRlcGVuZHMgb24gSEFTX0lPTUVNDQorCWRlcGVuZHMgb24g
+TlZNRU0gfHwgTlZNRU09bg0KIAlkZWZhdWx0IHkNCiAJaGVscA0KIAkgIEVuYWJsZSB0aGlzIG9w
+dGlvbiBpZiB5b3Ugd2FudCB0byBoYXZlIHN1cHBvcnQgZm9yIHRoZXJtYWwgbWFuYWdlbWVudA0K
