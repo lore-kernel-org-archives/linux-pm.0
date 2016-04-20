@@ -1,59 +1,119 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 0/2] Skylake PSys support
-Date: Wed, 20 Apr 2016 22:21:14 +0200
-Message-ID: <CAJZ5v0gtJxLxJpmBqT-ymFV-VtimG1R5ngaiO=+iPnA=7Xhkuw@mail.gmail.com>
-References: <1460930581-29748-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<20160420135945.GY3448@twins.programming.kicks-ass.net>
-	<1461176931.8946.150.camel@linux.intel.com>
+Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Wed, 20 Apr 2016 22:23:33 +0200
+Message-ID: <CAJZ5v0ic6YpYtM4cymLJ4oV2-J4CK4MxFi9-6bWNADD-QY3B6A@mail.gmail.com>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
+	<1460111790-92836-5-git-send-email-mika.westerberg@linux.intel.com>
+	<20160412175203.GB13637@wunner.de>
+	<20160413083352.GI1714@lahna.fi.intel.com>
+	<20160418143823.GA15165@wunner.de>
+	<20160419123131.GE1725@lahna.fi.intel.com>
+	<20160420192211.GA16093@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f194.google.com ([209.85.217.194]:35750 "EHLO
-	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902AbcDTUVR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 16:21:17 -0400
-In-Reply-To: <1461176931.8946.150.camel@linux.intel.com>
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:35371 "EHLO
+	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbcDTUXh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 16:23:37 -0400
+In-Reply-To: <20160420192211.GA16093@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, the arch/x86 maintainers <x86@kernel.org>, Borislav Petkov <bp@alien8.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Wed, Apr 20, 2016 at 8:28 PM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Wed, 2016-04-20 at 15:59 +0200, Peter Zijlstra wrote:
->> On Sun, Apr 17, 2016 at 03:02:59PM -0700, Srinivas Pandruvada wrote:
->> >
->> > Skylake processor supports a new set of RAPL registers for
->> > controlling
->> > entire SoC instead of just CPU package called PSys. This change
->> > adds
->> > support in two sub systems:
->> >
->> > x86/perf: Adds basic support for Skylake RAPL and PSys support
->> >
->> > powercap/rapl: A new platform domain to the current power capping
->> > Intel
->> > RAPL driver.
->> >
->> > Srinivas Pandruvada (2):
->> >   perf/x86/intel/rapl: support Skylake RAPL domains
->> >   powercap: intel_rapl: PSys support
->> >
->> >  arch/x86/events/intel/rapl.c     | 51 +++++++++++++++++++++++++++-
->> > -
->> >  arch/x86/include/asm/msr-index.h |  2 ++
->> >  drivers/powercap/intel_rapl.c    | 69
->> > ++++++++++++++++++++++++++++++++++++++++
->> >  3 files changed, 120 insertions(+), 2 deletions(-)
->> These two patches depend on one another, right?
-> Yes.
->> Because the first patch
->> adds the MSR the second patch uses?
+On Wed, Apr 20, 2016 at 9:22 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> Hi Mika,
+>
+> On Tue, Apr 19, 2016 at 03:31:31PM +0300, Mika Westerberg wrote:
+>> On Mon, Apr 18, 2016 at 04:38:23PM +0200, Lukas Wunner wrote:
+>> > In case you agree with this, I've prepared a fixup patch which you
+>> > can apply with "git rebase --autosquash":
+>> > https://github.com/l1k/linux/commit/24fc9d7b34ff
 >>
->> How should we go about merging this? The perf-rapl stuff normally
->> goes
->> through tip while the powercap stuff goes through Rafael's tree.
-> Do you want me to only send PERF patch and wait for this to be merged
-> before sending powercap?
+>> Based on the above, I'm going to fold your commit to [4/4]. Are you OK
+>> if I add your Signed-off-by to that patch?
+>
+> Sure.
+>
+>
+>> > Another thing I've spotted but that wasn't needed to get my patches
+>> > working: When the bridge_d3 attribute changes to true, you need to
+>> > notify the PM core thereof by calling pm_request_idle() for the
+>> > bridge device, otherwise the bridge needlessly stays awake. This
+>> > needs to be added near the end of pci_bridge_d3_update() I guess.
+>>
+>> I've been testing this by writing to 'd3cold_allowed' sysfs file and it
+>> suspends just fine when it is 1. How do you reproduce this?
+>
+> Testing with d3cold_allowed is misleading in this case because
+> d3cold_allowed_store() already calls pm_runtime_resume(dev),
+> and the next time dev runtime suspends, it automatically calls
+> rpm_idle() on its parent. This masks that a call to pm_request_idle()
+> is currently missing in pci_bridge_d3_update().
+>
+> However pci_bridge_d3_update() also gets called e.g. from
+> pci_remove_bus_device() and there's no call to pm_request_idle()
+> there, so a bridge would stay awake even if a child that has blocked
+> d3 has been removed.
+>
+> I only noticed this because I force bridge_d3 = true when loading
+> the thunderbolt upstream bridge driver, as a workaround for the BIOS
+> cut-off date, and noticed that I had to call pm_request_idle() because
+> otherwise the bridges would stay awake.
+>
+>
+> I hadn't played with d3cold_allowed before but tested it now that
+> you've mentioned it. Found a bug there:
+>
+> If d3cold_allowed is set to false for a device via sysfs, the bridge_d3
+> attribute of its parent bridges will correctly be updated to false.
+>
+> If d3cold_allowed is then set to true and the device has runtime
+> suspended in the meantime, the bridge_d3 attribute of its parent bridges
+> is *not* reverted back to true as it should. The reason is that when the
+> device runtime suspended, its no_d3cold attribute was set to false in
+> pci_pm_runtime_suspend() because d3cold_allowed was false. But no_d3cold
+> isn't reverted back to true when setting d3cold_allowed to true and
+> because this attribute is checked in pci_dev_check_d3cold(), the parent
+> bridges' bridge_d3 attribute remains false.
+>
+> no_d3cold is just a transient variable used by pci_pm_runtime_suspend()
+> and acpi_pci_choose_state(), which is indirectly called from it via
+> pci_finish_runtime_suspend(). One can fix this by reverting no_d3cold
+> back to false at the end of pci_pm_runtime_suspend(), like this:
+> https://github.com/l1k/linux/commit/9b9ffb8
+>
+>
+>> > One detail I'm not sure about: If you've got a hotplug downstream port
+>> > behind an upstream port and the upstream port goes to D3hot, is it
+>> > still possible for the downstream port to signal hotplug interrupts?
+>> > In other words, can INTx or MSI interrupts generated by the downstream
+>> > bridge still be routed via the upstream bridge if the upstream bridge
+>> > is in D3hot? I cannot easily test this, I'd have to hack the tg3 driver
+>> > for my Thunderbolt Ethernet adapter to use runtime suspend.
+>>
+>> If the downstream port is able to trigger wake (PME) from D3cold, I
+>> think it should work but I'm not 100% sure.
+>
+> I've been able to test this now with a hacked tg3 driver and it's as
+> I expected: A hotplug port may go to D3hot and will still generate
+> interrupts on hotplug, but all its parent ports are *not* allowed
+> to go to D3hot because otherwise the hotplug interrupts will no longer
+> come through. The algorithm in pci_bridge_d3_update() and
+> pci_dev_check_d3cold() needs to be amended to take that into account.
+> Hm, it's nontrivial I guess, allowing bridge_d3 = true for the lowest
+> hotplug bridge in a hierarchy but not for anything above?
+>
+>
+>> > My opinion is that we should strive for maximum power saving, thus try
+>> > (at least) 2010 and blacklist individual devices as needed.
+>>
+>> IMHO we should strive for working systems and not maximum power saving
+>> but I'm OK to change that if Bjorn or Rafael are fine with it.
+>
+> They've kept mum so far. :-)
 
-You can send both and they both can go in via tip as far as I'm concerned.
+Breaking any systems that work today is not an option.  if that
+happens, the commit that has done that is a clear candidate for
+reverting.
