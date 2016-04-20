@@ -1,79 +1,74 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: patch "thermal: fix mtk_thermal build dependency" added to thermal-soc tree
-Date: Wed, 20 Apr 2016 16:26:21 -0700
-Message-ID: <14611947813473@besouro>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
+Date: Thu, 21 Apr 2016 02:30:11 +0300
+Message-ID: <1747840.aL2QAkXYBh@avalon>
+References: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org> <2096023.P4Pq9IvUAO@avalon> <CAPDyKFqtrdw+MHh6tAz658=PQi+REGAEiNzNs_4aRzTTpOwP9Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:36841 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbcDTX1c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 19:27:32 -0400
-Received: by mail-pf0-f172.google.com with SMTP id e128so22915409pfe.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 16:27:32 -0700 (PDT)
+Received: from galahad.ideasonboard.com ([185.26.127.97]:33481 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbcDTX37 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 19:29:59 -0400
+In-Reply-To: <CAPDyKFqtrdw+MHh6tAz658=PQi+REGAEiNzNs_4aRzTTpOwP9Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rdunlap@infradead.org, edubezval@gmail.com, hanyi.wu@mediatek.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de
-Cc: Zhang Rui <rui.zhang@intel.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 
+Hello,
 
-This is a simple automated notification to let you know that 
-I've just added the patch titled
+Reviving this old thread.
 
-    thermal: fix mtk_thermal build dependency
+On Monday 07 Mar 2016 11:10:08 Ulf Hansson wrote:
+> [...]
+> 
+> >> I agree, that's a better idea. Drivers shouldn't call
+> >> pm_runtime_force_resume() if they haven't called
+> >> pm_runtime_force_suspend(), so checking the PM use count should be fine.
+> >> I'll modify the patch, test it and resubmit.
+> > 
+> > I gave it an unfortunately unsuccessful try. The problem I ran into is
+> > that device_prepare() calls pm_runtime_get_noresume() calls
+> > pm_runtime_get_noresume(), with the corresponding pm_runtime_put() call
+> > being performed in device_complete(). The device power usage_count is
+> > thus always non-zero in the system resume handler, so I can't base the
+> > decision on that.
+>
+> As Alan said, let's just check against 1 instead.
 
-to my thermal-soc git tree which can be found at
-    git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-in the fixes branch.
+I gave this a try, and unfortunately it won't work.
 
-The patch will show up in the next release of the linux-next tree
-(usually sometime within the next 24 hours during the week.)
+pm_genpd_prepare() resumes devices without increasing the usage count, which 
+leads to the device always being active in pm_runtime_force_suspend(). The 
+usage count will be 1 if the device was suspended prior to entering system 
+suspend (due to the pm_runtime_get_noresume() call in device_prepare()) or 
+higher than 1 if the device was active.
 
-The patch will hopefully also be merged in Linus's tree for the
-next -rc kernel release.
+However, pm_genpd_prepare() will not resume the device if suspend_power_off is 
+set. In that case the device will be suspended with a usage count of 1 in 
+pm_runtime_force_suspend() or active with a usage count higher than 1.
 
-If you have any questions about this process, please let me know.
+We thus can't detect at resume time whether we have force-suspended the device 
+using the usage count.
 
-All the best,
+Unless someone has another clever idea I'll keep the power.is_force_suspended 
+flag and protect it with power.lock.
 
-Eduardo Valentin
+> > I also noticed that pm_genpd_prepare() runtime-resumes the device (when
+> > the power domain is in the GPD_STATE_ACTIVE state). I don't know why that
+> > is, but it means that in practice my device gets runtime-resumed when
+> > suspending the system while it could stay runtime-suspended in practice.
+> 
+> I am aware of this and it's on my TODO list of improvements of genpd,
+> The issue is related to an unoptimized behaviour for how genpd deal
+> with wakeups during system PM.
 
-----------
->From 62e14f6fd383f756ff3fe5f6fb7aa5b546bb47e3 Mon Sep 17 00:00:00 2001
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Tue, 19 Apr 2016 09:44:23 -0700
-Subject: thermal: fix mtk_thermal build dependency
+Looking forward to seeing patches :-)
 
-Fix build errors when MTK_THERMAL=y and NVMEM=m by preventing that
-Kconfig combination.
-
-drivers/built-in.o: In function `mtk_thermal_probe':
-mtk_thermal.c:(.text+0xffa8f): undefined reference to `nvmem_cell_get'
-mtk_thermal.c:(.text+0xffabe): undefined reference to `nvmem_cell_read'
-mtk_thermal.c:(.text+0xffac9): undefined reference to `nvmem_cell_put'
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: <linux-pm@vger.kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Hanyi Wu <hanyi.wu@mediatek.com>
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c37eedc..5c77110 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -376,6 +376,7 @@ config MTK_THERMAL
- 	tristate "Temperature sensor driver for mediatek SoCs"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
- 	depends on HAS_IOMEM
-+	depends on NVMEM || NVMEM=n
- 	default y
- 	help
- 	  Enable this option if you want to have support for thermal management
 -- 
-2.1.4
+Regards,
 
+Laurent Pinchart
 
