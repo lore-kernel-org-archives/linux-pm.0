@@ -1,14 +1,14 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: patch "thermal: fix mtk_thermal build dependency" added to thermal-soc tree
-Date: Wed, 20 Apr 2016 15:52:23 -0700
-Message-ID: <14611927432507@besouro>
+Date: Wed, 20 Apr 2016 16:26:21 -0700
+Message-ID: <14611947813473@besouro>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:32988 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbcDTX1Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 19:27:25 -0400
-Received: by mail-pf0-f175.google.com with SMTP id 184so23210154pff.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 16:27:25 -0700 (PDT)
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36841 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbcDTX1c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 19:27:32 -0400
+Received: by mail-pf0-f172.google.com with SMTP id e128so22915409pfe.3
+        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 16:27:32 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rdunlap@infradead.org, edubezval@gmail.com, hanyi.wu@mediatek.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de
@@ -37,7 +37,7 @@ All the best,
 Eduardo Valentin
 
 ----------
->From 4d1e34b3934068774ca41c099b678d57b8308560 Mon Sep 17 00:00:00 2001
+>From 62e14f6fd383f756ff3fe5f6fb7aa5b546bb47e3 Mon Sep 17 00:00:00 2001
 From: Randy Dunlap <rdunlap@infradead.org>
 Date: Tue, 19 Apr 2016 09:44:23 -0700
 Subject: thermal: fix mtk_thermal build dependency
@@ -62,10 +62,10 @@ Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 594748e..f6d2ff9 100644
+index c37eedc..5c77110 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -366,6 +366,7 @@ config MTK_THERMAL
+@@ -376,6 +376,7 @@ config MTK_THERMAL
  	tristate "Temperature sensor driver for mediatek SoCs"
  	depends on ARCH_MEDIATEK || COMPILE_TEST
  	depends on HAS_IOMEM
