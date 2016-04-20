@@ -1,78 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI: Fix device attach failure handling
-Date: Wed, 20 Apr 2016 22:26:58 +0200
-Message-ID: <CAJZ5v0ihJfjq5n+HKiFxaS0OHPSN0H_zU5ijZ4YMfo=u3TpBqg@mail.gmail.com>
-References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
-	<20160419232329.GE17863@localhost>
-	<20160420145455.GA15912@wunner.de>
-	<20160420194807.GA22802@localhost>
-	<20160420200652.GA16139@wunner.de>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic
+ code
+Date: Wed, 20 Apr 2016 23:27:25 +0200
+Message-ID: <5717F43D.1060504@free.fr>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
+ <20160420095557.GF12019@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20160420200652.GA16139@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:55565 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279AbcDTV23 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Apr 2016 17:28:29 -0400
+In-Reply-To: <20160420095557.GF12019@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, mmcclint@codeaurora.org, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, k.kozlowski@samsung.com
 
-On Wed, Apr 20, 2016 at 10:06 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> Hi Bjorn,
->
-> On Wed, Apr 20, 2016 at 02:48:08PM -0500, Bjorn Helgaas wrote:
->> On Wed, Apr 20, 2016 at 04:54:55PM +0200, Lukas Wunner wrote:
->> > On Tue, Apr 19, 2016 at 06:23:29PM -0500, Bjorn Helgaas wrote:
->> > > On Thu, Mar 31, 2016 at 02:57:48PM +0200, Lukas Wunner wrote:
->> > > > Linux 4.5 introduced a behavioral change in device probing during the
->> > > > suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
->> > > > probing during suspend/hibernation"): It defers device probing during
->> > > > the entire suspend process, starting from the prepare phase and ending
->> > > > with the complete phase. A rule existed before that "we rely on sub-
->> > > > systems not to do any probing once a device is suspended" but it is
->> > > > enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
->> > > >
->> > > > This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
->> > > > plugged in while the system is asleep: Upon waking up, pciehp_resume()
->> > > > discovers new devices in the resume phase and immediately tries to bind
->> > > > them to a driver. Since probing is now deferred, device_attach() returns
->> > > > -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
->> > > >
->> > > > Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
->> > > > Check device_attach() return value always"): pci_bus_add_device() no
->> > > > longer sets dev->is_added = 1 if device_attach() returned a negative
->> > > > value. This results in a BUG lockup in pci_bus_add_devices().
+On 20/04/2016 11:55, Viresh Kumar wrote:
+> On 30-03-16, 13:45, Viresh Kumar wrote:
+>> Multiple platforms are using the generic cpufreq-dt driver now, and all
+>> of them are required to create a platform device with name "cpufreq-dt",
+>> in order to get the cpufreq-dt probed.
 >>
->> What is the connection here?  013c074f8642 causes device_attach() to
->> return -EPROBE_DEFER, and your patch makes pci_bus_add_device() treat
->> that as success, so it continues on and sets dev->is_added.
+>> Many of them do it from platform code, others have special drivers just
+>> to do that.
 >>
->> Since we will now set dev->is_added even for -EPROBE_DEFER, why do we
->> need to change the "BUG_ON(!dev->is_added)" in pci_bus_add_devices()?
+>> It would be more sensible to do this at a generic place, where all such
+>> platform can mark their entries.
 >>
->> I agree that device_attach() might fail for reasons other than
->> -EPROBE_DEFER, and it might be nice to avoid the BUG_ON then.  It just
->> seems like those scenarios are different from the -EPROBE_DEFER one.
->
-> Correct. The idea is that your commit ab1a187bba5c already throws a
-> warning message and undoes the steps preceding device_attach(),
-> so there's no reason to BUG_ON at this point. If we want to BUG_ON
-> whenever device_attach() fails we should do that in pci_bus_add_devices()
-> right after the call to device_attach().
->
-> It just doesn't seem to make sense to BUG_ON, there's no bug here,
-> ever since ab1a187bba5c got introduced, dev->is_added == false is now
-> a legitimate and expected result if device_attach() failed.
->
-> The commit message above is written from a user's point of view:
-> In 4.5 users got a WARN, in 4.6 they got a BUG when doing the same thing.
+>> The first patch fixes an issue that came up with an earlier version of
+>> patch 2/4, but its still worth fixing it.  The second one creates a new
+>> driver to create platform-device based on current platform and the last
+>> two converts exynos platform to use this common infrastructure.
+>>
+>> I will migrate rest of the platforms after this is accepted as the right
+>> way ahead.
+> 
+> @Matthew and @Mason,
+> 
+> Now that this is present in linux-next, you guys can send patches for
+> your platforms cpufreq support.
 
-Which is unfortunate.
+Present in linux-next means it will show up in 4.6-rc5?
 
->> Sorry I'm being so dense here.  I'm not very familiar with
->> suspend/resume, so I'm having a hard time following everything.
->
-> More like me writing incomprehensible / irritating stuff. Please ask
-> more questions if I failed to make everything clear.
-
-I still need to have a deeper look at your patches, sorry for the
-delay (travel & stuff).
+Regards.
