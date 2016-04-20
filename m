@@ -1,59 +1,55 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH] sched/cpufreq: don't trigger cpufreq update w/o real
- rt/deadline tasks running
-Date: Thu, 21 Apr 2016 00:28:35 +0200
-Message-ID: <57180293.1040809@intel.com>
-References: <1460958684-32105-1-git-send-email-wanpeng.li@hotmail.com>
- <6087716.bi8vDPiZNy@vostro.rjw.lan>
- <20160420140117.GZ3448@twins.programming.kicks-ass.net>
- <CANRm+CzGm5axJC_y=rqhmi=DLkfpXfo2NLzFyRyjeZE89Aty4Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic code
+Date: Thu, 21 Apr 2016 00:31:25 +0200
+Message-ID: <CAJZ5v0h0T=XyC2bd3RByAC7mSYqRRcTe9XDVULHRz0Owr3a9Kg@mail.gmail.com>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
+	<20160420095557.GF12019@vireshk-i7>
+	<5717F43D.1060504@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:5519 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751188AbcDTW2l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Apr 2016 18:28:41 -0400
-In-Reply-To: <CANRm+CzGm5axJC_y=rqhmi=DLkfpXfo2NLzFyRyjeZE89Aty4Q@mail.gmail.com>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:32938 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbcDTWb1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 18:31:27 -0400
+Received: by mail-lf0-f65.google.com with SMTP id p64so6603242lfg.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 15:31:26 -0700 (PDT)
+In-Reply-To: <5717F43D.1060504@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
+To: Mason <slash.tmp@free.fr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, mmcclint@codeaurora.org, Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, xf@rock-chips.com, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>
 
-On 4/21/2016 12:24 AM, Wanpeng Li wrote:
-> 2016-04-20 22:01 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
->> On Wed, Apr 20, 2016 at 02:32:35AM +0200, Rafael J. Wysocki wrote:
->>> On Monday, April 18, 2016 01:51:24 PM Wanpeng Li wrote:
->>>> Sometimes update_curr() is called w/o tasks actually running, it is
->>>> captured by:
->>>>      u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->>>> We should not trigger cpufreq update in this case for rt/deadline
->>>> classes, and this patch fix it.
->>>>
->>>> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
->>> The signed-off-by tag should agree with the From: header.  One way to achieve
->>> that is to add an extra From: line at the start of the changelog.
+On Wed, Apr 20, 2016 at 11:27 PM, Mason <slash.tmp@free.fr> wrote:
+> On 20/04/2016 11:55, Viresh Kumar wrote:
+>> On 30-03-16, 13:45, Viresh Kumar wrote:
+>>> Multiple platforms are using the generic cpufreq-dt driver now, and all
+>>> of them are required to create a platform device with name "cpufreq-dt",
+>>> in order to get the cpufreq-dt probed.
 >>>
->>> That said, this looks like a good catch that should go into 4.6 to me.
+>>> Many of them do it from platform code, others have special drivers just
+>>> to do that.
 >>>
->>> Peter, what do you think?
->> I'm confused by the Changelog. *what* ?
-> Sometimes .update_curr hook is called w/o tasks actually running, it is
-> captured by:
+>>> It would be more sensible to do this at a generic place, where all such
+>>> platform can mark their entries.
+>>>
+>>> The first patch fixes an issue that came up with an earlier version of
+>>> patch 2/4, but its still worth fixing it.  The second one creates a new
+>>> driver to create platform-device based on current platform and the last
+>>> two converts exynos platform to use this common infrastructure.
+>>>
+>>> I will migrate rest of the platforms after this is accepted as the right
+>>> way ahead.
+>>
+>> @Matthew and @Mason,
+>>
+>> Now that this is present in linux-next, you guys can send patches for
+>> your platforms cpufreq support.
 >
->          u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->
-> We should not trigger cpufreq update in this case for rt/deadline
-> classes, and this patch fix it.
+> Present in linux-next means it will show up in 4.6-rc5?
 
-That's what you wrote in the changelog, no need to repeat that.
+No, it doesn't, in general.
 
-I guess Peter is asking for more details, though.  I actually would like 
-to get some more details here too.  Like an example of when the 
-situation in question actually happens.
-
-Thanks,
-Rafael
-
-
+Bug fixes may show up in -rcX, X > 1, but the majority of new material
+in linux-next will show up in the next -rc1 (4.7-rc1 in this
+particular case).
