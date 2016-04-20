@@ -1,48 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic
- code
-Date: Wed, 20 Apr 2016 15:25:57 +0530
-Message-ID: <20160420095557.GF12019@vireshk-i7>
-References: <cover.1459325515.git.viresh.kumar@linaro.org>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 3/3] ARM64: dts: mt8173: Add thermal/auxadc device nodes
+Date: Wed, 20 Apr 2016 13:23:58 +0200
+Message-ID: <571766CE.2000202@gmail.com>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-4-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:34184 "EHLO
-	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932446AbcDTJ4B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 05:56:01 -0400
-Received: by mail-pf0-f174.google.com with SMTP id y69so1036886pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 02:56:00 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <cover.1459325515.git.viresh.kumar@linaro.org>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:38228 "EHLO
+	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933747AbcDTLYC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 07:24:02 -0400
+In-Reply-To: <1448883753-19068-4-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: slash.tmp@free.fr, mmcclint@codeaurora.org, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, k.kozlowski@samsung.com
+To: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On 30-03-16, 13:45, Viresh Kumar wrote:
-> Multiple platforms are using the generic cpufreq-dt driver now, and all
-> of them are required to create a platform device with name "cpufreq-dt",
-> in order to get the cpufreq-dt probed.
-> 
-> Many of them do it from platform code, others have special drivers just
-> to do that.
-> 
-> It would be more sensible to do this at a generic place, where all such
-> platform can mark their entries.
-> 
-> The first patch fixes an issue that came up with an earlier version of
-> patch 2/4, but its still worth fixing it.  The second one creates a new
-> driver to create platform-device based on current platform and the last
-> two converts exynos platform to use this common infrastructure.
-> 
-> I will migrate rest of the platforms after this is accepted as the right
-> way ahead.
 
-@Matthew and @Mason,
 
-Now that this is present in linux-next, you guys can send patches for
-your platforms cpufreq support.
+On 30/11/15 12:42, Sascha Hauer wrote:
+> This adds the thermal controller and auxadc nodes to the Mediatek MT8173
+> dtsi file.
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+> ---
+>   arch/arm64/boot/dts/mediatek/mt8173.dtsi | 17 +++++++++++++++++
+>   1 file changed, 17 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> index 06a1564..e2ddd03 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -277,6 +277,11 @@
+>   				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+>   		};
+>
+> +		auxadc: auxadc@11001000 {
+> +			compatible = "mediatek,mt8173-auxadc";
+> +			reg = <0 0x11001000 0 0x1000>;
+> +		};
+> +
+>   		uart0: serial@11002000 {
+>   			compatible = "mediatek,mt8173-uart",
+>   				     "mediatek,mt6577-uart";
+> @@ -487,6 +492,18 @@
+>   			clock-names = "source", "hclk";
+>   			status = "disabled";
+>   		};
+> +
+> +		thermal: thermal@1100b000 {
+> +			#thermal-sensor-cells = <0>;
+> +			compatible = "mediatek,mt8173-thermal";
+> +			reg = <0 0x1100b000 0 0x1000>;
+> +			interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
+> +			clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> +			clock-names = "therm", "auxadc";
+> +			resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+> +			mediatek,auxadc = <&auxadc>;
+> +			mediatek,apmixedsys = <&apmixedsys>;
+> +		};
+>   	};
+>   };
+>
+>
 
--- 
-viresh
+Applied with the ACK from Eduardo.
+Thanks.
