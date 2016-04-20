@@ -1,73 +1,50 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 03/11] soc: renesas: rcar-sysc: Add DT support for SYSC
- PM domains
-Date: Wed, 20 Apr 2016 16:17:20 +0200
-Message-ID: <CAPDyKFqJywUnCt99Dy=J8WXZ1ThyO319RvQx=kGK0YTJJ9AEng@mail.gmail.com>
-References: <1460558672-10290-1-git-send-email-geert+renesas@glider.be>
-	<1460558672-10290-4-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFrQtX3-7GodrXV2zp4wHBgbWBOVKyE0XoeWaaxhZ2kUuw@mail.gmail.com>
-	<CAMuHMdW+PboSz-u2dV=rmNFkd4qsEhm-O_4Ewdn_-H62gwq7Ng@mail.gmail.com>
-	<CAMuHMdUHPLRrOLO_qio80YHPye1tmrr=Fq9kpDg+Q0aVDycFiA@mail.gmail.com>
-	<CAPDyKFoNQ1VrheQ4Ak_fu85OswCdV4nmPNky98X7d_FoyMdAzA@mail.gmail.com>
-	<CAMuHMdVZZoq=t1x_RXXfT_PwR9fFVOrdK1J+xtJWW-yHHbBmHQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVZZoq=t1x_RXXfT_PwR9fFVOrdK1J+xtJWW-yHHbBmHQ@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v2 1/2] PCI: Fix BUG on device attach failure
+Date: Wed, 20 Apr 2016 16:44:27 +0200
+Message-ID: <158b8ef6bf71ae69ef54871e4762b98deb981d6e.1461162854.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 April 2016 at 10:24, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Mon, Apr 18, 2016 at 4:02 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 18 April 2016 at 15:39, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>> On Mon, Apr 18, 2016 at 2:59 PM, Geert Uytterhoeven
->>> <geert@linux-m68k.org> wrote:
->>>> On Mon, Apr 18, 2016 at 2:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>> [...]
->>>>>
->>>>>> +
->>>>>> +static bool rcar_sysc_active_wakeup(struct device *dev)
->>>>>> +{
->>>>>> +       return true;
->>>>>
->>>>> I am interested to know why this is always returning true. Perhaps you
->>>>> can elaborate a bit on that?
->>>>
->>>> Too many copying from old shmobile PM Domain code?
->>>> Honestly, I don't know...
->>>>
->>>> Perhaps Rafael still remembers the original rationale, as git history for
->>>> commit e3e0109138376bb2 ("ARM / shmobile: Support for I/O power domains for
->>>> SH7372 (v9)") doesn't have it.
->>>>
->>>> Google did find: https://lkml.org/lkml/2011/6/30/471
->>>>
->>>> Do we still need this at all? I.e. aren't PM Domains containing wake-up
->>>> devices kept powered automatically during system suspend?
->>>
->>> No they aren't. So for pm-rmobile we do need it.
->>
->> I don't quite understand why genpd should need to treat all devices
->> within the same domain exactly the same, it seems suboptimal.
->>
->> I guess it would be more clever to allow this to be controlled on per
->> device basis instead, so let's say from each driver.
->
-> Perhaps this can be handled through device_set_wakeup_enable()?
+Previously when pci_bus_add_device() called device_attach() and it
+returned a negative value, we emitted a WARN but carried on.
 
-Yes, the pm_wakeirq API should help with all what is needed.
+Commit ab1a187bba5c ("PCI: Check device_attach() return value always"),
+introduced in Linux 4.6-rc1, changed this to unwind all steps preceding
+device_attach() and to not set dev->is_added = 1.
 
-> Unfortunately this doesn't seem to be called from e.g. gpio-keys.
->
+The latter leads to a BUG if pci_bus_add_device() was called from
+pci_bus_add_devices(). Fix by not recursing to a child bus if
+device_attach() failed for the bridge leading to it.
 
-Okay, so it's a matter of deployment for these devices/drivers.
+This can be triggered by plugging in a PCI device (e.g. Thunderbolt)
+while the system is asleep. The system locks up when woken because
+device_attach() returns -EPROBE_DEFER.
 
-A list of such drivers/devices that needs to be fixed would be great
-to have. :-)
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+v2: Split commit in two (Bjorn Helgaas).
 
-Kind regards
-Uffe
+ drivers/pci/bus.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 6c9f546..23a39fd 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+ 	}
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		BUG_ON(!dev->is_added);
++		/* Skip if device attach failed */
++		if (!dev->is_added)
++			continue;
+ 		child = dev->subordinate;
+ 		if (child)
+ 			pci_bus_add_devices(child);
+-- 
+2.8.0.rc3
