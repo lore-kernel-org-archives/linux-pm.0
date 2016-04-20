@@ -1,17 +1,22 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 09/11] soc: renesas: rcar-sysc: Add support for R-Car M2-N power areas
-Date: Wed, 20 Apr 2016 14:02:44 +0200
-Message-ID: <1461153766-750-10-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v6 04/11] soc: renesas: rcar-sysc: Make rcar_sysc_power_is_off() static
+Date: Wed, 20 Apr 2016 14:02:39 +0200
+Message-ID: <1461153766-750-5-git-send-email-geert+renesas@glider.be>
 References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:56934 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933149AbcDTMCo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 08:02:44 -0400
 In-Reply-To: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-R-Car M2-N is identical to R-Car M2-W w.r.t. power domains, so reuse the
-definitions from the latter.
+As of commit b12ff41658171f53 ("ARM: shmobile: r8a7779: Remove legacy PM
+Domain remainings"), rcar_sysc_power_is_off() is no longer used from
+SoC-specific code.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
@@ -20,45 +25,43 @@ v6:
   - No changes,
 
 v5:
-  - Add Reviewed-by,
-  - Reference r8a7791_sysc_info directly for R-Car M2-N in rcar-sysc.c,
-
-v4:
   - No changes,
 
-v3:
-  - New (converted from DT to C).
----
- drivers/soc/renesas/Makefile    | 3 ++-
- drivers/soc/renesas/rcar-sysc.c | 4 ++++
- 2 files changed, 6 insertions(+), 1 deletion(-)
+v4:
+  - Add Reviewed-by,
 
-diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
-index 96463c05ee594335..c6c4ce7ef8a145ea 100644
---- a/drivers/soc/renesas/Makefile
-+++ b/drivers/soc/renesas/Makefile
-@@ -1,5 +1,6 @@
- obj-$(CONFIG_ARCH_R8A7779)	+= rcar-sysc.o r8a7779-sysc.o
- obj-$(CONFIG_ARCH_R8A7790)	+= rcar-sysc.o r8a7790-sysc.o
- obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o r8a7791-sysc.o
--obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o
-+# R-Car M2-N is identical to R-Car M2-W w.r.t. power domains.
-+obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o r8a7791-sysc.o
- obj-$(CONFIG_ARCH_R8A7794)	+= rcar-sysc.o
+v3:
+  - New.
+---
+ drivers/soc/renesas/rcar-sysc.c       | 2 +-
+ include/linux/soc/renesas/rcar-sysc.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
 diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index 5b70b93a2aa710b2..d8eaf8b2ee202ba1 100644
+index 95f2b59cbd76f777..4e760d63f2abd93f 100644
 --- a/drivers/soc/renesas/rcar-sysc.c
 +++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -293,6 +293,10 @@ static const struct of_device_id rcar_sysc_matches[] = {
- #ifdef CONFIG_ARCH_R8A7791
- 	{ .compatible = "renesas,r8a7791-sysc", .data = &r8a7791_sysc_info },
- #endif
-+#ifdef CONFIG_ARCH_R8A7793
-+	/* R-Car M2-N is identical to R-Car M2-W w.r.t. power domains. */
-+	{ .compatible = "renesas,r8a7793-sysc", .data = &r8a7791_sysc_info },
-+#endif
- 	{ /* sentinel */ }
- };
+@@ -152,7 +152,7 @@ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch)
+ 	return rcar_sysc_power(sysc_ch, true);
+ }
  
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
++static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+ {
+ 	unsigned int st;
+ 
+diff --git a/include/linux/soc/renesas/rcar-sysc.h b/include/linux/soc/renesas/rcar-sysc.h
+index 96f30c2883881d97..92fc613ab23db091 100644
+--- a/include/linux/soc/renesas/rcar-sysc.h
++++ b/include/linux/soc/renesas/rcar-sysc.h
+@@ -11,7 +11,6 @@ struct rcar_sysc_ch {
+ 
+ int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
+ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
+-bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch);
+ void __iomem *rcar_sysc_init(phys_addr_t base);
+ 
+ #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
 -- 
 1.9.1
+
