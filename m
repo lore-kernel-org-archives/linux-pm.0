@@ -1,141 +1,146 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PCI: Fix device attach failure handling
-Date: Wed, 20 Apr 2016 16:54:55 +0200
-Message-ID: <20160420145455.GA15912@wunner.de>
-References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
- <20160419232329.GE17863@localhost>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular
+Date: Wed, 20 Apr 2016 11:25:06 -0400
+Message-ID: <1461165906-21614-1-git-send-email-paul.gortmaker@windriver.com>
+References: <20160407165355.GA9188@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160419232329.GE17863@localhost>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.windriver.com ([147.11.1.11]:65304 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbcDTPZj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 11:25:39 -0400
+In-Reply-To: <20160407165355.GA9188@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Len Brown <len.brown@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, rcochran@linutronix.de, linux-pm@vger.kernel.org
 
-Hi Bjorn,
+The Kconfig for this driver is currently declared with:
 
-On Tue, Apr 19, 2016 at 06:23:29PM -0500, Bjorn Helgaas wrote:
-> On Thu, Mar 31, 2016 at 02:57:48PM +0200, Lukas Wunner wrote:
-> > Linux 4.5 introduced a behavioral change in device probing during the
-> > suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
-> > probing during suspend/hibernation"): It defers device probing during
-> > the entire suspend process, starting from the prepare phase and ending
-> > with the complete phase. A rule existed before that "we rely on sub-
-> > systems not to do any probing once a device is suspended" but it is
-> > enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
-> > 
-> > This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
-> > plugged in while the system is asleep: Upon waking up, pciehp_resume()
-> > discovers new devices in the resume phase and immediately tries to bind
-> > them to a driver. Since probing is now deferred, device_attach() returns
-> > -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
-> > 
-> > Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
-> > Check device_attach() return value always"): pci_bus_add_device() no
-> > longer sets dev->is_added = 1 if device_attach() returned a negative
-> > value. This results in a BUG lockup in pci_bus_add_devices().
-> 
-> If this fixes a BUG() that we introduced in v4.6-rc1, it sounds like we
-> should fix it before v4.6-final.  Please confirm.
+config INTEL_IDLE
+        bool "Cpuidle Driver for Intel Processors"
 
-Affirmative.
+...meaning that it currently is not being built as a module by anyone.
 
+This was done in commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
+("intel_idle: disable module support") since "...the module capability
+is cauing more trouble than it is worth."
 
-> > Fix the latter by not recursing to a child bus if device_attach() failed
-> > for the bridge leading to it.
-> > 
-> > Fix the former by not interpreting -EPROBE_DEFER as failure. The device
-> > will be probed eventually and there is proper locking in place to avoid
-> > races (e.g. if devices are unplugged again und thus deleted from the
-> > system before deferred probing happens, I have tested this). Also, those
-> > functions which dereference dev->driver (e.g. pci_pm_*()) do contain
-> > proper NULL pointer checks. So it seems safe to ignore -EPROBE_DEFER.
-> 
-> This looks like two different bug fixes.  Can you split them into
-> separate patches, or is there a reason to combine them?
+This was done over 5y ago, and Daniel adds that:
 
-The two bugs are related but the fix can be split in two, which I've
-just done and sent to the list as v2.
+    ...the modular support has been removed from almost all the cpuidle
+    drivers and the cpuidle framework is no longer assuming driver could
+    be unloaded.
 
+    Removing the modular dead code in the driver makes sense as this
+    what have been done in the others drivers.
 
-> > Note that even postponing the code in pciehp_resume() until the
-> > complete phase wouldn't avoid these troubles because dpm_complete()
-> > calls device_unblock_probing() only after ->complete has been
-> > executed for all devices. We lack a pm hook from which it would
-> > be safe to check a hotplug port and call device_attach() without
-> > risking -EPROBE_DEFER.
-> > 
-> > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> > Cc: Alan Stern <stern@rowland.harvard.edu>
-> > Cc: Rafael J. Wysocki <rafael@kernel.org>
-> > Cc: Bjorn Helgaas <bhelgaas@google.com>
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/bus.c | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-> > index 6c9f546..dd7cdbe 100644
-> > --- a/drivers/pci/bus.c
-> > +++ b/drivers/pci/bus.c
-> > @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
-> >  
-> >  	dev->match_driver = true;
-> >  	retval = device_attach(&dev->dev);
-> > -	if (retval < 0) {
-> > +	if (retval < 0 && retval != -EPROBE_DEFER) {
-> >  		dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
-> 
-> I would prefer if the dev_warn() made a distinction between
-> -EPROBE_DEFER and other failures.  It sounds like the -EPROBE_DEFER
-> case will happen in normal operation, and we probably shouldn't treat
-> it as a warning.
+So lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
 
-Both v1 and v2 of my fix do not dev_warn() at all on -EPROBE_DEFER since,
-as you've correctly stated above, it happens in normal operation.
+Since module_init translates to device_initcall in the non-modular
+case, the init ordering remains unchanged with this commit.  At a
+later date we might want to consider whether subsys_init or another
+init category seems more appropriate than device_init.
 
-If you want I could add a dev_info() specifically for the -EPROBE_DEFER
-case but personally I don't think it's necessary, it'll probably just
-irritate users.
+We replace module.h with moduleparam.h since the file does declare
+some module parameters, and leaving them as such is currently the
+easiest way to remain compatible with existing boot arg use cases.
 
+Note that MODULE_DEVICE_TABLE is a no-op for non-modular code.
 
-> >  		pci_proc_detach_device(dev);
-> >  		pci_remove_sysfs_dev_files(dev);
-> > @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
-> >  	}
-> >  
-> >  	list_for_each_entry(dev, &bus->devices, bus_list) {
-> > -		BUG_ON(!dev->is_added);
-> > +		/* Skip if device attach failed */
-> > +		if (!dev->is_added)
-> > +			continue;
-> 
-> I assume the "pci_bus_add_devices(child)" will happen *eventually*?
-> Can you add a comment about when that is?
+Also note that we can't remove intel_idle_cpuidle_devices_uninit() as
+that is still used for unwind purposes if the init fails.
 
-At the end of dpm_complete(), device_unblock_probing() is called and
-this will reprobe anything that's ended up on the deferred probing list.
-In other words, deferred probing happens right after ->complete has
-been called for all devices.
+We also delete the MODULE_LICENSE tag etc. since all that information
+is already contained at the top of the file in the comments.
 
-I've amended the commit message of patch [2/2] in v2 to clarify this.
+Cc: Len Brown <len.brown@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rcochran@linutronix.de
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-Let me know if you want anything else changed. If you send a pull with
-these to Linus, please consider including the thunderbolt double-free
-patch posted by Andreas Noever with:
+[v2: refresh for recent upstream changes to exit code; add comment from
+ Daniel to commit log.  Redo 32/64 build tests on today's linux-next.]
 
-    Subject: [PATCH] thunderbolt: Fix double free of drom buffer
-    Message-Id: <1460285307-3557-1-git-send-email-andreas.noever@gmail.com>
-    Date: Sun, 10 Apr 2016 12:48:27 +0200
+ drivers/idle/intel_idle.c | 41 ++++++++---------------------------------
+ 1 file changed, 8 insertions(+), 33 deletions(-)
 
-Thank you!
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index c96649292b55..f93788fad49a 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -46,8 +46,6 @@
+  * to avoid complications with the lapic timer workaround.
+  * Have not seen issues with suspend, but may need same workaround here.
+  *
+- * There is currently no kernel-based automatic probing/loading mechanism
+- * if the driver is built as a module.
+  */
+ 
+ /* un-comment DEBUG to enable pr_debug() statements */
+@@ -60,7 +58,7 @@
+ #include <linux/sched.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+-#include <linux/module.h>
++#include <linux/moduleparam.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/mwait.h>
+ #include <asm/msr.h>
+@@ -1054,7 +1052,6 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	ICPU(0x5c, idle_cpu_bxt),
+ 	{}
+ };
+-MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
+ 
+ /*
+  * intel_idle_probe()
+@@ -1415,34 +1412,12 @@ static int __init intel_idle_init(void)
+ 
+ 	return 0;
+ }
++device_initcall(intel_idle_init);
+ 
+-static void __exit intel_idle_exit(void)
+-{
+-	struct cpuidle_device *dev;
+-	int i;
+-
+-	cpu_notifier_register_begin();
+-
+-	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+-		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+-	__unregister_cpu_notifier(&cpu_hotplug_notifier);
+-
+-	for_each_possible_cpu(i) {
+-		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
+-		cpuidle_unregister_device(dev);
+-	}
+-
+-	cpu_notifier_register_done();
+-
+-	cpuidle_unregister_driver(&intel_idle_driver);
+-	free_percpu(intel_idle_cpuidle_devices);
+-}
+-
+-module_init(intel_idle_init);
+-module_exit(intel_idle_exit);
+-
++/*
++ * We are not really modular, but we used to support that.  Meaning we also
++ * support "intel_idle.max_cstate=..." at boot and also a read-only export of
++ * it at /sys/module/intel_idle/parameters/max_cstate -- so using module_param
++ * is the easiest way (currently) to continue doing that.
++ */
+ module_param(max_cstate, int, 0444);
+-
+-MODULE_AUTHOR("Len Brown <len.brown@intel.com>");
+-MODULE_DESCRIPTION("Cpuidle driver for Intel Hardware v" INTEL_IDLE_VERSION);
+-MODULE_LICENSE("GPL");
+-- 
+2.8.0
 
-Lukas
-
-> >  		child = dev->subordinate;
-> >  		if (child)
-> >  			pci_bus_add_devices(child);
-> > -- 
-> > 2.8.0.rc3
