@@ -1,50 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Fixes initialization of chip and chip
- mask
-Date: Wed, 20 Apr 2016 15:20:56 +0530
-Message-ID: <20160420095056.GE12019@vireshk-i7>
-References: <1461144758-17810-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic
+ code
+Date: Wed, 20 Apr 2016 15:25:57 +0530
+Message-ID: <20160420095557.GF12019@vireshk-i7>
+References: <cover.1459325515.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:32920 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932257AbcDTJvA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 05:51:00 -0400
-Received: by mail-pa0-f47.google.com with SMTP id zm5so16385144pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 02:51:00 -0700 (PDT)
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:34184 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932446AbcDTJ4B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 05:56:01 -0400
+Received: by mail-pf0-f174.google.com with SMTP id y69so1036886pfb.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 02:56:00 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1461144758-17810-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <cover.1459325515.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: slash.tmp@free.fr, mmcclint@codeaurora.org, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, k.kozlowski@samsung.com
 
-On 20-04-16, 15:02, Shilpasri G Bhat wrote:
-> commit 735366fc4077 ("cpufreq: powernv: Call throttle_check() on
-> receiving OCC_THROTTLE") used cpumask_of_node() as the chip mask. But
-> this mask contains only online cpus. This breaks a setup where cpufreq
-> is initialized with few offline cores and made online later. So this
-> patch fixes this bug by scanning all the possible cpus and sets the
-> cpu in the chip mask. It also fixes the chip discovery with
-> non-contiguous cpu mask. This patch creates a list of chips
-> 'powernv_chip_list' to replace the chip array for cleaner
-> initialization.
+On 30-03-16, 13:45, Viresh Kumar wrote:
+> Multiple platforms are using the generic cpufreq-dt driver now, and all
+> of them are required to create a platform device with name "cpufreq-dt",
+> in order to get the cpufreq-dt probed.
 > 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 80 +++++++++++++++++++++++----------------
->  1 file changed, 48 insertions(+), 32 deletions(-)
+> Many of them do it from platform code, others have special drivers just
+> to do that.
+> 
+> It would be more sensible to do this at a generic place, where all such
+> platform can mark their entries.
+> 
+> The first patch fixes an issue that came up with an earlier version of
+> patch 2/4, but its still worth fixing it.  The second one creates a new
+> driver to create platform-device based on current platform and the last
+> two converts exynos platform to use this common infrastructure.
+> 
+> I will migrate rest of the platforms after this is accepted as the right
+> way ahead.
 
-You have made your patch less readable by mixing two things here. Yes
-you prefer/need the list way of doing things for the new stuff, but
-that should have been done separately. Right now, I have to read it
-very carefully to see which line did the real change you are talking
-about.
+@Matthew and @Mason,
 
-So, please split this up into multiple patches. First one just moving
-to the list instead of array.
+Now that this is present in linux-next, you guys can send patches for
+your platforms cpufreq support.
 
 -- 
 viresh
