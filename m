@@ -1,119 +1,84 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Wed, 20 Apr 2016 21:22:11 +0200
-Message-ID: <20160420192211.GA16093@wunner.de>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
- <1460111790-92836-5-git-send-email-mika.westerberg@linux.intel.com>
- <20160412175203.GB13637@wunner.de>
- <20160413083352.GI1714@lahna.fi.intel.com>
- <20160418143823.GA15165@wunner.de>
- <20160419123131.GE1725@lahna.fi.intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI: Fix device attach failure handling
+Date: Wed, 20 Apr 2016 14:48:08 -0500
+Message-ID: <20160420194807.GA22802@localhost>
+References: <2c01b1a2d7703fbacae133502cbf6fce335077a9.1459423244.git.lukas@wunner.de>
+ <20160419232329.GE17863@localhost>
+ <20160420145455.GA15912@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:60370 "EHLO
-	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbcDTTTs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 15:19:48 -0400
+Received: from mail.kernel.org ([198.145.29.136]:35794 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751216AbcDTTsO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Apr 2016 15:48:14 -0400
 Content-Disposition: inline
-In-Reply-To: <20160419123131.GE1725@lahna.fi.intel.com>
+In-Reply-To: <20160420145455.GA15912@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Andreas Noever <andreas.noever@gmail.com>
 
-Hi Mika,
-
-On Tue, Apr 19, 2016 at 03:31:31PM +0300, Mika Westerberg wrote:
-> On Mon, Apr 18, 2016 at 04:38:23PM +0200, Lukas Wunner wrote:
-> > In case you agree with this, I've prepared a fixup patch which you
-> > can apply with "git rebase --autosquash":
-> > https://github.com/l1k/linux/commit/24fc9d7b34ff
+On Wed, Apr 20, 2016 at 04:54:55PM +0200, Lukas Wunner wrote:
+> Hi Bjorn,
 > 
-> Based on the above, I'm going to fold your commit to [4/4]. Are you OK
-> if I add your Signed-off-by to that patch?
+> On Tue, Apr 19, 2016 at 06:23:29PM -0500, Bjorn Helgaas wrote:
+> > On Thu, Mar 31, 2016 at 02:57:48PM +0200, Lukas Wunner wrote:
+> > > Linux 4.5 introduced a behavioral change in device probing during the
+> > > suspend process with commit 013c074f8642 ("PM / sleep: prohibit devices
+> > > probing during suspend/hibernation"): It defers device probing during
+> > > the entire suspend process, starting from the prepare phase and ending
+> > > with the complete phase. A rule existed before that "we rely on sub-
+> > > systems not to do any probing once a device is suspended" but it is
+> > > enforced only now (Alan Stern, https://lkml.org/lkml/2015/9/15/908).
+> > > 
+> > > This resulted in a WARN splat if a PCI device (e.g. Thunderbolt) is
+> > > plugged in while the system is asleep: Upon waking up, pciehp_resume()
+> > > discovers new devices in the resume phase and immediately tries to bind
+> > > them to a driver. Since probing is now deferred, device_attach() returns
+> > > -EPROBE_DEFER, which provoked a WARN in pci_bus_add_device().
+> > > 
+> > > Linux 4.6-rc1 aggravates the situation with commit ab1a187bba5c ("PCI:
+> > > Check device_attach() return value always"): pci_bus_add_device() no
+> > > longer sets dev->is_added = 1 if device_attach() returned a negative
+> > > value. This results in a BUG lockup in pci_bus_add_devices().
 
-Sure.
+What is the connection here?  013c074f8642 causes device_attach() to
+return -EPROBE_DEFER, and your patch makes pci_bus_add_device() treat
+that as success, so it continues on and sets dev->is_added.
 
+Since we will now set dev->is_added even for -EPROBE_DEFER, why do we
+need to change the "BUG_ON(!dev->is_added)" in pci_bus_add_devices()?
 
-> > Another thing I've spotted but that wasn't needed to get my patches
-> > working: When the bridge_d3 attribute changes to true, you need to
-> > notify the PM core thereof by calling pm_request_idle() for the
-> > bridge device, otherwise the bridge needlessly stays awake. This
-> > needs to be added near the end of pci_bridge_d3_update() I guess.
+I agree that device_attach() might fail for reasons other than
+-EPROBE_DEFER, and it might be nice to avoid the BUG_ON then.  It just
+seems like those scenarios are different from the -EPROBE_DEFER one.
+
+Sorry I'm being so dense here.  I'm not very familiar with
+suspend/resume, so I'm having a hard time following everything.
+
+> > > @@ -294,7 +294,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+> > >  
+> > >          dev->match_driver = true;
+> > >          retval = device_attach(&dev->dev);
+> > > -        if (retval < 0) {
+> > > +        if (retval < 0 && retval != -EPROBE_DEFER) {
+> > >                  dev_warn(&dev->dev, "device attach failed (%d)\n", retval);
+> > 
+> > I would prefer if the dev_warn() made a distinction between
+> > -EPROBE_DEFER and other failures.  It sounds like the -EPROBE_DEFER
+> > case will happen in normal operation, and we probably shouldn't treat
+> > it as a warning.
 > 
-> I've been testing this by writing to 'd3cold_allowed' sysfs file and it
-> suspends just fine when it is 1. How do you reproduce this?
-
-Testing with d3cold_allowed is misleading in this case because
-d3cold_allowed_store() already calls pm_runtime_resume(dev),
-and the next time dev runtime suspends, it automatically calls
-rpm_idle() on its parent. This masks that a call to pm_request_idle()
-is currently missing in pci_bridge_d3_update().
-
-However pci_bridge_d3_update() also gets called e.g. from
-pci_remove_bus_device() and there's no call to pm_request_idle()
-there, so a bridge would stay awake even if a child that has blocked
-d3 has been removed.
-
-I only noticed this because I force bridge_d3 = true when loading
-the thunderbolt upstream bridge driver, as a workaround for the BIOS
-cut-off date, and noticed that I had to call pm_request_idle() because
-otherwise the bridges would stay awake.
-
-
-I hadn't played with d3cold_allowed before but tested it now that
-you've mentioned it. Found a bug there:
-
-If d3cold_allowed is set to false for a device via sysfs, the bridge_d3
-attribute of its parent bridges will correctly be updated to false.
-
-If d3cold_allowed is then set to true and the device has runtime
-suspended in the meantime, the bridge_d3 attribute of its parent bridges
-is *not* reverted back to true as it should. The reason is that when the
-device runtime suspended, its no_d3cold attribute was set to false in
-pci_pm_runtime_suspend() because d3cold_allowed was false. But no_d3cold
-isn't reverted back to true when setting d3cold_allowed to true and
-because this attribute is checked in pci_dev_check_d3cold(), the parent
-bridges' bridge_d3 attribute remains false.
-
-no_d3cold is just a transient variable used by pci_pm_runtime_suspend()
-and acpi_pci_choose_state(), which is indirectly called from it via
-pci_finish_runtime_suspend(). One can fix this by reverting no_d3cold
-back to false at the end of pci_pm_runtime_suspend(), like this:
-https://github.com/l1k/linux/commit/9b9ffb8
-
-
-> > One detail I'm not sure about: If you've got a hotplug downstream port
-> > behind an upstream port and the upstream port goes to D3hot, is it
-> > still possible for the downstream port to signal hotplug interrupts?
-> > In other words, can INTx or MSI interrupts generated by the downstream
-> > bridge still be routed via the upstream bridge if the upstream bridge
-> > is in D3hot? I cannot easily test this, I'd have to hack the tg3 driver
-> > for my Thunderbolt Ethernet adapter to use runtime suspend.
+> Both v1 and v2 of my fix do not dev_warn() at all on -EPROBE_DEFER since,
+> as you've correctly stated above, it happens in normal operation.
 > 
-> If the downstream port is able to trigger wake (PME) from D3cold, I
-> think it should work but I'm not 100% sure.
+> If you want I could add a dev_info() specifically for the -EPROBE_DEFER
+> case but personally I don't think it's necessary, it'll probably just
+> irritate users.
 
-I've been able to test this now with a hacked tg3 driver and it's as
-I expected: A hotplug port may go to D3hot and will still generate
-interrupts on hotplug, but all its parent ports are *not* allowed
-to go to D3hot because otherwise the hotplug interrupts will no longer
-come through. The algorithm in pci_bridge_d3_update() and
-pci_dev_check_d3cold() needs to be amended to take that into account.
-Hm, it's nontrivial I guess, allowing bridge_d3 = true for the lowest
-hotplug bridge in a hierarchy but not for anything above?
+You're right; sorry, I just wasn't reading your code clearly.  I don't
+think we need an extra message.  We should already have messages for
+detecting the new device and its BARs, and those should be enough.
 
-
-> > My opinion is that we should strive for maximum power saving, thus try
-> > (at least) 2010 and blacklist individual devices as needed.
-> 
-> IMHO we should strive for working systems and not maximum power saving
-> but I'm OK to change that if Bjorn or Rafael are fine with it.
-
-They've kept mum so far. :-)
-
-
-Best regards,
-
-Lukas
+Bjorn
