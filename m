@@ -1,75 +1,90 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: Change ktime_get() with local_clock()
-Date: Wed, 20 Apr 2016 18:47:48 +0200
-Message-ID: <20160420164748.GL5862@linaro.org>
-References: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
- <20160420121315.GC3408@twins.programming.kicks-ass.net>
- <20160420123011.GJ5862@linaro.org>
- <20160420125837.GZ3430@twins.programming.kicks-ass.net>
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Ramp-down global pstate slower than local-pstate
+Date: Wed, 20 Apr 2016 10:18:51 -0700
+Message-ID: <8737qgmc5g.fsf@linux.vnet.ibm.com>
+References: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:36732 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbcDTQrx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 12:47:53 -0400
-Received: by mail-wm0-f47.google.com with SMTP id v188so211444113wme.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 09:47:52 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160420125837.GZ3430@twins.programming.kicks-ass.net>
+Received: from e18.ny.us.ibm.com ([129.33.205.208]:33119 "EHLO
+	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbcDTRTS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 13:19:18 -0400
+Received: from localhost
+	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <stewart@linux.vnet.ibm.com>;
+	Wed, 20 Apr 2016 13:19:17 -0400
+In-Reply-To: <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-On Wed, Apr 20, 2016 at 02:58:37PM +0200, Peter Zijlstra wrote:
-> On Wed, Apr 20, 2016 at 02:30:11PM +0200, Daniel Lezcano wrote:
-> > On Wed, Apr 20, 2016 at 02:13:15PM +0200, Peter Zijlstra wrote:
-> > > On Thu, Apr 14, 2016 at 09:23:54PM +0200, Daniel Lezcano wrote:
-> > > > @@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
-> > > >  	if (!cpuidle_state_is_coupled(drv, entered_state))
-> > > >  		local_irq_enable();
-> > > >  
-> > > > -	diff = ktime_to_us(ktime_sub(time_end, time_start));
-> > > > +	/*
-> > > > +	 * local_clock() returns the time in nanosecond, let's shift
-> > > > +	 * by 10 (divide by 1024) to have microsecond based time.
-> > > > +	 */
-> > > > +	diff = (time_end - time_start) >> 10;
-> > > 
-> > > Changelog fails to explain the ramifications of this change...
-> > 
-> > Sorry, I don't get the point of your comment. Do you mean I should elaborate 
-> > the comment above in the changelog?
-> 
-> Yeah, why is /1024 good enough?
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
+> Iozone results show fairly consistent performance boost.
+> YCSB on redis shows improved Max latencies in most cases.
 
-Ok.
+What about power consumption?
 
-The conversion between nanosec to microsec could be done with integer 
-division (div 1000) or by 10 bits shifting (div 1024).
+> Iozone write/rewite test were made with filesizes 200704Kb and 401408Kb
+> with different record sizes . The following table shows IOoperations/sec
+> with and without patch.
 
-The following table gives some results at the limits.
+> Iozone Results ( in op/sec) ( mean over 3 iterations )
 
- ------------------------------------------
-|   nsec   |   div(1000)   |   div(1024)   |
- ------------------------------------------
-|   1e3    |        1 usec |      976 nsec |
- ------------------------------------------
-|   1e6    |     1000 usec |      976 usec |
- ------------------------------------------
-|   1e9    |  1000000 usec |   976562 usec |
- ------------------------------------------
+What's the variance between runs?
 
-There is a linear deviation of 2.34%. This loss of precision is acceptable 
-in the context of the resulting diff which is used for statistics. These 
-ones are processed to guess estimate an approximation of the duration of the 
-next idle period which ends up into an idle state selection. The selection 
-criteria takes into account the next duration based on large intervals, 
-represented by the idle state's target residency.
+> Tested with YCSB workload (50% update + 50% read) over redis for 1 million
+> records and 1 million operation. Each test was carried out with target
+> operations per second and persistence disabled.
+>
+> Max-latency (in us)( mean over 5 iterations )
 
-The 2^10 division is enough because the approximation regarding the 1e3 
-division is lost in all the approximations done for the next idle duration 
-computation.
+What's the variance between runs?
 
-Would be this explanation sufficient ?
+std dev? 95th percentile?
+
+> ---------------------------------------------------------------
+> op/s    Operation       with patch      without patch   %change
+> ---------------------------------------------------------------
+> 15000   Read            61480.6         50261.4         22.32
+
+This seems fairly significant regression. Any idea why at 15K op/s
+there's such a regression?
+
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+[ 15 more citation lines. Click/Enter to show. ]
+> @@ -36,12 +36,56 @@
+>  #include <asm/reg.h>
+>  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+>  #include <asm/opal.h>
+> +#include <linux/timer.h>
+>  
+>  #define POWERNV_MAX_PSTATES	256
+>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+>  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+>  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
+>  
+> +#define MAX_RAMP_DOWN_TIME				5120
+> +/*
+> + * On an idle system we want the global pstate to ramp-down from max value
+> to
+> + * min over a span of ~5 secs. Also we want it to initially ramp-down
+> slowly and
+> + * then ramp-down rapidly later on.
+
+Where does 5 seconds come from?
+
+Why 5 and not 10, or not 2? Is there some time period inherit in
+hardware or software that this is computed from?
+
+> +/* Interval after which the timer is queued to bring down global pstate */
+> +#define GPSTATE_TIMER_INTERVAL				2000
+
+in ms?
+
+-- 
+Stewart Smith
+OPAL Architect, IBM.
+
