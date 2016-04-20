@@ -1,39 +1,184 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: Change ktime_get() with local_clock()
-Date: Wed, 20 Apr 2016 14:30:11 +0200
-Message-ID: <20160420123011.GJ5862@linaro.org>
-References: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
- <20160420121315.GC3408@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 3/4] intel_pstate: support scheduler cpufreq callbacks on remote CPUs
+Date: Wed, 20 Apr 2016 14:37:18 +0200
+Message-ID: <48732338.GBX16FRDRa@vostro.rjw.lan>
+References: <1461119969-10371-1-git-send-email-smuckle@linaro.org> <1461119969-10371-3-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f53.google.com ([74.125.82.53]:37042 "EHLO
-	mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932105AbcDTMaR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 08:30:17 -0400
-Received: by mail-wm0-f53.google.com with SMTP id n3so79160798wmn.0
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 05:30:16 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160420121315.GC3408@twins.programming.kicks-ass.net>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45335 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755015AbcDTMe2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 08:34:28 -0400
+In-Reply-To: <1461119969-10371-3-git-send-email-smuckle@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Wed, Apr 20, 2016 at 02:13:15PM +0200, Peter Zijlstra wrote:
-> On Thu, Apr 14, 2016 at 09:23:54PM +0200, Daniel Lezcano wrote:
-> > @@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
-> >  	if (!cpuidle_state_is_coupled(drv, entered_state))
-> >  		local_irq_enable();
-> >  
-> > -	diff = ktime_to_us(ktime_sub(time_end, time_start));
-> > +	/*
-> > +	 * local_clock() returns the time in nanosecond, let's shift
-> > +	 * by 10 (divide by 1024) to have microsecond based time.
-> > +	 */
-> > +	diff = (time_end - time_start) >> 10;
+On Tuesday, April 19, 2016 07:39:28 PM Steve Muckle wrote:
+> In preparation for the scheduler cpufreq callback happening on remote
+> CPUs, add support for this in intel_pstate, which requires the
+> callback run on the local CPU to be able to change the CPU frequency.
 > 
-> Changelog fails to explain the ramifications of this change...
+> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 88 +++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 83 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6c7cff13f0ed..fa49d3944aa5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -162,6 +162,9 @@ struct _pid {
+>   * struct cpudata -	Per CPU instance data storage
+>   * @cpu:		CPU number for this instance data
+>   * @update_util:	CPUFreq utility callback information
+> + * @irq_work:		Data for passing remote callbacks to the target CPU
+> + * @time:		Timestamp of CPUFreq callback
+> + * @ipi_in_progress:	Whether a remote callback IPI is outstanding
+>   * @pstate:		Stores P state limits for this CPU
+>   * @vid:		Stores VID limits for this CPU
+>   * @pid:		Stores PID parameters for this CPU
+> @@ -179,6 +182,9 @@ struct cpudata {
+>  	int cpu;
+>  
+>  	struct update_util_data update_util;
+> +	struct irq_work irq_work;
+> +	u64	time;
+> +	bool	ipi_in_progress;
+>  
+>  	struct pstate_data pstate;
+>  	struct vid_data vid;
+> @@ -1173,20 +1179,88 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+>  		get_avg_frequency(cpu));
+>  }
+>  
+> +static void _intel_pstate_update_util(struct cpudata *cpu, u64 time)
 
-Sorry, I don't get the point of your comment. Do you mean I should elaborate 
-the comment above in the changelog?
+What about calling this intel_pstate_update_cpu()?
+
+> +{
+> +	bool sample_taken = intel_pstate_sample(cpu, time);
+> +
+> +	if (sample_taken && !hwp_active)
+> +		intel_pstate_adjust_busy_pstate(cpu);
+> +}
+> +
+> +#ifdef CONFIG_SMP
+> +static void intel_pstate_update_util_remote(struct irq_work *irq_work)
+> +{
+> +	struct cpudata *cpu = container_of(irq_work, struct cpudata, irq_work);
+> +	s64 delta_ns = cpu->time - cpu->sample.time;
+> +
+> +	/*
+> +	 * A local update may have happened while the ipi
+> +	 * was in progress so re-check the time.
+> +	 */
+> +	if (delta_ns < pid_params.sample_rate_ns)
+> +		return;
+> +
+> +	_intel_pstate_update_util(cpu, cpu->time);
+> +
+> +	cpu->ipi_in_progress = false;
+> +}
+> +
+>  static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+>  				     unsigned long util, unsigned long max)
+>  {
+>  	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+> -	u64 delta_ns = time - cpu->sample.time;
+> +	s64 delta_ns = time - cpu->sample.time;
+>  
+> -	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
+> -		bool sample_taken = intel_pstate_sample(cpu, time);
+> +	if (delta_ns < pid_params.sample_rate_ns)
+
+Why don't you check cpu->ipi_in_progress here too and bail out if it is set?
+
+That would allow you to avoid checking the time again below, woulnd't it?
+
+> +		return;
+>  
+> -		if (sample_taken && !hwp_active)
+> -			intel_pstate_adjust_busy_pstate(cpu);
+> +	if (cpu->cpu == smp_processor_id()) {
+> +		_intel_pstate_update_util(cpu, time);
+> +	} else {
+> +		/* The target CPU's rq lock is held. */
+> +		if (cpu->ipi_in_progress)
+> +			return;
+> +
+> +		/* Re-check sample_time which may have advanced. */
+> +		smp_rmb();
+> +		delta_ns = time - READ_ONCE(cpu->sample.time);
+> +		if (delta_ns < pid_params.sample_rate_ns)
+> +			return;
+> +
+> +		cpu->ipi_in_progress = true;
+> +		cpu->time = time;
+> +		irq_work_queue_on(&cpu->irq_work, cpu->cpu);
+>  	}
+>  }
+>  
+> +static inline void intel_pstate_irq_work_sync(unsigned int cpu)
+> +{
+> +	irq_work_sync(&all_cpu_data[cpu]->irq_work);
+> +}
+> +
+> +static inline void intel_pstate_init_irq_work(struct cpudata *cpu)
+> +{
+> +	init_irq_work(&cpu->irq_work, intel_pstate_update_util_remote);
+> +}
+> +#else /* !CONFIG_SMP */
+> +static inline void intel_pstate_irq_work_sync(unsigned int cpu) {}
+> +static inline void intel_pstate_init_irq_work(struct cpudata *cpu) {}
+> +
+> +static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+> +				     unsigned long util, unsigned long max)
+> +{
+> +	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+> +	s64 delta_ns = time - cpu->sample.time;
+> +
+> +	if (delta_ns < pid_params.sample_rate_ns)
+> +		return;
+> +
+> +	_intel_pstate_update_util(cpu, time);
+> +}
+> +#endif
+> +
+> +
+> +
+
+The additional two empty lines are not necessary.
+
+>  #define ICPU(model, policy) \
+>  	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
+>  			(unsigned long)&policy }
+> @@ -1273,6 +1347,7 @@ static void intel_pstate_clear_update_util_hook(unsigned int cpu)
+>  {
+>  	cpufreq_remove_update_util_hook(cpu);
+>  	synchronize_sched();
+> +	intel_pstate_irq_work_sync(cpu);
+>  }
+>  
+>  static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+> @@ -1379,6 +1454,9 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>  
+>  	cpu = all_cpu_data[policy->cpu];
+>  
+> +	intel_pstate_init_irq_work(cpu);
+> +
+> +
+
+One additional empty line should be sufficient here.
+
+>  	if (limits->min_perf_pct == 100 && limits->max_perf_pct == 100)
+>  		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+>  	else
+> 
+
+Thanks,
+Rafael
+
