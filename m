@@ -1,60 +1,75 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v4 1/2] perf/x86/intel/rapl: support Skylake RAPL domains
-Date: Wed, 20 Apr 2016 08:54:26 -0700
-Message-ID: <1461167666.8946.107.camel@linux.intel.com>
-References: <1460930581-29748-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1460930581-29748-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20160420154320.GE3408@twins.programming.kicks-ass.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: Change ktime_get() with local_clock()
+Date: Wed, 20 Apr 2016 18:47:48 +0200
+Message-ID: <20160420164748.GL5862@linaro.org>
+References: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
+ <20160420121315.GC3408@twins.programming.kicks-ass.net>
+ <20160420123011.GJ5862@linaro.org>
+ <20160420125837.GZ3430@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:43956 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbcDTPyC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Apr 2016 11:54:02 -0400
-In-Reply-To: <20160420154320.GE3408@twins.programming.kicks-ass.net>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:36732 "EHLO
+	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbcDTQrx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 12:47:53 -0400
+Received: by mail-wm0-f47.google.com with SMTP id v188so211444113wme.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 09:47:52 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20160420125837.GZ3430@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rjw@rjwysocki.net, x86@kernel.org, bp@alien8.de, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Wed, 2016-04-20 at 17:43 +0200, Peter Zijlstra wrote:
-> On Sun, Apr 17, 2016 at 03:03:00PM -0700, Srinivas Pandruvada wrote:
-> >=20
-> > @@ -729,6 +771,11 @@ static int __init rapl_pmu_init(void)
-> > =C2=A0		rapl_cntr_mask =3D RAPL_IDX_SRV;
-> > =C2=A0		rapl_pmu_events_group.attrs =3D
-> > rapl_events_srv_attr;
-> > =C2=A0		break;
-> > +	case 78: /* Skylake client */
-> > +	case 94: /* Skylake H/S */
-> > +		rapl_cntr_mask =3D RAPL_IDX_SKL_CLN;
-> > +		rapl_pmu_events_group.attrs =3D
-> > rapl_events_skl_attr;
-> > +		break;
-> > =C2=A0	case 87: /* Knights Landing */
-> > =C2=A0		apply_quirk =3D true;
-> > =C2=A0		rapl_cntr_mask =3D RAPL_IDX_KNL;
-> Please post this against tip/perf/core, all this code got munged in
-> patch:
->=20
-> =C2=A0 4b6e2571bf00 ("x86/perf/intel/rapl: Make the Intel RAPL PMU dr=
-iver
-> modular")
-I will repost.
+On Wed, Apr 20, 2016 at 02:58:37PM +0200, Peter Zijlstra wrote:
+> On Wed, Apr 20, 2016 at 02:30:11PM +0200, Daniel Lezcano wrote:
+> > On Wed, Apr 20, 2016 at 02:13:15PM +0200, Peter Zijlstra wrote:
+> > > On Thu, Apr 14, 2016 at 09:23:54PM +0200, Daniel Lezcano wrote:
+> > > > @@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> > > >  	if (!cpuidle_state_is_coupled(drv, entered_state))
+> > > >  		local_irq_enable();
+> > > >  
+> > > > -	diff = ktime_to_us(ktime_sub(time_end, time_start));
+> > > > +	/*
+> > > > +	 * local_clock() returns the time in nanosecond, let's shift
+> > > > +	 * by 10 (divide by 1024) to have microsecond based time.
+> > > > +	 */
+> > > > +	diff = (time_end - time_start) >> 10;
+> > > 
+> > > Changelog fails to explain the ramifications of this change...
+> > 
+> > Sorry, I don't get the point of your comment. Do you mean I should elaborate 
+> > the comment above in the changelog?
+> 
+> Yeah, why is /1024 good enough?
 
->=20
-> Also; what about 85 (skl-server)?
-I didn't get chance to test RAPL on SKL server. It should follow BDW
-server, but want to test before.
+Ok.
 
-Thanks,
-Srinivas
+The conversion between nanosec to microsec could be done with integer 
+division (div 1000) or by 10 bits shifting (div 1024).
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+The following table gives some results at the limits.
+
+ ------------------------------------------
+|   nsec   |   div(1000)   |   div(1024)   |
+ ------------------------------------------
+|   1e3    |        1 usec |      976 nsec |
+ ------------------------------------------
+|   1e6    |     1000 usec |      976 usec |
+ ------------------------------------------
+|   1e9    |  1000000 usec |   976562 usec |
+ ------------------------------------------
+
+There is a linear deviation of 2.34%. This loss of precision is acceptable 
+in the context of the resulting diff which is used for statistics. These 
+ones are processed to guess estimate an approximation of the duration of the 
+next idle period which ends up into an idle state selection. The selection 
+criteria takes into account the next duration based on large intervals, 
+represented by the idle state's target residency.
+
+The 2^10 division is enough because the approximation regarding the 1e3 
+division is lost in all the approximations done for the next idle duration 
+computation.
+
+Would be this explanation sufficient ?
