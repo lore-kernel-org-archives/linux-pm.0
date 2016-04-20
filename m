@@ -1,139 +1,394 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH][v3] cpufreq: governor: Fix overflow when calculating idle time
-Date: Wed, 20 Apr 2016 15:52:52 +0200
-Message-ID: <CAJZ5v0g1Ymh72-m2DcNN0KVAh=d-u2tt3d7ikb-X+ci=KcMVvQ@mail.gmail.com>
-References: <1461038252-8687-1-git-send-email-yu.c.chen@intel.com>
-	<10769890.SYSXru1b3x@vostro.rjw.lan>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH v6 03/11] soc: renesas: rcar-sysc: Add DT support for SYSC PM domains
+Date: Wed, 20 Apr 2016 16:59:54 +0300
+Message-ID: <1605013.oj6f93rEp5@avalon>
+References: <1461153766-750-1-git-send-email-geert+renesas@glider.be> <1461153766-750-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f67.google.com ([209.85.215.67]:36328 "EHLO
-	mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbcDTNwy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 09:52:54 -0400
-In-Reply-To: <10769890.SYSXru1b3x@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1461153766-750-4-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Chen Yu <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <lenb@kernel.org>
 
-On Wed, Apr 20, 2016 at 3:26 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, April 19, 2016 11:57:32 AM Chen Yu wrote:
->> It was reported that after Commit 0df35026c6a5 ("cpufreq: governor:
->> Fix negative idle_time when configured with CONFIG_HZ_PERIODIC"),
->> cpufreq ondemand governor started to act oddly. Without any load,
->> with freshly booted system, it pumped cpu frequency up to maximum
->> at some point of time and stayed there. The problem is caused by
->> jiffies overflow in get_cpu_idle_time:
->>
->> After booting up 5 minutes, the jiffies will round up to zero.
->> As a result, the following condition in cpu governor will always be
->> true:
->>       if (cur_idle_time <= j_cdbs->prev_cpu_idle)
->>               idle_time = 0;
->>
->> which caused problems.
->>
->> For example, once cur_idle_time has rounded up to zero, meanwhile
->> prev_cpu_idle still remains negative(because of jiffies initial value
->> of -300HZ, which is very big after converted to unsigned), thus above
->> condition is met, thus we get a zero of idle running time during
->> this sample, which causes a high busy time, thus governor always
->> requests for the highest freq.
->>
->> This patch fixes this problem by updating prev_cpu_idle for
->> each sample period, even if prev_cpu_idle is bigger than
->> cur_idle_time, thus to prevent the scenario of 'prev_cpu_idle always
->> bigger than cur_idle_time' from happening.
->>
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=115261
->> Reported-by: Timo Valtoaho <timo.valtoaho@gmail.com>
->> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
->
-> This looks better than the previous versions to me, but ->
->
->> ---
->> v3:
->>  - Do not use INITIAL_JIFFIES because it should be transparent
->>    to user, meanwhile keep original semanteme to use delta
->>    of time slice.
->> ---
->> v2:
->>  - Send this patch to a wider scope, including timing-system maintainers,
->>    as well as some modifications in the commit message to make it more clear.
->> ---
->>  drivers/cpufreq/cpufreq.c          | 4 ++++
->>  drivers/cpufreq/cpufreq_governor.c | 8 +++++++-
->>  2 files changed, 11 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index b87596b..b0479b3 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -132,6 +132,10 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
->>  }
->>  EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
->>
->> +/**
->> + * The wall time and idle time are both possible to round up,
->
-> That's difficult to parse.  I guess you wanted to say that they may overflow?
->
->> + * people should use delta rather than the value itself.
->> + */
->
-> -> this new comment doesn't really belong to the fix.  You can send a separate
-> patch adding it.
->
-> Moreover -->
->
->>  static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
->>  {
->>       u64 idle_time;
->> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
->> index 10a5cfe..8de3fba 100644
->> --- a/drivers/cpufreq/cpufreq_governor.c
->> +++ b/drivers/cpufreq/cpufreq_governor.c
->> @@ -197,8 +197,14 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
->>                       idle_time = 0;
->>               } else {
->>                       idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
->> -                     j_cdbs->prev_cpu_idle = cur_idle_time;
->>               }
->> +             /*
->> +              * It is possible prev_cpu_idle being bigger than cur_idle_time,
->> +              * when 32bit rounds up if !CONFIG_VIRT_CPU_ACCOUNTING,
->> +              * thus get a 0% idle estimation. So update prev_cpu_idle during
->> +              * each sample period to avoid this situation lasting too long.
->> +              */
->> +             j_cdbs->prev_cpu_idle = cur_idle_time;
->
-> --> it looks like the bug is that we are comparing signed values as unsigned.
->
->>
->>               if (ignore_nice) {
->>                       u64 cur_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->>
->
-> So what about the simple change below?
+Hi Geert,
 
-Well, it doesn't make sense, sorry about the confusion.
+Thank you for the patch.
+
+On Wednesday 20 Apr 2016 14:02:38 Geert Uytterhoeven wrote:
+> Populate the SYSC PM domains from DT, based on the presence of a device
+> node for the System Controller. The actual power area hiearchy, and
+> features of specific areas are obtained from tables in the C code.
+> 
+> The SYSCIER and SYSCIMR register values are derived from the power areas
+> present, which will help to get rid of the hardcoded values in R-Car H1
+> and R-Car Gen2 platform code later.
+> 
+> Initialization is done from an early_initcall(), to make sure the PM
+> Domains are initialized before secondary CPU bringup.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
 > ---
->  drivers/cpufreq/cpufreq_governor.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -146,7 +146,7 @@ unsigned int dbs_update(struct cpufreq_p
->                 wall_time = cur_wall_time - j_cdbs->prev_cpu_wall;
->                 j_cdbs->prev_cpu_wall = cur_wall_time;
->
-> -               if (cur_idle_time <= j_cdbs->prev_cpu_idle) {
-> +               if ((s64)cur_idle_time <= (s64)j_cdbs->prev_cpu_idle) {
->                         idle_time = 0;
->                 } else {
->                         idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
->
+> v6:
+>   - Drop unneeded genpd->dev_ops.active_wakeup callback,
+>   - Move call to pm_genpd_init() after all local initialization,
+> 
+> v5:
+>   - Mask SYSC interrupts sources before enabling them (doesn't matter
+>     much as they're disabled at the GIC level anyway),
+>   - Re-add explicit "always-on" power area instead of aliasing the SoC's
+>     Clock Domain,
+>   - Merge the two initialization phases again,
+> 
+> v4:
+>   - Make sure not to clear reserved SYSCIMR bits that were set before,
+>   - Make the always-on power area implicit and always present, and an
+>     alias of the existing SoC's Clock Domain. This makes the number of
+>     power areas a compile-time constant, and allows to drop PD_ALWAYS_ON
+>     and some checks.
+>   - Split initialization in two phases,
+>   - Document that ARM cores are controlled by PSCI on R-Car Gen3
+>     (although the underlying CPG/APMU hardware is the same as on Gen2),
+>   - Minor improvements (double evaluation, unused parameter, debug
+>     message consolidation),
+> 
+> v3:
+>   - Drop check for CONFIG_PM_GENERIC_DOMAINS, which is now always
+>     enabled on R-Car SoCs,
+>   - Create PM Domains from hierarchy in C data instead of DT,
+>   - Initialize SYSCIER early, as SYSC needs the interrupt sources to be
+>     enabled to control power,
+>   - Mask all SYSC interrupt sources for the CPU,
+>   - Add support for an "always-on" domain,
+>   - Use early_initcall() instead of core_initcall(),
+>   - Do not power up CPU power areas during initialization, as this is
+>     handled later (directly or indirectly) by the SMP code,
+> 
+> v2:
+>   - Add missing definitions for SYSC_PWR_CA15_CPU and SYSC_PWR_CA7_CPU,
+>   - Add R-Car H3 (r8a7795) support,
+>   - Drop tests for CONFIG_ARCH_SHMOBILE_LEGACY,
+>   - Add missing break statements in rcar_sysc_pwr_on_off(),
+>   - Add missing calls to of_node_put() in error paths,
+>   - Fix build if CONFIG_PM=n,
+>   - Update compatible values,
+>   - Update copyright.
+> ---
+>  drivers/soc/renesas/rcar-sysc.c | 202
+> +++++++++++++++++++++++++++++++++++++++- drivers/soc/renesas/rcar-sysc.h | 
+> 53 +++++++++++
+>  2 files changed, 254 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/soc/renesas/rcar-sysc.h
+> 
+> diff --git a/drivers/soc/renesas/rcar-sysc.c
+> b/drivers/soc/renesas/rcar-sysc.c index 9ba5fd15c53bf9b9..95f2b59cbd76f777
+> 100644
+> --- a/drivers/soc/renesas/rcar-sysc.c
+> +++ b/drivers/soc/renesas/rcar-sysc.c
+> @@ -2,6 +2,7 @@
+>   * R-Car SYSC Power management support
+>   *
+>   * Copyright (C) 2014  Magnus Damm
+> + * Copyright (C) 2015-2016 Glider bvba
+>   *
+>   * This file is subject to the terms and conditions of the GNU General
+> Public * License.  See the file "COPYING" in the main directory of this
+> archive @@ -11,10 +12,15 @@
+>  #include <linux/delay.h>
+>  #include <linux/err.h>
+>  #include <linux/mm.h>
+> +#include <linux/of_address.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/slab.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/io.h>
+>  #include <linux/soc/renesas/rcar-sysc.h>
+> 
+> +#include "rcar-sysc.h"
+> +
+>  /* SYSC Common */
+>  #define SYSCSR			0x00	/* SYSC Status Register */
+>  #define SYSCISR			0x04	/* Interrupt Status Register */
+> @@ -29,7 +35,8 @@
+>  /*
+>   * Power Control Register Offsets inside the register block for each domain
+> * Note: The "CR" registers for ARM cores exist on H1 only
+> - *       Use WFI to power off, CPG/APMU to resume ARM cores on R-Car Gen2
+> + *	 Use WFI to power off, CPG/APMU to resume ARM cores on R-Car Gen2
+> + *	 Use PSCI on R-Car Gen3
+>   */
+>  #define PWRSR_OFFS		0x00	/* Power Status Register */
+>  #define PWROFFCR_OFFS		0x04	/* Power Shutoff Control Register */
+> @@ -48,6 +55,8 @@
+>  #define SYSCISR_RETRIES		1000
+>  #define SYSCISR_DELAY_US	1
+> 
+> +#define RCAR_PD_ALWAYS_ON	32	/* Always-on power area */
+> +
+>  static void __iomem *rcar_sysc_base;
+>  static DEFINE_SPINLOCK(rcar_sysc_lock); /* SMP CPUs + I/O devices */
+> 
+> @@ -162,3 +171,194 @@ void __iomem *rcar_sysc_init(phys_addr_t base)
+> 
+>  	return rcar_sysc_base;
+>  }
+> +
+> +struct rcar_sysc_pd {
+> +	struct generic_pm_domain genpd;
+> +	struct rcar_sysc_ch ch;
+> +	unsigned int flags;
+> +	char name[0];
+> +};
+> +
+> +static inline struct rcar_sysc_pd *to_rcar_pd(struct generic_pm_domain *d)
+> +{
+> +	return container_of(d, struct rcar_sysc_pd, genpd);
+> +}
+> +
+> +static int rcar_sysc_pd_power_off(struct generic_pm_domain *genpd)
+> +{
+> +	struct rcar_sysc_pd *pd = to_rcar_pd(genpd);
+> +
+> +	pr_debug("%s: %s\n", __func__, genpd->name);
+> +
+> +	if (pd->flags & PD_NO_CR) {
+> +		pr_debug("%s: Cannot control %s\n", __func__, genpd->name);
+> +		return -EBUSY;
+> +	}
+> +
+> +	if (pd->flags & PD_BUSY) {
+> +		pr_debug("%s: %s busy\n", __func__, genpd->name);
+> +		return -EBUSY;
+> +	}
+> +
+> +	return rcar_sysc_power_down(&pd->ch);
+> +}
+> +
+> +static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
+> +{
+> +	struct rcar_sysc_pd *pd = to_rcar_pd(genpd);
+> +
+> +	pr_debug("%s: %s\n", __func__, genpd->name);
+> +
+> +	if (pd->flags & PD_NO_CR) {
+> +		pr_debug("%s: Cannot control %s\n", __func__, genpd->name);
+> +		return 0;
+> +	}
+> +
+> +	return rcar_sysc_power_up(&pd->ch);
+> +}
+> +
+> +static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+> +{
+> +	struct generic_pm_domain *genpd = &pd->genpd;
+> +	const char *name = pd->genpd.name;
+> +	struct dev_power_governor *gov = &simple_qos_governor;
+> +
+> +	if (pd->flags & PD_CPU) {
+> +		/*
+> +		 * This domain contains a CPU core and therefore it should
+> +		 * only be turned off if the CPU is not in use.
+> +		 */
+> +		pr_debug("PM domain %s contains %s\n", name, "CPU");
+> +		pd->flags |= PD_BUSY;
+> +		gov = &pm_domain_always_on_gov;
+> +	} else if (pd->flags & PD_SCU) {
+> +		/*
+> +		 * This domain contains an SCU and cache-controller, and
+> +		 * therefore it should only be turned off if the CPU cores are
+> +		 * not in use.
+> +		 */
+> +		pr_debug("PM domain %s contains %s\n", name, "SCU");
+> +		pd->flags |= PD_BUSY;
+> +		gov = &pm_domain_always_on_gov;
+> +	} else if (pd->flags & PD_NO_CR) {
+> +		/*
+> +		 * This domain cannot be turned off.
+> +		 */
+> +		pd->flags |= PD_BUSY;
+> +		gov = &pm_domain_always_on_gov;
+> +	}
+> +
+> +	genpd->power_off = rcar_sysc_pd_power_off;
+> +	genpd->power_on = rcar_sysc_pd_power_on;
+> +
+> +	if (pd->flags & (PD_CPU | PD_NO_CR)) {
+> +		/* Skip CPUs (handled by SMP code) and areas without control */
+> +		pr_debug("%s: Not touching %s\n", __func__, genpd->name);
+> +		goto finalize;
+> +	}
+> +
+> +	if (!rcar_sysc_power_is_off(&pd->ch)) {
+> +		pr_debug("%s: %s is already powered\n", __func__, genpd->name);
+> +		goto finalize;
+> +	}
+> +
+> +	rcar_sysc_power_up(&pd->ch);
+> +
+> +finalize:
+> +	pm_genpd_init(genpd, gov, false);
+> +}
+> +
+> +static const struct of_device_id rcar_sysc_matches[] = {
+> +	{ /* sentinel */ }
+> +};
+> +
+> +struct rcar_pm_domains {
+> +	struct genpd_onecell_data onecell_data;
+> +	struct generic_pm_domain *domains[RCAR_PD_ALWAYS_ON + 1];
+> +};
+> +
+> +static int __init rcar_sysc_pd_init(void)
+> +{
+> +	const struct rcar_sysc_info *info;
+> +	const struct of_device_id *match;
+> +	struct rcar_pm_domains *domains;
+> +	struct device_node *np;
+> +	u32 syscier, syscimr;
+> +	void __iomem *base;
+> +	unsigned int i;
+> +	int error;
+> +
+> +	np = of_find_matching_node_and_match(NULL, rcar_sysc_matches, &match);
+> +	if (!np)
+> +		return -ENODEV;
+> +
+> +	info = match->data;
+> +
+> +	base = of_iomap(np, 0);
+> +	if (!base) {
+> +		pr_warn("%s: Cannot map regs\n", np->full_name);
+> +		error = -ENOMEM;
+> +		goto out_put;
+> +	}
+> +
+> +	rcar_sysc_base = base;
+> +
+> +	domains = kzalloc(sizeof(*domains), GFP_KERNEL);
+> +	if (!domains) {
+> +		error = -ENOMEM;
+> +		goto out_put;
+> +	}
+> +
+> +	domains->onecell_data.domains = domains->domains;
+> +	domains->onecell_data.num_domains = ARRAY_SIZE(domains->domains);
+> +
+> +	for (i = 0, syscier = 0; i < info->num_areas; i++)
+> +		syscier |= BIT(info->areas[i].isr_bit);
+> +
+> +	/*
+> +	 * Mask all interrupt sources to prevent the CPU from receiving them.
+> +	 * Make sure not to clear reserved bits that were set before.
+> +	 */
+> +	syscimr = ioread32(base + SYSCIMR);
+> +	syscimr |= syscier;
+> +	pr_debug("%s: syscimr = 0x%08x\n", np->full_name, syscimr);
+> +	iowrite32(syscimr, base + SYSCIMR);
+> +
+> +	/*
+> +	 * SYSC needs all interrupt sources enabled to control power.
+> +	 */
+> +	pr_debug("%s: syscier = 0x%08x\n", np->full_name, syscier);
+> +	iowrite32(syscier, base + SYSCIER);
+> +
+> +	for (i = 0; i < info->num_areas; i++) {
+> +		const struct rcar_sysc_area *area = &info->areas[i];
+> +		struct rcar_sysc_pd *pd;
+> +
+> +		pd = kzalloc(sizeof(*pd) + strlen(area->name) + 1, GFP_KERNEL);
+> +		if (!pd) {
+> +			error = -ENOMEM;
+> +			goto out_put;
+> +		}
+> +
+> +		strcpy(pd->name, area->name);
+> +		pd->genpd.name = pd->name;
+> +		pd->ch.chan_offs = area->chan_offs;
+> +		pd->ch.chan_bit = area->chan_bit;
+> +		pd->ch.isr_bit = area->isr_bit;
+> +		pd->flags = area->flags;
+> +
+> +		rcar_sysc_pd_setup(pd);
+> +		if (area->parent >= 0)
+> +			pm_genpd_add_subdomain(domains->domains[area->parent],
+> +					       &pd->genpd);
+> +
+> +		domains->domains[area->isr_bit] = &pd->genpd;
+> +	}
+> +
+> +	of_genpd_add_provider_onecell(np, &domains->onecell_data);
+> +
+> +out_put:
+> +	of_node_put(np);
+> +	return error;
+> +}
+> +early_initcall(rcar_sysc_pd_init);
+> diff --git a/drivers/soc/renesas/rcar-sysc.h
+> b/drivers/soc/renesas/rcar-sysc.h new file mode 100644
+> index 0000000000000000..7bb48b4f7334f960
+> --- /dev/null
+> +++ b/drivers/soc/renesas/rcar-sysc.h
+> @@ -0,0 +1,53 @@
+> +/*
+> + * Renesas R-Car System Controller
+> + *
+> + * Copyright (C) 2016 Glider bvba
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; version 2 of the License.
+> + */
+> +#ifndef __SOC_RENESAS_RCAR_SYSC_H__
+> +#define __SOC_RENESAS_RCAR_SYSC_H__
+> +
+> +#include <linux/types.h>
+> +
+> +
+> +/*
+> + * Power Domain flags
+> + */
+> +#define PD_CPU		BIT(0)	/* Area contains main CPU core */
+> +#define PD_SCU		BIT(1)	/* Area contains SCU and L2 cache */
+> +#define PD_NO_CR	BIT(2)	/* Area lacks PWR{ON,OFF}CR registers */
+> +
+> +#define PD_BUSY		BIT(3)	/* Busy, for internal use only */
+> +
+> +#define PD_CPU_CR	PD_CPU		  /* CPU area has CR (R-Car H1) */
+> +#define PD_CPU_NOCR	PD_CPU | PD_NO_CR /* CPU area lacks CR (R-Car Gen2/3)
+> */ +#define PD_ALWAYS_ON	PD_NO_CR	  /* Always-on area */
+> +
+> +
+> +/*
+> + * Description of a Power Area
+> + */
+> +
+> +struct rcar_sysc_area {
+> +	const char *name;
+> +	u16 chan_offs;		/* Offset of PWRSR register for this area */
+> +	u8 chan_bit;		/* Bit in PWR* (except for PWRUP in PWRSR) */
+> +	u8 isr_bit;		/* Bit in SYSCI*R */
+> +	int parent;		/* -1 if none */
+> +	unsigned int flags;	/* See PD_* */
+> +};
+> +
+> +
+> +/*
+> + * SoC-specific Power Area Description
+> + */
+> +
+> +struct rcar_sysc_info {
+> +	const struct rcar_sysc_area *areas;
+> +	unsigned int num_areas;
+> +};
+> +
+> +#endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
+
+-- 
+Regards,
+
+Laurent Pinchart
