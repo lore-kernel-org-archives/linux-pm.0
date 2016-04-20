@@ -1,90 +1,90 @@
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Ramp-down global pstate slower than local-pstate
-Date: Wed, 20 Apr 2016 10:18:51 -0700
-Message-ID: <8737qgmc5g.fsf@linux.vnet.ibm.com>
-References: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Enforce _PPC limits
+Date: Wed, 20 Apr 2016 10:28:02 -0700
+Message-ID: <1461173282.8946.125.camel@linux.intel.com>
+References: <1459812150-9111-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <57178C09.50603@yandex-team.ru>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e18.ny.us.ibm.com ([129.33.205.208]:33119 "EHLO
-	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbcDTRTS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 13:19:18 -0400
-Received: from localhost
-	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <stewart@linux.vnet.ibm.com>;
-	Wed, 20 Apr 2016 13:19:17 -0400
-In-Reply-To: <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Received: from mga04.intel.com ([192.55.52.120]:48542 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbcDTR1h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Apr 2016 13:27:37 -0400
+In-Reply-To: <57178C09.50603@yandex-team.ru>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org
 
-Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
-> Iozone results show fairly consistent performance boost.
-> YCSB on redis shows improved Max latencies in most cases.
+On Wed, 2016-04-20 at 17:02 +0300, Konstantin Khlebnikov wrote:
+> On 05.04.2016 02:22, Srinivas Pandruvada wrote:
+> >=20
+> > Use ACPI _PPC notification to limit max P state driver will
+> > request.
+[...]
+> > I guess this is consequences of my post year ago: "[PATCH RFC]
+> intel_pstate:
+> play well with frequency limits set by acpi". It would be nice if you
+> keep me in Cc.
 
-What about power consumption?
+Sure. This patchset is mini version of the patch which you reviewed and
+commented on
+"	Re: [RFC PATCH] cpufreq: intel_pstate: Use ACPI perf".
 
-> Iozone write/rewite test were made with filesizes 200704Kb and 401408Kb
-> with different record sizes . The following table shows IOoperations/sec
-> with and without patch.
 
-> Iozone Results ( in op/sec) ( mean over 3 iterations )
+> <couple notes below>
+[...]
 
-What's the variance between runs?
+> +	turbo_pss_ctl =3D convert_to_native_pstate_format(cpu, 0);
+> > +	if (turbo_pss_ctl > cpu->pstate.max_pstate)
+> > +		cpu->acpi_perf_data.states[0].core_frequency =3D
+> > +					policy->cpuinfo.max_freq /
+> > 1000;
+> I'm afraid not only first entry could have bogus frequency.
+>=20
+> Maybe just ignore them all and recalculate frequencies from pstates?
+> (frequency =3D clamp(pstate, min_pstate, turbo_pstate) * scaling /
+> 1000)
 
-> Tested with YCSB workload (50% update + 50% read) over redis for 1 million
-> records and 1 million operation. Each test was carried out with target
-> operations per second and persistence disabled.
->
-> Max-latency (in us)( mean over 5 iterations )
+We have to trust control values in _PSS then.
+This was the mistake we did when we merged the patch to 4.4-rc1, where
+we were overly optimistic about the control values in _PSS table. On
+some system these values were 0xff.
+The _PSS table will have max_non_turbo_freq in MHz + 1 only for turbo
+frequency. If ever Windows worked on that system the table should have
+correct values.
+Still there will be some systems, where as you suggested there can be
+junk in frequency or control value, hence I am no longer turning on
+this feature by default.
+>=20
+> >=20
+> > +	cpu->valid_pss_table =3D true;
 
-What's the variance between runs?
+[...]
 
-std dev? 95th percentile?
+> > =C2=A0 static struct cpufreq_driver intel_pstate_driver =3D {
+> > =C2=A0=C2=A0	.flags		=3D CPUFREQ_CONST_LOOPS,
+> > =C2=A0=C2=A0	.verify		=3D intel_pstate_verify_policy,
+> > =C2=A0=C2=A0	.setpolicy	=3D intel_pstate_set_policy,
+> > =C2=A0=C2=A0	.get		=3D intel_pstate_get,
+> > =C2=A0=C2=A0	.init		=3D intel_pstate_cpu_init,
+> If you add
+>=20
+> #if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0.bios_limit=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=3D acpi_processor_get_bios_limit,
+> #endif
+>=20
+> current limit will be shown in
+> /sys/devices/system/cpu/cpu*/cpufreq/bios_limit
+>=20
+The BIOS limit is no longer represent the max frequency you will get.
+This will be start of turbo range when config tdp feature on processor
+after SandyBridge.
+Does it add value, when it doesn't mean what it used before?
 
-> ---------------------------------------------------------------
-> op/s    Operation       with patch      without patch   %change
-> ---------------------------------------------------------------
-> 15000   Read            61480.6         50261.4         22.32
-
-This seems fairly significant regression. Any idea why at 15K op/s
-there's such a regression?
-
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-[ 15 more citation lines. Click/Enter to show. ]
-> @@ -36,12 +36,56 @@
->  #include <asm/reg.h>
->  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
->  #include <asm/opal.h>
-> +#include <linux/timer.h>
->  
->  #define POWERNV_MAX_PSTATES	256
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
->  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
->  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
->  
-> +#define MAX_RAMP_DOWN_TIME				5120
-> +/*
-> + * On an idle system we want the global pstate to ramp-down from max value
-> to
-> + * min over a span of ~5 secs. Also we want it to initially ramp-down
-> slowly and
-> + * then ramp-down rapidly later on.
-
-Where does 5 seconds come from?
-
-Why 5 and not 10, or not 2? Is there some time period inherit in
-hardware or software that this is computed from?
-
-> +/* Interval after which the timer is queued to bring down global pstate */
-> +#define GPSTATE_TIMER_INTERVAL				2000
-
-in ms?
-
--- 
-Stewart Smith
-OPAL Architect, IBM.
+Thanks,
+Srinivas
 
