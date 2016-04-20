@@ -1,134 +1,32 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 11/11] soc: renesas: rcar-sysc: Add support for R-Car H3 power areas
-Date: Wed, 20 Apr 2016 14:02:46 +0200
-Message-ID: <1461153766-750-12-git-send-email-geert+renesas@glider.be>
-References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] cpuidle: Change ktime_get() with local_clock()
+Date: Wed, 20 Apr 2016 14:13:15 +0200
+Message-ID: <20160420121315.GC3408@twins.programming.kicks-ass.net>
+References: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:37959 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbcDTMNU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 08:13:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1460661834-5683-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
-v6:
-  - No changes,
+On Thu, Apr 14, 2016 at 09:23:54PM +0200, Daniel Lezcano wrote:
+> @@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	if (!cpuidle_state_is_coupled(drv, entered_state))
+>  		local_irq_enable();
+>  
+> -	diff = ktime_to_us(ktime_sub(time_end, time_start));
+> +	/*
+> +	 * local_clock() returns the time in nanosecond, let's shift
+> +	 * by 10 (divide by 1024) to have microsecond based time.
+> +	 */
+> +	diff = (time_end - time_start) >> 10;
 
-v5:
-  - Add Reviewed-by,
-  - Re-add "always-on" power area,
-
-v4:
-  - Remove "always-on" power area, as it's now implicitly handled by the
-    rcar-sysc driver,
-  - Reformat table,
-
-v3:
-  - New (converted from DT to C).
----
- drivers/soc/renesas/Makefile       |  1 +
- drivers/soc/renesas/r8a7795-sysc.c | 56 ++++++++++++++++++++++++++++++++++++++
- drivers/soc/renesas/rcar-sysc.c    |  3 ++
- drivers/soc/renesas/rcar-sysc.h    |  1 +
- 4 files changed, 61 insertions(+)
- create mode 100644 drivers/soc/renesas/r8a7795-sysc.c
-
-diff --git a/drivers/soc/renesas/Makefile b/drivers/soc/renesas/Makefile
-index b328205fef36441a..151fcd3f025b01f3 100644
---- a/drivers/soc/renesas/Makefile
-+++ b/drivers/soc/renesas/Makefile
-@@ -4,3 +4,4 @@ obj-$(CONFIG_ARCH_R8A7791)	+= rcar-sysc.o r8a7791-sysc.o
- # R-Car M2-N is identical to R-Car M2-W w.r.t. power domains.
- obj-$(CONFIG_ARCH_R8A7793)	+= rcar-sysc.o r8a7791-sysc.o
- obj-$(CONFIG_ARCH_R8A7794)	+= rcar-sysc.o r8a7794-sysc.o
-+obj-$(CONFIG_ARCH_R8A7795)	+= rcar-sysc.o r8a7795-sysc.o
-diff --git a/drivers/soc/renesas/r8a7795-sysc.c b/drivers/soc/renesas/r8a7795-sysc.c
-new file mode 100644
-index 0000000000000000..5e7537c96f7bbbcd
---- /dev/null
-+++ b/drivers/soc/renesas/r8a7795-sysc.c
-@@ -0,0 +1,56 @@
-+/*
-+ * Renesas R-Car H3 System Controller
-+ *
-+ * Copyright (C) 2016 Glider bvba
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ */
-+
-+#include <linux/bug.h>
-+#include <linux/kernel.h>
-+
-+#include <dt-bindings/power/r8a7795-sysc.h>
-+
-+#include "rcar-sysc.h"
-+
-+static const struct rcar_sysc_area r8a7795_areas[] __initconst = {
-+	{ "always-on",	    0, 0, R8A7795_PD_ALWAYS_ON,	-1, PD_ALWAYS_ON },
-+	{ "ca57-scu",	0x1c0, 0, R8A7795_PD_CA57_SCU,	R8A7795_PD_ALWAYS_ON,
-+	  PD_SCU },
-+	{ "ca57-cpu0",	 0x80, 0, R8A7795_PD_CA57_CPU0,	R8A7795_PD_CA57_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca57-cpu1",	 0x80, 1, R8A7795_PD_CA57_CPU1,	R8A7795_PD_CA57_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca57-cpu2",	 0x80, 2, R8A7795_PD_CA57_CPU2,	R8A7795_PD_CA57_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca57-cpu3",	 0x80, 3, R8A7795_PD_CA57_CPU3,	R8A7795_PD_CA57_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca53-scu",	0x140, 0, R8A7795_PD_CA53_SCU,	R8A7795_PD_ALWAYS_ON,
-+	  PD_SCU },
-+	{ "ca53-cpu0",	0x200, 0, R8A7795_PD_CA53_CPU0,	R8A7795_PD_CA53_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca53-cpu1",	0x200, 1, R8A7795_PD_CA53_CPU1,	R8A7795_PD_CA53_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca53-cpu2",	0x200, 2, R8A7795_PD_CA53_CPU2,	R8A7795_PD_CA53_SCU,
-+	  PD_CPU_NOCR },
-+	{ "ca53-cpu3",	0x200, 3, R8A7795_PD_CA53_CPU3,	R8A7795_PD_CA53_SCU,
-+	  PD_CPU_NOCR },
-+	{ "a3vp",	0x340, 0, R8A7795_PD_A3VP,	R8A7795_PD_ALWAYS_ON },
-+	{ "cr7",	0x240, 0, R8A7795_PD_CR7,	R8A7795_PD_ALWAYS_ON },
-+	{ "a3vc",	0x380, 0, R8A7795_PD_A3VC,	R8A7795_PD_ALWAYS_ON },
-+	{ "a2vc0",	0x3c0, 0, R8A7795_PD_A2VC0,	R8A7795_PD_A3VC },
-+	{ "a2vc1",	0x3c0, 1, R8A7795_PD_A2VC1,	R8A7795_PD_A3VC },
-+	{ "3dg-a",	0x100, 0, R8A7795_PD_3DG_A,	R8A7795_PD_ALWAYS_ON },
-+	{ "3dg-b",	0x100, 1, R8A7795_PD_3DG_B,	R8A7795_PD_3DG_A },
-+	{ "3dg-c",	0x100, 2, R8A7795_PD_3DG_C,	R8A7795_PD_3DG_B },
-+	{ "3dg-d",	0x100, 3, R8A7795_PD_3DG_D,	R8A7795_PD_3DG_C },
-+	{ "3dg-e",	0x100, 4, R8A7795_PD_3DG_E,	R8A7795_PD_3DG_D },
-+	{ "a3ir",	0x180, 0, R8A7795_PD_A3IR,	R8A7795_PD_ALWAYS_ON },
-+};
-+
-+const struct rcar_sysc_info r8a7795_sysc_info __initconst = {
-+	.areas = r8a7795_areas,
-+	.num_areas = ARRAY_SIZE(r8a7795_areas),
-+};
-diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index e2cd99027303ea24..79dbc770895f4b6d 100644
---- a/drivers/soc/renesas/rcar-sysc.c
-+++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -300,6 +300,9 @@ static const struct of_device_id rcar_sysc_matches[] = {
- #ifdef CONFIG_ARCH_R8A7794
- 	{ .compatible = "renesas,r8a7794-sysc", .data = &r8a7794_sysc_info },
- #endif
-+#ifdef CONFIG_ARCH_R8A7795
-+	{ .compatible = "renesas,r8a7795-sysc", .data = &r8a7795_sysc_info },
-+#endif
- 	{ /* sentinel */ }
- };
- 
-diff --git a/drivers/soc/renesas/rcar-sysc.h b/drivers/soc/renesas/rcar-sysc.h
-index d64258cfaa20ba3f..5e766174c2f47eb0 100644
---- a/drivers/soc/renesas/rcar-sysc.h
-+++ b/drivers/soc/renesas/rcar-sysc.h
-@@ -54,4 +54,5 @@ extern const struct rcar_sysc_info r8a7779_sysc_info;
- extern const struct rcar_sysc_info r8a7790_sysc_info;
- extern const struct rcar_sysc_info r8a7791_sysc_info;
- extern const struct rcar_sysc_info r8a7794_sysc_info;
-+extern const struct rcar_sysc_info r8a7795_sysc_info;
- #endif /* __SOC_RENESAS_RCAR_SYSC_H__ */
--- 
-1.9.1
+Changelog fails to explain the ramifications of this change...
