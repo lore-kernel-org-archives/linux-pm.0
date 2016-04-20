@@ -1,102 +1,81 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFC PATCH 4/4] sched/fair: call cpufreq hook for remote wakeups
-Date: Tue, 19 Apr 2016 19:39:29 -0700
-Message-ID: <1461119969-10371-4-git-send-email-smuckle@linaro.org>
-References: <1461119969-10371-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1461119969-10371-1-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH] thermal: tegra: mark PM functions __maybe_unused
+Date: Wed, 20 Apr 2016 14:44:22 +0800
+Message-ID: <57172546.6090106@nvidia.com>
+References: <1460838026-1242452-1-git-send-email-arnd@arndb.de> <20160418071513.GA13078@ulmo.ba.sec> <5715998B.6080607@nvidia.com> <20160419124319.GG8284@ulmo.ba.sec>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from nat-hk.nvidia.com ([203.18.50.4]:30282 "EHLO
+	hkmmgate102.nvidia.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751964AbcDTGnN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 02:43:13 -0400
+In-Reply-To: <20160419124319.GG8284@ulmo.ba.sec>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Without calling the cpufreq hook for a remote wakeup it is possible
-for such a wakeup to go unnoticed by cpufreq on the target CPU for up
-to a full tick. This can occur if the target CPU is running a
-CPU-bound task.
 
-Signed-off-by: Steve Muckle <smuckle@linaro.org>
----
- kernel/sched/fair.c  |  8 +++-----
- kernel/sched/sched.h | 17 ++++++++++-------
- 2 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b06c1e938cb9..d21a80a44b6e 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2826,15 +2826,13 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
- 	struct rq *rq = rq_of(cfs_rq);
- 	int cpu = cpu_of(rq);
- 
--	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
-+	if (&rq->cfs == cfs_rq) {
- 		unsigned long max = rq->cpu_capacity_orig;
- 
- 		/*
- 		 * There are a few boundary cases this might miss but it should
- 		 * get called often enough that that should (hopefully) not be
--		 * a real problem -- added to that it only calls on the local
--		 * CPU, so if we enqueue remotely we'll miss an update, but
--		 * the next tick/schedule should update.
-+		 * a real problem.
- 		 *
- 		 * It will not get called when we go idle, because the idle
- 		 * thread is a different class (!fair), nor will the utilization
-@@ -2845,7 +2843,7 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
- 		 *
- 		 * See cpu_util().
- 		 */
--		cpufreq_update_util(rq_clock(rq),
-+		cpufreq_update_util(cpu, rq_clock(rq),
- 				    min(cfs_rq->avg.util_avg, max), max);
- 	}
- }
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 921d6e5d33b7..a8a1eb603263 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1799,6 +1799,7 @@ DECLARE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
- 
- /**
-  * cpufreq_update_util - Take a note about CPU utilization changes.
-+ * @cpu: Target CPU.
-  * @time: Current time.
-  * @util: Current utilization.
-  * @max: Utilization ceiling.
-@@ -1808,13 +1809,14 @@ DECLARE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
-  *
-  * It can only be called from RCU-sched read-side critical sections.
-  */
--static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
-+static inline void cpufreq_update_util(int cpu, u64 time, unsigned long util,
-+				       unsigned long max)
- {
--       struct update_util_data *data;
-+	struct update_util_data *data;
- 
--       data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
--       if (data)
--               data->func(data, time, util, max);
-+	data = rcu_dereference_sched(per_cpu(cpufreq_update_util_data, cpu));
-+	if (data)
-+		data->func(data, time, util, max);
- }
- 
- /**
-@@ -1835,10 +1837,11 @@ static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned lo
-  */
- static inline void cpufreq_trigger_update(u64 time)
- {
--	cpufreq_update_util(time, ULONG_MAX, 0);
-+	cpufreq_update_util(smp_processor_id(), time, ULONG_MAX, 0);
- }
- #else
--static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max) {}
-+static inline void cpufreq_update_util(int cpu, u64 time, unsigned long util,
-+				       unsigned long max) {}
- static inline void cpufreq_trigger_update(u64 time) {}
- #endif /* CONFIG_CPU_FREQ */
- 
--- 
-2.4.10
+On 2016=E5=B9=B404=E6=9C=8819=E6=97=A5 20:43, Thierry Reding wrote:
+> * PGP Signed by an unknown key
+>=20
+> On Tue, Apr 19, 2016 at 10:35:55AM +0800, Wei Ni wrote:
+>>
+>>
+>> On 2016=E5=B9=B404=E6=9C=8818=E6=97=A5 15:15, Thierry Reding wrote:
+>>>> Old Signed by an unknown key
+>>>
+>>> On Sat, Apr 16, 2016 at 10:19:33PM +0200, Arnd Bergmann wrote:
+>>>> After the PM support has been added to this driver, we get
+>>>> a harmless warning when that support is disabled at compile
+>>>> time:
+>>>>
+>>>> drivers/thermal/tegra/soctherm.c:641:12: error: 'soctherm_resume' =
+defined but not used [-Werror=3Dunused-function]
+>>>>  static int soctherm_resume(struct device *dev)
+>>>>
+>>>> This marks the two PM functions as __maybe_unused to shut up
+>>>> the warning. This is preferred over adding an #ifdef around
+>>>> them, as it is harder to get wrong, and provides better
+>>>> compile-time coverage.
+>>>>
+>>>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>>>> Fixes: a134b4143b65 ("thermal: tegra: add PM support")
+>>>> ---
+>>>>  drivers/thermal/tegra/soctherm.c | 4 ++--
+>>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> The need for this should go away when Jon's generic power domain se=
+ries
+>>
+>> Hi Thierry,
+>> Could you please show me the Jon's generic power domain series, so t=
+hat I can
+>> verify it.
+>=20
+> Here are the remaining patches from Jon's series:
+>=20
+> 	https://patchwork.ozlabs.org/patch/603285/
+> 	https://patchwork.ozlabs.org/patch/603287/
+> 	https://patchwork.ozlabs.org/patch/603284/
+
+I checked this generic power domain series, it select PM and PM_GENERIC=
+_DOMAINS
+for Tegra SoC Family. But the soctherm_suspend/resume callbacks defined=
+ by
+SIMPLE_DEV_PM_OPS are only used when the CONFIG_PM_SLEEP is enabled, so=
+ if the
+CONFIG_PM_SLEEP is disabled, we still will get this warning.
+So to avoid the warning, I think this patch is needed.
+
+Wei.
+
+>=20
+> Thierry
+>=20
+> * Unknown Key
+> * 0x7F3EB3A1
+>=20
