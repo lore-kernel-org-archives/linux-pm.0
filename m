@@ -1,103 +1,50 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: powernv: Fixes initialization of chip and chip mask
-Date: Wed, 20 Apr 2016 15:02:38 +0530
-Message-ID: <1461144758-17810-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: powernv: Fixes initialization of chip and chip
+ mask
+Date: Wed, 20 Apr 2016 15:20:56 +0530
+Message-ID: <20160420095056.GE12019@vireshk-i7>
+References: <1461144758-17810-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:32920 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932257AbcDTJvA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 05:51:00 -0400
+Received: by mail-pa0-f47.google.com with SMTP id zm5so16385144pac.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 02:51:00 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1461144758-17810-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 
-Y29tbWl0IDczNTM2NmZjNDA3NyAoImNwdWZyZXE6IHBvd2VybnY6IENhbGwgdGhyb3R0bGVfY2hl
-Y2soKSBvbgpyZWNlaXZpbmcgT0NDX1RIUk9UVExFIikgdXNlZCBjcHVtYXNrX29mX25vZGUoKSBh
-cyB0aGUgY2hpcCBtYXNrLiBCdXQKdGhpcyBtYXNrIGNvbnRhaW5zIG9ubHkgb25saW5lIGNwdXMu
-IFRoaXMgYnJlYWtzIGEgc2V0dXAgd2hlcmUgY3B1ZnJlcQppcyBpbml0aWFsaXplZCB3aXRoIGZl
-dyBvZmZsaW5lIGNvcmVzIGFuZCBtYWRlIG9ubGluZSBsYXRlci4gU28gdGhpcwpwYXRjaCBmaXhl
-cyB0aGlzIGJ1ZyBieSBzY2FubmluZyBhbGwgdGhlIHBvc3NpYmxlIGNwdXMgYW5kIHNldHMgdGhl
-CmNwdSBpbiB0aGUgY2hpcCBtYXNrLiBJdCBhbHNvIGZpeGVzIHRoZSBjaGlwIGRpc2NvdmVyeSB3
-aXRoCm5vbi1jb250aWd1b3VzIGNwdSBtYXNrLiBUaGlzIHBhdGNoIGNyZWF0ZXMgYSBsaXN0IG9m
-IGNoaXBzCidwb3dlcm52X2NoaXBfbGlzdCcgdG8gcmVwbGFjZSB0aGUgY2hpcCBhcnJheSBmb3Ig
-Y2xlYW5lcgppbml0aWFsaXphdGlvbi4KClNpZ25lZC1vZmYtYnk6IFNoaWxwYXNyaSBHIEJoYXQg
-PHNoaWxwYS5iaGF0QGxpbnV4LnZuZXQuaWJtLmNvbT4KUmV2aWV3ZWQtYnk6IEdhdXRoYW0gUi4g
-U2hlbm95IDxlZ29AbGludXgudm5ldC5pYm0uY29tPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9wb3dl
-cm52LWNwdWZyZXEuYyB8IDgwICsrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0t
-LQogMSBmaWxlIGNoYW5nZWQsIDQ4IGluc2VydGlvbnMoKyksIDMyIGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52LWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1
-ZnJlcS9wb3dlcm52LWNwdWZyZXEuYwppbmRleCAzOWFjNzhjLi4wNTgxYTU5IDEwMDY0NAotLS0g
-YS9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVx
-L3Bvd2VybnYtY3B1ZnJlcS5jCkBAIC02NCw3ICs2NCw5IEBAIGVudW0gdGhyb3R0bGVfcmVhc29u
-X3R5cGUgewogCU9DQ19NQVhfUkVBU09OCiB9OwogCi1zdGF0aWMgc3RydWN0IGNoaXAgeworc3Rh
-dGljIExJU1RfSEVBRChwb3dlcm52X2NoaXBfbGlzdCk7CisKK3N0cnVjdCBjaGlwIHsKIAl1bnNp
-Z25lZCBpbnQgaWQ7CiAJYm9vbCB0aHJvdHRsZWQ7CiAJYm9vbCByZXN0b3JlOwpAQCAtNzQsOSAr
-NzYsOSBAQCBzdGF0aWMgc3RydWN0IGNoaXAgewogCWludCB0aHJvdHRsZV90dXJibzsKIAlpbnQg
-dGhyb3R0bGVfc3ViX3R1cmJvOwogCWludCByZWFzb25bT0NDX01BWF9SRUFTT05dOwotfSAqY2hp
-cHM7CisJc3RydWN0IGxpc3RfaGVhZCBsaXN0OworfTsKIAotc3RhdGljIGludCBucl9jaGlwczsK
-IHN0YXRpYyBERUZJTkVfUEVSX0NQVShzdHJ1Y3QgY2hpcCAqLCBjaGlwX2luZm8pOwogCiAvKgpA
-QCAtNTI4LDEyICs1MzAsMjIgQEAgb3V0OgogCXB1dF9vbmxpbmVfY3B1cygpOwogfQogCitzdGF0
-aWMgaW5saW5lIHN0cnVjdCBjaGlwICpmaW5kX2NoaXAodW5zaWduZWQgaW50IGlkKQoreworCXN0
-cnVjdCBjaGlwICpjaGlwOworCisJbGlzdF9mb3JfZWFjaF9lbnRyeShjaGlwLCAmcG93ZXJudl9j
-aGlwX2xpc3QsIGxpc3QpCisJCWlmIChjaGlwLT5pZCA9PSBpZCkKKwkJCXJldHVybiBjaGlwOwor
-CXJldHVybiBOVUxMOworfQorCiBzdGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV9vY2NfbXNnKHN0
-cnVjdCBub3RpZmllcl9ibG9jayAqbmIsCiAJCQkJICAgdW5zaWduZWQgbG9uZyBtc2dfdHlwZSwg
-dm9pZCAqX21zZykKIHsKIAlzdHJ1Y3Qgb3BhbF9tc2cgKm1zZyA9IF9tc2c7CiAJc3RydWN0IG9w
-YWxfb2NjX21zZyBvbXNnOwotCWludCBpOworCXN0cnVjdCBjaGlwICpjaGlwOwogCiAJaWYgKG1z
-Z190eXBlICE9IE9QQUxfTVNHX09DQykKIAkJcmV0dXJuIDA7CkBAIC01NjksMjggKzU4MSwyNyBA
-QCBzdGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV9vY2NfbXNnKHN0cnVjdCBub3RpZmllcl9ibG9j
-ayAqbmIsCiAJCQl0aHJvdHRsZWQgPSBmYWxzZTsKIAkJCXByX2luZm8oIk9DQyBBY3RpdmUsIENQ
-VSBmcmVxdWVuY3kgaXMgbm8gbG9uZ2VyIHRocm90dGxlZFxuIik7CiAKLQkJCWZvciAoaSA9IDA7
-IGkgPCBucl9jaGlwczsgaSsrKSB7Ci0JCQkJY2hpcHNbaV0ucmVzdG9yZSA9IHRydWU7Ci0JCQkJ
-c2NoZWR1bGVfd29yaygmY2hpcHNbaV0udGhyb3R0bGUpOworCQkJbGlzdF9mb3JfZWFjaF9lbnRy
-eShjaGlwLCAmcG93ZXJudl9jaGlwX2xpc3QsIGxpc3QpIHsKKwkJCQljaGlwLT5yZXN0b3JlID0g
-dHJ1ZTsKKwkJCQlzY2hlZHVsZV93b3JrKCZjaGlwLT50aHJvdHRsZSk7CiAJCQl9CiAKIAkJCXJl
-dHVybiAwOwogCQl9CiAKLQkJZm9yIChpID0gMDsgaSA8IG5yX2NoaXBzOyBpKyspCi0JCQlpZiAo
-Y2hpcHNbaV0uaWQgPT0gb21zZy5jaGlwKQotCQkJCWJyZWFrOwotCisJCWNoaXAgPSBmaW5kX2No
-aXAob21zZy5jaGlwKTsKKwkJaWYgKCFjaGlwKQorCQkJcmV0dXJuIC1FSU5WQUw7CiAJCWlmIChv
-bXNnLnRocm90dGxlX3N0YXR1cyA+PSAwICYmCiAJCSAgICBvbXNnLnRocm90dGxlX3N0YXR1cyA8
-PSBPQ0NfTUFYX1RIUk9UVExFX1NUQVRVUykgewotCQkJY2hpcHNbaV0udGhyb3R0bGVfcmVhc29u
-ID0gb21zZy50aHJvdHRsZV9zdGF0dXM7Ci0JCQljaGlwc1tpXS5yZWFzb25bb21zZy50aHJvdHRs
-ZV9zdGF0dXNdKys7CisJCQljaGlwLT50aHJvdHRsZV9yZWFzb24gPSBvbXNnLnRocm90dGxlX3N0
-YXR1czsKKwkJCWNoaXAtPnJlYXNvbltvbXNnLnRocm90dGxlX3N0YXR1c10rKzsKIAkJfQogCiAJ
-CWlmICghb21zZy50aHJvdHRsZV9zdGF0dXMpCi0JCQljaGlwc1tpXS5yZXN0b3JlID0gdHJ1ZTsK
-KwkJCWNoaXAtPnJlc3RvcmUgPSB0cnVlOwogCi0JCXNjaGVkdWxlX3dvcmsoJmNoaXBzW2ldLnRo
-cm90dGxlKTsKKwkJc2NoZWR1bGVfd29yaygmY2hpcC0+dGhyb3R0bGUpOwogCX0KIAlyZXR1cm4g
-MDsKIH0KQEAgLTYyMiwzNyArNjMzLDQyIEBAIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9kcml2ZXIg
-cG93ZXJudl9jcHVmcmVxX2RyaXZlciA9IHsKIAogc3RhdGljIGludCBpbml0X2NoaXBfaW5mbyh2
-b2lkKQogewotCXVuc2lnbmVkIGludCBjaGlwWzI1Nl07Ci0JdW5zaWduZWQgaW50IGNwdSwgaTsK
-Kwl1bnNpZ25lZCBpbnQgY3B1OwogCXVuc2lnbmVkIGludCBwcmV2X2NoaXBfaWQgPSBVSU5UX01B
-WDsKKwlzdHJ1Y3QgY2hpcCAqY2hpcCA9IE5VTEw7CiAKIAlmb3JfZWFjaF9wb3NzaWJsZV9jcHUo
-Y3B1KSB7CiAJCXVuc2lnbmVkIGludCBpZCA9IGNwdV90b19jaGlwX2lkKGNwdSk7CiAKIAkJaWYg
-KHByZXZfY2hpcF9pZCAhPSBpZCkgewogCQkJcHJldl9jaGlwX2lkID0gaWQ7Ci0JCQljaGlwW25y
-X2NoaXBzKytdID0gaWQ7CisJCQljaGlwID0gZmluZF9jaGlwKGlkKTsKIAkJfQorCQlpZiAoIWNo
-aXApIHsKKwkJCWNoaXAgPSBremFsbG9jKHNpemVvZihzdHJ1Y3QgY2hpcCksIEdGUF9LRVJORUwp
-OworCQkJaWYgKCFjaGlwKQorCQkJCWdvdG8gb3V0OworCQkJY2hpcC0+aWQgPSBpZDsKKwkJCUlO
-SVRfV09SSygmY2hpcC0+dGhyb3R0bGUsIHBvd2VybnZfY3B1ZnJlcV93b3JrX2ZuKTsKKwkJCUlO
-SVRfTElTVF9IRUFEKCZjaGlwLT5saXN0KTsKKwkJCWxpc3RfYWRkKCZjaGlwLT5saXN0LCAmcG93
-ZXJudl9jaGlwX2xpc3QpOworCQl9CisJCWNwdW1hc2tfc2V0X2NwdShjcHUsICZjaGlwLT5tYXNr
-KTsKKwkJcGVyX2NwdShjaGlwX2luZm8sIGNwdSkgPSBjaGlwOwogCX0KLQotCWNoaXBzID0ga2Nh
-bGxvYyhucl9jaGlwcywgc2l6ZW9mKHN0cnVjdCBjaGlwKSwgR0ZQX0tFUk5FTCk7Ci0JaWYgKCFj
-aGlwcykKLQkJcmV0dXJuIC1FTk9NRU07Ci0KLQlmb3IgKGkgPSAwOyBpIDwgbnJfY2hpcHM7IGkr
-KykgewotCQljaGlwc1tpXS5pZCA9IGNoaXBbaV07Ci0JCWNwdW1hc2tfY29weSgmY2hpcHNbaV0u
-bWFzaywgY3B1bWFza19vZl9ub2RlKGNoaXBbaV0pKTsKLQkJSU5JVF9XT1JLKCZjaGlwc1tpXS50
-aHJvdHRsZSwgcG93ZXJudl9jcHVmcmVxX3dvcmtfZm4pOwotCQlmb3JfZWFjaF9jcHUoY3B1LCAm
-Y2hpcHNbaV0ubWFzaykKLQkJCXBlcl9jcHUoY2hpcF9pbmZvLCBjcHUpID0gICZjaGlwc1tpXTsK
-LQl9Ci0KIAlyZXR1cm4gMDsKK291dDoKKwlsaXN0X2Zvcl9lYWNoX2VudHJ5KGNoaXAsICZwb3dl
-cm52X2NoaXBfbGlzdCwgbGlzdCkKKwkJa2ZyZWUoY2hpcCk7CisJcmV0dXJuIC1FTk9NRU07CiB9
-CiAKIHN0YXRpYyBpbmxpbmUgdm9pZCBjbGVhbl9jaGlwX2luZm8odm9pZCkKIHsKLQlrZnJlZShj
-aGlwcyk7CisJc3RydWN0IGNoaXAgKmNoaXA7CisKKwlsaXN0X2Zvcl9lYWNoX2VudHJ5KGNoaXAs
-ICZwb3dlcm52X2NoaXBfbGlzdCwgbGlzdCkKKwkJa2ZyZWUoY2hpcCk7CiB9CiAKIHN0YXRpYyBp
-bmxpbmUgdm9pZCB1bnJlZ2lzdGVyX2FsbF9ub3RpZmllcnModm9pZCkKLS0gCjEuOS4zCgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYg
-bWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMu
-b3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+On 20-04-16, 15:02, Shilpasri G Bhat wrote:
+> commit 735366fc4077 ("cpufreq: powernv: Call throttle_check() on
+> receiving OCC_THROTTLE") used cpumask_of_node() as the chip mask. But
+> this mask contains only online cpus. This breaks a setup where cpufreq
+> is initialized with few offline cores and made online later. So this
+> patch fixes this bug by scanning all the possible cpus and sets the
+> cpu in the chip mask. It also fixes the chip discovery with
+> non-contiguous cpu mask. This patch creates a list of chips
+> 'powernv_chip_list' to replace the chip array for cleaner
+> initialization.
+> 
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 80 +++++++++++++++++++++++----------------
+>  1 file changed, 48 insertions(+), 32 deletions(-)
+
+You have made your patch less readable by mixing two things here. Yes
+you prefer/need the list way of doing things for the new stuff, but
+that should have been done separately. Right now, I have to read it
+very carefully to see which line did the real change you are talking
+about.
+
+So, please split this up into multiple patches. First one just moving
+to the list instead of array.
+
+-- 
+viresh
