@@ -1,50 +1,110 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power cooling model.
-Date: Thu, 21 Apr 2016 02:41:24 +0200
-Message-ID: <12007858.UuqVGafLHV@vostro.rjw.lan>
-References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com> <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com> <57176ECF.6020705@gmail.com>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [PATCH] sched/cpufreq: don't trigger cpufreq update w/o real
+ rt/deadline tasks running
+Date: Thu, 21 Apr 2016 09:09:43 +0800
+Message-ID: <CANRm+CwW_STS21Fu0iKs5gVps9OF8GFKB4ksqLqT=33O-hoOWg@mail.gmail.com>
+References: <1460958684-32105-1-git-send-email-wanpeng.li@hotmail.com>
+	<6087716.bi8vDPiZNy@vostro.rjw.lan>
+	<20160420140117.GZ3448@twins.programming.kicks-ass.net>
+	<CANRm+CzGm5axJC_y=rqhmi=DLkfpXfo2NLzFyRyjeZE89Aty4Q@mail.gmail.com>
+	<57180293.1040809@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <57176ECF.6020705-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:33435 "EHLO
+	mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbcDUBJo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 21:09:44 -0400
+In-Reply-To: <57180293.1040809@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
 
-On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
-> Hi Rafael,
-> 
-> On 13/04/16 06:52, Rafael J. Wysocki wrote:
-> > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> >> Hi Rafael,
-> >>
-> >> On 15-03-16, 16:10, Dawei Chien wrote:
-> >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
-> >>> cooling devices with dynamic power coefficient.
-> >>>
-> >>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> >>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >>
-> >> Can you please apply this patch from Dawei ?
-> >
-> > I can, but I'm traveling this week, so that's rather going to happen next week.
-> >
-> 
-> I don't see the patch in linux-next, did you forget to pick/push it?
+2016-04-21 6:28 GMT+08:00 Rafael J. Wysocki <rafael.j.wysocki@intel.com>:
+> On 4/21/2016 12:24 AM, Wanpeng Li wrote:
+>>
+>> 2016-04-20 22:01 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
+>>>
+>>> On Wed, Apr 20, 2016 at 02:32:35AM +0200, Rafael J. Wysocki wrote:
+>>>>
+>>>> On Monday, April 18, 2016 01:51:24 PM Wanpeng Li wrote:
+>>>>>
+>>>>> Sometimes update_curr() is called w/o tasks actually running, it is
+>>>>> captured by:
+>>>>>      u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
+>>>>> We should not trigger cpufreq update in this case for rt/deadline
+>>>>> classes, and this patch fix it.
+>>>>>
+>>>>> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
+>>>>
+>>>> The signed-off-by tag should agree with the From: header.  One way to
+>>>> achieve
+>>>> that is to add an extra From: line at the start of the changelog.
+>>>>
+>>>> That said, this looks like a good catch that should go into 4.6 to me.
+>>>>
+>>>> Peter, what do you think?
+>>>
+>>> I'm confused by the Changelog. *what* ?
+>>
+>> Sometimes .update_curr hook is called w/o tasks actually running, it is
+>> captured by:
+>>
+>>          u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
+>>
+>> We should not trigger cpufreq update in this case for rt/deadline
+>> classes, and this patch fix it.
+>
+>
+> That's what you wrote in the changelog, no need to repeat that.
+>
+> I guess Peter is asking for more details, though.  I actually would like to
+> get some more details here too.  Like an example of when the situation in
+> question actually happens.
 
-No, I didn't.  I just didn't have the time to get to them before.
+I add a print to print when delta_exec is zero for rt class, something
+like below:
 
-Now, given that they are thermal patches, they really should go in via
-linux-soc-thermal.git.
+      watchdog/5-48    [005] d...   568.449095: update_curr_rt: rt
+delta_exec is zero
+      watchdog/5-48    [005] d...   568.449104: <stack trace>
+ => pick_next_task_rt
+ => __schedule
+ => schedule
+ => smpboot_thread_fn
+ => kthread
+ => ret_from_fork
+      watchdog/5-48    [005] d...   568.449105: update_curr_rt: rt
+delta_exec is zero
+      watchdog/5-48    [005] d...   568.449111: <stack trace>
+ => put_prev_task_rt
+ => pick_next_task_idle
+ => __schedule
+ => schedule
+ => smpboot_thread_fn
+ => kthread
+ => ret_from_fork
+      watchdog/6-56    [006] d...   568.510094: update_curr_rt: rt
+delta_exec is zero
+      watchdog/6-56    [006] d...   568.510103: <stack trace>
+ => pick_next_task_rt
+ => __schedule
+ => schedule
+ => smpboot_thread_fn
+ => kthread
+ => ret_from_fork
+      watchdog/6-56    [006] d...   568.510105: update_curr_rt: rt
+delta_exec is zero
+      watchdog/6-56    [006] d...   568.510111: <stack trace>
+ => put_prev_task_rt
+ => pick_next_task_idle
+ => __schedule
+ => schedule
+ => smpboot_thread_fn
+ => kthread
+ => ret_from_fork
+[...]
 
-Eduardo, any chance to take care of these?
-
-Thanks,
-Rafael
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Regards,
+Wanpeng Li
