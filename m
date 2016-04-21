@@ -1,64 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 00/10] cpufreq: Get rid of cpufreq-dt's platform data
-Date: Thu, 21 Apr 2016 14:28:52 +0530
-Message-ID: <cover.1461228504.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:35708 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbcDUI7S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:59:18 -0400
-Received: by mail-pf0-f173.google.com with SMTP id n1so28198856pfn.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 01:59:17 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 05/10] PM / OPP: Mark shared-opp for non-dt case
+Date: Thu, 21 Apr 2016 14:28:57 +0530
+Message-ID: <11b3f4234120113b3493e9adf5c3e1ce1700f886.1461228504.git.viresh.kumar@linaro.org>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Guys,
+opp core allows OPPs to be explicitly marked as shared from platform
+code, in case of operating-point v1 bindings.
 
-The aim of the series is to kill the users of cpufreq-dt's platform
-data, i.e. mvebu. And because that required a new API to the OPP core,
-this just became a mix of cpufreq and OPP patches.
+Though we do everything fine in that case, we don't set the flag in the
+opp-table to indicate that the OPPs are shared. It works fine today as
+the flag isn't used anywhere else in the core, but we should be doing
+the right thing by marking it set.
 
-The first four patches does some sort of cleanup of the OPP core to base
-the next patches. Fifth one sets the shared_opp flag in opp-tables
-(required by later patches). Sixth one adds a new API for opp-v1 users,
-to get the CPUs sharing an OPP table.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/cpu.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Seventh to tenth update cpufreq-dt and mvebu to get rid of platform
-data.
-
-@Rafael: The last patch touches the compatible-list array in
-cpufreq-dt-platdev.c, which is also touched by
-'[PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code'.
-
-So, the last one has some sort of dependency on that series, otherwise
-all other patches can be applied cleanly.
-
-@Arnd: Can you please look at patches 7-10 ..
-
-Viresh Kumar (10):
-  PM / OPP: Propagate the error returned by _find_opp_table()
-  PM / OPP: Add missing doc style comments
-  PM / OPP: dev_pm_opp_set_sharing_cpus() doesn't depend on CONFIG_OF
-  PM / OPP: Relocate dev_pm_opp_set_sharing_cpus()
-  PM / OPP: Mark shared-opp for non-dt case
-  PM / OPP: Add dev_pm_opp_get_sharing_cpus()
-  cpufreq: dt: Identify cpu-sharing for platforms without
-    operating-points-v2
-  mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared
-  cpufreq: dt: Kill platform-data
-  cpufreq: mvebu: Use generic platdev driver
-
- arch/arm/mach-mvebu/pmsu.c           |  14 ++-
- drivers/base/power/opp/cpu.c         | 187 +++++++++++++++++++++++++++--------
- drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
- drivers/cpufreq/cpufreq-dt.c         |  22 ++---
- include/linux/cpufreq-dt.h           |  24 -----
- include/linux/pm_opp.h               |  18 ++--
- 6 files changed, 176 insertions(+), 91 deletions(-)
- delete mode 100644 include/linux/cpufreq-dt.h
-
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 491e8684bd5f..55cbf9bd8707 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -319,6 +319,9 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+ 				__func__, cpu);
+ 			continue;
+ 		}
++
++		/* Mark opp-table as multiple CPUs are sharing it now */
++		opp_table->shared_opp = true;
+ 	}
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
 -- 
 2.7.1.410.g6faf27b
-
