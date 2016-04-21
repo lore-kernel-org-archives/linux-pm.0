@@ -1,72 +1,81 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
- cooling model.
-Date: Wed, 20 Apr 2016 20:40:42 -0700
-Message-ID: <20160421034040.GA26525@localhost.localdomain>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [RESEND][PATCH 3/3] arm64: dts: mt8173: Add dynamic power node.
+Date: Thu, 21 Apr 2016 12:12:51 +0800
+Message-ID: <1461211971.16427.4.camel@mtksdaap41>
 References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
- <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
- <57176ECF.6020705@gmail.com>
- <12007858.UuqVGafLHV@vostro.rjw.lan>
- <20160421030141.GA4845@localhost.localdomain>
+	 <1458029437-12846-4-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36662 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751375AbcDUDkq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:40:46 -0400
-Content-Disposition: inline
-In-Reply-To: <20160421030141.GA4845@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1458029437-12846-4-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, srv_heupstream <srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit
 
-On Wed, Apr 20, 2016 at 08:01:41PM -0700, Eduardo Valentin wrote:
-> On Thu, Apr 21, 2016 at 02:41:24AM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
-> > > Hi Rafael,
-> > > 
-> > > On 13/04/16 06:52, Rafael J. Wysocki wrote:
-> > > > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > >> Hi Rafael,
-> > > >>
-> > > >> On 15-03-16, 16:10, Dawei Chien wrote:
-> > > >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
-> > > >>> cooling devices with dynamic power coefficient.
-> > > >>>
-> > > >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> > > >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > >>
-> > > >> Can you please apply this patch from Dawei ?
-> > > >
-> > > > I can, but I'm traveling this week, so that's rather going to happen next week.
-> > > >
-> > > 
-> > > I don't see the patch in linux-next, did you forget to pick/push it?
-> > 
-> > No, I didn't.  I just didn't have the time to get to them before.
-> > 
-> > Now, given that they are thermal patches, they really should go in via
-> > linux-soc-thermal.git.
-> > 
-> > Eduardo, any chance to take care of these?
-> 
-> Yes I can add this one, given that they have the proper acked-by. I was
-> a bit hesitant to just get them because they are touching
-> drivers/cpufreq. 
-> 
-> Anyways, I am adding this to my branch to the next merge window.
+On Tue, 2016-03-15 at 16:10 +0800, Dawei Chien (=E9=8C=A2=E5=A4=A7=E8=A1=
+=9B) wrote:
+> This device node is for calculating dynamic power in mW.
+> Since mt8173 has two clusters, there are two dynamic power
+> coefficient as well.
+>=20
+> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> ---
+> This patch is base on patchset:
+> https://lkml.org/lkml/2015/11/17/251
 
-Added the driver changes. The dt parts should go via your platform tree.
-And you can add my 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Sorry for miss one dependence for this device node.
+https://lkml.org/lkml/2015/7/9/206
 
-on the dt changes.
+> ---
+>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
+>  1 file changed, 4 insertions(+)
+>=20
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/bo=
+ot/dts/mediatek/mt8173.dtsi
+> index f9c44cc..5cb6b4e 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -71,6 +71,7 @@
+>                         #cooling-cells =3D <2>;
+>                         #cooling-min-level =3D <0>;
+>                         #cooling-max-level =3D <7>;
+> +                       dynamic-power-coefficient =3D <263>;
+>                 };
+>=20
+>                 cpu1: cpu@1 {
+> @@ -95,6 +96,7 @@
+>                         #cooling-cells =3D <2>;
+>                         #cooling-min-level =3D <0>;
+>                         #cooling-max-level =3D <7>;
+> +                       dynamic-power-coefficient =3D <263>;
+>                 };
+>=20
+>                 cpu2: cpu@100 {
+> @@ -119,6 +121,7 @@
+>                         #cooling-cells =3D <2>;
+>                         #cooling-min-level =3D <0>;
+>                         #cooling-max-level =3D <7>;
+> +                       dynamic-power-coefficient =3D <530>;
+>                 };
+>=20
+>                 cpu3: cpu@101 {
+> @@ -143,6 +146,7 @@
+>                         #cooling-cells =3D <2>;
+>                         #cooling-min-level =3D <0>;
+>                         #cooling-max-level =3D <7>;
+> +                       dynamic-power-coefficient =3D <530>;
+>                 };
+>=20
+>                 idle-states {
+> --
+> 1.7.9.5
+>=20
 
-> 
-> 
-> > 
-> > Thanks,
-> > Rafael
-> > 
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
