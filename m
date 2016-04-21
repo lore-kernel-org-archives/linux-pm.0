@@ -1,128 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/8] cpufreq: imx: Use generic platdev driver
-Date: Thu, 21 Apr 2016 14:13:48 +0530
-Message-ID: <08c7bf360dfb7620591c0e0de6e047fffb0a5546.1461228081.git.viresh.kumar@linaro.org>
+Subject: [PATCH 7/8] cpufreq: zynq: Use generic platdev driver
+Date: Thu, 21 Apr 2016 14:13:53 +0530
+Message-ID: <9d64ef8232464d1ea5ad786b318fab49c4332005.1461228081.git.viresh.kumar@linaro.org>
 References: <cover.1461228081.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
 References: <cover.1461228081.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: arnd.bergmann@linaro.org, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
 device now, reuse that and remove similar code from platform code.
 
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: S=C3=B6ren Brinkmann <soren.brinkmann@xilinx.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-imx/imx27-dt.c         | 4 ----
- arch/arm/mach-imx/mach-imx51.c       | 3 ---
- arch/arm/mach-imx/mach-imx53.c       | 2 --
- arch/arm/mach-imx/mach-imx7d.c       | 6 ------
- drivers/cpufreq/cpufreq-dt-platdev.c | 5 +++++
- 5 files changed, 5 insertions(+), 15 deletions(-)
+ arch/arm/mach-zynq/common.c          | 2 --
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-imx/imx27-dt.c b/arch/arm/mach-imx/imx27-dt.c
-index bd42d1bd10af..90c62bf01f9e 100644
---- a/arch/arm/mach-imx/imx27-dt.c
-+++ b/arch/arm/mach-imx/imx27-dt.c
-@@ -20,11 +20,7 @@
- 
- static void __init imx27_dt_init(void)
+diff --git a/arch/arm/mach-zynq/common.c b/arch/arm/mach-zynq/common.c
+index 860ffb663f02..da876d28ccbc 100644
+--- a/arch/arm/mach-zynq/common.c
++++ b/arch/arm/mach-zynq/common.c
+@@ -110,7 +110,6 @@ static void __init zynq_init_late(void)
+  */
+ static void __init zynq_init_machine(void)
  {
--	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
--
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--
+-	struct platform_device_info devinfo =3D { .name =3D "cpufreq-dt", };
+ 	struct soc_device_attribute *soc_dev_attr;
+ 	struct soc_device *soc_dev;
+ 	struct device *parent =3D NULL;
+@@ -145,7 +144,6 @@ static void __init zynq_init_machine(void)
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, parent);
+=20
+ 	platform_device_register(&zynq_cpuidle_device);
 -	platform_device_register_full(&devinfo);
  }
- 
- static const char * const imx27_dt_board_compat[] __initconst = {
-diff --git a/arch/arm/mach-imx/mach-imx51.c b/arch/arm/mach-imx/mach-imx51.c
-index 6883fbaf9484..10a82a4f1e58 100644
---- a/arch/arm/mach-imx/mach-imx51.c
-+++ b/arch/arm/mach-imx/mach-imx51.c
-@@ -50,13 +50,10 @@ static void __init imx51_ipu_mipi_setup(void)
- 
- static void __init imx51_dt_init(void)
- {
--	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
--
- 	imx51_ipu_mipi_setup();
- 	imx_src_init();
- 
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_full(&devinfo);
- }
- 
- static void __init imx51_init_late(void)
-diff --git a/arch/arm/mach-imx/mach-imx53.c b/arch/arm/mach-imx/mach-imx53.c
-index 86316a979297..18b5c5c136db 100644
---- a/arch/arm/mach-imx/mach-imx53.c
-+++ b/arch/arm/mach-imx/mach-imx53.c
-@@ -40,8 +40,6 @@ static void __init imx53_dt_init(void)
- static void __init imx53_init_late(void)
- {
- 	imx53_pm_init();
--
--	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
- }
- 
- static const char * const imx53_dt_board_compat[] __initconst = {
-diff --git a/arch/arm/mach-imx/mach-imx7d.c b/arch/arm/mach-imx/mach-imx7d.c
-index 5a27f20c9a82..b450f525a670 100644
---- a/arch/arm/mach-imx/mach-imx7d.c
-+++ b/arch/arm/mach-imx/mach-imx7d.c
-@@ -105,11 +105,6 @@ static void __init imx7d_init_irq(void)
- 	irqchip_init();
- }
- 
--static void __init imx7d_init_late(void)
--{
--	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
--}
--
- static const char *const imx7d_dt_compat[] __initconst = {
- 	"fsl,imx7d",
- 	NULL,
-@@ -117,7 +112,6 @@ static const char *const imx7d_dt_compat[] __initconst = {
- 
- DT_MACHINE_START(IMX7D, "Freescale i.MX7 Dual (Device Tree)")
- 	.init_irq	= imx7d_init_irq,
--	.init_late	= imx7d_init_late,
- 	.init_machine	= imx7d_init_machine,
- 	.dt_compat	= imx7d_dt_compat,
- MACHINE_END
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 3b3e6804cf14..ac12c4a02964 100644
+=20
+ static void __init zynq_timer_init(void)
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpu=
+freq-dt-platdev.c
+index db6767a1f975..c8a3eceac356 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -12,6 +12,11 @@
- #include <linux/platform_device.h>
- 
- static const struct of_device_id machines[] = {
-+	{ .compatible = "fsl,imx27", },
-+	{ .compatible = "fsl,imx51", },
-+	{ .compatible = "fsl,imx53", },
-+	{ .compatible = "fsl,imx7d", },
+@@ -64,6 +64,8 @@ static const struct of_device_id machines[] =3D {
+ 	{ .compatible =3D "ti,omap3", },
+ 	{ .compatible =3D "ti,omap4", },
+ 	{ .compatible =3D "ti,omap5", },
 +
- 	{ .compatible = "marvell,berlin", },
- 
- 	{ .compatible = "samsung,exynos3250", },
--- 
++	{ .compatible =3D "xlnx,zynq-7000", },
+ };
+=20
+ static int __init cpufreq_dt_platdev_init(void)
+--=20
 2.7.1.410.g6faf27b
