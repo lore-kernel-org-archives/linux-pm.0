@@ -1,110 +1,61 @@
-From: Wanpeng Li <kernellwp@gmail.com>
-Subject: Re: [PATCH] sched/cpufreq: don't trigger cpufreq update w/o real
- rt/deadline tasks running
-Date: Thu, 21 Apr 2016 09:09:43 +0800
-Message-ID: <CANRm+CwW_STS21Fu0iKs5gVps9OF8GFKB4ksqLqT=33O-hoOWg@mail.gmail.com>
-References: <1460958684-32105-1-git-send-email-wanpeng.li@hotmail.com>
-	<6087716.bi8vDPiZNy@vostro.rjw.lan>
-	<20160420140117.GZ3448@twins.programming.kicks-ass.net>
-	<CANRm+CzGm5axJC_y=rqhmi=DLkfpXfo2NLzFyRyjeZE89Aty4Q@mail.gmail.com>
-	<57180293.1040809@intel.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 7/9] thermal: of: Add support for hardware-tracked trip
+ points
+Date: Wed, 20 Apr 2016 18:12:30 -0700
+Message-ID: <20160421011230.GA118377@google.com>
+References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+ <1460950562-20652-8-git-send-email-wxt@rock-chips.com>
+ <20160420234818.GB2558@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:33435 "EHLO
-	mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbcDUBJo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 21:09:44 -0400
-In-Reply-To: <57180293.1040809@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160420234818.GB2558@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, smbarber@google.com, linux-rockchip@lists.infradead.org, Mikko Perttunen <mperttunen@nvidia.com>, Paul Walmsley <pwalmsley@nvidia.com>, Wei Ni <wni@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
 
-2016-04-21 6:28 GMT+08:00 Rafael J. Wysocki <rafael.j.wysocki@intel.com>:
-> On 4/21/2016 12:24 AM, Wanpeng Li wrote:
->>
->> 2016-04-20 22:01 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
->>>
->>> On Wed, Apr 20, 2016 at 02:32:35AM +0200, Rafael J. Wysocki wrote:
->>>>
->>>> On Monday, April 18, 2016 01:51:24 PM Wanpeng Li wrote:
->>>>>
->>>>> Sometimes update_curr() is called w/o tasks actually running, it is
->>>>> captured by:
->>>>>      u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->>>>> We should not trigger cpufreq update in this case for rt/deadline
->>>>> classes, and this patch fix it.
->>>>>
->>>>> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
->>>>
->>>> The signed-off-by tag should agree with the From: header.  One way to
->>>> achieve
->>>> that is to add an extra From: line at the start of the changelog.
->>>>
->>>> That said, this looks like a good catch that should go into 4.6 to me.
->>>>
->>>> Peter, what do you think?
->>>
->>> I'm confused by the Changelog. *what* ?
->>
->> Sometimes .update_curr hook is called w/o tasks actually running, it is
->> captured by:
->>
->>          u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->>
->> We should not trigger cpufreq update in this case for rt/deadline
->> classes, and this patch fix it.
->
->
-> That's what you wrote in the changelog, no need to repeat that.
->
-> I guess Peter is asking for more details, though.  I actually would like to
-> get some more details here too.  Like an example of when the situation in
-> question actually happens.
++ Sascha
 
-I add a print to print when delta_exec is zero for rt class, something
-like below:
+On Wed, Apr 20, 2016 at 04:48:18PM -0700, Eduardo Valentin wrote:
+> On Mon, Apr 18, 2016 at 11:35:59AM +0800, Caesar Wang wrote:
+> > From: Mikko Perttunen <mperttunen@nvidia.com>
+> > 
+> > This adds support for hardware-tracked trip points to the device tree
+> <cut>
+> 
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index 97b86c5..6ef932a 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -335,12 +335,14 @@ struct thermal_genl_event {
+> >   * @get_trend: a pointer to a function that reads the sensor temperature trend.
+> >   * @set_emul_temp: a pointer to a function that sets sensor emulated
+> >   *		   temperature.
+> > + * @set_trips: a pointer to a function that set low/high trip temperature.
+> >   */
+> >  struct thermal_zone_of_device_ops {
+> >  	int (*get_temp)(void *, int *);
+> >  	int (*get_trend)(void *, long *);
+> >  	int (*set_emul_temp)(void *, int);
+> >  	int (*set_trip_temp)(void *, int, int);
+> > +	int (*set_trips)(void *, int, int);
+> 
+> This is unfortunately a diverges from API available on thermal core. Can
+> you please add first on thermal core then, use it in of thermal?
+> 
+> I don't want to have callbacks available only via of thermal. If we
+> allow it, OF thermal becomes a separate API.
 
-      watchdog/5-48    [005] d...   568.449095: update_curr_rt: rt
-delta_exec is zero
-      watchdog/5-48    [005] d...   568.449104: <stack trace>
- => pick_next_task_rt
- => __schedule
- => schedule
- => smpboot_thread_fn
- => kthread
- => ret_from_fork
-      watchdog/5-48    [005] d...   568.449105: update_curr_rt: rt
-delta_exec is zero
-      watchdog/5-48    [005] d...   568.449111: <stack trace>
- => put_prev_task_rt
- => pick_next_task_idle
- => __schedule
- => schedule
- => smpboot_thread_fn
- => kthread
- => ret_from_fork
-      watchdog/6-56    [006] d...   568.510094: update_curr_rt: rt
-delta_exec is zero
-      watchdog/6-56    [006] d...   568.510103: <stack trace>
- => pick_next_task_rt
- => __schedule
- => schedule
- => smpboot_thread_fn
- => kthread
- => ret_from_fork
-      watchdog/6-56    [006] d...   568.510105: update_curr_rt: rt
-delta_exec is zero
-      watchdog/6-56    [006] d...   568.510111: <stack trace>
- => put_prev_task_rt
- => pick_next_task_idle
- => __schedule
- => schedule
- => smpboot_thread_fn
- => kthread
- => ret_from_fork
-[...]
+What ever happened to this effort?
 
-Regards,
-Wanpeng Li
+http://thread.gmane.org/gmane.linux.power-management.general/59451
+
+Patch 12 and 13 look to accomplish something similar, yet they do what
+Eduardo suggested. I was testing that series at my previous job, but
+unfortunately (for the fate of this series) I left that employer before
+I could finish reviewing and testing it. Perhaps Caesar can resurrect
+and test it?
+
+Brian
