@@ -1,84 +1,170 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v6 00/11] soc: renesas: Add R-Car SYSC PM Domain Support
-Date: Thu, 21 Apr 2016 17:14:40 +0200
-Message-ID: <CAMuHMdW8uyWUBiqrbkQ=SYd+k-_Ag2PmsGf6N0+-TtJvx0YFQg@mail.gmail.com>
-References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
-	<20160421032811.GF11116@verge.net.au>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user
+ space reporting
+Date: Thu, 21 Apr 2016 10:49:11 -0600
+Message-ID: <57190487.7000303@redhat.com>
+References: <20160421145310.GA26655@arm.com>
+Reply-To: ahs3@redhat.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20160421032811.GF11116@verge.net.au>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160421145310.GA26655@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexey Klimov <alexey.klimov@arm.com>
+Cc: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
-
-On Thu, Apr 21, 2016 at 5:28 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Wed, Apr 20, 2016 at 02:02:35PM +0200, Geert Uytterhoeven wrote:
->> This patch series introduces a DT-based driver for the R-Car System
->> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
->> SoCs.
+On 04/21/2016 08:53 AM, Alexey Klimov wrote:
+> 
+> On Tue, Apr 19, 2016 at 1:11 AM, Al Stone <ahs3@redhat.com> wrote:
 >>
->> This is a dependency for the enablement of DU and VSP on R-Car H3, as
->> the VSPs are located in a PM Domain.
-
-[...]
-
->> Dependencies:
->>   - clk-renesas-for-v4.7 (which now includes "[PATCH v2 0/4] clk:
->>     renesas: R-Car SYSC PM Domain Preparation"; pull request sent),
->>   - renesas-devel-20160420-v4.6-rc4 (which already contains series
->>     "[PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System
->>     Controller").
+>> When CPPC is being used by ACPI on arm64, user space tools such as
+>> cpupower report CPU frequency values from sysfs that are incorrect.
 >>
->> I won't be resending follow-up series "[PATCH v5 00/12] ARM/arm64: dts:
->> rcar: Add SYSC PM domains" for now, as it's unchanged, except for an
->> ugly rebase due to dropping the commits to reference both DMA
->> controllers on R-Car Gen2.
+>> What the driver was doing was reporting the values given by ACPI tables
+>> in whatever scale was used to provide them.  However, the ACPI spec
+>> defines the CPPC values as unitless abstract numbers.  Internal kernel
+>> structures such as struct perf_cap, in contrast, expect these values
+>> to be in KHz.  When these struct values get reported via sysfs, the
+>> user space tools also assume they are in KHz, causing them to report
+>> incorrect values (for example, reporting a CPU frequency of 1MHz when
+>> it should be 1.8GHz).
 >>
->> For your convenience, I've pushed this, incl. all dependencies, to the
->> topic/rcar-sysc-pd-v6 branch of
->> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
->> Integration with renesas-drivers-2016-04-12-v4.6-rc3 is available in the
->> topic/gen3-latest branch.
+>> While the investigation for a long term fix proceeds (several options
+>> are being explored, some of which may require spec changes or other
+>> much more invasive fixes), this patch forces the values read by CPPC
+>> to be read in KHz, regardless of what they actually represent.
 >>
->> This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
->> r8a7794/alt, and r8a7795/salvator-x.
+>> The downside is that this approach has some assumptions:
 >>
->> Thanks!
->
-> Thanks. I am not planning to queue these up at this point.
-> Let me know if that is not what you expected.
+>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+>>    value for a processor is set to a non-zero value.
+>>
+>>    (2) It assumes that all processors run at the same speed.  This
+> 
+> Sometimes short-term solution becomes long-term. It's worth to place
+> comment in code about this assumption.
 
-As the clock maintainers has merged the preparatory clock work, and pushed
-it out into clk-next, you can now:
-  1. Pull the preparatory clock work in your tree, i.e. pull from:
+True.  I'll add a comment.  Thanks.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
-tags/clk-renesas-for-v4.7-tag2
+>>    patch retrieves the first CPU Max Frequency from a type 4 DMI
+>>    record that it can find.  This may not be an issue, however, as a
+>>    sampling of DMI data on x86 and arm64 indicates there is often only
+>>    one such record regardless.
+>>
+>> For arm64 servers, this may be sufficient, but it does rely on
+>> firmware values being set correctly.  Hence, other approaches are
+>> also being considered.
+>>
+>> This has been tested on three arm64 servers, with and without DMI, with
+>> and without CPPC support.
+>>
+>> Changes for v2:
+>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+>>        not SELECT DMI (found by build daemon)
+>>
+>> Signed-off-by: Al Stone <ahs3@redhat.com>
+>> ---
+>>  drivers/acpi/cppc_acpi.c    | 61 +++++++++++++++++++++++++++++++++++++++++----
+>>  drivers/cpufreq/Kconfig.arm |  1 +
+>>  2 files changed, 57 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>> index 8adac69..d61ced6 100644
+>> --- a/drivers/acpi/cppc_acpi.c
+>> +++ b/drivers/acpi/cppc_acpi.c
+>> @@ -40,6 +40,9 @@
+>>  #include <linux/cpufreq.h>
+>>  #include <linux/delay.h>
+>>  #include <linux/ktime.h>
+>> +#include <linux/dmi.h>
+>> +
+>> +#include <asm/unaligned.h>
+>>
+>>  #include <acpi/cppc_acpi.h>
+>>  /*
+>> @@ -709,6 +712,47 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+>>         return ret_val;
+>>  }
+>>
+>> +static u64 cppc_dmi_khz;
+>> +
+>> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
+>> +{
+>> +       u16 *mhz = (u16 *)private;
+>> +       const u8 *dmi_data = (const u8 *)dm;
+>> +
+>> +       if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
+>> +               *mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
+>> +}
+>> +
+>> +
+>> +static u64 cppc_get_dmi_khz(void)
+>> +{
+>> +       u16 mhz;
+>> +
+>> +       dmi_walk(cppc_find_dmi_mhz, &mhz);
+>> +
+>> +       /*
+>> +        * Real stupid fallback value, just in case there is no
+>> +        * actual value set.
+>> +        */
+>> +       mhz = mhz ? mhz : 1;
+>> +
+>> +       return (1000 * mhz);
+>> +}
+>> +
+>> +static u64 cppc_unitless_to_khz(u64 min, u64 max, u64 val)
+>> +{
+>> +       /*
+>> +        * The incoming val should be min <= val <= max.  Our
+>> +        * job is to convert that to KHz so it can be properly
+>> +        * reported to user space via cpufreq_policy.
+>> +        */
+>> +
+>> +       if (!cppc_dmi_khz)
+>> +               cppc_dmi_khz = cppc_get_dmi_khz();
+>> +
+>> +       return ((val - min) * cppc_dmi_khz) / (max - min);
+> 
+> How pedantic should the kernel be while dealing with this values?
 
-  2. Apply this series.
+I'm not sure it can be.  By definition, the CPPC values define an abstract
+range.  We are only associating it with a frequency here because those are
+the units assumed elsewhere in the kernel, and that user space tools make the
+same assumptions.  What I'm looking at for the longer term is possibly breaking
+those assumptions so that maybe we can be pedantic.
 
-After that,
-  3. I will rebase and update "[PATCH v5 00/12] ARM/arm64: dts: rcar: Add SYSC
-     PM domains" to match your current dt-for-v4.7 and arm64-dt-for-v4.7 (for
-     dmas/dma-names changes and recently added mmc and sdhi nodes),
-     and send it out,
-  4. You can apply it to a branch containing all of the above as prerequisites.
+> This 1) can potentially divide by zero (extra care is required to
+> perform this in Solar System) and 2) can return 0.
 
-Is that OK for you?
+Hrm.  I'll double check the path for divide by zero; I thought that was covered
+elsewhere along the path but I might have missed it.
 
-Thanks!
+A zero in this case would mean the processor is running at its lowest possible
+level of performance, and is an artifact of mapping the CPPC abstract value
+onto a linear scale from 0 to max KHz.  Granted, that may not be exactly the
+same as 0 KHz; I'm open to suggestions here.  If there's a relatively
+straightforward way to get a processor's minimum operating frequency (apart
+from completely off), we could eliminate the zero.
 
-Gr{oetje,eeting}s,
+> Not sure if there is some benefit for firmware to export such
+> values.
 
-                        Geert
+Reporting a divide by zero would be bad and should not happen; a value
+of zero, though, could be argued.  Since we're using a linear scale from
+zero to max KHz, it's not unexpected.  That being said, though, the only
+reason for this patch is so that user space does not report completely
+incorrect values; we were seeing MHz values reported by cpupower when
+they should have been GHz, for example.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
