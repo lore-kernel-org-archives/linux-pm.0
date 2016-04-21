@@ -1,67 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code
-Date: Thu, 21 Apr 2016 14:13:46 +0530
-Message-ID: <cover.1461228081.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36740 "EHLO
-	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbcDUIoB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:44:01 -0400
-Received: by mail-pf0-f174.google.com with SMTP id e128so27832949pfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 01:44:01 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 1/8] cpufreq: berlin: Use generic platdev driver
+Date: Thu, 21 Apr 2016 14:13:47 +0530
+Message-ID: <4be5e8c38aed34a4aae08db2cae39ca8ece54d29.1461228081.git.viresh.kumar@linaro.org>
+References: <cover.1461228081.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
+References: <cover.1461228081.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, Antoine Tenart <antoine.tenart@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Antoine Tenart <antoine.tenart@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Heiko Stuebner <heiko@sntech.de>, Leo Yan <leo.yan@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Michal Simek <michal.simek@xilinx.com>, Sascha Hauer <kernel@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Simon Horman <horms@verge.net.au>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Tony Lindgren <tony@atomide.com>
 
-Hi,
+The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+device now, reuse that and remove similar code from platform code.
 
-This migrates rest of the platforms to use cpufreq-dt-platdev.c. There
-are few exceptions though:
-- mvebu: it uses platform data and its problem will be solved in a
-  separate series.
-- highbank, s5pv210, sti, tegra124: these platforms already have cpufreq
-  drivers in drivers/cpufreq/, which does some other stuff and finally
-  create the device. There are sequencing issues, and so they will be
-  left as it is.
+Cc: Antoine Tenart <antoine.tenart@free-electrons.com>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ arch/arm/mach-berlin/berlin.c        | 6 ------
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-I have pushed these for testing by:
-- kernelci (build/boot testing for ARM)
-- Intel's buildbot (build for ARM, build/boot for Intel)
-
-Viresh Kumar (8):
-  cpufreq: berlin: Use generic platdev driver
-  cpufreq: imx: Use generic platdev driver
-  cpufreq: omap: Use generic platdev driver
-  cpufreq: rockchip: Use generic platdev driver
-  cpufreq: shmobile: Use generic platdev driver
-  cpufreq: sunxi: Use generic platdev driver
-  cpufreq: zynq: Use generic platdev driver
-  cpufreq: hisilicon: Use generic platdev driver
-
- arch/arm/mach-berlin/berlin.c        |  6 -----
- arch/arm/mach-imx/imx27-dt.c         |  4 ---
- arch/arm/mach-imx/mach-imx51.c       |  3 ---
- arch/arm/mach-imx/mach-imx53.c       |  2 --
- arch/arm/mach-imx/mach-imx7d.c       |  6 -----
- arch/arm/mach-omap2/pm.c             |  7 ++----
- arch/arm/mach-rockchip/rockchip.c    |  1 -
- arch/arm/mach-shmobile/Makefile      |  1 -
- arch/arm/mach-shmobile/common.h      |  7 ------
- arch/arm/mach-shmobile/cpufreq.c     | 19 ---------------
- arch/arm/mach-sunxi/sunxi.c          |  9 -------
- arch/arm/mach-zynq/common.c          |  2 --
- drivers/cpufreq/Kconfig.arm          |  9 -------
- drivers/cpufreq/Makefile             |  1 -
- drivers/cpufreq/cpufreq-dt-platdev.c | 47 ++++++++++++++++++++++++++++++++++++
- drivers/cpufreq/hisi-acpu-cpufreq.c  | 42 --------------------------------
- 16 files changed, 49 insertions(+), 117 deletions(-)
- delete mode 100644 arch/arm/mach-shmobile/cpufreq.c
- delete mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
-
+diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
+index 25d73870ccca..ac181c6797ee 100644
+--- a/arch/arm/mach-berlin/berlin.c
++++ b/arch/arm/mach-berlin/berlin.c
+@@ -18,11 +18,6 @@
+ #include <asm/hardware/cache-l2x0.h>
+ #include <asm/mach/arch.h>
+ 
+-static void __init berlin_init_late(void)
+-{
+-	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+-}
+-
+ static const char * const berlin_dt_compat[] = {
+ 	"marvell,berlin",
+ 	NULL,
+@@ -30,7 +25,6 @@ static const char * const berlin_dt_compat[] = {
+ 
+ DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
+ 	.dt_compat	= berlin_dt_compat,
+-	.init_late	= berlin_init_late,
+ 	/*
+ 	 * with DT probing for L2CCs, berlin_init_machine can be removed.
+ 	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index f2ae7ad99a3c..3b3e6804cf14 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -12,6 +12,8 @@
+ #include <linux/platform_device.h>
+ 
+ static const struct of_device_id machines[] = {
++	{ .compatible = "marvell,berlin", },
++
+ 	{ .compatible = "samsung,exynos3250", },
+ 	{ .compatible = "samsung,exynos4210", },
+ 	{ .compatible = "samsung,exynos4212", },
 -- 
 2.7.1.410.g6faf27b
-
