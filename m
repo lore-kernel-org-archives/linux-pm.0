@@ -1,36 +1,52 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] thermal: rcar_thermal: Fix priv->zone error handling
-Date: Thu, 21 Apr 2016 15:00:53 +0200
-Message-ID: <CAMuHMdWDnHDrf8d1nY0M6bY_z1sJfHbTM15QoP+dpfTJkCDrWA@mail.gmail.com>
-References: <1461234295-30521-1-git-send-email-dirk.behme@de.bosch.com>
+Subject: Re: [PATCH 5/8] cpufreq: shmobile: Use generic platdev driver
+Date: Thu, 21 Apr 2016 15:04:11 +0200
+Message-ID: <CAMuHMdUnzgr==S86Wiz0fGk2gSWW2=j+maiq3=3x9Ozy7AoOZw@mail.gmail.com>
+References: <cover.1461228081.git.viresh.kumar@linaro.org>
+	<ab29df38f70453e67089e3f3dbb9085336eef1c2.1461228081.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1461234295-30521-1-git-send-email-dirk.behme@de.bosch.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Dirk Behme <dirk.behme@de.bosch.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-renesas-soc@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:34369 "EHLO
+	mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbcDUNEN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 09:04:13 -0400
+In-Reply-To: <ab29df38f70453e67089e3f3dbb9085336eef1c2.1461228081.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-renesas-soc@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Thu, Apr 21, 2016 at 12:24 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
-> In case thermal_zone_xxx_register() returns an error, priv->zone
-> isn't NULL any more, but contains the error code.
+Hi Viresh,
+
+On Thu, Apr 21, 2016 at 10:43 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -29,6 +29,18 @@ static const struct of_device_id machines[] = {
+>         { .compatible = "samsung,exynos5800", },
+>  #endif
 >
-> This is passed to thermal_zone_device_unregister(), then. This checks
-> for priv->zone being NULL, but the error code is != NULL. So it works
-> with the error code as a pointer. Crashing immediately.
->
-> To fix this, reset priv->zone to NULL before entering
-> rcar_gen3_thermal_remove().
 
-Alternatively, you could prevent a non-valid zone pointer from ever
-ending up in priv->zone by assigning the zone to a temporary variable,
-and only storing that in priv->zone after the error check.
+I think an #ifdef CONFIG_ARCH_RENESAS block wouldn't hurt, likewise
+for the other SoCs.
+Soon you'll have this file filled with lots of compatible values for random\
+SoCs...
 
-> Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
-
-Regardless of the above
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> +       { .compatible = "renesas,emev2", },
+> +       { .compatible = "renesas,r7s72100", },
+> +       { .compatible = "renesas,r8a73a4", },
+> +       { .compatible = "renesas,r8a7740", },
+> +       { .compatible = "renesas,r8a7778", },
+> +       { .compatible = "renesas,r8a7779", },
+> +       { .compatible = "renesas,r8a7790", },
+> +       { .compatible = "renesas,r8a7791", },
+> +       { .compatible = "renesas,r8a7793", },
+> +       { .compatible = "renesas,r8a7794", },
+> +       { .compatible = "renesas,sh73a0", },
+> +
+>         { .compatible = "rockchip,rk2928", },
+>         { .compatible = "rockchip,rk3066a", },
+>         { .compatible = "rockchip,rk3066b", },
 
 Gr{oetje,eeting}s,
 
