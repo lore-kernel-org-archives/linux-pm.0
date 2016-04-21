@@ -1,131 +1,72 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v6 00/11] soc: renesas: Add R-Car SYSC PM Domain Support
-Date: Thu, 21 Apr 2016 13:28:12 +1000
-Message-ID: <20160421032811.GF11116@verge.net.au>
-References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
+ cooling model.
+Date: Wed, 20 Apr 2016 20:40:42 -0700
+Message-ID: <20160421034040.GA26525@localhost.localdomain>
+References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
+ <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
+ <57176ECF.6020705@gmail.com>
+ <12007858.UuqVGafLHV@vostro.rjw.lan>
+ <20160421030141.GA4845@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:44183 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbcDUD2O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:28:14 -0400
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:36662 "EHLO
+	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbcDUDkq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:40:46 -0400
 Content-Disposition: inline
-In-Reply-To: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <20160421030141.GA4845@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit
 
-On Wed, Apr 20, 2016 at 02:02:35PM +0200, Geert Uytterhoeven wrote:
-> 	Hi Simon, Magnus,
+On Wed, Apr 20, 2016 at 08:01:41PM -0700, Eduardo Valentin wrote:
+> On Thu, Apr 21, 2016 at 02:41:24AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
+> > > Hi Rafael,
+> > > 
+> > > On 13/04/16 06:52, Rafael J. Wysocki wrote:
+> > > > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > >> Hi Rafael,
+> > > >>
+> > > >> On 15-03-16, 16:10, Dawei Chien wrote:
+> > > >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
+> > > >>> cooling devices with dynamic power coefficient.
+> > > >>>
+> > > >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> > > >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > >>
+> > > >> Can you please apply this patch from Dawei ?
+> > > >
+> > > > I can, but I'm traveling this week, so that's rather going to happen next week.
+> > > >
+> > > 
+> > > I don't see the patch in linux-next, did you forget to pick/push it?
+> > 
+> > No, I didn't.  I just didn't have the time to get to them before.
+> > 
+> > Now, given that they are thermal patches, they really should go in via
+> > linux-soc-thermal.git.
+> > 
+> > Eduardo, any chance to take care of these?
 > 
-> This patch series introduces a DT-based driver for the R-Car System
-> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
-> SoCs.
+> Yes I can add this one, given that they have the proper acked-by. I was
+> a bit hesitant to just get them because they are touching
+> drivers/cpufreq. 
 > 
-> This is a dependency for the enablement of DU and VSP on R-Car H3, as
-> the VSPs are located in a PM Domain.
-> 
-> Changes compared to v5:
->   - Add Reviewed-by,
->   - Drop unneeded genpd->dev_ops.active_wakeup callback,
->   - Move call to pm_genpd_init() after all local initialization,
-> 
-> Changes compared to v4:
->   - Add Reviewed-by,
->   - Mask SYSC interrupts sources before enabling them (doesn't matter
->     much as they're disabled at the GIC level anyway),
->   - Reference r8a7791_sysc_info directly for R-Car M2-N in rcar-sysc.c,
->   - Re-add explicit "always-on" power area instead of aliasing the SoC's
->     Clock Domain,
->   - Add "always-on" power area on R-Car H1 and Gen2 SoCs,
->   - Merge the two initialization phases again,
->   - Use either the cpg_mssr_*() or cpg_mstp_*() callbacks for Clock
->     Domain control,
->   - Drop dependency on r8a7795 of the Clock Domain handling, as this is
->     used for the "always-on" PM Domain on R-Car H1 and Gen2, too,
-> 
-> Changes compared to v3:
->   - Add Reviewed-by,
->   - Make sure not to clear reserved SYSCIMR bits that were set before,
->   - Make the always-on power area implicit and always present, and an
->     alias of the existing SoC's Clock Domain. This makes the number of
->     power areas a compile-time constant, and allows to drop PD_ALWAYS_ON
->     and some checks.
->   - Split initialization in two phases,
->   - Remove the explicit dependency on the CPG/MSSR driver by forwarding
->     the attach/detach callbacks to the parent PM Domain.
->     If deemed reusable, rcar_sysc_{at,de}tach_dev() can be moved to
->     common genpd code later.
->   - Document that ARM cores are controlled by PSCI on R-Car Gen3
->     (although the underlying CPG/APMU hardware is the same as on Gen2),
->   - Drop R8A7779_PD_SH, as it's not documented in the datasheet,
->   - Rename R8A779*_PD_SH to R8A779*_PD_SH_4A, and "sh" to "sh-4a" on
->     R-Car Gen2,
->   - Remove always-on power area from the R-Car Gen3 table, as it's now
->     implicitly handled by the rcar-sysc driver,
->   - Reformat tables,
->   - Minor improvements (double evaluation, unused parameter, debug
->     message consolidation),
->   - Update MAINTAINERS.
-> 
-> Changes compared to v2:
->   - Add Reviewed-by,
->   - Rename driver from pm-rcar to rcar-sysc,
->   - Create PM Domains from hierarchy in C data instead of DT,
->   - Add support for an "always-on" domain, which is currently used on
->     R-Car H3 only (support can be added for other R-Car SoCs, preferably
->     after their migration to CPG/MSSR),
->   - Drop power area A3SH on R-Car H3, as it's no longer
->     documented in the datasheet, and touching it seems to crash SYSC,
->   - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
->     using our own copies,
->   - Initialize SYSCIER early, as SYSC needs the interrupt sources to be
->     enabled to control power,
->   - Mask all SYSC interrupt sources for the CPU,
->   - Drop check for CONFIG_PM_GENERIC_DOMAINS, which is now always
->     enabled on R-Car SoCs,
->   - Use early_initcall() instead of core_initcall(),
->   - Do not power up CPU power areas during initialization, as this is
->     handled later (directly or indirectly) by the SMP code,
->   - Extract bindings into its own series, "[PATCH v3 0/7] PM / Domains:
->     Add DT bindings for the R-Car System Controller".
-> 
-> Changes compared to v1 (more details in the individual patches):
->   - Moved pm-rcar from arch/arm/mach-shmobile/ to drivers/soc/renesas/,
->   - Added R-Car H3 (r8a7795) support, incl. support for devices part of
->     a SYSC PM domain and the CPG/MSSR clock domain,
->   - Use "renesas,<type>-sysc" instead of "renesas,sysc-<type>",
->   - Added fallback compatibility strings for R-Car Gen2 and Gen3.
->   - Changed one-line summary prefix to match current arm-soc practices,
->   - The L2 cache-controller patches have been extracted into a separate
->     series ("[PATCH v3 0/7] ARM/arm64: dts: renesas: Add/complete L2
->     cache-controller nodes"),
->   - Minor fixes.
-> 
-> Dependencies:
->   - clk-renesas-for-v4.7 (which now includes "[PATCH v2 0/4] clk:
->     renesas: R-Car SYSC PM Domain Preparation"; pull request sent),
->   - renesas-devel-20160420-v4.6-rc4 (which already contains series
->     "[PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System
->     Controller").
-> 
-> I won't be resending follow-up series "[PATCH v5 00/12] ARM/arm64: dts:
-> rcar: Add SYSC PM domains" for now, as it's unchanged, except for an
-> ugly rebase due to dropping the commits to reference both DMA
-> controllers on R-Car Gen2.
-> 
-> For your convenience, I've pushed this, incl. all dependencies, to the
-> topic/rcar-sysc-pd-v6 branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
-> Integration with renesas-drivers-2016-04-12-v4.6-rc3 is available in the
-> topic/gen3-latest branch.
-> 
-> This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
-> r8a7794/alt, and r8a7795/salvator-x.
-> 
-> Thanks!
+> Anyways, I am adding this to my branch to the next merge window.
 
-Thanks. I am not planning to queue these up at this point.
-Let me know if that is not what you expected.
+Added the driver changes. The dt parts should go via your platform tree.
+And you can add my 
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+
+on the dt changes.
+
+> 
+> 
+> > 
+> > Thanks,
+> > Rafael
+> > 
