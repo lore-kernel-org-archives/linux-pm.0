@@ -1,56 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/8] cpufreq: rockchip: Use generic platdev driver
-Date: Thu, 21 Apr 2016 14:13:50 +0530
-Message-ID: <fe4bc7afb55990b316b541b7704269b150a016ed.1461228081.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/8] cpufreq: omap: Use generic platdev driver
+Date: Thu, 21 Apr 2016 14:13:49 +0530
+Message-ID: <52b6fd32c3542d908e20301e276ca4347dfa1560.1461228081.git.viresh.kumar@linaro.org>
 References: <cover.1461228081.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1461228081.git.viresh.kumar@linaro.org>
 References: <cover.1461228081.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Heiko Stuebner <heiko@sntech.de>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
 device now, reuse that and remove similar code from platform code.
 
-Cc: Heiko Stuebner <heiko@sntech.de>
+Cc: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-rockchip/rockchip.c    | 1 -
- drivers/cpufreq/cpufreq-dt-platdev.c | 7 +++++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/arm/mach-omap2/pm.c             | 7 ++-----
+ drivers/cpufreq/cpufreq-dt-platdev.c | 5 +++++
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
-index 3f07cc5dfe5f..beb71da5d9c8 100644
---- a/arch/arm/mach-rockchip/rockchip.c
-+++ b/arch/arm/mach-rockchip/rockchip.c
-@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index 58920bc8807b..2f7b11da7d5d 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -277,13 +277,10 @@ static void __init omap4_init_voltages(void)
+ 
+ static inline void omap_init_cpufreq(void)
  {
- 	rockchip_suspend_init();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
+-	struct platform_device_info devinfo = { };
++	struct platform_device_info devinfo = { .name = "omap-cpufreq" };
+ 
+ 	if (!of_have_populated_dt())
+-		devinfo.name = "omap-cpufreq";
+-	else
+-		devinfo.name = "cpufreq-dt";
+-	platform_device_register_full(&devinfo);
++		platform_device_register_full(&devinfo);
  }
  
- static const char * const rockchip_board_dt_compat[] = {
+ static int __init omap2_common_pm_init(void)
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 3d7d459aed25..b831f1463227 100644
+index ac12c4a02964..3d7d459aed25 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -29,6 +29,13 @@ static const struct of_device_id machines[] = {
+@@ -28,6 +28,11 @@ static const struct of_device_id machines[] = {
+ 	{ .compatible = "samsung,exynos5420", },
  	{ .compatible = "samsung,exynos5800", },
  #endif
- 
-+	{ .compatible = "rockchip,rk2928", },
-+	{ .compatible = "rockchip,rk3066a", },
-+	{ .compatible = "rockchip,rk3066b", },
-+	{ .compatible = "rockchip,rk3188", },
-+	{ .compatible = "rockchip,rk3228", },
-+	{ .compatible = "rockchip,rk3288", },
 +
- 	{ .compatible = "ti,omap2", },
- 	{ .compatible = "ti,omap3", },
- 	{ .compatible = "ti,omap4", },
++	{ .compatible = "ti,omap2", },
++	{ .compatible = "ti,omap3", },
++	{ .compatible = "ti,omap4", },
++	{ .compatible = "ti,omap5", },
+ };
+ 
+ static int __init cpufreq_dt_platdev_init(void)
 -- 
 2.7.1.410.g6faf27b
