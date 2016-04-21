@@ -1,60 +1,71 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.6-rc5
-Date: Thu, 21 Apr 2016 21:56:20 +0200
-Message-ID: <CAJZ5v0jegZNvq5pJf2Xkief6LMcYBAzNoaggpfUT-at+SUS5PA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 00/10] cpufreq: Get rid of cpufreq-dt's platform data
+Date: Thu, 21 Apr 2016 22:10:27 +0200
+Message-ID: <1487853.W42huqXPTb@vostro.rjw.lan>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f169.google.com ([209.85.217.169]:33632 "EHLO
-	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbcDUT4W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 15:56:22 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59190 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751583AbcDUUHe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 16:07:34 -0400
+In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com
 
-Hi Linus,
+On Thursday, April 21, 2016 02:28:52 PM Viresh Kumar wrote:
+> Hi Guys,
+> 
+> The aim of the series is to kill the users of cpufreq-dt's platform
+> data, i.e. mvebu. And because that required a new API to the OPP core,
+> this just became a mix of cpufreq and OPP patches.
+> 
+> The first four patches does some sort of cleanup of the OPP core to base
+> the next patches. Fifth one sets the shared_opp flag in opp-tables
+> (required by later patches). Sixth one adds a new API for opp-v1 users,
+> to get the CPUs sharing an OPP table.
+> 
+> Seventh to tenth update cpufreq-dt and mvebu to get rid of platform
+> data.
+> 
+> @Rafael: The last patch touches the compatible-list array in
+> cpufreq-dt-platdev.c, which is also touched by
+> '[PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code'.
+> 
+> So, the last one has some sort of dependency on that series, otherwise
+> all other patches can be applied cleanly.
+> 
+> @Arnd: Can you please look at patches 7-10 ..
+> 
+> Viresh Kumar (10):
+>   PM / OPP: Propagate the error returned by _find_opp_table()
+>   PM / OPP: Add missing doc style comments
+>   PM / OPP: dev_pm_opp_set_sharing_cpus() doesn't depend on CONFIG_OF
+>   PM / OPP: Relocate dev_pm_opp_set_sharing_cpus()
+>   PM / OPP: Mark shared-opp for non-dt case
+>   PM / OPP: Add dev_pm_opp_get_sharing_cpus()
+>   cpufreq: dt: Identify cpu-sharing for platforms without
+>     operating-points-v2
+>   mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared
+>   cpufreq: dt: Kill platform-data
+>   cpufreq: mvebu: Use generic platdev driver
+> 
+>  arch/arm/mach-mvebu/pmsu.c           |  14 ++-
+>  drivers/base/power/opp/cpu.c         | 187 +++++++++++++++++++++++++++--------
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
+>  drivers/cpufreq/cpufreq-dt.c         |  22 ++---
+>  include/linux/cpufreq-dt.h           |  24 -----
+>  include/linux/pm_opp.h               |  18 ++--
+>  6 files changed, 176 insertions(+), 91 deletions(-)
+>  delete mode 100644 include/linux/cpufreq-dt.h
 
-Please pull from
+As usual, I'd like to get some ACKs for the OPP stuff from Stephen or other
+people with vested interest.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.6-rc5
+Thanks,
+Rafael
 
-to receive power management material for v4.6-rc5 with top-most
-commit 395da1259ac3e3fdc70636a854c993ddb76c6169
-
- Merge branch 'pm-cpufreq-fixes'
-
-on top of commit c3b46c73264b03000d1e18b22f5caf63332547c9
-
- Linux 4.6-rc4
-
-Two fixes for issues introduced recently, one for an intel_pstate
-driver problem uncovered by the recent switch over from using
-timers and the other one for a potential cpufreq core problem
-related to system suspend/resume.
-
-Specifics:
-
- - Fix an intel_pstate driver problem causing CPUs to get stuck in
-   the highest P-state when completely idle uncovered by the recent
-   switch over from using timers (Rafael Wysocki).
-
- - Avoid attempts to get the current CPU frequency when all devices
-   (like I2C controllers that may be nedded for that purpose) have
-   been suspended during system suspend/resume (Rafael Wysocki).
-
-Thanks!
-
----------------
-
-Rafael J. Wysocki (2):
-      intel_pstate: Avoid getting stuck in high P-states when idle
-      cpufreq: Abort cpufreq_update_current_freq() for cpufreq_suspended set
-
----------------
-
- drivers/cpufreq/cpufreq.c      | 3 +++
- drivers/cpufreq/intel_pstate.c | 4 ++++
- 2 files changed, 7 insertions(+)
