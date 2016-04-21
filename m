@@ -1,196 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 2/3] power: axp288_charger: Replace deprecatd API of extcon
-Date: Thu, 21 Apr 2016 18:55:34 +0900
-Message-ID: <1461232535-3959-3-git-send-email-cw00.choi@samsung.com>
-References: <1461232535-3959-1-git-send-email-cw00.choi@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/8] cpufreq: imx: Use generic platdev driver
+Date: Thu, 21 Apr 2016 12:17:07 +0200
+Message-ID: <8137134.6Dsv9n3KFK@wuerfel>
+References: <cover.1461228081.git.viresh.kumar@linaro.org> <18756925.NSB5aJaqC9@wuerfel> <20160421095032.GD29799@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:51976 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbcDUJzk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 05:55:40 -0400
-In-reply-to: <1461232535-3959-1-git-send-email-cw00.choi@samsung.com>
+Received: from mout.kundenserver.de ([212.227.126.187]:64152 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbcDUKRs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 06:17:48 -0400
+In-Reply-To: <20160421095032.GD29799@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>, arnd.bergmann@linaro.org, Shawn Guo <shawnguo@kernel.org>
 
-This patch removes the deprecated notifier API of extcon framework and then use
-the new extcon API[2] with the unique id[1] to indicate the each external
-connector. Alter deprecated API as following:
-- extcon_register_interest() -> extcon_register_notifier()
-- extcon_unregister_interest() -> extcon_unregister_notifier()
-- extcon_get_cable_state() -> extcon_get_cable_state_()
+On Thursday 21 April 2016 15:20:32 Viresh Kumar wrote:
+> > > diff --git a/arch/arm/mach-imx/imx27-dt.c b/arch/arm/mach-imx/imx27-dt.c
+> > > index bd42d1bd10af..90c62bf01f9e 100644
+> > > --- a/arch/arm/mach-imx/imx27-dt.c
+> > > +++ b/arch/arm/mach-imx/imx27-dt.c
+> > > @@ -20,11 +20,7 @@
+> > >  
+> > >  static void __init imx27_dt_init(void)
+> > >  {
+> > > -   struct platform_device_info devinfo = { .name = "cpufreq-dt", };
+> > > -
+> > >     of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+> > > -
+> > > -   platform_device_register_full(&devinfo);
+> > >  }
+> > >
+> > 
+> > Please remove the entire function now, a NULL .init_machine machine
+> > callback pointer has the same effect as the remaining line.
+> > 
+> > The rest of the patch is fine.
+> 
+> Perhaps that should be done in a separate patch I feel. Will do so after this is
+> merged.
+> 
 
-And, extcon alters the name of USB charger connector in patch[3] as following:
-- EXTCON_CHG_USB_SDP /* Standard Downstream Port */
-- EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
-- EXTCON_CHG_USB_CDP /* Charging Downstream Port */
-- EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
+I would do it in the same patch, just like you remove some of the
+.init_late() callbacks elsewhere, but it clearly works either way, so
+do as you like unless Shawn or Sascha have a strong opinion on the
+matter.
 
-[1] Commit 2a9de9c0f08d61
-- ("extcon: Use the unique id for external connector instead of string)
-[2] Commit 046050f6e623e4
-- ("extcon: Update the prototype of extcon_register_notifier() with enum extcon
-[3] Commit 11eecf910bd81d
-- ("extcon: Modify the id and name of external connector")
-
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/power/axp288_charger.c | 77 +++++++++++++++++++++++++++++-------------
- 1 file changed, 53 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_charger.c
-index e4d569f57acc..4030eeb7cf65 100644
---- a/drivers/power/axp288_charger.c
-+++ b/drivers/power/axp288_charger.c
-@@ -129,10 +129,6 @@
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
- 
--#define AXP288_EXTCON_SLOW_CHARGER		"SLOW-CHARGER"
--#define AXP288_EXTCON_DOWNSTREAM_CHARGER	"CHARGE-DOWNSTREAM"
--#define AXP288_EXTCON_FAST_CHARGER		"FAST-CHARGER"
--
- enum {
- 	VBUS_OV_IRQ = 0,
- 	CHARGE_DONE_IRQ,
-@@ -158,7 +154,7 @@ struct axp288_chrg_info {
- 	/* OTG/Host mode */
- 	struct {
- 		struct work_struct work;
--		struct extcon_specific_cable_nb cable;
-+		struct extcon_dev *cable;
- 		struct notifier_block id_nb;
- 		bool id_short;
- 	} otg;
-@@ -586,17 +582,15 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
- 	bool old_connected = info->cable.connected;
- 
- 	/* Determine cable/charger type */
--	if (extcon_get_cable_state(edev, AXP288_EXTCON_SLOW_CHARGER) > 0) {
-+	if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_SDP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB SDP charger  is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB;
--	} else if (extcon_get_cable_state(edev,
--				AXP288_EXTCON_DOWNSTREAM_CHARGER) > 0) {
-+	} else if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_CDP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB CDP charger is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB_CDP;
--	} else if (extcon_get_cable_state(edev,
--					AXP288_EXTCON_FAST_CHARGER) > 0) {
-+	} else if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_DCP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB DCP charger is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB_DCP;
-@@ -692,8 +686,8 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
- {
- 	struct axp288_chrg_info *info =
- 	    container_of(nb, struct axp288_chrg_info, otg.id_nb);
--	struct extcon_dev *edev = param;
--	int usb_host = extcon_get_cable_state(edev, "USB-Host");
-+	struct extcon_dev *edev = info->otg.cable;
-+	int usb_host = extcon_get_cable_state_(edev, EXTCON_USB_HOST);
- 
- 	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
- 				usb_host ? "attached" : "detached");
-@@ -848,10 +842,33 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for extcon notification */
- 	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
- 	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
--	ret = extcon_register_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	if (ret) {
-+		dev_err(&info->pdev->dev,
-+			"failed to register extcon notifier for SDP %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	if (ret) {
-+		dev_err(&info->pdev->dev,
-+			"failed to register extcon notifier for CDP %d\n", ret);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_SDP, &info->cable.nb);
-+		return ret;
-+	}
-+
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	if (ret) {
- 		dev_err(&info->pdev->dev,
--			"failed to register extcon notifier %d\n", ret);
-+			"failed to register extcon notifier for DCP %d\n", ret);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_SDP, &info->cable.nb);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_CDP, &info->cable.nb);
- 		return ret;
- 	}
- 
-@@ -871,14 +888,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = extcon_register_interest(&info->otg.cable, NULL, "USB-Host",
-+	ret = extcon_register_notifier(info->otg.cable, EXTCON_USB_HOST,
- 				       &info->otg.id_nb);
- 	if (ret)
- 		dev_warn(&pdev->dev, "failed to register otg notifier\n");
- 
--	if (info->otg.cable.edev)
--		info->otg.id_short = extcon_get_cable_state(
--					info->otg.cable.edev, "USB-Host");
-+	if (info->otg.cable)
-+		info->otg.id_short = extcon_get_cable_state_(
-+					info->otg.cable, EXTCON_USB_HOST);
- 
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
-@@ -905,11 +922,17 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	return 0;
- 
- intr_reg_failed:
--	if (info->otg.cable.edev)
--		extcon_unregister_interest(&info->otg.cable);
-+	if (info->otg.cable)
-+		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
-+					&info->otg.id_nb);
- 	power_supply_unregister(info->psy_usb);
- psy_reg_failed:
--	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	return ret;
- }
- 
-@@ -917,10 +940,16 @@ static int axp288_charger_remove(struct platform_device *pdev)
- {
- 	struct axp288_chrg_info *info =  dev_get_drvdata(&pdev->dev);
- 
--	if (info->otg.cable.edev)
--		extcon_unregister_interest(&info->otg.cable);
-+	if (info->otg.cable)
-+		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
-+					&info->otg.id_nb);
- 
--	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	power_supply_unregister(info->psy_usb);
- 
- 	return 0;
--- 
-1.9.1
-
+	Arnd
