@@ -1,57 +1,67 @@
-From: Finlye Xiao <finley.xiao@rock-chips.com>
-Subject: [PATCH v1] cpufreq: rockchip: Use generic platdev driver
-Date: Thu, 21 Apr 2016 16:04:09 +0800
-Message-ID: <1461225849-36866-1-git-send-email-finley.xiao@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux@arm.linux.org.uk, rjw@rjwysocki.net, viresh.kumar@linaro.org, heiko@sntech.de
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code
+Date: Thu, 21 Apr 2016 14:13:46 +0530
+Message-ID: <cover.1461228081.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36740 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbcDUIoB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:44:01 -0400
+Received: by mail-pf0-f174.google.com with SMTP id e128so27832949pfe.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 01:44:01 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Antoine Tenart <antoine.tenart@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Heiko Stuebner <heiko@sntech.de>, Leo Yan <leo.yan@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Michal Simek <michal.simek@xilinx.com>, Sascha Hauer <kernel@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Simon Horman <horms@verge.net.au>, =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>, Tony Lindgren <tony@atomide.com>
 
-From: Finley Xiao <finley.xiao@rock-chips.com>
+Hi,
 
-This patch add rockchip's compatible string to the compat list and
-remove similar code from platform code for supporting generic platdev
-driver.
+This migrates rest of the platforms to use cpufreq-dt-platdev.c. There
+are few exceptions though:
+- mvebu: it uses platform data and its problem will be solved in a
+  separate series.
+- highbank, s5pv210, sti, tegra124: these platforms already have cpufreq
+  drivers in drivers/cpufreq/, which does some other stuff and finally
+  create the device. There are sequencing issues, and so they will be
+  left as it is.
 
-Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
----
+I have pushed these for testing by:
+- kernelci (build/boot testing for ARM)
+- Intel's buildbot (build for ARM, build/boot for Intel)
+
+Viresh Kumar (8):
+  cpufreq: berlin: Use generic platdev driver
+  cpufreq: imx: Use generic platdev driver
+  cpufreq: omap: Use generic platdev driver
+  cpufreq: rockchip: Use generic platdev driver
+  cpufreq: shmobile: Use generic platdev driver
+  cpufreq: sunxi: Use generic platdev driver
+  cpufreq: zynq: Use generic platdev driver
+  cpufreq: hisilicon: Use generic platdev driver
+
+ arch/arm/mach-berlin/berlin.c        |  6 -----
+ arch/arm/mach-imx/imx27-dt.c         |  4 ---
+ arch/arm/mach-imx/mach-imx51.c       |  3 ---
+ arch/arm/mach-imx/mach-imx53.c       |  2 --
+ arch/arm/mach-imx/mach-imx7d.c       |  6 -----
+ arch/arm/mach-omap2/pm.c             |  7 ++----
  arch/arm/mach-rockchip/rockchip.c    |  1 -
- drivers/cpufreq/cpufreq-dt-platdev.c | 10 ++++++++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ arch/arm/mach-shmobile/Makefile      |  1 -
+ arch/arm/mach-shmobile/common.h      |  7 ------
+ arch/arm/mach-shmobile/cpufreq.c     | 19 ---------------
+ arch/arm/mach-sunxi/sunxi.c          |  9 -------
+ arch/arm/mach-zynq/common.c          |  2 --
+ drivers/cpufreq/Kconfig.arm          |  9 -------
+ drivers/cpufreq/Makefile             |  1 -
+ drivers/cpufreq/cpufreq-dt-platdev.c | 47 ++++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/hisi-acpu-cpufreq.c  | 42 --------------------------------
+ 16 files changed, 49 insertions(+), 117 deletions(-)
+ delete mode 100644 arch/arm/mach-shmobile/cpufreq.c
+ delete mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
 
-diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
-index 3f07cc5..beb71da 100644
---- a/arch/arm/mach-rockchip/rockchip.c
-+++ b/arch/arm/mach-rockchip/rockchip.c
-@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
- {
- 	rockchip_suspend_init();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
- }
- 
- static const char * const rockchip_board_dt_compat[] = {
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index f2ae7ad..2128767 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -21,6 +21,16 @@ static const struct of_device_id machines[] = {
- 	{ .compatible = "samsung,exynos5420", },
- 	{ .compatible = "samsung,exynos5800", },
- #endif
-+	{ .compatible = "rockchip,rk2928", },
-+	{ .compatible = "rockchip,rk3036", },
-+	{ .compatible = "rockchip,rk3066a", },
-+	{ .compatible = "rockchip,rk3066b", },
-+	{ .compatible = "rockchip,rk3188", },
-+	{ .compatible = "rockchip,rk3228", },
-+	{ .compatible = "rockchip,rk3288", },
-+	{ .compatible = "rockchip,rk3366", },
-+	{ .compatible = "rockchip,rk3368", },
-+	{ .compatible = "rockchip,rk3399", },
- };
- 
- static int __init cpufreq_dt_platdev_init(void)
 -- 
-1.9.1
+2.7.1.410.g6faf27b
+
