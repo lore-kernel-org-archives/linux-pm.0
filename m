@@ -1,143 +1,154 @@
-From: Alexey Klimov <alexey.klimov@arm.com>
-Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Thu, 21 Apr 2016 15:53:10 +0100
-Message-ID: <20160421145310.GA26655@arm.com>
-References: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
+Date: Thu, 21 Apr 2016 18:11:08 +0300
+Message-ID: <17609720.HzoTaUK4Y8@avalon>
+References: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org> <8167646.6La0EzZQBr@avalon> <CAPDyKFp1B35pndFJ=HkPTyyG6j+MGc5yQBAnq-SjKF5ggLOf-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55761 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751931AbcDUOxU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Apr 2016 10:53:20 -0400
-Content-Disposition: inline
-In-Reply-To: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:34122 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbcDUPKy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 11:10:54 -0400
+In-Reply-To: <CAPDyKFp1B35pndFJ=HkPTyyG6j+MGc5yQBAnq-SjKF5ggLOf-Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ahs3@redhat.com
-Cc: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 
+Hi Ulf,
 
-On Tue, Apr 19, 2016 at 1:11 AM, Al Stone <ahs3@redhat.com> wrote:
+On Thursday 21 Apr 2016 15:52:06 Ulf Hansson wrote:
+> On 21 April 2016 at 14:41, Laurent Pinchart wrote:
+> > On Thursday 21 Apr 2016 11:10:19 Ulf Hansson wrote:
+> >> On 21 April 2016 at 01:30, Laurent Pinchart wrote:
+> >>> On Monday 07 Mar 2016 11:10:08 Ulf Hansson wrote:
+> >>>> [...]
+> >>>> 
+> >>>>>> I agree, that's a better idea. Drivers shouldn't call
+> >>>>>> pm_runtime_force_resume() if they haven't called
+> >>>>>> pm_runtime_force_suspend(), so checking the PM use count should be
+> >>>>>> fine. I'll modify the patch, test it and resubmit.
+> >>>>> 
+> >>>>> I gave it an unfortunately unsuccessful try. The problem I ran into
+> >>>>> is that device_prepare() calls pm_runtime_get_noresume() calls
+> >>>>> pm_runtime_get_noresume(), with the corresponding pm_runtime_put()
+> >>>>> call being performed in device_complete(). The device power
+> >>>>> usage_count is thus always non-zero in the system resume handler, so
+> >>>>> I can't base the decision on that.
+> >>>> 
+> >>>> As Alan said, let's just check against 1 instead.
+> >>> 
+> >>> I gave this a try, and unfortunately it won't work.
+> >>> 
+> >>> pm_genpd_prepare() resumes devices without increasing the usage count,
+> >>> which
+> >> 
+> >> It doesn't resume them, it only increases the usage count.
+> > 
+> > Maybe there's something I don't get, but pm_genpd_prepare() ends with
 > 
-> When CPPC is being used by ACPI on arm64, user space tools such as
-> cpupower report CPU frequency values from sysfs that are incorrect.
+> I realize that I did read *pm_genpd_prepare()* as *device_prepare()*,
+> which represents the behaviour of the PM core during the prepare phase
+> (drivers/base/power/main.c). In such cases my earlier reply would make
+> more sense, I believe.
 > 
-> What the driver was doing was reporting the values given by ACPI tables
-> in whatever scale was used to provide them.  However, the ACPI spec
-> defines the CPPC values as unitless abstract numbers.  Internal kernel
-> structures such as struct perf_cap, in contrast, expect these values
-> to be in KHz.  When these struct values get reported via sysfs, the
-> user space tools also assume they are in KHz, causing them to report
-> incorrect values (for example, reporting a CPU frequency of 1MHz when
-> it should be 1.8GHz).
-> 
-> While the investigation for a long term fix proceeds (several options
-> are being explored, some of which may require spec changes or other
-> much more invasive fixes), this patch forces the values read by CPPC
-> to be read in KHz, regardless of what they actually represent.
-> 
-> The downside is that this approach has some assumptions:
-> 
->    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->    value for a processor is set to a non-zero value.
-> 
->    (2) It assumes that all processors run at the same speed.  This
+> Apologize for giving you the wrong input by not reading your response
+> in more detail!
 
-Sometimes short-term solution becomes long-term. It's worth to place
-comment in code about this assumption.
+No worries, thanks for taking the time to reply now.
 
->    patch retrieves the first CPU Max Frequency from a type 4 DMI
->    record that it can find.  This may not be an issue, however, as a
->    sampling of DMI data on x86 and arm64 indicates there is often only
->    one such record regardless.
+> >     /*
+> >      * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
+> >      * so genpd_poweron() will return immediately, but if the device
+> >      * is suspended (e.g. it's been stopped by genpd_stop_dev()), we need
+> >      * to make it operational.
+> >      */
+> >     pm_runtime_resume(dev);
+> >     __pm_runtime_disable(dev, false);
+> >         
+> >     ret = pm_generic_prepare(dev);
+> >     if (ret) {
+> >             ... /* irrelevant error handling */
+> >     }
+> >         
+> >     pm_runtime_put(dev);
+> >     return ret;
+> > 
+> > The device is thus resumed. Note that the pm_runtime_put() call will
+> > decrease the usage count that was increased at the beginning of the
+> > function (and thus makes pm_genpd_prepare() neutral from a usage count
+> > point of view) but won't resume the device as the disable depth is
+> > increased by __pm_runtime_disable().
+> > 
+> > As far as I understand, the device is thus effectively active when
+> > entering the driver's system suspend handler, with a usage count equal to
+> > 1 or more. pm_runtime_force_suspend(), which decides whether to suspend
+> > the device based on the device pm state and not the usage count, will thus
+> > always pm suspend the device.
+> > 
+> > Is the above analysis correct ?
 > 
-> For arm64 servers, this may be sufficient, but it does rely on
-> firmware values being set correctly.  Hence, other approaches are
-> also being considered.
+> Yes.
 > 
-> This has been tested on three arm64 servers, with and without DMI, with
-> and without CPPC support.
-> 
-> Changes for v2:
->     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
->        not SELECT DMI (found by build daemon)
-> 
-> Signed-off-by: Al Stone <ahs3@redhat.com>
-> ---
->  drivers/acpi/cppc_acpi.c    | 61 +++++++++++++++++++++++++++++++++++++++++----
->  drivers/cpufreq/Kconfig.arm |  1 +
->  2 files changed, 57 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 8adac69..d61ced6 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -40,6 +40,9 @@
->  #include <linux/cpufreq.h>
->  #include <linux/delay.h>
->  #include <linux/ktime.h>
-> +#include <linux/dmi.h>
-> +
-> +#include <asm/unaligned.h>
-> 
->  #include <acpi/cppc_acpi.h>
->  /*
-> @@ -709,6 +712,47 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
->         return ret_val;
->  }
-> 
-> +static u64 cppc_dmi_khz;
-> +
-> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
-> +{
-> +       u16 *mhz = (u16 *)private;
-> +       const u8 *dmi_data = (const u8 *)dm;
-> +
-> +       if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
-> +               *mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
-> +}
-> +
-> +
-> +static u64 cppc_get_dmi_khz(void)
-> +{
-> +       u16 mhz;
-> +
-> +       dmi_walk(cppc_find_dmi_mhz, &mhz);
-> +
-> +       /*
-> +        * Real stupid fallback value, just in case there is no
-> +        * actual value set.
-> +        */
-> +       mhz = mhz ? mhz : 1;
-> +
-> +       return (1000 * mhz);
-> +}
-> +
-> +static u64 cppc_unitless_to_khz(u64 min, u64 max, u64 val)
-> +{
-> +       /*
-> +        * The incoming val should be min <= val <= max.  Our
-> +        * job is to convert that to KHz so it can be properly
-> +        * reported to user space via cpufreq_policy.
-> +        */
-> +
-> +       if (!cppc_dmi_khz)
-> +               cppc_dmi_khz = cppc_get_dmi_khz();
-> +
-> +       return ((val - min) * cppc_dmi_khz) / (max - min);
+> Although, genpd is not behaving as it should here. It must *not*
+> resume all devices, just because the domain is powered.
 
-How pedantic should the kernel be while dealing with this values?
+We agree on that.
 
-This 1) can potentially divide by zero (extra care is required to
-perform this in Solar System) and 2) can return 0.
+> > Now I'm a bit lost as to what happens (and what should happen) at resume
+> > time. Does genpd and the PM core try to suspend the device after calling
+> > the driver's resume handler (pm_runtime_force_resume() in this case)
+> > under some conditions, or does the resume handler have the last word in
+> > deciding the PM runtime status of the device after system resume ?
+> 
+> The resume callback of genpd decides what will happen, as its a PM
+> domain and it sits on top of the hierarchy of a devices PM callbacks.
+> 
+> As you have realized, there are issues in genpd regarding the system
+> PM code, there have even been reports about it.
+> 
+> For example, genpd prevents subsystem/drivers from manage their
+> devices during system PM - when it start the system PM phase with the
+> domain in powered off state.
+> 
+> That's not an okay behaviour, as it can't know whether a device needs
+> to be used to serve a request after that point, causing the device to
+> be runtime resumed. As genpd prevents it to be suspended via system
+> PM, it will stay resumed during the system PM suspend phase, at least
+> that is my understanding and it seems like bad idea.
+> 
+> In general, the system PM code in genpd needs to be modernized. It
+> somewhat duplicating some code from the PM core and I think the code
+> can be greatly simplified.
+> 
+> I have started to work on this quite recently, once the first steps
+> are done I will consider optimizations, such as not runtime resuming
+> devices unnecessarily.
+> 
+> >>> leads to the device always being active in pm_runtime_force_suspend().
+> >>> The usage count will be 1 if the device was suspended prior to entering
+> >>> system suspend (due to the pm_runtime_get_noresume() call in
+> >>> device_prepare()) or higher than 1 if the device was active.
+> >> 
+> >> It's only greater than 1 - if someone else than the PM core has
+> >> increased the usage count.
+> > 
+> > That I agree with.
+> 
+> Okay, great! :-)
+> 
+> [...]
+> 
+> Again, sorry for the giving the wrong input earlier!
+> 
+> Future wise, I will keep you on cc on any related genpd patches.
 
-Not sure if there is some benefit for firmware to export such
-values.
+Yeah \o/ more patches in my inbox, thank you so much ;-)
 
-[..]
+-- 
+Regards,
 
-Best regards,
-Alexey
+Laurent Pinchart
 
