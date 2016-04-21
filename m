@@ -1,51 +1,41 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/8] cpufreq: imx: Use generic platdev driver
-Date: Thu, 21 Apr 2016 12:17:07 +0200
-Message-ID: <8137134.6Dsv9n3KFK@wuerfel>
-References: <cover.1461228081.git.viresh.kumar@linaro.org> <18756925.NSB5aJaqC9@wuerfel> <20160421095032.GD29799@vireshk-i7>
+From: Dirk Behme <dirk.behme@de.bosch.com>
+Subject: [PATCH] thermal: rcar_thermal: Fix priv->zone error handling
+Date: Thu, 21 Apr 2016 12:24:55 +0200
+Message-ID: <1461234295-30521-1-git-send-email-dirk.behme@de.bosch.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:64152 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbcDUKRs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 06:17:48 -0400
-In-Reply-To: <20160421095032.GD29799@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-renesas-soc@vger.kernel.org, kuninori.morimoto.gx@renesas.com
+Cc: Dirk Behme <dirk.behme@de.bosch.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>, arnd.bergmann@linaro.org, Shawn Guo <shawnguo@kernel.org>
 
-On Thursday 21 April 2016 15:20:32 Viresh Kumar wrote:
-> > > diff --git a/arch/arm/mach-imx/imx27-dt.c b/arch/arm/mach-imx/imx27-dt.c
-> > > index bd42d1bd10af..90c62bf01f9e 100644
-> > > --- a/arch/arm/mach-imx/imx27-dt.c
-> > > +++ b/arch/arm/mach-imx/imx27-dt.c
-> > > @@ -20,11 +20,7 @@
-> > >  
-> > >  static void __init imx27_dt_init(void)
-> > >  {
-> > > -   struct platform_device_info devinfo = { .name = "cpufreq-dt", };
-> > > -
-> > >     of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-> > > -
-> > > -   platform_device_register_full(&devinfo);
-> > >  }
-> > >
-> > 
-> > Please remove the entire function now, a NULL .init_machine machine
-> > callback pointer has the same effect as the remaining line.
-> > 
-> > The rest of the patch is fine.
-> 
-> Perhaps that should be done in a separate patch I feel. Will do so after this is
-> merged.
-> 
+In case thermal_zone_xxx_register() returns an error, priv->zone
+isn't NULL any more, but contains the error code.
 
-I would do it in the same patch, just like you remove some of the
-.init_late() callbacks elsewhere, but it clearly works either way, so
-do as you like unless Shawn or Sascha have a strong opinion on the
-matter.
+This is passed to thermal_zone_device_unregister(), then. This checks
+for priv->zone being NULL, but the error code is != NULL. So it works
+with the error code as a pointer. Crashing immediately.
 
-	Arnd
+To fix this, reset priv->zone to NULL before entering
+rcar_gen3_thermal_remove().
+
+Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
+---
+ drivers/thermal/rcar_thermal.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 71a3392..5f81792 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -504,6 +504,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 		if (IS_ERR(priv->zone)) {
+ 			dev_err(dev, "can't register thermal zone\n");
+ 			ret = PTR_ERR(priv->zone);
++			priv->zone = NULL;
+ 			goto error_unregister;
+ 		}
+ 
+-- 
+2.8.0
