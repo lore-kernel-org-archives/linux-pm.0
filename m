@@ -1,81 +1,84 @@
-From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [RESEND][PATCH 3/3] arm64: dts: mt8173: Add dynamic power node.
-Date: Thu, 21 Apr 2016 12:12:51 +0800
-Message-ID: <1461211971.16427.4.camel@mtksdaap41>
-References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
-	 <1458029437-12846-4-git-send-email-dawei.chien@mediatek.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1458029437-12846-4-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, srv_heupstream <srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Wed, 20 Apr 2016 21:56:07 -0700
+Message-ID: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, mingo@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2016-03-15 at 16:10 +0800, Dawei Chien (=E9=8C=A2=E5=A4=A7=E8=A1=
-=9B) wrote:
-> This device node is for calculating dynamic power in mW.
-> Since mt8173 has two clusters, there are two dynamic power
-> coefficient as well.
->=20
-> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> ---
-> This patch is base on patchset:
-> https://lkml.org/lkml/2015/11/17/251
+Currently it just print a warning message but did not
+reset cpu_hotplug_disabled when the enable/disable is
+unbalanced. The unbalanced enable/disable will lead
+the cpu hotplug work abnormally.
 
-Sorry for miss one dependence for this device node.
-https://lkml.org/lkml/2015/7/9/206
+Reset it to 0 when an unablanced enable detected.
 
-> ---
->  arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/bo=
-ot/dts/mediatek/mt8173.dtsi
-> index f9c44cc..5cb6b4e 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> @@ -71,6 +71,7 @@
->                         #cooling-cells =3D <2>;
->                         #cooling-min-level =3D <0>;
->                         #cooling-max-level =3D <7>;
-> +                       dynamic-power-coefficient =3D <263>;
->                 };
->=20
->                 cpu1: cpu@1 {
-> @@ -95,6 +96,7 @@
->                         #cooling-cells =3D <2>;
->                         #cooling-min-level =3D <0>;
->                         #cooling-max-level =3D <7>;
-> +                       dynamic-power-coefficient =3D <263>;
->                 };
->=20
->                 cpu2: cpu@100 {
-> @@ -119,6 +121,7 @@
->                         #cooling-cells =3D <2>;
->                         #cooling-min-level =3D <0>;
->                         #cooling-max-level =3D <7>;
-> +                       dynamic-power-coefficient =3D <530>;
->                 };
->=20
->                 cpu3: cpu@101 {
-> @@ -143,6 +146,7 @@
->                         #cooling-cells =3D <2>;
->                         #cooling-min-level =3D <0>;
->                         #cooling-max-level =3D <7>;
-> +                       dynamic-power-coefficient =3D <530>;
->                 };
->=20
->                 idle-states {
-> --
-> 1.7.9.5
->=20
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+---
+ kernel/cpu.c | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 6ea42e8da861..fef6caed77a3 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -243,6 +243,19 @@ void cpu_hotplug_done(void)
+ 	cpuhp_lock_release();
+ }
+ 
++static void _cpu_hotplug_disable(void)
++{
++	cpu_hotplug_disabled++;
++}
++
++static void _cpu_hotplug_enable(void)
++{
++	if (--cpu_hotplug_disabled < 0) {
++		WARN(1, "unbalanced hotplug enable %d\n", cpu_hotplug_disabled);
++		cpu_hotplug_disabled = 0;
++	}
++}
++
+ /*
+  * Wait for currently running CPU hotplug operations to complete (if any) and
+  * disable future CPU hotplug (from sysfs). The 'cpu_add_remove_lock' protects
+@@ -253,7 +266,7 @@ void cpu_hotplug_done(void)
+ void cpu_hotplug_disable(void)
+ {
+ 	cpu_maps_update_begin();
+-	cpu_hotplug_disabled++;
++	_cpu_hotplug_disable();
+ 	cpu_maps_update_done();
+ }
+ EXPORT_SYMBOL_GPL(cpu_hotplug_disable);
+@@ -261,7 +274,7 @@ EXPORT_SYMBOL_GPL(cpu_hotplug_disable);
+ void cpu_hotplug_enable(void)
+ {
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	_cpu_hotplug_enable();
+ 	cpu_maps_update_done();
+ }
+ EXPORT_SYMBOL_GPL(cpu_hotplug_enable);
+@@ -1053,7 +1066,7 @@ int disable_nonboot_cpus(void)
+ 	 * this even in case of failure as all disable_nonboot_cpus() users are
+ 	 * supposed to do enable_nonboot_cpus() on the failure path.
+ 	 */
+-	cpu_hotplug_disabled++;
++	_cpu_hotplug_disable();
+ 
+ 	cpu_maps_update_done();
+ 	return error;
+@@ -1073,7 +1086,7 @@ void enable_nonboot_cpus(void)
+ 
+ 	/* Allow everyone to use the CPU hotplug again */
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	_cpu_hotplug_enable();
+ 	if (cpumask_empty(frozen_cpus))
+ 		goto out;
+ 
+-- 
+1.9.1
