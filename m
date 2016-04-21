@@ -1,33 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v6] ACPI / PM: Introduce efi poweroff for HW-full platforms without _S5
-Date: Thu, 21 Apr 2016 02:17:27 +0200
-Message-ID: <1562468.HF88ABVP4x@vostro.rjw.lan>
-References: <1458607870-22522-1-git-send-email-yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/3] PM / Domains: Further consolidate and clarify genpd code
+Date: Thu, 21 Apr 2016 02:33:26 +0200
+Message-ID: <8995224.0UngCiYHF5@vostro.rjw.lan>
+References: <1459416087-23519-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFqER0GSsKr2D_zkZch4evtRGk1Cyi7UR=QFkJ0kqAQAUw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458607870-22522-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-efi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51060 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751279AbcDUAaf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 20:30:35 -0400
+In-Reply-To: <CAPDyKFqER0GSsKr2D_zkZch4evtRGk1Cyi7UR=QFkJ0kqAQAUw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>
 
-On Tuesday, March 22, 2016 08:51:10 AM Chen Yu wrote:
-> The problem is Linux registers pm_power_off = efi_power_off only if
-> we are in hardware reduced mode. Actually, what we also want is to do
-> this when ACPI S5 is simply not supported on non-legacy platforms.
-> Since some future Intel platforms are HW-full mode where the DSDT
-> fails to supply an _S5 object(without SLP_TYP), we should let such
-> kind of platform to leverage efi runtime service to poweroff.
+On Wednesday, April 20, 2016 07:55:09 PM Ulf Hansson wrote:
+> On 31 March 2016 at 11:21, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > This is yet another quite trivial series of patches that further intends to
+> > consolidate and clarify some of the code for the generic PM domain (genpd).
+> >
+> > Ulf Hansson (3):
+> >   PM / Domains: Rename stop_ok to suspend_ok for the genpd governor
+> >   PM / Domains: Rename pm_genpd_runtime_suspend|resume()
+> >   PM / Domains: Remove ->save|restore_state() callbacks
+> >
+> >  drivers/base/power/domain.c          | 131 ++++++++++++++++-------------------
+> >  drivers/base/power/domain_governor.c |  20 +++---
+> >  include/linux/pm_domain.h            |   6 +-
+> >  3 files changed, 70 insertions(+), 87 deletions(-)
+> >
+> > --
+> > 1.9.1
+> >
 > 
-> This patch uses efi power off as first choice when S5 is unavailable,
-> even if there is a customized poweroff(driver provided, eg).
-> Meanwhile, the legacy platforms will not be affected because there is
-> no path for them to overwrite the pm_power_off to efi power off.
-> 
-> Suggested-by: Len Brown <len.brown@intel.com>
-> Reviewed-by: Matt Fleming <matt@codeblueprint.co.uk>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> Rafael, Kevin, do these look okay with you?
 
-Applied, thanks!
+I'm waiting for Kevin.
+
+Thanks,
+Rafael
+
