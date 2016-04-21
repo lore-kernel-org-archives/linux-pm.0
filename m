@@ -1,63 +1,87 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
- cooling model.
-Date: Wed, 20 Apr 2016 20:01:42 -0700
-Message-ID: <20160421030141.GA4845@localhost.localdomain>
-References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
- <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
- <57176ECF.6020705@gmail.com>
- <12007858.UuqVGafLHV@vostro.rjw.lan>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH v2] drivers/idle: make intel_idle.c driver more
+ explicitly non-modular
+Date: Wed, 20 Apr 2016 23:12:49 -0400
+Message-ID: <20160421031249.GH13379@windriver.com>
+References: <20160407165355.GA9188@linaro.org>
+ <1461165906-21614-1-git-send-email-paul.gortmaker@windriver.com>
+ <20160420181322.GM5862@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:36813 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbcDUDBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:01:47 -0400
+Received: from mail1.windriver.com ([147.11.146.13]:40928 "EHLO
+	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbcDUDNE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:13:04 -0400
 Content-Disposition: inline
-In-Reply-To: <12007858.UuqVGafLHV@vostro.rjw.lan>
+In-Reply-To: <20160420181322.GM5862@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, rcochran@linutronix.de, linux-pm@vger.kernel.org
 
-On Thu, Apr 21, 2016 at 02:41:24AM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
-> > Hi Rafael,
+[Re: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 20/04/2016 (Wed 20:13) Daniel Lezcano wrote:
+
+> On Wed, Apr 20, 2016 at 11:25:06AM -0400, Paul Gortmaker wrote:
+> > The Kconfig for this driver is currently declared with:
 > > 
-> > On 13/04/16 06:52, Rafael J. Wysocki wrote:
-> > > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > >> Hi Rafael,
-> > >>
-> > >> On 15-03-16, 16:10, Dawei Chien wrote:
-> > >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
-> > >>> cooling devices with dynamic power coefficient.
-> > >>>
-> > >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> > >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > >>
-> > >> Can you please apply this patch from Dawei ?
-> > >
-> > > I can, but I'm traveling this week, so that's rather going to happen next week.
-> > >
+> > config INTEL_IDLE
+> >         bool "Cpuidle Driver for Intel Processors"
 > > 
-> > I don't see the patch in linux-next, did you forget to pick/push it?
+> > ...meaning that it currently is not being built as a module by anyone.
+> > 
+> > This was done in commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
+> > ("intel_idle: disable module support") since "...the module capability
+> > is cauing more trouble than it is worth."
+> > 
+> > This was done over 5y ago, and Daniel adds that:
+> > 
+> >     ...the modular support has been removed from almost all the cpuidle
+> >     drivers and the cpuidle framework is no longer assuming driver could
+> >     be unloaded.
+> > 
+> >     Removing the modular dead code in the driver makes sense as this
+> >     what have been done in the others drivers.
+> > 
+> > So lets remove the modular code that is essentially orphaned, so that
+> > when reading the driver there is no doubt it is builtin-only.
+> > 
+> > Since module_init translates to device_initcall in the non-modular
+> > case, the init ordering remains unchanged with this commit.  At a
+> > later date we might want to consider whether subsys_init or another
+> > init category seems more appropriate than device_init.
+> > 
+> > We replace module.h with moduleparam.h since the file does declare
+> > some module parameters, and leaving them as such is currently the
+> > easiest way to remain compatible with existing boot arg use cases.
 > 
-> No, I didn't.  I just didn't have the time to get to them before.
-> 
-> Now, given that they are thermal patches, they really should go in via
-> linux-soc-thermal.git.
-> 
-> Eduardo, any chance to take care of these?
+> What about using __setup() ? so module* disappear from the file.
 
-Yes I can add this one, given that they have the proper acked-by. I was
-a bit hesitant to just get them because they are touching
-drivers/cpufreq. 
+No, it can't be __setup since moduleparam uses an instance of the
+filename as a prefix to the boot arg, and __setup does not.  And we
+should stay compatible with existing boot arg use cases for people
+who have embedded such a setting in their grub config a long time
+ago and forgot it.  It would take looking at and likely extending the
+early_param macro to provide a syntax compatible instance of what
+the module_param currently does if I recall correctly -- hence the
+above comment in the commit log.
 
-Anyways, I am adding this to my branch to the next merge window.
-
+Paul.
+--
 
 > 
-> Thanks,
-> Rafael
-> 
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/block/brd.c#n463
+>  
+> > Note that MODULE_DEVICE_TABLE is a no-op for non-modular code.
+> > 
+> > Also note that we can't remove intel_idle_cpuidle_devices_uninit() as
+> > that is still used for unwind purposes if the init fails.
+> > 
+> > We also delete the MODULE_LICENSE tag etc. since all that information
+> > is already contained at the top of the file in the comments.
+> > 
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: rcochran@linutronix.de
+> > Cc: linux-pm@vger.kernel.org
+> > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
