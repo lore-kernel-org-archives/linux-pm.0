@@ -1,71 +1,125 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/10] cpufreq: Get rid of cpufreq-dt's platform data
-Date: Thu, 21 Apr 2016 22:10:27 +0200
-Message-ID: <1487853.W42huqXPTb@vostro.rjw.lan>
-References: <cover.1461228504.git.viresh.kumar@linaro.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Thu, 21 Apr 2016 23:57:32 +0300
+Message-ID: <27575455.zVxi7rnRNK@avalon>
+References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org> <3340490.Br5NVWnCR9@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59190 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751583AbcDUUHe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 16:07:34 -0400
-In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:34358 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbcDUU5R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 16:57:17 -0400
+In-Reply-To: <3340490.Br5NVWnCR9@avalon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-arm-kernel@lists.infradead.org
 
-On Thursday, April 21, 2016 02:28:52 PM Viresh Kumar wrote:
-> Hi Guys,
+On Thursday 21 Apr 2016 20:31:52 Laurent Pinchart wrote:
+> Hi Ulf,
 > 
-> The aim of the series is to kill the users of cpufreq-dt's platform
-> data, i.e. mvebu. And because that required a new API to the OPP core,
-> this just became a mix of cpufreq and OPP patches.
+> Thank you for the patch.
 > 
-> The first four patches does some sort of cleanup of the OPP core to base
-> the next patches. Fifth one sets the shared_opp flag in opp-tables
-> (required by later patches). Sixth one adds a new API for opp-v1 users,
-> to get the CPUs sharing an OPP table.
+> On Thursday 21 Apr 2016 12:34:02 Ulf Hansson wrote:
+> > When the pm_runtime_force_suspend|resume() helpers were invented, we still
+> > had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+> > 
+> > To make sure these helpers worked for all combinations and without
+> > introducing too much of complexity, the device was always resumed in
+> > pm_runtime_force_resume().
+> > 
+> > More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+> > unset, we needed to resume the device as the subsystem/driver couldn't
+> > rely on using runtime PM to do it.
+> > 
+> > As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+> > removed this combination, of using CONFIG_PM_SLEEP without the earlier
+> > CONFIG_PM_RUNTIME.
+> > 
+> > For this reason we can now rely on the subsystem/driver to use runtime PM
+> > to resume the device, instead of forcing that to be done in all cases. In
+> > other words, let's defer this to a later point when it's actually needed.
+> > 
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> > 
+> > Note, this patch is based upon another not yet queued patch [1]. The
+> > reason
+> > is simply because that [1] is a more important patch as it fixes a
+> > problem.
+> > It was posted to linux-pm April 8th and I expect it (or a new revision of
+> > it) to be applied before $subject patch.
+> > 
+> > [1]
+> > https://patchwork.kernel.org/patch/8782851
+> > 
+> > ---
+> > 
+> >  drivers/base/power/runtime.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> > 
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index b746904..a190ca0 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -1506,6 +1506,17 @@ int pm_runtime_force_resume(struct device *dev)
+> > 
+> >  		goto out;
+> >  	
+> >  	}
+> > 
+> > +	/*
+> > +	 * The PM core increases the runtime PM usage count in the system PM
+> > +	 * prepare phase. If the count is greather than 1 at this point, 
+someone
+> > +	 * else has also increased it. In such case, let's make sure to runtime
+> > +	 * resume the device as that is likely what is expected. In other case
+> > +	 * we trust the subsystem/driver to runtime resume the device when it's
+> > +	 * actually needed.
+> > +	 */
+> > +	if (atomic_read(&dev->power.usage_count) < 2)
+> > +		goto out;
+> > +
+> > 
+> >  	ret = pm_runtime_set_active(dev);
+> >  	if (ret)
+> >  	
+> >  		goto out;
 > 
-> Seventh to tenth update cpufreq-dt and mvebu to get rid of platform
-> data.
+> This works in the sense that it prevents devices from being PM resumed at
+> system resume time if not needed. However, devices that are part of a PM
+> domain and that were idle before system suspend are suspended twice (with
+> their .runtime_suspend() handler called twice), which is not good at all.
 > 
-> @Rafael: The last patch touches the compatible-list array in
-> cpufreq-dt-platdev.c, which is also touched by
-> '[PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code'.
+> The first suspend occurs at system suspend time, with
+> pm_runtime_force_suspend() rightfully suspending the device as the device is
+> active (due to being woken up by pm_genpd_prepare()). The second suspend
+> occurs at resume time due to device_complete() calling pm_runtime_put().
 > 
-> So, the last one has some sort of dependency on that series, otherwise
-> all other patches can be applied cleanly.
+> I've tracked the issue to the fact that pm_genpd_complete() calls
+> pm_runtime_set_active() regardless of whether the device was PM resumed or
+> not. As pm_runtime_force_suspend() doesn't resume devices with this patch
+> applied, the pm_runtime_put() call from device_complete() will try to
+> runtime suspend the device a second time as the state is incorrectly set to
+> RPM_ACTIVE.
 > 
-> @Arnd: Can you please look at patches 7-10 ..
-> 
-> Viresh Kumar (10):
->   PM / OPP: Propagate the error returned by _find_opp_table()
->   PM / OPP: Add missing doc style comments
->   PM / OPP: dev_pm_opp_set_sharing_cpus() doesn't depend on CONFIG_OF
->   PM / OPP: Relocate dev_pm_opp_set_sharing_cpus()
->   PM / OPP: Mark shared-opp for non-dt case
->   PM / OPP: Add dev_pm_opp_get_sharing_cpus()
->   cpufreq: dt: Identify cpu-sharing for platforms without
->     operating-points-v2
->   mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared
->   cpufreq: dt: Kill platform-data
->   cpufreq: mvebu: Use generic platdev driver
-> 
->  arch/arm/mach-mvebu/pmsu.c           |  14 ++-
->  drivers/base/power/opp/cpu.c         | 187 +++++++++++++++++++++++++++--------
->  drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
->  drivers/cpufreq/cpufreq-dt.c         |  22 ++---
->  include/linux/cpufreq-dt.h           |  24 -----
->  include/linux/pm_opp.h               |  18 ++--
->  6 files changed, 176 insertions(+), 91 deletions(-)
->  delete mode 100644 include/linux/cpufreq-dt.h
+> With the current genpd implementation this patch isn't needed (and neither
+> is my patch), as genpd expects the device to be always active when the
+> system is resumed. However, when genpd isn't used,
+> pm_runtime_force_resume() needs to skip resuming devices that were
+> suspended before system suspend. This patch looks good to me to fix that
+> problem.
+>
+> Do we need to fix genpd first ?
 
-As usual, I'd like to get some ACKs for the OPP stuff from Stephen or other
-people with vested interest.
+And for the record, while this patch would require fixing genpd first, "[PATCH 
+v2] PM / Runtime: Only force-resume device if it has been force-suspended" 
+doesn't (at least as far as I understand the problem).
 
-Thanks,
-Rafael
+-- 
+Regards,
+
+Laurent Pinchart
 
