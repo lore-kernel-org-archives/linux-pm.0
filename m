@@ -1,77 +1,118 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: rockchip: Use generic platdev driver
-Date: Thu, 21 Apr 2016 14:35:18 +0530
-Message-ID: <20160421090518.GC9309@vireshk-i7>
-References: <1461225849-36866-1-git-send-email-finley.xiao@rock-chips.com>
- <1461229265-53750-1-git-send-email-finley.xiao@rock-chips.com>
+From: Antoine Tenart <antoine.tenart@free-electrons.com>
+Subject: Re: [PATCH 1/8] cpufreq: berlin: Use generic platdev driver
+Date: Thu, 21 Apr 2016 11:05:30 +0200
+Message-ID: <20160421090530.GE3685@kwain>
+References: <cover.1461228081.git.viresh.kumar@linaro.org>
+ <4be5e8c38aed34a4aae08db2cae39ca8ece54d29.1461228081.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="EgVrEAR5UttbsTXg"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34837 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbcDUJFW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 05:05:22 -0400
-Received: by mail-pa0-f46.google.com with SMTP id fs9so27377702pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 02:05:21 -0700 (PDT)
+Received: from down.free-electrons.com ([37.187.137.238]:54389 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751767AbcDUJFm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 05:05:42 -0400
 Content-Disposition: inline
-In-Reply-To: <1461229265-53750-1-git-send-email-finley.xiao@rock-chips.com>
+In-Reply-To: <4be5e8c38aed34a4aae08db2cae39ca8ece54d29.1461228081.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Finlye Xiao <finley.xiao@rock-chips.com>
-Cc: linux@arm.linux.org.uk, rjw@rjwysocki.net, heiko@sntech.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, Antoine Tenart <antoine.tenart@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 21-04-16, 17:01, Finlye Xiao wrote:
-> From: Finley Xiao <finley.xiao@rock-chips.com>
-> 
-> This patch add rockchip's compatible string to the compat list and
-> remove similar code from platform code for supporting generic platdev
-> driver.
-> 
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+
+--EgVrEAR5UttbsTXg
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, Apr 21, 2016 at 02:13:47PM +0530, Viresh Kumar wrote:
+> The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+> device now, reuse that and remove similar code from platform code.
+>=20
+> Cc: Antoine Tenart <antoine.tenart@free-electrons.com>
+> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Acked-by: Antoine Tenart <antoine.tenart@free-electrons.com>
+
+Thanks!
+
+Antoine
+
 > ---
-> v1->v2:
-> - add a blank line before rockchip's compatible
-> 
->  arch/arm/mach-rockchip/rockchip.c    |  1 -
->  drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
->  2 files changed, 11 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
-> index 3f07cc5..beb71da 100644
-> --- a/arch/arm/mach-rockchip/rockchip.c
-> +++ b/arch/arm/mach-rockchip/rockchip.c
-> @@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
->  {
->  	rockchip_suspend_init();
->  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-> -	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
->  }
->  
->  static const char * const rockchip_board_dt_compat[] = {
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index f2ae7ad..fc6529b 100644
+>  arch/arm/mach-berlin/berlin.c        | 6 ------
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>  2 files changed, 2 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
+> index 25d73870ccca..ac181c6797ee 100644
+> --- a/arch/arm/mach-berlin/berlin.c
+> +++ b/arch/arm/mach-berlin/berlin.c
+> @@ -18,11 +18,6 @@
+>  #include <asm/hardware/cache-l2x0.h>
+>  #include <asm/mach/arch.h>
+> =20
+> -static void __init berlin_init_late(void)
+> -{
+> -	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> -}
+> -
+>  static const char * const berlin_dt_compat[] =3D {
+>  	"marvell,berlin",
+>  	NULL,
+> @@ -30,7 +25,6 @@ static const char * const berlin_dt_compat[] =3D {
+> =20
+>  DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
+>  	.dt_compat	=3D berlin_dt_compat,
+> -	.init_late	=3D berlin_init_late,
+>  	/*
+>  	 * with DT probing for L2CCs, berlin_init_machine can be removed.
+>  	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufr=
+eq-dt-platdev.c
+> index f2ae7ad99a3c..3b3e6804cf14 100644
 > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -21,6 +21,17 @@ static const struct of_device_id machines[] = {
->  	{ .compatible = "samsung,exynos5420", },
->  	{ .compatible = "samsung,exynos5800", },
->  #endif
+> @@ -12,6 +12,8 @@
+>  #include <linux/platform_device.h>
+> =20
+>  static const struct of_device_id machines[] =3D {
+> +	{ .compatible =3D "marvell,berlin", },
 > +
-> +	{ .compatible = "rockchip,rk2928", },
-> +	{ .compatible = "rockchip,rk3036", },
-> +	{ .compatible = "rockchip,rk3066a", },
-> +	{ .compatible = "rockchip,rk3066b", },
-> +	{ .compatible = "rockchip,rk3188", },
-> +	{ .compatible = "rockchip,rk3228", },
-> +	{ .compatible = "rockchip,rk3288", },
-> +	{ .compatible = "rockchip,rk3366", },
-> +	{ .compatible = "rockchip,rk3368", },
-> +	{ .compatible = "rockchip,rk3399", },
->  };
->  
->  static int __init cpufreq_dt_platdev_init(void)
+>  	{ .compatible =3D "samsung,exynos3250", },
+>  	{ .compatible =3D "samsung,exynos4210", },
+>  	{ .compatible =3D "samsung,exynos4212", },
+> --=20
+> 2.7.1.410.g6faf27b
+>=20
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+--=20
+Antoine T=E9nart, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
 
--- 
-viresh
+--EgVrEAR5UttbsTXg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXGJfZAAoJEFxNi8it27zYC0EP/2iC4AcEmcdBEqxHLjh7bjdp
+iXehVzUY2havwGIG0zJJnul76k+DdseERfGuay4VGu8zcEaxjoDwBAzHB1viwnpL
+OhbKyQwgU5GcWnHnfgTS7Nq9sbhPesWfbemhyso40D5zuJVZaCnd4AtT/Lh8HWHS
+HVaJB9EiOf1ksMAOZhVPjUNxYezEuiImTZwLfmQWoLWreC6qtoM+uGN38Y1vB8x2
+jfK89PO0YTxzWro5lKzMWgCB6Opw05W7+AsgYQOhK3Bsra3OTPYcotCTgkrRAj2c
+fbMghSyfz8FEYV6PFDkH8TP3fgzzrd7iDilJ3CYk5J1h2LBmwgVf+FhvGGMn0DSb
+CNhASuqHzbXW3cmn5AJVXH0ac9sOQrRecCogwSzXuty7tKOTE1b2lvofW0o78/Vd
+dxayR5skGwD5S8TWOTlTULJDmQqL2hiB/4mlJVZAVAK4XztCfZwW+xiG1SPNUmhf
+N9NbUtfKXMpl5PaZbJ/UnusF2dnPuJXTSb4VMdwvg+r4SrcBQ4HL/+kW9oEioh5T
+uo8jesn4co7aeLeh3HrCLk4Ex7z0qsVAKmA9mHqTQFc9bK36EOCl0CadhJoLVFP2
+zTb+ZEh32IrVKO0oTPF01KBeoboyntg5Torv4k7hdS8XS2gIwlMCm4ZOxl+TjzgP
++XowDhteVetD8L158Gos
+=Hb0k
+-----END PGP SIGNATURE-----
+
+--EgVrEAR5UttbsTXg--
