@@ -1,63 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 10/10] cpufreq: mvebu: Use generic platdev driver
-Date: Thu, 21 Apr 2016 14:29:02 +0530
-Message-ID: <1c2cc13d812e04f231ddd4313e3ba6a54fb4632c.1461228504.git.viresh.kumar@linaro.org>
+Subject: [PATCH 09/10] cpufreq: dt: Kill platform-data
+Date: Thu, 21 Apr 2016 14:29:01 +0530
+Message-ID: <03e9d9e74651277bdfeac885fd86b0e482333b86.1461228504.git.viresh.kumar@linaro.org>
 References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:33420 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418AbcDUI74 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:59:56 -0400
-Received: by mail-pf0-f182.google.com with SMTP id 184so28329189pff.0
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 01:59:55 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
 References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
-device now, reuse that and remove similar code from platform code.
+There are no more users of platform-data for cpufreq-dt driver, get rid
+of it.
 
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Gregory Clement <gregory.clement@free-electrons.com>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-mvebu/pmsu.c           | 2 --
- drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq-dt.c |  6 +-----
+ include/linux/cpufreq-dt.h   | 24 ------------------------
+ 2 files changed, 1 insertion(+), 29 deletions(-)
+ delete mode 100644 include/linux/cpufreq-dt.h
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index 79d0a5d9da8e..f24f46776fbb 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -685,8 +685,6 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
- 			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
- 				__func__, ret);
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index aca9bec00f91..3957de801ae8 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -15,7 +15,6 @@
+ #include <linux/cpu.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/cpufreq.h>
+-#include <linux/cpufreq-dt.h>
+ #include <linux/cpumask.h>
+ #include <linux/err.h>
+ #include <linux/module.h>
+@@ -217,10 +216,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
  	}
+ 
+ 	if (fallback) {
+-		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
 -
--	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
- 	return 0;
- }
+-		if (!pd || !pd->independent_clocks)
+-			cpumask_setall(policy->cpus);
++		cpumask_setall(policy->cpus);
  
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 69b2a222c84e..5704a92c52dc 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -33,6 +33,8 @@ static const struct of_device_id machines[] = {
- 
- 	{ .compatible = "marvell,berlin", },
- 
-+	{ .compatible = "marvell,armadaxp", },
-+
- 	{ .compatible = "samsung,exynos3250", },
- 	{ .compatible = "samsung,exynos4210", },
- 	{ .compatible = "samsung,exynos4212", },
+ 		/*
+ 		 * OPP tables are initialized only for policy->cpu, do it for
+diff --git a/include/linux/cpufreq-dt.h b/include/linux/cpufreq-dt.h
+deleted file mode 100644
+index a87335a1660c..000000000000
+--- a/include/linux/cpufreq-dt.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-/*
+- * Copyright (C) 2014 Marvell
+- * Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef __CPUFREQ_DT_H__
+-#define __CPUFREQ_DT_H__
+-
+-#include <linux/types.h>
+-
+-struct cpufreq_dt_platform_data {
+-	/*
+-	 * True when each CPU has its own clock to control its
+-	 * frequency, false when all CPUs are controlled by a single
+-	 * clock.
+-	 */
+-	bool independent_clocks;
+-};
+-
+-#endif /* __CPUFREQ_DT_H__ */
 -- 
 2.7.1.410.g6faf27b
-
