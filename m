@@ -1,81 +1,152 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 08/10] mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP
- tables as shared
-Date: Thu, 21 Apr 2016 14:29:00 +0530
-Message-ID: <3808dbeda9c233026ed78fa3ec94c0bbd898875c.1461228504.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/10] PM / OPP: Relocate dev_pm_opp_set_sharing_cpus()
+Date: Thu, 21 Apr 2016 14:28:56 +0530
+Message-ID: <2e64f9a691dd6549baee5bf81cfe99d4b287b161.1461228504.git.viresh.kumar@linaro.org>
 References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
 References: <cover.1461228504.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Cc: nm@ti.com, thomas.petazzoni@free-electrons.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-That will allow us to avoid using cpufreq-dt platform data.
+Move dev_pm_opp_set_sharing_cpus() towards the end of the file. This
+is required for better readability after the next patch is applied,
+which adds dev_pm_opp_get_sharing_cpus().
 
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Gregory Clement <gregory.clement@free-electrons.com>
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-mvebu/pmsu.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/base/power/opp/cpu.c | 112 +++++++++++++++++++++----------------------
+ 1 file changed, 56 insertions(+), 56 deletions(-)
 
-diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-index ed8fda4cd055..79d0a5d9da8e 100644
---- a/arch/arm/mach-mvebu/pmsu.c
-+++ b/arch/arm/mach-mvebu/pmsu.c
-@@ -20,7 +20,6 @@
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index b151401d1513..491e8684bd5f 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -119,62 +119,6 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+ #endif	/* CONFIG_CPU_FREQ */
  
- #include <linux/clk.h>
- #include <linux/cpu_pm.h>
--#include <linux/cpufreq-dt.h>
- #include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/io.h>
-@@ -609,10 +608,6 @@ int mvebu_pmsu_dfs_request(int cpu)
- 	return 0;
- }
- 
--struct cpufreq_dt_platform_data cpufreq_dt_pd = {
--	.independent_clocks = true,
--};
+-/**
+- * dev_pm_opp_set_sharing_cpus() - Mark OPP table as shared by few CPUs
+- * @cpu_dev:	CPU device for which we do this operation
+- * @cpumask:	cpumask of the CPUs which share the OPP table with @cpu_dev
+- *
+- * This marks OPP table of the @cpu_dev as shared by the CPUs present in
+- * @cpumask.
+- *
+- * Returns -ENODEV if OPP table isn't already present.
+- *
+- * Locking: The internal opp_table and opp structures are RCU protected.
+- * Hence this function internally uses RCU updater strategy with mutex locks
+- * to keep the integrity of the internal data structures. Callers should ensure
+- * that this function is *NOT* called under RCU protection or in contexts where
+- * mutex cannot be locked.
+- */
+-int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+-{
+-	struct opp_device *opp_dev;
+-	struct opp_table *opp_table;
+-	struct device *dev;
+-	int cpu, ret = 0;
 -
- static int __init armada_xp_pmsu_cpufreq_init(void)
- {
- 	struct device_node *np;
-@@ -683,10 +678,15 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
- 			clk_put(clk);
- 			return ret;
- 		}
-+
-+		ret = dev_pm_opp_set_sharing_cpus(cpu_dev,
-+				(struct cpumask *) cpumask_of(cpu_dev->id));
-+		if (ret)
-+			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
-+				__func__, ret);
- 	}
- 
--	platform_device_register_data(NULL, "cpufreq-dt", -1,
--				      &cpufreq_dt_pd, sizeof(cpufreq_dt_pd));
-+	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
- 	return 0;
+-	mutex_lock(&opp_table_lock);
+-
+-	opp_table = _find_opp_table(cpu_dev);
+-	if (IS_ERR(opp_table)) {
+-		ret = PTR_ERR(opp_table);
+-		goto unlock;
+-	}
+-
+-	for_each_cpu(cpu, cpumask) {
+-		if (cpu == cpu_dev->id)
+-			continue;
+-
+-		dev = get_cpu_device(cpu);
+-		if (!dev) {
+-			dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
+-				__func__, cpu);
+-			continue;
+-		}
+-
+-		opp_dev = _add_opp_dev(dev, opp_table);
+-		if (!opp_dev) {
+-			dev_err(dev, "%s: failed to add opp-dev for cpu%d device\n",
+-				__func__, cpu);
+-			continue;
+-		}
+-	}
+-unlock:
+-	mutex_unlock(&opp_table_lock);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
+-
+ #ifdef CONFIG_OF
+ /**
+  * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
+@@ -326,3 +270,59 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask
  }
- 
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
+ #endif
++
++/**
++ * dev_pm_opp_set_sharing_cpus() - Mark OPP table as shared by few CPUs
++ * @cpu_dev:	CPU device for which we do this operation
++ * @cpumask:	cpumask of the CPUs which share the OPP table with @cpu_dev
++ *
++ * This marks OPP table of the @cpu_dev as shared by the CPUs present in
++ * @cpumask.
++ *
++ * Returns -ENODEV if OPP table isn't already present.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++{
++	struct opp_device *opp_dev;
++	struct opp_table *opp_table;
++	struct device *dev;
++	int cpu, ret = 0;
++
++	mutex_lock(&opp_table_lock);
++
++	opp_table = _find_opp_table(cpu_dev);
++	if (IS_ERR(opp_table)) {
++		ret = PTR_ERR(opp_table);
++		goto unlock;
++	}
++
++	for_each_cpu(cpu, cpumask) {
++		if (cpu == cpu_dev->id)
++			continue;
++
++		dev = get_cpu_device(cpu);
++		if (!dev) {
++			dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
++				__func__, cpu);
++			continue;
++		}
++
++		opp_dev = _add_opp_dev(dev, opp_table);
++		if (!opp_dev) {
++			dev_err(dev, "%s: failed to add opp-dev for cpu%d device\n",
++				__func__, cpu);
++			continue;
++		}
++	}
++unlock:
++	mutex_unlock(&opp_table_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
 -- 
 2.7.1.410.g6faf27b
