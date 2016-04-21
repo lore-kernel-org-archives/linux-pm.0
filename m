@@ -1,71 +1,63 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 2/2] thermal: generic-adc: Add ADC based thermal
- sensor driver
-Date: Wed, 20 Apr 2016 19:50:39 -0700
-Message-ID: <20160421025038.GA4761@localhost.localdomain>
-References: <1461050521-6080-1-git-send-email-ldewangan@nvidia.com>
- <1461050521-6080-2-git-send-email-ldewangan@nvidia.com>
- <20160420234322.GA2558@localhost.localdomain>
- <571828F0.8000101@nvidia.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
+ cooling model.
+Date: Wed, 20 Apr 2016 20:01:42 -0700
+Message-ID: <20160421030141.GA4845@localhost.localdomain>
+References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
+ <CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
+ <57176ECF.6020705@gmail.com>
+ <12007858.UuqVGafLHV@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36813 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbcDUDBr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 23:01:47 -0400
 Content-Disposition: inline
-In-Reply-To: <571828F0.8000101-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <12007858.UuqVGafLHV@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit
 
-On Thu, Apr 21, 2016 at 06:42:16AM +0530, Laxman Dewangan wrote:
+On Thu, Apr 21, 2016 at 02:41:24AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
+> > Hi Rafael,
+> > 
+> > On 13/04/16 06:52, Rafael J. Wysocki wrote:
+> > > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > >> Hi Rafael,
+> > >>
+> > >> On 15-03-16, 16:10, Dawei Chien wrote:
+> > >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
+> > >>> cooling devices with dynamic power coefficient.
+> > >>>
+> > >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> > >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > >>
+> > >> Can you please apply this patch from Dawei ?
+> > >
+> > > I can, but I'm traveling this week, so that's rather going to happen next week.
+> > >
+> > 
+> > I don't see the patch in linux-next, did you forget to pick/push it?
 > 
-> On Thursday 21 April 2016 05:13 AM, Eduardo Valentin wrote:
-> >Laxman,
-> >
-> >On Tue, Apr 19, 2016 at 12:52:01PM +0530, Laxman Dewangan wrote:
-> >>In some of platform, thermal sensors like NCT thermistors are
-> >>connected to the one of ADC channel. The temperature is read by
-> >>reading the voltage across the sensor resistance via ADC. Lookup
-> >>table for ADC read value to temperature is referred to get
-> >>temperature. ADC is read via IIO framework.
-> >>
-> >>Add support for thermal sensor driver which read the voltage across
-> >>sensor resistance from ADC through IIO framework.
-> >>
-> >>Signed-off-by: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >I really like this driver, as I mentioned  before. Just one comment
-> >though.
-> >
-> >>+
-> >>+	gti->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0,
-> >>+						      gti, &gadc_thermal_ops);
-> >Why not using the devm_ version you introduced?
-> >
-> >Any particular reason?
-> >
+> No, I didn't.  I just didn't have the time to get to them before.
 > 
-> Yaah, the reason is just to maintain the proper sequence in releasing of
-> resource during driver unbinding.
+> Now, given that they are thermal patches, they really should go in via
+> linux-soc-thermal.git.
 > 
-> Sequence in probe are:
->         iio_channel_get()
->         thermal_zone_of_sensor_register()
-> 
-> and on release, sensor should be released first before iio channel.
-> As of now, we do not have devm_iio_channel_get() [I already post patch and
-> it is accepted by Jonathan in iio sub system] and hence I can not use the
-> devm_ for sensor register to avoid race.
-> 
-> However, once the devm_ for iio channel get available in all subsystem (may
-> be in next release), I will post the patch to use devm_.
-> 
-> Currently, we can go with these APIs.
+> Eduardo, any chance to take care of these?
 
-Ok. We can have it in this way then.
+Yes I can add this one, given that they have the proper acked-by. I was
+a bit hesitant to just get them because they are touching
+drivers/cpufreq. 
+
+Anyways, I am adding this to my branch to the next merge window.
+
 
 > 
+> Thanks,
+> Rafael
 > 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
