@@ -1,80 +1,103 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Thu, 21 Apr 2016 12:58:12 +0200
-Message-ID: <5718B244.3020201@gmail.com>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
- <20150826021659.GD8784@linux>
- <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
- <22538895.vrRgZUmQTV@vostro.rjw.lan>
- <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
- <55E73077.8060106@gmail.com> <5718AAF0.3010606@gmail.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH] sched/cpufreq: don't trigger cpufreq update w/o real
+ rt/deadline tasks running
+Date: Thu, 21 Apr 2016 13:11:50 +0200
+Message-ID: <5718B576.1020306@intel.com>
+References: <1460958684-32105-1-git-send-email-wanpeng.li@hotmail.com>
+ <6087716.bi8vDPiZNy@vostro.rjw.lan>
+ <20160420140117.GZ3448@twins.programming.kicks-ass.net>
+ <CANRm+CzGm5axJC_y=rqhmi=DLkfpXfo2NLzFyRyjeZE89Aty4Q@mail.gmail.com>
+ <57180293.1040809@intel.com>
+ <CANRm+CwW_STS21Fu0iKs5gVps9OF8GFKB4ksqLqT=33O-hoOWg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:37939 "EHLO
-	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbcDUK6R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 06:58:17 -0400
-In-Reply-To: <5718AAF0.3010606@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CANRm+CwW_STS21Fu0iKs5gVps9OF8GFKB4ksqLqT=33O-hoOWg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wanpeng Li <kernellwp@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-
-
-On 21/04/16 12:26, Matthias Brugger wrote:
->
->
-> On 02/09/15 19:23, Matthias Brugger wrote:
->>
->>
->> On 02/09/15 08:45, Daniel Kurtz wrote:
->>> Matthias,
->>>
->>> On Fri, Aug 28, 2015 at 10:06 PM, Rafael J. Wysocki
->>> <rjw@rjwysocki.net> wrote:
->>>> On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
->>>>> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar
->>>>> <viresh.kumar@linaro.org> wrote:
->>>>>> On 26-08-15, 09:25, Pi-Cheng Chen wrote:
->>>>>>> The [3/3] is based on Mediatek SoC maintainer tree[1] and the
->>>>>>> patch which
->>>>>>> introduce a new clock type[2] consumed by MT8173 cpufreq driver.
->>>>>>> So it will
->>>>>>> cause some conflicts if it goes through your tree. I am not sure
->>>>>>> how this
->>>>>>> should be handled, but should it be merged through Mediatek SoC
->>>>>>> maintainer
->>>>>>> tree?
+On 4/21/2016 3:09 AM, Wanpeng Li wrote:
+> 2016-04-21 6:28 GMT+08:00 Rafael J. Wysocki <rafael.j.wysocki@intel.com>:
+>> On 4/21/2016 12:24 AM, Wanpeng Li wrote:
+>>> 2016-04-20 22:01 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
+>>>> On Wed, Apr 20, 2016 at 02:32:35AM +0200, Rafael J. Wysocki wrote:
+>>>>> On Monday, April 18, 2016 01:51:24 PM Wanpeng Li wrote:
+>>>>>> Sometimes update_curr() is called w/o tasks actually running, it is
+>>>>>> captured by:
+>>>>>>       u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
+>>>>>> We should not trigger cpufreq update in this case for rt/deadline
+>>>>>> classes, and this patch fix it.
 >>>>>>
->>>>>> Just get that applied to MTK tree, it doesn't have any dependency on
->>>>>> rest of the patches for build/boot. The only thing is that cpufreq
->>>>>> wouldn't work and it will work as soon as Rafael's and MTK's trees
->>>>>> are
->>>>>> merged by Linus.
+>>>>>> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
+>>>>> The signed-off-by tag should agree with the From: header.  One way to
+>>>>> achieve
+>>>>> that is to add an extra From: line at the start of the changelog.
 >>>>>
->>>>> Thanks for your explanation.
+>>>>> That said, this looks like a good catch that should go into 4.6 to me.
 >>>>>
->>>>> @Rafael, Would you please apply [1,2] to your tree?
->>>>
->>>> Applied, thanks!
+>>>>> Peter, what do you think?
+>>>> I'm confused by the Changelog. *what* ?
+>>> Sometimes .update_curr hook is called w/o tasks actually running, it is
+>>> captured by:
 >>>
->>> Can you please apply [3] from this set to your dts tree?
+>>>           u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
 >>>
+>>> We should not trigger cpufreq update in this case for rt/deadline
+>>> classes, and this patch fix it.
 >>
->> I will as soon as v4.3-rc1 shows up.
+>> That's what you wrote in the changelog, no need to repeat that.
+>>
+>> I guess Peter is asking for more details, though.  I actually would like to
+>> get some more details here too.  Like an example of when the situation in
+>> question actually happens.
+> I add a print to print when delta_exec is zero for rt class, something
+> like below:
 >
-> I somehow forgot this patch. Sorry for that.
-> Applied for v4.6-next/dts64 right now.
->
+>        watchdog/5-48    [005] d...   568.449095: update_curr_rt: rt
+> delta_exec is zero
+>        watchdog/5-48    [005] d...   568.449104: <stack trace>
+>   => pick_next_task_rt
+>   => __schedule
+>   => schedule
+>   => smpboot_thread_fn
+>   => kthread
+>   => ret_from_fork
+>        watchdog/5-48    [005] d...   568.449105: update_curr_rt: rt
+> delta_exec is zero
+>        watchdog/5-48    [005] d...   568.449111: <stack trace>
+>   => put_prev_task_rt
+>   => pick_next_task_idle
+>   => __schedule
+>   => schedule
+>   => smpboot_thread_fn
+>   => kthread
+>   => ret_from_fork
+>        watchdog/6-56    [006] d...   568.510094: update_curr_rt: rt
+> delta_exec is zero
+>        watchdog/6-56    [006] d...   568.510103: <stack trace>
+>   => pick_next_task_rt
+>   => __schedule
+>   => schedule
+>   => smpboot_thread_fn
+>   => kthread
+>   => ret_from_fork
+>        watchdog/6-56    [006] d...   568.510105: update_curr_rt: rt
+> delta_exec is zero
+>        watchdog/6-56    [006] d...   568.510111: <stack trace>
+>   => put_prev_task_rt
+>   => pick_next_task_idle
+>   => __schedule
+>   => schedule
+>   => smpboot_thread_fn
+>   => kthread
+>   => ret_from_fork
+> [...]
 
-I just realized that CLK_INFRA_CA53SEL and CLK_APMIXED_MAINPLL are not 
-part of the clk driver.
+And the statement in your changelog follows from this I suppose. How 
+does it follow, exactly?
 
-Pi-Cheng, can you check if they got renamed in the meanwhile? Or do we 
-need some clock driver patches that enable this clocks for the series?
-
-Regards,
-Matthias
+Thanks,
+Rafael
