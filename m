@@ -1,90 +1,63 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH v2] drivers/idle: make intel_idle.c driver more
- explicitly non-modular
-Date: Thu, 21 Apr 2016 13:42:18 -0400
-Message-ID: <20160421174217.GM13379@windriver.com>
-References: <20160407165355.GA9188@linaro.org>
- <1461165906-21614-1-git-send-email-paul.gortmaker@windriver.com>
- <20160420181322.GM5862@linaro.org>
- <20160421031249.GH13379@windriver.com>
- <20160421080427.GC14010@linaro.org>
- <20160421124454.GJ13379@windriver.com>
- <20160421132137.GA18670@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RESEND][PATCH 1/3] thermal: mediatek: Add cpu dynamic power
+ cooling model.
+Date: Thu, 21 Apr 2016 19:53:08 +0200
+Message-ID: <CAJZ5v0h_W6CW6Z-kux-kbur_NE3XZH-hKZazXV5TX3tET-6cAg@mail.gmail.com>
+References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
+	<CAJZ5v0hpkyMCVhvYy4JzR1A5OZKs7dqDOB64aQXmjXiLM0F=BQ@mail.gmail.com>
+	<57176ECF.6020705@gmail.com>
+	<12007858.UuqVGafLHV@vostro.rjw.lan>
+	<20160421030141.GA4845@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:53668 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752933AbcDURmc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 13:42:32 -0400
-Content-Disposition: inline
-In-Reply-To: <20160421132137.GA18670@linaro.org>
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:32949 "EHLO
+	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbcDURxK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 13:53:10 -0400
+In-Reply-To: <20160421030141.GA4845@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, rcochran@linutronix.de, linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, srv_heupstream@mediatek.comSascha
 
-[Re: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 21/04/2016 (Thu 15:21) Daniel Lezcano wrote:
+On Thu, Apr 21, 2016 at 5:01 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> On Thu, Apr 21, 2016 at 02:41:24AM +0200, Rafael J. Wysocki wrote:
+>> On Wednesday, April 20, 2016 01:58:07 PM Matthias Brugger wrote:
+>> > Hi Rafael,
+>> >
+>> > On 13/04/16 06:52, Rafael J. Wysocki wrote:
+>> > > On Tue, Apr 12, 2016 at 7:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > >> Hi Rafael,
+>> > >>
+>> > >> On 15-03-16, 16:10, Dawei Chien wrote:
+>> > >>> MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
+>> > >>> cooling devices with dynamic power coefficient.
+>> > >>>
+>> > >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+>> > >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > >>
+>> > >> Can you please apply this patch from Dawei ?
+>> > >
+>> > > I can, but I'm traveling this week, so that's rather going to happen next week.
+>> > >
+>> >
+>> > I don't see the patch in linux-next, did you forget to pick/push it?
+>>
+>> No, I didn't.  I just didn't have the time to get to them before.
+>>
+>> Now, given that they are thermal patches, they really should go in via
+>> linux-soc-thermal.git.
+>>
+>> Eduardo, any chance to take care of these?
+>
+> Yes I can add this one, given that they have the proper acked-by. I was
+> a bit hesitant to just get them because they are touching
+> drivers/cpufreq.
 
-> On Thu, Apr 21, 2016 at 08:44:55AM -0400, Paul Gortmaker wrote:
-> > [Re: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 21/04/2016 (Thu 10:04) Daniel Lezcano wrote:
-> > 
-> > > On Wed, Apr 20, 2016 at 11:12:49PM -0400, Paul Gortmaker wrote:
-> > > 
-> > > [ ... ]
-> > > 
-> > > > > > We replace module.h with moduleparam.h since the file does declare
-> > > > > > some module parameters, and leaving them as such is currently the
-> > > > > > easiest way to remain compatible with existing boot arg use cases.
-> > > > > 
-> > > > > What about using __setup() ? so module* disappear from the file.
-> > > > 
-> > > > No, it can't be __setup since moduleparam uses an instance of the
-> > > > filename as a prefix to the boot arg, and __setup does not.  And we
-> > > > should stay compatible with existing boot arg use cases for people
-> > > > who have embedded such a setting in their grub config a long time
-> > > > ago and forgot it.  It would take looking at and likely extending the
-> > > > early_param macro to provide a syntax compatible instance of what
-> > > > the module_param currently does if I recall correctly -- hence the
-> > > > above comment in the commit log.
-> > > 
-> > > -module_param(max_cstate, int, 0444);
-> > > +static int __init max_cstate_param(char *str)
-> > > +{
-> > > +       max_cstate = simple_strtol(str, NULL, 0);
-> > > +       return 1;
-> > > +}
-> > > +__setup("intel_idle.max_cstate=", max_cstate_param);
-> > 
-> > Yeah, I recall thinking it would be that easy too, but there was
-> > something that happens when you manually insert the dot in there that
-> > breaks processing.  I'd have to re-test to remind myself what failed.
-> 
-> Ok.
-> 
-> I quickly tested this code snippet and, except I missed something, it 
-> worked.
+Generally, ACKs from Viresh are sufficient for ARM cpufreq drivers
+unless the maintainers of the platform in question disagree.
 
-Maybe it was when I used early_param in testing that it failed....
+> Anyways, I am adding this to my branch to the next merge window.
 
-> 
-> That said, I looked around and found that using module_param() for 
-> non-modular is found in several places, so it is common. I don't like to 
-> find references to modular code when the the caller is not supposed to be 
-
-Agreed, I wasn't a fan of it either, and had it on my to-do list to
-circle back around and revisit them once I'd got all the dead code
-removed tree wide, and as you say, there are instances already, so I
-figured no real drastic rush needed for that.
-
-> modular but that's the situation today.
-> 
-> So I will let Len and you decice what to do ;)
-> 
-> Other than that: Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-Thanks for the input on this.  It is Len's subsystem, so he gets the final
-say and not me.  :)
-
-Paul.
---
+Thanks!
