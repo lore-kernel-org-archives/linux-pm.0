@@ -1,88 +1,144 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2] cpuidle: Change ktime_get() with local_clock()
-Date: Thu, 21 Apr 2016 21:41:14 +0200
-Message-ID: <CAJZ5v0je2kdDF6J4XVmWkySKUvby3bYpCTr51m3+MKGpWYcw=Q@mail.gmail.com>
-References: <1461228990-28957-1-git-send-email-daniel.lezcano@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / Runtime: Only force-resume device if it has been force-suspended
+Date: Thu, 21 Apr 2016 21:52:56 +0200
+Message-ID: <16994316.unmTLNhP4d@vostro.rjw.lan>
+References: <1461196375-21768-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:35339 "EHLO
-	mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbcDUTlP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 15:41:15 -0400
-In-Reply-To: <1461228990-28957-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63872 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751172AbcDUTuE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 15:50:04 -0400
+In-Reply-To: <1461196375-21768-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 
-On Thu, Apr 21, 2016 at 10:56 AM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> The ktime_get() can have a non negligeable overhead, use local_clock()
-> instead.
->
-> In order to test the difference between ktime_get() and local_clock(),
-> a quick hack has been added to trigger, via debugfs, 10000 times a
-> call to ktime_get() and local_clock() and measure the elapsed time.
->
-> Then the average value, the min and max is computed for each call.
->
-> From userspace, the test above was called 100 times every 2 seconds.
->
-> So, ktime_get() and local_clock() have been called 1000000 times in
-> total.
->
-> The results are:
->
-> ktime_get():
-> ============
->  * average: 101 ns (stddev: 27.4)
->  * maximum: 38313 ns
->  * minimum: 65 ns
->
-> local_clock():
-> ==============
->  * average: 60 ns (stddev: 9.8)
->  * maximum: 13487 ns
->  * minimum: 46 ns
->
-> The local_clock() is faster and more stable.
->
-> Even if it is a drop in the ocean, changing the ktime_get() by the
-> local_clock() allows to save 80ns at idle time (entry + exit). And
-> in some circumstances, especially when there are several CPUs racing
-> for the clock access, we save tens of microseconds.
->
-> The idle duration resulting from a diff is converted from nanosec to
-> microsec. This could be done with integer division (div 1000) - which is
-> an expensive operation or by 10 bits shifting (div 1024) - which is fast
-> but unprecise.
->
-> The following table gives some results at the limits.
->
->  ------------------------------------------
-> |   nsec   |   div(1000)   |   div(1024)   |
->  ------------------------------------------
-> |   1e3    |        1 usec |      976 nsec |
->  ------------------------------------------
-> |   1e6    |     1000 usec |      976 usec |
->  ------------------------------------------
-> |   1e9    |  1000000 usec |   976562 usec |
->  ------------------------------------------
->
-> There is a linear deviation of 2.34%. This loss of precision is acceptable
-> in the context of the resulting diff which is used for statistics. These
-> ones are processed to guess estimate an approximation of the duration of the
-> next idle period which ends up into an idle state selection. The selection
-> criteria takes into account the next duration based on large intervals,
-> represented by the idle state's target residency.
->
-> The 2^10 division is enough because the approximation regarding the 1e3
-> division is lost in all the approximations done for the next idle duration
-> computation.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Thursday, April 21, 2016 02:52:55 AM Laurent Pinchart wrote:
+> The pm_runtime_force_suspend() and pm_runtime_force_resume() helpers are
+> designed to help driver being RPM-centric by offering an easy way to
+> manage runtime PM state during system suspend and resume. The first
+> function will force the device into runtime suspend at system suspend
+> time, while the second one will perform the reverse operation at system
+> resume time.
+> 
+> However, the pm_runtime_force_resume() really forces resume, regardless
+> of whether the device was running or already suspended before the call
+> to pm_runtime_force_suspend(). This results in devices being runtime
+> resumed at system resume time when they shouldn't.
+> 
+> Fix this by recording whether the device has been forcefully suspended
+> in pm_runtime_force_suspend() and condition resume in
+> pm_runtime_force_resume() to that state.
+> 
+> All current users of pm_runtime_force_resume() call the function
+> unconditionally in their system resume handler (some actually set it as
+> the resume handler), all after calling pm_runtime_force_suspend() at
+> system suspend time. The change in behaviour should thus be safe.
+> 
+> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
 
-Looks good to me.
+Ulf, any comments?
 
-Peter, are you happy with the changelog now?
+> ---
+>  drivers/base/power/runtime.c | 19 ++++++++++++++++---
+>  include/linux/pm.h           |  1 +
+>  2 files changed, 17 insertions(+), 3 deletions(-)
+> 
+> Changes since v1:
+> 
+> - Fix typos
+> - Protect the is_force_suspended flag modifications with power.lock
+> 
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 4c7055009bd6..8fc7fba811fa 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1400,6 +1400,7 @@ void pm_runtime_init(struct device *dev)
+>  	pm_suspend_ignore_children(dev, false);
+>  	dev->power.runtime_auto = true;
+>  
+> +	dev->power.is_force_suspended = false;
+>  	dev->power.request_pending = false;
+>  	dev->power.request = RPM_REQ_NONE;
+>  	dev->power.deferred_resume = false;
+> @@ -1457,6 +1458,7 @@ void pm_runtime_remove(struct device *dev)
+>  int pm_runtime_force_suspend(struct device *dev)
+>  {
+>  	int (*callback)(struct device *);
+> +	unsigned long flags;
+>  	int ret = 0;
+>  
+>  	pm_runtime_disable(dev);
+> @@ -1475,6 +1477,10 @@ int pm_runtime_force_suspend(struct device *dev)
+>  		goto err;
+>  
+>  	pm_runtime_set_suspended(dev);
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +	dev->power.is_force_suspended = true;
+> +	spin_unlock_irqrestore(&dev->power.lock, flags);
+> +
+>  	return 0;
+>  err:
+>  	pm_runtime_enable(dev);
+> @@ -1483,13 +1489,13 @@ err:
+>  EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
+>  
+>  /**
+> - * pm_runtime_force_resume - Force a device into resume state.
+> + * pm_runtime_force_resume - Force a device into resume state if needed.
+>   * @dev: Device to resume.
+>   *
+>   * Prior invoking this function we expect the user to have brought the device
+>   * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
+> - * those actions and brings the device into full power. We update the runtime PM
+> - * status and re-enables runtime PM.
+> + * those actions and bring the device back to its runtime PM state before forced
+> + * suspension. We update the runtime PM status and re-enable runtime PM.
+>   *
+>   * Typically this function may be invoked from a system resume callback to make
+>   * sure the device is put into full power state.
+> @@ -1497,8 +1503,12 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
+>  int pm_runtime_force_resume(struct device *dev)
+>  {
+>  	int (*callback)(struct device *);
+> +	unsigned long flags;
+>  	int ret = 0;
+>  
+> +	if (!dev->power.is_force_suspended)
+> +		goto out;
+> +
+>  	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+>  
+>  	if (!callback) {
+> @@ -1510,6 +1520,9 @@ int pm_runtime_force_resume(struct device *dev)
+>  	if (ret)
+>  		goto out;
+>  
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +	dev->power.is_force_suspended = false;
+> +	spin_unlock_irqrestore(&dev->power.lock, flags);
+>  	pm_runtime_set_active(dev);
+>  	pm_runtime_mark_last_busy(dev);
+>  out:
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 6a5d654f4447..bec15e0f244e 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -596,6 +596,7 @@ struct dev_pm_info {
+>  	unsigned int		use_autosuspend:1;
+>  	unsigned int		timer_autosuspends:1;
+>  	unsigned int		memalloc_noio:1;
+> +	unsigned int		is_force_suspended:1;
+>  	enum rpm_request	request;
+>  	enum rpm_status		runtime_status;
+>  	int			runtime_error;
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
