@@ -1,157 +1,145 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH 8/9] cpuidle/powernv: Add support for POWER ISA v3 idle states
-Date: Thu, 21 Apr 2016 19:19:58 +0530
-Message-ID: <1461246599-6098-9-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1461246599-6098-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
+Date: Thu, 21 Apr 2016 15:52:06 +0200
+Message-ID: <CAPDyKFp1B35pndFJ=HkPTyyG6j+MGc5yQBAnq-SjKF5ggLOf-Q@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org>
+	<1747840.aL2QAkXYBh@avalon>
+	<CAPDyKFokRP5MiQkyFHBOZLVpO=xxa4ec_U45VNpQ+uZ=qarZvQ@mail.gmail.com>
+	<8167646.6La0EzZQBr@avalon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1461246599-6098-1-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <8167646.6La0EzZQBr@avalon>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-POWER ISA v3 defines a new idle processor core mechanism. In summary,
- a) new instruction named stop is added.
- b) new per thread SPR named PSSCR is added which controls the behavior
-	of stop instruction.
+On 21 April 2016 at 14:41, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> Hi Ulf,
+>
+> On Thursday 21 Apr 2016 11:10:19 Ulf Hansson wrote:
+>> On 21 April 2016 at 01:30, Laurent Pinchart wrote:
+>> > On Monday 07 Mar 2016 11:10:08 Ulf Hansson wrote:
+>> >> [...]
+>> >>
+>> >>>> I agree, that's a better idea. Drivers shouldn't call
+>> >>>> pm_runtime_force_resume() if they haven't called
+>> >>>> pm_runtime_force_suspend(), so checking the PM use count should be
+>> >>>> fine. I'll modify the patch, test it and resubmit.
+>> >>>
+>> >>> I gave it an unfortunately unsuccessful try. The problem I ran into is
+>> >>> that device_prepare() calls pm_runtime_get_noresume() calls
+>> >>> pm_runtime_get_noresume(), with the corresponding pm_runtime_put() call
+>> >>> being performed in device_complete(). The device power usage_count is
+>> >>> thus always non-zero in the system resume handler, so I can't base the
+>> >>> decision on that.
+>> >>
+>> >> As Alan said, let's just check against 1 instead.
+>> >
+>> > I gave this a try, and unfortunately it won't work.
+>> >
+>> > pm_genpd_prepare() resumes devices without increasing the usage count,
+>> > which
+>>
+>> It doesn't resume them, it only increases the usage count.
+>
+> Maybe there's something I don't get, but pm_genpd_prepare() ends with
 
-Supported idle states and value to be written to PSSCR register to enter
-any idle state is exposed via ibm,cpu-idle-state-names and
-ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-platform provided power_stop() needs to be invoked with the appropriate
-PSSCR value.
+I realize that I did read *pm_genpd_prepare()* as *device_prepare()*,
+which represents the behaviour of the PM core during the prepare phase
+(drivers/base/power/main.c). In such cases my earlier reply would make
+more sense, I believe.
 
-This patch adds support for this new mechanism in cpuidle powernv driver.
+Apologize for giving you the wrong input by not reading your response
+in more detail!
 
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 57 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
+>
+>         /*
+>          * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
+>          * so genpd_poweron() will return immediately, but if the device
+>          * is suspended (e.g. it's been stopped by genpd_stop_dev()), we need
+>          * to make it operational.
+>          */
+>         pm_runtime_resume(dev);
+>         __pm_runtime_disable(dev, false);
+>
+>         ret = pm_generic_prepare(dev);
+>         if (ret) {
+>                 ... /* irrelevant error handling */
+>         }
+>
+>         pm_runtime_put(dev);
+>         return ret;
+>
+> The device is thus resumed. Note that the pm_runtime_put() call will decrease
+> the usage count that was increased at the beginning of the function (and thus
+> makes pm_genpd_prepare() neutral from a usage count point of view) but won't
+> resume the device as the disable depth is increased by __pm_runtime_disable().
+>
+> As far as I understand, the device is thus effectively active when entering
+> the driver's system suspend handler, with a usage count equal to 1 or more.
+> pm_runtime_force_suspend(), which decides whether to suspend the device based
+> on the device pm state and not the usage count, will thus always pm suspend
+> the device.
+>
+> Is the above analysis correct ?
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index e12dc30..3552154 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -21,6 +21,7 @@
- #include <asm/runlatch.h>
- 
- #define MAX_POWERNV_IDLE_STATES	8
-+#define MAX_IDLE_STATE_NAME_LEN	10
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
-@@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
- 
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
-+
-+static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
-+
- static u64 snooze_timeout;
- static bool snooze_timeout_en;
--
- static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
-@@ -139,6 +142,15 @@ static struct notifier_block setup_hotplug_notifier = {
- 	.notifier_call = powernv_cpuidle_add_cpu_notifier,
- };
- 
-+static int stop_loop(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			int index)
-+{
-+	ppc64_runlatch_off();
-+	power_stop(stop_psscr_table[index]);
-+	ppc64_runlatch_on();
-+	return index;
-+}
- /*
-  * powernv_cpuidle_driver_init()
-  */
-@@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	u32 *latency_ns, *residency_ns, *flags;
-+	u64 *psscr_val = NULL;
-+	const char *names[MAX_POWERNV_IDLE_STATES];
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
- 		goto out_free_latency;
- 	}
- 
-+	rc = of_property_read_string_array(power_mgt,
-+		"ibm,cpu-idle-state-names", names, dt_idle_states);
-+	if (rc < -1) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names in DT\n");
-+		goto out_free_latency;
-+	}
-+
-+	if (cpu_has_feature(CPU_FTR_STOP_INST)) {
-+		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-+					GFP_KERNEL);
-+		rc = of_property_read_u64_array(power_mgt,
-+			"ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
-+		if (rc < -1) {
-+			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-+			goto out_free_psscr;
-+		}
-+	}
- 	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
-@@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
-+				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+			strncpy(powernv_states[nr_idle_states].name,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			powernv_states[nr_idle_states].flags = 0;
-+
-+			powernv_states[nr_idle_states].enter = &stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
- 
- 		/*
-@@ -233,6 +274,18 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
-+				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+
-+			strncpy(powernv_states[nr_idle_states].name,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
-+
-+			powernv_states[nr_idle_states].enter = &stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
- #endif
- 		powernv_states[nr_idle_states].exit_latency =
-@@ -247,6 +300,8 @@ static int powernv_add_idle_states(void)
- 	}
- 
- 	kfree(residency_ns);
-+out_free_psscr:
-+	kfree(psscr_val);
- out_free_latency:
- 	kfree(latency_ns);
- out_free_flags:
--- 
-2.1.4
+Yes.
+
+Although, genpd is not behaving as it should here. It must *not*
+resume all devices, just because the domain is powered.
+
+>
+> Now I'm a bit lost as to what happens (and what should happen) at resume time.
+> Does genpd and the PM core try to suspend the device after calling the
+> driver's resume handler (pm_runtime_force_resume() in this case) under some
+> conditions, or does the resume handler have the last word in deciding the PM
+> runtime status of the device after system resume ?
+
+The resume callback of genpd decides what will happen, as its a PM
+domain and it sits on top of the hierarchy of a devices PM callbacks.
+
+As you have realized, there are issues in genpd regarding the system
+PM code, there have even been reports about it.
+
+For example, genpd prevents subsystem/drivers from manage their
+devices during system PM - when it start the system PM phase with the
+domain in powered off state.
+
+That's not an okay behaviour, as it can't know whether a device needs
+to be used to serve a request after that point, causing the device to
+be runtime resumed. As genpd prevents it to be suspended via system
+PM, it will stay resumed during the system PM suspend phase, at least
+that is my understanding and it seems like bad idea.
+
+In general, the system PM code in genpd needs to be modernized. It
+somewhat duplicating some code from the PM core and I think the code
+can be greatly simplified.
+
+I have started to work on this quite recently, once the first steps
+are done I will consider optimizations, such as not runtime resuming
+devices unnecessarily.
+
+>
+>> > leads to the device always being active in pm_runtime_force_suspend(). The
+>> > usage count will be 1 if the device was suspended prior to entering system
+>> > suspend (due to the pm_runtime_get_noresume() call in device_prepare()) or
+>> > higher than 1 if the device was active.
+>>
+>> It's only greater than 1 - if someone else than the PM core has
+>> increased the usage count.
+>
+> That I agree with.
+
+Okay, great! :-)
+
+[...]
+
+Again, sorry for the giving the wrong input earlier!
+
+Future wise, I will keep you on cc on any related genpd patches.
+
+Kind regards
+Uffe
