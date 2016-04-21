@@ -1,118 +1,71 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC PATCH 3/4] intel_pstate: support scheduler cpufreq
- callbacks on remote CPUs
-Date: Wed, 20 Apr 2016 19:20:15 -0700
-Message-ID: <20160421022015.GA10028@sky.smuckle.net>
-References: <1461119969-10371-1-git-send-email-smuckle@linaro.org>
- <1461119969-10371-3-git-send-email-smuckle@linaro.org>
- <48732338.GBX16FRDRa@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V4 2/2] thermal: generic-adc: Add ADC based thermal
+ sensor driver
+Date: Wed, 20 Apr 2016 19:50:39 -0700
+Message-ID: <20160421025038.GA4761@localhost.localdomain>
+References: <1461050521-6080-1-git-send-email-ldewangan@nvidia.com>
+ <1461050521-6080-2-git-send-email-ldewangan@nvidia.com>
+ <20160420234322.GA2558@localhost.localdomain>
+ <571828F0.8000101@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34365 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbcDUCUT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Apr 2016 22:20:19 -0400
-Received: by mail-pa0-f46.google.com with SMTP id r5so21432434pag.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Apr 2016 19:20:19 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <48732338.GBX16FRDRa@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <571828F0.8000101-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Wed, Apr 20, 2016 at 02:37:18PM +0200, Rafael J. Wysocki wrote:
-...
-> > @@ -1173,20 +1179,88 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
-> >  		get_avg_frequency(cpu));
-> >  }
-> >  
-> > +static void _intel_pstate_update_util(struct cpudata *cpu, u64 time)
+On Thu, Apr 21, 2016 at 06:42:16AM +0530, Laxman Dewangan wrote:
 > 
-> What about calling this intel_pstate_update_cpu()?
-
-Sure will change.
-
-...
-> >  static void intel_pstate_update_util(struct update_util_data *data, u64 time,
-> >  				     unsigned long util, unsigned long max)
-> >  {
-> >  	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
-> > -	u64 delta_ns = time - cpu->sample.time;
-> > +	s64 delta_ns = time - cpu->sample.time;
-> >  
-> > -	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
-> > -		bool sample_taken = intel_pstate_sample(cpu, time);
-> > +	if (delta_ns < pid_params.sample_rate_ns)
+> On Thursday 21 April 2016 05:13 AM, Eduardo Valentin wrote:
+> >Laxman,
+> >
+> >On Tue, Apr 19, 2016 at 12:52:01PM +0530, Laxman Dewangan wrote:
+> >>In some of platform, thermal sensors like NCT thermistors are
+> >>connected to the one of ADC channel. The temperature is read by
+> >>reading the voltage across the sensor resistance via ADC. Lookup
+> >>table for ADC read value to temperature is referred to get
+> >>temperature. ADC is read via IIO framework.
+> >>
+> >>Add support for thermal sensor driver which read the voltage across
+> >>sensor resistance from ADC through IIO framework.
+> >>
+> >>Signed-off-by: Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> >I really like this driver, as I mentioned  before. Just one comment
+> >though.
+> >
+> >>+
+> >>+	gti->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0,
+> >>+						      gti, &gadc_thermal_ops);
+> >Why not using the devm_ version you introduced?
+> >
+> >Any particular reason?
+> >
 > 
-> Why don't you check cpu->ipi_in_progress here too and bail out if it is set?
+> Yaah, the reason is just to maintain the proper sequence in releasing of
+> resource during driver unbinding.
 > 
-> That would allow you to avoid checking the time again below, woulnd't it?
+> Sequence in probe are:
+>         iio_channel_get()
+>         thermal_zone_of_sensor_register()
+> 
+> and on release, sensor should be released first before iio channel.
+> As of now, we do not have devm_iio_channel_get() [I already post patch and
+> it is accepted by Jonathan in iio sub system] and hence I can not use the
+> devm_ for sensor register to avoid race.
+> 
+> However, once the devm_ for iio channel get available in all subsystem (may
+> be in next release), I will post the patch to use devm_.
+> 
+> Currently, we can go with these APIs.
 
-Yeah I think that should work. I can't recall why I thought I needed
-to check the time first, then ipi_in_progress, then the time. As long
-as ipi_in_progress is checked prior to the time, it should be fine.
+Ok. We can have it in this way then.
 
 > 
-> > +		return;
-> >  
-> > -		if (sample_taken && !hwp_active)
-> > -			intel_pstate_adjust_busy_pstate(cpu);
-> > +	if (cpu->cpu == smp_processor_id()) {
-> > +		_intel_pstate_update_util(cpu, time);
-> > +	} else {
-> > +		/* The target CPU's rq lock is held. */
-> > +		if (cpu->ipi_in_progress)
-> > +			return;
-> > +
-> > +		/* Re-check sample_time which may have advanced. */
-> > +		smp_rmb();
-> > +		delta_ns = time - READ_ONCE(cpu->sample.time);
-> > +		if (delta_ns < pid_params.sample_rate_ns)
-> > +			return;
-> > +
-> > +		cpu->ipi_in_progress = true;
-> > +		cpu->time = time;
-> > +		irq_work_queue_on(&cpu->irq_work, cpu->cpu);
-> >  	}
-> >  }
-> >  
-> > +static inline void intel_pstate_irq_work_sync(unsigned int cpu)
-> > +{
-> > +	irq_work_sync(&all_cpu_data[cpu]->irq_work);
-> > +}
-> > +
-> > +static inline void intel_pstate_init_irq_work(struct cpudata *cpu)
-> > +{
-> > +	init_irq_work(&cpu->irq_work, intel_pstate_update_util_remote);
-> > +}
-> > +#else /* !CONFIG_SMP */
-> > +static inline void intel_pstate_irq_work_sync(unsigned int cpu) {}
-> > +static inline void intel_pstate_init_irq_work(struct cpudata *cpu) {}
-> > +
-> > +static void intel_pstate_update_util(struct update_util_data *data, u64 time,
-> > +				     unsigned long util, unsigned long max)
-> > +{
-> > +	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
-> > +	s64 delta_ns = time - cpu->sample.time;
-> > +
-> > +	if (delta_ns < pid_params.sample_rate_ns)
-> > +		return;
-> > +
-> > +	_intel_pstate_update_util(cpu, time);
-> > +}
-> > +#endif
-> > +
-> > +
-> > +
 > 
-> The additional two empty lines are not necessary.
-> 
-
-Sorry yeah these were unintentional, will remove these and the ones below.
-
-Thanks for the review.
-
-thanks,
-Steve
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
