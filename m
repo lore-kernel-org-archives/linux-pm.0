@@ -1,114 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/10] PM / OPP: Add missing doc style comments
-Date: Thu, 21 Apr 2016 14:28:54 +0530
-Message-ID: <084f8a8dbb2b0c97d2e1343d1f14d165b9942e02.1461228504.git.viresh.kumar@linaro.org>
-References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
-References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
+From: Finlye Xiao <finley.xiao@rock-chips.com>
+Subject: [PATCH v2] cpufreq: rockchip: Use generic platdev driver
+Date: Thu, 21 Apr 2016 17:01:05 +0800
+Message-ID: <1461229265-53750-1-git-send-email-finley.xiao@rock-chips.com>
+References: <1461225849-36866-1-git-send-email-finley.xiao@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.139]:36259 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbcDUJDr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 05:03:47 -0400
+In-Reply-To: <1461225849-36866-1-git-send-email-finley.xiao@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux@arm.linux.org.uk, rjw@rjwysocki.net, viresh.kumar@linaro.org, heiko@sntech.de
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>
 
-Few of the routines in cpu.c were missing these, add them.
+From: Finley Xiao <finley.xiao@rock-chips.com>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch add rockchip's compatible string to the compat list and
+remove similar code from platform code for supporting generic platdev
+driver.
+
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
 ---
- drivers/base/power/opp/cpu.c | 59 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 58 insertions(+), 1 deletion(-)
+v1->v2:
+- add a blank line before rockchip's compatible
 
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-index b7411a3cdcb1..b151401d1513 100644
---- a/drivers/base/power/opp/cpu.c
-+++ b/drivers/base/power/opp/cpu.c
-@@ -119,7 +119,22 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
- EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
- #endif	/* CONFIG_CPU_FREQ */
- 
--/* Required only for V1 bindings, as v2 can manage it from DT itself */
-+/**
-+ * dev_pm_opp_set_sharing_cpus() - Mark OPP table as shared by few CPUs
-+ * @cpu_dev:	CPU device for which we do this operation
-+ * @cpumask:	cpumask of the CPUs which share the OPP table with @cpu_dev
-+ *
-+ * This marks OPP table of the @cpu_dev as shared by the CPUs present in
-+ * @cpumask.
-+ *
-+ * Returns -ENODEV if OPP table isn't already present.
-+ *
-+ * Locking: The internal opp_table and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+ arch/arm/mach-rockchip/rockchip.c    |  1 -
+ drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
+index 3f07cc5..beb71da 100644
+--- a/arch/arm/mach-rockchip/rockchip.c
++++ b/arch/arm/mach-rockchip/rockchip.c
+@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
  {
- 	struct opp_device *opp_dev;
-@@ -161,6 +176,18 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
- 
- #ifdef CONFIG_OF
-+/**
-+ * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
-+ * @cpumask:	cpumask for which OPP table needs to be removed
-+ *
-+ * This removes the OPP tables for CPUs present in the @cpumask.
-+ *
-+ * Locking: The internal opp_table and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
- void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
- {
- 	struct device *cpu_dev;
-@@ -181,6 +208,18 @@ void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
+ 	rockchip_suspend_init();
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+-	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
  
-+/**
-+ * dev_pm_opp_of_cpumask_add_table() - Adds OPP table for @cpumask
-+ * @cpumask:	cpumask for which OPP table needs to be added.
-+ *
-+ * This adds the OPP tables for CPUs present in the @cpumask.
-+ *
-+ * Locking: The internal opp_table and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
- int dev_pm_opp_of_cpumask_add_table(cpumask_var_t cpumask)
- {
- 	struct device *cpu_dev;
-@@ -216,6 +255,24 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
-  *
-  * Returns -ENOENT if operating-points-v2 bindings aren't supported.
-  */
-+/**
-+ * dev_pm_opp_of_get_sharing_cpus() - Get cpumask of CPUs sharing OPPs with
-+ *				      @cpu_dev using operating-points-v2
-+ *				      bindings.
-+ *
-+ * @cpu_dev:	CPU device for which we do this operation
-+ * @cpumask:	cpumask to update with information of sharing CPUs
-+ *
-+ * This updates the @cpumask with CPUs that are sharing OPPs with @cpu_dev.
-+ *
-+ * Returns -ENOENT if operating-points-v2 isn't present for @cpu_dev.
-+ *
-+ * Locking: The internal opp_table and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
- int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
- 	struct device_node *np, *tmp_np;
+ static const char * const rockchip_board_dt_compat[] = {
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index f2ae7ad..fc6529b 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -21,6 +21,17 @@ static const struct of_device_id machines[] = {
+ 	{ .compatible = "samsung,exynos5420", },
+ 	{ .compatible = "samsung,exynos5800", },
+ #endif
++
++	{ .compatible = "rockchip,rk2928", },
++	{ .compatible = "rockchip,rk3036", },
++	{ .compatible = "rockchip,rk3066a", },
++	{ .compatible = "rockchip,rk3066b", },
++	{ .compatible = "rockchip,rk3188", },
++	{ .compatible = "rockchip,rk3228", },
++	{ .compatible = "rockchip,rk3288", },
++	{ .compatible = "rockchip,rk3366", },
++	{ .compatible = "rockchip,rk3368", },
++	{ .compatible = "rockchip,rk3399", },
+ };
+ 
+ static int __init cpufreq_dt_platdev_init(void)
 -- 
-2.7.1.410.g6faf27b
+1.9.1
+
+
