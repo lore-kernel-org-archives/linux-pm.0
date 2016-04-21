@@ -1,111 +1,90 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Thu, 21 Apr 2016 20:31:52 +0300
-Message-ID: <3340490.Br5NVWnCR9@avalon>
-References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH v2] drivers/idle: make intel_idle.c driver more
+ explicitly non-modular
+Date: Thu, 21 Apr 2016 13:42:18 -0400
+Message-ID: <20160421174217.GM13379@windriver.com>
+References: <20160407165355.GA9188@linaro.org>
+ <1461165906-21614-1-git-send-email-paul.gortmaker@windriver.com>
+ <20160420181322.GM5862@linaro.org>
+ <20160421031249.GH13379@windriver.com>
+ <20160421080427.GC14010@linaro.org>
+ <20160421124454.GJ13379@windriver.com>
+ <20160421132137.GA18670@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:34219 "EHLO
-	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959AbcDURbj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 13:31:39 -0400
-In-Reply-To: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail1.windriver.com ([147.11.146.13]:53668 "EHLO
+	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbcDURmc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 13:42:32 -0400
+Content-Disposition: inline
+In-Reply-To: <20160421132137.GA18670@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-arm-kernel@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, rcochran@linutronix.de, linux-pm@vger.kernel.org
 
-Hi Ulf,
+[Re: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 21/04/2016 (Thu 15:21) Daniel Lezcano wrote:
 
-Thank you for the patch.
-
-On Thursday 21 Apr 2016 12:34:02 Ulf Hansson wrote:
-> When the pm_runtime_force_suspend|resume() helpers were invented, we still
-> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+> On Thu, Apr 21, 2016 at 08:44:55AM -0400, Paul Gortmaker wrote:
+> > [Re: [PATCH v2] drivers/idle: make intel_idle.c driver more explicitly non-modular] On 21/04/2016 (Thu 10:04) Daniel Lezcano wrote:
+> > 
+> > > On Wed, Apr 20, 2016 at 11:12:49PM -0400, Paul Gortmaker wrote:
+> > > 
+> > > [ ... ]
+> > > 
+> > > > > > We replace module.h with moduleparam.h since the file does declare
+> > > > > > some module parameters, and leaving them as such is currently the
+> > > > > > easiest way to remain compatible with existing boot arg use cases.
+> > > > > 
+> > > > > What about using __setup() ? so module* disappear from the file.
+> > > > 
+> > > > No, it can't be __setup since moduleparam uses an instance of the
+> > > > filename as a prefix to the boot arg, and __setup does not.  And we
+> > > > should stay compatible with existing boot arg use cases for people
+> > > > who have embedded such a setting in their grub config a long time
+> > > > ago and forgot it.  It would take looking at and likely extending the
+> > > > early_param macro to provide a syntax compatible instance of what
+> > > > the module_param currently does if I recall correctly -- hence the
+> > > > above comment in the commit log.
+> > > 
+> > > -module_param(max_cstate, int, 0444);
+> > > +static int __init max_cstate_param(char *str)
+> > > +{
+> > > +       max_cstate = simple_strtol(str, NULL, 0);
+> > > +       return 1;
+> > > +}
+> > > +__setup("intel_idle.max_cstate=", max_cstate_param);
+> > 
+> > Yeah, I recall thinking it would be that easy too, but there was
+> > something that happens when you manually insert the dot in there that
+> > breaks processing.  I'd have to re-test to remind myself what failed.
 > 
-> To make sure these helpers worked for all combinations and without
-> introducing too much of complexity, the device was always resumed in
-> pm_runtime_force_resume().
+> Ok.
 > 
-> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
-> unset, we needed to resume the device as the subsystem/driver couldn't
-> rely on using runtime PM to do it.
-> 
-> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
-> removed this combination, of using CONFIG_PM_SLEEP without the earlier
-> CONFIG_PM_RUNTIME.
-> 
-> For this reason we can now rely on the subsystem/driver to use runtime PM
-> to resume the device, instead of forcing that to be done in all cases. In
-> other words, let's defer this to a later point when it's actually needed.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Note, this patch is based upon another not yet queued patch [1]. The reason
-> is simply because that [1] is a more important patch as it fixes a problem.
-> It was posted to linux-pm April 8th and I expect it (or a new revision of
-> it) to be applied before $subject patch.
-> 
-> [1]
-> https://patchwork.kernel.org/patch/8782851
-> 
-> ---
->  drivers/base/power/runtime.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index b746904..a190ca0 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1506,6 +1506,17 @@ int pm_runtime_force_resume(struct device *dev)
->  		goto out;
->  	}
-> 
-> +	/*
-> +	 * The PM core increases the runtime PM usage count in the system PM
-> +	 * prepare phase. If the count is greather than 1 at this point, someone
-> +	 * else has also increased it. In such case, let's make sure to runtime
-> +	 * resume the device as that is likely what is expected. In other case
-> +	 * we trust the subsystem/driver to runtime resume the device when it's
-> +	 * actually needed.
-> +	 */
-> +	if (atomic_read(&dev->power.usage_count) < 2)
-> +		goto out;
-> +
->  	ret = pm_runtime_set_active(dev);
->  	if (ret)
->  		goto out;
+> I quickly tested this code snippet and, except I missed something, it 
+> worked.
 
-This works in the sense that it prevents devices from being PM resumed at 
-system resume time if not needed. However, devices that are part of a PM 
-domain and that were idle before system suspend are suspended twice (with 
-their .runtime_suspend() handler called twice), which is not good at all.
+Maybe it was when I used early_param in testing that it failed....
 
-The first suspend occurs at system suspend time, with 
-pm_runtime_force_suspend() rightfully suspending the device as the device is 
-active (due to being woken up by pm_genpd_prepare()). The second suspend 
-occurs at resume time due to device_complete() calling pm_runtime_put().
+> 
+> That said, I looked around and found that using module_param() for 
+> non-modular is found in several places, so it is common. I don't like to 
+> find references to modular code when the the caller is not supposed to be 
 
-I've tracked the issue to the fact that pm_genpd_complete() calls 
-pm_runtime_set_active() regardless of whether the device was PM resumed or 
-not. As pm_runtime_force_suspend() doesn't resume devices with this patch 
-applied, the pm_runtime_put() call from device_complete() will try to runtime 
-suspend the device a second time as the state is incorrectly set to 
-RPM_ACTIVE.
+Agreed, I wasn't a fan of it either, and had it on my to-do list to
+circle back around and revisit them once I'd got all the dead code
+removed tree wide, and as you say, there are instances already, so I
+figured no real drastic rush needed for that.
 
-With the current genpd implementation this patch isn't needed (and neither is 
-my patch), as genpd expects the device to be always active when the system is 
-resumed. However, when genpd isn't used, pm_runtime_force_resume() needs to 
-skip resuming devices that were suspended before system suspend. This patch 
-looks good to me to fix that problem.
+> modular but that's the situation today.
+> 
+> So I will let Len and you decice what to do ;)
+> 
+> Other than that: Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Do we need to fix genpd first ?
+Thanks for the input on this.  It is Len's subsystem, so he gets the final
+say and not me.  :)
 
--- 
-Regards,
-
-Laurent Pinchart
-
+Paul.
+--
