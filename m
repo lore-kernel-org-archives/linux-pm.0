@@ -1,68 +1,126 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH 6/8] cpufreq: sunxi: Use generic platdev driver
-Date: Thu, 21 Apr 2016 10:54:02 +0200
-Message-ID: <20160421085402.GL13045@lukather>
-References: <cover.1461228081.git.viresh.kumar@linaro.org>
- <e82bf5994897cc979a67c72f09229b8b295bb69a.1461228081.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1rguoi8KZGYj2k4L"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:53778 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751282AbcDUIyP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:54:15 -0400
-Content-Disposition: inline
-In-Reply-To: <e82bf5994897cc979a67c72f09229b8b295bb69a.1461228081.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2] cpuidle: Change ktime_get() with local_clock()
+Date: Thu, 21 Apr 2016 10:56:30 +0200
+Message-ID: <1461228990-28957-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: peterz@infradead.org, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Chen-Yu Tsai <wens@csie.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
+The ktime_get() can have a non negligeable overhead, use local_clock()
+instead.
 
---1rguoi8KZGYj2k4L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In order to test the difference between ktime_get() and local_clock(),
+a quick hack has been added to trigger, via debugfs, 10000 times a
+call to ktime_get() and local_clock() and measure the elapsed time.
 
-On Thu, Apr 21, 2016 at 02:13:52PM +0530, Viresh Kumar wrote:
-> The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
-> device now, reuse that and remove similar code from platform code.
->=20
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Then the average value, the min and max is computed for each call.
 
-Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+>From userspace, the test above was called 100 times every 2 seconds.
 
-Thanks,
-Maxime
+So, ktime_get() and local_clock() have been called 1000000 times in
+total.
 
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+The results are:
 
---1rguoi8KZGYj2k4L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ktime_get():
+============
+ * average: 101 ns (stddev: 27.4)
+ * maximum: 38313 ns
+ * minimum: 65 ns
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+local_clock():
+==============
+ * average: 60 ns (stddev: 9.8)
+ * maximum: 13487 ns
+ * minimum: 46 ns
 
-iQIcBAEBAgAGBQJXGJUqAAoJEBx+YmzsjxAgcK8P+wXwPAAH1MouzshzwH7UB03j
-TahzoANPQERnSZ89u6tgYOp+MveTp/lSIFM1YejQtwbDCU1VUl4nuPxC/l1UGsAk
-7K8x27TCzN+/cdt+So5TFHmPOJVYHVyHvudWV4l1jgIpR9L0wuHr9CxDZlr9PeT7
-ElaU0zOWf2hd2j+8fUIOVpGVFtKva4erdhbO/PuUVov6G8gjfdjkldQE7P7xk1de
-vn8jfD+H6ZaRJvQNPEUjb0Gsp/NnVMLhNX6ipEl8W4KfVp1WyALmFyZztJVsP0vE
-OH+K41Ijo4c/SdEK7+4paJc0rs2uC/mAc3nfnrVM66QPFhP4qU1q14QSYx5OczfS
-7jrMN1ERTl7iSeSj4i9B6gt7hCI3Q9DzSdmW7mv0jB+hKCnZVoA0HmzEkTWX00v5
-zWoyEPhwkXnPZbI+VKpSDhrklbilisWJ4JQoqLzzXOKBgzK0LKNUmZeUkBKDwjoS
-6Dw1VaORhhNn1epyM8f13HUf4Ic1R7quLfNrEELqjN7QLdL1QqBx7usKchVVhk9I
-8zj7zq+BQ/5OjIBhuGTik35KPQaPsX9Ywba+TmZWU8kVIB8KM5KG0GcbbDEEBiA3
-lQgVJHdJWJyHc+wLL6Nrs7/4WdagiJKQOnCv0QtuYrDXCLXmP5oxIGM+/e5okPI5
-gT8wIKbX1lbEElKtjn3s
-=B3wC
------END PGP SIGNATURE-----
+The local_clock() is faster and more stable.
 
---1rguoi8KZGYj2k4L--
+Even if it is a drop in the ocean, changing the ktime_get() by the
+local_clock() allows to save 80ns at idle time (entry + exit). And
+in some circumstances, especially when there are several CPUs racing
+for the clock access, we save tens of microseconds.
+
+The idle duration resulting from a diff is converted from nanosec to
+microsec. This could be done with integer division (div 1000) - which is
+an expensive operation or by 10 bits shifting (div 1024) - which is fast
+but unprecise.
+
+The following table gives some results at the limits.
+
+ ------------------------------------------
+|   nsec   |   div(1000)   |   div(1024)   |
+ ------------------------------------------
+|   1e3    |        1 usec |      976 nsec |
+ ------------------------------------------
+|   1e6    |     1000 usec |      976 usec |
+ ------------------------------------------
+|   1e9    |  1000000 usec |   976562 usec |
+ ------------------------------------------
+
+There is a linear deviation of 2.34%. This loss of precision is acceptable
+in the context of the resulting diff which is used for statistics. These
+ones are processed to guess estimate an approximation of the duration of the
+next idle period which ends up into an idle state selection. The selection
+criteria takes into account the next duration based on large intervals,
+represented by the idle state's target residency.
+
+The 2^10 division is enough because the approximation regarding the 1e3
+division is lost in all the approximations done for the next idle duration
+computation.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+  V2:
+      - Explained in the changelog why div1024 is enough precise for our
+        purpose.
+---
+ drivers/cpuidle/cpuidle.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index f996efc..78447bc 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -173,7 +173,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+-	ktime_t time_start, time_end;
++	u64 time_start, time_end;
+ 	s64 diff;
+ 
+ 	/*
+@@ -195,13 +195,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	sched_idle_set_state(target_state);
+ 
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+-	time_start = ktime_get();
++	time_start = local_clock();
+ 
+ 	stop_critical_timings();
+ 	entered_state = target_state->enter(dev, drv, index);
+ 	start_critical_timings();
+ 
+-	time_end = ktime_get();
++	time_end = local_clock();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
+ 	/* The cpu is no longer idle or about to enter idle. */
+@@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	if (!cpuidle_state_is_coupled(drv, entered_state))
+ 		local_irq_enable();
+ 
+-	diff = ktime_to_us(ktime_sub(time_end, time_start));
++	/*
++	 * local_clock() returns the time in nanosecond, let's shift
++	 * by 10 (divide by 1024) to have microsecond based time.
++	 */
++	diff = (time_end - time_start) >> 10;
+ 	if (diff > INT_MAX)
+ 		diff = INT_MAX;
+ 
+-- 
+1.9.1
