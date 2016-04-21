@@ -1,90 +1,75 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [RESEND][PATCH 3/3] arm64: dts: mt8173: Add dynamic power node.
-Date: Thu, 21 Apr 2016 12:28:28 +0200
-Message-ID: <5718AB4C.5020804@gmail.com>
-References: <1458029437-12846-1-git-send-email-dawei.chien@mediatek.com>
- <1458029437-12846-4-git-send-email-dawei.chien@mediatek.com>
- <1461211971.16427.4.camel@mtksdaap41>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Thu, 21 Apr 2016 12:34:02 +0200
+Message-ID: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f42.google.com ([74.125.82.42]:36036 "EHLO
-	mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbcDUK2c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 06:28:32 -0400
-In-Reply-To: <1461211971.16427.4.camel@mtksdaap41>
+Received: from mail-lf0-f48.google.com ([209.85.215.48]:36177 "EHLO
+	mail-lf0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbcDUKed (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 06:34:33 -0400
+Received: by mail-lf0-f48.google.com with SMTP id g184so57844408lfb.3
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 03:34:33 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dawei chien <dawei.chien@mediatek.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulf.hansson@linaro.org>
 
+When the pm_runtime_force_suspend|resume() helpers were invented, we still
+had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
 
+To make sure these helpers worked for all combinations and without
+introducing too much of complexity, the device was always resumed in
+pm_runtime_force_resume().
 
-On 21/04/16 06:12, dawei chien wrote:
-> On Tue, 2016-03-15 at 16:10 +0800, Dawei Chien (=E9=8C=A2=E5=A4=A7=E8=
-=A1=9B) wrote:
->> This device node is for calculating dynamic power in mW.
->> Since mt8173 has two clusters, there are two dynamic power
->> coefficient as well.
->>
->> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
->> ---
->> This patch is base on patchset:
->> https://lkml.org/lkml/2015/11/17/251
->
-> Sorry for miss one dependence for this device node.
-> https://lkml.org/lkml/2015/7/9/206
->
+More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+unset, we needed to resume the device as the subsystem/driver couldn't
+rely on using runtime PM to do it.
 
-This patch got somehow forgotten.
-Thanks for the reminder.
-Matthias
+As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+removed this combination, of using CONFIG_PM_SLEEP without the earlier
+CONFIG_PM_RUNTIME.
 
->> ---
->>   arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
->>   1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/b=
-oot/dts/mediatek/mt8173.dtsi
->> index f9c44cc..5cb6b4e 100644
->> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
->> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
->> @@ -71,6 +71,7 @@
->>                          #cooling-cells =3D <2>;
->>                          #cooling-min-level =3D <0>;
->>                          #cooling-max-level =3D <7>;
->> +                       dynamic-power-coefficient =3D <263>;
->>                  };
->>
->>                  cpu1: cpu@1 {
->> @@ -95,6 +96,7 @@
->>                          #cooling-cells =3D <2>;
->>                          #cooling-min-level =3D <0>;
->>                          #cooling-max-level =3D <7>;
->> +                       dynamic-power-coefficient =3D <263>;
->>                  };
->>
->>                  cpu2: cpu@100 {
->> @@ -119,6 +121,7 @@
->>                          #cooling-cells =3D <2>;
->>                          #cooling-min-level =3D <0>;
->>                          #cooling-max-level =3D <7>;
->> +                       dynamic-power-coefficient =3D <530>;
->>                  };
->>
->>                  cpu3: cpu@101 {
->> @@ -143,6 +146,7 @@
->>                          #cooling-cells =3D <2>;
->>                          #cooling-min-level =3D <0>;
->>                          #cooling-max-level =3D <7>;
->> +                       dynamic-power-coefficient =3D <530>;
->>                  };
->>
->>                  idle-states {
->> --
->> 1.7.9.5
->>
->
->
+For this reason we can now rely on the subsystem/driver to use runtime PM
+to resume the device, instead of forcing that to be done in all cases. In
+other words, let's defer this to a later point when it's actually needed.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+Note, this patch is based upon another not yet queued patch [1]. The reason is
+simply because that [1] is a more important patch as it fixes a problem. It was
+posted to linux-pm April 8th and I expect it (or a new revision of it) to be
+applied before $subject patch.
+
+[1]
+https://patchwork.kernel.org/patch/8782851
+
+---
+ drivers/base/power/runtime.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index b746904..a190ca0 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1506,6 +1506,17 @@ int pm_runtime_force_resume(struct device *dev)
+ 		goto out;
+ 	}
+ 
++	/*
++	 * The PM core increases the runtime PM usage count in the system PM
++	 * prepare phase. If the count is greather than 1 at this point, someone
++	 * else has also increased it. In such case, let's make sure to runtime
++	 * resume the device as that is likely what is expected. In other case
++	 * we trust the subsystem/driver to runtime resume the device when it's
++	 * actually needed.
++	 */
++	if (atomic_read(&dev->power.usage_count) < 2)
++		goto out;
++
+ 	ret = pm_runtime_set_active(dev);
+ 	if (ret)
+ 		goto out;
+-- 
+1.9.1
+
