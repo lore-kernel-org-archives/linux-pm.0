@@ -1,145 +1,36 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Runtime: Only force-resume device if it has been force-suspended
-Date: Thu, 21 Apr 2016 15:52:06 +0200
-Message-ID: <CAPDyKFp1B35pndFJ=HkPTyyG6j+MGc5yQBAnq-SjKF5ggLOf-Q@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1603041021200.1885-100000@iolanthe.rowland.org>
-	<1747840.aL2QAkXYBh@avalon>
-	<CAPDyKFokRP5MiQkyFHBOZLVpO=xxa4ec_U45VNpQ+uZ=qarZvQ@mail.gmail.com>
-	<8167646.6La0EzZQBr@avalon>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v4 0/2] Skylake PSys support
+Date: Thu, 21 Apr 2016 07:48:19 -0700
+Message-ID: <1461250099.4435.0.camel@linux.intel.com>
+References: <1460930581-29748-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20160420135945.GY3448@twins.programming.kicks-ass.net>
+	 <1461176931.8946.150.camel@linux.intel.com>
+	 <CAJZ5v0gtJxLxJpmBqT-ymFV-VtimG1R5ngaiO=+iPnA=7Xhkuw@mail.gmail.com>
+	 <20160421131034.GK3408@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8167646.6La0EzZQBr@avalon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:63651 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbcDUOvl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Apr 2016 10:51:41 -0400
+In-Reply-To: <20160421131034.GK3408@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, the arch/x86 maintainers <x86@kernel.org>, Borislav Petkov <bp@alien8.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 21 April 2016 at 14:41, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> Hi Ulf,
->
-> On Thursday 21 Apr 2016 11:10:19 Ulf Hansson wrote:
->> On 21 April 2016 at 01:30, Laurent Pinchart wrote:
->> > On Monday 07 Mar 2016 11:10:08 Ulf Hansson wrote:
->> >> [...]
->> >>
->> >>>> I agree, that's a better idea. Drivers shouldn't call
->> >>>> pm_runtime_force_resume() if they haven't called
->> >>>> pm_runtime_force_suspend(), so checking the PM use count should be
->> >>>> fine. I'll modify the patch, test it and resubmit.
->> >>>
->> >>> I gave it an unfortunately unsuccessful try. The problem I ran into is
->> >>> that device_prepare() calls pm_runtime_get_noresume() calls
->> >>> pm_runtime_get_noresume(), with the corresponding pm_runtime_put() call
->> >>> being performed in device_complete(). The device power usage_count is
->> >>> thus always non-zero in the system resume handler, so I can't base the
->> >>> decision on that.
->> >>
->> >> As Alan said, let's just check against 1 instead.
->> >
->> > I gave this a try, and unfortunately it won't work.
->> >
->> > pm_genpd_prepare() resumes devices without increasing the usage count,
->> > which
->>
->> It doesn't resume them, it only increases the usage count.
->
-> Maybe there's something I don't get, but pm_genpd_prepare() ends with
+On Thu, 2016-04-21 at 15:10 +0200, Peter Zijlstra wrote:
+> On Wed, Apr 20, 2016 at 10:21:14PM +0200, Rafael J. Wysocki wrote:
+> > You can send both and they both can go in via tip as far as I'm
+> > concerned.
+> 
+> OK, thanks!
+> 
+> Srinivas I've munged the rapl patch to match the new style, so no
+> need
+> to resend that.
+Thanks Peter.
 
-I realize that I did read *pm_genpd_prepare()* as *device_prepare()*,
-which represents the behaviour of the PM core during the prepare phase
-(drivers/base/power/main.c). In such cases my earlier reply would make
-more sense, I believe.
-
-Apologize for giving you the wrong input by not reading your response
-in more detail!
-
->
->         /*
->          * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
->          * so genpd_poweron() will return immediately, but if the device
->          * is suspended (e.g. it's been stopped by genpd_stop_dev()), we need
->          * to make it operational.
->          */
->         pm_runtime_resume(dev);
->         __pm_runtime_disable(dev, false);
->
->         ret = pm_generic_prepare(dev);
->         if (ret) {
->                 ... /* irrelevant error handling */
->         }
->
->         pm_runtime_put(dev);
->         return ret;
->
-> The device is thus resumed. Note that the pm_runtime_put() call will decrease
-> the usage count that was increased at the beginning of the function (and thus
-> makes pm_genpd_prepare() neutral from a usage count point of view) but won't
-> resume the device as the disable depth is increased by __pm_runtime_disable().
->
-> As far as I understand, the device is thus effectively active when entering
-> the driver's system suspend handler, with a usage count equal to 1 or more.
-> pm_runtime_force_suspend(), which decides whether to suspend the device based
-> on the device pm state and not the usage count, will thus always pm suspend
-> the device.
->
-> Is the above analysis correct ?
-
-Yes.
-
-Although, genpd is not behaving as it should here. It must *not*
-resume all devices, just because the domain is powered.
-
->
-> Now I'm a bit lost as to what happens (and what should happen) at resume time.
-> Does genpd and the PM core try to suspend the device after calling the
-> driver's resume handler (pm_runtime_force_resume() in this case) under some
-> conditions, or does the resume handler have the last word in deciding the PM
-> runtime status of the device after system resume ?
-
-The resume callback of genpd decides what will happen, as its a PM
-domain and it sits on top of the hierarchy of a devices PM callbacks.
-
-As you have realized, there are issues in genpd regarding the system
-PM code, there have even been reports about it.
-
-For example, genpd prevents subsystem/drivers from manage their
-devices during system PM - when it start the system PM phase with the
-domain in powered off state.
-
-That's not an okay behaviour, as it can't know whether a device needs
-to be used to serve a request after that point, causing the device to
-be runtime resumed. As genpd prevents it to be suspended via system
-PM, it will stay resumed during the system PM suspend phase, at least
-that is my understanding and it seems like bad idea.
-
-In general, the system PM code in genpd needs to be modernized. It
-somewhat duplicating some code from the PM core and I think the code
-can be greatly simplified.
-
-I have started to work on this quite recently, once the first steps
-are done I will consider optimizations, such as not runtime resuming
-devices unnecessarily.
-
->
->> > leads to the device always being active in pm_runtime_force_suspend(). The
->> > usage count will be 1 if the device was suspended prior to entering system
->> > suspend (due to the pm_runtime_get_noresume() call in device_prepare()) or
->> > higher than 1 if the device was active.
->>
->> It's only greater than 1 - if someone else than the PM core has
->> increased the usage count.
->
-> That I agree with.
-
-Okay, great! :-)
-
-[...]
-
-Again, sorry for the giving the wrong input earlier!
-
-Future wise, I will keep you on cc on any related genpd patches.
-
-Kind regards
-Uffe
+-Srinivas
