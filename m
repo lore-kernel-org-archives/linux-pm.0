@@ -1,126 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2] cpuidle: Change ktime_get() with local_clock()
-Date: Thu, 21 Apr 2016 10:56:30 +0200
-Message-ID: <1461228990-28957-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: peterz@infradead.org, mingo@kernel.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/10] cpufreq: Get rid of cpufreq-dt's platform data
+Date: Thu, 21 Apr 2016 14:28:52 +0530
+Message-ID: <cover.1461228504.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35708 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751804AbcDUI7S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 04:59:18 -0400
+Received: by mail-pf0-f173.google.com with SMTP id n1so28198856pfn.2
+        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 01:59:17 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-The ktime_get() can have a non negligeable overhead, use local_clock()
-instead.
+Hi Guys,
 
-In order to test the difference between ktime_get() and local_clock(),
-a quick hack has been added to trigger, via debugfs, 10000 times a
-call to ktime_get() and local_clock() and measure the elapsed time.
+The aim of the series is to kill the users of cpufreq-dt's platform
+data, i.e. mvebu. And because that required a new API to the OPP core,
+this just became a mix of cpufreq and OPP patches.
 
-Then the average value, the min and max is computed for each call.
+The first four patches does some sort of cleanup of the OPP core to base
+the next patches. Fifth one sets the shared_opp flag in opp-tables
+(required by later patches). Sixth one adds a new API for opp-v1 users,
+to get the CPUs sharing an OPP table.
 
->From userspace, the test above was called 100 times every 2 seconds.
+Seventh to tenth update cpufreq-dt and mvebu to get rid of platform
+data.
 
-So, ktime_get() and local_clock() have been called 1000000 times in
-total.
+@Rafael: The last patch touches the compatible-list array in
+cpufreq-dt-platdev.c, which is also touched by
+'[PATCH 0/8] cpufreq: dt: Don't create platform-device from platform code'.
 
-The results are:
+So, the last one has some sort of dependency on that series, otherwise
+all other patches can be applied cleanly.
 
-ktime_get():
-============
- * average: 101 ns (stddev: 27.4)
- * maximum: 38313 ns
- * minimum: 65 ns
+@Arnd: Can you please look at patches 7-10 ..
 
-local_clock():
-==============
- * average: 60 ns (stddev: 9.8)
- * maximum: 13487 ns
- * minimum: 46 ns
+Viresh Kumar (10):
+  PM / OPP: Propagate the error returned by _find_opp_table()
+  PM / OPP: Add missing doc style comments
+  PM / OPP: dev_pm_opp_set_sharing_cpus() doesn't depend on CONFIG_OF
+  PM / OPP: Relocate dev_pm_opp_set_sharing_cpus()
+  PM / OPP: Mark shared-opp for non-dt case
+  PM / OPP: Add dev_pm_opp_get_sharing_cpus()
+  cpufreq: dt: Identify cpu-sharing for platforms without
+    operating-points-v2
+  mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared
+  cpufreq: dt: Kill platform-data
+  cpufreq: mvebu: Use generic platdev driver
 
-The local_clock() is faster and more stable.
+ arch/arm/mach-mvebu/pmsu.c           |  14 ++-
+ drivers/base/power/opp/cpu.c         | 187 +++++++++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
+ drivers/cpufreq/cpufreq-dt.c         |  22 ++---
+ include/linux/cpufreq-dt.h           |  24 -----
+ include/linux/pm_opp.h               |  18 ++--
+ 6 files changed, 176 insertions(+), 91 deletions(-)
+ delete mode 100644 include/linux/cpufreq-dt.h
 
-Even if it is a drop in the ocean, changing the ktime_get() by the
-local_clock() allows to save 80ns at idle time (entry + exit). And
-in some circumstances, especially when there are several CPUs racing
-for the clock access, we save tens of microseconds.
-
-The idle duration resulting from a diff is converted from nanosec to
-microsec. This could be done with integer division (div 1000) - which is
-an expensive operation or by 10 bits shifting (div 1024) - which is fast
-but unprecise.
-
-The following table gives some results at the limits.
-
- ------------------------------------------
-|   nsec   |   div(1000)   |   div(1024)   |
- ------------------------------------------
-|   1e3    |        1 usec |      976 nsec |
- ------------------------------------------
-|   1e6    |     1000 usec |      976 usec |
- ------------------------------------------
-|   1e9    |  1000000 usec |   976562 usec |
- ------------------------------------------
-
-There is a linear deviation of 2.34%. This loss of precision is acceptable
-in the context of the resulting diff which is used for statistics. These
-ones are processed to guess estimate an approximation of the duration of the
-next idle period which ends up into an idle state selection. The selection
-criteria takes into account the next duration based on large intervals,
-represented by the idle state's target residency.
-
-The 2^10 division is enough because the approximation regarding the 1e3
-division is lost in all the approximations done for the next idle duration
-computation.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
-  V2:
-      - Explained in the changelog why div1024 is enough precise for our
-        purpose.
----
- drivers/cpuidle/cpuidle.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index f996efc..78447bc 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -173,7 +173,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 
- 	struct cpuidle_state *target_state = &drv->states[index];
- 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
--	ktime_t time_start, time_end;
-+	u64 time_start, time_end;
- 	s64 diff;
- 
- 	/*
-@@ -195,13 +195,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	sched_idle_set_state(target_state);
- 
- 	trace_cpu_idle_rcuidle(index, dev->cpu);
--	time_start = ktime_get();
-+	time_start = local_clock();
- 
- 	stop_critical_timings();
- 	entered_state = target_state->enter(dev, drv, index);
- 	start_critical_timings();
- 
--	time_end = ktime_get();
-+	time_end = local_clock();
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
- 	/* The cpu is no longer idle or about to enter idle. */
-@@ -217,7 +217,11 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	if (!cpuidle_state_is_coupled(drv, entered_state))
- 		local_irq_enable();
- 
--	diff = ktime_to_us(ktime_sub(time_end, time_start));
-+	/*
-+	 * local_clock() returns the time in nanosecond, let's shift
-+	 * by 10 (divide by 1024) to have microsecond based time.
-+	 */
-+	diff = (time_end - time_start) >> 10;
- 	if (diff > INT_MAX)
- 		diff = INT_MAX;
- 
 -- 
-1.9.1
+2.7.1.410.g6faf27b
+
