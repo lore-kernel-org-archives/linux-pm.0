@@ -1,33 +1,119 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: mt8173: use list_for_each_entry*()
-Date: Fri, 22 Apr 2016 02:41:38 +0200
-Message-ID: <1546830.rP9teHUGyP@vostro.rjw.lan>
-References: <0679e197c8c0c4329d3d8190f1777fd61edbaebf.1459823809.git.geliangtang@163.com> <20160405030557.GC20655@vireshk-i7>
+Subject: Re: [PATCH V4] intel_pstate: Use avg_pstate instead of current_pstate
+Date: Fri, 22 Apr 2016 02:48:44 +0200
+Message-ID: <1662176.YWLDtbbot1@vostro.rjw.lan>
+References: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53017 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62340 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751603AbcDVAiq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 20:38:46 -0400
-In-Reply-To: <20160405030557.GC20655@vireshk-i7>
+	by vger.kernel.org with SMTP id S1751485AbcDVApw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Apr 2016 20:45:52 -0400
+In-Reply-To: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Geliang Tang <geliangtang@163.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Philippe Longepe <philippe.longepe@linux.intel.com>, srinivas.pandruvada@linux.intel.com
+Cc: linux-pm@vger.kernel.org, rafael@kernel.org, len.brown@intel.com
 
-On Tuesday, April 05, 2016 08:35:57 AM Viresh Kumar wrote:
-> On 05-04-16, 10:38, Geliang Tang wrote:
-> > Use list_for_each_entry*() instead of list_for_each*() to simplify
-> > the code.
-> > 
-> > Signed-off-by: Geliang Tang <geliangtang@163.com>
-> > ---
-> >  drivers/cpufreq/mt8173-cpufreq.c | 14 ++++----------
-> >  1 file changed, 4 insertions(+), 10 deletions(-)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Monday, April 04, 2016 09:23:36 AM Philippe Longepe wrote:
+> The result returned by pid_calc() is subtracted from current_pstate
+> (which is the pstate requested during the last period) in order to
+> obtain the target pstate for the current iteration.
+> However, current_pstate may not reflect the real current P-state of
+> the CPU.  In particular, that P-state may be higher because of the
+> frequency sharing per module.
+>=20
+> The theory is:
+>=20
+> - The load is the percentage of time spent in C0 and is related to
+> the average frequency during the same period (We'll not have the
+> same load at 1GHz or at 2GHz for the same task running).
+>=20
+> - The current frequency can be completely different than the
+> average frequency (because of frequency sharing or throttling).
+>=20
+> =3D> The frequency shift computed by the pid_calc is based on the
+> load, so it must be applied to the frequency with which the load
+> was measured.
+>=20
+> Using the average pstate instead of current pstate solve some
+> migration issues (e.g when a task migrates from one core to another
+> in the same package/module and all of the cores in there except for
+> that particular one are basically idle).
+>=20
+> Performance and power comparison with this patch on Android:
+>=20
+> IPLoad+Avg-Pstate vs IP Load:
+>=20
+> Benchmark               =E2=88=86Perf    =E2=88=86Power
+> FishTank                10.45%    3.1%
+> SmartBench-Gaming       -0.1%   -10.4%
+> SmartBench-Productivity -0.8%   -10.4%
+> CandyCrush                n/a   -17.4%
+> AngryBirds                n/a    -5.9%
+> videoPlayback             n/a   -13.9%
+> audioPlayback             n/a    -4.9%
+> IcyRocks-20-50           0.0%   -38.4%
+> iozone RR               -0.16%  -1.3%
+> iozone RW                0.74%  -1.3%
+>=20
+> Comparison with the perf algorithm:
+> (this patch in cpu_load vs Core algorithm)
+>=20
+> Benchmark               =E2=88=86Perf    =E2=88=86Power
+> SmartBench-Gaming       -0.58%   -22.8%
+> SmartBench-Productivity  0.82%
+> CandyCrush                n/a    -20.8%
+> AngryBirds                n/a    -37.0%
+> videoPlayback             n/a    -53.4%
+> audioPlayback             n/a     -2.1%
+> iozone RR               -0.55%   -13.29%
+> iozone RW                2.22%
+>=20
+> =3D> No regression > 1% observed and a huge power improvement!
+>=20
+> Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
 
-Applied, thanks!
+Srinivas, what about this one?  Yes?  No?  Maybe?
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
+state.c
+> index 4b64452..b998e1d 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -919,6 +919,12 @@ static inline int32_t get_avg_frequency(struct c=
+pudata *cpu)
+>  		cpu->pstate.scaling, cpu->sample.mperf);
+>  }
+> =20
+> +static inline int32_t get_avg_pstate(struct cpudata *cpu)
+> +{
+> +	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aper=
+f,
+> +		cpu->sample.mperf);
+> +}
+> +
+>  static inline int32_t get_target_pstate_use_cpu_load(struct cpudata =
+*cpu)
+>  {
+>  	struct sample *sample =3D &cpu->sample;
+> @@ -951,7 +957,7 @@ static inline int32_t get_target_pstate_use_cpu_l=
+oad(struct cpudata *cpu)
+>  	cpu_load =3D div64_u64(int_tofp(100) * mperf, sample->tsc);
+>  	cpu->sample.busy_scaled =3D cpu_load;
+> =20
+> -	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
+> +	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, cpu_load);
+>  }
+> =20
+>  static inline int32_t get_target_pstate_use_performance(struct cpuda=
+ta *cpu)
+>=20
 
