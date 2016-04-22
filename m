@@ -1,58 +1,95 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 5/8] cpufreq: shmobile: Use generic platdev driver
-Date: Fri, 22 Apr 2016 08:41:24 +0200
-Message-ID: <CAMuHMdWXH+Oud+ZZbYFUcTN1a0v9_BJbP5cMLxx0tRWHzx4ADQ@mail.gmail.com>
-References: <cover.1461228081.git.viresh.kumar@linaro.org>
-	<ab29df38f70453e67089e3f3dbb9085336eef1c2.1461228081.git.viresh.kumar@linaro.org>
-	<CAMuHMdUnzgr==S86Wiz0fGk2gSWW2=j+maiq3=3x9Ozy7AoOZw@mail.gmail.com>
-	<20160422032142.GN29799@vireshk-i7>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V2] cpuidle: Change ktime_get() with local_clock()
+Date: Fri, 22 Apr 2016 08:42:40 +0200
+Message-ID: <20160422064240.GO3408@twins.programming.kicks-ass.net>
+References: <1461228990-28957-1-git-send-email-daniel.lezcano@linaro.org>
+ <CAJZ5v0je2kdDF6J4XVmWkySKUvby3bYpCTr51m3+MKGpWYcw=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f193.google.com ([209.85.213.193]:36351 "EHLO
-	mail-ig0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbcDVGlZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 02:41:25 -0400
-In-Reply-To: <20160422032142.GN29799@vireshk-i7>
+Received: from merlin.infradead.org ([205.233.59.134]:40144 "EHLO
+	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbcDVGmo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 02:42:44 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0je2kdDF6J4XVmWkySKUvby3bYpCTr51m3+MKGpWYcw=Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-renesas-soc@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+On Thu, Apr 21, 2016 at 09:41:14PM +0200, Rafael J. Wysocki wrote:
+> On Thu, Apr 21, 2016 at 10:56 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+> > The ktime_get() can have a non negligeable overhead, use local_clock()
+> > instead.
+> >
+> > In order to test the difference between ktime_get() and local_clock(),
+> > a quick hack has been added to trigger, via debugfs, 10000 times a
+> > call to ktime_get() and local_clock() and measure the elapsed time.
+> >
+> > Then the average value, the min and max is computed for each call.
+> >
+> > From userspace, the test above was called 100 times every 2 seconds.
+> >
+> > So, ktime_get() and local_clock() have been called 1000000 times in
+> > total.
+> >
+> > The results are:
+> >
+> > ktime_get():
+> > ============
+> >  * average: 101 ns (stddev: 27.4)
+> >  * maximum: 38313 ns
+> >  * minimum: 65 ns
+> >
+> > local_clock():
+> > ==============
+> >  * average: 60 ns (stddev: 9.8)
+> >  * maximum: 13487 ns
+> >  * minimum: 46 ns
+> >
+> > The local_clock() is faster and more stable.
+> >
+> > Even if it is a drop in the ocean, changing the ktime_get() by the
+> > local_clock() allows to save 80ns at idle time (entry + exit). And
+> > in some circumstances, especially when there are several CPUs racing
+> > for the clock access, we save tens of microseconds.
+> >
+> > The idle duration resulting from a diff is converted from nanosec to
+> > microsec. This could be done with integer division (div 1000) - which is
+> > an expensive operation or by 10 bits shifting (div 1024) - which is fast
+> > but unprecise.
+> >
+> > The following table gives some results at the limits.
+> >
+> >  ------------------------------------------
+> > |   nsec   |   div(1000)   |   div(1024)   |
+> >  ------------------------------------------
+> > |   1e3    |        1 usec |      976 nsec |
+> >  ------------------------------------------
+> > |   1e6    |     1000 usec |      976 usec |
+> >  ------------------------------------------
+> > |   1e9    |  1000000 usec |   976562 usec |
+> >  ------------------------------------------
+> >
+> > There is a linear deviation of 2.34%. This loss of precision is acceptable
+> > in the context of the resulting diff which is used for statistics. These
+> > ones are processed to guess estimate an approximation of the duration of the
+> > next idle period which ends up into an idle state selection. The selection
+> > criteria takes into account the next duration based on large intervals,
+> > represented by the idle state's target residency.
+> >
+> > The 2^10 division is enough because the approximation regarding the 1e3
+> > division is lost in all the approximations done for the next idle duration
+> > computation.
+> >
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> Looks good to me.
+> 
+> Peter, are you happy with the changelog now?
 
-On Fri, Apr 22, 2016 at 5:21 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 21-04-16, 15:04, Geert Uytterhoeven wrote:
->> On Thu, Apr 21, 2016 at 10:43 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
->> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
->> > @@ -29,6 +29,18 @@ static const struct of_device_id machines[] = {
->> >         { .compatible = "samsung,exynos5800", },
->> >  #endif
->> >
->>
->> I think an #ifdef CONFIG_ARCH_RENESAS block wouldn't hurt, likewise
->> for the other SoCs.
->> Soon you'll have this file filled with lots of compatible values for random\
->> SoCs...
->
-> This is going to be done once per boot and this shouldn't hurt. And for new
-> platforms we may do things differently as they are going to use opp-v2 bindings.
+Yep, works for me:
 
-I was mainly thinking about kernel size.
-If this is done once per boot, the array should be __initconst,
-(looking at the code
-in next) which is fine as cpufreq_dt_platdev_init() is already __init.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
