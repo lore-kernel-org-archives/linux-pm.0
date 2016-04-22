@@ -1,76 +1,41 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH V2 5/9] cpufreq: rockchip: Use generic platdev driver
-Date: Fri, 22 Apr 2016 15:58:21 +0200
-Message-ID: <30472058.4UOVq5Spqx@diego>
-References: <cover.1461324267.git.viresh.kumar@linaro.org> <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] PM / OPP: -ENOSYS is applicable only to syscalls
+Date: Fri, 22 Apr 2016 15:59:41 +0100
+Message-ID: <20160422155941.23e1d05b@lxorguk.ukuu.org.uk>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
+	<a825b531b34b15615791f40610c151e3f1ce2fb4.1461294917.git.viresh.kumar@linaro.org>
+	<60895590.AIt8jZZHh3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:34780 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbcDVN6d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Apr 2016 09:58:33 -0400
-In-Reply-To: <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:48992 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbcDVPAO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 11:00:14 -0400
+In-Reply-To: <60895590.AIt8jZZHh3@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, Finley Xiao <finley.xiao@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org
 
-Am Freitag, 22. April 2016, 16:58:43 schrieb Viresh Kumar:
-> From: Finley Xiao <finley.xiao@rock-chips.com>
-> 
-> This patch add rockchip's compatible string to the compat list and
-> remove similar code from platform code for supporting generic platdev
-> driver.
-> 
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Fri, 22 Apr 2016 14:42:31 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
 
-very cool to have that cpufreq stuff move somewhere else
-
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-
-> ---
->  arch/arm/mach-rockchip/rockchip.c    |  1 -
->  drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
->  2 files changed, 11 insertions(+), 1 deletion(-)
+> On Friday, April 22, 2016 08:46:51 AM Viresh Kumar wrote:
+> > Some of the routines have use -ENOSYS, which is supposed to be used only
+> > for syscalls. Replace that with -EINVAL.  
 > 
-> diff --git a/arch/arm/mach-rockchip/rockchip.c
-> b/arch/arm/mach-rockchip/rockchip.c index 3f07cc5dfe5f..beb71da5d9c8 100644
-> --- a/arch/arm/mach-rockchip/rockchip.c
-> +++ b/arch/arm/mach-rockchip/rockchip.c
-> @@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
->  {
->  	rockchip_suspend_init();
->  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
-> -	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
->  }
+> -EINVAL specifically means "invalid argument".
 > 
->  static const char * const rockchip_board_dt_compat[] = {
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c
-> b/drivers/cpufreq/cpufreq-dt-platdev.c index 4e525f6ec59f..75fa921d8540
-> 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -29,6 +29,17 @@ static const struct of_device_id machines[] __initconst =
-> { { .compatible = "samsung,exynos5800", },
->  #endif
-> 
-> +	{ .compatible = "rockchip,rk2928", },
-> +	{ .compatible = "rockchip,rk3036", },
-> +	{ .compatible = "rockchip,rk3066a", },
-> +	{ .compatible = "rockchip,rk3066b", },
-> +	{ .compatible = "rockchip,rk3188", },
-> +	{ .compatible = "rockchip,rk3228", },
-> +	{ .compatible = "rockchip,rk3288", },
-> +	{ .compatible = "rockchip,rk3366", },
-> +	{ .compatible = "rockchip,rk3368", },
-> +	{ .compatible = "rockchip,rk3399", },
-> +
->  	{ .compatible = "ti,omap2", },
->  	{ .compatible = "ti,omap3", },
->  	{ .compatible = "ti,omap4", },
+> What about using -ENXIO instead?
 
+That specifically means "device not present", but might be reasonable.
+Quite a bit of the kernel uses EOPNOTSUPP (operation not supported).
+
+Before you change it though please check how existing userspace does
+error handling. It's nice to use more "correct" error codes, but that's
+not sufficient reason if it turns out that existing user space checks for
+ENOSYS for example.
+
+Alan
