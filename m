@@ -1,63 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: -ENOSYS is applicable only to syscalls
-Date: Fri, 22 Apr 2016 08:46:51 +0530
-Message-ID: <a825b531b34b15615791f40610c151e3f1ce2fb4.1461294917.git.viresh.kumar@linaro.org>
-References: <cover.1461228504.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:35689 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751835AbcDVDRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 23:17:00 -0400
-Received: by mail-pa0-f45.google.com with SMTP id fs9so35284701pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 20:17:00 -0700 (PDT)
-In-Reply-To: <cover.1461228504.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH 5/8] cpufreq: shmobile: Use generic platdev driver
+Date: Fri, 22 Apr 2016 08:51:42 +0530
+Message-ID: <20160422032142.GN29799@vireshk-i7>
+References: <cover.1461228081.git.viresh.kumar@linaro.org>
+ <ab29df38f70453e67089e3f3dbb9085336eef1c2.1461228081.git.viresh.kumar@linaro.org>
+ <CAMuHMdUnzgr==S86Wiz0fGk2gSWW2=j+maiq3=3x9Ozy7AoOZw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdUnzgr==S86Wiz0fGk2gSWW2=j+maiq3=3x9Ozy7AoOZw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-renesas-soc@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 
-Some of the routines have use -ENOSYS, which is supposed to be used only
-for syscalls. Replace that with -EINVAL.
+On 21-04-16, 15:04, Geert Uytterhoeven wrote:
+> Hi Viresh,
+> 
+> On Thu, Apr 21, 2016 at 10:43 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -29,6 +29,18 @@ static const struct of_device_id machines[] = {
+> >         { .compatible = "samsung,exynos5800", },
+> >  #endif
+> >
+> 
+> I think an #ifdef CONFIG_ARCH_RENESAS block wouldn't hurt, likewise
+> for the other SoCs.
+> Soon you'll have this file filled with lots of compatible values for random\
+> SoCs...
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-I am including this patch into the series and this one will be the first
-patch of the series. Also, later patches will be updated to *not* use
--ENOSYS.
+This is going to be done once per boot and this shouldn't hurt. And for new
+platforms we may do things differently as they are going to use opp-v2 bindings.
 
-I will send out the series again once some sort of reviews are done.
+And, so I am not really in favor of ifdef hackery :)
 
- include/linux/pm_opp.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index cccaf4a29e9f..2605ed66f1bd 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -199,7 +199,7 @@ static inline void dev_pm_opp_of_remove_table(struct device *dev)
- 
- static inline int dev_pm_opp_of_cpumask_add_table(cpumask_var_t cpumask)
- {
--	return -ENOSYS;
-+	return -EINVAL;
- }
- 
- static inline void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
-@@ -208,12 +208,12 @@ static inline void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
- 
- static inline int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
--	return -ENOSYS;
-+	return -EINVAL;
- }
- 
- static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
--	return -ENOSYS;
-+	return -EINVAL;
- }
- #endif
- 
 -- 
-2.7.1.410.g6faf27b
-
+viresh
