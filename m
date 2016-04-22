@@ -1,102 +1,112 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V4] intel_pstate: Use avg_pstate instead of current_pstate
-Date: Fri, 22 Apr 2016 03:01:13 +0200
-Message-ID: <CAJZ5v0hMTanSQQ9VX2YbTgRvtUkkTDJAJSYcHGxAdtm=xEHE6g@mail.gmail.com>
-References: <1459754617-8872-1-git-send-email-philippe.longepe@linux.intel.com>
-	<1662176.YWLDtbbot1@vostro.rjw.lan>
-	<1461286745.8946.203.camel@linux.intel.com>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH 7/9] thermal: of: Add support for hardware-tracked trip
+ points
+Date: Fri, 22 Apr 2016 09:54:19 +0800
+Message-ID: <5719844B.3040703@gmail.com>
+References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+ <1460950562-20652-8-git-send-email-wxt@rock-chips.com>
+ <20160420234818.GB2558@localhost.localdomain>
+ <20160421011230.GA118377@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f195.google.com ([209.85.217.195]:34352 "EHLO
-	mail-lb0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbcDVBBP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 21:01:15 -0400
-Received: by mail-lb0-f195.google.com with SMTP id w1so3886901lbl.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 18:01:14 -0700 (PDT)
-In-Reply-To: <1461286745.8946.203.camel@linux.intel.com>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:33021 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbcDVByi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 21:54:38 -0400
+In-Reply-To: <20160421011230.GA118377@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Philippe Longepe <philippe.longepe@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>
+To: Brian Norris <briannorris@chromium.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>
+Cc: Wei Ni <wni@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dianders@chromium.org, Mikko Perttunen <mperttunen@nvidia.com>, linux-rockchip@lists.infradead.org, smbarber@google.com, Paul Walmsley <pwalmsley@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, Caesar Wang <wxt@rock-chips.com>, eddie.cai@rock-chips.com, huangtao@rock-chips.com
 
-On Fri, Apr 22, 2016 at 2:59 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Fri, 2016-04-22 at 02:48 +0200, Rafael J. Wysocki wrote:
->> On Monday, April 04, 2016 09:23:36 AM Philippe Longepe wrote:
->> >
->> > The result returned by pid_calc() is subtracted from current_pstat=
-e
->> > (which is the pstate requested during the last period) in order to
->> > obtain the target pstate for the current iteration.
->> > However, current_pstate may not reflect the real current P-state o=
-f
->> > the CPU.  In particular, that P-state may be higher because of the
->> > frequency sharing per module.
->> >
->> > The theory is:
->> >
->> > - The load is the percentage of time spent in C0 and is related to
->> > the average frequency during the same period (We'll not have the
->> > same load at 1GHz or at 2GHz for the same task running).
->> >
->> > - The current frequency can be completely different than the
->> > average frequency (because of frequency sharing or throttling).
->> >
->> > =3D> The frequency shift computed by the pid_calc is based on the
->> > load, so it must be applied to the frequency with which the load
->> > was measured.
->> >
->> > Using the average pstate instead of current pstate solve some
->> > migration issues (e.g when a task migrates from one core to anothe=
-r
->> > in the same package/module and all of the cores in there except fo=
-r
->> > that particular one are basically idle).
->> >
->> > Performance and power comparison with this patch on Android:
->> >
->> > IPLoad+Avg-Pstate vs IP Load:
->> >
->> > Benchmark               =E2=88=86Perf    =E2=88=86Power
->> > FishTank                10.45%    3.1%
->> > SmartBench-Gaming       -0.1%   -10.4%
->> > SmartBench-Productivity -0.8%   -10.4%
->> > CandyCrush                n/a   -17.4%
->> > AngryBirds                n/a    -5.9%
->> > videoPlayback             n/a   -13.9%
->> > audioPlayback             n/a    -4.9%
->> > IcyRocks-20-50           0.0%   -38.4%
->> > iozone RR               -0.16%  -1.3%
->> > iozone RW                0.74%  -1.3%
->> >
->> > Comparison with the perf algorithm:
->> > (this patch in cpu_load vs Core algorithm)
->> >
->> > Benchmark               =E2=88=86Perf    =E2=88=86Power
->> > SmartBench-Gaming       -0.58%   -22.8%
->> > SmartBench-Productivity  0.82%
->> > CandyCrush                n/a    -20.8%
->> > AngryBirds                n/a    -37.0%
->> > videoPlayback             n/a    -53.4%
->> > audioPlayback             n/a     -2.1%
->> > iozone RR               -0.55%   -13.29%
->> > iozone RW                2.22%
->> >
->> > =3D> No regression > 1% observed and a huge power improvement!
->> >
->> > Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
+Hi Brian, Eduardo, Sascha
+
+=E5=9C=A8 2016=E5=B9=B404=E6=9C=8821=E6=97=A5 09:12, Brian Norris =E5=86=
+=99=E9=81=93:
+> + Sascha
 >
->
->> Srinivas, what about this one?  Yes?  No?  Maybe?
+> On Wed, Apr 20, 2016 at 04:48:18PM -0700, Eduardo Valentin wrote:
+>> On Mon, Apr 18, 2016 at 11:35:59AM +0800, Caesar Wang wrote:
+>>> From: Mikko Perttunen <mperttunen@nvidia.com>
+>>>
+>>> This adds support for hardware-tracked trip points to the device tr=
+ee
+>> <cut>
 >>
-> I am fine with this change.
-> I would like to edit the commit and remove the bottom table compare
-> with core and statement with exclamation as this not relevant here fo=
-r
-> the affected platforms.
+>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>>> index 97b86c5..6ef932a 100644
+>>> --- a/include/linux/thermal.h
+>>> +++ b/include/linux/thermal.h
+>>> @@ -335,12 +335,14 @@ struct thermal_genl_event {
+>>>    * @get_trend: a pointer to a function that reads the sensor temp=
+erature trend.
+>>>    * @set_emul_temp: a pointer to a function that sets sensor emula=
+ted
+>>>    *		   temperature.
+>>> + * @set_trips: a pointer to a function that set low/high trip temp=
+erature.
+>>>    */
+>>>   struct thermal_zone_of_device_ops {
+>>>   	int (*get_temp)(void *, int *);
+>>>   	int (*get_trend)(void *, long *);
+>>>   	int (*set_emul_temp)(void *, int);
+>>>   	int (*set_trip_temp)(void *, int, int);
+>>> +	int (*set_trips)(void *, int, int);
+>> This is unfortunately a diverges from API available on thermal core.=
+ Can
+>> you please add first on thermal core then, use it in of thermal?
+>>
+>> I don't want to have callbacks available only via of thermal. If we
+>> allow it, OF thermal becomes a separate API.
+> What ever happened to this effort?
 >
-> Do you want me to send update?
+> http://thread.gmane.org/gmane.linux.power-management.general/59451
+>
+> Patch 12 and 13 look to accomplish something similar, yet they do wha=
+t
+> Eduardo suggested. I was testing that series at my previous job, but
+> unfortunately (for the fate of this series) I left that employer befo=
+re
+> I could finish reviewing and testing it. Perhaps Caesar can resurrect
+> and test it?
 
-Yes, please.
+@Brian
+Yes, I can
+
+Sure, I can.
+
+I see the Sascha's newest thermal patches in patchwork.
+The following patches are still needed, right?
+
+6446191 New          [06/16] thermal: inline only once used function
+6446111 New          [07/16] thermal: streamline get_trend callbacks
+6445871 New          [08/16] thermal: Allow sensor ops to fail with -EN=
+OSYS
+6445861 New          [09/16] thermal: of: always set sensor related=20
+callbacks
+6446221 New          [10/16] thermal: Make struct=20
+thermal_zone_device_ops const
+6446201 New          [11/16] thermal: bang-bang governor: act on lower=20
+trip boundary
+6445891 New          [12/16] thermal: thermal: Add support for=20
+hardware-tracked trip points
+6445911 New          [13/16] thermal: of: implement .set_trips for=20
+device tree thermal zones
+
+@Sascha, Eduardo
+Can you share your discussion content for the above patches as remember=
+ed?
+
+Thanks,
+
+-Caesar
+
+> Brian
+>
+> _______________________________________________
+> Linux-rockchip mailing list
+> Linux-rockchip@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-rockchip
