@@ -1,97 +1,126 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Fri, 22 Apr 2016 11:00:20 +0530
-Message-ID: <20160422053020.GB2235@vireshk-i7>
-References: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
- <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 7/9] thermal: of: Add support for hardware-tracked trip
+ points
+Date: Fri, 22 Apr 2016 07:41:47 +0200
+Message-ID: <20160422054147.GI21638@pengutronix.de>
+References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
+ <1460950562-20652-8-git-send-email-wxt@rock-chips.com>
+ <20160420234818.GB2558@localhost.localdomain>
+ <20160421011230.GA118377@google.com>
+ <5719844B.3040703@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35264 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbcDVFaY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 01:30:24 -0400
-Received: by mail-pa0-f43.google.com with SMTP id fs9so36376552pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Apr 2016 22:30:24 -0700 (PDT)
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:34022 "EHLO
+	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753882AbcDVFl4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 01:41:56 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
+In-Reply-To: <5719844B.3040703@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rwells@codeaurora.org" <rwells@codeaurora.org>
+To: Caesar Wang <caesar.upstream@gmail.com>
+Cc: Brian Norris <briannorris@chromium.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, huangtao@rock-chips.com, Wei Ni <wni@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, eddie.cai@rock-chips.com, smbarber@google.com, Paul Walmsley <pwalmsley@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, Mikko Perttunen <mperttunen@nvidia.com>, Caesar Wang <wxt@rock-chips.com>
 
-On 19-04-16, 16:12, Ashwin Chaugule wrote:
-> + Ryan
-> 
-> Hi Al,
-> 
-> On 18 April 2016 at 20:11, Al Stone <ahs3@redhat.com> wrote:
-> > When CPPC is being used by ACPI on arm64, user space tools such as
-> > cpupower report CPU frequency values from sysfs that are incorrect.
+On Fri, Apr 22, 2016 at 09:54:19AM +0800, Caesar Wang wrote:
+> Hi Brian, Eduardo, Sascha
+>=20
+> =E5=9C=A8 2016=E5=B9=B404=E6=9C=8821=E6=97=A5 09:12, Brian Norris =E5=
+=86=99=E9=81=93:
+> >+ Sascha
 > >
-> > What the driver was doing was reporting the values given by ACPI tables
-> > in whatever scale was used to provide them.  However, the ACPI spec
-> > defines the CPPC values as unitless abstract numbers.  Internal kernel
-> > structures such as struct perf_cap, in contrast, expect these values
-> > to be in KHz.  When these struct values get reported via sysfs, the
-> > user space tools also assume they are in KHz, causing them to report
-> > incorrect values (for example, reporting a CPU frequency of 1MHz when
-> > it should be 1.8GHz).
+> >On Wed, Apr 20, 2016 at 04:48:18PM -0700, Eduardo Valentin wrote:
+> >>On Mon, Apr 18, 2016 at 11:35:59AM +0800, Caesar Wang wrote:
+> >>>From: Mikko Perttunen <mperttunen@nvidia.com>
+> >>>
+> >>>This adds support for hardware-tracked trip points to the device t=
+ree
+> >><cut>
+> >>
+> >>>diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> >>>index 97b86c5..6ef932a 100644
+> >>>--- a/include/linux/thermal.h
+> >>>+++ b/include/linux/thermal.h
+> >>>@@ -335,12 +335,14 @@ struct thermal_genl_event {
+> >>>   * @get_trend: a pointer to a function that reads the sensor tem=
+perature trend.
+> >>>   * @set_emul_temp: a pointer to a function that sets sensor emul=
+ated
+> >>>   *		   temperature.
+> >>>+ * @set_trips: a pointer to a function that set low/high trip tem=
+perature.
+> >>>   */
+> >>>  struct thermal_zone_of_device_ops {
+> >>>  	int (*get_temp)(void *, int *);
+> >>>  	int (*get_trend)(void *, long *);
+> >>>  	int (*set_emul_temp)(void *, int);
+> >>>  	int (*set_trip_temp)(void *, int, int);
+> >>>+	int (*set_trips)(void *, int, int);
+> >>This is unfortunately a diverges from API available on thermal core=
+=2E Can
+> >>you please add first on thermal core then, use it in of thermal?
+> >>
+> >>I don't want to have callbacks available only via of thermal. If we
+> >>allow it, OF thermal becomes a separate API.
+> >What ever happened to this effort?
 > >
-> > While the investigation for a long term fix proceeds (several options
-> > are being explored, some of which may require spec changes or other
-> > much more invasive fixes), this patch forces the values read by CPPC
-> > to be read in KHz, regardless of what they actually represent.
+> >http://thread.gmane.org/gmane.linux.power-management.general/59451
 > >
-> > The downside is that this approach has some assumptions:
-> >
-> >    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
-> >    value for a processor is set to a non-zero value.
-> >
-> >    (2) It assumes that all processors run at the same speed.  This
-> >    patch retrieves the first CPU Max Frequency from a type 4 DMI
-> >    record that it can find.  This may not be an issue, however, as a
-> >    sampling of DMI data on x86 and arm64 indicates there is often only
-> >    one such record regardless.
+> >Patch 12 and 13 look to accomplish something similar, yet they do wh=
+at
+> >Eduardo suggested. I was testing that series at my previous job, but
+> >unfortunately (for the fate of this series) I left that employer bef=
+ore
+> >I could finish reviewing and testing it. Perhaps Caesar can resurrec=
+t
+> >and test it?
+>=20
+> @Brian
+> Yes, I can
+>=20
+> Sure, I can.
+>=20
+> I see the Sascha's newest thermal patches in patchwork.
+> The following patches are still needed, right?
+>=20
+> 6446191 New          [06/16] thermal: inline only once used function
+> 6446111 New          [07/16] thermal: streamline get_trend callbacks
+> 6445871 New          [08/16] thermal: Allow sensor ops to fail with -=
+ENOSYS
+> 6445861 New          [09/16] thermal: of: always set sensor related
+> callbacks
+> 6446221 New          [10/16] thermal: Make struct thermal_zone_device=
+_ops
+> const
+> 6446201 New          [11/16] thermal: bang-bang governor: act on lowe=
+r trip
+> boundary
+> 6445891 New          [12/16] thermal: thermal: Add support for
+> hardware-tracked trip points
+> 6445911 New          [13/16] thermal: of: implement .set_trips for de=
+vice
+> tree thermal zones
+>=20
+> @Sascha, Eduardo
+> Can you share your discussion content for the above patches as rememb=
+ered?
 
-Don't we have any big LITTLE ARM servers yet ? Or we will not have them at all ?
+These are still the newest patches. I won't have any resources in the
+near future for continuing the work on them, so feel free to pick them
+up. There hasn't been much discussion around these patches which was th=
+e
+reason I abandoned them.
 
-> > For arm64 servers, this may be sufficient, but it does rely on
-> > firmware values being set correctly.  Hence, other approaches are
-> > also being considered.
-> >
-> > This has been tested on three arm64 servers, with and without DMI, with
-> > and without CPPC support.
-> >
-> > Changes for v2:
-> >     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
-> >        not SELECT DMI (found by build daemon)
-> >
-> > Signed-off-by: Al Stone <ahs3@redhat.com>
-> 
-> This looks like a good short term solution. Does it make more sense to
-> move this to the cppc_cpufreq driver though? Since that ties more
-> closely into the cpufreq framework which requires the kHz values in
-> sysfs. That way we can keep the cppc_acpi.c shim compliant with the
-> ACPI spec. (i.e. values read in cppc structures remain abstract and
-> unitless).
-> 
-> Rafael, Viresh, others,
-> 
-> Any other ideas how to handle this better in the long term?
-> 
->  - Decouple the cpufreq sysfs from the cppc driver and introduce its
-> own entries. Is it possibly to do this cleanly while still allowing
-> usage of cpufreq registration with existing governors?
-> 
->  - Come up with a scaling factor using the PMU cycle counter at boot
-> before the CPPC drivers are initialized. This would use the current
-> freq set by some UEFI var. This would possibly require some messy
-> perfevents plumbing and added bootup time though.
+Sascha
 
-I may be missing the obvious, but can't we just create the cpufreq-table from
-this table in khz? We wouldn't require any further change then.
 
--- 
-viresh
+--=20
+Pengutronix e.K.                           |                           =
+  |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
+  |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
+5 |
