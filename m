@@ -1,130 +1,69 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Fri, 22 Apr 2016 13:27:07 -0700
-Message-ID: <7hwpnptmn8.fsf@baylibre.com>
-References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
-	<3340490.Br5NVWnCR9@avalon> <27575455.zVxi7rnRNK@avalon>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Fri, 22 Apr 2016 14:58:26 -0700
+Message-ID: <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+ <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
+ <alpine.DEB.2.11.1604221834430.3941@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:35373 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbcDVU1K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 16:27:10 -0400
-Received: by mail-pf0-f178.google.com with SMTP id n1so44564813pfn.2
-        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2016 13:27:09 -0700 (PDT)
-In-Reply-To: <27575455.zVxi7rnRNK@avalon> (Laurent Pinchart's message of "Thu,
-	21 Apr 2016 23:57:32 +0300")
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:35726 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbcDVV6r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 17:58:47 -0400
+In-Reply-To: <alpine.DEB.2.11.1604221834430.3941@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-arm-kernel@lists.infradead.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> writes:
-
-> On Thursday 21 Apr 2016 20:31:52 Laurent Pinchart wrote:
->> Hi Ulf,
->> 
->> Thank you for the patch.
->> 
->> On Thursday 21 Apr 2016 12:34:02 Ulf Hansson wrote:
->> > When the pm_runtime_force_suspend|resume() helpers were invented, we still
->> > had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
->> > 
->> > To make sure these helpers worked for all combinations and without
->> > introducing too much of complexity, the device was always resumed in
->> > pm_runtime_force_resume().
->> > 
->> > More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
->> > unset, we needed to resume the device as the subsystem/driver couldn't
->> > rely on using runtime PM to do it.
->> > 
->> > As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
->> > removed this combination, of using CONFIG_PM_SLEEP without the earlier
->> > CONFIG_PM_RUNTIME.
->> > 
->> > For this reason we can now rely on the subsystem/driver to use runtime PM
->> > to resume the device, instead of forcing that to be done in all cases. In
->> > other words, let's defer this to a later point when it's actually needed.
->> > 
->> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> > ---
->> > 
->> > Note, this patch is based upon another not yet queued patch [1]. The
->> > reason
->> > is simply because that [1] is a more important patch as it fixes a
->> > problem.
->> > It was posted to linux-pm April 8th and I expect it (or a new revision of
->> > it) to be applied before $subject patch.
->> > 
->> > [1]
->> > https://patchwork.kernel.org/patch/8782851
->> > 
->> > ---
->> > 
->> >  drivers/base/power/runtime.c | 11 +++++++++++
->> >  1 file changed, 11 insertions(+)
->> > 
->> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> > index b746904..a190ca0 100644
->> > --- a/drivers/base/power/runtime.c
->> > +++ b/drivers/base/power/runtime.c
->> > @@ -1506,6 +1506,17 @@ int pm_runtime_force_resume(struct device *dev)
->> > 
->> >  		goto out;
->> >  	
->> >  	}
->> > 
->> > +	/*
->> > +	 * The PM core increases the runtime PM usage count in the system PM
->> > +	 * prepare phase. If the count is greather than 1 at this point, 
-> someone
->> > +	 * else has also increased it. In such case, let's make sure to runtime
->> > +	 * resume the device as that is likely what is expected. In other case
->> > +	 * we trust the subsystem/driver to runtime resume the device when it's
->> > +	 * actually needed.
->> > +	 */
->> > +	if (atomic_read(&dev->power.usage_count) < 2)
->> > +		goto out;
->> > +
->> > 
->> >  	ret = pm_runtime_set_active(dev);
->> >  	if (ret)
->> >  	
->> >  		goto out;
->> 
->> This works in the sense that it prevents devices from being PM resumed at
->> system resume time if not needed. However, devices that are part of a PM
->> domain and that were idle before system suspend are suspended twice (with
->> their .runtime_suspend() handler called twice), which is not good at all.
->> 
->> The first suspend occurs at system suspend time, with
->> pm_runtime_force_suspend() rightfully suspending the device as the device is
->> active (due to being woken up by pm_genpd_prepare()). The second suspend
->> occurs at resume time due to device_complete() calling pm_runtime_put().
->> 
->> I've tracked the issue to the fact that pm_genpd_complete() calls
->> pm_runtime_set_active() regardless of whether the device was PM resumed or
->> not. As pm_runtime_force_suspend() doesn't resume devices with this patch
->> applied, the pm_runtime_put() call from device_complete() will try to
->> runtime suspend the device a second time as the state is incorrectly set to
->> RPM_ACTIVE.
->> 
->> With the current genpd implementation this patch isn't needed (and neither
->> is my patch), as genpd expects the device to be always active when the
->> system is resumed. However, when genpd isn't used,
->> pm_runtime_force_resume() needs to skip resuming devices that were
->> suspended before system suspend. This patch looks good to me to fix that
->> problem.
->>
->> Do we need to fix genpd first ?
+On Fri, Apr 22, 2016 at 9:37 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 22 Apr 2016, Lianwei Wang wrote:
 >
-> And for the record, while this patch would require fixing genpd first, "[PATCH 
-> v2] PM / Runtime: Only force-resume device if it has been force-suspended" 
-> doesn't (at least as far as I understand the problem).
+>> On Thu, Apr 21, 2016 at 3:50 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Wed, Apr 20, 2016 at 09:56:07PM -0700, Lianwei Wang wrote:
+>> >> Currently it just print a warning message but did not
+>> >> reset cpu_hotplug_disabled when the enable/disable is
+>> >> unbalanced. The unbalanced enable/disable will lead
+>> >> the cpu hotplug work abnormally.
+>> >>
+>> >> Reset it to 0 when an unablanced enable detected.
+>> >
+>> > How can this happen in the first place?
+>>
+>> That's is my question too, and why we check it with WARN_ON here?
+>> Obviously it is possible to happened because the
+>> cpu_hotplug_disable/enable are both kernel API and any driver can call
+>> it. A unbalanced check is a good way to handle it.
+>>
+>> The actually problem here is that what we do in case it happened? Just
+>> give a warning or do some error handling and recover it back? This's
+>> my focus..
+>
+> Actually we do nothing if it happens. We just emit a warning and that's good
+> enough because the machine is still accessible and therefor debugable. It just
+> renders cpu hotplug useless, but that's not a fundamental problem. If you look
+> at the checks we do with preempt count, where we actually restore the counter
+> that's a different issue. If we would not do that we simply would break the
+> machine completely and end up in an endless storm of warnings. Different
+> story, but that hotplug thing is just not in that class of problems.
+>
+> Thanks,
+>
+>         tglx
 
-Right, I'm thinking we should merge Laurent's patch first.  It fixes a
-current problem, and won't get in the way of doing the genpd
-improvements progressively.
+Any way is Ok for debugging purpose. But think the kernel run on a
+customer machine, such as PC, Mobile phone or other devices. How we
+let the customer debug it but not recover it smartly?
 
-Kevin
+If it happened then the cpu hotplug is not useless but may work in a
+wrong way. E.g. the cpu_hotplug_disabled now is -1 after the last call
+of cpu_hotplug_enable, then it is actually DISABLED but not enabled,
+and the following  call of cpu_hotplug_disable is actually enable but
+not disable. There is no way for the customer or end user to recover
+it except do a power cycle and reboot.
+
+Anyway, from a product perspective way, if we don't want to restore
+the unbalanced counter to 0, then maybe a BUG_ON is more reasonable
+than WARN_ON.
