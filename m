@@ -1,62 +1,94 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH] tools/power: turbostat: Allocate correct amount of fd and irq entries
-Date: Fri, 22 Apr 2016 11:13:23 +0300
-Message-ID: <1461312803-45678-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:12395 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751594AbcDVIN1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Apr 2016 04:13:27 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v6 00/11] soc: renesas: Add R-Car SYSC PM Domain Support
+Date: Fri, 22 Apr 2016 18:15:35 +1000
+Message-ID: <20160422081531.GA5453@verge.net.au>
+References: <CAMuHMdVWONBiKYo1w4HwhPQV1oZvw2Kgya7Gxb=NCHXvnr48Tw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdVWONBiKYo1w4HwhPQV1oZvw2Kgya7Gxb=NCHXvnr48Tw@mail.gmail.com>
+ <1810583.ixTcHKGr3L@avalon>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <len.brown@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-The tool uses topo.max_cpu_num to determine number of entries needed for
-fd_percpu[] and irqs_per_cpu[]. For example on a system with 4 CPUs
-topo.max_cpu_num is 3 so we get too small array for holding per-CPU items.
+Hi Laurent, Hi Geert,
 
-Fix this to use right number of entries, which is topo.max_cpu_num + 1.
+On Fri, Apr 22, 2016 at 07:12:23AM +0300, Laurent Pinchart wrote:
+> Hi Simon,
+> 
+> On Friday 22 Apr 2016 10:33:11 Simon Horman wrote:
+> > On Thu, Apr 21, 2016 at 05:14:40PM +0200, Geert Uytterhoeven wrote:
+> > > On Thu, Apr 21, 2016 at 5:28 AM, Simon Horman <horms@verge.net.au> wrote:
+> > > > On Wed, Apr 20, 2016 at 02:02:35PM +0200, Geert Uytterhoeven wrote:
+> > > >> This patch series introduces a DT-based driver for the R-Car System
+> > > >> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
+> > > >> SoCs.
+> > > >> 
+> > > >> This is a dependency for the enablement of DU and VSP on R-Car H3, as
+> > > >> the VSPs are located in a PM Domain.
 
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+[...]
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index acbf7ff2ee6e..fb70a6ce3e52 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1638,7 +1638,7 @@ void free_fd_percpu(void)
- {
- 	int i;
- 
--	for (i = 0; i < topo.max_cpu_num; ++i) {
-+	for (i = 0; i < topo.max_cpu_num + 1; ++i) {
- 		if (fd_percpu[i] != 0)
- 			close(fd_percpu[i]);
- 	}
-@@ -3598,7 +3598,7 @@ void allocate_output_buffer()
- }
- void allocate_fd_percpu(void)
- {
--	fd_percpu = calloc(topo.max_cpu_num, sizeof(int));
-+	fd_percpu = calloc(topo.max_cpu_num + 1, sizeof(int));
- 	if (fd_percpu == NULL)
- 		err(-1, "calloc fd_percpu");
- }
-@@ -3608,9 +3608,9 @@ void allocate_irq_buffers(void)
- 	if (irq_column_2_cpu == NULL)
- 		err(-1, "calloc %d", topo.num_cpus);
- 
--	irqs_per_cpu = calloc(topo.max_cpu_num, sizeof(int));
-+	irqs_per_cpu = calloc(topo.max_cpu_num + 1, sizeof(int));
- 	if (irqs_per_cpu == NULL)
--		err(-1, "calloc %d", topo.max_cpu_num);
-+		err(-1, "calloc %d", topo.max_cpu_num + 1);
- }
- void setup_all_buffers(void)
- {
--- 
-2.8.0.rc3
+> > I do wonder, as we are almost at the closing point for queuing up changes
+> > for v4.7 if, assuming the above patches are scheduled for inclusion in
+> > v4.7-rc1, it might not be better for me to queue up this series for v4.8.
+> 
+> Then that would delay a bunch of multimedia patch by one more kernel cycle, 
+> which I was hoping to avoid.
 
+On Fri, Apr 22, 2016 at 09:02:01AM +0200, Geert Uytterhoeven wrote:
+> Hi Simon,
+> 
+> On Fri, Apr 22, 2016 at 2:33 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Thu, Apr 21, 2016 at 05:14:40PM +0200, Geert Uytterhoeven wrote:
+> >> On Thu, Apr 21, 2016 at 5:28 AM, Simon Horman <horms@verge.net.au> wrote:
+> >> > On Wed, Apr 20, 2016 at 02:02:35PM +0200, Geert Uytterhoeven wrote:
+> >> >> This patch series introduces a DT-based driver for the R-Car System
+> >> >> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
+> >> >> SoCs.
+> >> >>
+> >> >> This is a dependency for the enablement of DU and VSP on R-Car H3, as
+> >> >> the VSPs are located in a PM Domain.
+
+[...]
+
+> > To my mind I need some kind of assurance from the clk maintainers that the
+> > patches are stable there - in particular that the commit ids won't change.
+> 
+> As the clock maintainer pulled the same tag instead of applying emailed
+> patches, the commit IDs won't change, even if he has to rework the clk-next
+> branch and repull.
+> 
+> > And that both they and the ARM-SoC maintainers are happy with me pulling
+> > it into my tree for this purpose.
+> 
+> I also mentioned that in the pull request. Pulling in a stable branch is
+> standard procedure: the code fails to compile if you don't merge
+> tags/clk-renesas-for-v4.7-tag2 first.
+> 
+> > I do wonder, as we are almost at the closing point for queuing up changes
+> > for v4.7 if, assuming the above patches are scheduled for inclusion in
+> > v4.7-rc1, it might not be better for me to queue up this series for v4.8.
+> >
+> > I could do that sooner rather than later in the devel branch of the renesas
+> > tree if you like.
+> 
+> v4.7-rc1 is still more than one month in the future.
+> 
+> As Laurent said, that would delay multimedia work by one more kernel cycle,
+> as R-Car SYSC PM Domains already missed v4.6.
+> In addition, it would mean continued rebasing/updating of "[PATCH v5 00/12]
+> ARM/arm64: dts: rcar: Add SYSC PM domains" in renesas-drivers, as it touches
+> all R-Car DTSes all over the place.
+> 
+> Thanks for reconsidering!
+
+Thanks for your feedback. I now have a better understanding of the
+situation both in regards to the state of the branch and the dependencies
+on it.
+
+I have reconsidered and queued up this series for v4.7.
+It is now present in the next branch of the renesas tree.
