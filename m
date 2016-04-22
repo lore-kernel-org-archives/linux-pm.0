@@ -1,51 +1,37 @@
-From: Penny Chiu <pchiu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 11/11] arm64: config: Enable CPUFreq-DT, Tegra DFLL PWM, and PWM regulator
-Date: Fri, 22 Apr 2016 18:31:11 +0800
-Message-ID: <1461321071-6431-12-git-send-email-pchiu@nvidia.com>
+From: Penny Chiu <pchiu@nvidia.com>
+Subject: [PATCH 07/11] cpufreq: tegra124: Add Tegra210 support
+Date: Fri, 22 Apr 2016 18:31:07 +0800
+Message-ID: <1461321071-6431-8-git-send-email-pchiu@nvidia.com>
 References: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1461321071-6431-1-git-send-email-pchiu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Penny Chiu <pchiu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mturquette@baylibre.com, sboyd@codeaurora.org, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Penny Chiu <pchiu@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Enable CPUFreq-DT, PWM regulator for CPU rail, and related PWM
-controller driver.
+Add tegra210 support in tegra124 cpufreq driver.
 
-Signed-off-by: Penny Chiu <pchiu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Penny Chiu <pchiu@nvidia.com>
 ---
- arch/arm64/configs/defconfig | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/tegra124-cpufreq.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 5091d35..865daca 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -75,6 +75,7 @@ CONFIG_COMPAT=y
- CONFIG_CPU_IDLE=y
- CONFIG_ARM_CPUIDLE=y
- CONFIG_CPU_FREQ=y
-+CONFIG_CPUFREQ_DT=y
- CONFIG_ARM_BIG_LITTLE_CPUFREQ=y
- CONFIG_ARM_SCPI_CPUFREQ=y
- CONFIG_NET=y
-@@ -177,11 +178,14 @@ CONFIG_THERMAL_EMULATION=y
- CONFIG_EXYNOS_THERMAL=y
- CONFIG_MFD_SPMI_PMIC=y
- CONFIG_MFD_SEC_CORE=y
-+CONFIG_PWM=y
-+CONFIG_PWM_TEGRA_DFLL=y
- CONFIG_REGULATOR=y
- CONFIG_REGULATOR_FIXED_VOLTAGE=y
- CONFIG_REGULATOR_QCOM_SMD_RPM=y
- CONFIG_REGULATOR_QCOM_SPMI=y
- CONFIG_REGULATOR_S2MPS11=y
-+CONFIG_REGULATOR_PWM=y
- CONFIG_FB=y
- CONFIG_FB_ARMCLCD=y
- CONFIG_FRAMEBUFFER_CONSOLE=y
+diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+index 20bcceb..c891e6e 100644
+--- a/drivers/cpufreq/tegra124-cpufreq.c
++++ b/drivers/cpufreq/tegra124-cpufreq.c
+@@ -188,7 +188,8 @@ static int __init tegra_cpufreq_init(void)
+ 	int ret;
+ 	struct platform_device *pdev;
+ 
+-	if (!of_machine_is_compatible("nvidia,tegra124"))
++	if (!of_machine_is_compatible("nvidia,tegra124") &&
++	    !of_machine_is_compatible("nvidia,tegra210"))
+ 		return -ENODEV;
+ 
+ 	/*
 -- 
 2.8.1
