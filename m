@@ -1,489 +1,696 @@
 From: Penny Chiu <pchiu@nvidia.com>
-Subject: [PATCH 05/11] pwm: tegra-dfll: Add driver for Tegra DFLL PWM controller
-Date: Fri, 22 Apr 2016 18:31:05 +0800
-Message-ID: <1461321071-6431-6-git-send-email-pchiu@nvidia.com>
+Subject: [PATCH 06/11] clk: tegra: dfll: Add PWM inferface
+Date: Fri, 22 Apr 2016 18:31:06 +0800
+Message-ID: <1461321071-6431-7-git-send-email-pchiu@nvidia.com>
 References: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: mturquette@baylibre.com, sboyd@codeaurora.org, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Penny Chiu <pchiu@nvidia.com>
+Cc: linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, Penny Chiu <pchiu@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Tegra DFLL IP block controls off-chip PMIC via I2C bus or PWM
-signals. This driver exposes DFLL as a PWM controller to generate
-PWM signals to PWM regulator.
+The DFLL module can autonomously change the supply voltage by
+communicating with an off-chip PMIC via either I2C or PWM signals.
 
-Tegra DFLL HW changes regulator voltage by adjusting PWM signals
-duty cycle automatically based on required DVCO frequency, so PWM
-regulator client doesn't need to change voltage by SW.
-
-In this driver, it only configs proper PWM rate in the driver
-initialization, and provides two APIs for clients to determine when
-to enable and disable generating PWM signals by setting related
-pinmux tristate.
+Original driver only supports I2C interface, this patch adds PWM
+interface support.
 
 Signed-off-by: Penny Chiu <pchiu@nvidia.com>
 ---
- .../bindings/pwm/nvidia,tegra-dfll-pwm.txt         |  48 +++
- drivers/pwm/Kconfig                                |  10 +
- drivers/pwm/Makefile                               |   1 +
- drivers/pwm/pwm-tegra-dfll.c                       | 322 +++++++++++++++++++++
- include/soc/tegra/pwm-tegra-dfll.h                 |  27 ++
- 5 files changed, 408 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt
- create mode 100644 drivers/pwm/pwm-tegra-dfll.c
- create mode 100644 include/soc/tegra/pwm-tegra-dfll.h
+ .../bindings/clock/nvidia,tegra124-dfll.txt        |   8 +-
+ drivers/clk/tegra/clk-dfll.c                       | 399 +++++++++++++++------
+ 2 files changed, 299 insertions(+), 108 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt b/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt
-new file mode 100644
-index 0000000..bd0d247
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt
-@@ -0,0 +1,48 @@
-+Tegra SoC DFLL PWM controller
-+
-+Required properties:
-+- compatible: For Tegra210, must contain "nvidia,tegra210-dfll-pwm".
-+- reg: physical base address and length of the controller's registers
-+- #pwm-cells: should be 2. See pwm.txt in this directory for a description of
-+  the cells format.
-+- clock-names: Must include the "ref" entry.
-+- clocks: Must contain one entry, for the DFLL closed loop reference clock.
-+  See ../clocks/clock-bindings.txt for details.
-+- pwm-regulator: phandle to PWM regulator for using this PWM controller.
-+- pinctrl-names: Must contain two entries to enable and disable PWM signals
-+  output pinmux states.
-+- pinctrl-0: pinmux state to enable PWM signals output
-+- pinctrl-1: pinmux state to disable PWM signals output
-+
-+Example:
-+
-+	pinmux: pinmux@700008d4 {
-+		dvfs_pwm_active_state: dvfs_pwm_active {
-+			dvfs_pwm_pbb1 {
-+				nvidia,pins = "dvfs_pwm_pbb1";
-+				nvidia,tristate = <TEGRA_PIN_DISABLE>;
-+			};
-+		};
-+
-+		dvfs_pwm_inactive_state: dvfs_pwm_inactive {
-+			dvfs_pwm_pbb1 {
-+				nvidia,pins = "dvfs_pwm_pbb1";
-+				nvidia,tristate = <TEGRA_PIN_ENABLE>;
-+			};
-+		};
-+	};
-+
-+	pwm_dfll: pwm@70110000 {
-+		compatible = "nvidia,tegra210-dfll-pwm";
-+		reg = <0x0 0x70110000 0x0 0x400>;
-+		clocks = <&tegra_car TEGRA210_CLK_DFLL_REF>;
-+		clock-names = "ref";
-+		#pwm-cells = <2>;
-+		pwm-regulator = <&cpu_ovr_reg>;
-+
-+		pinctrl-names = "dvfs_pwm_enable", "dvfs_pwm_disable";
-+		pinctrl-0 = <&dvfs_pwm_active_state>;
-+		pinctrl-1 = <&dvfs_pwm_inactive_state>;
-+
-+		status = "okay";
-+	};
-diff --git a/drivers/pwm/Kconfig b/drivers/pwm/Kconfig
-index c182efc..dd67cad 100644
---- a/drivers/pwm/Kconfig
-+++ b/drivers/pwm/Kconfig
-@@ -382,6 +382,16 @@ config PWM_TEGRA
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called pwm-tegra.
+diff --git a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+index 42a1fe6..a3e350e 100644
+--- a/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
++++ b/Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+@@ -8,7 +8,6 @@ the fast CPU cluster. It consists of a free-running voltage controlled
+ oscillator connected to the CPU voltage rail (VDD_CPU), and a closed loop
+ control module that will automatically adjust the VDD_CPU voltage by
+ communicating with an off-chip PMIC either via an I2C bus or via PWM signals.
+-Currently only the I2C mode is supported by these bindings.
  
-+config PWM_TEGRA_DFLL
-+	tristate "NVIDIA Tegra DFLL PWM support"
-+	depends on ARCH_TEGRA
-+	help
-+	  PWM driver support for the Tegra DFLL module found on NVIDIA
-+	  Tegra SoCs.
+ Required properties:
+ - compatible : should be one of following:
+@@ -36,6 +35,10 @@ Required properties:
+   hardware will start controlling. The regulator will be queried for
+   the I2C register, control values and supported voltages.
+ 
++Optional properties:
++- nvidia,pwm-to-pmic: Specify DFLL PMU interface as PWM. If the property
++  is not defined, default PMU interface is I2C.
 +
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called pwm-tegra-dfll.
+ Reguired properties for build voltage table:
+ - nvidia,align-step-uv: Step uV of regulator for CPU voltage rail. This
+   value will be applied when building frequency-voltage table to ensure
+@@ -58,6 +61,9 @@ Optional properties for the control loop parameters:
+ Required properties for I2C mode:
+ - nvidia,i2c-fs-rate: I2C transfer rate, if using full speed mode.
+ 
++Required properties for PWM mode:
++- nvidia,init-uv: Initialized CPU voltage before DFLL is not ready yet.
 +
- config  PWM_TIECAP
- 	tristate "ECAP PWM support"
- 	depends on ARCH_OMAP2PLUS || ARCH_DAVINCI_DA8XX
-diff --git a/drivers/pwm/Makefile b/drivers/pwm/Makefile
-index dd35bc1..22414cb 100644
---- a/drivers/pwm/Makefile
-+++ b/drivers/pwm/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_PWM_SPEAR)		+= pwm-spear.o
- obj-$(CONFIG_PWM_STI)		+= pwm-sti.o
- obj-$(CONFIG_PWM_SUN4I)		+= pwm-sun4i.o
- obj-$(CONFIG_PWM_TEGRA)		+= pwm-tegra.o
-+obj-$(CONFIG_PWM_TEGRA_DFLL)	+= pwm-tegra-dfll.o
- obj-$(CONFIG_PWM_TIECAP)	+= pwm-tiecap.o
- obj-$(CONFIG_PWM_TIEHRPWM)	+= pwm-tiehrpwm.o
- obj-$(CONFIG_PWM_TIPWMSS)	+= pwm-tipwmss.o
-diff --git a/drivers/pwm/pwm-tegra-dfll.c b/drivers/pwm/pwm-tegra-dfll.c
-new file mode 100644
-index 0000000..74d6b97
---- /dev/null
-+++ b/drivers/pwm/pwm-tegra-dfll.c
-@@ -0,0 +1,322 @@
-+/*
-+ * drivers/pwm/pwm-tegra-dfll.c
-+ *
-+ * Tegra DFLL PWM controller driver
-+ *
-+ * Copyright (c) 2016, NVIDIA Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/pwm.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/pinctrl/consumer.h>
+ Example:
+ 
+ clock@0,70110000 {
+diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
+index a279467..56829c6 100644
+--- a/drivers/clk/tegra/clk-dfll.c
++++ b/drivers/clk/tegra/clk-dfll.c
+@@ -53,6 +53,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/reset.h>
+ #include <linux/seq_file.h>
 +#include <soc/tegra/pwm-tegra-dfll.h>
-+
-+/* DFLL_CTRL: DFLL control register */
-+#define DFLL_CTRL			0x00
-+
-+/* DFLL_OUTPUT_CFG: closed loop mode control registers */
-+#define DFLL_OUTPUT_CFG			0x20
-+#define OUT_MASK			0x3f
-+#define DFLL_OUTPUT_CFG_PWM_DELTA	(0x1 << 7)
-+#define DFLL_OUTPUT_CFG_PWM_ENABLE	(0x1 << 6)
-+#define DFLL_OUTPUT_CFG_PWM_DIV_SHIFT	0
-+#define DFLL_OUTPUT_CFG_PWM_DIV_MASK	\
-+		(OUT_MASK << DFLL_OUTPUT_CFG_PWM_DIV_SHIFT)
-+
-+/* MAX_DFLL_VOLTAGES: number of LUT entries in the DFLL IP block */
-+#define DFLL_MAX_VOLTAGES		33
-+
-+#define DFLL_OF_PWM_PERIOD_CELL		1
-+
-+/**
-+ * struct tegra_dfll_pwm_chip - DFLL PWM controller data
-+ * @pwm_pin: pinmux for PWM signals output
-+ * @pwm_enable_state: enabled states of pinmux for PWM signals output
-+ * @pwm_disable_state: disabled states of pinmux for PWM signals output
-+ * @mmio_base: mmio base for access DFLL registers
-+ * @ref_clk: referenced source clock
-+ * @pwm_rate: PWM rate for DFLL PWM output config register
-+ */
-+struct tegra_dfll_pwm_chip {
-+	struct pwm_chip		chip;
-+	struct device		*dev;
-+
-+	struct pinctrl		*pwm_pin;
-+	struct pinctrl_state	*pwm_enable_state;
-+	struct pinctrl_state	*pwm_disable_state;
-+
-+	void __iomem		*mmio_base;
-+	struct clk		*ref_clk;
-+
-+	unsigned long		ref_rate;
-+	unsigned long		pwm_rate;
+ 
+ #include "clk-dfll.h"
+ 
+@@ -242,6 +243,11 @@ enum dfll_tune_range {
+ 	DFLL_TUNE_LOW = 1,
+ };
+ 
++enum tegra_dfll_pmu_if {
++	TEGRA_DFLL_PMU_I2C = 0,
++	TEGRA_DFLL_PMU_PWM = 1,
 +};
 +
-+static struct tegra_dfll_pwm_chip *tdpc;
+ /**
+  * struct dfll_rate_req - target DFLL rate request data
+  * @rate: target frequency, after the postscaling
+@@ -293,6 +299,7 @@ struct tegra_dfll {
+ 	u32				ci;
+ 	u32				cg;
+ 	bool				cg_scale;
++	u32				reg_init_uV;
+ 
+ 	/* I2C interface parameters */
+ 	u32				i2c_fs_rate;
+@@ -300,9 +307,12 @@ struct tegra_dfll {
+ 	u32				i2c_slave_addr;
+ 
+ 	/* i2c_lut array entries are regulator framework selectors */
+-	unsigned			i2c_lut[MAX_DFLL_VOLTAGES];
+-	int				i2c_lut_size;
++	unsigned			lut[MAX_DFLL_VOLTAGES];
++	int				lut_size;
+ 	u8				lut_min, lut_max, lut_safe;
 +
++	/* PWM interface */
++	enum tegra_dfll_pmu_if		pmu_if;
+ };
+ 
+ #define clk_hw_to_dfll(_hw) container_of(_hw, struct tegra_dfll, dfll_clk_hw)
+@@ -326,7 +336,6 @@ static inline u32 dfll_readl(struct tegra_dfll *td, u32 offs)
+ 
+ static inline void dfll_writel(struct tegra_dfll *td, u32 val, u32 offs)
+ {
+-	WARN_ON(offs >= DFLL_I2C_CFG);
+ 	__raw_writel(val, td->base + offs);
+ }
+ 
+@@ -538,7 +547,7 @@ static void dfll_load_i2c_lut(struct tegra_dfll *td)
+ 			lut_index = i;
+ 
+ 		val = regulator_list_hardware_vsel(td->vdd_reg,
+-						     td->i2c_lut[lut_index]);
++						     td->lut[lut_index]);
+ 		__raw_writel(val, td->lut_base + i * 4);
+ 	}
+ 
+@@ -581,36 +590,135 @@ static void dfll_init_i2c_if(struct tegra_dfll *td)
+ 	dfll_i2c_wmb(td);
+ }
+ 
 +/*
-+ * Register accessors
++ * DFLL-to-PWM controller interface
 + */
-+static inline u32 pwm_readl(u32 offs)
++
+ /**
+- * dfll_init_out_if - prepare DFLL-to-PMIC interface
++ * dfll_set_force_output_value - set fixed value for force output
+  * @td: DFLL instance
++ * @out_val: value to force output
+  *
+- * During DFLL driver initialization or resume from context loss,
+- * disable the I2C command output to the PMIC, set safe voltage and
+- * output limits, and disable and clear limit interrupts.
++ * Set the fixec value for force output, DFLL will output this value when
++ * force output is enabled.
+  */
+-static void dfll_init_out_if(struct tegra_dfll *td)
++static u32 dfll_set_force_output_value(struct tegra_dfll *td, u8 out_val)
 +{
-+	return __raw_readl(tdpc->mmio_base + offs);
++	u32 val = dfll_readl(td, DFLL_OUTPUT_FORCE);
++
++	val |= (val & DFLL_OUTPUT_FORCE_ENABLE) | (out_val & OUT_MASK);
++	dfll_writel(td, val, DFLL_OUTPUT_FORCE);
++	dfll_wmb(td);
++
++	return dfll_readl(td, DFLL_OUTPUT_FORCE);
 +}
 +
-+static inline void pwm_writel(u32 val, u32 offs)
++/**
++ * dfll_set_force_output_enabled - enable/disable force output
++ * @td: DFLL instance
++ * @enable: whether to enable or disable the force output
++ *
++ * Set the enable control for fouce output with fixed value.
++ */
++static void dfll_set_force_output_enabled(struct tegra_dfll *td, bool enable)
 +{
-+	__raw_writel(val, tdpc->mmio_base + offs);
-+	pwm_readl(DFLL_CTRL);
++	u32 val = dfll_readl(td, DFLL_OUTPUT_FORCE);
++
++	if (enable)
++		val |= DFLL_OUTPUT_FORCE_ENABLE;
++	else
++		val &= ~DFLL_OUTPUT_FORCE_ENABLE;
++
++	dfll_writel(td, val, DFLL_OUTPUT_FORCE);
++	dfll_wmb(td);
 +}
 +
-+static int tegra_dfll_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
-+				int duty_ns, int period_ns)
-+{
-+	return 0;
-+}
-+
-+static int tegra_dfll_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
-+{
-+	u32 val;
-+
-+	val = pwm_readl(DFLL_OUTPUT_CFG);
-+	val |= DFLL_OUTPUT_CFG_PWM_ENABLE;
-+	pwm_writel(val, DFLL_OUTPUT_CFG);
-+
-+	dev_info(tdpc->dev, "DFLL_PWM is enabled\n");
-+
-+	return 0;
-+}
-+
-+static void tegra_dfll_pwm_disable(struct pwm_chip *chip,
-+				   struct pwm_device *pwm)
-+{
-+	u32 val;
-+
-+	val = pwm_readl(DFLL_OUTPUT_CFG);
-+	val &= ~DFLL_OUTPUT_CFG_PWM_ENABLE;
-+	pwm_writel(val, DFLL_OUTPUT_CFG);
-+
-+	dev_info(tdpc->dev, "DFLL_PWM is disabled\n");
-+
++/**
++ * dfll_i2c_set_output_enabled - enable/disable I2C PMIC voltage requests
++ * @td: DFLL instance
++ * @enable: whether to enable or disable the I2C voltage requests
++ *
++ * Set the master enable control for I2C control value updates. If disabled,
++ * then I2C control messages are inhibited, regardless of the DFLL mode.
++ */
++static int dfll_force_output(struct tegra_dfll *td, unsigned int out_sel)
+ {
+ 	u32 val;
+ 
+-	td->lut_min = 0;
+-	td->lut_max = td->i2c_lut_size - 1;
+-	td->lut_safe = td->lut_min + 1;
++	if (out_sel > OUT_MASK)
++		return -EINVAL;
+ 
+-	dfll_i2c_writel(td, 0, DFLL_OUTPUT_CFG);
+-	val = (td->lut_safe << DFLL_OUTPUT_CFG_SAFE_SHIFT) |
+-		(td->lut_max << DFLL_OUTPUT_CFG_MAX_SHIFT) |
+-		(td->lut_min << DFLL_OUTPUT_CFG_MIN_SHIFT);
+-	dfll_i2c_writel(td, val, DFLL_OUTPUT_CFG);
+-	dfll_i2c_wmb(td);
++	val = dfll_set_force_output_value(td, out_sel);
++	if ((td->mode < DFLL_CLOSED_LOOP) &&
++	    !(val & DFLL_OUTPUT_FORCE_ENABLE)) {
++		dfll_set_force_output_enabled(td, true);
++	}
+ 
+-	dfll_writel(td, 0, DFLL_OUTPUT_FORCE);
+-	dfll_i2c_writel(td, 0, DFLL_INTR_EN);
+-	dfll_i2c_writel(td, DFLL_INTR_MAX_MASK | DFLL_INTR_MIN_MASK,
+-			DFLL_INTR_STS);
 +	return 0;
 +}
 +
 +/**
-+ * tegra_dfll_pwm_output_enable - enable DFLL PWM signals output
++ * dfll_init_out_if - prepare DFLL-to-PMIC interface
++ * @td: DFLL instance
 + *
-+ * Enable DFLL PWM signals output by changing related pinmux state
++ * During DFLL driver initialization or resume from context loss,
++ * it needs to set safe voltage and output limits, and disable and
++ * clear limit interrupts. For PWM interface, it needs to set
++ * initial voltage for force output to avoid CPU voltage glitch
++ * during DFLL is from open to closed loop transition.
 + */
-+int tegra_dfll_pwm_output_enable(void)
++static void dfll_init_out_if(struct tegra_dfll *td)
 +{
-+	int ret;
++	u32 val = 0;
+ 
+-	dfll_load_i2c_lut(td);
+-	dfll_init_i2c_if(td);
++	if (td->pmu_if == TEGRA_DFLL_PMU_PWM) {
++		int vinit = td->reg_init_uV;
++		int vstep = td->soc->alignment;
++		int vmin = regulator_list_voltage(td->vdd_reg, 0);
 +
-+	ret = pinctrl_select_state(tdpc->pwm_pin, tdpc->pwm_enable_state);
-+	if (ret < 0) {
-+		dev_err(tdpc->dev, "setting enable state failed\n");
-+		return -EINVAL;
++		td->lut_min = td->lut[0];
++		td->lut_max = td->lut[td->lut_size - 1];
++		td->lut_safe = td->lut_min + 1;
++
++		val = dfll_readl(td, DFLL_OUTPUT_CFG);
++		val |= (td->lut_safe << DFLL_OUTPUT_CFG_SAFE_SHIFT) |
++		       (td->lut_max << DFLL_OUTPUT_CFG_MAX_SHIFT) |
++		       (td->lut_min << DFLL_OUTPUT_CFG_MIN_SHIFT);
++		dfll_writel(td, val, DFLL_OUTPUT_CFG);
++		dfll_wmb(td);
++
++		dfll_writel(td, 0, DFLL_OUTPUT_FORCE);
++		dfll_writel(td, 0, DFLL_INTR_EN);
++		dfll_writel(td, DFLL_INTR_MAX_MASK | DFLL_INTR_MIN_MASK,
++				DFLL_INTR_STS);
++
++		/* set initial voltage */
++		if ((vinit >= vmin) && vstep) {
++			unsigned int vsel;
++
++			vsel = DIV_ROUND_UP((vinit - vmin), vstep);
++			dfll_force_output(td, vsel);
++		}
++	} else {
++		td->lut_min = 0;
++		td->lut_max = td->lut_size - 1;
++		td->lut_safe = td->lut_min + 1;
++
++		dfll_i2c_writel(td, 0, DFLL_OUTPUT_CFG);
++		val |= (td->lut_safe << DFLL_OUTPUT_CFG_SAFE_SHIFT) |
++		       (td->lut_max << DFLL_OUTPUT_CFG_MAX_SHIFT) |
++		       (td->lut_min << DFLL_OUTPUT_CFG_MIN_SHIFT);
++		dfll_i2c_writel(td, val, DFLL_OUTPUT_CFG);
++		dfll_i2c_wmb(td);
++
++		dfll_i2c_writel(td, 0, DFLL_OUTPUT_FORCE);
++		dfll_i2c_writel(td, 0, DFLL_INTR_EN);
++		dfll_i2c_writel(td, DFLL_INTR_MAX_MASK | DFLL_INTR_MIN_MASK,
++				DFLL_INTR_STS);
++
++		dfll_load_i2c_lut(td);
++		dfll_init_i2c_if(td);
 +	}
+ }
+ 
+ /*
+@@ -643,9 +751,9 @@ static int find_lut_index_for_rate(struct tegra_dfll *td, unsigned long rate)
+ 
+ 	rcu_read_unlock();
+ 
+-	for (i = 0; i < td->i2c_lut_size; i++) {
+-		if ((regulator_list_voltage(td->vdd_reg, td->i2c_lut[i]) /
+-				td->soc->alignment) == align_volt)
++	for (i = 0; i < td->lut_size; i++) {
++		if ((regulator_list_voltage(td->vdd_reg, td->lut[i]) /
++					td->soc->alignment) == align_volt)
+ 			return i;
+ 	}
+ 
+@@ -723,7 +831,12 @@ static void dfll_set_frequency_request(struct tegra_dfll *td,
+ 	int force_val;
+ 	int coef = 128; /* FIXME: td->cg_scale? */;
+ 
+-	force_val = (req->lut_index - td->lut_safe) * coef / td->cg;
++	if (td->pmu_if == TEGRA_DFLL_PMU_PWM)
++		force_val = td->lut[req->lut_index] - td->lut[td->lut_safe];
++	else
++		force_val = req->lut_index - td->lut_safe;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL(tegra_dfll_pwm_output_enable);
++	force_val = force_val * coef / td->cg;
+ 	force_val = clamp(force_val, FORCE_MIN, FORCE_MAX);
+ 
+ 	val |= req->mult_bits << DFLL_FREQ_REQ_MULT_SHIFT;
+@@ -867,9 +980,14 @@ static int dfll_lock(struct tegra_dfll *td)
+ 			return -EINVAL;
+ 		}
+ 
+-		dfll_i2c_set_output_enabled(td, true);
++		if (td->pmu_if == TEGRA_DFLL_PMU_PWM)
++			tegra_dfll_pwm_output_enable();
++		else
++			dfll_i2c_set_output_enabled(td, true);
 +
+ 		dfll_set_mode(td, DFLL_CLOSED_LOOP);
+ 		dfll_set_frequency_request(td, req);
++		dfll_set_force_output_enabled(td, false);
+ 		return 0;
+ 
+ 	default:
+@@ -889,11 +1007,17 @@ static int dfll_lock(struct tegra_dfll *td)
+  */
+ static int dfll_unlock(struct tegra_dfll *td)
+ {
++
+ 	switch (td->mode) {
+ 	case DFLL_CLOSED_LOOP:
+ 		dfll_set_open_loop_config(td);
+ 		dfll_set_mode(td, DFLL_OPEN_LOOP);
+-		dfll_i2c_set_output_enabled(td, false);
++
++		if (td->pmu_if == TEGRA_DFLL_PMU_PWM)
++			tegra_dfll_pwm_output_disable();
++		else
++			dfll_i2c_set_output_enabled(td, false);
++
+ 		return 0;
+ 
+ 	case DFLL_OPEN_LOOP:
+@@ -1160,7 +1284,8 @@ static int attr_registers_show(struct seq_file *s, void *data)
+ 
+ 	seq_puts(s, "CONTROL REGISTERS:\n");
+ 	for (offs = 0; offs <= DFLL_MONITOR_DATA; offs += 4) {
+-		if (offs == DFLL_OUTPUT_CFG)
++		if (td->pmu_if == TEGRA_DFLL_PMU_I2C &&
++		    offs == DFLL_OUTPUT_CFG)
+ 			val = dfll_i2c_readl(td, offs);
+ 		else
+ 			val = dfll_readl(td, offs);
+@@ -1168,22 +1293,33 @@ static int attr_registers_show(struct seq_file *s, void *data)
+ 	}
+ 
+ 	seq_puts(s, "\nI2C and INTR REGISTERS:\n");
+-	for (offs = DFLL_I2C_CFG; offs <= DFLL_I2C_STS; offs += 4)
+-		seq_printf(s, "[0x%02x] = 0x%08x\n", offs,
+-			   dfll_i2c_readl(td, offs));
+-	for (offs = DFLL_INTR_STS; offs <= DFLL_INTR_EN; offs += 4)
+-		seq_printf(s, "[0x%02x] = 0x%08x\n", offs,
+-			   dfll_i2c_readl(td, offs));
++	for (offs = DFLL_I2C_CFG; offs <= DFLL_I2C_STS; offs += 4) {
++		if (td->pmu_if == TEGRA_DFLL_PMU_I2C)
++			val = dfll_i2c_readl(td, offs);
++		else
++			val = dfll_readl(td, offs);
+ 
+-	seq_puts(s, "\nINTEGRATED I2C CONTROLLER REGISTERS:\n");
+-	offs = DFLL_I2C_CLK_DIVISOR;
+-	seq_printf(s, "[0x%02x] = 0x%08x\n", offs,
+-		   __raw_readl(td->i2c_controller_base + offs));
++		seq_printf(s, "[0x%02x] = 0x%08x\n", offs, val);
++	}
++	for (offs = DFLL_INTR_STS; offs <= DFLL_INTR_EN; offs += 4) {
++		if (td->pmu_if == TEGRA_DFLL_PMU_I2C)
++			val = dfll_i2c_readl(td, offs);
++		else
++			val = dfll_readl(td, offs);
++		seq_printf(s, "[0x%02x] = 0x%08x\n", offs, val);
++	}
+ 
+-	seq_puts(s, "\nLUT:\n");
+-	for (offs = 0; offs <  4 * MAX_DFLL_VOLTAGES; offs += 4)
++	if (td->pmu_if == TEGRA_DFLL_PMU_I2C) {
++		seq_puts(s, "\nINTEGRATED I2C CONTROLLER REGISTERS:\n");
++		offs = DFLL_I2C_CLK_DIVISOR;
+ 		seq_printf(s, "[0x%02x] = 0x%08x\n", offs,
+-			   __raw_readl(td->lut_base + offs));
++			   __raw_readl(td->i2c_controller_base + offs));
++
++		seq_puts(s, "\nLUT:\n");
++		for (offs = 0; offs <  4 * MAX_DFLL_VOLTAGES; offs += 4)
++			seq_printf(s, "[0x%02x] = 0x%08x\n", offs,
++				   __raw_readl(td->lut_base + offs));
++	}
+ 
+ 	return 0;
+ }
+@@ -1385,9 +1521,11 @@ static int find_vdd_map_entry_exact(struct tegra_dfll *td, int uV)
+ 
+ 	align_volt = uV / td->soc->alignment;
+ 	n_voltages = regulator_count_voltages(td->vdd_reg);
++
+ 	for (i = 0; i < n_voltages; i++) {
+ 		reg_volt = regulator_list_voltage(td->vdd_reg, i) /
+ 					td->soc->alignment;
++
+ 		if (reg_volt < 0)
+ 			break;
+ 
+@@ -1409,9 +1547,11 @@ static int find_vdd_map_entry_min(struct tegra_dfll *td, int uV)
+ 
+ 	align_volt = uV / td->soc->alignment;
+ 	n_voltages = regulator_count_voltages(td->vdd_reg);
++
+ 	for (i = 0; i < n_voltages; i++) {
+ 		reg_volt = regulator_list_voltage(td->vdd_reg, i) /
+ 					td->soc->alignment;
++
+ 		if (reg_volt < 0)
+ 			break;
+ 
+@@ -1424,7 +1564,7 @@ static int find_vdd_map_entry_min(struct tegra_dfll *td, int uV)
+ }
+ 
+ /**
+- * dfll_build_i2c_lut - build the I2C voltage register lookup table
++ * dfll_build_lut - build the I2C and PWM voltage register lookup table
+  * @td: DFLL instance
+  *
+  * The DFLL hardware has 33 bytes of look-up table RAM that must be filled with
+@@ -1433,12 +1573,12 @@ static int find_vdd_map_entry_min(struct tegra_dfll *td, int uV)
+  * the soc-specific platform driver (td->soc->opp_dev) and the PMIC
+  * register-to-voltage mapping queried from the regulator framework.
+  *
+- * On success, fills in td->i2c_lut and returns 0, or -err on failure.
++ * On success, fills in td->lut and returns 0, or -err on failure.
+  */
+-static int dfll_build_i2c_lut(struct tegra_dfll *td)
++static int dfll_build_lut(struct tegra_dfll *td)
+ {
+ 	int ret = -EINVAL;
+-	int j, v, v_max, v_opp;
++	int j, v, v_max, v_opp, v_min_align;
+ 	int selector;
+ 	unsigned long rate;
+ 	struct dev_pm_opp *opp;
+@@ -1454,19 +1594,21 @@ static int dfll_build_i2c_lut(struct tegra_dfll *td)
+ 	}
+ 	v_max = dev_pm_opp_get_voltage(opp);
+ 
++	v_min_align = DIV_ROUND_UP(td->soc->min_millivolts * 1000,
++			td->soc->alignment) * td->soc->alignment;
++
+ 	v = td->soc->min_millivolts * 1000;
+ 	lut = find_vdd_map_entry_exact(td, v);
+ 	if (lut < 0)
+ 		goto out;
+-	td->i2c_lut[0] = lut;
++	td->lut[0] = lut;
+ 
+ 	for (j = 1, rate = 0; ; rate++) {
+ 		opp = dev_pm_opp_find_freq_ceil(td->soc->dev, &rate);
+ 		if (IS_ERR(opp))
+ 			break;
+ 		v_opp = dev_pm_opp_get_voltage(opp);
+-
+-		if (v_opp <= td->soc->min_millivolts * 1000)
++		if (v_opp <= v_min_align)
+ 			td->dvco_rate_min = dev_pm_opp_get_freq(opp);
+ 
+ 		for (;;) {
+@@ -1477,21 +1619,21 @@ static int dfll_build_i2c_lut(struct tegra_dfll *td)
+ 			selector = find_vdd_map_entry_min(td, v);
+ 			if (selector < 0)
+ 				goto out;
+-			if (selector != td->i2c_lut[j - 1])
+-				td->i2c_lut[j++] = selector;
++			if (selector != td->lut[j - 1])
++				td->lut[j++] = selector;
+ 		}
+ 
+ 		v = (j == MAX_DFLL_VOLTAGES - 1) ? v_max : v_opp;
+ 		selector = find_vdd_map_entry_exact(td, v);
+ 		if (selector < 0)
+ 			goto out;
+-		if (selector != td->i2c_lut[j - 1])
+-			td->i2c_lut[j++] = selector;
++		if (selector != td->lut[j - 1])
++			td->lut[j++] = selector;
+ 
+ 		if (v >= v_max)
+ 			break;
+ 	}
+-	td->i2c_lut_size = j;
++	td->lut_size = j;
+ 
+ 	if (!td->dvco_rate_min)
+ 		dev_err(td->dev, "no opp above DFLL minimum voltage %d mV\n",
+@@ -1563,12 +1705,6 @@ static int dfll_fetch_i2c_params(struct tegra_dfll *td)
+ 	}
+ 	td->i2c_reg = vsel_reg;
+ 
+-	ret = dfll_build_i2c_lut(td);
+-	if (ret) {
+-		dev_err(td->dev, "couldn't build I2C LUT\n");
+-		return ret;
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -1601,6 +1737,61 @@ static int dfll_fetch_common_params(struct tegra_dfll *td)
+ 	return ok ? 0 : -EINVAL;
+ }
+ 
 +/**
-+ * tegra_dfll_pwm_output_disable - disable DFLL PWM signals output
++ * dfll_dt_parse - read necessary parameters from the device tree
++ * @td: DFLL instance
 + *
-+ * Disable DFLL PWM signals output by changing related pinmux state
++ * Read necessary DT parameters based on I2C or PWM operation.
++ * Returns 0 on success or -EINVAL on any failure.
 + */
-+int tegra_dfll_pwm_output_disable(void)
++static int dfll_dt_parse(struct tegra_dfll *td)
 +{
 +	int ret;
++	struct device_node *dn = td->dev->of_node;
 +
-+	ret = pinctrl_select_state(tdpc->pwm_pin, tdpc->pwm_disable_state);
-+	if (ret < 0) {
-+		dev_err(tdpc->dev, "setting enable state failed\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(tegra_dfll_pwm_output_disable);
-+
-+static const struct pwm_ops tegra_dfll_pwm_ops = {
-+	.config = tegra_dfll_pwm_config,
-+	.enable = tegra_dfll_pwm_enable,
-+	.disable = tegra_dfll_pwm_disable,
-+	.owner = THIS_MODULE,
-+};
-+
-+/**
-+ * dt_parse_pwm_regulator - parse PWM regulator from device-tree
-+ *
-+ * Parse DFLL PWM controller client to get and calcluate initialized
-+ * DFLL PWM rate.
-+ */
-+static int dt_parse_pwm_regulator(void)
-+{
-+	struct device_node *r_dn =
-+		of_parse_phandle(tdpc->dev->of_node, "pwm-regulator", 0);
-+	struct of_phandle_args args;
-+	unsigned long val;
-+	int ret;
-+
-+	/* pwm regulator device */
-+	if (!r_dn) {
-+		dev_err(tdpc->dev, "DT: missing pwm-regulator property\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_parse_phandle_with_args(r_dn, "pwms", "#pwm-cells", 0, &args);
++	ret = dfll_fetch_common_params(td);
 +	if (ret) {
-+		dev_err(tdpc->dev, "DT: failed to parse pwms property\n");
-+		return -EINVAL;
-+	}
-+	of_node_put(args.np);
-+
-+	if (args.args_count <= DFLL_OF_PWM_PERIOD_CELL) {
-+		dev_err(tdpc->dev, "DT: low #pwm-cells %d\n", args.args_count);
-+		return -EINVAL;
-+	}
-+
-+	/* convert pwm period in ns to DFLL pwm rate in Hz */
-+	val = args.args[DFLL_OF_PWM_PERIOD_CELL];
-+	val = (NSEC_PER_SEC / val) * (DFLL_MAX_VOLTAGES - 1);
-+	tdpc->pwm_rate = val;
-+	dev_info(tdpc->dev, "DFLL pwm-rate: %lu\n", val);
-+
-+	return 0;
-+}
-+
-+/**
-+ * tegra_dfll_pwm_init - init Tegra DFLL PWM controller
-+ *
-+ * Calculate the DIV value and write into DFLL register
-+ */
-+static int tegra_dfll_pwm_init(void)
-+{
-+	u32 div, val;
-+
-+	pwm_writel(0, DFLL_OUTPUT_CFG);
-+
-+	div = DIV_ROUND_UP(tdpc->ref_rate, tdpc->pwm_rate);
-+	val = (div << DFLL_OUTPUT_CFG_PWM_DIV_SHIFT) &
-+	      DFLL_OUTPUT_CFG_PWM_DIV_MASK;
-+	pwm_writel(val, DFLL_OUTPUT_CFG);
-+
-+	return 0;
-+}
-+
-+static int tegra_dfll_pwm_probe(struct platform_device *pdev)
-+{
-+	struct resource *res;
-+	int ret;
-+
-+	tdpc = devm_kzalloc(&pdev->dev, sizeof(*tdpc), GFP_KERNEL);
-+	if (!tdpc)
-+		return -ENOMEM;
-+
-+	tdpc->dev = &pdev->dev;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	tdpc->mmio_base = devm_ioremap_resource(tdpc->dev, res);
-+	if (IS_ERR(tdpc->mmio_base))
-+		return PTR_ERR(tdpc->mmio_base);
-+
-+	platform_set_drvdata(pdev, tdpc);
-+
-+	tdpc->chip.dev = tdpc->dev;
-+	tdpc->chip.ops = &tegra_dfll_pwm_ops;
-+	tdpc->chip.base = -1;
-+	tdpc->chip.npwm = 1;
-+
-+	ret = pwmchip_add(&tdpc->chip);
-+	if (ret < 0) {
-+		dev_err(tdpc->dev, "pwmchip_add() failed: %d\n", ret);
++		dev_err(td->dev, "couldn't parse device tree parameters\n");
 +		return ret;
 +	}
 +
-+	tdpc->ref_clk = devm_clk_get(tdpc->dev, "ref");
-+	if (IS_ERR(tdpc->ref_clk)) {
-+		dev_err(tdpc->dev, "DT: missing ref clock\n");
-+		return PTR_ERR(tdpc->ref_clk);
++	td->vdd_reg = devm_regulator_get(td->dev, "vdd-cpu");
++	if (IS_ERR(td->vdd_reg)) {
++		dev_err(td->dev, "couldn't get vdd_cpu regulator\n");
++		return PTR_ERR(td->vdd_reg);
 +	}
 +
-+	tdpc->ref_rate = clk_get_rate(tdpc->ref_clk);
++	/* I2C or PWM interface */
++	if (of_property_read_bool(dn, "nvidia,pwm-to-pmic")) {
++		td->pmu_if = TEGRA_DFLL_PMU_PWM;
++		dev_info(td->dev, "config PMU interface as PWM\n");
 +
-+	tdpc->pwm_pin = devm_pinctrl_get(tdpc->dev);
-+	if (IS_ERR(tdpc->pwm_pin)) {
-+		dev_err(tdpc->dev, "DT: missing pinctrl device\n");
-+		return PTR_ERR(tdpc->pwm_pin);
++		ret = of_property_read_u32(dn, "nvidia,init-uv",
++					&td->reg_init_uV);
++		if (ret) {
++			dev_err(td->dev, "couldn't get initialized voltage\n");
++			return ret;
++		}
++	} else {
++		td->pmu_if = TEGRA_DFLL_PMU_I2C;
++		dev_info(td->dev, "config PMU interface as I2C\n");
++
++		ret = dfll_fetch_i2c_params(td);
++		if (ret) {
++			dev_err(td->dev, "couldn't get I2C parameters\n");
++			return ret;
++		}
 +	}
 +
-+	tdpc->pwm_enable_state = pinctrl_lookup_state(tdpc->pwm_pin,
-+						"dvfs_pwm_enable");
-+	if (IS_ERR(tdpc->pwm_enable_state)) {
-+		dev_err(tdpc->dev, "DT: missing pwm enabled state\n");
-+		return PTR_ERR(tdpc->pwm_enable_state);
-+	}
-+
-+	tdpc->pwm_disable_state = pinctrl_lookup_state(tdpc->pwm_pin,
-+						"dvfs_pwm_disable");
-+	if (IS_ERR(tdpc->pwm_disable_state)) {
-+		dev_err(tdpc->dev, "DT: missing pwm disabled state\n");
-+		return PTR_ERR(tdpc->pwm_disable_state);
-+	}
-+
-+	ret = dt_parse_pwm_regulator();
-+	if (ret < 0) {
-+		dev_err(tdpc->dev, "failed to parse pwm regulator\n");
-+		return ret;
-+	}
-+
-+	ret = tegra_dfll_pwm_init();
-+	if (ret < 0) {
-+		dev_err(tdpc->dev, "failed to init DFLL pwm\n");
++	ret = dfll_build_lut(td);
++	if (ret) {
++		dev_err(td->dev, "couldn't build LUT\n");
 +		return ret;
 +	}
 +
 +	return 0;
 +}
 +
-+static int tegra_dfll_pwm_remove(struct platform_device *pdev)
-+{
-+	return pwmchip_remove(&tdpc->chip);
-+}
-+
-+static const struct of_device_id tegra_dfll_pwm_of_match[] = {
-+	{ .compatible = "nvidia,tegra210-dfll-pwm" },
-+	{ }
-+};
-+
-+MODULE_DEVICE_TABLE(of, tegra_dfll_pwm_of_match);
-+
-+static struct platform_driver tegra_dfll_pwm_driver = {
-+	.driver = {
-+		.name = "tegra-dfll-pwm",
-+		.of_match_table = tegra_dfll_pwm_of_match,
-+	},
-+	.probe = tegra_dfll_pwm_probe,
-+	.remove = tegra_dfll_pwm_remove,
-+};
-+
-+module_platform_driver(tegra_dfll_pwm_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("NVIDIA Corporation");
-+MODULE_ALIAS("platform:tegra-dfll-pwm");
-diff --git a/include/soc/tegra/pwm-tegra-dfll.h b/include/soc/tegra/pwm-tegra-dfll.h
-new file mode 100644
-index 0000000..d34c6e8
---- /dev/null
-+++ b/include/soc/tegra/pwm-tegra-dfll.h
-@@ -0,0 +1,27 @@
-+/*
-+ * Copyright (C) 2016 NVIDIA Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __SOC_TEGRA_PWM_TEGRA_DFLL_H__
-+#define __SOC_TEGRA_PWM_TEGRA_DFLL_H__
-+
-+#ifdef CONFIG_PWM_TEGRA_DFLL
-+int tegra_dfll_pwm_output_enable(void);
-+int tegra_dfll_pwm_output_disable(void);
-+#else
-+static inline int tegra_dfll_pwm_output_enable(void)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static inline int tegra_dfll_pwm_output_disable(void)
-+{
-+	return -ENOTSUPP;
-+}
-+#endif
-+
-+#endif /* __SOC_TEGRA_PWM_TEGRA_DFLL_H__ */
+ /*
+  * API exported to per-SoC platform drivers
+  */
+@@ -1634,10 +1825,10 @@ int tegra_dfll_register(struct platform_device *pdev,
+ 
+ 	td->soc = soc;
+ 
+-	td->vdd_reg = devm_regulator_get(td->dev, "vdd-cpu");
+-	if (IS_ERR(td->vdd_reg)) {
+-		dev_err(td->dev, "couldn't get vdd_cpu regulator\n");
+-		return PTR_ERR(td->vdd_reg);
++	ret = dfll_dt_parse(td);
++	if (ret) {
++		dev_err(td->dev, "parse device-tree failed\n");
++		return ret;
+ 	}
+ 
+ 	td->dvco_rst = devm_reset_control_get(td->dev, "dvco");
+@@ -1646,16 +1837,6 @@ int tegra_dfll_register(struct platform_device *pdev,
+ 		return PTR_ERR(td->dvco_rst);
+ 	}
+ 
+-	ret = dfll_fetch_common_params(td);
+-	if (ret) {
+-		dev_err(td->dev, "couldn't parse device tree parameters\n");
+-		return ret;
+-	}
+-
+-	ret = dfll_fetch_i2c_params(td);
+-	if (ret)
+-		return ret;
+-
+ 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!mem) {
+ 		dev_err(td->dev, "no control register resource\n");
+@@ -1668,43 +1849,47 @@ int tegra_dfll_register(struct platform_device *pdev,
+ 		return -ENODEV;
+ 	}
+ 
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+-	if (!mem) {
+-		dev_err(td->dev, "no i2c_base resource\n");
+-		return -ENODEV;
+-	}
++	if (td->pmu_if == TEGRA_DFLL_PMU_I2C) {
++		mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++		if (!mem) {
++			dev_err(td->dev, "no i2c_base resource\n");
++			return -ENODEV;
++		}
+ 
+-	td->i2c_base = devm_ioremap(td->dev, mem->start, resource_size(mem));
+-	if (!td->i2c_base) {
+-		dev_err(td->dev, "couldn't ioremap i2c_base resource\n");
+-		return -ENODEV;
+-	}
++		td->i2c_base = devm_ioremap(td->dev, mem->start,
++					resource_size(mem));
++		if (!td->i2c_base) {
++			dev_err(td->dev, "couldn't ioremap i2c_base resource\n");
++			return -ENODEV;
++		}
+ 
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+-	if (!mem) {
+-		dev_err(td->dev, "no i2c_controller_base resource\n");
+-		return -ENODEV;
+-	}
++		mem = platform_get_resource(pdev, IORESOURCE_MEM, 2);
++		if (!mem) {
++			dev_err(td->dev, "no i2c_controller_base resource\n");
++			return -ENODEV;
++		}
+ 
+-	td->i2c_controller_base = devm_ioremap(td->dev, mem->start,
++		td->i2c_controller_base = devm_ioremap(td->dev, mem->start,
+ 					       resource_size(mem));
+-	if (!td->i2c_controller_base) {
+-		dev_err(td->dev,
+-			"couldn't ioremap i2c_controller_base resource\n");
+-		return -ENODEV;
+-	}
++		if (!td->i2c_controller_base) {
++			dev_err(td->dev,
++				"couldn't ioremap i2c_controller_base resource\n");
++			return -ENODEV;
++		}
+ 
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 3);
+-	if (!mem) {
+-		dev_err(td->dev, "no lut_base resource\n");
+-		return -ENODEV;
+-	}
++		mem = platform_get_resource(pdev, IORESOURCE_MEM, 3);
++		if (!mem) {
++			dev_err(td->dev, "no lut_base resource\n");
++			return -ENODEV;
++		}
+ 
+-	td->lut_base = devm_ioremap(td->dev, mem->start, resource_size(mem));
+-	if (!td->lut_base) {
+-		dev_err(td->dev,
+-			"couldn't ioremap lut_base resource\n");
+-		return -ENODEV;
++		td->lut_base = devm_ioremap(td->dev, mem->start,
++					resource_size(mem));
++		if (!td->lut_base) {
++			dev_err(td->dev,
++				"couldn't ioremap lut_base resource\n");
++			return -ENODEV;
++		}
+ 	}
+ 
+ 	ret = dfll_init_clks(td);
 -- 
 2.8.1
