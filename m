@@ -1,62 +1,27 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Fri, 22 Apr 2016 14:37:35 +0200
-Message-ID: <10444945.SCLgHv361I@vostro.rjw.lan>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com> <CAJZ5v0hwmyPz8J2YFc-fS51BpBkh6+TrtnZ1WJRhbDzsdrbqGA@mail.gmail.com> <20160422091026.GG1725@lahna.fi.intel.com>
+Subject: Re: [PATCH] PM / OPP: -ENOSYS is applicable only to syscalls
+Date: Fri, 22 Apr 2016 14:42:31 +0200
+Message-ID: <60895590.AIt8jZZHh3@vostro.rjw.lan>
+References: <cover.1461228504.git.viresh.kumar@linaro.org> <a825b531b34b15615791f40610c151e3f1ce2fb4.1461294917.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47367 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49347 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751761AbcDVMem (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 08:34:42 -0400
-In-Reply-To: <20160422091026.GG1725@lahna.fi.intel.com>
+	by vger.kernel.org with SMTP id S1752524AbcDVMji (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 08:39:38 -0400
+In-Reply-To: <a825b531b34b15615791f40610c151e3f1ce2fb4.1461294917.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Lukas Wunner <lukas@wunner.de>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org
 
-On Friday, April 22, 2016 12:10:26 PM Mika Westerberg wrote:
-> On Fri, Apr 22, 2016 at 02:26:22AM +0200, Rafael J. Wysocki wrote:
-> > On Fri, Apr 22, 2016 at 1:25 AM, Andreas Noever
-> > <andreas.noever@gmail.com> wrote:
-> > > On Thu, Apr 21, 2016 at 9:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >> On Thursday, April 21, 2016 04:12:24 PM Mika Westerberg wrote:
-> > >>> On Wed, Apr 20, 2016 at 10:23:33PM +0200, Rafael J. Wysocki wrote:
-> > >>> > Breaking any systems that work today is not an option.  if that
-> > >>> > happens, the commit that has done that is a clear candidate for
-> > >>> > reverting.
-> > >>>
-> > >>> Understood, thanks.
-> > >>>
-> > >>> BTW, do you have any preference regarding the cut-off date?
-> > >>
-> > >> Some time around when machines with Windows 10 started to ship should be
-> > >> relatively safe.
-> > >>
-> > >> I guess we can just pick a reasonable date in the initial patch and then
-> > >> try to move it back to the past subsequently and see if that breaks things
-> > >> for anyone.
-> > >
-> > > Maybe add a boot option to overwrite the heuristic (in both
-> > > directions) to allow people to test this on older machines and
-> > > pinpoint breakage on newer machines?
-> > 
-> > Yes, a kernel command line override would be fine by me.
-> 
-> OK, so to summarize:
-> 
->  - Use cut-off date 2015 which is the year Windows 10 was released
-> 
->  - Add command line parameter that allows this to be overridden.
->    Something like:
-> 
-> 	pcie_port_pm=   [PCIE] PCIe port power management handling:
-> 		off     Disable power management off all PCIe ports
-> 		force   Forcibly enable power management of all PCIe ports
+On Friday, April 22, 2016 08:46:51 AM Viresh Kumar wrote:
+> Some of the routines have use -ENOSYS, which is supposed to be used only
+> for syscalls. Replace that with -EINVAL.
 
-Correct, unless Bjorn has a differing opinion.
+-EINVAL specifically means "invalid argument".
 
-Bjorn?
+What about using -ENXIO instead?
 
