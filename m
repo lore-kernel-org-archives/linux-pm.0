@@ -1,106 +1,130 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1] cpufreq: intel_pstate: Use average P-State instead of current P-State
-Date: Fri, 22 Apr 2016 11:46:09 -0700
-Message-ID: <1461350769-5947-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Fri, 22 Apr 2016 13:27:07 -0700
+Message-ID: <7hwpnptmn8.fsf@baylibre.com>
+References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
+	<3340490.Br5NVWnCR9@avalon> <27575455.zVxi7rnRNK@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:33524 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751831AbcDVStq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Apr 2016 14:49:46 -0400
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:35373 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751172AbcDVU1K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 16:27:10 -0400
+Received: by mail-pf0-f178.google.com with SMTP id n1so44564813pfn.2
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2016 13:27:09 -0700 (PDT)
+In-Reply-To: <27575455.zVxi7rnRNK@avalon> (Laurent Pinchart's message of "Thu,
+	21 Apr 2016 23:57:32 +0300")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Philippe Longepe <philippe.longepe@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-arm-kernel@lists.infradead.org
 
-=46rom: Philippe Longepe <philippe.longepe@linux.intel.com>
+Laurent Pinchart <laurent.pinchart@ideasonboard.com> writes:
 
-The result returned by pid_calc() is subtracted from current_pstate (wh=
-ich
-is the P-State requested during the last period) in order to obtain the
-target P-State for the current iteration.
-However, current_pstate may not reflect the real current P-State of the
-CPU. In particular, that P-State may be higher because of the frequency
-sharing per module.
-
-The theory is:
-- The load is the percentage of time spent in C0 and is related to the
-average P-State during the same period.
-- The last requested P-State can be completely different than the avera=
-ge
-P-State (because of frequency sharing or throttling).
-- The P-State shift computed by the pid_calc is based on the load compu=
-ted
-at average P-State, so the shift must be relative to this average P-Sta=
-te.
-
-Using the average P-State instead of current P-State improves =E2=88=86=
-Power
-without significant performance penalty in cases when a task migrates
-from one core to other core sharing frequency and voltage.
-
-Performance and power comparison with this patch on Cherry Trail platfo=
-rm
-using Android:
-
-Benchmark               =E2=88=86Perf    =E2=88=86Power
-=46ishTank                10.45%    3.1%
-SmartBench-Gaming       -0.1%   -10.4%
-SmartBench-Productivity -0.8%   -10.4%
-CandyCrush                n/a   -17.4%
-AngryBirds                n/a    -5.9%
-videoPlayback             n/a   -13.9%
-audioPlayback             n/a    -4.9%
-IcyRocks-20-50           0.0%   -38.4%
-iozone RR               -0.16%  -1.3%
-iozone RW                0.74%  -1.3%
-
-Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com=
+> On Thursday 21 Apr 2016 20:31:52 Laurent Pinchart wrote:
+>> Hi Ulf,
+>> 
+>> Thank you for the patch.
+>> 
+>> On Thursday 21 Apr 2016 12:34:02 Ulf Hansson wrote:
+>> > When the pm_runtime_force_suspend|resume() helpers were invented, we still
+>> > had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+>> > 
+>> > To make sure these helpers worked for all combinations and without
+>> > introducing too much of complexity, the device was always resumed in
+>> > pm_runtime_force_resume().
+>> > 
+>> > More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+>> > unset, we needed to resume the device as the subsystem/driver couldn't
+>> > rely on using runtime PM to do it.
+>> > 
+>> > As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+>> > removed this combination, of using CONFIG_PM_SLEEP without the earlier
+>> > CONFIG_PM_RUNTIME.
+>> > 
+>> > For this reason we can now rely on the subsystem/driver to use runtime PM
+>> > to resume the device, instead of forcing that to be done in all cases. In
+>> > other words, let's defer this to a later point when it's actually needed.
+>> > 
+>> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> > ---
+>> > 
+>> > Note, this patch is based upon another not yet queued patch [1]. The
+>> > reason
+>> > is simply because that [1] is a more important patch as it fixes a
+>> > problem.
+>> > It was posted to linux-pm April 8th and I expect it (or a new revision of
+>> > it) to be applied before $subject patch.
+>> > 
+>> > [1]
+>> > https://patchwork.kernel.org/patch/8782851
+>> > 
+>> > ---
+>> > 
+>> >  drivers/base/power/runtime.c | 11 +++++++++++
+>> >  1 file changed, 11 insertions(+)
+>> > 
+>> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+>> > index b746904..a190ca0 100644
+>> > --- a/drivers/base/power/runtime.c
+>> > +++ b/drivers/base/power/runtime.c
+>> > @@ -1506,6 +1506,17 @@ int pm_runtime_force_resume(struct device *dev)
+>> > 
+>> >  		goto out;
+>> >  	
+>> >  	}
+>> > 
+>> > +	/*
+>> > +	 * The PM core increases the runtime PM usage count in the system PM
+>> > +	 * prepare phase. If the count is greather than 1 at this point, 
+> someone
+>> > +	 * else has also increased it. In such case, let's make sure to runtime
+>> > +	 * resume the device as that is likely what is expected. In other case
+>> > +	 * we trust the subsystem/driver to runtime resume the device when it's
+>> > +	 * actually needed.
+>> > +	 */
+>> > +	if (atomic_read(&dev->power.usage_count) < 2)
+>> > +		goto out;
+>> > +
+>> > 
+>> >  	ret = pm_runtime_set_active(dev);
+>> >  	if (ret)
+>> >  	
+>> >  		goto out;
+>> 
+>> This works in the sense that it prevents devices from being PM resumed at
+>> system resume time if not needed. However, devices that are part of a PM
+>> domain and that were idle before system suspend are suspended twice (with
+>> their .runtime_suspend() handler called twice), which is not good at all.
+>> 
+>> The first suspend occurs at system suspend time, with
+>> pm_runtime_force_suspend() rightfully suspending the device as the device is
+>> active (due to being woken up by pm_genpd_prepare()). The second suspend
+>> occurs at resume time due to device_complete() calling pm_runtime_put().
+>> 
+>> I've tracked the issue to the fact that pm_genpd_complete() calls
+>> pm_runtime_set_active() regardless of whether the device was PM resumed or
+>> not. As pm_runtime_force_suspend() doesn't resume devices with this patch
+>> applied, the pm_runtime_put() call from device_complete() will try to
+>> runtime suspend the device a second time as the state is incorrectly set to
+>> RPM_ACTIVE.
+>> 
+>> With the current genpd implementation this patch isn't needed (and neither
+>> is my patch), as genpd expects the device to be always active when the
+>> system is resumed. However, when genpd isn't used,
+>> pm_runtime_force_resume() needs to skip resuming devices that were
+>> suspended before system suspend. This patch looks good to me to fix that
+>> problem.
+>>
+>> Do we need to fix genpd first ?
 >
----
-v1:
--Patch version V4 was only posted upstream, so the this update is
-version v1 not v5.
--No change in source code logic. Only formatting and commit description
-change.
+> And for the record, while this patch would require fixing genpd first, "[PATCH 
+> v2] PM / Runtime: Only force-resume device if it has been force-suspended" 
+> doesn't (at least as far as I understand the problem).
 
- drivers/cpufreq/intel_pstate.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Right, I'm thinking we should merge Laurent's patch first.  It fixes a
+current problem, and won't get in the way of doing the genpd
+improvements progressively.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pst=
-ate.c
-index 30fe323..1b2767d 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1061,6 +1061,12 @@ static inline int32_t get_avg_frequency(struct c=
-pudata *cpu)
- 		cpu->pstate.scaling, cpu->sample.mperf);
- }
-=20
-+static inline int32_t get_avg_pstate(struct cpudata *cpu)
-+{
-+	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aperf,
-+			 cpu->sample.mperf);
-+}
-+
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *c=
-pu)
- {
- 	struct sample *sample =3D &cpu->sample;
-@@ -1093,7 +1099,7 @@ static inline int32_t get_target_pstate_use_cpu_l=
-oad(struct cpudata *cpu)
- 	cpu_load =3D div64_u64(int_tofp(100) * mperf, sample->tsc);
- 	cpu->sample.busy_scaled =3D cpu_load;
-=20
--	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
-+	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, cpu_load);
- }
-=20
- static inline int32_t get_target_pstate_use_performance(struct cpudata=
- *cpu)
---=20
-2.5.0
-
+Kevin
