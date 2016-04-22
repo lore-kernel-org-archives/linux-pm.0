@@ -1,64 +1,102 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH 10/11] arm64: tegra: Add clock properties on cpu0 for
- Tegra210
-Date: Fri, 22 Apr 2016 12:44:21 +0100
-Message-ID: <571A0E95.9040203@nvidia.com>
-References: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
- <1461321071-6431-11-git-send-email-pchiu@nvidia.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH v3] sched/cpufreq: optimize cpufreq update kicker to avoid
+ update multiple times
+Date: Fri, 22 Apr 2016 14:04:56 +0200
+Message-ID: <571A1368.9060409@intel.com>
+References: <1461316044-9520-1-git-send-email-wanpeng.li@hotmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1461321071-6431-11-git-send-email-pchiu@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Penny Chiu <pchiu@nvidia.com>, swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: mturquette@baylibre.com, sboyd@codeaurora.org, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:37011 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751718AbcDVMFI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Apr 2016 08:05:08 -0400
+In-Reply-To: <1461316044-9520-1-git-send-email-wanpeng.li@hotmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wanpeng Li <kernellwp@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM <linux-pm@vger.kernel.org>
 
-Hi Penny,
+[Added linux-pm to the CC - can you please do so for PM-related patches 
+in the future?]
 
-On 22/04/16 11:31, Penny Chiu wrote:
-> Add clocks, clock-names, and clock-latency into cpu0 node.
-> These properties will be used by cpufreq driver.
-> 
-> Signed-off-by: Penny Chiu <pchiu@nvidia.com>
+On 4/22/2016 11:07 AM, Wanpeng Li wrote:
+> From: Wanpeng Li <wanpeng.li@hotmail.com>
+>
+> Sometimes delta_exec is 0 due to update_curr() is called multiple times,
+> this is captured by:
+>
+> 	u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
+>
+> This patch optimizes the cpufreq update kicker by bailing out when nothing
+> changed, it will benefit the upcoming schedutil, since otherwise it will
+> (over)react to the special util/max combination.
+>
+> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
+
+The changelog looks better now, thanks!
+
+Peter, do I think correctly that you're going to take care of this one?  
+Or do you want me to take it?
+
 > ---
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> index 204d9cd..1a85857 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> @@ -782,6 +782,12 @@
->  			device_type = "cpu";
->  			compatible = "arm,cortex-a57";
->  			reg = <0>;
-> +			clocks = <&tegra_car TEGRA210_CLK_CCLK_G>,
-> +				 <&tegra_car TEGRA210_CLK_PLL_X>,
-> +				 <&tegra_car TEGRA210_CLK_PLL_P_OUT4>,
-> +				 <&dfll>;
-> +			clock-names = "cpu_g", "pll_x", "pll_p", "dfll";
-> +			clock-latency = <300000>;
->  		};
->  
->  		cpu@1 {
-> 
+> v1 -> v2:
+>   * add From: head
+> v2 -> v3:
+>   * update changelog
+>
+>   kernel/sched/deadline.c | 8 ++++----
+>   kernel/sched/rt.c       | 8 ++++----
+>   2 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+> index affd97e..8f9b5af 100644
+> --- a/kernel/sched/deadline.c
+> +++ b/kernel/sched/deadline.c
+> @@ -717,10 +717,6 @@ static void update_curr_dl(struct rq *rq)
+>   	if (!dl_task(curr) || !on_dl_rq(dl_se))
+>   		return;
+>   
+> -	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
+> -	if (cpu_of(rq) == smp_processor_id())
+> -		cpufreq_trigger_update(rq_clock(rq));
+> -
+>   	/*
+>   	 * Consumed budget is computed considering the time as
+>   	 * observed by schedulable tasks (excluding time spent
+> @@ -736,6 +732,10 @@ static void update_curr_dl(struct rq *rq)
+>   		return;
+>   	}
+>   
+> +	/* kick cpufreq (see the comment in linux/cpufreq.h). */
+> +	if (cpu_of(rq) == smp_processor_id())
+> +		cpufreq_trigger_update(rq_clock(rq));
+> +
+>   	schedstat_set(curr->se.statistics.exec_max,
+>   		      max(curr->se.statistics.exec_max, delta_exec));
+>   
+> diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+> index c41ea7a..19e1306 100644
+> --- a/kernel/sched/rt.c
+> +++ b/kernel/sched/rt.c
+> @@ -953,14 +953,14 @@ static void update_curr_rt(struct rq *rq)
+>   	if (curr->sched_class != &rt_sched_class)
+>   		return;
+>   
+> -	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
+> -	if (cpu_of(rq) == smp_processor_id())
+> -		cpufreq_trigger_update(rq_clock(rq));
+> -
+>   	delta_exec = rq_clock_task(rq) - curr->se.exec_start;
+>   	if (unlikely((s64)delta_exec <= 0))
+>   		return;
+>   
+> +	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
+> +	if (cpu_of(rq) == smp_processor_id())
+> +		cpufreq_trigger_update(rq_clock(rq));
+> +
+>   	schedstat_set(curr->se.statistics.exec_max,
+>   		      max(curr->se.statistics.exec_max, delta_exec));
+>   
 
-Can you include a patch with this series to update the binding
-documentation for the nvidia,tegra124-cpufreq.txt? I think that although
-there is no specific nvidia,tegra210-cpufreq compatible string the
-documentation should state that both tegra124 and tegra210 are supported
-so it is clear.
-
-Also I see the above binding no longer includes the "cpu_lp" for
-tegra210 which I understand we don't use here. However, the binding
-documentation should reflect this. Having said that, looking at the
-driver it appears the "cpu_lp" clock is not even used for tegra124. I
-wonder if we should drop this from the binding documentation and the
-tegra124.dtsi altogether?
-
-What about the "vdd-cpu-supply" property? Don't we need this?
-
-Cheers
-Jon
