@@ -1,120 +1,50 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH v6 05/11] soc: renesas: rcar-sysc: Enable Clock Domain for
  I/O devices
-Date: Fri, 22 Apr 2016 09:28:18 +0200
-Message-ID: <CAPDyKFqcDDq-FGd9-PgJmig-Csqrj6LxqKtm1pMf1fq-LtGKvw@mail.gmail.com>
+Date: Fri, 22 Apr 2016 09:59:58 +0200
+Message-ID: <CAMuHMdVb46Get_+e0FzYhJMCwat-YaEDOcgFKqyGhtVBTOdJ8A@mail.gmail.com>
 References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
 	<1461153766-750-6-git-send-email-geert+renesas@glider.be>
+	<CAPDyKFqcDDq-FGd9-PgJmig-Csqrj6LxqKtm1pMf1fq-LtGKvw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1461153766-750-6-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <CAPDyKFqcDDq-FGd9-PgJmig-Csqrj6LxqKtm1pMf1fq-LtGKvw@mail.gmail.com>
 Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 April 2016 at 14:02, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> On R-Car H3, some power areas (e.g. A3VP) contain I/O devices, which are
-> also part of the CPG/MSSR Clock Domain.
-> On all R-Car SoCs, devices in the "always-on" PM Domain are part of the
-> Clock Domain served by the CPG/MSSR or CPG/MSTP driver.
->
-> Hook up the CPG/MSTP or CPG/MSSR Clock Domain attach/detach callbacks to
-> enable power management using module clocks. Which callback to hook up
-> depends on the presence of device nodes compatible with
-> "renesas,cpg-mstp-clocks". This clears the path for a future migration
-> from the CPG/MSTP to the CPG/MSSR driver on R-Car H1 and
-> Gen2.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> ---
-> v6:
->   - Add Reviewed-by,
->   - Rebased,
->
-> v5:
->   - Revert v4 changes,
->   - Use either the cpg_mssr_*() or cpg_mstp_*() callbacks,
->   - Drop dependency on r8a7795, as this is used for the "always-on" PM
->     Domain on R-Car H1 and Gen2, too,
->
-> v4:
->   - Remove the explicit dependency on the CPG/MSSR driver by forwarding
->     the attach/detach callbacks to the parent PM Domain.
->     If deemed reusable, rcar_sysc_{at,de}tach_dev() can be moved to
->     common genpd code later.
->
-> v3:
->   - Hook up the CPG/MSSR Clock Domain attach/detach callbacks instead of
->     using our own copies,
->
-> v2:
->   - New.
-> ---
->  drivers/soc/renesas/rcar-sysc.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->
-> diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-> index 4e760d63f2abd93f..0d49a25de740fbf8 100644
-> --- a/drivers/soc/renesas/rcar-sysc.c
-> +++ b/drivers/soc/renesas/rcar-sysc.c
-> @@ -9,6 +9,7 @@
->   * for more details.
->   */
->
-> +#include <linux/clk/renesas.h>
->  #include <linux/delay.h>
->  #include <linux/err.h>
->  #include <linux/mm.h>
-> @@ -217,6 +218,8 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
->         return rcar_sysc_power_up(&pd->ch);
->  }
->
-> +static bool has_cpg_mstp;
-> +
+Hi Ulf,
 
-That's seems lazy. :-)
+On Fri, Apr 22, 2016 at 9:28 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> @@ -217,6 +218,8 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
+>>         return rcar_sysc_power_up(&pd->ch);
+>>  }
+>>
+>> +static bool has_cpg_mstp;
+>> +
+>
+> That's seems lazy. :-)
+>
+> Sure you can provide this as an input parameter to
+> rcar_sysc_pd_setup() instead, no?
 
-Sure you can provide this as an input parameter to
-rcar_sysc_pd_setup() instead, no?
+This variable is intended to go away, once all R-Car SoCs have been converted
+to use the CPG/MSSR driver, and has_cpg_mstp will always be false.
+Then we can just remove those lines, instead of reworking the parameter
+passing.
 
->  static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
->  {
->         struct generic_pm_domain *genpd = &pd->genpd;
-> @@ -248,6 +251,18 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
->                 gov = &pm_domain_always_on_gov;
->         }
->
-> +       if (!(pd->flags & (PD_CPU | PD_SCU))) {
-> +               /* Enable Clock Domain for I/O devices */
-> +               genpd->flags = GENPD_FLAG_PM_CLK;
-> +               if (has_cpg_mstp) {
-> +                       genpd->attach_dev = cpg_mstp_attach_dev;
-> +                       genpd->detach_dev = cpg_mstp_detach_dev;
-> +               } else {
-> +                       genpd->attach_dev = cpg_mssr_attach_dev;
-> +                       genpd->detach_dev = cpg_mssr_detach_dev;
-> +               }
-> +       }
-> +
->         genpd->power_off = rcar_sysc_pd_power_off;
->         genpd->power_on = rcar_sysc_pd_power_on;
->
-> @@ -294,6 +309,9 @@ static int __init rcar_sysc_pd_init(void)
->
->         info = match->data;
->
-> +       has_cpg_mstp = of_find_compatible_node(NULL, NULL,
-> +                                              "renesas,cpg-mstp-clocks");
-> +
->         base = of_iomap(np, 0);
->         if (!base) {
->                 pr_warn("%s: Cannot map regs\n", np->full_name);
-> --
-> 1.9.1
->
+(I have to admit I just didn't think about using a parameter, but the
+ explanation above is still valid)
 
-Kind regards
-Uffe
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
