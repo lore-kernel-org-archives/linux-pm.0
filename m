@@ -1,37 +1,41 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] powercap/intel_rapl: Add support for Kabylake
-Date: Fri, 22 Apr 2016 10:17:19 -0700
-Message-ID: <1461345439-21215-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v6 00/20] kthread: Use kthread worker API more widely
+Date: Fri, 22 Apr 2016 14:30:40 -0400
+Message-ID: <20160422183040.GW7822@mtj.duckdns.org>
+References: <1460646879-617-1-git-send-email-pmladek@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:54372 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932298AbcDVRSy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Apr 2016 13:18:54 -0400
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:35938 "EHLO
+	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751172AbcDVSan (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 14:30:43 -0400
+Content-Disposition: inline
+In-Reply-To: <1460646879-617-1-git-send-email-pmladek@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-watchdog@vger.kernel.org, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org, Maxim Levitsky <maximl>
 
-Kabylake is similar to Skylake in terms of RAPL.
+Hello, Petr.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 2 ++
- 1 file changed, 2 insertions(+)
+On Thu, Apr 14, 2016 at 05:14:19PM +0200, Petr Mladek wrote:
+> My intention is to make it easier to manipulate and maintain kthreads.
+> Especially, I want to replace all the custom main cycles with a
+> generic one. Also I want to make the kthreads sleep in a consistent
+> state in a common place when there is no work.
+> 
+> My first attempt was with a brand new API (iterant kthread), see
+> http://thread.gmane.org/gmane.linux.kernel.api/11892 . But I was
+> directed to improve the existing kthread worker API. This is
+> the 4th iteration of the new direction.
+> 
+> 1nd..10th patches: improve the existing kthread worker API
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 8fad0a7..470bb62 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1101,6 +1101,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
- 	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
- 	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
-+	RAPL_CPU(0x8E, rapl_defaults_core),/* Kabylake */
-+	RAPL_CPU(0x9E, rapl_defaults_core),/* Kabylake */
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+I glanced over them and they generally look good to me.  Let's see how
+people respond to actual conversions.
+
+Thanks.
+
 -- 
-1.9.1
-
+tejun
