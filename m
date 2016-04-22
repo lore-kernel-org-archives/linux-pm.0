@@ -1,76 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/9] cpufreq: berlin: Use generic platdev driver
-Date: Fri, 22 Apr 2016 16:58:40 +0530
-Message-ID: <64733ec5d702497b80c8f5a96baaa86aa5281efa.1461324267.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V2 5/9] cpufreq: rockchip: Use generic platdev driver
+Date: Fri, 22 Apr 2016 16:58:43 +0530
+Message-ID: <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
 References: <cover.1461324267.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1461324267.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1461324267.git.viresh.kumar@linaro.org>
-References: <cover.1461324267.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, linux-kernel@vger.kernel.org, geert@linux-m68k.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
-device now, reuse that and remove similar code from platform code.
+From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Antoine Tenart <antoine.tenart@free-electrons.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+This patch add rockchip's compatible string to the compat list and
+remove similar code from platform code for supporting generic platdev
+driver.
+
+Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/mach-berlin/berlin.c        | 6 ------
- drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ arch/arm/mach-rockchip/rockchip.c    |  1 -
+ drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
-index 25d73870ccca..ac181c6797ee 100644
---- a/arch/arm/mach-berlin/berlin.c
-+++ b/arch/arm/mach-berlin/berlin.c
-@@ -18,11 +18,6 @@
- #include <asm/hardware/cache-l2x0.h>
- #include <asm/mach/arch.h>
+diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
+index 3f07cc5dfe5f..beb71da5d9c8 100644
+--- a/arch/arm/mach-rockchip/rockchip.c
++++ b/arch/arm/mach-rockchip/rockchip.c
+@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
+ {
+ 	rockchip_suspend_init();
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+-	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
+ }
  
--static void __init berlin_init_late(void)
--{
--	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
--}
--
- static const char * const berlin_dt_compat[] = {
- 	"marvell,berlin",
- 	NULL,
-@@ -30,7 +25,6 @@ static const char * const berlin_dt_compat[] = {
- 
- DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
- 	.dt_compat	= berlin_dt_compat,
--	.init_late	= berlin_init_late,
- 	/*
- 	 * with DT probing for L2CCs, berlin_init_machine can be removed.
- 	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+ static const char * const rockchip_board_dt_compat[] = {
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 00da8c8bee6c..3e1c8211c213 100644
+index 4e525f6ec59f..75fa921d8540 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -12,6 +12,8 @@
- #include <linux/platform_device.h>
+@@ -29,6 +29,17 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "samsung,exynos5800", },
+ #endif
  
- static const struct of_device_id machines[] __initconst = {
-+	{ .compatible = "marvell,berlin", },
++	{ .compatible = "rockchip,rk2928", },
++	{ .compatible = "rockchip,rk3036", },
++	{ .compatible = "rockchip,rk3066a", },
++	{ .compatible = "rockchip,rk3066b", },
++	{ .compatible = "rockchip,rk3188", },
++	{ .compatible = "rockchip,rk3228", },
++	{ .compatible = "rockchip,rk3288", },
++	{ .compatible = "rockchip,rk3366", },
++	{ .compatible = "rockchip,rk3368", },
++	{ .compatible = "rockchip,rk3399", },
 +
- 	{ .compatible = "samsung,exynos3250", },
- 	{ .compatible = "samsung,exynos4210", },
- 	{ .compatible = "samsung,exynos4212", },
+ 	{ .compatible = "ti,omap2", },
+ 	{ .compatible = "ti,omap3", },
+ 	{ .compatible = "ti,omap4", },
 -- 
 2.7.1.410.g6faf27b
