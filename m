@@ -1,39 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpuidle: Indicate when a device has been unregistered
-Date: Fri, 22 Apr 2016 02:40:56 +0200
-Message-ID: <17196985.m6DKFEgqnD@vostro.rjw.lan>
-References: <1459883138-21136-1-git-send-email-d-gerlach@ti.com> <20160406190047.GA32535@linaro.org>
+Subject: Re: [PATCH] cpufreq: mt8173: use list_for_each_entry*()
+Date: Fri, 22 Apr 2016 02:41:38 +0200
+Message-ID: <1546830.rP9teHUGyP@vostro.rjw.lan>
+References: <0679e197c8c0c4329d3d8190f1777fd61edbaebf.1459823809.git.geliangtang@163.com> <20160405030557.GC20655@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46592 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53017 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751611AbcDVAiE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 20:38:04 -0400
-In-Reply-To: <20160406190047.GA32535@linaro.org>
+	by vger.kernel.org with SMTP id S1751603AbcDVAiq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 20:38:46 -0400
+In-Reply-To: <20160405030557.GC20655@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Dave Gerlach <d-gerlach@ti.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Geliang Tang <geliangtang@163.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, April 06, 2016 12:00:48 PM Daniel Lezcano wrote:
-> On Tue, Apr 05, 2016 at 02:05:38PM -0500, Dave Gerlach wrote:
-> > Currently the 'registered' member of the cpuidle_device struct is set
-> > to 1 during cpuidle_register_device. In this same function there are
-> > checks to see if the device is already registered to prevent duplicate
-> > calls to register the device, but this value is never set to 0 even on
-> > unregister of the device. Because of this, any attempt to call
-> > cpuidle_register_device after a call to cpuidle_unregister_device will
-> > fail which shouldn't be the case.
+On Tuesday, April 05, 2016 08:35:57 AM Viresh Kumar wrote:
+> On 05-04-16, 10:38, Geliang Tang wrote:
+> > Use list_for_each_entry*() instead of list_for_each*() to simplify
+> > the code.
 > > 
-> > To prevent this, set registered to 0 when the device is unregistered.
-> > 
-> > Fixes: c878a52d3c7c ("cpuidle: Check if device is already registered")
-> > Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> > Signed-off-by: Geliang Tang <geliangtang@163.com>
 > > ---
+> >  drivers/cpufreq/mt8173-cpufreq.c | 14 ++++----------
+> >  1 file changed, 4 insertions(+), 10 deletions(-)
 > 
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Applied, thanks!
 
