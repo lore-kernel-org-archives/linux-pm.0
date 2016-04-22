@@ -1,47 +1,103 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Fri, 22 Apr 2016 02:26:22 +0200
-Message-ID: <CAJZ5v0hwmyPz8J2YFc-fS51BpBkh6+TrtnZ1WJRhbDzsdrbqGA@mail.gmail.com>
-References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com>
-	<CAJZ5v0ic6YpYtM4cymLJ4oV2-J4CK4MxFi9-6bWNADD-QY3B6A@mail.gmail.com>
-	<20160421131224.GY1725@lahna.fi.intel.com>
-	<2823801.fOoJOI22FZ@vostro.rjw.lan>
-	<CAMxnaaXN7YwEDNGDR1aRbOqhj_2JFyQAiCSjqvTa500x_xRmLA@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v6 00/11] soc: renesas: Add R-Car SYSC PM Domain Support
+Date: Fri, 22 Apr 2016 10:33:11 +1000
+Message-ID: <20160422003310.GE25416@verge.net.au>
+References: <1461153766-750-1-git-send-email-geert+renesas@glider.be>
+ <20160421032811.GF11116@verge.net.au>
+ <CAMuHMdW8uyWUBiqrbkQ=SYd+k-_Ag2PmsGf6N0+-TtJvx0YFQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:34203 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbcDVA0Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 20:26:24 -0400
-In-Reply-To: <CAMxnaaXN7YwEDNGDR1aRbOqhj_2JFyQAiCSjqvTa500x_xRmLA@mail.gmail.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:40953 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbcDVAdO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Apr 2016 20:33:14 -0400
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdW8uyWUBiqrbkQ=SYd+k-_Ag2PmsGf6N0+-TtJvx0YFQg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Noever <andreas.noever@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Apr 22, 2016 at 1:25 AM, Andreas Noever
-<andreas.noever@gmail.com> wrote:
-> On Thu, Apr 21, 2016 at 9:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Thursday, April 21, 2016 04:12:24 PM Mika Westerberg wrote:
->>> On Wed, Apr 20, 2016 at 10:23:33PM +0200, Rafael J. Wysocki wrote:
->>> > Breaking any systems that work today is not an option.  if that
->>> > happens, the commit that has done that is a clear candidate for
->>> > reverting.
->>>
->>> Understood, thanks.
->>>
->>> BTW, do you have any preference regarding the cut-off date?
->>
->> Some time around when machines with Windows 10 started to ship should be
->> relatively safe.
->>
->> I guess we can just pick a reasonable date in the initial patch and then
->> try to move it back to the past subsequently and see if that breaks things
->> for anyone.
->
-> Maybe add a boot option to overwrite the heuristic (in both
-> directions) to allow people to test this on older machines and
-> pinpoint breakage on newer machines?
+On Thu, Apr 21, 2016 at 05:14:40PM +0200, Geert Uytterhoeven wrote:
+> Hi Simon,
+> 
+> On Thu, Apr 21, 2016 at 5:28 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Wed, Apr 20, 2016 at 02:02:35PM +0200, Geert Uytterhoeven wrote:
+> >> This patch series introduces a DT-based driver for the R-Car System
+> >> Controller, as found on Renesas R-Car H1, R-Car Gen2, and R-Car Gen3
+> >> SoCs.
+> >>
+> >> This is a dependency for the enablement of DU and VSP on R-Car H3, as
+> >> the VSPs are located in a PM Domain.
+> 
+> [...]
+> 
+> >> Dependencies:
+> >>   - clk-renesas-for-v4.7 (which now includes "[PATCH v2 0/4] clk:
+> >>     renesas: R-Car SYSC PM Domain Preparation"; pull request sent),
+> >>   - renesas-devel-20160420-v4.6-rc4 (which already contains series
+> >>     "[PATCH v5 0/7] PM / Domains: Add DT bindings for the R-Car System
+> >>     Controller").
+> >>
+> >> I won't be resending follow-up series "[PATCH v5 00/12] ARM/arm64: dts:
+> >> rcar: Add SYSC PM domains" for now, as it's unchanged, except for an
+> >> ugly rebase due to dropping the commits to reference both DMA
+> >> controllers on R-Car Gen2.
+> >>
+> >> For your convenience, I've pushed this, incl. all dependencies, to the
+> >> topic/rcar-sysc-pd-v6 branch of
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+> >> Integration with renesas-drivers-2016-04-12-v4.6-rc3 is available in the
+> >> topic/gen3-latest branch.
+> >>
+> >> This has been tested on r8a7779/marzen, r8a7790/lager, r8a7791/koelsch,
+> >> r8a7794/alt, and r8a7795/salvator-x.
+> >>
+> >> Thanks!
+> >
+> > Thanks. I am not planning to queue these up at this point.
+> > Let me know if that is not what you expected.
+> 
+> As the clock maintainers has merged the preparatory clock work, and pushed
+> it out into clk-next, you can now:
+>   1. Pull the preparatory clock work in your tree, i.e. pull from:
+> 
+>         git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git
+> tags/clk-renesas-for-v4.7-tag2
 
-Yes, a kernel command line override would be fine by me.
+To my mind I need some kind of assurance from the clk maintainers that the
+patches are stable there - in particular that the commit ids won't change.
+And that both they and the ARM-SoC maintainers are happy with me pulling
+it into my tree for this purpose.
+
+I do wonder, as we are almost at the closing point for queuing up changes
+for v4.7 if, assuming the above patches are scheduled for inclusion in
+v4.7-rc1, it might not be better for me to queue up this series for v4.8.
+
+I could do that sooner rather than later in the devel branch of the renesas
+tree if you like.
+
+>   2. Apply this series.
+> 
+> After that,
+>   3. I will rebase and update "[PATCH v5 00/12] ARM/arm64: dts: rcar: Add SYSC
+>      PM domains" to match your current dt-for-v4.7 and arm64-dt-for-v4.7 (for
+>      dmas/dma-names changes and recently added mmc and sdhi nodes),
+>      and send it out,
+>   4. You can apply it to a branch containing all of the above as prerequisites.
+> 
+> Is that OK for you?
+> 
+> Thanks!
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
