@@ -1,44 +1,57 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [RESEND PATCH 1/8] thermal: rockchip: disable thermal->clk in err case
-Date: Fri, 22 Apr 2016 18:02:47 +0800
-Message-ID: <1461319374-10024-2-git-send-email-wxt@rock-chips.com>
+Subject: [RESEND PATCH 2/8] thermal: rockchip: fixes the code_to_temp for tsadc driver
+Date: Fri, 22 Apr 2016 18:02:48 +0800
+Message-ID: <1461319374-10024-3-git-send-email-wxt@rock-chips.com>
 References: <1461319374-10024-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1461319374-10024-1-git-send-email-wxt@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com, Heiko Stuebner <heiko@sntech.de>
-Cc: dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Shawn Lin <shawn.lin@rock-chips.com>
+We should judge the table.id[mid].code insearch algorithm on matter the
+adc value increment or decrement.
 
-Disable thermal->clk when enabling pclk fails in
-resume routine.
+Or otherwise, the temperature return the incorrect value in some cases.
+[    1.438589] adc_val=402,temp=-40000
+[    1.438903] adc_val=403,temp=-39375
+[    1.439217] adc_val=404,temp=-38750
+...
+[    1.441102] adc_val=410,temp=-40000
+[    1.441416] adc_val=411,temp=-34445
+[    1.441737] adc_val=412,temp=-33889
+...
 
-Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Caesar Wang <wxt@rock-chips.com>
+Let's fix it right now.
+
+Fixes commit 020ba95dbbbe ("thermal: rockchip:
+Add the sort mode for adc value increment or decrement").
+
+Reported-by: Rocky Hao <rocky.hao@rock-chips.com>
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Heiko Stuebner <heiko@sntech.de>
 ---
 
- drivers/thermal/rockchip_thermal.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/thermal/rockchip_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 1dbd862..f4c4bcd 100644
+index f4c4bcd..658772f 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -979,8 +979,10 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 		return error;
+@@ -405,8 +405,8 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 			return -EAGAIN;		/* Incorrect reading */
  
- 	error = clk_enable(thermal->pclk);
--	if (error)
-+	if (error) {
-+		clk_disable(thermal->clk);
- 		return error;
-+	}
- 
- 	rockchip_thermal_reset_controller(thermal->reset);
- 
+ 		while (low <= high) {
+-			if (code >= table.id[mid - 1].code &&
+-			    code < table.id[mid].code)
++			if (code <= table.id[mid].code &&
++			    code > table.id[mid - 1].code)
+ 				break;
+ 			else if (code > table.id[mid].code)
+ 				low = mid + 1;
 -- 
 1.9.1
