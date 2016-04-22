@@ -1,78 +1,76 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH 10/11] arm64: tegra: Add clock properties on cpu0 for
- Tegra210
-Date: Fri, 22 Apr 2016 14:36:50 +0100
-Message-ID: <571A28F2.5070203@nvidia.com>
-References: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
- <1461321071-6431-11-git-send-email-pchiu@nvidia.com>
- <571A0E95.9040203@nvidia.com> <20160422132325.GN9047@ulmo.ba.sec>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH V2 5/9] cpufreq: rockchip: Use generic platdev driver
+Date: Fri, 22 Apr 2016 15:58:21 +0200
+Message-ID: <30472058.4UOVq5Spqx@diego>
+References: <cover.1461324267.git.viresh.kumar@linaro.org> <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:2774 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbcDVNg5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 09:36:57 -0400
-In-Reply-To: <20160422132325.GN9047@ulmo.ba.sec>
+Received: from gloria.sntech.de ([95.129.55.99]:34780 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752942AbcDVN6d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Apr 2016 09:58:33 -0400
+In-Reply-To: <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Penny Chiu <pchiu@nvidia.com>, swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, Finley Xiao <finley.xiao@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 
-
-On 22/04/16 14:23, Thierry Reding wrote:
-> * PGP Signed by an unknown key
+Am Freitag, 22. April 2016, 16:58:43 schrieb Viresh Kumar:
+> From: Finley Xiao <finley.xiao@rock-chips.com>
 > 
-> On Fri, Apr 22, 2016 at 12:44:21PM +0100, Jon Hunter wrote:
->> Hi Penny,
->>
->> On 22/04/16 11:31, Penny Chiu wrote:
->>> Add clocks, clock-names, and clock-latency into cpu0 node.
->>> These properties will be used by cpufreq driver.
->>>
->>> Signed-off-by: Penny Chiu <pchiu@nvidia.com>
->>> ---
->>>  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 6 ++++++
->>>  1 file changed, 6 insertions(+)
->>>
->>> diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
->>> index 204d9cd..1a85857 100644
->>> --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
->>> +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
->>> @@ -782,6 +782,12 @@
->>>  			device_type = "cpu";
->>>  			compatible = "arm,cortex-a57";
->>>  			reg = <0>;
->>> +			clocks = <&tegra_car TEGRA210_CLK_CCLK_G>,
->>> +				 <&tegra_car TEGRA210_CLK_PLL_X>,
->>> +				 <&tegra_car TEGRA210_CLK_PLL_P_OUT4>,
->>> +				 <&dfll>;
->>> +			clock-names = "cpu_g", "pll_x", "pll_p", "dfll";
->>> +			clock-latency = <300000>;
->>>  		};
->>>  
->>>  		cpu@1 {
->>>
->>
->> Can you include a patch with this series to update the binding
->> documentation for the nvidia,tegra124-cpufreq.txt? I think that although
->> there is no specific nvidia,tegra210-cpufreq compatible string the
->> documentation should state that both tegra124 and tegra210 are supported
->> so it is clear.
->>
->> Also I see the above binding no longer includes the "cpu_lp" for
->> tegra210 which I understand we don't use here. However, the binding
->> documentation should reflect this. Having said that, looking at the
->> driver it appears the "cpu_lp" clock is not even used for tegra124. I
->> wonder if we should drop this from the binding documentation and the
->> tegra124.dtsi altogether?
->>
->> What about the "vdd-cpu-supply" property? Don't we need this?
+> This patch add rockchip's compatible string to the compat list and
+> remove similar code from platform code for supporting generic platdev
+> driver.
 > 
-> For some reason that seems to have moved into the clock@70110000 node.
+> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Yes I saw that. I surprised that the cpufreq driver would probe without
-this, unless I am missing something ...
+very cool to have that cpufreq stuff move somewhere else
 
-Jon
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+
+> ---
+>  arch/arm/mach-rockchip/rockchip.c    |  1 -
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
+>  2 files changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm/mach-rockchip/rockchip.c
+> b/arch/arm/mach-rockchip/rockchip.c index 3f07cc5dfe5f..beb71da5d9c8 100644
+> --- a/arch/arm/mach-rockchip/rockchip.c
+> +++ b/arch/arm/mach-rockchip/rockchip.c
+> @@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
+>  {
+>  	rockchip_suspend_init();
+>  	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+> -	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
+>  }
+> 
+>  static const char * const rockchip_board_dt_compat[] = {
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c
+> b/drivers/cpufreq/cpufreq-dt-platdev.c index 4e525f6ec59f..75fa921d8540
+> 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -29,6 +29,17 @@ static const struct of_device_id machines[] __initconst =
+> { { .compatible = "samsung,exynos5800", },
+>  #endif
+> 
+> +	{ .compatible = "rockchip,rk2928", },
+> +	{ .compatible = "rockchip,rk3036", },
+> +	{ .compatible = "rockchip,rk3066a", },
+> +	{ .compatible = "rockchip,rk3066b", },
+> +	{ .compatible = "rockchip,rk3188", },
+> +	{ .compatible = "rockchip,rk3228", },
+> +	{ .compatible = "rockchip,rk3288", },
+> +	{ .compatible = "rockchip,rk3366", },
+> +	{ .compatible = "rockchip,rk3368", },
+> +	{ .compatible = "rockchip,rk3399", },
+> +
+>  	{ .compatible = "ti,omap2", },
+>  	{ .compatible = "ti,omap3", },
+>  	{ .compatible = "ti,omap4", },
+
