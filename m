@@ -1,102 +1,62 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH v3] sched/cpufreq: optimize cpufreq update kicker to avoid
- update multiple times
-Date: Fri, 22 Apr 2016 14:04:56 +0200
-Message-ID: <571A1368.9060409@intel.com>
-References: <1461316044-9520-1-git-send-email-wanpeng.li@hotmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Fri, 22 Apr 2016 14:37:35 +0200
+Message-ID: <10444945.SCLgHv361I@vostro.rjw.lan>
+References: <1460111790-92836-1-git-send-email-mika.westerberg@linux.intel.com> <CAJZ5v0hwmyPz8J2YFc-fS51BpBkh6+TrtnZ1WJRhbDzsdrbqGA@mail.gmail.com> <20160422091026.GG1725@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:37011 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbcDVMFI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Apr 2016 08:05:08 -0400
-In-Reply-To: <1461316044-9520-1-git-send-email-wanpeng.li@hotmail.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47367 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751761AbcDVMem (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 08:34:42 -0400
+In-Reply-To: <20160422091026.GG1725@lahna.fi.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wanpeng Li <kernellwp@gmail.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Lukas Wunner <lukas@wunner.de>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-[Added linux-pm to the CC - can you please do so for PM-related patches 
-in the future?]
+On Friday, April 22, 2016 12:10:26 PM Mika Westerberg wrote:
+> On Fri, Apr 22, 2016 at 02:26:22AM +0200, Rafael J. Wysocki wrote:
+> > On Fri, Apr 22, 2016 at 1:25 AM, Andreas Noever
+> > <andreas.noever@gmail.com> wrote:
+> > > On Thu, Apr 21, 2016 at 9:19 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >> On Thursday, April 21, 2016 04:12:24 PM Mika Westerberg wrote:
+> > >>> On Wed, Apr 20, 2016 at 10:23:33PM +0200, Rafael J. Wysocki wrote:
+> > >>> > Breaking any systems that work today is not an option.  if that
+> > >>> > happens, the commit that has done that is a clear candidate for
+> > >>> > reverting.
+> > >>>
+> > >>> Understood, thanks.
+> > >>>
+> > >>> BTW, do you have any preference regarding the cut-off date?
+> > >>
+> > >> Some time around when machines with Windows 10 started to ship should be
+> > >> relatively safe.
+> > >>
+> > >> I guess we can just pick a reasonable date in the initial patch and then
+> > >> try to move it back to the past subsequently and see if that breaks things
+> > >> for anyone.
+> > >
+> > > Maybe add a boot option to overwrite the heuristic (in both
+> > > directions) to allow people to test this on older machines and
+> > > pinpoint breakage on newer machines?
+> > 
+> > Yes, a kernel command line override would be fine by me.
+> 
+> OK, so to summarize:
+> 
+>  - Use cut-off date 2015 which is the year Windows 10 was released
+> 
+>  - Add command line parameter that allows this to be overridden.
+>    Something like:
+> 
+> 	pcie_port_pm=   [PCIE] PCIe port power management handling:
+> 		off     Disable power management off all PCIe ports
+> 		force   Forcibly enable power management of all PCIe ports
 
-On 4/22/2016 11:07 AM, Wanpeng Li wrote:
-> From: Wanpeng Li <wanpeng.li@hotmail.com>
->
-> Sometimes delta_exec is 0 due to update_curr() is called multiple times,
-> this is captured by:
->
-> 	u64 delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->
-> This patch optimizes the cpufreq update kicker by bailing out when nothing
-> changed, it will benefit the upcoming schedutil, since otherwise it will
-> (over)react to the special util/max combination.
->
-> Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
+Correct, unless Bjorn has a differing opinion.
 
-The changelog looks better now, thanks!
-
-Peter, do I think correctly that you're going to take care of this one?  
-Or do you want me to take it?
-
-> ---
-> v1 -> v2:
->   * add From: head
-> v2 -> v3:
->   * update changelog
->
->   kernel/sched/deadline.c | 8 ++++----
->   kernel/sched/rt.c       | 8 ++++----
->   2 files changed, 8 insertions(+), 8 deletions(-)
->
-> diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-> index affd97e..8f9b5af 100644
-> --- a/kernel/sched/deadline.c
-> +++ b/kernel/sched/deadline.c
-> @@ -717,10 +717,6 @@ static void update_curr_dl(struct rq *rq)
->   	if (!dl_task(curr) || !on_dl_rq(dl_se))
->   		return;
->   
-> -	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-> -	if (cpu_of(rq) == smp_processor_id())
-> -		cpufreq_trigger_update(rq_clock(rq));
-> -
->   	/*
->   	 * Consumed budget is computed considering the time as
->   	 * observed by schedulable tasks (excluding time spent
-> @@ -736,6 +732,10 @@ static void update_curr_dl(struct rq *rq)
->   		return;
->   	}
->   
-> +	/* kick cpufreq (see the comment in linux/cpufreq.h). */
-> +	if (cpu_of(rq) == smp_processor_id())
-> +		cpufreq_trigger_update(rq_clock(rq));
-> +
->   	schedstat_set(curr->se.statistics.exec_max,
->   		      max(curr->se.statistics.exec_max, delta_exec));
->   
-> diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-> index c41ea7a..19e1306 100644
-> --- a/kernel/sched/rt.c
-> +++ b/kernel/sched/rt.c
-> @@ -953,14 +953,14 @@ static void update_curr_rt(struct rq *rq)
->   	if (curr->sched_class != &rt_sched_class)
->   		return;
->   
-> -	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-> -	if (cpu_of(rq) == smp_processor_id())
-> -		cpufreq_trigger_update(rq_clock(rq));
-> -
->   	delta_exec = rq_clock_task(rq) - curr->se.exec_start;
->   	if (unlikely((s64)delta_exec <= 0))
->   		return;
->   
-> +	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-> +	if (cpu_of(rq) == smp_processor_id())
-> +		cpufreq_trigger_update(rq_clock(rq));
-> +
->   	schedstat_set(curr->se.statistics.exec_max,
->   		      max(curr->se.statistics.exec_max, delta_exec));
->   
+Bjorn?
 
