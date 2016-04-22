@@ -1,76 +1,106 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V2 5/9] cpufreq: rockchip: Use generic platdev driver
-Date: Fri, 22 Apr 2016 16:58:43 +0530
-Message-ID: <736a08a0210e7e8b33e82e5439b7c00b612d0eff.1461324267.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 7/9] cpufreq: sunxi: Use generic platdev driver
+Date: Fri, 22 Apr 2016 16:58:45 +0530
+Message-ID: <5f0f49d36f37c83f0162064be4c49e78482b08c6.1461324267.git.viresh.kumar@linaro.org>
 References: <cover.1461324267.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1461324267.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:36828 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbcDVL3d (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Apr 2016 07:29:33 -0400
+Received: by mail-pa0-f45.google.com with SMTP id er2so39083386pad.3
+        for <linux-pm@vger.kernel.org>; Fri, 22 Apr 2016 04:29:33 -0700 (PDT)
+In-Reply-To: <cover.1461324267.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1461324267.git.viresh.kumar@linaro.org>
+References: <cover.1461324267.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+The cpufreq-dt-platdev driver supports creation of cpufreq-dt platform
+device now, reuse that and remove similar code from platform code.
 
-This patch add rockchip's compatible string to the compat list and
-remove similar code from platform code for supporting generic platdev
-driver.
-
-Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-rockchip/rockchip.c    |  1 -
- drivers/cpufreq/cpufreq-dt-platdev.c | 11 +++++++++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
+ arch/arm/mach-sunxi/sunxi.c          |  9 ---------
+ drivers/cpufreq/cpufreq-dt-platdev.c | 12 ++++++++++++
+ 2 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/mach-rockchip/rockchip.c b/arch/arm/mach-rockchip/rockchip.c
-index 3f07cc5dfe5f..beb71da5d9c8 100644
---- a/arch/arm/mach-rockchip/rockchip.c
-+++ b/arch/arm/mach-rockchip/rockchip.c
-@@ -74,7 +74,6 @@ static void __init rockchip_dt_init(void)
- {
- 	rockchip_suspend_init();
- 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
--	platform_device_register_simple("cpufreq-dt", 0, NULL, 0);
- }
+diff --git a/arch/arm/mach-sunxi/sunxi.c b/arch/arm/mach-sunxi/sunxi.c
+index 3c156190a1d4..95dca8c2c9ed 100644
+--- a/arch/arm/mach-sunxi/sunxi.c
++++ b/arch/arm/mach-sunxi/sunxi.c
+@@ -17,11 +17,6 @@
  
- static const char * const rockchip_board_dt_compat[] = {
+ #include <asm/mach/arch.h>
+ 
+-static void __init sunxi_dt_cpufreq_init(void)
+-{
+-	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+-}
+-
+ static const char * const sunxi_board_dt_compat[] = {
+ 	"allwinner,sun4i-a10",
+ 	"allwinner,sun5i-a10s",
+@@ -32,7 +27,6 @@ static const char * const sunxi_board_dt_compat[] = {
+ 
+ DT_MACHINE_START(SUNXI_DT, "Allwinner sun4i/sun5i Families")
+ 	.dt_compat	= sunxi_board_dt_compat,
+-	.init_late	= sunxi_dt_cpufreq_init,
+ MACHINE_END
+ 
+ static const char * const sun6i_board_dt_compat[] = {
+@@ -53,7 +47,6 @@ static void __init sun6i_timer_init(void)
+ DT_MACHINE_START(SUN6I_DT, "Allwinner sun6i (A31) Family")
+ 	.init_time	= sun6i_timer_init,
+ 	.dt_compat	= sun6i_board_dt_compat,
+-	.init_late	= sunxi_dt_cpufreq_init,
+ MACHINE_END
+ 
+ static const char * const sun7i_board_dt_compat[] = {
+@@ -63,7 +56,6 @@ static const char * const sun7i_board_dt_compat[] = {
+ 
+ DT_MACHINE_START(SUN7I_DT, "Allwinner sun7i (A20) Family")
+ 	.dt_compat	= sun7i_board_dt_compat,
+-	.init_late	= sunxi_dt_cpufreq_init,
+ MACHINE_END
+ 
+ static const char * const sun8i_board_dt_compat[] = {
+@@ -77,7 +69,6 @@ static const char * const sun8i_board_dt_compat[] = {
+ DT_MACHINE_START(SUN8I_DT, "Allwinner sun8i Family")
+ 	.init_time	= sun6i_timer_init,
+ 	.dt_compat	= sun8i_board_dt_compat,
+-	.init_late	= sunxi_dt_cpufreq_init,
+ MACHINE_END
+ 
+ static const char * const sun9i_board_dt_compat[] = {
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 4e525f6ec59f..75fa921d8540 100644
+index 4b94fe3427f9..24dde5e256d4 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -29,6 +29,17 @@ static const struct of_device_id machines[] __initconst = {
- 	{ .compatible = "samsung,exynos5800", },
- #endif
+@@ -12,6 +12,18 @@
+ #include <linux/platform_device.h>
  
-+	{ .compatible = "rockchip,rk2928", },
-+	{ .compatible = "rockchip,rk3036", },
-+	{ .compatible = "rockchip,rk3066a", },
-+	{ .compatible = "rockchip,rk3066b", },
-+	{ .compatible = "rockchip,rk3188", },
-+	{ .compatible = "rockchip,rk3228", },
-+	{ .compatible = "rockchip,rk3288", },
-+	{ .compatible = "rockchip,rk3366", },
-+	{ .compatible = "rockchip,rk3368", },
-+	{ .compatible = "rockchip,rk3399", },
+ static const struct of_device_id machines[] __initconst = {
++	{ .compatible = "allwinner,sun4i-a10", },
++	{ .compatible = "allwinner,sun5i-a10s", },
++	{ .compatible = "allwinner,sun5i-a13", },
++	{ .compatible = "allwinner,sun5i-r8", },
++	{ .compatible = "allwinner,sun6i-a31", },
++	{ .compatible = "allwinner,sun6i-a31s", },
++	{ .compatible = "allwinner,sun7i-a20", },
++	{ .compatible = "allwinner,sun8i-a23", },
++	{ .compatible = "allwinner,sun8i-a33", },
++	{ .compatible = "allwinner,sun8i-a83t", },
++	{ .compatible = "allwinner,sun8i-h3", },
 +
- 	{ .compatible = "ti,omap2", },
- 	{ .compatible = "ti,omap3", },
- 	{ .compatible = "ti,omap4", },
+ 	{ .compatible = "fsl,imx27", },
+ 	{ .compatible = "fsl,imx51", },
+ 	{ .compatible = "fsl,imx53", },
 -- 
 2.7.1.410.g6faf27b
+
