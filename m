@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [RFC PATCH 06/11] thermal: move mode attribute to tz->device.groups
-Date: Sat, 23 Apr 2016 16:34:25 -0700
-Message-ID: <1461454470-27714-7-git-send-email-edubezval@gmail.com>
+Subject: [RFC PATCH 08/11] thermal: move power actor code out of sysfs I/F section
+Date: Sat, 23 Apr 2016 16:34:27 -0700
+Message-ID: <1461454470-27714-9-git-send-email-edubezval@gmail.com>
 References: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
@@ -10,87 +10,195 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Moving mode attribute to tz->device.groups requires the implementation
-of a .is_visible() callback. The condition returned by .is_visible() of
-the mode attribute group is kept the same, we allow the attribute to be
-visible only if ops->get_mode() is set by the thermal driver.
+Simply reorganize code to keep only functions of sysfs interface
+of thermal zone device together. Therefore, move the power actor code
+out of the sysfs I/F section.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 35 +++++++++++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_core.c | 160 ++++++++++++++++++++---------------------
+ 1 file changed, 80 insertions(+), 80 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index e32f851..6e44038 100644
+index e48c720..7c95978 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1006,6 +1006,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+@@ -582,6 +582,86 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz);
+ }
  
-+/* These attributes are unconditionally added to a thermal zone */
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-@@ -1028,8 +1029,34 @@ static struct attribute_group thermal_zone_attribute_group = {
- 	.attrs = thermal_zone_dev_attrs,
- };
- 
-+/* We expose mode only if .get_mode is present */
-+static struct attribute *thermal_zone_mode_attrs[] = {
-+	&dev_attr_mode.attr,
-+};
-+
-+static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
-+					    struct attribute *attr,
-+					    int attrno)
++/**
++ * power_actor_get_max_power() - get the maximum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @max_power:	pointer in which to store the maximum power
++ *
++ * Calculate the maximum power consumption in milliwats that the
++ * cooling device can currently consume and store it in @max_power.
++ *
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
++ */
++int power_actor_get_max_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *max_power)
 +{
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct thermal_zone_device *tz;
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
 +
-+	tz = container_of(dev, struct thermal_zone_device, device);
++	return cdev->ops->state2power(cdev, tz, 0, max_power);
++}
 +
-+	if (tz->ops->get_mode)
-+		return attr->mode;
++/**
++ * power_actor_get_min_power() - get the mainimum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @min_power:	pointer in which to store the minimum power
++ *
++ * Calculate the minimum power consumption in milliwatts that the
++ * cooling device can currently consume and store it in @min_power.
++ *
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
++ */
++int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *min_power)
++{
++	unsigned long max_state;
++	int ret;
++
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
++
++	ret = cdev->ops->get_max_state(cdev, &max_state);
++	if (ret)
++		return ret;
++
++	return cdev->ops->state2power(cdev, tz, max_state, min_power);
++}
++
++/**
++ * power_actor_set_power() - limit the maximum power that a cooling device can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @instance:	thermal instance to update
++ * @power:	the power in milliwatts
++ *
++ * Set the cooling device to consume at most @power milliwatts.
++ *
++ * Return: 0 on success, -EINVAL if the cooling device does not
++ * implement the power actor API or -E* for other failures.
++ */
++int power_actor_set_power(struct thermal_cooling_device *cdev,
++			  struct thermal_instance *instance, u32 power)
++{
++	unsigned long state;
++	int ret;
++
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
++
++	ret = cdev->ops->power2state(cdev, instance->tz, power, &state);
++	if (ret)
++		return ret;
++
++	instance->target = state;
++	cdev->updated = false;
++	thermal_cdev_update(cdev);
 +
 +	return 0;
 +}
 +
-+static struct attribute_group thermal_zone_mode_attribute_group = {
-+	.attrs = thermal_zone_mode_attrs,
-+	.is_visible = thermal_zone_mode_is_visible,
-+};
-+
- static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
-+	&thermal_zone_mode_attribute_group,
+ /* sys I/F for thermal zone */
+ 
+ #define to_thermal_zone(_dev) \
+@@ -1092,86 +1172,6 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
  	NULL
  };
  
-@@ -1868,12 +1895,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	}
- 
- 	/* sys I/F */
--	if (ops->get_mode) {
--		result = device_create_file(&tz->device, &dev_attr_mode);
--		if (result)
--			goto unregister;
--	}
+-/**
+- * power_actor_get_max_power() - get the maximum power that a cdev can consume
+- * @cdev:	pointer to &thermal_cooling_device
+- * @tz:		a valid thermal zone device pointer
+- * @max_power:	pointer in which to store the maximum power
+- *
+- * Calculate the maximum power consumption in milliwats that the
+- * cooling device can currently consume and store it in @max_power.
+- *
+- * Return: 0 on success, -EINVAL if @cdev doesn't support the
+- * power_actor API or -E* on other error.
+- */
+-int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+-			      struct thermal_zone_device *tz, u32 *max_power)
+-{
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
 -
- 	result = create_trip_attrs(tz, mask);
- 	if (result)
- 		goto unregister;
-@@ -1990,8 +2011,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 
- 	thermal_zone_device_set_polling(tz, 0);
- 
--	if (tz->ops->get_mode)
--		device_remove_file(&tz->device, &dev_attr_mode);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
+-	return cdev->ops->state2power(cdev, tz, 0, max_power);
+-}
+-
+-/**
+- * power_actor_get_min_power() - get the mainimum power that a cdev can consume
+- * @cdev:	pointer to &thermal_cooling_device
+- * @tz:		a valid thermal zone device pointer
+- * @min_power:	pointer in which to store the minimum power
+- *
+- * Calculate the minimum power consumption in milliwatts that the
+- * cooling device can currently consume and store it in @min_power.
+- *
+- * Return: 0 on success, -EINVAL if @cdev doesn't support the
+- * power_actor API or -E* on other error.
+- */
+-int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+-			      struct thermal_zone_device *tz, u32 *min_power)
+-{
+-	unsigned long max_state;
+-	int ret;
+-
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
+-
+-	ret = cdev->ops->get_max_state(cdev, &max_state);
+-	if (ret)
+-		return ret;
+-
+-	return cdev->ops->state2power(cdev, tz, max_state, min_power);
+-}
+-
+-/**
+- * power_actor_set_power() - limit the maximum power that a cooling device can consume
+- * @cdev:	pointer to &thermal_cooling_device
+- * @instance:	thermal instance to update
+- * @power:	the power in milliwatts
+- *
+- * Set the cooling device to consume at most @power milliwatts.
+- *
+- * Return: 0 on success, -EINVAL if the cooling device does not
+- * implement the power actor API or -E* for other failures.
+- */
+-int power_actor_set_power(struct thermal_cooling_device *cdev,
+-			  struct thermal_instance *instance, u32 power)
+-{
+-	unsigned long state;
+-	int ret;
+-
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
+-
+-	ret = cdev->ops->power2state(cdev, instance->tz, power, &state);
+-	if (ret)
+-		return ret;
+-
+-	instance->target = state;
+-	cdev->updated = false;
+-	thermal_cdev_update(cdev);
+-
+-	return 0;
+-}
+-
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
 -- 
 2.1.4
