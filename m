@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [RFC PATCH 10/11] thermal: create tz->device.groups dynamically
-Date: Sat, 23 Apr 2016 16:34:29 -0700
-Message-ID: <1461454470-27714-11-git-send-email-edubezval@gmail.com>
+Subject: [RFC PATCH 06/11] thermal: move mode attribute to tz->device.groups
+Date: Sat, 23 Apr 2016 16:34:25 -0700
+Message-ID: <1461454470-27714-7-git-send-email-edubezval@gmail.com>
 References: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
@@ -10,75 +10,87 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a patch to allow adding groups created dynamically. For now we
-create only the existing group. However, this is a preparation to allow
-creating trip groups, which are determined only when the number of trips
-are known at runtime.
+Moving mode attribute to tz->device.groups requires the implementation
+of a .is_visible() callback. The condition returned by .is_visible() of
+the mode attribute group is kept the same, we allow the attribute to be
+visible only if ops->get_mode() is set by the thermal driver.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 25 ++++++++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c | 35 +++++++++++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index b1b2945..13a85d7 100644
+index e32f851..6e44038 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1169,7 +1169,7 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
- 	&thermal_zone_mode_attribute_group,
- 	&thermal_zone_passive_attribute_group,
--	NULL
-+	/* This is not NULL terminated as we create the group dynamically */
+@@ -1006,6 +1006,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+ 
++/* These attributes are unconditionally added to a thermal zone */
+ static struct attribute *thermal_zone_dev_attrs[] = {
+ 	&dev_attr_type.attr,
+ 	&dev_attr_temp.attr,
+@@ -1028,8 +1029,34 @@ static struct attribute_group thermal_zone_attribute_group = {
+ 	.attrs = thermal_zone_dev_attrs,
  };
  
- /**
-@@ -1281,6 +1281,25 @@ static void remove_trip_attrs(struct thermal_zone_device *tz)
- 	kfree(tz->trip_hyst_attrs);
- }
- 
-+static int thermal_zone_create_device_groups(struct thermal_zone_device *tz)
++/* We expose mode only if .get_mode is present */
++static struct attribute *thermal_zone_mode_attrs[] = {
++	&dev_attr_mode.attr,
++};
++
++static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
++					    struct attribute *attr,
++					    int attrno)
 +{
-+	const struct attribute_group **groups;
-+	int i, size;
++	struct device *dev = container_of(kobj, struct device, kobj);
++	struct thermal_zone_device *tz;
 +
-+	size = ARRAY_SIZE(thermal_zone_attribute_groups) + 1;
-+	/* This also takes care of API requirement to be NULL terminated */
-+	groups = kzalloc(size * sizeof(*groups), GFP_KERNEL);
-+	if (!groups)
-+		return -ENOMEM;
++	tz = container_of(dev, struct thermal_zone_device, device);
 +
-+	for (i = 0; i < size - 1; i++)
-+		groups[i] = thermal_zone_attribute_groups[i];
-+
-+	tz->device.groups = groups;
++	if (tz->ops->get_mode)
++		return attr->mode;
 +
 +	return 0;
 +}
 +
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
-@@ -1913,7 +1932,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	tz->polling_delay = polling_delay;
++static struct attribute_group thermal_zone_mode_attribute_group = {
++	.attrs = thermal_zone_mode_attrs,
++	.is_visible = thermal_zone_mode_is_visible,
++};
++
+ static const struct attribute_group *thermal_zone_attribute_groups[] = {
+ 	&thermal_zone_attribute_group,
++	&thermal_zone_mode_attribute_group,
+ 	NULL
+ };
  
- 	/* Add nodes that are always present via .groups */
--	tz->device.groups = thermal_zone_attribute_groups;
-+	thermal_zone_create_device_groups(tz);
- 	/* A new thermal zone needs to be updated anyway. */
- 	atomic_set(&tz->need_update, 1);
+@@ -1868,12 +1895,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	}
  
-@@ -2042,7 +2061,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	idr_destroy(&tz->idr);
- 	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
--	return;
-+	kfree(tz->device.groups);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+ 	/* sys I/F */
+-	if (ops->get_mode) {
+-		result = device_create_file(&tz->device, &dev_attr_mode);
+-		if (result)
+-			goto unregister;
+-	}
+-
+ 	result = create_trip_attrs(tz, mask);
+ 	if (result)
+ 		goto unregister;
+@@ -1990,8 +2011,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 
+ 	thermal_zone_device_set_polling(tz, 0);
+ 
+-	if (tz->ops->get_mode)
+-		device_remove_file(&tz->device, &dev_attr_mode);
+ 	remove_trip_attrs(tz);
+ 	thermal_set_governor(tz, NULL);
  
 -- 
 2.1.4
