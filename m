@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 2/3] cpufreq: intel_pstate: Adjust policy->max
-Date: Fri, 22 Apr 2016 21:03:52 -0700
-Message-ID: <1461384233-24214-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/3] cpufreq: intel_pstate: Enable PPC enforcement for servers
+Date: Fri, 22 Apr 2016 21:03:53 -0700
+Message-ID: <1461384233-24214-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1461384233-24214-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:17480 "EHLO mga04.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:16104 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbcDWEHS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1750757AbcDWEHS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Sat, 23 Apr 2016 00:07:18 -0400
 In-Reply-To: <1461384233-24214-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,63 +14,67 @@ List-Id: linux-pm@vger.kernel.org
 To: khlebnikov@yandex-team.ru
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When policy->max is changed via _PPC or sysfs and is more than the max non
-turbo frequency, it does not really change resulting performance in some
-processors. When policy->max results in a P-State ratio more than the
-turbo activation ratio, then processor can choose any P-State up to max
-turbo. So the user or _PPC setting has no value, but this can cause
-undesirable side effects like:
-- Showing reduced max percentage in Intel P-State sysfs
-- It can cause reduced max performance, if the policy->max is set to
-the least turbo frequency and because of precision error in calculation
-of ceiling limit, we may end up in a limit which is in non turbo region.
-This issue is more prone when we enforce _PPC limit, because of the way
-_PPC limit is set to indicate the beginning of turbo region when config
-TDP feature is in use.
-
-When config TDP feature is ON, the max non turbo ratio can be less than
-max physical non turbo ratio. In this case _PPC points to turbo activation
-ratio + 1. In this case we don't need to treat this as the reduced
-frequency in set_policy callback, as we can get performance up to max
-turbo frequency.
-
-In this change when config TDP is active (When the physical max non turbo
-ratio is more than the current max non turbo ratio), any request above
-current max non turbo is treated as full performance.
+For platforms which are controlled via remove node manager, enable _PPC by
+default. These platforms are mostly categorized as enterprise server or
+performance servers. These platforms needs to go through some
+certifications tests, which tests control via _PPC.
+The relative risk of enabling by default is  low as this is is less likely
+that these systems have broken _PSS table.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ Documentation/kernel-parameters.txt |  5 ++++-
+ drivers/cpufreq/intel_pstate.c      | 14 ++++++++++++--
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4199a1b..52292b2 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1662,7 +1662,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			Only load intel_pstate on systems which support
+ 			hardware P state control (HWP) if available.
+ 		support_acpi_ppc
+-			Enforce ACPI _PPC performance limits.
++			Enforce ACPI _PPC performance limits. If the Fixed ACPI
++			Description Table, specifies preferred power management
++			profile as "Enterprise Server" or "Performance Server",
++			then this feature is turned on by default.
+ 
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b3e8124..c9cc72d 100644
+index c9cc72d..eb5f1ec 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -1428,11 +1428,23 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+@@ -345,6 +345,16 @@ static struct perf_limits *limits = &powersave_limits;
+ #endif
  
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- {
-+	struct cpudata *cpu;
+ #ifdef CONFIG_ACPI
 +
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
- 
- 	intel_pstate_clear_update_util_hook(policy->cpu);
- 
-+	cpu = all_cpu_data[0];
-+	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate) {
-+		if (policy->max < policy->cpuinfo.max_freq &&
-+		    policy->max > (cpu->pstate.max_pstate *
-+				   cpu->pstate.scaling)) {
-+			pr_info("policy->max > max non turbo frequency\n");
-+			policy->max = policy->cpuinfo.max_freq;
-+		}
-+	}
++static bool intel_pstate_get_ppc_enable_status(void)
++{
++	if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
++	    acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER)
++		return true;
 +
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		limits = &performance_limits;
- 		if (policy->max >= policy->cpuinfo.max_freq) {
++	return acpi_ppc;
++}
++
+ /*
+  * The max target pstate ratio is a 8 bit value in both PLATFORM_INFO MSR and
+  * in TURBO_RATIO_LIMIT MSR, which pstate driver stores in max_pstate and
+@@ -368,8 +378,8 @@ static int intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
+ 	int ret;
+ 	int i;
+ 
+-	if (!acpi_ppc)
+-		return 0; /* this is optional flag, so no error returned */
++	if (!intel_pstate_get_ppc_enable_status())
++		return 0; /* this is optional, so no error returned */
+ 
+ 	cpu = all_cpu_data[policy->cpu];
+ 
 -- 
 2.5.0
 
