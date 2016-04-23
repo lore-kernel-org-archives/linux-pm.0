@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [RFC PATCH 07/11] thermal: move passive attr to tz->device.groups
-Date: Sat, 23 Apr 2016 16:34:26 -0700
-Message-ID: <1461454470-27714-8-git-send-email-edubezval@gmail.com>
+Subject: [RFC PATCH 03/11] thermal: group device_create_file() calls that are always created
+Date: Sat, 23 Apr 2016 16:34:22 -0700
+Message-ID: <1461454470-27714-4-git-send-email-edubezval@gmail.com>
 References: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1461454470-27714-1-git-send-email-edubezval@gmail.com>
@@ -10,95 +10,66 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch moves the passive attribute to tz->device.groups. Moving the
-passive attribute also requires a .is_visible() callback implementation
-for its attribute group.
-
-The logic behind the visibility of passive attribute is kept the same.
-We only expose the passive attribute if the thermal driver has exposed
-at least one passive trip point.
+Simple code reorganization to group files that are always created
+when registering a thermal zone.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 41 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 32 insertions(+), 9 deletions(-)
+ drivers/thermal/thermal_core.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6e44038..e48c720 100644
+index e28d547..2227264 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1054,9 +1054,41 @@ static struct attribute_group thermal_zone_mode_attribute_group = {
- 	.is_visible = thermal_zone_mode_is_visible,
- };
- 
-+/* We expose passive only if passive trips are present */
-+static struct attribute *thermal_zone_passive_attrs[] = {
-+	&dev_attr_passive.attr,
-+};
-+
-+static umode_t thermal_zone_passive_is_visible(struct kobject *kobj,
-+					       struct attribute *attr,
-+					       int attrno)
-+{
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct thermal_zone_device *tz;
-+	enum thermal_trip_type trip_type;
-+	int count;
-+
-+	tz = container_of(dev, struct thermal_zone_device, device);
-+
-+	for (count = 0; count < tz->trips; count++) {
-+		tz->ops->get_trip_type(tz, count, &trip_type);
-+
-+		if (trip_type == THERMAL_TRIP_PASSIVE)
-+			return attr->mode;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct attribute_group thermal_zone_passive_attribute_group = {
-+	.attrs = thermal_zone_passive_attrs,
-+	.is_visible = thermal_zone_passive_is_visible,
-+};
-+
- static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
- 	&thermal_zone_mode_attribute_group,
-+	&thermal_zone_passive_attribute_group,
- 	NULL
- };
- 
-@@ -1841,7 +1873,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	int trip_temp;
- 	int result;
- 	int count;
--	int passive = 0;
- 	struct thermal_governor *governor;
- 
- 	if (!type || strlen(type) == 0)
-@@ -1902,8 +1933,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	for (count = 0; count < trips; count++) {
- 		if (tz->ops->get_trip_type(tz, count, &trip_type))
- 			set_bit(count, &tz->trips_disabled);
--		if (trip_type == THERMAL_TRIP_PASSIVE)
--			passive = 1;
- 		if (tz->ops->get_trip_temp(tz, count, &trip_temp))
- 			set_bit(count, &tz->trips_disabled);
- 		/* Check for bogus trip points */
-@@ -1911,12 +1940,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 			set_bit(count, &tz->trips_disabled);
+@@ -1858,14 +1858,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
  	}
  
--	if (!passive) {
--		result = device_create_file(&tz->device, &dev_attr_passive);
--		if (result)
--			goto unregister;
--	}
+ 	/* sys I/F */
+-	result = device_create_file(&tz->device, &dev_attr_type);
+-	if (result)
+-		goto unregister;
 -
+-	result = device_create_file(&tz->device, &dev_attr_temp);
+-	if (result)
+-		goto unregister;
+-
+ 	if (ops->get_mode) {
+ 		result = device_create_file(&tz->device, &dev_attr_mode);
+ 		if (result)
+@@ -1900,13 +1892,16 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 			goto unregister;
+ 	}
+ 
+-	/* Create policy attribute */
+-	result = device_create_file(&tz->device, &dev_attr_policy);
++	result = device_create_file(&tz->device, &dev_attr_type);
+ 	if (result)
+ 		goto unregister;
+ 
+-	/* Add thermal zone params */
+-	result = create_tzp_attrs(&tz->device);
++	result = device_create_file(&tz->device, &dev_attr_temp);
++	if (result)
++		goto unregister;
++
++	/* Create policy attribute */
++	result = device_create_file(&tz->device, &dev_attr_policy);
+ 	if (result)
+ 		goto unregister;
+ 
+@@ -1915,6 +1910,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Add thermal zone params */
++	result = create_tzp_attrs(&tz->device);
++	if (result)
++		goto unregister;
++
  	/* Update 'this' zone's governor information */
  	mutex_lock(&thermal_governor_lock);
  
