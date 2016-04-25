@@ -1,58 +1,94 @@
-From: Marcin Niestroj <m.niestroj@grinn-global.com>
-Subject: Re: [PATCH 1/5] mfd: tps65217: Add support for IRQs
-Date: Mon, 25 Apr 2016 12:50:58 +0200
-Message-ID: <24ac37c7-a318-a145-0123-001947909d7b@grinn-global.com>
-References: <1459789865-3704-1-git-send-email-m.niestroj@grinn-global.com>
- <1459789865-3704-3-git-send-email-m.niestroj@grinn-global.com>
- <57038E46.9070204@ti.com> <57039E74.7030704@grinn-global.com>
- <20160411094426.GB8094@x1>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: governor: Fix prev_load initialization in cpufreq_governor_start()
+Date: Mon, 25 Apr 2016 13:24:22 +0200
+Message-ID: <CAJZ5v0hcePcs3of2-c3tqnY2mJoGex-Lp=u-=s7Y95yX0OZitA@mail.gmail.com>
+References: <5284094.6jVZZT3rEB@vostro.rjw.lan>
+	<20160425041401.GH22726@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20160411094426.GB8094@x1>
-Sender: linux-input-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, broonie@kernel.org
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f194.google.com ([209.85.213.194]:33484 "EHLO
+	mail-ig0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173AbcDYLYY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 07:24:24 -0400
+In-Reply-To: <20160425041401.GH22726@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>
 
-ping
-
-On 11.04.2016 11:44, Lee Jones wrote:
-> FAO Mark,
->
->> On 05.04.2016 12:07, Grygorii Strashko wrote:
->>> On 04/04/2016 08:11 PM, Marcin Niestroj wrote:
->>>> Add support for handling IRQs: power button, AC and USB power stat=
-e
->>>> changes. Mask and interrupt bits are shared within one register, w=
-hich
->>>> prevents us to use regmap_irq implementation. New irq_domain is
->>>> created in
->>>> order to add interrupt handling for each tps65217's subsystem. IRQ
->>>> resources have been added for charger subsystem to be able to noti=
-fy
->>>> about
->>>> AC and USB state changes.
->>>>
->>>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->>>> ---
->>>
->>> Just curious Why not use a regmap_irq?
+On Mon, Apr 25, 2016 at 6:14 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25-04-16, 03:07, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> tps65217 has IRQ mask and status bits in a single register.
->> regmap_irq works in case of two different registers (one mask, one
->> status), but with the same layout of mask and status bits in both.
+>> The way cpufreq_governor_start() initializes j_cdbs->prev_load is
+>> questionable.
+>>
+>> First off, j_cdbs->prev_cpu_wall used as a denominator in the
+>> computation may be zero.  The case this happens is when
+>> get_cpu_idle_time_us() returns -1 and get_cpu_idle_time_jiffy()
+>> used to return that number is called exactly at the jiffies_64
+>> wrap time.  It is rather hard to trigger that error, but it is not
+>> impossible and it will just crash the kernel then.
+>>
+>> Second, j_cdbs->prev_load is computed as the average load during
+>> the entire time since the system started and it may not reflect the
+>> load in the previous sampling period (as it is expected to).
+>> That doesn't play well with the way dbs_update() uses that value.
+>> Namely, if the update time delta (wall_time) happens do be greater
+>> than twice the sampling rate on the first invocation of it, the
+>> initial value of j_cdbs->prev_load (which may be completely off) will
+>> be returned to the caller as the current load (unless it is equal to
+>> zero and unless another CPU sharing the same policy object has a
+>> greater load value).
+>>
+>> For this reason, notice that the prev_load field of struct cpu_dbs_info
+>> is only used by dbs_update() and only in that one place, so if
+>> cpufreq_governor_start() is modified to always initialize it to 0,
+>> it will make dbs_update() always compute the actual load first time
+>> it checks the update time delta against the doubled sampling rate
+>> (after initialization) and there won't be any side effects of it.
+>>
+>> Consequently, modify cpufreq_governor_start() as described.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/cpufreq/cpufreq_governor.c |    8 ++++----
+>>  1 file changed, 4 insertions(+), 4 deletions(-)
+>>
+>> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+>> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+>> @@ -508,12 +508,12 @@ static int cpufreq_governor_start(struct
+>>
+>>       for_each_cpu(j, policy->cpus) {
+>>               struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
+>> -             unsigned int prev_load;
+>>
+>>               j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
+>> -
+>> -             prev_load = j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle;
+>> -             j_cdbs->prev_load = 100 * prev_load / (unsigned int)j_cdbs->prev_cpu_wall;
+>> +             /*
+>> +              * Make the first invocation of dbs_update() compute the load.
+>> +              */
+>> +             j_cdbs->prev_load = 0;
+>>
+>>               if (ignore_nice)
+>>                       j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
 >
-> Mark, is this the right approach?  Or is there another way regmap_irq
-> can be manipulated to support this configuration?
+> I tried to understand why the
 >
+> commit 18b46abd0009 ("cpufreq: governor: Be friendly towards
+> latency-sensitive bursty workloads")
+>
+> modify the START section and added this stuff and I completely failed
+> to understand it now. Do you remember why was this added at all ?
 
---=20
-Marcin Niestr=C3=B3j
---
-To unsubscribe from this list: send the line "unsubscribe linux-input" =
-in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The big comment in dbs_update() explains it, but not the initialization part.
+
+I guess the initialization tried to be smart and avoid the "almost
+zero load" effect in cases when the CPU is idle to start with, but
+that's questionable as explained in my changelog.  I guess I should
+add a "Fixes:" tag for that commit to the patch. :-)
