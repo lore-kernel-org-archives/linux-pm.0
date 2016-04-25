@@ -1,123 +1,54 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v4 0/4] PCI: Add support for suspending (including runtime) of PCIe ports
-Date: Mon, 25 Apr 2016 12:53:20 +0300
-Message-ID: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:16834 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754013AbcDYJxa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Apr 2016 05:53:30 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v4 3/4] ACPI / hotplug / PCI: Runtime resume bridge before rescan
+Date: Mon, 25 Apr 2016 12:53:23 +0300
+Message-ID: <1461578004-129094-4-git-send-email-mika.westerberg@linux.intel.com>
+References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
 To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Current Linux PCI core does not do any kind of power management to PCIe
-ports. This means that we waste energy and consume laptop battery even if
-the port has nothing connected to. These patches aim to change that to the
-right direction.
+If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
+hotplug event, such as BUS_CHECK we need to make sure it is resumed before
+devices below the bridge are re-scanned. Otherwise the devices behind the
+port are not accessible and will be treated as hot-unplugged.
 
-Previous versions of the patches can be found below:
+To fix this, resume PCI bridges from runtime suspend while rescanning.
 
-  v1: http://www.spinics.net/lists/linux-pci/msg49313.html
-  v2: http://www.spinics.net/lists/linux-pci/msg50167.html
-  v3: http://www.spinics.net/lists/linux-pci/msg50345.html
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+ drivers/pci/hotplug/acpiphp_glue.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-This assumes that recent (starting from 2015) PCIe ports are capable of
-transition to D3hot/D3cold. We add a new flag to struct pci_dev 'bridge_d3'
-that is set whenever the PCI core thinks the port can be put to D3. The
-check in pci_pm_suspend_noirq() is then extended to cover devices where
-'bridge_d3' is set.
-
-We then add two new functions pci_bridge_d3_device_changed/removed(). These
-are used to set and clear 'bridge_d3' whenever there is a change in device
-power management policy (or if the device is removed). For example when
-userspace forbids the device to enter D3cold pci_bridge_d3_device_changed()
-will clear 'bridge_d3' of the upstream bridge.
-
-For all PCI ports where 'bridge_d3' is set we also enable and unblock
-runtime PM automatically. Only exception is when the PCIe port claims to
-support hotplug. More information about that is in the changelog of
-patch [4/4].
-
-Since this also touches xhci, I'm adding Mathias and Greg to check if the
-change looks reasonable.
-
-Changes to v3:
-
-  - Make 'no_d3cold' persist for pci_dev. Once this is set through
-    pci_d3cold_enable/disable(), it will persist unless changed again using
-    the same functions. Those also handle setting and clearing 'bridge_d3'
-    as necessary.
-
-  - Add kernel command line parameter "pcie_port_pm=off|force" that can
-    be used to forcibly disable/enable the feature.
-
-  - Use runtime PM autosuspend instead of scheduling runtime suspend
-    manually
-
-  - Allow runtime PM always except when we are dealing with a hotplug
-    bridge. Actual checking whether the port can be suspended is done in
-    ->idle() and ->runtime_suspend() hooks based on 'bridge_d3'.
-
-Changes to v2:
-
-  - Renamed and split pci_enable_d3cold() into two functions
-    pci_d3cold_enable()/disable().
-
-  - Renamed pci_bridge_pm_update() into two functions
-    pci_bridge_d3_device_changed() and pci_bridge_d3_device_removed() that
-    should match better what they are doing.
-
-  - Propagate ->bridge_d3 change to upstream bridges in
-    pci_bridge_d3_update().
-
-  - Removed pci_can_suspend() in favor of doing ->bridge_d3 check directly
-    in pci_pm_suspend_noirq().
-
-  - Extend runtime PM enabling for ports that are using native PCIe
-    hotplug.
-
-  - Call pm_runtime_no_callbacks() for PCIe port service devices (the are
-    handled by the parent device).
-
-Changes to v1:
-
-  - Dropped patch [2/6] as there is no need to use that function from other
-    files anymore.
-
-  - Dropped patches [5-6/6] in favor of using cut-off date.
-
-  - Updated changelog of [1/4] to mention where in the PCI core PCI bridge
-    and PCIe ports are skipped from being power managed.
-
-  - Instead of checking at suspend time if it is possible to transition the
-    port to D3, do it whenever power management status of a device (below a
-    port) is changed or when it is added or removed to the bus.
-
-  - Added patch [3/4] to runtime resume a bridge when ACPI hotplug event is
-    received.
-
-Mika Westerberg (4):
-  PCI: No need to set d3cold_allowed to PCIe ports
-  PCI: Move PCIe ports to D3 during suspend
-  ACPI / hotplug / PCI: Runtime resume bridge before rescan
-  PCI: Add runtime PM support for PCIe ports
-
- Documentation/kernel-parameters.txt |   4 +
- drivers/pci/bus.c                   |   1 +
- drivers/pci/hotplug/acpiphp_glue.c  |   8 +-
- drivers/pci/pci-driver.c            |  10 +-
- drivers/pci/pci-sysfs.c             |   5 +
- drivers/pci/pci.c                   | 176 ++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.h                   |   2 +
- drivers/pci/pcie/portdrv_core.c     |   2 +
- drivers/pci/pcie/portdrv_pci.c      |  52 ++++++++++-
- drivers/pci/remove.c                |   2 +
- drivers/usb/host/xhci-pci.c         |   2 +-
- include/linux/pci.h                 |   3 +
- 12 files changed, 257 insertions(+), 10 deletions(-)
-
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index fa49f9143b80..d64ce8aa99b3 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -756,8 +756,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
+ 
+ 	acpi_lock_hp_context();
+ 	bridge = context->bridge;
+-	if (bridge)
++	if (bridge) {
+ 		get_bridge(bridge);
++		pm_runtime_get_sync(&bridge->pci_dev->dev);
++	}
+ 
+ 	acpi_unlock_hp_context();
+ 
+@@ -797,8 +799,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
+ 	}
+ 
+ 	pci_unlock_rescan_remove();
+-	if (bridge)
++	if (bridge) {
++		pm_runtime_put(&bridge->pci_dev->dev);
+ 		put_bridge(bridge);
++	}
+ }
+ 
+ static int acpiphp_hotplug_notify(struct acpi_device *adev, u32 type)
 -- 
 2.8.0.rc3
-
