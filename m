@@ -1,43 +1,48 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 19/41] Documentation: dt: opp: fix spelling mistake
-Date: Mon, 25 Apr 2016 08:50:53 -0500
-Message-ID: <20160425135053.GA9061@rob-hp-laptop>
-References: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
- <1461543878-3639-20-git-send-email-eric@engestrom.ch>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] powercap/intel_rapl: Add support for Kabylake
+Date: Mon, 25 Apr 2016 16:20:17 +0200
+Message-ID: <CAJZ5v0imwM3RCPM8QTWSWwEOfyCUZUTECMEa1hQOhyCLW06K_g@mail.gmail.com>
+References: <1461345439-21215-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1461543878-3639-20-git-send-email-eric@engestrom.ch>
+In-Reply-To: <1461345439-21215-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eric Engestrom <eric@engestrom.ch>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 25, 2016 at 01:24:16AM +0100, Eric Engestrom wrote:
-> Signed-off-by: Eric Engestrom <eric@engestrom.ch>
+On Fri, Apr 22, 2016 at 7:17 PM, Jacob Pan
+<jacob.jun.pan@linux.intel.com> wrote:
+> Kabylake is similar to Skylake in terms of RAPL.
+>
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Applied, thanks.
+How urgent is this?
 
-Rob
+Can we live without it in 4.6 in particular?
 
 > ---
->  Documentation/devicetree/bindings/opp/opp.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 601256f..ee91cbd 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -45,7 +45,7 @@ Devices supporting OPPs must set their "operating-points-v2" property with
->  phandle to a OPP table in their DT node. The OPP core will use this phandle to
->  find the operating points for the device.
->  
-> -If required, this can be extended for SoC vendor specfic bindings. Such bindings
-> +If required, this can be extended for SoC vendor specific bindings. Such bindings
->  should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
->  and should have a compatible description like: "operating-points-v2-<vendor>".
->  
-> -- 
-> 2.8.0
-> 
+>  drivers/powercap/intel_rapl.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 8fad0a7..470bb62 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1101,6 +1101,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+>         RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
+>         RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
+>         RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
+> +       RAPL_CPU(0x8E, rapl_defaults_core),/* Kabylake */
+> +       RAPL_CPU(0x9E, rapl_defaults_core),/* Kabylake */
+>         {}
+>  };
+>  MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
