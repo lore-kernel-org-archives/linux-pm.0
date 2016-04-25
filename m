@@ -1,76 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: governor: Fix prev_load initialization in cpufreq_governor_start()
-Date: Mon, 25 Apr 2016 03:07:45 +0200
-Message-ID: <5284094.6jVZZT3rEB@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 10/10] cpufreq: mvebu: Use generic platdev driver
+Date: Mon, 25 Apr 2016 08:30:41 +0530
+Message-ID: <20160425030041.GF22726@vireshk-i7>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
+ <1c2cc13d812e04f231ddd4313e3ba6a54fb4632c.1461228504.git.viresh.kumar@linaro.org>
+ <7576455.rVXD0283Nr@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45674 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752369AbcDYBEs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Apr 2016 21:04:48 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <7576455.rVXD0283Nr@wuerfel>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, nm@ti.com, thomas.petazzoni@free-electrons.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 23-04-16, 00:42, Arnd Bergmann wrote:
+> On Thursday 21 April 2016 14:29:02 Viresh Kumar wrote:
+> > diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
+> > index 79d0a5d9da8e..f24f46776fbb 100644
+> > --- a/arch/arm/mach-mvebu/pmsu.c
+> > +++ b/arch/arm/mach-mvebu/pmsu.c
+> > @@ -685,8 +685,6 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
+> >                         dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
+> >                                 __func__, ret);
+> >         }
+> > -
+> > -       platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> >         return 0;
+> >  }
+> >  
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index 69b2a222c84e..5704a92c52dc 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -33,6 +33,8 @@ static const struct of_device_id machines[] = {
+> >  
+> >         { .compatible = "marvell,berlin", },
+> >  
+> > +       { .compatible = "marvell,armadaxp", },
+> > +
+> >         { .compatible = "samsung,exynos3250", },
+> >         { .compatible = "samsung,exynos4210", },
+> >         { .compatible = "samsung,exynos4212", },
+> 
+> I think to make it clear that the ordering is significant here, I would leave this
+> platform_device_register_simple() in armada_xp_pmsu_cpufreq_init().
+> 
+> However, it might be helpful to move that function into a new file in
+> drivers/cpufreq/ if that works.
 
-The way cpufreq_governor_start() initializes j_cdbs->prev_load is
-questionable.
+We just can't get wrong with the ordering here, as this is done from
+device_initcall() and so that point is out of question.
 
-First off, j_cdbs->prev_cpu_wall used as a denominator in the
-computation may be zero.  The case this happens is when
-get_cpu_idle_time_us() returns -1 and get_cpu_idle_time_jiffy()
-used to return that number is called exactly at the jiffies_64
-wrap time.  It is rather hard to trigger that error, but it is not
-impossible and it will just crash the kernel then.
+The other thing that can happen is that armada_xp_pmsu_cpufreq_init()
+call can fail. In that case, most of the times cpufreq-dt ->init()
+will fail as well, so even that is fine for me.
 
-Second, j_cdbs->prev_load is computed as the average load during
-the entire time since the system started and it may not reflect the
-load in the previous sampling period (as it is expected to).
-That doesn't play well with the way dbs_update() uses that value.
-Namely, if the update time delta (wall_time) happens do be greater
-than twice the sampling rate on the first invocation of it, the
-initial value of j_cdbs->prev_load (which may be completely off) will
-be returned to the caller as the current load (unless it is equal to
-zero and unless another CPU sharing the same policy object has a
-greater load value).
+And, so I think we can keep this patch as is.
 
-For this reason, notice that the prev_load field of struct cpu_dbs_info
-is only used by dbs_update() and only in that one place, so if
-cpufreq_governor_start() is modified to always initialize it to 0,
-it will make dbs_update() always compute the actual load first time
-it checks the update time delta against the doubled sampling rate
-(after initialization) and there won't be any side effects of it.
+Do you agree ?
 
-Consequently, modify cpufreq_governor_start() as described.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_governor.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -508,12 +508,12 @@ static int cpufreq_governor_start(struct
- 
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
--		unsigned int prev_load;
- 
- 		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
--
--		prev_load = j_cdbs->prev_cpu_wall - j_cdbs->prev_cpu_idle;
--		j_cdbs->prev_load = 100 * prev_load / (unsigned int)j_cdbs->prev_cpu_wall;
-+		/*
-+		 * Make the first invocation of dbs_update() compute the load.
-+		 */
-+		j_cdbs->prev_load = 0;
- 
- 		if (ignore_nice)
- 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-
+-- 
+viresh
