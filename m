@@ -1,47 +1,148 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 0/4] Thermal: Support for hardware-tracked trip points
-Date: Mon, 25 Apr 2016 11:02:43 +0800
-Message-ID: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 1/4] thermal: Add support for hardware-tracked trip points
+Date: Mon, 25 Apr 2016 11:02:44 +0800
+Message-ID: <1461553367-24744-2-git-send-email-wxt@rock-chips.com>
+References: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, eddie.cai@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, eddie.cai@rock-chips.com, Sascha Hauer <s.hauer@pengutronix.de>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The history patches come from Mikko and Sascha.
-http://thread.gmane.org/gmane.linux.power-management.general/59451
+From: Sascha Hauer <s.hauer@pengutronix.de>
 
-Now, I pick them up to continue upstream.
-Nevermind!
+This adds support for hardware-tracked trip points to the device tree
+thermal sensor framework.
 
-Tis series adds support for hardware trip points. It picks up earlier
-work from Mikko Perttunen. Mikko implemented hardware trip points as part
-of the device tree support. It was suggested back then to move the
-functionality to the thermal core instead of putting more code into the
-device tree support. This series does exactly that.
+The framework supports an arbitrary number of trip points. Whenever
+the current temperature is updated, the trip points immediately
+below and above the current temperature are found. A .set_trips
+callback is then called with the temperatures. If there is no trip
+point above or below the current temperature, the passed trip
+temperature will be -INT_MAX or INT_MAX respectively. In this callback,
+the driver should program the hardware such that it is notified
+when either of these trip points are triggered. When a trip point
+is triggered, the driver should call `thermal_zone_device_update'
+for the respective thermal zone. This will cause the trip points
+to be updated again.
 
-This series patches rebase the conflicts.
-Note that the hardware-tracked trip points are very well tested currently.
+If .set_trips is not implemented, the framework behaves as before.
 
-Verified and tested on https://github.com/Caesar-github/rockchip/tree/wip/fixes-thermal-0425
-That's based on linux-kernel 20160422.
+This patch is based on an earlier version from Mikko Perttunen
+<mikko.perttunen@kapsi.fi>
 
-[    0.000000] Linux version 4.6.0-rc4-next-20160422-00016-g0ac0bfb-dirty
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org
+---
 
+ drivers/thermal/thermal_core.c | 48 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h        |  3 +++
+ 2 files changed, 51 insertions(+)
 
-
-Sascha Hauer (4):
-  thermal: Add support for hardware-tracked trip points
-  thermal: of: implement .set_trips for device tree thermal zones
-  thermal: streamline get_trend callbacks
-  thermal: bang-bang governor: act on lower trip boundary
-
- drivers/thermal/gov_bang_bang.c                    |  2 +-
- drivers/thermal/of-thermal.c                       | 23 ++++++-----
- drivers/thermal/thermal_core.c                     | 48 ++++++++++++++++++++++
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-------
- include/linux/thermal.h                            |  9 +++-
- 5 files changed, 78 insertions(+), 29 deletions(-)
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index f1db496..cfef8cc 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -520,6 +520,47 @@ exit:
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+ 
++static void thermal_zone_set_trips(struct thermal_zone_device *tz)
++{
++	int low = -INT_MAX;
++	int high = INT_MAX;
++	int trip_temp, hysteresis;
++	int temp = tz->temperature;
++	int i, ret;
++
++	if (!tz->ops->set_trips)
++		return;
++
++	for (i = 0; i < tz->trips; i++) {
++		int trip_low;
++
++		tz->ops->get_trip_temp(tz, i, &trip_temp);
++		tz->ops->get_trip_hyst(tz, i, &hysteresis);
++
++		trip_low = trip_temp - hysteresis;
++
++		if (trip_low < temp && trip_low > low)
++			low = trip_low;
++
++		if (trip_temp > temp && trip_temp < high)
++			high = trip_temp;
++	}
++
++	/* No need to change trip points */
++	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
++		return;
++
++	tz->prev_low_trip = low;
++	tz->prev_high_trip = high;
++
++	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
++			low, high);
++
++	ret = tz->ops->set_trips(tz, low, high);
++	if (ret)
++		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
++}
++
+ static void update_temperature(struct thermal_zone_device *tz)
+ {
+ 	int temp, ret;
+@@ -569,6 +610,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 
+ 	update_temperature(tz);
+ 
++	thermal_zone_set_trips(tz);
++
+ 	for (count = 0; count < tz->trips; count++)
+ 		handle_thermal_trip(tz, count);
+ }
+@@ -754,6 +797,9 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+ 	 */
+ 	ret = tz->ops->set_trip_hyst(tz, trip, temperature);
+ 
++	if (!ret)
++		thermal_zone_set_trips(tz);
++
+ 	return ret ? ret : count;
+ }
+ 
+@@ -1843,6 +1889,8 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	tz->trips = trips;
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
++	tz->prev_low_trip = INT_MAX;
++	tz->prev_high_trip = -INT_MAX;
+ 	/* A new thermal zone needs to be updated anyway. */
+ 	atomic_set(&tz->need_update, 1);
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e45abe7..e258359 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -98,6 +98,7 @@ struct thermal_zone_device_ops {
+ 	int (*unbind) (struct thermal_zone_device *,
+ 		       struct thermal_cooling_device *);
+ 	int (*get_temp) (struct thermal_zone_device *, int *);
++	int (*set_trips) (struct thermal_zone_device *, int, int);
+ 	int (*get_mode) (struct thermal_zone_device *,
+ 			 enum thermal_device_mode *);
+ 	int (*set_mode) (struct thermal_zone_device *,
+@@ -199,6 +200,8 @@ struct thermal_zone_device {
+ 	int last_temperature;
+ 	int emul_temperature;
+ 	int passive;
++	int prev_low_trip;
++	int prev_high_trip;
+ 	unsigned int forced_passive;
+ 	atomic_t need_update;
+ 	struct thermal_zone_device_ops *ops;
 -- 
 1.9.1
