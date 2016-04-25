@@ -1,54 +1,89 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v4 3/4] ACPI / hotplug / PCI: Runtime resume bridge before rescan
-Date: Mon, 25 Apr 2016 12:53:23 +0300
-Message-ID: <1461578004-129094-4-git-send-email-mika.westerberg@linux.intel.com>
-References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Subject: Re: [PATCH v2 2/3] cpufreq: intel_pstate: Adjust policy->max
+Date: Mon, 25 Apr 2016 13:13:27 +0300
+Message-ID: <571DEDC7.9010600@yandex-team.ru>
+References: <1461384233-24214-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1461384233-24214-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from forward-corp1o.mail.yandex.net ([37.140.190.172]:52922 "EHLO
+	forward-corp1o.mail.yandex.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754161AbcDYKNb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 06:13:31 -0400
+In-Reply-To: <1461384233-24214-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
-If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
-hotplug event, such as BUS_CHECK we need to make sure it is resumed before
-devices below the bridge are re-scanned. Otherwise the devices behind the
-port are not accessible and will be treated as hot-unplugged.
+On 23.04.2016 07:03, Srinivas Pandruvada wrote:
+> When policy->max is changed via _PPC or sysfs and is more than the max non
+> turbo frequency, it does not really change resulting performance in some
+> processors. When policy->max results in a P-State ratio more than the
+> turbo activation ratio, then processor can choose any P-State up to max
+> turbo. So the user or _PPC setting has no value, but this can cause
+> undesirable side effects like:
+> - Showing reduced max percentage in Intel P-State sysfs
+> - It can cause reduced max performance, if the policy->max is set to
+> the least turbo frequency and because of precision error in calculation
+> of ceiling limit, we may end up in a limit which is in non turbo region.
+> This issue is more prone when we enforce _PPC limit, because of the way
+> _PPC limit is set to indicate the beginning of turbo region when config
+> TDP feature is in use.
 
-To fix this, resume PCI bridges from runtime suspend while rescanning.
+I don't understand this. This fix for configuration where maximum allowed
+frequency between maximum non-turbo and first turbo frequency?
+Or this address regression that Borislav Petkov reported last year where
+_PSS had bogus pstate 0xff?
 
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
----
- drivers/pci/hotplug/acpiphp_glue.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> When config TDP feature is ON, the max non turbo ratio can be less than
+> max physical non turbo ratio. In this case _PPC points to turbo activation
+> ratio + 1. In this case we don't need to treat this as the reduced
+> frequency in set_policy callback, as we can get performance up to max
+> turbo frequency.
+>
+> In this change when config TDP is active (When the physical max non turbo
+> ratio is more than the current max non turbo ratio), any request above
+> current max non turbo is treated as full performance.
+>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c | 12 ++++++++++++
+>   1 file changed, 12 insertions(+)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index b3e8124..c9cc72d 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1428,11 +1428,23 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+>
+>   static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>   {
+> +	struct cpudata *cpu;
+> +
+>   	if (!policy->cpuinfo.max_freq)
+>   		return -ENODEV;
+>
+>   	intel_pstate_clear_update_util_hook(policy->cpu);
+>
+> +	cpu = all_cpu_data[0];
+> +	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate) {
+> +		if (policy->max < policy->cpuinfo.max_freq &&
+> +		    policy->max > (cpu->pstate.max_pstate *
+> +				   cpu->pstate.scaling)) {
+> +			pr_info("policy->max > max non turbo frequency\n");
+> +			policy->max = policy->cpuinfo.max_freq;
+> +		}
+> +	}
+> +
+>   	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+>   		limits = &performance_limits;
+>   		if (policy->max >= policy->cpuinfo.max_freq) {
+>
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index fa49f9143b80..d64ce8aa99b3 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -756,8 +756,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
- 
- 	acpi_lock_hp_context();
- 	bridge = context->bridge;
--	if (bridge)
-+	if (bridge) {
- 		get_bridge(bridge);
-+		pm_runtime_get_sync(&bridge->pci_dev->dev);
-+	}
- 
- 	acpi_unlock_hp_context();
- 
-@@ -797,8 +799,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
- 	}
- 
- 	pci_unlock_rescan_remove();
--	if (bridge)
-+	if (bridge) {
-+		pm_runtime_put(&bridge->pci_dev->dev);
- 		put_bridge(bridge);
-+	}
- }
- 
- static int acpiphp_hotplug_notify(struct acpi_device *adev, u32 type)
+
 -- 
-2.8.0.rc3
+Konstantin
