@@ -1,45 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 19/41] Documentation: dt: opp: fix spelling mistake
-Date: Mon, 25 Apr 2016 08:32:56 +0530
-Message-ID: <20160425030256.GG22726@vireshk-i7>
-References: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
- <1461543878-3639-20-git-send-email-eric@engestrom.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35859 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbcDYDDA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Apr 2016 23:03:00 -0400
-Received: by mail-pa0-f43.google.com with SMTP id bt5so5630959pac.3
-        for <linux-pm@vger.kernel.org>; Sun, 24 Apr 2016 20:02:59 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1461543878-3639-20-git-send-email-eric@engestrom.ch>
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH 0/4] Thermal: Support for hardware-tracked trip points
+Date: Mon, 25 Apr 2016 11:02:43 +0800
+Message-ID: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, eddie.cai@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eric Engestrom <eric@engestrom.ch>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 25-04-16, 01:24, Eric Engestrom wrote:
-> Signed-off-by: Eric Engestrom <eric@engestrom.ch>
-> ---
->  Documentation/devicetree/bindings/opp/opp.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 601256f..ee91cbd 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -45,7 +45,7 @@ Devices supporting OPPs must set their "operating-points-v2" property with
->  phandle to a OPP table in their DT node. The OPP core will use this phandle to
->  find the operating points for the device.
->  
-> -If required, this can be extended for SoC vendor specfic bindings. Such bindings
-> +If required, this can be extended for SoC vendor specific bindings. Such bindings
->  should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
->  and should have a compatible description like: "operating-points-v2-<vendor>".
+The history patches come from Mikko and Sascha.
+http://thread.gmane.org/gmane.linux.power-management.general/59451
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Now, I pick them up to continue upstream.
+Nevermind!
+
+Tis series adds support for hardware trip points. It picks up earlier
+work from Mikko Perttunen. Mikko implemented hardware trip points as part
+of the device tree support. It was suggested back then to move the
+functionality to the thermal core instead of putting more code into the
+device tree support. This series does exactly that.
+
+This series patches rebase the conflicts.
+Note that the hardware-tracked trip points are very well tested currently.
+
+Verified and tested on https://github.com/Caesar-github/rockchip/tree/wip/fixes-thermal-0425
+That's based on linux-kernel 20160422.
+
+[    0.000000] Linux version 4.6.0-rc4-next-20160422-00016-g0ac0bfb-dirty
+
+
+
+Sascha Hauer (4):
+  thermal: Add support for hardware-tracked trip points
+  thermal: of: implement .set_trips for device tree thermal zones
+  thermal: streamline get_trend callbacks
+  thermal: bang-bang governor: act on lower trip boundary
+
+ drivers/thermal/gov_bang_bang.c                    |  2 +-
+ drivers/thermal/of-thermal.c                       | 23 ++++++-----
+ drivers/thermal/thermal_core.c                     | 48 ++++++++++++++++++++++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-------
+ include/linux/thermal.h                            |  9 +++-
+ 5 files changed, 78 insertions(+), 29 deletions(-)
 
 -- 
-viresh
+1.9.1
