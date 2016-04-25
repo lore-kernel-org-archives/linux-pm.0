@@ -1,61 +1,92 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH 10/10] cpufreq: mvebu: Use generic platdev driver
-Date: Mon, 25 Apr 2016 17:55:03 +0200
-Message-ID: <20160425175503.28ef34d9@free-electrons.com>
-References: <cover.1461228504.git.viresh.kumar@linaro.org>
-	<17150729.NF4MViUffk@wuerfel>
-	<20160425152914.GI6104@vireshk-i7>
-	<5536968.ADFL5hRmGD@wuerfel>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix processing for turbo
+ activation ratio
+Date: Mon, 25 Apr 2016 09:28:30 -0700
+Message-ID: <1461601710.8946.209.camel@linux.intel.com>
+References: <1461380039-13804-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <CAJZ5v0hnf32+012i9tDskFNrHzEeJgGp+e00rGHH17ooN5qSPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:38290 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932723AbcDYPzQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 11:55:16 -0400
-In-Reply-To: <5536968.ADFL5hRmGD@wuerfel>
+Received: from mga09.intel.com ([134.134.136.24]:42035 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933032AbcDYQ2N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Apr 2016 12:28:13 -0400
+In-Reply-To: <CAJZ5v0hnf32+012i9tDskFNrHzEeJgGp+e00rGHH17ooN5qSPw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, nm@ti.com, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hello,
+On Mon, 2016-04-25 at 15:48 +0200, Rafael J. Wysocki wrote:
+> On Sat, Apr 23, 2016 at 4:53 AM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> >=20
+> > When the config TDP level is not nominal (level =3D 0), the MSR
+> > values for
+> > reading level 1 and level 2 ratios contain power in low 14 bits and
+> > actual
+> > ratio bits are at bits [23:16]. The current processing for level 1
+> > and
+> > level 2 is wrong as there is no shift done to get actual ratio.
+> >=20
+> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
+> > .com>
+> Since this is a fix, do we need it in v4.6?
+>=20
+This impact the display of turbo_pct in Intel P-state sysfs. So if not
+too late, I prefer for v4.6.
+=C2=A0
+> Do we want it in -stable too and in what -stable if so?
+4.4 onward.
+>=20
 
-On Mon, 25 Apr 2016 17:46:53 +0200, Arnd Bergmann wrote:
+Thanks,
+Srinivas
 
-> > What code are you talking about? Initializing the OPPs or adding the
-> > cpufreq-dt device? The first one (or whatever is left now in that
-> > function) can stay anywhere, even as a cpufreq driver. I was talking
-> > about the fact that we don't have a sequence problem to solve here.
-> 
-> My line of thinking was that the armada_xp_pmsu_cpufreq_init()
-> function makes sense by itself and feels like it should be
-> one file in drivers/cpufreq, including the creation of the device.
-> 
-> Even without the argument of the sequencing, they two parts sort
-> of belong together because the cpufreq-dt driver depends on both
-> of them being run before it can function. It's also the same amount
-> of code, as you are replacing one line in armada_xp_pmsu_cpufreq_init
-> with one line in "struct of_device_id machines".
-> 
-> It's not really that important, just a feeling I had that it could
-> be done better. Unless the mvebu maintainers feel strongly about
-> it, just do as you prefer.
-
-As a mvebu folk, I don't really have a strong opinion on this. We also
-have some cpufreq device registration code in
-arch/arm/mach-mvebu/kirkwood.c for the older Kirkwood platform, though
-this one uses a custom cpufreq driver and not the generic cpufreq-dt
-driver.
-
-Ideally, in the grand direction of removing as much things as possible
-from mach-<foo> directories, it would be great to move such
-initializations somewhere else. But cpufreq is not by far not the only
-reason why we still have code in mach-<foo>, at least in the mvebu land.
-
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+>=20
+> >=20
+> > ---
+> > =C2=A0drivers/cpufreq/intel_pstate.c | 4 ++++
+> > =C2=A01 file changed, 4 insertions(+)
+> >=20
+> > diff --git a/drivers/cpufreq/intel_pstate.c
+> > b/drivers/cpufreq/intel_pstate.c
+> > index 1b2767d..03f94c2 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -813,6 +813,10 @@ static int core_get_max_pstate(void)
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0if (err)
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0goto skip_tar;
+> >=20
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+/* For level 1 and 2, bits[23:16] contains
+> > ratio */
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+if (tdp_ctrl)
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0tdp_ratio >>=3D 16;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+tdp_ratio &=3D 0xff; /* ratios are only 8
+> > bits long */
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0if (tdp_ratio - 1 =3D=3D tar) {
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0max_pstate =3D tar;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pr_debug("max_pstate=
+=3DTAC %x\n",
+> > max_pstate);
+> > --
