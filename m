@@ -1,50 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix processing for turbo
- activation ratio
-Date: Mon, 25 Apr 2016 23:44:50 +0200
-Message-ID: <CAJZ5v0jBBGnDJbws-0Uzj=7H8i3CU3vUeafWmnKZ594vWBjwng@mail.gmail.com>
-References: <1461380039-13804-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<CAJZ5v0hnf32+012i9tDskFNrHzEeJgGp+e00rGHH17ooN5qSPw@mail.gmail.com>
-	<1461601710.8946.209.camel@linux.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 07/10] cpufreq: dt: Identify cpu-sharing for platforms
+ without operating-points-v2
+Date: Mon, 25 Apr 2016 14:45:33 -0700
+Message-ID: <20160425214533.GA29990@codeaurora.org>
+References: <cover.1461228504.git.viresh.kumar@linaro.org>
+ <e42f0fdd6b67461a631ca9d966a52357bbc6cc75.1461228504.git.viresh.kumar@linaro.org>
+ <20160422222736.GU13149@codeaurora.org>
+ <20160425093650.GG32183@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f44.google.com ([209.85.215.44]:35876 "EHLO
-	mail-lf0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965118AbcDYVov (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 17:44:51 -0400
-Received: by mail-lf0-f44.google.com with SMTP id u64so25164477lff.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Apr 2016 14:44:51 -0700 (PDT)
-In-Reply-To: <1461601710.8946.209.camel@linux.intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41438 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965053AbcDYVpf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 17:45:35 -0400
+Content-Disposition: inline
+In-Reply-To: <20160425093650.GG32183@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, arnd.bergmann@linaro.org, andrew@lunn.ch, gregory.clement@free-electrons.com, jason@lakedaemon.net, sebastian.hesselbarth@gmail.com, thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org
 
-On Mon, Apr 25, 2016 at 6:28 PM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Mon, 2016-04-25 at 15:48 +0200, Rafael J. Wysocki wrote:
->> On Sat, Apr 23, 2016 at 4:53 AM, Srinivas Pandruvada
->> <srinivas.pandruvada@linux.intel.com> wrote:
->> >
->> > When the config TDP level is not nominal (level = 0), the MSR
->> > values for
->> > reading level 1 and level 2 ratios contain power in low 14 bits and
->> > actual
->> > ratio bits are at bits [23:16]. The current processing for level 1
->> > and
->> > level 2 is wrong as there is no shift done to get actual ratio.
->> >
->> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
->> > .com>
->> Since this is a fix, do we need it in v4.6?
->>
-> This impact the display of turbo_pct in Intel P-state sysfs. So if not
-> too late, I prefer for v4.6.
->
->> Do we want it in -stable too and in what -stable if so?
-> 4.4 onward.
+On 04/25, Viresh Kumar wrote:
+> On 22-04-16, 15:27, Stephen Boyd wrote:
+> > On 04/21, Viresh Kumar wrote:
+> > > @@ -167,14 +167,16 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> > >  	/* Get OPP-sharing information from "operating-points-v2" bindings */
+> > >  	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
+[..]
+> > > +		if (dev_pm_opp_get_sharing_cpus(cpu_dev, policy->cpus))
+> > > +			fallback = true;
+> > 
+> > I'm sort of lost, we make the same call twice here. Why would the
+> > return value change between the first time and the second?
+> 
+> Two different APIs, which look similar :)
+> 
+> The first one tries to find the sharing-cpus relation from DT, the
+> other one is for v1 bindings and finds it due to platform code
+> dev_pm_opp_set_sharing_cpus() call.
 
-OK
+Ah thanks. My eyes glossed over the "of" part. Sounds fine.
 
-I also added a Fixes: tag to the commit.
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
