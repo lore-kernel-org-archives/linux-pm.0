@@ -1,55 +1,58 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] cpufreq: governor: Fix prev_load initialization in
- cpufreq_governor_start()
-Date: Mon, 25 Apr 2016 15:45:54 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640287478E9@shsmsx102.ccr.corp.intel.com>
-References: <5284094.6jVZZT3rEB@vostro.rjw.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 10/10] cpufreq: mvebu: Use generic platdev driver
+Date: Mon, 25 Apr 2016 17:46:53 +0200
+Message-ID: <5536968.ADFL5hRmGD@wuerfel>
+References: <cover.1461228504.git.viresh.kumar@linaro.org> <17150729.NF4MViUffk@wuerfel> <20160425152914.GI6104@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5284094.6jVZZT3rEB@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([217.72.192.75]:59446 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbcDYPsA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 11:48:00 -0400
+In-Reply-To: <20160425152914.GI6104@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, nm@ti.com, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5
-c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogTW9uZGF5LCBBcHJpbCAy
-NSwgMjAxNiA5OjA4IEFNDQo+IFRvOiBMaW51eCBQTSBsaXN0DQo+IENjOiBMaW51eCBLZXJuZWwg
-TWFpbGluZyBMaXN0OyBWaXJlc2ggS3VtYXI7IENoZW4sIFl1IEMNCj4gU3ViamVjdDogW1BBVENI
-XSBjcHVmcmVxOiBnb3Zlcm5vcjogRml4IHByZXZfbG9hZCBpbml0aWFsaXphdGlvbiBpbg0KPiBj
-cHVmcmVxX2dvdmVybm9yX3N0YXJ0KCkNCj4gDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-YWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gDQo+IFRoZSB3YXkgY3B1ZnJlcV9nb3Zlcm5v
-cl9zdGFydCgpIGluaXRpYWxpemVzIGpfY2Ricy0+cHJldl9sb2FkIGlzIHF1ZXN0aW9uYWJsZS4N
-Cj4gDQo+IEZpcnN0IG9mZiwgal9jZGJzLT5wcmV2X2NwdV93YWxsIHVzZWQgYXMgYSBkZW5vbWlu
-YXRvciBpbiB0aGUgY29tcHV0YXRpb24gbWF5DQo+IGJlIHplcm8uICBUaGUgY2FzZSB0aGlzIGhh
-cHBlbnMgaXMgd2hlbg0KPiBnZXRfY3B1X2lkbGVfdGltZV91cygpIHJldHVybnMgLTEgYW5kIGdl
-dF9jcHVfaWRsZV90aW1lX2ppZmZ5KCkgdXNlZCB0byByZXR1cm4NCj4gdGhhdCBudW1iZXIgaXMg
-Y2FsbGVkIGV4YWN0bHkgYXQgdGhlIGppZmZpZXNfNjQgd3JhcCB0aW1lLiAgSXQgaXMgcmF0aGVy
-IGhhcmQgdG8NCj4gdHJpZ2dlciB0aGF0IGVycm9yLCBidXQgaXQgaXMgbm90IGltcG9zc2libGUg
-YW5kIGl0IHdpbGwganVzdCBjcmFzaCB0aGUga2VybmVsIHRoZW4uDQo+IA0KPiBTZWNvbmQsIGpf
-Y2Ricy0+cHJldl9sb2FkIGlzIGNvbXB1dGVkIGFzIHRoZSBhdmVyYWdlIGxvYWQgZHVyaW5nIHRo
-ZSBlbnRpcmUNCj4gdGltZSBzaW5jZSB0aGUgc3lzdGVtIHN0YXJ0ZWQgYW5kIGl0IG1heSBub3Qg
-cmVmbGVjdCB0aGUgbG9hZCBpbiB0aGUgcHJldmlvdXMNCj4gc2FtcGxpbmcgcGVyaW9kIChhcyBp
-dCBpcyBleHBlY3RlZCB0bykuDQo+IFRoYXQgZG9lc24ndCBwbGF5IHdlbGwgd2l0aCB0aGUgd2F5
-IGRic191cGRhdGUoKSB1c2VzIHRoYXQgdmFsdWUuDQo+IE5hbWVseSwgaWYgdGhlIHVwZGF0ZSB0
-aW1lIGRlbHRhICh3YWxsX3RpbWUpIGhhcHBlbnMgZG8gYmUgZ3JlYXRlciB0aGFuIHR3aWNlDQpo
-YXBwZW5zIHMvZG8vdG8gYmU/DQo+IHRoZSBzYW1wbGluZyByYXRlIG9uIHRoZSBmaXJzdCBpbnZv
-Y2F0aW9uIG9mIGl0LCB0aGUgaW5pdGlhbCB2YWx1ZSBvZiBqX2NkYnMtDQo+ID5wcmV2X2xvYWQg
-KHdoaWNoIG1heSBiZSBjb21wbGV0ZWx5IG9mZikgd2lsbCBiZSByZXR1cm5lZCB0byB0aGUgY2Fs
-bGVyIGFzIHRoZQ0KPiBjdXJyZW50IGxvYWQgKHVubGVzcyBpdCBpcyBlcXVhbCB0byB6ZXJvIGFu
-ZCB1bmxlc3MgYW5vdGhlciBDUFUgc2hhcmluZyB0aGUgc2FtZQ0KPiBwb2xpY3kgb2JqZWN0IGhh
-cyBhIGdyZWF0ZXIgbG9hZCB2YWx1ZSkuDQo+IA0KPiBGb3IgdGhpcyByZWFzb24sIG5vdGljZSB0
-aGF0IHRoZSBwcmV2X2xvYWQgZmllbGQgb2Ygc3RydWN0IGNwdV9kYnNfaW5mbyBpcyBvbmx5DQo+
-IHVzZWQgYnkgZGJzX3VwZGF0ZSgpIGFuZCBvbmx5IGluIHRoYXQgb25lIHBsYWNlLCBzbyBpZg0K
-PiBjcHVmcmVxX2dvdmVybm9yX3N0YXJ0KCkgaXMgbW9kaWZpZWQgdG8gYWx3YXlzIGluaXRpYWxp
-emUgaXQgdG8gMCwgaXQgd2lsbCBtYWtlDQo+IGRic191cGRhdGUoKSBhbHdheXMgY29tcHV0ZSB0
-aGUgYWN0dWFsIGxvYWQgZmlyc3QgdGltZSBpdCBjaGVja3MgdGhlIHVwZGF0ZQ0KPiB0aW1lIGRl
-bHRhIGFnYWluc3QgdGhlIGRvdWJsZWQgc2FtcGxpbmcgcmF0ZSAoYWZ0ZXIgaW5pdGlhbGl6YXRp
-b24pIGFuZCB0aGVyZQ0KPiB3b24ndCBiZSBhbnkgc2lkZSBlZmZlY3RzIG9mIGl0Lg0KPiANCj4g
-Q29uc2VxdWVudGx5LCBtb2RpZnkgY3B1ZnJlcV9nb3Zlcm5vcl9zdGFydCgpIGFzIGRlc2NyaWJl
-ZC4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNv
-Y2tpQGludGVsLmNvbT4NCj4gLS0tDQoNCkFja2VkLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50
-ZWwuY29tPg0KDQp0aGFua3MsDQpZdQ0K
+On Monday 25 April 2016 20:59:14 Viresh Kumar wrote:
+> On 25-04-16, 17:26, Arnd Bergmann wrote:
+> > On Monday 25 April 2016 18:26:05 Viresh Kumar wrote:
+> > > On 25-04-16, 14:53, Arnd Bergmann wrote:
+> > > > What are the downsides of moving armada_xp_pmsu_cpufreq_init()
+> > > > into drivers/cpufreq?
+> > > 
+> > > More special code :)
+> > 
+> > Of course the special code still exists, it seems more like neither of
+> > us wants to have it in the portion of the kernel that he maintains ;-)
+> 
+> Hehe.. But after $subject patch, we don't have any special code for
+> creating the device, isn't it?
+> 
+> > Maybe the mvebu maintainers have a preference where they'd like the
+> > code to be, they are the ones that are most impacted if anything
+> > goes wrong.
+> 
+> What code are you talking about? Initializing the OPPs or adding the
+> cpufreq-dt device? The first one (or whatever is left now in that
+> function) can stay anywhere, even as a cpufreq driver. I was talking
+> about the fact that we don't have a sequence problem to solve here.
+
+My line of thinking was that the armada_xp_pmsu_cpufreq_init()
+function makes sense by itself and feels like it should be
+one file in drivers/cpufreq, including the creation of the device.
+
+Even without the argument of the sequencing, they two parts sort
+of belong together because the cpufreq-dt driver depends on both
+of them being run before it can function. It's also the same amount
+of code, as you are replacing one line in armada_xp_pmsu_cpufreq_init
+with one line in "struct of_device_id machines".
+
+It's not really that important, just a feeling I had that it could
+be done better. Unless the mvebu maintainers feel strongly about
+it, just do as you prefer.
+
+	Arnd
