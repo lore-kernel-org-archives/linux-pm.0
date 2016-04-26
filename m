@@ -1,46 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/3] Support INT3406 Display thermal device
-Date: Tue, 26 Apr 2016 02:58:41 +0200
-Message-ID: <2383528.7J2tIpIfEZ@vostro.rjw.lan>
-References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+Subject: Re: [PATCH v2 1/2] PCI: Fix BUG on device attach failure
+Date: Tue, 26 Apr 2016 03:00:09 +0200
+Message-ID: <5024018.XjBR86e3YV@vostro.rjw.lan>
+References: <158b8ef6bf71ae69ef54871e4762b98deb981d6e.1461162854.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56473 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750817AbcDZA5K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 20:57:10 -0400
+In-Reply-To: <158b8ef6bf71ae69ef54871e4762b98deb981d6e.1461162854.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>
 
-On Wednesday, April 13, 2016 03:32:48 PM Aaron Lu wrote:
-> The display thermal device represents the LED/LCD display panel
-> that may or may not include touch support. The main function of
-> the display thermal device is to allow control of the display
-> brightness in order to address a thermal condition or to reduce
-> power consumed by display device.
+On Wednesday, April 20, 2016 04:44:27 PM Lukas Wunner wrote:
+> Previously when pci_bus_add_device() called device_attach() and it
+> returned a negative value, we emitted a WARN but carried on.
 > 
-> Due to the way this thermal device changes brightness level is said
-> to be deprecated so we are using the raw interface to do the actual
-> backlight change. This requires the backlight core support so two
-> new APIs are added and exported in patch 1/3. With this, the previous
-> API backlight_device_registered can be removed and this is done in
-> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
+> Commit ab1a187bba5c ("PCI: Check device_attach() return value always"),
+> introduced in Linux 4.6-rc1, changed this to unwind all steps preceding
+> device_attach() and to not set dev->is_added = 1.
 > 
-> The 1st version is here:
-> http://thread.gmane.org/gmane.linux.acpi.devel/72619
+> The latter leads to a BUG if pci_bus_add_device() was called from
+> pci_bus_add_devices(). Fix by not recursing to a child bus if
+> device_attach() failed for the bridge leading to it.
 > 
-> This whole series should go through the thermal tree if applied.
+> This can be triggered by plugging in a PCI device (e.g. Thunderbolt)
+> while the system is asleep. The system locks up when woken because
+> device_attach() returns -EPROBE_DEFER.
 > 
-> Aaron Lu (3):
->   video / backlight: add two APIs for drivers to use
->   video / backlight: remove the backlight_device_registered API
->   Thermal: add INT3406 thermal driver
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
 
-So I have nothing against [1-2/3], but the [3/3] tries to do too many things
-in one go.  It should be at least two separate patches to my eyes, one making
-changes to the ACPI video driver and the other adding the INT3406 one.
+Both this and the [2/2] look reasonable to me.
 
-Thanks,
-Rafael
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+> ---
+> v2: Split commit in two (Bjorn Helgaas).
+> 
+>  drivers/pci/bus.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index 6c9f546..23a39fd 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+>  	}
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> -		BUG_ON(!dev->is_added);
+> +		/* Skip if device attach failed */
+> +		if (!dev->is_added)
+> +			continue;
+>  		child = dev->subordinate;
+>  		if (child)
+>  			pci_bus_add_devices(child);
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
