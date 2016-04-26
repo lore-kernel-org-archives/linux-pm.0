@@ -1,23 +1,23 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Subject: Re: [PATCH v2 1/2] PM / Domains: Remove redundant pm_runtime_get|put*() in pm_genpd_prepare()
-Date: Tue, 26 Apr 2016 10:27:11 +0300
-Message-ID: <2513384.HsRhARD727@avalon>
+Date: Tue, 26 Apr 2016 10:27:31 +0300
+Message-ID: <3028151.zbjnfJOmjv@avalon>
 References: <1461653238-3891-1-git-send-email-ulf.hansson@linaro.org> <1461653238-3891-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:37689 "EHLO
+Received: from galahad.ideasonboard.com ([185.26.127.97]:37697 "EHLO
 	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752471AbcDZH0s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 03:26:48 -0400
+	with ESMTP id S1752121AbcDZH1I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 03:27:08 -0400
 In-Reply-To: <1461653238-3891-2-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>
 
-Hi Ulrich,
+Hi Ulf,
 
 Thank you for the patch.
 
@@ -86,4 +86,3 @@ Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Regards,
 
 Laurent Pinchart
-
