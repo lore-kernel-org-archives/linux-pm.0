@@ -1,60 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PULL] ARM: cpuidle: changes for 4.7
-Date: Tue, 26 Apr 2016 02:34:49 +0200
-Message-ID: <1585774.soUmxhQCPX@vostro.rjw.lan>
-References: <5719E10D.5020008@linaro.org>
+Subject: Re: [PATCH v2 0/3] Support INT3406 Display thermal device
+Date: Tue, 26 Apr 2016 02:58:41 +0200
+Message-ID: <2383528.7J2tIpIfEZ@vostro.rjw.lan>
+References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57373 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751778AbcDZAbu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 20:31:50 -0400
-In-Reply-To: <5719E10D.5020008@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: jszhang@marvell.com, lorenzo.pieralisi@arm.com, andy.gross@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Friday, April 22, 2016 10:30:05 AM Daniel Lezcano wrote:
-> Hi Rafael,
+On Wednesday, April 13, 2016 03:32:48 PM Aaron Lu wrote:
+> The display thermal device represents the LED/LCD display panel
+> that may or may not include touch support. The main function of
+> the display thermal device is to allow control of the display
+> brightness in order to address a thermal condition or to reduce
+> power consumed by display device.
 > 
-> please pull the following changes for 4.7.
+> Due to the way this thermal device changes brightness level is said
+> to be deprecated so we are using the raw interface to do the actual
+> backlight change. This requires the backlight core support so two
+> new APIs are added and exported in patch 1/3. With this, the previous
+> API backlight_device_registered can be removed and this is done in
+> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
 > 
->   * Constify the cpuidle_ops structure and the types returned by the 
-> functions using it (Jisheng Zhang)
+> The 1st version is here:
+> http://thread.gmane.org/gmane.linux.acpi.devel/72619
 > 
-> Thanks !
+> This whole series should go through the thermal tree if applied.
 > 
->    -- Daniel
-> 
-> The following changes since commit c3b46c73264b03000d1e18b22f5caf63332547c9:
-> 
->    Linux 4.6-rc4 (2016-04-17 19:13:32 -0700)
-> 
-> are available in the git repository at:
-> 
->    http://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/4.7
-> 
-> for you to fetch changes up to 5e7c17df795e462c70a43f1b3b670e08efefe8fd:
-> 
->    drivers: firmware: psci: use const and __initconst for 
-> psci_cpuidle_ops (2016-04-20 10:44:32 +0200)
-> 
-> ----------------------------------------------------------------
-> Jisheng Zhang (4):
->        ARM: cpuidle: add const qualifier to cpuidle_ops member in structures
->        ARM: cpuidle: constify return value of arm_cpuidle_get_ops()
->        soc: qcom: spm: Use const and __initconst for qcom_cpuidle_ops
->        drivers: firmware: psci: use const and __initconst for 
-> psci_cpuidle_ops
-> 
->   arch/arm/include/asm/cpuidle.h | 2 +-
->   arch/arm/kernel/cpuidle.c      | 6 +++---
->   drivers/firmware/psci.c        | 2 +-
->   drivers/soc/qcom/spm.c         | 2 +-
->   4 files changed, 6 insertions(+), 6 deletions(-)
+> Aaron Lu (3):
+>   video / backlight: add two APIs for drivers to use
+>   video / backlight: remove the backlight_device_registered API
+>   Thermal: add INT3406 thermal driver
 
-Pulled, thanks!
+So I have nothing against [1-2/3], but the [3/3] tries to do too many things
+in one go.  It should be at least two separate patches to my eyes, one making
+changes to the ACPI video driver and the other adding the INT3406 one.
+
+Thanks,
+Rafael
 
