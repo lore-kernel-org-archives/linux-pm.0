@@ -1,75 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 0/9] cpufreq: dt: Don't create platform-device from platform code
-Date: Tue, 26 Apr 2016 02:06:39 +0200
-Message-ID: <2914865.ye66WsoxM0@vostro.rjw.lan>
-References: <cover.1461324267.git.viresh.kumar@linaro.org>
+Subject: Re: [PULL] ARM: cpuidle: changes for 4.7
+Date: Tue, 26 Apr 2016 02:34:49 +0200
+Message-ID: <1585774.soUmxhQCPX@vostro.rjw.lan>
+References: <5719E10D.5020008@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46183 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57373 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751095AbcDZADk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 20:03:40 -0400
-In-Reply-To: <cover.1461324267.git.viresh.kumar@linaro.org>
+	by vger.kernel.org with SMTP id S1751778AbcDZAbu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Apr 2016 20:31:50 -0400
+In-Reply-To: <5719E10D.5020008@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, Chen-Yu Tsai <wens@csie.org>, Leo Yan <leo.yan@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Michal Simek <michal.simek@xilinx.com>, Sascha Hauer <kernel@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Simon Horman <horms@verge.net.au>, =?ISO-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>, Tony Lindgren <tony@atomide.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: jszhang@marvell.com, lorenzo.pieralisi@arm.com, andy.gross@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Friday, April 22, 2016 04:58:38 PM Viresh Kumar wrote:
+On Friday, April 22, 2016 10:30:05 AM Daniel Lezcano wrote:
 > Hi Rafael,
 > 
-> This migrates rest of the platforms to use cpufreq-dt-platdev.c. There
-> are few exceptions though:
-> - mvebu: it uses platform data and its problem will be solved in a
->   separate series.
-> - highbank, s5pv210, sti, tegra124: these platforms already have cpufreq
->   drivers in drivers/cpufreq/, which does some other stuff and finally
->   create the device. There are sequencing issues, and so they will be
->   left as it is.
+> please pull the following changes for 4.7.
 > 
-> V1->V2:
-> - Acks from Arnd for all the patches and from few other maintainers
-> - Finley sent his patch for rockchip 2 minutes before I sent mine :), and so I
->   picked his patch instead of mine.
-> - First patch is new based on suggestions from Geert.
-> - Arnd suggested to get rid of a init routine in imx patch, that's done as well.
+>   * Constify the cpuidle_ops structure and the types returned by the 
+> functions using it (Jisheng Zhang)
 > 
-> I think we can push this series now that its been Acked by Arnd..
+> Thanks !
 > 
-> Finley Xiao (1):
->   cpufreq: rockchip: Use generic platdev driver
+>    -- Daniel
 > 
-> Viresh Kumar (8):
->   cpufreq: dt: Mark platdev machines array as __initconst
->   cpufreq: berlin: Use generic platdev driver
->   cpufreq: imx: Use generic platdev driver
->   cpufreq: omap: Use generic platdev driver
->   cpufreq: shmobile: Use generic platdev driver
->   cpufreq: sunxi: Use generic platdev driver
->   cpufreq: zynq: Use generic platdev driver
->   cpufreq: hisilicon: Use generic platdev driver
+> The following changes since commit c3b46c73264b03000d1e18b22f5caf63332547c9:
 > 
->  arch/arm/mach-berlin/berlin.c        |  6 ----
->  arch/arm/mach-imx/imx27-dt.c         | 10 -------
->  arch/arm/mach-imx/mach-imx51.c       |  3 --
->  arch/arm/mach-imx/mach-imx53.c       |  2 --
->  arch/arm/mach-imx/mach-imx7d.c       |  6 ----
->  arch/arm/mach-omap2/pm.c             |  7 ++---
->  arch/arm/mach-rockchip/rockchip.c    |  1 -
->  arch/arm/mach-shmobile/Makefile      |  1 -
->  arch/arm/mach-shmobile/common.h      |  7 -----
->  arch/arm/mach-shmobile/cpufreq.c     | 19 -------------
->  arch/arm/mach-sunxi/sunxi.c          |  9 ------
->  arch/arm/mach-zynq/common.c          |  2 --
->  drivers/cpufreq/Kconfig.arm          |  9 ------
->  drivers/cpufreq/Makefile             |  1 -
->  drivers/cpufreq/cpufreq-dt-platdev.c | 53 +++++++++++++++++++++++++++++++++++-
->  drivers/cpufreq/hisi-acpu-cpufreq.c  | 42 ----------------------------
->  16 files changed, 54 insertions(+), 124 deletions(-)
->  delete mode 100644 arch/arm/mach-shmobile/cpufreq.c
->  delete mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
+>    Linux 4.6-rc4 (2016-04-17 19:13:32 -0700)
+> 
+> are available in the git repository at:
+> 
+>    http://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/4.7
+> 
+> for you to fetch changes up to 5e7c17df795e462c70a43f1b3b670e08efefe8fd:
+> 
+>    drivers: firmware: psci: use const and __initconst for 
+> psci_cpuidle_ops (2016-04-20 10:44:32 +0200)
+> 
+> ----------------------------------------------------------------
+> Jisheng Zhang (4):
+>        ARM: cpuidle: add const qualifier to cpuidle_ops member in structures
+>        ARM: cpuidle: constify return value of arm_cpuidle_get_ops()
+>        soc: qcom: spm: Use const and __initconst for qcom_cpuidle_ops
+>        drivers: firmware: psci: use const and __initconst for 
+> psci_cpuidle_ops
+> 
+>   arch/arm/include/asm/cpuidle.h | 2 +-
+>   arch/arm/kernel/cpuidle.c      | 6 +++---
+>   drivers/firmware/psci.c        | 2 +-
+>   drivers/soc/qcom/spm.c         | 2 +-
+>   4 files changed, 6 insertions(+), 6 deletions(-)
 
-All [1-9/9] applied, thanks!
+Pulled, thanks!
 
