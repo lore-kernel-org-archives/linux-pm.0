@@ -1,67 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] cpupower: Add cpuidle parts into library
-Date: Tue, 26 Apr 2016 22:27:58 +0200
-Message-ID: <2288985.5qQqHb7DEP@vostro.rjw.lan>
-References: <1685056.NeGEfvDZMv@skinner> <3109572.conPodfd62@skinner>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 1/4] PCI: No need to set d3cold_allowed to PCIe ports
+Date: Tue, 26 Apr 2016 22:45:54 +0200
+Message-ID: <CAJZ5v0htAg28F8a5KXTLhH-U65+nGEgxY1u5tWaUtRt6JGgeOA@mail.gmail.com>
+References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+	<1461578004-129094-2-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63193 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751953AbcDZUY6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 16:24:58 -0400
-In-Reply-To: <3109572.conPodfd62@skinner>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:35852 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbcDZUp4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 16:45:56 -0400
+In-Reply-To: <1461578004-129094-2-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, April 25, 2016 04:34:02 PM Thomas Renninger wrote:
-> This more or less is a renaming and moving of functions and should not
-> introduce any functional change.
-> 
-> cpupower was built from cpufrequtils (which had a C library providing easy
-> access to cpu frequency platform info). In the meantime it got enhanced
-> by quite some neat cpuidle userspace tools.
-> 
-> Now the cpu idle functions have been separated and added to the cpupower.so
-> library.
-> So beside an already existing public header file:
-> cpufreq.h
-> cpupower now also exports these cpu idle functions in:
-> cpuidle.h 
-> 
-> Here again pasted for better review of the interfaces: 
-> 
-> ======================================
-> int cpuidle_is_state_disabled(unsigned int cpu,
->                                        unsigned int idlestate);
-> int cpuidle_state_disable(unsigned int cpu, unsigned int idlestate,
->                                    unsigned int disable);
-> unsigned long cpuidle_state_latency(unsigned int cpu,
->                                                 unsigned int idlestate);
-> unsigned long cpuidle_state_usage(unsigned int cpu,
->                                         unsigned int idlestate);
-> unsigned long long cpuidle_state_time(unsigned int cpu,
->                                                 unsigned int idlestate);
-> char *cpuidle_state_name(unsigned int cpu,
->                                 unsigned int idlestate);
-> char *cpuidle_state_desc(unsigned int cpu,
->                                 unsigned int idlestate);
-> unsigned int cpuidle_state_count(unsigned int cpu);
-> 
-> char *cpuidle_get_governor(void);
-> char *cpuidle_get_driver(void);
-> 
-> ======================================
-> 
-> 
-> Signed-off-by: Thomas Renninger <trenn@suse.com>
+On Mon, Apr 25, 2016 at 11:53 AM, Mika Westerberg
+<mika.westerberg@linux.intel.com> wrote:
+> The Linux PCI core skips PCI bridges and PCIe ports when system is
+> suspended. The PCI core checks return value of pci_has_subordinate() in
+> pci_pm_suspend_noirq() to skip all devices where it is non-zero (which
+> means PCI bridges and PCIe ports).
+>
+> Since PCIe ports are never suspended in the first place, there is no need
+> to set d3cold_allowed for them.
+>
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-It doesn't apply on top of 4.6-rc5 for me.  Can you please rebase on top
-of the current Linus' tree?
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks,
-Rafael
-
+> ---
+>  drivers/pci/pcie/portdrv_pci.c | 5 -----
+>  1 file changed, 5 deletions(-)
+>
+> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+> index be35da2e105e..6c6bb03392ea 100644
+> --- a/drivers/pci/pcie/portdrv_pci.c
+> +++ b/drivers/pci/pcie/portdrv_pci.c
+> @@ -134,11 +134,6 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+>                 return status;
+>
+>         pci_save_state(dev);
+> -       /*
+> -        * D3cold may not work properly on some PCIe port, so disable
+> -        * it by default.
+> -        */
+> -       dev->d3cold_allowed = false;
+>         return 0;
+>  }
+>
+> --
+> 2.8.0.rc3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
