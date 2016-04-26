@@ -1,60 +1,52 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v2 2/2] PM / Domains: Drop unnecessary wakeup code from pm_genpd_prepare()
-Date: Tue, 26 Apr 2016 10:31:37 +0300
-Message-ID: <4471844.9GATtWcZMn@avalon>
-References: <1461653238-3891-1-git-send-email-ulf.hansson@linaro.org> <1461653238-3891-3-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] clk: renesas: Clock Domain fixes
+Date: Tue, 26 Apr 2016 10:33 +0300
+Message-ID: <1849807.IPH4zQTRa3@avalon>
+References: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:37711 "EHLO
-	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbcDZHbN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 03:31:13 -0400
-In-Reply-To: <1461653238-3891-3-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-clk-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>
 
-Hi Ulf,
+Hi Geert,
 
-Thank you for the patch.
+Thank you for the patches.
 
-On Tuesday 26 Apr 2016 08:47:18 Ulf Hansson wrote:
-> As the PM core already have wakeup management during the system PM phase,
-> it seems reasonable that genpd and its users should be able to rely on
-> that. Therefore let's remove this from pm_genpd_prepare().
+For the whole series,
 
-It's probably because I'm not familiar enough with the PM implementation, but 
-I haven't been able to locate the wakeup management code in the PM core.
+Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
+On Tuesday 26 Apr 2016 09:09:38 Geert Uytterhoeven wrote:
+> 	Hi Mike, Stephen,
 > 
-> Changes in v2:
-> 	None.
+> This patch series contains fixes for the Renesas CPG/MSTP and CPG/MSSR
+> Clock Domains:
+>   1. Postpone calls to pm_genpd_init(), as all local setup of the
+>      generic_pm_domain structure should have been completed before
+>      calling pm_genpd_init(),
+>   2. Use always-on governor for Clock Domains, to prevent their status
+>      from being shown as "off-0" in
+>      /sys/kernel/debug/pm_genpd/pm_genpd_summary.
 > 
-> ---
->  drivers/base/power/domain.c | 6 ------
->  1 file changed, 6 deletions(-)
+> I plan to queue these up with other clock updates in
+> clk-renesas-for-v4.7, and send a pull request later.
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 60a3573..de23b64 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -730,12 +730,6 @@ static int pm_genpd_prepare(struct device *dev)
->  	 * at this point and a system wakeup event should be reported if it's
->  	 * set up to wake up the system from sleep states.
->  	 */
-> -	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-> -		pm_wakeup_event(dev, 0);
-> -
-> -	if (pm_wakeup_pending())
-> -		return -EBUSY;
-> -
->  	if (resume_needed(dev, genpd))
->  		pm_runtime_resume(dev);
+> Thanks for your comments!
+> 
+> Geert Uytterhoeven (4):
+>   clk: renesas: mstp: Postpone call to pm_genpd_init()
+>   clk: renesas: mstp: Use always-on governor for Clock Domain
+>   clk: renesas: cpg-mssr: Postpone call to pm_genpd_init()
+>   clk: renesas: cpg-mssr: Use always-on governor for Clock Domain
+> 
+>  drivers/clk/renesas/clk-mstp.c         | 3 +--
+>  drivers/clk/renesas/renesas-cpg-mssr.c | 2 +-
+>  2 files changed, 2 insertions(+), 3 deletions(-)
 
 -- 
 Regards,
