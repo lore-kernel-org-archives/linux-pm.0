@@ -1,55 +1,49 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 0/4] clk: renesas: Clock Domain fixes
-Date: Tue, 26 Apr 2016 10:33 +0300
-Message-ID: <1849807.IPH4zQTRa3@avalon>
-References: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v2 0/3] Support INT3406 Display thermal device
+Date: Tue, 26 Apr 2016 15:33:24 +0800
+Message-ID: <cdf06c09-c30b-05ee-8195-a60aac5a88ea@intel.com>
+References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+ <2383528.7J2tIpIfEZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-clk-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2383528.7J2tIpIfEZ@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
-
-Thank you for the patches.
-
-For the whole series,
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-On Tuesday 26 Apr 2016 09:09:38 Geert Uytterhoeven wrote:
-> 	Hi Mike, Stephen,
+On 04/26/2016 08:58 AM, Rafael J. Wysocki wrote:
+> On Wednesday, April 13, 2016 03:32:48 PM Aaron Lu wrote:
+>> The display thermal device represents the LED/LCD display panel
+>> that may or may not include touch support. The main function of
+>> the display thermal device is to allow control of the display
+>> brightness in order to address a thermal condition or to reduce
+>> power consumed by display device.
+>>
+>> Due to the way this thermal device changes brightness level is said
+>> to be deprecated so we are using the raw interface to do the actual
+>> backlight change. This requires the backlight core support so two
+>> new APIs are added and exported in patch 1/3. With this, the previous
+>> API backlight_device_registered can be removed and this is done in
+>> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
+>>
+>> The 1st version is here:
+>> http://thread.gmane.org/gmane.linux.acpi.devel/72619
+>>
+>> This whole series should go through the thermal tree if applied.
+>>
+>> Aaron Lu (3):
+>>   video / backlight: add two APIs for drivers to use
+>>   video / backlight: remove the backlight_device_registered API
+>>   Thermal: add INT3406 thermal driver
 > 
-> This patch series contains fixes for the Renesas CPG/MSTP and CPG/MSSR
-> Clock Domains:
->   1. Postpone calls to pm_genpd_init(), as all local setup of the
->      generic_pm_domain structure should have been completed before
->      calling pm_genpd_init(),
->   2. Use always-on governor for Clock Domains, to prevent their status
->      from being shown as "off-0" in
->      /sys/kernel/debug/pm_genpd/pm_genpd_summary.
-> 
-> I plan to queue these up with other clock updates in
-> clk-renesas-for-v4.7, and send a pull request later.
-> 
-> Thanks for your comments!
-> 
-> Geert Uytterhoeven (4):
->   clk: renesas: mstp: Postpone call to pm_genpd_init()
->   clk: renesas: mstp: Use always-on governor for Clock Domain
->   clk: renesas: cpg-mssr: Postpone call to pm_genpd_init()
->   clk: renesas: cpg-mssr: Use always-on governor for Clock Domain
-> 
->  drivers/clk/renesas/clk-mstp.c         | 3 +--
->  drivers/clk/renesas/renesas-cpg-mssr.c | 2 +-
->  2 files changed, 2 insertions(+), 3 deletions(-)
+> So I have nothing against [1-2/3], but the [3/3] tries to do too many things
+> in one go.  It should be at least two separate patches to my eyes, one making
+> changes to the ACPI video driver and the other adding the INT3406 one.
 
--- 
+Thanks for the review, will split the last patch and re-send.
+
 Regards,
-
-Laurent Pinchart
-
+Aaron
