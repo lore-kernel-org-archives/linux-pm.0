@@ -1,288 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/2] PM / Domains: Remove redundant wrapper functions for system PM
-Date: Tue, 26 Apr 2016 14:23:31 +0200
-Message-ID: <1461673411-14245-3-git-send-email-ulf.hansson@linaro.org>
-References: <1461673411-14245-1-git-send-email-ulf.hansson@linaro.org>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v2 1/5] PM / AVS: rockchip-io: make io-domains a child of the GRF
+Date: Tue, 26 Apr 2016 18:25:23 +0200
+Message-ID: <15890066.zZg7hiMmi2@diego>
+References: <1459432126-6395-1-git-send-email-heiko@sntech.de> <3991738.xMQYlxyb28@phil> <CAJZ5v0gi_EBnL+M6iEAkgYHNkFQOG5OT=6fABQtvCyQY4=GcQQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f49.google.com ([209.85.215.49]:34017 "EHLO
-	mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbcDZMXt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 08:23:49 -0400
-Received: by mail-lf0-f49.google.com with SMTP id j11so15706062lfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2016 05:23:48 -0700 (PDT)
-In-Reply-To: <1461673411-14245-1-git-send-email-ulf.hansson@linaro.org>
+Received: from gloria.sntech.de ([95.129.55.99]:55305 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbcDZQZc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 12:25:32 -0400
+In-Reply-To: <CAJZ5v0gi_EBnL+M6iEAkgYHNkFQOG5OT=6fABQtvCyQY4=GcQQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-rockchip@lists.infradead.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Previous changes to genpd enables us to assign several of the system PM
-callbacks to the pm_generic* helper functions, instead of invoking them
-via wrapper functions.
+Hi Rafael,
 
-While removing the wrapper functions, it became clear that some of the
-current assignment actually was causing the wrong system PM callback to
-be invoked. For example, the ->restore() callback ended up invoking
-pm_generic_resume(), which thus may invoke the wrong callback in the
-driver. Let's fix this here as well.
+Am Mittwoch, 13. April 2016, 06:55:03 schrieb Rafael J. Wysocki:
+> On Tue, Apr 12, 2016 at 4:23 AM, Heiko Stuebner <heiko@sntech.de> wro=
+te:
+> > Am Donnerstag, 31. M=E4rz 2016, 15:48:42 schrieb Heiko Stuebner:
+> >> IO-domain handling is part of the general register files, so shoul=
+d live
+> >> under the grf directly. This change allows the grf to be a simple-=
+mfd and
+> >> the io-domains fetching the syscon regmap from that parent-node.
+> >>=20
+> >> The old binding is of course preserved, though deprecated.
+> >>=20
+> >> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+> >> Acked-by: Kevin Hilman <khilman@baylibre.com>
+> >> Tested-by: David Wu <david.wu@rock-chips.com>
+> >=20
+> > could you look into picking up this patch 1/5 please?
+> >=20
+> > The others are to much interwined into other devicetree changes, so=
+ I'll
+> > apply them for 4.8, but it would be nice if you could pick up this =
+one for
+> > 4.7 so the code change becomes available at 4.8-rc1
+>=20
+> OK, I'll pick it up, but I'm traveling this week, so that'll take a
+> few days more.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 203 +++-----------------------------------------
- 1 file changed, 12 insertions(+), 191 deletions(-)
+I just checked kernel/git/rafael/linux-pm.git and didn't find this patc=
+h there,=20
+so I guess it might be time for a ping ;-) .
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a608f52..658eb1b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -768,48 +768,6 @@ static int pm_genpd_prepare(struct device *dev)
- }
- 
- /**
-- * pm_genpd_suspend - Suspend a device belonging to an I/O PM domain.
-- * @dev: Device to suspend.
-- *
-- * Suspend a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a PM domain consisting of I/O devices.
-- */
--static int pm_genpd_suspend(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_suspend(dev);
--}
--
--/**
-- * pm_genpd_suspend_late - Late suspend of a device from an I/O PM domain.
-- * @dev: Device to suspend.
-- *
-- * Carry out a late suspend of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a PM domain consisting of I/O devices.
-- */
--static int pm_genpd_suspend_late(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_suspend_late(dev);
--}
--
--/**
-  * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
-  * @dev: Device to suspend.
-  *
-@@ -873,92 +831,6 @@ static int pm_genpd_resume_noirq(struct device *dev)
- }
- 
- /**
-- * pm_genpd_resume_early - Early resume of a device in an I/O PM domain.
-- * @dev: Device to resume.
-- *
-- * Carry out an early resume of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_resume_early(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_resume_early(dev);
--}
--
--/**
-- * pm_genpd_resume - Resume of device in an I/O PM domain.
-- * @dev: Device to resume.
-- *
-- * Resume a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_resume(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_resume(dev);
--}
--
--/**
-- * pm_genpd_freeze - Freezing a device in an I/O PM domain.
-- * @dev: Device to freeze.
-- *
-- * Freeze a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_freeze(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_freeze(dev);
--}
--
--/**
-- * pm_genpd_freeze_late - Late freeze of a device in an I/O PM domain.
-- * @dev: Device to freeze.
-- *
-- * Carry out a late freeze of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_freeze_late(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_freeze_late(dev);
--}
--
--/**
-  * pm_genpd_freeze_noirq - Completion of freezing a device in an I/O PM domain.
-  * @dev: Device to freeze.
-  *
-@@ -1001,49 +873,6 @@ static int pm_genpd_thaw_noirq(struct device *dev)
- }
- 
- /**
-- * pm_genpd_thaw_early - Early thaw of device in an I/O PM domain.
-- * @dev: Device to thaw.
-- *
-- * Carry out an early thaw of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_thaw_early(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_thaw_early(dev);
--}
--
--/**
-- * pm_genpd_thaw - Thaw a device belonging to an I/O power domain.
-- * @dev: Device to thaw.
-- *
-- * Thaw a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_thaw(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_thaw(dev);
--}
--
--/**
-  * pm_genpd_restore_noirq - Start of restore of device in an I/O PM domain.
-  * @dev: Device to resume.
-  *
-@@ -1151,18 +980,10 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
- #else /* !CONFIG_PM_SLEEP */
- 
- #define pm_genpd_prepare		NULL
--#define pm_genpd_suspend		NULL
--#define pm_genpd_suspend_late		NULL
- #define pm_genpd_suspend_noirq		NULL
--#define pm_genpd_resume_early		NULL
- #define pm_genpd_resume_noirq		NULL
--#define pm_genpd_resume			NULL
--#define pm_genpd_freeze			NULL
--#define pm_genpd_freeze_late		NULL
- #define pm_genpd_freeze_noirq		NULL
--#define pm_genpd_thaw_early		NULL
- #define pm_genpd_thaw_noirq		NULL
--#define pm_genpd_thaw			NULL
- #define pm_genpd_restore_noirq		NULL
- #define pm_genpd_complete		NULL
- 
-@@ -1454,24 +1275,24 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = genpd_runtime_resume;
- 	genpd->domain.ops.prepare = pm_genpd_prepare;
--	genpd->domain.ops.suspend = pm_genpd_suspend;
--	genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
-+	genpd->domain.ops.suspend = pm_generic_suspend;
-+	genpd->domain.ops.suspend_late = pm_generic_suspend_late;
- 	genpd->domain.ops.suspend_noirq = pm_genpd_suspend_noirq;
- 	genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
--	genpd->domain.ops.resume_early = pm_genpd_resume_early;
--	genpd->domain.ops.resume = pm_genpd_resume;
--	genpd->domain.ops.freeze = pm_genpd_freeze;
--	genpd->domain.ops.freeze_late = pm_genpd_freeze_late;
-+	genpd->domain.ops.resume_early = pm_generic_resume_early;
-+	genpd->domain.ops.resume = pm_generic_resume;
-+	genpd->domain.ops.freeze = pm_generic_freeze;
-+	genpd->domain.ops.freeze_late = pm_generic_freeze_late;
- 	genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
- 	genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
--	genpd->domain.ops.thaw_early = pm_genpd_thaw_early;
--	genpd->domain.ops.thaw = pm_genpd_thaw;
--	genpd->domain.ops.poweroff = pm_genpd_suspend;
--	genpd->domain.ops.poweroff_late = pm_genpd_suspend_late;
-+	genpd->domain.ops.thaw_early = pm_generic_thaw_early;
-+	genpd->domain.ops.thaw = pm_generic_thaw;
-+	genpd->domain.ops.poweroff = pm_generic_poweroff;
-+	genpd->domain.ops.poweroff_late = pm_generic_poweroff_late;
- 	genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
- 	genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
--	genpd->domain.ops.restore_early = pm_genpd_resume_early;
--	genpd->domain.ops.restore = pm_genpd_resume;
-+	genpd->domain.ops.restore_early = pm_generic_restore_early;
-+	genpd->domain.ops.restore = pm_generic_restore;
- 	genpd->domain.ops.complete = pm_genpd_complete;
- 
- 	if (genpd->flags & GENPD_FLAG_PM_CLK) {
--- 
-1.9.1
 
+Thanks
+Heiko
