@@ -1,52 +1,78 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] ARM: cpuidle: Pass on arm_cpuidle_suspend()'s return
- value
-Date: Tue, 26 Apr 2016 12:31:03 +0100
-Message-ID: <20160426113103.GB2204@red-moon>
-References: <1461669301-30834-1-git-send-email-james.morse@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 2/2] PM / Domains: Drop unnecessary wakeup code from pm_genpd_prepare()
+Date: Tue, 26 Apr 2016 13:51:15 +0200
+Message-ID: <CAPDyKFowQyRgY6T+mUixZiSajBqcmeNGpqkC7QUyDtxgcZmgaQ@mail.gmail.com>
+References: <1461653238-3891-1-git-send-email-ulf.hansson@linaro.org>
+	<1461653238-3891-3-git-send-email-ulf.hansson@linaro.org>
+	<4471844.9GATtWcZMn@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53707 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbcDZLbD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Apr 2016 07:31:03 -0400
-Content-Disposition: inline
-In-Reply-To: <1461669301-30834-1-git-send-email-james.morse@arm.com>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:36036 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbcDZLvR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 07:51:17 -0400
+Received: by mail-wm0-f54.google.com with SMTP id v188so122801358wme.1
+        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2016 04:51:16 -0700 (PDT)
+In-Reply-To: <4471844.9GATtWcZMn@avalon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>
 
-On Tue, Apr 26, 2016 at 12:15:01PM +0100, James Morse wrote:
-> arm_cpuidle_suspend() may return -EOPNOTSUPP, or any value returned
-> by the cpu_ops/cpuidle_ops suspend call. arm_enter_idle_state() doesn't
-> update 'ret' with this value, meaning we always signal success to
-> cpuidle_enter_state(), causing it to update the usage counters as if we
-> succeeded.
-> 
-> Fixes: 191de17aa3c1 ("ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function")
-> Signed-off-by: James Morse <james.morse@arm.com>
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On 26 April 2016 at 09:31, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> Hi Ulf,
+>
+> Thank you for the patch.
+>
+> On Tuesday 26 Apr 2016 08:47:18 Ulf Hansson wrote:
+>> As the PM core already have wakeup management during the system PM phase,
+>> it seems reasonable that genpd and its users should be able to rely on
+>> that. Therefore let's remove this from pm_genpd_prepare().
+>
+> It's probably because I'm not familiar enough with the PM implementation, but
+> I haven't been able to locate the wakeup management code in the PM core.
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+It's done in __device_suspend() (drivers/base/power/main.c).
 
-> 
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 545069d5fdfb..e342565e8715 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -50,7 +50,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->  		 * call the CPU ops suspend protocol with idle index as a
->  		 * parameter.
->  		 */
-> -		arm_cpuidle_suspend(idx);
-> +		ret = arm_cpuidle_suspend(idx);
->  
->  		cpu_pm_exit();
->  	}
-> -- 
-> 2.8.0.rc3
-> 
+So it means it will be moved from the system PM prepare phase (as
+currently in genpd) to the system PM suspend phase. I think this
+should be okay for genpd users.
+
+Kind regards
+Uffe
+
+>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>
+>> Changes in v2:
+>>       None.
+>>
+>> ---
+>>  drivers/base/power/domain.c | 6 ------
+>>  1 file changed, 6 deletions(-)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 60a3573..de23b64 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -730,12 +730,6 @@ static int pm_genpd_prepare(struct device *dev)
+>>        * at this point and a system wakeup event should be reported if it's
+>>        * set up to wake up the system from sleep states.
+>>        */
+>> -     if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+>> -             pm_wakeup_event(dev, 0);
+>> -
+>> -     if (pm_wakeup_pending())
+>> -             return -EBUSY;
+>> -
+>>       if (resume_needed(dev, genpd))
+>>               pm_runtime_resume(dev);
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+>
