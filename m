@@ -1,162 +1,123 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Tue, 26 Apr 2016 23:10:15 +0200
-Message-ID: <CAJZ5v0gNkC8G8nWeyk9su91F+v9+J1Wg154JG7HpVcQ8u15Kpw@mail.gmail.com>
-References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
-	<1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 2/3] cpufreq: intel_pstate: Adjust policy->max
+Date: Tue, 26 Apr 2016 15:46:47 -0700
+Message-ID: <1461710807-26282-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:21349 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752875AbcDZWqc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Apr 2016 18:46:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: khlebnikov@yandex-team.ru, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Mon, Apr 25, 2016 at 11:53 AM, Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
-> Add back runtime PM support for PCIe ports that was removed in
-> commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for
-> PCIe ports").
->
-> First of all we cannot enable it automatically for all ports since there
-> has been problems previously as can be seen in [1]. In summary suspended
-> PCIe ports were not able to deal with ACPI based hotplug reliably. One
-> reason why this might happen is the fact that when a PCIe port is powered
-> down, config space access to the devices behind the port is not possible.
-> If the BIOS hotplug SMI handler assumes the port is always in D0 it will
-> not be able to find the hotplugged devices. To be on the safe side only
-> enable runtime PM if the port does not claim to support hotplug.
->
-> For PCIe ports not using hotplug we enable and allow runtime PM
-> automatically. Since 'bridge_d3' can be changed any time we check this in
-> driver ->runtime_idle() and ->runtime_suspend() and only allow runtime
-> suspend if the flag is still set. Use autosuspend with default of 10ms idle
-> time to prevent the port from repeatedly suspending and resuming on
-> continuous configuration space access of devices behind the port.
->
-> The actual power transition to D3 and back is handled in the PCI core.
->
-> Idea to automatically unblock (allow) runtime PM for PCIe ports came from
-> Dave Airlie.
->
-> [1] https://bugzilla.kernel.org/show_bug.cgi?id=53811
->
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+When policy->max is changed via _PPC or sysfs and is more than the max non
+turbo frequency, it does not really change resulting performance in some
+processors. When policy->max results in a P-State ratio more than the
+turbo activation ratio, then processor can choose any P-State up to max
+turbo. So the user or _PPC setting has no value, but this can cause
+undesirable side effects like:
+- Showing reduced max percentage in Intel P-State sysfs
+- It can cause reduced max performance under certain boundary conditions:
+The requested max scaling frequency either via _PPC or via cpufreq-sysfs,
+will be converted into a fixed floating point max percent scale. In
+majority of the cases this will result in correct max. But not 100% of the
+time. If the _PPC is requested at a point where the calculation lead to a
+lower max, this can result in a lower P-State then expected and it will
+impact performance.
+Example of this condition using a Broadwell laptop with config TDP.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+ACPI _PSS table from a Broadwell laptop
+2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
+1300000 1100000 1000000 900000 800000 600000 500000
 
-> ---
->  drivers/pci/pcie/portdrv_core.c |  2 ++
->  drivers/pci/pcie/portdrv_pci.c  | 51 +++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 53 insertions(+)
->
-> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-> index 88122dc2e1b1..65b1a624826b 100644
-> --- a/drivers/pci/pcie/portdrv_core.c
-> +++ b/drivers/pci/pcie/portdrv_core.c
-> @@ -11,6 +11,7 @@
->  #include <linux/kernel.h>
->  #include <linux/errno.h>
->  #include <linux/pm.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/string.h>
->  #include <linux/slab.h>
->  #include <linux/pcieport_if.h>
-> @@ -343,6 +344,7 @@ static int pcie_device_init(struct pci_dev *pdev, int service, int irq)
->                      get_descriptor_id(pci_pcie_type(pdev), service));
->         device->parent = &pdev->dev;
->         device_enable_async_suspend(device);
-> +       pm_runtime_no_callbacks(device);
->
->         retval = device_register(device);
->         if (retval) {
-> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index 6c6bb03392ea..22ee69dc8773 100644
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -93,6 +93,27 @@ static int pcie_port_resume_noirq(struct device *dev)
->         return 0;
->  }
->
-> +static int pcie_port_runtime_suspend(struct device *dev)
-> +{
-> +       return to_pci_dev(dev)->bridge_d3 ? 0 : -EBUSY;
-> +}
-> +
-> +static int pcie_port_runtime_resume(struct device *dev)
-> +{
-> +       pm_runtime_mark_last_busy(dev);
-> +       return 0;
-> +}
-> +
-> +static int pcie_port_runtime_idle(struct device *dev)
-> +{
-> +       /*
-> +        * Rely the PCI core has set bridge_d3 whenever it thinks the port
-> +        * should be good to go to D3. Everything else, including moving
-> +        * the port to D3, is handled by the PCI core.
-> +        */
-> +       return to_pci_dev(dev)->bridge_d3 ? 0 : -EBUSY;
-> +}
-> +
->  static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->         .suspend        = pcie_port_device_suspend,
->         .resume         = pcie_port_device_resume,
-> @@ -101,6 +122,9 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->         .poweroff       = pcie_port_device_suspend,
->         .restore        = pcie_port_device_resume,
->         .resume_noirq   = pcie_port_resume_noirq,
-> +       .runtime_suspend = pcie_port_runtime_suspend,
-> +       .runtime_resume = pcie_port_runtime_resume,
-> +       .runtime_idle   = pcie_port_runtime_idle,
->  };
->
->  #define PCIE_PORTDRV_PM_OPS    (&pcie_portdrv_pm_ops)
-> @@ -134,11 +158,38 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
->                 return status;
->
->         pci_save_state(dev);
-> +
-> +       /*
-> +        * Prevent runtime PM if the port is advertising support for PCIe
-> +        * hotplug. Otherwise the BIOS hotplug SMI code might not be able
-> +        * to enumerate devices behind this port properly (the port is
-> +        * powered down preventing all config space accesses to the
-> +        * subordinate devices). We can't be sure for native PCIe hotplug
-> +        * either so prevent that as well.
-> +        */
-> +       if (!dev->is_hotplug_bridge) {
-> +               /*
-> +                * Keep the port resumed 10ms to make sure things like
-> +                * config space accesses from userspace (lspci) will not
-> +                * cause the port to repeatedly suspend and resume.
-> +                */
-> +               pm_runtime_set_autosuspend_delay(&dev->dev, 10);
-> +               pm_runtime_use_autosuspend(&dev->dev);
-> +               pm_runtime_put_autosuspend(&dev->dev);
-> +               pm_runtime_allow(&dev->dev);
-> +       }
-> +
->         return 0;
->  }
->
->  static void pcie_portdrv_remove(struct pci_dev *dev)
->  {
-> +       if (!dev->is_hotplug_bridge) {
-> +               pm_runtime_forbid(&dev->dev);
-> +               pm_runtime_get_noresume(&dev->dev);
-> +               pm_runtime_dont_use_autosuspend(&dev->dev);
-> +       }
-> +
->         pcie_port_device_remove(dev);
->  }
->
-> --
-> 2.8.0.rc3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The actual results by disabling config TDP so that we can get what is
+requested on or below 2300000Khz.
+
+scaling_max_freq        Max Requested P-State   Resultant max freq
+---------------------------------------- ----------------------
+2400000                 18                      2900000 (max
+turbo)
+2300000                 17                      2300000 (max
+physical non turbo)
+2200000                 15                      2100000
+2100000                 15                      2100000
+2000000                 13                      1900000
+1900000                 13                      1900000
+1800000                 12                      1800000
+1700000                 11                      1700000
+1600000                 10                      1600000
+1500000                 f                       1500000
+1400000                 e                       1400000
+1300000                 d                       1300000
+1200000                 c                       1200000
+1100000                 a                       1000000
+1000000                 a                       1000000
+900000                  9                        900000
+800000                  8                        800000
+700000                  7                        700000
+600000                  6                        600000
+500000                  5                        500000
+------------------------------------------------------------------
+
+Now set the config TDP level 1 ratio as 0x0b (equivalent to 1100000KHz)
+in BIOS (not every system will let you adjust this).
+The turbo activation ratio will be set to one less than that, which will
+be 0x0a (So any request above 1000000KHz should result in turbo region
+assuming no thermal limits).
+Here _PPC will request max to 1100000KHz (which basically should still
+result in turbo as this is more than the turbo activation ratio up to
+max allowable turbo frequency), but actual calculation resulted in a max
+ceiling P-State which is 0x0a. So under any load condition, this driver
+will not request turbo P-States. This will be a huge performance hit.
+
+When config TDP feature is ON, if the _PPC points to a frequency above
+turbo activation ratio, the performance can still reach max turbo. In this
+case we don't need to treat this as the reduced frequency in set_policy
+callback.
+
+In this change when config TDP is active (by checking if the physical max
+non turbo ratio is more than the current max non turbo ratio), any request
+above current max non turbo is treated as full performance.
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+v3
+Only commit description is changed. Only this patch is modified
+in this series, other patches are same as v2.
+
+ drivers/cpufreq/intel_pstate.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8e0db49..428ccf8 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1418,11 +1418,23 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+ 
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
++	struct cpudata *cpu;
++
+ 	if (!policy->cpuinfo.max_freq)
+ 		return -ENODEV;
+ 
+ 	intel_pstate_clear_update_util_hook(policy->cpu);
+ 
++	cpu = all_cpu_data[0];
++	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate) {
++		if (policy->max < policy->cpuinfo.max_freq &&
++		    policy->max > (cpu->pstate.max_pstate *
++				   cpu->pstate.scaling)) {
++			pr_info("policy->max > max non turbo frequency\n");
++			policy->max = policy->cpuinfo.max_freq;
++		}
++	}
++
+ 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+ 		limits = &performance_limits;
+ 		if (policy->max >= policy->cpuinfo.max_freq) {
+-- 
+2.5.5
+
