@@ -1,62 +1,89 @@
-From: Lianwei Wang <lianwei.wang@gmail.com>
-Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
-Date: Mon, 25 Apr 2016 23:58:51 -0700
-Message-ID: <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
-References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
- <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
- <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
- <alpine.DEB.2.11.1604251018090.3941@nanos>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/2] PM / Domains: Remove redundant pm_runtime_get|put*()
+ in pm_genpd_prepare()
+Date: Tue, 26 Apr 2016 09:08:22 +0200
+Message-ID: <CAPDyKFq_6ZFt6W5wkYzpw2tq=-9496e00TkspRL4U8-P+239Aw@mail.gmail.com>
+References: <1461653238-3891-1-git-send-email-ulf.hansson@linaro.org>
+	<1461653238-3891-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:36660 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbcDZG7N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 02:59:13 -0400
-In-Reply-To: <alpine.DEB.2.11.1604251018090.3941@nanos>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:37303 "EHLO
+	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbcDZHIX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 03:08:23 -0400
+Received: by mail-wm0-f52.google.com with SMTP id n3so18115435wmn.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2016 00:08:22 -0700 (PDT)
+In-Reply-To: <1461653238-3891-2-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-On Mon, Apr 25, 2016 at 1:22 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Fri, 22 Apr 2016, Lianwei Wang wrote:
->> Any way is Ok for debugging purpose. But think the kernel run on a
->> customer machine, such as PC, Mobile phone or other devices. How we
->> let the customer debug it but not recover it smartly?
->
-> There is nothing smart here. Restoring the count is a bandaid and has nothing
-> to do with recovery. If that WARN_ON triggers then other stuff is going to be
-> more fundamentally wrong so restoring the count is the least of our worries.
->
-You are still think it from a developer view. You can not let the
-customer/consumer to fix such issue, right? You even can not let the
-customer/consumer to wait for the fix, right?
+On 26 April 2016 at 08:47, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> The PM core increases and decreases the runtime PM usage count in the
+> system PM prepare phase. This makes some of the pm_runtime_get|put*()
+> calls in pm_gendp_prepare() redundant, so let's remove them.
 
-Take the suspend for example, the suspend_prepare will call
-pm_notifier_call_chain to send PM_SUSPEND_PREPARE notification. If one
-of the function on the chain return NOTIFY_BAD or NOTIFY_STOP before
-calling cpu_hotplug_pm_callback, then either way will cause the
-cpu_hotplug_disable() not called in
-cpu_hotplug_pm_callback(PM_SUSPEND_PREPARE). When the suspend is going
-to call pm_notifier_call_chain(PM_POST_SUSPEND) ->
-cpu_hotplug_pm_callback -> cpu_hotplug_enable() , then it is
-Unbalanced...
+Huh, I noticed I missed to update pm_gendp_prepare() to pm_genpd_prepare().
 
-There are other paths to cause the counter unbalanced too. But no
-matter how it is unbalanced, we can detect it and recover it to normal
-state.
+Rafael, can you amend the patch or you want me to send a v3?
 
->> Anyway, from a product perspective way, if we don't want to restore
->> the unbalanced counter to 0, then maybe a BUG_ON is more reasonable
->> than WARN_ON.
+Kind regards
+Uffe
+
 >
-> Not at all. BUG_ON is the last resort if we have no other way to handle an
-> issue.
-Actually to the customer, you do nothing currently at all, and once it
-happened then there is no way for the customer to recover it except do
-a power cycle. A BUG_ON can trigger a power cycle and recover it.
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+> ---
 >
-> Thanks,
+> Changes in v2:
+>         Updated changlog and added Kevin's reviewed by.
 >
->         tglx
+> ---
+>  drivers/base/power/domain.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 4ce4ce0..60a3573 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -730,14 +730,11 @@ static int pm_genpd_prepare(struct device *dev)
+>          * at this point and a system wakeup event should be reported if it's
+>          * set up to wake up the system from sleep states.
+>          */
+> -       pm_runtime_get_noresume(dev);
+>         if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+>                 pm_wakeup_event(dev, 0);
+>
+> -       if (pm_wakeup_pending()) {
+> -               pm_runtime_put(dev);
+> +       if (pm_wakeup_pending())
+>                 return -EBUSY;
+> -       }
+>
+>         if (resume_needed(dev, genpd))
+>                 pm_runtime_resume(dev);
+> @@ -751,10 +748,8 @@ static int pm_genpd_prepare(struct device *dev)
+>
+>         mutex_unlock(&genpd->lock);
+>
+> -       if (genpd->suspend_power_off) {
+> -               pm_runtime_put_noidle(dev);
+> +       if (genpd->suspend_power_off)
+>                 return 0;
+> -       }
+>
+>         /*
+>          * The PM domain must be in the GPD_STATE_ACTIVE state at this point,
+> @@ -776,7 +771,6 @@ static int pm_genpd_prepare(struct device *dev)
+>                 pm_runtime_enable(dev);
+>         }
+>
+> -       pm_runtime_put(dev);
+>         return ret;
+>  }
+>
+> --
+> 1.9.1
+>
