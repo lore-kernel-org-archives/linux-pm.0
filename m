@@ -1,57 +1,41 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] ARM: cpuidle: Pass on arm_cpuidle_suspend()'s return value
-Date: Tue, 26 Apr 2016 21:05:57 +0200
-Message-ID: <CAJZ5v0h+P5baWVkTcbjxOjsXyp7aDy25+ik_9XHtUs6+jeN7Pw@mail.gmail.com>
-References: <1461669301-30834-1-git-send-email-james.morse@arm.com>
-	<20160426113103.GB2204@red-moon>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/1] cpupower: Add cpuidle library
+Date: Tue, 26 Apr 2016 22:20 +0200
+Message-ID: <2574684.bDi1t35TAq@vostro.rjw.lan>
+References: <1685056.NeGEfvDZMv@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:34202 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbcDZTF7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 15:05:59 -0400
-Received: by mail-lf0-f65.google.com with SMTP id m101so3793440lfi.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2016 12:05:58 -0700 (PDT)
-In-Reply-To: <20160426113103.GB2204@red-moon>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55279 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752514AbcDZURB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 16:17:01 -0400
+In-Reply-To: <1685056.NeGEfvDZMv@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: James Morse <james.morse@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-pm@vger.kernel.org
 
-On Tue, Apr 26, 2016 at 1:31 PM, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> On Tue, Apr 26, 2016 at 12:15:01PM +0100, James Morse wrote:
->> arm_cpuidle_suspend() may return -EOPNOTSUPP, or any value returned
->> by the cpu_ops/cpuidle_ops suspend call. arm_enter_idle_state() doesn't
->> update 'ret' with this value, meaning we always signal success to
->> cpuidle_enter_state(), causing it to update the usage counters as if we
->> succeeded.
->>
->> Fixes: 191de17aa3c1 ("ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function")
->> Signed-off-by: James Morse <james.morse@arm.com>
->> ---
->>  drivers/cpuidle/cpuidle-arm.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->
->>
->> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
->> index 545069d5fdfb..e342565e8715 100644
->> --- a/drivers/cpuidle/cpuidle-arm.c
->> +++ b/drivers/cpuidle/cpuidle-arm.c
->> @@ -50,7 +50,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->>                * call the CPU ops suspend protocol with idle index as a
->>                * parameter.
->>                */
->> -             arm_cpuidle_suspend(idx);
->> +             ret = arm_cpuidle_suspend(idx);
->>
->>               cpu_pm_exit();
->>       }
->> --
+On Monday, April 25, 2016 04:30:09 PM Thomas Renninger wrote:
+> Hi,
+> 
+> this is a cleanup I wanted to do for a long time.
+> 
+> I already added the change to our build service and things
+> still build against the same archs like arm, ppc, x86:
+> https://build.opensuse.org/package/show/hardware/cpupower
+> 
+> It would be nice to get the one or other review.
+> 
+> Rafael: If you could queue this up for mainline inclusion at some
+> point of time, I would very much appreciate it!
 
-OK
+I can do it right now, but there are a few cpupower patches in Patchwork
+that I'm not sure what to do with.
 
-Should that go into -stable?
+Do you want me to drop those on the floor?
+
+Thanks,
+Rafael
+
