@@ -1,170 +1,57 @@
-From: rwells@codeaurora.org
-Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Tue, 26 Apr 2016 14:46:32 -0400
-Message-ID: <9bf9293aa62b0a7caef7c032ed18749b@codeaurora.org>
-References: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
- <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
- <5716B706.2050700@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] ARM: cpuidle: Pass on arm_cpuidle_suspend()'s return value
+Date: Tue, 26 Apr 2016 21:05:57 +0200
+Message-ID: <CAJZ5v0h+P5baWVkTcbjxOjsXyp7aDy25+ik_9XHtUs6+jeN7Pw@mail.gmail.com>
+References: <1461669301-30834-1-git-send-email-james.morse@arm.com>
+	<20160426113103.GB2204@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5716B706.2050700@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ahs3@redhat.com
-Cc: Ashwin Chaugule <ashwin.chaugule@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:34202 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbcDZTF7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Apr 2016 15:05:59 -0400
+Received: by mail-lf0-f65.google.com with SMTP id m101so3793440lfi.1
+        for <linux-pm@vger.kernel.org>; Tue, 26 Apr 2016 12:05:58 -0700 (PDT)
+In-Reply-To: <20160426113103.GB2204@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: James Morse <james.morse@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 2016-04-19 18:53, Al Stone wrote:
-> On 04/19/2016 02:12 PM, Ashwin Chaugule wrote:
->> + Ryan
->>=20
->> Hi Al,
->>=20
->> On 18 April 2016 at 20:11, Al Stone <ahs3@redhat.com> wrote:
->>> When CPPC is being used by ACPI on arm64, user space tools such as
->>> cpupower report CPU frequency values from sysfs that are incorrect.
->>>=20
->>> What the driver was doing was reporting the values given by ACPI=20
->>> tables
->>> in whatever scale was used to provide them.  However, the ACPI spec
->>> defines the CPPC values as unitless abstract numbers.  Internal=20
->>> kernel
->>> structures such as struct perf_cap, in contrast, expect these value=
-s
->>> to be in KHz.  When these struct values get reported via sysfs, the
->>> user space tools also assume they are in KHz, causing them to repor=
-t
->>> incorrect values (for example, reporting a CPU frequency of 1MHz wh=
-en
->>> it should be 1.8GHz).
->>>=20
->>> While the investigation for a long term fix proceeds (several optio=
-ns
->>> are being explored, some of which may require spec changes or other
->>> much more invasive fixes), this patch forces the values read by CPP=
-C
->>> to be read in KHz, regardless of what they actually represent.
->>>=20
->>> The downside is that this approach has some assumptions:
->>>=20
->>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequenc=
-y
->>>    value for a processor is set to a non-zero value.
->>>=20
->>>    (2) It assumes that all processors run at the same speed.  This
->>>    patch retrieves the first CPU Max Frequency from a type 4 DMI
->>>    record that it can find.  This may not be an issue, however, as =
-a
->>>    sampling of DMI data on x86 and arm64 indicates there is often=20
->>> only
->>>    one such record regardless.
->>>=20
->>> For arm64 servers, this may be sufficient, but it does rely on
->>> firmware values being set correctly.  Hence, other approaches are
->>> also being considered.
->>>=20
->>> This has been tested on three arm64 servers, with and without DMI,=20
->>> with
->>> and without CPPC support.
->>>=20
->>> Changes for v2:
->>>     -- Corrected thinko: needed to have DEPENDS on DMI in=20
->>> Kconfig.arm,
->>>        not SELECT DMI (found by build daemon)
->>>=20
->>> Signed-off-by: Al Stone <ahs3@redhat.com>
->>=20
->> This looks like a good short term solution. Does it make more sense =
-to
->> move this to the cppc_cpufreq driver though? Since that ties more
->> closely into the cpufreq framework which requires the kHz values in
->> sysfs. That way we can keep the cppc_acpi.c shim compliant with the
->> ACPI spec. (i.e. values read in cppc structures remain abstract and
->> unitless).
->=20
-> Perhaps.  Doing it that way made the patch a bit messier since
-> cppc_acpi.c would set values that then had to be replaced in
-> cppc_cpufreq.c, so initialization looked odd to me; that's how
-> I ended up here.  You do raise a good point, however; I'll look
-> at that approach again since I could have missed an easier way
-> to do it.
->=20
->> Rafael, Viresh, others,
->>=20
->> Any other ideas how to handle this better in the long term?
->>=20
->>  - Decouple the cpufreq sysfs from the cppc driver and introduce its
->> own entries. Is it possibly to do this cleanly while still allowing
->> usage of cpufreq registration with existing governors?
->>=20
->>  - Come up with a scaling factor using the PMU cycle counter at boot
->> before the CPPC drivers are initialized. This would use the current
->> freq set by some UEFI var. This would possibly require some messy
->> perfevents plumbing and added bootup time though.
->>=20
->> - .. ?
->>=20
->>=20
->> Cheers,
->> Ashwin.
->>=20
->=20
-> The other thought that occurs to me is to go back through the
-> perf_cap and cpufreq structs and make them more general -- perhaps
-> store the units being used and pointers to functions to convert them
-> to KHz.  This may require separating sysfs data for perf_cap from the
-> cpufreq sysfs data from the cppc sysfs data.  But, if units are then
-> reported out to sysfs, user space tools can do whatever conversions
-> they want, or at least know what they're reporting instead of there
-> being an implicit ABI between the kernel and the tools.  This would
-> be a far more invasive patch set, I think, but it still may be the
-> right thing to do for the long term.
+On Tue, Apr 26, 2016 at 1:31 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Tue, Apr 26, 2016 at 12:15:01PM +0100, James Morse wrote:
+>> arm_cpuidle_suspend() may return -EOPNOTSUPP, or any value returned
+>> by the cpu_ops/cpuidle_ops suspend call. arm_enter_idle_state() doesn't
+>> update 'ret' with this value, meaning we always signal success to
+>> cpuidle_enter_state(), causing it to update the usage counters as if we
+>> succeeded.
+>>
+>> Fixes: 191de17aa3c1 ("ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 function")
+>> Signed-off-by: James Morse <james.morse@arm.com>
+>> ---
+>>  drivers/cpuidle/cpuidle-arm.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+>> index 545069d5fdfb..e342565e8715 100644
+>> --- a/drivers/cpuidle/cpuidle-arm.c
+>> +++ b/drivers/cpuidle/cpuidle-arm.c
+>> @@ -50,7 +50,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>                * call the CPU ops suspend protocol with idle index as a
+>>                * parameter.
+>>                */
+>> -             arm_cpuidle_suspend(idx);
+>> +             ret = arm_cpuidle_suspend(idx);
+>>
+>>               cpu_pm_exit();
+>>       }
+>> --
 
-The issue is a little more fundamental than that even.  We are=20
-retrofitting a performance management interface (CPPC) into a frequency=
-=20
-management framework (cpufreq) and accompanying tools.  Regardless of=20
-what scheme we come up with for deriving/exposing frequency, we still=20
-haven=E2=80=99t completely solved the problem as that assumes a linear=20
-relationship between freq and performance.  This will work for many but=
-=20
-not necessarily all CPPC systems.  In fact, making that assumption is=20
-explicitly forbidden in the ACPI spec: "OSPM must make no assumption=20
-about the exact meaning of the performance values presented by the=20
-platform, or how they may correlate to specific hardware metrics like=20
-processor frequency."
+OK
 
-So to be completely consistent with the current spec, we would need to=20
-ween the tools off of frequency altogether and move to abstract=20
-performance - either specifically when CPPC driver is loaded or more=20
-generally.  If we think reporting frequency is required that might stil=
-l=20
-be doable, but would need to be separate interface from the CPPC perf=20
-scale.  But I agree with Al that is a more invasive change.
-
-=46or the time being, I don't think it is unreasonable to assume=20
-performance is linear with frequency and come up with a scaling factor=20
-via one of several mechanisms:
-    1) SMBIOS as Al proposed (caveats above)
-    2) Measure at boot using PMU or other mechanism as Ashwin floated=20
-(more complicated but removes dependency on SMBIOS and assumption that=20
-freq scale is same across all CPUs)
-    3) Just hardcode a CPPC perf to kHz mapping - maybe everyone is usi=
-ng=20
-MHz today? (simplest but obviously least flexible)
-    4) Others?
-None of these are full solution - it is a question of how many differen=
-t=20
-scenarios do we need to cover with initial solution.  I think the SMBIO=
-S=20
-one is probably a good simplicity/flexibility compromise.
-
--Ryan
-
-Qualcomm Technologies, Inc. on behalf of Qualcomm Innovation Center,=20
-Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a=20
-Linux Foundation Collaborative Project
+Should that go into -stable?
