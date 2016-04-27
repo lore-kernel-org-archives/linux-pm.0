@@ -1,123 +1,103 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 2/3] cpufreq: intel_pstate: Adjust policy->max
-Date: Tue, 26 Apr 2016 15:46:47 -0700
-Message-ID: <1461710807-26282-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:21349 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbcDZWqc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Apr 2016 18:46:32 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH] cpufreq: Use IS_ENABLED() instead of checking for built-in or module
+Date: Tue, 26 Apr 2016 20:14:13 -0400
+Message-ID: <1461716053-17722-1-git-send-email-javier@osg.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: khlebnikov@yandex-team.ru, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When policy->max is changed via _PPC or sysfs and is more than the max non
-turbo frequency, it does not really change resulting performance in some
-processors. When policy->max results in a P-State ratio more than the
-turbo activation ratio, then processor can choose any P-State up to max
-turbo. So the user or _PPC setting has no value, but this can cause
-undesirable side effects like:
-- Showing reduced max percentage in Intel P-State sysfs
-- It can cause reduced max performance under certain boundary conditions:
-The requested max scaling frequency either via _PPC or via cpufreq-sysfs,
-will be converted into a fixed floating point max percent scale. In
-majority of the cases this will result in correct max. But not 100% of the
-time. If the _PPC is requested at a point where the calculation lead to a
-lower max, this can result in a lower P-State then expected and it will
-impact performance.
-Example of this condition using a Broadwell laptop with config TDP.
+The IS_ENABLED() macro checks if a Kconfig symbol has been enabled either
+built-in or as a module, use that macro instead of open coding the same.
 
-ACPI _PSS table from a Broadwell laptop
-2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-1300000 1100000 1000000 900000 800000 600000 500000
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
-The actual results by disabling config TDP so that we can get what is
-requested on or below 2300000Khz.
-
-scaling_max_freq        Max Requested P-State   Resultant max freq
----------------------------------------- ----------------------
-2400000                 18                      2900000 (max
-turbo)
-2300000                 17                      2300000 (max
-physical non turbo)
-2200000                 15                      2100000
-2100000                 15                      2100000
-2000000                 13                      1900000
-1900000                 13                      1900000
-1800000                 12                      1800000
-1700000                 11                      1700000
-1600000                 10                      1600000
-1500000                 f                       1500000
-1400000                 e                       1400000
-1300000                 d                       1300000
-1200000                 c                       1200000
-1100000                 a                       1000000
-1000000                 a                       1000000
-900000                  9                        900000
-800000                  8                        800000
-700000                  7                        700000
-600000                  6                        600000
-500000                  5                        500000
-------------------------------------------------------------------
-
-Now set the config TDP level 1 ratio as 0x0b (equivalent to 1100000KHz)
-in BIOS (not every system will let you adjust this).
-The turbo activation ratio will be set to one less than that, which will
-be 0x0a (So any request above 1000000KHz should result in turbo region
-assuming no thermal limits).
-Here _PPC will request max to 1100000KHz (which basically should still
-result in turbo as this is more than the turbo activation ratio up to
-max allowable turbo frequency), but actual calculation resulted in a max
-ceiling P-State which is 0x0a. So under any load condition, this driver
-will not request turbo P-States. This will be a huge performance hit.
-
-When config TDP feature is ON, if the _PPC points to a frequency above
-turbo activation ratio, the performance can still reach max turbo. In this
-case we don't need to treat this as the reduced frequency in set_policy
-callback.
-
-In this change when config TDP is active (by checking if the physical max
-non turbo ratio is more than the current max non turbo ratio), any request
-above current max non turbo is treated as full performance.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
-v3
-Only commit description is changed. Only this patch is modified
-in this series, other patches are same as v2.
 
- drivers/cpufreq/intel_pstate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/cpufreq/e_powersaver.c    | 14 +++++++-------
+ drivers/cpufreq/ppc_cbe_cpufreq.h |  2 +-
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8e0db49..428ccf8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1418,11 +1418,23 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index 5ec87e3a97bd..cdf097b29862 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -22,7 +22,7 @@
+ #include <asm/msr.h>
+ #include <asm/tsc.h>
  
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- {
-+	struct cpudata *cpu;
-+
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ #include <linux/acpi.h>
+ #include <acpi/processor.h>
+ #endif
+@@ -35,7 +35,7 @@
  
- 	intel_pstate_clear_update_util_hook(policy->cpu);
+ struct eps_cpu_data {
+ 	u32 fsb;
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ 	u32 bios_limit;
+ #endif
+ 	struct cpufreq_frequency_table freq_table[];
+@@ -48,7 +48,7 @@ static int freq_failsafe_off;
+ static int voltage_failsafe_off;
+ static int set_max_voltage;
  
-+	cpu = all_cpu_data[0];
-+	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate) {
-+		if (policy->max < policy->cpuinfo.max_freq &&
-+		    policy->max > (cpu->pstate.max_pstate *
-+				   cpu->pstate.scaling)) {
-+			pr_info("policy->max > max non turbo frequency\n");
-+			policy->max = policy->cpuinfo.max_freq;
-+		}
-+	}
-+
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		limits = &performance_limits;
- 		if (policy->max >= policy->cpuinfo.max_freq) {
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ static int ignore_acpi_limit;
+ 
+ static struct acpi_processor_performance *eps_acpi_cpu_perf;
+@@ -186,7 +186,7 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 	int k, step, voltage;
+ 	int ret;
+ 	int states;
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ 	unsigned int limit;
+ #endif
+ 
+@@ -286,7 +286,7 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 	/* Calc FSB speed */
+ 	fsb = cpu_khz / current_multiplier;
+ 
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ 	/* Check for ACPI processor speed limit */
+ 	if (!ignore_acpi_limit && !eps_acpi_init()) {
+ 		if (!acpi_processor_get_bios_limit(policy->cpu, &limit)) {
+@@ -333,7 +333,7 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	/* Copy basic values */
+ 	centaur->fsb = fsb;
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ 	centaur->bios_limit = limit;
+ #endif
+ 
+@@ -418,7 +418,7 @@ module_param(freq_failsafe_off, int, 0644);
+ MODULE_PARM_DESC(freq_failsafe_off, "Disable current vs max frequency check");
+ module_param(voltage_failsafe_off, int, 0644);
+ MODULE_PARM_DESC(voltage_failsafe_off, "Disable current vs max voltage check");
+-#if defined CONFIG_ACPI_PROCESSOR || defined CONFIG_ACPI_PROCESSOR_MODULE
++#if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ module_param(ignore_acpi_limit, int, 0644);
+ MODULE_PARM_DESC(ignore_acpi_limit, "Don't check ACPI's processor speed limit");
+ #endif
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.h b/drivers/cpufreq/ppc_cbe_cpufreq.h
+index b4c00a5a6a59..3eace725ccd6 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.h
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.h
+@@ -17,7 +17,7 @@ int cbe_cpufreq_get_pmode(int cpu);
+ 
+ int cbe_cpufreq_set_pmode_pmi(int cpu, unsigned int pmode);
+ 
+-#if defined(CONFIG_CPU_FREQ_CBE_PMI) || defined(CONFIG_CPU_FREQ_CBE_PMI_MODULE)
++#if IS_ENABLED(CONFIG_CPU_FREQ_CBE_PMI)
+ extern bool cbe_cpufreq_has_pmi;
+ #else
+ #define cbe_cpufreq_has_pmi (0)
 -- 
 2.5.5
-
