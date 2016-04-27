@@ -1,122 +1,131 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 2/3] cpufreq: intel_pstate: Adjust policy->max
-Date: Wed, 27 Apr 2016 15:48:07 -0700
-Message-ID: <1461797288-31573-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1461797288-31573-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: governor: Change confusing struct field and variable names
+Date: Thu, 28 Apr 2016 01:19:03 +0200
+Message-ID: <2024653.a0XKPA0FXA@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:29968 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751774AbcD0WsF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Apr 2016 18:48:05 -0400
-In-Reply-To: <1461797288-31573-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57030 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752830AbcD0XQD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2016 19:16:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: khlebnikov@yandex-team.ru, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>
 
-When policy->max is changed via _PPC or sysfs and is more than the max non
-turbo frequency, it does not really change resulting performance in some
-processors. When policy->max results in a P-State ratio more than the
-turbo activation ratio, then processor can choose any P-State up to max
-turbo. So the user or _PPC setting has no value, but this can cause
-undesirable side effects like:
-- Showing reduced max percentage in Intel P-State sysfs
-- It can cause reduced max performance under certain boundary conditions:
-The requested max scaling frequency either via _PPC or via cpufreq-sysfs,
-will be converted into a fixed floating point max percent scale. In
-majority of the cases this will result in correct max. But not 100% of the
-time. If the _PPC is requested at a point where the calculation lead to a
-lower max, this can result in a lower P-State then expected and it will
-impact performance.
-Example of this condition using a Broadwell laptop with config TDP.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-ACPI _PSS table from a Broadwell laptop
-2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-1300000 1100000 1000000 900000 800000 600000 500000
+The name of the prev_cpu_wall field in struct cpu_dbs_info is
+confusing, because it doesn't represent wall time, but the previous
+update time as returned by get_cpu_idle_time() (that may be the
+current value of jiffies_64 in some cases, for example).
 
-The actual results by disabling config TDP so that we can get what is
-requested on or below 2300000Khz.
+Moreover, the names of some related variables in dbs_update() take
+that confusion further.
 
-scaling_max_freq        Max Requested P-State   Resultant scaling
-max
----------------------------------------- ----------------------
-2400000                 18                      2900000 (max
-turbo)
-2300000                 17                      2300000 (max
-physical non turbo)
-2200000                 15                      2100000
-2100000                 15                      2100000
-2000000                 13                      1900000
-1900000                 13                      1900000
-1800000                 12                      1800000
-1700000                 11                      1700000
-1600000                 10                      1600000
-1500000                 f                       1500000
-1400000                 e                       1400000
-1300000                 d                       1300000
-1200000                 c                       1200000
-1100000                 a                       1000000
-1000000                 a                       1000000
-900000                  9                        900000
-800000                  8                        800000
-700000                  7                        700000
-600000                  6                        600000
-500000                  5                        500000
-------------------------------------------------------------------
+Rename all of those things to make their names reflect the purpose
+more accurately.  While at it, drop unnecessary parens from one of
+the updated expressions.
 
-Now set the config TDP level 1 ratio as 0x0b (equivalent to 1100000KHz)
-in BIOS (not every system will let you adjust this).
-The turbo activation ratio will be set to one less than that, which will
-be 0x0a (So any request above 1000000KHz should result in turbo region
-assuming no thermal limits).
-Here _PPC will request max to 1100000KHz (which basically should still
-result in turbo as this is more than the turbo activation ratio up to
-max allowable turbo frequency), but actual calculation resulted in a max
-ceiling P-State which is 0x0a. So under any load condition, this driver
-will not request turbo P-States. This will be a huge performance hit.
+No functional changes.
 
-When config TDP feature is ON, if the _PPC points to a frequency above
-turbo activation ratio, the performance can still reach max turbo. In this
-case we don't need to treat this as the reduced frequency in set_policy
-callback.
-
-In this change when config TDP is active (by checking if the physical max
-non turbo ratio is more than the current max non turbo ratio), any request
-above current max non turbo is treated as full performance.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/cpufreq/cpufreq_governor.c |   22 +++++++++++-----------
+ drivers/cpufreq/cpufreq_governor.h |    2 +-
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index fc37446..c4894ff 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1413,11 +1413,23 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
++++ linux-pm/drivers/cpufreq/cpufreq_governor.h
+@@ -111,7 +111,7 @@ static inline void gov_update_sample_del
+ /* Per cpu structures */
+ struct cpu_dbs_info {
+ 	u64 prev_cpu_idle;
+-	u64 prev_cpu_wall;
++	u64 prev_update_time;
+ 	u64 prev_cpu_nice;
+ 	/*
+ 	 * Used to keep track of load in the previous interval. However, when
+Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
++++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+@@ -103,7 +103,7 @@ void gov_update_cpu_data(struct dbs_data
+ 		for_each_cpu(j, policy_dbs->policy->cpus) {
+ 			struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
  
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- {
-+	struct cpudata *cpu;
-+
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
+-			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall,
++			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_update_time,
+ 								  dbs_data->io_is_busy);
+ 			if (dbs_data->ignore_nice_load)
+ 				j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+@@ -137,14 +137,14 @@ unsigned int dbs_update(struct cpufreq_p
+ 	/* Get Absolute Load */
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
+-		u64 cur_wall_time, cur_idle_time;
+-		unsigned int idle_time, wall_time;
++		u64 update_time, cur_idle_time;
++		unsigned int idle_time, time_elapsed;
+ 		unsigned int load;
  
- 	intel_pstate_clear_update_util_hook(policy->cpu);
+-		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
++		cur_idle_time = get_cpu_idle_time(j, &update_time, io_busy);
  
-+	cpu = all_cpu_data[0];
-+	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate) {
-+		if (policy->max < policy->cpuinfo.max_freq &&
-+		    policy->max > (cpu->pstate.max_pstate *
-+				   cpu->pstate.scaling)) {
-+			pr_info("policy->max > max non turbo frequency\n");
-+			policy->max = policy->cpuinfo.max_freq;
-+		}
-+	}
-+
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		limits = &performance_limits;
- 		if (policy->max >= policy->cpuinfo.max_freq) {
--- 
-2.5.5
+-		wall_time = cur_wall_time - j_cdbs->prev_cpu_wall;
+-		j_cdbs->prev_cpu_wall = cur_wall_time;
++		time_elapsed = update_time - j_cdbs->prev_update_time;
++		j_cdbs->prev_update_time = update_time;
+ 
+ 		idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
+ 		j_cdbs->prev_cpu_idle = cur_idle_time;
+@@ -156,7 +156,7 @@ unsigned int dbs_update(struct cpufreq_p
+ 			j_cdbs->prev_cpu_nice = cur_nice;
+ 		}
+ 
+-		if (unlikely(!wall_time || wall_time < idle_time))
++		if (unlikely(!time_elapsed || time_elapsed < idle_time))
+ 			continue;
+ 
+ 		/*
+@@ -177,7 +177,7 @@ unsigned int dbs_update(struct cpufreq_p
+ 		 *
+ 		 * Detecting this situation is easy: the governor's utilization
+ 		 * update handler would not have run during CPU-idle periods.
+-		 * Hence, an unusually large 'wall_time' (as compared to the
++		 * Hence, an unusually large 'time_elapsed' (as compared to the
+ 		 * sampling rate) indicates this scenario.
+ 		 *
+ 		 * prev_load can be zero in two cases and we must recalculate it
+@@ -185,7 +185,7 @@ unsigned int dbs_update(struct cpufreq_p
+ 		 * - during long idle intervals
+ 		 * - explicitly set to zero
+ 		 */
+-		if (unlikely(wall_time > (2 * sampling_rate) &&
++		if (unlikely(time_elapsed > 2 * sampling_rate &&
+ 			     j_cdbs->prev_load)) {
+ 			load = j_cdbs->prev_load;
+ 
+@@ -196,7 +196,7 @@ unsigned int dbs_update(struct cpufreq_p
+ 			 */
+ 			j_cdbs->prev_load = 0;
+ 		} else {
+-			load = 100 * (wall_time - idle_time) / wall_time;
++			load = 100 * (time_elapsed - idle_time) / time_elapsed;
+ 			j_cdbs->prev_load = load;
+ 		}
+ 
+@@ -509,7 +509,7 @@ static int cpufreq_governor_start(struct
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
+ 
+-		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
++		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_update_time, io_busy);
+ 		/*
+ 		 * Make the first invocation of dbs_update() compute the load.
+ 		 */
 
