@@ -1,7 +1,7 @@
 From: Andy Yan <andy.yan@rock-chips.com>
 Subject: Re: [PATCH v8 2/4] power: reset: add reboot mode driver
-Date: Wed, 27 Apr 2016 20:57:08 +0800
-Message-ID: <5720B724.4060904@rock-chips.com>
+Date: Wed, 27 Apr 2016 21:24:21 +0800
+Message-ID: <5720BD85.5030302@rock-chips.com>
 References: <1461567051-21734-1-git-send-email-andy.yan@rock-chips.com>
  <1461567336-21834-1-git-send-email-andy.yan@rock-chips.com>
  <571DF49F.6000706@samsung.com> <571DFFB0.4010409@rock-chips.com>
@@ -237,9 +237,6 @@ freed.
 > In this error path you are freeing 'info'. Where is the kfree_const()
 > for 'info->mode'?
 >
-
-     Sorry, I got it, it's my fault.Thanks for your review.
-
 >>>> +            continue;
 >>>> +        }
 >>>> +        list_add_tail(&info->list, &reboot->head);
@@ -265,6 +262,10 @@ be
 >> clean up,because other resources allocated by devm. If there is
 >> something else, please let me know.
 > Just goto error...
+
+     I check the code of register_reboot_notifier, this function only =20
+return 0. So
+Maybe I don't need to check the return value here.
 >
 > Best regards,
 > Krzysztof
