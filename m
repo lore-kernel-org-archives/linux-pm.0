@@ -1,57 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2/4] clk: renesas: mstp: Use always-on governor for Clock Domain
-Date: Wed, 27 Apr 2016 16:04:05 +0200
-Message-ID: <CAMuHMdWyzbd8n-3+AZ16b9HL2prYQM2YXfcm8PKa_TbJ1QDQtg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] clk: renesas: Clock Domain fixes
+Date: Wed, 27 Apr 2016 16:06:08 +0200
+Message-ID: <CAPDyKFofkVaXPO013rES6FYQrtWRRFWBOqSETaqT8Q7VisHuqA@mail.gmail.com>
 References: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
-	<1461654582-668-3-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFqApbcY9apg7dtGh=y71607c0hPHvEGDOo-skUTwCrUCg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqApbcY9apg7dtGh=y71607c0hPHvEGDOo-skUTwCrUCg@mail.gmail.com>
+In-Reply-To: <1461654582-668-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-clk-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
-
-On Wed, Apr 27, 2016 at 3:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 26 April 2016 at 09:09, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->> As a pure Clock Domain does not have the concept of powering the domain
->> itself, the CPG/MSTP driver does not provide power_off() and power_on()
->> callbacks.
->> However, the genpd core may still perform a dummy power down, causing
->> /sys/kernel/debug/pm_genpd/pm_genpd_summary to report the domain's
->> status being "off-0".
->>
->> Use the always-on governor to make sure the domain is never powered
->> down, and always shows up as "on" in pm_genpd_summary.
+On 26 April 2016 at 09:09, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>         Hi Mike, Stephen,
 >
-> Hmm.
+> This patch series contains fixes for the Renesas CPG/MSTP and CPG/MSSR
+> Clock Domains:
+>   1. Postpone calls to pm_genpd_init(), as all local setup of the
+>      generic_pm_domain structure should have been completed before
+>      calling pm_genpd_init(),
+>   2. Use always-on governor for Clock Domains, to prevent their status
+>      from being shown as "off-0" in
+>      /sys/kernel/debug/pm_genpd/pm_genpd_summary.
 >
-> Hypothetically, what if the clock domain would be a subdomain, where
-> its master is able to power down? Using the always on governor would
-> prevent the master from power off as well.
-
-That's correct. However, on R-Mobile/R-Car SoCs, this is not the case, so it
-doesn't matter here.
-
-> I am wondering whether we should introduce some similar as
-> pm_runtime_no_callbacks() but for the generic PM domain instead.
+> I plan to queue these up with other clock updates in
+> clk-renesas-for-v4.7, and send a pull request later.
 >
-> What do you think?
+> Thanks for your comments!
+>
+> Geert Uytterhoeven (4):
+>   clk: renesas: mstp: Postpone call to pm_genpd_init()
+>   clk: renesas: mstp: Use always-on governor for Clock Domain
+>   clk: renesas: cpg-mssr: Postpone call to pm_genpd_init()
+>   clk: renesas: cpg-mssr: Use always-on governor for Clock Domain
+>
+>  drivers/clk/renesas/clk-mstp.c         | 3 +--
+>  drivers/clk/renesas/renesas-cpg-mssr.c | 2 +-
+>  2 files changed, 2 insertions(+), 3 deletions(-)
 
-In my case, the domain is not managed by its parent, to there's no such
-analogy.
+For the series:
 
-Gr{oetje,eeting}s,
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Kind regards
+Uffe
