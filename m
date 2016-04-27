@@ -1,131 +1,197 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: governor: Change confusing struct field and variable names
-Date: Thu, 28 Apr 2016 01:19:03 +0200
-Message-ID: <2024653.a0XKPA0FXA@vostro.rjw.lan>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 4/9] of: Add bindings of hw throttle for soctherm
+Date: Wed, 27 Apr 2016 16:30:55 -0700
+Message-ID: <20160427233054.GA26451@localhost.localdomain>
+References: <1461727554-15065-1-git-send-email-wni@nvidia.com>
+ <1461727554-15065-5-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57030 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752830AbcD0XQD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2016 19:16:03 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1461727554-15065-5-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org,
+	MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org,
+	mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
+	linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
+	linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Bcc: 
+Subject: Re: [PATCH v2 4/9] of: Add bindings of hw throttle for soctherm
+Reply-To: 
+In-Reply-To: <1461727554-15065-5-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-The name of the prev_cpu_wall field in struct cpu_dbs_info is
-confusing, because it doesn't represent wall time, but the previous
-update time as returned by get_cpu_idle_time() (that may be the
-current value of jiffies_64 in some cases, for example).
+The patch title must say something about the fact that this is specific
+to nvidia thermal driver.
 
-Moreover, the names of some related variables in dbs_update() take
-that confusion further.
+On Wed, Apr 27, 2016 at 11:25:49AM +0800, Wei Ni wrote:
+> Add HW throttle configuration sub-node for soctherm, which
+> is used to describe the throttle event, and worked as a
+> cooling device. The "hot" type trip in thermal zone can
+> be bound to this cooling device, and trigger the throttle
+> function.
+> 
+> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 89 +++++++++++++++++++++-
+>  1 file changed, 87 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
+> index edebfa0a985e..dc337d139f49 100644
+> --- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
+> +++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
+> @@ -10,8 +10,14 @@ Required properties :
+>  - compatible : For Tegra124, must contain "nvidia,tegra124-soctherm".
+>    For Tegra132, must contain "nvidia,tegra132-soctherm".
+>    For Tegra210, must contain "nvidia,tegra210-soctherm".
+> -- reg : Should contain 1 entry:
+> +- reg : Should contain at least 2 entries for each entry in reg-names:
+>    - SOCTHERM register set
+> +  - Tegra CAR register set: Required for Tegra124 and Tegra210.
+> +  - CCROC register set: Required for Tegra132.
+> +- reg-names :  Should contain at least 2 entries:
+> +  - soctherm-reg
+> +  - car-reg
+> +  - ccroc-reg
+>  - interrupts : Defines the interrupt used by SOCTHERM
+>  - clocks : Must contain an entry for each entry in clock-names.
+>    See ../clocks/clock-bindings.txt for details.
+> @@ -25,17 +31,44 @@ Required properties :
+>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
+>      of this property. See <dt-bindings/thermal/tegra124-soctherm.h> for a
+>      list of valid values when referring to thermal sensors.
+> +- throttle-cfgs: A sub-node which is a container of configuration for each
+> +    hardware throttle events. These events can be set as cooling devices.
+> +  * throttle events: Sub-nodes must be named as "light" or "heavy".
+> +      Properties:
+> +      - priority: Each throttles has its own throttle settings, so the SW need
+> +        to set priorities for various throttle, the HW arbiter can select the
+> +        final throttle settings.
+> +        Bigger value indicates higher priority, In general, higher priority
+> +        translates to lower target frequency. SW needs to ensure that critical
+> +        thermal alarms are given higher priority, and ensure that there is
+> +        no race if priority of two vectors is set to the same value.
+> +      - cpu-throt-depth:  This property is for Tegra124 and Tegra210. It is
+> +        the throttling depth of pulse skippers, it's the percentage
+> +        throttling.
+> +      - cpu-throt-level: This property is only for Tegra132, it is the level
+> +        of pulse skippers, which used to throttle clock frequencies. It
+> +        indicates cpu clock throttling depth, and the depth can be programmed.
+> +        Must set as following values:
+> +        TEGRA_SOCTHERM_THROT_LEVEL_LOW, TEGRA_SOCTHERM_THROT_LEVEL_MED
+> +        TEGRA_SOCTHERM_THROT_LEVEL_HIGH, TEGRA_SOCTHERM_THROT_LEVEL_NONE
 
-Rename all of those things to make their names reflect the purpose
-more accurately.  While at it, drop unnecessary parens from one of
-the updated expressions.
+These properties are not generic properties. My understanding is that
+you must have vendor prefix in such case. Same applies to the new nodes.
 
-No functional changes.
+> +      - #cooling-cells: Should be 1. This cooling device only support on/off state.
+> +        See ./thermal.txt for a description of this property.
+>  
+>  Note:
+>  - the "critical" type trip points will be set to SOC_THERM hardware as the
+>  shut down temperature. Once the temperature of this thermal zone is higher
+>  than it, the system will be shutdown or reset by hardware.
+> +- the "hot" type trip points will be set to SOC_THERM hardware as the throttle
+> +temperature. Once the the temperature of this thermal zone is higher
+> +than it, it will trigger the HW throttle event.
+>  
+>  Example :
+>  
+>  	soctherm@700e2000 {
+>  		compatible = "nvidia,tegra124-soctherm";
+> -		reg = <0x0 0x700e2000 0x0 0x1000>;
+> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
+> +			0x0 0x60006000 0x0 0x400 /* CAR reg_base */
+> +		reg-names = "soctherm-reg", "car-reg";
+>  		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+>  		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
+>  			<&tegra_car TEGRA124_CLK_SOC_THERM>;
+> @@ -44,6 +77,45 @@ Example :
+>  		reset-names = "soctherm";
+>  
+>  		#thermal-sensor-cells = <1>;
+> +
+> +		throttle-cfgs {
+> +			throttle_heavy: heavy {
+> +				priority = <100>;
+> +				cpu-throt-depth = <85>;
+> +
+> +				#cooling-cells = <1>;
+> +			};
+> +			throttle_light: light {
+> +				priority = <80>;
+> +				cpu-throt-depth = <50>;
+> +
+> +				#cooling-cells = <1>;
+> +			};
+> +		};
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_governor.c |   22 +++++++++++-----------
- drivers/cpufreq/cpufreq_governor.h |    2 +-
- 2 files changed, 12 insertions(+), 12 deletions(-)
+This is a sensor, which at the same time, has sub nodes that can be
+cooling devices. Is my understanding correct of what you are trying to
+do?
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -111,7 +111,7 @@ static inline void gov_update_sample_del
- /* Per cpu structures */
- struct cpu_dbs_info {
- 	u64 prev_cpu_idle;
--	u64 prev_cpu_wall;
-+	u64 prev_update_time;
- 	u64 prev_cpu_nice;
- 	/*
- 	 * Used to keep track of load in the previous interval. However, when
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -103,7 +103,7 @@ void gov_update_cpu_data(struct dbs_data
- 		for_each_cpu(j, policy_dbs->policy->cpus) {
- 			struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
--			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall,
-+			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_update_time,
- 								  dbs_data->io_is_busy);
- 			if (dbs_data->ignore_nice_load)
- 				j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-@@ -137,14 +137,14 @@ unsigned int dbs_update(struct cpufreq_p
- 	/* Get Absolute Load */
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
--		u64 cur_wall_time, cur_idle_time;
--		unsigned int idle_time, wall_time;
-+		u64 update_time, cur_idle_time;
-+		unsigned int idle_time, time_elapsed;
- 		unsigned int load;
- 
--		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
-+		cur_idle_time = get_cpu_idle_time(j, &update_time, io_busy);
- 
--		wall_time = cur_wall_time - j_cdbs->prev_cpu_wall;
--		j_cdbs->prev_cpu_wall = cur_wall_time;
-+		time_elapsed = update_time - j_cdbs->prev_update_time;
-+		j_cdbs->prev_update_time = update_time;
- 
- 		idle_time = cur_idle_time - j_cdbs->prev_cpu_idle;
- 		j_cdbs->prev_cpu_idle = cur_idle_time;
-@@ -156,7 +156,7 @@ unsigned int dbs_update(struct cpufreq_p
- 			j_cdbs->prev_cpu_nice = cur_nice;
- 		}
- 
--		if (unlikely(!wall_time || wall_time < idle_time))
-+		if (unlikely(!time_elapsed || time_elapsed < idle_time))
- 			continue;
- 
- 		/*
-@@ -177,7 +177,7 @@ unsigned int dbs_update(struct cpufreq_p
- 		 *
- 		 * Detecting this situation is easy: the governor's utilization
- 		 * update handler would not have run during CPU-idle periods.
--		 * Hence, an unusually large 'wall_time' (as compared to the
-+		 * Hence, an unusually large 'time_elapsed' (as compared to the
- 		 * sampling rate) indicates this scenario.
- 		 *
- 		 * prev_load can be zero in two cases and we must recalculate it
-@@ -185,7 +185,7 @@ unsigned int dbs_update(struct cpufreq_p
- 		 * - during long idle intervals
- 		 * - explicitly set to zero
- 		 */
--		if (unlikely(wall_time > (2 * sampling_rate) &&
-+		if (unlikely(time_elapsed > 2 * sampling_rate &&
- 			     j_cdbs->prev_load)) {
- 			load = j_cdbs->prev_load;
- 
-@@ -196,7 +196,7 @@ unsigned int dbs_update(struct cpufreq_p
- 			 */
- 			j_cdbs->prev_load = 0;
- 		} else {
--			load = 100 * (wall_time - idle_time) / wall_time;
-+			load = 100 * (time_elapsed - idle_time) / time_elapsed;
- 			j_cdbs->prev_load = load;
- 		}
- 
-@@ -509,7 +509,7 @@ static int cpufreq_governor_start(struct
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
- 
--		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
-+		j_cdbs->prev_cpu_idle = get_cpu_idle_time(j, &j_cdbs->prev_update_time, io_busy);
- 		/*
- 		 * Make the first invocation of dbs_update() compute the load.
- 		 */
 
+> +	};
+> +
+> +Example: referring to Tegra132's "reg", "reg-names" and "throttle-cfgs" :
+> +
+> +	soctherm@0,700e2000 {
+> +		compatible = "nvidia,tegra132-soctherm";
+> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
+> +			0x0 0x70040000 0x0 0x200>; /* CCROC reg_base */;
+> +		reg-names = "soctherm-reg", "ccroc-reg";
+> +
+> +		throttle-cfgs {
+> +			throttle_heavy: heavy {
+> +				priority = <100>;
+> +				cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_HIGH>;
+> +
+> +				#cooling-cells = <1>;
+> +			};
+> +			throttle_light: light {
+> +				priority = <80>;
+> +				cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_MED>;
+> +
+> +				#cooling-cells = <1>;
+
+Could you please describe a little here what to expect of the above
+setup?
+
+
+> +			};
+> +		};
+>  	};
+>  
+>  Example: referring to thermal sensors :
+> @@ -62,6 +134,19 @@ Example: referring to thermal sensors :
+>  					hysteresis = <1000>;
+>  					type = "critical";
+>  				};
+> +
+> +				cpu_throttle_trip: throttle-trip {
+> +					temperature = <100000>;
+> +					hysteresis = <1000>;
+> +					type = "hot";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +				map0 {
+> +					trip = <&cpu_throttle_trip>;
+> +					cooling-device = <&throttle_heavy 1 1>;
+> +				};
+>  			};
+>                  };
+>  	};
+> -- 
+> 1.9.1
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
