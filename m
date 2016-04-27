@@ -1,73 +1,110 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 4/7] cpufreq: dt: Identify cpu-sharing for platforms without operating-points-v2
-Date: Wed, 27 Apr 2016 08:52:24 +0530
-Message-ID: <63799f4fb97a958852ab5f5c055358f669da4772.1461727086.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 3/7] PM / OPP: Add dev_pm_opp_get_sharing_cpus()
+Date: Wed, 27 Apr 2016 08:52:23 +0530
+Message-ID: <f8c698d839cadcfce1f01048ade655e039ee0c53.1461727086.git.viresh.kumar@linaro.org>
 References: <cover.1461727086.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1461727086.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1461727086.git.viresh.kumar@linaro.org>
 References: <cover.1461727086.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org, arnd.bergmann@linaro.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Existing platforms, which do not support operating-points-v2, can
-explicitly tell the opp core that some of the CPUs share opp tables,
-with help of dev_pm_opp_set_sharing_cpus().
+OPP core allows a platform to mark OPP table as shared, when the
+platform isn't using operating-points-v2 bindings.
 
-For such platforms, explicitly ask the opp core to provide list of CPUs
-sharing the opp table with current cpu device, before falling back to
-platform data.
+And, so there should be a non DT way of finding out if the OPP table is
+shared or not.
+
+This patch adds dev_pm_opp_get_sharing_cpus(), which first tries to get
+OPP sharing information from the opp-table (in case it is already marked
+as shared), otherwise it uses the existing DT way of finding sharing
+information.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/base/power/opp/cpu.c | 45 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h       |  6 ++++++
+ 2 files changed, 51 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 5f8dbe640a20..aca9bec00f91 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -147,7 +147,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	struct clk *cpu_clk;
- 	struct dev_pm_opp *suspend_opp;
- 	unsigned int transition_latency;
--	bool opp_v1 = false;
-+	bool fallback = false;
- 	const char *name;
- 	int ret;
- 
-@@ -167,14 +167,16 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	/* Get OPP-sharing information from "operating-points-v2" bindings */
- 	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
- 	if (ret) {
-+		if (ret != -ENOENT)
-+			goto out_put_clk;
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 5469e7730ff2..3428380dfca7 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -330,3 +330,48 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
 +
- 		/*
- 		 * operating-points-v2 not supported, fallback to old method of
--		 * finding shared-OPPs for backward compatibility.
-+		 * finding shared-OPPs for backward compatibility if the
-+		 * platform hasn't set sharing CPUs.
- 		 */
--		if (ret == -ENOENT)
--			opp_v1 = true;
--		else
--			goto out_put_clk;
-+		if (dev_pm_opp_get_sharing_cpus(cpu_dev, policy->cpus))
-+			fallback = true;
- 	}
++/**
++ * dev_pm_opp_get_sharing_cpus() - Get cpumask of CPUs sharing OPPs with @cpu_dev
++ * @cpu_dev:	CPU device for which we do this operation
++ * @cpumask:	cpumask to update with information of sharing CPUs
++ *
++ * This updates the @cpumask with CPUs that are sharing OPPs with @cpu_dev.
++ *
++ * Returns -ENODEV if OPP table isn't already present.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++{
++	struct opp_device *opp_dev;
++	struct opp_table *opp_table;
++	int ret = 0;
++
++	mutex_lock(&opp_table_lock);
++
++	opp_table = _find_opp_table(cpu_dev);
++	if (IS_ERR(opp_table)) {
++		ret = PTR_ERR(opp_table);
++		goto unlock;
++	}
++
++	cpumask_clear(cpumask);
++
++	if (opp_table->shared_opp) {
++		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
++			cpumask_set_cpu(opp_dev->dev->id, cpumask);
++	} else {
++		cpumask_set_cpu(cpu_dev->id, cpumask);
++	}
++
++unlock:
++	mutex_unlock(&opp_table_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_sharing_cpus);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 0c08ed3836b1..15f554443b59 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -66,6 +66,7 @@ int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+ void dev_pm_opp_put_regulator(struct device *dev);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const cpumask_var_t cpumask);
++int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -184,6 +185,11 @@ static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const cpum
+ 	return -ENOTSUPP;
+ }
  
- 	/*
-@@ -214,7 +216,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		goto out_free_opp;
- 	}
++static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++{
++	return -EINVAL;
++}
++
+ #endif		/* CONFIG_PM_OPP */
  
--	if (opp_v1) {
-+	if (fallback) {
- 		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
- 
- 		if (!pd || !pd->independent_clocks)
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
 -- 
 2.7.1.410.g6faf27b
