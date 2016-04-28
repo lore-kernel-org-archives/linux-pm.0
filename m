@@ -1,19 +1,26 @@
 From: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Subject: [RFC/PATCH] cpufreq: Fix GOV_LIMITS handling for the userspace governor
-Date: Thu, 28 Apr 2016 11:00:02 -0700
-Message-ID: <57224FA2.2080000@nvidia.com>
+Subject: [RESEND][RFC/PATCH] cpufreq: Fix GOV_LIMITS handling for the userspace
+ governor
+Date: Thu, 28 Apr 2016 11:06:51 -0700
+Message-ID: <5722513B.4080801@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:17669 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbcD1SCD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 14:02:03 -0400
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14867 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbcD1SIz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 14:08:55 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: viresh.kumar@linaro.org, rafael.j.wysocki@intel.com
 Cc: linux-pm@vger.kernel.org, mlongnecker@nvidia.com
+
+Resending without the copyright headed appended..sorry!
+
+-Sai
+
+=======
 
 Currently, the userspace governor only updates frequency on GOV_LIMITS
 if policy->cur falls outside policy->{min/max}. However, it is also
@@ -101,12 +108,4 @@ cpufreq_policy *policy,
  		mutex_unlock(&userspace_mutex);
  		break;
  	}
--- 
-2.1.4
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+-- 2.1.4
