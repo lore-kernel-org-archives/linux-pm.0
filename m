@@ -1,84 +1,68 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 4/9] thermal: rockchip: handle the power sequence for
- tsadc controller
-Date: Thu, 28 Apr 2016 08:04:33 -0700
-Message-ID: <20160428150432.GA20009@localhost.localdomain>
-References: <1460950562-20652-1-git-send-email-wxt@rock-chips.com>
- <1460950562-20652-5-git-send-email-wxt@rock-chips.com>
- <20160427234818.GB2590@localhost.localdomain>
- <57216C65.5040501@gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v4 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Thu, 28 Apr 2016 18:13:56 +0300
+Message-ID: <20160428151356.GF32610@lahna.fi.intel.com>
+References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
+ <20160428142216.GA18211@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:36645 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752468AbcD1PEh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 11:04:37 -0400
+Received: from mga14.intel.com ([192.55.52.115]:47495 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752692AbcD1POE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 28 Apr 2016 11:14:04 -0400
 Content-Disposition: inline
-In-Reply-To: <57216C65.5040501@gmail.com>
+In-Reply-To: <20160428142216.GA18211@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.upstream@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Apr 28, 2016 at 09:50:29AM +0800, Caesar Wang wrote:
->=20
->=20
-> =E5=9C=A8 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 07:48, Eduardo Valentin=
- =E5=86=99=E9=81=93:
-> >On Mon, Apr 18, 2016 at 11:35:56AM +0800, Caesar Wang wrote:
-> >>+		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_ON);
-> >>+		mdelay(10);
-> >>+		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_OFF);
-> >>+		udelay(100); /* The spec note says at least 15 us */
-> >>+		regmap_write(grf, GRF_SARADC_TESTBIT, GRF_SARADC_TESTBIT_ON);
-> >>+		regmap_write(grf, GRF_TSADC_TESTBIT_H, GRF_TSADC_TESTBIT_H_ON);
-> >>+		udelay(200); /* The spec note says at least 90 us */
-> >Does it make sense to use usleep_range() instead?
->=20
-> I think so in the past, but I'm digging into the the udelay/usleep fo=
-r
-> kernel.
+On Thu, Apr 28, 2016 at 04:22:16PM +0200, Lukas Wunner wrote:
+> Hi Mika,
+> 
+> I've rebased my Thunderbolt runtime pm patches on v4 of your patches
+> and everything seems to still work fine. d3cold_allowed also works
+> as it should now.
 
-What do you mean by in the past? timekeeping doc still recommends the
-range 10us to 20ms for usleep_range()
+Cool, thanks for testing.
 
->=20
-> In general,
->=20
-> udelay < 10us ~100us
-> mdelay > 1m, <1000ms/HZ
-> usleep_range(min,max) > 100us, <20ms
+> As said I've amended my series to allow runtime pm on hotplug ports
+> if they're Thunderbolt ports on a Mac:
+> https://github.com/l1k/linux/commit/a6810db929485c7fc8677f265b1c68e31879ce61
 
-even here, your udelays could be replaced by usleep_range().
+If we are going to add more conditions, I think it makes sense to
+introduce pcie_port_runtime_pm_possible() or similar which includes all
+these checks.
 
-Any particular reason you believe spining is better than sleeping in
-your case?
+> I've also reviewed the patches one more time and spotted only this
+> small nit:
+> 
+> On Mon, Apr 25, 2016 at 12:53:24PM +0300, Mika Westerberg wrote:
+> > +static int pcie_port_runtime_resume(struct device *dev)
+> > +{
+> > +	pm_runtime_mark_last_busy(dev);
+> > +	return 0;
+> > +}
+> 
+> The PM core seems to do this automatically, see rpm_resume():
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/base/power/runtime.c#n749
+> 
+> So you could just drop the .runtime_resume entry here and it shouldn't
+> result in any functional change:
+> 
+> > @@ -101,6 +122,9 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
+> >  	.poweroff	= pcie_port_device_suspend,
+> >  	.restore	= pcie_port_device_resume,
+> >  	.resume_noirq	= pcie_port_resume_noirq,
+> > +	.runtime_suspend = pcie_port_runtime_suspend,
+> > +	.runtime_resume	= pcie_port_runtime_resume,
+> > +	.runtime_idle	= pcie_port_runtime_idle,
 
-> msleep > 20ms,  < 1000ms
->=20
-> So the udelay is suit for tsadc power sequence.
-> ---
->=20
->=20
-> Also,  we have used the mdelay(10), so it doesn't matter if use the u=
-delay.
-> After all the udelay is stable than the usleep_range.
+Hmm, PM core calls pci_pm_runtime_resume() for PCI drivers which then
+delegates to driver->runtime_resume() if set. However, if it is missing
+it just returns -ENOSYS and does not put the device back to D0.
 
-What do you mean udelay is stable than usleep_range? usleep_range will
-give the opportunity to the scheduler to coalesce wakeups. udelay is a
-busyloop spin. Besides, I am not sure the current situation, but
-busylooping may be affected by cpu frequency.
-
->=20
-> -Caesar
->=20
-> >1.9.1
-> >
-> >
-> >
-> >
-> >--=20
-> >Thanks,
-> >Caesar
+So if I'm reading this right we actually need to provide
+pcie_port_runtime_resume().
