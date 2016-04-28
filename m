@@ -1,39 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/4] cpufreq: dt: Create platform device from generic
- code
-Date: Thu, 28 Apr 2016 07:57:14 +0530
-Message-ID: <20160428022714.GY4225@vireshk-i7>
-References: <cover.1459325515.git.viresh.kumar@linaro.org>
- <20160420095557.GF12019@vireshk-i7>
- <5720ED0F.6050204@free.fr>
- <F0617D5F-67FB-4A02-9CDB-1DA9AD4CA27B@codeaurora.org>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Wed, 27 Apr 2016 23:10:34 -0700
+Message-ID: <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+ <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
+ <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
+ <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604271216400.3941@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36301 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbcD1C1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2016 22:27:19 -0400
-Received: by mail-pa0-f51.google.com with SMTP id bt5so26319559pac.3
-        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2016 19:27:18 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <F0617D5F-67FB-4A02-9CDB-1DA9AD4CA27B@codeaurora.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34069 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbcD1GKz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 02:10:55 -0400
+In-Reply-To: <alpine.DEB.2.11.1604271216400.3941@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Matthew McClintock <mmcclint@codeaurora.org>
-Cc: Mason <slash.tmp@free.fr>, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, xf@rock-chips.com, heiko@sntech.de, k.kozlowski@samsung.com, Sebastian Frias <sf84@laposte.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 27-04-16, 11:57, Matthew McClintock wrote:
-> On Apr 27, 2016, at 11:47 AM, Mason <slash.tmp@free.fr> wrote:
-> > 
-> > Should I add it at the beginning or at the end?
-> > (I suppose at the end.)
-> 
-> I was going to do alphabetical order.
+On Wed, Apr 27, 2016 at 3:17 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Mon, 25 Apr 2016, Lianwei Wang wrote:
+>> On Mon, Apr 25, 2016 at 1:22 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> >> Anyway, from a product perspective way, if we don't want to restore
+>> >> the unbalanced counter to 0, then maybe a BUG_ON is more reasonable
+>> >> than WARN_ON.
+>> >
+>> > Not at all. BUG_ON is the last resort if we have no other way to handle an
+>> > issue.
+>> Actually to the customer, you do nothing currently at all, and once it
+>> happened then there is no way for the customer to recover it except do
+>> a power cycle. A BUG_ON can trigger a power cycle and recover it.
+>
+> Do you have a single incident where this happened?
+>
+> Thanks,
+>
+>         tglx
 
-That's right, you should follow the way things are present in the file itself.
-So, it should be in alphabetical order, + blank lines separating your platform
-from the rest.
-
--- 
-viresh
+Yes. In our project, there is a kernel driver which register a pm
+notifier. On some conditions this pm notifier will return an error and
+abort the suspend process. The counter will be unbalanced in case it
+happened.
