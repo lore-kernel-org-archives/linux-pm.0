@@ -1,120 +1,55 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: arm_big_little: use generic OPP functions
- for {init,free}_opp_table
-Date: Thu, 28 Apr 2016 13:48:06 +0100
-Message-ID: <57220686.9050507@arm.com>
-References: <1461839114-29857-1-git-send-email-sudeep.holla@arm.com>
- <1461839114-29857-2-git-send-email-sudeep.holla@arm.com>
- <20160428112657.GD2915@vireshk-i7>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 0/1] cpupower: Add cpuidle library
+Date: Thu, 28 Apr 2016 15:23:05 +0200
+Message-ID: <9049803.y9XhT0fdX4@skinner>
+References: <1685056.NeGEfvDZMv@skinner> <2574684.bDi1t35TAq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:43057 "EHLO foss.arm.com"
+Received: from mx2.suse.de ([195.135.220.15]:33090 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbcD1MsK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Apr 2016 08:48:10 -0400
-In-Reply-To: <20160428112657.GD2915@vireshk-i7>
+	id S1750867AbcD1NXH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 28 Apr 2016 09:23:07 -0400
+In-Reply-To: <2574684.bDi1t35TAq@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
+On Tuesday, April 26, 2016 10:20:00 PM Rafael J. Wysocki wrote:
+> On Monday, April 25, 2016 04:30:09 PM Thomas Renninger wrote:
+> > Hi,
+> > 
+> > this is a cleanup I wanted to do for a long time.
 
+> > I already added the change to our build service and things
+> > still build against the same archs like arm, ppc, x86:
+> > https://build.opensuse.org/package/show/hardware/cpupower
+> > 
+> > It would be nice to get the one or other review.
+> > 
+> > Rafael: If you could queue this up for mainline inclusion at some
+> > point of time, I would very much appreciate it!
+> 
+> I can do it right now, but there are a few cpupower patches in Patchwork
+> that I'm not sure what to do with.
 
-On 28/04/16 12:26, Viresh Kumar wrote:
-> On 28-04-16, 11:25, Sudeep Holla wrote:
->> Currently when performing random hotplugs and suspend-to-ram(S2R) on
->> systems using arm_big_little cpufreq driver, we get warnings similar to:
->>
->> cpu cpu1: _opp_add: duplicate OPPs detected. Existing: freq: 600000000,
->> 	volt: 800000, enabled: 1. New: freq: 600000000, volt: 800000, enabled: 1
->>
->> This is mainly because the OPPs for the shared cpus are not set. We can
->> just use dev_pm_opp_of_cpumask_add_table in case the OPPs are obtained
->> from DT(arm_big_little_dt.c) or use dev_pm_opp_set_sharing_cpus if the
->> OPPs are obtained by other means like firmware(e.g. scpi-cpufreq.c)
->>
->> Also now that the generic dev_pm_opp_cpumask_remove_table can handle
->> removal of opp table and entries for all associated CPUs, we can reuse
->> dev_pm_opp_cpumask_remove_table as free_opp_table in cpufreq_arm_bL_ops.
->>
->> This patch makes necessary changes to reuse the generic OPP functions for
->> {init,free}_opp_table and thereby eliminating the warnings.
->>
->> Cc: Viresh Kumar <vireshk@kernel.org>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/cpufreq/arm_big_little.c    | 54 ++++++++++++++++++++-----------------
->>   drivers/cpufreq/arm_big_little.h    |  4 +--
->>   drivers/cpufreq/arm_big_little_dt.c | 21 ++-------------
->>   drivers/cpufreq/scpi-cpufreq.c      | 24 ++++++++++++++---
->>   4 files changed, 54 insertions(+), 49 deletions(-)
->>
->> Hi Viresh,
->>
->> Why is dynamic OPPs not deleted in dev_pm_opp_{,cpumask_}remove_table ?
->> It would remove some code in scpi-cpufreq.c but I would like to understand.
->> Is there any use in not deleting them there ?
->
-> That was intentional, consider this case:
-> - OPPs are added dynamically from platform code
-> - insmod cpufreq-dt.ko (add static (dt) OPPs as well, mostly fail)
-> - rmmod  cpufreq-dt.ko (remove all OPPs)
->
-> - insmod cpufreq-dt.ko (no more OPPs available, as we removed them both).
->
-> That's bad ?
->
-> Now, how to fix platforms which don't add dynamic OPPs from platform code? But
-> something like the scpi driver, which can get inserted/removed again.
->
-> This is what I would suggest:
-> - Even if dev_pm_opp_of_cpumask_remove_table() isn't doing any OF specific
->    stuff, lets not update its name and move it out of the ifdef, as it will be
->    used only if the user has created OPPs using DT earlier.
-> - But rather make those two routines call two new routines in the core (which
->    don't depend on OF) and implement what these of-remove routines do.
-> - Add two more routines for removing OPPs created dynamically and call the two
->    routines created in previous step.
->
-> I hope you followed that :)
->
+Where do I find the patchwork stuff?
 
-Yes I got it. I had thought of this initially, but somehow got convinced 
-that we can delete dynamic OPPs too.
+> Do you want me to drop those on the floor?
 
->> -static void scpi_free_opp_table(struct device *cpu_dev)
->> +static void scpi_free_opp_table(cpumask_var_t cpumask)
->>   {
->> +	struct device *cpu_dev = get_cpu_device(cpumask_first(cpumask));
->> +
->> +	cpumask_clear_cpu(cpu_dev->id, cpumask);
->> +	dev_pm_opp_cpumask_remove_table(cpumask);
->> +	cpumask_set_cpu(cpu_dev->id, cpumask);
->> +
->>   	scpi_opp_table_ops(cpu_dev, true);
->>   }
->
-> This was a *really* crazy idea :)
->
+No, please not.
 
-I knew that :)
+I went through the list and found some patches.
+Not critical, but valid fixes.
+The one from Mattia already was in, in another form.
 
-> And btw, I think you better move to cpufreq-dt, instead of struggling with this
-> one :)
->
+I will send them right now.
 
-Yes that's next on my TODO, but since this is duplicate messages are
-getting reported now, it's better to fix that rather than wait for move
-to cpufreq-dt. BTW cpufreq-dt will be misnomer after I make it work with
-firmware driver DVFS.
+This should now more or less match with what patchwork
+gives you?
 
-Anyways, what ever change to fix these warning now will help to move to
-cpufreq-dt IMO.
+Thanks,
 
--- 
-Regards,
-Sudeep
+     Thomas
