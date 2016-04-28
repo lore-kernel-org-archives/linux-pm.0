@@ -1,52 +1,48 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v4 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Thu, 28 Apr 2016 16:22:16 +0200
-Message-ID: <20160428142216.GA18211@wunner.de>
+Subject: Re: [PATCH v4 2/4] PCI: Move PCIe ports to D3 during suspend
+Date: Thu, 28 Apr 2016 16:25:19 +0200
+Message-ID: <20160428142519.GB18211@wunner.de>
 References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
- <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
+ <1461578004-129094-3-git-send-email-mika.westerberg@linux.intel.com>
+ <CAJZ5v0itrp_=KUo9kFHh8rSN5RYfPk0+iEgeAWZR5rrnFq-jDA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.hostsharing.net ([176.9.242.54]:52552 "EHLO
+	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbcD1OWk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 10:22:40 -0400
 Content-Disposition: inline
-In-Reply-To: <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <CAJZ5v0itrp_=KUo9kFHh8rSN5RYfPk0+iEgeAWZR5rrnFq-jDA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Mika,
+Hi Rafael,
 
-I've rebased my Thunderbolt runtime pm patches on v4 of your patches
-and everything seems to still work fine. d3cold_allowed also works
-as it should now.
+On Tue, Apr 26, 2016 at 11:04:55PM +0200, Rafael J. Wysocki wrote:
+> On Mon, Apr 25, 2016 at 11:53 AM, Mika Westerberg
+> <mika.westerberg@linux.intel.com> wrote:
+[snip]
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -777,7 +777,12 @@ static int pci_pm_suspend_noirq(struct device *dev)
+> >
+> >         if (!pci_dev->state_saved) {
+> >                 pci_save_state(pci_dev);
+> > -               if (!pci_has_subordinate(pci_dev))
+> > +               /*
+> > +                * Check if given device can go to low power state. Currently
+> > +                * we allow normal PCI devices and PCI bridges if their
+> > +                * bridge_d3 is set.
+> > +                */
+> > +               if (!pci_has_subordinate(pci_dev) || pci_dev->bridge_d3)
+> 
+> I'd add a helper for this, say pci_power_manageable() or similar.
 
-As said I've amended my series to allow runtime pm on hotplug ports
-if they're Thunderbolt ports on a Mac:
-https://github.com/l1k/linux/commit/a6810db929485c7fc8677f265b1c68e31879ce61
-
-I've also reviewed the patches one more time and spotted only this
-small nit:
-
-On Mon, Apr 25, 2016 at 12:53:24PM +0300, Mika Westerberg wrote:
-> +static int pcie_port_runtime_resume(struct device *dev)
-> +{
-> +	pm_runtime_mark_last_busy(dev);
-> +	return 0;
-> +}
-
-The PM core seems to do this automatically, see rpm_resume():
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/base/power/runtime.c#n749
-
-So you could just drop the .runtime_resume entry here and it shouldn't
-result in any functional change:
-
-> @@ -101,6 +122,9 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
->  	.poweroff	= pcie_port_device_suspend,
->  	.restore	= pcie_port_device_resume,
->  	.resume_noirq	= pcie_port_resume_noirq,
-> +	.runtime_suspend = pcie_port_runtime_suspend,
-> +	.runtime_resume	= pcie_port_runtime_resume,
-> +	.runtime_idle	= pcie_port_runtime_idle,
+He had a helper for this in a prior version and removed it on my
+suggestion. Sorry Mika, guess I caused you additional work there. :-/
 
 Best regards,
 
