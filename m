@@ -1,75 +1,49 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
-Date: Thu, 28 Apr 2016 09:48:30 +0800
-Message-ID: <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
- <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: governor: Change confusing struct field and
+ variable names
+Date: Thu, 28 Apr 2016 07:46:31 +0530
+Message-ID: <20160428021631.GU4225@vireshk-i7>
+References: <2024653.a0XKPA0FXA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Jingoo Han <jingoohan1@gmail.com>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:34815 "EHLO
+	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376AbcD1CQg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Apr 2016 22:16:36 -0400
+Received: by mail-pf0-f179.google.com with SMTP id y69so27571679pfb.1
+        for <linux-pm@vger.kernel.org>; Wed, 27 Apr 2016 19:16:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2024653.a0XKPA0FXA@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>
 
-On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
-> On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
->> v3:
->> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
->> and one adds the int3406 driver as suggested by Rafael. There should
->> be no functionality change compared to v2.
->>
->> v2:
->> The display thermal device represents the LED/LCD display panel
->> that may or may not include touch support. The main function of
->> the display thermal device is to allow control of the display
->> brightness in order to address a thermal condition or to reduce
->> power consumed by display device.
->>
->> Due to the way this thermal device changes brightness level is said
->> to be deprecated so we are using the raw interface to do the actual
->> backlight change. This requires the backlight core support so two
->> new APIs are added and exported in patch 1/3. With this, the previous
->> API backlight_device_registered can be removed and this is done in
->> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
->>
->> The 1st version is here:
->> http://thread.gmane.org/gmane.linux.acpi.devel/72619
->>
->> This whole series should go through the thermal tree if applied.
->>
->> Aaron Lu (3):
->>   video / backlight: add two APIs for drivers to use
->>   video / backlight: remove the backlight_device_registered API
->>   Thermal: add INT3406 thermal driver
->>
->>  drivers/acpi/acpi_video.c                         |  83 ++++----
->>  drivers/acpi/video_detect.c                       |   2 +-
->>  drivers/thermal/Kconfig                           |  28 +--
->>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
->>  drivers/thermal/int340x_thermal/Makefile          |   1 +
->>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
->>  drivers/video/backlight/backlight.c               |  39 ++--
->>  include/acpi/video.h                              |  20 ++
->>  include/linux/backlight.h                         |   3 +-
->>  9 files changed, 374 insertions(+), 80 deletions(-)
->>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+On 28-04-16, 01:19, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The first three patches in this series look OK to me, so
+> The name of the prev_cpu_wall field in struct cpu_dbs_info is
+> confusing, because it doesn't represent wall time, but the previous
+> update time as returned by get_cpu_idle_time() (that may be the
+> current value of jiffies_64 in some cases, for example).
 > 
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Moreover, the names of some related variables in dbs_update() take
+> that confusion further.
 > 
-> for the [1-3/4].
+> Rename all of those things to make their names reflect the purpose
+> more accurately.  While at it, drop unnecessary parens from one of
+> the updated expressions.
 > 
-> That said it may be better if those three go in via ACPI.  I can put
-> them into a separate branch for Rui to pull from.
+> No functional changes.
 > 
-> Please let me know what you think.
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |   22 +++++++++++-----------
+>  drivers/cpufreq/cpufreq_governor.h |    2 +-
+>  2 files changed, 12 insertions(+), 12 deletions(-)
 
-I have no problem with that.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Regards,
-Aaron
+-- 
+viresh
