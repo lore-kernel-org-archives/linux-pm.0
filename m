@@ -1,72 +1,37 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/1] cpupower: Add cpuidle library
-Date: Thu, 28 Apr 2016 17:37:38 +0200
-Message-ID: <CAJZ5v0hpwK=G=HCRk17f1v=nNtKGoVqc77cbRPtiGVpy2Tfg2A@mail.gmail.com>
-References: <1685056.NeGEfvDZMv@skinner>
-	<2574684.bDi1t35TAq@vostro.rjw.lan>
-	<9049803.y9XhT0fdX4@skinner>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v4 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Thu, 28 Apr 2016 18:38:58 +0300
+Message-ID: <20160428153858.GG32610@lahna.fi.intel.com>
+References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
+ <20160428142216.GA18211@wunner.de>
+ <20160428151356.GF32610@lahna.fi.intel.com>
+ <CAJZ5v0h7n669VkzV23FA3YSQDFR5weWWVKrFBHF0XuCigGeMSA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:33606 "EHLO
-	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031AbcD1Phj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 11:37:39 -0400
-Received: by mail-lf0-f65.google.com with SMTP id p64so15863389lfg.0
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2016 08:37:39 -0700 (PDT)
-In-Reply-To: <9049803.y9XhT0fdX4@skinner>
+Received: from mga14.intel.com ([192.55.52.115]:60212 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750923AbcD1PjE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 28 Apr 2016 11:39:04 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h7n669VkzV23FA3YSQDFR5weWWVKrFBHF0XuCigGeMSA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Apr 28, 2016 at 3:23 PM, Thomas Renninger <trenn@suse.de> wrote:
-> On Tuesday, April 26, 2016 10:20:00 PM Rafael J. Wysocki wrote:
->> On Monday, April 25, 2016 04:30:09 PM Thomas Renninger wrote:
->> > Hi,
->> >
->> > this is a cleanup I wanted to do for a long time.
->
->> > I already added the change to our build service and things
->> > still build against the same archs like arm, ppc, x86:
->> > https://build.opensuse.org/package/show/hardware/cpupower
->> >
->> > It would be nice to get the one or other review.
->> >
->> > Rafael: If you could queue this up for mainline inclusion at some
->> > point of time, I would very much appreciate it!
->>
->> I can do it right now, but there are a few cpupower patches in Patchwork
->> that I'm not sure what to do with.
->
-> Where do I find the patchwork stuff?
->
->> Do you want me to drop those on the floor?
->
-> No, please not.
->
-> I went through the list and found some patches.
-> Not critical, but valid fixes.
-> The one from Mattia already was in, in another form.
->
-> I will send them right now.
->
-> This should now more or less match with what patchwork
-> gives you?
+On Thu, Apr 28, 2016 at 05:31:58PM +0200, Rafael J. Wysocki wrote:
+> > Hmm, PM core calls pci_pm_runtime_resume() for PCI drivers which then
+> > delegates to driver->runtime_resume() if set. However, if it is missing
+> > it just returns -ENOSYS and does not put the device back to D0.
+> >
+> > So if I'm reading this right we actually need to provide
+> > pcie_port_runtime_resume().
+> 
+> You do, but it could just return 0.
+> 
+> The suggestion seems to be that pm_runtime_mark_last_busy() is not
+> needed as the core will invoke it anyway.
 
-That's about right.  There is one more patch in Patchwork that is not
-present in your series:
-
-https://patchwork.kernel.org/patch/8301391/
-
-I've queued up your series for 4.7, but I'm still unsure about the above one.
-
-
->
-> Thanks,
->
->      Thomas
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Ah, got it now. Thanks for the clarification!
