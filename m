@@ -1,65 +1,53 @@
-From: Thomas Renninger <trenn@suse.com>
-Subject: [PATCH 4/5] cpupowerutils: bench: trivial fix of spelling mistake on "average"
-Date: Thu, 28 Apr 2016 15:24:39 +0200
-Message-ID: <1461849880-24777-4-git-send-email-trenn@suse.com>
-References: <1461849880-24777-1-git-send-email-trenn@suse.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:33288 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbcD1NYt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Apr 2016 09:24:49 -0400
-In-Reply-To: <1461849880-24777-1-git-send-email-trenn@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v4 4/4] PCI: Add runtime PM support for PCIe ports
+Date: Thu, 28 Apr 2016 16:22:16 +0200
+Message-ID: <20160428142216.GA18211@wunner.de>
+References: <1461578004-129094-1-git-send-email-mika.westerberg@linux.intel.com>
+ <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1461578004-129094-5-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, trenn@suse.com, Colin Ian King <colin.king@canonical.com>
 
-From: Colin Ian King <colin.king@canonical.com>
+Hi Mika,
 
-fix spelling mistake, avarage -> average
+I've rebased my Thunderbolt runtime pm patches on v4 of your patches
+and everything seems to still work fine. d3cold_allowed also works
+as it should now.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
-Signed-off-by: Thomas Renninger <trenn@suse.com>
----
- tools/power/cpupower/bench/README-BENCH | 2 +-
- tools/power/cpupower/bench/benchmark.c  | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+As said I've amended my series to allow runtime pm on hotplug ports
+if they're Thunderbolt ports on a Mac:
+https://github.com/l1k/linux/commit/a6810db929485c7fc8677f265b1c68e31879ce61
 
-diff --git a/tools/power/cpupower/bench/README-BENCH b/tools/power/cpupower/bench/README-BENCH
-index 8093ec7..97727ae 100644
---- a/tools/power/cpupower/bench/README-BENCH
-+++ b/tools/power/cpupower/bench/README-BENCH
-@@ -113,7 +113,7 @@ cpufreq-bench Command Usage
- -c, --cpu=<unsigned int>        CPU Number to use, starting at 0
- -p, --prio=<priority>           scheduler priority, HIGH, LOW or DEFAULT
- -g, --governor=<governor>       cpufreq governor to test
---n, --cycles=<int>              load/sleep cycles to get an avarage value to compare
-+-n, --cycles=<int>              load/sleep cycles to get an average value to compare
- -r, --rounds<int>               load/sleep rounds
- -f, --file=<configfile>         config file to use
- -o, --output=<dir>              output dir, must exist
-diff --git a/tools/power/cpupower/bench/benchmark.c b/tools/power/cpupower/bench/benchmark.c
-index 81b1c48..429d51a 100644
---- a/tools/power/cpupower/bench/benchmark.c
-+++ b/tools/power/cpupower/bench/benchmark.c
-@@ -130,7 +130,7 @@ void start_benchmark(struct config *config)
- 			_round, load_time, sleep_time);
- 
- 		if (config->verbose)
--			printf("avarage: %lius, rps:%li\n",
-+			printf("average: %lius, rps:%li\n",
- 				load_time / calculations,
- 				1000000 * calculations / load_time);
- 
-@@ -177,7 +177,7 @@ void start_benchmark(struct config *config)
- 
- 		progress_time += sleep_time + load_time;
- 
--		/* compare the avarage sleep/load cycles  */
-+		/* compare the average sleep/load cycles  */
- 		fprintf(config->output, "%li ",
- 			powersave_time / config->cycles);
- 		fprintf(config->output, "%.3f\n",
--- 
-1.8.5.6
+I've also reviewed the patches one more time and spotted only this
+small nit:
 
+On Mon, Apr 25, 2016 at 12:53:24PM +0300, Mika Westerberg wrote:
+> +static int pcie_port_runtime_resume(struct device *dev)
+> +{
+> +	pm_runtime_mark_last_busy(dev);
+> +	return 0;
+> +}
+
+The PM core seems to do this automatically, see rpm_resume():
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/base/power/runtime.c#n749
+
+So you could just drop the .runtime_resume entry here and it shouldn't
+result in any functional change:
+
+> @@ -101,6 +122,9 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
+>  	.poweroff	= pcie_port_device_suspend,
+>  	.restore	= pcie_port_device_resume,
+>  	.resume_noirq	= pcie_port_resume_noirq,
+> +	.runtime_suspend = pcie_port_runtime_suspend,
+> +	.runtime_resume	= pcie_port_runtime_resume,
+> +	.runtime_idle	= pcie_port_runtime_idle,
+
+Best regards,
+
+Lukas
