@@ -1,53 +1,55 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 0/1] cpupower: Add cpuidle library
-Date: Fri, 29 Apr 2016 08:57:50 +0200
-Message-ID: <31806757.JiaQphXfhu@skinner>
-References: <1685056.NeGEfvDZMv@skinner> <9049803.y9XhT0fdX4@skinner> <CAJZ5v0hpwK=G=HCRk17f1v=nNtKGoVqc77cbRPtiGVpy2Tfg2A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Thomas Renninger <trenn@suse.com>
+Subject: [PATCH] cpupower: fix potential memory leak
+Date: Fri, 29 Apr 2016 09:00:14 +0200
+Message-ID: <1461913214-15900-1-git-send-email-trenn@suse.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:32953 "EHLO mx2.suse.de"
+Received: from mx2.suse.de ([195.135.220.15]:33030 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752818AbcD2G5w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 29 Apr 2016 02:57:52 -0400
-In-Reply-To: <CAJZ5v0hpwK=G=HCRk17f1v=nNtKGoVqc77cbRPtiGVpy2Tfg2A@mail.gmail.com>
+	id S1751910AbcD2HAa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 29 Apr 2016 03:00:30 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arjun Sreedharan <arjun024@gmail.com>
+To: rafael@kernel.org
+Cc: linux-pm@vger.kernel.org, arjun024@gmail.com, trenn@suse.com
 
-On Thursday, April 28, 2016 05:37:38 PM Rafael J. Wysocki wrote:
-> On Thu, Apr 28, 2016 at 3:23 PM, Thomas Renninger <trenn@suse.de> wrote:
-> > On Tuesday, April 26, 2
-...
+From: Arjun Sreedharan <arjun024@gmail.com>
 
-> > This should now more or less match with what patchwork
-> > gives you?
-> 
-> That's about right.  There is one more patch in Patchwork that is not
-> present in your series:
-> 
-> https://patchwork.kernel.org/patch/8301391/
+Signed-off-by: Thomas Renninger <trenn@suse.com>
+---
+ tools/power/cpupower/bench/parse.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Thanks, I have overseen this one.
+diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
+index 2d09c92..9b65f05 100644
+--- a/tools/power/cpupower/bench/parse.c
++++ b/tools/power/cpupower/bench/parse.c
+@@ -65,7 +65,7 @@ FILE *prepare_output(const char *dirname)
+ {
+ 	FILE *output = NULL;
+ 	int len;
+-	char *filename;
++	char *filename, *filename_tmp;
+ 	struct utsname sysdata;
+ 	DIR *dir;
  
-> I've queued up your series for 4.7, but I'm still unsure about the above
-> one.
+@@ -88,13 +88,15 @@ FILE *prepare_output(const char *dirname)
+ 
+ 	if (uname(&sysdata) == 0) {
+ 		len += strlen(sysdata.nodename) + strlen(sysdata.release);
+-		filename = realloc(filename, sizeof(char) * len);
++		filename_tmp = realloc(filename, sizeof(*filename) * len);
+ 
+-		if (!filename) {
++		if (filename_tmp == NULL) {
++			free(filename);
+ 			perror("realloc");
+ 			goto out_dir;
+ 		}
+ 
++		filename = filename_tmp;
+ 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
+ 			dirname, sysdata.nodename, sysdata.release, time(NULL));
+ 	} else {
+-- 
+2.1.4
 
-Ah, I also wanted to fix this and then decided it's not worth it.
-But now that we have a patch (compile tested from my side, looks
-correct).
-
-This fixes cppcheck error:
-
-Checking bench/parse.c...
-[bench/parse.c:91]: (error) Common realloc mistake: 'filename' nulled but not 
-freed upon failure
-
-I had to merge this one on top of the others, I'll send the adjusted
-version in a minute.
-
-Thanks!
-
-       Thomas
