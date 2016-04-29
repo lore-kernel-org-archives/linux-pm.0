@@ -1,156 +1,242 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
-Date: Fri, 29 Apr 2016 05:36:25 -0400
-Message-ID: <CAJvTdK=tuqYo_YaOFCTZZbF9VWGo1CjqXSavod4LKb3vNfBS2w@mail.gmail.com>
-References: <1458564569-19672-1-git-send-email-prarit@redhat.com>
-	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>
-	<56F32BDB.1010107@redhat.com>
-	<CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>
-	<56F94439.3000908@redhat.com>
-	<CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>
-	<570B8C7E.2030504@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v3 1/2] PM / OPP: add non-OF versions of dev_pm_opp_{cpumask_,}remove_table
+Date: Fri, 29 Apr 2016 11:37:41 +0100
+Message-ID: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:35503 "EHLO
-	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbcD2Jg1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2016 05:36:27 -0400
-In-Reply-To: <570B8C7E.2030504@redhat.com>
+Received: from foss.arm.com ([217.140.101.70]:49974 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbcD2KiB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 29 Apr 2016 06:38:01 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-On Mon, Apr 11, 2016 at 7:37 AM, Prarit Bhargava <prarit@redhat.com> wrote:
->
->
-> On 03/31/2016 12:59 AM, Len Brown wrote:
->>> Len,
->>>
->>> Your patch does
->>>
->>> +       skl_cstates[5].disabled = 1;    /* C8-SKL */
->>> +       skl_cstates[6].disabled = 1;    /* C9-SKL */
->>>
->>> and I don't think that is correct for SKY-H.
->>
->> For https://bugzilla.kernel.org/show_bug.cgi?id=109081
->> it is correct.
->>
->>> Your patch does not take into account that the states are explicitly disabled
->>> in MSR_NHM_SNB_PKG_CST_CFG_CTL.  That is the problem here and what you've done
->>> is simply hammered a disable into those states.
->>
->> ENOPARSE.
->> Are we talking about the failure in
->> https://bugzilla.kernel.org/show_bug.cgi?id=109081
->> or a different problem?
->>
->
-> I see now.  There are two bugs.  The first is your case where the deep c-states
-> should be disabled but are not disabled, and the my case where the states *are*
-> disabled but not indicated as such in sysfs.
->
->>>
->>> Additionally, your patch does not show the user the correct state information:
->>>
->>>     [root@dhcp40-125 ~]# egrep ^
-> /sys/devices/system/cpu/cpu0/cpuidle/state?/disable
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state0/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state1/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state2/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state3/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state4/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state5/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state6/disable:1:0
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state7/disable:1:0 << should be 1
->>>     /sys/devices/system/cpu/cpu0/cpuidle/state8/disable:1:0 << should be 1
->>
->> the 'disabled' attribute you see in sysfs is not
->> struct cpuidle_state.disabled
->> it is
->> struct cpuidle_state_usage.disabled
->
-> Yes.  I know that.  But the problem is that your patch should take that
-> into account.
+Functions dev_pm_opp_of_{cpumask_,}remove_table removes/frees all the
+static OPP entries associated with the device and/or all cpus(in case
+of cpumask) that are created from DT.
 
-When the patch to disable C8/C9 takes effect,
-cpuidle_state.disabled is at intel_idle initizliation time.
-That causes it to skip registering C8/C9 with cpuidle.
-So  those states  do not appear in sysfs
-and so cpuidle_state_usage.disabled does not exist for them.
+However the OPP entries are populated reading from the firmware or some
+different method using dev_pm_opp_add are marked dynamic and can't be
+removed using above functions.
 
-In the example above, the patch to disable C8/C9 was not invoked,
-or else C8 would not be present in sysfs at all.
+This patch adds non DT/OF versions of dev_pm_opp_{cpumask_,}remove_table
+to support the above mentioned usecase.
 
->>> The fix is to honour the settings in MSR_NHM_SNB_PKG_CST_CFG_CTL.  I cannot say
->>> for certain that ALL SKY-H are impacted (you are admittedly in better position
->>> to say so or not).  I can say that on the 2 systems tested here the
->>> MSR_NHM_SNB_PKG_CST_CFG_CTL do have the appropriate disable value set.
->>>
->>> /me could be missing some important info  -- again, perhaps there are some
->>> SKY-H's out there that do not have states disabled in
->>> MSR_NHM_SNB_PKG_CST_CFG_CTL, and that's why I've proposed rebasing on top of
->>> your change.
->>
->> Do you see this debug message when you run current upstream on this hardware?
->>
->>                 /* if state marked as disabled, skip it */
->>                 if (cpuidle_state_table[cstate].disabled != 0) {
->>                         pr_debug(PREFIX "state %s is disabled",
->>                                 cpuidle_state_table[cstate].name);
->>                         continue;
->>                 }
->>
->>
->> If no, then my patch is not disabling C8/C9 on your system.
->>
->> Also, if it were, the code above causes the states to not appear
->> at all in sysfs, because they are not registered.
->>
->> Re: MSR_NHM_SNB_PKG_CST_CFG_CTL
->>
->> if PC10 is disabled there, then functionally, it doesn't matter what we do,
->> which is why my patch does nothing when PC10 is disabled.
->>
->> In such a scenario, pc10 presence in sysfs (and cpufreq)
->> is cosmetic.  The hardware knows what to do.
->>
->> Do you think that cosmetic issue is worth dealing with?
->
-> The bug reported is that the system will not go into the deep
-> c-states.  This is because the c-states are disabled by hardware.  This
-> means that turbostat shows only transitions to C7, while sysfs (and the
-> monitoring software) indicates deeper c-states are available.
-> So yes, I do think that it is worth dealing with.
+This is in preparation to make use of the same in scpi-cpufreq.c
 
-Please reply with the URL of the bug you are referring to.
+Cc: Viresh Kumar <vireshk@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>
+CC: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/base/power/opp/core.c | 56 ++++++++++++++++++++++++++++++----------
+ drivers/base/power/opp/cpu.c  | 59 ++++++++++++++++++++++++++++++++-----------
+ include/linux/pm_opp.h        | 10 ++++++++
+ 3 files changed, 96 insertions(+), 29 deletions(-)
 
-Note that somebody who looks in just sysfs will be dumb and happy - as
-it will show
-what states were requested, and everything will be requested, eventually...
+v1->v2:
+	- Instead of renaming OF versions, created non-OF versions of
+	  dev_pm_opp_{cpumask_,}remove_table as suggested by Viresh
+v2->v3:
+	- updated all the errors in documentation and changed to use
+	  remove_all rather than remove_dyn(suggested by Viresh)
+	- Added Viresh's ACK on both the patches
+	- Rebased on linux-pm/bleeding-edge as there was a conflict
 
-Somebody who looks at turbostat output will sometimes see columns that are 0%,
-as it is showing the underlying HW residency counters.  There is also
-a line at the top that decodes pkg-cstate-limit, which may or may not
-explain why those columns are 0.
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 433b60092972..15536d45832a 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1845,21 +1845,11 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
+ 
+-#ifdef CONFIG_OF
+ /**
+- * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
+- *				  entries
+- * @dev:	device pointer used to lookup OPP table.
+- *
+- * Free OPPs created using static entries present in DT.
+- *
+- * Locking: The internal opp_table and opp structures are RCU protected.
+- * Hence this function indirectly uses RCU updater strategy with mutex locks
+- * to keep the integrity of the internal data structures. Callers should ensure
+- * that this function is *NOT* called under RCU protection or in contexts where
+- * mutex cannot be locked.
++ * Free OPPs either created using static entries present in DT or even the
++ * dynamically added entries based on remove_all param.
+  */
+-void dev_pm_opp_of_remove_table(struct device *dev)
++static void _dev_pm_opp_remove_table(struct device *dev, bool remove_all)
+ {
+ 	struct opp_table *opp_table;
+ 	struct dev_pm_opp *opp, *tmp;
+@@ -1884,7 +1874,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ 	if (list_is_singular(&opp_table->dev_list)) {
+ 		/* Free static OPPs */
+ 		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
+-			if (!opp->dynamic)
++			if (remove_all || !opp->dynamic)
+ 				_opp_remove(opp_table, opp, true);
+ 		}
+ 	} else {
+@@ -1894,6 +1884,44 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
+ }
++
++/**
++ * dev_pm_opp_remove_table() - Free all OPPs associated with the device
++ * @dev:	device pointer used to lookup OPP table.
++ *
++ * Free both OPPs created using static entries present in DT and the
++ * dynamically added entries.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function indirectly uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_remove_table(struct device *dev)
++{
++	_dev_pm_opp_remove_table(dev, true);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_remove_table);
++
++#ifdef CONFIG_OF
++/**
++ * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
++ *				  entries
++ * @dev:	device pointer used to lookup OPP table.
++ *
++ * Free OPPs created using static entries present in DT.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function indirectly uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_of_remove_table(struct device *dev)
++{
++	_dev_pm_opp_remove_table(dev, false);
++}
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ 
+ /* Returns opp descriptor node for a device, caller must do of_node_put() */
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 3428380dfca7..7aff8d8a62c2 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -119,20 +119,7 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+ #endif	/* CONFIG_CPU_FREQ */
+ 
+-#ifdef CONFIG_OF
+-/**
+- * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
+- * @cpumask:	cpumask for which OPP table needs to be removed
+- *
+- * This removes the OPP tables for CPUs present in the @cpumask.
+- *
+- * Locking: The internal opp_table and opp structures are RCU protected.
+- * Hence this function internally uses RCU updater strategy with mutex locks
+- * to keep the integrity of the internal data structures. Callers should ensure
+- * that this function is *NOT* called under RCU protection or in contexts where
+- * mutex cannot be locked.
+- */
+-void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
++static void _dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask, bool of)
+ {
+ 	struct device *cpu_dev;
+ 	int cpu;
+@@ -147,9 +134,51 @@ void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
+ 			continue;
+ 		}
+ 
+-		dev_pm_opp_of_remove_table(cpu_dev);
++		if (of)
++			dev_pm_opp_of_remove_table(cpu_dev);
++		else
++			dev_pm_opp_remove_table(cpu_dev);
+ 	}
+ }
++
++/**
++ * dev_pm_opp_cpumask_remove_table() - Removes OPP table for @cpumask
++ * @cpumask:	cpumask for which OPP table needs to be removed
++ *
++ * This removes the OPP tables for CPUs present in the @cpumask.
++ * This should be used to remove all the OPPs entries associated with
++ * the cpus in @cpumask.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask)
++{
++	_dev_pm_opp_cpumask_remove_table(cpumask, false);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_remove_table);
++
++#ifdef CONFIG_OF
++/**
++ * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
++ * @cpumask:	cpumask for which OPP table needs to be removed
++ *
++ * This removes the OPP tables for CPUs present in the @cpumask.
++ * This should be used only to remove static entries created from DT.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
++{
++	_dev_pm_opp_cpumask_remove_table(cpumask, true);
++}
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
+ 
+ /**
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 15f554443b59..5d3bde4ca9a9 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -67,6 +67,8 @@ void dev_pm_opp_put_regulator(struct device *dev);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const cpumask_var_t cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
++void dev_pm_opp_remove_table(struct device *dev);
++void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -190,6 +192,14 @@ static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_va
+ 	return -EINVAL;
+ }
+ 
++static inline void dev_pm_opp_remove_table(struct device *dev)
++{
++}
++
++static inline void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask)
++{
++}
++
+ #endif		/* CONFIG_PM_OPP */
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+-- 
+1.9.1
 
-So the most useful way to pretty this up would be for turbostat to assume that
-users don't understand the pkg-cstate-limit decoding, and to hide
-disabled columns.
-Sure, I can do that.
-
-Yes, we could delete the redundant states from cpuidle, but on current HW,
-we can only do it for package states that have no corresponding core state.
-eg. PC8, PC9, PC10.  This will have no effect on the operation of the hardware,
-but I agree it would look more tidy to a user who is under the impression
-that the counters in sysfs reflect closely what the hardware is doing,
-rather than the permission that Linux is giving the HW to do.
-
-But above is all cosmetic.  The real "bug" that users are running into is
-that they can't get into deep c-states when they are enabled.
-Linux (and Intel) need to do a much better job enabling diagnosis of
-that condition.
-
-Len Brown, Intel Open Source Technology Center
