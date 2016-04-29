@@ -1,129 +1,249 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND][RFC/PATCH] cpufreq: Fix GOV_LIMITS handling for the
- userspace governor
-Date: Fri, 29 Apr 2016 09:19:08 +0530
-Message-ID: <20160429034908.GS2915@vireshk-i7>
-References: <5722513B.4080801@nvidia.com>
+Subject: Re: [PATCH v2 1/2] PM / OPP: add non-OF versions of
+ dev_pm_opp_{cpumask_,}remove_table
+Date: Fri, 29 Apr 2016 09:37:21 +0530
+Message-ID: <20160429040721.GV2915@vireshk-i7>
+References: <1461839114-29857-1-git-send-email-sudeep.holla@arm.com>
+ <1461863237-12928-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:32792 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752448AbcD2DtM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Apr 2016 23:49:12 -0400
-Received: by mail-pa0-f45.google.com with SMTP id zm5so44905693pac.0
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2016 20:49:11 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5722513B.4080801@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1461863237-12928-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, mlongnecker@nvidia.com
 
-On 28-04-16, 11:06, Sai Gurrappadi wrote:
-> Resending without the copyright headed appended..sorry!
-> 
-> -Sai
-> 
-> =======
+On 28-04-16, 18:07, Sudeep Holla wrote:
+> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> index 433b60092972..e59b9e7c31ba 100644
+> --- a/drivers/base/power/opp/core.c
+> +++ b/drivers/base/power/opp/core.c
+> @@ -1845,13 +1845,14 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
+>  
+> -#ifdef CONFIG_OF
+>  /**
+> - * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
+> - *				  entries
+> + * _dev_pm_opp_remove_table() - Free OPP table entries
 
-:)
+This is an internal routine and doesn't really require a doc-style comment at
+all. Please remove it. You can add a simple comment for things you want to
+mention though.
 
-For your information, this isn't the right place to add text which shouldn't be
-committed.
+>   * @dev:	device pointer used to lookup OPP table.
+> + * @remove_dyn:	specify whether to remove only OPPs created using
+> + *              static entries from DT or even the dynamically add OPPs.
+>   *
+> - * Free OPPs created using static entries present in DT.
+> + * Free OPPs either created using static entries present in DT or even the
+> + * dynamically added entries based on @remove_dyn param.
+>   *
+>   * Locking: The internal opp_table and opp structures are RCU protected.
+>   * Hence this function indirectly uses RCU updater strategy with mutex locks
+> @@ -1859,7 +1860,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
+>   * that this function is *NOT* called under RCU protection or in contexts where
+>   * mutex cannot be locked.
+>   */
+> -void dev_pm_opp_of_remove_table(struct device *dev)
+> +static void _dev_pm_opp_remove_table(struct device *dev, bool remove_dyn)
 
-> 
-> Currently, the userspace governor only updates frequency on GOV_LIMITS
-> if policy->cur falls outside policy->{min/max}. However, it is also
-> necessary to update current frequency on GOV_LIMITS to match the user
-> requested value if it can be achieved within the new policy->{max/min}.
-> 
-> This was previously the behaviour in the governor until commit d1922f0
-> ("cpufreq: Simplify userspace governor") which incorrectly assumed that
-> policy->cur == user requested frequency via scaling_setspeed. This won't
-> be true if the user requested frequency falls outside policy->{min/max}.
-> Ex: a temporary thermal cap throttled the user requested frequency.
-> 
-> Fix this by doing a partial revert of commit d1922f0 to bring back the
-> per-cpu cpu_set_freq variable that stores the user requested frequency.
-> The governor will then try to achieve this request on every GOV_LIMITS.
-> 
-> Signed-off-by: Sai Gurrappadi <sgurrappadi@nvidia.com>
-> ---
+Maybe s/remove_dyn/remove_all ..
 
-Rather do it here and git am will automatically drop that while applying the
-patch.
+>  {
+>  	struct opp_table *opp_table;
+>  	struct dev_pm_opp *opp, *tmp;
+> @@ -1884,7 +1885,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+>  	if (list_is_singular(&opp_table->dev_list)) {
+>  		/* Free static OPPs */
+>  		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
+> -			if (!opp->dynamic)
+> +			if (!opp->dynamic || (opp->dynamic && remove_dyn))
 
->  drivers/cpufreq/cpufreq_userspace.c | 20 ++++++++++++++++----
->  1 file changed, 16 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_userspace.c
-> b/drivers/cpufreq/cpufreq_userspace.c
-> index 4d16f45..ae03ba7 100644
-> --- a/drivers/cpufreq/cpufreq_userspace.c
-> +++ b/drivers/cpufreq/cpufreq_userspace.c
-> @@ -18,6 +18,8 @@
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> 
-> +static DEFINE_PER_CPU(unsigned int, cpu_set_freq); /* CPU freq desired by
-> +							userspace */
->  static DEFINE_PER_CPU(unsigned int, cpu_is_managed);
->  static DEFINE_MUTEX(userspace_mutex);
-> 
-> @@ -38,6 +40,8 @@ static int cpufreq_set(struct cpufreq_policy *policy,
-> unsigned int freq)
->  	if (!per_cpu(cpu_is_managed, policy->cpu))
->  		goto err;
-> 
-> +	per_cpu(cpu_set_freq, policy->cpu) = freq;
+Well, that's a funny one :)
+
+The second conditional statement doesn't require opp->dynamic, as that is
+guaranteed to be true, as the first condition failed.
+
+So this should be:
+
+if (remove_all || !opp->dynamic)
+
+>  				_opp_remove(opp_table, opp, true);
+>  		}
+>  	} else {
+> @@ -1894,6 +1895,44 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+>  unlock:
+>  	mutex_unlock(&opp_table_lock);
+>  }
 > +
->  	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
->   err:
->  	mutex_unlock(&userspace_mutex);
-> @@ -62,6 +66,7 @@ static int cpufreq_governor_userspace(struct cpufreq_policy
-> *policy,
-> 
->  		mutex_lock(&userspace_mutex);
->  		per_cpu(cpu_is_managed, cpu) = 1;
-> +		per_cpu(cpu_set_freq, cpu) = policy->cur;
->  		mutex_unlock(&userspace_mutex);
->  		break;
->  	case CPUFREQ_GOV_STOP:
-> @@ -69,20 +74,27 @@ static int cpufreq_governor_userspace(struct
-> cpufreq_policy *policy,
-> 
->  		mutex_lock(&userspace_mutex);
->  		per_cpu(cpu_is_managed, cpu) = 0;
-> +		per_cpu(cpu_set_freq, cpu) = 0;
->  		mutex_unlock(&userspace_mutex);
->  		break;
->  	case CPUFREQ_GOV_LIMITS:
->  		mutex_lock(&userspace_mutex);
-> -		pr_debug("limit event for cpu %u: %u - %u kHz, currently %u kHz\n",
-> +		pr_debug("limit event for cpu %u: %u - %u kHz, "
-> +			"currently %u kHz, last set to %u kHz\n",
->  			cpu, policy->min, policy->max,
-> -			policy->cur);
-> +			policy->cur, per_cpu(cpu_set_freq, cpu));
-> 
-> -		if (policy->max < policy->cur)
-> +		if (policy->max < per_cpu(cpu_set_freq, cpu)) {
->  			__cpufreq_driver_target(policy, policy->max,
->  						CPUFREQ_RELATION_H);
-> -		else if (policy->min > policy->cur)
-> +		} else if (policy->min > per_cpu(cpu_set_freq, cpu)) {
->  			__cpufreq_driver_target(policy, policy->min,
->  						CPUFREQ_RELATION_L);
-> +		} else {
-> +			__cpufreq_driver_target(policy,
-> +						per_cpu(cpu_set_freq, cpu),
-> +						CPUFREQ_RELATION_L);
+> +/**
+> + * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
+
+No, this isn't the OF specific function.
+
+> + *				  entries
+> + * @dev:	device pointer used to lookup OPP table.
+> + *
+> + * Free all OPPs associated with the device
+
+Full stop at the end.
+
+> + *
+> + * Locking: The internal opp_table and opp structures are RCU protected.
+> + * Hence this function indirectly uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +void dev_pm_opp_remove_table(struct device *dev)
+> +{
+> +	_dev_pm_opp_remove_table(dev, true);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_remove_table);
+> +
+> +#ifdef CONFIG_OF
+> +/**
+> + * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
+> + *				  entries
+> + * @dev:	device pointer used to lookup OPP table.
+> + *
+> + * Free OPPs created using static entries present in DT.
+> + *
+> + * Locking: The internal opp_table and opp structures are RCU protected.
+> + * Hence this function indirectly uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +void dev_pm_opp_of_remove_table(struct device *dev)
+> +{
+> +	_dev_pm_opp_remove_table(dev, false);
+> +}
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+>  
+>  /* Returns opp descriptor node for a device, caller must do of_node_put() */
+> diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+> index 55cbf9bd8707..9df4ad809c26 100644
+> --- a/drivers/base/power/opp/cpu.c
+> +++ b/drivers/base/power/opp/cpu.c
+> @@ -119,12 +119,54 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+>  #endif	/* CONFIG_CPU_FREQ */
+>  
+> +static void _dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask, bool of)
+> +{
+> +	struct device *cpu_dev;
+> +	int cpu;
+> +
+> +	WARN_ON(cpumask_empty(cpumask));
+> +
+> +	for_each_cpu(cpu, cpumask) {
+> +		cpu_dev = get_cpu_device(cpu);
+> +		if (!cpu_dev) {
+> +			pr_err("%s: failed to get cpu%d device\n", __func__,
+> +			       cpu);
+> +			continue;
 > +		}
->  		mutex_unlock(&userspace_mutex);
->  		break;
->  	}
-> -- 2.1.4
+
+Blank line here.
+
+> +		if (of)
+> +			dev_pm_opp_of_remove_table(cpu_dev);
+> +		else
+> +			dev_pm_opp_remove_table(cpu_dev);
+> +	}
+> +}
+> +
+> +/**
+> + * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
+
+of :(
+
+> + * @cpumask:	cpumask for which OPP table needs to be removed
+> + *
+> + * This removes the OPP tables for CPUs present in the @cpumask.
+> + * This should be used to remove all the OPPs entries associated with
+> + * the cpus in @cpumask.
+> + *
+> + * Locking: The internal opp_table and opp structures are RCU protected.
+> + * Hence this function internally uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask)
+> +{
+> +	_dev_pm_opp_cpumask_remove_table(cpumask, false);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_remove_table);
+> +
+>  #ifdef CONFIG_OF
+>  /**
+>   * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
+>   * @cpumask:	cpumask for which OPP table needs to be removed
+>   *
+>   * This removes the OPP tables for CPUs present in the @cpumask.
+> + * This should be used only to remove static entries created from DT.
+>   *
+>   * Locking: The internal opp_table and opp structures are RCU protected.
+>   * Hence this function internally uses RCU updater strategy with mutex locks
+> @@ -134,21 +176,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+>   */
+>  void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
+>  {
+> -	struct device *cpu_dev;
+> -	int cpu;
+> -
+> -	WARN_ON(cpumask_empty(cpumask));
+> -
+> -	for_each_cpu(cpu, cpumask) {
+> -		cpu_dev = get_cpu_device(cpu);
+> -		if (!cpu_dev) {
+> -			pr_err("%s: failed to get cpu%d device\n", __func__,
+> -			       cpu);
+> -			continue;
+> -		}
+> -
+> -		dev_pm_opp_of_remove_table(cpu_dev);
+> -	}
+> +	_dev_pm_opp_cpumask_remove_table(cpumask, true);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
+>  
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 5b6ad31403a5..5c3781a79d31 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -66,6 +66,8 @@ int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+>  void dev_pm_opp_put_regulator(struct device *dev);
+>  int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+>  int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
+> +void dev_pm_opp_remove_table(struct device *dev);
+> +void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask);
+>  #else
+>  static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+>  {
+> @@ -184,6 +186,14 @@ static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_va
+>  	return -ENOSYS;
+>  }
+>  
+> +static inline void dev_pm_opp_remove_table(struct device *dev)
+> +{
+> +}
+> +
+> +static inline void dev_pm_opp_cpumask_remove_table(cpumask_var_t cpumask)
+> +{
+> +}
+> +
+>  #endif		/* CONFIG_PM_OPP */
+>  
+>  #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+> -- 
+> 1.9.1
 
 -- 
 viresh
