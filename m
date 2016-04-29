@@ -1,55 +1,60 @@
-From: Thomas Renninger <trenn@suse.com>
-Subject: [PATCH] cpupower: fix potential memory leak
-Date: Fri, 29 Apr 2016 09:00:14 +0200
-Message-ID: <1461913214-15900-1-git-send-email-trenn@suse.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v5 3/4] ACPI / hotplug / PCI: Runtime resume bridge before rescan
+Date: Fri, 29 Apr 2016 11:51:58 +0300
+Message-ID: <1461919919-120102-4-git-send-email-mika.westerberg@linux.intel.com>
+References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:33030 "EHLO mx2.suse.de"
+Received: from mga14.intel.com ([192.55.52.115]:32142 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751910AbcD2HAa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 29 Apr 2016 03:00:30 -0400
+	id S1750760AbcD2IwJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 29 Apr 2016 04:52:09 -0400
+In-Reply-To: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael@kernel.org
-Cc: linux-pm@vger.kernel.org, arjun024@gmail.com, trenn@suse.com
+To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Arjun Sreedharan <arjun024@gmail.com>
+If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
+hotplug event, such as BUS_CHECK we need to make sure it is resumed before
+devices below the bridge are re-scanned. Otherwise the devices behind the
+port are not accessible and will be treated as hot-unplugged.
 
-Signed-off-by: Thomas Renninger <trenn@suse.com>
+To fix this, resume PCI bridges from runtime suspend while rescanning.
+
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- tools/power/cpupower/bench/parse.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/pci/hotplug/acpiphp_glue.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
-index 2d09c92..9b65f05 100644
---- a/tools/power/cpupower/bench/parse.c
-+++ b/tools/power/cpupower/bench/parse.c
-@@ -65,7 +65,7 @@ FILE *prepare_output(const char *dirname)
- {
- 	FILE *output = NULL;
- 	int len;
--	char *filename;
-+	char *filename, *filename_tmp;
- 	struct utsname sysdata;
- 	DIR *dir;
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index fa49f9143b80..d64ce8aa99b3 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -756,8 +756,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
  
-@@ -88,13 +88,15 @@ FILE *prepare_output(const char *dirname)
+ 	acpi_lock_hp_context();
+ 	bridge = context->bridge;
+-	if (bridge)
++	if (bridge) {
+ 		get_bridge(bridge);
++		pm_runtime_get_sync(&bridge->pci_dev->dev);
++	}
  
- 	if (uname(&sysdata) == 0) {
- 		len += strlen(sysdata.nodename) + strlen(sysdata.release);
--		filename = realloc(filename, sizeof(char) * len);
-+		filename_tmp = realloc(filename, sizeof(*filename) * len);
+ 	acpi_unlock_hp_context();
  
--		if (!filename) {
-+		if (filename_tmp == NULL) {
-+			free(filename);
- 			perror("realloc");
- 			goto out_dir;
- 		}
+@@ -797,8 +799,10 @@ static void hotplug_event(u32 type, struct acpiphp_context *context)
+ 	}
  
-+		filename = filename_tmp;
- 		snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
- 			dirname, sysdata.nodename, sysdata.release, time(NULL));
- 	} else {
+ 	pci_unlock_rescan_remove();
+-	if (bridge)
++	if (bridge) {
++		pm_runtime_put(&bridge->pci_dev->dev);
+ 		put_bridge(bridge);
++	}
+ }
+ 
+ static int acpiphp_hotplug_notify(struct acpi_device *adev, u32 type)
 -- 
-2.1.4
+2.8.0.rc3
 
