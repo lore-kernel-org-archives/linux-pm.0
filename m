@@ -1,59 +1,257 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] cpufreq: arm_big_little: use generic OPP
- functions for {init,free}_opp_table
-Date: Fri, 29 Apr 2016 09:42:56 +0530
-Message-ID: <20160429041256.GW2915@vireshk-i7>
-References: <1461839114-29857-1-git-send-email-sudeep.holla@arm.com>
- <1461863237-12928-1-git-send-email-sudeep.holla@arm.com>
- <1461863237-12928-2-git-send-email-sudeep.holla@arm.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v2 4/9] of: Add bindings of hw throttle for soctherm
+Date: Fri, 29 Apr 2016 13:55:06 +0800
+Message-ID: <5722F73A.7020606@nvidia.com>
+References: <1461727554-15065-1-git-send-email-wni@nvidia.com> <1461727554-15065-5-git-send-email-wni@nvidia.com> <20160427233054.GA26451@localhost.localdomain> <5721B249.3010101@nvidia.com> <20160428144828.GB19279@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:32865 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbcD2ENA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2016 00:13:00 -0400
-Received: by mail-pf0-f178.google.com with SMTP id 206so42833092pfu.0
-        for <linux-pm@vger.kernel.org>; Thu, 28 Apr 2016 21:12:59 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1461863237-12928-2-git-send-email-sudeep.holla@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160428144828.GB19279-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 28-04-16, 18:07, Sudeep Holla wrote:
-> Currently when performing random hotplugs and suspend-to-ram(S2R) on
-> systems using arm_big_little cpufreq driver, we get warnings similar to:
-> 
-> cpu cpu1: _opp_add: duplicate OPPs detected. Existing: freq: 600000000,
-> 	volt: 800000, enabled: 1. New: freq: 600000000, volt: 800000, enabled: 1
-> 
-> This is mainly because the OPPs for the shared cpus are not set. We can
-> just use dev_pm_opp_of_cpumask_add_table in case the OPPs are obtained
-> from DT(arm_big_little_dt.c) or use dev_pm_opp_set_sharing_cpus if the
-> OPPs are obtained by other means like firmware(e.g. scpi-cpufreq.c)
-> 
-> Also now that the generic dev_pm_opp_cpumask_remove_table can handle
-> removal of opp table and entries for all associated CPUs, we can reuse
-> dev_pm_opp_cpumask_remove_table as free_opp_table in cpufreq_arm_bL_ops.
-> 
-> This patch makes necessary changes to reuse the generic OPP functions for
-> {init,free}_opp_table and thereby eliminating the warnings.
-> 
-> Cc: Viresh Kumar <vireshk@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/arm_big_little.c       | 54 ++++++++++++++++++----------------
->  drivers/cpufreq/arm_big_little.h       |  4 +--
->  drivers/cpufreq/arm_big_little_dt.c    | 21 ++-----------
->  drivers/cpufreq/scpi-cpufreq.c         | 47 +++++++++++++----------------
->  drivers/cpufreq/vexpress-spc-cpufreq.c |  4 ++-
->  5 files changed, 56 insertions(+), 74 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-viresh
+On 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 22:48, Eduardo Valentin wrote:
+> On Thu, Apr 28, 2016 at 02:48:41PM +0800, Wei Ni wrote:
+>>
+>>
+>> On 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 07:30, Eduardo Valentin wrote=
+:
+>>> From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>> To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>> Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang@intel.c=
+om,
+>>> 	MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org,
+>>> 	mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
+>>> 	linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org,
+>>> 	linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> Bcc:=20
+>>> Subject: Re: [PATCH v2 4/9] of: Add bindings of hw throttle for soc=
+therm
+>>> Reply-To:=20
+>>> In-Reply-To: <1461727554-15065-5-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>
+>>> The patch title must say something about the fact that this is spec=
+ific
+>>> to nvidia thermal driver.
+>>
+>> Yes, it's my mistake, will fix it in next series.
+>>
+>>>
+>>> On Wed, Apr 27, 2016 at 11:25:49AM +0800, Wei Ni wrote:
+>>>> Add HW throttle configuration sub-node for soctherm, which
+>>>> is used to describe the throttle event, and worked as a
+>>>> cooling device. The "hot" type trip in thermal zone can
+>>>> be bound to this cooling device, and trigger the throttle
+>>>> function.
+>>>>
+>>>> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>> ---
+>>>>  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 89 +++++++++=
+++++++++++++-
+>>>>  1 file changed, 87 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegr=
+a124-soctherm.txt b/Documentation/devicetree/bindings/thermal/nvidia,te=
+gra124-soctherm.txt
+>>>> index edebfa0a985e..dc337d139f49 100644
+>>>> --- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-so=
+ctherm.txt
+>>>> +++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-so=
+ctherm.txt
+>>>> @@ -10,8 +10,14 @@ Required properties :
+>>>>  - compatible : For Tegra124, must contain "nvidia,tegra124-socthe=
+rm".
+>>>>    For Tegra132, must contain "nvidia,tegra132-soctherm".
+>>>>    For Tegra210, must contain "nvidia,tegra210-soctherm".
+>>>> -- reg : Should contain 1 entry:
+>>>> +- reg : Should contain at least 2 entries for each entry in reg-n=
+ames:
+>>>>    - SOCTHERM register set
+>>>> +  - Tegra CAR register set: Required for Tegra124 and Tegra210.
+>>>> +  - CCROC register set: Required for Tegra132.
+>>>> +- reg-names :  Should contain at least 2 entries:
+>>>> +  - soctherm-reg
+>>>> +  - car-reg
+>>>> +  - ccroc-reg
+>>>>  - interrupts : Defines the interrupt used by SOCTHERM
+>>>>  - clocks : Must contain an entry for each entry in clock-names.
+>>>>    See ../clocks/clock-bindings.txt for details.
+>>>> @@ -25,17 +31,44 @@ Required properties :
+>>>>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a de=
+scription
+>>>>      of this property. See <dt-bindings/thermal/tegra124-soctherm.=
+h> for a
+>>>>      list of valid values when referring to thermal sensors.
+>>>> +- throttle-cfgs: A sub-node which is a container of configuration=
+ for each
+>>>> +    hardware throttle events. These events can be set as cooling =
+devices.
+>>>> +  * throttle events: Sub-nodes must be named as "light" or "heavy=
+".
+>>>> +      Properties:
+>>>> +      - priority: Each throttles has its own throttle settings, s=
+o the SW need
+>>>> +        to set priorities for various throttle, the HW arbiter ca=
+n select the
+>>>> +        final throttle settings.
+>>>> +        Bigger value indicates higher priority, In general, highe=
+r priority
+>>>> +        translates to lower target frequency. SW needs to ensure =
+that critical
+>>>> +        thermal alarms are given higher priority, and ensure that=
+ there is
+>>>> +        no race if priority of two vectors is set to the same val=
+ue.
+>>>> +      - cpu-throt-depth:  This property is for Tegra124 and Tegra=
+210. It is
+>>>> +        the throttling depth of pulse skippers, it's the percenta=
+ge
+>>>> +        throttling.
+>>>> +      - cpu-throt-level: This property is only for Tegra132, it i=
+s the level
+>>>> +        of pulse skippers, which used to throttle clock frequenci=
+es. It
+>>>> +        indicates cpu clock throttling depth, and the depth can b=
+e programmed.
+>>>> +        Must set as following values:
+>>>> +        TEGRA_SOCTHERM_THROT_LEVEL_LOW, TEGRA_SOCTHERM_THROT_LEVE=
+L_MED
+>>>> +        TEGRA_SOCTHERM_THROT_LEVEL_HIGH, TEGRA_SOCTHERM_THROT_LEV=
+EL_NONE
+>>>
+>>> These properties are not generic properties. My understanding is th=
+at
+>>> you must have vendor prefix in such case. Same applies to the new n=
+odes.
+>>
+>> Ok, will do it.
+>>
+>>>
+>>>> +      - #cooling-cells: Should be 1. This cooling device only sup=
+port on/off state.
+>>>> +        See ./thermal.txt for a description of this property.
+>>>> =20
+>>>>  Note:
+>>>>  - the "critical" type trip points will be set to SOC_THERM hardwa=
+re as the
+>>>>  shut down temperature. Once the temperature of this thermal zone =
+is higher
+>>>>  than it, the system will be shutdown or reset by hardware.
+>>>> +- the "hot" type trip points will be set to SOC_THERM hardware as=
+ the throttle
+>>>> +temperature. Once the the temperature of this thermal zone is hig=
+her
+>>>> +than it, it will trigger the HW throttle event.
+>>>> =20
+>>>>  Example :
+>>>> =20
+>>>>  	soctherm@700e2000 {
+>>>>  		compatible =3D "nvidia,tegra124-soctherm";
+>>>> -		reg =3D <0x0 0x700e2000 0x0 0x1000>;
+>>>> +		reg =3D <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
+>>>> +			0x0 0x60006000 0x0 0x400 /* CAR reg_base */
+>>>> +		reg-names =3D "soctherm-reg", "car-reg";
+>>>>  		interrupts =3D <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
+>>>>  		clocks =3D <&tegra_car TEGRA124_CLK_TSENSOR>,
+>>>>  			<&tegra_car TEGRA124_CLK_SOC_THERM>;
+>>>> @@ -44,6 +77,45 @@ Example :
+>>>>  		reset-names =3D "soctherm";
+>>>> =20
+>>>>  		#thermal-sensor-cells =3D <1>;
+>>>> +
+>>>> +		throttle-cfgs {
+>>>> +			throttle_heavy: heavy {
+>>>> +				priority =3D <100>;
+>>>> +				cpu-throt-depth =3D <85>;
+>>>> +
+>>>> +				#cooling-cells =3D <1>;
+>>>> +			};
+>>>> +			throttle_light: light {
+>>>> +				priority =3D <80>;
+>>>> +				cpu-throt-depth =3D <50>;
+>>>> +
+>>>> +				#cooling-cells =3D <1>;
+>>>> +			};
+>>>> +		};
+>>>
+>>> This is a sensor, which at the same time, has sub nodes that can be
+>>> cooling devices. Is my understanding correct of what you are trying=
+ to
+>>> do?
+>>
+>> Yes, we set this sub nodes as cooling devices.
+>> Let me explain it.
+>> The Tegra's soctherm has the HW throttle function, it will be trigge=
+red when the
+>> temperatures reach to the "hot" type trip. These throttle events can=
+ be
+>> configured to different levels "heavy" and "light" on different sens=
+ors. So it
+>> something like cooling devices which can be bound with thermal zones=
+, and in
+>> this way, we can use the linux of-thermal framework to handle it. If=
+ not, we
+>> have to add more codes to parse these configuration and set them for=
+ those
+>> sensors. I had used this method to handle the shutdown function in T=
+egra's
+>> soctherm driver in my previous series, however Rob didn't like it, h=
+e preferred
+>> to use linux framework to handle it.
+>> So I think it's better to set these throttle-cfgs as cooling devices=
+, so they
+>> can be bound to the cpu/gpu thermal zones easily.
+>>
+>>>
+>>>
+>>>> +	};
+>>>> +
+>>>> +Example: referring to Tegra132's "reg", "reg-names" and "throttle=
+-cfgs" :
+>>>> +
+>>>> +	soctherm@0,700e2000 {
+>>>> +		compatible =3D "nvidia,tegra132-soctherm";
+>>>> +		reg =3D <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
+>>>> +			0x0 0x70040000 0x0 0x200>; /* CCROC reg_base */;
+>>>> +		reg-names =3D "soctherm-reg", "ccroc-reg";
+>>>> +
+>>>> +		throttle-cfgs {
+>>>> +			throttle_heavy: heavy {
+>>>> +				priority =3D <100>;
+>>>> +				cpu-throt-level =3D <TEGRA_SOCTHERM_THROT_LEVEL_HIGH>;
+>>>> +
+>>>> +				#cooling-cells =3D <1>;
+>>>> +			};
+>>>> +			throttle_light: light {
+>>>> +				priority =3D <80>;
+>>>> +				cpu-throt-level =3D <TEGRA_SOCTHERM_THROT_LEVEL_MED>;
+>>>> +
+>>>> +				#cooling-cells =3D <1>;
+>>>
+>>> Could you please describe a little here what to expect of the above
+>>> setup?
+>>
+>> Ok, let me describe it.
+>> When the "heavy" cooling device triggered, the hardware will skip cp=
+u clock's
+>> pulse in HIGH level, and if the "light" triggered, the hardware will=
+ skip cpu
+>> clock's pulse in MED level.
+>> If these two devices are triggered in same time, the HW throttle arb=
+iter will
+>> select the highest priority as the final throttle settings to skip c=
+pu pulse.
+>=20
+>=20
+> I would prefer if you add these descriptions into your examples in yo=
+ur
+> next version.
+
+Sure, will do it.
+
+>=20
