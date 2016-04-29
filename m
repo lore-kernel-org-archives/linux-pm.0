@@ -1,45 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH 1/4] cpufreq: governor: support scheduler cpufreq callbacks on remote CPUs
-Date: Fri, 29 Apr 2016 13:21:24 +0200
-Message-ID: <1811208.ius7TXdi4I@vostro.rjw.lan>
-References: <1461119969-10371-1-git-send-email-smuckle@linaro.org> <20160429103816.GC2927@vireshk-i7>
+From: Mathias Nyman <mathias.nyman@intel.com>
+Subject: Re: [PATCH v5 0/4] PCI: Add support for suspending (including runtime)
+ of PCIe ports
+Date: Fri, 29 Apr 2016 14:46:33 +0300
+Message-ID: <57234999.2040202@intel.com>
+References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160429103816.GC2927@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 29, 2016 04:08:16 PM Viresh Kumar wrote:
-> On 19-04-16, 19:39, Steve Muckle wrote:
-> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> > index 20f0a4e114d1..429d3a5b9866 100644
-> > --- a/drivers/cpufreq/cpufreq_governor.c
-> > +++ b/drivers/cpufreq/cpufreq_governor.c
-> > @@ -248,6 +248,20 @@ static void dbs_irq_work(struct irq_work *irq_work)
-> >  	schedule_work_on(smp_processor_id(), &policy_dbs->work);
-> >  }
-> >  
-> > +#ifdef CONFIG_SMP
-> > +static inline void dbs_irq_work_queue(struct policy_dbs_info *policy_dbs,
-> > +				      int cpu)
-> > +{
-> > +	irq_work_queue_on(&policy_dbs->irq_work, cpu);
-> > +}
-> > +#else
-> > +static inline void dbs_irq_work_queue(struct policy_dbs_info *policy_dbs,
-> > +				      int cpu)
-> > +{
-> > +	irq_work_queue(&policy_dbs->irq_work);
-> > +}
-> > +#endif
-> 
-> Any clue, why we don't have a non-SMP version of irq_work_queue_on(), Which can
-> simply call irq_work_queue() ?
+On 29.04.2016 11:51, Mika Westerberg wrote:
+> Current Linux PCI core does not do any kind of power management to PCIe
+> ports. This means that we waste energy and consume laptop battery even if
+> the port has nothing connected to. These patches aim to change that to the
+> right direction.
+>
+> Previous versions of the patches can be found below:
+>
+>    v1: http://www.spinics.net/lists/linux-pci/msg49313.html
+>    v2: http://www.spinics.net/lists/linux-pci/msg50167.html
+>    v3: http://www.spinics.net/lists/linux-pci/msg50345.html
+>    v4: http://www.spinics.net/lists/linux-pci/msg50665.html
+>
+> This assumes that recent (starting from 2015) PCIe ports are capable of
+> transition to D3hot/D3cold. We add a new flag to struct pci_dev 'bridge_d3'
+> that is set whenever the PCI core thinks the port can be put to D3. The
+> check in pci_pm_suspend_noirq() is then extended to cover devices where
+> 'bridge_d3' is set.
+>
+> We then add two new functions pci_bridge_d3_device_changed/removed(). These
+> are used to set and clear 'bridge_d3' whenever there is a change in device
+> power management policy (or if the device is removed). For example when
+> userspace forbids the device to enter D3cold pci_bridge_d3_device_changed()
+> will clear 'bridge_d3' of the upstream bridge.
+>
+> For all PCI ports where 'bridge_d3' is set we also enable and unblock
+> runtime PM automatically. Only exception is when the PCIe port claims to
+> support hotplug. More information about that is in the changelog of
+> patch [4/4].
+>
+> Since this also touches xhci, I'm adding Mathias and Greg to check if the
+> change looks reasonable.
+>
 
-Because nobody else needs it?
+For the non-functional one-line only xhci change in patch 2/4:
+Acked-by: Mathias Nyman <mathias.nyman@linux.intel.com>
 
-But I agree that it would be nicer to add the stub to irq_work.h.
+Out of curiosity, does enabling bridge d3 in any way impact #PME
+wakeup signaling initiated by devices behind that bridge?
+
+-Mathias
