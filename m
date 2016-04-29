@@ -1,154 +1,81 @@
-From: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Subject: [PATCHv2] cpufreq: Fix GOV_LIMITS handling for the userspace governor
-Date: Fri, 29 Apr 2016 14:44:37 -0700
-Message-ID: <5723D5C5.9030900@nvidia.com>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Fri, 29 Apr 2016 14:47:22 -0700
+Message-ID: <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+ <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
+ <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
+ <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604271216400.3941@nanos> <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com>
+ <alpine.DEB.2.11.1604290240560.3718@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:13051 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbcD2Vqg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2016 17:46:36 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.11.1604290240560.3718@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, MLongnecker@nvidia.com
 
-Currently, the userspace governor only updates frequency on GOV_LIMITS
-if policy->cur falls outside policy->{min/max}. However, it is also
-necessary to update current frequency on GOV_LIMITS to match the user
-requested value if it can be achieved within the new policy->{max/min}.
+On Thu, Apr 28, 2016 at 5:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Thu, 28 Apr 2016, Lianwei Wang wrote:
+>> On Wed, Apr 27, 2016 at 11:15 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > On Wed, 27 Apr 2016, Lianwei Wang wrote:
+>> >> Yes. In our project, there is a kernel driver which register a pm
+>> >> notifier. On some conditions this pm notifier will return an error and
+>> >> abort the suspend process. The counter will be unbalanced in case it
+>> >> happened.
+>> >
+>> > So what? You wreckaged your driver, so you fix it and be done with it.
+>>
+>> Do you mean no pm_notifier callback can return an error or NOTIFY_BAD
+>> to abort the suspend process?
+>>
+>> It's not the driver issue. The driver return an error to abort the
+>> suspend process on purpose. Why do you think it is not allowed to
+>> return an error to abort suspend?
+>>
+>> The issue is very clear as described below.
+>> 1. How the issue happened?
+>> One of the pm notifier return error to abort suspend before
+>> cpu_hotplug_disable() is called on PM_SUSPEND_PREPARE.
+>>
+>> 2. What's the result?
+>> CPU hotplug work in a wrong way, or it doesn't work anymore. No way to
+>> recover it.
+>>
+>> 3. The root cause is that there is no any handling for the unbalanced
+>> cpu_hotplug_disable/enable calling. This patch add a protection for
+>> such issue.
+>
+> Wrong. This is the symptom. The root cause is in #1. Therefor you are trying
+> to fix the symptom and not the root cause
+>
+I don't understand why you keep saying that the issue is in the pm
+notifier callback. As I told you, the pm notifier return an error(or
+NOTIFY_BAD) on purpose to abort the suspend process. This is work as
+design. Any driver can abort the suspend process if it is not ready to
+suspend.
 
-This was previously the behaviour in the governor until commit d1922f0
-("cpufreq: Simplify userspace governor") which incorrectly assumed that
-policy->cur == user requested frequency via scaling_setspeed. This won't
-be true if the user requested frequency falls outside policy->{min/max}.
-Ex: a temporary thermal cap throttled the user requested frequency.
+I know your maintainers are busy but it is not hard for you to
+understand it. If you did not look at the suspend code for a long time
+then you can look at it now.
 
-Fix this by storing the user requested frequency in a seperate variable.
-The governor will then try to achieve this request on every GOV_LIMITS
-change.
+Below are some examples to return error to abort the suspend on
+PM_SUSPEND_PREPARE pm notifier.
+http://lxr.free-electrons.com/source/arch/x86/power/cpu.c#L290
+http://lxr.free-electrons.com/source/arch/s390/kernel/suspend.c#L164
+http://lxr.free-electrons.com/source/drivers/s390/cio/css.c#L840
+http://lxr.free-electrons.com/source/drivers/devfreq/exynos/exynos5_bus.c#L202
 
-Fixes: d1922f02562f ("cpufreq: Simplify userspace governor")
-
-Signed-off-by: Sai Gurrappadi <sgurrappadi@nvidia.com>
----
-
-Changes in v2:
-- Used policy->governor_data rather than using a per-cpu variable
-
- drivers/cpufreq/cpufreq_userspace.c | 43 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 38 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_userspace.c
-b/drivers/cpufreq/cpufreq_userspace.c
-index 4d16f45..9f3dec9 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -17,6 +17,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/slab.h>
-
- static DEFINE_PER_CPU(unsigned int, cpu_is_managed);
- static DEFINE_MUTEX(userspace_mutex);
-@@ -31,6 +32,7 @@ static DEFINE_MUTEX(userspace_mutex);
- static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
- {
- 	int ret = -EINVAL;
-+	unsigned int *setspeed = policy->governor_data;
-
- 	pr_debug("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
-
-@@ -38,6 +40,8 @@ static int cpufreq_set(struct cpufreq_policy *policy,
-unsigned int freq)
- 	if (!per_cpu(cpu_is_managed, policy->cpu))
- 		goto err;
-
-+	*setspeed = freq;
-+
- 	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
-  err:
- 	mutex_unlock(&userspace_mutex);
-@@ -49,19 +53,45 @@ static ssize_t show_speed(struct cpufreq_policy *policy,
-char *buf)
- 	return sprintf(buf, "%u\n", policy->cur);
- }
-
-+static int cpufreq_userspace_policy_init(struct cpufreq_policy *policy)
-+{
-+	unsigned int *setspeed;
-+
-+	setspeed = kzalloc(sizeof(*setspeed), GFP_KERNEL);
-+	if (!setspeed)
-+		return -ENOMEM;
-+
-+	policy->governor_data = setspeed;
-+	return 0;
-+}
-+
- static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
- 				   unsigned int event)
- {
-+	unsigned int *setspeed = policy->governor_data;
- 	unsigned int cpu = policy->cpu;
- 	int rc = 0;
-
-+	if (event == CPUFREQ_GOV_POLICY_INIT)
-+		return cpufreq_userspace_policy_init(policy);
-+
-+	if (!setspeed)
-+		return -EINVAL;
-+
- 	switch (event) {
-+	case CPUFREQ_GOV_POLICY_EXIT:
-+		mutex_lock(&userspace_mutex);
-+		policy->governor_data = NULL;
-+		kfree(setspeed);
-+		mutex_unlock(&userspace_mutex);
-+		break;
- 	case CPUFREQ_GOV_START:
- 		BUG_ON(!policy->cur);
- 		pr_debug("started managing cpu %u\n", cpu);
-
- 		mutex_lock(&userspace_mutex);
- 		per_cpu(cpu_is_managed, cpu) = 1;
-+		*setspeed = policy->cur;
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	case CPUFREQ_GOV_STOP:
-@@ -69,20 +99,23 @@ static int cpufreq_governor_userspace(struct
-cpufreq_policy *policy,
-
- 		mutex_lock(&userspace_mutex);
- 		per_cpu(cpu_is_managed, cpu) = 0;
-+		*setspeed = 0;
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	case CPUFREQ_GOV_LIMITS:
- 		mutex_lock(&userspace_mutex);
--		pr_debug("limit event for cpu %u: %u - %u kHz, currently %u kHz\n",
--			cpu, policy->min, policy->max,
--			policy->cur);
-+		pr_debug("limit event for cpu %u: %u - %u kHz, currently %u kHz, last set
-to %u kHz\n",
-+			cpu, policy->min, policy->max, policy->cur, *setspeed);
-
--		if (policy->max < policy->cur)
-+		if (policy->max < *setspeed)
- 			__cpufreq_driver_target(policy, policy->max,
- 						CPUFREQ_RELATION_H);
--		else if (policy->min > policy->cur)
-+		else if (policy->min > *setspeed)
- 			__cpufreq_driver_target(policy, policy->min,
- 						CPUFREQ_RELATION_L);
-+		else
-+			__cpufreq_driver_target(policy, *setspeed,
-+						CPUFREQ_RELATION_L);
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	}
--- 
-2.1.4
+>> Anything not clear?
+>
+> No.
+>
+> I completely understand that you are tyring to put the cart before the horse.
+No. Your understanding is wrong.
+>
+> Thanks,
+>
+>         tglx
