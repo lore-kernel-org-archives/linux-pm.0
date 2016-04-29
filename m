@@ -1,69 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/4] PCI: Add support for suspending (including runtime) of PCIe ports
-Date: Fri, 29 Apr 2016 14:10:59 +0200
-Message-ID: <86024359.9LxrAC1gtb@vostro.rjw.lan>
-References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com> <57234999.2040202@intel.com>
+From: Rafael Wysocki <rjwysocki@gmail.com>
+Subject: [GIT PULL] Power management fixes for v4.6-rc6
+Date: Fri, 29 Apr 2016 14:40:51 +0200
+Message-ID: <CAJZ5v0hTp=6+j_A+GFptBzG9MD2DnRmxmJ6vm8ZSt-64maGgMA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59879 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752176AbcD2MH4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Apr 2016 08:07:56 -0400
-In-Reply-To: <57234999.2040202@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mathias Nyman <mathias.nyman@intel.com>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, April 29, 2016 02:46:33 PM Mathias Nyman wrote:
-> On 29.04.2016 11:51, Mika Westerberg wrote:
-> > Current Linux PCI core does not do any kind of power management to PCIe
-> > ports. This means that we waste energy and consume laptop battery even if
-> > the port has nothing connected to. These patches aim to change that to the
-> > right direction.
-> >
-> > Previous versions of the patches can be found below:
-> >
-> >    v1: http://www.spinics.net/lists/linux-pci/msg49313.html
-> >    v2: http://www.spinics.net/lists/linux-pci/msg50167.html
-> >    v3: http://www.spinics.net/lists/linux-pci/msg50345.html
-> >    v4: http://www.spinics.net/lists/linux-pci/msg50665.html
-> >
-> > This assumes that recent (starting from 2015) PCIe ports are capable of
-> > transition to D3hot/D3cold. We add a new flag to struct pci_dev 'bridge_d3'
-> > that is set whenever the PCI core thinks the port can be put to D3. The
-> > check in pci_pm_suspend_noirq() is then extended to cover devices where
-> > 'bridge_d3' is set.
-> >
-> > We then add two new functions pci_bridge_d3_device_changed/removed(). These
-> > are used to set and clear 'bridge_d3' whenever there is a change in device
-> > power management policy (or if the device is removed). For example when
-> > userspace forbids the device to enter D3cold pci_bridge_d3_device_changed()
-> > will clear 'bridge_d3' of the upstream bridge.
-> >
-> > For all PCI ports where 'bridge_d3' is set we also enable and unblock
-> > runtime PM automatically. Only exception is when the PCIe port claims to
-> > support hotplug. More information about that is in the changelog of
-> > patch [4/4].
-> >
-> > Since this also touches xhci, I'm adding Mathias and Greg to check if the
-> > change looks reasonable.
-> >
-> 
-> For the non-functional one-line only xhci change in patch 2/4:
-> Acked-by: Mathias Nyman <mathias.nyman@linux.intel.com>
-> 
-> Out of curiosity, does enabling bridge d3 in any way impact #PME
-> wakeup signaling initiated by devices behind that bridge?
+Hi Linus,
 
-If the device reports (via the config space) that it is capable of signaling
-PME from D3_{cold}, the wakeup signaling won't be affected (as long as the
-hardware design follows the spec).
+Please pull from
 
-The Mika's patches take that into account AFAICS.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.6-rc6
 
-Thanks,
-Rafael
+to receive power management material for v4.6-rc6 with top-most
+commit 81be193b7e2089dc34a4e3939f1b057f53995f56
 
+ Merge branch 'pm-cpufreq-fixes'
+
+on top of commit 02da2d72174c61988eb4456b53f405e3ebdebce4
+
+ Linux 4.6-rc5
+
+One revert of a recent cpufreq commit that introduced a regression
+and a fix for intel_pstate's Turbo Activation Ratio handling code.
+
+Specifics:
+
+ - Revert cpufreq commit that attempted to fix a problem in the
+   ondemand/conservative governor code, but did that incorrectly
+   and introduced another problem instead (Rafael Wysocki).
+
+ - Fix incorrect decoding of MSR contents related to the
+   Turbo Activation Ratio (TAR) handling in the intel_pstate
+   driver (Srinivas Pandruvada).
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (1):
+      Revert "cpufreq: governor: Fix negative idle_time when
+configured with CONFIG_HZ_PERIODIC"
+
+Srinivas Pandruvada (1):
+      cpufreq: intel_pstate: Fix processing for turbo activation ratio
+
+---------------
+
+ drivers/cpufreq/cpufreq_governor.c | 8 ++------
+ drivers/cpufreq/intel_pstate.c     | 5 +++++
+ 2 files changed, 7 insertions(+), 6 deletions(-)
