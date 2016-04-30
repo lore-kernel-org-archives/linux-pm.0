@@ -1,81 +1,153 @@
-From: Lianwei Wang <lianwei.wang@gmail.com>
-Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
-Date: Fri, 29 Apr 2016 14:47:22 -0700
-Message-ID: <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
-References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
- <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
- <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
- <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
- <alpine.DEB.2.11.1604271216400.3941@nanos> <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com>
- <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com>
- <alpine.DEB.2.11.1604290240560.3718@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.11.1604290240560.3718@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] PM / OPP: pass cpumask by reference
+Date: Sat, 30 Apr 2016 13:33:29 +0200
+Message-ID: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:56745 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbcD3Lef (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Apr 2016 07:34:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Apr 28, 2016 at 5:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 28 Apr 2016, Lianwei Wang wrote:
->> On Wed, Apr 27, 2016 at 11:15 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Wed, 27 Apr 2016, Lianwei Wang wrote:
->> >> Yes. In our project, there is a kernel driver which register a pm
->> >> notifier. On some conditions this pm notifier will return an error and
->> >> abort the suspend process. The counter will be unbalanced in case it
->> >> happened.
->> >
->> > So what? You wreckaged your driver, so you fix it and be done with it.
->>
->> Do you mean no pm_notifier callback can return an error or NOTIFY_BAD
->> to abort the suspend process?
->>
->> It's not the driver issue. The driver return an error to abort the
->> suspend process on purpose. Why do you think it is not allowed to
->> return an error to abort suspend?
->>
->> The issue is very clear as described below.
->> 1. How the issue happened?
->> One of the pm notifier return error to abort suspend before
->> cpu_hotplug_disable() is called on PM_SUSPEND_PREPARE.
->>
->> 2. What's the result?
->> CPU hotplug work in a wrong way, or it doesn't work anymore. No way to
->> recover it.
->>
->> 3. The root cause is that there is no any handling for the unbalanced
->> cpu_hotplug_disable/enable calling. This patch add a protection for
->> such issue.
->
-> Wrong. This is the symptom. The root cause is in #1. Therefor you are trying
-> to fix the symptom and not the root cause
->
-I don't understand why you keep saying that the issue is in the pm
-notifier callback. As I told you, the pm notifier return an error(or
-NOTIFY_BAD) on purpose to abort the suspend process. This is work as
-design. Any driver can abort the suspend process if it is not ready to
-suspend.
+The new use of dev_pm_opp_set_sharing_cpus resulted in a harmless compiler
+warning with CONFIG_CPUMASK_OFFSTACK=y:
 
-I know your maintainers are busy but it is not hard for you to
-understand it. If you did not look at the suspend code for a long time
-then you can look at it now.
+drivers/cpufreq/mvebu-cpufreq.c: In function 'armada_xp_pmsu_cpufreq_init':
+include/linux/cpumask.h:550:25: error: passing argument 2 of 'dev_pm_opp_set_sharing_cpus' discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]
 
-Below are some examples to return error to abort the suspend on
-PM_SUSPEND_PREPARE pm notifier.
-http://lxr.free-electrons.com/source/arch/x86/power/cpu.c#L290
-http://lxr.free-electrons.com/source/arch/s390/kernel/suspend.c#L164
-http://lxr.free-electrons.com/source/drivers/s390/cio/css.c#L840
-http://lxr.free-electrons.com/source/drivers/devfreq/exynos/exynos5_bus.c#L202
+The problem here is that cpumask_var_t gets passed by reference, but
+by declaring a 'const cpumask_var_t' argument, only the pointer is
+constant, not the actual mask. This is harmless because the function
+does not actually modify the mask.
 
->> Anything not clear?
->
-> No.
->
-> I completely understand that you are tyring to put the cart before the horse.
-No. Your understanding is wrong.
->
-> Thanks,
->
->         tglx
+This patch changes the function prototypes for all of the related functions
+to pass a 'struct cpumask *' instead of 'cpumask_var_t', matching what
+most other such functions do in the kernel. This lets us mark all the
+other similar functions as taking a 'const' mask where possible,
+and it avoids the warning without any change in object code.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 947bd567f7a5 ("mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared")
+---
+ drivers/base/power/opp/cpu.c | 10 +++++-----
+ include/linux/pm_opp.h       | 20 ++++++++++----------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 3428380dfca7..8e0b6349d7d4 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -132,7 +132,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
++void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask)
+ {
+ 	struct device *cpu_dev;
+ 	int cpu;
+@@ -164,7 +164,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-int dev_pm_opp_of_cpumask_add_table(cpumask_var_t cpumask)
++int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
+ {
+ 	struct device *cpu_dev;
+ 	int cpu, ret = 0;
+@@ -217,7 +217,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+ 	struct device_node *np, *tmp_np;
+ 	struct device *tcpu_dev;
+@@ -288,7 +288,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
+  * mutex cannot be locked.
+  */
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
+-				const cpumask_var_t cpumask)
++				const struct cpumask *cpumask)
+ {
+ 	struct opp_device *opp_dev;
+ 	struct opp_table *opp_table;
+@@ -346,7 +346,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+ 	struct opp_device *opp_dev;
+ 	struct opp_table *opp_table;
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 15f554443b59..5221d259e413 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -65,8 +65,8 @@ void dev_pm_opp_put_prop_name(struct device *dev);
+ int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+ void dev_pm_opp_put_regulator(struct device *dev);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+-int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const cpumask_var_t cpumask);
+-int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
++int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
++int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -180,12 +180,12 @@ static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_f
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const cpumask_var_t cpumask)
++static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask)
+ {
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+ 	return -EINVAL;
+ }
+@@ -195,9 +195,9 @@ static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_va
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+ int dev_pm_opp_of_add_table(struct device *dev);
+ void dev_pm_opp_of_remove_table(struct device *dev);
+-int dev_pm_opp_of_cpumask_add_table(cpumask_var_t cpumask);
+-void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask);
+-int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
++int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
++void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
++int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+ #else
+ static inline int dev_pm_opp_of_add_table(struct device *dev)
+ {
+@@ -208,16 +208,16 @@ static inline void dev_pm_opp_of_remove_table(struct device *dev)
+ {
+ }
+ 
+-static inline int dev_pm_opp_of_cpumask_add_table(cpumask_var_t cpumask)
++static inline int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
+ {
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
++static inline void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask)
+ {
+ }
+ 
+-static inline int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
++static inline int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+ 	return -ENOTSUPP;
+ }
+-- 
+2.7.0
+
