@@ -1,172 +1,71 @@
-From: Andreas Noever <andreas.noever@gmail.com>
-Subject: Re: [RFC 4/4] thunderbolt: Support runtime pm
-Date: Sun, 1 May 2016 13:18:46 +0200
-Message-ID: <CAMxnaaVT0L-7L2TURARX-oD5GNooOkzqA3T88Oz_WzegraRh4Q@mail.gmail.com>
-References: <cover.1458126755.git.lukas@wunner.de> <4560ddb26a2bb15eeaf8eab565ac41c35e36d092.1458126755.git.lukas@wunner.de>
- <CAMxnaaXLAEERtc7=odiqXAp_pA-PnsaQFw6bQhLN=DWeBngq9g@mail.gmail.com> <20160424152308.GA16898@wunner.de>
+From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Subject: Re: Re: [PATCH v2 2/6] mfd: axp20x: Add register bits
+ for axp20x-ac-power
+Date: Sun, 1 May 2016 16:24:20 +0200
+Message-ID: <70789f3b-32c2-7d9c-1091-e4fd40b9a754@computerlinguist.org>
+References: <1462093047-7885-1-git-send-email-haas@computerlinguist.org>
+ <1462093047-7885-3-git-send-email-haas@computerlinguist.org>
+ <CAGb2v67g6rmnsKwjP3d25y5FV4BpYcenU1gX5NF4PbhOhJSxNA@mail.gmail.com>
+Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160424152308.GA16898@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, linux-acpi@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, Bjorn Helgaas <bhelgaas@google.com>
+Return-path: <linux-sunxi+bncBCD4V7EG6QFRBGVDTC4QKGQEEMQYGQI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <CAGb2v67g6rmnsKwjP3d25y5FV4BpYcenU1gX5NF4PbhOhJSxNA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: wens-jdAy2FN1RRM@public.gmane.org
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 24, 2016 at 5:23 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> Hi Andreas,
->
-> thank you for your valuable feedback.
->
-> On Sun, Mar 20, 2016 at 02:53:10PM +0100, Andreas Noever wrote:
->> - My firmware does not provide the TRPE ACPI method, only XRPE. So
->> either TRPE is only post CactusRidge or it is only present in newer
->> MBPs. In any case the OS X driver looks for TRPE first and uses XRPE
->> only if TRPE does not exists. I suggest we do the same (but see below
->> for TRPE).
->
-> I only had the acpidump of an MBA6 (2013) available when I implemented
-> this and it uses TRPE. I have since been able to obtain the acpidump of
-> an MBP10 (2012) and you're right, it uses XRPE. Both have the same
-> controller, Cactus Ridge 4C. It looks like they changed this on machines
-> introduced 2013. It's just a rename of the method, there are no machines
-> which have both methods.
->
->
->> - The XRIN GPE fired immediately after the power was cut. The problem
->> seems to be that the controller takes a bit to shut down. The solution
->> is to poll until XRIL returns 1 before activating the GPE. On "Type 2"
->> devices the OS X driver polls up to 300 times with a 1ms sleep in
->> between (for me 1 or 2 iterations were always enough). Afaik no
->> polling is done on "Type 1" devices.
->
-> Hm, this means that the semantics of XRIN and XRIL changed on Cactus
-> Ridge. I have changed the behaviour to be exactly as you've specified
-> above, this works fine on Light Ridge and should hopefully also work
-> on Cactus Ridge, no distinction between Type 1 and Type 2 necessary.
+On 05/01/2016 11:48 AM, Chen-Yu Tsai wrote:
+> Hi,
+> 
+> On Sun, May 1, 2016 at 4:57 PM, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org> wrote:
+>> This change adds some register bit definitions used by the
+>> axp20x-ac-power driver.
+>>
+>> Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+>> ---
+>>  include/linux/mfd/axp20x.h | 11 +++++++++++
+>>  1 file changed, 11 insertions(+)
+>>
+>> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+>> index d82e7d5..c4c6dfa 100644
+>> --- a/include/linux/mfd/axp20x.h
+>> +++ b/include/linux/mfd/axp20x.h
+>> @@ -90,6 +90,17 @@ enum {
+>>  #define AXP22X_ALDO3_V_OUT             0x2a
+>>  #define AXP22X_CHRG_CTRL3              0x35
+>>
+>> +
+>> +/* Fields of AXP20X_PWR_INPUT_STATUS */
+>> +#define AXP20X_PWR_STATUS_AC_PRESENT     BIT(7)
+>> +#define AXP20X_PWR_STATUS_AC_AVAILABLE   BIT(6)
+>> +#define AXP20X_PWR_STATUS_AC_VBUS_SHORT  BIT(1)
+>> +#define AXP20X_PWR_STATUS_AC_VBUS_SEL    BIT(0)
+>> +
+>> +/* Fields of AXP20X_ADC_EN1 */
+>> +#define AXP20X_ADC_EN1_ACIN_VOLT BIT(5)
+>> +#define AXP20X_ADC_EN1_ACIN_CURR BIT(4)
+>> +
+> 
+> We keep the bit definitions of each register in each separate driver.
+> The drivers only define the ones they use.
+> 
+> ChenYu
 
-ok
+Hi ChenYu,
 
->
->> Also the OS X interrupt handler checks XRIL
->> and only wakes up the device if it returns 0. This was not necessary
->> to do on my model - but maybe spurious interrupts can happen with
->> newer controllers?
->
-> They're doing lots of stuff which seems superfluous or needlessly
-> complicated, e.g. they also reset the controller upon driver load using
-> the XRST method (which exists only on some models). I don't think we
-> have to do everything exactly as they do as long as it works.
-> FWIW I haven't seen any spurious XRIN interrupts on Light Ridge.
->
->
->> Concerning TRPE style hardware: It seems that pm is more complicated
->> here. I see a bunch of references to SX* ACPI methods (SXFP, SXLV,
->> SXIO) and have not yet figured out what they do. Maybe we should not
->> enable PM if XRPE is not present until we find someone to test it.
->
-> But you do have the SX* methods on your machine even though it uses
-> XRPE, right? I've mostly figured out now what these methods are there
-> for and have documented them extensively in upstream.c. However I cannot
-> verify if my documentation is accurate as they are not present on my
-> machine, but perhaps you can if your machine has them.
-Yes I have these methods but I have no idea what they do. Just that
-they have to be called before suspend:
-http://lxr.free-electrons.com/source/drivers/pci/quirks.c#L3175
+i believe Maxime Ripard requested that these defines be moved to the
+header: https://groups.google.com/d/msg/linux-sunxi/nEUg87cV6KI/TvdB6MBZBAAJ
 
+What do you think?
 
-> SXLV, SXIO and SXIL exist only on Cactus Ridge machines and utilize
-> the Go2Sx and Ok2Go2Sx pins. Judging by the PCI quirk you've added,
-> it seems that a Go2Sx dance is necessary on this controller before
-> power is cut (either by going to S3 / S4 / S5 or by using the Force
-> Power pin, which is what XRPE / TRPE / SXFP do).
->
->
->> As you have noted the "correct" place to but this logic would be at
->> the upstream bridge. Ideally the downstream bridges should go into
->> D3hot by themselves if no devices are attached. The NHI as well
->
-> In v2 it works exactly like this now:
-> https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
->
-> The trick is to allocate a Thunderbolt port service for the upstream
-> bridge which we can bind to. In fact I'm allocating such a port service
-> for *any* PCIe port on Thunderbolt devices, this could be useful for all
-> sorts of other stuff.
-Just tested your branch - works nicely (runtime pm, suspend and hibernate)!
+Thanks for the review!
 
-> Binding to the upstream bridge also allows us to replace the PCI quirk
-> which delays resume_noirq on the downstream bridges, as demonstrated by
-> this experimental commit (works fine on Light Ridge but YMMV):
-> https://github.com/l1k/linux/commit/79e0b8b8fb5da50b63836939f75212f824d8cba7
->
->
->> (did you by chance check whether the NHI can be put into D3hot without
->> killing the thunderbolt tunnels?).
->
-> Amazingly this works. However the NHI does not act on hotplug events
-> after thunderbolt_suspend() has been called. Even without calling
-> thunderbolt_suspend(), it seems that the control channel is down
-> when the NHI is in D3hot, I'm getting RX timeouts. Also, I cannot
-> see any reduction in power consumption when putting the NHI in D3,
-> same for the downstream bridges.
-Interesting. Looks like the NHI is really just a a device on the tb
-swicht. But then it is understandable that turning it of does not
-decrease power consumption.
-
-
-> You can test this for yourself by commenting out the two calls to
-> pm_runtime_get() and pm_runtime_put_autosuspend() in switch.c.
-> Plug in a Thunderbolt device, wait 10 sec for the NHI to autosuspend,
-> try accessing the Thunderbolt device. Works for me.
->
-> If the NHI suspended before you had a chance to plug in the device,
-> invoke "echo on > /sys/bus/pci/devices/0000:06:00.0/power/control".
-> Plug in the device and use "echo auto" to let the NHI autosuspend.
->
->
->> (1) should be possible to fix? For (2): D3Cold always requires a
->> platform specific mechanism and the pci subsystem only supports ACPI.
->> Would it be possible to add an API to tell the pci subsystem that we
->> know how to put a specific device(tree) into D3Cold from a platform
->> driver [+CC Bjorn]? Then this whole thing would become a normal pci
->> suspend operation.
->
-> I simply go to D3cold in the driver's ->runtime_suspend callback.
-> There's just one small fix necessary in pci_raw_set_power_state()
-> for this to work. Plus some changes in portdrv to call down to the
-> port service drivers on each pm transition. (It already does this
-> for ->suspend and ->resume, we just need the same functionality for
-> additional pm callbacks).
->
->
->> Bridges in Hotplugged TB devices might have the same PCI ids as the
->> "root" bridges (if they use the same TB chip). You probably should
->> check that dev is a bridge of the builtin controller (for example by
->> checking for the presence of ACPI methods, see the comment in the
->> other tb quirks).
->
-> For the upstream bridge I'm checking if its parent is a root port now
-> to determine if it's a host controller built into the machine.
-> I think the only chance for a false positive is if two machines are
-> connected with Thunderbolt and one of them has multiple Thunderbolt
-> controllers built in. Might look like this:
->
-> RP - UPSB - DSB - UPSB - DSB - RP - RP - UPSB - DSB
-> ^^^^^^^^^^^^^^^   ^^^^                   ^^^^^^^^^^
-> local machine     remote machine         secondary controller on remote
-I don't think that it is possible to tunnel into a different machine
-like that :) The root port check should be sufficient.
-
-Best Regards
-Andreas
-
-
-> If the topology indeed looks like this (which I'm not sure of, I lack
-> the hardware to test it), a thunderbolt_upstream driver will try to
-> attach to UPSB on the secondary controller of the remote machine but
-> should bail out because it can't find an ACPI handle for its NHI.
-> So we should even have this corner case covered.
-> Best regards,
->
-> Lukas
+Michael
