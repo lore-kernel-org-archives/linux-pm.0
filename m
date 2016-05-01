@@ -1,51 +1,56 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal management updates for v4.6-rc6
-Date: Sat, 30 Apr 2016 16:05:31 -0700
-Message-ID: <20160430230530.GA11246@localhost.localdomain>
+From: Sean Fu <fxinrong@gmail.com>
+Subject: Fail to build tools/all
+Date: Sun, 1 May 2016 13:11:33 +0800
+Message-ID: <20160501050629.GA7386@linux-dunz.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Linus,
+Hi guys:
+        I encountered a build error when running "make V=1 tools/all".
+        Shall we write a patch to fix it?
+        The following is error log.
 
-Here are only a couple of minor fixes on thermal subsystem.
+================================ start ==========================
+commit 05cf8077e54b20dddb756eaa26f3aeb5c38dd3cf
+Merge: cf78031 db5dd0d
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Fri Apr 1 20:03:33 2016 -0500
+================================= end  =========================
 
-Please consider pulling from
+============================== start ===========================
+mkdir -p
+/home/sean/work/source/upstream/kernel.linus/linux/tools/power/cpupower
+&& make O=/home/sean/work/source/upstream/kernel.linus/linux
+subdir=tools/power/cpupower --no-print-directory -C power/cpupower 
+gcc  -DVERSION=\"4.6.rc1.190.g05cf80\" -DPACKAGE=\"cpupower\"
+-DPACKAGE_BUGREPORT=\"linux-pm@vger.kernel.org\" -D_GNU_SOURCE -pipe
+-DNLS -Wall -Wchar-subscripts -Wpointer-arith -Wsign-compare
+-Wno-pointer-sign -Wdeclaration-after-statement -Wshadow -O1 -g -DDEBUG
+-I./lib -I ./utils -o
+/home/sean/work/source/upstream/kernel.linus/linux/utils/helpers/amd.o
+-c utils/helpers/amd.c
+utils/helpers/amd.c:7:21: fatal error: pci/pci.h: No such file or
+directory
+ #include <pci/pci.h>
+                      ^
+		      compilation terminated.
+		      Makefile:218: recipe for target
+		      '/home/sean/work/source/upstream/kernel.linus/linux/utils/helpers/amd.o'
+		      failed
+		      make[2]: ***
+		      [/home/sean/work/source/upstream/kernel.linus/linux/utils/helpers/amd.o]
+		      Error 1
+		      Makefile:56: recipe for target 'cpupower' failed
+		      make[1]: *** [cpupower] Error 2
+		      Makefile:1548: recipe for target 'tools/all'
+		      failed
+		      make: *** [tools/all] Error 2
+=============================== end ==========================
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-
-to receive Thermal Management updates for v4.6-rc6 with top-most
-
-15333e3af1de37b1b214b28c85fe9a7b257fb92c:
-
-  thermal: use %d to print S32 parameters (2016-04-27 15:54:51 -0700)
-
-on top of commit 913f201083c81cf021f050d041352ac854c4b526:
-
-  Merge branch 'fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal (2016-04-23 17:15:39 -0700)
-
-Specifics in this pull request:
-- Fixes in hisilicon thermal driver
-- More fixes of unsigned to int type change in thermal_core.c.
-- These change have been CI tested using KernelCI bot [1,2]. \o/
-
-[1] - https://kernelci.org/boot/all/job/evalenti/kernel/v4.6-rc4-285-gddc8fdc6e2f0/
-[2] - https://kernelci.org/build/evalenti/kernel/v4.6-rc4-285-gddc8fdc6e2f0/
-
-BR,
-
-Eduardo Valentin
-
-----------------------------------------------------------------
-Leo Yan (2):
-      thermal: hisilicon: increase temperature resolution
-      thermal: use %d to print S32 parameters
-
- drivers/thermal/hisi_thermal.c | 4 ++--
- drivers/thermal/thermal_core.c | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+BestRegards
+Sean
