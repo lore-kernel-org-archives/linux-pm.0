@@ -1,14 +1,15 @@
 From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH v2 2/6] mfd: axp20x: Add register bits for axp20x-ac-power
-Date: Sun, 1 May 2016 17:48:45 +0800
-Message-ID: <CAGb2v67g6rmnsKwjP3d25y5FV4BpYcenU1gX5NF4PbhOhJSxNA@mail.gmail.com>
-References: <1462093047-7885-1-git-send-email-haas@computerlinguist.org> <1462093047-7885-3-git-send-email-haas@computerlinguist.org>
+Subject: Re: [PATCH v2 5/6] ARM: dts: axp209: Add
+ ac_power_supply child node to the ax209 node
+Date: Sun, 1 May 2016 17:50:53 +0800
+Message-ID: <CAGb2v66BkBW6ZWiO7TaAdCWSkmSF8traVTpCi38_vLfgU2im6g@mail.gmail.com>
+References: <1462093047-7885-1-git-send-email-haas@computerlinguist.org> <1462093047-7885-6-git-send-email-haas@computerlinguist.org>
 Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBFFCS64QKGQEDUJPM7Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBFFDS64QKGQEVPDSGBI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <1462093047-7885-3-git-send-email-haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+In-Reply-To: <1462093047-7885-6-git-send-email-haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <https://groups.google.com/group/linux-sunxi
@@ -22,42 +23,41 @@ List-Id: linux-pm@vger.kernel.org
 Hi,
 
 On Sun, May 1, 2016 at 4:57 PM, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org> wrote:
-> This change adds some register bit definitions used by the
-> axp20x-ac-power driver.
+> Add a node representing the ac power supply part of the axp209 pmic.
 >
 > Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 > ---
->  include/linux/mfd/axp20x.h | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>  arch/arm/boot/dts/axp209.dtsi | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index d82e7d5..c4c6dfa 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -90,6 +90,17 @@ enum {
->  #define AXP22X_ALDO3_V_OUT             0x2a
->  #define AXP22X_CHRG_CTRL3              0x35
->
+> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+> index 051ab3b..9046f0a 100644
+> --- a/arch/arm/boot/dts/axp209.dtsi
+> +++ b/arch/arm/boot/dts/axp209.dtsi
+> @@ -94,4 +94,10 @@
+>                 compatible = "x-powers,axp202-usb-power-supply";
+>                 status = "disabled";
+>         };
 > +
-> +/* Fields of AXP20X_PWR_INPUT_STATUS */
-> +#define AXP20X_PWR_STATUS_AC_PRESENT     BIT(7)
-> +#define AXP20X_PWR_STATUS_AC_AVAILABLE   BIT(6)
-> +#define AXP20X_PWR_STATUS_AC_VBUS_SHORT  BIT(1)
-> +#define AXP20X_PWR_STATUS_AC_VBUS_SEL    BIT(0)
-> +
-> +/* Fields of AXP20X_ADC_EN1 */
-> +#define AXP20X_ADC_EN1_ACIN_VOLT BIT(5)
-> +#define AXP20X_ADC_EN1_ACIN_CURR BIT(4)
+> +       ac_power_supply: ac_power_supply {
+
+Please keep them alphabetically sorted.
+
+> +               compatible = "x-powers,axp202-ac-power-supply";
+> +               status = "disabled";
+
+I see no reason why we shouldn't just enable it by default.
+It is almost always going to be used. Same for the VBUS power supply.
+
+> +       };
 > +
 
-We keep the bit definitions of each register in each separate driver.
-The drivers only define the ones they use.
+Extra line here.
+
 
 ChenYu
 
->  /* Interrupt */
->  #define AXP152_IRQ1_EN                 0x40
->  #define AXP152_IRQ2_EN                 0x41
+>  };
 > --
 > 2.8.0
 >
