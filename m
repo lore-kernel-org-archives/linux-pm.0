@@ -1,86 +1,80 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Applied "spi: qup: Handle clocks in pm_runtime suspend and resume" to the spi tree
-Date: Mon, 02 May 2016 16:47:24 +0100
-Message-ID: <E1axG4C-0005RE-2M@debutante>
-References: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pramod Gurav <pramod.gurav@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>broonie@kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, andy.gross@linaro.org, linux-spi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 1/2] PCI: Fix BUG on device attach failure
+Date: Mon, 2 May 2016 14:01:33 -0500
+Message-ID: <20160502190133.GH24851@localhost>
+References: <158b8ef6bf71ae69ef54871e4762b98deb981d6e.1461162854.git.lukas@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:44924 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754224AbcEBTBi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 May 2016 15:01:38 -0400
+Content-Disposition: inline
+In-Reply-To: <158b8ef6bf71ae69ef54871e4762b98deb981d6e.1461162854.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-The patch
+On Wed, Apr 20, 2016 at 04:44:27PM +0200, Lukas Wunner wrote:
+> Previously when pci_bus_add_device() called device_attach() and it
+> returned a negative value, we emitted a WARN but carried on.
+> 
+> Commit ab1a187bba5c ("PCI: Check device_attach() return value always"),
+> introduced in Linux 4.6-rc1, changed this to unwind all steps preceding
+> device_attach() and to not set dev->is_added = 1.
+> 
+> The latter leads to a BUG if pci_bus_add_device() was called from
+> pci_bus_add_devices(). Fix by not recursing to a child bus if
+> device_attach() failed for the bridge leading to it.
+> 
+> This can be triggered by plugging in a PCI device (e.g. Thunderbolt)
+> while the system is asleep. The system locks up when woken because
+> device_attach() returns -EPROBE_DEFER.
+> 
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
 
-   spi: qup: Handle clocks in pm_runtime suspend and resume
+Applied both with Rafael's acks to for-linus for v4.6.
 
-has been applied to the spi tree at
+The rationale is that ab1a187bba5c ("PCI: Check device_attach() return
+value always") appeared in v4.6-rc1, and after that commit, plugging
+in a Thunderbolt device while the system is asleep will cause a BUG()
+when the system is awakened.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git 
+Lukas, you mentioned earlier that we might want to include Andreas'
+patch "thunderbolt: Fix double free of drom buffer" at the same time.
+I did apply that on pci/thunderbolt for v4.7.  I can move that to
+for-linus and put it in v4.6 if necessary, but that bug been there
+since v3.17.  Is there something in v4.6 that makes us more likely to
+hit that double free?
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From dae1a7700b34eceae049cf8f1567a640528ca4c1 Mon Sep 17 00:00:00 2001
-From: Pramod Gurav <pramod.gurav@linaro.org>
-Date: Mon, 2 May 2016 17:44:03 +0530
-Subject: [PATCH] spi: qup: Handle clocks in pm_runtime suspend and resume
-
-Clocks must ne disabled in pm_runtime to achieve some power saving.
-Enable the clocks when the device is runtime resumed during a transfer.
-
-Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- drivers/spi/spi-qup.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/spi/spi-qup.c b/drivers/spi/spi-qup.c
-index 810a7fae3479..e42ff613c0e0 100644
---- a/drivers/spi/spi-qup.c
-+++ b/drivers/spi/spi-qup.c
-@@ -937,6 +937,10 @@ static int spi_qup_pm_suspend_runtime(struct device *device)
- 	config = readl(controller->base + QUP_CONFIG);
- 	config |= QUP_CONFIG_CLOCK_AUTO_GATE;
- 	writel_relaxed(config, controller->base + QUP_CONFIG);
-+
-+	clk_disable_unprepare(controller->cclk);
-+	clk_disable_unprepare(controller->iclk);
-+
- 	return 0;
- }
- 
-@@ -945,6 +949,15 @@ static int spi_qup_pm_resume_runtime(struct device *device)
- 	struct spi_master *master = dev_get_drvdata(device);
- 	struct spi_qup *controller = spi_master_get_devdata(master);
- 	u32 config;
-+	int ret;
-+
-+	ret = clk_prepare_enable(controller->iclk);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_prepare_enable(controller->cclk);
-+	if (ret)
-+		return ret;
- 
- 	/* Disable clocks auto gaiting */
- 	config = readl_relaxed(controller->base + QUP_CONFIG);
--- 
-2.8.1
+> ---
+> v2: Split commit in two (Bjorn Helgaas).
+> 
+>  drivers/pci/bus.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index 6c9f546..23a39fd 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -324,7 +324,9 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+>  	}
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> -		BUG_ON(!dev->is_added);
+> +		/* Skip if device attach failed */
+> +		if (!dev->is_added)
+> +			continue;
+>  		child = dev->subordinate;
+>  		if (child)
+>  			pci_bus_add_devices(child);
+> -- 
+> 2.8.0.rc3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
