@@ -1,35 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: tango: Use generic platdev driver
-Date: Mon, 2 May 2016 20:32:52 +0530
-Message-ID: <20160502150252.GI2855@vireshk-i7>
-References: <5727588D.5090105@free.fr>
+Subject: Re: cpufreq policy
+Date: Mon, 2 May 2016 20:35:39 +0530
+Message-ID: <20160502150538.GJ2855@vireshk-i7>
+References: <CANMsd00DqTiTQEM3HxEvY3Qyo9cBpAHV83BjVpXKcq4gE0B96Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33013 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbcEBPC5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 11:02:57 -0400
-Received: by mail-pa0-f46.google.com with SMTP id xk12so3852494pac.0
-        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 08:02:57 -0700 (PDT)
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:34731 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754020AbcEBPFr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 11:05:47 -0400
+Received: by mail-pf0-f172.google.com with SMTP id y69so79551747pfb.1
+        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 08:05:46 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <5727588D.5090105@free.fr>
+In-Reply-To: <CANMsd00DqTiTQEM3HxEvY3Qyo9cBpAHV83BjVpXKcq4gE0B96Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, arm-soc <arm@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sebastian Frias <sf84@laposte.net>
+To: Ryan <ryanphilips19@googlemail.com>
+Cc: linux-pm@vger.kernel.org
 
-On 02-05-16, 15:39, Mason wrote:
-> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+On 02-05-16, 19:15, Ryan wrote:
+> Hi,
 > 
-> Add tango4 compatible string to the list.
-> 
-> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->  1 file changed, 2 insertions(+)
+> How can i change the governor at runtime or run at a specific
+> frequency while doing an operation.
+> For example i might want the cpu not to scale down during specific
+> operations in the driver.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+https://www.kernel.org/doc/Documentation/cpu-freq/
+
+Please read this.. It has all the information you need. In short, you
+have a bunch of files present in
+/sys/devices/system/cpu/cpuX/cpufreq/, which are useful for your case.
 
 -- 
 viresh
