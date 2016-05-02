@@ -1,51 +1,40 @@
-From: Pramod Gurav <pramod.gurav@linaro.org>
-Subject: [PATCH 1/2] spi: qup: Handle clocks in pm_runtime suspend and resume
-Date: Mon,  2 May 2016 17:44:03 +0530
-Message-ID: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: broonie@kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, andy.gross@linaro.org
-Cc: linux-spi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Pramod Gurav <pramod.gurav@linaro.org>
+From: Pramod Gurav <pramod.gurav-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 2/2] spi: qup: Add spi_master_put in remove function
+Date: Mon,  2 May 2016 17:44:04 +0530
+Message-ID: <1462191244-30758-2-git-send-email-pramod.gurav@linaro.org>
+References: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
+Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1462191244-30758-1-git-send-email-pramod.gurav-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pramod Gurav <pramod.gurav-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Clocks must ne disabled in pm_runtime to achieve some power saving.
-Enable the clocks when the device is runtime resumed during a transfer.
+Release memory allocated for spi master by calling spi_master_put in
+.remove function.
 
-Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
+Signed-off-by: Pramod Gurav <pramod.gurav-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/spi/spi-qup.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/spi/spi-qup.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/spi/spi-qup.c b/drivers/spi/spi-qup.c
-index 810a7fa..e42ff61 100644
+index e42ff61..c338ef1 100644
 --- a/drivers/spi/spi-qup.c
 +++ b/drivers/spi/spi-qup.c
-@@ -937,6 +937,10 @@ static int spi_qup_pm_suspend_runtime(struct device *device)
- 	config = readl(controller->base + QUP_CONFIG);
- 	config |= QUP_CONFIG_CLOCK_AUTO_GATE;
- 	writel_relaxed(config, controller->base + QUP_CONFIG);
-+
-+	clk_disable_unprepare(controller->cclk);
-+	clk_disable_unprepare(controller->iclk);
+@@ -1030,6 +1030,8 @@ static int spi_qup_remove(struct platform_device *pdev)
+ 
+ 	pm_runtime_put_noidle(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
++	spi_master_put(master);
 +
  	return 0;
  }
  
-@@ -945,6 +949,15 @@ static int spi_qup_pm_resume_runtime(struct device *device)
- 	struct spi_master *master = dev_get_drvdata(device);
- 	struct spi_qup *controller = spi_master_get_devdata(master);
- 	u32 config;
-+	int ret;
-+
-+	ret = clk_prepare_enable(controller->iclk);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_prepare_enable(controller->cclk);
-+	if (ret)
-+		return ret;
- 
- 	/* Disable clocks auto gaiting */
- 	config = readl_relaxed(controller->base + QUP_CONFIG);
 -- 
 1.8.2.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-spi" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
