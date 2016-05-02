@@ -1,22 +1,18 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Applied "spi: qup: Add spi_master_put in remove function" to the spi tree
-Date: Mon, 02 May 2016 16:47:21 +0100
-Message-ID: <E1axG49-0005QK-50@debutante>
-References: <1462191244-30758-2-git-send-email-pramod.gurav@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:41912 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbcEBPr3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 11:47:29 -0400
-In-Reply-To: <1462191244-30758-2-git-send-email-pramod.gurav@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: Applied "spi: qup: Handle clocks in pm_runtime suspend and resume" to the spi tree
+Date: Mon, 02 May 2016 16:47:24 +0100
+Message-ID: <E1axG4C-0005RE-2M@debutante>
+References: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1462191244-30758-1-git-send-email-pramod.gurav@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Pramod Gurav <pramod.gurav@linaro.org>
 Cc: Mark Brown <broonie@kernel.org>broonie@kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, andy.gross@linaro.org, linux-spi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 The patch
 
-   spi: qup: Add spi_master_put in remove function
+   spi: qup: Handle clocks in pm_runtime suspend and resume
 
 has been applied to the spi tree at
 
@@ -41,33 +37,50 @@ to this mail.
 Thanks,
 Mark
 
->From d2442287e77926ee3552acf3bf31a6047ecb0ac1 Mon Sep 17 00:00:00 2001
+>From dae1a7700b34eceae049cf8f1567a640528ca4c1 Mon Sep 17 00:00:00 2001
 From: Pramod Gurav <pramod.gurav@linaro.org>
-Date: Mon, 2 May 2016 17:44:04 +0530
-Subject: [PATCH] spi: qup: Add spi_master_put in remove function
+Date: Mon, 2 May 2016 17:44:03 +0530
+Subject: [PATCH] spi: qup: Handle clocks in pm_runtime suspend and resume
 
-Release memory allocated for spi master by calling spi_master_put in
-.remove function.
+Clocks must ne disabled in pm_runtime to achieve some power saving.
+Enable the clocks when the device is runtime resumed during a transfer.
 
 Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
 Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/spi/spi-qup.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/spi/spi-qup.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/spi/spi-qup.c b/drivers/spi/spi-qup.c
-index e42ff613c0e0..c338ef1136f6 100644
+index 810a7fae3479..e42ff613c0e0 100644
 --- a/drivers/spi/spi-qup.c
 +++ b/drivers/spi/spi-qup.c
-@@ -1030,6 +1030,8 @@ static int spi_qup_remove(struct platform_device *pdev)
- 
- 	pm_runtime_put_noidle(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
-+	spi_master_put(master);
+@@ -937,6 +937,10 @@ static int spi_qup_pm_suspend_runtime(struct device *device)
+ 	config = readl(controller->base + QUP_CONFIG);
+ 	config |= QUP_CONFIG_CLOCK_AUTO_GATE;
+ 	writel_relaxed(config, controller->base + QUP_CONFIG);
++
++	clk_disable_unprepare(controller->cclk);
++	clk_disable_unprepare(controller->iclk);
 +
  	return 0;
  }
  
+@@ -945,6 +949,15 @@ static int spi_qup_pm_resume_runtime(struct device *device)
+ 	struct spi_master *master = dev_get_drvdata(device);
+ 	struct spi_qup *controller = spi_master_get_devdata(master);
+ 	u32 config;
++	int ret;
++
++	ret = clk_prepare_enable(controller->iclk);
++	if (ret)
++		return ret;
++
++	ret = clk_prepare_enable(controller->cclk);
++	if (ret)
++		return ret;
+ 
+ 	/* Disable clocks auto gaiting */
+ 	config = readl_relaxed(controller->base + QUP_CONFIG);
 -- 
 2.8.1
-
