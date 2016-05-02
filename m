@@ -1,53 +1,50 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: Fwd: [PATCH v2 0/8] PM / devfreq: Add NoCP devfreq-event and
- support busfreq on exyno5422-odroidxu3
-Date: Mon, 02 May 2016 08:24:16 +0200
-Message-ID: <5726F290.8050808@samsung.com>
-References: <1894783822.297231462168123817.JavaMail.weblogic@ep2mlwas04a>
- <5726EBD7.30403@samsung.com> <5726EE55.7050204@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: pass cpumask by reference
+Date: Mon, 2 May 2016 13:41:06 +0530
+Message-ID: <20160502081106.GG2855@vireshk-i7>
+References: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:35424 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbcEBGYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 02:24:22 -0400
-In-reply-to: <5726EE55.7050204@samsung.com>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:36622 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbcEBILK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 04:11:10 -0400
+Received: by mail-pf0-f182.google.com with SMTP id c189so77528128pfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 01:11:10 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, =?UTF-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "tomasz.figa@gmail.com" <tomasz.figa@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
-Cc: "robh@kernel.org" <robh@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "m.reichl@fivetechno.de" <m.reichl@fivetechno.de>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, devicetree@vger.k
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/02/2016 08:06 AM, Krzysztof Kozlowski wrote:
-> On 05/02/2016 07:55 AM, Krzysztof Kozlowski wrote:
->> On 05/02/2016 07:48 AM, MyungJoo Ham wrote:
->>> Sender : =EC=B5=9C=EC=B0=AC=EC=9A=B0<cw00.choi@samsung.com> S5(=EC=B1=
-=85=EC=9E=84)/Change Agent/Tizen Platform Lab(S/W=EC=84=BC=ED=84=B0)/=EC=
-=82=BC=EC=84=B1=EC=A0=84=EC=9E=90
->>> Date : 2016-04-15 15:32 (GMT+09:00)
->>>>
->>>> This patchset support the AMBA bus frequency scaling on Exynos5422=
--based
->>>> Odroid-XU3 board. But, this series only support the bus frequency =
-scaling
->>>> for INT (Internal) block using VDD_INT power line.
->>>
->>> Along with Devfreq/Passive patchset, the patchset is merged in
->>> devfreq for-4.7 tree.
->>>
->>> https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/log/?h=
-=3Dfor-4.7
->>>
->>> @Chanwoo: If there are commits to be merged by a tree other than Li=
-nux/PM,
->>> please let me know. I'll send out pull-request soon.
+On 30-04-16, 13:33, Arnd Bergmann wrote:
+> The new use of dev_pm_opp_set_sharing_cpus resulted in a harmless compiler
+> warning with CONFIG_CPUMASK_OFFSTACK=y:
+> 
+> drivers/cpufreq/mvebu-cpufreq.c: In function 'armada_xp_pmsu_cpufreq_init':
+> include/linux/cpumask.h:550:25: error: passing argument 2 of 'dev_pm_opp_set_sharing_cpus' discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]
+> 
+> The problem here is that cpumask_var_t gets passed by reference, but
+> by declaring a 'const cpumask_var_t' argument, only the pointer is
+> constant, not the actual mask. This is harmless because the function
+> does not actually modify the mask.
+> 
+> This patch changes the function prototypes for all of the related functions
+> to pass a 'struct cpumask *' instead of 'cpumask_var_t', matching what
+> most other such functions do in the kernel. This lets us mark all the
+> other similar functions as taking a 'const' mask where possible,
+> and it avoids the warning without any change in object code.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 947bd567f7a5 ("mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared")
+> ---
+>  drivers/base/power/opp/cpu.c | 10 +++++-----
+>  include/linux/pm_opp.h       | 20 ++++++++++----------
+>  2 files changed, 15 insertions(+), 15 deletions(-)
 
-=2E.. and now I noticed that you also applied clock patches. Please don=
-'t.
-They are for some time in clk tree. Sylwester prepared a tag for that,
-if you need one.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Best regards,
-Krzysztof
-
+-- 
+viresh
