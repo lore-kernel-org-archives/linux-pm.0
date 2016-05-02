@@ -1,45 +1,36 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
-Date: Mon, 2 May 2016 10:11:13 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1605021007310.3692@nanos>
-References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com> <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com> <alpine.DEB.2.11.1604221834430.3941@nanos>
- <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com> <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com> <alpine.DEB.2.11.1604271216400.3941@nanos>
- <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com> <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com> <alpine.DEB.2.11.1604290240560.3718@nanos>
- <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v5 0/4] PCI: Add support for suspending (including
+ runtime) of PCIe ports
+Date: Mon, 2 May 2016 13:16:38 +0300
+Message-ID: <20160502101638.GN32610@lahna.fi.intel.com>
+References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
+ <57234999.2040202@intel.com>
+ <86024359.9LxrAC1gtb@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:40230 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbcEBIM4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 04:12:56 -0400
-In-Reply-To: <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:3203 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbcEBKQo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 May 2016 06:16:44 -0400
+Content-Disposition: inline
+In-Reply-To: <86024359.9LxrAC1gtb@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lianwei Wang <lianwei.wang@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mathias Nyman <mathias.nyman@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, 29 Apr 2016, Lianwei Wang wrote:
-> On Thu, Apr 28, 2016 at 5:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > Wrong. This is the symptom. The root cause is in #1. Therefor you are trying
-> > to fix the symptom and not the root cause
-> >
-> I don't understand why you keep saying that the issue is in the pm
-> notifier callback. As I told you, the pm notifier return an error(or
-> NOTIFY_BAD) on purpose to abort the suspend process. This is work as
-> design. Any driver can abort the suspend process if it is not ready to
-> suspend.
+On Fri, Apr 29, 2016 at 02:10:59PM +0200, Rafael J. Wysocki wrote:
+> > For the non-functional one-line only xhci change in patch 2/4:
+> > Acked-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+> > 
+> > Out of curiosity, does enabling bridge d3 in any way impact #PME
+> > wakeup signaling initiated by devices behind that bridge?
+> 
+> If the device reports (via the config space) that it is capable of signaling
+> PME from D3_{cold}, the wakeup signaling won't be affected (as long as the
+> hardware design follows the spec).
+> 
+> The Mika's patches take that into account AFAICS.
 
-Right. That's not the issue. The issue is that as a consequence we end up with
-an unbalanced count. So how do we end up with an unbalanced count? That's what
-needs to be fixed and not worked around.
-
-> > I completely understand that you are tyring to put the cart before the horse.
-> No. Your understanding is wrong.
-
-My understanding is very correct. We have a situation which leads to an
-unbalanced count. Instead of fixing that, you fix up the unbalanced count.
-
-Thanks,
-
-	tglx
+Yes, that's right.
