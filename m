@@ -1,41 +1,27 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [PATCH] cpufreq: tango: Use generic platdev driver
-Date: Mon, 2 May 2016 15:39:25 +0200
-Message-ID: <5727588D.5090105@free.fr>
+From: Ryan <ryanphilips19@googlemail.com>
+Subject: cpufreq policy
+Date: Mon, 2 May 2016 19:15:16 +0530
+Message-ID: <CANMsd00DqTiTQEM3HxEvY3Qyo9cBpAHV83BjVpXKcq4gE0B96Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:21511 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753704AbcEBNjn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 2 May 2016 09:39:43 -0400
+Received: from mail-ig0-f169.google.com ([209.85.213.169]:38767 "EHLO
+	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbcEBNpR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 09:45:17 -0400
+Received: by mail-ig0-f169.google.com with SMTP id m9so73982882ige.1
+        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 06:45:17 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>, arm-soc <arm@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sebastian Frias <sf84@laposte.net>
+To: linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Hi,
 
-Add tango4 compatible string to the list.
+How can i change the governor at runtime or run at a specific
+frequency while doing an operation.
+For example i might want the cpu not to scale down during specific
+operations in the driver.
 
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index ac4a0ba87c12..3646b143bbf5 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -66,6 +66,8 @@ static const struct of_device_id machines[] __initconst = {
- 	{ .compatible = "rockchip,rk3368", },
- 	{ .compatible = "rockchip,rk3399", },
- 
-+	{ .compatible = "sigma,tango4" },
-+
- 	{ .compatible = "ti,omap2", },
- 	{ .compatible = "ti,omap3", },
- 	{ .compatible = "ti,omap4", },
--- 
-2.8.1
+Thanks,
+ryan
