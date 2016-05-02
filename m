@@ -1,50 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: pass cpumask by reference
-Date: Mon, 2 May 2016 13:41:06 +0530
-Message-ID: <20160502081106.GG2855@vireshk-i7>
-References: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Mon, 2 May 2016 10:11:13 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1605021007310.3692@nanos>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com> <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com> <alpine.DEB.2.11.1604221834430.3941@nanos>
+ <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com> <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com> <alpine.DEB.2.11.1604271216400.3941@nanos>
+ <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com> <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com> <alpine.DEB.2.11.1604290240560.3718@nanos>
+ <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:36622 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbcEBILK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 04:11:10 -0400
-Received: by mail-pf0-f182.google.com with SMTP id c189so77528128pfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 01:11:10 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
+Received: from www.linutronix.de ([62.245.132.108]:40230 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbcEBIM4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 04:12:56 -0400
+In-Reply-To: <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lianwei Wang <lianwei.wang@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 30-04-16, 13:33, Arnd Bergmann wrote:
-> The new use of dev_pm_opp_set_sharing_cpus resulted in a harmless compiler
-> warning with CONFIG_CPUMASK_OFFSTACK=y:
-> 
-> drivers/cpufreq/mvebu-cpufreq.c: In function 'armada_xp_pmsu_cpufreq_init':
-> include/linux/cpumask.h:550:25: error: passing argument 2 of 'dev_pm_opp_set_sharing_cpus' discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]
-> 
-> The problem here is that cpumask_var_t gets passed by reference, but
-> by declaring a 'const cpumask_var_t' argument, only the pointer is
-> constant, not the actual mask. This is harmless because the function
-> does not actually modify the mask.
-> 
-> This patch changes the function prototypes for all of the related functions
-> to pass a 'struct cpumask *' instead of 'cpumask_var_t', matching what
-> most other such functions do in the kernel. This lets us mark all the
-> other similar functions as taking a 'const' mask where possible,
-> and it avoids the warning without any change in object code.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 947bd567f7a5 ("mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared")
-> ---
->  drivers/base/power/opp/cpu.c | 10 +++++-----
->  include/linux/pm_opp.h       | 20 ++++++++++----------
->  2 files changed, 15 insertions(+), 15 deletions(-)
+On Fri, 29 Apr 2016, Lianwei Wang wrote:
+> On Thu, Apr 28, 2016 at 5:44 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > Wrong. This is the symptom. The root cause is in #1. Therefor you are trying
+> > to fix the symptom and not the root cause
+> >
+> I don't understand why you keep saying that the issue is in the pm
+> notifier callback. As I told you, the pm notifier return an error(or
+> NOTIFY_BAD) on purpose to abort the suspend process. This is work as
+> design. Any driver can abort the suspend process if it is not ready to
+> suspend.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Right. That's not the issue. The issue is that as a consequence we end up with
+an unbalanced count. So how do we end up with an unbalanced count? That's what
+needs to be fixed and not worked around.
 
--- 
-viresh
+> > I completely understand that you are tyring to put the cart before the horse.
+> No. Your understanding is wrong.
+
+My understanding is very correct. We have a situation which leads to an
+unbalanced count. Instead of fixing that, you fix up the unbalanced count.
+
+Thanks,
+
+	tglx
