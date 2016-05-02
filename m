@@ -1,71 +1,142 @@
-From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
-Subject: Re: Re: [PATCH v2 2/6] mfd: axp20x: Add register bits
- for axp20x-ac-power
-Date: Sun, 1 May 2016 16:24:20 +0200
-Message-ID: <70789f3b-32c2-7d9c-1091-e4fd40b9a754@computerlinguist.org>
-References: <1462093047-7885-1-git-send-email-haas@computerlinguist.org>
- <1462093047-7885-3-git-send-email-haas@computerlinguist.org>
- <CAGb2v67g6rmnsKwjP3d25y5FV4BpYcenU1gX5NF4PbhOhJSxNA@mail.gmail.com>
-Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: intel_pstate: Fix HWP on boot CPU after system resume
+Date: Mon, 02 May 2016 02:27:19 +0200
+Message-ID: <7068194.yg8ROcCISN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCD4V7EG6QFRBGVDTC4QKGQEEMQYGQI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <CAGb2v67g6rmnsKwjP3d25y5FV4BpYcenU1gX5NF4PbhOhJSxNA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: wens-jdAy2FN1RRM@public.gmane.org
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48052 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751362AbcEBAYO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 May 2016 20:24:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 05/01/2016 11:48 AM, Chen-Yu Tsai wrote:
-> Hi,
-> 
-> On Sun, May 1, 2016 at 4:57 PM, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org> wrote:
->> This change adds some register bit definitions used by the
->> axp20x-ac-power driver.
->>
->> Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
->> ---
->>  include/linux/mfd/axp20x.h | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->>
->> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
->> index d82e7d5..c4c6dfa 100644
->> --- a/include/linux/mfd/axp20x.h
->> +++ b/include/linux/mfd/axp20x.h
->> @@ -90,6 +90,17 @@ enum {
->>  #define AXP22X_ALDO3_V_OUT             0x2a
->>  #define AXP22X_CHRG_CTRL3              0x35
->>
->> +
->> +/* Fields of AXP20X_PWR_INPUT_STATUS */
->> +#define AXP20X_PWR_STATUS_AC_PRESENT     BIT(7)
->> +#define AXP20X_PWR_STATUS_AC_AVAILABLE   BIT(6)
->> +#define AXP20X_PWR_STATUS_AC_VBUS_SHORT  BIT(1)
->> +#define AXP20X_PWR_STATUS_AC_VBUS_SEL    BIT(0)
->> +
->> +/* Fields of AXP20X_ADC_EN1 */
->> +#define AXP20X_ADC_EN1_ACIN_VOLT BIT(5)
->> +#define AXP20X_ADC_EN1_ACIN_CURR BIT(4)
->> +
-> 
-> We keep the bit definitions of each register in each separate driver.
-> The drivers only define the ones they use.
-> 
-> ChenYu
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Hi ChenYu,
+Commit 41cfd64cf49fc "Update frequencies of policy->cpus only from
+->set_policy()" changed the way the intel_pstate driver's ->set_policy
+callback updates the HWP (hardware-managed P-states) settings.
+A side effect of it is that if those settings are modified on the
+boot CPU during system suspend and wakeup, they will never be
+restored during subsequent system resume.
 
-i believe Maxime Ripard requested that these defines be moved to the
-header: https://groups.google.com/d/msg/linux-sunxi/nEUg87cV6KI/TvdB6MBZBAAJ
+To address this problem, allow cpufreq drivers that don't provide
+->target or ->target_index callbacks to use ->suspend and ->resume
+callbacks and add a ->resume callback to intel_pstate to restore
+the HWP settings on the CPUs that belong to the given policy.
 
-What do you think?
+Fixes: 41cfd64cf49fc "Update frequencies of policy->cpus only from ->set_policy()"
+Tested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Thanks for the review!
+Note: We've tried to address that issue by adding syscore_ops to
+intel_pstate and restoring the boot CPU's HWP setting from a
+syscore resume, but that turns out to be too early (apparently,
+the processor is not ready for that at that point).
 
-Michael
+---
+ drivers/cpufreq/cpufreq.c      |   28 ++++++++++++++++------------
+ drivers/cpufreq/intel_pstate.c |   12 ++++++++++--
+ 2 files changed, 26 insertions(+), 14 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -318,6 +318,14 @@ static void intel_pstate_hwp_set(const s
+ 	}
+ }
+ 
++static int intel_pstate_hwp_set_policy(struct cpufreq_policy *policy)
++{
++	if (hwp_active)
++		intel_pstate_hwp_set(policy->cpus);
++
++	return 0;
++}
++
+ static void intel_pstate_hwp_set_online_cpus(void)
+ {
+ 	get_online_cpus();
+@@ -1183,8 +1191,7 @@ static int intel_pstate_set_policy(struc
+  out:
+ 	intel_pstate_set_update_util_hook(policy->cpu);
+ 
+-	if (hwp_active)
+-		intel_pstate_hwp_set(policy->cpus);
++	intel_pstate_hwp_set_policy(policy);
+ 
+ 	return 0;
+ }
+@@ -1248,6 +1255,7 @@ static struct cpufreq_driver intel_pstat
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.verify		= intel_pstate_verify_policy,
+ 	.setpolicy	= intel_pstate_set_policy,
++	.resume		= intel_pstate_hwp_set_policy,
+ 	.get		= intel_pstate_get,
+ 	.init		= intel_pstate_cpu_init,
+ 	.stop_cpu	= intel_pstate_stop_cpu,
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1631,21 +1631,25 @@ void cpufreq_suspend(void)
+ 	if (!cpufreq_driver)
+ 		return;
+ 
+-	if (!has_target())
++	if (!has_target() && !cpufreq_driver->suspend)
+ 		goto suspend;
+ 
+ 	pr_debug("%s: Suspending Governors\n", __func__);
+ 
+ 	for_each_active_policy(policy) {
+-		down_write(&policy->rwsem);
+-		ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		up_write(&policy->rwsem);
+-
+-		if (ret)
+-			pr_err("%s: Failed to stop governor for policy: %p\n",
+-				__func__, policy);
+-		else if (cpufreq_driver->suspend
+-		    && cpufreq_driver->suspend(policy))
++		if (has_target()) {
++			down_write(&policy->rwsem);
++			ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++			up_write(&policy->rwsem);
++
++			if (ret) {
++				pr_err("%s: Failed to stop governor for policy: %p\n",
++					__func__, policy);
++				continue;
++			}
++		}
++
++		if (cpufreq_driver->suspend && cpufreq_driver->suspend(policy))
+ 			pr_err("%s: Failed to suspend driver: %p\n", __func__,
+ 				policy);
+ 	}
+@@ -1670,7 +1674,7 @@ void cpufreq_resume(void)
+ 
+ 	cpufreq_suspended = false;
+ 
+-	if (!has_target())
++	if (!has_target() && !cpufreq_driver->resume)
+ 		return;
+ 
+ 	pr_debug("%s: Resuming Governors\n", __func__);
+@@ -1679,7 +1683,7 @@ void cpufreq_resume(void)
+ 		if (cpufreq_driver->resume && cpufreq_driver->resume(policy)) {
+ 			pr_err("%s: Failed to resume driver: %p\n", __func__,
+ 				policy);
+-		} else {
++		} else if (has_target()) {
+ 			down_write(&policy->rwsem);
+ 			ret = cpufreq_start_governor(policy);
+ 			up_write(&policy->rwsem);
+
