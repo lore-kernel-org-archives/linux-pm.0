@@ -1,78 +1,59 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH V9 RESEND 13/14] arm64: tegra: add soctherm node for Tegra210
-Date: Tue, 3 May 2016 17:29:59 +0800
-Message-ID: <57286F97.4060007@nvidia.com>
-References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-14-git-send-email-wni@nvidia.com> <20160329151629.GB1855@localhost.localdomain> <56FE1CBB.9000807@nvidia.com> <570CB781.8040208@nvidia.com> <571EE220.3070609@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <571EE220.3070609@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, thierry.reding@gmail.com, swarren@wwwdotorg.org
-Cc: Eduardo Valentin <edubezval@gmail.com>, rui.zhang@intel.com, MLongnecker@nvidia.com, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v2 0/5] Thermal: Support for hardware-tracked trip points
+Date: Tue,  3 May 2016 17:33:28 +0800
+Message-ID: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: edubezval@gmail.com
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Caesar Wang <wxt@rock-chips.com>, linux-arm-kernel@lists.infradead.org, Keerthy <j-keerthy@ti.com>, linux-doc@vger.kernel.org, Ni Wade <wni@nvidia.com>, linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Durgadoss R <durgadoss.r@intel.com>, Andy Champ <andycham@amazon.com>, Javi Merino <javi.merino@arm.com>, Leo Yan <leo.yan@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Will move patch 12 and 14 to my "Add HW throttle for Tegra soctherm" se=
-ries.
+The history patches come from Mikko and Sascha.
+http://thread.gmane.org/gmane.linux.power-management.general/59451
 
-On 2016=E5=B9=B404=E6=9C=8826=E6=97=A5 11:36, Wei Ni wrote:
-> Hi Thierry,
->=20
-> Do you know who can take these patch 13 and 14?
-> The corresponding driver was merged to linux-next several weeks ago.
-> Does I need to send these two patches again?
->=20
-> Thanks.
-> Wei.
->=20
-> On 2016=E5=B9=B404=E6=9C=8812=E6=97=A5 16:53, Wei Ni wrote:
->> Could anyone take a look this patch?
->>
->> On 2016=E5=B9=B404=E6=9C=8801=E6=97=A5 15:01, Wei Ni wrote:
->>> Patches 1 to 12 in this series were accepted by Eduardo.
->>> Patches 13 and 14 need to go via platform or dt tree.
->>>
->>> Used get_maintainer.pl to get maintainers and open list, add them i=
-n To: and Cc:
->>> list.
->>>
->>> To:
->>> Rob Herring <robh+dt@kernel.org>
->>> Pawel Moll <pawel.moll@arm.com>
->>> Mark Rutland <mark.rutland@arm.com>
->>> Ian Campbell <ijc+devicetree@hellion.org.uk>
->>> Kumar Gala <galak@codeaurora.org>
->>>
->>> Cc:
->>> devicetree@vger.kernel.org
->>>
->>> On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 23:16, Eduardo Valentin wrot=
-e:
->>>> On Tue, Mar 29, 2016 at 06:29:23PM +0800, Wei Ni wrote:
->>>>> Adds soctherm node for Tegra210, and add cpu,
->>>>> gpu, mem, pllx as thermal-zones. Set critical
->>>>> trip temperatures for them.
->>>>>
->>>>> Signed-off-by: Wei Ni <wni@nvidia.com>
->>>>
->>>> Acked-by: Eduardo Valentin <edubezval@gmail.com>
->>>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm"=
- in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+Now, I pick them up to continue upstream.
+Nevermind!
+
+This series history patches:
+v1: https://lkml.org/lkml/2016/4/24/227
+
+This series adds support for hardware trip points. It picks up earlier
+work from Mikko Perttunen. Mikko implemented hardware trip points as part
+of the device tree support. It was suggested back then to move the
+functionality to the thermal core instead of putting more code into the
+device tree support. This series does exactly that.
+
+This series patches rebase the conflicts.
+Note that the hardware-tracked trip points are very well tested currently.
+
+Verified and tested on https://github.com/Caesar-github/rockchip/tree/wip/fixes-thermal-0503
+That's based on linux-kernel 20160502.
+.Linux version 4.6.0-rc6-next-20160502-08922-g860ed34 (wxt@nb)
+
+
+Changes in v2:
+- update the sysfs-api.txt for set_trips
+- add the commit in patch[v2 2/5].
+- Update the commit for patch[v2 4/5].
+
+Caesar Wang (1):
+  thermal: rockchip: add the set_trips function
+
+Sascha Hauer (4):
+  thermal: Add support for hardware-tracked trip points
+  thermal: of: implement .set_trips for device tree thermal zones
+  thermal: streamline get_trend callbacks
+  thermal: bang-bang governor: act on lower trip boundary
+
+ Documentation/thermal/sysfs-api.txt                |  7 +++
+ drivers/thermal/gov_bang_bang.c                    |  2 +-
+ drivers/thermal/of-thermal.c                       | 23 +++++-----
+ drivers/thermal/rockchip_thermal.c                 | 39 ++++++++++++++++
+ drivers/thermal/thermal_core.c                     | 52 ++++++++++++++++++++++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-------
+ include/linux/thermal.h                            |  9 +++-
+ 7 files changed, 128 insertions(+), 29 deletions(-)
+
+-- 
+1.9.1
+
