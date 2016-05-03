@@ -1,105 +1,108 @@
-From: Eric Engestrom <eric.engestrom@imgtec.com>
-Subject: [PATCH] Fix CONFIG_PM_OPP without CONFIG_OF build failure
-Date: Tue, 3 May 2016 14:14:38 +0100
-Message-ID: <1462281278-8553-1-git-send-email-eric.engestrom@imgtec.com>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any()
+ out of irq safe block
+Date: Tue, 3 May 2016 18:48:51 +0530
+Message-ID: <5728A53B.4040502@linux.vnet.ibm.com>
+References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <20160503114931.GA3083@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailapp01.imgtec.com ([195.59.15.196]:30723 "EHLO
-	mailapp01.imgtec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932903AbcECNOh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 09:14:37 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:51216 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbcECNTt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 09:19:49 -0400
+Received: from localhost
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
+	Tue, 3 May 2016 23:19:46 +1000
+In-Reply-To: <20160503114931.GA3083@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Rufus Hamade <rufus.hamade@imgtec.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-From: Rufus Hamade <rufus.hamade@imgtec.com>
 
-A few `#ifdef CONFIG_OF` were missing or misplaced, resulting in a few
-"unused function" warnings in core.c, and preventing the build of cpu.c
-because of the redefinition of `dev_pm_opp_set_sharing_cpus()`.
+Hi Viresh,
 
-Signed-off-by: Rufus Hamade <rufus.hamade@imgtec.com>
-Reviewed-by: Eric Engestrom <eric.engestrom@imgtec.com>
-Tested-by: Eric Engestrom <eric.engestrom@imgtec.com>
----
- drivers/base/power/opp/core.c | 6 ++++++
- drivers/base/power/opp/cpu.c  | 2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+On 05/03/2016 05:19 PM, Viresh Kumar wrote:
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 433b600..bc5448c 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -53,6 +53,7 @@ static struct opp_device *_find_opp_dev(const struct device *dev,
- 	return NULL;
- }
- 
-+#ifdef CONFIG_OF
- static struct opp_table *_managed_opp(const struct device_node *np)
- {
- 	struct opp_table *opp_table;
-@@ -72,6 +73,7 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 
- 	return NULL;
- }
-+#endif
- 
- /**
-  * _find_opp_table() - find opp_table struct using device pointer
-@@ -1115,6 +1117,7 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	return ret;
- }
- 
-+#ifdef CONFIG_OF
- /* TODO: Support multiple regulators */
- static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 			      struct opp_table *opp_table)
-@@ -1191,6 +1194,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 
- 	return 0;
- }
-+#endif
- 
- /**
-  * dev_pm_opp_set_supported_hw() - Set supported platforms
-@@ -1520,6 +1524,7 @@ void dev_pm_opp_put_regulator(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulator);
- 
-+#ifdef CONFIG_OF
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
- 			      struct device_node *np)
- {
-@@ -1657,6 +1662,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	mutex_unlock(&opp_table_lock);
- 	return ret;
- }
-+#endif
- 
- /**
-  * dev_pm_opp_add()  - Add an OPP table from a table definitions
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-index ba2bdbd..8aae170 100644
---- a/drivers/base/power/opp/cpu.c
-+++ b/drivers/base/power/opp/cpu.c
-@@ -119,6 +119,7 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
- EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
- #endif	/* CONFIG_CPU_FREQ */
- 
-+#ifdef CONFIG_OF
- /* Required only for V1 bindings, as v2 can manage it from DT itself */
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
-@@ -160,7 +161,6 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
- 
--#ifdef CONFIG_OF
- void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
- {
- 	struct device *cpu_dev;
--- 
-2.8.1
+> On 03-05-16, 15:10, Akshay Adiga wrote:
+>> Fixing a WARN_ON caused by smp_call_function_any() when irq is disabled,
+>> because of changes made in the patch
+>> ('cpufreq: powernv: Ramp-down global pstate slower than local-pstate')
+>> https://patchwork.ozlabs.org/patch/612058/
+>>
+>>   WARNING: CPU: 0 PID: 4 at kernel/smp.c:291
+>> smp_call_function_single+0x170/0x180
+>>
+>>   Call Trace:
+>>   [c0000007f648f9f0] [c0000007f648fa90] 0xc0000007f648fa90 (unreliable)
+>>   [c0000007f648fa30] [c0000000001430e0] smp_call_function_any+0x170/0x1c0
+>>   [c0000007f648fa90] [c0000000007b4b00]
+>> powernv_cpufreq_target_index+0xe0/0x250
+>>   [c0000007f648fb00] [c0000000007ac9dc]
+>> __cpufreq_driver_target+0x20c/0x3d0
+>>   [c0000007f648fbc0] [c0000000007b1b4c] od_dbs_timer+0xcc/0x260
+>>   [c0000007f648fc10] [c0000000007b3024] dbs_work_handler+0x54/0xa0
+>>   [c0000007f648fc50] [c0000000000c49a8] process_one_work+0x1d8/0x590
+>>   [c0000007f648fce0] [c0000000000c4e08] worker_thread+0xa8/0x660
+>>   [c0000007f648fd80] [c0000000000cca88] kthread+0x108/0x130
+>>   [c0000007f648fe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
+>>
+>> Moving smp_call_function_any() out of the critical section and changing
+>> irq safe spinlocks to normal spinlocks.
+>>
+>> Reported-by: Abdul Haleem <abdhalee@linux.vnet.linux.com>
+>> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+>> ---
+>> Patch is based on Rafael's linux-next
+>>   drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
+>>   1 file changed, 5 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index 144c732..1f0e20c 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -581,9 +581,10 @@ void gpstate_timer_handler(unsigned long data)
+>>   	gpstates->last_gpstate = freq_data.gpstate_id;
+>>   	gpstates->last_lpstate = freq_data.pstate_id;
+>>   
+>> +	spin_unlock(&gpstates->gpstate_lock);
+>> +
+>>   	/* Timer may get migrated to a different cpu on cpu hot unplug */
+>>   	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>> -	spin_unlock(&gpstates->gpstate_lock);
+>>   }
+>>   
+>>   /*
+>> @@ -596,7 +597,6 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   {
+>>   	struct powernv_smp_call_data freq_data;
+>>   	unsigned int cur_msec, gpstate_id;
+>> -	unsigned long flags;
+>>   	struct global_pstate_info *gpstates = policy->driver_data;
+>>   
+>>   	if (unlikely(rebooting) && new_index != get_nominal_index())
+>> @@ -607,7 +607,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   
+>>   	cur_msec = jiffies_to_msecs(get_jiffies_64());
+>>   
+>> -	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
+>> +	spin_lock(&gpstates->gpstate_lock);
+> You don't necessarily have to write 'what you are doing' in the commit log, but
+> tell us why you are doing that.
+>
+> Please explain, why is this changed and why will things continue to work
+> without this.
+>
+Thanks for reviewing. I have tried to convey that in the first line of commit message,
+
+"WARN_ON caused by smp_call_function_any() when irq is disabled,
+because of changes made in the patch"
+
+I see, i have not explained why i am changing irq safe spinlock to normal spinlock.
+will add some explanation.
 
