@@ -1,84 +1,78 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH 1/4] thermal: Add support for hardware-tracked trip points
-Date: Tue, 3 May 2016 17:25:47 +0800
-Message-ID: <57286E9B.5060804@gmail.com>
-References: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
- <1461553367-24744-2-git-send-email-wxt@rock-chips.com>
- <20160427214843.GA6438@localhost.localdomain>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH V9 RESEND 13/14] arm64: tegra: add soctherm node for Tegra210
+Date: Tue, 3 May 2016 17:29:59 +0800
+Message-ID: <57286F97.4060007@nvidia.com>
+References: <1459247364-1139-1-git-send-email-wni@nvidia.com> <1459247364-1139-14-git-send-email-wni@nvidia.com> <20160329151629.GB1855@localhost.localdomain> <56FE1CBB.9000807@nvidia.com> <570CB781.8040208@nvidia.com> <571EE220.3070609@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:34602 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932223AbcECJ0E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 05:26:04 -0400
-In-Reply-To: <20160427214843.GA6438@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <571EE220.3070609@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, thierry.reding@gmail.com, swarren@wwwdotorg.org
+Cc: Eduardo Valentin <edubezval@gmail.com>, rui.zhang@intel.com, MLongnecker@nvidia.com, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, dianders@chromium.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, eddie.cai@rock-chips.com, smbarber@google.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>
 
+Will move patch 12 and 14 to my "Add HW throttle for Tegra soctherm" se=
+ries.
 
-
-=E5=9C=A8 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 05:48, Eduardo Valentin =E5=
-=86=99=E9=81=93:
-> This patch is based on an earlier version from Mikko Perttunen
-> <mikko.perttunen@kapsi.fi>
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> ---
->
->   drivers/thermal/thermal_core.c | 48 +++++++++++++++++++++++++++++++=
-+++++++++++
->   include/linux/thermal.h        |  3 +++
+On 2016=E5=B9=B404=E6=9C=8826=E6=97=A5 11:36, Wei Ni wrote:
+> Hi Thierry,
+>=20
+> Do you know who can take these patch 13 and 14?
+> The corresponding driver was merged to linux-next several weeks ago.
+> Does I need to send these two patches again?
+>=20
+> Thanks.
+> Wei.
+>=20
+> On 2016=E5=B9=B404=E6=9C=8812=E6=97=A5 16:53, Wei Ni wrote:
+>> Could anyone take a look this patch?
 >>
->
->   static void update_temperature(struct thermal_zone_device *tz)
->   {
->   	int temp, ret;
-> @@ -569,6 +610,8 @@ void thermal_zone_device_update(struct thermal_zo=
-ne_device *tz)
->  =20
->   	update_temperature(tz);
->  =20
-> +	thermal_zone_set_trips(tz);
-> +
->   	for (count =3D 0; count < tz->trips; count++)
->   		handle_thermal_trip(tz, count);
->   }
-> @@ -754,6 +797,9 @@ trip_point_hyst_store(struct device *dev, struct =
-device_attribute *attr,
->   	 */
->   	ret =3D tz->ops->set_trip_hyst(tz, trip, temperature);
->  =20
-> +	if (!ret)
-> +		thermal_zone_set_trips(tz);
-> +
-> You would probably want to do the same on trip_point_temp_store().
->
-
-Sorry, that has been set in thermal_zone_device_update().
-
-static ssize_t trip_point_temp_store()
-{
-     ..
-     thermal_zone_device_update(tz);
-     ..
-}
-
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
-
-
---=20
-Thanks,
-Caesar
-
+>> On 2016=E5=B9=B404=E6=9C=8801=E6=97=A5 15:01, Wei Ni wrote:
+>>> Patches 1 to 12 in this series were accepted by Eduardo.
+>>> Patches 13 and 14 need to go via platform or dt tree.
+>>>
+>>> Used get_maintainer.pl to get maintainers and open list, add them i=
+n To: and Cc:
+>>> list.
+>>>
+>>> To:
+>>> Rob Herring <robh+dt@kernel.org>
+>>> Pawel Moll <pawel.moll@arm.com>
+>>> Mark Rutland <mark.rutland@arm.com>
+>>> Ian Campbell <ijc+devicetree@hellion.org.uk>
+>>> Kumar Gala <galak@codeaurora.org>
+>>>
+>>> Cc:
+>>> devicetree@vger.kernel.org
+>>>
+>>> On 2016=E5=B9=B403=E6=9C=8829=E6=97=A5 23:16, Eduardo Valentin wrot=
+e:
+>>>> On Tue, Mar 29, 2016 at 06:29:23PM +0800, Wei Ni wrote:
+>>>>> Adds soctherm node for Tegra210, and add cpu,
+>>>>> gpu, mem, pllx as thermal-zones. Set critical
+>>>>> trip temperatures for them.
+>>>>>
+>>>>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>>>
+>>>> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-pm"=
+ in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
