@@ -1,41 +1,97 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
-Date: Tue, 3 May 2016 12:18:28 +0530
-Message-ID: <20160503064828.GN2274@localhost>
-References: <1462191475-30904-1-git-send-email-pramod.gurav@linaro.org>
- <C246CAC1457055469EF09E3A7AC4E11A4A57D4C0@XAP-PVEXMBX01.xlnx.xilinx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:33359 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbcECGm2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 May 2016 02:42:28 -0400
-Content-Disposition: inline
-In-Reply-To: <C246CAC1457055469EF09E3A7AC4E11A4A57D4C0@XAP-PVEXMBX01.xlnx.xilinx.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/9] powerpc/powernv/cpuidle: Add support for POWER ISA v3 idle states
+Date: Tue,  3 May 2016 13:54:29 +0530
+Message-ID: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Appana Durga Kedareswara Rao <appana.durga.rao@xilinx.com>
-Cc: Pramod Gurav <pramod.gurav@linaro.org>, "andy.gross@linaro.org" <andy.gross@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "stanimir.varbanov@linaro.org" <stanimir.varbanov@linaro.org>, "okaya@codeaurora.org" <okaya@codeaurora.org>
 
-On Mon, May 02, 2016 at 12:28:02PM +0000, Appana Durga Kedareswara Rao wrote:
-> Hi,
-> 
-> > -----Original Message-----
-> > From: dmaengine-owner@vger.kernel.org [mailto:dmaengine-
-> > owner@vger.kernel.org] On Behalf Of Pramod Gurav
-> > Sent: Monday, May 02, 2016 5:48 PM
-> > To: vinod.koul@intel.com; andy.gross@linaro.org; ulf.hansson@linaro.org;
-> > rjw@rjwysocki.net; linux-arm-msm@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> > dmaengine@vger.kernel.org; stanimir.varbanov@linaro.org;
-> > okaya@codeaurora.org; Pramod Gurav <pramod.gurav@linaro.org>
-> > Subject: [PATCH 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-How difficult is it for you to get rid of this nonsense?
+This patch series adds support for this new mechanism.
 
-And while replying please remove the non relevant context, it serves no
-purpose!
+Patches 1-6 are cleanups and code movement.
+Patch 7 adds platform specific support for stop and psscr handling.
+Patch 8 adds cpuidle driver support.
+Patch 9 makes offlined cpu use stop state.
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+
+
+Shreyas B. Prabhu (9):
+  powerpc/powernv: Move CHECK_HMI_INTERRUPT to exception-64s header
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Move idle code usable by multiple hardware to common
+    location
+  powerpc/powernv: Make power7_powersave_common more generic
+  powerpc/powernv: Move idle related macros to cpuidle.h
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |  29 ++++
+ arch/powerpc/include/asm/exception-64s.h  |  18 +++
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  11 ++
+ arch/powerpc/kernel/Makefile              |   2 +
+ arch/powerpc/kernel/asm-offsets.c         |   4 +
+ arch/powerpc/kernel/exceptions-64s.S      |  29 +---
+ arch/powerpc/kernel/idle_power7.S         | 212 +++-------------------------
+ arch/powerpc/kernel/idle_power_common.S   | 185 +++++++++++++++++++++++++
+ arch/powerpc/kernel/idle_power_stop.S     | 221 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig            |   4 +
+ arch/powerpc/platforms/powernv/Kconfig    |   1 +
+ arch/powerpc/platforms/powernv/idle.c     |  94 +++++++++++--
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  57 +++++++-
+ 22 files changed, 659 insertions(+), 238 deletions(-)
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+ create mode 100644 arch/powerpc/kernel/idle_power_stop.S
 
 -- 
-~Vinod
+2.4.11
