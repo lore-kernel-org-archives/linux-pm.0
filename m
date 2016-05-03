@@ -1,163 +1,94 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [RESEND PATCH v10 4/4] power: wm831x_power: Support USB charger current limit management
-Date: Tue,  3 May 2016 11:30:17 +0800
-Message-ID: <80aa73ffd5c8e9ae8cd280d37f5141067e79c11f.1462245638.git.baolin.wang@linaro.org>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [RESEND PATCH v10 3/4] gadget: Integrate with the usb gadget supporting for usb charger
+Date: Tue,  3 May 2016 11:30:16 +0800
+Message-ID: <f97f8a11c247b88f7bc0f5ac6d5ee74d0be47683.1462245638.git.baolin.wang@linaro.org>
 References: <cover.1462245638.git.baolin.wang@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:34346 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932755AbcECDbK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 23:31:10 -0400
-Received: by mail-pa0-f54.google.com with SMTP id r5so3949441pag.1
-        for <linux-pm@vger.kernel.org>; Mon, 02 May 2016 20:31:09 -0700 (PDT)
-In-Reply-To: <cover.1462245638.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1462245638.git.baolin.wang@linaro.org>
-References: <cover.1462245638.git.baolin.wang@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: robh@kernel.org, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
+When the usb gadget supporting for usb charger is ready, the usb charger
+can implement the usb_charger_plug_by_gadget() function and usb_charger_exit()
+function by getting 'struct usb_charger' from 'struct gadget'.
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Acked-by: Peter Chen <peter.chen@freescale.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pdata.h |    3 ++
- 2 files changed, 72 insertions(+)
+ drivers/usb/gadget/udc/charger.c |   39 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 38 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index 7082301..cef1812 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/charger.h>
- 
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_charger *usb_charger;
-+	struct notifier_block usb_notify;
- };
- 
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
-+/* In milliamps */
-+static const unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
+diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
+index e24cb0a..ee711cd 100644
+--- a/drivers/usb/gadget/udc/charger.c
++++ b/drivers/usb/gadget/udc/charger.c
+@@ -527,6 +527,30 @@ usb_charger_plug_by_extcon(struct notifier_block *nb,
+ int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
+ 			       unsigned long state)
+ {
++	struct usb_charger *uchger = gadget->charger;
++	enum usb_charger_state uchger_state;
 +
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
-+{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	unsigned int i, best;
++	if (WARN(!uchger, "charger can not be NULL"))
++		return -EINVAL;
 +
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit >= wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
++	/*
++	 * Report event to power to setting the current limitation
++	 * for this usb charger when one usb charger state is changed
++	 * with detecting by usb gadget state.
++	 */
++	if (uchger->old_gadget_state != state) {
++		uchger->old_gadget_state = state;
++
++		if (state >= USB_STATE_ATTACHED)
++			uchger_state = USB_CHARGER_PRESENT;
++		else if (state == USB_STATE_NOTATTACHED)
++			uchger_state = USB_CHARGER_REMOVE;
++		else
++			uchger_state = USB_CHARGER_DEFAULT;
++
++		usb_charger_notify_others(uchger, uchger_state);
 +	}
 +
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %umA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(usb_charger_plug_by_gadget);
+@@ -683,6 +707,7 @@ int usb_charger_init(struct usb_gadget *ugadget)
  
-+	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-+		power->usb_charger =
-+			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-+		if (IS_ERR(power->usb_charger)) {
-+			ret = PTR_ERR(power->usb_charger);
-+			dev_err(&pdev->dev,
-+				"Failed to find USB gadget: %d\n", ret);
-+			goto err_bat_irq;
-+		}
-+
-+		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+
-+		ret = usb_charger_register_notify(power->usb_charger,
-+						  &power->usb_notify);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to register notifier: %d\n", ret);
-+			goto err_usb_charger;
-+		}
-+	}
-+
- 	return ret;
+ 	/* register a notifier on a usb gadget device */
+ 	uchger->gadget = ugadget;
++	ugadget->charger = uchger;
+ 	uchger->old_gadget_state = ugadget->state;
  
-+err_usb_charger:
-+	/* put_device on charger */
- err_bat_irq:
- 	--i;
- 	for (; i >= 0; i--) {
-@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
+ 	/* register a new usb charger */
+@@ -703,7 +728,19 @@ fail:
  
-+	if (wm831x_power->usb_charger) {
-+		usb_charger_unregister_notify(wm831x_power->usb_charger,
-+					      &wm831x_power->usb_notify);
-+		/* Free charger */
-+	}
+ int usb_charger_exit(struct usb_gadget *ugadget)
+ {
+-	return 0;
++	struct usb_charger *uchger = ugadget->charger;
 +
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
-diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-index dcc9631..5af8399 100644
---- a/include/linux/mfd/wm831x/pdata.h
-+++ b/include/linux/mfd/wm831x/pdata.h
-@@ -126,6 +126,9 @@ struct wm831x_pdata {
- 	/** The driver should initiate a power off sequence during shutdown */
- 	bool soft_shutdown;
++	if (WARN(!uchger, "charger can not be NULL"))
++		return -EINVAL;
++
++	if (uchger->extcon_dev)
++		extcon_unregister_notifier(uchger->extcon_dev,
++					   EXTCON_USB,
++					   &uchger->extcon_nb.nb);
++
++	ida_simple_remove(&usb_charger_ida, uchger->id);
++
++	return usb_charger_unregister(uchger);
+ }
  
-+	/** dev_name of USB charger gadget to integrate with */
-+	const char *usb_gadget;
-+
- 	int irq_base;
- 	int gpio_base;
- 	int gpio_defaults[WM831X_GPIO_NUM];
+ static int __init usb_charger_class_init(void)
 -- 
 1.7.9.5
 
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
