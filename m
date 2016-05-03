@@ -1,98 +1,89 @@
-From: Pramod Gurav <pramod.gurav@linaro.org>
-Subject: Re: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
-Date: Tue, 3 May 2016 17:00:17 +0530
-Message-ID: <CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
-References: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
-	<CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any()
+ out of irq safe block
+Date: Tue, 3 May 2016 17:19:31 +0530
+Message-ID: <20160503114931.GA3083@vireshk-i7>
+References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f42.google.com ([209.85.215.42]:35123 "EHLO
-	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755725AbcECLaS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 07:30:18 -0400
-Received: by mail-lf0-f42.google.com with SMTP id j8so18002895lfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 May 2016 04:30:18 -0700 (PDT)
-In-Reply-To: <CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: Manish Badarkhe <badarkhe.manish@gmail.com>
-Cc: vinod.koul@intel.com, Andy Gross <andy.gross@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Stanimir Varbanov <stanimir.varbanov@linaro.org>, okaya@codeaurora.org
 
-Hi Manish,
+On 03-05-16, 15:10, Akshay Adiga wrote:
+> Fixing a WARN_ON caused by smp_call_function_any() when irq is disabled,
+> because of changes made in the patch
+> ('cpufreq: powernv: Ramp-down global pstate slower than local-pstate')
+> https://patchwork.ozlabs.org/patch/612058/
+> 
+>  WARNING: CPU: 0 PID: 4 at kernel/smp.c:291
+> smp_call_function_single+0x170/0x180
+> 
+>  Call Trace:
+>  [c0000007f648f9f0] [c0000007f648fa90] 0xc0000007f648fa90 (unreliable)
+>  [c0000007f648fa30] [c0000000001430e0] smp_call_function_any+0x170/0x1c0
+>  [c0000007f648fa90] [c0000000007b4b00]
+> powernv_cpufreq_target_index+0xe0/0x250
+>  [c0000007f648fb00] [c0000000007ac9dc]
+> __cpufreq_driver_target+0x20c/0x3d0
+>  [c0000007f648fbc0] [c0000000007b1b4c] od_dbs_timer+0xcc/0x260
+>  [c0000007f648fc10] [c0000000007b3024] dbs_work_handler+0x54/0xa0
+>  [c0000007f648fc50] [c0000000000c49a8] process_one_work+0x1d8/0x590
+>  [c0000007f648fce0] [c0000000000c4e08] worker_thread+0xa8/0x660
+>  [c0000007f648fd80] [c0000000000cca88] kthread+0x108/0x130
+>  [c0000007f648fe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
+> 
+> Moving smp_call_function_any() out of the critical section and changing
+> irq safe spinlocks to normal spinlocks.
+> 
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.linux.com>
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
+> Patch is based on Rafael's linux-next
+>  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 144c732..1f0e20c 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -581,9 +581,10 @@ void gpstate_timer_handler(unsigned long data)
+>  	gpstates->last_gpstate = freq_data.gpstate_id;
+>  	gpstates->last_lpstate = freq_data.pstate_id;
+>  
+> +	spin_unlock(&gpstates->gpstate_lock);
+> +
+>  	/* Timer may get migrated to a different cpu on cpu hot unplug */
+>  	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+> -	spin_unlock(&gpstates->gpstate_lock);
+>  }
+>  
+>  /*
+> @@ -596,7 +597,6 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  {
+>  	struct powernv_smp_call_data freq_data;
+>  	unsigned int cur_msec, gpstate_id;
+> -	unsigned long flags;
+>  	struct global_pstate_info *gpstates = policy->driver_data;
+>  
+>  	if (unlikely(rebooting) && new_index != get_nominal_index())
+> @@ -607,7 +607,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  
+>  	cur_msec = jiffies_to_msecs(get_jiffies_64());
+>  
+> -	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
+> +	spin_lock(&gpstates->gpstate_lock);
 
-Thanks for review.
+You don't necessarily have to write 'what you are doing' in the commit log, but
+tell us why you are doing that.
 
-On 3 May 2016 at 15:21, Manish Badarkhe <badarkhe.manish@gmail.com> wrote:
-> Hi Pramod
->
->> @@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
->>         struct bam_device *bdev = bchan->bdev;
->>         unsigned long flag;
->>
->> +       pm_runtime_get_sync(bdev->dev);
->>         spin_lock_irqsave(&bchan->vc.lock, flag);
->>         writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
->>         bchan->paused = 0;
->>         spin_unlock_irqrestore(&bchan->vc.lock, flag);
->> +       pm_runtime_mark_last_busy(bdev->dev);
->> +       pm_runtime_put_autosuspend(bdev->dev);
->>
->>         return 0;
->>  }
->
-> Why this function simply return 'success' without any error capture?
->
-I should check return of pm_runtime_get_sync.
+Please explain, why is this changed and why will things continue to work
+without this.
 
->> @@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
->>
->>         tasklet_kill(&bdev->task);
->>
->> +       pm_runtime_get_sync(&pdev->dev);
->>         clk_disable_unprepare(bdev->bamclk);
->> +       pm_runtime_disable(&pdev->dev);
->> +       pm_runtime_put_noidle(&pdev->dev);
->> +       pm_runtime_set_suspended(&pdev->dev);
->> +
->> +       return 0;
->> +}
->
-> Why this function simply return 'success' without any error capture?
-Need to handle it better.
-
->
->> +static int bam_dma_runtime_suspend(struct device *dev)
->> +{
->> +       struct bam_device *bdev = dev_get_drvdata(dev);
->> +
->> +       clk_disable(bdev->bamclk);
->> +
->> +       return 0;
->> +}
->
-> Why this function simply return 'success' without any error capture?
-If probe has succeeded means bdev->bamclk is not NULL and error hence
-clk_disable wont return anything.
-
->
->
->> +#ifdef CONFIG_PM_SLEEP
->> +static int bam_dma_suspend(struct device *dev)
->> +{
->> +       struct bam_device *bdev = dev_get_drvdata(dev);
->> +
->> +       pm_runtime_force_suspend(dev);
->> +
->> +       clk_unprepare(bdev->bamclk);
->>
->>         return 0;
->>  }
->
-> Why this function simply return 'success' without any error capture?
-Same logic applies here as well, as pm_runtime_force_suspend and
-clk_unprepare may not return error in our case once probe is through.
-
->
-> Regards
-> Manish Badarkhe
+-- 
+viresh
