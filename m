@@ -1,44 +1,49 @@
-From: Dirk Behme <dirk.behme@gmail.com>
-Subject: Re: [PATCH] thermal: rcar_thermal: Fix priv->zone error handling
-Date: Tue, 3 May 2016 19:46:22 +0200
-Message-ID: <5728E3EE.6030506@gmail.com>
-References: <1461234295-30521-1-git-send-email-dirk.behme@de.bosch.com>
- <CAMuHMdWDnHDrf8d1nY0M6bY_z1sJfHbTM15QoP+dpfTJkCDrWA@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 1/2] PM / OPP: add non-OF versions of
+ dev_pm_opp_{cpumask_,}remove_table
+Date: Tue, 3 May 2016 11:11:19 -0700
+Message-ID: <20160503181119.GQ3492@codeaurora.org>
+References: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
+ <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWDnHDrf8d1nY0M6bY_z1sJfHbTM15QoP+dpfTJkCDrWA@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Dirk Behme <dirk.behme@de.bosch.com>, linux-renesas-soc@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:34681 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933513AbcECSL0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 14:11:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
 
-On 21.04.2016 15:00, Geert Uytterhoeven wrote:
-> On Thu, Apr 21, 2016 at 12:24 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
->> In case thermal_zone_xxx_register() returns an error, priv->zone
->> isn't NULL any more, but contains the error code.
->>
->> This is passed to thermal_zone_device_unregister(), then. This checks
->> for priv->zone being NULL, but the error code is != NULL. So it works
->> with the error code as a pointer. Crashing immediately.
->>
->> To fix this, reset priv->zone to NULL before entering
->> rcar_gen3_thermal_remove().
->
-> Alternatively, you could prevent a non-valid zone pointer from ever
-> ending up in priv->zone by assigning the zone to a temporary variable,
-> and only storing that in priv->zone after the error check.
->
->> Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
->
-> Regardless of the above
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On 05/03, Sudeep Holla wrote:
+> Functions dev_pm_opp_of_{cpumask_,}remove_table removes/frees all the
+> static OPP entries associated with the device and/or all cpus(in case
+> of cpumask) that are created from DT.
+> 
+> However the OPP entries are populated reading from the firmware or some
+> different method using dev_pm_opp_add are marked dynamic and can't be
+> removed using above functions.
+> 
+> This patch adds non DT/OF versions of dev_pm_opp_{cpumask_,}remove_table
+> to support the above mentioned usecase.
+> 
+> This is in preparation to make use of the same in scpi-cpufreq.c
+> 
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Nishanth Menon <nm@ti.com>
+> CC: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
 
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Could this be applied, then?
-
-
-Best regards
-
-Dirk
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
