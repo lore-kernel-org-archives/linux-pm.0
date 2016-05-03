@@ -1,65 +1,98 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RESEND PATCH v10 4/4] power: wm831x_power: Support USB charger
- current limit management
-Date: Tue, 3 May 2016 11:57:18 +0100
-Message-ID: <20160503105718.GL6292@sirena.org.uk>
-References: <cover.1462245638.git.baolin.wang@linaro.org>
- <80aa73ffd5c8e9ae8cd280d37f5141067e79c11f.1462245638.git.baolin.wang@linaro.org>
- <CAKDJKT46cJQbjdObUxBpWsciG1FjcL8CdV7iAeMefjNQPGicKA@mail.gmail.com>
+From: Pramod Gurav <pramod.gurav@linaro.org>
+Subject: Re: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
+Date: Tue, 3 May 2016 17:00:17 +0530
+Message-ID: <CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
+References: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
+	<CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="xjamM5M9kpPM/bcu"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:44282 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932269AbcECK6E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 06:58:04 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKDJKT46cJQbjdObUxBpWsciG1FjcL8CdV7iAeMefjNQPGicKA@mail.gmail.com>
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:35123 "EHLO
+	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755725AbcECLaS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 07:30:18 -0400
+Received: by mail-lf0-f42.google.com with SMTP id j8so18002895lfd.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 May 2016 04:30:18 -0700 (PDT)
+In-Reply-To: <CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Manish Badarkhe <badarkhe.manish@gmail.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: vinod.koul@intel.com, Andy Gross <andy.gross@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Stanimir Varbanov <stanimir.varbanov@linaro.org>, okaya@codeaurora.org
 
+Hi Manish,
 
---xjamM5M9kpPM/bcu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks for review.
 
-On Tue, May 03, 2016 at 09:30:48AM +0530, Manish Badarkhe wrote:
-> On Tue, May 3, 2016 at 9:00 AM, Baolin Wang <baolin.wang@linaro.org> wrote:
+On 3 May 2016 at 15:21, Manish Badarkhe <badarkhe.manish@gmail.com> wrote:
+> Hi Pramod
+>
+>> @@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
+>>         struct bam_device *bdev = bchan->bdev;
+>>         unsigned long flag;
+>>
+>> +       pm_runtime_get_sync(bdev->dev);
+>>         spin_lock_irqsave(&bchan->vc.lock, flag);
+>>         writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
+>>         bchan->paused = 0;
+>>         spin_unlock_irqrestore(&bchan->vc.lock, flag);
+>> +       pm_runtime_mark_last_busy(bdev->dev);
+>> +       pm_runtime_put_autosuspend(bdev->dev);
+>>
+>>         return 0;
+>>  }
+>
+> Why this function simply return 'success' without any error capture?
+>
+I should check return of pm_runtime_get_sync.
 
-> > +static const unsigned int wm831x_usb_limits[] = {
-> > +       0,
-> > +       2,
-> > +       100,
-> > +       500,
-> > +       900,
-> > +       1500,
-> > +       1800,
-> > +       550,
-> > +};
+>> @@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
+>>
+>>         tasklet_kill(&bdev->task);
+>>
+>> +       pm_runtime_get_sync(&pdev->dev);
+>>         clk_disable_unprepare(bdev->bamclk);
+>> +       pm_runtime_disable(&pdev->dev);
+>> +       pm_runtime_put_noidle(&pdev->dev);
+>> +       pm_runtime_set_suspended(&pdev->dev);
+>> +
+>> +       return 0;
+>> +}
+>
+> Why this function simply return 'success' without any error capture?
+Need to handle it better.
 
-> Just for curiosity, How these current limits are getting decided?
-> Can we have some proper defines over here so that it can be grasped easily?
+>
+>> +static int bam_dma_runtime_suspend(struct device *dev)
+>> +{
+>> +       struct bam_device *bdev = dev_get_drvdata(dev);
+>> +
+>> +       clk_disable(bdev->bamclk);
+>> +
+>> +       return 0;
+>> +}
+>
+> Why this function simply return 'success' without any error capture?
+If probe has succeeded means bdev->bamclk is not NULL and error hence
+clk_disable wont return anything.
 
-They're in the silicon, it's just a table of values that were put into
-the silicon at design time.  The defines would just be TABLE_ENTRY_1 or
-whatever.
+>
+>
+>> +#ifdef CONFIG_PM_SLEEP
+>> +static int bam_dma_suspend(struct device *dev)
+>> +{
+>> +       struct bam_device *bdev = dev_get_drvdata(dev);
+>> +
+>> +       pm_runtime_force_suspend(dev);
+>> +
+>> +       clk_unprepare(bdev->bamclk);
+>>
+>>         return 0;
+>>  }
+>
+> Why this function simply return 'success' without any error capture?
+Same logic applies here as well, as pm_runtime_force_suspend and
+clk_unprepare may not return error in our case once probe is through.
 
---xjamM5M9kpPM/bcu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXKIQJAAoJECTWi3JdVIfQBIoH/2xbZ/KEd4BBBQSDs6mOswQg
-hjYS5DKEeK1zYDl1U1Cq5QA5FfAZePuMldRIsUr3FR5adlMfB3FatmYPjjW6AHnO
-HAP38pIanV2ZQapc0PMOl9b0989FKZnJjUT6p03XI92km0COjKaw7JW3F8/id5kQ
-nuaH2UBXYY5wy2P7wbVsI+Zm7wk5V/lNL9j+tDgU5xTMrgdR0o47PBySYpViqApP
-WjrhfI4lXXvH5PfW/nZaznoPQCrzHc0hAZYJj/GiSSWbQbiuuZqjeyP7I7aTPAyK
-/8cp8UIbXT8kX1P2Bhk6l461ivoy69LQGII0SXphRvH+rWARzA6mNqksuf16GtA=
-=xc3b
------END PGP SIGNATURE-----
-
---xjamM5M9kpPM/bcu--
+>
+> Regards
+> Manish Badarkhe
