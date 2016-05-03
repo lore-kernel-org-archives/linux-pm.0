@@ -1,42 +1,44 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [PATCH] thermal: tango: initialize TEMPSI_CFG
-Date: Tue, 3 May 2016 17:40:08 +0200
-Message-ID: <5728C658.7050206@free.fr>
-References: <57222B46.4070502@free.fr> <5728C4FA.6040200@free.fr>
+From: Dirk Behme <dirk.behme@gmail.com>
+Subject: Re: [PATCH] thermal: rcar_thermal: Fix priv->zone error handling
+Date: Tue, 3 May 2016 19:46:22 +0200
+Message-ID: <5728E3EE.6030506@gmail.com>
+References: <1461234295-30521-1-git-send-email-dirk.behme@de.bosch.com>
+ <CAMuHMdWDnHDrf8d1nY0M6bY_z1sJfHbTM15QoP+dpfTJkCDrWA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:8272 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbcECPkY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 May 2016 11:40:24 -0400
-In-Reply-To: <5728C4FA.6040200@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWDnHDrf8d1nY0M6bY_z1sJfHbTM15QoP+dpfTJkCDrWA@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Dirk Behme <dirk.behme@de.bosch.com>, linux-renesas-soc@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@arm.com>, Sebastian Frias <sf84@laposte.net>
 
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+On 21.04.2016 15:00, Geert Uytterhoeven wrote:
+> On Thu, Apr 21, 2016 at 12:24 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
+>> In case thermal_zone_xxx_register() returns an error, priv->zone
+>> isn't NULL any more, but contains the error code.
+>>
+>> This is passed to thermal_zone_device_unregister(), then. This checks
+>> for priv->zone being NULL, but the error code is != NULL. So it works
+>> with the error code as a pointer. Crashing immediately.
+>>
+>> To fix this, reset priv->zone to NULL before entering
+>> rcar_gen3_thermal_remove().
+>
+> Alternatively, you could prevent a non-valid zone pointer from ever
+> ending up in priv->zone by assigning the zone to a temporary variable,
+> and only storing that in priv->zone after the error check.
+>
+>> Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
+>
+> Regardless of the above
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-TEMPSI_CFG is not equal to 0 at reset. It must be initialized.
 
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
- drivers/thermal/tango_thermal.c | 1 +
- 1 file changed, 1 insertion(+)
+Could this be applied, then?
 
-diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
-index 22f9b1e92db1..70e0d9f406e9 100644
---- a/drivers/thermal/tango_thermal.c
-+++ b/drivers/thermal/tango_thermal.c
-@@ -80,6 +80,7 @@ static int tango_thermal_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->base);
- 
- 	priv->thresh_idx = IDX_MIN;
-+	writel(0, priv->base + TEMPSI_CFG);
- 	writel(CMD_ON, priv->base + TEMPSI_CMD);
- 
- 	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
--- 
-2.8.1
+
+Best regards
+
+Dirk
