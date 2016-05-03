@@ -1,43 +1,42 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH-next v2 2/2] cpufreq: powernv: del_timer_sync when global and
- local pstate are equal
-Date: Tue,  3 May 2016 20:49:36 +0530
-Message-ID: <1462288776-26721-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Mason <slash.tmp@free.fr>
+Subject: [PATCH] thermal: tango: initialize TEMPSI_CFG
+Date: Tue, 3 May 2016 17:40:08 +0200
+Message-ID: <5728C658.7050206@free.fr>
+References: <57222B46.4070502@free.fr> <5728C4FA.6040200@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:8272 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755546AbcECPkY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 May 2016 11:40:24 -0400
+In-Reply-To: <5728C4FA.6040200@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@arm.com>, Sebastian Frias <sf84@laposte.net>
 
-V2hlbiBnbG9iYWwgYW5kIGxvY2FsIHBzdGF0ZSBhcmUgZXF1YWwgaW4gYSBwb3dlcm52X3Rhcmdl
-dF9pbmRleCgpIGNhbGwsCndlIGRvbid0IHF1ZXVlIGEgdGltZXIuIEJ1dCB3ZSBtYXkgaGF2ZSB0
-aW1lciBhbHJlYWR5IHF1ZXVlZCBmb3IgZnV0dXJlLgpUaGlzIGNvdWxkIGNhdXNlIHRoZSB0aW1l
-ciB0byBmaXJlIG9uZSBhZGRpdGlvbmFsIHRpbWUgZm9yIG5vIHVzZS4KClNpZ25lZC1vZmYtYnk6
-IEFrc2hheSBBZGlnYSA8YWtzaGF5LmFkaWdhQGxpbnV4LnZuZXQuaWJtLmNvbT4KLS0tClBhdGNo
-IGlzIGJhc2VkIG9uIFJhZmFlbCdzIGxpbnV4LW5leHQKIGRyaXZlcnMvY3B1ZnJlcS9wb3dlcm52
-LWNwdWZyZXEuYyB8IDIgKysKIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykKCmRpZmYg
-LS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZy
-ZXEvcG93ZXJudi1jcHVmcmVxLmMKaW5kZXggMWYwZTIwYy4uNTRjNDUzNiAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9w
-b3dlcm52LWNwdWZyZXEuYwpAQCAtNjQ3LDYgKzY0Nyw4IEBAIHN0YXRpYyBpbnQgcG93ZXJudl9j
-cHVmcmVxX3RhcmdldF9pbmRleChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIAkgKi8K
-IAlpZiAoZ3BzdGF0ZV9pZCAhPSBmcmVxX2RhdGEucHN0YXRlX2lkKQogCQlxdWV1ZV9ncHN0YXRl
-X3RpbWVyKGdwc3RhdGVzKTsKKwllbHNlCisJCWRlbF90aW1lcl9zeW5jKCZncHN0YXRlcy0+dGlt
-ZXIpOwogCiBncHN0YXRlc19kb25lOgogCWZyZXFfZGF0YS5ncHN0YXRlX2lkID0gZ3BzdGF0ZV9p
-ZDsKLS0gCjIuNS41CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+
+TEMPSI_CFG is not equal to 0 at reset. It must be initialized.
+
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+ drivers/thermal/tango_thermal.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
+index 22f9b1e92db1..70e0d9f406e9 100644
+--- a/drivers/thermal/tango_thermal.c
++++ b/drivers/thermal/tango_thermal.c
+@@ -80,6 +80,7 @@ static int tango_thermal_probe(struct platform_device *pdev)
+ 		return PTR_ERR(priv->base);
+ 
+ 	priv->thresh_idx = IDX_MIN;
++	writel(0, priv->base + TEMPSI_CFG);
+ 	writel(CMD_ON, priv->base + TEMPSI_CMD);
+ 
+ 	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
+-- 
+2.8.1
