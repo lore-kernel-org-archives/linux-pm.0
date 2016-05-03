@@ -1,119 +1,106 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL Request] Devfreq for next (4.7)
-Date: Tue, 03 May 2016 02:56:36 +0000 (GMT)
-Message-ID: <1799748329.331081462244196087.JavaMail.weblogic@ep2mlwas05b>
-Reply-To: myungjoo.ham@samsung.com
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v3 3/4] thermal: of: enable temperature notifications
+Date: Mon, 2 May 2016 20:26:27 -0700
+Message-ID: <20160503032626.GA18752@localhost.localdomain>
+References: <1459298497-29481-1-git-send-email-srikars@nvidia.com>
+ <1459298497-29481-4-git-send-email-srikars@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:38803 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932232AbcECC4j (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 May 2016 22:56:39 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0O6K018YSYUCTHB0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 03 May 2016 11:56:36 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1459298497-29481-4-git-send-email-srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mlongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, =?utf-8?Q?=ED=81=AC=EC=89=AC=EC=8B=9C=ED=86=A0=ED=94=84?= <k.kozlowski@samsung.com>
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCB0YXJnZXR0aW5nIExpbnV4
-IDQuNyAobmV4dCkNCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQotLS0tLUJFR0lOIFBHUCBTSUdO
-RUQgTUVTU0FHRS0tLS0tDQpIYXNoOiBTSEExDQoNClRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5j
-ZSBjb21taXQgMDQ5NzRkZjgwNDlmYzQyNDBkMjI3NTlhOTFlMDM1MDgyY2NkMThiNDoNCg0KICBM
-aW51eCA0LjYtcmM2ICgyMDE2LTA1LTAxIDE1OjUyOjMxIC0wNzAwKQ0KDQphcmUgYXZhaWxhYmxl
-IGluIHRoZSBnaXQgcmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1
-Yi9zY20vbGludXgva2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgdGFncy9QUl80LjdfMjAxNjA1
-MDMNCg0KZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIDgzY2IwZTRkODM3YWY0MzQ4Y2My
-MTg2MzhlOWQ2ZGFkZGQyMWQyNjA6DQoNCiAgUE0gLyBkZXZmcmVxOiBzdHlsZS90eXBvIGZpeGVz
-ICgyMDE2LTA1LTAzIDExOjIyOjEwICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClB1bGwgUmVxdWVzdCBm
-b3IgUE0vTGludXgsIHRhcmdldHRpbmcgTGludXgtbmV4dCAoNC43KQ0KDQpVcGRhdGVzOg0KLSAt
-IFBhc3NpdmUgZ292ZXJub3I6IGZvciBTb0Mgc3Vic3lzdGVtcyB0aGF0IG1heSBlaXRoZXINCmhh
-dmUgYW4gaW5kZXBlbmRlbnQgdm9sdGFnZSByYWlsIG9yIGhhdmUgYSBwYXJlbnQgc3Vic3lzdGVt
-DQpvciBjb2xsZWd1ZSBzdWJzeXN0ZW0gc2hhcmluZyBhIHZvbHRhZ2UgcmFpbCwgd2hlbiB0aGVy
-ZQ0KaXMgYSBwYXJlbnQgb2YgYSBjb2xsZWd1ZSB0aGF0IGlzIGdvaW5nIHRvIGJlIHRoZSBvd25l
-cg0Kb2YgdGhlIHZvbHRhZ2UgcmFpbCwgdGhlIGRlcGVuZGVudCBzdWJzeXN0ZW0gbWF5IHVzZSB0
-aGUNCnBhc3NpdmUgZ292ZXJub3IuDQotIC0gQ29uc29saWRhdGVkIGV4eW5vcyBidXMvbWVtLWlm
-IGRyaXZlcjogbm93IHdlIGhhdmUgYSBzaW5nbGUNCmRyaXZlciB0aGF0IHN1cHBvcnRzIChhbG1v
-c3QpIGFsbCBFeHlub3MgU29DJ3MgYnVzL21lbS1pZiBzdWJzeXN0ZW1zLg0KLSAtIE5ldyBkZXZm
-cmVxIGRyaXZlcnMgaW5jbHVkZWQ6IEV4eW5vcyBOb0MgcHJvYmUNCg0KLSAtLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpDaGFu
-d29vIENob2kgKDEzKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zOiBBZGQgZ2VuZXJpYyBl
-eHlub3MgYnVzIGZyZXF1ZW5jeSBkcml2ZXINCiAgICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zOiBB
-ZGQgZG9jdW1lbnRhdGlvbiBmb3IgZ2VuZXJpYyBleHlub3MgYnVzIGZyZXF1ZW5jeSBkcml2ZXIN
-CiAgICAgIFBNIC8gZGV2ZnJlcTogQWRkIGRldmZyZXFfZ2V0X2RldmZyZXFfYnlfcGhhbmRsZSgp
-DQogICAgICBQTSAvIGRldmZyZXE6IEFkZCBuZXcgREVWRlJFUV9UUkFOU0lUSU9OX05PVElGSUVS
-IG5vdGlmaWVyDQogICAgICBQTSAvIGRldmZyZXE6IEFkZCBuZXcgcGFzc2l2ZSBnb3Zlcm5vcg0K
-ICAgICAgUE0gLyBkZXZmcmVxOiBleHlub3M6IEFkZCBzdXBwb3J0IG9mIGJ1cyBmcmVxdWVuY3kg
-b2Ygc3ViLWJsb2NrcyB1c2luZyBwYXNzaXZlIGdvdmVybm9yDQogICAgICBQTSAvIGRldmZyZXE6
-IGV4eW5vczogVXBkYXRlIGRvY3VtZW50YXRpb24gZm9yIGJ1cyBkZXZpY2VzIHVzaW5nIHBhc3Np
-dmUgZ292ZXJub3INCiAgICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zOiBBZGQgdGhlIGRldGFpbGVk
-IGNvcnJlbGF0aW9uIGJldHdlZW4gc3ViLWJsb2NrcyBhbmQgcG93ZXIgbGluZQ0KICAgICAgUE0g
-LyBkZXZmcmVxOiBleHlub3M6IFJlbW92ZSB1bnVzZWQgZXh5bm9zNC81IGJ1c2ZyZXEgZHJpdmVy
-DQogICAgICBNQUlOVEFJTkVSUzogQWRkIHNhbXN1bmcgYnVzIGZyZXF1ZW5jeSBkcml2ZXIgZW50
-cnkNCiAgICAgIFBNIC8gZGV2ZnJlcTogZXZlbnQ6IEFkZCBuZXcgRXh5bm9zIE5vQyBwcm9iZSBk
-cml2ZXINCiAgICAgIFBNIC8gZGV2ZnJlcTogZXZlbnQ6IEZpbmQgdGhlIGluc3RhbmNlIG9mIGRl
-dmZyZXEtZXZlbnQgZGV2aWNlIGJ5IHVzaW5nIHBoYW5kbGUNCiAgICAgIFBNIC8gZGV2ZnJlcTog
-ZXh5bm9zOiBBZGQgdGhlIGRldGFpbGVkIGNvcnJlbGF0aW9uIGZvciBFeHlub3M1NDIyIGJ1cw0K
-DQpNeXVuZ0pvbyBIYW0gKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBzdHlsZS90eXBvIGZpeGVz
-DQoNCiAuLi4vYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9leHlub3Mtbm9jcC50eHQgICAgICAgICB8
-ICAgMjYgKw0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXh5bm9zLWJ1cy50eHQg
-ICAgIHwgIDQwOSArKysrKysrKw0KIE1BSU5UQUlORVJTICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHwgICAgOSArDQogZHJpdmVycy9kZXZmcmVxL0tjb25maWcgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgfCAgIDM2ICstDQogZHJpdmVycy9kZXZmcmVxL01ha2VmaWxl
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgICA0ICstDQogZHJpdmVycy9kZXZmcmVxL2Rl
-dmZyZXEtZXZlbnQuYyAgICAgICAgICAgICAgICAgICAgfCAgICA1ICsNCiBkcml2ZXJzL2RldmZy
-ZXEvZGV2ZnJlcS5jICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyMDcgKysrLQ0KIGRyaXZl
-cnMvZGV2ZnJlcS9ldmVudC9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgIHwgICAgOCArDQog
-ZHJpdmVycy9kZXZmcmVxL2V2ZW50L01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgfCAgICAy
-ICsNCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYyAgICAgICAgICAgICAgICB8
-ICAzMDQgKysrKysrDQogZHJpdmVycy9kZXZmcmVxL2V2ZW50L2V4eW5vcy1ub2NwLmggICAgICAg
-ICAgICAgICAgfCAgIDc4ICsrDQogZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXMuYyAgICAgICAg
-ICAgICAgICAgICAgICAgfCAgNTcwICsrKysrKysrKysrDQogZHJpdmVycy9kZXZmcmVxL2V4eW5v
-cy9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgfCAgICAzIC0NCiBkcml2ZXJzL2RldmZyZXEv
-ZXh5bm9zL2V4eW5vczRfYnVzLmMgICAgICAgICAgICAgICB8IDEwNTUgLS0tLS0tLS0tLS0tLS0t
-LS0tLS0NCiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczRfYnVzLmggICAgICAgICAgICAg
-ICB8ICAxMTAgLS0NCiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmMgICAgICAg
-ICAgICAgICB8ICA0MzEgLS0tLS0tLS0NCiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vc19w
-cG11LmMgICAgICAgICAgICAgICB8ICAxMTkgLS0tDQogZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9l
-eHlub3NfcHBtdS5oICAgICAgICAgICAgICAgfCAgIDg2IC0tDQogZHJpdmVycy9kZXZmcmVxL2dv
-dmVybm9yX3Bhc3NpdmUuYyAgICAgICAgICAgICAgICAgfCAgMjA1ICsrKysNCiBpbmNsdWRlL2xp
-bnV4L2RldmZyZXEuaCAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAgOTkgKysNCiAyMCBm
-aWxlcyBjaGFuZ2VkLCAxOTQyIGluc2VydGlvbnMoKyksIDE4MjQgZGVsZXRpb25zKC0pDQogY3Jl
-YXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVx
-L2V2ZW50L2V4eW5vcy1ub2NwLnR4dA0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9leHlub3MtYnVzLnR4dA0KIGNyZWF0ZSBtb2Rl
-IDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYw0KIGNyZWF0ZSBtb2Rl
-IDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuaA0KIGNyZWF0ZSBtb2Rl
-IDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZXh5bm9zLWJ1cy5jDQogZGVsZXRlIG1vZGUgMTAwNjQ0
-IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvTWFrZWZpbGUNCiBkZWxldGUgbW9kZSAxMDA2NDQgZHJp
-dmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3M0X2J1cy5jDQogZGVsZXRlIG1vZGUgMTAwNjQ0IGRy
-aXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9zNF9idXMuaA0KIGRlbGV0ZSBtb2RlIDEwMDY0NCBk
-cml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmMNCiBkZWxldGUgbW9kZSAxMDA2NDQg
-ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3NfcHBtdS5jDQogZGVsZXRlIG1vZGUgMTAwNjQ0
-IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvZXh5bm9zX3BwbXUuaA0KIGNyZWF0ZSBtb2RlIDEwMDY0
-NCBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcGFzc2l2ZS5jDQotLS0tLUJFR0lOIFBHUCBTSUdO
-QVRVUkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKWEtCSDJBQW9K
-RUJPaHVydldCb0NLR3Y4UC8xaUcxSmx6dlV5N1NyaHlzR203YnRXdg0KcHM5SE9ySHVoYXYzNVla
-d3RTR2V6ckM5L3lGWjdleVI3bXd3WEJQeVk3YklFa0NDMlliYXgvR1k4cCtwUXJRdQ0Kc21Ib2dv
-T1NoK0JTT3FCdm52NkRGbkZqbEthTlRDM3BXem5rdWVsUEF6SzFOZW1Zck9ldk5uQlVJSmtsdXdS
-ZQ0KcC9VM2FONzIzNFkrQ2l3K3V5VmRDdXo1amlPdVlydGcyM0pPUmhmMW11elZqUy9XUVk4YVVR
-UzJ4bTJEOVkyNg0KNmpJTXZnaGw1ZXBTWmdKMkZwa3Y2QkgzS0NJdlB4SnF0aGZhZGlKblUvaFQ1
-MXZ3R3JVVE1zUTMxODBJd2V1bw0KcTJ6cEFxYW1IS3dBVTROcmNMbjZpZlNTcGRURUFSM1IvbHNW
-Z3pmeEdMQ0diZlh0a0EzRlQxZVBpc3NDVVBWbA0KQ200WUI4K2pTV21IQ1dSVkQyek1GRWtSellB
-ZGw0dVh3WkNuT2xTMDRPcHIzbXlRN3hlQXJQNUZBT25MaHBpSg0KRTZSR3VrSEwxSVpVMUJGUWZ1
-VlhqZXhoOG5jOEh0UjAyVnlleTRVQjhxQk9zaWY1YnFWWFdBdTNYQW9XbVl2dQ0KRDZKUENOWnps
-akh5WVJCa1lvaUVtbFU4SFRjMkVrUmxnZGJiZjU0US9ob2xCZWgyVEVjelpYbTl2MWN2aGpoeQ0K
-Q0NzUzJmaEJuT2V6V0dKcXhNTXpOeXR1NjkyRDRZZEplSVU4OVNRdlZ2dW84QTRUMkpzSWQ4VVhC
-eGo3VGFqaA0KMGpnNUVPOVVRL3l4NlN3Mm1mMkdBcUZxSXRKRXJZUEIwK2h6VDhiT1Z2Nk4vUExx
-UWJVeFBmTGpSSTl1OWpCWg0KSFFRd3BkbmM5SUpUUXl6TVJMWnUNCj1PVFdTDQotLS0tLUVORCBQ
-R1AgU0lHTkFUVVJFLS0tLS0NCg==
+On Tue, Mar 29, 2016 at 05:41:36PM -0700, Srikar Srimath Tirumala wrote:
+> * Add a state variable to track if trip point is triggered.
+> * Enable trip events only when the state of the tirp point changes.
+> * Implement the get\set callbacks for trip state.
+> 
+> Change-Id: I1bd6a7b0e5e520d8ee678b83111d23cada7a580c
+> Signed-off-by: Srikar Srimath Tirumala <srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/thermal/of-thermal.c | 43 +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+> 
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 49ac23d..f6d9d3d 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -379,6 +379,43 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+>  	return -EINVAL;
+>  }
+>  
+> +static bool of_thermal_enb_temp_notify(struct thermal_zone_device *tz, int trip)
+> +{
+> +	bool ret = true;
+> +	struct __thermal_zone *data = tz->devdata;
+> +
+> +	if (trip >= data->ntrips || trip < 0)
+> +		ret = false;
+> +
+> +	return ret;
+> +}
+> +
+> +static int of_thermal_get_trip_state(struct thermal_zone_device *tz, int trip,
+> +				     enum thermal_trip_state *state)
+> +{
+> +	struct __thermal_zone *data = tz->devdata;
+> +
+> +	if (trip >= data->ntrips || trip < 0)
+> +		return -EDOM;
+> +
+> +	*state = data->trips[trip].state;
+
+For the sake of the current implementation, I believe tracking state is probably
+more of a thermal core duty. Not sure this has anything to do with OF
+thermal.
 
 
+Could you please clarify why you think this has to be here?
+
+> +
+> +	return 0;
+> +}
+> +
+> +static int of_thermal_set_trip_state(struct thermal_zone_device *tz, int trip,
+> +				     enum thermal_trip_state state)
+> +{
+> +	struct __thermal_zone *data = tz->devdata;
+> +
+> +	if (trip >= data->ntrips || trip < 0)
+> +		return -EDOM;
+> +
+> +	data->trips[trip].state = state;
+> +
+> +	return 0;
+> +}
+> +
+>  static struct thermal_zone_device_ops of_thermal_ops = {
+>  	.get_mode = of_thermal_get_mode,
+>  	.set_mode = of_thermal_set_mode,
+> @@ -392,6 +429,10 @@ static struct thermal_zone_device_ops of_thermal_ops = {
+>  
+>  	.bind = of_thermal_bind,
+>  	.unbind = of_thermal_unbind,
+> +
+> +	.get_trip_state = of_thermal_get_trip_state,
+> +	.set_trip_state = of_thermal_set_trip_state,
+> +	.enb_temp_notify = of_thermal_enb_temp_notify,
+>  };
+>  
+>  /***   sensor API   ***/
+> @@ -782,6 +823,8 @@ static int thermal_of_populate_trip(struct device_node *np,
+>  		return ret;
+>  	}
+>  
+> +	trip->state = THERMAL_TRIP_NOT_TRIPPED;
+> +
+>  	/* Required for cooling map matching */
+>  	trip->np = np;
+>  	of_node_get(np);
+> -- 
+> 2.1.4
+> 
