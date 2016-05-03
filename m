@@ -1,44 +1,61 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH] arm64: tegra: fix compatible string for Tegra132 fuse
- node
-Date: Tue, 3 May 2016 18:11:08 +0800
-Message-ID: <5728793C.7000109@nvidia.com>
-References: <1462267942-2165-1-git-send-email-wni@nvidia.com>
+Subject: [PATCH v3 00/11] Add HW throttle for Tegra soctherm
+Date: Tue, 3 May 2016 18:13:19 +0800
+Message-ID: <1462270410-2425-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1462267942-2165-1-git-send-email-wni@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Sorry, please ignore this mail.
+This series add following functions for Tegra soctherm:
+1. add HW throttle function.
+2. enable soctherm node for Tegra124, Tegra132, Tegra210, and
+set "critical", "hot" trips for them.
 
-On 2016=E5=B9=B405=E6=9C=8803=E6=97=A5 17:32, Wei Ni wrote:
-> This patch changes the compatible of Tegra132 fuse node
-> to "nvidia,tegra132-efuse", instead of "nvidia,tegra1124-efuse".
-> Because the CONFIG_ARCH_TEGRA_124_SOC will not be enabled for
-> Tegra132, the fuse driver can't find the corresponding node.
->=20
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  arch/arm64/boot/dts/nvidia/tegra132.dtsi | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/bo=
-ot/dts/nvidia/tegra132.dtsi
-> index 5d013809448b..ee101cb52f70 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
-> @@ -582,7 +582,7 @@
->  	};
-> =20
->  	fuse@7000f800 {
-> -		compatible =3D "nvidia,tegra124-efuse";
-> +		compatible =3D "nvidia,tegra132-efuse";
->  		reg =3D <0x0 0x7000f800 0x0 0x400>;
->  		clocks =3D <&tegra_car TEGRA124_CLK_FUSE>;
->  		clock-names =3D "fuse";
->=20
+Main changes from v2:
+1. improve the of-binding, per Eduardo's comments, and
+change the corresponding driver codes.
+2. move two setting critical trip patches in this series,
+3. fix some bugs in dts changes.
+
+Main changes from v1:
+1. use readl/writel instead of __raw_readl/__raw_writel.
+2. rebase on the linux-next.
+
+The v1 series is in:
+https://lkml.org/lkml/2016/3/31/230
+
+The v2 series is in:
+https://lkml.org/lkml/2016/4/26/1577
+
+Wei Ni (11):
+  of: Add bindings of hw throttle for Tegra soctherm
+  thermal: tegra: add hw-throttle function
+  thermal: tegra: add hw-throttle for Tegra132
+  arm: tegra: set critical trips for Tegra124
+  arm: tegra: set hot trips for Tegra124
+  arm64: tegra: use tegra132-soctherm for Tegra132
+  arm64: tegra: set critical trips for Tegra132
+  arm64: tegra: set hot trips for Tegra132
+  arm64: tegra: add soctherm node for Tegra210
+  arm64: tegra: set critical trips for Tegra210
+  arm64: tegra: set hot trips for Tegra210
+
+ .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 120 ++-
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  18 +-
+ arch/arm/boot/dts/tegra124.dtsi                    |  83 +-
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi           | 119 ++-
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi           | 127 ++++
+ drivers/thermal/tegra/soctherm.c                   | 842 ++++++++++++++++++++-
+ drivers/thermal/tegra/soctherm.h                   |  10 +
+ drivers/thermal/tegra/tegra124-soctherm.c          |  18 +
+ drivers/thermal/tegra/tegra132-soctherm.c          |  18 +
+ drivers/thermal/tegra/tegra210-soctherm.c          |  18 +
+ include/dt-bindings/thermal/tegra124-soctherm.h    |   5 +
+ 11 files changed, 1343 insertions(+), 35 deletions(-)
+
+-- 
+1.9.1
