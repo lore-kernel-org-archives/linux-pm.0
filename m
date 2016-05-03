@@ -1,153 +1,211 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v2 5/5] thermal: rockchip: add the set_trips function
-Date: Tue,  3 May 2016 17:33:33 +0800
-Message-ID: <1462268013-14992-6-git-send-email-wxt@rock-chips.com>
-References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Pramod Gurav <pramod.gurav@linaro.org>
+Subject: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
+Date: Tue,  3 May 2016 15:07:16 +0530
+Message-ID: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:36830 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755509AbcECJhf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 05:37:35 -0400
+Received: by mail-pa0-f48.google.com with SMTP id bt5so7183884pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 03 May 2016 02:37:34 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: vinod.koul@intel.com, andy.gross@linaro.org, ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, stanimir.varbanov@linaro.org, okaya@codeaurora.org, Pramod Gurav <pramod.gurav@linaro.org>
 
-Whenever the current temperature is updated, the trip points immediately
-below and above the current temperature are found. A sensor driver
-callback `set_trips' is then called with the temperatures.
-Lastly, The sensor will trigger the hardware high temperature interrupts
-to increase the sampleing rate and throttle frequency to limit the
-temperature rising When performing passive cooling.
+Adds pm_runtime support for BAM DMA so that clock
+is enabled only when there is a transaction going on to help
+save power.
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
-
+Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
 ---
+Changes since v1:
+- Removed unnecessary extra line additions and remavals
 
-Changes in v2: None
+ drivers/dma/qcom/bam_dma.c | 86 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 86 insertions(+)
 
- drivers/thermal/rockchip_thermal.c | 39 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 5d491f1..8175cdb 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -96,6 +96,7 @@ struct chip_tsadc_table {
-  * @initialize: SoC special initialize tsadc controller method
-  * @irq_ack: clear the interrupt
-  * @get_temp: get the temperature
-+ * @set_alarm_temp: set the high temperature interrupt
-  * @set_tshut_temp: set the hardware-controlled shutdown temperature
-  * @set_tshut_mode: set the hardware-controlled shutdown mode
-  * @table: the chip-specific conversion table
-@@ -119,6 +120,8 @@ struct rockchip_tsadc_chip {
- 	/* Per-sensor methods */
- 	int (*get_temp)(struct chip_tsadc_table table,
- 			int chn, void __iomem *reg, int *temp);
-+	void (*set_alarm_temp)(struct chip_tsadc_table table,
-+			       int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_temp)(struct chip_tsadc_table table,
- 			       int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
-@@ -183,6 +186,7 @@ struct rockchip_thermal_data {
- #define TSADCV2_INT_EN				0x08
- #define TSADCV2_INT_PD				0x0c
- #define TSADCV2_DATA(chn)			(0x20 + (chn) * 0x04)
-+#define TSADCV2_COMP_INT(chn)		        (0x30 + (chn) * 0x04)
- #define TSADCV2_COMP_SHUT(chn)		        (0x40 + (chn) * 0x04)
- #define TSADCV2_HIGHT_INT_DEBOUNCE		0x60
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE		0x64
-@@ -628,6 +632,20 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
- 	return rk_tsadcv2_code_to_temp(table, val, temp);
+diff --git a/drivers/dma/qcom/bam_dma.c b/drivers/dma/qcom/bam_dma.c
+index 5b427c4..f2a8b17 100644
+--- a/drivers/dma/qcom/bam_dma.c
++++ b/drivers/dma/qcom/bam_dma.c
+@@ -48,6 +48,7 @@
+ #include <linux/of_dma.h>
+ #include <linux/clk.h>
+ #include <linux/dmaengine.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "../dmaengine.h"
+ #include "../virt-dma.h"
+@@ -58,6 +59,8 @@ struct bam_desc_hw {
+ 	u16 flags;
+ };
+ 
++#define BAM_DMA_AUTOSUSPEND_DELAY 100
++
+ #define DESC_FLAG_INT BIT(15)
+ #define DESC_FLAG_EOT BIT(14)
+ #define DESC_FLAG_EOB BIT(13)
+@@ -535,6 +538,7 @@ static void bam_free_chan(struct dma_chan *chan)
+ 		return;
+ 	}
+ 
++	pm_runtime_get_sync(bdev->dev);
+ 	spin_lock_irqsave(&bchan->vc.lock, flags);
+ 	bam_reset_channel(bchan);
+ 	spin_unlock_irqrestore(&bchan->vc.lock, flags);
+@@ -550,6 +554,8 @@ static void bam_free_chan(struct dma_chan *chan)
+ 
+ 	/* disable irq */
+ 	writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_IRQ_EN));
++	pm_runtime_mark_last_busy(bdev->dev);
++	pm_runtime_put_autosuspend(bdev->dev);
  }
  
-+static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
-+				  int chn, void __iomem *regs, int temp)
-+{
-+	u32 alarm_value, int_en;
+ /**
+@@ -696,10 +702,13 @@ static int bam_pause(struct dma_chan *chan)
+ 	struct bam_device *bdev = bchan->bdev;
+ 	unsigned long flag;
+ 
++	pm_runtime_get_sync(bdev->dev);
+ 	spin_lock_irqsave(&bchan->vc.lock, flag);
+ 	writel_relaxed(1, bam_addr(bdev, bchan->id, BAM_P_HALT));
+ 	bchan->paused = 1;
+ 	spin_unlock_irqrestore(&bchan->vc.lock, flag);
++	pm_runtime_mark_last_busy(bdev->dev);
++	pm_runtime_put_autosuspend(bdev->dev);
+ 
+ 	return 0;
+ }
+@@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
+ 	struct bam_device *bdev = bchan->bdev;
+ 	unsigned long flag;
+ 
++	pm_runtime_get_sync(bdev->dev);
+ 	spin_lock_irqsave(&bchan->vc.lock, flag);
+ 	writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
+ 	bchan->paused = 0;
+ 	spin_unlock_irqrestore(&bchan->vc.lock, flag);
++	pm_runtime_mark_last_busy(bdev->dev);
++	pm_runtime_put_autosuspend(bdev->dev);
+ 
+ 	return 0;
+ }
+@@ -967,6 +979,9 @@ static void dma_tasklet(unsigned long data)
+ 			bam_start_dma(bchan);
+ 		spin_unlock_irqrestore(&bchan->vc.lock, flags);
+ 	}
 +
-+	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
-+	writel_relaxed(alarm_value & table.data_mask,
-+		       regs + TSADCV2_COMP_INT(chn));
-+
-+	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
-+	int_en |= TSADCV2_INT_SRC_EN(chn);
-+	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
-+}
-+
- static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
- 				  int chn, void __iomem *regs, int temp)
++	pm_runtime_mark_last_busy(bdev->dev);
++	pm_runtime_put_autosuspend(bdev->dev);
+ }
+ 
+ /**
+@@ -978,8 +993,12 @@ static void dma_tasklet(unsigned long data)
+ static void bam_issue_pending(struct dma_chan *chan)
  {
-@@ -670,6 +688,7 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
+ 	struct bam_chan *bchan = to_bam_chan(chan);
++	struct bam_device *bdev = bchan->bdev;
+ 	unsigned long flags;
  
-@@ -694,6 +713,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	.irq_ack = rk_tsadcv2_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -718,6 +738,7 @@ static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -742,6 +763,7 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 	.irq_ack = rk_tsadcv2_irq_ack,
- 	.control = rk_tsadcv2_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -766,6 +788,7 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
- 	.irq_ack = rk_tsadcv3_irq_ack,
- 	.control = rk_tsadcv3_control,
- 	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
- 	.set_tshut_temp = rk_tsadcv2_tshut_temp,
- 	.set_tshut_mode = rk_tsadcv2_tshut_mode,
- 
-@@ -826,6 +849,21 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
- 	return IRQ_HANDLED;
- }
- 
-+static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
-+{
-+	struct rockchip_thermal_sensor *sensor = _sensor;
-+	struct rockchip_thermal_data *thermal = sensor->thermal;
-+	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
++	if (pm_runtime_status_suspended(bdev->dev))
++		pm_runtime_get_sync(bdev->dev);
 +
-+	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
-+		__func__, sensor->id, low, high);
+ 	spin_lock_irqsave(&bchan->vc.lock, flags);
+ 
+ 	/* if work pending and idle, start a transaction */
+@@ -1210,6 +1229,13 @@ static int bam_dma_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_unregister_dma;
+ 
++	pm_runtime_irq_safe(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(&pdev->dev, BAM_DMA_AUTOSUSPEND_DELAY);
++	pm_runtime_use_autosuspend(&pdev->dev);
++	pm_runtime_mark_last_busy(&pdev->dev);
++	pm_runtime_set_active(&pdev->dev);
++	pm_runtime_enable(&pdev->dev);
 +
-+	tsadc->set_alarm_temp(tsadc->table,
-+			      sensor->id, thermal->regs, high);
+ 	return 0;
+ 
+ err_unregister_dma:
+@@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
+ 
+ 	tasklet_kill(&bdev->task);
+ 
++	pm_runtime_get_sync(&pdev->dev);
+ 	clk_disable_unprepare(bdev->bamclk);
++	pm_runtime_disable(&pdev->dev);
++	pm_runtime_put_noidle(&pdev->dev);
++	pm_runtime_set_suspended(&pdev->dev);
 +
 +	return 0;
 +}
 +
- static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
- {
- 	struct rockchip_thermal_sensor *sensor = _sensor;
-@@ -843,6 +881,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
++static int bam_dma_runtime_suspend(struct device *dev)
++{
++	struct bam_device *bdev = dev_get_drvdata(dev);
++
++	clk_disable(bdev->bamclk);
++
++	return 0;
++}
++
++static int bam_dma_runtime_resume(struct device *dev)
++{
++	struct bam_device *bdev = dev_get_drvdata(dev);
++	int ret;
++
++	ret = clk_enable(bdev->bamclk);
++	if (ret < 0) {
++		dev_err(dev, "clk_enable failed: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++#ifdef CONFIG_PM_SLEEP
++static int bam_dma_suspend(struct device *dev)
++{
++	struct bam_device *bdev = dev_get_drvdata(dev);
++
++	pm_runtime_force_suspend(dev);
++
++	clk_unprepare(bdev->bamclk);
  
- static const struct thermal_zone_of_device_ops rockchip_of_thermal_ops = {
- 	.get_temp = rockchip_thermal_get_temp,
-+	.set_trips = rockchip_thermal_set_trips,
+ 	return 0;
+ }
+ 
++static int bam_dma_resume(struct device *dev)
++{
++	struct bam_device *bdev = dev_get_drvdata(dev);
++	int ret;
++
++	ret = clk_prepare(bdev->bamclk);
++	if (ret)
++		return ret;
++
++	pm_runtime_force_resume(dev);
++
++	return 0;
++}
++#endif
++
++static const struct dev_pm_ops bam_dma_pm_ops = {
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(bam_dma_suspend, bam_dma_resume)
++	SET_RUNTIME_PM_OPS(bam_dma_runtime_suspend, bam_dma_runtime_resume,
++				NULL)
++};
++
+ static struct platform_driver bam_dma_driver = {
+ 	.probe = bam_dma_probe,
+ 	.remove = bam_dma_remove,
+ 	.driver = {
+ 		.name = "bam-dma-engine",
++		.pm = &bam_dma_pm_ops,
+ 		.of_match_table = bam_of_match,
+ 	},
  };
- 
- static int rockchip_configure_from_dt(struct device *dev,
 -- 
-1.9.1
+1.8.2.1
+
