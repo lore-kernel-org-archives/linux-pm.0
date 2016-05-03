@@ -1,49 +1,33 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v4 1/2] PM / OPP: add non-OF versions of
- dev_pm_opp_{cpumask_,}remove_table
-Date: Tue, 3 May 2016 11:11:19 -0700
-Message-ID: <20160503181119.GQ3492@codeaurora.org>
-References: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
- <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 0/3] idle, Honor Hardware Disabled States
+Date: Tue, 03 May 2016 14:11:56 -0400
+Message-ID: <5728E9EC.4030801@redhat.com>
+References: <1458564569-19672-1-git-send-email-prarit@redhat.com>	<CAJvTdKk0qsFsN7RPQGVQ7mWbd2N9jW7kZbH4htSnMBxvwo8M2w@mail.gmail.com>	<56F32BDB.1010107@redhat.com>	<CAJvTdKmi2pfE+fn5-MVd8T5_0j+EbASJ992AYmVKG2osk762yQ@mail.gmail.com>	<56F94439.3000908@redhat.com>	<CAJvTdKmmoZFJ83dx6vS6D8FasrHKdgpxMEC_rVM-_6tZe2s6dg@mail.gmail.com>	<570B8C7E.2030504@redhat.com> <CAJvTdK=tuqYo_YaOFCTZZbF9VWGo1CjqXSavod4LKb3vNfBS2w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:34681 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933513AbcECSL0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 14:11:26 -0400
-Content-Disposition: inline
-In-Reply-To: <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
+Received: from mx1.redhat.com ([209.132.183.28]:55204 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933513AbcECSL7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 May 2016 14:11:59 -0400
+In-Reply-To: <CAJvTdK=tuqYo_YaOFCTZZbF9VWGo1CjqXSavod4LKb3vNfBS2w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Borislav Petkov <bp@suse.de>, Andi Kleen <ak@linux.intel.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 05/03, Sudeep Holla wrote:
-> Functions dev_pm_opp_of_{cpumask_,}remove_table removes/frees all the
-> static OPP entries associated with the device and/or all cpus(in case
-> of cpumask) that are created from DT.
-> 
-> However the OPP entries are populated reading from the firmware or some
-> different method using dev_pm_opp_add are marked dynamic and can't be
-> removed using above functions.
-> 
-> This patch adds non DT/OF versions of dev_pm_opp_{cpumask_,}remove_table
-> to support the above mentioned usecase.
-> 
-> This is in preparation to make use of the same in scpi-cpufreq.c
-> 
-> Cc: Viresh Kumar <vireshk@kernel.org>
-> Cc: Nishanth Menon <nm@ti.com>
-> CC: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+On 04/29/2016 05:36 AM, Len Brown wrote:
+
+> But above is all cosmetic.  The real "bug" that users are running into is
+> that they can't get into deep c-states when they are enabled.
+> Linux (and Intel) need to do a much better job enabling diagnosis of
+> that condition.
+> 
+Okay, I geddit.
+
+Acked-by: Prarit Bhargava <prarit@redhat.com>
+
+P.
