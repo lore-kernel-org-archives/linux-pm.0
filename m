@@ -1,156 +1,117 @@
-From: Caesar Wang <caesar.upstream-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 1/4] thermal: Add support for hardware-tracked trip points
-Date: Tue, 3 May 2016 14:19:10 +0800
-Message-ID: <572842DE.7080301@gmail.com>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: Re: [PATCH 2/4] thermal: of: implement .set_trips for device tree
+ thermal zones
+Date: Tue, 3 May 2016 14:32:46 +0800
+Message-ID: <5728460E.4000009@rock-chips.com>
 References: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
- <1461553367-24744-2-git-send-email-wxt@rock-chips.com>
- <20160427214843.GA6438@localhost.localdomain>
+ <1461553367-24744-3-git-send-email-wxt@rock-chips.com>
+ <20160427215209.GC6438@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20160427214843.GA6438-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, eddie.cai-TNX95d0MmH7DzftRWevZcw@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular2.263xmail.com ([211.157.152.4]:49184 "EHLO
+	regular2.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbcECGdV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 02:33:21 -0400
+In-Reply-To: <20160427215209.GC6438@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, dmitry.torokhov@gmail.com, huangtao@rock-chips.com, eddie.cai@rock-chips.com, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-CgrlnKggMjAxNuW5tDA05pyIMjjml6UgMDU6NDgsIEVkdWFyZG8gVmFsZW50aW4g5YaZ6YGTOgo+
-IEEgY291cGxlIG9mIGNvbW1lbnRzIGFzIGZvbGxvd3MsCj4KPiBPbiBNb24sIEFwciAyNSwgMjAx
-NiBhdCAxMTowMjo0NEFNICswODAwLCBDYWVzYXIgV2FuZyB3cm90ZToKPj4gRnJvbTogU2FzY2hh
-IEhhdWVyIDxzLmhhdWVyQHBlbmd1dHJvbml4LmRlPgo+Pgo+PiBUaGlzIGFkZHMgc3VwcG9ydCBm
-b3IgaGFyZHdhcmUtdHJhY2tlZCB0cmlwIHBvaW50cyB0byB0aGUgZGV2aWNlIHRyZWUKPj4gdGhl
-cm1hbCBzZW5zb3IgZnJhbWV3b3JrLgo+Pgo+PiBUaGUgZnJhbWV3b3JrIHN1cHBvcnRzIGFuIGFy
-Yml0cmFyeSBudW1iZXIgb2YgdHJpcCBwb2ludHMuIFdoZW5ldmVyCj4+IHRoZSBjdXJyZW50IHRl
-bXBlcmF0dXJlIGlzIHVwZGF0ZWQsIHRoZSB0cmlwIHBvaW50cyBpbW1lZGlhdGVseQo+PiBiZWxv
-dyBhbmQgYWJvdmUgdGhlIGN1cnJlbnQgdGVtcGVyYXR1cmUgYXJlIGZvdW5kLiBBIC5zZXRfdHJp
-cHMKPj4gY2FsbGJhY2sgaXMgdGhlbiBjYWxsZWQgd2l0aCB0aGUgdGVtcGVyYXR1cmVzLiBJZiB0
-aGVyZSBpcyBubyB0cmlwCj4+IHBvaW50IGFib3ZlIG9yIGJlbG93IHRoZSBjdXJyZW50IHRlbXBl
-cmF0dXJlLCB0aGUgcGFzc2VkIHRyaXAKPj4gdGVtcGVyYXR1cmUgd2lsbCBiZSAtSU5UX01BWCBv
-ciBJTlRfTUFYIHJlc3BlY3RpdmVseS4gSW4gdGhpcyBjYWxsYmFjaywKPj4gdGhlIGRyaXZlciBz
-aG91bGQgcHJvZ3JhbSB0aGUgaGFyZHdhcmUgc3VjaCB0aGF0IGl0IGlzIG5vdGlmaWVkCj4+IHdo
-ZW4gZWl0aGVyIG9mIHRoZXNlIHRyaXAgcG9pbnRzIGFyZSB0cmlnZ2VyZWQuIFdoZW4gYSB0cmlw
-IHBvaW50Cj4+IGlzIHRyaWdnZXJlZCwgdGhlIGRyaXZlciBzaG91bGQgY2FsbCBgdGhlcm1hbF96
-b25lX2RldmljZV91cGRhdGUnCj4+IGZvciB0aGUgcmVzcGVjdGl2ZSB0aGVybWFsIHpvbmUuIFRo
-aXMgd2lsbCBjYXVzZSB0aGUgdHJpcCBwb2ludHMKPj4gdG8gYmUgdXBkYXRlZCBhZ2Fpbi4KPj4K
-Pj4gSWYgLnNldF90cmlwcyBpcyBub3QgaW1wbGVtZW50ZWQsIHRoZSBmcmFtZXdvcmsgYmVoYXZl
-cyBhcyBiZWZvcmUuCj4+Cj4+IFRoaXMgcGF0Y2ggaXMgYmFzZWQgb24gYW4gZWFybGllciB2ZXJz
-aW9uIGZyb20gTWlra28gUGVydHR1bmVuCj4+IDxtaWtrby5wZXJ0dHVuZW5Aa2Fwc2kuZmk+Cj4+
-Cj4+IFNpZ25lZC1vZmYtYnk6IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5ndXRyb25peC5kZT4K
-Pj4gU2lnbmVkLW9mZi1ieTogQ2Flc2FyIFdhbmcgPHd4dEByb2NrLWNoaXBzLmNvbT4KPj4gQ2M6
-IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4KPj4gQ2M6IEVkdWFyZG8gVmFsZW50aW4g
-PGVkdWJlenZhbEBnbWFpbC5jb20+Cj4+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcKPj4g
-LS0tCj4+Cj4+ICAgZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jIHwgNDggKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4+ICAgaW5jbHVkZS9saW51eC90aGVy
-bWFsLmggICAgICAgIHwgIDMgKysrCj4gR2l2ZW4gdGhhdCB0aGlzIGlzIGFkZGluZyBhIG5ldyBm
-ZWF0dXJlIGluIHRoZSBmcmFtZXdvcmssIEkgd291bGQgcHJlZmVyCj4gaWYgeW91IGNvdWxkIGFs
-c28gZGVzY3JpYmUgdGhlIC5zZXRfdHJpcHMoKSBpbiB0aGUgc3lzZnMtYXBpLnR4dAo+IGRvY3Vt
-ZW50YXRpb24gZmlsZS4KCk9rYXksIGRvbmUuCj4KPiBBIHNob3J0IGRlc2NyaXB0aW9uIG9mIHRo
-ZSBleHBlY3RhdGlvbiBvZiB3aGF0IHRoZSBmcmFtZXdvcmsgaXMgZ29pbmcgdG8KPiBkbyBpcyBh
-bHNvIHdlbGNvbWUuIEZvciBleGFtcGxlLCBhcmUgZHJpdmVycyBzdXBwb3NlZCB0byBzZXR1cCB0
-aGUKPiBwb2xsaW5nIHRvZ2V0aGVyIHdpdGggdGhlIHRocmVzaG9sZCBiYXNlZCBhcHByb2FjaD8K
-Pgo+PiAgIDIgZmlsZXMgY2hhbmdlZCwgNTEgaW5zZXJ0aW9ucygrKQo+Pgo+PiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jIGIvZHJpdmVycy90aGVybWFsL3RoZXJt
-YWxfY29yZS5jCj4+IGluZGV4IGYxZGI0OTYuLmNmZWY4Y2MgMTAwNjQ0Cj4+IC0tLSBhL2RyaXZl
-cnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYwo+PiArKysgYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1h
-bF9jb3JlLmMKPj4gQEAgLTUyMCw2ICs1MjAsNDcgQEAgZXhpdDoKPj4gICB9Cj4+ICAgRVhQT1JU
-X1NZTUJPTF9HUEwodGhlcm1hbF96b25lX2dldF90ZW1wKTsKPj4gICAKPj4gK3N0YXRpYyB2b2lk
-IHRoZXJtYWxfem9uZV9zZXRfdHJpcHMoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQo+
-PiArewo+PiArCWludCBsb3cgPSAtSU5UX01BWDsKPj4gKwlpbnQgaGlnaCA9IElOVF9NQVg7Cj4+
-ICsJaW50IHRyaXBfdGVtcCwgaHlzdGVyZXNpczsKPj4gKwlpbnQgdGVtcCA9IHR6LT50ZW1wZXJh
-dHVyZTsKPj4gKwlpbnQgaSwgcmV0Owo+PiArCj4+ICsJaWYgKCF0ei0+b3BzLT5zZXRfdHJpcHMp
-Cj4+ICsJCXJldHVybjsKPj4gKwo+PiArCWZvciAoaSA9IDA7IGkgPCB0ei0+dHJpcHM7IGkrKykg
-ewo+PiArCQlpbnQgdHJpcF9sb3c7Cj4+ICsKPj4gKwkJdHotPm9wcy0+Z2V0X3RyaXBfdGVtcCh0
-eiwgaSwgJnRyaXBfdGVtcCk7Cj4+ICsJCXR6LT5vcHMtPmdldF90cmlwX2h5c3QodHosIGksICZo
-eXN0ZXJlc2lzKTsKPj4gKwo+PiArCQl0cmlwX2xvdyA9IHRyaXBfdGVtcCAtIGh5c3RlcmVzaXM7
-Cj4+ICsKPj4gKwkJaWYgKHRyaXBfbG93IDwgdGVtcCAmJiB0cmlwX2xvdyA+IGxvdykKPj4gKwkJ
-CWxvdyA9IHRyaXBfbG93Owo+PiArCj4+ICsJCWlmICh0cmlwX3RlbXAgPiB0ZW1wICYmIHRyaXBf
-dGVtcCA8IGhpZ2gpCj4+ICsJCQloaWdoID0gdHJpcF90ZW1wOwo+PiArCX0KPiBEaWQgSSB1bmRl
-cnN0YW5kIGNvcnJlY3RseSB0aGF0IHlvdSB3aWxsIGJlIGZsb29kZWQgYnkgSVJRcyB3aGVuIHlv
-dQo+IGhhdmU6Cj4gMS4gT25lIHNpbmdsZSB0cmlwIHBvaW50Lgo+IDIuIFlvdXIgdGVtcCBpcyBh
-Ym92ZSB0cmlwX3RlbXAKPgo+IFdpdGggdGhlIGFib3ZlLCB5b3Ugd291bGQgcHJvZ3JhbSBhcyB0
-aHJlc2hvbGQ6Cj4gaGlnaCA9PSB0cmlwX3RlbXAKPiBsb3cgPT0gdHJpcF90ZW1wIC0gaHlzdAo+
-Cj4gQW5kIHRoZSBJUlEgd291bGQgZmlyZSBpbW1lZGlhdHRlbHksIGNhdXNpbmcgYSBkZXZpY2Ug
-dXBkYXRlLCBjYXVzaW5nIGEKPiByZXByb2dyYW1taW5nLCBjYXVzaW5nIGFub3RoZXIgaXJxLCBh
-bmQgdGhpcyB3b3VsZCBjb250aW51ZSwgdW50aWwgdGhlCj4gdGVtcGVyYXR1cmUgZ29lcyBiZWxv
-dyB0cmlwX3RlbXAsIHJpZ2h0PwoKUmlnaHQsIEFzIHRoZSBleGFtcGxlIHRlc3RlZCBieSB0aGUg
-cm9ja2NoaXAgcGxhdGZvcm0uICg3MC83NS8gZGVncmVlIGlzIAp0aGUgdHJpcCBwb2ludCkKCi4u
-ClsgIDY2My45ODQzMjddIHJvY2tjaGlwLXRoZXJtYWwgZmYyNjAwMDAudHNhZGM6IHNlbnNvciAw
-IC0gdGVtcDogNjYxMTEsIApyZXR2YWw6IDAKWyAgNjY0LjA0ODMyNl0gcm9ja2NoaXAtdGhlcm1h
-bCBmZjI2MDAwMC50c2FkYzogc2Vuc29yIDEgLSB0ZW1wOiA2ODMzMywgCnJldHZhbDogMApbICA2
-NjQuMDU1NjAwXSByb2NrY2hpcC10aGVybWFsIGZmMjYwMDAwLnRzYWRjOiAKcm9ja2NoaXBfdGhl
-cm1hbF9zZXRfdHJpcHM6IHNlbnNvciAxOiBsb3c6IDY4MDAwLCBoaWdoIDcwMDAwClsgIDY2NC45
-OTIzMjJdIHJvY2tjaGlwLXRoZXJtYWwgZmYyNjAwMDAudHNhZGM6IHNlbnNvciAwIC0gdGVtcDog
-Njg4ODgsIApyZXR2YWw6IDAKWyAgNjY0Ljk5OTU3OV0gcm9ja2NoaXAtdGhlcm1hbCBmZjI2MDAw
-MC50c2FkYzogCnJvY2tjaGlwX3RoZXJtYWxfc2V0X3RyaXBzOiBzZW5zb3IgMDogbG93OiA2ODAw
-MCwgaGlnaCA3MDAwMApbICA2NjUuMDY2MzIyXSByb2NrY2hpcC10aGVybWFsIGZmMjYwMDAwLnRz
-YWRjOiBzZW5zb3IgMSAtIHRlbXA6IDY4MzMzLCAKcmV0dmFsOiAwCi4uLgoKWyA0MjUwLjQ3NDEw
-Ml0gcm9ja2NoaXAtdGhlcm1hbCBmZjI2MDAwMC50c2FkYzogc2Vuc29yIDAgLSB0ZW1wOiA3MzMz
-MywgCnJldHZhbDogMApbIDQyNTAuNDgxNDMyXSByb2NrY2hpcC10aGVybWFsIGZmMjYwMDAwLnRz
-YWRjOiBzZW5zb3IgMSAtIHRlbXA6IDc0NDQ0LCAKcmV0dmFsOiAwClsgNDI1MC40ODg3OTJdIHJv
-Y2tjaGlwLXRoZXJtYWwgZmYyNjAwMDAudHNhZGM6IApyb2NrY2hpcF90aGVybWFsX3NldF90cmlw
-czogc2Vuc29yIDE6IGxvdzogNzMwMDAsIGhpZ2ggNzUwMDAKWyA0MjUwLjU4MTM2MF0gcm9ja2No
-aXAtdGhlcm1hbCBmZjI2MDAwMC50c2FkYzogc2Vuc29yIDAgLSB0ZW1wOiA3Mjc3NywgCnJldHZh
-bDogMApbIDQyNTAuNTg4NzY3XSByb2NrY2hpcC10aGVybWFsIGZmMjYwMDAwLnRzYWRjOiAKcm9j
-a2NoaXBfdGhlcm1hbF9zZXRfdHJpcHM6IHNlbnNvciAwOiBsb3c6IDY4MDAwLCBoaWdoIDc1MDAw
-ClsgNDI1MC41OTg3MzVdIHJvY2tjaGlwLXRoZXJtYWwgZmYyNjAwMDAudHNhZGM6IHNlbnNvciAx
-IC0gdGVtcDogNzUwMDAsIApyZXR2YWw6IDAKWyA0MjUwLjYwNjA2NV0gcm9ja2NoaXAtdGhlcm1h
-bCBmZjI2MDAwMC50c2FkYzogCnJvY2tjaGlwX3RoZXJtYWxfc2V0X3RyaXBzOiBzZW5zb3IgMTog
-bG93OiA3MzAwMCwgaGlnaCA5NTAwMAouLi4KCgo+PiArCj4+ICsJLyogTm8gbmVlZCB0byBjaGFu
-Z2UgdHJpcCBwb2ludHMgKi8KPj4gKwlpZiAodHotPnByZXZfbG93X3RyaXAgPT0gbG93ICYmIHR6
-LT5wcmV2X2hpZ2hfdHJpcCA9PSBoaWdoKQo+PiArCQlyZXR1cm47Cj4+ICsKPj4gKwl0ei0+cHJl
-dl9sb3dfdHJpcCA9IGxvdzsKPj4gKwl0ei0+cHJldl9oaWdoX3RyaXAgPSBoaWdoOwo+PiArCj4+
-ICsJZGV2X2RiZygmdHotPmRldmljZSwgIm5ldyB0ZW1wZXJhdHVyZSBib3VuZGFyaWVzOiAlZCA8
-IHggPCAlZFxuIiwKPj4gKwkJCWxvdywgaGlnaCk7Cj4+ICsKPj4gKwlyZXQgPSB0ei0+b3BzLT5z
-ZXRfdHJpcHModHosIGxvdywgaGlnaCk7Cj4+ICsJaWYgKHJldCkKPj4gKwkJZGV2X2VycigmdHot
-PmRldmljZSwgIkZhaWxlZCB0byBzZXQgdHJpcHM6ICVkXG4iLCByZXQpOwo+PiArfQo+PiArCj4+
-ICAgc3RhdGljIHZvaWQgdXBkYXRlX3RlbXBlcmF0dXJlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2
-aWNlICp0eikKPj4gICB7Cj4+ICAgCWludCB0ZW1wLCByZXQ7Cj4+IEBAIC01NjksNiArNjEwLDgg
-QEAgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZShzdHJ1Y3QgdGhlcm1hbF96b25lX2Rl
-dmljZSAqdHopCj4+ICAgCj4+ICAgCXVwZGF0ZV90ZW1wZXJhdHVyZSh0eik7Cj4+ICAgCj4+ICsJ
-dGhlcm1hbF96b25lX3NldF90cmlwcyh0eik7Cj4+ICsKPj4gICAJZm9yIChjb3VudCA9IDA7IGNv
-dW50IDwgdHotPnRyaXBzOyBjb3VudCsrKQo+PiAgIAkJaGFuZGxlX3RoZXJtYWxfdHJpcCh0eiwg
-Y291bnQpOwo+PiAgIH0KPj4gQEAgLTc1NCw2ICs3OTcsOSBAQCB0cmlwX3BvaW50X2h5c3Rfc3Rv
-cmUoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwKPj4g
-ICAJICovCj4+ICAgCXJldCA9IHR6LT5vcHMtPnNldF90cmlwX2h5c3QodHosIHRyaXAsIHRlbXBl
-cmF0dXJlKTsKPj4gICAKPj4gKwlpZiAoIXJldCkKPj4gKwkJdGhlcm1hbF96b25lX3NldF90cmlw
-cyh0eik7Cj4+ICsKPiBZb3Ugd291bGQgcHJvYmFibHkgd2FudCB0byBkbyB0aGUgc2FtZSBvbiB0
-cmlwX3BvaW50X3RlbXBfc3RvcmUoKS4KClN1cmUuCj4+ICAgCXJldHVybiByZXQgPyByZXQgOiBj
-b3VudDsKPj4gICB9Cj4+ICAgCj4+IEBAIC0xODQzLDYgKzE4ODksOCBAQCBzdHJ1Y3QgdGhlcm1h
-bF96b25lX2RldmljZSAqdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICp0
-eXBlLAo+PiAgIAl0ei0+dHJpcHMgPSB0cmlwczsKPj4gICAJdHotPnBhc3NpdmVfZGVsYXkgPSBw
-YXNzaXZlX2RlbGF5Owo+PiAgIAl0ei0+cG9sbGluZ19kZWxheSA9IHBvbGxpbmdfZGVsYXk7Cj4+
-ICsJdHotPnByZXZfbG93X3RyaXAgPSBJTlRfTUFYOwo+PiArCXR6LT5wcmV2X2hpZ2hfdHJpcCA9
-IC1JTlRfTUFYOwo+PiAgIAkvKiBBIG5ldyB0aGVybWFsIHpvbmUgbmVlZHMgdG8gYmUgdXBkYXRl
-ZCBhbnl3YXkuICovCj4+ICAgCWF0b21pY19zZXQoJnR6LT5uZWVkX3VwZGF0ZSwgMSk7Cj4+ICAg
-Cj4+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCBiL2luY2x1ZGUvbGludXgv
-dGhlcm1hbC5oCj4+IGluZGV4IGU0NWFiZTcuLmUyNTgzNTkgMTAwNjQ0Cj4+IC0tLSBhL2luY2x1
-ZGUvbGludXgvdGhlcm1hbC5oCj4+ICsrKyBiL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oCj4+IEBA
-IC05OCw2ICs5OCw3IEBAIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlX29wcyB7Cj4+ICAgCWlu
-dCAoKnVuYmluZCkgKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosCj4+ICAgCQkgICAgICAg
-c3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKik7Cj4+ICAgCWludCAoKmdldF90ZW1wKSAo
-c3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKiwgaW50ICopOwo+PiArCWludCAoKnNldF90cmlw
-cykgKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosIGludCwgaW50KTsKPj4gICAJaW50ICgq
-Z2V0X21vZGUpIChzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLAo+PiAgIAkJCSBlbnVtIHRo
-ZXJtYWxfZGV2aWNlX21vZGUgKik7Cj4+ICAgCWludCAoKnNldF9tb2RlKSAoc3RydWN0IHRoZXJt
-YWxfem9uZV9kZXZpY2UgKiwKPj4gQEAgLTE5OSw2ICsyMDAsOCBAQCBzdHJ1Y3QgdGhlcm1hbF96
-b25lX2RldmljZSB7Cj4+ICAgCWludCBsYXN0X3RlbXBlcmF0dXJlOwo+PiAgIAlpbnQgZW11bF90
-ZW1wZXJhdHVyZTsKPj4gICAJaW50IHBhc3NpdmU7Cj4+ICsJaW50IHByZXZfbG93X3RyaXA7Cj4+
-ICsJaW50IHByZXZfaGlnaF90cmlwOwo+PiAgIAl1bnNpZ25lZCBpbnQgZm9yY2VkX3Bhc3NpdmU7
-Cj4+ICAgCWF0b21pY190IG5lZWRfdXBkYXRlOwo+PiAgIAlzdHJ1Y3QgdGhlcm1hbF96b25lX2Rl
-dmljZV9vcHMgKm9wczsKPj4gLS0gCj4+IDEuOS4xCj4+Cj4gX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KPiBMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QK
-PiBMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCj4gaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1yb2NrY2hpcAoKCi0tIApUaGFua3MsCkNh
-ZXNhcgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxp
-bnV4LXJvY2tjaGlwIG1haWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQu
-b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9j
-a2NoaXAK
+
+
+=E5=9C=A8 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 05:52, Eduardo Valentin =E5=
+=86=99=E9=81=93:
+> On Mon, Apr 25, 2016 at 11:02:45AM +0800, Caesar Wang wrote:
+>> From: Sascha Hauer <s.hauer@pengutronix.de>
+>>
+>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Cc: linux-pm@vger.kernel.org
+>> ---
+>>
+>>   drivers/thermal/of-thermal.c | 12 ++++++++++++
+>>   include/linux/thermal.h      |  4 ++++
+>>   2 files changed, 16 insertions(+)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-therm=
+al.c
+>> index b8e509c..8722e63 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -101,6 +101,17 @@ static int of_thermal_get_temp(struct thermal_z=
+one_device *tz,
+>>   	return data->ops->get_temp(data->sensor_data, temp);
+>>   }
+>>  =20
+>> +static int of_thermal_set_trips(struct thermal_zone_device *tz,
+>> +				int low, int high)
+>> +{
+>> +	struct __thermal_zone *data =3D tz->devdata;
+>> +
+>> +	if (!data->ops || !data->ops->set_trips)
+>> +		return -EINVAL;
+>> +
+>> +	return data->ops->set_trips(data->sensor_data, low, high);
+>> +}
+>> +
+>>   /**
+>>    * of_thermal_get_ntrips - function to export number of available =
+trip
+>>    *			   points.
+>> @@ -427,6 +438,7 @@ thermal_zone_of_add_sensor(struct device_node *z=
+one,
+>>  =20
+>>   	tzd->ops->get_temp =3D of_thermal_get_temp;
+>>   	tzd->ops->get_trend =3D of_thermal_get_trend;
+>> +	tzd->ops->set_trips =3D of_thermal_set_trips;
+>>   	tzd->ops->set_emul_temp =3D of_thermal_set_emul_temp;
+>>   	mutex_unlock(&tzd->lock);
+>>  =20
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index e258359..cb64866 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -336,12 +336,16 @@ struct thermal_genl_event {
+>>    *
+>>    * Optional:
+>>    * @get_trend: a pointer to a function that reads the sensor tempe=
+rature trend.
+>> + * @@set_trips: a pointer to a function that sets a temperature win=
+dow. When
+>> + *		this window is left the driver must inform the thermal core via
+>> + *              thermal_zone_device_update.
+> Ok. We start to see some documentation and expectation being stated
+> here. Nice. Please respin the comment on thermal core too, so drivers
+> that dont use OF will also be aware of this feature and how to use th=
+em.
+
+Okay, done
+
+>
+>>    * @set_emul_temp: a pointer to a function that sets sensor emulat=
+ed
+>>    *		   temperature.
+>>    */
+>>   struct thermal_zone_of_device_ops {
+>>   	int (*get_temp)(void *, int *);
+>>   	int (*get_trend)(void *, long *);
+>> +	int (*set_trips)(void *, int, int);
+>>   	int (*set_emul_temp)(void *, int);
+>>   	int (*set_trip_temp)(void *, int, int);
+>>   };
+>> --=20
+>> 1.9.1
+>>
+>
+>
+
+--=20
+caesar wang | software engineer | wxt@rock-chip.com
+
+
