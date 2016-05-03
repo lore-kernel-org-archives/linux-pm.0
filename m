@@ -1,83 +1,80 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any() out
- of irq safe block
-Date: Tue,  3 May 2016 15:10:47 +0530
-Message-ID: <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Manish Badarkhe <badarkhe.manish@gmail.com>
+Subject: Re: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
+Date: Tue, 3 May 2016 15:21:39 +0530
+Message-ID: <CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
+References: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f179.google.com ([209.85.223.179]:32905 "EHLO
+	mail-io0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755628AbcECJvk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 05:51:40 -0400
+In-Reply-To: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@linaro.org>
+Cc: vinod.koul@intel.com, andy.gross@linaro.org, ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, stanimir.varbanov@linaro.org, okaya@codeaurora.org
 
-Rml4aW5nIGEgV0FSTl9PTiBjYXVzZWQgYnkgc21wX2NhbGxfZnVuY3Rpb25fYW55KCkgd2hlbiBp
-cnEgaXMgZGlzYWJsZWQsCmJlY2F1c2Ugb2YgY2hhbmdlcyBtYWRlIGluIHRoZSBwYXRjaAooJ2Nw
-dWZyZXE6IHBvd2VybnY6IFJhbXAtZG93biBnbG9iYWwgcHN0YXRlIHNsb3dlciB0aGFuIGxvY2Fs
-LXBzdGF0ZScpCmh0dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNjEyMDU4LwoKIFdB
-Uk5JTkc6IENQVTogMCBQSUQ6IDQgYXQga2VybmVsL3NtcC5jOjI5MQpzbXBfY2FsbF9mdW5jdGlv
-bl9zaW5nbGUrMHgxNzAvMHgxODAKCiBDYWxsIFRyYWNlOgogW2MwMDAwMDA3ZjY0OGY5ZjBdIFtj
-MDAwMDAwN2Y2NDhmYTkwXSAweGMwMDAwMDA3ZjY0OGZhOTAgKHVucmVsaWFibGUpCiBbYzAwMDAw
-MDdmNjQ4ZmEzMF0gW2MwMDAwMDAwMDAxNDMwZTBdIHNtcF9jYWxsX2Z1bmN0aW9uX2FueSsweDE3
-MC8weDFjMAogW2MwMDAwMDA3ZjY0OGZhOTBdIFtjMDAwMDAwMDAwN2I0YjAwXQpwb3dlcm52X2Nw
-dWZyZXFfdGFyZ2V0X2luZGV4KzB4ZTAvMHgyNTAKIFtjMDAwMDAwN2Y2NDhmYjAwXSBbYzAwMDAw
-MDAwMDdhYzlkY10KX19jcHVmcmVxX2RyaXZlcl90YXJnZXQrMHgyMGMvMHgzZDAKIFtjMDAwMDAw
-N2Y2NDhmYmMwXSBbYzAwMDAwMDAwMDdiMWI0Y10gb2RfZGJzX3RpbWVyKzB4Y2MvMHgyNjAKIFtj
-MDAwMDAwN2Y2NDhmYzEwXSBbYzAwMDAwMDAwMDdiMzAyNF0gZGJzX3dvcmtfaGFuZGxlcisweDU0
-LzB4YTAKIFtjMDAwMDAwN2Y2NDhmYzUwXSBbYzAwMDAwMDAwMDBjNDlhOF0gcHJvY2Vzc19vbmVf
-d29yaysweDFkOC8weDU5MAogW2MwMDAwMDA3ZjY0OGZjZTBdIFtjMDAwMDAwMDAwMGM0ZTA4XSB3
-b3JrZXJfdGhyZWFkKzB4YTgvMHg2NjAKIFtjMDAwMDAwN2Y2NDhmZDgwXSBbYzAwMDAwMDAwMDBj
-Y2E4OF0ga3RocmVhZCsweDEwOC8weDEzMAogW2MwMDAwMDA3ZjY0OGZlMzBdIFtjMDAwMDAwMDAw
-MDA5NWU4XSByZXRfZnJvbV9rZXJuZWxfdGhyZWFkKzB4NWMvMHg3NAoKTW92aW5nIHNtcF9jYWxs
-X2Z1bmN0aW9uX2FueSgpIG91dCBvZiB0aGUgY3JpdGljYWwgc2VjdGlvbiBhbmQgY2hhbmdpbmcK
-aXJxIHNhZmUgc3BpbmxvY2tzIHRvIG5vcm1hbCBzcGlubG9ja3MuCgpSZXBvcnRlZC1ieTogQWJk
-dWwgSGFsZWVtIDxhYmRoYWxlZUBsaW51eC52bmV0LmxpbnV4LmNvbT4KU2lnbmVkLW9mZi1ieTog
-QWtzaGF5IEFkaWdhIDxha3NoYXkuYWRpZ2FAbGludXgudm5ldC5pYm0uY29tPgotLS0KUGF0Y2gg
-aXMgYmFzZWQgb24gUmFmYWVsJ3MgbGludXgtbmV4dAogZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYt
-Y3B1ZnJlcS5jIHwgOSArKysrKy0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyks
-IDQgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1
-ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jCmluZGV4IDE0NGM3MzIu
-LjFmMGUyMGMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52LWNwdWZyZXEuYwor
-KysgYi9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMKQEAgLTU4MSw5ICs1ODEsMTAg
-QEAgdm9pZCBncHN0YXRlX3RpbWVyX2hhbmRsZXIodW5zaWduZWQgbG9uZyBkYXRhKQogCWdwc3Rh
-dGVzLT5sYXN0X2dwc3RhdGUgPSBmcmVxX2RhdGEuZ3BzdGF0ZV9pZDsKIAlncHN0YXRlcy0+bGFz
-dF9scHN0YXRlID0gZnJlcV9kYXRhLnBzdGF0ZV9pZDsKIAorCXNwaW5fdW5sb2NrKCZncHN0YXRl
-cy0+Z3BzdGF0ZV9sb2NrKTsKKwogCS8qIFRpbWVyIG1heSBnZXQgbWlncmF0ZWQgdG8gYSBkaWZm
-ZXJlbnQgY3B1IG9uIGNwdSBob3QgdW5wbHVnICovCiAJc21wX2NhbGxfZnVuY3Rpb25fYW55KHBv
-bGljeS0+Y3B1cywgc2V0X3BzdGF0ZSwgJmZyZXFfZGF0YSwgMSk7Ci0Jc3Bpbl91bmxvY2soJmdw
-c3RhdGVzLT5ncHN0YXRlX2xvY2spOwogfQogCiAvKgpAQCAtNTk2LDcgKzU5Nyw2IEBAIHN0YXRp
-YyBpbnQgcG93ZXJudl9jcHVmcmVxX3RhcmdldF9pbmRleChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
-KnBvbGljeSwKIHsKIAlzdHJ1Y3QgcG93ZXJudl9zbXBfY2FsbF9kYXRhIGZyZXFfZGF0YTsKIAl1
-bnNpZ25lZCBpbnQgY3VyX21zZWMsIGdwc3RhdGVfaWQ7Ci0JdW5zaWduZWQgbG9uZyBmbGFnczsK
-IAlzdHJ1Y3QgZ2xvYmFsX3BzdGF0ZV9pbmZvICpncHN0YXRlcyA9IHBvbGljeS0+ZHJpdmVyX2Rh
-dGE7CiAKIAlpZiAodW5saWtlbHkocmVib290aW5nKSAmJiBuZXdfaW5kZXggIT0gZ2V0X25vbWlu
-YWxfaW5kZXgoKSkKQEAgLTYwNyw3ICs2MDcsNyBAQCBzdGF0aWMgaW50IHBvd2VybnZfY3B1ZnJl
-cV90YXJnZXRfaW5kZXgoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksCiAKIAljdXJfbXNl
-YyA9IGppZmZpZXNfdG9fbXNlY3MoZ2V0X2ppZmZpZXNfNjQoKSk7CiAKLQlzcGluX2xvY2tfaXJx
-c2F2ZSgmZ3BzdGF0ZXMtPmdwc3RhdGVfbG9jaywgZmxhZ3MpOworCXNwaW5fbG9jaygmZ3BzdGF0
-ZXMtPmdwc3RhdGVfbG9jayk7CiAJZnJlcV9kYXRhLnBzdGF0ZV9pZCA9IHBvd2VybnZfZnJlcXNb
-bmV3X2luZGV4XS5kcml2ZXJfZGF0YTsKIAogCWlmICghZ3BzdGF0ZXMtPmxhc3Rfc2FtcGxlZF90
-aW1lKSB7CkBAIC02NTQsMTMgKzY1NCwxNCBAQCBncHN0YXRlc19kb25lOgogCWdwc3RhdGVzLT5s
-YXN0X2dwc3RhdGUgPSBmcmVxX2RhdGEuZ3BzdGF0ZV9pZDsKIAlncHN0YXRlcy0+bGFzdF9scHN0
-YXRlID0gZnJlcV9kYXRhLnBzdGF0ZV9pZDsKIAorCXNwaW5fdW5sb2NrKCZncHN0YXRlcy0+Z3Bz
-dGF0ZV9sb2NrKTsKKwogCS8qCiAJICogVXNlIHNtcF9jYWxsX2Z1bmN0aW9uIHRvIHNlbmQgSVBJ
-IGFuZCBleGVjdXRlIHRoZQogCSAqIG10c3ByIG9uIHRhcmdldCBDUFUuICBXZSBjb3VsZCBkbyB0
-aGF0IHdpdGhvdXQgSVBJCiAJICogaWYgY3VycmVudCBDUFUgaXMgd2l0aGluIHBvbGljeS0+Y3B1
-cyAoY29yZSkKIAkgKi8KIAlzbXBfY2FsbF9mdW5jdGlvbl9hbnkocG9saWN5LT5jcHVzLCBzZXRf
-cHN0YXRlLCAmZnJlcV9kYXRhLCAxKTsKLQlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZncHN0YXRl
-cy0+Z3BzdGF0ZV9sb2NrLCBmbGFncyk7CiAJcmV0dXJuIDA7CiB9CiAKLS0gCjIuNS41CgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYg
-bWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMu
-b3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXY=
+Hi Pramod
+
+> @@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
+>         struct bam_device *bdev = bchan->bdev;
+>         unsigned long flag;
+>
+> +       pm_runtime_get_sync(bdev->dev);
+>         spin_lock_irqsave(&bchan->vc.lock, flag);
+>         writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
+>         bchan->paused = 0;
+>         spin_unlock_irqrestore(&bchan->vc.lock, flag);
+> +       pm_runtime_mark_last_busy(bdev->dev);
+> +       pm_runtime_put_autosuspend(bdev->dev);
+>
+>         return 0;
+>  }
+
+Why this function simply return 'success' without any error capture?
+
+> @@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
+>
+>         tasklet_kill(&bdev->task);
+>
+> +       pm_runtime_get_sync(&pdev->dev);
+>         clk_disable_unprepare(bdev->bamclk);
+> +       pm_runtime_disable(&pdev->dev);
+> +       pm_runtime_put_noidle(&pdev->dev);
+> +       pm_runtime_set_suspended(&pdev->dev);
+> +
+> +       return 0;
+> +}
+
+Why this function simply return 'success' without any error capture?
+
+> +static int bam_dma_runtime_suspend(struct device *dev)
+> +{
+> +       struct bam_device *bdev = dev_get_drvdata(dev);
+> +
+> +       clk_disable(bdev->bamclk);
+> +
+> +       return 0;
+> +}
+
+Why this function simply return 'success' without any error capture?
+
+
+> +#ifdef CONFIG_PM_SLEEP
+> +static int bam_dma_suspend(struct device *dev)
+> +{
+> +       struct bam_device *bdev = dev_get_drvdata(dev);
+> +
+> +       pm_runtime_force_suspend(dev);
+> +
+> +       clk_unprepare(bdev->bamclk);
+>
+>         return 0;
+>  }
+
+Why this function simply return 'success' without any error capture?
+
+Regards
+Manish Badarkhe
