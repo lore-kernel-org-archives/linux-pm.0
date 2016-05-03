@@ -1,373 +1,172 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v4 2/2] cpufreq: arm_big_little: use generic OPP functions for {init,free}_opp_table
-Date: Tue,  3 May 2016 15:05:05 +0100
-Message-ID: <1462284305-32177-2-git-send-email-sudeep.holla@arm.com>
-References: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
- <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [lkp] [sched/fair] 41e0d37f7a: divide error: 0000 [#1] SMP
+Date: Tue, 03 May 2016 17:10:53 +0200
+Message-ID: <3180695.EyLdKFABtM@vostro.rjw.lan>
+References: <87mvo8gd44.fsf@yhuang-dev.intel.com> <CAJZ5v0jwHf8yC9736Ys3ZfyACPZovv5Oz8dCgZ05mtabJsGJVg@mail.gmail.com> <2362020.cjfALfDaxe@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59880 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755482AbcECPHo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 11:07:44 -0400
+In-Reply-To: <2362020.cjfALfDaxe@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Wanpeng Li <kernellwp@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, kernel test robot <ying.huang@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, lkp@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Mike Galbraith <efault@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Currently when performing random CPU hot-plugs and suspend-to-ram(S2R)
-on systems using arm_big_little cpufreq driver, we get warnings similar
-to something like below:
+On Tuesday, May 03, 2016 03:53:12 PM Rafael J. Wysocki wrote:
+> On Tuesday, May 03, 2016 03:22:24 PM Rafael J. Wysocki wrote:
+> > On Tue, May 3, 2016 at 2:58 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > On Tue, May 3, 2016 at 2:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >> On Tue, May 3, 2016 at 2:15 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >>> On Tue, May 3, 2016 at 10:32 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > >>>> On Tue, May 03, 2016 at 09:10:51AM +0800, kernel test robot wrote:
+> > >>>>> FYI, we noticed the following commit:
+> > >>>>>
+> > >>>>> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git sched/core
+> > >>>>> commit 41e0d37f7ac81297c07ba311e4ad39465b8c8295 ("sched/fair: Do not call cpufreq hook unless util changed")
+> > >>>>
+> > >>>>
+> > >>>>> [   14.860950] Freeing unused kernel memory: 260K (ffff88103edbf000 - ffff88103ee00000)
+> > >>>>> [   14.873013] systemd[1]: RTC configured in localtime, applying delta of 480 minutes to system time.
+> > >>>>> [   14.884474] random: systemd urandom read with 5 bits of entropy available
+> > >>>>> [   14.903975] divide error: 0000 [#1] SMP
+> > >>>>> [   14.908375] Modules linked in:
+> > >>>>> [   14.911793] CPU: 39 PID: 1 Comm: systemd Not tainted 4.6.0-rc4-00016-g41e0d37 #1
+> > >>>>> [   14.920051] Hardware name: Intel Corporation S2600WP/S2600WP, BIOS SE5C600.86B.02.02.0002.122320131210 12/23/2013
+> > >>>>> [   14.931509] task: ffff8810101d8000 ti: ffff88081ab20000 task.ti: ffff88081ab20000
+> > >>>>> [   14.939862] RIP: 0010:[<ffffffff8176ad32>]  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
+> > >>>>> [   14.949202] RSP: 0018:ffff88081ab23d70  EFLAGS: 00010006
+> > >>>>> [   14.955129] RAX: 0000000000000000 RBX: 0000000000000024 RCX: ffff8808091e0300
+> > >>>>> [   14.963094] RDX: 0000000000000000 RSI: 0000000000000100 RDI: 0000000000000024
+> > >>>>> [   14.971057] RBP: ffff88081ab23d88 R08: 0000000000001000 R09: 00000000096a1000
+> > >>>>> [   14.979022] R10: 0000000000ffff10 R11: 000000000000000f R12: 0000000000000202
+> > >>>>> [   14.986984] R13: ffff88101390a040 R14: ffff88100e48e180 R15: ffff88101390a040
+> > >>>>> [   14.994950] FS:  00007f66fe117880(0000) GS:ffff8810139c0000(0000) knlGS:0000000000000000
+> > >>>>> [   15.003982] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > >>>>> [   15.010393] CR2: 000055f78b760098 CR3: 000000103d759000 CR4: 00000000001406e0
+> > >>>>> [   15.018359] Stack:
+> > >>>>> [   15.020602]  ffffffff81764dad 0000000000000024 ffff88100e48e180 ffff88081ab23dc8
+> > >>>>> [   15.028899]  ffffffff81040267 ffff88101390a0ac 0000000000000340 ffff88081ab23f20
+> > >>>>> [   15.037197]  ffff88103cd7c400 ffff88100e48e180 ffff88101390a040 ffff88081ab23e30
+> > >>>>> [   15.045493] Call Trace:
+> > >>>>> [   15.048223]  [<ffffffff81764dad>] ? cpufreq_quick_get+0x3d/0x90
+> > >>>>> [   15.054832]  [<ffffffff81040267>] show_cpuinfo+0x3c7/0x410
+> > >>>>> [   15.060956]  [<ffffffff8121f5c4>] seq_read+0x2c4/0x3a0
+> > >>>>> [   15.066685]  [<ffffffff81266ea8>] proc_reg_read+0x48/0x70
+> > >>>>> [   15.072713]  [<ffffffff811f9d58>] __vfs_read+0x28/0xd0
+> > >>>>> [   15.078451]  [<ffffffff813bab63>] ? security_file_permission+0xa3/0xc0
+> > >>>>> [   15.085737]  [<ffffffff811faa97>] ? rw_verify_area+0x57/0xd0
+> > >>>>> [   15.092054]  [<ffffffff811fab96>] vfs_read+0x86/0x130
+> > >>>>> [   15.097691]  [<ffffffff811fbf96>] SyS_read+0x46/0xa0
+> > >>>>> [   15.103234]  [<ffffffff818f71b2>] entry_SYSCALL_64_fastpath+0x1a/0xa4
+> > >>>>> [   15.110421] Code: 05 dc 1b c3 00 89 ff 55 48 89 e5 48 8b 0c f8 48 85 c9 74 1f 48 63 51 1c 48 63 41 20 5d 48 0f af c2 31 d2 48 0f af 81 88 00 00 00 <48> f7 b1 90 00 00 00 c3 31 c0 5d c3 66 90 0f 1f 44 00 00 8b 77
+> > >>>>> [   15.132161] RIP  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
+> > >>>>> [   15.138875]  RSP <ffff88081ab23d70>
+> > >>>>> [   15.142770] ---[ end trace e5d5a8bedf5502e1 ]---
+> > >>>>> [   15.149323] Kernel panic - not syncing: Fatal exception
+> > >>>>>
+> > >>>>
+> > >>>> That's intel_pstate.c:get_avg_frequency(), which assumes mperf != 0. It
+> > >>>> being 0 seems to suggest intel_pstate_sample() hasn't been called yet or
+> > >>>> so.
+> > >>>
+> > >>> Well, what's the tree based on?
+> > >>>
+> > >>> The mainline does this:
+> > >>>
+> > >>> bool sample_taken = intel_pstate_sample(cpu, time);
+> > >>>
+> > >>> if (sample_taken && !hwp_active)
+> > >>>         intel_pstate_adjust_busy_pstate(cpu);
+> > >>>
+> > >>> and (the mainline version of) intel_pstate_sample() returns false when
+> > >>> it is called for the first time after setting the update_util hook.
+> > >>
+> > >> If that helps, I can expose my pm-cpufreq-fixes branch to pull from.
+> > >> It contains all cpufreq material that went into the Linus' tree to
+> > >> date and is based on 4.5-rc3.
+> > >
+> > > In fact, it is exposed already:
+> > >
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+> > > pm-cpufreq-fixes
+> > >
+> > > and the top-most commit is 1becf03545a0859ceaaf9e8c2d9861882a71cb01
+> > > (cpufreq: intel_pstate: Fix processing for turbo activation ratio).
+> > 
+> > Ah, that will fail as well.
+> > 
+> > The problem is that intel_pstate_get() can be called before we take
+> > the first sample.
+> > 
+> > I need to think about how to fix that.
+> 
+> Maybe something like the below (untested, but builds).
+> 
+> It will make intel_pstate_get() return 0 until avg_frequency gets populated
+> which is actually OK.
 
-cpu cpu1: _opp_add: duplicate OPPs detected. Existing: freq: 600000000,
-	volt: 800000, enabled: 1. New: freq: 600000000, volt: 800000, enabled: 1
+The previous one would break the HWP case, so below is a new one (still
+untested).
 
-This is mainly because the OPPs for the shared cpus are not set. We can
-just use dev_pm_opp_of_cpumask_add_table in case the OPPs are obtained
-from DT(arm_big_little_dt.c) or use dev_pm_opp_set_sharing_cpus if the
-OPPs are obtained by other means like firmware(e.g. scpi-cpufreq.c)
-
-Also now that the generic dev_pm_opp{,_of}_cpumask_remove_table can
-handle removal of opp table and entries for all associated CPUs, we can
-re-use dev_pm_opp{,_of}_cpumask_remove_table as free_opp_table in
-cpufreq_arm_bL_ops.
-
-This patch makes necessary changes to reuse the generic OPP functions for
-{init,free}_opp_table and thereby eliminating the warnings.
-
-Cc: Viresh Kumar <vireshk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/arm_big_little.c       | 54 ++++++++++++++++++----------------
- drivers/cpufreq/arm_big_little.h       |  4 +--
- drivers/cpufreq/arm_big_little_dt.c    | 21 ++-----------
- drivers/cpufreq/scpi-cpufreq.c         | 47 +++++++++++++----------------
- drivers/cpufreq/vexpress-spc-cpufreq.c |  4 ++-
- 5 files changed, 56 insertions(+), 74 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index c251247ae661..418042201e6d 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -298,7 +298,8 @@ static int merge_cluster_tables(void)
- 	return 0;
- }
- 
--static void _put_cluster_clk_and_freq_table(struct device *cpu_dev)
-+static void _put_cluster_clk_and_freq_table(struct device *cpu_dev,
-+					    const struct cpumask *cpumask)
- {
- 	u32 cluster = raw_cpu_to_cluster(cpu_dev->id);
- 
-@@ -308,11 +309,12 @@ static void _put_cluster_clk_and_freq_table(struct device *cpu_dev)
- 	clk_put(clk[cluster]);
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table[cluster]);
- 	if (arm_bL_ops->free_opp_table)
--		arm_bL_ops->free_opp_table(cpu_dev);
-+		arm_bL_ops->free_opp_table(cpumask);
- 	dev_dbg(cpu_dev, "%s: cluster: %d\n", __func__, cluster);
- }
- 
--static void put_cluster_clk_and_freq_table(struct device *cpu_dev)
-+static void put_cluster_clk_and_freq_table(struct device *cpu_dev,
-+					   const struct cpumask *cpumask)
- {
- 	u32 cluster = cpu_to_cluster(cpu_dev->id);
- 	int i;
-@@ -321,7 +323,7 @@ static void put_cluster_clk_and_freq_table(struct device *cpu_dev)
- 		return;
- 
- 	if (cluster < MAX_CLUSTERS)
--		return _put_cluster_clk_and_freq_table(cpu_dev);
-+		return _put_cluster_clk_and_freq_table(cpu_dev, cpumask);
- 
- 	for_each_present_cpu(i) {
- 		struct device *cdev = get_cpu_device(i);
-@@ -330,14 +332,15 @@ static void put_cluster_clk_and_freq_table(struct device *cpu_dev)
- 			return;
- 		}
- 
--		_put_cluster_clk_and_freq_table(cdev);
-+		_put_cluster_clk_and_freq_table(cdev, cpumask);
- 	}
- 
- 	/* free virtual table */
- 	kfree(freq_table[cluster]);
- }
- 
--static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
-+static int _get_cluster_clk_and_freq_table(struct device *cpu_dev,
-+					   const struct cpumask *cpumask)
- {
- 	u32 cluster = raw_cpu_to_cluster(cpu_dev->id);
- 	int ret;
-@@ -345,7 +348,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 	if (freq_table[cluster])
- 		return 0;
- 
--	ret = arm_bL_ops->init_opp_table(cpu_dev);
-+	ret = arm_bL_ops->init_opp_table(cpumask);
- 	if (ret) {
- 		dev_err(cpu_dev, "%s: init_opp_table failed, cpu: %d, err: %d\n",
- 				__func__, cpu_dev->id, ret);
-@@ -374,14 +377,15 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 
- free_opp_table:
- 	if (arm_bL_ops->free_opp_table)
--		arm_bL_ops->free_opp_table(cpu_dev);
-+		arm_bL_ops->free_opp_table(cpumask);
- out:
- 	dev_err(cpu_dev, "%s: Failed to get data for cluster: %d\n", __func__,
- 			cluster);
- 	return ret;
- }
- 
--static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
-+static int get_cluster_clk_and_freq_table(struct device *cpu_dev,
-+					  const struct cpumask *cpumask)
- {
- 	u32 cluster = cpu_to_cluster(cpu_dev->id);
- 	int i, ret;
-@@ -390,7 +394,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 		return 0;
- 
- 	if (cluster < MAX_CLUSTERS) {
--		ret = _get_cluster_clk_and_freq_table(cpu_dev);
-+		ret = _get_cluster_clk_and_freq_table(cpu_dev, cpumask);
- 		if (ret)
- 			atomic_dec(&cluster_usage[cluster]);
- 		return ret;
-@@ -407,7 +411,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 			return -ENODEV;
- 		}
- 
--		ret = _get_cluster_clk_and_freq_table(cdev);
-+		ret = _get_cluster_clk_and_freq_table(cdev, cpumask);
- 		if (ret)
- 			goto put_clusters;
- 	}
-@@ -433,7 +437,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 			return -ENODEV;
- 		}
- 
--		_put_cluster_clk_and_freq_table(cdev);
-+		_put_cluster_clk_and_freq_table(cdev, cpumask);
- 	}
- 
- 	atomic_dec(&cluster_usage[cluster]);
-@@ -455,18 +459,6 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 		return -ENODEV;
- 	}
- 
--	ret = get_cluster_clk_and_freq_table(cpu_dev);
--	if (ret)
--		return ret;
--
--	ret = cpufreq_table_validate_and_show(policy, freq_table[cur_cluster]);
--	if (ret) {
--		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
--				policy->cpu, cur_cluster);
--		put_cluster_clk_and_freq_table(cpu_dev);
--		return ret;
--	}
--
- 	if (cur_cluster < MAX_CLUSTERS) {
- 		int cpu;
- 
-@@ -479,6 +471,18 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 		per_cpu(physical_cluster, policy->cpu) = A15_CLUSTER;
- 	}
- 
-+	ret = get_cluster_clk_and_freq_table(cpu_dev, policy->cpus);
-+	if (ret)
-+		return ret;
-+
-+	ret = cpufreq_table_validate_and_show(policy, freq_table[cur_cluster]);
-+	if (ret) {
-+		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
-+			policy->cpu, cur_cluster);
-+		put_cluster_clk_and_freq_table(cpu_dev, policy->cpus);
-+		return ret;
-+	}
-+
- 	if (arm_bL_ops->get_transition_latency)
- 		policy->cpuinfo.transition_latency =
- 			arm_bL_ops->get_transition_latency(cpu_dev);
-@@ -509,7 +513,7 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- 		return -ENODEV;
- 	}
- 
--	put_cluster_clk_and_freq_table(cpu_dev);
-+	put_cluster_clk_and_freq_table(cpu_dev, policy->related_cpus);
- 	dev_dbg(cpu_dev, "%s: Exited, cpu: %d\n", __func__, policy->cpu);
- 
- 	return 0;
-diff --git a/drivers/cpufreq/arm_big_little.h b/drivers/cpufreq/arm_big_little.h
-index b88889d9387e..184d7c3a112a 100644
---- a/drivers/cpufreq/arm_big_little.h
-+++ b/drivers/cpufreq/arm_big_little.h
-@@ -30,11 +30,11 @@ struct cpufreq_arm_bL_ops {
- 	 * This must set opp table for cpu_dev in a similar way as done by
- 	 * dev_pm_opp_of_add_table().
- 	 */
--	int (*init_opp_table)(struct device *cpu_dev);
-+	int (*init_opp_table)(const struct cpumask *cpumask);
- 
- 	/* Optional */
- 	int (*get_transition_latency)(struct device *cpu_dev);
--	void (*free_opp_table)(struct device *cpu_dev);
-+	void (*free_opp_table)(const struct cpumask *cpumask);
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -114,6 +114,7 @@ struct cpudata {
+ 	u64	prev_mperf;
+ 	u64	prev_tsc;
+ 	u64	prev_cummulative_iowait;
++	int	avg_frequency;
+ 	struct sample sample;
  };
  
- int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops);
-diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
-index 16ddeefe9443..39b3f51d9a30 100644
---- a/drivers/cpufreq/arm_big_little_dt.c
-+++ b/drivers/cpufreq/arm_big_little_dt.c
-@@ -43,23 +43,6 @@ static struct device_node *get_cpu_node_with_valid_op(int cpu)
- 	return np;
+@@ -1044,7 +1045,7 @@ static inline void intel_pstate_adjust_b
+ 		sample->mperf,
+ 		sample->aperf,
+ 		sample->tsc,
+-		get_avg_frequency(cpu));
++		cpu->avg_frequency);
  }
  
--static int dt_init_opp_table(struct device *cpu_dev)
--{
--	struct device_node *np;
--	int ret;
--
--	np = of_node_get(cpu_dev->of_node);
--	if (!np) {
--		pr_err("failed to find cpu%d node\n", cpu_dev->id);
--		return -ENOENT;
--	}
--
--	ret = dev_pm_opp_of_add_table(cpu_dev);
--	of_node_put(np);
--
--	return ret;
--}
--
- static int dt_get_transition_latency(struct device *cpu_dev)
- {
- 	struct device_node *np;
-@@ -81,8 +64,8 @@ static int dt_get_transition_latency(struct device *cpu_dev)
- static struct cpufreq_arm_bL_ops dt_bL_ops = {
- 	.name	= "dt-bl",
- 	.get_transition_latency = dt_get_transition_latency,
--	.init_opp_table = dt_init_opp_table,
--	.free_opp_table = dev_pm_opp_of_remove_table,
-+	.init_opp_table = dev_pm_opp_of_cpumask_add_table,
-+	.free_opp_table = dev_pm_opp_of_cpumask_remove_table,
- };
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+@@ -1056,8 +1057,11 @@ static void intel_pstate_update_util(str
+ 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
+ 		bool sample_taken = intel_pstate_sample(cpu, time);
  
- static int generic_bL_probe(struct platform_device *pdev)
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index de5e89b2eaaa..e8a7bf57b31b 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -18,6 +18,7 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -38,10 +39,20 @@ static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
- 	return scpi_ops->dvfs_get_info(domain);
- }
- 
--static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
-+static int scpi_get_transition_latency(struct device *cpu_dev)
- {
--	int idx, ret = 0;
-+	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
-+
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
-+	return info->latency;
-+}
-+
-+static int scpi_init_opp_table(const struct cpumask *cpumask)
-+{
-+	int idx, ret;
- 	struct scpi_opp *opp;
-+	struct device *cpu_dev = get_cpu_device(cpumask_first(cpumask));
- 	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
- 
- 	if (IS_ERR(info))
-@@ -51,11 +62,7 @@ static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
- 		return -EIO;
- 
- 	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
--		if (remove)
--			dev_pm_opp_remove(cpu_dev, opp->freq);
--		else
--			ret = dev_pm_opp_add(cpu_dev, opp->freq,
--					     opp->m_volt * 1000);
-+		ret = dev_pm_opp_add(cpu_dev, opp->freq, opp->m_volt * 1000);
- 		if (ret) {
- 			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
- 				 opp->freq, opp->m_volt);
-@@ -64,33 +71,19 @@ static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
- 			return ret;
- 		}
+-		if (sample_taken && !hwp_active)
+-			intel_pstate_adjust_busy_pstate(cpu);
++		if (sample_taken) {
++			cpu->avg_frequency = get_avg_frequency(cpu);
++			if (!hwp_active)
++				intel_pstate_adjust_busy_pstate(cpu);
++		}
  	}
--	return ret;
--}
- 
--static int scpi_get_transition_latency(struct device *cpu_dev)
--{
--	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
--
--	if (IS_ERR(info))
--		return PTR_ERR(info);
--	return info->latency;
--}
--
--static int scpi_init_opp_table(struct device *cpu_dev)
--{
--	return scpi_opp_table_ops(cpu_dev, false);
--}
--
--static void scpi_free_opp_table(struct device *cpu_dev)
--{
--	scpi_opp_table_ops(cpu_dev, true);
-+	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, cpumask);
-+	if (ret)
-+		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
-+			__func__, ret);
-+	return ret;
  }
  
- static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
- 	.name	= "scpi",
- 	.get_transition_latency = scpi_get_transition_latency,
- 	.init_opp_table = scpi_init_opp_table,
--	.free_opp_table = scpi_free_opp_table,
-+	.free_opp_table = dev_pm_opp_cpumask_remove_table,
- };
+@@ -1123,14 +1127,9 @@ static int intel_pstate_init_cpu(unsigne
  
- static int scpi_cpufreq_probe(struct platform_device *pdev)
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 433e93fd4900..87e5bdc5ec74 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -18,6 +18,7 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -26,8 +27,9 @@
- 
- #include "arm_big_little.h"
- 
--static int ve_spc_init_opp_table(struct device *cpu_dev)
-+static int ve_spc_init_opp_table(const struct cpumask *cpumask)
+ static unsigned int intel_pstate_get(unsigned int cpu_num)
  {
-+	struct device *cpu_dev = get_cpu_device(cpumask_first(cpumask));
- 	/*
- 	 * platform specific SPC code must initialise the opp table
- 	 * so just check if the OPP count is non-zero
--- 
-1.9.1
+-	struct sample *sample;
+-	struct cpudata *cpu;
++	struct cpudata *cpu = all_cpu_data[cpu_num];
+ 
+-	cpu = all_cpu_data[cpu_num];
+-	if (!cpu)
+-		return 0;
+-	sample = &cpu->sample;
+-	return get_avg_frequency(cpu);
++	return cpu ? cpu->avg_frequency : 0;
+ }
+ 
+ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+
