@@ -1,89 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any()
- out of irq safe block
-Date: Tue, 3 May 2016 17:19:31 +0530
-Message-ID: <20160503114931.GA3083@vireshk-i7>
-References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH] thermal: trivial: fix the typo
+Date: Tue,  3 May 2016 20:07:41 +0800
+Message-ID: <1462277262-29935-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: edubezval@gmail.com
+Cc: Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Jiri Kosina <trivial@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03-05-16, 15:10, Akshay Adiga wrote:
-> Fixing a WARN_ON caused by smp_call_function_any() when irq is disabled,
-> because of changes made in the patch
-> ('cpufreq: powernv: Ramp-down global pstate slower than local-pstate')
-> https://patchwork.ozlabs.org/patch/612058/
-> 
->  WARNING: CPU: 0 PID: 4 at kernel/smp.c:291
-> smp_call_function_single+0x170/0x180
-> 
->  Call Trace:
->  [c0000007f648f9f0] [c0000007f648fa90] 0xc0000007f648fa90 (unreliable)
->  [c0000007f648fa30] [c0000000001430e0] smp_call_function_any+0x170/0x1c0
->  [c0000007f648fa90] [c0000000007b4b00]
-> powernv_cpufreq_target_index+0xe0/0x250
->  [c0000007f648fb00] [c0000000007ac9dc]
-> __cpufreq_driver_target+0x20c/0x3d0
->  [c0000007f648fbc0] [c0000000007b1b4c] od_dbs_timer+0xcc/0x260
->  [c0000007f648fc10] [c0000000007b3024] dbs_work_handler+0x54/0xa0
->  [c0000007f648fc50] [c0000000000c49a8] process_one_work+0x1d8/0x590
->  [c0000007f648fce0] [c0000000000c4e08] worker_thread+0xa8/0x660
->  [c0000007f648fd80] [c0000000000cca88] kthread+0x108/0x130
->  [c0000007f648fe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
-> 
-> Moving smp_call_function_any() out of the critical section and changing
-> irq safe spinlocks to normal spinlocks.
-> 
-> Reported-by: Abdul Haleem <abdhalee@linux.vnet.linux.com>
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
-> Patch is based on Rafael's linux-next
->  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 144c732..1f0e20c 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -581,9 +581,10 @@ void gpstate_timer_handler(unsigned long data)
->  	gpstates->last_gpstate = freq_data.gpstate_id;
->  	gpstates->last_lpstate = freq_data.pstate_id;
->  
-> +	spin_unlock(&gpstates->gpstate_lock);
-> +
->  	/* Timer may get migrated to a different cpu on cpu hot unplug */
->  	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> -	spin_unlock(&gpstates->gpstate_lock);
->  }
->  
->  /*
-> @@ -596,7 +597,6 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  {
->  	struct powernv_smp_call_data freq_data;
->  	unsigned int cur_msec, gpstate_id;
-> -	unsigned long flags;
->  	struct global_pstate_info *gpstates = policy->driver_data;
->  
->  	if (unlikely(rebooting) && new_index != get_nominal_index())
-> @@ -607,7 +607,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	cur_msec = jiffies_to_msecs(get_jiffies_64());
->  
-> -	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
-> +	spin_lock(&gpstates->gpstate_lock);
+See the thermal code, the obvious typo from my editor.
 
-You don't necessarily have to write 'what you are doing' in the commit log, but
-tell us why you are doing that.
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+---
 
-Please explain, why is this changed and why will things continue to work
-without this.
+ Documentation/devicetree/bindings/thermal/thermal.txt | 10 +++++-----
+ drivers/thermal/thermal_core.c                        |  2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 41b817f..88b6ea1 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -62,7 +62,7 @@ For more examples of cooling devices, refer to the example sections below.
+ Required properties:
+ - #cooling-cells:	Used to provide cooling device specific information
+   Type: unsigned	while referring to it. Must be at least 2, in order
+-  Size: one cell      	to specify minimum and maximum cooling state used
++  Size: one cell	to specify minimum and maximum cooling state used
+ 			in the reference. The first cell is the minimum
+ 			cooling state requested and the second cell is
+ 			the maximum cooling state requested in the reference.
+@@ -119,7 +119,7 @@ Required properties:
+ Optional property:
+ - contribution:		The cooling contribution to the thermal zone of the
+   Type: unsigned	referred cooling device at the referred trip point.
+-  Size: one cell      	The contribution is a ratio of the sum
++  Size: one cell	The contribution is a ratio of the sum
+ 			of all cooling contributions within a thermal zone.
+ 
+ Note: Using the THERMAL_NO_LIMIT (-1UL) constant in the cooling-device phandle
+@@ -145,7 +145,7 @@ Required properties:
+   Size: one cell
+ 
+ - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
+-  Type: list of 	used while monitoring the thermal zone.
++  Type: list of		used while monitoring the thermal zone.
+   phandles + sensor
+   specifier
+ 
+@@ -473,7 +473,7 @@ thermal-zones {
+ 				  <&adc>;	/* pcb north */
+ 
+ 		/* hotspot = 100 * bandgap - 120 * adc + 484 */
+-		coefficients = 		<100	-120	484>;
++		coefficients =		<100	-120	484>;
+ 
+ 		trips {
+ 			...
+@@ -502,7 +502,7 @@ from the ADC sensor. The binding would be then:
+         thermal-sensors =  <&adc>;
+ 
+ 		/* hotspot = 1 * adc + 6000 */
+-	coefficients = 		<1	6000>;
++	coefficients =		<1	6000>;
+ 
+ (d) - Board thermal
+ 
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index e5bfbd3..26870ef 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -513,7 +513,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 		if (!ret && *temp < crit_temp)
+ 			*temp = tz->emul_temperature;
+ 	}
+- 
++
+ 	mutex_unlock(&tz->lock);
+ exit:
+ 	return ret;
 -- 
-viresh
+1.9.1
