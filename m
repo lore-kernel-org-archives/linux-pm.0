@@ -1,94 +1,62 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [RESEND PATCH v10 3/4] gadget: Integrate with the usb gadget supporting for usb charger
-Date: Tue,  3 May 2016 11:30:16 +0800
-Message-ID: <f97f8a11c247b88f7bc0f5ac6d5ee74d0be47683.1462245638.git.baolin.wang@linaro.org>
-References: <cover.1462245638.git.baolin.wang@linaro.org>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1462245638.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
-Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [RFC][RFP] LPC2016 Thermal MC
+Date: Mon, 2 May 2016 20:55:49 -0700
+Message-ID: <20160503035548.GA19699@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: caesar.wang@rock-chips.com, wxt@rock-chips.com, j-keerthy@ti.com, punit.agrawal@arm.com, viresh.kumar@linaro.org, wni@nvidia.com, Srikar Srimath Tirumala <srikars@nvidia.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Lina Iyer <lina.iyer@linaro.org>, rjw@rjwysocki.net, len.brown@intel.com, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When the usb gadget supporting for usb charger is ready, the usb charger
-can implement the usb_charger_plug_by_gadget() function and usb_charger_exit()
-function by getting 'struct usb_charger' from 'struct gadget'.
+Linux-pm,
 
-Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/usb/gadget/udc/charger.c |   39 +++++++++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+As a continuation of the work done in 2015, I am proposing this year a
+micro conference (MC) to gather thermal interested parties to discuss
+improvements to the thermal subsystem [1]. Last year, I believe it was a
+success in terms of achieving the goal of creating awareness, however, I
+believe we need to continue improving the design and architecture of the
+subsystem by listening how engineers are using it in their use cases.
 
-diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
-index e24cb0a..ee711cd 100644
---- a/drivers/usb/gadget/udc/charger.c
-+++ b/drivers/usb/gadget/udc/charger.c
-@@ -527,6 +527,30 @@ usb_charger_plug_by_extcon(struct notifier_block *nb,
- int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
- 			       unsigned long state)
- {
-+	struct usb_charger *uchger = gadget->charger;
-+	enum usb_charger_state uchger_state;
-+
-+	if (WARN(!uchger, "charger can not be NULL"))
-+		return -EINVAL;
-+
-+	/*
-+	 * Report event to power to setting the current limitation
-+	 * for this usb charger when one usb charger state is changed
-+	 * with detecting by usb gadget state.
-+	 */
-+	if (uchger->old_gadget_state != state) {
-+		uchger->old_gadget_state = state;
-+
-+		if (state >= USB_STATE_ATTACHED)
-+			uchger_state = USB_CHARGER_PRESENT;
-+		else if (state == USB_STATE_NOTATTACHED)
-+			uchger_state = USB_CHARGER_REMOVE;
-+		else
-+			uchger_state = USB_CHARGER_DEFAULT;
-+
-+		usb_charger_notify_others(uchger, uchger_state);
-+	}
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(usb_charger_plug_by_gadget);
-@@ -683,6 +707,7 @@ int usb_charger_init(struct usb_gadget *ugadget)
- 
- 	/* register a notifier on a usb gadget device */
- 	uchger->gadget = ugadget;
-+	ugadget->charger = uchger;
- 	uchger->old_gadget_state = ugadget->state;
- 
- 	/* register a new usb charger */
-@@ -703,7 +728,19 @@ fail:
- 
- int usb_charger_exit(struct usb_gadget *ugadget)
- {
--	return 0;
-+	struct usb_charger *uchger = ugadget->charger;
-+
-+	if (WARN(!uchger, "charger can not be NULL"))
-+		return -EINVAL;
-+
-+	if (uchger->extcon_dev)
-+		extcon_unregister_notifier(uchger->extcon_dev,
-+					   EXTCON_USB,
-+					   &uchger->extcon_nb.nb);
-+
-+	ida_simple_remove(&usb_charger_ida, uchger->id);
-+
-+	return usb_charger_unregister(uchger);
- }
- 
- static int __init usb_charger_class_init(void)
--- 
-1.7.9.5
+Clearly, more and more I hear engineers looking for a better solution
+for userspace driven policies. For this reason, I am proposing the
+following agenda:
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+  * Sensor API: 
+    * Current sensor feature support: what is really in use. 
+    * interaction with other subsystems: IIO and hwmon, path to consolidation
+  * Userspace governors:
+    * What is currently existing
+    * What feature are controlled by userspace governors
+  * Effective userspace notification mechanism
+    * Existing mechanism for notification
+    * GAPs in notification needed to be covered
+    * Policy configuration and interaction with userspace 
+  * Cooling devices
+    * Userspace listeners for cooling device state transition
+    * Userspace cooling devices
+
+If you are interested and have a good use case description to be discussed
+within to above topics, please add your name to the list in the wiki, and
+sign up for driving one of the topics. It would be nice to conclude the
+MC with a list of practical required changes in the subsystem, based on
+real use case scenarios.
+
+I know the MC has a time limitation and we can probably also progress by
+discussing code in the mailing list. However, I also believe it is important
+to have a face to face discussion to better understand the use cases that
+are not covered today.
+
+Also, if you believe another topic needs to be covered, please, do not
+hesitate to add it to the list.
+
+Note: If you believe I forgot to copy someone, please help me to
+properly make sure the message reaches the right quorum.
+
+BR,
+
+Eduardo Valentin
+
+[1] - http://wiki.linuxplumbersconf.org/2016:thermal#proposed_topics_tentative
