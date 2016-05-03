@@ -1,34 +1,84 @@
-From: Appana Durga Kedareswara Rao <appana.durga.rao@xilinx.com>
-Subject: RE: [PATCH 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
-Date: Tue, 3 May 2016 09:10:21 +0000
-Message-ID: <C246CAC1457055469EF09E3A7AC4E11A4A57E021@XAP-PVEXMBX01.xlnx.xilinx.com>
-References: <1462191475-30904-1-git-send-email-pramod.gurav@linaro.org>
- <C246CAC1457055469EF09E3A7AC4E11A4A57D4C0@XAP-PVEXMBX01.xlnx.xilinx.com>
- <20160503064828.GN2274@localhost>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH 1/4] thermal: Add support for hardware-tracked trip points
+Date: Tue, 3 May 2016 17:25:47 +0800
+Message-ID: <57286E9B.5060804@gmail.com>
+References: <1461553367-24744-1-git-send-email-wxt@rock-chips.com>
+ <1461553367-24744-2-git-send-email-wxt@rock-chips.com>
+ <20160427214843.GA6438@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160503064828.GN2274@localhost>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: Pramod Gurav <pramod.gurav@linaro.org>, "andy.gross@linaro.org" <andy.gross@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "stanimir.varbanov@linaro.org" <stanimir.varbanov@linaro.org>, "okaya@codeaurora.org" <okaya@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:34602 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932223AbcECJ0E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 05:26:04 -0400
+In-Reply-To: <20160427214843.GA6438@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, dianders@chromium.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, eddie.cai@rock-chips.com, smbarber@google.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>
 
-Hi Vinod,
 
-> How difficult is it for you to get rid of this nonsense?
 
-It is issue with my mail client I am not sure how to get rid of it
-Will manually strip crap while replying to patches next time on wards.
-Sorry for the noise...
+=E5=9C=A8 2016=E5=B9=B404=E6=9C=8828=E6=97=A5 05:48, Eduardo Valentin =E5=
+=86=99=E9=81=93:
+> This patch is based on an earlier version from Mikko Perttunen
+> <mikko.perttunen@kapsi.fi>
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>
+>   drivers/thermal/thermal_core.c | 48 +++++++++++++++++++++++++++++++=
++++++++++++
+>   include/linux/thermal.h        |  3 +++
+>>
+>
+>   static void update_temperature(struct thermal_zone_device *tz)
+>   {
+>   	int temp, ret;
+> @@ -569,6 +610,8 @@ void thermal_zone_device_update(struct thermal_zo=
+ne_device *tz)
+>  =20
+>   	update_temperature(tz);
+>  =20
+> +	thermal_zone_set_trips(tz);
+> +
+>   	for (count =3D 0; count < tz->trips; count++)
+>   		handle_thermal_trip(tz, count);
+>   }
+> @@ -754,6 +797,9 @@ trip_point_hyst_store(struct device *dev, struct =
+device_attribute *attr,
+>   	 */
+>   	ret =3D tz->ops->set_trip_hyst(tz, trip, temperature);
+>  =20
+> +	if (!ret)
+> +		thermal_zone_set_trips(tz);
+> +
+> You would probably want to do the same on trip_point_temp_store().
+>
 
-> 
-> And while replying please remove the non relevant context, it serves no
-> purpose!
+Sorry, that has been set in thermal_zone_device_update().
 
-Sure will take care of it next time onwards...
+static ssize_t trip_point_temp_store()
+{
+     ..
+     thermal_zone_device_update(tz);
+     ..
+}
 
-Regards,
-Kedar.
+> _______________________________________________
+> Linux-rockchip mailing list
+> Linux-rockchip@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+
+
+--=20
+Thanks,
+Caesar
+
