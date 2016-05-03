@@ -1,90 +1,65 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 0/8] PM / devfreq: Add NoCP devfreq-event and support
- busfreq on exyno5422-odroidxu3
-Date: Tue, 03 May 2016 19:48:24 +0900
-Message-ID: <572881F8.3020701@samsung.com>
-References: <1460701975-24178-1-git-send-email-cw00.choi@samsung.com>
- <20160503102922.GD3956@kozik-lap>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RESEND PATCH v10 4/4] power: wm831x_power: Support USB charger
+ current limit management
+Date: Tue, 3 May 2016 11:57:18 +0100
+Message-ID: <20160503105718.GL6292@sirena.org.uk>
+References: <cover.1462245638.git.baolin.wang@linaro.org>
+ <80aa73ffd5c8e9ae8cd280d37f5141067e79c11f.1462245638.git.baolin.wang@linaro.org>
+ <CAKDJKT46cJQbjdObUxBpWsciG1FjcL8CdV7iAeMefjNQPGicKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="xjamM5M9kpPM/bcu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:42127 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbcECKs3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 06:48:29 -0400
-In-reply-to: <20160503102922.GD3956@kozik-lap>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:44282 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932269AbcECK6E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 06:58:04 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKDJKT46cJQbjdObUxBpWsciG1FjcL8CdV7iAeMefjNQPGicKA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, tomasz.figa@gmail.com, s.nawrocki@samsung.com, kgene@kernel.org, robh@kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, linux.amoon@gmail.com, m.reichl@fivetechno.de, tjakobi@math.uni-bielefeld.de, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+To: Manish Badarkhe <badarkhe.manish@gmail.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Krzysztof,
 
-On 2016=EB=85=84 05=EC=9B=94 03=EC=9D=BC 19:29, Krzysztof Kozlowski wro=
-te:
-> On Fri, Apr 15, 2016 at 03:32:47PM +0900, Chanwoo Choi wrote:
->> This patchset support the AMBA bus frequency scaling on Exynos5422-b=
-ased
->> Odroid-XU3 board. But, this series only support the bus frequency sc=
-aling
->> for INT (Internal) block using VDD_INT power line.
->>
->> Also, to support the bus frequency scaling for Exynos542x SoC,
->> Exynos542x SoC has the specific 'NoC (Network on Chip) Probe' device
->> to measure the transfered data traffic on NoC (Network on Chip)
->> instead of PPMU (Platform Performance Monitoring Unit). NoC Probe de=
-vice
->> provide the utilization for INT block of Exynos542x SoC.
->>
->> The generic exynos-bus frequency driver uses the 'NoC Probe' devfreq=
--event
->> device (drivers/devfreq/event/exynos-nocp.c) without any modificatio=
-n.
->> Just add the phandle of 'NoC Probe' dt node to bus dt node.
->>
->> Depend on:
->> This patchset depends on patch[1] which support the generic exynos-b=
-us
->> frequency driver.
->> [1] http://www.spinics.net/lists/arm-kernel/msg495976.html
->> - [PATCH v9 00/20] PM / devferq: Add generic exynos bus frequency dr=
-iver and new passive governor
->>
->>
->> Changse from v1:
->> (https://lkml.org/lkml/2016/4/8/28)
->> - Simplify the documentation of exynos-nocp.txt
->> - Check the return value of regmap function
->> - Modify Device Tree node name using general device name
->>  : nocp_memX_X@ nocp_memX_X -> nocp_memX_X@ nocp
->> - Fix wrong node name about nocp device tree node
->> - Drop the CLK_SET_RATE_PARENT flag
->> - Reorder bus device tree node alpabetically
->> - Add the tested-by tag from Anand Moon and Markus Reichl
->> - Add the reviewed-by tag to patch5/7 from Exynos SoC Maintainer
->> - Add patch2 to modify the devfreq_event_get_edev_by_phandle()
->>   to get the instance of devfreq-event device by using the phandle
->>
->> Chanwoo Choi (8):
->>   PM / devfreq: event: Add new Exynos NoC probe driver
->>   PM / devfreq: event: Find the instance of devfreq-event device by =
-using phandle
->>   PM / devfreq: exynos: Add the detailed correlation for Exynos5422 =
-bus
->>   ARM: dts: Add NoC Probe dt node for Exynos542x SoC
->>   dt-bindings: clock: Add the clock id for ACLK clock of Exynos542x =
-SoC
->>   clk: samsung: exynos542x: Add the clock id for ACLK
->>   ARM: dts: Add bus nodes using VDD_INT for Exynos542x SoC
->>   ARM: dts: Add support of Bus frequency using VDD_INT for exynos542=
-2-odroidxu3
->=20
->=20
-> Applied DTS patches for late v4.7 (hopefully).
+--xjamM5M9kpPM/bcu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks for your review and apply.
+On Tue, May 03, 2016 at 09:30:48AM +0530, Manish Badarkhe wrote:
+> On Tue, May 3, 2016 at 9:00 AM, Baolin Wang <baolin.wang@linaro.org> wrote:
 
-Best Regards,
-Chanwoo Choi
+> > +static const unsigned int wm831x_usb_limits[] = {
+> > +       0,
+> > +       2,
+> > +       100,
+> > +       500,
+> > +       900,
+> > +       1500,
+> > +       1800,
+> > +       550,
+> > +};
 
+> Just for curiosity, How these current limits are getting decided?
+> Can we have some proper defines over here so that it can be grasped easily?
+
+They're in the silicon, it's just a table of values that were put into
+the silicon at design time.  The defines would just be TABLE_ENTRY_1 or
+whatever.
+
+--xjamM5M9kpPM/bcu
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXKIQJAAoJECTWi3JdVIfQBIoH/2xbZ/KEd4BBBQSDs6mOswQg
+hjYS5DKEeK1zYDl1U1Cq5QA5FfAZePuMldRIsUr3FR5adlMfB3FatmYPjjW6AHnO
+HAP38pIanV2ZQapc0PMOl9b0989FKZnJjUT6p03XI92km0COjKaw7JW3F8/id5kQ
+nuaH2UBXYY5wy2P7wbVsI+Zm7wk5V/lNL9j+tDgU5xTMrgdR0o47PBySYpViqApP
+WjrhfI4lXXvH5PfW/nZaznoPQCrzHc0hAZYJj/GiSSWbQbiuuZqjeyP7I7aTPAyK
+/8cp8UIbXT8kX1P2Bhk6l461ivoy69LQGII0SXphRvH+rWARzA6mNqksuf16GtA=
+=xc3b
+-----END PGP SIGNATURE-----
+
+--xjamM5M9kpPM/bcu--
