@@ -1,149 +1,248 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [lkp] [sched/fair] 41e0d37f7a: divide error: 0000 [#1] SMP
-Date: Tue, 03 May 2016 15:53:12 +0200
-Message-ID: <2362020.cjfALfDaxe@vostro.rjw.lan>
-References: <87mvo8gd44.fsf@yhuang-dev.intel.com> <CAJZ5v0j8310K6D7OXOhiJfMaktQAG3Q0RQ5rx_mpTd8zsnER3A@mail.gmail.com> <CAJZ5v0jwHf8yC9736Ys3ZfyACPZovv5Oz8dCgZ05mtabJsGJVg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v4 1/2] PM / OPP: add non-OF versions of dev_pm_opp_{cpumask_,}remove_table
+Date: Tue,  3 May 2016 15:05:04 +0100
+Message-ID: <1462284305-32177-1-git-send-email-sudeep.holla@arm.com>
+References: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jwHf8yC9736Ys3ZfyACPZovv5Oz8dCgZ05mtabJsGJVg@mail.gmail.com>
+In-Reply-To: <1461926262-24732-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Wanpeng Li <kernellwp@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, kernel test robot <ying.huang@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, lkp@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Mike Galbraith <efault@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 03, 2016 03:22:24 PM Rafael J. Wysocki wrote:
-> On Tue, May 3, 2016 at 2:58 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Tue, May 3, 2016 at 2:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >> On Tue, May 3, 2016 at 2:15 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >>> On Tue, May 3, 2016 at 10:32 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >>>> On Tue, May 03, 2016 at 09:10:51AM +0800, kernel test robot wrote:
-> >>>>> FYI, we noticed the following commit:
-> >>>>>
-> >>>>> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git sched/core
-> >>>>> commit 41e0d37f7ac81297c07ba311e4ad39465b8c8295 ("sched/fair: Do not call cpufreq hook unless util changed")
-> >>>>
-> >>>>
-> >>>>> [   14.860950] Freeing unused kernel memory: 260K (ffff88103edbf000 - ffff88103ee00000)
-> >>>>> [   14.873013] systemd[1]: RTC configured in localtime, applying delta of 480 minutes to system time.
-> >>>>> [   14.884474] random: systemd urandom read with 5 bits of entropy available
-> >>>>> [   14.903975] divide error: 0000 [#1] SMP
-> >>>>> [   14.908375] Modules linked in:
-> >>>>> [   14.911793] CPU: 39 PID: 1 Comm: systemd Not tainted 4.6.0-rc4-00016-g41e0d37 #1
-> >>>>> [   14.920051] Hardware name: Intel Corporation S2600WP/S2600WP, BIOS SE5C600.86B.02.02.0002.122320131210 12/23/2013
-> >>>>> [   14.931509] task: ffff8810101d8000 ti: ffff88081ab20000 task.ti: ffff88081ab20000
-> >>>>> [   14.939862] RIP: 0010:[<ffffffff8176ad32>]  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
-> >>>>> [   14.949202] RSP: 0018:ffff88081ab23d70  EFLAGS: 00010006
-> >>>>> [   14.955129] RAX: 0000000000000000 RBX: 0000000000000024 RCX: ffff8808091e0300
-> >>>>> [   14.963094] RDX: 0000000000000000 RSI: 0000000000000100 RDI: 0000000000000024
-> >>>>> [   14.971057] RBP: ffff88081ab23d88 R08: 0000000000001000 R09: 00000000096a1000
-> >>>>> [   14.979022] R10: 0000000000ffff10 R11: 000000000000000f R12: 0000000000000202
-> >>>>> [   14.986984] R13: ffff88101390a040 R14: ffff88100e48e180 R15: ffff88101390a040
-> >>>>> [   14.994950] FS:  00007f66fe117880(0000) GS:ffff8810139c0000(0000) knlGS:0000000000000000
-> >>>>> [   15.003982] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> >>>>> [   15.010393] CR2: 000055f78b760098 CR3: 000000103d759000 CR4: 00000000001406e0
-> >>>>> [   15.018359] Stack:
-> >>>>> [   15.020602]  ffffffff81764dad 0000000000000024 ffff88100e48e180 ffff88081ab23dc8
-> >>>>> [   15.028899]  ffffffff81040267 ffff88101390a0ac 0000000000000340 ffff88081ab23f20
-> >>>>> [   15.037197]  ffff88103cd7c400 ffff88100e48e180 ffff88101390a040 ffff88081ab23e30
-> >>>>> [   15.045493] Call Trace:
-> >>>>> [   15.048223]  [<ffffffff81764dad>] ? cpufreq_quick_get+0x3d/0x90
-> >>>>> [   15.054832]  [<ffffffff81040267>] show_cpuinfo+0x3c7/0x410
-> >>>>> [   15.060956]  [<ffffffff8121f5c4>] seq_read+0x2c4/0x3a0
-> >>>>> [   15.066685]  [<ffffffff81266ea8>] proc_reg_read+0x48/0x70
-> >>>>> [   15.072713]  [<ffffffff811f9d58>] __vfs_read+0x28/0xd0
-> >>>>> [   15.078451]  [<ffffffff813bab63>] ? security_file_permission+0xa3/0xc0
-> >>>>> [   15.085737]  [<ffffffff811faa97>] ? rw_verify_area+0x57/0xd0
-> >>>>> [   15.092054]  [<ffffffff811fab96>] vfs_read+0x86/0x130
-> >>>>> [   15.097691]  [<ffffffff811fbf96>] SyS_read+0x46/0xa0
-> >>>>> [   15.103234]  [<ffffffff818f71b2>] entry_SYSCALL_64_fastpath+0x1a/0xa4
-> >>>>> [   15.110421] Code: 05 dc 1b c3 00 89 ff 55 48 89 e5 48 8b 0c f8 48 85 c9 74 1f 48 63 51 1c 48 63 41 20 5d 48 0f af c2 31 d2 48 0f af 81 88 00 00 00 <48> f7 b1 90 00 00 00 c3 31 c0 5d c3 66 90 0f 1f 44 00 00 8b 77
-> >>>>> [   15.132161] RIP  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
-> >>>>> [   15.138875]  RSP <ffff88081ab23d70>
-> >>>>> [   15.142770] ---[ end trace e5d5a8bedf5502e1 ]---
-> >>>>> [   15.149323] Kernel panic - not syncing: Fatal exception
-> >>>>>
-> >>>>
-> >>>> That's intel_pstate.c:get_avg_frequency(), which assumes mperf != 0. It
-> >>>> being 0 seems to suggest intel_pstate_sample() hasn't been called yet or
-> >>>> so.
-> >>>
-> >>> Well, what's the tree based on?
-> >>>
-> >>> The mainline does this:
-> >>>
-> >>> bool sample_taken = intel_pstate_sample(cpu, time);
-> >>>
-> >>> if (sample_taken && !hwp_active)
-> >>>         intel_pstate_adjust_busy_pstate(cpu);
-> >>>
-> >>> and (the mainline version of) intel_pstate_sample() returns false when
-> >>> it is called for the first time after setting the update_util hook.
-> >>
-> >> If that helps, I can expose my pm-cpufreq-fixes branch to pull from.
-> >> It contains all cpufreq material that went into the Linus' tree to
-> >> date and is based on 4.5-rc3.
-> >
-> > In fact, it is exposed already:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-> > pm-cpufreq-fixes
-> >
-> > and the top-most commit is 1becf03545a0859ceaaf9e8c2d9861882a71cb01
-> > (cpufreq: intel_pstate: Fix processing for turbo activation ratio).
-> 
-> Ah, that will fail as well.
-> 
-> The problem is that intel_pstate_get() can be called before we take
-> the first sample.
-> 
-> I need to think about how to fix that.
+Functions dev_pm_opp_of_{cpumask_,}remove_table removes/frees all the
+static OPP entries associated with the device and/or all cpus(in case
+of cpumask) that are created from DT.
 
-Maybe something like the below (untested, but builds).
+However the OPP entries are populated reading from the firmware or some
+different method using dev_pm_opp_add are marked dynamic and can't be
+removed using above functions.
 
-It will make intel_pstate_get() return 0 until avg_frequency gets populated
-which is actually OK.
+This patch adds non DT/OF versions of dev_pm_opp_{cpumask_,}remove_table
+to support the above mentioned usecase.
 
+This is in preparation to make use of the same in scpi-cpufreq.c
+
+Cc: Viresh Kumar <vireshk@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>
+CC: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/intel_pstate.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/base/power/opp/core.c | 58 ++++++++++++++++++++++++++++++-----------
+ drivers/base/power/opp/cpu.c  | 60 ++++++++++++++++++++++++++++++++-----------
+ include/linux/pm_opp.h        | 10 ++++++++
+ 3 files changed, 98 insertions(+), 30 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -114,6 +114,7 @@ struct cpudata {
- 	u64	prev_mperf;
- 	u64	prev_tsc;
- 	u64	prev_cummulative_iowait;
-+	int	avg_frequency;
- 	struct sample sample;
- };
+v3->v4:
+	- Rebased on top of Arnd's patch[1] to avoid re-introducing the
+	  issue addressed by that patch
+
+v2->v3:
+	- updated all the errors in documentation and changed to use
+	  remove_all rather than remove_dyn(suggested by Viresh)
+	- Added Viresh's ACK on both the patches
+	- Rebased on linux-pm/bleeding-edge as there was a conflict
+
+v1->v2:
+	- Instead of renaming OF versions, created non-OF versions of
+	  dev_pm_opp_{cpumask_,}remove_table as suggested by Viresh
+
+[1] http://lkml.kernel.org/r/1462016049-1976580-1-git-send-email-arnd@arndb.de
+
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 433b60092972..9f8bf04b4dbe 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1845,21 +1845,11 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
  
-@@ -1037,6 +1038,7 @@ static inline void intel_pstate_adjust_b
- 	intel_pstate_update_pstate(cpu, target_pstate);
+-#ifdef CONFIG_OF
+-/**
+- * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
+- *				  entries
+- * @dev:	device pointer used to lookup OPP table.
+- *
+- * Free OPPs created using static entries present in DT.
+- *
+- * Locking: The internal opp_table and opp structures are RCU protected.
+- * Hence this function indirectly uses RCU updater strategy with mutex locks
+- * to keep the integrity of the internal data structures. Callers should ensure
+- * that this function is *NOT* called under RCU protection or in contexts where
+- * mutex cannot be locked.
++/*
++ * Free OPPs either created using static entries present in DT or even the
++ * dynamically added entries based on remove_all param.
+  */
+-void dev_pm_opp_of_remove_table(struct device *dev)
++static void _dev_pm_opp_remove_table(struct device *dev, bool remove_all)
+ {
+ 	struct opp_table *opp_table;
+ 	struct dev_pm_opp *opp, *tmp;
+@@ -1884,7 +1874,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ 	if (list_is_singular(&opp_table->dev_list)) {
+ 		/* Free static OPPs */
+ 		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
+-			if (!opp->dynamic)
++			if (remove_all || !opp->dynamic)
+ 				_opp_remove(opp_table, opp, true);
+ 		}
+ 	} else {
+@@ -1894,6 +1884,44 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
+ }
++
++/**
++ * dev_pm_opp_remove_table() - Free all OPPs associated with the device
++ * @dev:	device pointer used to lookup OPP table.
++ *
++ * Free both OPPs created using static entries present in DT and the
++ * dynamically added entries.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function indirectly uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_remove_table(struct device *dev)
++{
++	_dev_pm_opp_remove_table(dev, true);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_remove_table);
++
++#ifdef CONFIG_OF
++/**
++ * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
++ *				  entries
++ * @dev:	device pointer used to lookup OPP table.
++ *
++ * Free OPPs created using static entries present in DT.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function indirectly uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_of_remove_table(struct device *dev)
++{
++	_dev_pm_opp_remove_table(dev, false);
++}
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
  
- 	sample = &cpu->sample;
-+	cpu->avg_frequency = get_avg_frequency(cpu);
- 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
- 		fp_toint(sample->busy_scaled),
- 		from,
-@@ -1044,7 +1046,7 @@ static inline void intel_pstate_adjust_b
- 		sample->mperf,
- 		sample->aperf,
- 		sample->tsc,
--		get_avg_frequency(cpu));
-+		cpu->avg_frequency);
+ /* Returns opp descriptor node for a device, caller must do of_node_put() */
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 8e0b6349d7d4..357781e0b791 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -119,20 +119,8 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+ #endif	/* CONFIG_CPU_FREQ */
+ 
+-#ifdef CONFIG_OF
+-/**
+- * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
+- * @cpumask:	cpumask for which OPP table needs to be removed
+- *
+- * This removes the OPP tables for CPUs present in the @cpumask.
+- *
+- * Locking: The internal opp_table and opp structures are RCU protected.
+- * Hence this function internally uses RCU updater strategy with mutex locks
+- * to keep the integrity of the internal data structures. Callers should ensure
+- * that this function is *NOT* called under RCU protection or in contexts where
+- * mutex cannot be locked.
+- */
+-void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask)
++static void
++_dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of)
+ {
+ 	struct device *cpu_dev;
+ 	int cpu;
+@@ -147,9 +135,51 @@ void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask)
+ 			continue;
+ 		}
+ 
+-		dev_pm_opp_of_remove_table(cpu_dev);
++		if (of)
++			dev_pm_opp_of_remove_table(cpu_dev);
++		else
++			dev_pm_opp_remove_table(cpu_dev);
+ 	}
+ }
++
++/**
++ * dev_pm_opp_cpumask_remove_table() - Removes OPP table for @cpumask
++ * @cpumask:	cpumask for which OPP table needs to be removed
++ *
++ * This removes the OPP tables for CPUs present in the @cpumask.
++ * This should be used to remove all the OPPs entries associated with
++ * the cpus in @cpumask.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask)
++{
++	_dev_pm_opp_cpumask_remove_table(cpumask, false);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_remove_table);
++
++#ifdef CONFIG_OF
++/**
++ * dev_pm_opp_of_cpumask_remove_table() - Removes OPP table for @cpumask
++ * @cpumask:	cpumask for which OPP table needs to be removed
++ *
++ * This removes the OPP tables for CPUs present in the @cpumask.
++ * This should be used only to remove static entries created from DT.
++ *
++ * Locking: The internal opp_table and opp structures are RCU protected.
++ * Hence this function internally uses RCU updater strategy with mutex locks
++ * to keep the integrity of the internal data structures. Callers should ensure
++ * that this function is *NOT* called under RCU protection or in contexts where
++ * mutex cannot be locked.
++ */
++void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask)
++{
++	_dev_pm_opp_cpumask_remove_table(cpumask, true);
++}
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
+ 
+ /**
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 5221d259e413..bca26157f5b6 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -67,6 +67,8 @@ void dev_pm_opp_put_regulator(struct device *dev);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
++void dev_pm_opp_remove_table(struct device *dev);
++void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -190,6 +192,14 @@ static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpu
+ 	return -EINVAL;
  }
  
- static void intel_pstate_update_util(struct update_util_data *data, u64 time,
-@@ -1130,7 +1132,7 @@ static unsigned int intel_pstate_get(uns
- 	if (!cpu)
- 		return 0;
- 	sample = &cpu->sample;
--	return get_avg_frequency(cpu);
-+	return cpu->avg_frequency;
- }
++static inline void dev_pm_opp_remove_table(struct device *dev)
++{
++}
++
++static inline void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask)
++{
++}
++
+ #endif		/* CONFIG_PM_OPP */
  
- static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+-- 
+1.9.1
