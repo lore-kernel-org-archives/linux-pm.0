@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 18/31] thermal: core: move to_cooling_device macro to header file
-Date: Tue,  3 May 2016 23:02:32 -0700
-Message-ID: <1462341765-13268-19-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 12/31] thermal: core: remove unnecessary device_remove() calls
+Date: Tue,  3 May 2016 23:02:26 -0700
+Message-ID: <1462341765-13268-13-git-send-email-edubezval@gmail.com>
 References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
@@ -10,45 +10,33 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Make the to_cooling_device() macro available across
-files in thermal core.
+Given that cdevs sysfs properties are already registered using
+the dev.groups, there is no need to explicitly call device_remove()
+for each property.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 3 ---
- drivers/thermal/thermal_core.h | 3 +++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 0e7ffc5..c866b0a 100644
+index e844a04..5c13fa8 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -741,9 +741,6 @@ int thermal_build_list_of_policies(char *buf)
- }
+@@ -1798,11 +1798,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
  
- /* sys I/F for cooling device */
--#define to_cooling_device(_dev)	\
--	container_of(_dev, struct thermal_cooling_device, device)
+ 	mutex_unlock(&thermal_list_lock);
+ 
+-	if (cdev->type[0])
+-		device_remove_file(&cdev->device, &dev_attr_cdev_type);
+-	device_remove_file(&cdev->device, &dev_attr_max_state);
+-	device_remove_file(&cdev->device, &dev_attr_cur_state);
 -
- static ssize_t
- thermal_cooling_device_type_show(struct device *dev,
- 				 struct device_attribute *attr, char *buf)
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 62889c2..727c87d 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -57,6 +57,9 @@ struct thermal_instance {
- #define to_thermal_zone(_dev) \
- 	container_of(_dev, struct thermal_zone_device, device)
- 
-+#define to_cooling_device(_dev)	\
-+	container_of(_dev, struct thermal_cooling_device, device)
-+
- int thermal_register_governor(struct thermal_governor *);
- void thermal_unregister_governor(struct thermal_governor *);
- void thermal_zone_device_passive_update(struct thermal_zone_device *, int);
+ 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
+ 	device_unregister(&cdev->device);
+ 	return;
 -- 
 2.1.4
