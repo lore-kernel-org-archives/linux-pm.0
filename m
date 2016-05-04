@@ -1,47 +1,94 @@
 From: Manish Badarkhe <badarkhe.manish@gmail.com>
-Subject: Re: [RESEND PATCH v10 4/4] power: wm831x_power: Support USB charger
- current limit management
-Date: Wed, 4 May 2016 08:59:23 +0530
-Message-ID: <CAKDJKT4=LtMRGJKnj6CkYhey1Avmdk0gFf-mTQuDz+VrRrQsMg@mail.gmail.com>
-References: <cover.1462245638.git.baolin.wang@linaro.org>
-	<80aa73ffd5c8e9ae8cd280d37f5141067e79c11f.1462245638.git.baolin.wang@linaro.org>
-	<CAKDJKT46cJQbjdObUxBpWsciG1FjcL8CdV7iAeMefjNQPGicKA@mail.gmail.com>
-	<20160503105718.GL6292@sirena.org.uk>
+Subject: Re: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
+Date: Wed, 4 May 2016 09:02:08 +0530
+Message-ID: <CAKDJKT5SyvTmZX3wUead_bzigJvs5JRR35=jPX_usP4XJaYZ0g@mail.gmail.com>
+References: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
+	<CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
+	<CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f174.google.com ([209.85.223.174]:33344 "EHLO
-	mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752458AbcEDD3Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 May 2016 23:29:24 -0400
-In-Reply-To: <20160503105718.GL6292@sirena.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@linaro.org>
+Cc: vinod.koul@intel.com, Andy Gross <andy.gross@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Stanimir Varbanov <stanimir.varbanov@linaro.org>, okaya@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, peter.chen@freescale.com, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, Lee Jones <lee.jones@linaro.org>, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Mark
+Hi Pramod
 
->> > +static const unsigned int wm831x_usb_limits[] = {
->> > +       0,
->> > +       2,
->> > +       100,
->> > +       500,
->> > +       900,
->> > +       1500,
->> > +       1800,
->> > +       550,
->> > +};
->
->> Just for curiosity, How these current limits are getting decided?
->> Can we have some proper defines over here so that it can be grasped easily?
->
-> They're in the silicon, it's just a table of values that were put into
-> the silicon at design time.  The defines would just be TABLE_ENTRY_1 or
-> whatever.
+>>> @@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
+>>>         struct bam_device *bdev = bchan->bdev;
+>>>         unsigned long flag;
+>>>
+>>> +       pm_runtime_get_sync(bdev->dev);
+>>>         spin_lock_irqsave(&bchan->vc.lock, flag);
+>>>         writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
+>>>         bchan->paused = 0;
+>>>         spin_unlock_irqrestore(&bchan->vc.lock, flag);
+>>> +       pm_runtime_mark_last_busy(bdev->dev);
+>>> +       pm_runtime_put_autosuspend(bdev->dev);
+>>>
+>>>         return 0;
+>>>  }
+>>
+>> Why this function simply return 'success' without any error capture?
+>>
+> I should check return of pm_runtime_get_sync.
 
-Thanks for the clarification, In that case, comments/documentation
-will work instead of making any defines.
+Ok, fine.
+
+>>> @@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
+>>>
+>>>         tasklet_kill(&bdev->task);
+>>>
+>>> +       pm_runtime_get_sync(&pdev->dev);
+>>>         clk_disable_unprepare(bdev->bamclk);
+>>> +       pm_runtime_disable(&pdev->dev);
+>>> +       pm_runtime_put_noidle(&pdev->dev);
+>>> +       pm_runtime_set_suspended(&pdev->dev);
+>>> +
+>>> +       return 0;
+>>> +}
+>>
+>> Why this function simply return 'success' without any error capture?
+> Need to handle it better.
+
+Yes, need to handle __pm_runtime__ errors.
+
+>>
+>>> +static int bam_dma_runtime_suspend(struct device *dev)
+>>> +{
+>>> +       struct bam_device *bdev = dev_get_drvdata(dev);
+>>> +
+>>> +       clk_disable(bdev->bamclk);
+>>> +
+>>> +       return 0;
+>>> +}
+>>
+>> Why this function simply return 'success' without any error capture?
+> If probe has succeeded means bdev->bamclk is not NULL and error hence
+> clk_disable wont return anything.
+
+got it.
+
+>>> +#ifdef CONFIG_PM_SLEEP
+>>> +static int bam_dma_suspend(struct device *dev)
+>>> +{
+>>> +       struct bam_device *bdev = dev_get_drvdata(dev);
+>>> +
+>>> +       pm_runtime_force_suspend(dev);
+>>> +
+>>> +       clk_unprepare(bdev->bamclk);
+>>>
+>>>         return 0;
+>>>  }
+>>
+>> Why this function simply return 'success' without any error capture?
+> Same logic applies here as well, as pm_runtime_force_suspend and
+> clk_unprepare may not return error in our case once probe is through.
+
+got it.
+
 
 Regards
 Manish Badarkhe
