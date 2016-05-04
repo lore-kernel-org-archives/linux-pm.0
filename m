@@ -1,94 +1,86 @@
-From: Manish Badarkhe <badarkhe.manish@gmail.com>
-Subject: Re: [PATCH v2 1/2] dmaengine: qcom-bam-dma: Add pm_runtime support
-Date: Wed, 4 May 2016 09:02:08 +0530
-Message-ID: <CAKDJKT5SyvTmZX3wUead_bzigJvs5JRR35=jPX_usP4XJaYZ0g@mail.gmail.com>
-References: <1462268237-29508-1-git-send-email-pramod.gurav@linaro.org>
-	<CAKDJKT6q7bg7UTDex_S_+nG-3q16H0Fe0UE_hp2VvFm60ZYQgQ@mail.gmail.com>
-	<CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CANYu_0uUE7Vtmx8ifLPNC9RpfSPPy-VqUNZAF+UzXCA68WnQcA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Pramod Gurav <pramod.gurav@linaro.org>
-Cc: vinod.koul@intel.com, Andy Gross <andy.gross@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Stanimir Varbanov <stanimir.varbanov@linaro.org>, okaya@codeaurora.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 00/31] thermal: reorganizing thermal core
+Date: Tue,  3 May 2016 23:02:14 -0700
+Message-ID: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35106 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbcEDGCw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 02:02:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Pramod
+Folks,
 
->>> @@ -715,10 +724,13 @@ static int bam_resume(struct dma_chan *chan)
->>>         struct bam_device *bdev = bchan->bdev;
->>>         unsigned long flag;
->>>
->>> +       pm_runtime_get_sync(bdev->dev);
->>>         spin_lock_irqsave(&bchan->vc.lock, flag);
->>>         writel_relaxed(0, bam_addr(bdev, bchan->id, BAM_P_HALT));
->>>         bchan->paused = 0;
->>>         spin_unlock_irqrestore(&bchan->vc.lock, flag);
->>> +       pm_runtime_mark_last_busy(bdev->dev);
->>> +       pm_runtime_put_autosuspend(bdev->dev);
->>>
->>>         return 0;
->>>  }
->>
->> Why this function simply return 'success' without any error capture?
->>
-> I should check return of pm_runtime_get_sync.
+Here is a series of patches I am proposing to add to thermal core
+with the intent to have a better code organization. It started
+as an RFC for sysfs handling [1]. But now, on top of the sysfs
+organization, I added a code split as well.
 
-Ok, fine.
+The only change in behavior is that now, thermal zones with empty
+.type will not be allowed to be registered.
 
->>> @@ -1252,16 +1278,76 @@ static int bam_dma_remove(struct platform_device *pdev)
->>>
->>>         tasklet_kill(&bdev->task);
->>>
->>> +       pm_runtime_get_sync(&pdev->dev);
->>>         clk_disable_unprepare(bdev->bamclk);
->>> +       pm_runtime_disable(&pdev->dev);
->>> +       pm_runtime_put_noidle(&pdev->dev);
->>> +       pm_runtime_set_suspended(&pdev->dev);
->>> +
->>> +       return 0;
->>> +}
->>
->> Why this function simply return 'success' without any error capture?
-> Need to handle it better.
+After this series, thermal core is split into the following files:
+- thermal_sysfs.c: contains the functions handling the sysfs nodes
+- thermal_helpers.c: groups functions that do not need to touch thermal
+core internal data structures, such as internal lists, and list locks.
+- thermal_core.c: functions to handle the lifecycle of the subsystem,
+its governors, cooling devices, thermal zone devices, and their
+interactions.
 
-Yes, need to handle __pm_runtime__ errors.
+I don't expect any impact on userspace.
 
->>
->>> +static int bam_dma_runtime_suspend(struct device *dev)
->>> +{
->>> +       struct bam_device *bdev = dev_get_drvdata(dev);
->>> +
->>> +       clk_disable(bdev->bamclk);
->>> +
->>> +       return 0;
->>> +}
->>
->> Why this function simply return 'success' without any error capture?
-> If probe has succeeded means bdev->bamclk is not NULL and error hence
-> clk_disable wont return anything.
+Please give your inputs.
 
-got it.
-
->>> +#ifdef CONFIG_PM_SLEEP
->>> +static int bam_dma_suspend(struct device *dev)
->>> +{
->>> +       struct bam_device *bdev = dev_get_drvdata(dev);
->>> +
->>> +       pm_runtime_force_suspend(dev);
->>> +
->>> +       clk_unprepare(bdev->bamclk);
->>>
->>>         return 0;
->>>  }
->>
->> Why this function simply return 'success' without any error capture?
-> Same logic applies here as well, as pm_runtime_force_suspend and
-> clk_unprepare may not return error in our case once probe is through.
-
-got it.
+BR,
 
 
-Regards
-Manish Badarkhe
+Eduardo Valentin (31):
+  thermal: core: prevent zones with no types to be registered
+  thermal: core: group thermal_zone DEVICE_ATTR's declarations
+  thermal: core: group device_create_file() calls that are always
+    created
+  thermal: core: use dev.groups to manage always present tz attributes
+  thermal: core: move emul_temp creation to tz->device.groups
+  thermal: core: move mode attribute to tz->device.groups
+  thermal: core: move passive attr to tz->device.groups
+  thermal: core:  move power actor code out of sysfs I/F section
+  thermal: core: move the trip attrs to the tz sysfs I/F section
+  thermal: core: create tz->device.groups dynamically
+  thermal: core: move trips attributes to tz->device.groups
+  thermal: core: remove unnecessary device_remove() calls
+  thermal: core: split passive_store
+  thermal: core: split policy_store
+  thermal: core: split available_policies_show()
+  thermal: core: move to_thermal_zone() macro to header file
+  thermal: core: move thermal_zone sysfs to thermal_sysfs.c
+  thermal: core: move to_cooling_device macro to header file
+  thermal: core: move cooling device sysfs to thermal_sysfs.c
+  thermal: core: introduce thermal_helpers.c
+  thermal: core: group functions related to governor handling
+  thermal: core: move idr handling to device management section
+  thermal: core: move __unbind() helper to where it is used
+  thermal: core: move bind_cdev() to where it is used
+  thermal: core: move bind_tz() to where it is used
+  thermal: core: move __bind() to where it is used
+  thermal: core: add inline to print_bind_err_msg()
+  thermal: core: move notify to the zone update section
+  thermal: core: add a comment describing the main update loop
+  thermal: core: add a comment describing the power actor section
+  thermal: core: add a comment describing the device management section
+
+ drivers/thermal/Makefile          |    3 +-
+ drivers/thermal/thermal_core.c    | 1313 ++++++++-----------------------------
+ drivers/thermal/thermal_core.h    |   23 +
+ drivers/thermal/thermal_helpers.c |  143 ++++
+ drivers/thermal/thermal_sysfs.c   |  734 +++++++++++++++++++++
+ include/linux/thermal.h           |    2 +
+ 6 files changed, 1191 insertions(+), 1027 deletions(-)
+ create mode 100644 drivers/thermal/thermal_helpers.c
+ create mode 100644 drivers/thermal/thermal_sysfs.c
+
+-- 
+2.1.4
+
