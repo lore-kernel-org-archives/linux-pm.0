@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 31/31] thermal: core: add a comment describing the device management section
-Date: Tue,  3 May 2016 23:02:45 -0700
-Message-ID: <1462341765-13268-32-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 18/31] thermal: core: move to_cooling_device macro to header file
+Date: Tue,  3 May 2016 23:02:32 -0700
+Message-ID: <1462341765-13268-19-git-send-email-edubezval@gmail.com>
 References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
@@ -10,39 +10,45 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-comment describing the section with function to handle
-registration, unregistration, binding, and unbinding of
-thermal devices.
+Make the to_cooling_device() macro available across
+files in thermal core.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c | 3 ---
+ drivers/thermal/thermal_core.h | 3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index b6a94fa..651467e 100644
+index 0e7ffc5..c866b0a 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -580,8 +580,15 @@ void thermal_zone_device_passive_update(struct thermal_zone_device *tz,
- 	thermal_zone_device_update(tz);
+@@ -741,9 +741,6 @@ int thermal_build_list_of_policies(char *buf)
  }
  
--/* Device management */
+ /* sys I/F for cooling device */
+-#define to_cooling_device(_dev)	\
+-	container_of(_dev, struct thermal_cooling_device, device)
 -
-+/*
-+ * Device management section: cooling devices, zones devices, and binding
-+ *
-+ * Set of functions provided by the thermal core for:
-+ * - cooling devices lifecycle: registration, unregistration,
-+ *   				binding, and unbinding.
-+ * - thermal zone devices lifecycle: registration, unregistration,
-+ *   				     binding, and unbinding.
-+ */
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int ret;
+ static ssize_t
+ thermal_cooling_device_type_show(struct device *dev,
+ 				 struct device_attribute *attr, char *buf)
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 62889c2..727c87d 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -57,6 +57,9 @@ struct thermal_instance {
+ #define to_thermal_zone(_dev) \
+ 	container_of(_dev, struct thermal_zone_device, device)
+ 
++#define to_cooling_device(_dev)	\
++	container_of(_dev, struct thermal_cooling_device, device)
++
+ int thermal_register_governor(struct thermal_governor *);
+ void thermal_unregister_governor(struct thermal_governor *);
+ void thermal_zone_device_passive_update(struct thermal_zone_device *, int);
 -- 
 2.1.4
