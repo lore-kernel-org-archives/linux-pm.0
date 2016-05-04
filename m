@@ -1,98 +1,160 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] intel_pstate: Fix intel_pstate_get()
-Date: Wed, 04 May 2016 14:01:10 +0200
-Message-ID: <54177738.QIcPrzf0Y7@vostro.rjw.lan>
-References: <87mvo8gd44.fsf@yhuang-dev.intel.com> <20160503083231.GG3430@twins.programming.kicks-ass.net>
+From: Felipe Balbi <felipe.balbi@linux.intel.com>
+Subject: Re: [PATCH] usb: xhci-mtk: fixup mouse wakeup failure during system suspend
+Date: Wed, 04 May 2016 14:56:34 +0300
+Message-ID: <87mvo6dojx.fsf@intel.com>
+References: <1461204293-18243-1-git-send-email-chunfeng.yun@mediatek.com> <1462261458.11651.7.camel@mhfsdcap03> <87vb2vfujq.fsf@intel.com> <1462266591.11651.34.camel@mhfsdcap03> <87mvo7fpuc.fsf@intel.com> <1462324873.11651.57.camel@mhfsdcap03> <871t5ifdxk.fsf@intel.com> <1462359261.11651.69.camel@mhfsdcap03>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62921 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751629AbcEDL6A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 07:58:00 -0400
-In-Reply-To: <20160503083231.GG3430@twins.programming.kicks-ass.net>
+Received: from mga14.intel.com ([192.55.52.115]:13156 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752357AbcEDL6n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 4 May 2016 07:58:43 -0400
+In-Reply-To: <1462359261.11651.69.camel@mhfsdcap03>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: kernel test robot <ying.huang@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, lkp@01.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Mike Galbraith <efault@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Ingo Molnar <mingo@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: chunfeng yun <chunfeng.yun@mediatek.com>
+Cc: Mathias Nyman <mathias.nyman@intel.com>, Matthias Brugger <matthias.bgg@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-After commit 8fa520af5081 "intel_pstate: Remove freq calculation from
-intel_pstate_calc_busy()" intel_pstate_get() calls get_avg_frequency()
-to compute the average frequency, which is problematic for two reasons.
 
-First, intel_pstate_get() may be invoked before the driver reads the
-CPU feedback registers for the first time and if that happens,
-get_avg_frequency() will attempt to divide by zero.
+Hi,
 
-Second, the get_avg_frequency() call in intel_pstate_get() is racy
-with respect to intel_pstate_sample() and it may end up returning
-completely meaningless values for this reason.
+chunfeng yun <chunfeng.yun@mediatek.com> writes:
+>> chunfeng yun <chunfeng.yun@mediatek.com> writes:
+>> > On Tue, 2016-05-03 at 12:33 +0300, Felipe Balbi wrote:
+>> >> Hi,
+>> >>=20
+>> >> chunfeng yun <chunfeng.yun@mediatek.com> writes:
+>> >> >> chunfeng yun <chunfeng.yun@mediatek.com> writes:
+>> >> >> > On Thu, 2016-04-21 at 10:04 +0800, Chunfeng Yun wrote:
+>> >> >> >> Click mouse after xhci suspend completion but before system sus=
+pend
+>> >> >> >> completion, system will not be waken up by mouse if the duratio=
+n of
+>> >> >> >> them is larger than 20ms which is the device UFP's resume signa=
+ling
+>> >> >>=20
+>> >> >> what is "them" here ? The duration of what is longer than 20ms ?
+>> >> > They are "xhci suspend completion" and "system suspend completion";
+>> >> >
+>> >> > It's time duration
+>> >>=20
+>> >> okay. So if xhci suspend takes longer than 20ms your SPM doesn't see a
+>> >> wakeup ?
+>> > It is not the time of xhci suspend consumed, but is the time of durati=
+on
+>> > from xhci suspend completion to system suspend completion(after BOOT-C=
+PU
+>> > is turned off, SPM will be enabled to receive wakeup event)
+>>=20
+>> Okay, so SPM will be the entity actually handling wakeups, right ? I'm
+>> assuming something like this happens:
+>>=20
+>> echo mem > /sys/power/state
+>>  /* start suspending devices */
+>>   xhci_suspend()
+>>  /* all devices suspended */
+>>  enable_spm()
+>>=20
+>> so, if a mouse button is pressed after xhci_suspend() returns but before
+>> enable_spm() runs, then we're gonna miss that event, am I right ?
+> Yes, you are right.
+>>=20
+>> I can't think of any way to sort this out. Let's ask on linux-pm (I've
+>> added linux-pm to Cc list)
+> Thanks
+>>=20
+>> >> >> >> lasted. Another reason is that the SPM is not enabled before sy=
+stem
+>> >> >>=20
+>> >> >> what's SPM ?
+>> >> > It is System Power Management which is powered off when system is
+>> >> > running in normal mode, and is powered on when system enters suspend
+>> >> > mode. It is used to wakeup system when some wakeup sources, such as
+>> >> > bluetooth or powerkey etc, tigger wakeup event.
+>> >>=20
+>> >> okay, thanks
+>> >>=20
+>> >> >> >> suspend compeltion, this causes SPM also not notice the resume =
+signal.
+>> >> >>            ^^^^^^^^^^
+>> >> >>            completion
+>> >> >>=20
+>> >> >> >> So in order to reduce the duration less than 20ms, make use of
+>> >> >> >> syscore's suspend/resume interface.
+>> >> >>=20
+>> >> >> no, this is the wrong approach
+>> >> > But it seems only one workable approach from software side
+>> >>=20
+>> >> I wouldn't say that. It seems to me SPM should be enabled earlier.
+>> > Yes, but normally SPM should be enabled after all CPUS are turned off,
+>> > so it's difficult to do that, I mean enable SPM before turning off CPUS
+>>=20
+>> is it a requirement that SPM should be enabled only after all CPUs are
+>> turned off ? If that's the case, then any device in the system might
+>> have missed wakeups. This doesn't seem like a good design to me; unless
+>> I'm missing something...
+> Yes, it's a requirement.
+>
+> If the wakeup source is level trigger, and will keep it until SPM notice
+> it. Although USB wakeup is level trigger, but it just last at most 20ms
+> and clear itself automatically.
 
-Moreover, after commit 7349ec0470b6 "intel_pstate: Move
-intel_pstate_calc_busy() into get_target_pstate_use_performance()"
-sample.core_pct_busy is never computed on Atom, but it is used in
-intel_pstate_adjust_busy_pstate() in that case too.
+who's clearing USB wakeup after 20ms ? Sure, it's a requirement by the
+USB spec that host should drive reset for *at least* 20ms, but I don't
+remember the exact wordings WRT remote wakeup
 
-To address those problems notice that if sample.core_pct_busy
-was used in the average frequency computation carried out by
-get_avg_frequency(), both the divide by zero problem and the
-race with respect to intel_pstate_sample() would be avoided.
+/me reads
 
-Accordingly, move the invocation of intel_pstate_calc_busy() from
-get_target_pstate_use_performance() to intel_pstate_update_util(),
-which also will take care of the uninitialized sample.core_pct_busy
-on Atom, and modify get_avg_frequency() to use sample.core_pct_busy
-as per the above.
+Okay, here it is, section 7.1.7.7 of USB 2.0 Spec states:
 
-Reported-by: kernel test robot <ying.huang@linux.intel.com>
-Link: http://marc.info/?l=linux-kernel&m=146226437623173&w=4
-Fixes: 8fa520af5081 "intel_pstate: Remove freq calculation from intel_pstate_calc_busy()"
-Fixes: 7349ec0470b6 "intel_pstate: Move intel_pstate_calc_busy() into get_target_pstate_use_performance()"
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+	"The remote wakeup device must hold the resume signaling for at
+        least 1 ms but for no more than 15 ms (TDRSMUP). At the end of
+        this period, the device stops driving the bus (puts its drivers
+        into the high-impedance state and does not drive the bus to the
+        J state)."
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -928,8 +928,9 @@ static inline bool intel_pstate_sample(s
- 
- static inline int32_t get_avg_frequency(struct cpudata *cpu)
- {
--	return div64_u64(cpu->pstate.max_pstate_physical * cpu->sample.aperf *
--		cpu->pstate.scaling, cpu->sample.mperf);
-+	return fp_toint(mul_fp(cpu->sample.core_pct_busy,
-+			       int_tofp(cpu->pstate.max_pstate_physical *
-+						cpu->pstate.scaling / 100)));
- }
- 
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
-@@ -972,8 +973,6 @@ static inline int32_t get_target_pstate_
- 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
- 	u64 duration_ns;
- 
--	intel_pstate_calc_busy(cpu);
--
- 	/*
- 	 * core_busy is the ratio of actual performance to max
- 	 * max_pstate is the max non turbo pstate available
-@@ -1056,8 +1055,11 @@ static void intel_pstate_update_util(str
- 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
- 		bool sample_taken = intel_pstate_sample(cpu, time);
- 
--		if (sample_taken && !hwp_active)
--			intel_pstate_adjust_busy_pstate(cpu);
-+		if (sample_taken) {
-+			intel_pstate_calc_busy(cpu);
-+			if (!hwp_active)
-+				intel_pstate_adjust_busy_pstate(cpu);
-+		}
- 	}
- }
- 
+IOW, the mouse is not at fault here. Remote wakeup can last anywhere
+between 1ms and 15ms. If your system can't cope with it, then I'd say
+it's a problem with your system and you shouldn't allow XHCI to go to
+such deep power states until SPM is enabled.
 
+I really tried finding the correct piece of code which does this for PCI
+devices, but basically it's treated as an IRQ and as long as
+enable_irq_wake() or the sysfs file is set to true, then PME gets
+enabled (hopefully PCI folks can confirm this statement).
+
+Very recently Tony Lindgren added proper handling of wakeup signals as
+IRQs for non-PCI systems too (see 4990d4fe327b PM / Wakeirq: Add
+automated device wake IRQ handling), wonder if you could treat SPM
+similarly.
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXKeNzAAoJEIaOsuA1yqRENG0P/1gs4U6jurng0gk37oDVaqYi
+LBw1VijiSTSgEuikApr+L52plvlMPKd/NbLQSj51bsrXtOH79H9MmCUK0tYY2YZ0
+Fw9xhIJtjaKuG5TJYXtz/s8SRANAPq0B2MjmWS4O/pNgh3JuPJMCriqwpDPE9ArC
+j8knk/PGd0AV8UnyrA9Q7JtpH0lA0AkohJUBa4DQC82/NOpT6wHe09HvKR1io6MO
+hLNKnfPxyhl/PJsNzX9GV/LsHa6xYeJSMHCDXzqDAu3A6oJhhRUTAnyAfa91rHmy
+34q7WEuqq+zexjgfhMhC1yZ/eL0Y/cyv1hYKmwvgIyVJyCB6YwNmd8GtJ5c0Tfyc
+pB0/jQVclNRVWni/0Keof+F+6KOB+3jdqFU+sPQdi6vt90Nwm2pkTCUJCuEBY/gc
+s7+UxmCvbcCukuVBhzRd8W6dEN+WXQda2OdFPUrxw3JYu7nmzu7YfXlOOkzsnbse
+wQY03ZSG87uFvUB3UWoFGYZCYFqi/sqcuSjN/kWNIbAIAPXpP+7yM73eQnIC0Sq9
+0mK7XgguxvALbFGhLHSuAocFiIZBTfdxDce7YlYSyvFAzYn4ukObQhx+Dl5VZd70
+0zMNi7xTGwU0c1jwI+0Pru3qTkz5NRHj2TPLMGOMvHCGeIM9NXpK0dz59WuW523S
+eUb0+369Vn3FtcBSFFP4
+=1+G6
+-----END PGP SIGNATURE-----
+--=-=-=--
