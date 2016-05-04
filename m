@@ -1,36 +1,70 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Use IS_ENABLED() instead of checking for built-in or module
-Date: Wed, 04 May 2016 23:21:12 +0200
-Message-ID: <1640438.89cURul1Mm@vostro.rjw.lan>
-References: <1461716053-17722-1-git-send-email-javier@osg.samsung.com> <20160427020140.GU17047@vireshk-i7>
+Subject: Re: [PATCH v2] cpufreq: st: enable selective initialization based on the platform
+Date: Wed, 04 May 2016 23:22:41 +0200
+Message-ID: <1590046.bZySizU5mQ@vostro.rjw.lan>
+References: <1461757227-22381-1-git-send-email-sudeep.holla@arm.com> <1461773939-1004-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43453 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55790 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752541AbcEDVSB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 17:18:01 -0400
-In-Reply-To: <20160427020140.GU17047@vireshk-i7>
+	by vger.kernel.org with SMTP id S1753114AbcEDVTa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 17:19:30 -0400
+In-Reply-To: <1461773939-1004-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wednesday, April 27, 2016 07:31:40 AM Viresh Kumar wrote:
-> On 26-04-16, 20:14, Javier Martinez Canillas wrote:
-> > The IS_ENABLED() macro checks if a Kconfig symbol has been enabled either
-> > built-in or as a module, use that macro instead of open coding the same.
-> > 
-> > Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
-> > 
-> > ---
-> > 
-> >  drivers/cpufreq/e_powersaver.c    | 14 +++++++-------
-> >  drivers/cpufreq/ppc_cbe_cpufreq.h |  2 +-
-> >  2 files changed, 8 insertions(+), 8 deletions(-)
+On Wednesday, April 27, 2016 05:18:59 PM Sudeep Holla wrote:
+> The sti-cpufreq does unconditional registration of the cpufreq-dt driver
+> which causes issue on an multi-platform build. For example, on Vexpress
+> TC2 platform, we get the following error on boot:
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> cpu cpu0: OPP-v2 not supported
+> cpu cpu0: Not doing voltage scaling
+> cpu: dev_pm_opp_of_cpumask_add_table: couldn't find opp table
+> 	for cpu:0, -19
+> cpu cpu0: dev_pm_opp_get_max_volt_latency: Invalid regulator (-6)
+> ...
+> arm_big_little: bL_cpufreq_register: Failed registering platform driver:
+> 		vexpress-spc, err: -17
+> 
+> The actual driver fails to initialise as cpufreq-dt is probed
+> successfully, which is incorrect. This issue can happen to any platform
+> not using cpufreq-dt in a multi-platform build.
+> 
+> This patch adds a check to do selective initialization of the driver.
+> 
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Fixes: ab0ea257fc58 ("cpufreq: st: Provide runtime initialised driver for ST's platforms")
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/sti-cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> v1->v2:
+> 	- Updated compatible strings as per Lee's confirmation
+> 
+> diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
+> index a9c659f58974..04042038ec4b 100644
+> --- a/drivers/cpufreq/sti-cpufreq.c
+> +++ b/drivers/cpufreq/sti-cpufreq.c
+> @@ -259,6 +259,10 @@ static int sti_cpufreq_init(void)
+>  {
+>  	int ret;
+> 
+> +	if ((!of_machine_is_compatible("st,stih407")) &&
+> +		(!of_machine_is_compatible("st,stih410")))
+> +		return -ENODEV;
+> +
+>  	ddata.cpu = get_cpu_device(0);
+>  	if (!ddata.cpu) {
+>  		dev_err(ddata.cpu, "Failed to get device for CPU0\n");
 
-Applied, thanks!
+Applied with the ACKs, thanks!
 
