@@ -1,207 +1,97 @@
 From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 01/11] of: Add bindings of hw throttle for Tegra
- soctherm
-Date: Wed, 4 May 2016 08:35:18 -0500
-Message-ID: <20160504133518.GA28191@rob-hp-laptop>
-References: <1462270410-2425-1-git-send-email-wni@nvidia.com>
- <1462270410-2425-2-git-send-email-wni@nvidia.com>
+Subject: Re: [PATCH] thermal: trivial: fix the typo
+Date: Wed, 4 May 2016 08:46:18 -0500
+Message-ID: <20160504134618.GA3079@rob-hp-laptop>
+References: <1462277262-29935-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1462270410-2425-2-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1462277262-29935-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 03, 2016 at 06:13:20PM +0800, Wei Ni wrote:
-> Add HW throttle configuration sub-node for soctherm, which
-> is used to describe the throttle event, and worked as a
-> cooling device. The "hot" type trip in thermal zone can
-> be bound to this cooling device, and trigger the throttle
-> function.
+On Tue, May 03, 2016 at 08:07:41PM +0800, Caesar Wang wrote:
+> See the thermal code, the obvious typo from my editor.
+
+It looks like whitespace changes, not typos. Please be specific.
+
 > 
-> Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 > ---
->  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 120 ++++++++++++++++++++-
->  1 file changed, 118 insertions(+), 2 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> index edebfa0a985e..6ba8ae3f59ed 100644
-> --- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> +++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> @@ -10,8 +10,14 @@ Required properties :
->  - compatible : For Tegra124, must contain "nvidia,tegra124-soctherm".
->    For Tegra132, must contain "nvidia,tegra132-soctherm".
->    For Tegra210, must contain "nvidia,tegra210-soctherm".
-> -- reg : Should contain 1 entry:
-> +- reg : Should contain at least 2 entries for each entry in reg-names:
->    - SOCTHERM register set
-> +  - Tegra CAR register set: Required for Tegra124 and Tegra210.
-> +  - CCROC register set: Required for Tegra132.
-> +- reg-names :  Should contain at least 2 entries:
-> +  - soctherm-reg
-> +  - car-reg
-> +  - ccroc-reg
->  - interrupts : Defines the interrupt used by SOCTHERM
->  - clocks : Must contain an entry for each entry in clock-names.
->    See ../clocks/clock-bindings.txt for details.
-> @@ -25,17 +31,44 @@ Required properties :
->  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
->      of this property. See <dt-bindings/thermal/tegra124-soctherm.h> for a
->      list of valid values when referring to thermal sensors.
-> +- nvidia,throttle-cfgs: A sub-node which is a container of configuration for
-> +    each hardware throttle events. These events can be set as cooling devices.
-> +  * throttle events: Sub-nodes must be named as "nvidia,light" or "nvidia,heavy".
-> +      Properties:
-> +      - nvidia,priority: Each throttles has its own throttle settings, so the
-> +        SW need to set priorities for various throttle, the HW arbiter can select
-> +        the final throttle settings.
-> +        Bigger value indicates higher priority, In general, higher priority
-> +        translates to lower target frequency. SW needs to ensure that critical
-> +        thermal alarms are given higher priority, and ensure that there is
-> +        no race if priority of two vectors is set to the same value.
-
-What are valid range of values?
-
-> +      - nvidia,cpu-throt-depth:  This property is for Tegra124 and Tegra210.
-> +        It is the throttling depth of pulse skippers, it's the percentage
-> +        throttling.
-
-Add unit suffix (-percent)
-
-> +      - nvidia,cpu-throt-level: This property is only for Tegra132, it is the
-> +        level of pulse skippers, which used to throttle clock frequencies. It
-> +        indicates cpu clock throttling depth, and the depth can be programmed.
-> +        Must set as following values:
-> +        TEGRA_SOCTHERM_THROT_LEVEL_LOW, TEGRA_SOCTHERM_THROT_LEVEL_MED
-> +        TEGRA_SOCTHERM_THROT_LEVEL_HIGH, TEGRA_SOCTHERM_THROT_LEVEL_NONE
-> +      - #cooling-cells: Should be 1. This cooling device only support on/off state.
-> +        See ./thermal.txt for a description of this property.
+>  Documentation/devicetree/bindings/thermal/thermal.txt | 10 +++++-----
+>  drivers/thermal/thermal_core.c                        |  2 +-
+>  2 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> index 41b817f..88b6ea1 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> @@ -62,7 +62,7 @@ For more examples of cooling devices, refer to the example sections below.
+>  Required properties:
+>  - #cooling-cells:	Used to provide cooling device specific information
+>    Type: unsigned	while referring to it. Must be at least 2, in order
+> -  Size: one cell      	to specify minimum and maximum cooling state used
+> +  Size: one cell	to specify minimum and maximum cooling state used
+>  			in the reference. The first cell is the minimum
+>  			cooling state requested and the second cell is
+>  			the maximum cooling state requested in the reference.
+> @@ -119,7 +119,7 @@ Required properties:
+>  Optional property:
+>  - contribution:		The cooling contribution to the thermal zone of the
+>    Type: unsigned	referred cooling device at the referred trip point.
+> -  Size: one cell      	The contribution is a ratio of the sum
+> +  Size: one cell	The contribution is a ratio of the sum
+>  			of all cooling contributions within a thermal zone.
 >  
->  Note:
->  - the "critical" type trip points will be set to SOC_THERM hardware as the
->  shut down temperature. Once the temperature of this thermal zone is higher
->  than it, the system will be shutdown or reset by hardware.
-> +- the "hot" type trip points will be set to SOC_THERM hardware as the throttle
-> +temperature. Once the the temperature of this thermal zone is higher
-> +than it, it will trigger the HW throttle event.
+>  Note: Using the THERMAL_NO_LIMIT (-1UL) constant in the cooling-device phandle
+> @@ -145,7 +145,7 @@ Required properties:
+>    Size: one cell
 >  
->  Example :
+>  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
+> -  Type: list of 	used while monitoring the thermal zone.
+> +  Type: list of		used while monitoring the thermal zone.
+>    phandles + sensor
+>    specifier
 >  
->  	soctherm@700e2000 {
->  		compatible = "nvidia,tegra124-soctherm";
-> -		reg = <0x0 0x700e2000 0x0 0x1000>;
-> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
-> +			0x0 0x60006000 0x0 0x400 /* CAR reg_base */
-> +		reg-names = "soctherm-reg", "car-reg";
->  		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
->  		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
->  			<&tegra_car TEGRA124_CLK_SOC_THERM>;
-> @@ -44,6 +77,76 @@ Example :
->  		reset-names = "soctherm";
+> @@ -473,7 +473,7 @@ thermal-zones {
+>  				  <&adc>;	/* pcb north */
 >  
->  		#thermal-sensor-cells = <1>;
-> +
-> +		nvidia,throttle-cfgs {
-
-Drop the vendor prefix in node names.
-
-> +			/*
-> +			 * When the "heavy" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in 85% depth
-> +			 */
-> +			throttle_heavy: nvidia,heavy {
-> +				nvidia,priority = <100>;
-> +				nvidia,cpu-throt-depth = <85>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * When the "light" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in 50% depth
-> +			 */
-> +			throttle_light: nvidia,light {
-> +				nvidia,priority = <80>;
-> +				nvidia,cpu-throt-depth = <50>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * If these two devices are triggered in same time, the HW throttle
-> +			 * arbiter will select the highest priority as the final throttle
-> +			 * settings to skip cpu pulse.
-> +			 */
-> +		};
-> +	};
-> +
-> +Example: referring to Tegra132's "reg", "reg-names" and "throttle-cfgs" :
-> +
-> +	soctherm@0,700e2000 {
-
-Drop the comma in the unit address.
-
-> +		compatible = "nvidia,tegra132-soctherm";
-> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
-> +			0x0 0x70040000 0x0 0x200>; /* CCROC reg_base */;
-> +		reg-names = "soctherm-reg", "ccroc-reg";
-> +
-> +		nvidia,throttle-cfgs {
-> +			/*
-> +			 * When the "heavy" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in HIGH level
-> +			 */
-> +			throttle_heavy: nvidia,heavy {
-> +				nvidia,priority = <100>;
-> +				nvidia,cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_HIGH>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * When the "light" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in MED level
-> +			 */
-> +			throttle_light: nvidia,light {
-> +				nvidia,priority = <80>;
-> +				nvidia,cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_MED>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * If these two devices are triggered in same time, the HW throttle
-> +			 * arbiter will select the highest priority as the final throttle
-> +			 * settings to skip cpu pulse.
-> +			 */
-> +
-> +		};
->  	};
+>  		/* hotspot = 100 * bandgap - 120 * adc + 484 */
+> -		coefficients = 		<100	-120	484>;
+> +		coefficients =		<100	-120	484>;
 >  
->  Example: referring to thermal sensors :
-> @@ -62,6 +165,19 @@ Example: referring to thermal sensors :
->  					hysteresis = <1000>;
->  					type = "critical";
->  				};
+>  		trips {
+>  			...
+> @@ -502,7 +502,7 @@ from the ADC sensor. The binding would be then:
+>          thermal-sensors =  <&adc>;
+>  
+>  		/* hotspot = 1 * adc + 6000 */
+> -	coefficients = 		<1	6000>;
+> +	coefficients =		<1	6000>;
+>  
+>  (d) - Board thermal
+>  
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index e5bfbd3..26870ef 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -513,7 +513,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+>  		if (!ret && *temp < crit_temp)
+>  			*temp = tz->emul_temperature;
+>  	}
+> - 
 > +
-> +				cpu_throttle_trip: throttle-trip {
-> +					temperature = <100000>;
-> +					hysteresis = <1000>;
-> +					type = "hot";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&cpu_throttle_trip>;
-> +					cooling-device = <&throttle_heavy 1 1>;
-> +				};
->  			};
->                  };
->  	};
+>  	mutex_unlock(&tz->lock);
+>  exit:
+>  	return ret;
 > -- 
 > 1.9.1
 > 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
