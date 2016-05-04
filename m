@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 28/31] thermal: core: move notify to the zone update section
-Date: Tue,  3 May 2016 23:02:42 -0700
-Message-ID: <1462341765-13268-29-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 30/31] thermal: core: add a comment describing the power actor section
+Date: Tue,  3 May 2016 23:02:44 -0700
+Message-ID: <1462341765-13268-31-git-send-email-edubezval@gmail.com>
 References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
@@ -10,69 +10,34 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-moving the helper function to closer to similar functions.
+Simply marking the power actor section and adding a
+comment describing it.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/thermal/thermal_core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 609c3be..0317aea 100644
+index d552183..b6a94fa 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -419,6 +419,24 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+@@ -456,6 +456,13 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz);
  }
- EXPORT_SYMBOL_GPL(thermal_zone_device_update);
  
-+/**
-+ * thermal_notify_framework - Sensor drivers use this API to notify framework
-+ * @tz:		thermal zone device
-+ * @trip:	indicates which trip point has been crossed
++/*
++ * Power actor section: interface to power actors to estimate power
 + *
-+ * This function handles the trip events from sensor drivers. It starts
-+ * throttling the cooling devices according to the policy configured.
-+ * For CRITICAL and HOT trip points, this notifies the respective drivers,
-+ * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
-+ * The throttling policy is based on the configured platform data; if no
-+ * platform data is provided, this uses the step_wise throttling policy.
++ * Set of functions used to interact to cooling devices that know
++ * how to estimate their devices power consumption.
 + */
-+void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
-+{
-+	handle_thermal_trip(tz, trip);
-+}
-+EXPORT_SYMBOL_GPL(thermal_notify_framework);
 +
- static void thermal_zone_device_check(struct work_struct *work)
- {
- 	struct thermal_zone_device *tz = container_of(work, struct
-@@ -1027,24 +1045,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
- 
--/**
-- * thermal_notify_framework - Sensor drivers use this API to notify framework
-- * @tz:		thermal zone device
-- * @trip:	indicates which trip point has been crossed
-- *
-- * This function handles the trip events from sensor drivers. It starts
-- * throttling the cooling devices according to the policy configured.
-- * For CRITICAL and HOT trip points, this notifies the respective drivers,
-- * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
-- * The throttling policy is based on the configured platform data; if no
-- * platform data is provided, this uses the step_wise throttling policy.
-- */
--void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
--{
--	handle_thermal_trip(tz, trip);
--}
--EXPORT_SYMBOL_GPL(thermal_notify_framework);
--
- static void bind_tz(struct thermal_zone_device *tz)
- {
- 	int i, ret;
+ /**
+  * power_actor_get_max_power() - get the maximum power that a cdev can consume
+  * @cdev:	pointer to &thermal_cooling_device
 -- 
 2.1.4
