@@ -1,81 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
-Date: Wed, 04 May 2016 23:47:20 +0200
-Message-ID: <7370640.WWc4AQ4034@vostro.rjw.lan>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com> <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com> <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/1] drivers: acpi: add CPU id to cooling device type of
+ processor driver
+Date: Wed, 4 May 2016 23:49:18 +0200
+Message-ID: <CAJZ5v0hPL3Wc1ZKZv-Gqny5cur9+262OCuqVqbQ2US9=gpsX7g@mail.gmail.com>
+References: <1462251879-7224-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Jingoo Han <jingoohan1@gmail.com>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:34976 "EHLO
+	mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbcEDVtU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 17:49:20 -0400
+In-Reply-To: <1462251879-7224-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Thursday, April 28, 2016 09:48:30 AM Aaron Lu wrote:
-> On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
-> > On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
-> >> v3:
-> >> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
-> >> and one adds the int3406 driver as suggested by Rafael. There should
-> >> be no functionality change compared to v2.
-> >>
-> >> v2:
-> >> The display thermal device represents the LED/LCD display panel
-> >> that may or may not include touch support. The main function of
-> >> the display thermal device is to allow control of the display
-> >> brightness in order to address a thermal condition or to reduce
-> >> power consumed by display device.
-> >>
-> >> Due to the way this thermal device changes brightness level is said
-> >> to be deprecated so we are using the raw interface to do the actual
-> >> backlight change. This requires the backlight core support so two
-> >> new APIs are added and exported in patch 1/3. With this, the previous
-> >> API backlight_device_registered can be removed and this is done in
-> >> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
-> >>
-> >> The 1st version is here:
-> >> http://thread.gmane.org/gmane.linux.acpi.devel/72619
-> >>
-> >> This whole series should go through the thermal tree if applied.
-> >>
-> >> Aaron Lu (3):
-> >>   video / backlight: add two APIs for drivers to use
-> >>   video / backlight: remove the backlight_device_registered API
-> >>   Thermal: add INT3406 thermal driver
-> >>
-> >>  drivers/acpi/acpi_video.c                         |  83 ++++----
-> >>  drivers/acpi/video_detect.c                       |   2 +-
-> >>  drivers/thermal/Kconfig                           |  28 +--
-> >>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
-> >>  drivers/thermal/int340x_thermal/Makefile          |   1 +
-> >>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
-> >>  drivers/video/backlight/backlight.c               |  39 ++--
-> >>  include/acpi/video.h                              |  20 ++
-> >>  include/linux/backlight.h                         |   3 +-
-> >>  9 files changed, 374 insertions(+), 80 deletions(-)
-> >>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
-> >>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
-> > 
-> > The first three patches in this series look OK to me, so
-> > 
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > for the [1-3/4].
-> > 
-> > That said it may be better if those three go in via ACPI.  I can put
-> > them into a separate branch for Rui to pull from.
-> > 
-> > Please let me know what you think.
-> 
-> I have no problem with that.
+On Tue, May 3, 2016 at 7:04 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> Currently, in an ACPI based system, the processor driver registers
+> one cooling device per processor. However, the cooling device type
+> is the same for each processor. For example, on a system with four
+> processors, the sysfs reading of each cooling device would look like:
+> ebv@besouro ~ $ cat /sys/class/thermal/cooling_device*/type
+> Processor
+> Processor
+> Processor
+> Processor
+>
+> which turns out to fine. But, some parts of the thermal code may use
+> type to identify participating devices in a thermal zone. Besides,
+> adding notifications to user space may cause the production of messages
+> that may confuse the listener.
+>
+> For this reason, this patch adds the processor ID cooling device type.
+> After this change, the cooling device listing in the same previous example
+> would look like this:
+> ebv@besouro ~ $ cat /sys/class/thermal/cooling_device*/type
+> Processor.0
+> Processor.1
+> Processor.2
+> Processor.3
+>
+> allowing an easier identification of cooling device target.
 
-OK
-
-[1-3/4] have been queued up for 4.7 in my tree.  Please let me know if you
-want me to expose the branch containing them.
-
-Thanks,
-Rafael
-
+Is it not going to confuse any user space scripts or similar?
