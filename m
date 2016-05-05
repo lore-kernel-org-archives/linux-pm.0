@@ -1,108 +1,106 @@
 From: Chris Brand <chris.brand@broadcom.com>
-Subject: [PATCH 3/6] docs: Document BCM23550 bindings
-Date: Thu,  5 May 2016 13:48:51 -0700
-Message-ID: <1462481334-8943-4-git-send-email-chris.brand@broadcom.com>
+Subject: [PATCH 5/6] arm: BCM23550 SMP support
+Date: Thu,  5 May 2016 13:48:53 -0700
+Message-ID: <1462481334-8943-6-git-send-email-chris.brand@broadcom.com>
 References: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-gw1-out.broadcom.com ([216.31.210.62]:29560 "EHLO
-	mail-gw1-out.broadcom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756427AbcEEUr4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 16:47:56 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Russell King <linux@arm.linux.org.uk>, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, Raymond Ngun <raymond.ngun@broadcom.com>, Markus Mayer <markus.mayer@broadcom.com>
-
-Add binding document for Broadcom BCM23550 SoC.
+List-Id: linux-pm@vger.kernel.org
 
 BCM23550 has a Cluster Dormant Control IP block that holds cores
-in an idle state. Introduce a new CPU enable method in which the CDC is
+in an idle state. Support a new CPU enable method in which the CDC is
 accessed to bring the core online.
 
+Signed-off-by: Raymond Ngun <raymond.ngun@broadcom.com>
 Signed-off-by: Chris Brand <chris.brand@broadcom.com>
 ---
- .../bindings/arm/bcm/brcm,bcm23550-cpu-method.txt  | 36 ++++++++++++++++++++++
- .../devicetree/bindings/arm/bcm/brcm,bcm23550.txt  | 15 +++++++++
- Documentation/devicetree/bindings/arm/cpus.txt     |  1 +
- 3 files changed, 52 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550-cpu-method.txt
- create mode 100644 Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550.txt
+ arch/arm/mach-bcm/platsmp.c | 58 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550-cpu-method.txt b/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550-cpu-method.txt
-new file mode 100644
-index 000000000000..b1b16872bbca
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550-cpu-method.txt
-@@ -0,0 +1,36 @@
-+Broadcom Kona Family CPU Enable Method
-+--------------------------------------
-+This binding defines the enable method used for starting secondary
-+CPUs in the following Broadcom SoCs:
-+  BCM23550
+diff --git a/arch/arm/mach-bcm/platsmp.c b/arch/arm/mach-bcm/platsmp.c
+index cfae9c71fb74..c57fc6b1ac07 100644
+--- a/arch/arm/mach-bcm/platsmp.c
++++ b/arch/arm/mach-bcm/platsmp.c
+@@ -19,6 +19,7 @@
+ #include <linux/io.h>
+ #include <linux/jiffies.h>
+ #include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/sched.h>
+ #include <linux/smp.h>
+ 
+@@ -255,6 +256,57 @@ static int kona_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ 	return -ENXIO;
+ }
+ 
++/* Cluster Dormant Control command to bring CPU into a running state */
++#define CDC_CMD			6
++#define CDC_CMD_OFFSET		0
++#define CDC_CMD_REG(cpu)	(CDC_CMD_OFFSET + 4*(cpu))
 +
-+The enable method is specified by defining the following required
-+properties in the "cpu" device tree node:
-+  - enable-method = "brcm,bcm23550-cpu-method";
-+  - secondary-boot-reg = <...>;
++/*
++ * BCM23550 has a Cluster Dormant Control block that keeps the core in
++ * idle state. A command needs to be sent to the block to bring the CPU
++ * into running state.
++ */
++static int bcm23550_boot_secondary(unsigned int cpu, struct task_struct *idle)
++{
++	void __iomem *cdc_base;
++	struct device_node *dn;
++	char *name;
++	int ret;
 +
-+The secondary-boot-reg property is a u32 value that specifies the
-+physical address of the register used to request the ROM holding pen
-+code release a secondary CPU.  The value written to the register is
-+formed by encoding the target CPU id into the low bits of the
-+physical start address it should jump to.
-+
-+Example:
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
-+		};
-+
-+		cpu1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a9";
-+			reg = <1>;
-+			enable-method = "brcm,bcm23550-cpu-method";
-+			secondary-boot-reg = <0x3500417c>;
-+		};
-+	};
-diff --git a/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550.txt b/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550.txt
-new file mode 100644
-index 000000000000..080baad923d6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/bcm/brcm,bcm23550.txt
-@@ -0,0 +1,15 @@
-+Broadcom BCM23550 device tree bindings
-+--------------------------------------
-+
-+This document describes the device tree bindings for boards with the BCM23550
-+SoC.
-+
-+Required root node property:
-+  - compatible: brcm,bcm23550
-+
-+Example:
-+	/ {
-+		model = "BCM23550 SoC";
-+		compatible = "brcm,bcm23550";
-+		[...]
++	/* Make sure a CDC node exists before booting the
++	 * secondary core.
++	 */
++	name = "brcm,bcm23550-cdc";
++	dn = of_find_compatible_node(NULL, NULL, name);
++	if (!dn) {
++		pr_err("unable to find cdc node\n");
++		return -ENODEV;
 +	}
-diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-index ccc62f145306..8d63711139bd 100644
---- a/Documentation/devicetree/bindings/arm/cpus.txt
-+++ b/Documentation/devicetree/bindings/arm/cpus.txt
-@@ -194,6 +194,7 @@ nodes to be present and contain the properties described below.
- 			    "allwinner,sun8i-a23"
- 			    "arm,psci"
- 			    "arm,realview-smp"
-+			    "brcm,bcm23550-cpu-method"
- 			    "brcm,bcm-nsp-smp"
- 			    "brcm,brahma-b15"
- 			    "marvell,armada-375-smp"
++
++	cdc_base = of_iomap(dn, 0);
++	of_node_put(dn);
++
++	if (!cdc_base) {
++		pr_err("unable to remap cdc base register\n");
++		return -ENOMEM;
++	}
++
++	/* Boot the secondary core */
++	ret = kona_boot_secondary(cpu, idle);
++	if (ret)
++		goto out;
++
++	/* Bring this CPU to RUN state so that nIRQ nFIQ
++	 * signals are unblocked.
++	 */
++	writel_relaxed(CDC_CMD, cdc_base + CDC_CMD_REG(cpu));
++
++out:
++	iounmap(cdc_base);
++
++	return ret;
++}
++
+ static int nsp_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ {
+ 	int ret;
+@@ -283,6 +335,12 @@ static const struct smp_operations bcm_smp_ops __initconst = {
+ CPU_METHOD_OF_DECLARE(bcm_smp_bcm281xx, "brcm,bcm11351-cpu-method",
+ 			&bcm_smp_ops);
+ 
++static const struct smp_operations bcm23550_smp_ops __initconst = {
++	.smp_boot_secondary	= bcm23550_boot_secondary,
++};
++CPU_METHOD_OF_DECLARE(bcm_smp_bcm23550, "brcm,bcm23550-cpu-method",
++			&bcm23550_smp_ops);
++
+ static const struct smp_operations nsp_smp_ops __initconst = {
+ 	.smp_prepare_cpus	= bcm_smp_prepare_cpus,
+ 	.smp_boot_secondary	= nsp_boot_secondary,
 -- 
 1.9.1
-
