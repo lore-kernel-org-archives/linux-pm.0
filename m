@@ -1,113 +1,569 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v6 00/11] qcom: Add support for TSENS driver
-Date: Thu,  5 May 2016 14:21:38 +0530
-Message-ID: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:36821 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbcEEIwY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 04:52:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v6 01/11] thermal: qcom: tsens: Add a skeletal TSENS drivers
+Date: Thu,  5 May 2016 14:21:39 +0530
+Message-ID: <1462438309-11196-2-git-send-email-rnayak@codeaurora.org>
+References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: edubezval@gmail.com, andy.gross@linaro.org
 Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
-Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
-are now posted [1] and queued in -next [2]
-Patches [1-6] will need to be merged via thermal tree/Eduardo.
-Patches [7-11] will need to go via qcom-msm tree/Andy.
+TSENS is Qualcomms' thermal temperature sensor device. It
+supports reading temperatures from multiple thermal sensors
+present on various QCOM SoCs.
+Calibration data is generally read from a non-volatile memory
+(eeprom) device.
 
-Changes since v5:
-* Minor review fixes from Eduardo
+Add a skeleton driver with all the necessary abstractions so
+a variety of qcom device families which support TSENS can
+add driver extensions.
 
-Changes since v4:
-* dropped qcom,tsens-slopes binding, used coefficients instead
-* dropped qcom,sensor-id binding
-* Added support for msm8996 family
-* Other minor review fixes from v4
+Also add the required device tree bindings which can be used
+to describe the TSENS device in DT.
 
-Changes since v3:
-* Dropped 'clk: qcom: create virtual child device for TSENS' which
-is picked up by Stephen
-* Updated GCC bindings with optional TSENS properties
-
-Changes since v2:
-* Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
-
-Changes since v1:
-* Created virtual tsens device from gcc driver for 8960,
-with DT having a single node for gcc and tsens
-* Minor fixes with rebasing on 4.3-rc1
-
-Changes since RFC:
-* Added support for 8916 and 8084
-* Based off the latest nvmem framework patches [1]
-* Minor review fixes for comments mostly from Lina
-
-This is an attempt to have a single TSENS driver for
-the different versions of the TSENS IP that exist, on
-different qcom msm/apq SoCs'
-Support is added for msm8916, msm8960, msm8974 and msm8996 families.
-
-A lot of the work is based of original code from Stephen Boyd
-and Siddartha Mohanadoss. I have also picked some of what
-Narendran Rajan did in his attempt to upstream the support
-for 8960 family. I could not keep the original authorship on
-any of the patches because I ended up moving the code around
-quite a bit in an effort to have a single driver for the
-various devices. I would be glad to change the authorship
-for any of the patches if needed.
-
-[1] https://lkml.org/lkml/2016/4/24/103
-[2] git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git char-misc-next
-
-Rajendra Nayak (11):
-  thermal: qcom: tsens: Add a skeletal TSENS drivers
-  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
-  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
-  thermal: core: export apis to get slope and offset
-  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
-  thermal: qcom: tsens-8996: Add support for 8996 family of SoCs
-  arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
-  arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
-  arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
-  arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
-  arm64: dts: msm8996: Add thermal zones, tsens and qfprom nodes
-
- .../devicetree/bindings/clock/qcom,gcc.txt         |  18 ++
- .../devicetree/bindings/thermal/qcom-tsens.txt     |  21 ++
- Documentation/thermal/sysfs-api.txt                |  12 +
- arch/arm/boot/dts/qcom-apq8064.dtsi                | 103 ++++++++
- arch/arm/boot/dts/qcom-apq8084.dtsi                | 103 ++++++++
- arch/arm/boot/dts/qcom-msm8974.dtsi                | 103 ++++++++
- arch/arm64/boot/dts/qcom/msm8916.dtsi              |  64 +++++
- arch/arm64/boot/dts/qcom/msm8996.dtsi              |  92 +++++++
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  21 +++
  drivers/thermal/Kconfig                            |   5 +
  drivers/thermal/Makefile                           |   1 +
- drivers/thermal/qcom/Kconfig                       |  11 +
+ drivers/thermal/qcom/Kconfig                       |  11 ++
  drivers/thermal/qcom/Makefile                      |   2 +
- drivers/thermal/qcom/tsens-8916.c                  | 113 ++++++++
- drivers/thermal/qcom/tsens-8960.c                  | 292 +++++++++++++++++++++
- drivers/thermal/qcom/tsens-8974.c                  | 244 +++++++++++++++++
- drivers/thermal/qcom/tsens-8996.c                  |  84 ++++++
- drivers/thermal/qcom/tsens-common.c                | 141 ++++++++++
- drivers/thermal/qcom/tsens.c                       | 200 ++++++++++++++
- drivers/thermal/qcom/tsens.h                       |  92 +++++++
- drivers/thermal/thermal_core.c                     |  30 +++
- include/linux/thermal.h                            |   8 +
- 21 files changed, 1739 insertions(+)
+ drivers/thermal/qcom/tsens-common.c                | 141 +++++++++++++++
+ drivers/thermal/qcom/tsens.c                       | 195 +++++++++++++++++++++
+ drivers/thermal/qcom/tsens.h                       |  90 ++++++++++
+ 8 files changed, 466 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
  create mode 100644 drivers/thermal/qcom/Kconfig
  create mode 100644 drivers/thermal/qcom/Makefile
- create mode 100644 drivers/thermal/qcom/tsens-8916.c
- create mode 100644 drivers/thermal/qcom/tsens-8960.c
- create mode 100644 drivers/thermal/qcom/tsens-8974.c
- create mode 100644 drivers/thermal/qcom/tsens-8996.c
  create mode 100644 drivers/thermal/qcom/tsens-common.c
  create mode 100644 drivers/thermal/qcom/tsens.c
  create mode 100644 drivers/thermal/qcom/tsens.h
 
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+new file mode 100644
+index 0000000..292ed89
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+@@ -0,0 +1,21 @@
++* QCOM SoC Temperature Sensor (TSENS)
++
++Required properties:
++- compatible :
++ - "qcom,msm8916-tsens" : For 8916 Family of SoCs
++ - "qcom,msm8974-tsens" : For 8974 Family of SoCs
++ - "qcom,msm8996-tsens" : For 8996 Family of SoCs
++
++- reg: Address range of the thermal registers
++- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
++- Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
++nvmem cells
++
++Example:
++tsens: thermal-sensor@900000 {
++		compatible = "qcom,msm8916-tsens";
++		reg = <0x4a8000 0x2000>;
++		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
++		nvmem-cell-names = "caldata", "calsel";
++		#thermal-sensor-cells = <1>;
++	};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 3c3dc4a..04d562d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -410,4 +410,9 @@ config QCOM_SPMI_TEMP_ALARM
+ 	  real time die temperature if an ADC is present or an estimate of the
+ 	  temperature based upon the over temperature stage value.
+ 
++menu "Qualcomm thermal drivers"
++depends on (ARCH_QCOM && OF) || COMPILE_TEST
++source "drivers/thermal/qcom/Kconfig"
++endmenu
++
+ endif
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 8e9cbc3..3f3e72c 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -46,6 +46,7 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
++obj-$(CONFIG_QCOM_TSENS)	+= qcom/
+ obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+diff --git a/drivers/thermal/qcom/Kconfig b/drivers/thermal/qcom/Kconfig
+new file mode 100644
+index 0000000..be32e5a
+--- /dev/null
++++ b/drivers/thermal/qcom/Kconfig
+@@ -0,0 +1,11 @@
++config QCOM_TSENS
++	tristate "Qualcomm TSENS Temperature Alarm"
++	depends on THERMAL
++	depends on QCOM_QFPROM
++	depends on ARCH_QCOM || COMPILE_TEST
++	help
++	  This enables the thermal sysfs driver for the TSENS device. It shows
++	  up in Sysfs as a thermal zone with multiple trip points. Disabling the
++	  thermal zone device via the mode file results in disabling the sensor.
++	  Also able to set threshold temperature for both hot and cold and update
++	  when a threshold is reached.
+diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+new file mode 100644
+index 0000000..2e800c5
+--- /dev/null
++++ b/drivers/thermal/qcom/Makefile
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
++qcom_tsens-y			+= tsens.o tsens-common.o
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+new file mode 100644
+index 0000000..4a1af15
+--- /dev/null
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -0,0 +1,141 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include "tsens.h"
++
++#define S0_ST_ADDR		0x1030
++#define SN_ADDR_OFFSET		0x4
++#define SN_ST_TEMP_MASK		0x3ff
++#define CAL_DEGC_PT1		30
++#define CAL_DEGC_PT2		120
++#define SLOPE_FACTOR		1000
++#define SLOPE_DEFAULT		3200
++
++char *qfprom_read(struct device *dev, const char *cname)
++{
++	struct nvmem_cell *cell;
++	ssize_t data;
++	char *ret;
++
++	cell = nvmem_cell_get(dev, cname);
++	if (IS_ERR(cell))
++		return ERR_CAST(cell);
++
++	ret = nvmem_cell_read(cell, &data);
++	nvmem_cell_put(cell);
++
++	return ret;
++}
++
++/*
++ * Use this function on devices where slope and offset calculations
++ * depend on calibration data read from qfprom. On others the slope
++ * and offset values are derived from tz->tzp->slope and tz->tzp->offset
++ * resp.
++ */
++void compute_intercept_slope(struct tsens_device *tmdev, u32 *p1,
++			     u32 *p2, u32 mode)
++{
++	int i;
++	int num, den;
++
++	for (i = 0; i < tmdev->num_sensors; i++) {
++		dev_dbg(tmdev->dev,
++			"sensor%d - data_point1:%#x data_point2:%#x\n",
++			i, p1[i], p2[i]);
++
++		tmdev->sensor[i].slope = SLOPE_DEFAULT;
++		if (mode == TWO_PT_CALIB) {
++			/*
++			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
++			 *	temp_120_degc - temp_30_degc (x2 - x1)
++			 */
++			num = p2[i] - p1[i];
++			num *= SLOPE_FACTOR;
++			den = CAL_DEGC_PT2 - CAL_DEGC_PT1;
++			tmdev->sensor[i].slope = num / den;
++		}
++
++		tmdev->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
++				(CAL_DEGC_PT1 *
++				tmdev->sensor[i].slope);
++		dev_dbg(tmdev->dev, "offset:%d\n", tmdev->sensor[i].offset);
++	}
++}
++
++static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
++{
++	int degc, num, den;
++
++	num = (adc_code * SLOPE_FACTOR) - s->offset;
++	den = s->slope;
++
++	if (num > 0)
++		degc = num + (den / 2);
++	else if (num < 0)
++		degc = num - (den / 2);
++	else
++		degc = num;
++
++	degc /= den;
++
++	return degc;
++}
++
++int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
++{
++	struct tsens_sensor *s = &tmdev->sensor[id];
++	u32 code;
++	unsigned int sensor_addr;
++	int last_temp = 0, ret;
++
++	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
++	ret = regmap_read(tmdev->map, sensor_addr, &code);
++	if (ret)
++		return ret;
++	last_temp = code & SN_ST_TEMP_MASK;
++
++	*temp = code_to_degc(last_temp, s) * 1000;
++
++	return 0;
++}
++
++static const struct regmap_config tsens_config = {
++	.reg_bits	= 32,
++	.val_bits	= 32,
++	.reg_stride	= 4,
++};
++
++int __init init_common(struct tsens_device *tmdev)
++{
++	void __iomem *base;
++
++	base = of_iomap(tmdev->dev->of_node, 0);
++	if (IS_ERR(base))
++		return -EINVAL;
++
++	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base, &tsens_config);
++	if (!tmdev->map) {
++		iounmap(base);
++		return -ENODEV;
++	}
++
++	return 0;
++}
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+new file mode 100644
+index 0000000..17d7b55
+--- /dev/null
++++ b/drivers/thermal/qcom/tsens.c
+@@ -0,0 +1,195 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm.h>
++#include <linux/slab.h>
++#include <linux/thermal.h>
++#include "tsens.h"
++
++static int tsens_get_temp(void *data, int *temp)
++{
++	const struct tsens_sensor *s = data;
++	struct tsens_device *tmdev = s->tmdev;
++
++	return tmdev->ops->get_temp(tmdev, s->id, temp);
++}
++
++static int tsens_get_trend(void *data, long *temp)
++{
++	const struct tsens_sensor *s = data;
++	struct tsens_device *tmdev = s->tmdev;
++
++	if (tmdev->ops->get_trend)
++		return tmdev->ops->get_trend(tmdev, s->id, temp);
++
++	return -ENOTSUPP;
++}
++
++static int tsens_suspend(struct device *dev)
++{
++	struct tsens_device *tmdev = dev_get_drvdata(dev);
++
++	if (tmdev->ops && tmdev->ops->suspend)
++		return tmdev->ops->suspend(tmdev);
++
++	return 0;
++}
++
++static int tsens_resume(struct device *dev)
++{
++	struct tsens_device *tmdev = dev_get_drvdata(dev);
++
++	if (tmdev->ops && tmdev->ops->resume)
++		return tmdev->ops->resume(tmdev);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
++
++static const struct of_device_id tsens_table[] = {
++	{
++		.compatible = "qcom,msm8916-tsens",
++	}, {
++		.compatible = "qcom,msm8974-tsens",
++	},
++	{}
++};
++MODULE_DEVICE_TABLE(of, tsens_table);
++
++static const struct thermal_zone_of_device_ops tsens_of_ops = {
++	.get_temp = tsens_get_temp,
++	.get_trend = tsens_get_trend,
++};
++
++static int tsens_register(struct tsens_device *tmdev)
++{
++	int i;
++	struct thermal_zone_device *tzd;
++	u32 *hw_id, n = tmdev->num_sensors;
++
++	hw_id = devm_kcalloc(tmdev->dev, n, sizeof(u32), GFP_KERNEL);
++	if (!hw_id)
++		return -ENOMEM;
++
++	for (i = 0;  i < tmdev->num_sensors; i++) {
++		tmdev->sensor[i].tmdev = tmdev;
++		tmdev->sensor[i].id = i;
++		tzd = devm_thermal_zone_of_sensor_register(tmdev->dev, i,
++							   &tmdev->sensor[i],
++							   &tsens_of_ops);
++		if (IS_ERR(tzd))
++			continue;
++		tmdev->sensor[i].tzd = tzd;
++		if (tmdev->ops->enable)
++			tmdev->ops->enable(tmdev, i);
++	}
++	return 0;
++}
++
++static int tsens_probe(struct platform_device *pdev)
++{
++	int ret, i;
++	struct device *dev;
++	struct device_node *np;
++	struct tsens_sensor *s;
++	struct tsens_device *tmdev;
++	const struct tsens_data *data;
++	const struct of_device_id *id;
++
++	if (pdev->dev.of_node)
++		dev = &pdev->dev;
++	else
++		dev = pdev->dev.parent;
++
++	np = dev->of_node;
++
++	id = of_match_node(tsens_table, np);
++	if (!id)
++		return -EINVAL;
++
++	data = id->data;
++
++	if (data->num_sensors <= 0) {
++		dev_err(dev, "invalid number of sensors\n");
++		return -EINVAL;
++	}
++
++	tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
++			     data->num_sensors * sizeof(*s), GFP_KERNEL);
++	if (!tmdev)
++		return -ENOMEM;
++
++	tmdev->dev = dev;
++	tmdev->num_sensors = data->num_sensors;
++	tmdev->ops = data->ops;
++	for (i = 0;  i < tmdev->num_sensors; i++) {
++		if (data->hw_ids)
++			tmdev->sensor[i].hw_id = data->hw_ids[i];
++		else
++			tmdev->sensor[i].hw_id = i;
++	}
++
++	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->get_temp)
++		return -EINVAL;
++
++	ret = tmdev->ops->init(tmdev);
++	if (ret < 0) {
++		dev_err(dev, "tsens init failed\n");
++		return ret;
++	}
++
++	if (tmdev->ops->calibrate) {
++		ret = tmdev->ops->calibrate(tmdev);
++		if (ret < 0) {
++			dev_err(dev, "tsens calibration failed\n");
++			return ret;
++		}
++	}
++
++	ret = tsens_register(tmdev);
++
++	platform_set_drvdata(pdev, tmdev);
++
++	return ret;
++}
++
++static int tsens_remove(struct platform_device *pdev)
++{
++	struct tsens_device *tmdev = platform_get_drvdata(pdev);
++
++	if (tmdev->ops->disable)
++		tmdev->ops->disable(tmdev);
++
++	return 0;
++}
++
++static struct platform_driver tsens_driver = {
++	.probe = tsens_probe,
++	.remove = tsens_remove,
++	.driver = {
++		.name = "qcom-tsens",
++		.pm	= &tsens_pm_ops,
++		.of_match_table = tsens_table,
++	},
++};
++module_platform_driver(tsens_driver);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("QCOM Temperature Sensor driver");
++MODULE_ALIAS("platform:qcom-tsens");
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+new file mode 100644
+index 0000000..3b1b6ae
+--- /dev/null
++++ b/drivers/thermal/qcom/tsens.h
+@@ -0,0 +1,90 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#ifndef __QCOM_TSENS_H__
++#define __QCOM_TSENS_H__
++
++#define ONE_PT_CALIB		0x1
++#define ONE_PT_CALIB2		0x2
++#define TWO_PT_CALIB		0x3
++
++struct tsens_device;
++
++struct tsens_sensor {
++	struct tsens_device		*tmdev;
++	struct thermal_zone_device	*tzd;
++	int				offset;
++	int				id;
++	int				hw_id;
++	int				slope;
++	u32				status;
++};
++
++/**
++ * struct tsens_ops - operations as supported by the tsens device
++ * @init: Function to initialize the tsens device
++ * @calibrate: Function to calibrate the tsens device
++ * @get_temp: Function which returns the temp in millidegC
++ * @enable: Function to enable (clocks/power) tsens device
++ * @disable: Function to disable the tsens device
++ * @suspend: Function to suspend the tsens device
++ * @resume: Function to resume the tsens device
++ * @get_trend: Function to get the thermal/temp trend
++ */
++struct tsens_ops {
++	/* mandatory callbacks */
++	int (*init)(struct tsens_device *);
++	int (*calibrate)(struct tsens_device *);
++	int (*get_temp)(struct tsens_device *, int, int *);
++	/* optional callbacks */
++	int (*enable)(struct tsens_device *, int);
++	void (*disable)(struct tsens_device *);
++	int (*suspend)(struct tsens_device *);
++	int (*resume)(struct tsens_device *);
++	int (*get_trend)(struct tsens_device *, int, long *);
++};
++
++/**
++ * struct tsens_data - tsens instance specific data
++ * @num_sensors: Max number of sensors supported by platform
++ * @ops: operations the tsens instance supports
++ * @hw_ids: Subset of sensors ids supported by platform, if not the first n
++ */
++struct tsens_data {
++	const u32		num_sensors;
++	const struct tsens_ops	*ops;
++	unsigned int		*hw_ids;
++};
++
++/* Registers to be saved/restored across a context loss */
++struct tsens_context {
++	int	threshold;
++	int	control;
++};
++
++struct tsens_device {
++	struct device			*dev;
++	u32				num_sensors;
++	struct regmap			*map;
++	struct regmap_field		*status_field;
++	struct tsens_context		ctx;
++	bool				trdy;
++	const struct tsens_ops		*ops;
++	struct tsens_sensor		sensor[0];
++};
++
++char *qfprom_read(struct device *, const char *);
++void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
++int init_common(struct tsens_device *);
++int get_temp_common(struct tsens_device *, int, int *);
++
++#endif /* __QCOM_TSENS_H__ */
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
-
