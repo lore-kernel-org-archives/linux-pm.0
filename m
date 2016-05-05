@@ -1,14 +1,13 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v5 05/11] thermal: qcom: tsens-8960: Add support for 8960
- family of SoCs
-Date: Thu, 05 May 2016 10:18:59 +0530
-Message-ID: <572AD0BB.5050900@codeaurora.org>
-References: <1460626319-14516-1-git-send-email-rnayak@codeaurora.org> <1460626319-14516-6-git-send-email-rnayak@codeaurora.org> <20160428001055.GB17932@localhost.localdomain>
+Subject: Re: [PATCH v5 01/11] thermal: qcom: tsens: Add a skeletal TSENS drivers
+Date: Thu, 05 May 2016 10:20:41 +0530
+Message-ID: <572AD121.8040503@codeaurora.org>
+References: <1460626319-14516-1-git-send-email-rnayak@codeaurora.org> <1460626319-14516-2-git-send-email-rnayak@codeaurora.org> <20160428002040.GA18496@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160428001055.GB17932@localhost.localdomain>
+In-Reply-To: <20160428002040.GA18496@localhost.localdomain>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
@@ -16,51 +15,27 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 04/28/2016 05:40 AM, Eduardo Valentin wrote:
-> On Thu, Apr 14, 2016 at 03:01:53PM +0530, Rajendra Nayak wrote:
->> 8960 family of SoCs have the TSENS device as part of GCC, hence
->> the driver probes the virtual child device created by GCC and
->> uses the parent to extract all DT properties and reuses the GCC
->> regmap.
+On 04/28/2016 05:50 AM, Eduardo Valentin wrote:
+> On Thu, Apr 14, 2016 at 03:01:49PM +0530, Rajendra Nayak wrote:
+>> TSENS is Qualcomms' thermal temperature sensor device. It
+>> supports reading temperatures from multiple thermal sensors
+>> present on various QCOM SoCs.
+>> Calibration data is generally read from a non-volatile memory
+>> (eeprom) device.
 >>
->> Also GCC/TSENS are part of a  domain thats not always ON.
->> Hence add .suspend and .resume hooks to save and restore some of
->> the inited register context.
+>> Add a skeleton driver with all the necessary abstractions so
+>> a variety of qcom device families which support TSENS can
+>> add driver extensions.
 >>
->> Also 8960 family have some of the TSENS init sequence thats
->> required to be done by the HLOS driver (some later versions of TSENS
->> do not export these registers to non-secure world, and hence need
->> these initializations to be done by secure bootloaders)
->>
->> 8660 from the same family has just one sensor and hence some register
->> offset/layout differences which need special handling in the driver.
->>
->> Based on the original code from Siddartha Mohanadoss, Stephen Boyd and
->> Narendran Rajan.
+>> Also add the required device tree bindings which can be used
+>> to describe the TSENS device in DT.
 >>
 >> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>> Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
 >> ---
->>  drivers/thermal/qcom/Makefile     |   2 +-
->>  drivers/thermal/qcom/tsens-8960.c | 293 ++++++++++++++++++++++++++++++++++++++
->>  drivers/thermal/qcom/tsens.c      |   8 +-
->>  drivers/thermal/qcom/tsens.h      |   2 +-
->>  4 files changed, 299 insertions(+), 6 deletions(-)
->>  create mode 100644 drivers/thermal/qcom/tsens-8960.c
->>
->> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
->> index a471100..f3cefd1 100644
->> --- a/drivers/thermal/qcom/Makefile
->> +++ b/drivers/thermal/qcom/Makefile
->> @@ -1,2 +1,2 @@
->>  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
->> -qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o
->> +qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o
->> diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
->> new file mode 100644
->> index 0000000..a5976ec3
->> --- /dev/null
->> +++ b/drivers/thermal/qcom/tsens-8960.c
->> @@ -0,0 +1,293 @@
+[]..
+
+>> @@ -0,0 +1,135 @@
 >> +/*
 >> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
 >> + *
@@ -75,250 +50,75 @@ On 04/28/2016 05:40 AM, Eduardo Valentin wrote:
 >> + *
 >> + */
 >> +
+>> +#include <linux/err.h>
+>> +#include <linux/io.h>
+>> +#include <linux/nvmem-consumer.h>
+>> +#include <linux/of_address.h>
 >> +#include <linux/platform_device.h>
->> +#include <linux/delay.h>
->> +#include <linux/bitops.h>
 >> +#include <linux/regmap.h>
->> +#include <linux/thermal.h>
 >> +#include "tsens.h"
 >> +
->> +#define CAL_MDEGC		30000
+>> +#define S0_ST_ADDR		0x1030
+>> +#define SN_ADDR_OFFSET		0x4
+>> +#define SN_ST_TEMP_MASK		0x3ff
+>> +#define CAL_DEGC_PT1		30
+>> +#define CAL_DEGC_PT2		120
+>> +#define SLOPE_FACTOR		1000
+>> +#define SLOPE_DEFAULT		3200
 >> +
->> +#define CONFIG_ADDR		0x3640
->> +#define CONFIG_ADDR_8660	0x3620
->> +/* CONFIG_ADDR bitmasks */
->> +#define CONFIG			0x9b
->> +#define CONFIG_MASK		0xf
->> +#define CONFIG_8660		1
->> +#define CONFIG_SHIFT_8660	28
->> +#define CONFIG_MASK_8660	(3 << CONFIG_SHIFT_8660)
->> +
->> +#define STATUS_CNTL_ADDR_8064	0x3660
->> +#define CNTL_ADDR		0x3620
->> +/* CNTL_ADDR bitmasks */
->> +#define EN			BIT(0)
->> +#define SW_RST			BIT(1)
->> +#define SENSOR0_EN		BIT(3)
->> +#define SLP_CLK_ENA		BIT(26)
->> +#define SLP_CLK_ENA_8660	BIT(24)
->> +#define MEASURE_PERIOD		1
->> +#define SENSOR0_SHIFT		3
->> +
->> +/* INT_STATUS_ADDR bitmasks */
->> +#define MIN_STATUS_MASK		BIT(0)
->> +#define LOWER_STATUS_CLR	BIT(1)
->> +#define UPPER_STATUS_CLR	BIT(2)
->> +#define MAX_STATUS_MASK		BIT(3)
->> +
->> +#define THRESHOLD_ADDR		0x3624
->> +/* THRESHOLD_ADDR bitmasks */
->> +#define THRESHOLD_MAX_LIMIT_SHIFT	24
->> +#define THRESHOLD_MIN_LIMIT_SHIFT	16
->> +#define THRESHOLD_UPPER_LIMIT_SHIFT	8
->> +#define THRESHOLD_LOWER_LIMIT_SHIFT	0
->> +
->> +/* Initial temperature threshold values */
->> +#define LOWER_LIMIT_TH		0x50
->> +#define UPPER_LIMIT_TH		0xdf
->> +#define MIN_LIMIT_TH		0x0
->> +#define MAX_LIMIT_TH		0xff
->> +
->> +#define S0_STATUS_ADDR		0x3628
->> +#define INT_STATUS_ADDR		0x363c
->> +#define TRDY_MASK		BIT(7)
->> +#define TIMEOUT_US		100
->> +
->> +static int suspend_8960(struct tsens_device *tmdev)
+>> +char *qfprom_read(struct device *dev, const char *cname)
 >> +{
->> +	int ret;
->> +	unsigned int mask;
->> +	struct regmap *map = tmdev->map;
+>> +	struct nvmem_cell *cell;
+>> +	ssize_t data;
+>> +	char *ret;
 >> +
->> +	ret = regmap_read(map, THRESHOLD_ADDR, &tmdev->ctx.threshold);
->> +	if (ret)
->> +		return ret;
+>> +	cell = nvmem_cell_get(dev, cname);
+>> +	if (IS_ERR(cell))
+>> +		return ERR_CAST(cell);
 >> +
->> +	ret = regmap_read(map, CNTL_ADDR, &tmdev->ctx.control);
->> +	if (ret)
->> +		return ret;
+>> +	ret = nvmem_cell_read(cell, &data);
+>> +	nvmem_cell_put(cell);
 >> +
->> +	if (tmdev->num_sensors > 1)
->> +		mask = SLP_CLK_ENA | EN;
->> +	else
->> +		mask = SLP_CLK_ENA_8660 | EN;
->> +
->> +	ret = regmap_update_bits(map, CNTL_ADDR, mask, 0);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
+>> +	return ret;
 >> +}
 >> +
->> +static int resume_8960(struct tsens_device *tmdev)
+>> +void compute_intercept_slope(struct tsens_device *tmdev, u32 *p1,
+>> +			     u32 *p2, u32 mode)
 >> +{
->> +	int ret;
->> +	struct regmap *map = tmdev->map;
->> +
->> +	ret = regmap_update_bits(map, CNTL_ADDR, SW_RST, SW_RST);
->> +	if (ret)
->> +		return ret;
->> +
->> +	/*
->> +	 * Separate CONFIG restore is not needed only for 8660 as
->> +	 * config is part of CTRL Addr and its restored as such
->> +	 */
->> +	if (tmdev->num_sensors > 1) {
->> +		ret = regmap_update_bits(map, CONFIG_ADDR, CONFIG_MASK, CONFIG);
->> +		if (ret)
->> +			return ret;
->> +	}
->> +
->> +	ret = regmap_write(map, THRESHOLD_ADDR, tmdev->ctx.threshold);
->> +	if (ret)
->> +		return ret;
->> +
->> +	ret = regmap_write(map, CNTL_ADDR, tmdev->ctx.control);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static int enable_8960(struct tsens_device *tmdev, int id)
->> +{
->> +	int ret;
->> +	u32 reg, mask;
->> +
->> +	ret = regmap_read(tmdev->map, CNTL_ADDR, &reg);
->> +	if (ret)
->> +		return ret;
->> +
->> +	mask = BIT(id + SENSOR0_SHIFT);
->> +	ret = regmap_write(tmdev->map, CNTL_ADDR, reg | SW_RST);
->> +	if (ret)
->> +		return ret;
->> +
->> +	if (tmdev->num_sensors > 1)
->> +		reg |= mask | SLP_CLK_ENA | EN;
->> +	else
->> +		reg |= mask | SLP_CLK_ENA_8660 | EN;
->> +
->> +	ret = regmap_write(tmdev->map, CNTL_ADDR, reg);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static void disable_8960(struct tsens_device *tmdev)
->> +{
->> +	int ret;
->> +	u32 reg_cntl;
->> +	u32 mask;
->> +
->> +	mask = GENMASK(tmdev->num_sensors - 1, 0);
->> +	mask <<= SENSOR0_SHIFT;
->> +	mask |= EN;
->> +
->> +	ret = regmap_read(tmdev->map, CNTL_ADDR, &reg_cntl);
->> +	if (ret)
->> +		return;
->> +
->> +	reg_cntl &= ~mask;
->> +
->> +	if (tmdev->num_sensors > 1)
->> +		reg_cntl &= ~SLP_CLK_ENA;
->> +	else
->> +		reg_cntl &= ~SLP_CLK_ENA_8660;
->> +
->> +	regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
->> +}
->> +
->> +static int init_8960(struct tsens_device *tmdev)
->> +{
->> +	int ret, i;
->> +	u32 reg_cntl;
->> +
->> +	tmdev->map = dev_get_regmap(tmdev->dev, NULL);
->> +	if (!tmdev->map)
->> +		return -ENODEV;
->> +
->> +	/*
->> +	 * The status registers for each sensor are discontiguous
->> +	 * because some SoCs have 5 sensors while others have more
->> +	 * but the control registers stay in the same place, i.e
->> +	 * directly after the first 5 status registers.
->> +	 */
->> +	for (i = 0; i < tmdev->num_sensors; i++) {
->> +		if (i >= 5)
->> +			tmdev->sensor[i].status = S0_STATUS_ADDR + 40;
->> +		tmdev->sensor[i].status += i * 4;
->> +	}
->> +
->> +	reg_cntl = SW_RST;
->> +	ret = regmap_update_bits(tmdev->map, CNTL_ADDR, SW_RST, reg_cntl);
->> +	if (ret)
->> +		return ret;
->> +
->> +	if (tmdev->num_sensors > 1) {
->> +		reg_cntl |= SLP_CLK_ENA | (MEASURE_PERIOD << 18);
->> +		reg_cntl &= ~SW_RST;
->> +		ret = regmap_update_bits(tmdev->map, CONFIG_ADDR,
->> +					 CONFIG_MASK, CONFIG);
->> +	} else {
->> +		reg_cntl |= SLP_CLK_ENA_8660 | (MEASURE_PERIOD << 16);
->> +		reg_cntl &= ~CONFIG_MASK_8660;
->> +		reg_cntl |= CONFIG_8660 << CONFIG_SHIFT_8660;
->> +	}
->> +
->> +	reg_cntl |= GENMASK(tmdev->num_sensors - 1, 0) << SENSOR0_SHIFT;
->> +	ret = regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
->> +	if (ret)
->> +		return ret;
->> +
->> +	reg_cntl |= EN;
->> +	ret = regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +
->> +static int calibrate_8960(struct tsens_device *tmdev)
->> +{
+> 
+> Could you please add a comment explaining the cases that this function
+> is used instead of tz->tzp->slope,offset?
+
+sure, will do.
+
+> 
 >> +	int i;
->> +	char *data;
+>> +	int num, den;
 >> +
->> +	ssize_t num_read = tmdev->num_sensors;
->> +	struct tsens_sensor *s = tmdev->sensor;
+>> +	for (i = 0; i < tmdev->num_sensors; i++) {
+>> +		dev_dbg(tmdev->dev,
+>> +			"sensor%d - data_point1:%#x data_point2:%#x\n",
+>> +			i, p1[i], p2[i]);
 >> +
->> +	data = qfprom_read(tmdev->dev, "calib");
->> +	if (IS_ERR(data))
->> +		data = qfprom_read(tmdev->dev, "calib_backup");
->> +	if (IS_ERR(data))
->> +		return PTR_ERR(data);
+>> +		tmdev->sensor[i].slope = SLOPE_DEFAULT;
+>> +		if (mode == TWO_PT_CALIB) {
+>> +			/*
+>> +			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
+>> +			 *	temp_120_degc - temp_30_degc (x2 - x1)
+>> +			 */
+>> +			num = p2[i] - p1[i];
+>> +			num *= SLOPE_FACTOR;
+>> +			den = CAL_DEGC_PT2 - CAL_DEGC_PT1;
+>> +			tmdev->sensor[i].slope = num / den;
+>> +		}
 >> +
->> +	for (i = 0; i < num_read; i++, s++)
->> +		s->offset = data[i];
->> +
->> +	return 0;
+>> +		tmdev->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
+>> +				(CAL_DEGC_PT1 *
+>> +				tmdev->sensor[i].slope);
+>> +		dev_dbg(tmdev->dev, "offset:%d\n", tmdev->sensor[i].offset);
+>> +	}
 >> +}
->> +
->> +/* Temperature on y axis and ADC-code on x-axis */
->> +static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
->> +{
->> +	u32 slope;
-> 
-> why unsigned?
-> 
->> +	int offset;
->> +
->> +	slope = thermal_zone_get_slope(s->tzd);;
-> 
-> Please use one single ;
-
-Will fix both when I repost.
-
+[]..
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 hosted by The Linux Foundation
