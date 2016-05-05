@@ -1,37 +1,34 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: pass cpumask by reference
-Date: Fri, 06 May 2016 01:34:40 +0200
-Message-ID: <8109630.bu5WkkmZiA@vostro.rjw.lan>
-References: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
+Subject: Re: [PATCH] cpufreq: tango: Use generic platdev driver
+Date: Fri, 06 May 2016 01:35:08 +0200
+Message-ID: <6895724.6hn8T5abCQ@vostro.rjw.lan>
+References: <5727588D.5090105@free.fr> <20160502150252.GI2855@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1462016049-1976580-1-git-send-email-arnd@arndb.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58184 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755416AbcEEXbz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 19:31:55 -0400
+In-Reply-To: <20160502150252.GI2855@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Mason <slash.tmp@free.fr>
+Cc: linux-pm <linux-pm@vger.kernel.org>, arm-soc <arm@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sebastian Frias <sf84@laposte.net>
 
-On Saturday, April 30, 2016 01:33:29 PM Arnd Bergmann wrote:
-> The new use of dev_pm_opp_set_sharing_cpus resulted in a harmless compiler
-> warning with CONFIG_CPUMASK_OFFSTACK=y:
+On Monday, May 02, 2016 08:32:52 PM Viresh Kumar wrote:
+> On 02-05-16, 15:39, Mason wrote:
+> > From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> > 
+> > Add tango4 compatible string to the list.
+> > 
+> > Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+> >  1 file changed, 2 insertions(+)
 > 
-> drivers/cpufreq/mvebu-cpufreq.c: In function 'armada_xp_pmsu_cpufreq_init':
-> include/linux/cpumask.h:550:25: error: passing argument 2 of 'dev_pm_opp_set_sharing_cpus' discards 'const' qualifier from pointer target type [-Werror=discarded-qualifiers]
-> 
-> The problem here is that cpumask_var_t gets passed by reference, but
-> by declaring a 'const cpumask_var_t' argument, only the pointer is
-> constant, not the actual mask. This is harmless because the function
-> does not actually modify the mask.
-> 
-> This patch changes the function prototypes for all of the related functions
-> to pass a 'struct cpumask *' instead of 'cpumask_var_t', matching what
-> most other such functions do in the kernel. This lets us mark all the
-> other similar functions as taking a 'const' mask where possible,
-> and it avoids the warning without any change in object code.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 947bd567f7a5 ("mvebu: Use dev_pm_opp_set_sharing_cpus() to mark OPP tables as shared")
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Applied with all the ACKs, thanks!
+Applied, thanks!
+
