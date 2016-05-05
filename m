@@ -1,32 +1,28 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v6 07/11] arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
-Date: Thu,  5 May 2016 14:21:45 +0530
-Message-ID: <1462438309-11196-8-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v6 09/11] arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+Date: Thu,  5 May 2016 14:21:47 +0530
+Message-ID: <1462438309-11196-10-git-send-email-rnayak@codeaurora.org>
 References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:36990 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756285AbcEEIwz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 04:52:55 -0400
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: edubezval@gmail.com, andy.gross@linaro.org
 Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>, Andy Gross <agross@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
 Add thermal zones, tsens and qfprom nodes
 
 Cc: Andy Gross <agross@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 103 ++++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 103 ++++++++++++++++++++++++++++++++++++
  1 file changed, 103 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 8193139..3a7a63b 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -126,6 +126,88 @@
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index a33a09f..5284709 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -86,6 +86,88 @@
  		};
  	};
  
@@ -115,7 +111,7 @@ index 8193139..3a7a63b 100644
  	cpu-pmu {
  		compatible = "qcom,krait-pmu";
  		interrupts = <1 7 0xf04>;
-@@ -249,6 +331,27 @@
+@@ -142,6 +224,27 @@
  			reg = <0xf9011000 0x1000>;
  		};
  
@@ -146,4 +142,3 @@ index 8193139..3a7a63b 100644
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
-
