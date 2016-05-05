@@ -1,14 +1,13 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 6/6] arm: dt: bcm23550: Add device tree files
-Date: Thu, 05 May 2016 23:05:04 +0200
-Message-ID: <9191808.kbIrFQuH7z@wuerfel>
+Subject: Re: [PATCH 0/6] Support BCM23550 SoC
+Date: Thu, 05 May 2016 23:09:38 +0200
+Message-ID: <6872671.Czyv7J9iJZ@wuerfel>
 References: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
- <1462481334-8943-7-git-send-email-chris.brand@broadcom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1462481334-8943-7-git-send-email-chris.brand@broadcom.com>
+In-Reply-To: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,15 +21,22 @@ To: Chris Brand <chris.brand@broadcom.com>
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Scott Branden <sbranden@broadcom.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Ray Jui <rjui@broadcom.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Raymond Ngun <raymond.ngun@broadcom.com>, Rob Herring <robh+dt@kernel.org>, bcm-kernel-feedback-list@broadcom.com, Markus Mayer <markus.mayer@broadcom.com>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 05 May 2016 13:48:54 Chris Brand wrote:
-> +
-> +       chosen {
-> +               bootargs = "console=ttyS0,115200n8";
-> +       };
-> +
+On Thursday 05 May 2016 13:48:48 Chris Brand wrote:
+> This patchset introduces support for the BCM23550 SoC and the Broadcom
+> Sparrow development board.
 > 
+> It modifies the BCM21664 support slightly to share code between the two.
+> 
+> With this patchset, a multi-v7 kernel brings up all 4 CPUs on a Sparrow
+> board, and gets to a shell prompt. Many of the IP blocks that are shared
+> with BCM28155 and BCM21664 are also functional, although not all have
+> been thoroughly tested.
 
-Can you move this into the .dts file, and add a stdout-path
-property to make earlycon work?
+Looks really nice overall, I only found one tiny detail I commented on
+for patch 6.
+
+I'm glad to see work on the old chips resume, are you working on new
+code for it as well, or just upstreaming the patches that were already
+done in the past?
 
 	Arnd
