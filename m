@@ -1,26 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpupower: fix potential memory leak
-Date: Fri, 06 May 2016 01:37:55 +0200
-Message-ID: <9404513.ZIouDq0nSu@vostro.rjw.lan>
-References: <1461913214-15900-1-git-send-email-trenn@suse.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: cpufreq governors broken with !CONFIG_SMP?
+Date: Thu, 5 May 2016 16:49:22 -0700
+Message-ID: <20160505234922.GA14673@sky.smuckle.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53416 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755380AbcEEXem (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 19:34:42 -0400
-In-Reply-To: <1461913214-15900-1-git-send-email-trenn@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: rafael@kernel.org, linux-pm@vger.kernel.org, arjun024@gmail.com
 
-On Friday, April 29, 2016 09:00:14 AM Thomas Renninger wrote:
-> From: Arjun Sreedharan <arjun024@gmail.com>
-> 
-> Signed-off-by: Thomas Renninger <trenn@suse.com>
+While working on a few patches for schedutil I noticed that the CFS
+cpufreq hooks depend on PELT, which depends on CONFIG_SMP.
 
-Applied, thanks!
+I compiled and ran a UP kernel with intel_pstate. Running a cpu-bound
+task did not result in the frequency increasing beyond fmin. For some reason
+ondemand is working for me with the same test, not sure why yet.
 
+It appears dbs/intel-pstate/schedutil have a dependency on CONFIG_SMP
+now. Or am I missing something?
