@@ -1,43 +1,75 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] PM / OPP: Move CONFIG_OF dependent code in a separate
- file
-Date: Thu, 5 May 2016 15:00:11 +0100
-Message-ID: <572B51EB.1080505@arm.com>
-References: <1f90c873e5801967acbb2e38fe0b268189247049.1462445391.git.viresh.kumar@linaro.org>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [RFC v2 10/13] usb: hub: Power sequence the ports on activation
+Date: Thu, 5 May 2016 10:09:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1605051007040.2008-100000@iolanthe.rowland.org>
+References: <1462451666-17945-11-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50151 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754017AbcEEOAR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 May 2016 10:00:17 -0400
-In-Reply-To: <1f90c873e5801967acbb2e38fe0b268189247049.1462445391.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1462451666-17945-11-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, eric.engestrom@imgtec.com, rufus.hamade@imgtec.com, linux-kernel@vger.kernel.org
 
+On Thu, 5 May 2016, Krzysztof Kozlowski wrote:
 
+> The autodetection of attached USB device might not work on certain
+> boards where the power is delivered externally. These devices also might
+> require a hard reset. Use pwrseq for that in USB hub.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/usb/core/hub.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+> index 1c82fcc448f5..0fddaacc62bf 100644
+> --- a/drivers/usb/core/hub.c
+> +++ b/drivers/usb/core/hub.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/random.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pwrseq.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/byteorder.h>
+> @@ -1661,7 +1662,17 @@ static int hub_configure(struct usb_hub *hub,
+>  
+>  	usb_hub_adjust_deviceremovable(hdev, hub->descriptor);
+>  
+> +	/* FIXME: When do the pre-power-on? */
 
-On 05/05/16 11:50, Viresh Kumar wrote:
-> Recently few issues were noticed in the code where CONFIG_OF wasn't
-> consistently used for many routines. The core file is big enough now and
-> ifdef hackery makes it less readable.
->
-> Move OF specific code to another file and compile that only if CONFIG_OF
-> is enabled.
->
-> Compile-tested:
-> - For ARM (exynos) with CONFIG_OF enabled
-> - For X86 with CONFIG_OF disabled (have to enable CONFIG_PM_OPP separately)
->
+It's hard to answer this without knowing what pre-power-on involves.
 
-Just gave it a spin on ARM64 Juno on top of linux-pm/bleeding-edge so
-you can have:
+Why not create a pwrseq_power_on() routine that does pre_power_on 
+followed by post_power_on?
 
-Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> +	/*
+> +	for (i = 0; i < maxchild; i++)
+> +		pwrseq_pre_power_on(hub->ports[i]->pwrseq);
+> +	*/
+> +
+> +	for (i = 0; i < maxchild; i++)
+> +		pwrseq_post_power_on(hub->ports[i]->pwrseq);
 
--- 
-Regards,
-Sudeep
+This is patch 10/13.  hub->ports[i]->pwrseq doesn't get added until 
+11/13.  Obviously you never tried compiling each patch in the series.
+
+> +
+>  	hub_activate(hub, HUB_INIT);
+> +
+
+Unnecessary blank line added.
+
+>  	return 0;
+>  
+>  fail:
+
+Alan Stern
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
