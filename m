@@ -1,59 +1,54 @@
-From: Michael Haas <haas@computerlinguist.org>
-Subject: [PATCH v3 2/5] mfd: axp20x: Add a cell for the ac power_supply part of the axp20x PMICs
-Date: Thu,  5 May 2016 12:35:05 +0200
-Message-ID: <1462444508-9363-3-git-send-email-haas@computerlinguist.org>
+From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Subject: [PATCH v3 4/5] ARM: dts: axp209: Add ac_power_supply
+ child node to the ax209 node
+Date: Thu,  5 May 2016 12:35:07 +0200
+Message-ID: <1462444508-9363-5-git-send-email-haas@computerlinguist.org>
 References: <1462444508-9363-1-git-send-email-haas@computerlinguist.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.mailbox.org ([80.241.60.215]:44950 "EHLO mx2.mailbox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756563AbcEEKfY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 5 May 2016 06:35:24 -0400
-In-Reply-To: <1462444508-9363-1-git-send-email-haas@computerlinguist.org>
-Sender: linux-pm-owner@vger.kernel.org
+Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCD4V7EG6QFRB3GDVS4QKGQEVVUV5UA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <1462444508-9363-1-git-send-email-haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, maxime.ripard@free-electrons.com, wens@csie.org, lee.jones@linaro.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: hdegoede@redhat.com, bonbons@linux-vserver.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-sunxi@googlegroups.com, Michael Haas <haas@computerlinguist.org>
 
-As a counterpart to the usb power_supply cell, this commit adds an AC
-power_supply cell to the axp20x driver.
+Add a node representing the ac power supply part of the axp209 pmic.
 
-Still missing are the RTC backup battery and the main battery charger
-cells.
+This node is enabled by default. A device is likely to have an AC power
+connection. If the AC power is indeed absent, the ac power driver
+will simply report the power input as offline.
 
-Signed-off-by: Michael Haas <haas@computerlinguist.org>
+Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 ---
- drivers/mfd/axp20x.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/arm/boot/dts/axp209.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index a57d6e9..aa6ef08 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -128,6 +128,12 @@ static struct resource axp152_pek_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(AXP152_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
- };
+diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+index 051ab3b..7deb7d9 100644
+--- a/arch/arm/boot/dts/axp209.dtsi
++++ b/arch/arm/boot/dts/axp209.dtsi
+@@ -90,8 +90,14 @@
+ 		};
+ 	};
  
-+static struct resource axp20x_ac_power_supply_resources[] = {
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_PLUGIN, "ACIN_PLUGIN"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_REMOVAL, "ACIN_REMOVAL"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_OVER_V, "ACIN_OVER_V"),
-+};
++	ac_power_supply: ac_power_supply {
++		compatible = "x-powers,axp202-ac-power-supply";
++		status = "okay";
++	};
 +
- static struct resource axp20x_pek_resources[] = {
- 	{
- 		.name	= "PEK_DBR",
-@@ -436,6 +442,11 @@ static struct mfd_cell axp20x_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
-+		.name		= "axp20x-ac-power-supply",
-+		.of_compatible	= "x-powers,axp202-ac-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-+		.resources	= axp20x_ac_power_supply_resources,
-+	}, {
- 		.name		= "axp20x-usb-power-supply",
- 		.of_compatible	= "x-powers,axp202-usb-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_usb_power_supply_resources),
+ 	usb_power_supply: usb_power_supply {
+ 		compatible = "x-powers,axp202-usb-power-supply";
+ 		status = "disabled";
+ 	};
++
+ };
 -- 
 2.8.2
-
