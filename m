@@ -1,75 +1,55 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: [RFC v2 10/13] usb: hub: Power sequence the ports on activation
-Date: Thu, 5 May 2016 10:09:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1605051007040.2008-100000@iolanthe.rowland.org>
-References: <1462451666-17945-11-git-send-email-k.kozlowski@samsung.com>
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [PATCHv2] cpufreq: Fix GOV_LIMITS handling for the userspace
+ governor
+Date: Thu, 5 May 2016 09:53:17 -0700
+Message-ID: <572B7A7D.9090505@nvidia.com>
+References: <5723D5C5.9030900@nvidia.com> <20160502020724.GD2855@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1462451666-17945-11-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:8927 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757425AbcEEQzh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 12:55:37 -0400
+In-Reply-To: <20160502020724.GD2855@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Matthew Longnecker <MLongnecker@nvidia.com>
 
-On Thu, 5 May 2016, Krzysztof Kozlowski wrote:
-
-> The autodetection of attached USB device might not work on certain
-> boards where the power is delivered externally. These devices also might
-> require a hard reset. Use pwrseq for that in USB hub.
+On 05/01/2016 07:07 PM, Viresh Kumar wrote:
+> On 29-04-16, 14:44, Sai Gurrappadi wrote:
+>> Currently, the userspace governor only updates frequency on GOV_LIMITS
+>> if policy->cur falls outside policy->{min/max}. However, it is also
+>> necessary to update current frequency on GOV_LIMITS to match the user
+>> requested value if it can be achieved within the new policy->{max/min}.
+>>
+>> This was previously the behaviour in the governor until commit d1922f0
+>> ("cpufreq: Simplify userspace governor") which incorrectly assumed that
+>> policy->cur == user requested frequency via scaling_setspeed. This won't
+>> be true if the user requested frequency falls outside policy->{min/max}.
+>> Ex: a temporary thermal cap throttled the user requested frequency.
+>>
+>> Fix this by storing the user requested frequency in a seperate variable.
+>> The governor will then try to achieve this request on every GOV_LIMITS
+>> change.
+>>
+>> Fixes: d1922f02562f ("cpufreq: Simplify userspace governor")
+>>
+>> Signed-off-by: Sai Gurrappadi <sgurrappadi@nvidia.com>
+>> ---
+>>
+>> Changes in v2:
+>> - Used policy->governor_data rather than using a per-cpu variable
+>>
+>>  drivers/cpufreq/cpufreq_userspace.c | 43 ++++++++++++++++++++++++++++++++-----
+>>  1 file changed, 38 insertions(+), 5 deletions(-)
 > 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> ---
->  drivers/usb/core/hub.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index 1c82fcc448f5..0fddaacc62bf 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -26,6 +26,7 @@
->  #include <linux/mutex.h>
->  #include <linux/random.h>
->  #include <linux/pm_qos.h>
-> +#include <linux/pwrseq.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/byteorder.h>
-> @@ -1661,7 +1662,17 @@ static int hub_configure(struct usb_hub *hub,
->  
->  	usb_hub_adjust_deviceremovable(hdev, hub->descriptor);
->  
-> +	/* FIXME: When do the pre-power-on? */
 
-It's hard to answer this without knowing what pre-power-on involves.
+Thanks! Do I just wait for Rafael to review/pick it up? Or is there anything
+else I must do?
 
-Why not create a pwrseq_power_on() routine that does pre_power_on 
-followed by post_power_on?
-
-> +	/*
-> +	for (i = 0; i < maxchild; i++)
-> +		pwrseq_pre_power_on(hub->ports[i]->pwrseq);
-> +	*/
-> +
-> +	for (i = 0; i < maxchild; i++)
-> +		pwrseq_post_power_on(hub->ports[i]->pwrseq);
-
-This is patch 10/13.  hub->ports[i]->pwrseq doesn't get added until 
-11/13.  Obviously you never tried compiling each patch in the series.
-
-> +
->  	hub_activate(hub, HUB_INIT);
-> +
-
-Unnecessary blank line added.
-
->  	return 0;
->  
->  fail:
-
-Alan Stern
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-Sai
