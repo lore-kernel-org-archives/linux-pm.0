@@ -1,85 +1,108 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC v2 10/13] usb: hub: Power sequence the ports on activation
-Date: Thu, 5 May 2016 19:37:03 +0200
-Message-ID: <20160505173703.GA3034@kozik-lap>
-References: <1462451666-17945-11-git-send-email-k.kozlowski@samsung.com>
- <Pine.LNX.4.44L0.1605051007040.2008-100000@iolanthe.rowland.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 1/1] drivers: acpi: add CPU id to cooling device type of
+ processor driver
+Date: Thu, 05 May 2016 11:27:33 -0700
+Message-ID: <1462472853.27421.11.camel@linux.intel.com>
+References: <1462251879-7224-1-git-send-email-edubezval@gmail.com>
+	 <CAJZ5v0hPL3Wc1ZKZv-Gqny5cur9+262OCuqVqbQ2US9=gpsX7g@mail.gmail.com>
+	 <1462398872.14904.29.camel@linux.intel.com>
+	 <2680812.8DqCpBTJz8@vostro.rjw.lan>
+	 <20160505030645.GA2158@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1605051007040.2008-100000@iolanthe.rowland.org>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, tjakobi@math.uni-bielefeld.de, m.szyprowski@samsung.com, hverkuil@xs4all.nl, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:42469 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752284AbcEES0x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 May 2016 14:26:53 -0400
+In-Reply-To: <20160505030645.GA2158@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, May 05, 2016 at 10:09:47AM -0400, Alan Stern wrote:
-> On Thu, 5 May 2016, Krzysztof Kozlowski wrote:
-> 
-> > The autodetection of attached USB device might not work on certain
-> > boards where the power is delivered externally. These devices also might
-> > require a hard reset. Use pwrseq for that in USB hub.
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > ---
-> >  drivers/usb/core/hub.c | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> > 
-> > diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> > index 1c82fcc448f5..0fddaacc62bf 100644
-> > --- a/drivers/usb/core/hub.c
-> > +++ b/drivers/usb/core/hub.c
-> > @@ -26,6 +26,7 @@
-> >  #include <linux/mutex.h>
-> >  #include <linux/random.h>
-> >  #include <linux/pm_qos.h>
-> > +#include <linux/pwrseq.h>
-> >  
-> >  #include <asm/uaccess.h>
-> >  #include <asm/byteorder.h>
-> > @@ -1661,7 +1662,17 @@ static int hub_configure(struct usb_hub *hub,
-> >  
-> >  	usb_hub_adjust_deviceremovable(hdev, hub->descriptor);
-> >  
-> > +	/* FIXME: When do the pre-power-on? */
-> 
-> It's hard to answer this without knowing what pre-power-on involves.
+Hi Eduardo,
 
-In my particular case, I want to achieve a full reset through regulator (off
-and on) because the bootloader left it in initialized state. I assume
-that if bootloader did not configure the device, the reset won't be
-harmful.
+On Wed, 2016-05-04 at 20:06 -0700, Eduardo Valentin wrote:
+> On Thu, May 05, 2016 at 12:00:57AM +0200, Rafael J. Wysocki wrote:
+> >=20
+> > On Wednesday, May 04, 2016 02:54:32 PM Srinivas Pandruvada wrote:
+> > >=20
+> > > On Wed, 2016-05-04 at 23:49 +0200, Rafael J. Wysocki wrote:
+> > > >=20
+> > > > On Tue, May 3, 2016 at 7:04 AM, Eduardo Valentin <edubezval@gma
+> > > > il.com
+> > > > >=20
+> > > > > wrote:
+> > > > >=20
+> > > > > Currently, in an ACPI based system, the processor driver
+> > > > > registers
+> > > > > one cooling device per processor. However, the cooling device
+> > > > > type
+> > > > > is the same for each processor. For example, on a system with
+> > > > > four
+> > > > > processors, the sysfs reading of each cooling device would
+> > > > > look
+> > > > > like:
+> > > > > ebv@besouro ~ $ cat /sys/class/thermal/cooling_device*/type
+> > > > > Processor
+> > > > > Processor
+> > > > > Processor
+> > > > > Processor
+> > > > >=20
+> > > > > which turns out to fine. But, some parts of the thermal code
+> > > > > may
+> > > > > use
+> > > > > type to identify participating devices in a thermal zone.
+> > > > > Besides,
+> > > > > adding notifications to user space may cause the production
+> > > > > of
+> > > > > messages
+> > > > > that may confuse the listener.
+> > > > >=20
+> > > > > For this reason, this patch adds the processor ID cooling
+> > > > > device
+> > > > > type.
+> > > > > After this change, the cooling device listing in the same
+> > > > > previous
+> > > > > example
+> > > > > would look like this:
+> > > > > ebv@besouro ~ $ cat /sys/class/thermal/cooling_device*/type
+> > > > > Processor.0
+> > > > > Processor.1
+> > > > > Processor.2
+> > > > > Processor.3
+> > > > >=20
+> > > > > allowing an easier identification of cooling device target.
+> > > > Is it not going to confuse any user space scripts or similar?
+> > > Yes, it will.
+> > In that case the patch cannot be applied.
+> In fact, we shall never brake userspace.=C2=A0
+>=20
+> Srinivas, could you please elaborate a bit more on how this would
+> break
+> userspace? How different would it be having an extra id? Are you
+> expecting "Processor" string in daemon?
+Yes.
+Also Processor is a special type of cdev on client systems. So you set
+a state in one Processor all Processors cooling device gets changed as
+they share voltage and frequency. So they all are same. So if some user
+space tries to reduce the cur_state by 1 for all the processor cooling
+devices they will effectively reduce cur_state to much lower value.
 
-In a MMC case, this pre-power-on on is setting the 'reset' GPIO (thus
-triggering the reset) and post-power-on is clearing the 'reset'.
+So instead of this, we should have only one processor cooling device
+per CPU package, so on most of the client systems, we will see only one
+processor cooling device.
 
-> Why not create a pwrseq_power_on() routine that does pre_power_on 
-> followed by post_power_on?
+Thanks,
+Srinivas
 
-For my purpose it seems sensible.
-
-> 
-> > +	/*
-> > +	for (i = 0; i < maxchild; i++)
-> > +		pwrseq_pre_power_on(hub->ports[i]->pwrseq);
-> > +	*/
-> > +
-> > +	for (i = 0; i < maxchild; i++)
-> > +		pwrseq_post_power_on(hub->ports[i]->pwrseq);
-> 
-> This is patch 10/13.  hub->ports[i]->pwrseq doesn't get added until 
-> 11/13.  Obviously you never tried compiling each patch in the series.
-
-Ahh yes, I forgot to reorder them. Thanks for spotting this.
-
-> 
-> > +
-> >  	hub_activate(hub, HUB_INIT);
-> > +
-> 
-> Unnecessary blank line added.
-
-Thanks for feedback,
-Krzysztof
-
+>=20
+> BR,
+>=20
+> >=20
+> >=20
+> > Thanks,
+> > Rafael
+> >=20
