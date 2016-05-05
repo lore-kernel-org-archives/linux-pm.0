@@ -1,39 +1,49 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Ignore _PPC processing under HWP
-Date: Wed,  4 May 2016 15:07:34 -0700
-Message-ID: <1462399654-15005-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] Fix CONFIG_PM_OPP without CONFIG_OF build failure
+Date: Thu, 5 May 2016 08:31:09 +0530
+Message-ID: <20160505030109.GG2573@vireshk-i7>
+References: <1462281278-8553-1-git-send-email-eric.engestrom@imgtec.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13420 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754191AbcEDWGj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 4 May 2016 18:06:39 -0400
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34753 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755160AbcEEDBN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 May 2016 23:01:13 -0400
+Received: by mail-pa0-f42.google.com with SMTP id r5so31712070pag.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 May 2016 20:01:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1462281278-8553-1-git-send-email-eric.engestrom@imgtec.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Eric Engestrom <eric.engestrom@imgtec.com>
+Cc: linux-kernel@vger.kernel.org, Rufus Hamade <rufus.hamade@imgtec.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-When HWP (hardware P states) feature is active, the ACPI _PSS and _PPC
-is not used. So ignore processing for _PPC limits.
+On 03-05-16, 14:14, Eric Engestrom wrote:
+> diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+> index ba2bdbd..8aae170 100644
+> --- a/drivers/base/power/opp/cpu.c
+> +++ b/drivers/base/power/opp/cpu.c
+> @@ -119,6 +119,7 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+>  #endif	/* CONFIG_CPU_FREQ */
+>  
+> +#ifdef CONFIG_OF
+>  /* Required only for V1 bindings, as v2 can manage it from DT itself */
+>  int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+>  {
+> @@ -160,7 +161,6 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
+>  
+> -#ifdef CONFIG_OF
+>  void dev_pm_opp_of_cpumask_remove_table(cpumask_var_t cpumask)
+>  {
+>  	struct device *cpu_dev;
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 3 +++
- 1 file changed, 3 insertions(+)
+This change was incorrect as this API can be used for non-OF case.
+Some things have already changed, can you please rebase on linux-next
+and resend this patch?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 97a8278..0620fa6 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -378,6 +378,9 @@ static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
- 	int ret;
- 	int i;
- 
-+	if (hwp_active)
-+		return;
-+
- 	if (!intel_pstate_get_ppc_enable_status())
- 		return;
- 
 -- 
-2.5.5
-
+viresh
