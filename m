@@ -1,325 +1,129 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC v2 02/13] power/mmc: Move pwrseq drivers to power/pwrseq
-Date: Thu, 05 May 2016 14:34:15 +0200
-Message-ID: <1462451666-17945-3-git-send-email-k.kozlowski@samsung.com>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [lkp] [sched/fair] 41e0d37f7a: divide error: 0000 [#1] SMP
+Date: Thu, 05 May 2016 15:46:19 +0200
+Message-ID: <2986116.vKjD9YH9EZ@vostro.rjw.lan>
+References: <87mvo8gd44.fsf@yhuang-dev.intel.com> <3180695.EyLdKFABtM@vostro.rjw.lan> <CANRm+CyaMDJBK1gxoJo+v7CXuhcN=x-mhgfgCVFm-bahXPUKKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>
-Cc: hverkuil@xs4all.nl, tjakobi@math.uni-bielefeld.de, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, m.szyprowski@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64575 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752827AbcEENnI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 May 2016 09:43:08 -0400
+In-Reply-To: <CANRm+CyaMDJBK1gxoJo+v7CXuhcN=x-mhgfgCVFm-bahXPUKKA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wanpeng Li <kernellwp@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, kernel test robot <ying.huang@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, lkp@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Mike Galbraith <efault@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-The MMC power sequence drivers are useful also outside of MMC world: for
-USB devices needed a hard-reset before probing. Before extending and
-re-using pwrseq drivers, move them to a new place.
+On Thursday, May 05, 2016 01:05:41 PM Wanpeng Li wrote:
+> 2016-05-03 23:10 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > On Tuesday, May 03, 2016 03:53:12 PM Rafael J. Wysocki wrote:
+> >> On Tuesday, May 03, 2016 03:22:24 PM Rafael J. Wysocki wrote:
+> >> > On Tue, May 3, 2016 at 2:58 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >> > > On Tue, May 3, 2016 at 2:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >> > >> On Tue, May 3, 2016 at 2:15 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >> > >>> On Tue, May 3, 2016 at 10:32 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >> > >>>> On Tue, May 03, 2016 at 09:10:51AM +0800, kernel test robot wrote:
+> >> > >>>>> FYI, we noticed the following commit:
+> >> > >>>>>
+> >> > >>>>> https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git sched/core
+> >> > >>>>> commit 41e0d37f7ac81297c07ba311e4ad39465b8c8295 ("sched/fair: Do not call cpufreq hook unless util changed")
+> >> > >>>>
+> >> > >>>>
+> >> > >>>>> [   14.860950] Freeing unused kernel memory: 260K (ffff88103edbf000 - ffff88103ee00000)
+> >> > >>>>> [   14.873013] systemd[1]: RTC configured in localtime, applying delta of 480 minutes to system time.
+> >> > >>>>> [   14.884474] random: systemd urandom read with 5 bits of entropy available
+> >> > >>>>> [   14.903975] divide error: 0000 [#1] SMP
+> >> > >>>>> [   14.908375] Modules linked in:
+> >> > >>>>> [   14.911793] CPU: 39 PID: 1 Comm: systemd Not tainted 4.6.0-rc4-00016-g41e0d37 #1
+> >> > >>>>> [   14.920051] Hardware name: Intel Corporation S2600WP/S2600WP, BIOS SE5C600.86B.02.02.0002.122320131210 12/23/2013
+> >> > >>>>> [   14.931509] task: ffff8810101d8000 ti: ffff88081ab20000 task.ti: ffff88081ab20000
+> >> > >>>>> [   14.939862] RIP: 0010:[<ffffffff8176ad32>]  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
+> >> > >>>>> [   14.949202] RSP: 0018:ffff88081ab23d70  EFLAGS: 00010006
+> >> > >>>>> [   14.955129] RAX: 0000000000000000 RBX: 0000000000000024 RCX: ffff8808091e0300
+> >> > >>>>> [   14.963094] RDX: 0000000000000000 RSI: 0000000000000100 RDI: 0000000000000024
+> >> > >>>>> [   14.971057] RBP: ffff88081ab23d88 R08: 0000000000001000 R09: 00000000096a1000
+> >> > >>>>> [   14.979022] R10: 0000000000ffff10 R11: 000000000000000f R12: 0000000000000202
+> >> > >>>>> [   14.986984] R13: ffff88101390a040 R14: ffff88100e48e180 R15: ffff88101390a040
+> >> > >>>>> [   14.994950] FS:  00007f66fe117880(0000) GS:ffff8810139c0000(0000) knlGS:0000000000000000
+> >> > >>>>> [   15.003982] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> >> > >>>>> [   15.010393] CR2: 000055f78b760098 CR3: 000000103d759000 CR4: 00000000001406e0
+> >> > >>>>> [   15.018359] Stack:
+> >> > >>>>> [   15.020602]  ffffffff81764dad 0000000000000024 ffff88100e48e180 ffff88081ab23dc8
+> >> > >>>>> [   15.028899]  ffffffff81040267 ffff88101390a0ac 0000000000000340 ffff88081ab23f20
+> >> > >>>>> [   15.037197]  ffff88103cd7c400 ffff88100e48e180 ffff88101390a040 ffff88081ab23e30
+> >> > >>>>> [   15.045493] Call Trace:
+> >> > >>>>> [   15.048223]  [<ffffffff81764dad>] ? cpufreq_quick_get+0x3d/0x90
+> >> > >>>>> [   15.054832]  [<ffffffff81040267>] show_cpuinfo+0x3c7/0x410
+> >> > >>>>> [   15.060956]  [<ffffffff8121f5c4>] seq_read+0x2c4/0x3a0
+> >> > >>>>> [   15.066685]  [<ffffffff81266ea8>] proc_reg_read+0x48/0x70
+> >> > >>>>> [   15.072713]  [<ffffffff811f9d58>] __vfs_read+0x28/0xd0
+> >> > >>>>> [   15.078451]  [<ffffffff813bab63>] ? security_file_permission+0xa3/0xc0
+> >> > >>>>> [   15.085737]  [<ffffffff811faa97>] ? rw_verify_area+0x57/0xd0
+> >> > >>>>> [   15.092054]  [<ffffffff811fab96>] vfs_read+0x86/0x130
+> >> > >>>>> [   15.097691]  [<ffffffff811fbf96>] SyS_read+0x46/0xa0
+> >> > >>>>> [   15.103234]  [<ffffffff818f71b2>] entry_SYSCALL_64_fastpath+0x1a/0xa4
+> >> > >>>>> [   15.110421] Code: 05 dc 1b c3 00 89 ff 55 48 89 e5 48 8b 0c f8 48 85 c9 74 1f 48 63 51 1c 48 63 41 20 5d 48 0f af c2 31 d2 48 0f af 81 88 00 00 00 <48> f7 b1 90 00 00 00 c3 31 c0 5d c3 66 90 0f 1f 44 00 00 8b 77
+> >> > >>>>> [   15.132161] RIP  [<ffffffff8176ad32>] intel_pstate_get+0x32/0x40
+> >> > >>>>> [   15.138875]  RSP <ffff88081ab23d70>
+> >> > >>>>> [   15.142770] ---[ end trace e5d5a8bedf5502e1 ]---
+> >> > >>>>> [   15.149323] Kernel panic - not syncing: Fatal exception
+> >> > >>>>>
+> >> > >>>>
+> >> > >>>> That's intel_pstate.c:get_avg_frequency(), which assumes mperf != 0. It
+> >> > >>>> being 0 seems to suggest intel_pstate_sample() hasn't been called yet or
+> >> > >>>> so.
+> >> > >>>
+> >> > >>> Well, what's the tree based on?
+> >> > >>>
+> >> > >>> The mainline does this:
+> >> > >>>
+> >> > >>> bool sample_taken = intel_pstate_sample(cpu, time);
+> >> > >>>
+> >> > >>> if (sample_taken && !hwp_active)
+> >> > >>>         intel_pstate_adjust_busy_pstate(cpu);
+> >> > >>>
+> >> > >>> and (the mainline version of) intel_pstate_sample() returns false when
+> >> > >>> it is called for the first time after setting the update_util hook.
+> >> > >>
+> >> > >> If that helps, I can expose my pm-cpufreq-fixes branch to pull from.
+> >> > >> It contains all cpufreq material that went into the Linus' tree to
+> >> > >> date and is based on 4.5-rc3.
+> >> > >
+> >> > > In fact, it is exposed already:
+> >> > >
+> >> > > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+> >> > > pm-cpufreq-fixes
+> >> > >
+> >> > > and the top-most commit is 1becf03545a0859ceaaf9e8c2d9861882a71cb01
+> >> > > (cpufreq: intel_pstate: Fix processing for turbo activation ratio).
+> >> >
+> >> > Ah, that will fail as well.
+> >> >
+> >> > The problem is that intel_pstate_get() can be called before we take
+> >> > the first sample.
+> >> >
+> >> > I need to think about how to fix that.
+> >>
+> >> Maybe something like the below (untested, but builds).
+> >>
+> >> It will make intel_pstate_get() return 0 until avg_frequency gets populated
+> >> which is actually OK.
+> >
+> > The previous one would break the HWP case, so below is a new one (still
+> > untested).
+> 
+> I can reproduce the bug and your patch fix it.
+> 
+> Tested-by: Wanpeng Li <wanpeng.li@hotmail.com>
 
-The commit does not introduce significant changes in the pwrseq drivers
-code so still all the functions are prefixed with "mmc_pwrseq". However
-the MMC-specific pwrseq functions has to be now exported and everything
-is hidden not by CONFIG_OF but by new CONFIG_POWER_SEQ option.
+Thanks!
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/mmc/Kconfig                                |  2 --
- drivers/mmc/core/Makefile                          |  3 ---
- drivers/mmc/core/core.c                            |  2 +-
- drivers/mmc/core/host.c                            |  2 +-
- drivers/power/Kconfig                              |  1 +
- drivers/power/Makefile                             |  1 +
- drivers/{mmc/core => power/pwrseq}/Kconfig         | 17 ++++++++++++-----
- drivers/power/pwrseq/Makefile                      |  3 +++
- drivers/{mmc/core => power/pwrseq}/pwrseq.c        |  8 ++++++--
- drivers/{mmc/core => power/pwrseq}/pwrseq_emmc.c   |  3 +--
- drivers/{mmc/core => power/pwrseq}/pwrseq_simple.c |  3 +--
- {drivers/mmc/core => include/linux}/pwrseq.h       |  6 +++---
- 12 files changed, 30 insertions(+), 21 deletions(-)
- rename drivers/{mmc/core => power/pwrseq}/Kconfig (71%)
- create mode 100644 drivers/power/pwrseq/Makefile
- rename drivers/{mmc/core => power/pwrseq}/pwrseq.c (90%)
- rename drivers/{mmc/core => power/pwrseq}/pwrseq_emmc.c (99%)
- rename drivers/{mmc/core => power/pwrseq}/pwrseq_simple.c (99%)
- rename {drivers/mmc/core => include/linux}/pwrseq.h (94%)
+Please also try this one:
 
-diff --git a/drivers/mmc/Kconfig b/drivers/mmc/Kconfig
-index f2eeb38efa65..7ade379e0634 100644
---- a/drivers/mmc/Kconfig
-+++ b/drivers/mmc/Kconfig
-@@ -21,8 +21,6 @@ config MMC_DEBUG
- 
- if MMC
- 
--source "drivers/mmc/core/Kconfig"
--
- source "drivers/mmc/card/Kconfig"
- 
- source "drivers/mmc/host/Kconfig"
-diff --git a/drivers/mmc/core/Makefile b/drivers/mmc/core/Makefile
-index f007151dfdc6..a901d3cd09d3 100644
---- a/drivers/mmc/core/Makefile
-+++ b/drivers/mmc/core/Makefile
-@@ -8,7 +8,4 @@ mmc_core-y			:= core.o bus.o host.o \
- 				   sdio.o sdio_ops.o sdio_bus.o \
- 				   sdio_cis.o sdio_io.o sdio_irq.o \
- 				   quirks.o slot-gpio.o
--mmc_core-$(CONFIG_OF)		+= pwrseq.o
--obj-$(CONFIG_PWRSEQ_SIMPLE)	+= pwrseq_simple.o
--obj-$(CONFIG_PWRSEQ_EMMC)	+= pwrseq_emmc.o
- mmc_core-$(CONFIG_DEBUG_FS)	+= debugfs.o
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 99275e40bf2f..0f145ff6e4f1 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -25,6 +25,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/pm_wakeup.h>
- #include <linux/suspend.h>
-+#include <linux/pwrseq.h>
- #include <linux/fault-inject.h>
- #include <linux/random.h>
- #include <linux/slab.h>
-@@ -43,7 +44,6 @@
- #include "bus.h"
- #include "host.h"
- #include "sdio_bus.h"
--#include "pwrseq.h"
- 
- #include "mmc_ops.h"
- #include "sd_ops.h"
-diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-index e0a3ee16c0d3..98164a352dfb 100644
---- a/drivers/mmc/core/host.c
-+++ b/drivers/mmc/core/host.c
-@@ -21,6 +21,7 @@
- #include <linux/export.h>
- #include <linux/leds.h>
- #include <linux/slab.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/host.h>
- #include <linux/mmc/card.h>
-@@ -29,7 +30,6 @@
- #include "core.h"
- #include "host.h"
- #include "slot-gpio.h"
--#include "pwrseq.h"
- 
- #define cls_dev_to_mmc_host(d)	container_of(d, struct mmc_host, class_dev)
- 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 421770ddafa3..2702aca6cd2c 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -511,5 +511,6 @@ config AXP20X_POWER
- 
- endif # POWER_SUPPLY
- 
-+source "drivers/power/pwrseq/Kconfig"
- source "drivers/power/reset/Kconfig"
- source "drivers/power/avs/Kconfig"
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index e46b75d448a5..02f9d5da2e76 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -71,6 +71,7 @@ obj-$(CONFIG_POWER_AVS)		+= avs/
- obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
- obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
- obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
-+obj-$(CONFIG_POWER_SEQ)		+= pwrseq/
- obj-$(CONFIG_POWER_RESET)	+= reset/
- obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
- obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
-diff --git a/drivers/mmc/core/Kconfig b/drivers/power/pwrseq/Kconfig
-similarity index 71%
-rename from drivers/mmc/core/Kconfig
-rename to drivers/power/pwrseq/Kconfig
-index 250f223aaa80..b5d2d6c65f28 100644
---- a/drivers/mmc/core/Kconfig
-+++ b/drivers/power/pwrseq/Kconfig
-@@ -1,7 +1,12 @@
--#
--# MMC core configuration
--#
--config PWRSEQ_EMMC
-+menuconfig POWER_SEQ
-+	default y if OF
-+	bool "Hardware reset support for specific devices"
-+	help
-+	  Provides drivers which reset the specific device before...
-+
-+if POWER_SEQ
-+
-+config POWER_SEQ_EMMC
- 	tristate "HW reset support for eMMC"
- 	default y
- 	depends on OF
-@@ -12,7 +17,7 @@ config PWRSEQ_EMMC
- 	  This driver can also be built as a module. If so, the module
- 	  will be called pwrseq_emmc.
- 
--config PWRSEQ_SIMPLE
-+config POWER_SEQ_SIMPLE
- 	tristate "Simple HW reset support for MMC"
- 	default y
- 	depends on OF
-@@ -22,3 +27,5 @@ config PWRSEQ_SIMPLE
- 
- 	  This driver can also be built as a module. If so, the module
- 	  will be called pwrseq_simple.
-+
-+endif
-diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-new file mode 100644
-index 000000000000..9e40e4b9068b
---- /dev/null
-+++ b/drivers/power/pwrseq/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_POWER_SEQ)		+= pwrseq.o
-+obj-$(CONFIG_POWER_SEQ_SIMPLE)	+= pwrseq_simple.o
-+obj-$(CONFIG_POWER_SEQ_EMMC)	+= pwrseq_emmc.o
-diff --git a/drivers/mmc/core/pwrseq.c b/drivers/power/pwrseq/pwrseq.c
-similarity index 90%
-rename from drivers/mmc/core/pwrseq.c
-rename to drivers/power/pwrseq/pwrseq.c
-index 9386c4771814..66310d7643cc 100644
---- a/drivers/mmc/core/pwrseq.c
-+++ b/drivers/power/pwrseq/pwrseq.c
-@@ -11,11 +11,10 @@
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/host.h>
- 
--#include "pwrseq.h"
--
- static DEFINE_MUTEX(pwrseq_list_mutex);
- static LIST_HEAD(pwrseq_list);
- 
-@@ -51,6 +50,7 @@ int mmc_pwrseq_alloc(struct mmc_host *host)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(mmc_pwrseq_alloc);
- 
- void mmc_pwrseq_pre_power_on(struct mmc_host *host)
- {
-@@ -59,6 +59,7 @@ void mmc_pwrseq_pre_power_on(struct mmc_host *host)
- 	if (pwrseq && pwrseq->ops->pre_power_on)
- 		pwrseq->ops->pre_power_on(host);
- }
-+EXPORT_SYMBOL_GPL(mmc_pwrseq_pre_power_on);
- 
- void mmc_pwrseq_post_power_on(struct mmc_host *host)
- {
-@@ -67,6 +68,7 @@ void mmc_pwrseq_post_power_on(struct mmc_host *host)
- 	if (pwrseq && pwrseq->ops->post_power_on)
- 		pwrseq->ops->post_power_on(host);
- }
-+EXPORT_SYMBOL_GPL(mmc_pwrseq_post_power_on);
- 
- void mmc_pwrseq_power_off(struct mmc_host *host)
- {
-@@ -75,6 +77,7 @@ void mmc_pwrseq_power_off(struct mmc_host *host)
- 	if (pwrseq && pwrseq->ops->power_off)
- 		pwrseq->ops->power_off(host);
- }
-+EXPORT_SYMBOL_GPL(mmc_pwrseq_power_off);
- 
- void mmc_pwrseq_free(struct mmc_host *host)
- {
-@@ -85,6 +88,7 @@ void mmc_pwrseq_free(struct mmc_host *host)
- 		host->pwrseq = NULL;
- 	}
- }
-+EXPORT_SYMBOL_GPL(mmc_pwrseq_free);
- 
- int mmc_pwrseq_register(struct mmc_pwrseq *pwrseq)
- {
-diff --git a/drivers/mmc/core/pwrseq_emmc.c b/drivers/power/pwrseq/pwrseq_emmc.c
-similarity index 99%
-rename from drivers/mmc/core/pwrseq_emmc.c
-rename to drivers/power/pwrseq/pwrseq_emmc.c
-index adc9c0c614fb..a0583ed46d7f 100644
---- a/drivers/mmc/core/pwrseq_emmc.c
-+++ b/drivers/power/pwrseq/pwrseq_emmc.c
-@@ -17,11 +17,10 @@
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
- #include <linux/reboot.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/host.h>
- 
--#include "pwrseq.h"
--
- struct mmc_pwrseq_emmc {
- 	struct mmc_pwrseq pwrseq;
- 	struct notifier_block reset_nb;
-diff --git a/drivers/mmc/core/pwrseq_simple.c b/drivers/power/pwrseq/pwrseq_simple.c
-similarity index 99%
-rename from drivers/mmc/core/pwrseq_simple.c
-rename to drivers/power/pwrseq/pwrseq_simple.c
-index 450d907c6e6c..786f1db53a3f 100644
---- a/drivers/mmc/core/pwrseq_simple.c
-+++ b/drivers/power/pwrseq/pwrseq_simple.c
-@@ -16,11 +16,10 @@
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/pwrseq.h>
- 
- #include <linux/mmc/host.h>
- 
--#include "pwrseq.h"
--
- struct mmc_pwrseq_simple {
- 	struct mmc_pwrseq pwrseq;
- 	bool clk_enabled;
-diff --git a/drivers/mmc/core/pwrseq.h b/include/linux/pwrseq.h
-similarity index 94%
-rename from drivers/mmc/core/pwrseq.h
-rename to include/linux/pwrseq.h
-index d69e751f148b..e230670c1d8d 100644
---- a/drivers/mmc/core/pwrseq.h
-+++ b/include/linux/pwrseq.h
-@@ -23,7 +23,7 @@ struct mmc_pwrseq {
- 	struct module *owner;
- };
- 
--#ifdef CONFIG_OF
-+#ifdef CONFIG_POWER_SEQ
- 
- int mmc_pwrseq_register(struct mmc_pwrseq *pwrseq);
- void mmc_pwrseq_unregister(struct mmc_pwrseq *pwrseq);
-@@ -34,7 +34,7 @@ void mmc_pwrseq_post_power_on(struct mmc_host *host);
- void mmc_pwrseq_power_off(struct mmc_host *host);
- void mmc_pwrseq_free(struct mmc_host *host);
- 
--#else
-+#else /* CONFIG_POWER_SEQ */
- 
- static inline int mmc_pwrseq_register(struct mmc_pwrseq *pwrseq)
- {
-@@ -47,6 +47,6 @@ static inline void mmc_pwrseq_post_power_on(struct mmc_host *host) {}
- static inline void mmc_pwrseq_power_off(struct mmc_host *host) {}
- static inline void mmc_pwrseq_free(struct mmc_host *host) {}
- 
--#endif
-+#endif /* CONFIG_POWER_SEQ */
- 
- #endif
--- 
-1.9.1
+https://patchwork.kernel.org/patch/9012861/
+
+which is the final fix for this bug.
+
