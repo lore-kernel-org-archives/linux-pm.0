@@ -1,40 +1,94 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 05/11] pwm: tegra-dfll: Add driver for Tegra DFLL PWM
- controller
-Date: Fri, 6 May 2016 17:21:11 -0600
-Message-ID: <572D26E7.2060406@wwwdotorg.org>
-References: <1461321071-6431-1-git-send-email-pchiu@nvidia.com>
- <1461321071-6431-6-git-send-email-pchiu@nvidia.com>
- <20160422125513.GJ9047@ulmo.ba.sec> <20160506231532.GK3492@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/3] intel_pstate: Clean up get_target_pstate_use_performance()
+Date: Sat, 07 May 2016 01:47:08 +0200
+Message-ID: <6021838.4PBIxTzBzu@vostro.rjw.lan>
+References: <2638272.Bq3MnQEe4U@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20160506231532.GK3492@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Thierry Reding <thierry.reding@gmail.com>
-Cc: Penny Chiu <pchiu@nvidia.com>, gnurou@gmail.com, pdeschrijver@nvidia.com, pgaikwad@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-pwm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48590 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758765AbcEFXoD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 19:44:03 -0400
+In-Reply-To: <2638272.Bq3MnQEe4U@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 05/06/2016 05:15 PM, Stephen Boyd wrote:
-> On 04/22, Thierry Reding wrote:
->> On Fri, Apr 22, 2016 at 06:31:05PM +0800, Penny Chiu wrote:
->>> diff --git a/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt b/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt
->>> new file mode 100644
->>> index 0000000..bd0d247
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/pwm/nvidia,tegra-dfll-pwm.txt
->>> @@ -0,0 +1,48 @@
->>> +Tegra SoC DFLL PWM controller
->>
->> Stephen, we have in the past used tegra124 in names, even if the IP was
->> already included in tegra114, but we never supported it on Tegra114 and
->> hence couldn't even verify that the binding was valid. Any preference as
->> to the name in this particular case?
->
-> You meant Stephen Warren right? I don't care either way.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Sorry, I wasn't really paying attention to patches.
+The way the code in get_target_pstate_use_performance() is arranged
+and the comments in there are totally confusing, so modify them to
+reflect what's going on.
 
-Yes, using "124" seems to make sense; we can always expand the binding 
-to cover "114" later if there's any demand.
+The results of the computations should be the same as before.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   32 +++++++++++++-------------------
+ 1 file changed, 13 insertions(+), 19 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1241,43 +1241,37 @@ static inline int32_t get_target_pstate_
+ 
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ {
+-	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
++	int32_t perf_scaled, sample_ratio;
+ 	u64 duration_ns;
+ 
+ 	/*
+-	 * core_busy is the ratio of actual performance to max
+-	 * max_pstate is the max non turbo pstate available
+-	 * current_pstate was the pstate that was requested during
+-	 * 	the last sample period.
+-	 *
+-	 * We normalize core_busy, which was our actual percent
+-	 * performance to what we requested during the last sample
+-	 * period. The result will be a percentage of busy at a
+-	 * specified pstate.
++	 * perf_scaled is the average performance during the last sampling
++	 * period (in percent) scaled by the ratio of the P-state requested
++	 * last time to the maximum P-state.  That measures the system's
++	 * response to the previous P-state selection.
+ 	 */
+-	core_busy = 100 * cpu->sample.core_avg_perf;
+-	max_pstate = cpu->pstate.max_pstate_physical;
+-	current_pstate = cpu->pstate.current_pstate;
+-	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
++	perf_scaled = div_fp(cpu->pstate.max_pstate_physical,
++			     cpu->pstate.current_pstate);
++	perf_scaled = mul_fp(perf_scaled, 100 * cpu->sample.core_avg_perf);
+ 
+ 	/*
+ 	 * Since our utilization update callback will not run unless we are
+ 	 * in C0, check if the actual elapsed time is significantly greater (3x)
+ 	 * than our sample interval.  If it is, then we were idle for a long
+-	 * enough period of time to adjust our busyness.
++	 * enough period of time to adjust our performance metric.
+ 	 */
+ 	duration_ns = cpu->sample.time - cpu->last_sample_time;
+ 	if ((s64)duration_ns > pid_params.sample_rate_ns * 3) {
+ 		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+-		core_busy = mul_fp(core_busy, sample_ratio);
++		perf_scaled = mul_fp(perf_scaled, sample_ratio);
+ 	} else {
+ 		sample_ratio = div_fp(100 * cpu->sample.mperf, cpu->sample.tsc);
+ 		if (sample_ratio < int_tofp(1))
+-			core_busy = 0;
++			perf_scaled = 0;
+ 	}
+ 
+-	cpu->sample.busy_scaled = core_busy;
+-	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
++	cpu->sample.busy_scaled = perf_scaled;
++	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
+ }
+ 
+ static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+
