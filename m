@@ -1,101 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for v4.6-rc7
-Date: Fri, 6 May 2016 14:46:02 +0200
-Message-ID: <CAJZ5v0jFHHdxzY8_3wXdYKPXKhXM0Em50sniauO8SEZrN0XP3A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] sched/fair: Invoke cpufreq hooks for CONFIG_SMP unset
+Date: Fri, 06 May 2016 14:58:43 +0200
+Message-ID: <6282396.VVEdgVYxO3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63255 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751997AbcEFMza (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 08:55:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@kernel.org>
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from
+Commit 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization
+update callbacks) overlooked the fact that update_load_avg(), where
+CFS invokes cpufreq utilization update hooks, becomes an empty stub for
+CONFIG_SMP unset.  In consequence, if CONFIG_SMP is not set, cpufreq
+governors are never invoked from CFS and they do not have a chance to
+evaluate CPU performace levels and update them often enough.  Needless
+to say, things don't work as expected then.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.6-rc7
+Fix the problem by making the !CONFIG_SMP stub of update_load_avg()
+invoke cpufreq update hooks too.
 
-to receive power management and ACPI fixes for v4.6-rc7 with top-most
-commit 5f2f88e330e7ee2d2d7c5e0984b86108b00ac800
+Fixes: 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization update callbacks)
+Reported-by: Steve Muckle <steve.muckle@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
- Merge branches 'pm-opp-fixes', 'pm-cpufreq-fixes' and 'pm-cpuidle-fixes'
+This needs to go into v4.6.
 
-on top of commit 04974df8049fc4240d22759a91e035082ccd18b4
+---
+ kernel/sched/fair.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
- Linux 4.6-rc6
+Index: linux-pm/kernel/sched/fair.c
+===================================================================
+--- linux-pm.orig/kernel/sched/fair.c
++++ linux-pm/kernel/sched/fair.c
+@@ -3030,7 +3030,14 @@ static int idle_balance(struct rq *this_
+ 
+ #else /* CONFIG_SMP */
+ 
+-static inline void update_load_avg(struct sched_entity *se, int update_tg) {}
++static inline void update_load_avg(struct sched_entity *se, int not_used)
++{
++	struct cfs_rq *cfs_rq = cfs_rq_of(se);
++	struct rq *rq = rq_of(cfs_rq);
++
++	cpufreq_trigger_update(rq_clock(rq));
++}
++
+ static inline void
+ enqueue_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
+ static inline void
 
-Fixes for problems introduced or discovered recently (intel_pstate,
-sti-cpufreq, ARM64 cpuidle, Operating Performance Points framework,
-generic device properties framework) and one fix for a hotplug-related
-deadlock in ACPICA that's been there forever, but is nasty enough.
-
-Specifics:
-
- - Fix for a recent regression in the intel_pstate driver causing
-   it to fail to restore the HWP (HW-managed P-states) configuration
-   of the boot CPU after suspend-to-RAM (Rafael Wysocki).
-
- - Fix for two recent regressions in the intel_pstate driver, one
-   that can trigger a divide by zero if the driver is accessed via
-   sysfs before it manages to take the first sample and one causing
-   it to fail to update a structure field used in a trace point, so
-   the information coming from it is less useful (Rafael Wysocki).
-
- - Fix for a problem in the sti-cpufreq driver introduced during
-   the 4.5 cycle that causes it to break CPU PM in multi-platform
-   kernels by registering cpufreq-dt (which subsequently doesn't
-   work) unconditionally and preventing the driver that would
-   actually work from registering (Sudeep Holla).
-
- - Stable-candidate fix for an ARM64 cpuidle issue causing idle
-   state usage counters to be incorrectly updated for idle states
-   that were not entered due to errors (James Morse).
-
- - Fix for a recently introduced issue in the OPP (Operating
-   Performance Points) framework causing it to print bogus error
-   messages for missing optional regulators (Viresh Kumar).
-
- - Fix for a recently introduced issue in the generic device
-   properties framework that may cause it to attempt to dereferece
-   and invalid pointer in some cases (Heikki Krogerus).
-
- - Fix for a deadlock in the ACPICA core that may be triggered
-   by device (eg. Thunderbolt) hotplug (Prarit Bhargava).
-
-Thanks!
-
----------------
-
-Heikki Krogerus (1):
-      device property: Avoid potential dereferences of invalid pointers
-
-James Morse (1):
-      ARM: cpuidle: Pass on arm_cpuidle_suspend()'s return value
-
-Prarit Bhargava (1):
-      ACPICA: Dispatcher: Update thread ID for recursive method calls
-
-Rafael J. Wysocki (2):
-      cpufreq: intel_pstate: Fix HWP on boot CPU after system resume
-      intel_pstate: Fix intel_pstate_get()
-
-Sudeep Holla (1):
-      cpufreq: st: enable selective initialization based on the platform
-
-Viresh Kumar (1):
-      PM / OPP: Remove useless check
-
----------------
-
- drivers/acpi/acpica/dsmethod.c |  3 +++
- drivers/base/power/opp/core.c  |  3 ---
- drivers/base/property.c        |  2 +-
- drivers/cpufreq/cpufreq.c      | 26 +++++++++++++++-----------
- drivers/cpufreq/intel_pstate.c | 26 ++++++++++++++++++--------
- drivers/cpufreq/sti-cpufreq.c  |  4 ++++
- drivers/cpuidle/cpuidle-arm.c  |  2 +-
- include/acpi/acpi_bus.h        |  4 ++--
- include/linux/of.h             |  2 +-
- 9 files changed, 45 insertions(+), 27 deletions(-)
