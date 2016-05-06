@@ -1,13 +1,13 @@
 From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
-Subject: [PATCH v4 4/4] ARM: dts: axp209: Add ac_power_supply
- child node to the ax209 node
-Date: Fri,  6 May 2016 07:19:51 +0200
-Message-ID: <1462511991-1911-5-git-send-email-haas@computerlinguist.org>
+Subject: [PATCH v4 2/4] mfd: axp20x: Add a cell for the ac
+ power_supply part of the axp20x PMICs
+Date: Fri,  6 May 2016 07:19:49 +0200
+Message-ID: <1462511991-1911-3-git-send-email-haas@computerlinguist.org>
 References: <1462511991-1911-1-git-send-email-haas@computerlinguist.org>
 Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCD4V7EG6QFRBAWTWC4QKGQEP6RLYTI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCD4V7EG6QFRBAGTWC4QKGQEQCU7RCA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <1462511991-1911-1-git-send-email-haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,31 +20,46 @@ To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@publ
 Cc: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a node representing the ac power supply part of the axp209 pmic.
+As a counterpart to the usb power_supply cell, this commit adds an AC
+power_supply cell to the axp20x driver.
+
+Still missing are the RTC backup battery and the main battery charger
+cells.
 
 Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- arch/arm/boot/dts/axp209.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/mfd/axp20x.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 051ab3b..bdf8fe8 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -90,8 +90,14 @@
- 		};
- 	};
- 
-+	ac_power_supply: ac_power_supply {
-+		compatible = "x-powers,axp202-ac-power-supply";
-+		status = "disabled";
-+	};
-+
- 	usb_power_supply: usb_power_supply {
- 		compatible = "x-powers,axp202-usb-power-supply";
- 		status = "disabled";
- 	};
-+
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index a57d6e9..aa6ef08 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -128,6 +128,12 @@ static struct resource axp152_pek_resources[] = {
+ 	DEFINE_RES_IRQ_NAMED(AXP152_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
  };
+ 
++static struct resource axp20x_ac_power_supply_resources[] = {
++	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_PLUGIN, "ACIN_PLUGIN"),
++	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_REMOVAL, "ACIN_REMOVAL"),
++	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_OVER_V, "ACIN_OVER_V"),
++};
++
+ static struct resource axp20x_pek_resources[] = {
+ 	{
+ 		.name	= "PEK_DBR",
+@@ -436,6 +442,11 @@ static struct mfd_cell axp20x_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp202-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp202-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp20x_usb_power_supply_resources),
 -- 
 2.8.2
