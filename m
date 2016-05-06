@@ -1,90 +1,143 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
-Date: Fri, 6 May 2016 14:45:41 +0800
-Message-ID: <d160a515-3e11-8faa-71a4-233ff1b7d70d@intel.com>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
- <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
- <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
- <7370640.WWc4AQ4034@vostro.rjw.lan>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Fri, 6 May 2016 00:06:44 -0700
+Message-ID: <CAJFUiJhryV7vHAofFSCc8iEL2FgYQ-qt8xzW3vPj9EQ3di-51g@mail.gmail.com>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+ <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
+ <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
+ <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604271216400.3941@nanos> <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com>
+ <alpine.DEB.2.11.1604290240560.3718@nanos> <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
+ <alpine.DEB.2.11.1605021007310.3692@nanos> <CAJFUiJizA=ZxXh5BNj-eL6xsVrNEbTnd0Z5yePPDxAR8YjGibw@mail.gmail.com>
+ <alpine.DEB.2.11.1605051404290.3540@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <7370640.WWc4AQ4034@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Jingoo Han <jingoohan1@gmail.com>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.11.1605051404290.3540@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/05/2016 05:47 AM, Rafael J. Wysocki wrote:
-> On Thursday, April 28, 2016 09:48:30 AM Aaron Lu wrote:
->> On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
->>> On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
->>>> v3:
->>>> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
->>>> and one adds the int3406 driver as suggested by Rafael. There should
->>>> be no functionality change compared to v2.
->>>>
->>>> v2:
->>>> The display thermal device represents the LED/LCD display panel
->>>> that may or may not include touch support. The main function of
->>>> the display thermal device is to allow control of the display
->>>> brightness in order to address a thermal condition or to reduce
->>>> power consumed by display device.
->>>>
->>>> Due to the way this thermal device changes brightness level is said
->>>> to be deprecated so we are using the raw interface to do the actual
->>>> backlight change. This requires the backlight core support so two
->>>> new APIs are added and exported in patch 1/3. With this, the previous
->>>> API backlight_device_registered can be removed and this is done in
->>>> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
->>>>
->>>> The 1st version is here:
->>>> http://thread.gmane.org/gmane.linux.acpi.devel/72619
->>>>
->>>> This whole series should go through the thermal tree if applied.
->>>>
->>>> Aaron Lu (3):
->>>>   video / backlight: add two APIs for drivers to use
->>>>   video / backlight: remove the backlight_device_registered API
->>>>   Thermal: add INT3406 thermal driver
->>>>
->>>>  drivers/acpi/acpi_video.c                         |  83 ++++----
->>>>  drivers/acpi/video_detect.c                       |   2 +-
->>>>  drivers/thermal/Kconfig                           |  28 +--
->>>>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
->>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
->>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
->>>>  drivers/video/backlight/backlight.c               |  39 ++--
->>>>  include/acpi/video.h                              |  20 ++
->>>>  include/linux/backlight.h                         |   3 +-
->>>>  9 files changed, 374 insertions(+), 80 deletions(-)
->>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
->>>
->>> The first three patches in this series look OK to me, so
->>>
->>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> for the [1-3/4].
->>>
->>> That said it may be better if those three go in via ACPI.  I can put
->>> them into a separate branch for Rui to pull from.
->>>
->>> Please let me know what you think.
+On Thu, May 5, 2016 at 5:13 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 4 May 2016, Lianwei Wang wrote:
+>> In this example, the unbalanced count is caused by the
+>> cpu_hotplug_pm_callback pm notifier callback function.
+>
+> I doubt that.
+>
+>> We can add a variable to avoid the unbalanced call of cpu_hotplug_enable
+>> ,e.g.
+>
+>> diff --git a/kernel/cpu.c b/kernel/cpu.c
+>> index 3e3f6e49eabb..aa6694f0e9d3 100644
+>> --- a/kernel/cpu.c
+>> +++ b/kernel/cpu.c
+>> @@ -1140,16 +1140,21 @@ static int
+>>  cpu_hotplug_pm_callback(struct notifier_block *nb,
+>>                         unsigned long action, void *ptr)
+>>  {
+>> +       static int disabled;
+>> +
+>>         switch (action) {
 >>
->> I have no problem with that.
-> 
-> OK
-> 
-> [1-3/4] have been queued up for 4.7 in my tree.  Please let me know if you
-> want me to expose the branch containing them.
+>>         case PM_SUSPEND_PREPARE:
+>>         case PM_HIBERNATION_PREPARE:
+>>                 cpu_hotplug_disable();
+>> +               disabled = 1;
+>>                 break;
+>>
+>>         case PM_POST_SUSPEND:
+>>         case PM_POST_HIBERNATION:
+>> -               cpu_hotplug_enable();
+>> +               if (disabled)
+>> +                       cpu_hotplug_enable();
+>> +               disabled = 0;
+>>                 break;
+>>
+>>         default:
+>>
+>> Please let me know if you like to fix it in this way.
+>
+> So you are moving the work around one step down w/o providing any reasonable
+> explanation how this asymetric call of that callback can happen.
+>
+> Can you eventually come up with a coherent explanation of the problem down to
+> the root cause or are we going to play this "move the workaround one step
+> down" game for another 10 rounds?
+>
+Do you agree that any driver can abort the suspend process by
+returning an error or NOTIFY_BAD if it is not ready to suspend?
+I have explain it and I also copied the example code that abort
+suspend by returning an error or NOTIFY_BAD in the pm notifier
+callback function.
+The cpu_hotplug_disable and cpu_hotplug_enable are called in one of
+the PM notifier callback. And they are called from two difference
+place.
+Below is how it happened:
+  pm_suspend
+    |--enter_state
+        |--suspend_prepare
+            |--pm_notifier_call_chain(PM_SUSPEND_PREPARE)
+            |    |--call_back_1
+            |    |--call_back_..
+            |    |--call_back_n ===> return NOTIFY_BAD to abort call chain and
+            |    |                                suspend process here
+            |    |--cpu_hotplug_pm_callback()
+            |    |   |--cpu_hotplug_disable  =====> remember it is not
+called yet
+            |    |--call_back_..
+            |
+            |--pm_notifier_call_chain(PM_POST_SUSPEND)
+            |    |--call_back_1
+            |    |--call_back_..
+            |    |--call_back_n
+            |    |--cpu_hotplug_pm_callback()
+            |    |   |--cpu_hotplug_enable  =====> Here it is unbalanced called
+            |    |--call_back_..
+            |
+So, keep in mind that for pm notifier call chain, the
+PM_SUSPEND_PREPARE notifier and PM_POST_SUSPEND notifier is not always
+paired called. Sometimes for a driver's pm notifier callback, the
+PM_POST_SUSPEND is called without PM_SUSPEND_PREPARE.
 
-Thanks a lot!
+>> +static void _cpu_hotplug_enable(void)
+>> +{
+>> +       if (WARN(!cpu_hotplug_disabled, "Unbalanced cpu hotplug enable\n"))
+>> +               return;
+>> +
+>> +       cpu_hotplug_disabled--;
+>> +}
+>>
+>> I like to fix it in the cpu_hotplug_enable because it is a public
+>
+> You CANNOT fix it there. The problem is the call site and NOT
+> cpu_hotplug_enable(). Can you finally accept this?
+I know what you mean. But why let the driver unconditionally do
+"--cpu_hotplug_disabled" without any checking. It should do nothing if
+it detect a unbalanced enable. A good example for unbalanced checking
+from enable_irq is here:
+http://lxr.free-electrons.com/source/kernel/irq/manage.c#L512
 
-Rui,
-
-Do you need a branch so that you can pull and merge 4/4 on top of that?
-
-Regards,
-Aaron
+It's the cpu hotplug driver's responsibility to guarantee that the cpu
+hotplug always working well even others failed do something to it. And
+the driver can check and handle it itself, why not let the driver to
+handle it and make the cpu hotplug driver more strong?
+>
+>> kernel API and fix in it can prevent any other unbalanced calling.
+>
+> It cannot prevent any unbalanced calls. It mitigates the issue, but that's a
+> different problem.
+It did not migrate the issue. It give a warning message to log the
+unbalanced issue and it also make sure the cpu hotplug continue to
+work well even someone do an unbalanced call. It is a good checking as
+the enable_irq/disable_irq do. There are some other unbalanced
+checking in kernel too. All make sure the kernel has a better
+stability.
+>
+> We can discuss that seperately after fixing the offending call site.
+>
+> Thanks,
+>
+>         tglx
