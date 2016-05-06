@@ -1,65 +1,39 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
- PSCI
-Date: Fri, 6 May 2016 14:28:18 +0100
-Message-ID: <572C9BF2.9010004@arm.com>
-References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+From: Chris Brand <chris.brand@broadcom.com>
+Subject: Re: [PATCH 6/6] arm: dt: bcm23550: Add device tree files
+Date: Fri, 6 May 2016 10:49:00 -0700
+Message-ID: <CAMsMSK9usB6+tfrUFwhBW+WUc1rW3eNmWG-SCy5RF7JydsWRZg@mail.gmail.com>
+References: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
+	<1462481334-8943-7-git-send-email-chris.brand@broadcom.com>
+	<9191808.kbIrFQuH7z@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56059 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758073AbcEFN2X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 6 May 2016 09:28:23 -0400
-In-Reply-To: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+Received: from mail-ig0-f178.google.com ([209.85.213.178]:36025 "EHLO
+	mail-ig0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbcEFRtB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 13:49:01 -0400
+Received: by mail-ig0-f178.google.com with SMTP id u10so52518805igr.1
+        for <linux-pm@vger.kernel.org>; Fri, 06 May 2016 10:49:01 -0700 (PDT)
+In-Reply-To: <9191808.kbIrFQuH7z@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Frank Li <Frank.Li@freescale.com>, Peng Fan <Peng.Fan@freescale.com>, Tom Warren <twarren@nvidia.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Russell King <linux@armlinux.org.uk>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, Raymond Ngun <raymond.ngun@broadcom.com>, Markus Mayer <markus.mayer@broadcom.com>
 
-Hi Hongbo,
-
-On 06/05/16 11:11, Hongbo Zhang wrote:
-> Hi Guys,
-> We know in the legacy kernel suspend codes, a typical suspend_ops->enter
-> callback is like this:
+On Thu, May 5, 2016 at 2:05 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Thursday 05 May 2016 13:48:54 Chris Brand wrote:
+>> +
+>> +       chosen {
+>> +               bootargs = "console=ttyS0,115200n8";
+>> +       };
+>> +
+>>
 >
-
-[...]
-
+> Can you move this into the .dts file, and add a stdout-path
+> property to make earlycon work?
 >
-> That means we implement standby and suspend-to-ram in one callback, and
-> these two state can be identified by an input parameter 'state'.
->
-> While now PSCI is used for ARM to implement cores operations and power
-> management, for the above suspend_ops->enter we choose SYSTEM_SUSPEND
-> function, and this function is defined for suspend-to-ram, then here
-> comes the problem:
->
-> How can we implement the standby state following the PSCI framework?
->
+>         Arnd
 
-Jisheng Zhang raised similar question few months back and we had a
-discussion. Please have a look at the thread [1]
+Will do. Thanks, Arnd.
 
-> I couldn't find other PSCI function which fits for standby well.
-> In the spec there isn't such a 'state' parameter passed for
-> SYSTEM_SUSPEND (only entry_point_address and context_id), can we change
-> the spec a bit, e.g. using one more register to pass another 'state'
-> parameter? is that acceptable? (similar like CPU_SUSPEND then)
->
-
-Since the standby state is not well defined on ARM systems, it's hard to
-define the conditions like system suspend and hence difficult to
-generalize in the spec. I think suspend-to-idle should suffice in your
-case. Anyways its better to get more information on the definition of
-standby on your platform.
-
--- 
-Regards,
-Sudeep
-
-[1] 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2015-July/356467.html
-
+Chris
