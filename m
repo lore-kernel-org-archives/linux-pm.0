@@ -1,40 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: cpufreq governors broken with !CONFIG_SMP?
-Date: Fri, 6 May 2016 13:49:52 +0200
-Message-ID: <CAJZ5v0iSpuB58kQjVAJ_R73_yCmxaC7siKt9Gm8bZ2cOX1H5hw@mail.gmail.com>
-References: <20160505234922.GA14673@sky.smuckle.net>
-	<1961527.dEtpL4HAvs@vostro.rjw.lan>
-	<1953902.drhraqW2It@vostro.rjw.lan>
-	<20160506114627.GX3430@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [lkp] [sched/fair] 41e0d37f7a: divide error: 0000 [#1] SMP
+Date: Fri, 06 May 2016 14:29:35 +0200
+Message-ID: <3547943.XdEfRmCVLV@vostro.rjw.lan>
+References: <87mvo8gd44.fsf@yhuang-dev.intel.com> <2986116.vKjD9YH9EZ@vostro.rjw.lan> <CANRm+Cw9mFGBttgWUHrbZ_n3NvGswh6T-Ws9g31HDxCEf5--Cg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f43.google.com ([209.85.215.43]:32983 "EHLO
-	mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758566AbcEFLty (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 07:49:54 -0400
-In-Reply-To: <20160506114627.GX3430@twins.programming.kicks-ass.net>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57381 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757596AbcEFM0W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 08:26:22 -0400
+In-Reply-To: <CANRm+Cw9mFGBttgWUHrbZ_n3NvGswh6T-Ws9g31HDxCEf5--Cg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Wanpeng Li <kernellwp@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, kernel test robot <ying.huang@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, lkp@01.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Mike Galbraith <efault@gmx.de>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, May 6, 2016 at 1:46 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, May 06, 2016 at 02:25:16AM +0200, Rafael J. Wysocki wrote:
->> On Friday, May 06, 2016 02:09:07 AM Rafael J. Wysocki wrote:
->> > On Thursday, May 05, 2016 04:49:22 PM Steve Muckle wrote:
->> > > While working on a few patches for schedutil I noticed that the CFS
->> > > cpufreq hooks depend on PELT, which depends on CONFIG_SMP.
->
->> > For governors other than schedutil fixing that would be a matter of
->> > adding a !CONFIG_SMP variant of update_load_avg() that will call
->> > cpufreq_update_util() and do nothing else.  It doesn't matter what
->> > is passed via util and max then.
->>
->> Maybe something like the below, FWIW, as a quick fix for 4.6?
->
-> Right; I suppose that'll have to do for 4.6.
+On Friday, May 06, 2016 03:06:44 PM Wanpeng Li wrote:
+> 2016-05-05 21:46 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > On Thursday, May 05, 2016 01:05:41 PM Wanpeng Li wrote:
+> >> 2016-05-03 23:10 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> >> > On Tuesday, May 03, 2016 03:53:12 PM Rafael J. Wysocki wrote:
 
-OK, thanks!
+[cut]
 
-I'll resend it with a changelog and stuff then.
+> >>
+> >> I can reproduce the bug and your patch fix it.
+> >>
+> >> Tested-by: Wanpeng Li <wanpeng.li@hotmail.com>
+> >
+> > Thanks!
+> >
+> > Please also try this one:
+> >
+> > https://patchwork.kernel.org/patch/9012861/
+> >
+> > which is the final fix for this bug.
+> 
+> The warning disappear.
+> 
+> Tested-by: Wanpeng Li <wanpeng.li@hotmail.com>
+
+Thank you!
+
