@@ -1,98 +1,82 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
-Date: Fri, 6 May 2016 09:18:10 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1605060908350.3540@nanos>
-References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com> <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com> <alpine.DEB.2.11.1604221834430.3941@nanos>
- <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com> <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com> <alpine.DEB.2.11.1604271216400.3941@nanos>
- <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com> <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com> <alpine.DEB.2.11.1604290240560.3718@nanos>
- <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com> <alpine.DEB.2.11.1605021007310.3692@nanos> <CAJFUiJizA=ZxXh5BNj-eL6xsVrNEbTnd0Z5yePPDxAR8YjGibw@mail.gmail.com> <alpine.DEB.2.11.1605051404290.3540@nanos>
- <CAJFUiJhryV7vHAofFSCc8iEL2FgYQ-qt8xzW3vPj9EQ3di-51g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:58042 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbcEFHT5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 03:19:57 -0400
-In-Reply-To: <CAJFUiJhryV7vHAofFSCc8iEL2FgYQ-qt8xzW3vPj9EQ3di-51g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v6 0/9] mfd: max8997: Add regmap support
+Date: Fri, 06 May 2016 09:21:20 +0200
+Message-ID: <1462519289-2356-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
+Cc: r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lianwei Wang <lianwei.wang@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com, Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, 6 May 2016, Lianwei Wang wrote:
-> On Thu, May 5, 2016 at 5:13 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > Can you eventually come up with a coherent explanation of the problem down to
-> > the root cause or are we going to play this "move the workaround one step
-> > down" game for another 10 rounds?
-> >
-> Do you agree that any driver can abort the suspend process by
-> returning an error or NOTIFY_BAD if it is not ready to suspend?
-> I have explain it and I also copied the example code that abort
-> suspend by returning an error or NOTIFY_BAD in the pm notifier
-> callback function.
+Hi,
 
-I don't need copied example code which does not tell me what the real problem
-is.
 
-> The cpu_hotplug_disable and cpu_hotplug_enable are called in one of
-> the PM notifier callback. And they are called from two difference
-> place.
-> Below is how it happened:
->   pm_suspend
->     |--enter_state
->         |--suspend_prepare
->             |--pm_notifier_call_chain(PM_SUSPEND_PREPARE)
->             |    |--call_back_1
->             |    |--call_back_..
->             |    |--call_back_n ===> return NOTIFY_BAD to abort call chain and
->             |    |                                suspend process here
->             |    |--cpu_hotplug_pm_callback()
->             |    |   |--cpu_hotplug_disable  =====> remember it is not
-> called yet
->             |    |--call_back_..
->             |
->             |--pm_notifier_call_chain(PM_POST_SUSPEND)
->             |    |--call_back_1
->             |    |--call_back_..
->             |    |--call_back_n
->             |    |--cpu_hotplug_pm_callback()
->             |    |   |--cpu_hotplug_enable  =====> Here it is unbalanced called
->             |    |--call_back_..
->             |
-> So, keep in mind that for pm notifier call chain, the
-> PM_SUSPEND_PREPARE notifier and PM_POST_SUSPEND notifier is not always
-> paired called. Sometimes for a driver's pm notifier callback, the
-> PM_POST_SUSPEND is called without PM_SUSPEND_PREPARE.
+This is a rebase and extension of old Robert Baldyga's work. [0]
 
-So that is the real problem: cpu_hotplug_pm_callback(PM_POST_SUSPEND) can be
-called w/o a previous call to cpu_hotplug_pm_callback(PM_SUSPEND_PREPARE).
- 
-> > It cannot prevent any unbalanced calls. It mitigates the issue, but that's a
-> > different problem.
-> It did not migrate the issue. It give a warning message to log the
-> unbalanced issue and it also make sure the cpu hotplug continue to
-> work well even someone do an unbalanced call. It is a good checking as
-> the enable_irq/disable_irq do. There are some other unbalanced
-> checking in kernel too. All make sure the kernel has a better
-> stability.
+Robert no longer works in Samsung.
 
-I'm not opposed to do that and I said so several times. But I said as well,
-that we do not add this without fixing the problem which made you write that
-patch in the first place.
+>From the original cover letter:
+"This patchset modifies max8997 driver and associated function drivers to use
+register maps instead of operating directly on i2c bus. This change allowed
+to simplify irq handling, and to move some initializations to individual
+function drivers. Hence now when some functions are not enabled, their i2c
+clients, regmaps and irqs are not registered."
 
-So we have a proper explanation for the real problem now, but we have no
-fix. 
 
-And again: Your patch is NOT a fix. Simply because it will emit a warning
-everytime the above happens. And that's wrong because the abort is a
-legitimate scenario.
+My changes (since Robert's v5)
+==============================
+1. Rebase on v4.6-rc6.
+2. Collect more acks.
+3. Add few fixes:
+   a. Haptic fix from Marek,
+   b. Extcon and RTC fix from me,
+   c. DTS fixes from Marek.
 
-So please come up with a sensible fix for the suspend abort issue and then we
-can add the balance check/fixup to the hotplug_disable/enable() code.
+DTS changes are independent but rest of them (extcon/input/MFD) rely
+on each other.
 
-Thanks,
+One way of merging would be to pick everything (except DTS) through
+one tree. Or use tags.
 
-	tglx
 
+Best regards,
+Krzysztof
+
+[0] http://lkml.iu.edu/hypermail//linux/kernel/1411.1/03152.html
+
+
+Krzysztof Kozlowski (3):
+  extcon: max8997: Fix handling error code of regmap_irq_get_virq()
+  rtc: max8997: Check for ERRNO of regmap_irq_get_virq()
+  extcon: max8997: Fix inconsistent indenting
+
+Marek Szyprowski (3):
+  input: max8997-haptic: Fix NULL pointer dereference
+  ARM: dts: exynos: Fix regulator name to avoid forbidden character on
+    exynos4210-trats
+  ARM: dts: exynos: Add interrupt line to MAX8997 PMIC on
+    exynos4210-trats
+
+Robert Baldyga (3):
+  mfd: max8997: Use regmap to access registers
+  mfd: max8997: handle IRQs using regmap
+  mfd: max8997: Change irq names to upper case
+
+ arch/arm/boot/dts/exynos4210-trats.dts |   4 +-
+ drivers/extcon/extcon-max8997.c        |  72 ++++---
+ drivers/input/misc/max8997_haptic.c    |  40 ++--
+ drivers/leds/leds-max8997.c            |  13 +-
+ drivers/mfd/Kconfig                    |   3 +-
+ drivers/mfd/Makefile                   |   2 +-
+ drivers/mfd/max8997-irq.c              | 383 ---------------------------------
+ drivers/mfd/max8997.c                  | 245 ++++++++++++++-------
+ drivers/power/max8997_charger.c        |  33 +--
+ drivers/regulator/max8997.c            |  87 ++++----
+ drivers/rtc/rtc-max8997.c              |  60 +++---
+ include/linux/mfd/max8997-private.h    |  82 +++++--
+ 12 files changed, 392 insertions(+), 632 deletions(-)
+ delete mode 100644 drivers/mfd/max8997-irq.c
+
+-- 
+1.9.1
 
