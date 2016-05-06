@@ -1,74 +1,65 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
-Date: Fri, 6 May 2016 08:01:54 -0500
-Message-ID: <CAL_JsqJ_J=xFH8DfBwXv8Xd2HYYWX-FvCr4zO9sFhY=3keCdtw@mail.gmail.com>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
- <20160505224240.GA31429@rob-hp-laptop> <572C355E.7090008@samsung.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
+ PSCI
+Date: Fri, 6 May 2016 14:28:18 +0100
+Message-ID: <572C9BF2.9010004@arm.com>
+References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <572C355E.7090008@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Peter Chen <hzpeterchen@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux USB List <linux-usb@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, Hans Verkuil <hverkuil@xs4all.nl>, tjakobi@math.uni-bielefeld.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:56059 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758073AbcEFN2X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 6 May 2016 09:28:23 -0400
+In-Reply-To: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hongbo Zhang <hongbo.zhang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Frank Li <Frank.Li@freescale.com>, Peng Fan <Peng.Fan@freescale.com>, Tom Warren <twarren@nvidia.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Fri, May 6, 2016 at 1:10 AM, Krzysztof Kozlowski
-<k.kozlowski@samsung.com> wrote:
-> On 05/06/2016 12:42 AM, Rob Herring wrote:
->> On Thu, May 05, 2016 at 02:34:13PM +0200, Krzysztof Kozlowski wrote:
->>> Hi,
->>>
->>> This is a different, second try to fix usb3503+lan on Odroid U3 board
->>> if it was initialized by bootloader (e.g. for TFTP boot).
->>>
->>> First version:
->>> http://www.spinics.net/lists/linux-usb/msg140042.html
->>>
->>>
->>> Problem
->>> =======
->>> When Odroid U3 (usb3503 + smsc95xx + max77686) boots from network (TFTP),
->>> the usb3503 and LAN smsc95xx do not show up in "lsusb". Hard-reset
->>> is required, e.g. by suspend to RAM. The actual TFTP boot does
->>> not have to happen. Just "usb start" from U-Boot is sufficient.
->>>
->>> From the schematics, the regulator is a supply only to LAN, however
->>> without toggling it off/on, the usb3503 hub won appear neither.
->>>
->>>
->>> Solution
->>> ========
->>> This is very similar to the MMC pwrseq behavior so the idea is to:
->>> 1. Move MMC pwrseq drivers to generic place,
->>
->> You can do that, but I'm going to NAK any use of pwrseq bindings outside
->> of MMC. I think it is the wrong way to do things. The DT should describe
->> the devices. If they happen to be "simple" then the core can walk the
->> tree and do any setup. For example, look for "reset-gpios" and toggle
->> that GPIO. There is no need for a special node.
+Hi Hongbo,
+
+On 06/05/16 11:11, Hongbo Zhang wrote:
+> Hi Guys,
+> We know in the legacy kernel suspend codes, a typical suspend_ops->enter
+> callback is like this:
 >
-> Okay, I got it, no node for pwrseq but parse device properties. In case
-> of reset-gpios it seems quite obvious but also actively used:
-> $ git grep reset-gpios arch/arm/boot/dts | wc -l
-> 142
+
+[...]
+
 >
-> Definitely pwrseq shouldn't add itself to all of these devices.
+> That means we implement standby and suspend-to-ram in one callback, and
+> these two state can be identified by an input parameter 'state'.
 >
-> My questions would be then:
-> 1. An additional pwrseq compatible for device is acceptable?
+> While now PSCI is used for ARM to implement cores operations and power
+> management, for the above suspend_ops->enter we choose SYSTEM_SUSPEND
+> function, and this function is defined for suspend-to-ram, then here
+> comes the problem:
+>
+> How can we implement the standby state following the PSCI framework?
+>
 
-Perhaps. The issue is whether common or driver specific code handles
-this may change over time. In other words, it is purely a kernel
-decision. It could move in either direction. It may be better to just
-have a whitelist of devices (though it would need to be board specific
-somehow).
+Jisheng Zhang raised similar question few months back and we had a
+discussion. Please have a look at the thread [1]
 
-> 2. How would you name the regulator? We shouldn't toggle off/on every
-> regulator but probably only some specific ones.
+> I couldn't find other PSCI function which fits for standby well.
+> In the spec there isn't such a 'state' parameter passed for
+> SYSTEM_SUSPEND (only entry_point_address and context_id), can we change
+> the spec a bit, e.g. using one more register to pass another 'state'
+> parameter? is that acceptable? (similar like CPU_SUSPEND then)
+>
 
-I'd argue the generic case is just enable all the ones defined. If you
-only need to deal with some of them or need a specific sequence, then
-it is not generic.
+Since the standby state is not well defined on ARM systems, it's hard to
+define the conditions like system suspend and hence difficult to
+generalize in the spec. I think suspend-to-idle should suffice in your
+case. Anyways its better to get more information on the definition of
+standby on your platform.
 
-Rob
+-- 
+Regards,
+Sudeep
+
+[1] 
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-July/356467.html
+
