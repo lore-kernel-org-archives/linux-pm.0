@@ -1,62 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] sched/fair: Invoke cpufreq hooks for CONFIG_SMP unset
-Date: Fri, 06 May 2016 14:58:43 +0200
-Message-ID: <6282396.VVEdgVYxO3@vostro.rjw.lan>
+Subject: [PATCH] cpufreq: schedutil: Make it depend on CONFIG_SMP
+Date: Fri, 06 May 2016 15:00:38 +0200
+Message-ID: <3697740.fObsh7mydn@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63255 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55478 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751997AbcEFMza (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 08:55:30 -0400
+	by vger.kernel.org with SMTP id S1757934AbcEFM5Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 May 2016 08:57:25 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] cpufreq: schedutil: Make it depend on CONFIG_SMP
 
-Commit 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization
-update callbacks) overlooked the fact that update_load_avg(), where
-CFS invokes cpufreq utilization update hooks, becomes an empty stub for
-CONFIG_SMP unset.  In consequence, if CONFIG_SMP is not set, cpufreq
-governors are never invoked from CFS and they do not have a chance to
-evaluate CPU performace levels and update them often enough.  Needless
-to say, things don't work as expected then.
+Make the schedutil cpufreq governor depend on CONFIG_SMP, because
+the scheduler-provided utilization numbers used by it are only
+available for CONFIG_SMP set.
 
-Fix the problem by making the !CONFIG_SMP stub of update_load_avg()
-invoke cpufreq update hooks too.
-
-Fixes: 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization update callbacks)
+Fixes: 9bdcb44e391d (cpufreq: schedutil: New governor based on scheduler utilization data)
 Reported-by: Steve Muckle <steve.muckle@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-This needs to go into v4.6.
+linux-next material.
+
+Please let me know if there are any objections.
 
 ---
- kernel/sched/fair.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/cpufreq/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-pm/kernel/sched/fair.c
+Index: linux-pm/drivers/cpufreq/Kconfig
 ===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -3030,7 +3030,14 @@ static int idle_balance(struct rq *this_
+--- linux-pm.orig/drivers/cpufreq/Kconfig
++++ linux-pm/drivers/cpufreq/Kconfig
+@@ -200,7 +200,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
  
- #else /* CONFIG_SMP */
- 
--static inline void update_load_avg(struct sched_entity *se, int update_tg) {}
-+static inline void update_load_avg(struct sched_entity *se, int not_used)
-+{
-+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-+	struct rq *rq = rq_of(cfs_rq);
-+
-+	cpufreq_trigger_update(rq_clock(rq));
-+}
-+
- static inline void
- enqueue_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
- static inline void
+ config CPU_FREQ_GOV_SCHEDUTIL
+ 	tristate "'schedutil' cpufreq policy governor"
+-	depends on CPU_FREQ
++	depends on CPU_FREQ && SMP
+ 	select CPU_FREQ_GOV_ATTR_SET
+ 	select IRQ_WORK
+ 	help
 
