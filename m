@@ -1,68 +1,70 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH v6 1/9] input: max8997-haptic: Fix NULL pointer dereference
-Date: Fri, 06 May 2016 09:21:21 +0200
-Message-ID: <1462519289-2356-2-git-send-email-k.kozlowski@samsung.com>
-References: <1462519289-2356-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1462519289-2356-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
-Cc: r.baldyga@hackerion.com, Marek Szyprowski <m.szyprowski@samsung.com>, stable@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
+Date: Fri, 6 May 2016 15:15:25 +0800
+Message-ID: <20160506071525.GB32359@shlinux2.ap.freescale.net>
+References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
+ <20160505224240.GA31429@rob-hp-laptop>
+ <20160506054459.GA32359@shlinux2.ap.freescale.net>
+ <572C35C8.9080709@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <572C35C8.9080709-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Marek Szyprowski <m.szyprowski@samsung.com>
+On Fri, May 06, 2016 at 08:12:24AM +0200, Krzysztof Kozlowski wrote:
+> On 05/06/2016 07:44 AM, Peter Chen wrote:
+> > On Thu, May 05, 2016 at 05:42:40PM -0500, Rob Herring wrote:
+> >> On Thu, May 05, 2016 at 02:34:13PM +0200, Krzysztof Kozlowski wrote:
+> >>> Hi,
+> >>>
+> >>> This is a different, second try to fix usb3503+lan on Odroid U3 board
+> >>> if it was initialized by bootloader (e.g. for TFTP boot).
+> >>>
+> >>> First version:
+> >>> http://www.spinics.net/lists/linux-usb/msg140042.html
+> >>>
+> >>>
+> >>> Problem
+> >>> =======
+> >>> When Odroid U3 (usb3503 + smsc95xx + max77686) boots from network (TFTP),
+> >>> the usb3503 and LAN smsc95xx do not show up in "lsusb". Hard-reset
+> >>> is required, e.g. by suspend to RAM. The actual TFTP boot does
+> >>> not have to happen. Just "usb start" from U-Boot is sufficient.
+> >>>
+> >>> From the schematics, the regulator is a supply only to LAN, however
+> >>> without toggling it off/on, the usb3503 hub won appear neither.
+> >>>
+> >>>
+> >>> Solution
+> >>> ========
+> >>> This is very similar to the MMC pwrseq behavior so the idea is to:
+> >>> 1. Move MMC pwrseq drivers to generic place,
+> >>
+> >> You can do that, but I'm going to NAK any use of pwrseq bindings outside 
+> >> of MMC. I think it is the wrong way to do things. The DT should describe 
+> >> the devices. If they happen to be "simple" then the core can walk the 
+> >> tree and do any setup. For example, look for "reset-gpios" and toggle 
+> >> that GPIO. There is no need for a special node.
+> >>
+> > 
+> > Oh, I am doing the same thing like this patch set doing.
+> 
+> Shame on me that I did not use Google before starting the work. I could
+> just extend your patchset. I think we can combine our efforts.
+> 
 
-NULL pointer derefence happens when booting with DTB because the
-platform data for haptic device is not set in supplied data from parent
-MFD device.
+Sure :)
 
-The MFD device creates only platform data (from Device Tree) for itself,
-not for haptic child.
-
-Unable to handle kernel NULL pointer dereference at virtual address 0000009c
-pgd = c0004000
-	[0000009c] *pgd=00000000
-	Internal error: Oops: 5 [#1] PREEMPT SMP ARM
-	(max8997_haptic_probe) from [<c03f9cec>] (platform_drv_probe+0x4c/0xb0)
-	(platform_drv_probe) from [<c03f8440>] (driver_probe_device+0x214/0x2c0)
-	(driver_probe_device) from [<c03f8598>] (__driver_attach+0xac/0xb0)
-	(__driver_attach) from [<c03f67ac>] (bus_for_each_dev+0x68/0x9c)
-	(bus_for_each_dev) from [<c03f7a38>] (bus_add_driver+0x1a0/0x218)
-	(bus_add_driver) from [<c03f8db0>] (driver_register+0x78/0xf8)
-	(driver_register) from [<c0101774>] (do_one_initcall+0x90/0x1d8)
-	(do_one_initcall) from [<c0a00dbc>] (kernel_init_freeable+0x15c/0x1fc)
-	(kernel_init_freeable) from [<c06bb5b4>] (kernel_init+0x8/0x114)
-	(kernel_init) from [<c0107938>] (ret_from_fork+0x14/0x3c)
-
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: <stable@vger.kernel.org>
-Fixes: 104594b01ce7 ("Input: add driver support for MAX8997-haptic")
-[k.kozlowski: Write commit message, add CC-stable]
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/input/misc/max8997_haptic.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/input/misc/max8997_haptic.c b/drivers/input/misc/max8997_haptic.c
-index a806ba3818f7..8d6326d7e7be 100644
---- a/drivers/input/misc/max8997_haptic.c
-+++ b/drivers/input/misc/max8997_haptic.c
-@@ -255,12 +255,14 @@ static int max8997_haptic_probe(struct platform_device *pdev)
- 	struct max8997_dev *iodev = dev_get_drvdata(pdev->dev.parent);
- 	const struct max8997_platform_data *pdata =
- 					dev_get_platdata(iodev->dev);
--	const struct max8997_haptic_platform_data *haptic_pdata =
--					pdata->haptic_pdata;
-+	const struct max8997_haptic_platform_data *haptic_pdata = NULL;
- 	struct max8997_haptic *chip;
- 	struct input_dev *input_dev;
- 	int error;
- 
-+	if (pdata)
-+		haptic_pdata = pdata->haptic_pdata;
-+
- 	if (!haptic_pdata) {
- 		dev_err(&pdev->dev, "no haptic platform data\n");
- 		return -EINVAL;
 -- 
-1.9.1
+
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
