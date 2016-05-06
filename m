@@ -1,32 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: cpufreq governors broken with !CONFIG_SMP?
-Date: Fri, 06 May 2016 02:39:11 +0200
-Message-ID: <20628091.X3uHbXY5oF@vostro.rjw.lan>
-References: <20160505234922.GA14673@sky.smuckle.net> <1961527.dEtpL4HAvs@vostro.rjw.lan> <20160506002519.GB14673@sky.smuckle.net>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH v3 3/5] ARM: dts: Add binding documentation
+ for AXP20x pmic ac power supply
+Date: Fri, 6 May 2016 10:33:03 +0800
+Message-ID: <CAGb2v66yDCnaWrYUN4SYKVu0jgP_drFW8LURQM2uN-6Yn7XCaA@mail.gmail.com>
+References: <1462444508-9363-1-git-send-email-haas@computerlinguist.org>
+ <1462444508-9363-4-git-send-email-haas@computerlinguist.org> <20160505223058.GA28732@rob-hp-laptop>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160506002519.GB14673@sky.smuckle.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCMILY6JWQBBB5MEWC4QKGQEOVYD45I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20160505223058.GA28732@rob-hp-laptop>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 05, 2016 05:25:19 PM Steve Muckle wrote:
-> On Fri, May 06, 2016 at 02:09:07AM +0200, Rafael J. Wysocki wrote:
-> > In turn, schedutil should probably depend on CONFIG_SMP.
-> 
-> In the long term I wonder if it's worth putting PELT under its own
-> separate feature or just removing #ifdef CONFIG_SMP.
-> 
-> Aside from task migration CPU frequency updates there's also task
-> creation and deletion which would apply on UP. The tunable
-> infrastructure being created for scheduler-guided frequency may be of
-> interest on UP also.
+On Fri, May 6, 2016 at 6:30 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Thu, May 05, 2016 at 12:35:06PM +0200, Michael Haas wrote:
+>> Add binding documentation for the ac power supply part of the AXP20x
+>> pmic.
+>>
+>> Signed-off-by: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+>> ---
+>>  .../bindings/power_supply/axp20x_ac_power.txt           | 17 +++++++++++++++++
+>>  1 file changed, 17 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power_supply/axp20x_ac_power.txt
+>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-I agree, but I was talking short-term. :-)
-
-We need to fix this for 4.6 (which most likely is 2 weeks away only) and
-I don't think it hurts anyone if schedutil depends on CONFIG_SMP to start
-with.
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
