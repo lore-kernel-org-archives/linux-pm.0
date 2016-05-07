@@ -1,84 +1,50 @@
-From: "tip-bot for Rafael J. Wysocki" <tipbot@zytor.com>
-Subject: [tip:sched/urgent] sched/fair: Fix !CONFIG_SMP kernel cpufreq
- governor breakage
-Date: Fri, 6 May 2016 23:37:46 -0700
-Message-ID: <tip-536bd00cdbb7b908573e5a93bae67b64cbae60d8@git.kernel.org>
-References: <6282396.VVEdgVYxO3@vostro.rjw.lan>
-Reply-To: rafael.j.wysocki@intel.com, mingo@kernel.org,
-	  linux-pm@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-	  linux-kernel@vger.kernel.org, peterz@infradead.org,
-	  torvalds@linux-foundation.org, viresh.kumar@linaro.org,
-	  srinivas.pandruvada@linux.intel.com, steve.muckle@linaro.org
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH v6 6/9] rtc: max8997: Check for ERRNO of
+ regmap_irq_get_virq()
+Date: Sat, 7 May 2016 08:48:45 +0200
+Message-ID: <20160507064845.GD2890@piout.net>
+References: <1462519289-2356-2-git-send-email-k.kozlowski@samsung.com>
+ <1462519636-3250-1-git-send-email-k.kozlowski@samsung.com>
+ <1462519636-3250-5-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6282396.VVEdgVYxO3@vostro.rjw.lan>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tip-commits@vger.kernel.org
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@kernel.org, rafael.j.wysocki@intel.com, tglx@linutronix.de, linux-pm@vger.kernel.org, steve.muckle@linaro.org, srinivas.pandruvada@linux.intel.com, torvalds@linux-foundation.org, viresh.kumar@linaro.org
+In-Reply-To: <1462519636-3250-5-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com, r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Commit-ID:  536bd00cdbb7b908573e5a93bae67b64cbae60d8
-Gitweb:     http://git.kernel.org/tip/536bd00cdbb7b908573e5a93bae67b64cbae60d8
-Author:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-AuthorDate: Fri, 6 May 2016 14:58:43 +0200
-Committer:  Ingo Molnar <mingo@kernel.org>
-CommitDate: Sat, 7 May 2016 07:45:34 +0200
+On 06/05/2016 at 09:27:13 +0200, Krzysztof Kozlowski wrote :
+> The regmap_irq_get_virq() can return zero or negative ERRNO, so it is
+> insufficient to check only for non-zero value.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-sched/fair: Fix !CONFIG_SMP kernel cpufreq governor breakage
+> ---
+>  drivers/rtc/rtc-max8997.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/rtc/rtc-max8997.c b/drivers/rtc/rtc-max8997.c
+> index 4998aee0f07f..1a06e17ebe9b 100644
+> --- a/drivers/rtc/rtc-max8997.c
+> +++ b/drivers/rtc/rtc-max8997.c
+> @@ -497,7 +497,7 @@ static int max8997_rtc_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	virq = regmap_irq_get_virq(max8997->irq_data, MAX8997_PMICIRQ_RTCA1);
+> -	if (!virq) {
+> +	if (virq <= 0) {
+>  		dev_err(&pdev->dev, "Failed to create mapping alarm IRQ\n");
+>  		ret = -ENXIO;
+>  		goto err_out;
+> -- 
+> 1.9.1
+> 
 
-The following commit:
-
-  34e2c555f3e1 ("cpufreq: Add mechanism for registering utilization update callbacks")
-
-overlooked the fact that update_load_avg(), where CFS invokes cpufreq
-utilization update callbacks, becomes an empty stub on UP kernels.
-
-In consequence, if !CONFIG_SMP, cpufreq governors are never invoked
-from CFS and they do not have a chance to evaluate CPU performace
-levels and update them often enough.
-
-Needless to say, things don't work as expected then.
-
-Fix the problem by making the !CONFIG_SMP stub of update_load_avg()
-invoke cpufreq update callbacks too.
-
-Reported-by: Steve Muckle <steve.muckle@linaro.org>
-Tested-by: Steve Muckle <steve.muckle@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Steve Muckle <steve.muckle@linaro.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Fixes: 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization update callbacks)
-Link: http://lkml.kernel.org/r/6282396.VVEdgVYxO3@vostro.rjw.lan
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
----
- kernel/sched/fair.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 0fe30e6..40748dc 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3030,7 +3030,14 @@ static int idle_balance(struct rq *this_rq);
- 
- #else /* CONFIG_SMP */
- 
--static inline void update_load_avg(struct sched_entity *se, int update_tg) {}
-+static inline void update_load_avg(struct sched_entity *se, int not_used)
-+{
-+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-+	struct rq *rq = rq_of(cfs_rq);
-+
-+	cpufreq_trigger_update(rq_clock(rq));
-+}
-+
- static inline void
- enqueue_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
- static inline void
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
