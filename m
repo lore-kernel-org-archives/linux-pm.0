@@ -1,81 +1,44 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
-Date: Mon, 9 May 2016 09:46:40 +0200
-Message-ID: <CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
-	<20160505224240.GA31429@rob-hp-laptop>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 4/4] Thermal: add INT3406 thermal driver
+Date: Mon, 9 May 2016 07:47:43 +0000
+Message-ID: <1462780064.10198.3.camel@rzhang1-mobl4>
+References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
+	 <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160505224240.GA31429@rob-hp-laptop>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mmc <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
+Content-Language: en-US
+Content-ID: <B3D2C5A30F02BC408F11C658A1D6D6F2@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Lu, Aaron" <aaron.lu@intel.com>
+Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 May 2016 at 00:42, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Thu, May 05, 2016 at 02:34:13PM +0200, Krzysztof Kozlowski wrote:
->> Hi,
->>
->> This is a different, second try to fix usb3503+lan on Odroid U3 board
->> if it was initialized by bootloader (e.g. for TFTP boot).
->>
->> First version:
->> http://www.spinics.net/lists/linux-usb/msg140042.html
->>
->>
->> Problem
->> =======
->> When Odroid U3 (usb3503 + smsc95xx + max77686) boots from network (TFTP),
->> the usb3503 and LAN smsc95xx do not show up in "lsusb". Hard-reset
->> is required, e.g. by suspend to RAM. The actual TFTP boot does
->> not have to happen. Just "usb start" from U-Boot is sufficient.
->>
->> From the schematics, the regulator is a supply only to LAN, however
->> without toggling it off/on, the usb3503 hub won appear neither.
->>
->>
->> Solution
->> ========
->> This is very similar to the MMC pwrseq behavior so the idea is to:
->> 1. Move MMC pwrseq drivers to generic place,
->
-> You can do that, but I'm going to NAK any use of pwrseq bindings outside
-> of MMC. I think it is the wrong way to do things. The DT should describe
-
-Huh, I didn't know that was your view of the mmc pwrseq bindings. Why
-didn't you NAK them before?
-
-> the devices. If they happen to be "simple" then the core can walk the
-> tree and do any setup. For example, look for "reset-gpios" and toggle
-> that GPIO. There is no need for a special node.
->
->> 2. Extend the pwrseq-simple with regulator toggling,
->> 3. Add support to USB hub and port core for pwrseq,
->
-> We discussed this for USB already[1] and is why we defined how to add
-> USB child devices. The idea is not to add pwrseq to that.
-
-I am not familiar with the USB discussion.
-
-Still, let me give you some more background to the mmc pwrseq. The
-idea from the mmc pwrseq bindings comes from the power-domain DT
-bindings, as I thought these things were a bit related.
-In both cases they are not directly a property of the device, but more
-describing a HW dependency to allow the device to work.
-
-One could probably use a child node instead of a phandle, but that
-wasn't chosen back then. Of course you are the DT expert, but could
-you perhaps tell me why a child node is better for cases like this?
-
->
-> Rob
->
-> [1] http://www.spinics.net/lists/linux-usb/msg134082.html
-
-Kind regards
-Uffe
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gV2VkLCAyMDE2LTA0LTI3IGF0IDIwOjQ1ICswODAwLCBBYXJvbiBMdSB3cm90ZToNCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvaW50MzQwNl90aGVybWFs
+LmMgYi9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL2ludDM0MDZfdGhlcm1hbC5jDQo+
+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4IDAwMDAwMDAwMDAwMC4uMWM5Yjc1OTBmMDk4
+DQo+IC0tLSAvZGV2L251bGwNCj4gKysrIGIvZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1h
+bC9pbnQzNDA2X3RoZXJtYWwuYw0KPiBAQCAtMCwwICsxLDIzNiBAQA0KPiArLyoNCj4gKyAqIElO
+VDM0MDYgdGhlcm1hbCBkcml2ZXIgZm9yIGRpc3BsYXkgcGFydGljaXBhbnQgZGV2aWNlDQo+ICsg
+Kg0KPiArICogQ29weXJpZ2h0IChDKSAyMDE0LCBJbnRlbCBDb3Jwb3JhdGlvbg0KDQpTaG91bGQg
+YmUgMjAxNiwgcmlnaHQ/DQoNCj4gKyAqIEF1dGhvcnM6IEFhcm9uIEx1IDxhYXJvbi5sdUBpbnRl
+bC5jb20+DQo+ICsgKg0KPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
+YW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJt
+cyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzDQo+ICsgKiBw
+dWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4NCj4gKyAqDQo+ICsgKi8N
+Cj4gKw0KPiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L3Bs
+YXRmb3JtX2RldmljZS5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L2FjcGkuaD4NCj4gKyNpbmNsdWRl
+IDxsaW51eC9iYWNrbGlnaHQuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC90aGVybWFsLmg+DQo+ICsj
+aW5jbHVkZSA8YWNwaS92aWRlby5oPg0KPiArDQoNCj4gK01PRFVMRV9ERVZJQ0VfVEFCTEUoYWNw
+aSwgaW50MzQwNl90aGVybWFsX21hdGNoKTsNCj4gKw0KPiArc3RhdGljIHN0cnVjdCBwbGF0Zm9y
+bV9kcml2ZXIgaW50MzQwNl90aGVybWFsX2RyaXZlciA9IHsNCj4gKwkucHJvYmUgPSBpbnQzNDA2
+X3RoZXJtYWxfcHJvYmUsDQo+ICsJLnJlbW92ZSA9IGludDM0MDZfdGhlcm1hbF9yZW1vdmUsDQo+
+ICsJLmRyaXZlciA9IHsNCj4gKwkJICAgLm5hbWUgPSAiaW50MzQwNiB0aGVybWFsIiwNCj4gKwkJ
+ICAgLm93bmVyID0gVEhJU19NT0RVTEUsDQo+ICsJCSAgIC5hY3BpX21hdGNoX3RhYmxlID0gaW50
+MzQwNl90aGVybWFsX21hdGNoLA0KPiArCQkgICB9LA0KPiArfTsNCj4gKw0KPiArbW9kdWxlX3Bs
+YXRmb3JtX2RyaXZlcihpbnQzNDA2X3RoZXJtYWxfZHJpdmVyKTsNCj4gKw0KPiArTU9EVUxFX0RF
+U0NSSVBUSU9OKCJJTlQzNDA2IFRoZXJtYWwgZHJpdmVyIik7DQo+ICtNT0RVTEVfTElDRU5TRSgi
+R1BMIik7DQoNCk1PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKQ0KDQp0aGFua3MsDQpydWkNCg0K
