@@ -1,42 +1,42 @@
-From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v4 11/11] arm64: tegra: set hot trips for Tegra210
-Date: Mon, 9 May 2016 14:54:04 +0800
-Message-ID: <1462776844-2152-12-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v4 08/11] arm64: tegra: set hot trips for Tegra132
+Date: Mon, 9 May 2016 14:54:01 +0800
+Message-ID: <1462776844-2152-9-git-send-email-wni@nvidia.com>
 References: <1462776844-2152-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1462776844-2152-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1462776844-2152-1-git-send-email-wni@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
 Enable throttle function for SOC_THERM.
 Set "hot" trips for cpu and gpu thermal zones, which
 can trigger the SOC_THERM hardware throttle.
 
-Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- arch/arm64/boot/dts/nvidia/tegra210.dtsi | 41 +++++++++++++++++++++++++-------
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi | 41 +++++++++++++++++++++++++-------
  1 file changed, 32 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-index e55589c8a561..b364153ae7e9 100644
---- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-@@ -808,7 +808,9 @@
+diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+index a3889e930010..63ec3a9c4e04 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+@@ -729,7 +729,9 @@
  
  	soctherm: thermal-sensor@700e2000 {
- 		compatible = "nvidia,tegra210-soctherm";
--		reg = <0x0 0x700e2000 0x0 0x1000>;
-+		reg = <0x0 0x700e2000 0x0 0x600 /* SOC_THERM reg_base */
-+			0x0 0x60006000 0x0 0x400>; /* CAR reg_base */
-+		reg-names = "soctherm-reg", "car-reg";
+ 		compatible = "nvidia,tegra132-soctherm";
+-		reg = <0x0 0x700e2000 0x0 0x600>;
++		reg = <0x0 0x700e2000 0x0 0x600 /* 0: SOC_THERM reg_base */
++			0x0 0x70040000 0x0 0x200>; /* 2: CCROC reg_base */
++		reg-names = "soctherm-reg", "ccroc-reg";
  		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&tegra_car TEGRA210_CLK_TSENSOR>,
- 			<&tegra_car TEGRA210_CLK_SOC_THERM>;
-@@ -816,6 +818,15 @@
+ 		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
+ 			<&tegra_car TEGRA124_CLK_SOC_THERM>;
+@@ -737,6 +739,15 @@
  		resets = <&tegra_car 78>;
  		reset-names = "soctherm";
  		#thermal-sensor-cells = <1>;
@@ -44,7 +44,7 @@ index e55589c8a561..b364153ae7e9 100644
 +		throttle-cfgs {
 +			throttle_heavy: nvidia,heavy {
 +				nvidia,priority = <100>;
-+				nvidia,cpu-throt-percent = <85>;
++				nvidia,cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_HIGH>;
 +
 +				#cooling-cells = <2>;
 +			};
@@ -52,13 +52,13 @@ index e55589c8a561..b364153ae7e9 100644
  	};
  
  	thermal-zones {
-@@ -832,13 +843,19 @@
- 					hysteresis = <0>;
+@@ -753,13 +764,19 @@
+ 					hysteresis = <1000>;
  					type = "critical";
  				};
 +
 +				cpu_throttle_trip: throttle-trip {
-+					temperature = <98500>;
++					temperature = <102000>;
 +					hysteresis = <1000>;
 +					type = "hot";
 +				};
@@ -76,13 +76,13 @@ index e55589c8a561..b364153ae7e9 100644
  			};
  		};
  		mem {
-@@ -876,13 +893,19 @@
- 					hysteresis = <0>;
+@@ -797,13 +814,19 @@
+ 					hysteresis = <1000>;
  					type = "critical";
  				};
 +
 +				gpu_throttle_trip: throttle-trip {
-+					temperature = <100000>;
++					temperature = <99000>;
 +					hysteresis = <1000>;
 +					type = "hot";
 +				};
@@ -102,8 +102,3 @@ index e55589c8a561..b364153ae7e9 100644
  		pllx {
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
