@@ -1,203 +1,100 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 01/11] of: Add bindings of hw throttle for Tegra
- soctherm
-Date: Mon, 9 May 2016 15:15:38 -0500
-Message-ID: <20160509201538.GA21382@rob-hp-laptop>
-References: <1462776844-2152-1-git-send-email-wni@nvidia.com>
- <1462776844-2152-2-git-send-email-wni@nvidia.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: ARM: mxs: STI: console can't wake up from freeze
+Date: Mon, 9 May 2016 22:49:36 +0200 (CEST)
+Message-ID: <1474284101.292364.2298f4ae-2c4a-4dbb-9e38-0a6190db0f92.open-xchange@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59764 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbcEIUPo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 May 2016 16:15:44 -0400
-Content-Disposition: inline
-In-Reply-To: <1462776844-2152-2-git-send-email-wni@nvidia.com>
+Received: from mout.kundenserver.de ([212.227.17.24]:49250 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbcEIUuR (ORCPT
+	<rfc822;Linux-pm@vger.kernel.org>); Mon, 9 May 2016 16:50:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: edubezval@gmail.com, thierry.reding@gmail.com, rui.zhang@intel.com, MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: fabio.estevam@nxp.com, marex@denx.de
+Cc: Linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de, joerg.krause@embedded.rocks
 
-On Mon, May 09, 2016 at 02:53:54PM +0800, Wei Ni wrote:
-> Add HW throttle configuration sub-node for soctherm, which
-> is used to describe the throttle event, and worked as a
-> cooling device. The "hot" type trip in thermal zone can
-> be bound to this cooling device, and trigger the throttle
-> function.
-> 
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 121 ++++++++++++++++++++-
->  1 file changed, 119 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> index edebfa0a985e..f691f63da567 100644
-> --- a/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> +++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra124-soctherm.txt
-> @@ -10,8 +10,14 @@ Required properties :
->  - compatible : For Tegra124, must contain "nvidia,tegra124-soctherm".
->    For Tegra132, must contain "nvidia,tegra132-soctherm".
->    For Tegra210, must contain "nvidia,tegra210-soctherm".
-> -- reg : Should contain 1 entry:
-> +- reg : Should contain at least 2 entries for each entry in reg-names:
->    - SOCTHERM register set
-> +  - Tegra CAR register set: Required for Tegra124 and Tegra210.
-> +  - CCROC register set: Required for Tegra132.
-> +- reg-names :  Should contain at least 2 entries:
-> +  - soctherm-reg
-> +  - car-reg
-> +  - ccroc-reg
->  - interrupts : Defines the interrupt used by SOCTHERM
->  - clocks : Must contain an entry for each entry in clock-names.
->    See ../clocks/clock-bindings.txt for details.
-> @@ -25,17 +31,45 @@ Required properties :
->  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
->      of this property. See <dt-bindings/thermal/tegra124-soctherm.h> for a
->      list of valid values when referring to thermal sensors.
-> +- nvidia,throttle-cfgs: A sub-node which is a container of configuration for
-> +    each hardware throttle events. These events can be set as cooling devices.
-> +  * throttle events: Sub-nodes must be named as "nvidia,light" or "nvidia,heavy".
-> +      Properties:
-> +      - nvidia,priority: Each throttles has its own throttle settings, so the
-> +        SW need to set priorities for various throttle, the HW arbiter can select
-> +        the final throttle settings.
-> +        Bigger value indicates higher priority, In general, higher priority
-> +        translates to lower target frequency. SW needs to ensure that critical
-> +        thermal alarms are given higher priority, and ensure that there is
-> +        no race if priority of two vectors is set to the same value.
-> +        The range of this value is 1~100.
-> +      - nvidia,cpu-throt-percent: This property is for Tegra124 and Tegra210.
-> +        It is the throttling depth of pulse skippers, it's the percentage
-> +        throttling.
-> +      - nvidia,cpu-throt-level: This property is only for Tegra132, it is the
-> +        level of pulse skippers, which used to throttle clock frequencies. It
-> +        indicates cpu clock throttling depth, and the depth can be programmed.
-> +        Must set as following values:
-> +        TEGRA_SOCTHERM_THROT_LEVEL_LOW, TEGRA_SOCTHERM_THROT_LEVEL_MED
-> +        TEGRA_SOCTHERM_THROT_LEVEL_HIGH, TEGRA_SOCTHERM_THROT_LEVEL_NONE
-> +      - #cooling-cells: Should be 1. This cooling device only support on/off state.
-> +        See ./thermal.txt for a description of this property.
->  
->  Note:
->  - the "critical" type trip points will be set to SOC_THERM hardware as the
->  shut down temperature. Once the temperature of this thermal zone is higher
->  than it, the system will be shutdown or reset by hardware.
-> +- the "hot" type trip points will be set to SOC_THERM hardware as the throttle
-> +temperature. Once the the temperature of this thermal zone is higher
-> +than it, it will trigger the HW throttle event.
->  
->  Example :
->  
->  	soctherm@700e2000 {
->  		compatible = "nvidia,tegra124-soctherm";
-> -		reg = <0x0 0x700e2000 0x0 0x1000>;
-> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
-> +			0x0 0x60006000 0x0 0x400 /* CAR reg_base */
-> +		reg-names = "soctherm-reg", "car-reg";
->  		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
->  		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
->  			<&tegra_car TEGRA124_CLK_SOC_THERM>;
-> @@ -44,6 +78,76 @@ Example :
->  		reset-names = "soctherm";
->  
->  		#thermal-sensor-cells = <1>;
-> +
-> +		throttle-cfgs {
-> +			/*
-> +			 * When the "heavy" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in 85% depth
-> +			 */
-> +			throttle_heavy: nvidia,heavy {
+Hi,
 
-Still need to drop vendor prefix in the node names here and elsewhere.
+i'm faced with the issue that on i.MX28 the console is unable to wake up from
+freeze ( suspend to idle). I tested it with Linux 3.18 and 4.5 ( cmdline has
+no_console_suspend=1 ) and also with a i.MX23 with the same result. The suspend
+seems to work, but there is no reaction to the console after the freeze.
+Strangely the suspend to RAM from console and using freeze in combination with
+pm_test works without any issues.
 
-> +				nvidia,priority = <100>;
-> +				nvidia,cpu-throt-percent = <85>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * When the "light" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in 50% depth
-> +			 */
-> +			throttle_light: nvidia,light {
-> +				nvidia,priority = <80>;
-> +				nvidia,cpu-throt-percent = <50>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * If these two devices are triggered in same time, the HW throttle
-> +			 * arbiter will select the highest priority as the final throttle
-> +			 * settings to skip cpu pulse.
-> +			 */
-> +		};
-> +	};
-> +
-> +Example: referring to Tegra132's "reg", "reg-names" and "throttle-cfgs" :
-> +
-> +	soctherm@700e2000 {
-> +		compatible = "nvidia,tegra132-soctherm";
-> +		reg = <0x0 0x700e2000 0x0 0x600  /* SOC_THERM reg_base */
-> +			0x0 0x70040000 0x0 0x200>; /* CCROC reg_base */;
-> +		reg-names = "soctherm-reg", "ccroc-reg";
-> +
-> +		throttle-cfgs {
-> +			/*
-> +			 * When the "heavy" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in HIGH level
-> +			 */
-> +			throttle_heavy: nvidia,heavy {
-> +				nvidia,priority = <100>;
-> +				nvidia,cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_HIGH>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * When the "light" cooling device triggered,
-> +			 * the HW will skip cpu clock's pulse in MED level
-> +			 */
-> +			throttle_light: nvidia,light {
-> +				nvidia,priority = <80>;
-> +				nvidia,cpu-throt-level = <TEGRA_SOCTHERM_THROT_LEVEL_MED>;
-> +
-> +				#cooling-cells = <1>;
-> +			};
-> +
-> +			/*
-> +			 * If these two devices are triggered in same time, the HW throttle
-> +			 * arbiter will select the highest priority as the final throttle
-> +			 * settings to skip cpu pulse.
-> +			 */
-> +
-> +		};
->  	};
->  
->  Example: referring to thermal sensors :
-> @@ -62,6 +166,19 @@ Example: referring to thermal sensors :
->  					hysteresis = <1000>;
->  					type = "critical";
->  				};
-> +
-> +				cpu_throttle_trip: throttle-trip {
-> +					temperature = <100000>;
-> +					hysteresis = <1000>;
-> +					type = "hot";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&cpu_throttle_trip>;
-> +					cooling-device = <&throttle_heavy 1 1>;
-> +				};
->  			};
->                  };
->  	};
-> -- 
-> 1.9.1
-> 
+Any ideas to narrow down the problem?
+
+Here is the console output:
+
+root@duckbill:~# echo freeze > /sys/power/state 
+[   54.163568] PM: Syncing filesystems ... done.
+[   57.916487] Freezing user space processes ... (elapsed 0.007 seconds) done.
+[   57.930987] Freezing remaining freezable tasks ... (elapsed 0.004 seconds)
+done.
+[   57.970490] PM: suspend of devices complete after 22.813 msecs
+[   57.983052] PM: late suspend of devices complete after 6.480 msecs
+[   57.997832] PM: noirq suspend of devices complete after 8.500 msecs
+[  240.633397] INFO: task ext4lazyinit:73 blocked for more than 120 seconds.
+[  240.640245]       Not tainted 3.18.0-01974-gb2776bf #12
+[  240.645639] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
+message.
+[  240.653619] ext4lazyinit    D c0511a80     0    73      2 0x00000000
+[  240.660147] [<c0511a80>] (__schedule) from [<c05153c0>]
+(schedule_timeout+0x138/0x1e4)
+[  240.668265] [<c05153c0>] (schedule_timeout) from [<c05117bc>]
+(io_schedule_timeout+0x94/0xfc)
+[  240.676983] [<c05117bc>] (io_schedule_timeout) from [<c0512b10>]
+(T.312+0x9c/0x120)
+[  240.684848] [<c0512b10>] (T.312) from [<c02a9138>]
+(__blkdev_issue_zeroout+0x1f8/0x210)
+[  240.693059] [<c02a9138>] (__blkdev_issue_zeroout) from [<c02a942c>]
+(blkdev_issue_zeroout+0x94/0xa0)
+[  240.702265] [<c02a942c>] (blkdev_issue_zeroout) from [<c017fd74>]
+(ext4_init_inode_table+0x1a0/0x394)
+[  240.711689] [<c017fd74>] (ext4_init_inode_table) from [<c019e050>]
+(ext4_lazyinit_thread+0x100/0x2f0)
+[  240.721126] [<c019e050>] (ext4_lazyinit_thread) from [<c0032fd4>]
+(kthread+0xb8/0xd4)
+[  240.729145] [<c0032fd4>] (kthread) from [<c0009680>]
+(ret_from_fork+0x14/0x34)
+[  240.736535] 4 locks held by ext4lazyinit/73:
+[  240.740839]  #0:  (&eli->li_list_mtx){+.+...}, at: [<c019df90>]
+ext4_lazyinit_thread+0x40/0x2f0
+[  240.749815]  #1:  (sb_writers#3){.+.+.+}, at: [<c019dfdc>]
+ext4_lazyinit_thread+0x8c/0x2f0
+[  240.758373]  #2:  (jbd2_handle){+.+...}, at: [<c01d3880>]
+start_this_handle+0x174/0x5dc
+[  240.766630]  #3:  (&meta_group_info[i]->alloc_sem){++++..}, at: [<c017fc8c>]
+ext4_init_inode_table+0xb8/0x394
+[  240.776855] INFO: task bash:465 blocked for more than 120 seconds.
+[  240.783191]       Not tainted 3.18.0-01974-gb2776bf #12
+[  240.788456] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
+message.
+[  240.796417] bash            D c0511a80     0   465    311 0x00000000
+[  240.803062] [<c0511a80>] (__schedule) from [<c0051044>]
+(suspend_devices_and_enter+0x308/0x62c)
+[  240.811840] [<c0051044>] (suspend_devices_and_enter) from [<c0051648>]
+(pm_suspend+0x2e0/0x400)
+[  240.820729] [<c0051648>] (pm_suspend) from [<c004ff10>]
+(state_store+0x80/0xcc)
+[  240.828226] [<c004ff10>] (state_store) from [<c02bd950>]
+(kobj_attr_store+0x18/0x1c)
+[  240.836169] [<c02bd950>] (kobj_attr_store) from [<c0157d18>]
+(sysfs_kf_write+0x48/0x4c)
+[  240.844363] [<c0157d18>] (sysfs_kf_write) from [<c0156f10>]
+(kernfs_fop_write+0xc8/0x184)
+[  240.852624] [<c0156f10>] (kernfs_fop_write) from [<c00f5058>]
+(vfs_write+0xb8/0x1d8)
+[  240.860559] [<c00f5058>] (vfs_write) from [<c00f524c>] (SyS_write+0x44/0x88)
+[  240.867783] [<c00f524c>] (SyS_write) from [<c00095c0>]
+(ret_fast_syscall+0x0/0x44)
+[  240.875517] 4 locks held by bash/465:
+[  240.879214]  #0:  (sb_writers#4){.+.+.+}, at: [<c00f511c>]
+vfs_write+0x17c/0x1d8
+[  240.886898]  #1:  (&of->mutex){+.+.+.}, at: [<c0156ed4>]
+kernfs_fop_write+0x8c/0x184
+[  240.894883]  #2:  (s_active#39){.+.+.+}, at: [<c0156edc>]
+kernfs_fop_write+0x94/0x184
+[  240.902996]  #3:  (pm_mutex){+.+.+.}, at: [<c00513e8>] pm_suspend+0x80/0x400
