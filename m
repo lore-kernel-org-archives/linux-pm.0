@@ -1,37 +1,53 @@
-From: Chris Brand <chris.brand@broadcom.com>
-Subject: Re: [PATCH 0/6] Support BCM23550 SoC
-Date: Mon, 9 May 2016 15:31:31 -0700
-Message-ID: <CAMsMSK-MwY6HDmb45vj6g2BTM9yk7+g5oP0hEm9gk6Gi7f+XjA@mail.gmail.com>
-References: <1462481334-8943-1-git-send-email-chris.brand@broadcom.com>
-	<6872671.Czyv7J9iJZ@wuerfel>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH] sched/fair: Invoke cpufreq hooks for CONFIG_SMP unset
+Date: Mon, 9 May 2016 16:53:16 -0700
+Message-ID: <20160509235316.GA30310@sky.smuckle.net>
+References: <6282396.VVEdgVYxO3@vostro.rjw.lan>
+ <20160507061310.GA15728@worktop.ger.corp.intel.com>
+ <20160507063051.GA23722@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f174.google.com ([209.85.213.174]:37797 "EHLO
-	mail-ig0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbcEIWbd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2016 18:31:33 -0400
-Received: by mail-ig0-f174.google.com with SMTP id s8so104135875ign.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 May 2016 15:31:32 -0700 (PDT)
-In-Reply-To: <6872671.Czyv7J9iJZ@wuerfel>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:36528 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbcEIXxU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2016 19:53:20 -0400
+Received: by mail-pf0-f173.google.com with SMTP id c189so83840148pfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 09 May 2016 16:53:20 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20160507063051.GA23722@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Russell King <linux@armlinux.org.uk>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, Raymond Ngun <raymond.ngun@broadcom.com>, Markus Mayer <markus.mayer@broadcom.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>
 
-On Thu, May 5, 2016 at 2:09 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-[...]
-> Looks really nice overall, I only found one tiny detail I commented on
-> for patch 6.
+On Sat, May 07, 2016 at 08:30:51AM +0200, Ingo Molnar wrote:
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Fri, May 06, 2016 at 02:58:43PM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > Commit 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization
+> > > update callbacks) overlooked the fact that update_load_avg(), where
+> > > CFS invokes cpufreq utilization update hooks, becomes an empty stub for
+> > > CONFIG_SMP unset.  In consequence, if CONFIG_SMP is not set, cpufreq
+> > > governors are never invoked from CFS and they do not have a chance to
+> > > evaluate CPU performace levels and update them often enough.  Needless
+> > > to say, things don't work as expected then.
+> > > 
+> > > Fix the problem by making the !CONFIG_SMP stub of update_load_avg()
+> > > invoke cpufreq update hooks too.
+> > > 
+> > > Fixes: 34e2c555f3e1 (cpufreq: Add mechanism for registering utilization update callbacks)
+> > > Reported-by: Steve Muckle <steve.muckle@linaro.org>
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Rafael; feel free to push this through the pm tree.
+> > 
+> > Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> 
+> I already have it in sched/urgent.
 
-Thanks!
-
-> I'm glad to see work on the old chips resume, are you working on new
-> code for it as well, or just upstreaming the patches that were already
-> done in the past?
-
-
-This is new work. It was actually a good testament to the value of
-upstreaming that it was so easy to bring up a 4.6 kernel on this chip.
-
-Chris
+Looks like this just missed 4.6-rc7 and the release email for
+that doesn't suggest an rc8, as it stands...
