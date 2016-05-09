@@ -1,91 +1,102 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH v4 06/11] arm64: tegra: use tegra132-soctherm for Tegra132
-Date: Mon, 9 May 2016 14:53:59 +0800
-Message-ID: <1462776844-2152-7-git-send-email-wni@nvidia.com>
-References: <1462776844-2152-1-git-send-email-wni@nvidia.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v6 0/9] mfd: max8997: Add regmap support
+Date: Mon, 9 May 2016 08:35:49 +0100
+Message-ID: <20160509073549.GC8324@dell>
+References: <1462519289-2356-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:18275 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbcEIGws (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 May 2016 02:52:48 -0400
-In-Reply-To: <1462776844-2152-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1462519289-2356-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com, r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com
-Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-The Tegra132 has the specific settings for soctherm,
-so change to use campatible "nvidia,tegra132-soctherm" for it.
-And adds cpu, gpu, mem and pllx thermal zones.
+On Fri, 06 May 2016, Krzysztof Kozlowski wrote:
+> This is a rebase and extension of old Robert Baldyga's work. [0]
+>=20
+> Robert no longer works in Samsung.
+>=20
+> From the original cover letter:
+> "This patchset modifies max8997 driver and associated function driver=
+s to use
+> register maps instead of operating directly on i2c bus. This change a=
+llowed
+> to simplify irq handling, and to move some initializations to individ=
+ual
+> function drivers. Hence now when some functions are not enabled, thei=
+r i2c
+> clients, regmaps and irqs are not registered."
+>=20
+>=20
+> My changes (since Robert's v5)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> 1. Rebase on v4.6-rc6.
+> 2. Collect more acks.
+> 3. Add few fixes:
+>    a. Haptic fix from Marek,
+>    b. Extcon and RTC fix from me,
+>    c. DTS fixes from Marek.
+>=20
+> DTS changes are independent but rest of them (extcon/input/MFD) rely
+> on each other.
+>=20
+> One way of merging would be to pick everything (except DTS) through
+> one tree. Or use tags.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
- arch/arm64/boot/dts/nvidia/tegra132.dtsi | 36 ++++++++++++++++++++++++++++++--
- 1 file changed, 34 insertions(+), 2 deletions(-)
+I'd be happy to take the set, once you have collected all Acks.
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
-index 2013f8916084..e41d8e82d7ed 100644
---- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
-@@ -4,6 +4,7 @@
- #include <dt-bindings/pinctrl/pinctrl-tegra.h>
- #include <dt-bindings/pinctrl/pinctrl-tegra-xusb.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/thermal/tegra124-soctherm.h>
- 
- / {
- 	compatible = "nvidia,tegra132", "nvidia,tegra124";
-@@ -727,8 +728,8 @@
- 	};
- 
- 	soctherm: thermal-sensor@700e2000 {
--		compatible = "nvidia,tegra124-soctherm";
--		reg = <0x0 0x700e2000 0x0 0x1000>;
-+		compatible = "nvidia,tegra132-soctherm";
-+		reg = <0x0 0x700e2000 0x0 0x600>;
- 		interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&tegra_car TEGRA124_CLK_TSENSOR>,
- 			<&tegra_car TEGRA124_CLK_SOC_THERM>;
-@@ -738,6 +739,37 @@
- 		#thermal-sensor-cells = <1>;
- 	};
- 
-+	thermal-zones {
-+		cpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <0>;
-+
-+			thermal-sensors =
-+				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
-+		};
-+		mem {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+
-+			thermal-sensors =
-+				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
-+		};
-+		gpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <0>;
-+
-+			thermal-sensors =
-+				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
-+		};
-+		pllx {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+
-+			thermal-sensors =
-+				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
-+		};
-+	};
-+
- 	ahub@70300000 {
- 		compatible = "nvidia,tegra124-ahub";
- 		reg = <0x0 0x70300000 0x0 0x200>,
--- 
-1.9.1
+> Best regards,
+> Krzysztof
+>=20
+> [0] http://lkml.iu.edu/hypermail//linux/kernel/1411.1/03152.html
+>=20
+>=20
+> Krzysztof Kozlowski (3):
+>   extcon: max8997: Fix handling error code of regmap_irq_get_virq()
+>   rtc: max8997: Check for ERRNO of regmap_irq_get_virq()
+>   extcon: max8997: Fix inconsistent indenting
+>=20
+> Marek Szyprowski (3):
+>   input: max8997-haptic: Fix NULL pointer dereference
+>   ARM: dts: exynos: Fix regulator name to avoid forbidden character o=
+n
+>     exynos4210-trats
+>   ARM: dts: exynos: Add interrupt line to MAX8997 PMIC on
+>     exynos4210-trats
+>=20
+> Robert Baldyga (3):
+>   mfd: max8997: Use regmap to access registers
+>   mfd: max8997: handle IRQs using regmap
+>   mfd: max8997: Change irq names to upper case
+>=20
+>  arch/arm/boot/dts/exynos4210-trats.dts |   4 +-
+>  drivers/extcon/extcon-max8997.c        |  72 ++++---
+>  drivers/input/misc/max8997_haptic.c    |  40 ++--
+>  drivers/leds/leds-max8997.c            |  13 +-
+>  drivers/mfd/Kconfig                    |   3 +-
+>  drivers/mfd/Makefile                   |   2 +-
+>  drivers/mfd/max8997-irq.c              | 383 -----------------------=
+----------
+>  drivers/mfd/max8997.c                  | 245 ++++++++++++++-------
+>  drivers/power/max8997_charger.c        |  33 +--
+>  drivers/regulator/max8997.c            |  87 ++++----
+>  drivers/rtc/rtc-max8997.c              |  60 +++---
+>  include/linux/mfd/max8997-private.h    |  82 +++++--
+>  12 files changed, 392 insertions(+), 632 deletions(-)
+>  delete mode 100644 drivers/mfd/max8997-irq.c
+>=20
 
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-input" =
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
