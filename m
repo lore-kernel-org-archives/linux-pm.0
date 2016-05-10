@@ -1,55 +1,122 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v6 7/9] extcon: max8997: Fix inconsistent indenting
-Date: Tue, 10 May 2016 10:24:28 +0900
-Message-ID: <5731384C.6000209@samsung.com>
-References: <1462519289-2356-2-git-send-email-k.kozlowski@samsung.com>
- <1462519636-3250-1-git-send-email-k.kozlowski@samsung.com>
- <1462519636-3250-6-git-send-email-k.kozlowski@samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 3/3] intel_pstate: Clean up
+ get_target_pstate_use_performance()
+Date: Mon, 09 May 2016 18:24:49 -0700
+Message-ID: <1462843489.4224.17.camel@linux.intel.com>
+References: <2638272.Bq3MnQEe4U@vostro.rjw.lan>
+	 <6021838.4PBIxTzBzu@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1462519636-3250-6-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Cc: r.baldyga-anjuHVi6/WSaMJb+Lgu22Q@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:32139 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751745AbcEJBZV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 May 2016 21:25:21 -0400
+In-Reply-To: <6021838.4PBIxTzBzu@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Krzysztof,
-
-On 2016=EB=85=84 05=EC=9B=94 06=EC=9D=BC 16:27, Krzysztof Kozlowski wro=
-te:
-> Fix smatch warning:
-> 	max8997_muic_probe() warn: inconsistent indenting
+On Sat, 2016-05-07 at 01:47 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> The way the code in get_target_pstate_use_performance() is arranged
+> and the comments in there are totally confusing, so modify them to
+> reflect what's going on.
+>=20
+> The results of the computations should be the same as before.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
 > ---
->  drivers/extcon/extcon-max8997.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A032 ++++++++++=
++++-----------------
+> --
+> =C2=A01 file changed, 13 insertions(+), 19 deletions(-)
 >=20
-> diff --git a/drivers/extcon/extcon-max8997.c b/drivers/extcon/extcon-=
-max8997.c
-> index 0afa3e8b5dc3..cf8de5be2405 100644
-> --- a/drivers/extcon/extcon-max8997.c
-> +++ b/drivers/extcon/extcon-max8997.c
-> @@ -737,7 +737,7 @@ static int max8997_muic_probe(struct platform_dev=
-ice *pdev)
->  	}
-> =20
->  	/* Set initial path for UART */
-> -	 max8997_muic_set_path(info, info->path_uart, true);
-> +	max8997_muic_set_path(info, info->path_uart, true);
-> =20
->  	/* Set ADC debounce time */
->  	max8997_muic_set_debounce_time(info, ADC_DEBOUNCE_TIME_25MS);
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -1241,43 +1241,37 @@ static inline int32_t get_target_pstate_
+> =C2=A0
+> =C2=A0static inline int32_t get_target_pstate_use_performance(struct
+> cpudata *cpu)
+> =C2=A0{
+> -	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+> +	int32_t perf_scaled, sample_ratio;
+> =C2=A0	u64 duration_ns;
+> =C2=A0
+> =C2=A0	/*
+> -	=C2=A0* core_busy is the ratio of actual performance to max
+> -	=C2=A0* max_pstate is the max non turbo pstate available
+> -	=C2=A0* current_pstate was the pstate that was requested during
+> -	=C2=A0*=C2=A0	the last sample period.
+> -	=C2=A0*
+> -	=C2=A0* We normalize core_busy, which was our actual percent
+> -	=C2=A0* performance to what we requested during the last sample
+> -	=C2=A0* period. The result will be a percentage of busy at a
+> -	=C2=A0* specified pstate.
+> +	=C2=A0* perf_scaled is the average performance during the last
+> sampling
+> +	=C2=A0* period (in percent) scaled by the ratio of the P-state
+> requested
+> +	=C2=A0* last time to the maximum P-state.=C2=A0=C2=A0That measures =
+the
+> system's
+> +	=C2=A0* response to the previous P-state selection.
+> =C2=A0	=C2=A0*/
+> -	core_busy =3D 100 * cpu->sample.core_avg_perf;
+> -	max_pstate =3D cpu->pstate.max_pstate_physical;
+> -	current_pstate =3D cpu->pstate.current_pstate;
+> -	core_busy =3D mul_fp(core_busy, div_fp(max_pstate,
+> current_pstate));
+> +	perf_scaled =3D div_fp(cpu->pstate.max_pstate_physical,
+> +			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cpu->pstate.current_pstate);
+> +	perf_scaled =3D mul_fp(perf_scaled, 100 * cpu-
+> >sample.core_avg_perf);
+> =C2=A0
+> =C2=A0	/*
+> =C2=A0	=C2=A0* Since our utilization update callback will not run unl=
+ess
+> we are
+> =C2=A0	=C2=A0* in C0, check if the actual elapsed time is significant=
+ly
+> greater (3x)
+> =C2=A0	=C2=A0* than our sample interval.=C2=A0=C2=A0If it is, then we=
+ were idle
+> for a long
+> -	=C2=A0* enough period of time to adjust our busyness.
+> +	=C2=A0* enough period of time to adjust our performance metric.
+> =C2=A0	=C2=A0*/
+> =C2=A0	duration_ns =3D cpu->sample.time - cpu->last_sample_time;
+> =C2=A0	if ((s64)duration_ns > pid_params.sample_rate_ns * 3) {
+> =C2=A0		sample_ratio =3D div_fp(pid_params.sample_rate_ns,
+> duration_ns);
+> -		core_busy =3D mul_fp(core_busy, sample_ratio);
+> +		perf_scaled =3D mul_fp(perf_scaled, sample_ratio);
+> =C2=A0	} else {
+> =C2=A0		sample_ratio =3D div_fp(100 * cpu->sample.mperf, cpu-
+> >sample.tsc);
+> =C2=A0		if (sample_ratio < int_tofp(1))
+> -			core_busy =3D 0;
+> +			perf_scaled =3D 0;
+> =C2=A0	}
+> =C2=A0
+> -	cpu->sample.busy_scaled =3D core_busy;
+> -	return cpu->pstate.current_pstate - pid_calc(&cpu->pid,
+> core_busy);
+> +	cpu->sample.busy_scaled =3D perf_scaled;
+> +	return cpu->pstate.current_pstate - pid_calc(&cpu->pid,
+> perf_scaled);
+> =C2=A0}
+> =C2=A0
+> =C2=A0static inline void intel_pstate_update_pstate(struct cpudata *c=
+pu,
+> int pstate)
 >=20
-
-Acked-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-
-Thanks,
-Chanwoo Choi
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
