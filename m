@@ -1,65 +1,73 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: ti-soc-thermal: Add set_emul_temp hook
-Date: Tue, 10 May 2016 17:12:10 +0530
-Message-ID: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH] thermal: omap-thermal: Add notify function to
+ thermal_zone_device_ops
+Date: Tue, 10 May 2016 17:32:52 +0530
+Message-ID: <5731CDEC.5020904@ti.com>
+References: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
+ <20160308204812.GA6800@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:43076 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751079AbcEJLmt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2016 07:42:49 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:43049 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbcEJMC5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 May 2016 08:02:57 -0400
+In-Reply-To: <20160308204812.GA6800@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com, j-keerthy@ti.com
+To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
+Cc: nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-Setting the emulation temperature helps reproduce critical
-temperature scenarios without risking the actual hardware at
-extreme temperatures. Adding __ti_thermal_set_emul_temp as
-the set_emul_temp hook.
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
 
-Tested the emulation temperature feature on DRA72-EVM.
+On Wednesday 09 March 2016 02:18 AM, Eduardo Valentin wrote:
+> On Tue, Feb 16, 2016 at 10:35:45AM +0530, Keerthy wrote:
+>> notify function is used to notify when some temperature thresholds
+>> are crossed. In case we get notified for a critical trip point then
+>> schedule an emergency shutdown function to backup orderly_poweroff
+>> failures.
+>>
+>> orderly_poweroff is triggered when a graceful shutdown
+>> of system is desired. This may be used in many critical states of the
+>> kernel such as when subsystems detects conditions such as critical
+>> temperature conditions. However, in certain conditions in system
+>> boot up sequences like those in the middle of driver probes being
+>> initiated, userspace will be unable to power off the system in a clean
+>> manner and leaves the system in a critical state. In cases like these,
+>> the /sbin/poweroff will return success (having forked off to attempt
+>> powering off the system. However, the system overall will fail to
+>> completely poweroff (since other modules will be probed) and the system
+>> is still functional with no userspace (since that would have shut itself
+>> off).
+>>
+>> However, there is no clean way of detecting such failure of userspace
+>> powering off the system. In such scenarios, it is necessary for a backup
+>> workqueue to be able to force a shutdown of the system when orderly
+>> shutdown is not successful after a configurable time period.
+>>
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>> ---
+>>
+>> The previous discussion:
+>>
+>> https://lkml.org/lkml/2016/1/28/989
+>>
+>> Making use of the notify ops to schedule a backup thermal shutdown.
+>
+> Yeah, this was a bit of a stretching. If we cannot fix orderly power
+> off, I would say, better fixing it for all thermal drivers (previous
+> version of this). This patch:
+> 1. Abuse a notify function to be used as a power off functions
+> 2. Fix an issue only for a single driver.
+>
+> I will check your initial version.
 
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Eduardo,
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index b213a12..e6f7025 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -278,6 +278,20 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
-+static int __ti_thermal_set_emul_temp(void *p, int temp)
-+{
-+	struct ti_thermal_data *data = p;
-+	struct thermal_zone_device *tz;
-+
-+	tz = data->ti_thermal;
-+
-+	mutex_lock(&tz->lock);
-+	tz->emul_temperature = temp;
-+	mutex_unlock(&tz->lock);
-+
-+	return 0;
-+}
-+
- /* Get critical temperature callback functions for thermal zone */
- static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
- 				    int *temp)
-@@ -289,6 +303,7 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
- static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
- 	.get_temp = __ti_thermal_get_temp,
- 	.get_trend = __ti_thermal_get_trend,
-+	.set_emul_temp = __ti_thermal_set_emul_temp,
- };
- 
- static struct thermal_zone_device_ops ti_thermal_ops = {
--- 
-1.9.1
+Any updates on this?
 
+Regards,
+Keerthy
+
+>
