@@ -1,93 +1,65 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
-Date: Tue, 10 May 2016 13:02:08 +0200
-Message-ID: <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw@mail.gmail.com>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
-	<20160505224240.GA31429@rob-hp-laptop>
-	<CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
-	<20160509181829.GA19687@rob-hp-laptop>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH] thermal: ti-soc-thermal: Add set_emul_temp hook
+Date: Tue, 10 May 2016 17:12:10 +0530
+Message-ID: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20160509181829.GA19687@rob-hp-laptop>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, hverkuil@xs4all.nl, tjakobi@math.uni-bielefeld.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:43076 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbcEJLmt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2016 07:42:49 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com, j-keerthy@ti.com
 
-+ Arnd
+Setting the emulation temperature helps reproduce critical
+temperature scenarios without risking the actual hardware at
+extreme temperatures. Adding __ti_thermal_set_emul_temp as
+the set_emul_temp hook.
 
-[...]
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
 
->> >> Solution
->> >> ========
->> >> This is very similar to the MMC pwrseq behavior so the idea is to:
->> >> 1. Move MMC pwrseq drivers to generic place,
->> >
->> > You can do that, but I'm going to NAK any use of pwrseq bindings outside
->> > of MMC. I think it is the wrong way to do things. The DT should describe
->>
->> Huh, I didn't know that was your view of the mmc pwrseq bindings. Why
->> didn't you NAK them before?
->
-> Unfortunately, either I missed it or it was a time I couldn't spend much
-> time on reviews.
+Tested the emulation temperature feature on DRA72-EVM.
 
-Okay, I guess it's common issue among maintainers. The problem with DT
-is that it gets really hard to be fixed up later. :-)
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
->
->> > the devices. If they happen to be "simple" then the core can walk the
->> > tree and do any setup. For example, look for "reset-gpios" and toggle
->> > that GPIO. There is no need for a special node.
->> >
->> >> 2. Extend the pwrseq-simple with regulator toggling,
->> >> 3. Add support to USB hub and port core for pwrseq,
->> >
->> > We discussed this for USB already[1] and is why we defined how to add
->> > USB child devices. The idea is not to add pwrseq to that.
->>
->> I am not familiar with the USB discussion.
->>
->> Still, let me give you some more background to the mmc pwrseq. The
->> idea from the mmc pwrseq bindings comes from the power-domain DT
->> bindings, as I thought these things were a bit related.
->> In both cases they are not directly a property of the device, but more
->> describing a HW dependency to allow the device to work.
->
-> I could see this as a board level power domain. However the difference
-> is we are not generally exposing internal SOC details the same way as
-> board level components. Perhaps we could extend power domains to board
-> level, but that is not what was done here.
->
->> One could probably use a child node instead of a phandle, but that
->> wasn't chosen back then. Of course you are the DT expert, but could
->> you perhaps tell me why a child node is better for cases like this?
->
-> If there is a control path hierarchy, then we try to model that in DT
-> with child nodes. In cases of SDIO and USB, there is a clear hierarchy.
-> Ignoring the discovery ordering problem, we already have defined ways to
-> describe GPIO connections, regulators, etc. to devices. Describing those
-> things separately from the device to solve a particular issue that is
-> really a kernel limitation is what I don't like.
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index b213a12..e6f7025 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -278,6 +278,20 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
+ 
++static int __ti_thermal_set_emul_temp(void *p, int temp)
++{
++	struct ti_thermal_data *data = p;
++	struct thermal_zone_device *tz;
++
++	tz = data->ti_thermal;
++
++	mutex_lock(&tz->lock);
++	tz->emul_temperature = temp;
++	mutex_unlock(&tz->lock);
++
++	return 0;
++}
++
+ /* Get critical temperature callback functions for thermal zone */
+ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+ 				    int *temp)
+@@ -289,6 +303,7 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+ static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
+ 	.get_temp = __ti_thermal_get_temp,
+ 	.get_trend = __ti_thermal_get_trend,
++	.set_emul_temp = __ti_thermal_set_emul_temp,
+ };
+ 
+ static struct thermal_zone_device_ops ti_thermal_ops = {
+-- 
+1.9.1
 
-Okay, I see.
-
-To move forward in trying to make mmc pwrseq a generic pwrseq, could
-we perhaps allow both cases?
-
-In the mmc case, there are already deployed bindings so we need to
-cope with these by using the phandle option, but for USB etc we could
-force the child node option.
-As long as we agree that we keep using a compatible string for the
-child node as well, both options should be able to co-exist and we
-should probably be able to managed them both from a common pwrseq
-driver framework.
-
-Although, I do remember from an older conversations around some of
-mine submission for the mmc pwrseq code, that some people (maybe
-Arnd?) wasn't keen on adding a new framework for this. Perhaps that
-has changed?
-
-Kind regards
-Uffe
