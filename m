@@ -1,73 +1,39 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: omap-thermal: Add notify function to
- thermal_zone_device_ops
-Date: Tue, 10 May 2016 17:32:52 +0530
-Message-ID: <5731CDEC.5020904@ti.com>
-References: <1455599145-5656-1-git-send-email-j-keerthy@ti.com>
- <20160308204812.GA6800@localhost.localdomain>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [GIT PULL] ARM: dts: exynos: Devfreq for v4.7
+Date: Tue, 10 May 2016 16:18:20 +0200
+Message-ID: <4199175.Sym2be3WAj@wuerfel>
+References: <1462367136-28627-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:43049 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbcEJMC5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 May 2016 08:02:57 -0400
-In-Reply-To: <20160308204812.GA6800@localhost.localdomain>
+Received: from mout.kundenserver.de ([212.227.126.135]:61115 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbcEJOS6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 May 2016 10:18:58 -0400
+In-Reply-To: <1462367136-28627-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
-Cc: nm@ti.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@kernel.org>, arm@kernel.org, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, myungjoo.ham@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
+On Wednesday 04 May 2016 15:05:36 Krzysztof Kozlowski wrote:
+> Topic branch for Device Tree changes adding new generic devfreq driver, for
+> v4.7:
+> 1. Add bus nodes for Exynos3250, Exynos4x12, Exynos4210 and Exynos542x.
+> 2. Split out common PPMU (Performance Monitoring Unit) nodes into separate
+>    DTSI. The PPMU provides performance data for devfreq.
+> 3. Add NoCP (Network on Chip Probe) node for Exynos542x. On this SoC, like PPMU
+>    on older designs, provides performance data for devfreq.
+> 4. Enable DFVS (Dynamic Voltage and Frequency Scaling) on boards:
+>    - Exynos3250 Rinato,
+>    - Exynos4412 Odroid-X/X2/U3 and Trats2,
+>    - Exynos5422 Odroid XU3/XU3-Lite/XU4.
+> 
+> 
 
+Merged into next/late now, so we can track the clk dependency more easily.
 
-On Wednesday 09 March 2016 02:18 AM, Eduardo Valentin wrote:
-> On Tue, Feb 16, 2016 at 10:35:45AM +0530, Keerthy wrote:
->> notify function is used to notify when some temperature thresholds
->> are crossed. In case we get notified for a critical trip point then
->> schedule an emergency shutdown function to backup orderly_poweroff
->> failures.
->>
->> orderly_poweroff is triggered when a graceful shutdown
->> of system is desired. This may be used in many critical states of the
->> kernel such as when subsystems detects conditions such as critical
->> temperature conditions. However, in certain conditions in system
->> boot up sequences like those in the middle of driver probes being
->> initiated, userspace will be unable to power off the system in a clean
->> manner and leaves the system in a critical state. In cases like these,
->> the /sbin/poweroff will return success (having forked off to attempt
->> powering off the system. However, the system overall will fail to
->> completely poweroff (since other modules will be probed) and the system
->> is still functional with no userspace (since that would have shut itself
->> off).
->>
->> However, there is no clean way of detecting such failure of userspace
->> powering off the system. In such scenarios, it is necessary for a backup
->> workqueue to be able to force a shutdown of the system when orderly
->> shutdown is not successful after a configurable time period.
->>
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
->>
->> The previous discussion:
->>
->> https://lkml.org/lkml/2016/1/28/989
->>
->> Making use of the notify ops to schedule a backup thermal shutdown.
->
-> Yeah, this was a bit of a stretching. If we cannot fix orderly power
-> off, I would say, better fixing it for all thermal drivers (previous
-> version of this). This patch:
-> 1. Abuse a notify function to be used as a power off functions
-> 2. Fix an issue only for a single driver.
->
-> I will check your initial version.
+Thanks,
 
-Eduardo,
-
-Any updates on this?
-
-Regards,
-Keerthy
-
->
+	Arnd
