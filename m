@@ -1,163 +1,61 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 1/3] intel_pstate: Clarify average performance
- computation
-Date: Mon, 09 May 2016 18:18:36 -0700
-Message-ID: <1462843116.4224.16.camel@linux.intel.com>
-References: <2638272.Bq3MnQEe4U@vostro.rjw.lan>
-	 <1880504.e9G30eDLBM@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v6 5/9] extcon: max8997: Fix handling error code of
+ regmap_irq_get_virq()
+Date: Tue, 10 May 2016 10:23:45 +0900
+Message-ID: <57313821.4050309@samsung.com>
+References: <1462519289-2356-2-git-send-email-k.kozlowski@samsung.com>
+ <1462519636-3250-1-git-send-email-k.kozlowski@samsung.com>
+ <1462519636-3250-4-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:38028 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752990AbcEJBTI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 May 2016 21:19:08 -0400
-In-Reply-To: <1880504.e9G30eDLBM@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <1462519636-3250-4-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
+Cc: r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sat, 2016-05-07 at 01:44 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> The core_pct_busy field of struct sample actually contains the
-> average performace during the last sampling period (in percent)
-> and not the utilization of the core as suggested by its name
-> which is confusing.
->=20
-> For this reason, change the name of that field to core_avg_perf
-> and rename the function that computes its value accordingly.
->=20
-Makes perfect sense.
+Hi Krzysztof,
 
-> Also notice that it would be more useful if it was a "raw" fraction
-> rather than percentage, so change its meaning too and update the
-> code using it accordingly (it is better to change the name of
-> the field along with its meaning in one go than to make those
-> two changes separately, as that would likely lead to more
-> confusion).
-Due to the calculation the results from old and new method will be
-similar but not same. For example in one scenario the
-get_avg_frequency=C2=A0difference is 4.3KHz (printed side by side using=
- both
-old style using pct and new using fraction)
-=46requency with old calc: 2996093 Hz
-=46requency with old calc: 3000460 Hz
-
-How much do you think the performance gain changing fraction vs pct?
-
+On 2016=EB=85=84 05=EC=9B=94 06=EC=9D=BC 16:27, Krzysztof Kozlowski wro=
+te:
+> The regmap_irq_get_virq() can return negative ERRNO, so its result
+> should not be stored in unsigned int because error would be ignored.
 >=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 > ---
-> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A024 ++++++++++=
---------------
-> =C2=A01 file changed, 10 insertions(+), 14 deletions(-)
+>  drivers/extcon/extcon-max8997.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >=20
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -72,10 +72,10 @@ static inline int ceiling_fp(int32_t x)
-> =C2=A0
-> =C2=A0/**
-> =C2=A0 * struct sample -	Store performance sample
-> - * @core_pct_busy:	Ratio of APERF/MPERF in percent, which is
-> actual
-> + * @core_avg_perf:	Ratio of APERF/MPERF which is the actual
-> average
-> =C2=A0 *			performance during last sample period
-> =C2=A0 * @busy_scaled:	Scaled busy value which is used to calculate
-> next
-> - *			P state. This can be different than
-> core_pct_busy
-> + *			P state. This can be different than
-> core_avg_perf
-> =C2=A0 *			to account for cpu idle period
-> =C2=A0 * @aperf:		Difference of actual performance frequency
-> clock count
-> =C2=A0 *			read from APERF MSR between last and
-> current sample
-> @@ -90,7 +90,7 @@ static inline int ceiling_fp(int32_t x)
-> =C2=A0 * data for choosing next P State.
-> =C2=A0 */
-> =C2=A0struct sample {
-> -	int32_t core_pct_busy;
-> +	int32_t core_avg_perf;
-> =C2=A0	int32_t busy_scaled;
-> =C2=A0	u64 aperf;
-> =C2=A0	u64 mperf;
-> @@ -1147,15 +1147,11 @@ static void intel_pstate_get_cpu_pstates
-> =C2=A0	intel_pstate_set_min_pstate(cpu);
-> =C2=A0}
-> =C2=A0
-> -static inline void intel_pstate_calc_busy(struct cpudata *cpu)
-> +static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
-> =C2=A0{
-> =C2=A0	struct sample *sample =3D &cpu->sample;
-> -	int64_t core_pct;
-> =C2=A0
-> -	core_pct =3D sample->aperf * int_tofp(100);
-> -	core_pct =3D div64_u64(core_pct, sample->mperf);
-> -
-> -	sample->core_pct_busy =3D (int32_t)core_pct;
-> +	sample->core_avg_perf =3D div_fp(sample->aperf, sample-
-> >mperf);
-> =C2=A0}
-> =C2=A0
-> =C2=A0static inline bool intel_pstate_sample(struct cpudata *cpu, u64
-> time)
-> @@ -1198,9 +1194,9 @@ static inline bool intel_pstate_sample(s
-> =C2=A0
-> =C2=A0static inline int32_t get_avg_frequency(struct cpudata *cpu)
-> =C2=A0{
-> -	return fp_toint(mul_fp(cpu->sample.core_pct_busy,
-> +	return fp_toint(mul_fp(cpu->sample.core_avg_perf,
-> =C2=A0			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int_tofp(cpu-
-> >pstate.max_pstate_physical *
-> -						cpu->pstate.scaling
-> / 100)));
-> +						cpu-
-> >pstate.scaling)));
-> =C2=A0}
-> =C2=A0
-> =C2=A0static inline int32_t get_avg_pstate(struct cpudata *cpu)
-> @@ -1260,7 +1256,7 @@ static inline int32_t get_target_pstate_
-> =C2=A0	=C2=A0* period. The result will be a percentage of busy at a
-> =C2=A0	=C2=A0* specified pstate.
-> =C2=A0	=C2=A0*/
-> -	core_busy =3D cpu->sample.core_pct_busy;
-> +	core_busy =3D 100 * cpu->sample.core_avg_perf;
-> =C2=A0	max_pstate =3D cpu->pstate.max_pstate_physical;
-> =C2=A0	current_pstate =3D cpu->pstate.current_pstate;
-> =C2=A0	core_busy =3D mul_fp(core_busy, div_fp(max_pstate,
-> current_pstate));
-> @@ -1312,7 +1308,7 @@ static inline void intel_pstate_adjust_b
-> =C2=A0	intel_pstate_update_pstate(cpu, target_pstate);
-> =C2=A0
-> =C2=A0	sample =3D &cpu->sample;
-> -	trace_pstate_sample(fp_toint(sample->core_pct_busy),
-> +	trace_pstate_sample(fp_toint(100 * sample->core_avg_perf),
-> =C2=A0		fp_toint(sample->busy_scaled),
-> =C2=A0		from,
-> =C2=A0		cpu->pstate.current_pstate,
-> @@ -1332,7 +1328,7 @@ static void intel_pstate_update_util(str
-> =C2=A0		bool sample_taken =3D intel_pstate_sample(cpu, time);
-> =C2=A0
-> =C2=A0		if (sample_taken) {
-> -			intel_pstate_calc_busy(cpu);
-> +			intel_pstate_calc_avg_perf(cpu);
-> =C2=A0			if (!hwp_active)
-> =C2=A0				intel_pstate_adjust_busy_pstate(cpu)
-> ;
-> =C2=A0		}
+> diff --git a/drivers/extcon/extcon-max8997.c b/drivers/extcon/extcon-=
+max8997.c
+> index 68754ac2c8ea..0afa3e8b5dc3 100644
+> --- a/drivers/extcon/extcon-max8997.c
+> +++ b/drivers/extcon/extcon-max8997.c
+> @@ -660,11 +660,11 @@ static int max8997_muic_probe(struct platform_d=
+evice *pdev)
+> =20
+>  	for (i =3D 0; i < ARRAY_SIZE(muic_irqs); i++) {
+>  		struct max8997_muic_irq *muic_irq =3D &muic_irqs[i];
+> -		unsigned int virq =3D 0;
+> +		int virq =3D 0;
+> =20
+>  		virq =3D regmap_irq_get_virq(max8997->irq_data_muic,
+>  					muic_irq->irq);
+> -		if (!virq) {
+> +		if (virq <=3D 0) {
+>  			ret =3D -EINVAL;
+>  			goto err_irq;
+>  		}
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Thanks,
+Chanwoo Choi
+--
+To unsubscribe from this list: send the line "unsubscribe linux-input" =
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
