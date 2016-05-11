@@ -1,60 +1,79 @@
-From: Michele Di Giorgio <michele.digiorgio@arm.com>
-Subject: [PATCH] thermal: check validity get_trip_hyst function pointer in bang-bang governor
-Date: Wed, 11 May 2016 10:49:07 +0100
-Message-ID: <1462960147-9175-1-git-send-email-michele.digiorgio@arm.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v5 00/11] Add HW throttle for Tegra soctherm
+Date: Wed, 11 May 2016 18:20:15 +0800
+Message-ID: <1462962026-19653-1-git-send-email-wni@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:57254 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751129AbcEKJyl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 05:54:41 -0400
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:5632 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbcEKKSs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 06:18:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Michele Di Giorgio <michele.digiorgio@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
+To: edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-Bang-bang thermal governor uses trip point hysteresis to make decisions.
-Hysteresis is a required property in the device tree for trip points, but it is
-an optional thermal zone device operation. Hence, we need to check whether the
-function pointer is valid or not.
+This series add following functions for Tegra soctherm:
+1. add HW throttle function.
+2. enable soctherm node for Tegra124, Tegra132, Tegra210, and
+set "critical", "hot" trips for them.
 
-If it is not available, we assume the hysteresis to be zero. Consequently, a
-highly varying temperature will make the governor continuosly switch a cooling
-device ON and OFF.
+Main changes from v4:
+1. drop the "nvidia" prefix from the node name, per Rob's comments.
 
-CC: Zhang Rui <rui.zhang@intel.com>
-CC: Eduardo Valentin <edubezval@gmail.com>
-CC: Peter Feuerer <peter@piie.net>
-Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
----
-Using trip_hyst == 0 makes the governor work sensibly but may cause oscillations
-of the control signals of a cooling device. An alternative to this could be to
-fail the registration of the thermal governor.
+Main changes from v3:
+1. change some properties'name and descriptions, per Rob's comments.
+2. change the corresponding driver codes.
 
-Another way would be to set the default value of the hysteresis to x% of the
-trip temperature, to make the governor less sensitive to highly varying inputs.
+Main changes from v2:
+1. improve the of-binding, per Eduardo's comments, and
+change the corresponding driver codes.
+2. move two setting critical trip patches in this series,
+3. fix some bugs in dts changes.
 
- drivers/thermal/gov_bang_bang.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Main changes from v1:
+1. use readl/writel instead of __raw_readl/__raw_writel.
+2. rebase on the linux-next.
 
-diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-index 39d1519..bb118a1 100644
---- a/drivers/thermal/gov_bang_bang.c
-+++ b/drivers/thermal/gov_bang_bang.c
-@@ -29,7 +29,13 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 	struct thermal_instance *instance;
- 
- 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
--	tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
-+
-+	if (!tz->ops->get_trip_hyst) {
-+		pr_warn_once("Undefined get_trip_hyst for thermal zone %s - "
-+				"running with default hysteresis zero\n", tz->type);
-+		trip_hyst = 0;
-+	} else
-+		tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
- 
- 	dev_dbg(&tz->device, "Trip%d[temp=%d]:temp=%d:hyst=%d\n",
- 				trip, trip_temp, tz->temperature,
+The v1 series is in:
+https://lkml.org/lkml/2016/3/31/230
+
+The v2 series is in:
+https://lkml.org/lkml/2016/4/26/1577
+
+The v3 series is in:
+https://lkml.org/lkml/2016/5/3/274
+
+The v4 series is in:
+https://lkml.org/lkml/2016/5/9/45
+
+Wei Ni (11):
+  of: Add bindings of hw throttle for Tegra soctherm
+  thermal: tegra: add hw-throttle function
+  thermal: tegra: add hw-throttle for Tegra132
+  arm: tegra: set critical trips for Tegra124
+  arm: tegra: set hot trips for Tegra124
+  arm64: tegra: use tegra132-soctherm for Tegra132
+  arm64: tegra: set critical trips for Tegra132
+  arm64: tegra: set hot trips for Tegra132
+  arm64: tegra: add soctherm node for Tegra210
+  arm64: tegra: set critical trips for Tegra210
+  arm64: tegra: set hot trips for Tegra210
+
+ .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 121 ++-
+ arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  18 +-
+ arch/arm/boot/dts/tegra124.dtsi                    |  83 +-
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi           | 119 ++-
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi           | 127 ++++
+ drivers/thermal/tegra/soctherm.c                   | 842 ++++++++++++++++++++-
+ drivers/thermal/tegra/soctherm.h                   |  10 +
+ drivers/thermal/tegra/tegra124-soctherm.c          |  18 +
+ drivers/thermal/tegra/tegra132-soctherm.c          |  18 +
+ drivers/thermal/tegra/tegra210-soctherm.c          |  18 +
+ include/dt-bindings/thermal/tegra124-soctherm.h    |   5 +
+ 11 files changed, 1344 insertions(+), 35 deletions(-)
+
 -- 
 1.9.1
 
