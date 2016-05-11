@@ -1,58 +1,141 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC] cpufreq: intel_pstate: Avoid time-costly
- synchronization if schedutil is not enabled
-Date: Wed, 11 May 2016 00:17:04 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64028759491@shsmsx102.ccr.corp.intel.com>
-References: <1462872252-16152-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0jCmcHS-J7L182+Xfv_FJiAzfWL4MNpvAHq7siuW1Bp=g@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 1/3] intel_pstate: Clarify average performance
+ computation
+Date: Tue, 10 May 2016 22:01:09 -0700
+Message-ID: <1462942869.4224.25.camel@linux.intel.com>
+References: <2638272.Bq3MnQEe4U@vostro.rjw.lan>
+	 <CAJZ5v0h3Z9Dr72KdXzCiv-5Yb6kjv-Bpt0weacQ2jO0gU96hEQ@mail.gmail.com>
+	 <1462910284.28729.116.camel@linux.intel.com>
+	 <1703361.r4IIOaCPTn@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:47008 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbcEKARK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 10 May 2016 20:17:10 -0400
-In-Reply-To: <CAJZ5v0jCmcHS-J7L182+Xfv_FJiAzfWL4MNpvAHq7siuW1Bp=g@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1703361.r4IIOaCPTn@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdt
-YWlsLmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZg0KPiBSYWZh
-ZWwgSi4gV3lzb2NraQ0KPiBTZW50OiBXZWRuZXNkYXksIE1heSAxMSwgMjAxNiAzOjA3IEFNDQo+
-IFRvOiBDaGVuLCBZdSBDDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IFNyaW5pdmFz
-IFBhbmRydXZhZGE7IFJhZmFlbCBKLiBXeXNvY2tpOyBMZW4NCj4gQnJvd247IFZpcmVzaCBLdW1h
-cjsgWmhhbmcsIFJ1aTsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiBTdWJqZWN0OiBSZTog
-W1BBVENIXVtSRkNdIGNwdWZyZXE6IGludGVsX3BzdGF0ZTogQXZvaWQgdGltZS1jb3N0bHkNCj4g
-c3luY2hyb25pemF0aW9uIGlmIHNjaGVkdXRpbCBpcyBub3QgZW5hYmxlZA0KPiANCj4gT24gVHVl
-LCBNYXkgMTAsIDIwMTYgYXQgMTE6MjQgQU0sICA8eXUuYy5jaGVuQGludGVsLmNvbT4gd3JvdGU6
-DQo+ID4gRnJvbTogQ2hlbiBZdSA8eXUuYy5jaGVuQGludGVsLmNvbT4NCj4gDQo+IEZpcnN0LCB0
-aGUgc3ViamVjdC4gIEl0IGRvZXNuJ3QgaGF2ZSBhbnl0aGluZyB0byBkbyB3aXRoIHNjaGVkdXRp
-bCwgc28gSSdkIGp1c3QgdXNlDQo+IHNvbWV0aGluZyBsaWtlICJBdm9pZCB1bm5lY2Vzc2FyeSBz
-eW5jaHJvbml6ZV9zY2hlZCgpIGR1cmluZyBpbml0aWFsaXphdGlvbiIuDQpPSy4NCj4gDQo+ID4g
-Q29tbWl0IGJiNmFiNTJmMmJlZiAoImludGVsX3BzdGF0ZTogRG8gbm90IHNldCB1dGlsaXphdGlv
-biB1cGRhdGUgaG9vaw0KPiA+IHRvbyBlYXJseSIpIG1vdmVkIHRoZSBhc3NpZ25tZW50IG9mIHV0
-aWxpemF0aW9uIHVwZGF0ZSBob29rIGZyb20NCj4gPiBpbnRlbF9wc3RhdGVfaW5pdF9jcHUgdG8g
-aW50ZWxfcHN0YXRlX3NldF9wb2xpY3koKSwgaG93ZXZlciBhZnRlcg0KPiA+IG1vdmluZywgd2Ug
-bmVlZCB0byBsZXZlcmFnZSBzeW5jaHJvbml6ZV9zY2hlZCgpIHRvIGRlYWwgd2l0aA0KPiA+IHN5
-bmNocm9uaXphdGlvbiwgd2hpY2ggaXMgdGltZS1jb3N0bHkgYmVjYXVzZSBpdCBuZWVkcyB0byB3
-YWl0IGZvciBhbGwNCj4gPiB0aGUgQ1BVcyB0byBnbyB0aHJvdWdoIGEgZ3JhY2UgcGVyaW9kLg0K
-PiA+DQo+ID4gQWN0dWFsbCB3ZSBkb24ndCBuZWVkIHRvIHN5bmNocm9uaXplX3NjaGVkIGlmIHNj
-aGVkdXRpbCBoYXMgbm90IGJlZW4NCj4gPiBlbmFibGVkLCB3aGljaCBhbHNvIGNhbiBhZGRyZXNz
-IHRoZSBwcm9ibGVtIGluIG91ciBjYXNlLCB0aHVzIGJ5cGFzcw0KPiA+IHRoZSBzeW5jaHJvbml6
-ZV9zY2hlZCBkdXJpbmcgYm9vdHVwLg0KPiANCj4gIkFjdHVhbGx5LCB0aGUgc3luY2hyb25pemVf
-c2NoZWQoKSBpcyBub3QgbmVjZXNzYXJ5IGlmIHRoZSB1dGlsaXphdGlvbiB1cGRhdGUgaG9vaw0K
-PiBoYXMgbm90IGJlZW4gc2V0IGZvciB0aGUgZ2l2ZW4gQ1BVIHlldCwgc28gbWFrZSB0aGUgZHJp
-dmVyIGNoZWNrIGlmIHRoYXQncyB0aGUNCj4gY2FzZSBhbmQgYXZvaWQgdGhlIHN5bmNocm9uaXpl
-X3NjaGVkKCkgY2FsbCBpbiB0aGF0IGNhc2UuIg0KT0suDQo+IA0KPiA+IEZpeGVzOiBiYjZhYjUy
-ZjJiZWYgImludGVsX3BzdGF0ZTogRG8gbm90IHNldCB1dGlsaXphdGlvbiB1cGRhdGUgaG9vayB0
-b28NCj4gZWFybHkiDQo+IA0KPiBJJ20gbm90IHN1cmUgSSdkIGNhbGwgaXQgYSBmaXgsIHVubGVz
-cyB0aGVyZSBpcyBhIHNpZ25pZmljYW50IGRpZmZlcmVuY2UgaW4gdGhlIHN5c3RlbQ0KPiBib290
-IHRpbWUgb3Igc2ltaWxhci4gIElmIHRoYXQncyBub3QgdGhlIGNhc2UsIHRoaXMgc2ltcGx5IGlz
-IGFuIG9wdGltaXphdGlvbiBvbiB0b3ANCj4gb2YgdGhlIGFib3ZlIGNvbW1pdC4NClRoZSB0aW1l
-IG9mICBpbmNyZW1lbnQgaXMgc21hbGwsIGFuZCB0aGUgZHJpdmVycyBhcmUgcnVubmluZyBwYXJh
-bGxlbGx5LCBzbyB0aGlzDQpkb2VzIG5vdCBhZmZlY3QgdGhlIHN5c3RlbSBib290IHRpbWUgc2ln
-bmlmaWNhbnRseS4gV2lsbCByZXNlbmQgdGhlIHBhdGNoLCB0aGFua3MhIA0KDQpZdQ0K
+On Tue, 2016-05-10 at 22:57 +0200, Rafael J. Wysocki wrote:
+> > > >=20
+
+[...]
+
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] intel_pstate: Clarify average performance
+> computation
+>=20
+> The core_pct_busy field of struct sample actually contains the
+> average performace during the last sampling period (in percent)
+> and not the utilization of the core as suggested by its name
+> which is confusing.
+>=20
+> For this reason, change the name of that field to core_avg_perf
+> and rename the function that computes its value accordingly.
+>=20
+> Also notice that storing this value as percentage requires a costly
+> integer multiplication to be carried out in a hot path, so instead
+> store it as an "extended fixed point" value with more fraction bits
+> and update the code using it accordingly (it is better to change the
+> name of the field along with its meaning in one go than to make those
+> two changes separately, as that would likely lead to more
+> confusion).
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A031 ++++++++++=
++++++---------------
+> -
+> =C2=A01 file changed, 15 insertions(+), 16 deletions(-)
+>=20
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -49,6 +49,9 @@
+> =C2=A0#define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+> =C2=A0#define fp_toint(X) ((X) >> FRAC_BITS)
+> =C2=A0
+> +#define EXT_BITS 6
+> +#define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
+> +
+> =C2=A0static inline int32_t mul_fp(int32_t x, int32_t y)
+> =C2=A0{
+> =C2=A0	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+> @@ -72,10 +75,10 @@ static inline int ceiling_fp(int32_t x)
+> =C2=A0
+> =C2=A0/**
+> =C2=A0 * struct sample -	Store performance sample
+> - * @core_pct_busy:	Ratio of APERF/MPERF in percent, which is
+> actual
+> + * @core_avg_perf:	Ratio of APERF/MPERF which is the actual
+> average
+> =C2=A0 *			performance during last sample period
+> =C2=A0 * @busy_scaled:	Scaled busy value which is used to calculate
+> next
+> - *			P state. This can be different than
+> core_pct_busy
+> + *			P state. This can be different than
+> core_avg_perf
+> =C2=A0 *			to account for cpu idle period
+> =C2=A0 * @aperf:		Difference of actual performance frequency
+> clock count
+> =C2=A0 *			read from APERF MSR between last and
+> current sample
+> @@ -90,8 +93,8 @@ static inline int ceiling_fp(int32_t x)
+> =C2=A0 * data for choosing next P State.
+> =C2=A0 */
+> =C2=A0struct sample {
+> -	int32_t core_pct_busy;
+> =C2=A0	int32_t busy_scaled;
+> +	u64 core_avg_perf;
+> =C2=A0	u64 aperf;
+> =C2=A0	u64 mperf;
+> =C2=A0	u64 tsc;
+> @@ -1147,15 +1150,12 @@ static void intel_pstate_get_cpu_pstates
+> =C2=A0	intel_pstate_set_min_pstate(cpu);
+> =C2=A0}
+> =C2=A0
+> -static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+> +static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+> =C2=A0{
+> =C2=A0	struct sample *sample =3D &cpu->sample;
+> -	int64_t core_pct;
+> -
+> -	core_pct =3D sample->aperf * int_tofp(100);
+> -	core_pct =3D div64_u64(core_pct, sample->mperf);
+> =C2=A0
+> -	sample->core_pct_busy =3D (int32_t)core_pct;
+> +	sample->core_avg_perf =3D div64_u64(sample->aperf <<
+> EXT_FRAC_BITS,
+> +					=C2=A0=C2=A0sample->mperf);
+> =C2=A0}
+> =C2=A0
+> =C2=A0static inline bool intel_pstate_sample(struct cpudata *cpu, u64
+> time)
+> @@ -1198,9 +1198,8 @@ static inline bool intel_pstate_sample(s
+> =C2=A0
+> =C2=A0static inline int32_t get_avg_frequency(struct cpudata *cpu)
+> =C2=A0{
+> -	return fp_toint(mul_fp(cpu->sample.core_pct_busy,
+> -			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int_tofp(cpu-
+> >pstate.max_pstate_physical *
+> -						cpu->pstate.scaling
+> / 100)));
+> +	return (cpu->sample.core_avg_perf * cpu-
+> >pstate.max_pstate_physical *
+> +			cpu->pstate.scaling) >> EXT_FRAC_BITS;
+
+This breaks frequency display. Needs cast
+return ((u64)cpu->sample.core_avg_perf * cpu->
+	pstate.max_pstate_physical * cpu->pstate.scaling) >>
+EXT_FRAC_BITS;
+
+Otherwise results are very close with the version without this change.
+
+Thanks,
+Srinivas
