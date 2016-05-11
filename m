@@ -1,7 +1,7 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH v5 10/11] arm64: tegra: set critical trips for Tegra210
-Date: Wed, 11 May 2016 18:20:25 +0800
-Message-ID: <1462962026-19653-11-git-send-email-wni@nvidia.com>
+Subject: [PATCH v5 07/11] arm64: tegra: set critical trips for Tegra132
+Date: Wed, 11 May 2016 18:20:22 +0800
+Message-ID: <1462962026-19653-8-git-send-email-wni@nvidia.com>
 References: <1462962026-19653-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -13,26 +13,26 @@ Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, lin
 List-Id: linux-pm@vger.kernel.org
 
 Set general "critical" trip temperatures for cpu, gpu, mem and pllx
-thermal zones on Tegra210, these trips can trigger shut down or reset.
+thermal zones on Tegra132, these trips can trigger shut down or reset.
 
 Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- arch/arm64/boot/dts/nvidia/tegra210.dtsi | 60 ++++++++++++++++++++++++++++++++
+ arch/arm64/boot/dts/nvidia/tegra132.dtsi | 60 ++++++++++++++++++++++++++++++++
  1 file changed, 60 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-index 97d75149a1ac..e55589c8a561 100644
---- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-@@ -825,6 +825,21 @@
+diff --git a/arch/arm64/boot/dts/nvidia/tegra132.dtsi b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+index e41d8e82d7ed..a3889e930010 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra132.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra132.dtsi
+@@ -746,6 +746,21 @@
  
  			thermal-sensors =
  				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
 +
 +			trips {
-+				cpu-shutdown-trip {
-+					temperature = <102500>;
-+					hysteresis = <0>;
++				cpu_shutdown_trip {
++					temperature = <105000>;
++					hysteresis = <1000>;
 +					type = "critical";
 +				};
 +			};
@@ -46,15 +46,15 @@ index 97d75149a1ac..e55589c8a561 100644
  		};
  		mem {
  			polling-delay-passive = <0>;
-@@ -832,6 +847,21 @@
+@@ -753,6 +768,21 @@
  
  			thermal-sensors =
  				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
 +
 +			trips {
-+				mem-shutdown-trip {
-+					temperature = <103000>;
-+					hysteresis = <0>;
++				mem_shutdown_trip {
++					temperature = <101000>;
++					hysteresis = <1000>;
 +					type = "critical";
 +				};
 +			};
@@ -68,15 +68,15 @@ index 97d75149a1ac..e55589c8a561 100644
  		};
  		gpu {
  			polling-delay-passive = <1000>;
-@@ -839,6 +869,21 @@
+@@ -760,6 +790,21 @@
  
  			thermal-sensors =
  				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
 +
 +			trips {
-+				gpu-shutdown-trip {
-+					temperature = <103000>;
-+					hysteresis = <0>;
++				gpu_shutdown_trip {
++					temperature = <101000>;
++					hysteresis = <1000>;
 +					type = "critical";
 +				};
 +			};
@@ -90,15 +90,15 @@ index 97d75149a1ac..e55589c8a561 100644
  		};
  		pllx {
  			polling-delay-passive = <0>;
-@@ -846,6 +891,21 @@
+@@ -767,6 +812,21 @@
  
  			thermal-sensors =
  				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
 +
 +			trips {
-+				pllx-shutdown-trip {
-+					temperature = <103000>;
-+					hysteresis = <0>;
++				pllx_shutdown_trip {
++					temperature = <105000>;
++					hysteresis = <1000>;
 +					type = "critical";
 +				};
 +			};
@@ -111,6 +111,6 @@ index 97d75149a1ac..e55589c8a561 100644
 +			};
  		};
  	};
- };
+ 
 -- 
 1.9.1
