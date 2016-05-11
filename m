@@ -1,77 +1,44 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH v2] cpufreq: intel_pstate: Avoid unnecessary synchronize_sched() during initialization
-Date: Wed, 11 May 2016 14:33:08 +0800
-Message-ID: <1462948388-2941-1-git-send-email-yu.c.chen@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 0/2] PM / Domains: Second step in improving system PM code in genpd
+Date: Wed, 11 May 2016 10:00:08 +0200
+Message-ID: <1462953610-20824-1-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:10422 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbcEKG0Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 11 May 2016 02:26:25 -0400
+Received: from mail-lf0-f43.google.com ([209.85.215.43]:34209 "EHLO
+	mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbcEKIAi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 04:00:38 -0400
+Received: by mail-lf0-f43.google.com with SMTP id m64so40520912lfd.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 May 2016 01:00:37 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Airlie <airlied@linux.ie>, Alex Deucher <alexander.deucher@amd.com>, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 
-Currently in intel_pstate_clear_update_util_hook, after
-clearing the utilization update hook, we leverage
-synchronize_sched() to deal with synchronization, which
-is a little bit time-costly because synchronize_sched()
-has to wait for all the CPUs to go through a grace period.
+Changes in v2:
+	- Updated changelogs for both patches according to comments from Kevin.
+	- Updated patch 1/2, as I realized one genpd client driver, (ab)uses
+	genpd's suspend_power_off flag.
 
-Actually, the synchronize_sched() is not necessary if the utilization
-update hook has not been set for the given CPU yet, so make the driver
-check if that's the case and avoid the synchronize_sched() call in
-that case.
+This is the second step in improving the system PM code in genpd. The first
+patch is actually fixing a bug while it also enables for further clean-ups,
+which is done in the second patch.
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=116371
-Tested-by: Tian Ye <yex.tian@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
-v2:
- - Rewrite the commit log according to Rafael's suggestion.
----
- drivers/cpufreq/intel_pstate.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+The next step of improving system PM code in genpd will move it to the part of
+trying to optimize the behaviour, such as avoid waking up devices unless it's
+really needed.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b230eba..9811e4e 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -162,6 +162,7 @@ struct _pid {
-  * struct cpudata -	Per CPU instance data storage
-  * @cpu:		CPU number for this instance data
-  * @update_util:	CPUFreq utility callback information
-+ * @update_util_set:	CPUFreq utility callback is set
-  * @pstate:		Stores P state limits for this CPU
-  * @vid:		Stores VID limits for this CPU
-  * @pid:		Stores PID parameters for this CPU
-@@ -179,6 +180,7 @@ struct cpudata {
- 	int cpu;
- 
- 	struct update_util_data update_util;
-+	bool   update_util_set;
- 
- 	struct pstate_data pstate;
- 	struct vid_data vid;
-@@ -1287,11 +1289,18 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
- 	/* Prevent intel_pstate_update_util() from using stale data. */
- 	cpu->sample.time = 0;
- 	cpufreq_set_update_util_data(cpu_num, &cpu->update_util);
-+	cpu->update_util_set = true;
- }
- 
- static void intel_pstate_clear_update_util_hook(unsigned int cpu)
- {
-+	struct cpudata *cpu_data = all_cpu_data[cpu];
-+
-+	if (!cpu_data->update_util_set)
-+		return;
-+
- 	cpufreq_set_update_util_data(cpu, NULL);
-+	cpu_data->update_util_set = false;
- 	synchronize_sched();
- }
- 
+Ulf Hansson (2):
+  PM / Domains: Allow genpd to power on during the system PM phase
+  PM / Domains: Remove redundant wrapper functions for system PM
+
+ drivers/base/power/domain.c             | 271 +++++---------------------------
+ drivers/gpu/drm/amd/amdgpu/amdgpu_acp.c |  23 ---
+ include/linux/pm_domain.h               |   1 -
+ 3 files changed, 35 insertions(+), 260 deletions(-)
+
 -- 
-2.7.4
+1.9.1
 
