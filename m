@@ -1,92 +1,151 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2, 3/3] intel_pstate: Clean up get_target_pstate_use_performance()
-Date: Wed, 11 May 2016 19:11:26 +0200
-Message-ID: <1942272.lC5nrrGFM2@vostro.rjw.lan>
+Subject: [PATCH v2, 1/3] intel_pstate: Clarify average performance computation
+Date: Wed, 11 May 2016 19:09:12 +0200
+Message-ID: <1487208.l3NOUntOYs@vostro.rjw.lan>
 References: <2638272.Bq3MnQEe4U@vostro.rjw.lan> <4400018.TlI4RAhtYU@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52021 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751948AbcEKRIs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 13:08:48 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <4400018.TlI4RAhtYU@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The comments and the core_busy variable name in
-get_target_pstate_use_performance() are totally confusing,
-so modify them to reflect what's going on.
+The core_pct_busy field of struct sample actually contains the
+average performace during the last sampling period (in percent)
+and not the utilization of the core as suggested by its name
+which is confusing.
 
-The results of the computations should be the same as before.
+For this reason, change the name of that field to core_avg_perf
+and rename the function that computes its value accordingly.
+
+Also notice that storing this value as percentage requires a costly
+integer multiplication to be carried out in a hot path, so instead
+store it as an "extended fixed point" value with more fraction bits
+and update the code using it accordingly (it is better to change the
+name of the field along with its meaning in one go than to make those
+two changes separately, as that would likely lead to more
+confusion).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
+
+v1 -> v2: Preserve more APERF bits from APERF/MPERF to increase precision
+
+---
+ drivers/cpufreq/intel_pstate.c |   40 ++++++++++++++++++++++++----------------
+ 1 file changed, 24 insertions(+), 16 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1254,43 +1254,38 @@ static inline int32_t get_target_pstate_
+@@ -49,6 +49,9 @@
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+ #define fp_toint(X) ((X) >> FRAC_BITS)
  
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
++#define EXT_BITS 6
++#define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
++
+ static inline int32_t mul_fp(int32_t x, int32_t y)
  {
--	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
-+	int32_t perf_scaled, max_pstate, current_pstate, sample_ratio;
- 	u64 duration_ns;
+ 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+@@ -70,12 +73,22 @@ static inline int ceiling_fp(int32_t x)
+ 	return ret;
+ }
  
- 	/*
--	 * core_busy is the ratio of actual performance to max
--	 * max_pstate is the max non turbo pstate available
--	 * current_pstate was the pstate that was requested during
--	 * 	the last sample period.
--	 *
--	 * We normalize core_busy, which was our actual percent
--	 * performance to what we requested during the last sample
--	 * period. The result will be a percentage of busy at a
--	 * specified pstate.
-+	 * perf_scaled is the average performance during the last sampling
-+	 * period scaled by the ratio of the maximum P-state to the P-state
-+	 * requested last time (in percent).  That measures the system's
-+	 * response to the previous P-state selection.
++static inline u64 mul_ext_fp(u64 x, u64 y)
++{
++	return (x * y) >> EXT_FRAC_BITS;
++}
++
++static inline u64 div_ext_fp(u64 x, u64 y)
++{
++	return div64_u64(x << EXT_FRAC_BITS, y);
++}
++
+ /**
+  * struct sample -	Store performance sample
+- * @core_pct_busy:	Ratio of APERF/MPERF in percent, which is actual
++ * @core_avg_perf:	Ratio of APERF/MPERF which is the actual average
+  *			performance during last sample period
+  * @busy_scaled:	Scaled busy value which is used to calculate next
+- *			P state. This can be different than core_pct_busy
++ *			P state. This can be different than core_avg_perf
+  *			to account for cpu idle period
+  * @aperf:		Difference of actual performance frequency clock count
+  *			read from APERF MSR between last and current sample
+@@ -90,7 +103,7 @@ static inline int ceiling_fp(int32_t x)
+  * data for choosing next P State.
+  */
+ struct sample {
+-	int32_t core_pct_busy;
++	int32_t core_avg_perf;
+ 	int32_t busy_scaled;
+ 	u64 aperf;
+ 	u64 mperf;
+@@ -1147,15 +1160,11 @@ static void intel_pstate_get_cpu_pstates
+ 	intel_pstate_set_min_pstate(cpu);
+ }
+ 
+-static inline void intel_pstate_calc_busy(struct cpudata *cpu)
++static inline void intel_pstate_calc_avg_perf(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+-	int64_t core_pct;
+-
+-	core_pct = sample->aperf * int_tofp(100);
+-	core_pct = div64_u64(core_pct, sample->mperf);
+ 
+-	sample->core_pct_busy = (int32_t)core_pct;
++	sample->core_avg_perf = div_ext_fp(sample->aperf, sample->mperf);
+ }
+ 
+ static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
+@@ -1198,9 +1207,8 @@ static inline bool intel_pstate_sample(s
+ 
+ static inline int32_t get_avg_frequency(struct cpudata *cpu)
+ {
+-	return fp_toint(mul_fp(cpu->sample.core_pct_busy,
+-			       int_tofp(cpu->pstate.max_pstate_physical *
+-						cpu->pstate.scaling / 100)));
++	return mul_ext_fp(cpu->sample.core_avg_perf,
++			  cpu->pstate.max_pstate_physical * cpu->pstate.scaling);
+ }
+ 
+ static inline int32_t get_avg_pstate(struct cpudata *cpu)
+@@ -1260,10 +1268,10 @@ static inline int32_t get_target_pstate_
+ 	 * period. The result will be a percentage of busy at a
+ 	 * specified pstate.
  	 */
+-	core_busy = cpu->sample.core_pct_busy;
  	max_pstate = cpu->pstate.max_pstate_physical;
  	current_pstate = cpu->pstate.current_pstate;
--	core_busy = mul_ext_fp(cpu->sample.core_avg_perf,
-+	perf_scaled = mul_ext_fp(cpu->sample.core_avg_perf,
- 			       div_fp(100 * max_pstate, current_pstate));
+-	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
++	core_busy = mul_ext_fp(cpu->sample.core_avg_perf,
++			       div_fp(100 * max_pstate, current_pstate));
  
  	/*
  	 * Since our utilization update callback will not run unless we are
- 	 * in C0, check if the actual elapsed time is significantly greater (3x)
- 	 * than our sample interval.  If it is, then we were idle for a long
--	 * enough period of time to adjust our busyness.
-+	 * enough period of time to adjust our performance metric.
- 	 */
- 	duration_ns = cpu->sample.time - cpu->last_sample_time;
- 	if ((s64)duration_ns > pid_params.sample_rate_ns * 3) {
- 		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
--		core_busy = mul_fp(core_busy, sample_ratio);
-+		perf_scaled = mul_fp(perf_scaled, sample_ratio);
- 	} else {
- 		sample_ratio = div_fp(100 * cpu->sample.mperf, cpu->sample.tsc);
- 		if (sample_ratio < int_tofp(1))
--			core_busy = 0;
-+			perf_scaled = 0;
- 	}
+@@ -1312,7 +1320,7 @@ static inline void intel_pstate_adjust_b
+ 	intel_pstate_update_pstate(cpu, target_pstate);
  
--	cpu->sample.busy_scaled = core_busy;
--	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
-+	cpu->sample.busy_scaled = perf_scaled;
-+	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
- }
+ 	sample = &cpu->sample;
+-	trace_pstate_sample(fp_toint(sample->core_pct_busy),
++	trace_pstate_sample(mul_ext_fp(100, sample->core_avg_perf),
+ 		fp_toint(sample->busy_scaled),
+ 		from,
+ 		cpu->pstate.current_pstate,
+@@ -1332,7 +1340,7 @@ static void intel_pstate_update_util(str
+ 		bool sample_taken = intel_pstate_sample(cpu, time);
  
- static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
-
+ 		if (sample_taken) {
+-			intel_pstate_calc_busy(cpu);
++			intel_pstate_calc_avg_perf(cpu);
+ 			if (!hwp_active)
+ 				intel_pstate_adjust_busy_pstate(cpu);
+ 		}
