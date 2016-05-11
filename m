@@ -1,7 +1,7 @@
 From: Chris Brand <chris.brand@broadcom.com>
-Subject: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
-Date: Wed, 11 May 2016 14:36:17 -0700
-Message-ID: <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
+Subject: [PATCH v2 4/6] arm: Add support for Broadcom BCM23550 SoC
+Date: Wed, 11 May 2016 14:36:20 -0700
+Message-ID: <1463002582-6875-5-git-send-email-chris.brand@broadcom.com>
 References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
@@ -9,56 +9,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This driver supports reset on both BCM21664 and BCM23550.
-Code is being moved from arch/arm/mach-bcm/board_bcm21664.c
+BCM23550 is a quad-A7 SoC used on the Broadcom "Sparrow" board.
+It shares many IP blocks with other Broadcom Kona chips.
 
 Signed-off-by: Chris Brand <chris.brand@broadcom.com>
 ---
- drivers/power/reset/Kconfig           | 10 +++++
- drivers/power/reset/Makefile          |  1 +
- drivers/power/reset/brcm-kona-reset.c | 75 +++++++++++++++++++++++++++++++++++
- 3 files changed, 86 insertions(+)
- create mode 100644 drivers/power/reset/brcm-kona-reset.c
+ arch/arm/mach-bcm/Kconfig          | 12 ++++++++++--
+ arch/arm/mach-bcm/Makefile         |  5 ++++-
+ arch/arm/mach-bcm/board_bcm23550.c | 25 +++++++++++++++++++++++++
+ 3 files changed, 39 insertions(+), 3 deletions(-)
+ create mode 100644 arch/arm/mach-bcm/board_bcm23550.c
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 0a6408a39c66..1a7c49f3650a 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -38,6 +38,16 @@ config POWER_RESET_AXXIA
+diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
+index 7ef121472cdd..cb1281f115a9 100644
+--- a/arch/arm/mach-bcm/Kconfig
++++ b/arch/arm/mach-bcm/Kconfig
+@@ -111,9 +111,17 @@ config ARCH_BCM_21664
+ 	  Enable support for the BCM21664 family, which includes
+ 	  BCM21663 and BCM21664 variants.
  
- 	  Say Y if you have an Axxia family SoC.
- 
-+config POWER_RESET_BRCMKONA
-+	bool "Broadcom Kona reset driver"
-+	depends on ARM || COMPILE_TEST
-+	default ARCH_BCM_MOBILE
++config ARCH_BCM_23550
++	bool "Broadcom BCM23550 SoC"
++	depends on ARCH_MULTI_V7
++	select ARCH_BCM_MOBILE
++	select HAVE_SMP
 +	help
-+	  This driver provides restart support for Broadcom Kona chips.
++	  Enable support for the BCM23550.
 +
-+	  Say Y here if you have a Broadcom Kona-based board and you wish
-+	  to have restart support.
+ config ARCH_BCM_MOBILE_L2_CACHE
+ 	bool "Broadcom mobile SoC level 2 cache support"
+-	depends on ARCH_BCM_MOBILE
++	depends on ARCH_BCM_281XX || ARCH_BCM_21664
+ 	default y
+ 	select CACHE_L2X0
+ 	select ARCH_BCM_MOBILE_SMC
+@@ -128,7 +136,7 @@ config ARCH_BCM_MOBILE_SMP
+ 	select HAVE_ARM_SCU
+ 	select ARM_ERRATA_764369
+ 	help
+-	  SMP support for the BCM281XX and BCM21664 SoC families.
++	  SMP support for the BCM281XX, BCM21664 and BCM23550 SoC families.
+ 	  Provided as an option so SMP support for SoCs of this type
+ 	  can be disabled for an SMP-enabled kernel.
+ 
+diff --git a/arch/arm/mach-bcm/Makefile b/arch/arm/mach-bcm/Makefile
+index 7d665151c772..980f5850097c 100644
+--- a/arch/arm/mach-bcm/Makefile
++++ b/arch/arm/mach-bcm/Makefile
+@@ -26,7 +26,10 @@ obj-$(CONFIG_ARCH_BCM_281XX)	+= board_bcm281xx.o
+ # BCM21664
+ obj-$(CONFIG_ARCH_BCM_21664)	+= board_bcm21664.o
+ 
+-# BCM281XX and BCM21664 SMP support
++# BCM23550
++obj-$(CONFIG_ARCH_BCM_23550)	+= board_bcm23550.o
 +
- config POWER_RESET_BRCMSTB
- 	bool "Broadcom STB reset driver"
- 	depends on ARM || MIPS || COMPILE_TEST
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 096fa67047f6..ddb9a5b35480 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -2,6 +2,7 @@ obj-$(CONFIG_POWER_RESET_AS3722) += as3722-poweroff.o
- obj-$(CONFIG_POWER_RESET_AT91_POWEROFF) += at91-poweroff.o
- obj-$(CONFIG_POWER_RESET_AT91_RESET) += at91-reset.o
- obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
-+obj-$(CONFIG_POWER_RESET_BRCMKONA) += brcm-kona-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
-diff --git a/drivers/power/reset/brcm-kona-reset.c b/drivers/power/reset/brcm-kona-reset.c
++# BCM281XX, BCM21664 and BCM23550 SMP support
+ obj-$(CONFIG_ARCH_BCM_MOBILE_SMP) += platsmp.o
+ 
+ # BCM281XX and BCM21664 L2 cache control
+diff --git a/arch/arm/mach-bcm/board_bcm23550.c b/arch/arm/mach-bcm/board_bcm23550.c
 new file mode 100644
-index 000000000000..d6f2070be89c
+index 000000000000..0ac01debd077
 --- /dev/null
-+++ b/drivers/power/reset/brcm-kona-reset.c
-@@ -0,0 +1,75 @@
++++ b/arch/arm/mach-bcm/board_bcm23550.c
+@@ -0,0 +1,25 @@
 +/*
 + * Copyright (C) 2016 Broadcom
 + *
@@ -72,67 +87,17 @@ index 000000000000..d6f2070be89c
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/io.h>
-+#include <linux/of_address.h>
 +#include <linux/of_platform.h>
-+#include <linux/reboot.h>
 +
 +#include <asm/mach/arch.h>
 +
-+#define RSTMGR_REG_WR_ACCESS_OFFSET	0
-+#define RSTMGR_REG_CHIP_SOFT_RST_OFFSET	4
-+
-+#define RSTMGR_WR_PASSWORD		0xa5a5
-+#define RSTMGR_WR_PASSWORD_SHIFT	8
-+#define RSTMGR_WR_ACCESS_ENABLE		1
-+
-+static void __iomem *kona_reset_base;
-+
-+static int kona_reset_handler(struct notifier_block *this,
-+				unsigned long mode, void *cmd)
-+{
-+	/*
-+	 * A soft reset is triggered by writing a 0 to bit 0 of the soft reset
-+	 * register. To write to that register we must first write the password
-+	 * and the enable bit in the write access enable register.
-+	 */
-+	writel((RSTMGR_WR_PASSWORD << RSTMGR_WR_PASSWORD_SHIFT) |
-+		RSTMGR_WR_ACCESS_ENABLE,
-+		kona_reset_base + RSTMGR_REG_WR_ACCESS_OFFSET);
-+	writel(0, kona_reset_base + RSTMGR_REG_CHIP_SOFT_RST_OFFSET);
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block kona_reset_nb = {
-+	.notifier_call = kona_reset_handler,
-+	.priority = 128,
++static const char * const bcm23550_dt_compat[] = {
++	"brcm,bcm23550",
++	NULL,
 +};
 +
-+static int kona_reset_probe(struct platform_device *pdev)
-+{
-+	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+
-+	kona_reset_base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(kona_reset_base))
-+		return PTR_ERR(kona_reset_base);
-+
-+	return register_restart_handler(&kona_reset_nb);
-+}
-+
-+static const struct of_device_id of_match[] = {
-+	{ .compatible = "brcm,bcm21664-resetmgr" },
-+	{},
-+};
-+
-+static struct platform_driver bcm_kona_reset_driver = {
-+	.probe = kona_reset_probe,
-+	.driver = {
-+		.name = "brcm-kona-reset",
-+		.of_match_table = of_match,
-+	},
-+};
-+
-+builtin_platform_driver(bcm_kona_reset_driver);
++DT_MACHINE_START(BCM23550_DT, "BCM23550 Broadcom Application Processor")
++	.dt_compat = bcm23550_dt_compat,
++MACHINE_END
 -- 
 1.9.1
