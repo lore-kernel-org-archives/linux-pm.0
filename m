@@ -1,33 +1,92 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Wed, 11 May 2016 18:24:14 +0200
-Message-ID: <CAJZ5v0ig1f-MMZUuCBZ4DpOhweKtTWnGUw8OvB9CLXR9KD36uA@mail.gmail.com>
-References: <20160511101920.GZ4329@intel.com>
-	<57332171.8070403@linutronix.de>
-	<20160511122116.GA4329@intel.com>
-	<5733354F.6080703@intel.com>
-	<625fc476-744c-240d-28b0-e1f09712c6a3@xs4all.nl>
-	<CAJZ5v0iNakYVA6bynyRakK11GbjSaGVo-41X3dWZcJ3OQngmBQ@mail.gmail.com>
-	<57335C18.6010009@linutronix.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2, 3/3] intel_pstate: Clean up get_target_pstate_use_performance()
+Date: Wed, 11 May 2016 19:11:26 +0200
+Message-ID: <1942272.lC5nrrGFM2@vostro.rjw.lan>
+References: <2638272.Bq3MnQEe4U@vostro.rjw.lan> <4400018.TlI4RAhtYU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <57335C18.6010009@linutronix.de>
-Sender: linux-arch-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Jim Bos <jim876@xs4all.nl>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52021 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751948AbcEKRIs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 13:08:48 -0400
+In-Reply-To: <4400018.TlI4RAhtYU@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, May 11, 2016 at 6:21 PM, Sebastian Andrzej Siewior
-<bigeasy@linutronix.de> wrote:
-> On 05/11/2016 06:19 PM, Rafael J. Wysocki wrote:
->> Have you tried to check if this is the same commit reported in this thread?
->
-> The commit in this thread is part of v4.6-rc1 and he is saying that rc1
-> is working fine.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I see.  That is a different problem then.
+The comments and the core_busy variable name in
+get_target_pstate_use_performance() are totally confusing,
+so modify them to reflect what's going on.
 
-Jim, can you please start a new thread (with a CC to linux-pm) or just
-file a bug at bugzilla.kernel.org to avoid confusing things?
+The results of the computations should be the same as before.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   27 +++++++++++----------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1254,43 +1254,38 @@ static inline int32_t get_target_pstate_
+ 
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ {
+-	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
++	int32_t perf_scaled, max_pstate, current_pstate, sample_ratio;
+ 	u64 duration_ns;
+ 
+ 	/*
+-	 * core_busy is the ratio of actual performance to max
+-	 * max_pstate is the max non turbo pstate available
+-	 * current_pstate was the pstate that was requested during
+-	 * 	the last sample period.
+-	 *
+-	 * We normalize core_busy, which was our actual percent
+-	 * performance to what we requested during the last sample
+-	 * period. The result will be a percentage of busy at a
+-	 * specified pstate.
++	 * perf_scaled is the average performance during the last sampling
++	 * period scaled by the ratio of the maximum P-state to the P-state
++	 * requested last time (in percent).  That measures the system's
++	 * response to the previous P-state selection.
+ 	 */
+ 	max_pstate = cpu->pstate.max_pstate_physical;
+ 	current_pstate = cpu->pstate.current_pstate;
+-	core_busy = mul_ext_fp(cpu->sample.core_avg_perf,
++	perf_scaled = mul_ext_fp(cpu->sample.core_avg_perf,
+ 			       div_fp(100 * max_pstate, current_pstate));
+ 
+ 	/*
+ 	 * Since our utilization update callback will not run unless we are
+ 	 * in C0, check if the actual elapsed time is significantly greater (3x)
+ 	 * than our sample interval.  If it is, then we were idle for a long
+-	 * enough period of time to adjust our busyness.
++	 * enough period of time to adjust our performance metric.
+ 	 */
+ 	duration_ns = cpu->sample.time - cpu->last_sample_time;
+ 	if ((s64)duration_ns > pid_params.sample_rate_ns * 3) {
+ 		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+-		core_busy = mul_fp(core_busy, sample_ratio);
++		perf_scaled = mul_fp(perf_scaled, sample_ratio);
+ 	} else {
+ 		sample_ratio = div_fp(100 * cpu->sample.mperf, cpu->sample.tsc);
+ 		if (sample_ratio < int_tofp(1))
+-			core_busy = 0;
++			perf_scaled = 0;
+ 	}
+ 
+-	cpu->sample.busy_scaled = core_busy;
+-	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
++	cpu->sample.busy_scaled = perf_scaled;
++	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
+ }
+ 
+ static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+
