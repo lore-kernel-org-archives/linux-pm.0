@@ -1,50 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC] Should we add Android's Interactive governor into mainline now?
-Date: Thu, 12 May 2016 15:19:26 +0200
-Message-ID: <CAJZ5v0g3Q+CUo6U55hCBSCMhmcZJ5Or2Ctq7OJx3hxaiDx+F1A@mail.gmail.com>
-References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v3 0/2] PM / Domains: Second step in improving system PM code in genpd
+Date: Thu, 12 May 2016 16:11:23 +0200
+Message-ID: <1463062285-3213-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:35524 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbcELNT2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 09:19:28 -0400
-Received: by mail-wm0-f48.google.com with SMTP id e201so258318585wme.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 06:19:27 -0700 (PDT)
-In-Reply-To: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+Received: from mail-lf0-f52.google.com ([209.85.215.52]:34938 "EHLO
+	mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbcELOLg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 10:11:36 -0400
+Received: by mail-lf0-f52.google.com with SMTP id j8so72255088lfd.2
+        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 07:11:35 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Airlie <airlied@linux.ie>, Alex Deucher <alexander.deucher@amd.com>, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 
-On Thu, May 12, 2016 at 4:04 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Rafael and others,
+Changes in v3:
+	- Changelog of patch 1/2.
 
-Hi,
+Changes in v2:
+	- Updated changelogs for both patches according to comments from Kevin.
+	- Updated patch 1/2, as I realized one genpd client driver, (ab)uses
+	genpd's suspend_power_off flag.
 
-> Since we have moved away from the background timers to scheduler
-> callbacks, should we consider merging the Interactive governor into
-> mainline ?
+This is the second step in improving the system PM code in genpd. The first
+patch is actually fixing a bug while it also enables for further clean-ups,
+which is done in the second patch.
 
-We may, depending on how it looks like. :-)
+The next step of improving system PM code in genpd will move it to the part of
+trying to optimize the behaviour, such as avoid waking up devices unless it's
+really needed.
 
-> It was rejected earlier for few reasons, one of which was that we
-> didn't wanted to add on any new governors before the background
-> timers hack is removed and inputs received from scheduler.
+Ulf Hansson (2):
+  PM / Domains: Allow genpd to power on during the system PM phases
+  PM / Domains: Remove redundant wrapper functions for system PM
 
-Actually, the last submission did not receive any comments from
-anyone, so I'd call it lack of interest rather than rejection.
+ drivers/base/power/domain.c             | 271 +++++---------------------------
+ drivers/gpu/drm/amd/amdgpu/amdgpu_acp.c |  23 ---
+ include/linux/pm_domain.h               |   1 -
+ 3 files changed, 35 insertions(+), 260 deletions(-)
 
-> I can try putting some effort to do that, but wanted to check what
-> others feel about it first.
->
-> Its getting used for mobile phones using Android for a very long
-> time now.
+-- 
+1.9.1
 
-I think that we'd be better off if the interactive governor was in the
-tree, so if you have the time to work on it, that's great.
-
-One caveat is that I have some governor API rearrangement in the works
-and you'd need to rebase your work on top of that.  I've just sent two
-patches, but there's more to come.
