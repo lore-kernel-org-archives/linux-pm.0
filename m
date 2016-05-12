@@ -1,42 +1,34 @@
-From: kernel@martin.sperl.org
-Subject: [PATCH 4/4] ARM: bcm2835: add thermal driver to default_config
-Date: Thu, 12 May 2016 14:35:38 +0000
-Message-ID: <1463063738-11506-5-git-send-email-kernel@martin.sperl.org>
-References: <1463063738-11506-1-git-send-email-kernel@martin.sperl.org>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC] Should we add Android's Interactive governor into mainline
+ now?
+Date: Thu, 12 May 2016 09:36:48 -0700
+Message-ID: <20160512163648.GB12886@graphite.smuckle.net>
+References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 212-186-180-163.dynamic.surfer.at ([212.186.180.163]:54401 "EHLO
-	cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932111AbcELOfy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 10:35:54 -0400
-In-Reply-To: <1463063738-11506-1-git-send-email-kernel@martin.sperl.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:33730 "EHLO
+	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbcELQgw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 12:36:52 -0400
+Received: by mail-pf0-f176.google.com with SMTP id 206so32651162pfu.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 09:36:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
-Cc: Martin Sperl <kernel@martin.sperl.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-From: Martin Sperl <kernel@martin.sperl.org>
+On Thu, May 12, 2016 at 07:34:01AM +0530, Viresh Kumar wrote:
+> Since we have moved away from the background timers to scheduler
+> callbacks, should we consider merging the Interactive governor into
+> mainline ?
 
-Add the thermal driver to list of compiled modules
-in the default config for bcm2835.
+Merging interactive will help us more easily compare schedutil against
+it and get schedutil at or beyond feature parity.
 
-Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
----
- arch/arm/configs/bcm2835_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/arm/configs/bcm2835_defconfig b/arch/arm/configs/bcm2835_defconfig
-index 29a44bd..634e07e 100644
---- a/arch/arm/configs/bcm2835_defconfig
-+++ b/arch/arm/configs/bcm2835_defconfig
-@@ -71,6 +71,8 @@ CONFIG_SPI_BCM2835=y
- CONFIG_SPI_BCM2835AUX=y
- CONFIG_GPIO_SYSFS=y
- # CONFIG_HWMON is not set
-+CONFIG_THERMAL=y
-+CONFIG_BCM2835_THERMAL=y
- CONFIG_WATCHDOG=y
- CONFIG_BCM2835_WDT=y
- CONFIG_FB=y
--- 
-2.1.4
+That said my understanding is that the goal is to eventually deprecate
+the non-sched governors. That will be made harder by adding another one
+into the tree.
 
