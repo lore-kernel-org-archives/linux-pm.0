@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/2] cpufreq: governor: CPUFREQ_GOV_POLICY_EXIT never fails
-Date: Thu, 12 May 2016 15:13:35 +0200
-Message-ID: <10942818.DP54y8SPGY@vostro.rjw.lan>
+Subject: [PATCH 2/2] cpufreq: governor: CPUFREQ_GOV_STOP never fails
+Date: Thu, 12 May 2016 15:14:12 +0200
+Message-ID: <2034165.RqMO62khMb@vostro.rjw.lan>
 References: <4540082.RMPf3KxPDh@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -17,86 +17,109 @@ From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 None of the cpufreq governors currently in the tree will ever fail
 an invocation of the ->governor() callback with the event argument
-equal to CPUFREQ_GOV_POLICY_EXIT (unless invoked with incorrect
-arguments which doesn't matter anyway) and it wouldn't really
-make sense to fail it, because the caller won't be able to handle
-that failure in a meaningful way.
+equal to CPUFREQ_GOV_STOP (unless invoked with incorrect arguments
+which doesn't matter anyway) and it is rather difficult to imagine
+a valid reason for such a failure.
 
 Accordingly, rearrange the code in the core to make it clear that
 this call never fails.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |   35 ++++++++++++-----------------------
- 1 file changed, 12 insertions(+), 23 deletions(-)
+ drivers/cpufreq/cpufreq.c |   40 +++++++++++-----------------------------
+ 1 file changed, 11 insertions(+), 29 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -78,9 +78,9 @@ static int cpufreq_governor(struct cpufr
- static unsigned int __cpufreq_get(struct cpufreq_policy *policy);
- static int cpufreq_start_governor(struct cpufreq_policy *policy);
- 
--static inline int cpufreq_exit_governor(struct cpufreq_policy *policy)
-+static inline void cpufreq_exit_governor(struct cpufreq_policy *policy)
- {
--	return cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-+	(void)cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+@@ -83,6 +83,11 @@ static inline void cpufreq_exit_governor
+ 	(void)cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
  }
  
++static inline void cpufreq_stop_governor(struct cpufreq_policy *policy)
++{
++	(void)cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++}
++
  /**
-@@ -1387,12 +1387,8 @@ static void cpufreq_offline(unsigned int
- 	if (cpufreq_driver->stop_cpu)
- 		cpufreq_driver->stop_cpu(policy);
+  * Two notifier lists: the "policy" list is involved in the
+  * validation process for a new CPU frequency policy; the
+@@ -1026,13 +1031,8 @@ static int cpufreq_add_policy_cpu(struct
+ 		return 0;
  
--	/* If cpu is last user of policy, free policy */
+ 	down_write(&policy->rwsem);
 -	if (has_target()) {
--		ret = cpufreq_exit_governor(policy);
--		if (ret)
--			pr_err("%s: Failed to exit governor\n", __func__);
+-		ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		if (ret) {
+-			pr_err("%s: Failed to stop governor\n", __func__);
+-			goto unlock;
+-		}
 -	}
 +	if (has_target())
-+		cpufreq_exit_governor(policy);
++		cpufreq_stop_governor(policy);
  
- 	/*
- 	 * Perform the ->exit() even during light-weight tear-down,
-@@ -2049,16 +2045,15 @@ static int cpufreq_governor(struct cpufr
+ 	cpumask_set_cpu(cpu, policy->cpus);
  
- 	ret = policy->governor->governor(policy, event);
- 
--	if (!ret) {
--		if (event == CPUFREQ_GOV_POLICY_INIT)
-+	if (event == CPUFREQ_GOV_POLICY_INIT) {
-+		if (ret)
-+			module_put(policy->governor->owner);
-+		else
- 			policy->governor->initialized++;
--		else if (event == CPUFREQ_GOV_POLICY_EXIT)
--			policy->governor->initialized--;
--	}
+@@ -1041,8 +1041,6 @@ static int cpufreq_add_policy_cpu(struct
+ 		if (ret)
+ 			pr_err("%s: Failed to start governor\n", __func__);
+ 	}
 -
--	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
--			((event == CPUFREQ_GOV_POLICY_EXIT) && !ret))
-+	} else if (event == CPUFREQ_GOV_POLICY_EXIT) {
-+		policy->governor->initialized--;
- 		module_put(policy->governor->owner);
-+	}
- 
+-unlock:
+ 	up_write(&policy->rwsem);
  	return ret;
  }
-@@ -2228,13 +2223,7 @@ static int cpufreq_set_policy(struct cpu
- 				 __func__, old_gov->name, ret);
- 			return ret;
- 		}
--
--		ret = cpufreq_exit_governor(policy);
--		if (ret) {
--			pr_err("%s: Failed to Exit Governor: %s (%d)\n",
--			       __func__, old_gov->name, ret);
--			return ret;
--		}
-+		cpufreq_exit_governor(policy);
+@@ -1354,11 +1352,8 @@ static void cpufreq_offline(unsigned int
  	}
  
- 	/* start new governor */
+ 	down_write(&policy->rwsem);
+-	if (has_target()) {
+-		ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		if (ret)
+-			pr_err("%s: Failed to stop governor\n", __func__);
+-	}
++	if (has_target())
++		cpufreq_stop_governor(policy);
+ 
+ 	cpumask_clear_cpu(cpu, policy->cpus);
+ 
+@@ -1622,7 +1617,6 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
+ void cpufreq_suspend(void)
+ {
+ 	struct cpufreq_policy *policy;
+-	int ret;
+ 
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1635,14 +1629,8 @@ void cpufreq_suspend(void)
+ 	for_each_active_policy(policy) {
+ 		if (has_target()) {
+ 			down_write(&policy->rwsem);
+-			ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++			cpufreq_stop_governor(policy);
+ 			up_write(&policy->rwsem);
+-
+-			if (ret) {
+-				pr_err("%s: Failed to stop governor for policy: %p\n",
+-					__func__, policy);
+-				continue;
+-			}
+ 		}
+ 
+ 		if (cpufreq_driver->suspend && cpufreq_driver->suspend(policy))
+@@ -2216,13 +2204,7 @@ static int cpufreq_set_policy(struct cpu
+ 	old_gov = policy->governor;
+ 	/* end old governor */
+ 	if (old_gov) {
+-		ret = cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		if (ret) {
+-			/* This can happen due to race with other operations */
+-			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
+-				 __func__, old_gov->name, ret);
+-			return ret;
+-		}
++		cpufreq_stop_governor(policy);
+ 		cpufreq_exit_governor(policy);
+ 	}
+ 
