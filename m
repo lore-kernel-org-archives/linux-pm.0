@@ -1,34 +1,64 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC] Should we add Android's Interactive governor into mainline
- now?
-Date: Thu, 12 May 2016 09:36:48 -0700
-Message-ID: <20160512163648.GB12886@graphite.smuckle.net>
-References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Thu, 12 May 2016 22:01:13 +0300
+Message-ID: <4661739.p5SU9QcIps@avalon>
+References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org> <5465506.Z3sjI0lQh6@avalon> <CAPDyKFpOxabizwQqhtKb-h0vGpTRtrCa0nPxAKMY22rnjLCouw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:33730 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbcELQgw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 12:36:52 -0400
-Received: by mail-pf0-f176.google.com with SMTP id 206so32651162pfu.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 09:36:51 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+Received: from galahad.ideasonboard.com ([185.26.127.97]:50534 "EHLO
+	galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbcELTBQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 15:01:16 -0400
+In-Reply-To: <CAPDyKFpOxabizwQqhtKb-h0vGpTRtrCa0nPxAKMY22rnjLCouw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, May 12, 2016 at 07:34:01AM +0530, Viresh Kumar wrote:
-> Since we have moved away from the background timers to scheduler
-> callbacks, should we consider merging the Interactive governor into
-> mainline ?
+Hello,
 
-Merging interactive will help us more easily compare schedutil against
-it and get schedutil at or beyond feature parity.
+On Wednesday 27 Apr 2016 16:23:49 Ulf Hansson wrote:
+> [...]
+> 
+> >> Following you reasoning, I agree!
+> >> 
+> >> Let's put this patch on hold for a little while. I am already working
+> >> on changing genpd, so it shouldn't take long before I can post some
+> >> additional genpd patches improving the behaviour.
+> > 
+> > I'd like to see something merged for v4.7 if possible. I agree that my
+> > patch isn't a long term solution (we want to avoid adding additional
+> > fields to the device power structure), but it has the benefit of being
+> > available now and fixing the problem I ran into with drivers that would
+> > be broken on v4.7 without a fix. Do you think you could get a better fix
+> > ready in time for v4.7 ? If so I'm fine with dropping this patch, but
+> > otherwise I'd prefer to get it merged and reverted as part of your better
+> > implementation for v4.8.
+> 
+> My impression was that devices becomes unnecessary resumed when they
+> don't need to. They won't stay resumed as the PM core invokes
+> pm_runtime_put() in the system PM complete phase.
+> 
+> So, in the end I think we are trying to optimize a behaviour here, but
+> not fix something that is "broken", correct?
+> 
+> Anyway, I have no objections to your proposed solution, so I leave it
+> to Rafael and Kevin to decide what to do.
 
-That said my understanding is that the goal is to eventually deprecate
-the non-sched governors. That will be made harder by adding another one
-into the tree.
+Kevin, Rafael, any comment ? I need to fix PM support in a driver that is 
+currently broken partly due to this issue. Which of "PM / Runtime: Only force-
+resume device if it has been force-suspended" and this patch should we merge, 
+if any ?
+
+> From my side I will continue with the improvements for the system PM
+> support in genpd.
+
+Thanks.
+
+-- 
+Regards,
+
+Laurent Pinchart
 
