@@ -1,72 +1,36 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v2] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Wed, 11 May 2016 17:08:10 -0600
-Message-ID: <359d426f-4e6d-6411-2bb0-0daa215dbbb4@redhat.com>
-References: <1461024699-13734-1-git-send-email-ahs3@redhat.com>
- <CAJ5Y-ea+oO22FAjXJBWdFYTZ+6xqpQvYXGZuyy4ZwPDO5hToqA@mail.gmail.com>
- <20160422053020.GB2235@vireshk-i7>
-Reply-To: ahs3@redhat.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [RFC] Should we add Android's Interactive governor into mainline now?
+Date: Thu, 12 May 2016 07:34:01 +0530
+Message-ID: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160422053020.GB2235@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rwells@codeaurora.org" <rwells@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f170.google.com ([209.85.223.170]:33166 "EHLO
+	mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbcELCED (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 May 2016 22:04:03 -0400
+Received: by mail-io0-f170.google.com with SMTP id f89so77690029ioi.0
+        for <linux-pm@vger.kernel.org>; Wed, 11 May 2016 19:04:02 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 04/21/2016 11:30 PM, Viresh Kumar wrote:
-> On 19-04-16, 16:12, Ashwin Chaugule wrote:
->> + Ryan
->>
->> Hi Al,
->>
->> On 18 April 2016 at 20:11, Al Stone <ahs3@redhat.com> wrote:
->>> When CPPC is being used by ACPI on arm64, user space tools such as
->>> cpupower report CPU frequency values from sysfs that are incorrect.
->>>
->>> What the driver was doing was reporting the values given by ACPI tables
->>> in whatever scale was used to provide them.  However, the ACPI spec
->>> defines the CPPC values as unitless abstract numbers.  Internal kernel
->>> structures such as struct perf_cap, in contrast, expect these values
->>> to be in KHz.  When these struct values get reported via sysfs, the
->>> user space tools also assume they are in KHz, causing them to report
->>> incorrect values (for example, reporting a CPU frequency of 1MHz when
->>> it should be 1.8GHz).
->>>
->>> While the investigation for a long term fix proceeds (several options
->>> are being explored, some of which may require spec changes or other
->>> much more invasive fixes), this patch forces the values read by CPPC
->>> to be read in KHz, regardless of what they actually represent.
->>>
->>> The downside is that this approach has some assumptions:
->>>
->>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->>>    value for a processor is set to a non-zero value.
->>>
->>>    (2) It assumes that all processors run at the same speed.  This
->>>    patch retrieves the first CPU Max Frequency from a type 4 DMI
->>>    record that it can find.  This may not be an issue, however, as a
->>>    sampling of DMI data on x86 and arm64 indicates there is often only
->>>    one such record regardless.
-> 
-> Don't we have any big LITTLE ARM servers yet ? Or we will not have them at all ?
+Hi Rafael and others,
 
-My apologies, but I missed this question earlier and just now noticed
-it.  AFAIK, there are no big.LITTLE ARM servers yet.  That doesn't mean
-there aren't any, or that no one is planning one; I just don't know of
-any.  I have been in discussions about doing that, but in the past those
-have ended up concluding that there is probably no need for that level
-of power management in a server.
+Since we have moved away from the background timers to scheduler
+callbacks, should we consider merging the Interactive governor into
+mainline ?
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+It was rejected earlier for few reasons, one of which was that we
+didn't wanted to add on any new governors before the background
+timers hack is removed and inputs received from scheduler.
+
+I can try putting some effort to do that, but wanted to check what
+others feel about it first.
+
+Its getting used for mobile phones using Android for a very long
+time now.
+
+--
+viresh
