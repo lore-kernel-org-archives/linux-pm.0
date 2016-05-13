@@ -1,73 +1,78 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume after
- direct-complete
-Date: Fri, 13 May 2016 13:15:31 +0200
-Message-ID: <9f0713b23baf7c6139a4b476cd9637d96e18cc95.1463134232.git.lukas@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC] Should we add Android's Interactive governor into mainline
+ now?
+Date: Fri, 13 May 2016 12:44:56 +0100
+Message-ID: <20160513114456.GL9525@e106622-lin>
+References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+ <20160512163648.GB12886@graphite.smuckle.net>
+ <CAJZ5v0jYqLKf-ckpEm7dm_jHeUkD6ey_cAgdrgFFuFnMYa-HUw@mail.gmail.com>
+ <20160512211012.GA28594@graphite.smuckle.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:35798 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932123AbcEMLor (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 13 May 2016 07:44:47 -0400
+Content-Disposition: inline
+In-Reply-To: <20160512211012.GA28594@graphite.smuckle.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Since commit aae4518b3124 ("PM / sleep: Mechanism to avoid resuming
-runtime-suspended devices unnecessarily"), we no longer wake up devices
-which are already runtime suspended upon entering system sleep
-("direct-complete").
+Hi,
 
-However commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might
-have been reset by firmware") changed this to mandatorily runtime resume
-such devices after the system is woken.  The motivation was to ensure
-that devices do not remain in a reset-power-on state after system
-resume, potentially preventing deep SoC-wide low-power states from being
-entered on idle.
+On 12/05/16 14:10, Steve Muckle wrote:
+> On Thu, May 12, 2016 at 10:34:39PM +0200, Rafael J. Wysocki wrote:
+> > > That said my understanding is that the goal is to eventually deprecate
+> > > the non-sched governors. That will be made harder by adding another one
+> > > into the tree.
+> > 
+> > We can't really deprecate any out-of-the-tree code, because it is
+> > beyond the scope of our influence, so one can argue that taking it
+> > into the tree may actually allow us to deprecate it at one point going
+> > forward. :-)
+> > 
+> > Seriously, though, "deprecation" may not be the right term to use
+> > here.  Our goal, IMO, should be to persuade the users of the code in
+> > question to switch over to something else and I'm not really sure if
+> > refusing to take that code into the tree is the best way to achieve
+> > that goal.
+> > 
+> > I do believe that if there's a significant piece of code living out of
+> > the tree for a sufficiently long time, the tree is likely to be
+> > missing something important.  Then, it is really difficult to figure
+> > out what is missing without even trying to take that code into the
+> > tree.
+> 
+> By far the biggest user of interactive is Android (I'm not aware of its
+> use elsewhere). Persuading Google to switch is relatively doable once a
+> viable alternative exists. After that point I'd expect the desire to
+> merge and maintain interactive would almost immediately disappear. Folks
+> wanting to run upstream kernels on already released devices have much
+> bigger hurdles than merging the interactive governor.
+> 
+> But if interactive is merged I'm worried that many other users on random
+> platforms will adopt it, for whatever reason, introducing a support
+> burden during a time that we're trying to develop and encourage an
+> alternative.
+> 
 
-This is counter-productive for devices of which we know that the
-mandatory runtime resume is unnecessary.  Thunderbolt on the Mac is a
-case in point: Runtime resume not just powers up the controller, but
-multiple adjacent chips, including a 15V boost converter, multiplexers
-and an eeprom.  Gratuitously powering this up after every system sleep
-burns a not insignificant amount of energy and needlessly strains the
-hardware.
+Right. It looks a bit odd to merge (and then maintain) something while
+we are actively working on an alternative designed to suit the same kind
+of needs.  Also considering that, with Viresh's effort, the merge
+request will not come from the original authors.
 
-Perhaps it would have been better to carry out the mandatory runtime
-resume only for those devices that actually need it, but at least we
-should allow an opt-out.
+> Anyway that's just my $.02 - it'd actually be good for me as
+> again it'd permit easier comparison with schedutil, so I won't complain
+> if it goes in :) .
+> 
 
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/base/power/generic_ops.c | 3 ++-
- include/linux/pm.h               | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+Anyway, I can't say that comparison would not be much easier. :-)
+Even though we won't run the workloads interactive has been designed for
+on mainline, I guess.
 
-diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-index 07c3c4a..6e88f55 100644
---- a/drivers/base/power/generic_ops.c
-+++ b/drivers/base/power/generic_ops.c
-@@ -316,7 +316,8 @@ void pm_complete_with_resume_check(struct device *dev)
- 	 * the sleep state it is going out of and it has never been resumed till
- 	 * now, resume it in case the firmware powered it up.
- 	 */
--	if (dev->power.direct_complete && pm_resume_via_firmware())
-+	if (dev->power.direct_complete && pm_resume_via_firmware() &&
-+	    !dev->power.direct_complete_noresume)
- 		pm_request_resume(dev);
- }
- EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6a5d654..023de94 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -596,6 +596,7 @@ struct dev_pm_info {
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-+	unsigned int		direct_complete_noresume:1;
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
--- 
-2.8.1
+Best,
+
+- Juri
