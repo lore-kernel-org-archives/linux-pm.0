@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/5] cpufreq: governor: Check transition latecy at init time only
-Date: Sat, 14 May 2016 01:00:28 +0200
-Message-ID: <8685194.VWxfunzal1@vostro.rjw.lan>
+Subject: [PATCH 3/5] cpufreq: governor: Simplify performance and powersave governors
+Date: Sat, 14 May 2016 01:01:08 +0200
+Message-ID: <2924709.Lf5ftEZLmT@vostro.rjw.lan>
 References: <10707470.yIcqGAzuFY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,53 +15,53 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is not necessary to check the governor's max_transition_latency
-attribute every time cpufreq_governor() runs, so check it only if
-the event argument is CPUFREQ_GOV_POLICY_INIT.
+The performance and powersave cpufreq governors handle the
+CPUFREQ_GOV_START event in the same way as CPUFREQ_GOV_LIMITS.
+However, the cpufreq core always invokes cpufreq_governor() with the
+event argument equal to CPUFREQ_GOV_LIMITS right after invoking it with
+event equal to CPUFREQ_GOV_START.  As a result, for both the governors
+in question, __cpufreq_driver_target() is executed twice in a row
+with the same arguments which is not useful.
+
+For this reason, simplify the performance and powersave governors
+to handle the CPUFREQ_GOV_LIMITS event only as that's going to be
+sufficient for the governor start too.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ drivers/cpufreq/cpufreq_performance.c |    4 +---
+ drivers/cpufreq/cpufreq_powersave.c   |    4 +---
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
+Index: linux-pm/drivers/cpufreq/cpufreq_performance.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2011,23 +2011,24 @@ static int cpufreq_governor(struct cpufr
- 	if (!policy->governor)
- 		return -EINVAL;
- 
--	if (policy->governor->max_transition_latency &&
--	    policy->cpuinfo.transition_latency >
--	    policy->governor->max_transition_latency) {
--		struct cpufreq_governor *gov = cpufreq_fallback_governor();
-+	if (event == CPUFREQ_GOV_POLICY_INIT) {
-+		if (policy->governor->max_transition_latency &&
-+		    policy->cpuinfo.transition_latency >
-+		    policy->governor->max_transition_latency) {
-+			struct cpufreq_governor *gov = cpufreq_fallback_governor();
- 
--		if (gov) {
--			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
--				policy->governor->name, gov->name);
--			policy->governor = gov;
--		} else {
--			return -EINVAL;
-+			if (gov) {
-+				pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
-+					policy->governor->name, gov->name);
-+				policy->governor = gov;
-+			} else {
-+				return -EINVAL;
-+			}
- 		}
--	}
- 
--	if (event == CPUFREQ_GOV_POLICY_INIT)
- 		if (!try_module_get(policy->governor->owner))
- 			return -EINVAL;
-+	}
- 
- 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
- 
+--- linux-pm.orig/drivers/cpufreq/cpufreq_performance.c
++++ linux-pm/drivers/cpufreq/cpufreq_performance.c
+@@ -20,10 +20,8 @@ static int cpufreq_governor_performance(
+ 					unsigned int event)
+ {
+ 	switch (event) {
+-	case CPUFREQ_GOV_START:
+ 	case CPUFREQ_GOV_LIMITS:
+-		pr_debug("setting to %u kHz because of event %u\n",
+-						policy->max, event);
++		pr_debug("setting to %u kHz\n", policy->max);
+ 		__cpufreq_driver_target(policy, policy->max,
+ 						CPUFREQ_RELATION_H);
+ 		break;
+Index: linux-pm/drivers/cpufreq/cpufreq_powersave.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_powersave.c
++++ linux-pm/drivers/cpufreq/cpufreq_powersave.c
+@@ -20,10 +20,8 @@ static int cpufreq_governor_powersave(st
+ 					unsigned int event)
+ {
+ 	switch (event) {
+-	case CPUFREQ_GOV_START:
+ 	case CPUFREQ_GOV_LIMITS:
+-		pr_debug("setting to %u kHz because of event %u\n",
+-							policy->min, event);
++		pr_debug("setting to %u kHz\n", policy->min);
+ 		__cpufreq_driver_target(policy, policy->min,
+ 						CPUFREQ_RELATION_L);
+ 		break;
