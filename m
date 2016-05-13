@@ -1,135 +1,54 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [RFC PATCH 1/1] acpi: processor_driver: register cooling device per package
-Date: Thu, 12 May 2016 23:19:30 -0700
-Message-ID: <1463120370-2553-1-git-send-email-edubezval@gmail.com>
+From: Martin Sperl <kernel@martin.sperl.org>
+Subject: Re: [PATCH 3/4] ARM: bcm2835: add thermal node to device-tree of bcm283x
+Date: Fri, 13 May 2016 08:29:37 +0200
+Message-ID: <FA3695BE-D1A7-44E3-9714-08B6A002EB06@martin.sperl.org>
+References: <1463063738-11506-1-git-send-email-kernel@martin.sperl.org> <1463063738-11506-4-git-send-email-kernel@martin.sperl.org> <87posqamh9.fsf@eliezer.anholt.net>
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34605 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbcEMGTj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 02:19:39 -0400
+Received: from 212-186-180-163.dynamic.surfer.at ([212.186.180.163]:54556 "EHLO
+	cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbcEMG3k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 02:29:40 -0400
+In-Reply-To: <87posqamh9.fsf@eliezer.anholt.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, Eduardo Valentin <edubezval@gmail.com>
+To: Eric Anholt <eric@anholt.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-The current throttling strategy is to apply cooling levels
-on all processors in a package. Therefore, if one cooling
-device is requested to cap the frequency, the same request
-is applied to all sibling processors in the same package.
 
-For this reason, this patch removes the redundant cooling
-devices, registering only one cooling device per package.
-
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
-Srinivas,
-
-This is the outcome of our discussion on the Processor cooling device.
-As per your suggestion, I am now attempting to register a single
-cooling device per package.
-
-The only thing is about the sysfs links. Now the Processor cooling
-device would look like:
-$ ls /sys/class/thermal/cooling_device0/
-cur_state  device.0  device.1  device.2  device.3  max_state  power  subsystem	type  uevent
-
-Instead of:
-
-$ ls /sys/class/thermal/cooling_device0/
-cur_state  device  max_state  power  subsystem	type  uevent
-
-This is obviously to keep a link between the cooling device and
-its affected devices. Would this break userspace?
-
-BR,
-
-Eduardo Valentin
-
- drivers/acpi/processor_driver.c | 40 +++++++++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 11154a3..e1e17de 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -160,9 +160,29 @@ static struct notifier_block acpi_cpu_notifier = {
- };
- 
- #ifdef CONFIG_ACPI_CPU_FREQ_PSS
-+static struct thermal_cooling_device *
-+acpi_pss_register_cooling(struct acpi_processor *pr, struct acpi_device *device)
-+{
-+	int i, cpu = pr->id;
-+
-+	for_each_online_cpu(i) {
-+		if (topology_physical_package_id(i) ==
-+		    topology_physical_package_id(cpu)) {
-+			struct acpi_processor *pre = per_cpu(processors, i);
-+
-+			if (pre->cdev && !IS_ERR(pre->cdev))
-+				return pre->cdev;
-+		}
-+	}
-+
-+	return thermal_cooling_device_register("Processor", device,
-+					       &processor_cooling_ops);
-+}
-+
- static int acpi_pss_perf_init(struct acpi_processor *pr,
- 		struct acpi_device *device)
- {
-+	char cpu_id[15];
- 	int result = 0;
- 
- 	acpi_processor_ppc_has_changed(pr, 0);
-@@ -172,8 +192,7 @@ static int acpi_pss_perf_init(struct acpi_processor *pr,
- 	if (pr->flags.throttling)
- 		pr->flags.limit = 1;
- 
--	pr->cdev = thermal_cooling_device_register("Processor", device,
--						   &processor_cooling_ops);
-+	pr->cdev = acpi_pss_register_cooling(pr, device);
- 	if (IS_ERR(pr->cdev)) {
- 		result = PTR_ERR(pr->cdev);
- 		return result;
-@@ -191,9 +210,10 @@ static int acpi_pss_perf_init(struct acpi_processor *pr,
- 		goto err_thermal_unregister;
- 	}
- 
-+	snprintf(cpu_id, sizeof(cpu_id), "device.%d", pr->id);
- 	result = sysfs_create_link(&pr->cdev->device.kobj,
- 				   &device->dev.kobj,
--				   "device");
-+				   cpu_id);
- 	if (result) {
- 		dev_err(&pr->cdev->device,
- 			"Failed to create sysfs link 'device'\n");
-@@ -213,11 +233,25 @@ static int acpi_pss_perf_init(struct acpi_processor *pr,
- static void acpi_pss_perf_exit(struct acpi_processor *pr,
- 		struct acpi_device *device)
- {
-+	char cpu_id[15];
-+	int i;
-+
- 	if (pr->cdev) {
- 		sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
-+		snprintf(cpu_id, sizeof(cpu_id), "device.%d", pr->id);
- 		sysfs_remove_link(&pr->cdev->device.kobj, "device");
- 		thermal_cooling_device_unregister(pr->cdev);
- 		pr->cdev = NULL;
-+
-+		for_each_online_cpu(i) {
-+			if (topology_physical_package_id(i) ==
-+			    topology_physical_package_id(pr->id)) {
-+				struct acpi_processor *pre;
-+
-+				pre = per_cpu(processors, i);
-+				pre->cdev = NULL;
-+			}
-+		}
- 	}
- }
- #else
--- 
-2.1.4
+> On 13.05.2016, at 01:24, Eric Anholt <eric@anholt.net> wrote:
+> 
+> kernel@martin.sperl.org writes:
+> 
+>> From: Martin Sperl <kernel@martin.sperl.org>
+>> 
+>> Add the node for the thermal sensor of the bcm2835-soc
+>> to the device tree.
+>> 
+>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+>> ---
+>> arch/arm/boot/dts/bcm283x.dtsi | 6 ++++++
+>> 1 file changed, 6 insertions(+)
+>> 
+>> diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+>> index 9db9d97..525f1f2 100644
+>> --- a/arch/arm/boot/dts/bcm283x.dtsi
+>> +++ b/arch/arm/boot/dts/bcm283x.dtsi
+>> @@ -159,6 +159,12 @@
+>> 			status = "disabled";
+>> 		};
+>> 
+>> +		thermal: thermal@0x7e212000 {
+>> +			compatible = "brcm,bcm2835-thermal";
+>> +			reg = <0x7e212000 0x8>;
+>> +			clocks = <&clocks BCM2835_CLOCK_TSENS>;
+>> +		};
+>> +
+> 
+> You could drop the "thermal: " here since nothing refers to it.  Either
+> way,
+Actually you will refer to it in the device tree for the bcm2837
+so that you can set a different compatible string.
 
