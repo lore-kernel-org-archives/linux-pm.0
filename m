@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/5] cpufreq: governor: CPUFREQ_GOV_LIMITS never fails
-Date: Sat, 14 May 2016 00:59:27 +0200
-Message-ID: <4856300.OoAS5drrzx@vostro.rjw.lan>
+Subject: [PATCH 2/5] cpufreq: governor: Check transition latecy at init time only
+Date: Sat, 14 May 2016 01:00:28 +0200
+Message-ID: <8685194.VWxfunzal1@vostro.rjw.lan>
 References: <10707470.yIcqGAzuFY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,45 +15,53 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-None of the cpufreq governors currently in the tree will ever fail
-an invocation of the ->governor() callback with the event argument
-equal to CPUFREQ_GOV_LIMITS (unless invoked with incorrect arguments
-which doesn't matter anyway) and had it ever failed, the result of
-it wouldn't have been very clean.
-
-For this reason, rearrange the code in the core to ignore the return
-value of cpufreq_governor() when called with event equal to
-CPUFREQ_GOV_LIMITS.
+It is not necessary to check the governor's max_transition_latency
+attribute every time cpufreq_governor() runs, so check it only if
+the event argument is CPUFREQ_GOV_POLICY_INIT.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c |   25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2054,7 +2054,11 @@ static int cpufreq_start_governor(struct
- 		cpufreq_update_current_freq(policy);
+@@ -2011,23 +2011,24 @@ static int cpufreq_governor(struct cpufr
+ 	if (!policy->governor)
+ 		return -EINVAL;
  
- 	ret = cpufreq_governor(policy, CPUFREQ_GOV_START);
--	return ret ? ret : cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+	if (ret)
-+		return ret;
-+
-+	cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+	return 0;
- }
+-	if (policy->governor->max_transition_latency &&
+-	    policy->cpuinfo.transition_latency >
+-	    policy->governor->max_transition_latency) {
+-		struct cpufreq_governor *gov = cpufreq_fallback_governor();
++	if (event == CPUFREQ_GOV_POLICY_INIT) {
++		if (policy->governor->max_transition_latency &&
++		    policy->cpuinfo.transition_latency >
++		    policy->governor->max_transition_latency) {
++			struct cpufreq_governor *gov = cpufreq_fallback_governor();
  
- int cpufreq_register_governor(struct cpufreq_governor *governor)
-@@ -2195,7 +2199,8 @@ static int cpufreq_set_policy(struct cpu
+-		if (gov) {
+-			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
+-				policy->governor->name, gov->name);
+-			policy->governor = gov;
+-		} else {
+-			return -EINVAL;
++			if (gov) {
++				pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
++					policy->governor->name, gov->name);
++				policy->governor = gov;
++			} else {
++				return -EINVAL;
++			}
+ 		}
+-	}
  
- 	if (new_policy->governor == policy->governor) {
- 		pr_debug("cpufreq: governor limits update\n");
--		return cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+		cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+		return 0;
- 	}
+-	if (event == CPUFREQ_GOV_POLICY_INIT)
+ 		if (!try_module_get(policy->governor->owner))
+ 			return -EINVAL;
++	}
  
- 	pr_debug("governor switch\n");
+ 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
+ 
