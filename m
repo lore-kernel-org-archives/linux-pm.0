@@ -1,72 +1,52 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 06/13] PCI: pciehp: Support runtime pm
+Subject: [PATCH v2 07/13] PCI: pciehp: Ignore interrupts during D3cold
 Date: Fri, 13 May 2016 13:15:31 +0200
-Message-ID: <a73a2e066e43e2e9d15d670be52fe920f013e5d1.1463134231.git.lukas@wunner.de>
+Message-ID: <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
 References: <cover.1463134231.git.lukas@wunner.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:42794 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbcEMLRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 07:17:00 -0400
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Andreas Noever <andreas.noever@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Resume the port for the duration of board_added() and remove_board().
-When plugging a device in, the port stays active as long as it has
-active children.  When nothing is plugged in, the port may suspend since
-hotplug detection continues to work during D3hot.  Thus further runtime
-refs need not be acquired.
+If a hotplug port is suspended to D3cold, its slot status register
+cannot be read.  If that hotplug port happens to share its IRQ with
+other devices, then whenever an interrupt occurs for one of these
+devices, a "no response from device" message is logged with level
+KERN_INFO.  Apart from this annoyance, CPU time is needlessly spent
+trying to read the slot status register even though we know in advance
+that it will fail.
+
+On MacBook Pros introduced 2011 and 2012, the IRQ of a Thunderbolt
+hotplug port is unfortunately shared with a wireless card, an audio card
+and an SDXC controller.  When the Thunderbolt controller is powered
+down, the machine carries out at least one unneeded slot status register
+read for each wireless packet received and prints a corresponding error
+message to the system log.
+
+The hotplug port's current_state will be D3cold when it's powered down,
+so ignore interrupts that occur during that power state.
 
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/hotplug/pciehp_ctrl.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/pci/hotplug/pciehp_hpc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
-index 880978b..edf8b0e 100644
---- a/drivers/pci/hotplug/pciehp_ctrl.c
-+++ b/drivers/pci/hotplug/pciehp_ctrl.c
-@@ -31,6 +31,7 @@
- #include <linux/kernel.h>
- #include <linux/types.h>
- #include <linux/slab.h>
-+#include <linux/pm_runtime.h>
- #include <linux/pci.h>
- #include "../pci.h"
- #include "pciehp.h"
-@@ -432,7 +433,9 @@ int pciehp_enable_slot(struct slot *p_slot)
+diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+index 5c24e93..08e84d6 100644
+--- a/drivers/pci/hotplug/pciehp_hpc.c
++++ b/drivers/pci/hotplug/pciehp_hpc.c
+@@ -546,6 +546,10 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+ 	u8 present;
+ 	bool link;
  
- 	pciehp_get_latch_status(p_slot, &getstatus);
- 
-+	pm_runtime_get_sync(&ctrl->pcie->port->dev);
- 	rc = board_added(p_slot);
-+	pm_runtime_put(&ctrl->pcie->port->dev);
- 	if (rc)
- 		pciehp_get_latch_status(p_slot, &getstatus);
- 
-@@ -445,6 +448,7 @@ int pciehp_enable_slot(struct slot *p_slot)
- int pciehp_disable_slot(struct slot *p_slot)
- {
- 	u8 getstatus = 0;
-+	int rc;
- 	struct controller *ctrl = p_slot->ctrl;
- 
- 	if (!p_slot->ctrl)
-@@ -459,7 +463,10 @@ int pciehp_disable_slot(struct slot *p_slot)
- 		}
- 	}
- 
--	return remove_board(p_slot);
-+	pm_runtime_get_sync(&ctrl->pcie->port->dev);
-+	rc = remove_board(p_slot);
-+	pm_runtime_put(&ctrl->pcie->port->dev);
-+	return rc;
- }
- 
- int pciehp_sysfs_enable_slot(struct slot *p_slot)
++	/* Interrupts cannot originate from a controller that's asleep */
++	if (pdev->current_state == PCI_D3cold)
++		return IRQ_NONE;
++
+ 	/*
+ 	 * In order to guarantee that all interrupt events are
+ 	 * serviced, we need to re-inspect Slot Status register after
 -- 
 2.8.1
-
