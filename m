@@ -1,31 +1,37 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 update 4/4] Thermal: add INT3406 thermal driver
-Date: Sat, 14 May 2016 00:05:24 +0200
-Message-ID: <5104945.McBGKbKeb7@vostro.rjw.lan>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com> <20160509075458.GA8945@aaronlu.sh.intel.com> <1462867730.25391.2.camel@rzhang1-mobl4>
+Subject: Re: [PATCH-next v2 0/2] cpufreq: powernv: Fixes for Global pstate management
+Date: Sat, 14 May 2016 00:08:53 +0200
+Message-ID: <2343292.GUrEpiMUq0@vostro.rjw.lan>
+References: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <20160509153204.GA21661@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41921 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53319 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753759AbcEMWCA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 18:02:00 -0400
-In-Reply-To: <1462867730.25391.2.camel@rzhang1-mobl4>
+	by vger.kernel.org with SMTP id S1753440AbcEMWF3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 18:05:29 -0400
+In-Reply-To: <20160509153204.GA21661@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>
-Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On Tuesday, May 10, 2016 08:08:52 AM Zhang, Rui wrote:
-> On Mon, 2016-05-09 at 15:54 +0800, Aaron Lu wrote:
-> > INT3406 ACPI device object resembles an ACPI video output device, but its
-> > _BCM is said to be deprecated and should not be used. So we will make
-> > use of the raw interface to do the actual cooling.
+On Monday, May 09, 2016 09:02:04 PM Viresh Kumar wrote:
+> On 03-05-16, 20:49, Akshay Adiga wrote:
+> > Fixes are based on patch https://patchwork.ozlabs.org/patch/612058/ which
+> > is in Rafael's linux-next.
 > > 
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> > - Patch [1] fixes WARN_ON in powernv_target_index()
+> > - Patch [2] Deleting any pending timer to saves an unnecessary irq call
+> >  in powernv_target_index()
+> > 
+> > Akshay Adiga (2):
+> >   cpufreq: powernv: Move smp_call_function_any() out of irq safe block
+> >   cpufreq: powernv: del_timer_sync when global and local pstate are
+> >     equal
 > 
-> Acked-by: Zhang Rui <rui.zhang@intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Applied, thanks!
+Both [1-2/2] applied, thanks!
 
