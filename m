@@ -1,93 +1,189 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 03/13] PCI: Add Thunderbolt portdrv service type
+Subject: [PATCH v2 04/13] PCI: Generalize portdrv pm iterator
 Date: Fri, 13 May 2016 13:15:31 +0200
-Message-ID: <3e694101e5fa1551e07b5ecf92157087922e952f.1463134231.git.lukas@wunner.de>
+Message-ID: <fe6b28525ac234cb580e3de1897511e21b6b78af.1463134231.git.lukas@wunner.de>
 References: <cover.1463134231.git.lukas@wunner.de>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:54075 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbcEMLQe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 07:16:34 -0400
 In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Andreas Noever <andreas.noever@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-A Thunderbolt controller is a PCIe switch which, as defined in the PCIe
-spec, appears to the OS "as a collection of virtual PCI-to-PCI bridges".
+Move ->suspend and ->resume callbacks from portdrv_core.c to
+portdrv_pci.c (where ->resume_noirq, ->runtime_suspend, ->runtime_resume
+and ->runtime_idle already are), allowing us to drop their prototypes
+from portdrv.h.
 
-We're about to add support for Apple's nonstandard ACPI methods to power
-Thunderbolt controllers up and down.  To facilitate that, allocate a
-port service for every PCI bridge belonging to a Thunderbolt controller.
+Replace suspend_iter() and resume_iter() with a single function
+generic_iter() with the intention of using it in further pm callbacks.
 
-This port service might come in handy for other use cases, e.g. device
-initialization of Thunderbolt controllers.
+Rename pcie_port_device_(suspend|resume) to pcie_port_(suspend|resume)
+to be consistent with the existing pm callbacks.
 
-To understand when and how this port service will be allocated, consider
-the PCI devices exposed by a Thunderbolt host controller:
+Replace the somewhat terse kerneldoc for pcie_port_(suspend|resume) with
+a generic documentation which applies to all pm callbacks.
 
-  (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-                                     +-- Downstream Bridge 1 --
-                                     +-- Downstream Bridge 2 --
-                                     ...
+No functional change intended.
 
-The upstream and downstream bridges represent the PCIe switch and a
-Thunderbolt port service will be allocated for each of them.  Hotplugged
-devices will appear behind the downstream bridges.  The NHI (Native Host
-Interface) is a virtual PCI device to manage the switch fabric and is
-not relevant here.  It uses class 0x88000, so it is not a PCIe port.
-
-Next, consider the PCI devices exposed by Thunderbolt controllers built
-into hotplugged devices:
-
-  -- Upstream Bridge ---- Downstream Bridge ---- Hotplugged device
-
-Again, Thunderbolt port services will be allocated for the upstream and
-downstream bridge, but not for the hotplugged device, which might use
-e.g. class 0x20000 if it's a Thunderbolt Ethernet adapter.
+(Okay there *is* one functional change, generic_iter() returns the
+result of the service driver's callback whereas suspend_iter() and
+resume_iter() always returned 0.  That was a bug since we never
+propagated errors that occurred in the service driver callbacks back to
+the pm core.  The bug never manifested itself because PME's and
+Hotplug's pm callbacks always return 0, AER doesn't declare pm callbacks
+and VC has no service driver.  So there's no *behavioral* change right
+now.)
 
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pcie/portdrv.h      | 2 +-
- drivers/pci/pcie/portdrv_core.c | 2 ++
- include/linux/pcieport_if.h     | 2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/pci/pcie/portdrv.h      |  4 ----
+ drivers/pci/pcie/portdrv_core.c | 45 -------------------------------------
+ drivers/pci/pcie/portdrv_pci.c  | 49 ++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 43 insertions(+), 55 deletions(-)
 
 diff --git a/drivers/pci/pcie/portdrv.h b/drivers/pci/pcie/portdrv.h
-index 587aef3..a0d9973 100644
+index a0d9973..9f21926 100644
 --- a/drivers/pci/pcie/portdrv.h
 +++ b/drivers/pci/pcie/portdrv.h
-@@ -11,7 +11,7 @@
+@@ -22,10 +22,6 @@
  
- #include <linux/compiler.h>
- 
--#define PCIE_PORT_DEVICE_MAXSERVICES   5
-+#define PCIE_PORT_DEVICE_MAXSERVICES	6
- /*
-  * According to the PCI Express Base Specification 2.0, the indices of
-  * the MSI-X table entries used by port services must not exceed 31
+ extern struct bus_type pcie_port_bus_type;
+ int pcie_port_device_register(struct pci_dev *dev);
+-#ifdef CONFIG_PM
+-int pcie_port_device_suspend(struct device *dev);
+-int pcie_port_device_resume(struct device *dev);
+-#endif
+ void pcie_port_device_remove(struct pci_dev *dev);
+ int __must_check pcie_port_bus_register(void);
+ void pcie_port_bus_unregister(void);
 diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index d04fb58..8cd9db8 100644
+index 8cd9db8..3621f96 100644
 --- a/drivers/pci/pcie/portdrv_core.c
 +++ b/drivers/pci/pcie/portdrv_core.c
-@@ -310,6 +310,8 @@ static int get_port_device_capability(struct pci_dev *dev)
- 	}
- 	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DPC))
- 		services |= PCIE_PORT_SERVICE_DPC;
-+	if (dev->is_thunderbolt)
-+		services |= PCIE_PORT_SERVICE_TBT;
- 
- 	return services;
+@@ -414,51 +414,6 @@ error_disable:
+ 	return status;
  }
-diff --git a/include/linux/pcieport_if.h b/include/linux/pcieport_if.h
-index afcd130..d205bd6 100644
---- a/include/linux/pcieport_if.h
-+++ b/include/linux/pcieport_if.h
-@@ -23,6 +23,8 @@
- #define PCIE_PORT_SERVICE_VC		(1 << PCIE_PORT_SERVICE_VC_SHIFT)
- #define PCIE_PORT_SERVICE_DPC_SHIFT	4	/* Downstream Port Containment */
- #define PCIE_PORT_SERVICE_DPC		(1 << PCIE_PORT_SERVICE_DPC_SHIFT)
-+#define PCIE_PORT_SERVICE_TBT_SHIFT	5	/* Thunderbolt */
-+#define PCIE_PORT_SERVICE_TBT		(1 << PCIE_PORT_SERVICE_TBT_SHIFT)
  
- struct pcie_device {
- 	int		irq;	    /* Service IRQ/MSI/MSI-X Vector */
+-#ifdef CONFIG_PM
+-static int suspend_iter(struct device *dev, void *data)
+-{
+-	struct pcie_port_service_driver *service_driver;
+-
+-	if ((dev->bus == &pcie_port_bus_type) && dev->driver) {
+-		service_driver = to_service_driver(dev->driver);
+-		if (service_driver->suspend)
+-			service_driver->suspend(to_pcie_device(dev));
+-	}
+-	return 0;
+-}
+-
+-/**
+- * pcie_port_device_suspend - suspend port services associated with a PCIe port
+- * @dev: PCI Express port to handle
+- */
+-int pcie_port_device_suspend(struct device *dev)
+-{
+-	return device_for_each_child(dev, NULL, suspend_iter);
+-}
+-
+-static int resume_iter(struct device *dev, void *data)
+-{
+-	struct pcie_port_service_driver *service_driver;
+-
+-	if ((dev->bus == &pcie_port_bus_type) &&
+-	    (dev->driver)) {
+-		service_driver = to_service_driver(dev->driver);
+-		if (service_driver->resume)
+-			service_driver->resume(to_pcie_device(dev));
+-	}
+-	return 0;
+-}
+-
+-/**
+- * pcie_port_device_resume - resume port services associated with a PCIe port
+- * @dev: PCI Express port to handle
+- */
+-int pcie_port_device_resume(struct device *dev)
+-{
+-	return device_for_each_child(dev, NULL, resume_iter);
+-}
+-#endif /* PM */
+-
+ static int remove_iter(struct device *dev, void *data)
+ {
+ 	if (dev->bus == &pcie_port_bus_type)
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index cd41360..acbd1d2 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -79,6 +79,43 @@ static int pcie_portdrv_restore_config(struct pci_dev *dev)
+ }
+ 
+ #ifdef CONFIG_PM
++typedef int (*pcie_pm_callback_t)(struct pcie_device *);
++
++static int generic_iter(struct device *dev, void *data)
++{
++	struct pcie_port_service_driver *service_driver;
++	size_t offset = *(size_t *)data;
++	pcie_pm_callback_t cb;
++
++	if ((dev->bus == &pcie_port_bus_type) && dev->driver) {
++		service_driver = to_service_driver(dev->driver);
++		cb = *(pcie_pm_callback_t *)((void *)service_driver + offset);
++		if (cb)
++			return cb(to_pcie_device(dev));
++	}
++	return 0;
++}
++
++/*
++ * The PM callbacks iterate over the port services allocated for the PCIe port
++ * and call down to each of them. Execution is aborted as soon as one of them
++ * returns a non-zero value.
++ *
++ * The return value is 0 if all port services' callbacks returned 0, otherwise
++ * it is the return value of the last callback executed.
++ */
++static int pcie_port_suspend(struct device *dev)
++{
++	size_t o = offsetof(struct pcie_port_service_driver, suspend);
++	return device_for_each_child(dev, &o, generic_iter);
++}
++
++static int pcie_port_resume(struct device *dev)
++{
++	size_t o = offsetof(struct pcie_port_service_driver, resume);
++	return device_for_each_child(dev, &o, generic_iter);
++}
++
+ static int pcie_port_resume_noirq(struct device *dev)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+@@ -114,12 +151,12 @@ static int pcie_port_runtime_idle(struct device *dev)
+ }
+ 
+ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
+-	.suspend	= pcie_port_device_suspend,
+-	.resume		= pcie_port_device_resume,
+-	.freeze		= pcie_port_device_suspend,
+-	.thaw		= pcie_port_device_resume,
+-	.poweroff	= pcie_port_device_suspend,
+-	.restore	= pcie_port_device_resume,
++	.suspend	= pcie_port_suspend,
++	.resume		= pcie_port_resume,
++	.freeze		= pcie_port_suspend,
++	.thaw		= pcie_port_resume,
++	.poweroff	= pcie_port_suspend,
++	.restore	= pcie_port_resume,
+ 	.resume_noirq	= pcie_port_resume_noirq,
+ 	.runtime_suspend = pcie_port_runtime_suspend,
+ 	.runtime_resume	= pcie_port_runtime_resume,
 -- 
 2.8.1
+
