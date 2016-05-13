@@ -1,110 +1,82 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC] Should we add Android's Interactive governor into mainline
- now?
-Date: Fri, 13 May 2016 14:15:09 +0100
-Message-ID: <20160513131509.GM9525@e106622-lin>
-References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
- <20160512163648.GB12886@graphite.smuckle.net>
- <CAJZ5v0jYqLKf-ckpEm7dm_jHeUkD6ey_cAgdrgFFuFnMYa-HUw@mail.gmail.com>
- <20160512211012.GA28594@graphite.smuckle.net>
- <20160513114456.GL9525@e106622-lin>
- <CAJZ5v0igpMqgrLdJdNRkb7qFG65UJ4XCUtr7fae1eoVCF-coig@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Fri, 13 May 2016 15:59:59 +0200
+Message-ID: <CAPDyKFqJqq7hUFBvo91hc-5H7fwu2WfcOzxGO25VopZ3CwNoXA@mail.gmail.com>
+References: <1461234842-22820-1-git-send-email-ulf.hansson@linaro.org>
+	<5465506.Z3sjI0lQh6@avalon>
+	<CAPDyKFpOxabizwQqhtKb-h0vGpTRtrCa0nPxAKMY22rnjLCouw@mail.gmail.com>
+	<4661739.p5SU9QcIps@avalon>
+	<CAJZ5v0jTAM74asCM5gG5wBWn+gvSQ21_W6dY9WQD+cMybUnEEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36478 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751510AbcEMNO7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 May 2016 09:14:59 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0igpMqgrLdJdNRkb7qFG65UJ4XCUtr7fae1eoVCF-coig@mail.gmail.com>
+Received: from mail-wm0-f42.google.com ([74.125.82.42]:38317 "EHLO
+	mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbcEMOAA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 10:00:00 -0400
+Received: by mail-wm0-f42.google.com with SMTP id g17so31854698wme.1
+        for <linux-pm@vger.kernel.org>; Fri, 13 May 2016 07:00:00 -0700 (PDT)
+In-Reply-To: <CAJZ5v0jTAM74asCM5gG5wBWn+gvSQ21_W6dY9WQD+cMybUnEEg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <andy.gross@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 13/05/16 13:56, Rafael J. Wysocki wrote:
-> On Fri, May 13, 2016 at 1:44 PM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > Hi,
-> >
-> > On 12/05/16 14:10, Steve Muckle wrote:
-> >> On Thu, May 12, 2016 at 10:34:39PM +0200, Rafael J. Wysocki wrote:
-> >> > > That said my understanding is that the goal is to eventually deprecate
-> >> > > the non-sched governors. That will be made harder by adding another one
-> >> > > into the tree.
-> >> >
-> >> > We can't really deprecate any out-of-the-tree code, because it is
-> >> > beyond the scope of our influence, so one can argue that taking it
-> >> > into the tree may actually allow us to deprecate it at one point going
-> >> > forward. :-)
-> >> >
-> >> > Seriously, though, "deprecation" may not be the right term to use
-> >> > here.  Our goal, IMO, should be to persuade the users of the code in
-> >> > question to switch over to something else and I'm not really sure if
-> >> > refusing to take that code into the tree is the best way to achieve
-> >> > that goal.
-> >> >
-> >> > I do believe that if there's a significant piece of code living out of
-> >> > the tree for a sufficiently long time, the tree is likely to be
-> >> > missing something important.  Then, it is really difficult to figure
-> >> > out what is missing without even trying to take that code into the
-> >> > tree.
-> >>
-> >> By far the biggest user of interactive is Android (I'm not aware of its
-> >> use elsewhere). Persuading Google to switch is relatively doable once a
-> >> viable alternative exists. After that point I'd expect the desire to
-> >> merge and maintain interactive would almost immediately disappear. Folks
-> >> wanting to run upstream kernels on already released devices have much
-> >> bigger hurdles than merging the interactive governor.
-> >>
-> >> But if interactive is merged I'm worried that many other users on random
-> >> platforms will adopt it, for whatever reason, introducing a support
-> >> burden during a time that we're trying to develop and encourage an
-> >> alternative.
-> >>
-> >
-> > Right. It looks a bit odd to merge (and then maintain) something while
-> > we are actively working on an alternative designed to suit the same kind
-> > of needs.
-> 
-> I'm not worried too much about the maintenance part.  The code seems
-> to be mostly self-contained and it shouldn't add too many additional
-> constraints on the core as far as the interface is concerned.
-> 
+On 12 May 2016 at 22:28, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, May 12, 2016 at 9:01 PM, Laurent Pinchart
+> <laurent.pinchart@ideasonboard.com> wrote:
+>> Hello,
+>>
+>> On Wednesday 27 Apr 2016 16:23:49 Ulf Hansson wrote:
+>>> [...]
+>>>
+>>> >> Following you reasoning, I agree!
+>>> >>
+>>> >> Let's put this patch on hold for a little while. I am already working
+>>> >> on changing genpd, so it shouldn't take long before I can post some
+>>> >> additional genpd patches improving the behaviour.
+>>> >
+>>> > I'd like to see something merged for v4.7 if possible. I agree that my
+>>> > patch isn't a long term solution (we want to avoid adding additional
+>>> > fields to the device power structure), but it has the benefit of being
+>>> > available now and fixing the problem I ran into with drivers that would
+>>> > be broken on v4.7 without a fix. Do you think you could get a better fix
+>>> > ready in time for v4.7 ? If so I'm fine with dropping this patch, but
+>>> > otherwise I'd prefer to get it merged and reverted as part of your better
+>>> > implementation for v4.8.
+>>>
+>>> My impression was that devices becomes unnecessary resumed when they
+>>> don't need to. They won't stay resumed as the PM core invokes
+>>> pm_runtime_put() in the system PM complete phase.
+>>>
+>>> So, in the end I think we are trying to optimize a behaviour here, but
+>>> not fix something that is "broken", correct?
+>>>
+>>> Anyway, I have no objections to your proposed solution, so I leave it
+>>> to Rafael and Kevin to decide what to do.
+>>
+>> Kevin, Rafael, any comment ? I need to fix PM support in a driver that is
+>> currently broken partly due to this issue. Which of "PM / Runtime: Only force-
+>> resume device if it has been force-suspended" and this patch should we merge,
+>> if any ?
+>
+> My and Kevin's assumption was that Ulf would provide a better fix
+> shortly, but I'm not sure how realistic that is.
 
-Yeah, this is true.
+First, is this really a fix we are talking about or an optimization? Laurent?
 
-> > Also considering that, with Viresh's effort, the merge
-> > request will not come from the original authors.
-> 
-> Which may not be a bad thing. ;-)
-> 
+Second, I currently have patches for genpd etc that I think may deals
+with this better, although I need a day or two before I can post them.
 
-:-)
+Additionally, "[PATCH v3 1/2] PM / Domains: Allow genpd to power on
+during the system PM phases", has been posted [1] already.
+That change, will prevent Laurent's approach to work and it's because
+genpd will force a runtime resume of the device in the system PM
+prepare phase. This means pm_genpd_force_resume() will anyway *always*
+resume the device.
 
-> >> Anyway that's just my $.02 - it'd actually be good for me as
-> >> again it'd permit easier comparison with schedutil, so I won't complain
-> >> if it goes in :) .
-> >>
-> >
-> > Anyway, I can't say that comparison would not be much easier. :-)
-> > Even though we won't run the workloads interactive has been designed for
-> > on mainline, I guess.
-> 
-> Think about running Android on top of the mainline, though.  That
-> would be somewhat easier if we had interactive in the mainline,
-> wouldn't it?
-> 
+Kind regards
+Uffe
 
-I agree that there might be value in reducing the gap between Android
-and mainline (even though I still fear that lacking interactive is not
-the biggest problem out there). However, wouldn't it be better if we
-convince Google folks to switch to something coming from mainline
-instead of doing the other way around?
-
-Anyway, as said, if Viresh wants and has time to work on this I think it
-will still help doing comparisons, so I'm not saying no to it! :-)
-
-Best,
-
-- Juri
+[1]
+http://www.spinics.net/lists/dri-devel/msg107210.html
