@@ -1,135 +1,164 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
+Subject: [PATCH v2 09/13] PCI: Do not write to PM control register while in
+ D3cold
 Date: Fri, 13 May 2016 13:15:31 +0200
-Message-ID: <cover.1463134231.git.lukas@wunner.de>
+Message-ID: <1741c0949a06c96a5bae9ef5d8eceaba8188730e.1463134232.git.lukas@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:41869 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbcEMLXY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 07:23:24 -0400
+Received: from mailout1.hostsharing.net ([83.223.95.204]:51127 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbcEMLYC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 07:24:02 -0400
+In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
+Cc: Andreas Noever <andreas.noever@gmail.com>, Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-This series powers Thunderbolt controllers on Macs down when nothing is
-plugged in, saving 1.7 W on machines with a Light Ridge controller and
-reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
+The PM control register is not accessible in D3cold so we shouldn't try
+writing to it in pci_raw_set_power_state() and return an error instead.
 
-Briefly, a custom ACPI method provided by Apple is used to cut power to
-the controller.  A GPE is enabled while the controller is powered down
-which side-band signals a plug event, whereupon power is reinstated using
-the ACPI method.  Note that even though this mechanism is ACPI-based,
-it does not use _PSx methods and is thus entirely nonstandard.
+The current behaviour is fatal for devices which are not power-managed
+by the platform, yet can be runtime suspended to D3cold with some other
+mechanism by the driver:
 
+- When the device is runtime resumed, pci_pm_runtime_resume() first
+  calls pci_restore_standard_config() which calls pci_set_power_state()
+  which calls pci_raw_set_power_state() to put the device into D0.
+  This fails since the device is still in D3cold.  It will be powered up
+  later on when pci_pm_runtime_resume() calls the driver's
+  ->runtime_resume callback.
 
-A Thunderbolt controller appears to the OS as a set of PCI devices:  One
-NHI (Native Host Interface) and multiple bridges.  Power is cut to the
-entire set of devices:
+- pci_raw_set_power_state() prints a message that the device refused to
+  change power state and returns 0.  Further up in the call stack,
+  pci_restore_standard_config() calls pci_restore_state(), which fails
+  since the device is in D3cold, but nevertheless invalidates the
+  saved_state.
 
-  (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-                                     +-- Downstream Bridge 1 --
-                                     +-- Downstream Bridge 2 --
-                                     ...
+- When pci_pm_runtime_resume() finally calls the driver ->runtime_resume
+  callback to power up the device, the saved_state is gone.
 
-v1 of this series shoehorned power control into the NHI driver.  This
-violated the Linux pm model which assumes that a child cannot resume
-before its parent. As seen above, the NHI is a child, so the child cut
-power to the bridges above it.
+Return an error from pci_raw_set_power_state() to avoid this.
 
-v2 resolves this by positioning power control on the controller's
-topmost device, which is the upstream bridge.  That is achieved by
-binding to it as a Thunderbolt port service driver.  portdrv already
-calls down to each service driver on ->suspend and ->resume and I
-extended that scheme to further PM callbacks.  E.g. when the upstream
-bridge is runtime suspended, portdrv invokes the ->runtime_suspend
-callback of each attached service driver, and the Thunderbolt service
-driver's callback in turn invokes the ACPI method to cut power to the
-controller.
+An example for devices affected by this are Thunderbolt controllers
+built into Macs which can be put into D3cold with nonstandard ACPI
+methods.
 
+Unfortunately we rely on pci_raw_set_power_state()'s current behaviour
+in several places: When platform_pci_set_power_state() is called to wake
+a device from D3cold, its current_state is not updated even though it is
+no longer in D3cold.  Instead, pci_raw_set_power_state() is assumed to
+clean up the resulting incongruence.  Fix by setting current_state to
+PCI_UNKNOWN after platform_pci_set_power_state().
 
-For such a nonstandard ACPI-based PM mechanism one would normally assign
-a dev_pm_domain to the upstream bridge which overrides the PCI subsystem
-PM callbacks.  But that's not an option here because dev_pm_domain_set()
-can only be called during driver probe.  The driver is portdrv and
-obviously loads earlier than the thunderbolt port service driver.
-So one has to make do with the PCI subsystem PM callbacks.
+Also, when a bridge is put into D3cold, its children's current_state is
+changed to D3cold in __pci_complete_power_transition().  (Introduced by
+commit 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support").) This
+doesn't necessarily reflect the children's actual power state: They may
+still be powered on, they're just no longer accessible.  However this
+shouldn't be a concern because if the children are accessed, their
+parent needs to resume anyway and the PM core takes care of this.
+Again, pci_raw_set_power_state() is relied upon to clean up the
+current_state when the children are resumed the next time.  We cannot
+reliably reconstruct the children's current_state when resuming their
+parent.  We also shouldn't blindly set it to PCI_UNKNOWN since some
+children may actually be turned off and D3cold is their correct
+current_state.  Therefore fix by no longer touching the children's
+current_state at all.
 
-The PCI core currently assumes that devices can only be put into D3cold
-by the platform, i.e. using the standard ACPI _PSx methods.  I extended
-the PCI core so that it can deal with devices which are put into D3cold
-by the driver callbacks.  It turns out only two changes are needed to
-make this work, and they are in patches [09/13] and [10/13].  Runtime
-suspend works out of the box, but runtime resume tries to set the device
-power state *before* invoking the driver callback, and this goes awry
-since the device is still in D3cold.  I solved this by returning an error
-in pci_raw_set_power_state() if the device's current_state is D3cold
-(patch [09/13]).
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci.c | 43 ++++++++++---------------------------------
+ 1 file changed, 10 insertions(+), 33 deletions(-)
 
-Theoretically it would also be possible to patch the missing _PSx methods
-into the ACPI namespace at runtime but I suspect it wouldn't be pretty:
-I think I'd have to include pre-compiled AML methods in the kernel and
-modify those blobs at runtime (adjust GPE number etc) before patching
-them into the namespace.
-
-
-To make direct-complete work for such non-platform-power-managed devices,
-I also had to modify pci_target_state() (patch [10/13]).
-
-Finally, I wanted to avoid the mandatory runtime resume after direct-
-complete which was introduced by Rafael with 58a1fbbb2ee8 ("PM / PCI /
-ACPI: Kick devices that might have been reset by firmware"), so I added
-the possibility to opt out of it (patch [11/13]).
-
-
-I've pushed these patches to GitHub where they can be reviewed more
-comfortably with green/red highlighting:
-https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
-
-For reference, here's a link to v1:
-http://thread.gmane.org/gmane.linux.power-management.general/73197
-
-Thanks in advance for your comments.
-
-Lukas
-
-
-Lukas Wunner (13):
-  PCI: Recognize Thunderbolt devices
-  PCI: Allow D3 for Thunderbolt ports
-  PCI: Add Thunderbolt portdrv service type
-  PCI: Generalize portdrv pm iterator
-  PCI: Use portdrv pm iterator on further callbacks
-  PCI: pciehp: Support runtime pm
-  PCI: pciehp: Ignore interrupts during D3cold
-  PCI: Allow runtime PM for Thunderbolt hotplug ports on Macs
-  PCI: Do not write to PM control register while in D3cold
-  PCI: Avoid going from D3cold to D3hot for system sleep
-  PM / sleep: Allow opt-out from runtime resume after direct-complete
-  thunderbolt: Support runtime pm on upstream bridge
-  thunderbolt: Support runtime pm on NHI
-
- drivers/base/power/generic_ops.c  |   3 +-
- drivers/pci/hotplug/pciehp_ctrl.c |   9 +-
- drivers/pci/hotplug/pciehp_hpc.c  |   4 +
- drivers/pci/pci.c                 |  50 ++----
- drivers/pci/pci.h                 |   2 +
- drivers/pci/pcie/portdrv.h        |   6 +-
- drivers/pci/pcie/portdrv_core.c   |  47 +-----
- drivers/pci/pcie/portdrv_pci.c    |  88 ++++++++--
- drivers/pci/probe.c               |  17 ++
- drivers/thunderbolt/Kconfig       |   4 +-
- drivers/thunderbolt/Makefile      |   4 +-
- drivers/thunderbolt/nhi.c         |  32 +++-
- drivers/thunderbolt/switch.c      |   9 +
- drivers/thunderbolt/tb.c          |  13 ++
- drivers/thunderbolt/upstream.c    | 345 ++++++++++++++++++++++++++++++++++++++
- include/linux/pci.h               |   1 +
- include/linux/pcieport_if.h       |   7 +
- include/linux/pm.h                |   1 +
- 18 files changed, 539 insertions(+), 103 deletions(-)
- create mode 100644 drivers/thunderbolt/upstream.c
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 95727b4..791dfe7 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -612,6 +612,9 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+ 	if (!dev->pm_cap)
+ 		return -EIO;
+ 
++	if (dev->current_state == PCI_D3cold)
++		return -EIO;
++
+ 	if (state < PCI_D0 || state > PCI_D3hot)
+ 		return -EINVAL;
+ 
+@@ -728,8 +731,10 @@ void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+  */
+ void pci_power_up(struct pci_dev *dev)
+ {
+-	if (platform_pci_power_manageable(dev))
++	if (platform_pci_power_manageable(dev)) {
+ 		platform_pci_set_power_state(dev, PCI_D0);
++		dev->current_state = PCI_UNKNOWN;
++	}
+ 
+ 	pci_raw_set_power_state(dev, PCI_D0);
+ 	pci_update_current_state(dev, PCI_D0);
+@@ -746,8 +751,10 @@ static int pci_platform_power_transition(struct pci_dev *dev, pci_power_t state)
+ 
+ 	if (platform_pci_power_manageable(dev)) {
+ 		error = platform_pci_set_power_state(dev, state);
+-		if (!error)
++		if (!error) {
++			dev->current_state = PCI_UNKNOWN;
+ 			pci_update_current_state(dev, state);
++		}
+ 	} else
+ 		error = -ENODEV;
+ 
+@@ -809,30 +816,6 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
+ }
+ 
+ /**
+- * __pci_dev_set_current_state - Set current state of a PCI device
+- * @dev: Device to handle
+- * @data: pointer to state to be set
+- */
+-static int __pci_dev_set_current_state(struct pci_dev *dev, void *data)
+-{
+-	pci_power_t state = *(pci_power_t *)data;
+-
+-	dev->current_state = state;
+-	return 0;
+-}
+-
+-/**
+- * __pci_bus_set_current_state - Walk given bus and set current state of devices
+- * @bus: Top bus of the subtree to walk.
+- * @state: state to be set
+- */
+-static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
+-{
+-	if (bus)
+-		pci_walk_bus(bus, __pci_dev_set_current_state, &state);
+-}
+-
+-/**
+  * __pci_complete_power_transition - Complete power transition of a PCI device
+  * @dev: PCI device to handle.
+  * @state: State to put the device into.
+@@ -841,15 +824,9 @@ static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
+  */
+ int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
+ {
+-	int ret;
+-
+ 	if (state <= PCI_D0)
+ 		return -EINVAL;
+-	ret = pci_platform_power_transition(dev, state);
+-	/* Power off the bridge may power off the whole hierarchy */
+-	if (!ret && state == PCI_D3cold)
+-		__pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
+-	return ret;
++	return pci_platform_power_transition(dev, state);
+ }
+ EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
+ 
 -- 
 2.8.1
 
