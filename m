@@ -1,43 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: governor: CPUFREQ_GOV_STOP never fails
-Date: Fri, 13 May 2016 08:44:16 +0530
-Message-ID: <20160513031416.GB3415@vireshk-i7>
-References: <4540082.RMPf3KxPDh@vostro.rjw.lan>
- <2034165.RqMO62khMb@vostro.rjw.lan>
+Subject: Re: [RFC] Should we add Android's Interactive governor into mainline
+ now?
+Date: Fri, 13 May 2016 08:49:18 +0530
+Message-ID: <20160513031918.GD3415@vireshk-i7>
+References: <CAKohponvfRR=nDPcVWpW0L1JZO9+7hgLL7YrWwyJXkL8BtJNpg@mail.gmail.com>
+ <CAJZ5v0g3Q+CUo6U55hCBSCMhmcZJ5Or2Ctq7OJx3hxaiDx+F1A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33564 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbcEMDOT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 23:14:19 -0400
-Received: by mail-pa0-f45.google.com with SMTP id xk12so36116276pac.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 20:14:19 -0700 (PDT)
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:35552 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbcEMDTW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 May 2016 23:19:22 -0400
+Received: by mail-pf0-f171.google.com with SMTP id 77so37208437pfv.2
+        for <linux-pm@vger.kernel.org>; Thu, 12 May 2016 20:19:22 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <2034165.RqMO62khMb@vostro.rjw.lan>
+In-Reply-To: <CAJZ5v0g3Q+CUo6U55hCBSCMhmcZJ5Or2Ctq7OJx3hxaiDx+F1A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 12-05-16, 15:14, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> None of the cpufreq governors currently in the tree will ever fail
-> an invocation of the ->governor() callback with the event argument
-> equal to CPUFREQ_GOV_STOP (unless invoked with incorrect arguments
-> which doesn't matter anyway) and it is rather difficult to imagine
-> a valid reason for such a failure.
-> 
-> Accordingly, rearrange the code in the core to make it clear that
-> this call never fails.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |   40 +++++++++++-----------------------------
->  1 file changed, 11 insertions(+), 29 deletions(-)
+On 12-05-16, 15:19, Rafael J. Wysocki wrote:
+> Actually, the last submission did not receive any comments from
+> anyone, so I'd call it lack of interest rather than rejection.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The last attempt had 70 patches in it :)
+
+> I think that we'd be better off if the interactive governor was in the
+> tree, so if you have the time to work on it, that's great.
+> 
+> One caveat is that I have some governor API rearrangement in the works
+> and you'd need to rebase your work on top of that.  I've just sent two
+> patches, but there's more to come.
+
+That wouldn't be an issue and anyway I will take some time (I have to find some
+first) to do that :)
 
 -- 
 viresh
