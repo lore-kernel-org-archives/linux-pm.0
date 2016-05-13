@@ -1,59 +1,79 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [RFC 4/4] thunderbolt: Support runtime pm
-Date: Fri, 13 May 2016 14:10:29 +0200
-Message-ID: <20160513121029.GA22994@wunner.de>
-References: <20160316162017.GA28372@wunner.de>
- <Pine.LNX.4.44L0.1603171042520.2097-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1603171042520.2097-100000@iolanthe.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>
+From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Subject: [PATCH-V2 0/5] bcm2835: add thermal driver
+Date: Fri, 13 May 2016 13:13:01 +0000
+Message-ID: <1463145186-12906-1-git-send-email-kernel@martin.sperl.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-rpi-kernel <linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 
-On Thu, Mar 17, 2016 at 10:54:55AM -0400, Alan Stern wrote:
-> On Wed, 16 Mar 2016, Lukas Wunner wrote:
-> > > The way you're doing it, how does the NHI driver know when to go into 
-> > > suspend?  The runtime PM core won't notify it when all the hotplugged 
-> > > devices attached to the other bridges have been suspended, since it's 
-> > > not their parent.
-> > 
-> > The NHI knows when something is plugged in, it talks to the switches
-> > in devices that are hotplugged to the controller. As I've explained
-> > in the lengthy comment in the middle of patch [4/4], we acquire a
-> > runtime pm ref for each switch that is plugged in and release one
-> > whenever a switch is unplugged.
-> 
-> If I understand correctly, that means you allow the Thunderbolt
-> controller to go into runtime suspend only when nothing is plugged into
-> any of the ports.  Is that right?  It's quite inefficient.
+Add a thermal driver for the TSENSE device of the bcm2835 SOC.
 
-In the case of Thunderbolt on the Mac, runtime suspend means that the
-controller is powered down. A plug event is side-band signaled using a GPE
-so that we're able to power the controller up once something is plugged in.
+If the firmware enables the HW, then the configuration is not touched.
+In case the firmware has not enabled the device, then we try to set
+it up correctly (which unfortunately can not get tested).
 
-It's not possible to power the controller down while devices are attached
-because downstream devices have no way to side-band signal an interrupt
-when they need to send data to the controller.
+It exposes temperature and a critical trip point
+(using a hardcoded default of 80C or the temperature configured
+in the control register by the firmware - reads as 0 currently)
 
+The calibrations are (potentially) different for bcm2835, bcm2836
+and bcm2837 and can get selected by the compatiblity property
+in the device tree.
 
-> What I'm getting at is that we should have proper runtime-PM support
-> for bridges, i.e., I agree with what you wrote above.  A bridge can
-> safely go into runtime suspend when there are no unsuspended devices
-> attached to any of its downstream ports.  (That's how the USB hub
-> driver works, for instance.)  Doing things that way would make
-> everything simpler in the long run.
-> 
-> So my suggestion is that you change over to the "less kludgy solution"  
-> and work on that instead.
+The driver also exposes the registers via debugfs.
 
-Alright, posted as v2 today. :-)
+Possible future enhancements:
+* the device has the ability to trigger interrupts on reaching
+  the programmed critical temperature.
+  I have no knowledge which interrupt could be responsible
+  for this on the ARM side, so if we get to know which irq
+  it is we can implement that
+* the device can also reset the HW after the trip point
+  has been reached (also with some delay, so that corrective
+  actions can get taken) - this is currently not enabled by the
+  firmware, but could.
+* we could define more trip points for THERMAL_TRIP_HOT
+* make the trip point limits modifiable (ops.set_trip_temp)
 
-Thanks,
+Changelog:
+ V1 -> V2: renamed dt-binding documentation file
+       	   added specific settings depending on compatiblity
+	   added trip point based on register
+	   setting up ctrl-register if HW is not enabled by firmware
+	     as per recommendation of Eric (untested)
+	   check that clock frequency is in range
+	     (1.9 - 5MHz - as per comment in clk-bcm2835.c)
+ 	   added driver to multi_v7_defconfig
 
-Lukas
+Martin Sperl (5):
+  dt: bindings: add thermal device driver for bcm2835
+  thermal: bcm2835: add thermal driver for bcm2835 soc
+  ARM: bcm2835: add thermal node to device-tree of bcm283x
+  ARM: bcm2835: add thermal driver to default_config
+  ARM: multi_v7_defconfig: bcm2835: add bcm2835-thermal driver
+
+ .../bindings/thermal/brcm,bcm2835-thermal.txt      |  17 ++
+ arch/arm/boot/dts/bcm283x.dtsi                     |   6 +
+ arch/arm/configs/bcm2835_defconfig                 |   2 +
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ drivers/thermal/Kconfig                            |   5 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/bcm/Kconfig                        |   4 +
+ drivers/thermal/bcm/Makefile                       |   1 +
+ drivers/thermal/bcm/bcm2835_thermal.c              | 326 +++++++++++++++++++++
+ 9 files changed, 363 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+ create mode 100644 drivers/thermal/bcm/Kconfig
+ create mode 100644 drivers/thermal/bcm/Makefile
+ create mode 100644 drivers/thermal/bcm/bcm2835_thermal.c
+
+--
+2.1.4
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
