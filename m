@@ -1,56 +1,31 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [PATCH] PM / sleep: fix unbalanced pm runtime disable in __device_suspend_late()
-Date: Fri, 13 May 2016 21:03:48 +0300
-Message-ID: <1463162628-16976-1-git-send-email-grygorii.strashko@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 update 4/4] Thermal: add INT3406 thermal driver
+Date: Sat, 14 May 2016 00:05:24 +0200
+Message-ID: <5104945.McBGKbKeb7@vostro.rjw.lan>
+References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com> <20160509075458.GA8945@aaronlu.sh.intel.com> <1462867730.25391.2.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([198.47.19.12]:39435 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752361AbcEMSED (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 May 2016 14:04:03 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41921 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753759AbcEMWCA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 May 2016 18:02:00 -0400
+In-Reply-To: <1462867730.25391.2.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>
+Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-The PM runtime will be left disabled for the device if its .suspend_late()
-callback fails and async suspend is not allowed for this device. In
-this case device will not be added in dpm_late_early_list and
-dpm_resume_early() will ignore this device, as result PM runtime will
-be disabled for it forever (side effect: after 8 subsequent failures
-for the same device the PM runtime will be reenabled due to
-disable_depth overflow).
+On Tuesday, May 10, 2016 08:08:52 AM Zhang, Rui wrote:
+> On Mon, 2016-05-09 at 15:54 +0800, Aaron Lu wrote:
+> > INT3406 ACPI device object resembles an ACPI video output device, but its
+> > _BCM is said to be deprecated and should not be used. So we will make
+> > use of the raw interface to do the actual cooling.
+> > 
+> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> 
+> Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-Hence, re-enable PM runtime in __device_suspend_late() if
-.suspend_late() callback fails and async suspend is not allowed for
-this device.
-
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
- drivers/base/power/main.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 6e7c3cc..9b266e5 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1207,10 +1207,13 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	}
- 
- 	error = dpm_run_callback(callback, dev, state, info);
--	if (!error)
-+	if (!error) {
- 		dev->power.is_late_suspended = true;
--	else
-+	} else {
- 		async_error = error;
-+		if (!is_async(dev))
-+			pm_runtime_enable(dev);
-+	}
- 
- Complete:
- 	TRACE_SUSPEND(error);
--- 
-2.8.2
+Applied, thanks!
 
