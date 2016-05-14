@@ -1,46 +1,54 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH 3/5] thermal: x86_pkg_temp: Handle the FROZEN hot plug
- notifier actions.
-Date: Sat, 14 May 2016 00:59:13 +0000
-Message-ID: <1463187520.7872.16.camel@intel.com>
-References: <1458336371-17748-3-git-send-email-rcochran@linutronix.de>
+From: Caizhiyong <caizhiyong@hisilicon.com>
+Subject: [PATCH] devfreq: fix double call put_device
+Date: Sat, 14 May 2016 05:45:45 +0000
+Message-ID: <C3050A4DBA34F345975765E43127F10F6381E56F@SZXEMA512-MBS.china.huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1458336371-17748-3-git-send-email-rcochran@linutronix.de>
-Content-Language: en-US
-Content-ID: <8A45B0F290EE324A98629B9548467E37@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rcochran@linutronix.de" <rcochran@linutronix.de>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rt@linutronix.de" <rt@linutronix.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:17571 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbcENFtN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 May 2016 01:49:13 -0400
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, lkml <linux-kernel@vger.kernel.org>
+Cc: "Wanli (welly)" <welly.wan@hisilicon.com>, Quyaxin <quyaxin@hisilicon.com>, "Wangming (Wonder)" <mingwonder.wang@hisilicon.com>
 
-T24gRnJpLCAyMDE2LTAzLTE4IGF0IDIyOjI2ICswMTAwLCBSaWNoYXJkIENvY2hyYW4gd3JvdGU6
-DQo+IFdoZW4gcGVyZm9ybWluZyBhIHN1c3BlbmQgb3BlcmF0aW9uLCB0aGUga2VybmVsIGJyaW5n
-cyBhbGwgb2YgdGhlDQo+IG5vbi1ib290IENQVXMgb2ZmbGluZSwgY2FsbGluZyB0aGUgaG90IHBs
-dWcgbm90aWZpZXJzIHdpdGggdGhlIGZsYWcsDQo+IENQVV9UQVNLU19GUk9aRU4sIHNldCBpbiB0
-aGUgYWN0aW9uIGNvZGUuwqDCoFNpbWlsYXJseSwgZHVyaW5nIHJlc3VtZSwNCj4gdGhlIENQVXMg
-YXJlIGJyb3VnaHQgYmFjayBvbmxpbmUsIGJ1dCBhZ2FpbiB0aGUgbm90aWZpZXJzIGhhdmUgdGhl
-DQo+IEZST1pFTiBmbGFnIHNldC4NCj4gDQo+IFdoaWxlIHNvbWUgdmVyeSBmZXcgZHJpdmVycyBy
-ZWFsbHkgbmVlZCB0byB0cmVhdCBzdXNwZW5kL3Jlc3VtZQ0KPiBzcGVjaWFsbHksIHRoaXMgZHJp
-dmVyIHVuaW50ZW50aW9uYWxseSBpZ25vcmVzIHRoZSBub3RpZmljYXRpb25zLg0KPiANCj4gVGhp
-cyBwYXRjaCBjaGFuZ2VzIHRoZSBkcml2ZXIgdG8gY2FuY2VsIGl0cyB3b3JrIGl0ZW0gd2hlbiB0
-aGUgQ1BVDQo+IGdvZXMgZG93biwgZXZlbiBkdXJpbmcgYSBzdXNwZW5kIG9wZXJhdGlvbi7CoMKg
-QXMgYSByZXN1bHQsIHRoZQ0KPiBzdXNwZW5kZWQgc3RhdGUgaXMgbm8gbG9uZ2VyIGEgc3BlY2lh
-bCBjYXNlLg0KPiANCj4gQ2M6IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4NCj4gQ2M6
-IEVkdWFyZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+DQo+IENjOiBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmcNCj4gU2lnbmVkLW9mZi1ieTogUmljaGFyZCBDb2NocmFuIDxyY29jaHJh
-bkBsaW51dHJvbml4LmRlPg0KUmV2aWV3ZWQtYnk6IFNyaW5pdmFzIFBhbmRydXZhZGEgPHNyaW5p
-dmFzLnBhbmRydXZhZGFAbGludXguaW50ZWwuY29tPg0KDQo+IC0tLQ0KPiDCoGRyaXZlcnMvdGhl
-cm1hbC94ODZfcGtnX3RlbXBfdGhlcm1hbC5jIHwgMiArLQ0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAx
-IGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-dGhlcm1hbC94ODZfcGtnX3RlbXBfdGhlcm1hbC5jDQo+IGIvZHJpdmVycy90aGVybWFsL3g4Nl9w
-a2dfdGVtcF90aGVybWFsLmMNCj4gaW5kZXggN2ZjOTE5Zi4uOTdmMGEyYiAxMDA2NDQNCj4gLS0t
-IGEvZHJpdmVycy90aGVybWFsL3g4Nl9wa2dfdGVtcF90aGVybWFsLmMNCj4gKysrIGIvZHJpdmVy
-cy90aGVybWFsL3g4Nl9wa2dfdGVtcF90aGVybWFsLmMNCj4gQEAgLTU1NSw3ICs1NTUsNyBAQCBz
-dGF0aWMgaW50IHBrZ190ZW1wX3RoZXJtYWxfY3B1X2NhbGxiYWNrKHN0cnVjdA0KPiBub3RpZmll
-cl9ibG9jayAqbmZiLA0KPiDCoHsNCj4gwqAJdW5zaWduZWQgaW50IGNwdSA9ICh1bnNpZ25lZCBs
-b25nKSBoY3B1Ow0KPiDCoA0KPiAtCXN3aXRjaCAoYWN0aW9uKSB7DQo+ICsJc3dpdGNoIChhY3Rp
-b24gJiB+Q1BVX1RBU0tTX0ZST1pFTikgew0KPiDCoAljYXNlIENQVV9PTkxJTkU6DQo+IMKgCWNh
-c2UgQ1BVX0RPV05fRkFJTEVEOg0KPiDCoAkJZ2V0X2NvcmVfb25saW5lKGNwdSk7
+From: Cai Zhiyong <caizhiyong@huawei.com>
+Date: Sat, 14 May 2016 14:13:30 +0800
+Subject: [PATCH] devfreq: fix double call put_device
+
+1295  */
+1296 void device_unregister(struct device *dev)
+1297 {
+1298         pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
+1299         device_del(dev);
+1300         put_device(dev);
+1301 }
+1302 EXPORT_SYMBOL_GPL(device_unregister);
+1303
+
+device_unregister is called put_device, there is no need to call
+put_device(&devfreq->dev) again.
+
+Signed-off-by: Cai Zhiyong <caizhiyong@huawei.com>
+---
+ drivers/devfreq/devfreq.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 1d6c803..8de22c0 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -621,7 +621,6 @@ int devfreq_remove_device(struct devfreq *devfreq)
+ 		return -EINVAL;
+ 
+ 	device_unregister(&devfreq->dev);
+-	put_device(&devfreq->dev);
+ 
+ 	return 0;
+ }
+-- 
+1.7.9.5
