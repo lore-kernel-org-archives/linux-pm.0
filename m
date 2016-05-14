@@ -1,58 +1,197 @@
-From: <mmorrison@mxschool.edu>
-Subject: (unknown)
-Date: Fri, 14 May 2016 18:02:22 0000
-Message-ID: <000101d1ae0a$c3abde8a$c0a80001@bisv.ru>
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH 1/3] power: axp20x_usb: Add support for usb
+ power-supply on axp22x pmics
+Date: Sat, 14 May 2016 19:51:27 +0200
+Message-ID: <1463248289-16456-1-git-send-email-hdegoede@redhat.com>
+Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_22515423_linux-pm.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from host-109-235-186-195.bisv.ru ([109.235.186.195]:41391 "HELO
-	bisv.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751363AbcENMC1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 14 May 2016 08:02:27 -0400
-Subject: 
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBDRZXY4CYYORBLGL3W4QKGQE5KFSWVY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
 
+The usb power-supply on the axp22x pmics is mostly identical to the
+one on the axp20x pmics. One significant difference is that it cannot
+measure / monitor the usb voltage / current.
 
+Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+---
+ drivers/power/axp20x_usb_power.c | 99 +++++++++++++++++++++++++++++++---------
+ 1 file changed, 77 insertions(+), 22 deletions(-)
 
-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
-AFBLBQYAAAAAAQABAFYAAADoBwAAAAA=
+diff --git a/drivers/power/axp20x_usb_power.c b/drivers/power/axp20x_usb_power.c
+index 421a90b..b3c1d8e 100644
+--- a/drivers/power/axp20x_usb_power.c
++++ b/drivers/power/axp20x_usb_power.c
+@@ -42,6 +42,7 @@
+ #define AXP20X_VBUS_MON_VBUS_VALID	BIT(3)
+ 
+ struct axp20x_usb_power {
++	struct axp20x_dev *axp20x;
+ 	struct regmap *regmap;
+ 	struct power_supply *supply;
+ };
+@@ -85,7 +86,15 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 
+ 		switch (v & AXP20X_VBUS_CLIMIT_MASK) {
+ 		case AXP20X_VBUC_CLIMIT_100mA:
+-			val->intval = 100000;
++			switch (power->axp20x->variant) {
++			case AXP202_ID:
++			case AXP209_ID:
++				val->intval = 100000;
++				break;
++			default:
++				val->intval = -1; /* No 100mA limit */
++				break;
++			}
+ 			break;
+ 		case AXP20X_VBUC_CLIMIT_500mA:
+ 			val->intval = 500000;
+@@ -122,16 +131,23 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 			break;
+ 		}
+ 
+-		ret = regmap_read(power->regmap, AXP20X_USB_OTG_STATUS, &v);
+-		if (ret)
+-			return ret;
++		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+ 
+-		if (!(v & AXP20X_USB_STATUS_VBUS_VALID)) {
+-			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++		switch (power->axp20x->variant) {
++		case AXP202_ID:
++		case AXP209_ID:
++			ret = regmap_read(power->regmap,
++					  AXP20X_USB_OTG_STATUS, &v);
++			if (ret)
++				return ret;
++
++			if (!(v & AXP20X_USB_STATUS_VBUS_VALID))
++				val->intval =
++					POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++			break;
++		default:
+ 			break;
+ 		}
+-
+-		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+ 		break;
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 		val->intval = !!(input & AXP20X_PWR_STATUS_VBUS_PRESENT);
+@@ -156,6 +172,14 @@ static enum power_supply_property axp20x_usb_power_properties[] = {
+ 	POWER_SUPPLY_PROP_CURRENT_NOW,
+ };
+ 
++static enum power_supply_property axp22x_usb_power_properties[] = {
++	POWER_SUPPLY_PROP_HEALTH,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
++};
++
+ static const struct power_supply_desc axp20x_usb_power_desc = {
+ 	.name = "axp20x-usb",
+ 	.type = POWER_SUPPLY_TYPE_USB,
+@@ -164,13 +188,25 @@ static const struct power_supply_desc axp20x_usb_power_desc = {
+ 	.get_property = axp20x_usb_power_get_property,
+ };
+ 
++static const struct power_supply_desc axp22x_usb_power_desc = {
++	.name = "axp20x-usb",
++	.type = POWER_SUPPLY_TYPE_USB,
++	.properties = axp22x_usb_power_properties,
++	.num_properties = ARRAY_SIZE(axp22x_usb_power_properties),
++	.get_property = axp20x_usb_power_get_property,
++};
++
+ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ {
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config psy_cfg = {};
+ 	struct axp20x_usb_power *power;
+-	static const char * const irq_names[] = { "VBUS_PLUGIN",
+-		"VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID" };
++	static const char * const axp20x_irq_names[] = { "VBUS_PLUGIN",
++		"VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID", NULL };
++	static const char * const axp22x_irq_names[] = {
++		"VBUS_PLUGIN", "VBUS_REMOVAL", NULL };
++	static const char * const *irq_names;
++	const struct power_supply_desc *usb_power_desc;
+ 	int i, irq, ret;
+ 
+ 	if (!of_device_is_available(pdev->dev.of_node))
+@@ -185,31 +221,50 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 	if (!power)
+ 		return -ENOMEM;
+ 
++	power->axp20x = axp20x;
+ 	power->regmap = axp20x->regmap;
+ 
+-	/* Enable vbus valid checking */
+-	ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
+-		    AXP20X_VBUS_MON_VBUS_VALID, AXP20X_VBUS_MON_VBUS_VALID);
+-	if (ret)
+-		return ret;
++	switch (power->axp20x->variant) {
++	case AXP202_ID:
++	case AXP209_ID:
++		/* Enable vbus valid checking */
++		ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
++					 AXP20X_VBUS_MON_VBUS_VALID,
++					 AXP20X_VBUS_MON_VBUS_VALID);
++		if (ret)
++			return ret;
+ 
+-	/* Enable vbus voltage and current measurement */
+-	ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
++		/* Enable vbus voltage and current measurement */
++		ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
+ 			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
+ 			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
+-	if (ret)
+-		return ret;
++		if (ret)
++			return ret;
++
++		usb_power_desc = &axp20x_usb_power_desc;
++		irq_names = axp20x_irq_names;
++		break;
++	case AXP221_ID:
++	case AXP223_ID:
++		usb_power_desc = &axp22x_usb_power_desc;
++		irq_names = axp22x_irq_names;
++		break;
++	default:
++		dev_err(&pdev->dev, "Unsupported AXP variant: %ld\n",
++			axp20x->variant);
++		return -EINVAL;
++	}
+ 
+ 	psy_cfg.of_node = pdev->dev.of_node;
+ 	psy_cfg.drv_data = power;
+ 
+-	power->supply = devm_power_supply_register(&pdev->dev,
+-					&axp20x_usb_power_desc, &psy_cfg);
++	power->supply = devm_power_supply_register(&pdev->dev, usb_power_desc,
++						   &psy_cfg);
+ 	if (IS_ERR(power->supply))
+ 		return PTR_ERR(power->supply);
+ 
+ 	/* Request irqs after registering, as irqs may trigger immediately */
+-	for (i = 0; i < ARRAY_SIZE(irq_names); i++) {
++	for (i = 0; irq_names[i]; i++) {
+ 		irq = platform_get_irq_byname(pdev, irq_names[i]);
+ 		if (irq < 0) {
+ 			dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
+-- 
+2.7.4
