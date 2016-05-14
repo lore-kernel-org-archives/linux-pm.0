@@ -1,20 +1,16 @@
 From: Caizhiyong <caizhiyong@hisilicon.com>
 Subject: [PATCH] devfreq: fix double call put_device
-Date: Sat, 14 May 2016 05:45:45 +0000
-Message-ID: <C3050A4DBA34F345975765E43127F10F6381E56F@SZXEMA512-MBS.china.huawei.com>
+Date: Sat, 14 May 2016 06:28:16 +0000
+Message-ID: <C3050A4DBA34F345975765E43127F10F6381E593@SZXEMA512-MBS.china.huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:17571 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbcENFtN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 May 2016 01:49:13 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Language: zh-CN
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Andrew Morton <akpm@linux-foundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, lkml <linux-kernel@vger.kernel.org>
-Cc: "Wanli (welly)" <welly.wan@hisilicon.com>, Quyaxin <quyaxin@hisilicon.com>, "Wangming (Wonder)" <mingwonder.wang@hisilicon.com>
+Cc: "Wanli (welly)" <welly.wan@hisilicon.com>, "Wangming (Wonder)" <mingwonder.wang@hisilicon.com>, Quyaxin <quyaxin@hisilicon.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Cai Zhiyong <caizhiyong@huawei.com>
 Date: Sat, 14 May 2016 14:13:30 +0800
