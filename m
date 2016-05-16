@@ -1,60 +1,25 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] driver: cpufreq: simplified goto out in
- cpufreq_register_driver
-Date: Mon, 16 May 2016 16:40:19 +0530
-Message-ID: <20160516111019.GC2832@vireshk-i7>
-References: <20160516110718.GA5005@pankajguptaubtnb.spreadtrum.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH 2/3] mfd: axp20x: Extend axp22x_volatile_ranges
+Date: Mon, 16 May 2016 19:13:17 +0800
+Message-ID: <CAGb2v65nuj4Uh9jNSS4wk8CWkgN6iiuGR2vz4Kat=8QT68EE6Q@mail.gmail.com>
+References: <1463248289-16456-1-git-send-email-hdegoede@redhat.com> <1463248289-16456-2-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35180 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642AbcEPLKX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2016 07:10:23 -0400
-Received: by mail-pa0-f42.google.com with SMTP id gj5so6288172pac.2
-        for <linux-pm@vger.kernel.org>; Mon, 16 May 2016 04:10:23 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160516110718.GA5005@pankajguptaubtnb.spreadtrum.com>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:55196 "EHLO
+	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbcEPLNm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 May 2016 07:13:42 -0400
+In-Reply-To: <1463248289-16456-2-git-send-email-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Pankaj Gupta (Pankaj Gupta)" <Pankaj.Gupta@spreadtrum.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Yinghai Lu <yinghai@kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>
 
-On 16-05-16, 11:07, Pankaj Gupta (Pankaj Gupta) wrote:
-> simplified goto out in cpufreq_register_driver for increasing
-> code readability
-> 
-> Signed-off-by: Pankaj Gupta <pankaj.gupta@spreadtrum.com>
-> Signed-off-by: Sanjeev Yadav <sanjeev.yadav@spreadtrum.com>
-> ---
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index b87596b..0bc23f6 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2370,10 +2370,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->  
->  	register_hotcpu_notifier(&cpufreq_cpu_notifier);
->  	pr_debug("driver %s up and running\n", driver_data->name);
-> -
-> -out:
-> -	put_online_cpus();
-> -	return ret;
-> +	goto out;
->  
->  err_if_unreg:
->  	subsys_interface_unregister(&cpufreq_interface);
-> @@ -2383,7 +2380,9 @@ err_null_driver:
->  	write_lock_irqsave(&cpufreq_driver_lock, flags);
->  	cpufreq_driver = NULL;
->  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -	goto out;
-> +out:
-> +	put_online_cpus();
-> +	return ret;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_register_driver);
+On Sun, May 15, 2016 at 1:51 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> The axp22x pmic has a bunch of volatile registers besides the interrupt
+> ones, extend axp22x_volatile_ranges with these.
+>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+Acked-by: Chen-Yu Tsai <wens@csie.org>
