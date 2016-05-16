@@ -1,42 +1,64 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 2/3] mfd: axp20x: Extend axp22x_volatile_ranges
-Date: Sat, 14 May 2016 19:51:28 +0200
-Message-ID: <1463248289-16456-2-git-send-email-hdegoede@redhat.com>
-References: <1463248289-16456-1-git-send-email-hdegoede@redhat.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: devm_kzalloc to have dev pointer more precisely
+Date: Mon, 16 May 2016 02:45:22 +0000 (GMT)
+Message-ID: <1049410616.743641463366722379.JavaMail.weblogic@ep2mlwas03c>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47461 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbcENRvp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 14 May 2016 13:51:45 -0400
-In-Reply-To: <1463248289-16456-1-git-send-email-hdegoede@redhat.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:35247 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbcEPCp0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 15 May 2016 22:45:26 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0O7902YDG0ZMNRC0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 16 May 2016 11:45:22 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com, Hans de Goede <hdegoede@redhat.com>
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@gmail.com
 
-The axp22x pmic has a bunch of volatile registers besides the interrupt
-ones, extend axp22x_volatile_ranges with these.
+DQpkZXZtX2t6YWxsb2Mgb2YgZGV2ZnJlcSdzIHN0YXRpc3RpY3MgZGF0YSBzdHJ1Y3R1cmUgaGFz
+IGJlZW4NCnVzaW5nIGl0cyBwYXJlbnQgZGV2aWNlIGFzIHRoZSBkZXYgYWxsb2NhdGVkIGZvci4N
+CklmIGEgZGV2aWNlJ3MgZGV2ZnJlcSBpcyBkaXNhYmxlZCBpbiBydW4tdGltZSwNCnN1Y2ggYWxs
+b2NhdGVkIG1lbW9yeSB3b24ndCBiZSBmcmVlZC4NCg0KRGVzZ2luYXRpbmcgbW9yZSBwcmVjaXNl
+bHkgd2l0aCB0aGUgZGV2ZnJlcSBkZXZpY2UNCnBvaW50ZXIgZml4ZXMgdGhlIGlzc3VlLg0KDQpT
+aWduZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCi0t
+LQ0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgfCAyMyArKysrKysrKysrKysrKystLS0tLS0t
+LQ0KIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQ0KDQpk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyBiL2RyaXZlcnMvZGV2ZnJlcS9k
+ZXZmcmVxLmMNCmluZGV4IDk4NGM1ZTkuLjMxZmFmODUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2Rl
+dmZyZXEvZGV2ZnJlcS5jDQorKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQpAQCAtNTI0
+LDE0ICs1MjQsNiBAQCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBk
+ZXZpY2UgKmRldiwNCiAJCW11dGV4X2xvY2soJmRldmZyZXEtPmxvY2spOw0KIAl9DQogDQotCWRl
+dmZyZXEtPnRyYW5zX3RhYmxlID0JZGV2bV9remFsbG9jKGRldiwgc2l6ZW9mKHVuc2lnbmVkIGlu
+dCkgKg0KLQkJCQkJCWRldmZyZXEtPnByb2ZpbGUtPm1heF9zdGF0ZSAqDQotCQkJCQkJZGV2ZnJl
+cS0+cHJvZmlsZS0+bWF4X3N0YXRlLA0KLQkJCQkJCUdGUF9LRVJORUwpOw0KLQlkZXZmcmVxLT50
+aW1lX2luX3N0YXRlID0gZGV2bV9remFsbG9jKGRldiwgc2l6ZW9mKHVuc2lnbmVkIGxvbmcpICoN
+Ci0JCQkJCQlkZXZmcmVxLT5wcm9maWxlLT5tYXhfc3RhdGUsDQotCQkJCQkJR0ZQX0tFUk5FTCk7
+DQotCWRldmZyZXEtPmxhc3Rfc3RhdF91cGRhdGVkID0gamlmZmllczsNCiANCiAJZGV2X3NldF9u
+YW1lKCZkZXZmcmVxLT5kZXYsICIlcyIsIGRldl9uYW1lKGRldikpOw0KIAllcnIgPSBkZXZpY2Vf
+cmVnaXN0ZXIoJmRldmZyZXEtPmRldik7DQpAQCAtNTQxLDYgKzUzMywxNSBAQCBzdHJ1Y3QgZGV2
+ZnJlcSAqZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwNCiAJCWdvdG8gZXJy
+X291dDsNCiAJfQ0KIA0KKwlkZXZmcmVxLT50cmFuc190YWJsZSA9CWRldm1fa3phbGxvYygmZGV2
+ZnJlcS0+ZGV2LCBzaXplb2YodW5zaWduZWQgaW50KSAqDQorCQkJCQkJZGV2ZnJlcS0+cHJvZmls
+ZS0+bWF4X3N0YXRlICoNCisJCQkJCQlkZXZmcmVxLT5wcm9maWxlLT5tYXhfc3RhdGUsDQorCQkJ
+CQkJR0ZQX0tFUk5FTCk7DQorCWRldmZyZXEtPnRpbWVfaW5fc3RhdGUgPSBkZXZtX2t6YWxsb2Mo
+JmRldmZyZXEtPmRldiwgc2l6ZW9mKHVuc2lnbmVkIGxvbmcpICoNCisJCQkJCQlkZXZmcmVxLT5w
+cm9maWxlLT5tYXhfc3RhdGUsDQorCQkJCQkJR0ZQX0tFUk5FTCk7DQorCWRldmZyZXEtPmxhc3Rf
+c3RhdF91cGRhdGVkID0gamlmZmllczsNCisNCiAJbXV0ZXhfdW5sb2NrKCZkZXZmcmVxLT5sb2Nr
+KTsNCiANCiAJbXV0ZXhfbG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOw0KQEAgLTk2Nyw2ICs5Njgs
+MTIgQEAgdW5sb2NrOg0KIAlyZXR1cm4gcmV0Ow0KIH0NCiANCitzdGF0aWMgc3NpemVfdCBtaW5f
+ZnJlcV9zaG93KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0
+dHIsDQorCQkJICAgICBjaGFyICpidWYpDQorew0KKwlyZXR1cm4gc3ByaW50ZihidWYsICIlbHVc
+biIsIHRvX2RldmZyZXEoZGV2KS0+bWluX2ZyZXEpOw0KK30NCisNCiBzdGF0aWMgc3NpemVfdCBt
+YXhfZnJlcV9zdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZpY2VfYXR0cmlidXRl
+ICphdHRyLA0KIAkJCSAgICAgIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IGNvdW50KQ0KIHsNCi0t
+IA0KMS45LjENCg0K
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/mfd/axp20x.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index e4e3297..ca04361 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -93,7 +93,10 @@ static const struct regmap_range axp22x_writeable_ranges[] = {
- };
- 
- static const struct regmap_range axp22x_volatile_ranges[] = {
-+	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
-+	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
-+	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
- };
- 
- static const struct regmap_access_table axp22x_writeable_table = {
--- 
-2.7.4
 
