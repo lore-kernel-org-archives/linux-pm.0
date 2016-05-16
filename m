@@ -1,66 +1,44 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH-V2 1/5] dt: bindings: add thermal device driver for
- bcm2835
-Date: Mon, 16 May 2016 11:32:43 -0500
-Message-ID: <20160516163243.GA20435@rob-hp-laptop>
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH-V2 5/5] ARM: multi_v7_defconfig: bcm2835: add
+ bcm2835-thermal driver
+Date: Mon, 16 May 2016 09:43:24 -0700
+Message-ID: <5739F8AC.8080003@gmail.com>
 References: <1463145186-12906-1-git-send-email-kernel@martin.sperl.org>
- <1463145186-12906-2-git-send-email-kernel@martin.sperl.org>
+ <1463145186-12906-6-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47113 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753654AbcEPQdM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 16 May 2016 12:33:12 -0400
-Content-Disposition: inline
-In-Reply-To: <1463145186-12906-2-git-send-email-kernel@martin.sperl.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1463145186-12906-6-git-send-email-kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-rpi-kernel <linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: kernel@martin.sperl.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree <devicetree@vger.kernel.org>, linux-rpi-kernel <linux-rpi-kernel@lists.infradead.org>, linux-arm-kernel@lists.infradead.org
 
-On Fri, May 13, 2016 at 01:13:02PM +0000, kernel@martin.sperl.org wrote:
-> From: Martin Sperl <kernel@martin.sperl.org>
+On 05/13/2016 06:13 AM, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org wrote:
+> From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 > 
-> Add documentation for bcm2835 SOC thermal sensor.
+> Add the thermal driver to list of compiled modules in
+> multi_v7_defconfig.
 > 
-> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-> Acked-by: Eric Anholt <eric@anholt.net>
-> 
-> Changelog:
->  V1 -> V2: renamed file to follow naming conventions
+> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 > ---
->  .../bindings/thermal/brcm,bcm2835-thermal.txt           | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+>  arch/arm/configs/multi_v7_defconfig | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
-> new file mode 100644
-> index 0000000..09de164
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
-> @@ -0,0 +1,17 @@
-> +Binding for Thermal Sensor driver for BCM2835 SoCs.
-> +
-> +Required parameters:
-> +-------------------
-> +
-> +compatible: 	should be one of: "brcm,bcm2835-thermal",
-> +		"brcm,bcm2836-thermal" or "brcm,bcm2837-thermal"
-> +reg:		Address range of the thermal registers.
-> +clocks: 	Phandle of the clock used by the thermal sensor.
-> +
-> +Example:
-> +
-> +thermal: thermal@0x7e212000 {
+> diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+> index 2823490..5f0f5a3 100644
+> --- a/arch/arm/configs/multi_v7_defconfig
+> +++ b/arch/arm/configs/multi_v7_defconfig
+> @@ -422,6 +422,7 @@ CONFIG_CPU_THERMAL=y
+>  CONFIG_ROCKCHIP_THERMAL=y
+>  CONFIG_RCAR_THERMAL=y
+>  CONFIG_ARMADA_THERMAL=y
+> +CONFIG_BCM2835_THERMAL=y
 
-Drop the '0x'. Otherwise,
-
-Acked-by: Rob Herring <robh@kernel.org>
-
-> +	compatible = "brcm,bcm2835-thermal";
-> +	reg = <0x7e212000 0x8>;
-> +	clocks = <&clocks BCM2835_CLOCK_TSENS>;
-> +};
-> --
-> 2.1.4
+Does this need to be built into the kernel?
+-- 
+Florian
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
