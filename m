@@ -1,92 +1,93 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Wed, 18 May 2016 01:14:42 +0200
-Message-ID: <573BA5E2.5040506@intel.com>
-References: <20160511101920.GZ4329@intel.com> <57332171.8070403@linutronix.de>
- <20160511122116.GA4329@intel.com>
- <20160511084445.00030b49@gandalf.local.home>
- <20160511133406.GC4329@intel.com> <20160516193910.GL4329@intel.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [cpufreq-4.7] New schedutil governor in combination with intel_pstate/x86
+Date: Wed, 18 May 2016 01:16:06 +0200
+Message-ID: <CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
+References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
+	<573B4C2A.4010205@intel.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:62530 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbcEQXOx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 May 2016 19:14:53 -0400
-In-Reply-To: <20160516193910.GL4329@intel.com>
+Received: from mail-vk0-f66.google.com ([209.85.213.66]:35183 "EHLO
+	mail-vk0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbcEQXQI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 19:16:08 -0400
+Received: by mail-vk0-f66.google.com with SMTP id e126so4625677vkb.2
+        for <linux-pm@vger.kernel.org>; Tue, 17 May 2016 16:16:07 -0700 (PDT)
+In-Reply-To: <573B4C2A.4010205@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, linux-kernel@vger.kernel.org, rui.zhang@intel.com, len.brown@intel.com, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, linux-pm@vger.kernel.org
 
-On 5/16/2016 9:39 PM, Ville Syrj=E4l=E4 wrote:
-> On Wed, May 11, 2016 at 04:34:06PM +0300, Ville Syrj=E4l=E4 wrote:
->> On Wed, May 11, 2016 at 08:44:45AM -0400, Steven Rostedt wrote:
->>> On Wed, 11 May 2016 15:21:16 +0300
->>> Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com> wrote:
->>>
->>>> Yeah can't get anything from the machine at that point. netconsole
->>>> didn't help either, and no serial on this machine. And IIRC I've
->>>> tried ramoops on this thing in the past but unfortunately the memo=
-ry
->>>> got cleared on reboot.
->>>>
->>> Can you look at the documentation in the kernel code at
->>>
->>> Documentation/power/basic-pm-debugging.txt And follow the procedure=
-s
->>> for testing suspend to RAM (although it requires mostly running the
->>> same tests as for hibernation suspending).
->>>
->>> You can also use the tool s2ram for this as well.
->>>
->>> See Documentation/power/s2ram.txt
->>>
->>> Perhaps this can give us a bit more light onto the problem.
->>>
->>> Basically the above does partial suspend and resume, and can pinpoi=
-nt
->>> problem areas down to a more select location.
->> All the pm_test modes work fine. The only difference between them wa=
-s
->> that 'platform' required me to manually wake up the machine (hitting=
- a
->> key was sufficient), whereas the others woke up without help.
->>
->> pm_trace gave me
->> [    1.306633]   Magic number: 0:185:178
->> [    1.322880]   hash matches ../drivers/base/power/main.c:1070
->> [    1.339270] acpi device:0e: hash matches
->> [    1.355414]  platform: hash matches
->>
->> which is the TRACE_SUSPEND in __device_suspend_noirq(), so no help
->> there.
->>
->> I guess I could try to sprinkle more TRACE_RESUMEs around into some
->> early resume code. If anyone has good ideas where to put them it
->> might speed things up a bit.
-> So I did a bunch of that and found that it gets stuck somewhere
-> around executing the _WAK method:
-> platform_resume_noirq
->   acpi_pm_finish
->    acpi_leave_sleep_state
->     acpi_hw_sleep_dispatch
->      acpi_hw_legacy_wake
->       acpi_hw_execute_sleep_method
->        acpi_evaluate_object
->         acpi_ns_evaluate
->          acpi_ps_execute_method
->           acpi_ps_parse_aml
+On 5/17/16, Rafael J. Wysocki <rafael.j.wysocki@intel.com> wrote:
+> On 5/17/2016 5:30 PM, Sedat Dilek wrote:
+>> Hi,
 >
-> It also seesm that adding a few TRACE_RESUME()s or an msleep() right
-> after enable_nonboot_cpus() can avoid the hang, sometimes.
+> Hi,
 >
-> I've attached the DSDT in case anyone is interested in looking at it.
+> You have a broken address of linux-pm (it leads to nowhere).
 >
 
-What if you comment out the execution of _WAK (line 318 of=20
-drivers/acpi/acpica/hwsleep.c in 4.6)?  Does that make any difference?
+Grrr, yeah you are right.
 
+>> I wonder if the Kconfig logic is correct when using
+>> CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL=y in combination with
+>> intel_pstate driver for X86 architecture
+>>
+>> The available scaling-governors for intel_pstate are: performance
+>> powersave.
+>>
+>> Only acpi-cpufreq can use the new schedutil governor.
+>
+> The right way to say that would be that intel_pstate doesn't work with
+> cpufreq governors.
+>
+> scalling_governor is just used by intel_pstate as an interface for
+> choosing the mode it works in and it always uses its own built-in
+> "governor".  And BTW, intel_pstate "powersave" is not the same as the
+> cpufreq's "powersave" even.
+>
+>> Shouldn't it be prevented from selecting schedutil governor as default
+>> when CONFIG_X86_INTEL_PSTATE=y is set?
+>
+> That should apply to "ondemand" too and it doesn't, so no.
+>
+> "schedutil" is just a regular cpufreq governor and it doesn't care about
+> intel_pstate.
+>
+>> It makes no real sense to me.
+>>
+>> Ubuntu has in it's kernels CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y.
+>>
+>> What are the alternatives?
+>> Set CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y.
+>
+> You can choose every cpufreq governor as the default.  There are 6 of
+> then now in the tree.
+>
+>> BTW, I cannot change my scaling-driver...
+>> ...intel_pstate -> acpi-cpufreq...
+>>
+>> root# for p in policy0 policy1 policy2 policy3 ; do LC_ALL=C echo -n
+>> acpi-cpufreq > /sys/devices/system/cpu/cpufreq/${p}/scaling_driver ;
+>> done
+>>
+>> Attached is also a modified /etc/init.d/ondemand script from my
+>> Ubuntu/precise AMD64 to use and fallback to schedutil governor.
+>
+> No, you can't change the scaling driver this way.
+>
+> It actually is not possible to change from intel_pstate to anything else
+> now.  To run without intel_pstate, you need to add
+> "intel_pstate=disable" to the kernel command line.
+>
+
+OK, I will try intel_pstate=disable in my k-c-l.
+
+Is there no way to switch between acpi-cpufreq and intel_pstate on the fly?
+Did not look in the Kconfig sections...
+Can I built both as modules?
+Then unload and load the other?
+
+- Sedat -
