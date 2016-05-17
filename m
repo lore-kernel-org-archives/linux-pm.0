@@ -1,176 +1,62 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL v2] Thermal SoC management updates for v4.7
-Date: Tue, 17 May 2016 07:39:19 -0700
-Message-ID: <20160517143917.GA14550@localhost.localdomain>
+Subject: Re: [PATCH 20/31] thermal: core: introduce thermal_helpers.c
+Date: Tue, 17 May 2016 07:40:45 -0700
+Message-ID: <20160517144044.GB14550@localhost.localdomain>
+References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
+ <1462341765-13268-21-git-send-email-edubezval@gmail.com>
+ <1463491216.29980.36.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33673 "EHLO
+	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbcEQOkt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 10:40:49 -0400
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+In-Reply-To: <1463491216.29980.36.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Rui
+On Tue, May 17, 2016 at 01:20:17PM +0000, Zhang, Rui wrote:
+> $checkpatch.pl 20-31-thermal-core-introduce-thermal_helpers.c.patch 
+> 
+> WARNING: added, moved or deleted file(s), does MAINTAINERS need
+> updating?
+> #187: 
+> new file mode 100644
+> 
+> ERROR: trailing whitespace
+> #302: FILE: drivers/thermal/thermal_helpers.c:111:
+> + $
+> 
+> WARNING: please, no spaces at the start of a line
+> #302: FILE: drivers/thermal/thermal_helpers.c:111:
+> + $
+> 
+> total: 1 errors, 2 warnings, 287 lines checked
+> 
+> NOTE: Whitespace errors detected.
+>       You may wish to use scripts/cleanpatch or scripts/cleanfile
+> 
+> 20-31-thermal-core-introduce-thermal_helpers.c.patch has style problems,
+> please review.
+> 
+> NOTE: If any of the errors are false positives, please report
+>       them to the maintainer, see CHECKPATCH in MAINTAINERS.
+> 
+> Please remove these spaces.
+> BTW, there are also some warnings in the other patches, please fix the
+> checkpatch warnings/errors.
 
-Here is material for 4.7 on thermal SoC. This time based on v4.6-rc6. In
-fact, ideally I should not rebase my branch for the merge window and you
-should just pull from its original cut, so we keep the history when
-patches got applied. Rebasing this branch right before the merge window
-makes it look like I just created it, when in fact it was been tested
-on linux-next for several weeks.
+Yeah, I will fix those.
 
-Anyways,
+These patches were supposed to be reviewed/merged before the merge
+window though. I am going to wait until the merge window is closed to
+send them again.
 
-The following changes since commit 04974df8049fc4240d22759a91e035082ccd18b4:
-
-  Linux 4.6-rc6 (2016-05-01 15:52:31 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal work-linus-4.7
-
-for you to fetch changes up to 431c30f74cdffba6456b52742e80f9b629228940:
-
-  thermal: tango: initialize TEMPSI_CFG (2016-05-17 07:28:33 -0700)
-
-In this pull you get:
-- Rockchip driver support for RK3399, RK3366, and some fixes.
-- Mediatek CPU power model
-- Wider usage of dev_thermal_zone_of_sensor_register
-- A generic ADC thermal driver, based on OF thermal
-- TI thermal driver gained a new maintainer (Keerthy)
-- New thermal driver for Tango chips
-- Various fixes on OF thermal, Tegra, and RCAR
-
-You may find the same original branch (based on 4.6-rc1 though) here:
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal work-linus
 
 BR,
 
 Eduardo Valentin
-
-----------------------------------------------------------------
-Andy Champ (1):
-      thermal: Syntactic and factual errors in the API document
-
-Arnd Bergmann (1):
-      thermal: tegra: mark PM functions __maybe_unused
-
-Caesar Wang (5):
-      thermal: rockchip: fixes the code_to_temp for tsadc driver
-      thermal: rockchip: update the tsadc table for rk3399
-      thermal: rockchip: handle the power sequence for tsadc controller
-      thermal: rockchip: add the notes for better reading
-      thermal: rockchip: use the usleep_range instead of udelay
-
-Dawei Chien (1):
-      thermal: mediatek: Add cpu dynamic power cooling model.
-
-Eduardo Valentin (12):
-      hwmon: convert lm75 to use devm_thermal_zone_of_sensor_register
-      hwmon: convert ntc_thermistor to use devm_thermal_zone_of_sensor_register
-      hwmon: convert tmp102 to use devm_thermal_zone_of_sensor_register
-      hwmon: convert scpi-hwmon to use devm_thermal_zone_of_sensor_register
-      input: convert sun4i-ts to use devm_thermal_zone_of_sensor_register
-      thermal: convert hisi_thermal to use devm_thermal_zone_of_sensor_register
-      thermal: convert mtk_thermal to use devm_thermal_zone_of_sensor_register
-      thermal: convert qcom-spmi to use devm_thermal_zone_of_sensor_register
-      thermal: convert rcar_thermal to use devm_thermal_zone_of_sensor_register
-      thermal: convert rockchip_thermal to use devm_thermal_zone_of_sensor_register
-      thermal: convert tegra_thermal to use devm_thermal_zone_of_sensor_register
-      thermal: convert ti-thermal to use devm_thermal_zone_of_sensor_register
-
-Elaine Zhang (1):
-      thermal: rockchip: Support RK3366 SoCs in the thermal driver
-
-Keerthy (1):
-      MAINTAINERS: ti-soc-thermal: add a co-maintainer and update the entry
-
-Laxman Dewangan (2):
-      thermal: generic-adc: Add DT binding for ADC based thermal sensor
-      thermal: generic-adc: Add ADC based thermal sensor driver
-
-Leo Yan (2):
-      thermal: hisilicon: support to use any sensor
-      thermal: hisilicon: fix IRQ imbalance enabling
-
-Marc Gonzalez (2):
-      thermal: add temperature sensor support for tango SoC
-      thermal: tango: initialize TEMPSI_CFG
-
-Shawn Lin (1):
-      thermal: rockchip: disable thermal->clk in err case
-
-Simon Horman (1):
-      thermal: rcar: Remove binding docs for r8a7794
-
-Ulises Brindis (1):
-      thermal: of: fix cleanup when building a thermal zone
-
-Wei Ni (14):
-      thermal: tegra: move tegra thermal files into tegra directory
-      thermal: tegra: combine sensor group-related data
-      thermal: tegra: get rid of PDIV/HOTSPOT hack
-      thermal: tegra: split tegra_soctherm driver
-      thermal: tegra: add Tegra210 specific SOC_THERM driver
-      thermal: tegra: add a debugfs to show registers
-      thermal: of-thermal: allow setting trip_temp on hardware
-      of: add notes of critical trips for soctherm
-      thermal: tegra: add thermtrip function
-      thermal: tegra: handle clocks in one function
-      thermal: tegra: handle HW initialization in one funcotion
-      thermal: tegra: add PM support
-      thermal: tegra: fix static checker warning
-      thermal: tegra: add Tegra132 specific SOC_THERM driver
-
-kbuild test robot (1):
-      thermal: fix ptr_ret.cocci warnings
-
- .../devicetree/bindings/thermal/rcar-thermal.txt   |   1 -
- .../devicetree/bindings/thermal/tango-thermal.txt  |  17 +
- .../devicetree/bindings/thermal/tegra-soctherm.txt |  12 +
- .../bindings/thermal/thermal-generic-adc.txt       |  89 +++
- Documentation/thermal/sysfs-api.txt                |  44 +-
- MAINTAINERS                                        |   1 +
- drivers/cpufreq/mt8173-cpufreq.c                   |  11 +-
- drivers/hwmon/lm75.c                               |  10 +-
- drivers/hwmon/ntc_thermistor.c                     |  12 +-
- drivers/hwmon/scpi-hwmon.c                         |  48 +-
- drivers/hwmon/tmp102.c                             |   8 +-
- drivers/input/touchscreen/sun4i-ts.c               |   9 +-
- drivers/thermal/Kconfig                            |  31 +-
- drivers/thermal/Makefile                           |   4 +-
- drivers/thermal/hisi_thermal.c                     |  45 +-
- drivers/thermal/mtk_thermal.c                      |  12 +-
- drivers/thermal/of-thermal.c                       |  10 +-
- drivers/thermal/qcom-spmi-temp-alarm.c             |   3 +-
- drivers/thermal/rcar_thermal.c                     |   2 +-
- drivers/thermal/rockchip_thermal.c                 | 280 ++++++---
- drivers/thermal/tango_thermal.c                    | 109 ++++
- drivers/thermal/tegra/Kconfig                      |  13 +
- drivers/thermal/tegra/Makefile                     |   6 +
- drivers/thermal/tegra/soctherm-fuse.c              | 169 +++++
- drivers/thermal/tegra/soctherm.c                   | 685 +++++++++++++++++++++
- drivers/thermal/tegra/soctherm.h                   | 127 ++++
- drivers/thermal/tegra/tegra124-soctherm.c          | 196 ++++++
- drivers/thermal/tegra/tegra132-soctherm.c          | 196 ++++++
- drivers/thermal/tegra/tegra210-soctherm.c          | 197 ++++++
- drivers/thermal/tegra_soctherm.c                   | 476 --------------
- drivers/thermal/thermal-generic-adc.c              | 182 ++++++
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   5 +-
- include/dt-bindings/thermal/tegra124-soctherm.h    |   1 +
- include/linux/thermal.h                            |   1 +
- 34 files changed, 2320 insertions(+), 692 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/tango-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
- create mode 100644 drivers/thermal/tango_thermal.c
- create mode 100644 drivers/thermal/tegra/Kconfig
- create mode 100644 drivers/thermal/tegra/Makefile
- create mode 100644 drivers/thermal/tegra/soctherm-fuse.c
- create mode 100644 drivers/thermal/tegra/soctherm.c
- create mode 100644 drivers/thermal/tegra/soctherm.h
- create mode 100644 drivers/thermal/tegra/tegra124-soctherm.c
- create mode 100644 drivers/thermal/tegra/tegra132-soctherm.c
- create mode 100644 drivers/thermal/tegra/tegra210-soctherm.c
- delete mode 100644 drivers/thermal/tegra_soctherm.c
- create mode 100644 drivers/thermal/thermal-generic-adc.c
