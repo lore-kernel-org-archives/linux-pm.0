@@ -1,62 +1,59 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 20/31] thermal: core: introduce thermal_helpers.c
-Date: Tue, 17 May 2016 07:40:45 -0700
-Message-ID: <20160517144044.GB14550@localhost.localdomain>
-References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
- <1462341765-13268-21-git-send-email-edubezval@gmail.com>
- <1463491216.29980.36.camel@rzhang1-mobl4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33673 "EHLO
-	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbcEQOkt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 10:40:49 -0400
-Content-Disposition: inline
-In-Reply-To: <1463491216.29980.36.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle: Fix coupled state parameter in cpuidle_enter()
+Date: Tue, 17 May 2016 16:54:00 +0200
+Message-ID: <1463496840-2858-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: gregory.clement@free-electrons.com, linux-pm@vger.kernel.org, linux@armlinux.org.uk, paul.burton@imgtec.com, stable@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, May 17, 2016 at 01:20:17PM +0000, Zhang, Rui wrote:
-> $checkpatch.pl 20-31-thermal-core-introduce-thermal_helpers.c.patch 
-> 
-> WARNING: added, moved or deleted file(s), does MAINTAINERS need
-> updating?
-> #187: 
-> new file mode 100644
-> 
-> ERROR: trailing whitespace
-> #302: FILE: drivers/thermal/thermal_helpers.c:111:
-> + $
-> 
-> WARNING: please, no spaces at the start of a line
-> #302: FILE: drivers/thermal/thermal_helpers.c:111:
-> + $
-> 
-> total: 1 errors, 2 warnings, 287 lines checked
-> 
-> NOTE: Whitespace errors detected.
->       You may wish to use scripts/cleanpatch or scripts/cleanfile
-> 
-> 20-31-thermal-core-introduce-thermal_helpers.c.patch has style problems,
-> please review.
-> 
-> NOTE: If any of the errors are false positives, please report
->       them to the maintainer, see CHECKPATCH in MAINTAINERS.
-> 
-> Please remove these spaces.
-> BTW, there are also some warnings in the other patches, please fix the
-> checkpatch warnings/errors.
+The commit 0b89e9aa2856 rightfully fixed a regression by letting the couple
+idle state framework to handle local interrupt enabling when the cpu is
+exiting an idle state.
 
-Yeah, I will fix those.
+The current code check if the idle state is a coupled one and, if so, it will
+let the couple code to enable the interrupt. This way, it can decrement the
+ready-count before handling the interrupts. This mechanism prevents the other
+cpus to wait for a cpu which is handling interrupts.
 
-These patches were supposed to be reviewed/merged before the merge
-window though. I am going to wait until the merge window is closed to
-send them again.
+But the check is done against the state index returned by the back end driver
+'enter' functions which could be different from the initial index passed as
+parameter to the cpuidle_enter_state() function.
 
+ entered_state = target_state->enter(dev, drv, index);
 
-BR,
+ [ ... ]
 
-Eduardo Valentin
+ if (!cpuidle_state_is_coupled(drv, entered_state))
+	local_irq_enable();
+
+ [ ... ]
+
+If the 'index' is referring to a coupled idle state but the 'entered_state'
+is *not* coupled, then the interrupts are enabled again. All cpus blocked on
+the sync barrier may busy loop longer if the cpu has interrupts to handle
+before decrementing the ready-count. Thus consuming more energy than saving.
+
+Fixes: 0b89e9aa2856 "cpuidle: delay enabling interrupts until all coupled CPUs leave idle"
+Cc: stable@vger.kernel.org
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index f996efc..cd021ed 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -214,7 +214,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 		tick_broadcast_exit();
+ 	}
+ 
+-	if (!cpuidle_state_is_coupled(drv, entered_state))
++	if (!cpuidle_state_is_coupled(drv, index))
+ 		local_irq_enable();
+ 
+ 	diff = ktime_to_us(ktime_sub(time_end, time_start));
+-- 
+1.9.1
