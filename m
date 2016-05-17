@@ -1,55 +1,104 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
- PSCI
-Date: Tue, 17 May 2016 13:53:56 +0200
-Message-ID: <1463486036.19237.9.camel@suse.com>
-References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
-	 <572C9BF2.9010004@arm.com>
-	 <DB3PR04MB08125A628F5034749F8109D884730@DB3PR04MB0812.eurprd04.prod.outlook.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC 4/4] arm64: dts: r8a7795: Add Z clock scaling support
+Date: Tue, 17 May 2016 15:03:23 +0200
+Message-ID: <CAMuHMdW52t9SZq89QjdB=P-aM8dCSq-YYLCxRA7Wk1NVGLsUPg@mail.gmail.com>
+References: <1462372543-31835-1-git-send-email-geert+renesas@glider.be>
+	<573166EB.70908@rvc.renesas.com>
+	<5731678E.3080003@rvc.renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:42489 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754807AbcEQL51 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 May 2016 07:57:27 -0400
-In-Reply-To: <DB3PR04MB08125A628F5034749F8109D884730@DB3PR04MB0812.eurprd04.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <5731678E.3080003@rvc.renesas.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Toru Oishi <toru.oishi.zj@rvc.renesas.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@nxp.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Frank Li <Frank.Li@freescale.com>, Peng Fan <Peng.Fan@freescale.com>, Tom Warren <twarren@nvidia.com>, Vincent Guittot <vincent.guittot@linaro.org>, "jszhang@marvell.com" <jszhang@marvell.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, 2016-05-12 at 09:42 +0000, Hongbo Zhang wrote:
-> On our platform we have some shallow states which maps to cpuidle
-> well, 
-> and we have two more deeper states:
-> 
-> Sleep state:
-> All cores are in WFI state,
-> Core cluster is in standby state, e.g. L2 cache is flushed then stops 
-> snooping,
-> Only those modules which are required to wake up the device still have
-> a 
-> running clock, other device modules in chip are clock gated.
-> 
-> Deep sleep state:
-> ARM cores and DDR controller are switched off,
-> DDR is in self-refresh mode,
-> VDD power to off domain IPs are removed, Only the blocks needed to 
-> detect wake up and sequence the chip out of deep sleep are on.
+On Tue, May 10, 2016 at 6:46 AM, Khiem Nguyen
+<khiem.nguyen.xt@rvc.renesas.com> wrote:
+> This patch adds Z clock scaling support for CA57 in R8A7795 SoC.
+> An OPP table is created with the supported frequency scaling.
+>
+> Signed-off-by: Dien Pham <dien.pham.ry@rvc.renesas.com>
+> Signed-off-by: Takeshi Kihara <takeshi.kihara.df@renesas.com>
+> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+> ---
+>  arch/arm64/boot/dts/renesas/r8a7795.dtsi | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+> b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+> index 7181db0..041d0f2 100644
+> --- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+> +++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+> @@ -43,6 +43,8 @@
+>                         power-domains = <&sysc R8A7795_PD_CA57_CPU0>;
+>                         next-level-cache = <&L2_CA57>;
+>                         enable-method = "psci";
+> +                       clocks =<&cpg CPG_CORE R8A7795_CLK_Z>;
+> +                       operating-points-v2 = <&cluster0_opp_tb0>;
+>                 };
+>
+>                 a57_1: cpu@1 {
+> @@ -52,6 +54,7 @@
+>                         power-domains = <&sysc R8A7795_PD_CA57_CPU1>;
+>                         next-level-cache = <&L2_CA57>;
+>                         enable-method = "psci";
+> +                       operating-points-v2 = <&cluster0_opp_tb0>;
+>                 };
+>                 a57_2: cpu@2 {
+>                         compatible = "arm,cortex-a57","arm,armv8";
+> @@ -60,6 +63,7 @@
+>                         power-domains = <&sysc R8A7795_PD_CA57_CPU2>;
+>                         next-level-cache = <&L2_CA57>;
+>                         enable-method = "psci";
+> +                       operating-points-v2 = <&cluster0_opp_tb0>;
+>                 };
+>                 a57_3: cpu@3 {
+>                         compatible = "arm,cortex-a57","arm,armv8";
+> @@ -68,6 +72,28 @@
+>                         power-domains = <&sysc R8A7795_PD_CA57_CPU3>;
+>                         next-level-cache = <&L2_CA57>;
+>                         enable-method = "psci";
+> +                       operating-points-v2 = <&cluster0_opp_tb0>;
+> +               };
+> +       };
+> +
+> +       cluster0_opp_tb0: opp_table0 {
+> +               compatible = "operating-points-v2";
+> +               opp-shared;
+> +
+> +               opp@500000000 {
+> +                       opp-hz = /bits/ 64 <500000000>;
+> +                       opp-microvolt = <820000>;
+> +                       clock-latency-ns = <300000>;
+> +               };
+> +               opp@1000000000 {
+> +                       opp-hz = /bits/ 64 <1000000000>;
+> +                       opp-microvolt = <820000>;
+> +                       clock-latency-ns = <300000>;
+> +               };
+> +               opp@1500000000 {
+> +                       opp-hz = /bits/ 64 <1500000000>;
+> +                       opp-microvolt = <820000>;
+> +                       clock-latency-ns = <300000>;
 
-For the pm module of the core kernel a low power state is a sleep
-state if even one of three conditions is met:
+With W=1:
 
-a) a device that can be used for input is not a source of wake ups
-b) tasks need to be frozen to enter it
-c) the display goes off, while it should be on
+Warning (unit_address_vs_reg): Node /opp_table0/opp@500000000 has a
+unit name, but no reg property
+Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+unit name, but no reg property
+Warning (unit_address_vs_reg): Node /opp_table0/opp@1500000000 has a
+unit name, but no reg property
 
-Generally runtime PM is better if you can get the same results.
-Going to a system sleep state is a necessary evil.
+Gr{oetje,eeting}s,
 
-	Regards
-		Oliver
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
