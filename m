@@ -1,58 +1,46 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH] powercap/rapl: Do not load in virtualized environments
-Date: Tue, 17 May 2016 07:34:05 -0400
-Message-ID: <1463484845-9839-1-git-send-email-prarit@redhat.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 1/4] PM / Domains: Remove redundant call to pm_request_idle() in genpd
+Date: Tue, 17 May 2016 13:41:33 +0200
+Message-ID: <1463485296-22742-2-git-send-email-ulf.hansson@linaro.org>
+References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:44347 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752241AbcEQLed (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 May 2016 07:34:33 -0400
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:34338 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbcEQLls (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 07:41:48 -0400
+Received: by mail-lb0-f171.google.com with SMTP id n11so4858506lbh.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 May 2016 04:41:47 -0700 (PDT)
+In-Reply-To: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Jun Pan <jacob.jun.pan@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-intel_rapl is currently not supported in virtualized environments.  When
-booting the warning message
+The PM core increases the runtime PM usage count at the system PM prepare
+phase. Later when the system has resumed and the ->complete() callback has
+been invoked, it drops the usage count. In this way, it intentionally
+prevents runtime PM suspend for the device throughout this period.
 
-intel_rapl: no valid rapl domains found in package 0
+For this reason, let's remove the call to pm_request_idle() from within
+genpd's ->complete() calllback as it's redundant.
 
-is output for every virtual core.
-
-This patch stops the driver from being loaded in virtual boots.
-
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Jacob Jun Pan <jacob.jun.pan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/powercap/intel_rapl.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/base/power/domain.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index f2201d42a9cd..bebfbe8acccd 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -29,6 +29,7 @@
- #include <linux/sysfs.h>
- #include <linux/cpu.h>
- #include <linux/powercap.h>
-+#include <asm/hypervisor.h>
- #include <asm/iosf_mbi.h>
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 658eb1b..60a9971 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -938,7 +938,6 @@ static void pm_genpd_complete(struct device *dev)
+ 	pm_generic_complete(dev);
+ 	pm_runtime_set_active(dev);
+ 	pm_runtime_enable(dev);
+-	pm_request_idle(dev);
+ }
  
- #include <asm/processor.h>
-@@ -1600,6 +1601,10 @@ static int __init rapl_init(void)
- 		return -ENODEV;
- 	}
- 
-+	/* Intel RAPL is not supported on virtualized environments */
-+	if (x86_hyper)
-+		return -ENODEV;
-+
- 	rapl_defaults = (struct rapl_defaults *)id->driver_data;
- 
- 	cpu_notifier_register_begin();
+ /**
 -- 
-1.7.9.3
+1.9.1
 
