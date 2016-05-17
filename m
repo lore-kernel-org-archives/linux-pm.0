@@ -1,132 +1,170 @@
-From: chunfeng yun <chunfeng.yun@mediatek.com>
-Subject: Re: [PATCH] usb: xhci-mtk: fixup mouse wakeup failure during system
- suspend
-Date: Tue, 17 May 2016 10:00:06 +0800
-Message-ID: <1463450406.11651.134.camel@mhfsdcap03>
-References: <1461204293-18243-1-git-send-email-chunfeng.yun@mediatek.com>
-	 <1462261458.11651.7.camel@mhfsdcap03> <87vb2vfujq.fsf@intel.com>
-	 <1462266591.11651.34.camel@mhfsdcap03> <87mvo7fpuc.fsf@intel.com>
-	 <1462324873.11651.57.camel@mhfsdcap03> <871t5ifdxk.fsf@intel.com>
-	 <1462359261.11651.69.camel@mhfsdcap03> <87mvo6dojx.fsf@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal SoC management updates for v4.7
+Date: Mon, 16 May 2016 20:18:58 -0700
+Message-ID: <20160517031857.GA3318@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87mvo6dojx.fsf@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <felipe.balbi@linux.intel.com>
-Cc: Mathias Nyman <mathias.nyman@intel.com>, Matthias Brugger <matthias.bgg@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2016-05-04 at 14:56 +0300, Felipe Balbi wrote:
-> Hi,
-> 
-> chunfeng yun <chunfeng.yun@mediatek.com> writes:
-> >> chunfeng yun <chunfeng.yun@mediatek.com> writes:
-> >> > On Tue, 2016-05-03 at 12:33 +0300, Felipe Balbi wrote:
-> >> >> Hi,
-> >> >> 
-> >> >> chunfeng yun <chunfeng.yun@mediatek.com> writes:
-> >> >> >> chunfeng yun <chunfeng.yun@mediatek.com> writes:
-> >> >> >> > On Thu, 2016-04-21 at 10:04 +0800, Chunfeng Yun wrote:
-> >> >> >> >> Click mouse after xhci suspend completion but before system suspend
-> >> >> >> >> completion, system will not be waken up by mouse if the duration of
-> >> >> >> >> them is larger than 20ms which is the device UFP's resume signaling
-> >> >> >> 
-> >> >> >> what is "them" here ? The duration of what is longer than 20ms ?
-> >> >> > They are "xhci suspend completion" and "system suspend completion";
-> >> >> >
-> >> >> > It's time duration
-> >> >> 
-> >> >> okay. So if xhci suspend takes longer than 20ms your SPM doesn't see a
-> >> >> wakeup ?
-> >> > It is not the time of xhci suspend consumed, but is the time of duration
-> >> > from xhci suspend completion to system suspend completion(after BOOT-CPU
-> >> > is turned off, SPM will be enabled to receive wakeup event)
-> >> 
-> >> Okay, so SPM will be the entity actually handling wakeups, right ? I'm
-> >> assuming something like this happens:
-> >> 
-> >> echo mem > /sys/power/state
-> >>  /* start suspending devices */
-> >>   xhci_suspend()
-> >>  /* all devices suspended */
-> >>  enable_spm()
-> >> 
-> >> so, if a mouse button is pressed after xhci_suspend() returns but before
-> >> enable_spm() runs, then we're gonna miss that event, am I right ?
-> > Yes, you are right.
-> >> 
-> >> I can't think of any way to sort this out. Let's ask on linux-pm (I've
-> >> added linux-pm to Cc list)
-> > Thanks
-> >> 
-> >> >> >> >> lasted. Another reason is that the SPM is not enabled before system
-> >> >> >> 
-> >> >> >> what's SPM ?
-> >> >> > It is System Power Management which is powered off when system is
-> >> >> > running in normal mode, and is powered on when system enters suspend
-> >> >> > mode. It is used to wakeup system when some wakeup sources, such as
-> >> >> > bluetooth or powerkey etc, tigger wakeup event.
-> >> >> 
-> >> >> okay, thanks
-> >> >> 
-> >> >> >> >> suspend compeltion, this causes SPM also not notice the resume signal.
-> >> >> >>            ^^^^^^^^^^
-> >> >> >>            completion
-> >> >> >> 
-> >> >> >> >> So in order to reduce the duration less than 20ms, make use of
-> >> >> >> >> syscore's suspend/resume interface.
-> >> >> >> 
-> >> >> >> no, this is the wrong approach
-> >> >> > But it seems only one workable approach from software side
-> >> >> 
-> >> >> I wouldn't say that. It seems to me SPM should be enabled earlier.
-> >> > Yes, but normally SPM should be enabled after all CPUS are turned off,
-> >> > so it's difficult to do that, I mean enable SPM before turning off CPUS
-> >> 
-> >> is it a requirement that SPM should be enabled only after all CPUs are
-> >> turned off ? If that's the case, then any device in the system might
-> >> have missed wakeups. This doesn't seem like a good design to me; unless
-> >> I'm missing something...
-> > Yes, it's a requirement.
-> >
-> > If the wakeup source is level trigger, and will keep it until SPM notice
-> > it. Although USB wakeup is level trigger, but it just last at most 20ms
-> > and clear itself automatically.
-> 
-> who's clearing USB wakeup after 20ms ? Sure, it's a requirement by the
-> USB spec that host should drive reset for *at least* 20ms, but I don't
-> remember the exact wordings WRT remote wakeup
-> 
-> /me reads
-> 
-> Okay, here it is, section 7.1.7.7 of USB 2.0 Spec states:
-> 
-> 	"The remote wakeup device must hold the resume signaling for at
->         least 1 ms but for no more than 15 ms (TDRSMUP). At the end of
->         this period, the device stops driving the bus (puts its drivers
->         into the high-impedance state and does not drive the bus to the
->         J state)."
-> 
-> IOW, the mouse is not at fault here. Remote wakeup can last anywhere
-> between 1ms and 15ms. If your system can't cope with it, then I'd say
-> it's a problem with your system and you shouldn't allow XHCI to go to
-> such deep power states until SPM is enabled.
-Yes
+Hello Rui,
 
-> 
-> I really tried finding the correct piece of code which does this for PCI
-> devices, but basically it's treated as an IRQ and as long as
-> enable_irq_wake() or the sysfs file is set to true, then PME gets
-> enabled (hopefully PCI folks can confirm this statement).
-> 
-> Very recently Tony Lindgren added proper handling of wakeup signals as
-> IRQs for non-PCI systems too (see 4990d4fe327b PM / Wakeirq: Add
-> automated device wake IRQ handling), wonder if you could treat SPM
-> similarly.
-We can't make use of device's interrupt as wake IRQ, because there is no
-IRQ when xHCI enters suspend mode.
+Here is material for 4.7 on thermal SoC. I have rebased this branch on
+top of latest linus tree. But this material have been tested and on
+linux-next for several weeks.
 
-Thanks
-> 
+The following changes since commit b6ae4055f4ab55c05df31cc1b6a7ea8c85eb525d:
+
+  Merge tag 'arm64-perf' of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux (2016-05-16 17:39:29 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal work-linus-4.7
+
+for you to fetch changes up to 17c403d8ba287212102c9d72696e2666d4516478:
+
+  thermal: tango: initialize TEMPSI_CFG (2016-05-16 18:00:40 -0700)
+
+In this pull you get:
+- Rockchip driver support for RK3399, RK3366, and some fixes.
+- Mediatek CPU power model
+- Wider usage of dev_thermal_zone_of_sensor_register
+- A generic ADC thermal driver, based on OF thermal
+- TI thermal driver gained a new maintainer (Keerthy)
+- New thermal driver for Tango chips
+- Various fixes on OF thermal, Tegra, and RCAR
+
+BR,
+
+
+Eduardo Valentin
+
+
+----------------------------------------------------------------
+Andy Champ (1):
+      thermal: Syntactic and factual errors in the API document
+
+Arnd Bergmann (1):
+      thermal: tegra: mark PM functions __maybe_unused
+
+Caesar Wang (5):
+      thermal: rockchip: fixes the code_to_temp for tsadc driver
+      thermal: rockchip: update the tsadc table for rk3399
+      thermal: rockchip: handle the power sequence for tsadc controller
+      thermal: rockchip: add the notes for better reading
+      thermal: rockchip: use the usleep_range instead of udelay
+
+Dawei Chien (1):
+      thermal: mediatek: Add cpu dynamic power cooling model.
+
+Eduardo Valentin (12):
+      hwmon: convert lm75 to use devm_thermal_zone_of_sensor_register
+      hwmon: convert ntc_thermistor to use devm_thermal_zone_of_sensor_register
+      hwmon: convert tmp102 to use devm_thermal_zone_of_sensor_register
+      hwmon: convert scpi-hwmon to use devm_thermal_zone_of_sensor_register
+      input: convert sun4i-ts to use devm_thermal_zone_of_sensor_register
+      thermal: convert hisi_thermal to use devm_thermal_zone_of_sensor_register
+      thermal: convert mtk_thermal to use devm_thermal_zone_of_sensor_register
+      thermal: convert qcom-spmi to use devm_thermal_zone_of_sensor_register
+      thermal: convert rcar_thermal to use devm_thermal_zone_of_sensor_register
+      thermal: convert rockchip_thermal to use devm_thermal_zone_of_sensor_register
+      thermal: convert tegra_thermal to use devm_thermal_zone_of_sensor_register
+      thermal: convert ti-thermal to use devm_thermal_zone_of_sensor_register
+
+Elaine Zhang (1):
+      thermal: rockchip: Support RK3366 SoCs in the thermal driver
+
+Keerthy (1):
+      MAINTAINERS: ti-soc-thermal: add a co-maintainer and update the entry
+
+Laxman Dewangan (2):
+      thermal: generic-adc: Add DT binding for ADC based thermal sensor
+      thermal: generic-adc: Add ADC based thermal sensor driver
+
+Leo Yan (2):
+      thermal: hisilicon: support to use any sensor
+      thermal: hisilicon: fix IRQ imbalance enabling
+
+Marc Gonzalez (2):
+      thermal: add temperature sensor support for tango SoC
+      thermal: tango: initialize TEMPSI_CFG
+
+Shawn Lin (1):
+      thermal: rockchip: disable thermal->clk in err case
+
+Simon Horman (1):
+      thermal: rcar: Remove binding docs for r8a7794
+
+Ulises Brindis (1):
+      thermal: of: fix cleanup when building a thermal zone
+
+Wei Ni (14):
+      thermal: tegra: move tegra thermal files into tegra directory
+      thermal: tegra: combine sensor group-related data
+      thermal: tegra: get rid of PDIV/HOTSPOT hack
+      thermal: tegra: split tegra_soctherm driver
+      thermal: tegra: add Tegra210 specific SOC_THERM driver
+      thermal: tegra: add a debugfs to show registers
+      thermal: of-thermal: allow setting trip_temp on hardware
+      of: add notes of critical trips for soctherm
+      thermal: tegra: add thermtrip function
+      thermal: tegra: handle clocks in one function
+      thermal: tegra: handle HW initialization in one funcotion
+      thermal: tegra: add PM support
+      thermal: tegra: fix static checker warning
+      thermal: tegra: add Tegra132 specific SOC_THERM driver
+
+kbuild test robot (1):
+      thermal: fix ptr_ret.cocci warnings
+
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |   1 -
+ .../devicetree/bindings/thermal/tango-thermal.txt  |  17 +
+ .../devicetree/bindings/thermal/tegra-soctherm.txt |  12 +
+ .../bindings/thermal/thermal-generic-adc.txt       |  89 +++
+ Documentation/thermal/sysfs-api.txt                |  44 +-
+ MAINTAINERS                                        |   1 +
+ drivers/cpufreq/mt8173-cpufreq.c                   |  11 +-
+ drivers/hwmon/lm75.c                               |  10 +-
+ drivers/hwmon/ntc_thermistor.c                     |  12 +-
+ drivers/hwmon/scpi-hwmon.c                         |  48 +-
+ drivers/hwmon/tmp102.c                             |   8 +-
+ drivers/input/touchscreen/sun4i-ts.c               |   9 +-
+ drivers/thermal/Kconfig                            |  31 +-
+ drivers/thermal/Makefile                           |   4 +-
+ drivers/thermal/hisi_thermal.c                     |  45 +-
+ drivers/thermal/mtk_thermal.c                      |  12 +-
+ drivers/thermal/of-thermal.c                       |  10 +-
+ drivers/thermal/qcom-spmi-temp-alarm.c             |   3 +-
+ drivers/thermal/rcar_thermal.c                     |   2 +-
+ drivers/thermal/rockchip_thermal.c                 | 280 ++++++---
+ drivers/thermal/tango_thermal.c                    | 109 ++++
+ drivers/thermal/tegra/Kconfig                      |  13 +
+ drivers/thermal/tegra/Makefile                     |   6 +
+ drivers/thermal/tegra/soctherm-fuse.c              | 169 +++++
+ drivers/thermal/tegra/soctherm.c                   | 685 +++++++++++++++++++++
+ drivers/thermal/tegra/soctherm.h                   | 127 ++++
+ drivers/thermal/tegra/tegra124-soctherm.c          | 196 ++++++
+ drivers/thermal/tegra/tegra132-soctherm.c          | 196 ++++++
+ drivers/thermal/tegra/tegra210-soctherm.c          | 197 ++++++
+ drivers/thermal/tegra_soctherm.c                   | 476 --------------
+ drivers/thermal/thermal-generic-adc.c              | 182 ++++++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   5 +-
+ include/dt-bindings/thermal/tegra124-soctherm.h    |   1 +
+ include/linux/thermal.h                            |   1 +
+ 34 files changed, 2320 insertions(+), 692 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/tango-thermal.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
+ create mode 100644 drivers/thermal/tango_thermal.c
+ create mode 100644 drivers/thermal/tegra/Kconfig
+ create mode 100644 drivers/thermal/tegra/Makefile
+ create mode 100644 drivers/thermal/tegra/soctherm-fuse.c
+ create mode 100644 drivers/thermal/tegra/soctherm.c
+ create mode 100644 drivers/thermal/tegra/soctherm.h
+ create mode 100644 drivers/thermal/tegra/tegra124-soctherm.c
+ create mode 100644 drivers/thermal/tegra/tegra132-soctherm.c
+ create mode 100644 drivers/thermal/tegra/tegra210-soctherm.c
+ delete mode 100644 drivers/thermal/tegra_soctherm.c
+ create mode 100644 drivers/thermal/thermal-generic-adc.c
