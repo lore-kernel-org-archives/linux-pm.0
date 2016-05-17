@@ -1,52 +1,162 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: Fix coupled state parameter in cpuidle_enter()
-Date: Tue, 17 May 2016 16:55:35 +0200
-Message-ID: <573B30E7.6040802@linaro.org>
-References: <1463496840-2858-1-git-send-email-daniel.lezcano@linaro.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC PATCH 1/1] acpi: processor_driver: register cooling device
+ per package
+Date: Tue, 17 May 2016 10:19:44 -0700
+Message-ID: <1463505584.28729.198.camel@linux.intel.com>
+References: <1463120370-2553-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1463496840-2858-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: gregory.clement@free-electrons.com, linux-pm@vger.kernel.org, linux@armlinux.org.uk, paul.burton@imgtec.com, stable@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:18110 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbcEQRSz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 17 May 2016 13:18:55 -0400
+In-Reply-To: <1463120370-2553-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net
 
-On 05/17/2016 04:54 PM, Daniel Lezcano wrote:
-> The commit 0b89e9aa2856 rightfully fixed a regression by letting the couple
-> idle state framework to handle local interrupt enabling when the cpu is
-> exiting an idle state.
->
-> The current code check if the idle state is a coupled one and, if so, it will
-> let the couple code to enable the interrupt. This way, it can decrement the
-> ready-count before handling the interrupts. This mechanism prevents the other
-> cpus to wait for a cpu which is handling interrupts.
->
-> But the check is done against the state index returned by the back end driver
-> 'enter' functions which could be different from the initial index passed as
-> parameter to the cpuidle_enter_state() function.
->
->   entered_state = target_state->enter(dev, drv, index);
->
->   [ ... ]
->
->   if (!cpuidle_state_is_coupled(drv, entered_state))
-> 	local_irq_enable();
->
->   [ ... ]
->
-> If the 'index' is referring to a coupled idle state but the 'entered_state'
-> is *not* coupled, then the interrupts are enabled again. All cpus blocked on
-> the sync barrier may busy loop longer if the cpu has interrupts to handle
-> before decrementing the ready-count. Thus consuming more energy than saving.
->
-> Fixes: 0b89e9aa2856 "cpuidle: delay enabling interrupts until all coupled CPUs leave idle"
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Thu, 2016-05-12 at 23:19 -0700, Eduardo Valentin wrote:
+> The current throttling strategy is to apply cooling levels
+> on all processors in a package. Therefore, if one cooling
+> device is requested to cap the frequency, the same request
+> is applied to all sibling processors in the same package.
+>=20
+> For this reason, this patch removes the redundant cooling
+> devices, registering only one cooling device per package.
+>=20
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 > ---
+> Srinivas,
+>=20
+> This is the outcome of our discussion on the Processor cooling
+> device.
+> As per your suggestion, I am now attempting to register a single
+> cooling device per package.
+>=20
+> The only thing is about the sysfs links. Now the Processor cooling
+> device would look like:
+> $ ls /sys/class/thermal/cooling_device0/
+> cur_state=C2=A0=C2=A0device.0=C2=A0=C2=A0device.1=C2=A0=C2=A0device.2=
+=C2=A0=C2=A0device.3=C2=A0=C2=A0max_state=C2=A0=C2=A0power=C2=A0=C2=A0
+> subsystem	type=C2=A0=C2=A0uevent
+>=20
+> Instead of:
+>=20
+> $ ls /sys/class/thermal/cooling_device0/
+> cur_state=C2=A0=C2=A0device=C2=A0=C2=A0max_state=C2=A0=C2=A0power=C2=A0=
+=C2=A0subsystem	type=C2=A0=C2=A0uevent
+>=20
+> This is obviously to keep a link between the cooling device and
+> its affected devices. Would this break userspace?
+>=20
+Conceptually it is fine and should work. I need to run some tests
+before I confirm.
+Hopefully I can do in next 2 weeks.
 
-I don't have a board available with a driver doing couple idle state, so 
-I wasn't able to test this patch.
-
-   -- Daniel
+Thanks,
+Srinivas
+> BR,
+>=20
+> Eduardo Valentin
+>=20
+> =C2=A0drivers/acpi/processor_driver.c | 40
+> +++++++++++++++++++++++++++++++++++++---
+> =C2=A01 file changed, 37 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/acpi/processor_driver.c
+> b/drivers/acpi/processor_driver.c
+> index 11154a3..e1e17de 100644
+> --- a/drivers/acpi/processor_driver.c
+> +++ b/drivers/acpi/processor_driver.c
+> @@ -160,9 +160,29 @@ static struct notifier_block acpi_cpu_notifier =3D
+> {
+> =C2=A0};
+> =C2=A0
+> =C2=A0#ifdef CONFIG_ACPI_CPU_FREQ_PSS
+> +static struct thermal_cooling_device *
+> +acpi_pss_register_cooling(struct acpi_processor *pr, struct
+> acpi_device *device)
+> +{
+> +	int i, cpu =3D pr->id;
+> +
+> +	for_each_online_cpu(i) {
+> +		if (topology_physical_package_id(i) =3D=3D
+> +		=C2=A0=C2=A0=C2=A0=C2=A0topology_physical_package_id(cpu)) {
+> +			struct acpi_processor *pre =3D
+> per_cpu(processors, i);
+> +
+> +			if (pre->cdev && !IS_ERR(pre->cdev))
+> +				return pre->cdev;
+> +		}
+> +	}
+> +
+> +	return thermal_cooling_device_register("Processor", device,
+> +					=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0&processor_cooling_op
+> s);
+> +}
+> +
+> =C2=A0static int acpi_pss_perf_init(struct acpi_processor *pr,
+> =C2=A0		struct acpi_device *device)
+> =C2=A0{
+> +	char cpu_id[15];
+> =C2=A0	int result =3D 0;
+> =C2=A0
+> =C2=A0	acpi_processor_ppc_has_changed(pr, 0);
+> @@ -172,8 +192,7 @@ static int acpi_pss_perf_init(struct
+> acpi_processor *pr,
+> =C2=A0	if (pr->flags.throttling)
+> =C2=A0		pr->flags.limit =3D 1;
+> =C2=A0
+> -	pr->cdev =3D thermal_cooling_device_register("Processor",
+> device,
+> -						=C2=A0=C2=A0=C2=A0&processor_coolin
+> g_ops);
+> +	pr->cdev =3D acpi_pss_register_cooling(pr, device);
+> =C2=A0	if (IS_ERR(pr->cdev)) {
+> =C2=A0		result =3D PTR_ERR(pr->cdev);
+> =C2=A0		return result;
+> @@ -191,9 +210,10 @@ static int acpi_pss_perf_init(struct
+> acpi_processor *pr,
+> =C2=A0		goto err_thermal_unregister;
+> =C2=A0	}
+> =C2=A0
+> +	snprintf(cpu_id, sizeof(cpu_id), "device.%d", pr->id);
+> =C2=A0	result =3D sysfs_create_link(&pr->cdev->device.kobj,
+> =C2=A0				=C2=A0=C2=A0=C2=A0&device->dev.kobj,
+> -				=C2=A0=C2=A0=C2=A0"device");
+> +				=C2=A0=C2=A0=C2=A0cpu_id);
+> =C2=A0	if (result) {
+> =C2=A0		dev_err(&pr->cdev->device,
+> =C2=A0			"Failed to create sysfs link 'device'\n");
+> @@ -213,11 +233,25 @@ static int acpi_pss_perf_init(struct
+> acpi_processor *pr,
+> =C2=A0static void acpi_pss_perf_exit(struct acpi_processor *pr,
+> =C2=A0		struct acpi_device *device)
+> =C2=A0{
+> +	char cpu_id[15];
+> +	int i;
+> +
+> =C2=A0	if (pr->cdev) {
+> =C2=A0		sysfs_remove_link(&device->dev.kobj,
+> "thermal_cooling");
+> +		snprintf(cpu_id, sizeof(cpu_id), "device.%d", pr-
+> >id);
+> =C2=A0		sysfs_remove_link(&pr->cdev->device.kobj, "device");
+> =C2=A0		thermal_cooling_device_unregister(pr->cdev);
+> =C2=A0		pr->cdev =3D NULL;
+> +
+> +		for_each_online_cpu(i) {
+> +			if (topology_physical_package_id(i) =3D=3D
+> +			=C2=A0=C2=A0=C2=A0=C2=A0topology_physical_package_id(pr->id)) {
+> +				struct acpi_processor *pre;
+> +
+> +				pre =3D per_cpu(processors, i);
+> +				pre->cdev =3D NULL;
+> +			}
+> +		}
+> =C2=A0	}
+> =C2=A0}
+> =C2=A0#else
