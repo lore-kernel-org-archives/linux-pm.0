@@ -1,56 +1,43 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 omap 3/6] arm: Add _rcuidle tracepoints to allow
- clk_core_disable() use from idle
-Date: Wed, 18 May 2016 10:31:38 -0700
-Message-ID: <20160518173138.GW3528@linux.vnet.ibm.com>
-References: <20160516184844.GA20144@linux.vnet.ibm.com>
- <1463424608-20237-3-git-send-email-paulmck@linux.vnet.ibm.com>
- <573C8943.6090104@free.fr>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Peter Wu <peter@lekensteyn.nl>
+Subject: Rescanning is broken with runtime PM for PCIe ports
+Date: Wed, 18 May 2016 19:14:01 +0200
+Message-ID: <20160518171401.GC1222@al>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e19.ny.us.ibm.com ([129.33.205.209]:44224 "EHLO
-	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932333AbcERRbj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 13:31:39 -0400
-Received: from localhost
-	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Wed, 18 May 2016 13:31:38 -0400
+Received: from lekensteyn.nl ([178.21.112.251]:43905 "EHLO lekensteyn.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932882AbcERRlB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 May 2016 13:41:01 -0400
 Content-Disposition: inline
-In-Reply-To: <573C8943.6090104@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, May 18, 2016 at 05:24:51PM +0200, Mason wrote:
-> On 16/05/2016 20:50, Paul E. McKenney wrote:
-> 
-> >> stack backtrace:
-> >> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.6.0-rc5-next-20160426+ #1114
-> >> Hardware name: Generic OMAP36xx (Flattened Device Tree)
-> >> [<c0110290>] (unwind_backtrace) from [<c010c3a8>] (show_stack+0x10/0x14)
-> >> [<c010c3a8>] (show_stack) from [<c047fd68>] (dump_stack+0xb0/0xe4)
-> >> [<c047fd68>] (dump_stack) from [<c0631618>] (clk_core_disable+0x17c/0x348)
-> >> [<c0631618>] (clk_core_disable) from [<c0632774>] (clk_disable+0x24/0x30)
-> >> [<c0632774>] (clk_disable) from [<c0120590>] (_disable_clocks+0x18/0x7c)
-> >> [<c0120590>] (_disable_clocks) from [<c0121680>] (_idle+0x12c/0x230)
-> >> [<c0121680>] (_idle) from [<c0121b4c>] (omap_hwmod_idle+0x24/0x44)
-> >> [<c0121b4c>] (omap_hwmod_idle) from [<c0122c24>] (omap_device_idle+0x3c/0x90)
-> >> [<c0122c24>] (omap_device_idle) from [<c052cc00>] (__rpm_callback+0x2c/0x60)
-> >> [<c052cc00>] (__rpm_callback) from [<c052cc54>] (rpm_callback+0x20/0x80)
-> >> [<c052cc54>] (rpm_callback) from [<c052d150>] (rpm_suspend+0x100/0x768)
-> >> [<c052d150>] (rpm_suspend) from [<c052ec58>] (__pm_runtime_suspend+0x64/0x84)
-> >> [<c052ec58>] (__pm_runtime_suspend) from [<c04bf25c>] (omap2_gpio_prepare_for_idle+0x5
-> >> c/0x70)
-> >> [<c04bf25c>] (omap2_gpio_prepare_for_idle) from [<c0125568>] (omap_sram_idle+0x140/0x2
-> >> 44)
-> 
-> Wouldn't the stack trace look better without the word wrap?  :-)
+Hi,
 
-Truth in advertising!!!  ;-)
+While testing the pci/pm tree from Bjorn with HEAD being 0195d2813547
+("PCI: Add runtime PM support for PCIe ports"), I have noticed that
+detaching and rescanning is broken.
 
-							Thanx, Paul
+When a bridgr is in D3 state, it cannot discover children. Reproducer:
 
+    echo > /sys/bus/pci/devices/0000:01:00.0/remove 1
+    # wait for the PCIe port to enter D3cold
+    echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
+    # Workaround to get the device back
+    echo > /sys/bus/pci/devices/0000:00:01.0/power/control on
+    echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
+
+lspci:
+
+    00:01.0 PCI bridge [0604]: Intel Corporation Skylake PCIe Controller (x16) [8086:1901] (rev 07)
+    01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GM204M [GeForce GTX 965M] [10de:13d9] (rev a1)
+
+Probably needs a pm_runtime_{get,put}_sync in pci_rescan_bus and
+pci_rescan_bus_bridge_resize.
+-- 
+Kind regards,
+Peter Wu
+https://lekensteyn.nl
