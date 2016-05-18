@@ -1,80 +1,98 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] powercap/rapl: Do not load in virtualized environments
-Date: Wed, 18 May 2016 19:36:33 -0400
-Message-ID: <573CFC81.1060602@redhat.com>
-References: <1463484845-9839-1-git-send-email-prarit@redhat.com>	<CAJZ5v0g59CvQVePgCbEsXvw5UqOcqvn-Snh3=0Jcnj=mhT_mfg@mail.gmail.com>	<573C6247.3000605@redhat.com> <CAJZ5v0i2h=WtdfRTmTDkLcpp3p9sqBBfO72dVCFb7EfECUQh8w@mail.gmail.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH 8/8] ARM: dts: dra7: Move to operating-points-v2 table
+Date: Wed, 18 May 2016 18:36:33 -0500
+Message-ID: <20af92f75bf0f707458dd021719cce3a70d768d5.1463606963.git.d-gerlach@ti.com>
+References: <cover.1463606963.git.d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:44997 "EHLO mx1.redhat.com"
+Received: from arroyo.ext.ti.com ([198.47.19.12]:59315 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbcERXgf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 18 May 2016 19:36:35 -0400
-In-Reply-To: <CAJZ5v0i2h=WtdfRTmTDkLcpp3p9sqBBfO72dVCFb7EfECUQh8w@mail.gmail.com>
+	id S1752215AbcERXhQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 May 2016 19:37:16 -0400
+In-Reply-To: <cover.1463606963.git.d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Jun Pan <jacob.jun.pan@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>, Dave Gerlach <d-gerlach@ti.com>
 
+Add an operating-points-v2 table with all OPPs available for all silicon
+revisions along with necessary data for use by ti-opp driver to selectively
+enable the appropriate OPPs at runtime and handle voltage transitions
 
+As we now need to define voltage ranges for each OPP, we define the
+minimum and maximum voltage to match the ranges possible for AVS class0
+voltage as defined by the DRA7/AM57 Data Manual, with the exception of
+using a range for OPP_OD based on historical data to ensure that SoCs
+from older lots still continue to boot, even though more optimal voltages
+are now the standard. Once an AVS Class0 driver is in place it will be
+possible for these OPP voltages to be adjusted to any voltage within the
+provided range.
 
-On 05/18/2016 07:06 PM, Rafael J. Wysocki wrote:
-> On Wed, May 18, 2016 at 2:38 PM, Prarit Bhargava <prarit@redhat.com> wrote:
->>
->>
->> On 05/17/2016 08:50 PM, Rafael J. Wysocki wrote:
->>> On Tue, May 17, 2016 at 1:34 PM, Prarit Bhargava <prarit@redhat.com> wrote:
->>>> intel_rapl is currently not supported in virtualized environments.  When
->>>> booting the warning message
->>>>
->>>> intel_rapl: no valid rapl domains found in package 0
->>>
->>> You seem to be saying that this message is problematic for some
->>> reason, so why is it?
->>>
->>
->> I thought about my previous answer and after thinking about it realized I didn't
->> give you enough background Rafael.  Virtual environments won't use this feature
->> as this is meant for restricting power consumption at the HW level.
->>
->> So ... here's the situation.  Most CPU features from Intel have a CPU feature
->> bit (also known in some circles as cpuflags) set for them.  For example MCE has
->> an mce bit that is exposed in /proc/cpuinfo.  Unfortunately, for Intel RAPL
->> there is no bit (I don't know if someone dropped the ball or if Intel
->> intentionally left this feature off ... I've heard both explanations :)).
->>
->> In any case the Intel RAPL driver is one of the few cpu based drivers in the
->> kernel that still does a x86_match_cpu() against supported CPUs.  This means for
->> virtual cpus which export the host cpu's cpu model number, the intel_rapl driver
->> will attempt to load for each cpu.
->>
->> As a result the message
->>
->> intel_rapl: no valid rapl domains found in package 0
->>
->> is output as a *visible* error to the user for each virtual core.
->>
->> The error is valid for native cpus (although over 100s of systems I can say I've
->> never seen the warning output on a native cpu) but it is clearly not valid for
->> virtual cpus *because virtualized systems don't use this feature*.
->>
->> The driver shouldn't load on virt systems.  That's the bottom line here, and the
->> patch prevents that from happening.  Would I prefer that there were some other
->> mechanism to detect RAPL?  Yep.  I really really would.  But beyond mucking with
->> MSRs (which is definitely more complicated and awful than this simple check) I
->> don't see any easier method than the one I've proposed.
->>
->> I really don't want to be the one who sets the precedent of abusing x86_hyper in
->> this way.  I know it isn't the "right" thing to do -- but I honestly do not see
->> a better or cleaner way out of this.
-> 
-> One quite obvious alternative might be to reduce the log level of the
-> message in question, say to pr_debug.
+Information from SPRS953, Revised December 2015.
 
-Yeah -- I thought about that too.  But that's really a band-aid, isn't it?  The
-code shouldn't execute on virt.
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ arch/arm/boot/dts/dra7.dtsi   | 26 +++++++++++++++++++++-----
+ arch/arm/boot/dts/dra74x.dtsi |  1 +
+ 2 files changed, 22 insertions(+), 5 deletions(-)
 
-P.
+diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
+index 104b62657163..0d74f8a15937 100644
+--- a/arch/arm/boot/dts/dra7.dtsi
++++ b/arch/arm/boot/dts/dra7.dtsi
+@@ -82,11 +82,9 @@
+ 			compatible = "arm,cortex-a15";
+ 			reg = <0>;
+ 
+-			operating-points = <
+-				/* kHz    uV */
+-				1000000	1060000
+-				1176000	1160000
+-				>;
++			operating-points-v2 = <&cpu0_opp_table>;
++			ti,syscon-efuse = <&scm_wkup 0x20c 0xf80000 19>;
++			ti,syscon-rev = <&scm_wkup 0x204>;
+ 
+ 			clocks = <&dpll_mpu_ck>;
+ 			clock-names = "cpu";
+@@ -100,6 +98,24 @@
+ 		};
+ 	};
+ 
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp_nom@1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <1060000 850000 1150000>;
++			opp-supported-hw = <0xFF 0x01>;
++			opp-suspend;
++		};
++
++		opp_od@1176000000 {
++			opp-hz = /bits/ 64 <1176000000>;
++			opp-microvolt = <1160000 885000 1160000>;
++			opp-supported-hw = <0xFF 0x02>;
++		};
++	};
++
+ 	/*
+ 	 * The soc node represents the soc top level view. It is used for IPs
+ 	 * that are not memory mapped in the MPU view or for the MPU itself.
+diff --git a/arch/arm/boot/dts/dra74x.dtsi b/arch/arm/boot/dts/dra74x.dtsi
+index 0c31db3a8919..0a8a5eee5dd0 100644
+--- a/arch/arm/boot/dts/dra74x.dtsi
++++ b/arch/arm/boot/dts/dra74x.dtsi
+@@ -17,6 +17,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a15";
+ 			reg = <1>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
+ 
+-- 
+2.7.3
 
-> 
