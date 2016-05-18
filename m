@@ -1,110 +1,35 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Wed, 18 May 2016 10:24:24 +0300
-Message-ID: <20160518072424.GU4329@intel.com>
-References: <20160511101920.GZ4329@intel.com>
- <57332171.8070403@linutronix.de>
- <20160511122116.GA4329@intel.com>
- <20160511084445.00030b49@gandalf.local.home>
- <20160511133406.GC4329@intel.com>
- <20160516193910.GL4329@intel.com>
- <573BA5E2.5040506@intel.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] powercap/rapl: Do not load in virtualized environments
+Date: Wed, 18 May 2016 05:59:53 -0400
+Message-ID: <573C3D19.8060400@redhat.com>
+References: <1463484845-9839-1-git-send-email-prarit@redhat.com> <CAJZ5v0g59CvQVePgCbEsXvw5UqOcqvn-Snh3=0Jcnj=mhT_mfg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <573BA5E2.5040506@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, linux-kernel@vger.kernel.org, rui.zhang@intel.com, len.brown@intel.com, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35775 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753049AbcERJ7z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 May 2016 05:59:55 -0400
+In-Reply-To: <CAJZ5v0g59CvQVePgCbEsXvw5UqOcqvn-Snh3=0Jcnj=mhT_mfg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Jun Pan <jacob.jun.pan@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, May 18, 2016 at 01:14:42AM +0200, Rafael J. Wysocki wrote:
-> On 5/16/2016 9:39 PM, Ville Syrj=E4l=E4 wrote:
-> > On Wed, May 11, 2016 at 04:34:06PM +0300, Ville Syrj=E4l=E4 wrote:
-> >> On Wed, May 11, 2016 at 08:44:45AM -0400, Steven Rostedt wrote:
-> >>> On Wed, 11 May 2016 15:21:16 +0300
-> >>> Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com> wrote:
-> >>>
-> >>>> Yeah can't get anything from the machine at that point. netconso=
-le
-> >>>> didn't help either, and no serial on this machine. And IIRC I've
-> >>>> tried ramoops on this thing in the past but unfortunately the me=
-mory
-> >>>> got cleared on reboot.
-> >>>>
-> >>> Can you look at the documentation in the kernel code at
-> >>>
-> >>> Documentation/power/basic-pm-debugging.txt And follow the procedu=
-res
-> >>> for testing suspend to RAM (although it requires mostly running t=
-he
-> >>> same tests as for hibernation suspending).
-> >>>
-> >>> You can also use the tool s2ram for this as well.
-> >>>
-> >>> See Documentation/power/s2ram.txt
-> >>>
-> >>> Perhaps this can give us a bit more light onto the problem.
-> >>>
-> >>> Basically the above does partial suspend and resume, and can pinp=
-oint
-> >>> problem areas down to a more select location.
-> >> All the pm_test modes work fine. The only difference between them =
-was
-> >> that 'platform' required me to manually wake up the machine (hitti=
-ng a
-> >> key was sufficient), whereas the others woke up without help.
-> >>
-> >> pm_trace gave me
-> >> [    1.306633]   Magic number: 0:185:178
-> >> [    1.322880]   hash matches ../drivers/base/power/main.c:1070
-> >> [    1.339270] acpi device:0e: hash matches
-> >> [    1.355414]  platform: hash matches
-> >>
-> >> which is the TRACE_SUSPEND in __device_suspend_noirq(), so no help
-> >> there.
-> >>
-> >> I guess I could try to sprinkle more TRACE_RESUMEs around into som=
-e
-> >> early resume code. If anyone has good ideas where to put them it
-> >> might speed things up a bit.
-> > So I did a bunch of that and found that it gets stuck somewhere
-> > around executing the _WAK method:
-> > platform_resume_noirq
-> >   acpi_pm_finish
-> >    acpi_leave_sleep_state
-> >     acpi_hw_sleep_dispatch
-> >      acpi_hw_legacy_wake
-> >       acpi_hw_execute_sleep_method
-> >        acpi_evaluate_object
-> >         acpi_ns_evaluate
-> >          acpi_ps_execute_method
-> >           acpi_ps_parse_aml
-> >
-> > It also seesm that adding a few TRACE_RESUME()s or an msleep() righ=
-t
-> > after enable_nonboot_cpus() can avoid the hang, sometimes.
-> >
-> > I've attached the DSDT in case anyone is interested in looking at i=
-t.
-> >
->=20
-> What if you comment out the execution of _WAK (line 318 of=20
-> drivers/acpi/acpica/hwsleep.c in 4.6)?  Does that make any difference=
-?
 
-Indeed it does. Tried with acpi_idle and intel_idle, and both appear to
-resume just fine with that hack.
 
--       acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sleep_state)=
-;
-+       //acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sleep_stat=
-e);
-+       printk(KERN_CRIT "skipping _WAK\n");
+On 05/17/2016 08:50 PM, Rafael J. Wysocki wrote:
+> On Tue, May 17, 2016 at 1:34 PM, Prarit Bhargava <prarit@redhat.com> wrote:
+>> intel_rapl is currently not supported in virtualized environments.  When
+>> booting the warning message
+>>
+>> intel_rapl: no valid rapl domains found in package 0
+> 
+> You seem to be saying that this message is problematic for some
+> reason, so why is it?
 
---=20
-Ville Syrj=E4l=E4
-Intel OTC
+It is a loud warning message that comes up for every cpu.  The virt boot is
+essentially silent *except* for the above messages.
+
+P.
