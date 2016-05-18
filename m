@@ -1,68 +1,92 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Date: Wed, 18 May 2016 23:11:51 +0200
-Message-ID: <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+Subject: Re: [RFC PATCH] cpufreq: powernv: Add fast_switch callback
+Date: Wed, 18 May 2016 23:22:16 +0200
+Message-ID: <CAJZ5v0iaGCi8X7Ko0aZL6CBgZ3i4=59cqFhzi1nBFumHL=huQw@mail.gmail.com>
 References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	<1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35358 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbcERVLx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 17:11:53 -0400
-In-Reply-To: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36347 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbcERVWV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 17:22:21 -0400
+In-Reply-To: <1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Peter Zijlstra <peterz@infradead.org>
 
 On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
 <shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patch adds driver callback for fast_switch and below observations
-> on schedutil governor are done with this patch.
+> Add fast_switch driver callback to support frequency update in
+> interrupt context while using schedutil governor. Changing frequency
+> in interrupt context will remove the jitter on the workloads which can
+> be seen when a kworker thread is used for the changing the frequency.
 >
-> In POWER8 there is a regression observed with schedutil compared to
-> ondemand. With schedutil the frequency is not ramping down and is
-> mostly stuck at max frequency during idle . This is because of the
-> watchdog timer, an RT task which is fired every 4 seconds which
-> results in requesting max frequency.
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-Well, yes, that would be problematic.
+This looks simple enough. :-)
 
-I guess the Steve Muckle's cross-CPU utilization updates series might
-help (you can find it in the linux-pm patchwork).
+A couple of comments, though.
 
-> In a completely idle system, when there are no processes running apart
-> from few short running housekeeping tasks (like watchdog) the system is
-> stuck at max frequency due to 'cpufreq_trigger_update()'
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
 >
-> static inline void cpufreq_trigger_update(u64 time)
-> {
->         cpufreq_update_util(time, ULONG_MAX, 0);
-> }
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 54c4536..4553eb6 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -678,6 +678,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>         for (i = 0; i < threads_per_core; i++)
+>                 cpumask_set_cpu(base + i, policy->cpus);
 >
-> If there is no noise apart from the watchdog timer the cpu is held at
-> max frequency for no good reason. On a 16 core system I can see an
-> increase in 20% idle power with schedutil compared to ondemand
-> governor.
+> +       policy->fast_switch_possible = true;
+> +
+>         kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+>         if (!kn) {
+>                 int ret;
+> @@ -854,6 +856,24 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+>         del_timer_sync(&gpstates->timer);
+>  }
 >
-> Below is the trace with 'sched:sched_switch' and 'power:cpu_frequency'
-> events. Here the watchdog timer that runs for a very small period is
-> requesting Pmax and this gets triggered regularly.
->
-> <idle>-0  19059.992912: sched_switch: prev_comm=swapper/16  prev_state=R
->                                 ==> next_comm=watchdog/16
-> watchdog/16-107 19059.992914: cpu_frequency: state=4322000 cpu_id=16
-> watchdog/16-107 19059.992915: sched_switch: prev_comm=watchdog/16 prev_state=S
->                                 ==> next_comm=swapper/16
->
-> However adding a cpufreq hook in pick_next_task_idle() to decrease the
-> frequency helped to reduce the problem.
->
-> static inline void cpufreq_trigger_idle(u64 time)
-> {
->        cpufreq_update_util(time, 0, 1);
-> }
->
-> This might not be the right fix for the problem, however this thread
-> is reporting the other short-comings of cpufreq_trigger_update().
+> +static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+> +                                       unsigned int target_freq)
+> +{
+> +       int index;
+> +       struct powernv_smp_call_data freq_data;
+> +
+> +       cpufreq_frequency_table_target(policy, policy->freq_table,
+> +                                      target_freq,
+> +                                      CPUFREQ_RELATION_C, &index);
+
+According to the discussion I had with Peter some time ago, this
+should be RELATION_L or you may end up using a frequency that's not
+sufficient to meet a deadline somewhere.
+
+Also cpufreq_frequency_table_target() is somewhat heavy-weight
+especially if the table is known to be sorted (which I guess is the
+case).
+
+> +       if (index < 0 || index >= powernv_pstate_info.nr_pstates)
+> +               return CPUFREQ_ENTRY_INVALID;
+> +       freq_data.pstate_id = powernv_freqs[index].driver_data;
+> +       freq_data.gpstate_id = powernv_freqs[index].driver_data;
+> +       set_pstate(&freq_data);
+> +
+> +       return pstate_id_to_freq(-index);
+> +}
+> +
+>  static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .name           = "powernv-cpufreq",
+>         .flags          = CPUFREQ_CONST_LOOPS,
+> @@ -861,6 +881,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .exit           = powernv_cpufreq_cpu_exit,
+>         .verify         = cpufreq_generic_frequency_table_verify,
+>         .target_index   = powernv_cpufreq_target_index,
+> +       .fast_switch    = powernv_fast_switch,
+>         .get            = powernv_cpufreq_get,
+>         .stop_cpu       = powernv_cpufreq_stop_cpu,
+>         .attr           = powernv_cpu_freq_attr,
+> --
