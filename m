@@ -1,59 +1,47 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH 0/2] cpufreq: Introduce TI CPUFreq/OPP Driver
-Date: Wed, 18 May 2016 18:30:24 -0500
-Message-ID: <cover.1463609497.git.d-gerlach@ti.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/5] sched: cpufreq: call cpufreq hook from remote CPUs
+Date: Thu, 19 May 2016 01:33:09 +0200
+Message-ID: <CAJZ5v0iWfc=cNaCVuQ9QLK0FMLy1i5zEVcZSutOAK=+1OxaRtg@mail.gmail.com>
+References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
+	<1462828814-32530-4-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Yegor Yefremov <yegorslists-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33176 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbcERXdL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 19:33:11 -0400
+In-Reply-To: <1462828814-32530-4-git-send-email-smuckle@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 
-Hi,
-This series introduces the ti-cpufreq driver which parses SoC data and
-provides opp-supported-hw data to the OPP core in order to enable the
-proper OPPs for the silicon in use. It still relies on the cpufreq-dt
-driver to actually provide cpufreq and creates the "cpufreq-dt" platform
-driver after it probes as the sti-cpufreq driver does.
+On Mon, May 9, 2016 at 11:20 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> Without calling the cpufreq hook for a remote wakeup it is possible
+> for such a wakeup to go unnoticed by cpufreq on the target CPU for up
+> to a full tick. This can occur if the target CPU is running a
+> CPU-bound task and preemption does not occur. If preemption does occur
+> then the scheduler is expected to run soon on the target CPU anyway so
+> invoking the cpufreq hook on the remote wakeup is not required.
+>
+> In order to avoid unnecessary interprocessor communication in the
+> governor for the preemption case, the existing hook (which happens
+> before preemption is decided) is only called when the target CPU
+> is within the current CPU's cpufreq policy. A new hook is added in
+> check_preempt_curr() to handle events outside the current CPU's
+> cpufreq policy where preemption does not happen.
+>
+> Some governors may opt to not receive remote CPU callbacks. This
+> behavior is possible by providing NULL as the new policy_cpus
+> parameter to cpufreq_add_update_util_hook(). Callbacks will only be
+> issued in this case when the target CPU and the current CPU are the
+> same. Otherwise policy_cpus is used to determine what is a local
+> vs. remote callback.
 
-This series will add support for am335x, am437x, dra7xx, and am57xx
-platforms, otherwise other TI devices will rely on the recently introduced
-cpufreq-dt-platdev code [1] to create the cpufreq-dt device. This means
-that the aforementioned platforms do *not* need to be added to
-cpufreq-dt-platdev. DTS patches for the above platforms are being sent in
-a separate series right after this one. Even without merging the DTS series,
-this series will not break backwards compatibility for those platforms above
-that already have operating-points v1 tables as the ti-cpufreq driver
-fails through and creates the cpufreq-dt platform device if no
-operating-points-v2 table is found.
+I don't really like the extra complexity added by this patch.
 
-This series is based on linux-next next-20160517 tag, it depends on [2] which
-drops the default creation of the cpufreq-dt device from omap platform code,
-otherwise we'd end up with a duplicate because this driver creates it also.
+It makes the code look fragile at some places and it only really
+matters for schedutil and for the fast switch case in there.
 
-Regards,
-Dave
-
-[1] http://permalink.gmane.org/gmane.linux.power-management.general/73887
-[2] http://permalink.gmane.org/gmane.linux.power-management.general/75215
-
-Dave Gerlach (2):
-  Documentation: dt: add bindings for ti-cpufreq
-  cpufreq: ti: Add cpufreq driver to determine available OPPs at runtime
-
- .../devicetree/bindings/cpufreq/ti-cpufreq.txt     |  89 ++++++++
- drivers/cpufreq/Kconfig.arm                        |  11 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/ti-cpufreq.c                       | 254 +++++++++++++++++++++
- 4 files changed, 355 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
- create mode 100644 drivers/cpufreq/ti-cpufreq.c
-
--- 
-2.7.3
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Overall, it looks like a premature optimization to me.
