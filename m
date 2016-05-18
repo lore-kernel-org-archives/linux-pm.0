@@ -1,94 +1,64 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [cpufreq-4.7] New schedutil governor in combination with
- intel_pstate/x86
-Date: Wed, 18 May 2016 01:18:30 +0200
-Message-ID: <573BA6C6.901@intel.com>
-References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
- <573B4C2A.4010205@intel.com>
- <CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] powercap/rapl: Do not load in virtualized environments
+Date: Wed, 18 May 2016 02:50:07 +0200
+Message-ID: <CAJZ5v0g59CvQVePgCbEsXvw5UqOcqvn-Snh3=0Jcnj=mhT_mfg@mail.gmail.com>
+References: <1463484845-9839-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:53711 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751991AbcEQXSe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 May 2016 19:18:34 -0400
-In-Reply-To: <CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33897 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbcERAuJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 20:50:09 -0400
+In-Reply-To: <1463484845-9839-1-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Jun Pan <jacob.jun.pan@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 5/18/2016 1:16 AM, Sedat Dilek wrote:
-> On 5/17/16, Rafael J. Wysocki <rafael.j.wysocki@intel.com> wrote:
->> On 5/17/2016 5:30 PM, Sedat Dilek wrote:
->>> Hi,
->> Hi,
->>
->> You have a broken address of linux-pm (it leads to nowhere).
->>
-> Grrr, yeah you are right.
+On Tue, May 17, 2016 at 1:34 PM, Prarit Bhargava <prarit@redhat.com> wrote:
+> intel_rapl is currently not supported in virtualized environments.  When
+> booting the warning message
 >
->>> I wonder if the Kconfig logic is correct when using
->>> CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL=y in combination with
->>> intel_pstate driver for X86 architecture
->>>
->>> The available scaling-governors for intel_pstate are: performance
->>> powersave.
->>>
->>> Only acpi-cpufreq can use the new schedutil governor.
->> The right way to say that would be that intel_pstate doesn't work with
->> cpufreq governors.
->>
->> scalling_governor is just used by intel_pstate as an interface for
->> choosing the mode it works in and it always uses its own built-in
->> "governor".  And BTW, intel_pstate "powersave" is not the same as the
->> cpufreq's "powersave" even.
->>
->>> Shouldn't it be prevented from selecting schedutil governor as default
->>> when CONFIG_X86_INTEL_PSTATE=y is set?
->> That should apply to "ondemand" too and it doesn't, so no.
->>
->> "schedutil" is just a regular cpufreq governor and it doesn't care about
->> intel_pstate.
->>
->>> It makes no real sense to me.
->>>
->>> Ubuntu has in it's kernels CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y.
->>>
->>> What are the alternatives?
->>> Set CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y.
->> You can choose every cpufreq governor as the default.  There are 6 of
->> then now in the tree.
->>
->>> BTW, I cannot change my scaling-driver...
->>> ...intel_pstate -> acpi-cpufreq...
->>>
->>> root# for p in policy0 policy1 policy2 policy3 ; do LC_ALL=C echo -n
->>> acpi-cpufreq > /sys/devices/system/cpu/cpufreq/${p}/scaling_driver ;
->>> done
->>>
->>> Attached is also a modified /etc/init.d/ondemand script from my
->>> Ubuntu/precise AMD64 to use and fallback to schedutil governor.
->> No, you can't change the scaling driver this way.
->>
->> It actually is not possible to change from intel_pstate to anything else
->> now.  To run without intel_pstate, you need to add
->> "intel_pstate=disable" to the kernel command line.
->>
-> OK, I will try intel_pstate=disable in my k-c-l.
+> intel_rapl: no valid rapl domains found in package 0
+
+You seem to be saying that this message is problematic for some
+reason, so why is it?
+
+> is output for every virtual core.
 >
-> Is there no way to switch between acpi-cpufreq and intel_pstate on the fly?
-
-No, there's no way to do that ATM.
-
-> Did not look in the Kconfig sections...
-> Can I built both as modules?
-> Then unload and load the other?
-
-No, intel_pstate can't be built as a module.
-
-Thanks,
-Rafael
-
+> This patch stops the driver from being loaded in virtual boots.
+>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Jacob Jun Pan <jacob.jun.pan@intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> ---
+>  drivers/powercap/intel_rapl.c |    5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index f2201d42a9cd..bebfbe8acccd 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/sysfs.h>
+>  #include <linux/cpu.h>
+>  #include <linux/powercap.h>
+> +#include <asm/hypervisor.h>
+>  #include <asm/iosf_mbi.h>
+>
+>  #include <asm/processor.h>
+> @@ -1600,6 +1601,10 @@ static int __init rapl_init(void)
+>                 return -ENODEV;
+>         }
+>
+> +       /* Intel RAPL is not supported on virtualized environments */
+> +       if (x86_hyper)
+> +               return -ENODEV;
+> +
+>         rapl_defaults = (struct rapl_defaults *)id->driver_data;
+>
+>         cpu_notifier_register_begin();
+> --
