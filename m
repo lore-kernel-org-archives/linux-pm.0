@@ -1,45 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/6] cpufreq: minor cleanups
-Date: Wed, 18 May 2016 17:55:25 +0530
-Message-ID: <cover.1463574213.git.viresh.kumar@linaro.org>
+Subject: [PATCH 1/6] cpufreq: governor: Remove prints from allocation failures
+Date: Wed, 18 May 2016 17:55:26 +0530
+Message-ID: <c67367f1c086fce0686e1ab154a9f1142e706a63.1463574213.git.viresh.kumar@linaro.org>
+References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35575 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbcERMZi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 08:25:38 -0400
-Received: by mail-pa0-f47.google.com with SMTP id gj5so17390468pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 05:25:38 -0700 (PDT)
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:35922 "EHLO
+	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbcERMZm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 08:25:42 -0400
+Received: by mail-pf0-f177.google.com with SMTP id c189so18699673pfb.3
+        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 05:25:41 -0700 (PDT)
+In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
+References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael,
+These aren't required anymore as the allocation core already prints such
+messages. Remove the redundant ones.
 
-These are few cleanup patches for cpufreq governors, they shouldn't be
-doing any functional changes.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 4 +---
+ drivers/cpufreq/cpufreq_ondemand.c     | 4 +---
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-Rebased over bleeding-edge.
-
---
-viresh
-
-Viresh Kumar (6):
-  cpufreq: governor: Remove prints from allocation failures
-  cpufreq: governor: Remove unnecessary bits from print message
-  cpufreq: schedutil: Improve prints messages with pr_fmt
-  cpufreq: conservative: Remove declaration of cs_dbs_gov
-  cpufreq: Reuse gov_attr_* macros in schedutil governor
-  cpufreq: governor: Create cpufreq_policy_apply_limits()
-
- drivers/cpufreq/cpufreq_conservative.c |  6 +-----
- drivers/cpufreq/cpufreq_governor.c     |  9 ++-------
- drivers/cpufreq/cpufreq_governor.h     |  8 --------
- drivers/cpufreq/cpufreq_ondemand.c     |  4 +---
- include/linux/cpufreq.h                | 16 ++++++++++++++++
- kernel/sched/cpufreq_schedutil.c       | 21 ++++++++-------------
- 6 files changed, 28 insertions(+), 36 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 316df247e00d..5a15f649602c 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -273,10 +273,8 @@ static int cs_init(struct dbs_data *dbs_data, bool notify)
+ 	struct cs_dbs_tuners *tuners;
+ 
+ 	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+-	if (!tuners) {
+-		pr_err("%s: kzalloc failed\n", __func__);
++	if (!tuners)
+ 		return -ENOMEM;
+-	}
+ 
+ 	tuners->down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD;
+ 	tuners->freq_step = DEF_FREQUENCY_STEP;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 300163430516..309cfeb744b2 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -368,10 +368,8 @@ static int od_init(struct dbs_data *dbs_data, bool notify)
+ 	int cpu;
+ 
+ 	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+-	if (!tuners) {
+-		pr_err("%s: kzalloc failed\n", __func__);
++	if (!tuners)
+ 		return -ENOMEM;
+-	}
+ 
+ 	cpu = get_cpu();
+ 	idle_time = get_cpu_idle_time_us(cpu, NULL);
 -- 
 2.7.1.410.g6faf27b
 
