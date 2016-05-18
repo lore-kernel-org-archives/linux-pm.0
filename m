@@ -1,37 +1,26 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH omap v2 0/6] Fix OMAP uses of RCU from idle loop
-Date: Wed, 18 May 2016 11:56:38 -0700
-Message-ID: <20160518185638.GD3528@linux.vnet.ibm.com>
-References: <20160516184844.GA20144@linux.vnet.ibm.com>
- <573C7E6F.90001@roeck-us.net>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v1] PM / sleep: make pm notifier called symmetrically
+Date: Wed, 18 May 2016 22:34:02 +0200
+Message-ID: <CAJZ5v0hT8B9k44V3KFbJPev0ORyVD2MiE=0nn8O_qdaU=QkHXg@mail.gmail.com>
+References: <1463551630-9930-1-git-send-email-lianwei.wang@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <573C7E6F.90001@roeck-us.net>
-Sender: linux-clk-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, tony@atomide.com, mingo@kernel.org, rostedt@goodmis.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:35458 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbcERUeE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 16:34:04 -0400
+In-Reply-To: <1463551630-9930-1-git-send-email-lianwei.wang@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lianwei Wang <lianwei.wang@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, May 18, 2016 at 07:38:39AM -0700, Guenter Roeck wrote:
-> On 05/16/2016 11:48 AM, Paul E. McKenney wrote:
-> >Hello!
-> >
-> >The following series fixes a number of uses of RCU from the idle loop.
-> >These are all due to tracing, so the fix is simply to append _rcuidle
-> >to the event-tracing call.
-> >
-> >Changes since v1: Fix commit-log subjects and add maintainers on CC.
-> >
-> 
-> For the series, on top of mainline (which now experiences the problem fixed
-> by this series):
-> 
-> Tested-by: Guenter Roeck <linux@roeck-us.net>
+On Wed, May 18, 2016 at 8:07 AM, Lianwei Wang <lianwei.wang@gmail.com> wrote:
+> This makes pm notifier PREPARE/POST symmetrical: if PREPARE
+> fails, we will only undo what ever happened on PREPARE.
+>
+> It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
 
-Applied, thank you!  And fixed the line-wrapping while I was at it.  ;-)
-
-							Thanx, Paul
-
+Can you please describe the problem you're trying to address in a bit
+more detail?
