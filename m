@@ -1,28 +1,26 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 5/6] cpufreq: Reuse gov_attr_* macros in schedutil governor
-Date: Wed, 18 May 2016 23:01:31 +0200
-Message-ID: <CAJZ5v0jtj8DnKjb6n8PYYw-Fx_aa=FJf3uvN+dtfLScfT4gVpg@mail.gmail.com>
+Subject: Re: [PATCH 4/6] cpufreq: conservative: Remove declaration of cs_dbs_gov
+Date: Wed, 18 May 2016 23:03:18 +0200
+Message-ID: <CAJZ5v0gbFaEpRbSXaEr8X5_DjcuWParKdS+mUshmKrLu7xnRTQ@mail.gmail.com>
 References: <cover.1463574213.git.viresh.kumar@linaro.org>
-	<8db591e521218af3c4b21ccc0d50606bfbde106b.1463574213.git.viresh.kumar@linaro.org>
+	<f51606d0f2c04852b7b5c2f1137238bbc1fe1828.1463574213.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8db591e521218af3c4b21ccc0d50606bfbde106b.1463574213.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:37929 "EHLO
+	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932090AbcERVDU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 17:03:20 -0400
+In-Reply-To: <f51606d0f2c04852b7b5c2f1137238bbc1fe1828.1463574213.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 On Wed, May 18, 2016 at 2:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> These macros can be used by governors which don't use the common
-> governor code present in cpufreq_governor.c and should be moved to the
-> relevant header.
->
-> Now that they are getting moved to the right header file, reuse them in
-> schedutil governor as well (that required rename of show/store
-> routines).
+> The code doesn't use 'cs_dbs_gov' anymore before it is defined and the
+> extra line for declaring it can be removed.
 
-I'm not sure what the benefit is to be honest.
-
-It adds one level of indirection to the definition of rate_limit_us,
-but why is that better?
+This sort of conflicts with a patch I've just posted
+(https://patchwork.kernel.org/patch/9122121/) and I'd prefer to go
+with that one if that's not a big deal.
