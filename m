@@ -1,77 +1,87 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 4/5] cpufreq: schedutil: map raw required frequency to
- CPU-supported frequency
-Date: Thu, 19 May 2016 01:37:40 +0200
-Message-ID: <CAJZ5v0iNc767ANwQpju4D9XMfjADuZrfvuQvQ_CBmcDKUAuEAA@mail.gmail.com>
-References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
-	<1462828814-32530-5-git-send-email-smuckle@linaro.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH 4/8] ARM: dts: am4372: Add operating-points-v2 table
+Date: Wed, 18 May 2016 18:36:29 -0500
+Message-ID: <ac373ad0594ce79516614d52fef59b76fbea4563.1463606963.git.d-gerlach@ti.com>
+References: <cover.1463606963.git.d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:36356 "EHLO
-	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752417AbcERXhm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 19:37:42 -0400
-In-Reply-To: <1462828814-32530-5-git-send-email-smuckle@linaro.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:54390 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbcERXhN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 19:37:13 -0400
+In-Reply-To: <cover.1463606963.git.d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+To: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>, Dave Gerlach <d-gerlach@ti.com>
 
-On Mon, May 9, 2016 at 11:20 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> The mechanisms for remote CPU updates and slow-path frequency
-> transitions are relatively expensive - the former is an IPI while the
-> latter requires waking up a thread to do work. These activities should
-> be avoided if they are not necessary. To that end, calculate the
-> actual target-supported frequency required by the new utilization
-> value in schedutil. If it is the same as the previously requested
-> frequency then there is no need to continue with the update.
+Add an operating-points-v2 table with all OPPs available for all silicon
+revisions along with necessary data for use by ti-cpufreq to selectively
+enable the appropriate OPPs at runtime.
 
-Unless the max/min limits changed in the meantime, right?
+Information from AM437x Data Manual, SPRS851B, Revised April 2015,
+Table 5-2.
 
->
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 6cb2ecc204ec..e185075fcb5c 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -153,14 +153,26 @@ static void sugov_update_commit(struct sugov_cpu *sg_cpu, int cpu, u64 time,
->   * next_freq = C * curr_freq * util_raw / max
->   *
->   * Take C = 1.25 for the frequency tipping point at (util / max) = 0.8.
-> + *
-> + * The lowest target-supported frequency which is equal or greater than the raw
-> + * next_freq (as calculated above) is returned, or the CPU's max_freq if such
-> + * a target-supported frequency does not exist.
->   */
->  static unsigned int get_next_freq(struct cpufreq_policy *policy,
->                                   unsigned long util, unsigned long max)
->  {
-> +       struct cpufreq_frequency_table *entry;
->         unsigned int freq = arch_scale_freq_invariant() ?
->                                 policy->cpuinfo.max_freq : policy->cur;
-> +       unsigned int target_freq = UINT_MAX;
-> +
-> +       freq = (freq + (freq >> 2)) * util / max;
-> +
-> +       cpufreq_for_each_valid_entry(entry, policy->freq_table)
-> +               if (entry->frequency >= freq && entry->frequency < target_freq)
-> +                       target_freq = entry->frequency;
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ arch/arm/boot/dts/am4372.dtsi | 39 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-Please don't assume that every driver will have a frequency table.
-That may not be the case in the future (and I'm not even sure about
-the existing CPPC driver for that matter).
+diff --git a/arch/arm/boot/dts/am4372.dtsi b/arch/arm/boot/dts/am4372.dtsi
+index 12fcde4d4d2e..8bf2db276128 100644
+--- a/arch/arm/boot/dts/am4372.dtsi
++++ b/arch/arm/boot/dts/am4372.dtsi
+@@ -44,10 +44,49 @@
+ 			clocks = <&dpll_mpu_ck>;
+ 			clock-names = "cpu";
+ 
++			operating-points-v2 = <&cpu0_opp_table>;
++			ti,syscon-efuse = <&scm_conf 0x610 0x3f 0>;
++			ti,syscon-rev = <&scm_conf 0x600>;
++
+ 			clock-latency = <300000>; /* From omap-cpufreq driver */
+ 		};
+ 	};
+ 
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++
++		opp50@300000000 {
++			opp-hz = /bits/ 64 <300000000>;
++			opp-microvolt = <950000 931000 969000>;
++			opp-supported-hw = <0xFF 0x01>;
++			opp-suspend;
++		};
++
++		opp100@600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			opp-microvolt = <1100000 1078000 1122000>;
++			opp-supported-hw = <0xFF 0x04>;
++		};
++
++		opp120@720000000 {
++			opp-hz = /bits/ 64 <720000000>;
++			opp-microvolt = <1200000 1176000 1224000>;
++			opp-supported-hw = <0xFF 0x08>;
++		};
++
++		oppturbo@800000000 {
++			opp-hz = /bits/ 64 <800000000>;
++			opp-microvolt = <1260000 1234800 1285200>;
++			opp-supported-hw = <0xFF 0x10>;
++		};
++
++		oppnitro@1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <1325000 1298500 1351500>;
++			opp-supported-hw = <0xFF 0x20>;
++		};
++	};
++
+ 	gic: interrupt-controller@48241000 {
+ 		compatible = "arm,cortex-a9-gic";
+ 		interrupt-controller;
+-- 
+2.7.3
 
->
-> -       return (freq + (freq >> 2)) * util / max;
-> +       return target_freq != UINT_MAX ? target_freq : policy->cpuinfo.max_freq;
->  }
->
->  static void sugov_update_single(struct update_util_data *hook, u64 time,
-> --
-> 2.4.10
->
