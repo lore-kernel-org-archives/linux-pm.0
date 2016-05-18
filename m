@@ -1,32 +1,43 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH omap v2 0/6] Fix OMAP uses of RCU from idle loop
-Date: Wed, 18 May 2016 07:38:39 -0700
-Message-ID: <573C7E6F.90001@roeck-us.net>
-References: <20160516184844.GA20144@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20160516184844.GA20144@linux.vnet.ibm.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org
-Cc: tony@atomide.com, mingo@kernel.org, rostedt@goodmis.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH] thermal: add the note for set_trip_temp
+Date: Wed, 18 May 2016 23:01:39 +0800
+Message-ID: <1463583699-31020-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f68.google.com ([209.85.220.68]:34703 "EHLO
+	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932607AbcERPCD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 11:02:03 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/16/2016 11:48 AM, Paul E. McKenney wrote:
-> Hello!
->
-> The following series fixes a number of uses of RCU from the idle loop.
-> These are all due to tracing, so the fix is simply to append _rcuidle
-> to the event-tracing call.
->
-> Changes since v1: Fix commit-log subjects and add maintainers on CC.
->
+Fixes commit 60f9ce3ada53
+("thermal: of-thermal: allow setting trip_temp on hardware")
 
-For the series, on top of mainline (which now experiences the problem fixed
-by this series):
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-Tested-by: Guenter Roeck <linux@roeck-us.net>
+---
 
-Guenter
+ include/linux/thermal.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e45abe7..ee517be 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -335,6 +335,8 @@ struct thermal_genl_event {
+  * @get_trend: a pointer to a function that reads the sensor temperature trend.
+  * @set_emul_temp: a pointer to a function that sets sensor emulated
+  *		   temperature.
++ * @set_trip_temp: a pointer to a function that sets the trip temperature on
++ *		   hardware.
+  */
+ struct thermal_zone_of_device_ops {
+ 	int (*get_temp)(void *, int *);
+-- 
+2.7.4
 
