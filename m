@@ -1,43 +1,37 @@
-From: Peter Wu <peter@lekensteyn.nl>
-Subject: Rescanning is broken with runtime PM for PCIe ports
-Date: Wed, 18 May 2016 19:14:01 +0200
-Message-ID: <20160518171401.GC1222@al>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH omap v2 0/6] Fix OMAP uses of RCU from idle loop
+Date: Wed, 18 May 2016 11:56:38 -0700
+Message-ID: <20160518185638.GD3528@linux.vnet.ibm.com>
+References: <20160516184844.GA20144@linux.vnet.ibm.com>
+ <573C7E6F.90001@roeck-us.net>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lekensteyn.nl ([178.21.112.251]:43905 "EHLO lekensteyn.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932882AbcERRlB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 18 May 2016 13:41:01 -0400
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <573C7E6F.90001@roeck-us.net>
+Sender: linux-clk-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, tony@atomide.com, mingo@kernel.org, rostedt@goodmis.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
+On Wed, May 18, 2016 at 07:38:39AM -0700, Guenter Roeck wrote:
+> On 05/16/2016 11:48 AM, Paul E. McKenney wrote:
+> >Hello!
+> >
+> >The following series fixes a number of uses of RCU from the idle loop.
+> >These are all due to tracing, so the fix is simply to append _rcuidle
+> >to the event-tracing call.
+> >
+> >Changes since v1: Fix commit-log subjects and add maintainers on CC.
+> >
+> 
+> For the series, on top of mainline (which now experiences the problem fixed
+> by this series):
+> 
+> Tested-by: Guenter Roeck <linux@roeck-us.net>
 
-While testing the pci/pm tree from Bjorn with HEAD being 0195d2813547
-("PCI: Add runtime PM support for PCIe ports"), I have noticed that
-detaching and rescanning is broken.
+Applied, thank you!  And fixed the line-wrapping while I was at it.  ;-)
 
-When a bridgr is in D3 state, it cannot discover children. Reproducer:
+							Thanx, Paul
 
-    echo > /sys/bus/pci/devices/0000:01:00.0/remove 1
-    # wait for the PCIe port to enter D3cold
-    echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
-    # Workaround to get the device back
-    echo > /sys/bus/pci/devices/0000:00:01.0/power/control on
-    echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
-
-lspci:
-
-    00:01.0 PCI bridge [0604]: Intel Corporation Skylake PCIe Controller (x16) [8086:1901] (rev 07)
-    01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GM204M [GeForce GTX 965M] [10de:13d9] (rev a1)
-
-Probably needs a pm_runtime_{get,put}_sync in pci_rescan_bus and
-pci_rescan_bus_bridge_resize.
--- 
-Kind regards,
-Peter Wu
-https://lekensteyn.nl
