@@ -1,51 +1,82 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/6] cpufreq: schedutil: Improve prints messages with pr_fmt
-Date: Wed, 18 May 2016 17:55:28 +0530
-Message-ID: <30cb533c2e24d22832cbc2953c51fa3cf60cd202.1463574213.git.viresh.kumar@linaro.org>
+Subject: [PATCH 6/6] cpufreq: governor: Create cpufreq_policy_apply_limits()
+Date: Wed, 18 May 2016 17:55:31 +0530
+Message-ID: <6f25deee2fff9e5f5081e457d606d85d670fa7ed.1463574213.git.viresh.kumar@linaro.org>
 References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
 References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Prefix print messages with KBUILD_MODNAME, i.e 'cpufreq_schedutil: '.
-This helps to keep similar formatting for all the print messages
-particular to a file and identify those easily in kernel logs.
-
-Its already done this way for rest of the governors.
-
-Along with that, remove the (now) redundant bits from a print message.
+Create a new helper to avoid code duplication across governors.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- kernel/sched/cpufreq_schedutil.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq_governor.c | 7 +------
+ include/linux/cpufreq.h            | 8 ++++++++
+ kernel/sched/cpufreq_schedutil.c   | 9 +--------
+ 3 files changed, 10 insertions(+), 14 deletions(-)
 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 45ca5aff88b2..10cf91cadb97 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -551,12 +551,7 @@ static int cpufreq_governor_limits(struct cpufreq_policy *policy)
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 
+ 	mutex_lock(&policy_dbs->timer_mutex);
+-
+-	if (policy->max < policy->cur)
+-		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
+-	else if (policy->min > policy->cur)
+-		__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
+-
++	cpufreq_policy_apply_limits(policy);
+ 	gov_update_sample_delay(policy_dbs, 0);
+ 
+ 	mutex_unlock(&policy_dbs->timer_mutex);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index fe4c48b0fa40..2c0c5177f3e1 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -493,6 +493,14 @@ void cpufreq_unregister_governor(struct cpufreq_governor *governor);
+ struct cpufreq_governor *cpufreq_default_governor(void);
+ struct cpufreq_governor *cpufreq_fallback_governor(void);
+ 
++static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)
++{
++	if (policy->max < policy->cur)
++		__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
++	else if (policy->min > policy->cur)
++		__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
++}
++
+ /* Governor attribute set */
+ struct gov_attr_set {
+ 	struct kobject kobj;
 diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 154ae3a51e86..14c4aa25cc45 100644
+index 4035765deafc..7699f88234ce 100644
 --- a/kernel/sched/cpufreq_schedutil.c
 +++ b/kernel/sched/cpufreq_schedutil.c
-@@ -9,6 +9,8 @@
-  * published by the Free Software Foundation.
-  */
+@@ -465,14 +465,7 @@ static int sugov_limits(struct cpufreq_policy *policy)
  
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/cpufreq.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-@@ -388,7 +390,7 @@ static int sugov_init(struct cpufreq_policy *policy)
- 	mutex_unlock(&global_tunables_lock);
- 
- 	sugov_policy_free(sg_policy);
--	pr_err("cpufreq: schedutil governor initialization failed (error %d)\n", ret);
-+	pr_err("initialization failed (error %d)\n", ret);
- 	return ret;
- }
+ 	if (!policy->fast_switch_enabled) {
+ 		mutex_lock(&sg_policy->work_lock);
+-
+-		if (policy->max < policy->cur)
+-			__cpufreq_driver_target(policy, policy->max,
+-						CPUFREQ_RELATION_H);
+-		else if (policy->min > policy->cur)
+-			__cpufreq_driver_target(policy, policy->min,
+-						CPUFREQ_RELATION_L);
+-
++		cpufreq_policy_apply_limits(policy);
+ 		mutex_unlock(&sg_policy->work_lock);
+ 	}
  
 -- 
 2.7.1.410.g6faf27b
