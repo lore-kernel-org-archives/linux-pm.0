@@ -1,197 +1,130 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/5] cpufreq: schedutil: support scheduler cpufreq
- callbacks on remote CPUs
-Date: Thu, 19 May 2016 01:24:41 +0200
-Message-ID: <CAJZ5v0jcFNdYMXdaBDaTzyxCaPn9=q2YxUMqziEaprwiOm=5dA@mail.gmail.com>
-References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
-	<1462828814-32530-3-git-send-email-smuckle@linaro.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH 1/2] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 18 May 2016 18:30:25 -0500
+Message-ID: <f17fbc8acb1e903b9f175f49fe29563b83132faf.1463609497.git.d-gerlach@ti.com>
+References: <cover.1463609497.git.d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34642 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbcERXYn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 19:24:43 -0400
-In-Reply-To: <1462828814-32530-3-git-send-email-smuckle@linaro.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:57571 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751332AbcERXbK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 May 2016 19:31:10 -0400
+In-Reply-To: <cover.1463609497.git.d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>
 
-On Mon, May 9, 2016 at 11:20 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> In preparation for the scheduler cpufreq callback happening on remote
-> CPUs, add support for this in schedutil.
->
-> Schedutil currently requires the callback occur on the CPU being
-> updated in order to support fast frequency switches. Remove this
-> limitation by checking for the current CPU being outside the target
-> CPU's cpufreq policy and if this is the case, enqueuing an irq_work on
-> the target CPU. The irq_work for schedutil is modified to carry out a
-> fast frequency switch if that is enabled for the policy.
->
-> If the callback occurs on a CPU within the target CPU's policy, the
-> transition is carried out on the local CPU.
->
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 86 ++++++++++++++++++++++++++++++----------
->  1 file changed, 65 insertions(+), 21 deletions(-)
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 154ae3a51e86..c81f9432f520 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -76,27 +76,61 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->         return delta_ns >= sg_policy->freq_update_delay_ns;
->  }
->
-> -static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-> +static void sugov_fast_switch(struct sugov_policy *sg_policy, int cpu,
-> +                             unsigned int next_freq)
-> +{
-> +       struct cpufreq_policy *policy = sg_policy->policy;
-> +
-> +       next_freq = cpufreq_driver_fast_switch(policy, next_freq);
-> +       if (next_freq == CPUFREQ_ENTRY_INVALID)
-> +               return;
-> +
-> +       policy->cur = next_freq;
-> +       trace_cpu_frequency(next_freq, cpu);
-> +}
-> +
-> +#ifdef CONFIG_SMP
+Add the device tree bindings document for the TI CPUFreq/OPP driver
+on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
+to provide an opp-supported-hw property for each OPP to define when
+it is available. This driver is responsible for reading and parsing
+registers to determine which OPPs can be selectively enabled based
+on the specific SoC in use by matching against the opp-supported-hw
+data.
 
-schedutil depends on CONFIG_SMP now, so that's not necessary at least
-for the time being.
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 89 ++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
 
-> +static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
-> +                                        int cpu)
-> +{
-> +       struct cpufreq_policy *policy = sg_policy->policy;
-> +
-> +       if (!cpumask_test_cpu(smp_processor_id(), policy->cpus)) {
+diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+new file mode 100644
+index 000000000000..f719b2df2a1f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+@@ -0,0 +1,89 @@
++Bindings for TI's CPUFreq driver
++================================
++
++The ti-cpufreq driver works with the operating-points-v2 binding described
++at [../opp/opp.txt] to make sure the proper OPPs for a platform get enabled
++and then creates a "cpufreq-dt" platform device to leverage the cpufreq-dt
++driver described in [cpufreq-dt.txt].
++
++Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
++families support different OPPs depending on the silicon variant in use.
++The ti-cpufreq driver uses the revision and an efuse value from the SoC to
++provide the OPP framework with supported hardware information. This is used
++to determine which OPPs from the operating-points-v2 table get enabled. In
++order to maintain backwards compatilibity if this information is not present
++the "cpufreq-dt" platform device is still created to attempt to find an
++operating-points (v1) table, otherwise no OPPs will be available because
++safe OPPs cannot be determined.
++
++Required properties:
++--------------------
++In 'cpus' nodes:
++- operating-points-v2: Phandle to the operating-points-v2 table to use
++- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
++		   mask, and efuse register shift to get the relevant bits
++		   that describe OPP availability
++- ti,syscon-rev: Syscon and offset used to look up revision value on SoC
++
++In 'operating-points-v2' table:
++- opp-supported-hw: Two bitfields indicating:
++	1. Which revision of the SoC the OPP is supported by
++	2. Which eFuse bits indicate this OPP is available
++
++	A bitwise and is performed against these values and if any bit
++	matches, the OPP gets enabled.
++
++NOTE: Without the above, platform-device for "cpufreq-dt" is still created
++      but no determination of which OPPs should be available is done, but this
++      allows for use of a v1 operating-points table.
++
++Example:
++--------
++
++/* From arch/arm/boot/dts/am4372.dtsi */
++cpus {
++	cpu: cpu@0 {
++		...
++
++		operating-points-v2 = <&cpu0_opp_table>;
++
++		ti,syscon-efuse = <&scm_conf 0x610 0x3f 0>;
++		ti,syscon-rev = <&scm_conf 0x600>;
++
++		...
++	};
++};
++
++cpu0_opp_table: opp_table0 {
++	compatible = "operating-points-v2";
++	opp50@300000000 {
++		opp-hz = /bits/ 64 <300000000>;
++		opp-microvolt = <950000>;
++		opp-supported-hw = <0xFF 0x01>;
++		opp-suspend;
++	};
++
++	opp100@600000000 {
++		opp-hz = /bits/ 64 <600000000>;
++		opp-microvolt = <1100000>;
++		opp-supported-hw = <0xFF 0x04>;
++	};
++
++	opp120@720000000 {
++		opp-hz = /bits/ 64 <720000000>;
++		opp-microvolt = <1200000>;
++		opp-supported-hw = <0xFF 0x08>;
++	};
++
++	oppturbo@800000000 {
++		opp-hz = /bits/ 64 <800000000>;
++		opp-microvolt = <1260000>;
++		opp-supported-hw = <0xFF 0x10>;
++	};
++
++	oppnitro@1000000000 {
++		opp-hz = /bits/ 64 <1000000000>;
++		opp-microvolt = <1325000>;
++		opp-supported-hw = <0xFF 0x20>;
++	};
++};
+-- 
+2.7.3
 
-This check is overkill for policies that aren't shared (and we have a
-special case for them already).
-
-> +               sg_policy->work_in_progress = true;
-> +               irq_work_queue_on(&sg_policy->irq_work, cpu);
-> +               return true;
-> +       }
-> +
-> +       return false;
-> +}
-> +#else
-> +static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
-> +                                        int cpu)
-> +{
-> +       return false;
-> +}
-> +#endif
-> +
-> +static void sugov_update_commit(struct sugov_cpu *sg_cpu, int cpu, u64 time,
-
-It looks like you might pass hook here instead of the sg_cpu, cpu pair.
-
->                                 unsigned int next_freq)
->  {
-> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
->         struct cpufreq_policy *policy = sg_policy->policy;
->
->         sg_policy->last_freq_update_time = time;
->
-> +       if (sg_policy->next_freq == next_freq) {
-> +               trace_cpu_frequency(policy->cur, cpu);
-> +               return;
-> +       }
-
-There was a reason why I put the above under the fast_switch_enabled
-branch and it was because this check/trace is not necessary otherwise.
-
-> +       sg_policy->next_freq = next_freq;
-> +
-> +       if (sugov_queue_remote_callback(sg_policy, cpu))
-> +               return;
-> +
->         if (policy->fast_switch_enabled) {
-> -               if (sg_policy->next_freq == next_freq) {
-> -                       trace_cpu_frequency(policy->cur, smp_processor_id());
-> -                       return;
-> -               }
-> -               sg_policy->next_freq = next_freq;
-> -               next_freq = cpufreq_driver_fast_switch(policy, next_freq);
-> -               if (next_freq == CPUFREQ_ENTRY_INVALID)
-> -                       return;
-> -
-> -               policy->cur = next_freq;
-> -               trace_cpu_frequency(next_freq, smp_processor_id());
-> -       } else if (sg_policy->next_freq != next_freq) {
-> -               sg_policy->next_freq = next_freq;
-> +               sugov_fast_switch(sg_policy, cpu, next_freq);
-> +       } else {
->                 sg_policy->work_in_progress = true;
->                 irq_work_queue(&sg_policy->irq_work);
->         }
-> @@ -142,12 +176,13 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->
->         next_f = util == ULONG_MAX ? policy->cpuinfo.max_freq :
->                         get_next_freq(policy, util, max);
-> -       sugov_update_commit(sg_policy, time, next_f);
-> +       sugov_update_commit(sg_cpu, hook->cpu, time, next_f);
->  }
->
-> -static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
-> +static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
->                                            unsigned long util, unsigned long max)
->  {
-> +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
->         struct cpufreq_policy *policy = sg_policy->policy;
->         unsigned int max_f = policy->cpuinfo.max_freq;
->         u64 last_freq_update_time = sg_policy->last_freq_update_time;
-> @@ -161,10 +196,10 @@ static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
->                 unsigned long j_util, j_max;
->                 s64 delta_ns;
->
-> -               if (j == smp_processor_id())
-> +               j_sg_cpu = &per_cpu(sugov_cpu, j);
-> +               if (j_sg_cpu == sg_cpu)
->                         continue;
->
-> -               j_sg_cpu = &per_cpu(sugov_cpu, j);
->                 /*
->                  * If the CPU utilization was last updated before the previous
->                  * frequency update and the time elapsed between the last update
-> @@ -204,8 +239,8 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->         sg_cpu->last_update = time;
->
->         if (sugov_should_update_freq(sg_policy, time)) {
-> -               next_f = sugov_next_freq_shared(sg_policy, util, max);
-> -               sugov_update_commit(sg_policy, time, next_f);
-> +               next_f = sugov_next_freq_shared(sg_cpu, util, max);
-> +               sugov_update_commit(sg_cpu, hook->cpu, time, next_f);
->         }
->
->         raw_spin_unlock(&sg_policy->update_lock);
-> @@ -226,9 +261,18 @@ static void sugov_work(struct work_struct *work)
->  static void sugov_irq_work(struct irq_work *irq_work)
->  {
->         struct sugov_policy *sg_policy;
-> +       struct cpufreq_policy *policy;
->
->         sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
-> -       schedule_work_on(smp_processor_id(), &sg_policy->work);
-> +       policy = sg_policy->policy;
-> +
-> +       if (policy->fast_switch_enabled) {
-> +               sugov_fast_switch(sg_policy, smp_processor_id(),
-> +                                 sg_policy->next_freq);
-> +               sg_policy->work_in_progress = false;
-> +       } else {
-> +               schedule_work_on(smp_processor_id(), &sg_policy->work);
-> +       }
->  }
->
->  /************************** sysfs interface ************************/
-> --
-> 2.4.10
->
