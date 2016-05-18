@@ -1,43 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/6] cpufreq: governor: Remove unnecessary bits from print message
-Date: Wed, 18 May 2016 17:55:27 +0530
-Message-ID: <a676e03e63c25c0fed482706d98317b66a277252.1463574213.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/6] cpufreq: schedutil: Improve prints messages with pr_fmt
+Date: Wed, 18 May 2016 17:55:28 +0530
+Message-ID: <30cb533c2e24d22832cbc2953c51fa3cf60cd202.1463574213.git.viresh.kumar@linaro.org>
 References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1463574213.git.viresh.kumar@linaro.org>
 References: <cover.1463574213.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-pr_*() helpers already prefix the print messages with
-"cpufreq_governor:" and similar details aren't required in the actual
-message.
+Prefix print messages with KBUILD_MODNAME, i.e 'cpufreq_schedutil: '.
+This helps to keep similar formatting for all the print messages
+particular to a file and identify those easily in kernel logs.
 
-For example, the print message getting fixed looks like this before this
-patch:
+Its already done this way for rest of the governors.
 
-cpufreq_governor: cpufreq: Governor initialization failed (dbs_data kobject init error 0)
+Along with that, remove the (now) redundant bits from a print message.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/sched/cpufreq_schedutil.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index be498d56dd69..45ca5aff88b2 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -458,7 +458,7 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy)
- 		goto out;
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 154ae3a51e86..14c4aa25cc45 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -9,6 +9,8 @@
+  * published by the Free Software Foundation.
+  */
  
- 	/* Failure, so roll back. */
--	pr_err("cpufreq: Governor initialization failed (dbs_data kobject init error %d)\n", ret);
-+	pr_err("initialization failed (dbs_data kobject init error %d)\n", ret);
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/cpufreq.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+@@ -388,7 +390,7 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 	mutex_unlock(&global_tunables_lock);
  
- 	policy->governor_data = NULL;
+ 	sugov_policy_free(sg_policy);
+-	pr_err("cpufreq: schedutil governor initialization failed (error %d)\n", ret);
++	pr_err("initialization failed (error %d)\n", ret);
+ 	return ret;
+ }
  
 -- 
 2.7.1.410.g6faf27b
