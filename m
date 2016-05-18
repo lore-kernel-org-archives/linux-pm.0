@@ -1,64 +1,221 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] powercap/rapl: Do not load in virtualized environments
-Date: Wed, 18 May 2016 02:50:07 +0200
-Message-ID: <CAJZ5v0g59CvQVePgCbEsXvw5UqOcqvn-Snh3=0Jcnj=mhT_mfg@mail.gmail.com>
-References: <1463484845-9839-1-git-send-email-prarit@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: [PATCH v1] PM / sleep: make pm notifier called symmetrically
+Date: Tue, 17 May 2016 23:07:10 -0700
+Message-ID: <1463551630-9930-1-git-send-email-lianwei.wang@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:33897 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbcERAuJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 May 2016 20:50:09 -0400
-In-Reply-To: <1463484845-9839-1-git-send-email-prarit@redhat.com>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33292 "EHLO
+	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbcERGHZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 02:07:25 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Jun Pan <jacob.jun.pan@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: tglx@linutronix.de
+Cc: peterz@infradead.org, mingo@kernel.org, oleg@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
 
-On Tue, May 17, 2016 at 1:34 PM, Prarit Bhargava <prarit@redhat.com> wrote:
-> intel_rapl is currently not supported in virtualized environments.  When
-> booting the warning message
->
-> intel_rapl: no valid rapl domains found in package 0
+This makes pm notifier PREPARE/POST symmetrical: if PREPARE
+fails, we will only undo what ever happened on PREPARE.
 
-You seem to be saying that this message is problematic for some
-reason, so why is it?
+It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
 
-> is output for every virtual core.
->
-> This patch stops the driver from being loaded in virtual boots.
->
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Jacob Jun Pan <jacob.jun.pan@intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> ---
->  drivers/powercap/intel_rapl.c |    5 +++++
->  1 file changed, 5 insertions(+)
->
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index f2201d42a9cd..bebfbe8acccd 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -29,6 +29,7 @@
->  #include <linux/sysfs.h>
->  #include <linux/cpu.h>
->  #include <linux/powercap.h>
-> +#include <asm/hypervisor.h>
->  #include <asm/iosf_mbi.h>
->
->  #include <asm/processor.h>
-> @@ -1600,6 +1601,10 @@ static int __init rapl_init(void)
->                 return -ENODEV;
->         }
->
-> +       /* Intel RAPL is not supported on virtualized environments */
-> +       if (x86_hyper)
-> +               return -ENODEV;
-> +
->         rapl_defaults = (struct rapl_defaults *)id->driver_data;
->
->         cpu_notifier_register_begin();
-> --
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+---
+ kernel/power/hibernate.c | 20 ++++++++++++--------
+ kernel/power/main.c      | 11 +++++++++--
+ kernel/power/power.h     |  2 ++
+ kernel/power/suspend.c   | 10 ++++++----
+ kernel/power/user.c      | 18 ++++++++++++------
+ 5 files changed, 41 insertions(+), 20 deletions(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index fca9254280ee..20aa92cf56e4 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -647,7 +647,7 @@ static void power_down(void)
+  */
+ int hibernate(void)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!hibernation_available()) {
+ 		pr_debug("PM: Hibernation not available.\n");
+@@ -662,9 +662,11 @@ int hibernate(void)
+ 	}
+ 
+ 	pm_prepare_console();
+-	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--
+ 		goto Exit;
++	}
+ 
+ 	printk(KERN_INFO "PM: Syncing filesystems ... ");
+ 	sys_sync();
+@@ -714,7 +716,7 @@ int hibernate(void)
+ 	/* Don't bother checking whether freezer_test_done is true */
+ 	freezer_test_done = false;
+  Exit:
+-	pm_notifier_call_chain(PM_POST_HIBERNATION);
++	__pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
+ 	pm_restore_console();
+ 	atomic_inc(&snapshot_device_available);
+  Unlock:
+@@ -740,7 +742,7 @@ int hibernate(void)
+  */
+ static int software_resume(void)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 	unsigned int flags;
+ 
+ 	/*
+@@ -827,9 +829,11 @@ static int software_resume(void)
+ 	}
+ 
+ 	pm_prepare_console();
+-	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--
+ 		goto Close_Finish;
++	}
+ 
+ 	pr_debug("PM: Preparing processes for restore.\n");
+ 	error = freeze_processes();
+@@ -855,7 +859,7 @@ static int software_resume(void)
+ 	unlock_device_hotplug();
+ 	thaw_processes();
+  Finish:
+-	pm_notifier_call_chain(PM_POST_RESTORE);
++	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+ 	pm_restore_console();
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 27946975eff0..577a5dec5b35 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -38,12 +38,19 @@ int unregister_pm_notifier(struct notifier_block *nb)
+ }
+ EXPORT_SYMBOL_GPL(unregister_pm_notifier);
+ 
+-int pm_notifier_call_chain(unsigned long val)
++int __pm_notifier_call_chain(unsigned long val, int nr_to_call, int *nr_calls)
+ {
+-	int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
++	int ret;
++
++	ret =  __blocking_notifier_call_chain(&pm_chain_head, val, NULL,
++						nr_to_call, nr_calls);
+ 
+ 	return notifier_to_errno(ret);
+ }
++int pm_notifier_call_chain(unsigned long val)
++{
++	return __pm_notifier_call_chain(val, -1, NULL);
++}
+ 
+ /* If set, devices may be suspended and resumed asynchronously. */
+ int pm_async_enabled = 1;
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index efe1b3b17c88..51f02ecaf125 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -200,6 +200,8 @@ static inline void suspend_test_finish(const char *label) {}
+ 
+ #ifdef CONFIG_PM_SLEEP
+ /* kernel/power/main.c */
++extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
++				    int *nr_calls);
+ extern int pm_notifier_call_chain(unsigned long val);
+ #endif
+ 
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 5b70d64b871e..0acab9d7f96f 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -266,16 +266,18 @@ static int suspend_test(int level)
+  */
+ static int suspend_prepare(suspend_state_t state)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!sleep_state_supported(state))
+ 		return -EPERM;
+ 
+ 	pm_prepare_console();
+ 
+-	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_SUSPEND_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--;
+ 		goto Finish;
++	}
+ 
+ 	trace_suspend_resume(TPS("freeze_processes"), 0, true);
+ 	error = suspend_freeze_processes();
+@@ -286,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
+ 	suspend_stats.failed_freeze++;
+ 	dpm_save_failed_step(SUSPEND_FREEZE);
+  Finish:
+-	pm_notifier_call_chain(PM_POST_SUSPEND);
++	__pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
+ 	pm_restore_console();
+ 	return error;
+ }
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 526e8911460a..14ad11dd7eb7 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -47,7 +47,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!hibernation_available())
+ 		return -EPERM;
+@@ -74,9 +74,11 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
+ 		data->free_bitmaps = false;
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE,
++							-1, &nr_calls);
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			__pm_notifier_call_chain(PM_POST_HIBERNATION,
++							--nr_calls, NULL);
+ 	} else {
+ 		/*
+ 		 * Resuming.  We may need to wait for the image device to
+@@ -86,13 +88,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+-		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		error = __pm_notifier_call_chain(PM_RESTORE_PREPARE,
++							-1, &nr_calls);
+ 		if (!error) {
+ 			error = create_basic_memory_bitmaps();
+ 			data->free_bitmaps = !error;
+-		}
++		} else
++			nr_calls--;
++
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_RESTORE);
++			__pm_notifier_call_chain(PM_POST_RESTORE,
++							nr_calls, NULL);
+ 	}
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
+-- 
+1.9.1
+
