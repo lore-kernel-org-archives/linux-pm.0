@@ -1,7 +1,7 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [cpufreq-4.7] New schedutil governor in combination with intel_pstate/x86
-Date: Thu, 19 May 2016 16:24:03 +0200
-Message-ID: <CA+icZUWWJ-G0SuOPmkOe9W7f+fctB14dFigRGWpNjcB6N5CfHg@mail.gmail.com>
+Date: Thu, 19 May 2016 16:24:30 +0200
+Message-ID: <CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
 References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
 	<573B4C2A.4010205@intel.com>
 	<CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
@@ -14,27 +14,25 @@ References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
 	<CAJZ5v0iMfT6WPx_ighZ7WTRjTo=qz9EjYmxBoc_YNCLVL3JOZw@mail.gmail.com>
 	<CA+icZUWJhEVp4GwHQsMTeLLPqbZw7de8vfwtgm2=r6wbiStMFw@mail.gmail.com>
 	<CAJZ5v0izrrssFwjtNTVAhHVywcfL9OzdiTPnSOPEFXWCGuxR3A@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f68.google.com ([209.85.213.68]:35237 "EHLO
-	mail-vk0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753824AbcESOYF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 10:24:05 -0400
-Received: by mail-vk0-f68.google.com with SMTP id e126so12104289vkb.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 07:24:04 -0700 (PDT)
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:36485 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932788AbcESOYc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 10:24:32 -0400
+Received: by mail-wm0-f68.google.com with SMTP id w143so21390022wmw.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 07:24:31 -0700 (PDT)
 In-Reply-To: <CAJZ5v0izrrssFwjtNTVAhHVywcfL9OzdiTPnSOPEFXWCGuxR3A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: sedat.dilek@gmail.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Thu, May 19, 2016 at 4:04 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
 > On Thu, May 19, 2016 at 3:54 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
 >> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Thu, May 19, 2016 at 3:41 PM, Sedat Dilek <sedat.dilek@gmail.com>
->>> wrote:
+>>> On Thu, May 19, 2016 at 3:41 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
 >>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >>>>> On Thu, May 19, 2016 at 2:10 PM, Sedat Dilek <sedat.dilek@gmail.com>
 >>>>> wrote:
@@ -73,9 +71,9 @@ On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >> ( I double-checked to have schedutil as running cpufreq-governor. )
 >
 > That means it has been enabled.
->
 
-How can I check if cpu fast switching is really enabled?
-I checked with the dmesg before.
+Actually, you can check if it has been enabled by looking and the
+wakeups statistics from powertop.
 
-- Sedat -
+Without fast switching you'll see kWork with sugov_work under
+"Description" somewhere close to the top of the list.
