@@ -1,41 +1,36 @@
 From: Andy Gross <andy.gross@linaro.org>
-Subject: [PATCH 2/5] arm: defconfig: Enable PM8941 pwr key
-Date: Thu, 19 May 2016 00:00:17 -0500
-Message-ID: <1463634020-17252-3-git-send-email-andy.gross@linaro.org>
+Subject: [PATCH 3/5] arm64: dts: msm8916: Add spc compat tag
+Date: Thu, 19 May 2016 00:00:18 -0500
+Message-ID: <1463634020-17252-4-git-send-email-andy.gross@linaro.org>
 References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:36349 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751610AbcESFAl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 01:00:41 -0400
-Received: by mail-pa0-f44.google.com with SMTP id bt5so24862264pac.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 22:00:41 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org, Andy Gross <andy.gross@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-This patch enables the PM8941 pwr key driver.
+This patch adds the qcom,idle-state-spc compatible to the SPC idle
+state.  This compatible indicates that the state is one which supports
+freeze.
 
 Signed-off-by: Andy Gross <andy.gross@linaro.org>
 ---
- arch/arm64/configs/defconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 8917150..d4c539f 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -142,6 +142,8 @@ CONFIG_WL18XX=m
- CONFIG_WLCORE_SDIO=m
- CONFIG_INPUT_EVDEV=y
- CONFIG_KEYBOARD_GPIO=y
-+CONFIG_INPUT_MISC=y
-+CONFIG_INPUT_PM8941_PWRKEY=y
- # CONFIG_SERIO_SERPORT is not set
- CONFIG_SERIO_AMBAKMI=y
- CONFIG_LEGACY_PTY_COUNT=16
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 208af00..032e411 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -104,7 +104,7 @@
+ 
+ 		idle-states {
+ 			CPU_SPC: spc {
+-				compatible = "arm,idle-state";
++				compatible = "qcom,idle-state-spc", "arm,idle-state";
+ 				arm,psci-suspend-param = <0x40000002>;
+ 				entry-latency-us = <130>;
+ 				exit-latency-us = <150>;
 -- 
 1.9.1
-
