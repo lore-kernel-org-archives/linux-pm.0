@@ -1,189 +1,143 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH 1/2] Documentation: dt: add bindings for ti-cpufreq
-Date: Thu, 19 May 2016 13:35:04 -0500
-Message-ID: <573E0758.3080109@ti.com>
-References: <cover.1463609497.git.d-gerlach@ti.com>
- <f17fbc8acb1e903b9f175f49fe29563b83132faf.1463609497.git.d-gerlach@ti.com>
- <20160519031559.GK24777@vireshk-i7>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 2/5] cpufreq: schedutil: support scheduler cpufreq
+ callbacks on remote CPUs
+Date: Thu, 19 May 2016 11:40:55 -0700
+Message-ID: <20160519184055.GD17223@graphite.smuckle.net>
+References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
+ <1462828814-32530-3-git-send-email-smuckle@linaro.org>
+ <CAJZ5v0jcFNdYMXdaBDaTzyxCaPn9=q2YxUMqziEaprwiOm=5dA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:41027 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932431AbcESSfj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 14:35:39 -0400
-In-Reply-To: <20160519031559.GK24777@vireshk-i7>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35756 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932431AbcESSlA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 14:41:00 -0400
+Received: by mail-pf0-f180.google.com with SMTP id b66so11956794pfb.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 11:41:00 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jcFNdYMXdaBDaTzyxCaPn9=q2YxUMqziEaprwiOm=5dA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 
-On 05/18/2016 10:15 PM, Viresh Kumar wrote:
-> On 18-05-16, 18:30, Dave Gerlach wrote:
->> Add the device tree bindings document for the TI CPUFreq/OPP driver
->> on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
->> to provide an opp-supported-hw property for each OPP to define when
->> it is available. This driver is responsible for reading and parsing
->> registers to determine which OPPs can be selectively enabled based
->> on the specific SoC in use by matching against the opp-supported-hw
->> data.
->
-> Here and ...
->
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->>   .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 89 ++++++++++++++++++++++
->>   1 file changed, 89 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> new file mode 100644
->> index 000000000000..f719b2df2a1f
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> @@ -0,0 +1,89 @@
->> +Bindings for TI's CPUFreq driver
->> +================================
->> +
->> +The ti-cpufreq driver works with the operating-points-v2 binding described
->> +at [../opp/opp.txt] to make sure the proper OPPs for a platform get enabled
->> +and then creates a "cpufreq-dt" platform device to leverage the cpufreq-dt
->> +driver described in [cpufreq-dt.txt].
->> +
->> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
->> +families support different OPPs depending on the silicon variant in use.
->> +The ti-cpufreq driver uses the revision and an efuse value from the SoC to
->> +provide the OPP framework with supported hardware information. This is used
->> +to determine which OPPs from the operating-points-v2 table get enabled. In
->> +order to maintain backwards compatilibity if this information is not present
->> +the "cpufreq-dt" platform device is still created to attempt to find an
->> +operating-points (v1) table, otherwise no OPPs will be available because
->> +safe OPPs cannot be determined.
->
-> ... here..
->
-> We shouldn't be talking about the drivers are going to use it, etc.
-> This is a binding document, which should be independent of Linux
-> kernel. It can be used by other Operating systems as well and so the
-> implementation details should be just dropped.
+On Thu, May 19, 2016 at 01:24:41AM +0200, Rafael J. Wysocki wrote:
+> On Mon, May 9, 2016 at 11:20 PM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> > In preparation for the scheduler cpufreq callback happening on remote
+> > CPUs, add support for this in schedutil.
+> >
+> > Schedutil currently requires the callback occur on the CPU being
+> > updated in order to support fast frequency switches. Remove this
+> > limitation by checking for the current CPU being outside the target
+> > CPU's cpufreq policy and if this is the case, enqueuing an irq_work on
+> > the target CPU. The irq_work for schedutil is modified to carry out a
+> > fast frequency switch if that is enabled for the policy.
+> >
+> > If the callback occurs on a CPU within the target CPU's policy, the
+> > transition is carried out on the local CPU.
+> >
+> > Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> > ---
+> >  kernel/sched/cpufreq_schedutil.c | 86 ++++++++++++++++++++++++++++++----------
+> >  1 file changed, 65 insertions(+), 21 deletions(-)
+> >
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 154ae3a51e86..c81f9432f520 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -76,27 +76,61 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> >         return delta_ns >= sg_policy->freq_update_delay_ns;
+> >  }
+> >
+> > -static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> > +static void sugov_fast_switch(struct sugov_policy *sg_policy, int cpu,
+> > +                             unsigned int next_freq)
+> > +{
+> > +       struct cpufreq_policy *policy = sg_policy->policy;
+> > +
+> > +       next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+> > +       if (next_freq == CPUFREQ_ENTRY_INVALID)
+> > +               return;
+> > +
+> > +       policy->cur = next_freq;
+> > +       trace_cpu_frequency(next_freq, cpu);
+> > +}
+> > +
+> > +#ifdef CONFIG_SMP
+> 
+> schedutil depends on CONFIG_SMP now, so that's not necessary at least
+> for the time being.
 
-Ah ok, will fix this up.
+Will remove.
 
->
->> +
->> +Required properties:
->> +--------------------
->> +In 'cpus' nodes:
->> +- operating-points-v2: Phandle to the operating-points-v2 table to use
->> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
->> +		   mask, and efuse register shift to get the relevant bits
->> +		   that describe OPP availability
->> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC
->
-> These are proper sentences and so maybe a full-stop (.) at the end of
-> each line ?
+> 
+> > +static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
+> > +                                        int cpu)
+> > +{
+> > +       struct cpufreq_policy *policy = sg_policy->policy;
+> > +
+> > +       if (!cpumask_test_cpu(smp_processor_id(), policy->cpus)) {
+> 
+> This check is overkill for policies that aren't shared (and we have a
+> special case for them already).
 
-Sure, can do this.
+I don't see why it is overkill - regardless of whether the policy is
+shared, we need to determine whether or not we are running on one of the
+CPUs (or in the case of a non-shared policy, the single CPU) within that
+policy to know whether we can immediately change the frequency in this
+context or a remote call is required.
 
->
->> +
->> +In 'operating-points-v2' table:
->> +- opp-supported-hw: Two bitfields indicating:
->> +	1. Which revision of the SoC the OPP is supported by
->> +	2. Which eFuse bits indicate this OPP is available
->> +
->> +	A bitwise and is performed against these values and if any bit
->
->                    AND or &
+> > +               sg_policy->work_in_progress = true;
+> > +               irq_work_queue_on(&sg_policy->irq_work, cpu);
+> > +               return true;
+> > +       }
+> > +
+> > +       return false;
+> > +}
+> > +#else
+> > +static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
+> > +                                        int cpu)
+> > +{
+> > +       return false;
+> > +}
+> > +#endif
+> > +
+> > +static void sugov_update_commit(struct sugov_cpu *sg_cpu, int cpu, u64 time,
+> 
+> It looks like you might pass hook here instead of the sg_cpu, cpu pair.
 
-Ok will change.
+I can do that but it means having to do the comtainer_of operation
+again. Strictly speaking this seems slightly less efficient than passing
+the above values which are already available in the callers.
 
->
->> +	matches, the OPP gets enabled.
->> +
->> +NOTE: Without the above, platform-device for "cpufreq-dt" is still created
->> +      but no determination of which OPPs should be available is done, but this
->> +      allows for use of a v1 operating-points table.
->
-> Again, these are implementation details.. should be dropped.
+> 
+> >                                 unsigned int next_freq)
+> >  {
+> > +       struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+> >         struct cpufreq_policy *policy = sg_policy->policy;
+> >
+> >         sg_policy->last_freq_update_time = time;
+> >
+> > +       if (sg_policy->next_freq == next_freq) {
+> > +               trace_cpu_frequency(policy->cur, cpu);
+> > +               return;
+> > +       }
+> 
+> There was a reason why I put the above under the fast_switch_enabled
+> branch and it was because this check/trace is not necessary otherwise.
 
-Yes, will do.
+I remember asking about this tracepoint earlier. You had said it was
+required because powertop would not work without it (reporting the CPU
+as idle in certain situations).
 
->
->> +
->> +Example:
->> +--------
->> +
->> +/* From arch/arm/boot/dts/am4372.dtsi */
->> +cpus {
->> +	cpu: cpu@0 {
->> +		...
->> +
->> +		operating-points-v2 = <&cpu0_opp_table>;
->> +
->> +		ti,syscon-efuse = <&scm_conf 0x610 0x3f 0>;
->> +		ti,syscon-rev = <&scm_conf 0x600>;
->
-> @Rob: Can we add properties to the CPU node just like that ?
->
->> +
->> +		...
->> +	};
->> +};
->> +
->> +cpu0_opp_table: opp_table0 {
->> +	compatible = "operating-points-v2";
->
-> Otherwise, you could have added above properties right here and added
-> your own compatible string..
+I'm not sure why that is only true for the fast switch enabled case but
+it seems like an odd inconsistency for the governor to trace unchanged
+frequencies when fast switches are enabled but not otherwise. It'd be
+useful I think for profiling and tuning if the tracing was consistent.
 
-I felt they went well with the cpu node but thinking about it more they 
-fit just as well here, I'd be fine moving them.
+This behavioral change is admittedly not part of the purpose of the
+patch and could be split out if needbe.
 
->
->> +	opp50@300000000 {
->> +		opp-hz = /bits/ 64 <300000000>;
->> +		opp-microvolt = <950000>;
->> +		opp-supported-hw = <0xFF 0x01>;
->> +		opp-suspend;
->> +	};
->> +
->> +	opp100@600000000 {
->> +		opp-hz = /bits/ 64 <600000000>;
->> +		opp-microvolt = <1100000>;
->> +		opp-supported-hw = <0xFF 0x04>;
->> +	};
->> +
->> +	opp120@720000000 {
->> +		opp-hz = /bits/ 64 <720000000>;
->> +		opp-microvolt = <1200000>;
->> +		opp-supported-hw = <0xFF 0x08>;
->> +	};
->> +
->> +	oppturbo@800000000 {
->> +		opp-hz = /bits/ 64 <800000000>;
->> +		opp-microvolt = <1260000>;
->> +		opp-supported-hw = <0xFF 0x10>;
->> +	};
->> +
->> +	oppnitro@1000000000 {
->> +		opp-hz = /bits/ 64 <1000000000>;
->> +		opp-microvolt = <1325000>;
->> +		opp-supported-hw = <0xFF 0x20>;
->
-> so the first one is always FF ? Why have it then ?
-
-Hmmm, this particular platform was a bad choice for the example, I will 
-use a different platform that makes use of the first field better. This 
-platform supports all OPPs on all revisions, but am335x does not so I 
-will use that instead in v2.
-
-Regards,
-Dave
-
->
->> +	};
->> +};
->
-
+thanks,
+Steve
