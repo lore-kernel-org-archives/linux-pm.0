@@ -1,36 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
- platforms
-Date: Thu, 19 May 2016 10:17:44 +0530
-Message-ID: <20160519044744.GE32001@vireshk-i7>
-References: <cover.1463606963.git.d-gerlach@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:33609 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbcESErr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 00:47:47 -0400
-Received: by mail-pa0-f47.google.com with SMTP id xk12so24898727pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 21:47:47 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <cover.1463606963.git.d-gerlach@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Gross <andy.gross@linaro.org>
+Subject: [PATCH 0/5] Qualcomm Suspend to Idle Support
+Date: Thu, 19 May 2016 00:00:15 -0500
+Message-ID: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org, Andy Gross <andy.gross@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>
 
-On 18-05-16, 18:36, Dave Gerlach wrote:
-> Hi,
-> This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
-> and am57xx based platforms along with some support patches so that we
-> can enable more OPPs for the CPU on these platforms.
-> 
-> These patches rely on the ti-cpufreq series sent here [1] and provide
-> opp-supported-hw data for each OPP so that only the appropriate OPPs
-> for a specific piece of silicon get enabled.
+This set of patches adds suspend to idle support for the Qualcomm APQ8084
+and MSM8916 platforms.  The patches add a minimal set of suspend ops and
+init functions to properly configure the enter_freeze function.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch set is based on the work done in the following:
+[RFC v3 00/12] PM: SoC idle support using PM domains
+http://comments.gmane.org/gmane.linux.ports.arm.msm/17966
+
+The relevant prerequisites are the PSCI enablement DT patches.  PSCI based
+firmware is also required for the MSM8916 to work properly.
+
+Andy Gross (5):
+  soc: qcom: Add suspend to idle support
+  arm: defconfig: Add Qualcomm Suspend options
+  arm64: dts: msm8916: Add spc compat tag
+  ARM: dts: qcom: Remove size elements from pmic reg
+  ARM: dts: qcom: pma8084: Add pwrkey entry
+
+ arch/arm/boot/dts/qcom-pma8084.dtsi   | 20 ++++++---
+ arch/arm64/boot/dts/qcom/msm8916.dtsi |  2 +-
+ arch/arm64/configs/defconfig          |  2 +
+ drivers/soc/qcom/Makefile             |  1 +
+ drivers/soc/qcom/suspend.c            | 77 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 95 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/soc/qcom/suspend.c
 
 -- 
-viresh
+1.9.1
