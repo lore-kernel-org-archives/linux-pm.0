@@ -1,71 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Drop the 'initialized' field from struct
- cpufreq_governor
-Date: Thu, 19 May 2016 07:40:23 +0530
-Message-ID: <20160519021023.GF24777@vireshk-i7>
-References: <1835934.f0fzDcHWum@vostro.rjw.lan>
+Subject: Re: [PATCH 5/6] cpufreq: Reuse gov_attr_* macros in schedutil
+ governor
+Date: Thu, 19 May 2016 07:43:26 +0530
+Message-ID: <20160519021326.GG24777@vireshk-i7>
+References: <cover.1463574213.git.viresh.kumar@linaro.org>
+ <8db591e521218af3c4b21ccc0d50606bfbde106b.1463574213.git.viresh.kumar@linaro.org>
+ <CAJZ5v0jtj8DnKjb6n8PYYw-Fx_aa=FJf3uvN+dtfLScfT4gVpg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:33390 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbcESCK1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 22:10:27 -0400
-Received: by mail-pa0-f53.google.com with SMTP id xk12so23612034pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 19:10:27 -0700 (PDT)
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:35087 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbcESCNa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 22:13:30 -0400
+Received: by mail-pa0-f44.google.com with SMTP id tb2so6189855pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 19:13:30 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1835934.f0fzDcHWum@vostro.rjw.lan>
+In-Reply-To: <CAJZ5v0jtj8DnKjb6n8PYYw-Fx_aa=FJf3uvN+dtfLScfT4gVpg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 18-05-16, 22:59, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 18-05-16, 23:01, Rafael J. Wysocki wrote:
+> On Wed, May 18, 2016 at 2:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > These macros can be used by governors which don't use the common
+> > governor code present in cpufreq_governor.c and should be moved to the
+> > relevant header.
+> >
+> > Now that they are getting moved to the right header file, reuse them in
+> > schedutil governor as well (that required rename of show/store
+> > routines).
 > 
-> The 'initialized' field in struct cpufreq_governor is only used by
-> the conservative governor (as a usage counter) and the way that
-> happens is far from straightforward and arguably incorrect.
+> I'm not sure what the benefit is to be honest.
 > 
-> Namely, the value of 'initialized' is checked by
-> cpufreq_dbs_governor_init() and cpufreq_dbs_governor_exit() and
-> the results of those checks are passed (as the second argument) to
-> the ->init() and ->exit() callbacks in struct dbs_governor.  Those
-> callbacks are only implemented by the ondemand and conservative
-> governors and ondemand doesn't use their second argument at all.
-> In turn, the conservative governor uses it to decide whether or not
-> to either register or unregister a transition notifier.
-> 
-> That whole mechanism is not only unnecessarily convoluted, but also
-> racy, because the 'initialized' field of struct cpufreq_governor is
-> updated in cpufreq_init_governor() and cpufreq_exit_governor() under
-> policy->rwsem which doesn't help if one of these functions is run
-> twice in parallel for different policies (which isn't impossible in
-> principle), for example.
-> 
-> Instead of it, add a proper usage counter to the conservative
-> governor and update it from cs_init() and cs_exit() which is
-> guaranteed to be non-racy, as those functions are only called
-> under gov_dbs_data_mutex which is global.
-> 
-> With that in place, drop the 'initialized' field from struct
-> cpufreq_governor as it is not used any more.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> This is on top of https://patchwork.kernel.org/patch/9094021/
-> 
-> ---
->  drivers/cpufreq/cpufreq.c              |    3 --
->  drivers/cpufreq/cpufreq_conservative.c |   44 +++++++++++++++++++++------------
->  drivers/cpufreq/cpufreq_governor.c     |    6 ++--
->  drivers/cpufreq/cpufreq_governor.h     |    4 +--
->  drivers/cpufreq/cpufreq_ondemand.c     |    4 +--
->  include/linux/cpufreq.h                |    1 
->  6 files changed, 36 insertions(+), 26 deletions(-)
+> It adds one level of indirection to the definition of rate_limit_us,
+> but why is that better?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I agree.
+
+I did it because I am required to use these macros for the
+interactive-governor and have to move them to cpufreq.h anyway.
+
+Now that we have to move them out, I thought that we should perhaps
+use them for schedutil as well. This would look more relevant to
+schedutil once it has more tunables instead of just one.
 
 -- 
 viresh
