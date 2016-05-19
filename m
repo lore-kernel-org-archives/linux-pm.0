@@ -1,103 +1,61 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: [cpufreq-4.7] New schedutil governor in combination with intel_pstate/x86
-Date: Thu, 19 May 2016 16:50:10 +0200
-Message-ID: <CA+icZUVq5wGwM2kyLo3cnRxN7kH9F_h+fzVeELJx7ytZR60M-g@mail.gmail.com>
-References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
-	<573B4C2A.4010205@intel.com>
-	<CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
-	<573BA6C6.901@intel.com>
-	<CA+icZUVotMFEXSJ1BNY72zQfB-L-PJbyR_31LK8Obje7YjNJsA@mail.gmail.com>
-	<CAJZ5v0htU2WyqwNBcfSG1+AH9iB4LDd_tH1GN604rCyrahwbyw@mail.gmail.com>
-	<CA+icZUXV3mz9Yr05o5zHLOcXwYRWydtXZOuLnE10Zy3RwzOHUg@mail.gmail.com>
-	<CAJZ5v0g1-KT5Jnh2BYOd66GkkvyTkUe0JNJ5_fxQa4wNvr9fAQ@mail.gmail.com>
-	<CA+icZUU3wJ7PFiYgr2DW_Q4vak13TNhzw8AySkFFkuTigZk16g@mail.gmail.com>
-	<CAJZ5v0iMfT6WPx_ighZ7WTRjTo=qz9EjYmxBoc_YNCLVL3JOZw@mail.gmail.com>
-	<CA+icZUWJhEVp4GwHQsMTeLLPqbZw7de8vfwtgm2=r6wbiStMFw@mail.gmail.com>
-	<CAJZ5v0izrrssFwjtNTVAhHVywcfL9OzdiTPnSOPEFXWCGuxR3A@mail.gmail.com>
-	<CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: Should 9aafabc7fece be reverted?
+Date: Thu, 19 May 2016 10:38:14 -0500
+Message-ID: <573DDDE6.7070408@ti.com>
+References: <573C9F45.5090109@ti.com> <573D60B4.7010906@gmail.com>
+ <20160519091719.GL29844@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f65.google.com ([209.85.213.65]:35911 "EHLO
-	mail-vk0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103AbcESOuL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 10:50:11 -0400
-Received: by mail-vk0-f65.google.com with SMTP id c189so12188496vkb.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 07:50:11 -0700 (PDT)
-In-Reply-To: <CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
+Received: from bear.ext.ti.com ([198.47.19.11]:55981 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932261AbcESPip (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 May 2016 11:38:45 -0400
+In-Reply-To: <20160519091719.GL29844@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 
-On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, May 19, 2016 at 4:04 PM, Rafael J. Wysocki <rafael@kernel.org>
-> wrote:
->> On Thu, May 19, 2016 at 3:54 PM, Sedat Dilek <sedat.dilek@gmail.com>
->> wrote:
->>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> On Thu, May 19, 2016 at 3:41 PM, Sedat Dilek <sedat.dilek@gmail.com>
->>>> wrote:
->>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>>>> On Thu, May 19, 2016 at 2:10 PM, Sedat Dilek <sedat.dilek@gmail.com>
->>>>>> wrote:
->>>>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>>>>>> On Thu, May 19, 2016 at 1:04 PM, Sedat Dilek
->>>>>>>> <sedat.dilek@gmail.com>
->>>>>>>> wrote:
->>>>
->>>> [cut]
->>>>
->>>>>
->>>>> With these changes...
->>>>>
->>>>> $ ./scripts/diffconfig /boot/config-4.6.0-4-iniza-small
->>>>> /boot/config-4.6.0-5-iniza-small
->>>>>  CPU_FREQ_STAT y -> m
->>>>>  X86_ACPI_CPUFREQ y -> m
->>>>>  X86_POWERNOW_K8 y -> m
->>>>>
->>>>> ...I still see "Fast frequency switching not enabled"...
->>>>>
->>>>> $ sudo modprobe -r -v acpi_cpufreq
->>>>> [sudo] password for wearefam:
->>>>> rmmod acpi_cpufreq
->>>>> $ sudo modprobe -r -v cpufreq_stats
->>>>> rmmod cpufreq_stats
->>>>>
->>>>> $ sudo modprobe -v cpufreq_stats
->>>>> insmod
->>>>> /lib/modules/4.6.0-5-iniza-small/kernel/drivers/cpufreq/cpufreq_stats.ko
->>>>
->>>> Skip the above modprobe. :-)
->>>>
->>>
->>> If I do not insmod cpufreq_stats (only insmod acpi_cpufreq) then I do
->>> not see anything with "cpu fast switching" in my logs.
->>> ( I double-checked to have schedutil as running cpufreq-governor. )
+On 05/19/2016 04:17 AM, Pali Roh=C3=A1r wrote:
+> On Thursday 19 May 2016 09:44:04 Ivaylo Dimitrov wrote:
+>> Hi,
 >>
->> That means it has been enabled.
->
-> Actually, you can check if it has been enabled by looking and the
-> wakeups statistics from powertop.
->
-> Without fast switching you'll see kWork with sugov_work under
-> "Description" somewhere close to the top of the list.
->
+>> On 18.05.2016 19:58, Andrew F. Davis wrote:
+>>> Hello all,
+>>>
+>>> Why do we need this patch? I removed giving each battery a number i=
+n its
+>>> name intentionally. It doesn't seem to be needed anymore, and only =
+two
+>>> old drivers out of the ~70 power supply drivers do this.
+>>>
+>>
+>> The patch is needed because commit <703df6c09795> breaks existing us=
+erspace
+>> on Nokia N900, which counts on name numbering. Also, commit <703df6c=
+09795>
+>> description says nothing about name changing, so I assumed it is an
+>> unintentional side-effect of splitting the code into modules.
+>=20
+> Right, changing name cause breaking userspace and that commit does no=
+t
+> describe anything about changing name. So also from my perspective it=
+ is
+> regression.
+>=20
 
-The software-repos for Ubuntu/precise lists me a PowerTOP version 1.97.
-Not sure if this version has all bits to show me cpu fast switching
-(short: c-f-s).
+=46air enough, I was unaware of the userspace breakage, the patch messa=
+ge
+only stated it was being put back because it used to exist.
 
-IOW, it is a bit uncool to see it "not enabled" in my logs.
-I would expect also to see the successful initialization/availibility
-in my logs.
+Thanks for the clarification,
+Andrew
 
-Does turbostats (shipped with the kernel-sources) support c-f-s?
-
-- Sedat -
-
-[1] list PowerTOP v2.8
-
-[1] https://01.org/powertop
+P.S. The code is still a bit strange, I'll probably go grab one of the
+N900s from our test farm and make sure my future cleanups don't break
+this, but are we sure the *name* of a driver is an ABI? Sound like ABI
+abuse by the N900 software to me, almost like telling Linus he can't
+change the kernel version number because a userspace script depends on
+"uname =3D=3D v2.6.x". :)
