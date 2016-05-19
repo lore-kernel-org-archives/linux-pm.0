@@ -1,93 +1,272 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: Should 9aafabc7fece be reverted?
-Date: Thu, 19 May 2016 11:46:55 -0500
-Message-ID: <573DEDFF.8060305@ti.com>
-References: <573C9F45.5090109@ti.com> <201605191806.50809@pali>
- <573DE5A2.7070900@ti.com> <201605191818.20237@pali>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v3] Force cppc_cpufreq to report values in KHz to fix user
+ space reporting
+Date: Thu, 19 May 2016 10:59:12 -0600
+Message-ID: <c2d86300-48cf-ba95-ac90-14f26a0912e4@redhat.com>
+References: <1463614882-26101-1-git-send-email-ahs3@redhat.com>
+ <CAJZ5v0hkRP6ZqZiB_RAjYt27zwK7met6XNvQBzCz5KaRFvgqwA@mail.gmail.com>
+Reply-To: ahs3@redhat.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([198.47.19.11]:58533 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbcESQr2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 May 2016 12:47:28 -0400
-In-Reply-To: <201605191818.20237@pali>
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:38512 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755324AbcESQ7U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 12:59:20 -0400
+Received: by mail-ig0-f177.google.com with SMTP id vs11so9160103igb.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 09:59:19 -0700 (PDT)
+In-Reply-To: <CAJZ5v0hkRP6ZqZiB_RAjYt27zwK7met6XNvQBzCz5KaRFvgqwA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 05/19/2016 11:18 AM, Pali Roh=C3=A1r wrote:
-> On Thursday 19 May 2016 18:11:14 Andrew F. Davis wrote:
->> On 05/19/2016 11:06 AM, Pali Roh=C3=A1r wrote:
->>> On Thursday 19 May 2016 17:57:34 Andrew F. Davis wrote:
->>>> On 05/19/2016 10:51 AM, Pali Roh=C3=A1r wrote:
->>>>> On Thursday 19 May 2016 17:48:29 Andrew F. Davis wrote:
->>>>>> On 05/19/2016 10:44 AM, Pali Roh=C3=A1r wrote:
->>>>>>> On Thursday 19 May 2016 17:38:14 Andrew F. Davis wrote:
->>>>>>>> P.S. The code is still a bit strange, I'll probably go grab
->>>>>>>> one of the N900s from our test farm and make sure my future
->>>>>>>> cleanups don't break this, but are we sure the *name* of a
->>>>>>>> driver is an ABI?
->>>>>>>
->>>>>>> It is not name of driver, but directory name of sysfs path
->>>>>>> where device is exported...
->>>>>>
->>>>>> Which is named after the drivers name, so the same question
->>>>>> remains.
->>>>>>
->>>>>> :/
->>>>>
->>>>> No, it is not driver name, but device name. That is different.
->>>>
->>>> My bad, that's what I meant, device names should be dynamic,
->>>> right? Relying on them being static in software would then be
->>>> buggy (like relying on eth0 being the right NIC everytime)?
->>>>
->>>> I'm not familiar with the N900 software, but IDR can give out
->>>> different numbers and may not always give the first battery #0 (it
->>>> does now but is that a guarantee in IDR?) and if not then what is
->>>> the userspace response to this changing?
->>>
->>> In case N900 would have more bq27xxx batteries, then yes. But N900
->>> has exactly *one* bq27200 battery, so there is no IDR problem.
+On 05/19/2016 07:12 AM, Rafael J. Wysocki wrote:
+> On Thu, May 19, 2016 at 1:41 AM, Al Stone <ahs3@redhat.com> wrote:
+>> When CPPC is being used by ACPI on arm64, user space tools such as
+>> cpupower report CPU frequency values from sysfs that are incorrect.
 >>
->> Right, but if IDR returns 42 instead of 0 would this then break its
->> userspace software?
->=20
-> I think it is insane to starts generating random numbers for IDR... H=
-ard=20
-> to decide what happen if such situation occur...
->=20
+>> What the driver was doing was reporting the values given by ACPI tables
+>> in whatever scale was used to provide them.  However, the ACPI spec
+>> defines the CPPC values as unitless abstract numbers.  Internal kernel
+>> structures such as struct perf_cap, in contrast, expect these values
+>> to be in KHz.  When these struct values get reported via sysfs, the
+>> user space tools also assume they are in KHz, causing them to report
+>> incorrect values (for example, reporting a CPU frequency of 1MHz when
+>> it should be 1.8GHz).
+>>
+>> While the investigation for a long term fix proceeds (several options
+>> are being explored, some of which may require spec changes or other
+>> much more invasive fixes), this patch forces the values read by CPPC
+>> to be read in KHz, regardless of what they actually represent.
+>>
+>> The downside is that this approach has some assumptions:
+>>
+>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+>>    value for a processor is set to a non-zero value.
+>>
+>>    (2) It assumes that all processors run at the same speed, or that
+>>    the CPPC values have all been scaled to reflect relative speed.
+>>    This patch retrieves the first CPU Max Frequency from a type 4 DMI
+>>    record that it can find.  This may not be an issue, however, as a
+>>    sampling of DMI data on x86 and arm64 indicates there is often only
+>>    one such record regardless.  Since CPPC is relatively new, it is
+>>    unclear if the ACPI ASL will always be written to reflect any sort
+>>    of relative performance of processors of differing speeds.
+>>
+>>    (3) It assumes that performance and frequency both scale linearly.
+>>
+>> For arm64 servers, this may be sufficient, but it does rely on
+>> firmware values being set correctly.  Hence, other approaches are
+>> also being considered.
+>>
+>> This has been tested on three arm64 servers, with and without DMI, with
+>> and without CPPC support.
+>>
+>> Changes for v3:
+>>     -- Added clarifying commentary re short-term vs long-term fix (Alexey
+>>        Klimov)
+>>     -- Added range checking code to ensure proper arithmetic occurs,
+>>        especially no division by zero (Alexey Klimov)
+>>
+>> Changes for v2:
+>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+>>        not SELECT DMI (found by build daemon)
+>>
+>> Signed-off-by: Al Stone <ahs3@redhat.com>
+>> ---
+>>  drivers/acpi/cppc_acpi.c    | 96 ++++++++++++++++++++++++++++++++++++++++++---
+>>  drivers/cpufreq/Kconfig.arm |  1 +
+>>  2 files changed, 92 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>> index 8adac69..56a46e6 100644
+>> --- a/drivers/acpi/cppc_acpi.c
+>> +++ b/drivers/acpi/cppc_acpi.c
+>> @@ -40,6 +40,9 @@
+>>  #include <linux/cpufreq.h>
+>>  #include <linux/delay.h>
+>>  #include <linux/ktime.h>
+>> +#include <linux/dmi.h>
+>> +
+>> +#include <asm/unaligned.h>
+>>
+>>  #include <acpi/cppc_acpi.h>
+>>  /*
+>> @@ -709,6 +712,55 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+>>         return ret_val;
+>>  }
+>>
+>> +static u64 cppc_dmi_khz;
+>> +
+>> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
+>> +{
+>> +       u16 *mhz = (u16 *)private;
+>> +       const u8 *dmi_data = (const u8 *)dm;
+>> +
+>> +       if (dm->type == DMI_ENTRY_PROCESSOR && dm->length >= 48)
+>> +               *mhz = (u16)get_unaligned((const u16 *)(dmi_data + 0x14));
+> 
+> Is the offset standardized across architectures (I can't recall ATM)?
+> If so, maybe #define a symbol for it and add a comment saying that
+> next to its definition?
 
-That's kind of what I'm looking for though, if the userspace break is
-caused by software relying on the battery to be named "bq27200-0", then
-nothing short of hard-coding this exact name will 100% safely fix the
-N900 userspace software. And so using IDR and hoping it gives 0 is just
-a hacky work-around way of just naming the device "bq27200-0".
+It's part of the SMBIOS standard.  I'll fix it.
 
-> What I can say is that N900 charging software and other battery=20
-> applications stops working. And people who develop kernel for N900=20
-> starts to be angry, because without working battery charging it is no=
-t=20
-> possible to develop and fix other kernel bugs on device.
->=20
->> How is this handled for other power-supply drivers when more that on=
-e
->> battery exists, they look to give static device names so I'm assumin=
-g
->> the framework handles giving them new folder names automatically.
->=20
-> N900 software can be happy that this problem does not happen... :-)
->=20
-> But basically in case there will be more batteries of same type, then=
- it=20
-> depends if it is needed to distinguish between them or not. So this i=
-s=20
-> depends on exact situation and usage...
->=20
+I feel very silly -- I just bugged somebody else about magic constants; karma
+is an amazing thing :).
 
-I'll test this and see what happens, but I'm assuming there is a more
-standard way to differentiate parts than appending a number to the
-device name.
+>> +}
+>> +
+>> +
+>> +static u64 cppc_get_dmi_khz(void)
+>> +{
+>> +       u16 mhz;
+>> +
+>> +       dmi_walk(cppc_find_dmi_mhz, &mhz);
+>> +
+>> +       /*
+>> +        * Real stupid fallback value, just in case there is no
+>> +        * actual value set.
+>> +        */
+>> +       mhz = mhz ? mhz : 1;
+>> +
+>> +       return (1000 * mhz);
+>> +}
+>> +
+>> +static u64 cppc_unitless_to_khz(u64 min_in, u64 max_in, u64 val)
+> 
+> Is the "unitless" part of the name really necessary?
+
+Probably not essential, but descriptive.  "cppc_convert_to_khz()" instead?
+Or even "cppc_to_khz()"?
+
+> 
+>> +{
+>> +       /*
+>> +        * The incoming val should be min <= val <= max.  Our
+>> +        * job is to convert that to KHz so it can be properly
+>> +        * reported to user space via cpufreq_policy.
+>> +        */
+>> +       u64 curval = val;
+>> +       u64 maxf = max_in;
+>> +       u64 minf = min_in;
+>> +
+>> +       if (!cppc_dmi_khz)
+>> +               cppc_dmi_khz = cppc_get_dmi_khz();
+> 
+> I don't like hidden initializations like this if they are avoidable
+> and it very much looks like it is avoidable here.
+
+Fair enough.  I'll fix it.
+
+> Also you seem to be using the same cppc_dmi_khz value for all
+> processors handled by this driver.  Is that really guaranteed to be
+> correct?
+
+Yes and no.  It all depends on what's in the SMBIOS tables.  Let me
+see about making the search for that data a bit more robust; oddly
+enough, I poked at some random machines (x86 and arm64) and more often
+than not only found one CPU entry in the SMBIOS data.
+
+>> +
+>> +       /* range check the input values */
+>> +       curval = curval < minf ? minf : curval;
+>> +       curval = curval > maxf ? maxf : curval;
+>> +       minf = minf >= maxf ? maxf - 1 : minf;
+>> +
+>> +       return ((curval - minf) * cppc_dmi_khz) / (maxf - minf);
+>> +}
+>> +
+>>  /**
+>>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
+>>   * @cpunum: CPU from which to get capabilities info.
+>> @@ -748,17 +800,51 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+>>                 }
+>>         }
+>>
+>> +       /*
+>> +        * Since these values in perf_caps will be used in setting
+>> +        * up the cpufreq policy, they must always be stored in units
+>> +        * of KHz.  If they are not, user space tools will become very
+>> +        * confused since they assume these are in KHz when reading
+>> +        * sysfs.
+>> +        *
+>> +        * NB: there may be better approaches to this problem that, as
+>> +        * of this writing, are still being explored.  Ideally, this is
+>> +        * a short term solution since correlating CPPC abstract values
+>> +        * with CPU frequency may or may not reflect actual performance.
+>> +        *
+>> +        * The reason longer term solutions are being explored is because
+>> +        * this solution requires we make the following assumptions:
+>> +        *
+>> +        *    (1) It relies on SMBIOS3 being used, *and* that the Max
+>> +        *        Frequency value for a processor is set to a non-zero value.
+>> +        *
+>> +        *    (2) It assumes that all processors run at the same speed, or
+>> +        *        that the CPPC values have all been scaled to reflect any
+>> +        *        relative differences.  This code retrieves the first CPU
+>> +        *        Max Frequency from a type 4 DMI record that it can find.
+>> +        *        This may not be an issue, however, as a sampling of DMI
+>> +        *        data on x86 and arm64 indicates there is often only one
+>> +        *        such record regardless.
+>> +        *
+>> +        *    (3) It assumes that performance and frequency both scale
+>> +        *        linearly.
+>> +        *
+>> +        * None of these are particularly horrible assumptions.  But, they
+>> +        * are assumptions and ultimately we'd like to be able to report
+>> +        * performance without quite so many of them.
+>> +        *
+>> +        */
+>>         cpc_read(&highest_reg->cpc_entry.reg, &high);
+>> -       perf_caps->highest_perf = high;
+>> -
+>>         cpc_read(&lowest_reg->cpc_entry.reg, &low);
+>> -       perf_caps->lowest_perf = low;
+>> +
+>> +       perf_caps->highest_perf = cppc_unitless_to_khz(low, high, high);
+>> +       perf_caps->lowest_perf = cppc_unitless_to_khz(low, high, low);
+>>
+>>         cpc_read(&ref_perf->cpc_entry.reg, &ref);
+>> -       perf_caps->reference_perf = ref;
+>> +       perf_caps->reference_perf = cppc_unitless_to_khz(low, high, ref);
+>>
+>>         cpc_read(&nom_perf->cpc_entry.reg, &nom);
+>> -       perf_caps->nominal_perf = nom;
+>> +       perf_caps->nominal_perf = cppc_unitless_to_khz(low, high, nom);
+>>
+>>         if (!ref)
+>>                 perf_caps->reference_perf = perf_caps->nominal_perf;
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 14b1f93..0573982 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -255,6 +255,7 @@ config ACPI_CPPC_CPUFREQ
+>>         tristate "CPUFreq driver based on the ACPI CPPC spec"
+>>         depends on ACPI
+>>         select ACPI_CPPC_LIB
+>> +       select DMI
+> 
+> What if there are unmet dependencies for DMI?  Or is that not possible?
+>
+
+I'll double check this.  I don't recall any, off hand.
+
+>>         default n
+>>         help
+>>           This adds a CPUFreq driver which uses CPPC methods
+>> --
+
+Thanks for the feedback, Rafael!
+
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
