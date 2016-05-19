@@ -1,45 +1,51 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 3/5] sched: cpufreq: call cpufreq hook from remote CPUs
-Date: Thu, 19 May 2016 16:04:19 -0700
-Message-ID: <20160519230419.GB15383@graphite.smuckle.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/5] cpufreq: schedutil: support scheduler cpufreq
+ callbacks on remote CPUs
+Date: Fri, 20 May 2016 01:14:56 +0200
+Message-ID: <CAJZ5v0hCqGq_Q73ioVjFs-nYj60BbUOaYJ42_s_n4N+YZDgdmA@mail.gmail.com>
 References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
- <1462828814-32530-4-git-send-email-smuckle@linaro.org>
- <CAJZ5v0iWfc=cNaCVuQ9QLK0FMLy1i5zEVcZSutOAK=+1OxaRtg@mail.gmail.com>
- <CAJZ5v0i-9QhNt1o_MN9_kEut6vs53-nwkM44dYq8hnuxynn4eQ@mail.gmail.com>
- <20160519191916.GE17223@graphite.smuckle.net>
- <CAJZ5v0hu=6sp=p+jYXfesSC20ZfKcGL6f5fTpvC+RX1uAEbn=A@mail.gmail.com>
+	<1462828814-32530-3-git-send-email-smuckle@linaro.org>
+	<CAJZ5v0jcFNdYMXdaBDaTzyxCaPn9=q2YxUMqziEaprwiOm=5dA@mail.gmail.com>
+	<20160519184055.GD17223@graphite.smuckle.net>
+	<CAJZ5v0jt6r38kiAE=Qf3y8vpquMdQnnLEDqjg2v7QoKgKzOcuw@mail.gmail.com>
+	<20160519225939.GA15383@graphite.smuckle.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:34792 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755371AbcESXEY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 19:04:24 -0400
-Received: by mail-pf0-f176.google.com with SMTP id y69so34494699pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 16:04:23 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hu=6sp=p+jYXfesSC20ZfKcGL6f5fTpvC+RX1uAEbn=A@mail.gmail.com>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:34476 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754492AbcESXO6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 19:14:58 -0400
+In-Reply-To: <20160519225939.GA15383@graphite.smuckle.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 
-On Thu, May 19, 2016 at 11:06:14PM +0200, Rafael J. Wysocki wrote:
-> > In the case of a remote update the hook has to run (or not) after it is
-> > known whether preemption will occur so we don't do needless work or
-> > IPIs. If the policy CPUs aren't known in the scheduler then the early
-> > hook will always need to be called along with an indication that it is
-> > the early hook being called. If it turns out to be a remote update it
-> > could then be deferred to the later hook, which would only be called
-> > when a remote update has been deferred and preemption has not occurred.
-> >
-> > This means two hook inovcations for a remote non-preempting wakeup
-> > though instead of one.  Perhaps this is a good middle ground on code
-> > churn vs. optimization though.
-> 
-> I would think so.
+On Fri, May 20, 2016 at 12:59 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> On Thu, May 19, 2016 at 10:55:23PM +0200, Rafael J. Wysocki wrote:
+>> >> > +static inline bool sugov_queue_remote_callback(struct sugov_policy *sg_policy,
+>> >> > +                                        int cpu)
+>> >> > +{
+>> >> > +       struct cpufreq_policy *policy = sg_policy->policy;
+>> >> > +
+>> >> > +       if (!cpumask_test_cpu(smp_processor_id(), policy->cpus)) {
+>> >>
+>> >> This check is overkill for policies that aren't shared (and we have a
+>> >> special case for them already).
+>> >
+>> > I don't see why it is overkill -
+>>
+>> Because it requires more computation, memory accesses etc than simply
+>> comparing smp_processor_id() with cpu.
+>
+> Do you have a preference on how to restructure this?
 
-Ok, I will pursue this approach.
+Not really.
 
-thanks,
-Steve
+> Otherwise I'll create a second version of sugov_update_commit, factoring out as much of
+> it as I can into two inline sub-functions.
+
+I guess in that case it might be better to fold the
+sugov_update_commit() code into its callers and then factor out common
+stuff into sub-functions called from there.
