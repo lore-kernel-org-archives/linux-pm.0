@@ -1,37 +1,165 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/6] cpufreq: conservative: Remove declaration of
- cs_dbs_gov
-Date: Thu, 19 May 2016 07:43:53 +0530
-Message-ID: <20160519021353.GH24777@vireshk-i7>
-References: <cover.1463574213.git.viresh.kumar@linaro.org>
- <f51606d0f2c04852b7b5c2f1137238bbc1fe1828.1463574213.git.viresh.kumar@linaro.org>
- <CAJZ5v0gbFaEpRbSXaEr8X5_DjcuWParKdS+mUshmKrLu7xnRTQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Documentation: dt: add bindings for ti-cpufreq
+Date: Thu, 19 May 2016 08:45:59 +0530
+Message-ID: <20160519031559.GK24777@vireshk-i7>
+References: <cover.1463609497.git.d-gerlach@ti.com>
+ <f17fbc8acb1e903b9f175f49fe29563b83132faf.1463609497.git.d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:36638 "EHLO
-	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbcESCN5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 22:13:57 -0400
-Received: by mail-pf0-f175.google.com with SMTP id c189so25272654pfb.3
-        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 19:13:57 -0700 (PDT)
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:34177 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbcESDQD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 May 2016 23:16:03 -0400
+Received: by mail-pf0-f170.google.com with SMTP id y69so24978600pfb.1
+        for <linux-pm@vger.kernel.org>; Wed, 18 May 2016 20:16:02 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gbFaEpRbSXaEr8X5_DjcuWParKdS+mUshmKrLu7xnRTQ@mail.gmail.com>
+In-Reply-To: <f17fbc8acb1e903b9f175f49fe29563b83132faf.1463609497.git.d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Yegor Yefremov <yegorslists@googlemail.com>
 
-On 18-05-16, 23:03, Rafael J. Wysocki wrote:
-> On Wed, May 18, 2016 at 2:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > The code doesn't use 'cs_dbs_gov' anymore before it is defined and the
-> > extra line for declaring it can be removed.
+On 18-05-16, 18:30, Dave Gerlach wrote:
+> Add the device tree bindings document for the TI CPUFreq/OPP driver
+> on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
+> to provide an opp-supported-hw property for each OPP to define when
+> it is available. This driver is responsible for reading and parsing
+> registers to determine which OPPs can be selectively enabled based
+> on the specific SoC in use by matching against the opp-supported-hw
+> data.
+
+Here and ...
+
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
+>  .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 89 ++++++++++++++++++++++
+>  1 file changed, 89 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
 > 
-> This sort of conflicts with a patch I've just posted
-> (https://patchwork.kernel.org/patch/9122121/) and I'd prefer to go
-> with that one if that's not a big deal.
+> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+> new file mode 100644
+> index 000000000000..f719b2df2a1f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+> @@ -0,0 +1,89 @@
+> +Bindings for TI's CPUFreq driver
+> +================================
+> +
+> +The ti-cpufreq driver works with the operating-points-v2 binding described
+> +at [../opp/opp.txt] to make sure the proper OPPs for a platform get enabled
+> +and then creates a "cpufreq-dt" platform device to leverage the cpufreq-dt
+> +driver described in [cpufreq-dt.txt].
+> +
+> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
+> +families support different OPPs depending on the silicon variant in use.
+> +The ti-cpufreq driver uses the revision and an efuse value from the SoC to
+> +provide the OPP framework with supported hardware information. This is used
+> +to determine which OPPs from the operating-points-v2 table get enabled. In
+> +order to maintain backwards compatilibity if this information is not present
+> +the "cpufreq-dt" platform device is still created to attempt to find an
+> +operating-points (v1) table, otherwise no OPPs will be available because
+> +safe OPPs cannot be determined.
 
-Yeah, drop it.
+... here..
+
+We shouldn't be talking about the drivers are going to use it, etc.
+This is a binding document, which should be independent of Linux
+kernel. It can be used by other Operating systems as well and so the
+implementation details should be just dropped.
+
+> +
+> +Required properties:
+> +--------------------
+> +In 'cpus' nodes:
+> +- operating-points-v2: Phandle to the operating-points-v2 table to use
+> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
+> +		   mask, and efuse register shift to get the relevant bits
+> +		   that describe OPP availability
+> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC
+
+These are proper sentences and so maybe a full-stop (.) at the end of
+each line ?
+
+> +
+> +In 'operating-points-v2' table:
+> +- opp-supported-hw: Two bitfields indicating:
+> +	1. Which revision of the SoC the OPP is supported by
+> +	2. Which eFuse bits indicate this OPP is available
+> +
+> +	A bitwise and is performed against these values and if any bit
+
+                  AND or &
+
+> +	matches, the OPP gets enabled.
+> +
+> +NOTE: Without the above, platform-device for "cpufreq-dt" is still created
+> +      but no determination of which OPPs should be available is done, but this
+> +      allows for use of a v1 operating-points table.
+
+Again, these are implementation details.. should be dropped.
+
+> +
+> +Example:
+> +--------
+> +
+> +/* From arch/arm/boot/dts/am4372.dtsi */
+> +cpus {
+> +	cpu: cpu@0 {
+> +		...
+> +
+> +		operating-points-v2 = <&cpu0_opp_table>;
+> +
+> +		ti,syscon-efuse = <&scm_conf 0x610 0x3f 0>;
+> +		ti,syscon-rev = <&scm_conf 0x600>;
+
+@Rob: Can we add properties to the CPU node just like that ?
+
+> +
+> +		...
+> +	};
+> +};
+> +
+> +cpu0_opp_table: opp_table0 {
+> +	compatible = "operating-points-v2";
+
+Otherwise, you could have added above properties right here and added
+your own compatible string..
+
+> +	opp50@300000000 {
+> +		opp-hz = /bits/ 64 <300000000>;
+> +		opp-microvolt = <950000>;
+> +		opp-supported-hw = <0xFF 0x01>;
+> +		opp-suspend;
+> +	};
+> +
+> +	opp100@600000000 {
+> +		opp-hz = /bits/ 64 <600000000>;
+> +		opp-microvolt = <1100000>;
+> +		opp-supported-hw = <0xFF 0x04>;
+> +	};
+> +
+> +	opp120@720000000 {
+> +		opp-hz = /bits/ 64 <720000000>;
+> +		opp-microvolt = <1200000>;
+> +		opp-supported-hw = <0xFF 0x08>;
+> +	};
+> +
+> +	oppturbo@800000000 {
+> +		opp-hz = /bits/ 64 <800000000>;
+> +		opp-microvolt = <1260000>;
+> +		opp-supported-hw = <0xFF 0x10>;
+> +	};
+> +
+> +	oppnitro@1000000000 {
+> +		opp-hz = /bits/ 64 <1000000000>;
+> +		opp-microvolt = <1325000>;
+> +		opp-supported-hw = <0xFF 0x20>;
+
+so the first one is always FF ? Why have it then ?
+
+> +	};
+> +};
 
 -- 
 viresh
