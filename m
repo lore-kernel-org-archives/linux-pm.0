@@ -1,48 +1,111 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: Should 9aafabc7fece be reverted?
-Date: Thu, 19 May 2016 10:57:34 -0500
-Message-ID: <573DE26E.2040403@ti.com>
-References: <573C9F45.5090109@ti.com> <201605191744.07228@pali>
- <573DE04D.9050101@ti.com> <201605191751.28412@pali>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [cpufreq-4.7] New schedutil governor in combination with intel_pstate/x86
+Date: Thu, 19 May 2016 18:05:30 +0200
+Message-ID: <CAJZ5v0j+sshsUrVcTOpu5ORoNrafw4UKo=Eu_gi50Ckb7qLYYw@mail.gmail.com>
+References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
+	<573B4C2A.4010205@intel.com>
+	<CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
+	<573BA6C6.901@intel.com>
+	<CA+icZUVotMFEXSJ1BNY72zQfB-L-PJbyR_31LK8Obje7YjNJsA@mail.gmail.com>
+	<CAJZ5v0htU2WyqwNBcfSG1+AH9iB4LDd_tH1GN604rCyrahwbyw@mail.gmail.com>
+	<CA+icZUXV3mz9Yr05o5zHLOcXwYRWydtXZOuLnE10Zy3RwzOHUg@mail.gmail.com>
+	<CAJZ5v0g1-KT5Jnh2BYOd66GkkvyTkUe0JNJ5_fxQa4wNvr9fAQ@mail.gmail.com>
+	<CA+icZUU3wJ7PFiYgr2DW_Q4vak13TNhzw8AySkFFkuTigZk16g@mail.gmail.com>
+	<CAJZ5v0iMfT6WPx_ighZ7WTRjTo=qz9EjYmxBoc_YNCLVL3JOZw@mail.gmail.com>
+	<CA+icZUWJhEVp4GwHQsMTeLLPqbZw7de8vfwtgm2=r6wbiStMFw@mail.gmail.com>
+	<CAJZ5v0izrrssFwjtNTVAhHVywcfL9OzdiTPnSOPEFXWCGuxR3A@mail.gmail.com>
+	<CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
+	<CA+icZUVq5wGwM2kyLo3cnRxN7kH9F_h+fzVeELJx7ytZR60M-g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:34472 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbcESP6F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 11:58:05 -0400
-In-Reply-To: <201605191751.28412@pali>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34621 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751297AbcESQFc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 12:05:32 -0400
+Received: by mail-wm0-f67.google.com with SMTP id n129so22262375wmn.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 09:05:31 -0700 (PDT)
+In-Reply-To: <CA+icZUVq5wGwM2kyLo3cnRxN7kH9F_h+fzVeELJx7ytZR60M-g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: sedat.dilek@gmail.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 05/19/2016 10:51 AM, Pali Roh=C3=A1r wrote:
-> On Thursday 19 May 2016 17:48:29 Andrew F. Davis wrote:
->> On 05/19/2016 10:44 AM, Pali Roh=C3=A1r wrote:
->>> On Thursday 19 May 2016 17:38:14 Andrew F. Davis wrote:
->>>> P.S. The code is still a bit strange, I'll probably go grab one of
->>>> the N900s from our test farm and make sure my future cleanups
->>>> don't break this, but are we sure the *name* of a driver is an
->>>> ABI?
+On Thu, May 19, 2016 at 4:50 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Thu, May 19, 2016 at 4:04 PM, Rafael J. Wysocki <rafael@kernel.org>
+>> wrote:
+>>> On Thu, May 19, 2016 at 3:54 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>>> wrote:
+>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>> On Thu, May 19, 2016 at 3:41 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>>>>> wrote:
+>>>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>>>> On Thu, May 19, 2016 at 2:10 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>>>>>>> wrote:
+>>>>>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>>>>>> On Thu, May 19, 2016 at 1:04 PM, Sedat Dilek
+>>>>>>>>> <sedat.dilek@gmail.com>
+>>>>>>>>> wrote:
+>>>>>
+>>>>> [cut]
+>>>>>
+>>>>>>
+>>>>>> With these changes...
+>>>>>>
+>>>>>> $ ./scripts/diffconfig /boot/config-4.6.0-4-iniza-small
+>>>>>> /boot/config-4.6.0-5-iniza-small
+>>>>>>  CPU_FREQ_STAT y -> m
+>>>>>>  X86_ACPI_CPUFREQ y -> m
+>>>>>>  X86_POWERNOW_K8 y -> m
+>>>>>>
+>>>>>> ...I still see "Fast frequency switching not enabled"...
+>>>>>>
+>>>>>> $ sudo modprobe -r -v acpi_cpufreq
+>>>>>> [sudo] password for wearefam:
+>>>>>> rmmod acpi_cpufreq
+>>>>>> $ sudo modprobe -r -v cpufreq_stats
+>>>>>> rmmod cpufreq_stats
+>>>>>>
+>>>>>> $ sudo modprobe -v cpufreq_stats
+>>>>>> insmod
+>>>>>> /lib/modules/4.6.0-5-iniza-small/kernel/drivers/cpufreq/cpufreq_stats.ko
+>>>>>
+>>>>> Skip the above modprobe. :-)
+>>>>>
+>>>>
+>>>> If I do not insmod cpufreq_stats (only insmod acpi_cpufreq) then I do
+>>>> not see anything with "cpu fast switching" in my logs.
+>>>> ( I double-checked to have schedutil as running cpufreq-governor. )
 >>>
->>> It is not name of driver, but directory name of sysfs path where
->>> device is exported...
+>>> That means it has been enabled.
 >>
->> Which is named after the drivers name, so the same question remains.
->> :/
->=20
-> No, it is not driver name, but device name. That is different.
->=20
+>> Actually, you can check if it has been enabled by looking and the
+>> wakeups statistics from powertop.
+>>
+>> Without fast switching you'll see kWork with sugov_work under
+>> "Description" somewhere close to the top of the list.
+>>
+>
+> The software-repos for Ubuntu/precise lists me a PowerTOP version 1.97.
+> Not sure if this version has all bits to show me cpu fast switching
+> (short: c-f-s).
 
-My bad, that's what I meant, device names should be dynamic, right?
-Relying on them being static in software would then be buggy (like
-relying on eth0 being the right NIC everytime)?
+Any version of powertop should be sufficient.  You just need to go
+into the "wakups" screen and look for "sugov_work" in the output.  If
+it's not there, you have fast switching enabled.
 
-I'm not familiar with the N900 software, but IDR can give out different
-numbers and may not always give the first battery #0 (it does now but i=
-s
-that a guarantee in IDR?) and if not then what is the userspace respons=
-e
-to this changing?
+> IOW, it is a bit uncool to see it "not enabled" in my logs.
+> I would expect also to see the successful initialization/availibility
+> in my logs.
+
+The reason why "not enabled" is visible is because that indicates some
+conflict with cpufreq transition notifiers and we want to know about
+those.
+
+>
+> Does turbostats (shipped with the kernel-sources) support c-f-s?
+
+That's not a hardware feature, so why would it?
+
+Why do you care so much about the fast switching in the first place?
